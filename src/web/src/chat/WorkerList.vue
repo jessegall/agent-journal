@@ -1,18 +1,17 @@
 <script setup>
-import {helperCard, helperCounts, helperEnvironment, helperName, helpersBySection} from "../domain/helpers.js";
+import {workerCounts, workerName, workersBySection} from "../domain/workers.js";
 import {computed, ref} from "vue";
-import {api} from "../api/client.js";
 import CloseButton from "../kit/CloseButton.vue";
 import Btn from "../kit/Btn.vue";
 import FoldGroup from "../kit/FoldGroup.vue";
-import TicketAgent from "../agents/TicketAgent.vue";
-import HelperRow from "./HelperRow.vue";
+import WorkerRow from "./WorkerRow.vue";
 import Skeleton from "../kit/Skeleton.vue";
+import {peek} from "../route.js";
 
 const props = defineProps({rows: {type: Array, default: () => []}, loading: Boolean});
-const emit = defineEmits(["changed", "close"]);
-const sections = computed(() => helpersBySection(props.rows));
-const counts = computed(() => helperCounts(props.rows));
+const emit = defineEmits(["close"]);
+const sections = computed(() => workersBySection(props.rows));
+const counts = computed(() => workerCounts(props.rows));
 const countsLine = computed(() =>
     [counts.value.working && `${counts.value.working} working`, counts.value.reported && `${counts.value.reported} with reports`]
         .filter(Boolean)
@@ -20,70 +19,62 @@ const countsLine = computed(() =>
 );
 const OPEN_SECTIONS = [
     {key: "working", title: "Working"},
-    {key: "waiting", title: "Idle"},
-    {key: "closed", title: "Closed, can take more work"},
+    {key: "waiting", title: "Reported"},
 ];
 const retiredOpen = ref(false);
-const inspected = ref(null);
+
+function inspect(row) {
+    peek("workers", row.id);
+    emit("close");
+}
 </script>
 
 <template>
-    <div class="helpers">
-        <header class="helpers-head">
+    <div class="workers">
+        <header class="workers-head">
             <div>
-                <h4 class="helpers-heading">Helpers</h4>
-                <span class="helpers-counts">{{ countsLine }}</span>
+                <h4 class="workers-heading">Workers</h4>
+                <span class="workers-counts">{{ countsLine }}</span>
             </div>
             <CloseButton @click="emit('close')" />
         </header>
-        <div class="helpers-body">
+        <div class="workers-body">
             <template v-if="!rows.length && loading">
-                <Skeleton :count="3" label="Loading the helpers" />
+                <Skeleton :count="3" label="Loading the workers" />
             </template>
             <template v-else-if="!rows.length">
-                <p class="helpers-none">No helpers have been started here.</p>
+                <p class="workers-none">No workers have been sent from here.</p>
             </template>
             <template v-for="section in OPEN_SECTIONS" :key="section.key">
                 <template v-if="sections[section.key].length">
-                    <h5 class="helpers-section">{{ section.title }}</h5>
-                    <template v-for="row in sections[section.key]" :key="row.n">
-                        <HelperRow :row="row" @changed="emit('changed')" @inspect="inspected = row" />
+                    <h5 class="workers-section">{{ section.title }}</h5>
+                    <template v-for="row in sections[section.key]" :key="row.id">
+                        <WorkerRow :row="row" @inspect="inspect(row)" />
                     </template>
                 </template>
             </template>
             <template v-if="sections.retired.length">
-                <FoldGroup bar class="helpers-closed" label="Retired" :count="sections.retired.length" :open="retiredOpen" @toggle="retiredOpen = !retiredOpen">
-                    <template v-for="row in sections.retired" :key="row.n">
-                        <Btn kind="text" class="helpers-retired" v-tip="`Open this helper's inspector`" @click="inspected = row">
-                            {{ helperName(row) }}
+                <FoldGroup bar class="workers-closed" label="Closed" :count="sections.retired.length" :open="retiredOpen" @toggle="retiredOpen = !retiredOpen">
+                    <template v-for="row in sections.retired" :key="row.id">
+                        <Btn kind="text" class="workers-retired" v-tip="'Open this worker'" @click="inspect(row)">
+                            {{ workerName(row) }}
                         </Btn>
                     </template>
                 </FoldGroup>
             </template>
         </div>
-        <template v-if="inspected">
-            <TicketAgent
-                :card="helperCard(inspected)"
-                :env="helperEnvironment(inspected)"
-                kind="helper"
-                :recorded="inspected.n"
-                :label="helperName(inspected)"
-                @close="inspected = null"
-                @stopped="emit('changed')"
-            />
-        </template>
     </div>
 </template>
 
 <style scoped>
-.helpers {
+.workers {
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
 }
 
-.helpers-head {
+.workers-head {
     display: flex;
     flex: none;
     align-items: center;
@@ -93,31 +84,31 @@ const inspected = ref(null);
     border-bottom: 1px solid var(--line);
 }
 
-.helpers-heading {
+.workers-heading {
     margin: 0;
     color: var(--text);
     font-size: 13px;
     font-weight: 600;
 }
 
-.helpers-counts {
+.workers-counts {
     margin-left: 8px;
     color: var(--text-3);
     font-size: 12px;
 }
 
-.helpers-body {
+.workers-body {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     padding-top: 4px;
 }
 
-.helpers-closed {
+.workers-closed {
     --fold-bleed: 6px;
 }
 
-.helpers-section {
+.workers-section {
     margin: 10px 8px 2px;
     color: var(--text-3);
     font-size: 11px;
@@ -126,14 +117,14 @@ const inspected = ref(null);
     text-transform: uppercase;
 }
 
-.helpers-retired {
+.workers-retired {
     display: block;
     padding: 4px 8px;
     color: var(--text-3);
     font-size: 12px;
 }
 
-.helpers-none {
+.workers-none {
     margin: 8px;
     color: var(--text-3);
     font-size: 12px;

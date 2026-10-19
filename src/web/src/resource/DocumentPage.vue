@@ -10,7 +10,7 @@ import SequenceRuns from "./SequenceRuns.vue";
 import {useBeingWritten} from "../composables/sequenceRuns.js";
 import Links from "./Links.vue";
 import Highlight from "./Highlight.vue";
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 
 const props = defineProps({
     resource: Object,

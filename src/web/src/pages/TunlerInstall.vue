@@ -17,7 +17,7 @@ async function install() {
     busy.value = true;
     failure.value = "";
     try {
-        emit("installed", await api.installTunler(server.value.trim()));
+        emit("installed", (await api.installTunler(server.value.trim())).installed);
     } catch (e) {
         failure.value = e.message;
     } finally {

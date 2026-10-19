@@ -7,7 +7,6 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
-import {hostedOn} from "../composables/settings.js";
 import {runUpdate} from "../composables/updates.js";
 import {clear, updating} from "../state/updating.js";
 
@@ -15,7 +14,7 @@ const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
-const visible = computed(() => !hostedOn.value && upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
+const visible = computed(() => upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
 const mine = (document.querySelector("script[type=module]") || {}).src || "";
 const stale = computed(() => {
     const serving = store.spec && store.spec.build;

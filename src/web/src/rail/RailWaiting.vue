@@ -1,5 +1,5 @@
 <script setup>
-import {meta, types} from "../domain/spec.js";
+import {meta, tables} from "../domain/tables.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
@@ -25,7 +25,7 @@ const props = defineProps({type: {type: String, default: ""}});
 const OWN_TABS = ["question", "suggestion"];
 const waiting = computed(() => openRows(props.type).sort((a, b) => b.created - a.created));
 const notifications = computed(() =>
-    types.value
+    tables.value
         .filter((t) => t.needs_attention && !OWN_TABS.includes(t.name))
         .flatMap((t) => [
             ...unreadByUser(t.name),

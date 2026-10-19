@@ -3,13 +3,17 @@ import {ref, toRaw, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
 import {onOutboxChange} from "../chat/outbox.js";
 import {withoutAnswered} from "../domain/placeholders.js";
+import {isClosed, updatedAt} from "../domain/row.js";
+import {TABLES} from "../domain/tables.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {PAGE, RECENT} from "./paging.js";
 
 export {PAGE, RECENT};
 
-const watchedTypes = new Set();
+// The rows the viewer holds, by table: each table is read when a page first asks for it and caught up when the timeline
+// says one of its rows was made, changed or deleted.
+const watchedTables = new Set();
 const seen = ref(0);
 const loaded = new Set();
 const changed = new Set();
@@ -20,231 +24,227 @@ const absent = new Map();
 let owedWhole = false;
 let draining = null;
 
-export function hasLoaded(type) {
+const byId = (a, b) => a.id - b.id;
+
+export function hasLoaded(table) {
     seen.value;
-    return loaded.has(type);
+    return loaded.has(table);
 }
 
-export function rows(type) {
+export function rows(table) {
     seen.value;
-    if (!watchedTypes.has(type)) {
-        watchedTypes.add(type);
-        if (store.booted && (!loaded.has(type) || changed.has(type))) queueMicrotask(() => refresh([type], false));
+    if (!watchedTables.has(table)) {
+        watchedTables.add(table);
+        if (store.booted && (!loaded.has(table) || changed.has(table))) queueMicrotask(() => refresh([table], false));
     }
-    return store.rows[type] || [];
+    return store.rows[table] || [];
 }
 
-function trimmed(type) {
-    const held = store.rows[type] || [];
+function trimmed(table) {
+    const held = store.rows[table] || [];
     if (held.length <= PAGE) return;
     const recent = new Set(held.slice(-PAGE));
-    store.rows[type] = held.filter((r) => recent.has(r) || !r.completed);
-    store.paging.size[type] = PAGE;
-    store.paging.more[type] = true;
+    store.rows[table] = held.filter((r) => recent.has(r) || !isClosed(r));
+    store.paging.size[table] = PAGE;
+    store.paging.more[table] = true;
 }
 
 function forget() {
-    watchedTypes.forEach(trimmed);
-    watchedTypes.clear();
+    watchedTables.forEach(trimmed);
+    watchedTables.clear();
     asked.clear();
     seen.value += 1;
 }
 
-async function damage(type, n) {
-    try {
-        await api.show(type, n);
-    } catch (e) {
-        if (/ is damaged: /.test(e.message)) store.damaged[`${type}:${n}`] = e.message.split(" is damaged: ").pop();
-    }
-}
-
-export async function holding(type, numbers) {
-    const have = new Set((store.rows[type] || []).map((r) => r.n));
-    const pending = asked.get(type) || new Set();
-    const none = absent.get(type) || new Set();
-    const missing = numbers.filter((n) => !have.has(n) && !pending.has(n) && !none.has(n));
+// The rows of a table with these ids, read when a page needs one it does not hold.
+export async function holding(table, ids) {
+    const have = new Set((store.rows[table] || []).map((r) => r.id));
+    const pending = asked.get(table) || new Set();
+    const none = absent.get(table) || new Set();
+    const missing = ids.filter((id) => !have.has(id) && !pending.has(id) && !none.has(id));
     if (!missing.length) return;
-    missing.forEach((n) => pending.add(n));
-    asked.set(type, pending);
+    missing.forEach((id) => pending.add(id));
+    asked.set(table, pending);
     try {
-        const got = await api.list(type, {completed: true, only: missing});
-        const found = new Set(got.rows.map((r) => r.n));
-        missing
-            .filter((n) => !found.has(n))
-            .forEach((n) => {
-                none.add(n);
-                damage(type, n);
-            });
-        absent.set(type, none);
+        const got = await api.list(table, {ids: missing});
+        const found = new Set(got.rows.map((r) => r.id));
+        missing.filter((id) => !found.has(id)).forEach((id) => none.add(id));
+        absent.set(table, none);
         if (!got.rows.length) return;
-        const known = new Set((store.rows[type] || []).map((r) => r.n));
-        store.rows[type] = [...withoutAnswered(store.rows[type] || [], got.rows), ...got.rows.filter((r) => !known.has(r.n))].sort((a, b) => a.n - b.n);
-        store.paging.size[type] = store.rows[type].length;
+        const known = new Set((store.rows[table] || []).map((r) => r.id));
+        store.rows[table] = [...withoutAnswered(store.rows[table] || [], got.rows), ...got.rows.filter((r) => !known.has(r.id))].sort(byId);
+        store.paging.size[table] = store.rows[table].length;
     } finally {
-        missing.forEach((n) => pending.delete(n));
+        missing.forEach((id) => pending.delete(id));
     }
 }
 
-watch(() => `${route.value.env}/${route.value.page}/${route.value.open ? route.value.open.type : ""}`, forget);
+watch(() => `${route.value.env}/${route.value.page}/${route.value.open ? route.value.open.table : ""}`, forget);
 watch(
     () => store.booted,
     (booted) =>
         booted &&
         refresh(
-            [...watchedTypes].filter((type) => !loaded.has(type)),
+            [...watchedTables].filter((table) => !loaded.has(table)),
             false
         )
 );
 
+// A list may carry a document or report without its body, a summary: one held whole stays whole while it has not changed.
+const isSummary = (r) => (r.table === "docs" || r.table === "reports") && !("body" in r);
+
 function stillWhole(held, arriving) {
-    const wholes = new Map(held.filter((r) => r.n > 0 && !r.summary).map((r) => [r.n, r]));
-    return arriving.map((r) => (r.summary && wholes.get(r.n)?.updated === r.updated ? wholes.get(r.n) : r));
+    const wholes = new Map(held.filter((r) => r.id > 0 && !isSummary(r)).map((r) => [r.id, r]));
+    return arriving.map((r) => (isSummary(r) && wholes.get(r.id)?.updated_at === r.updated_at ? wholes.get(r.id) : r));
 }
 
-export async function whole(type, n) {
-    const got = await api.list(type, {completed: true, only: [n]});
-    const row = got.rows.find((r) => r.n === n);
-    if (row) store.rows[type] = (store.rows[type] || []).map((r) => (r.n === n ? row : r));
+export const isWhole = (r) => !isSummary(r);
+
+export async function whole(table, id) {
+    const got = await api.list(table, {ids: [id]});
+    const row = got.rows.find((r) => r.id === id);
+    if (row) store.rows[table] = (store.rows[table] || []).map((r) => (r.id === id ? row : r));
 }
 
-function took(type, got) {
-    loaded.add(type);
+function took(table, got) {
+    loaded.add(table);
     seen.value += 1;
-    const held = store.rows[type] || [];
-    store.rows[type] = [...stillWhole(held, got.rows), ...withoutAnswered(held.filter((r) => r.n === 0), got.rows)];
-    store.paging.size[type] = store.paging.size[type] || PAGE;
-    store.paging.more[type] = got.more;
+    const held = store.rows[table] || [];
+    store.rows[table] = [...stillWhole(held, got.rows), ...withoutAnswered(held.filter((r) => r.id === 0), got.rows)];
+    store.paging.size[table] = store.paging.size[table] || PAGE;
+    store.paging.more[table] = got.more;
 }
 
 const oldest = (held) => {
-    const closed = held.filter((r) => r.completed);
-    return (closed.length ? closed : held).reduce((low, r) => Math.min(low, r.n), Infinity);
+    const closed = held.filter(isClosed);
+    return (closed.length ? closed : held).reduce((low, r) => Math.min(low, r.id), Infinity);
 };
 
 const beforeKey = (held) => (Number.isFinite(oldest(held)) ? oldest(held) : 0);
 
-async function rebuilt(type, size) {
-    const first = await api.list(type, {last: PAGE, completed: true});
+async function rebuilt(table, size) {
+    const first = await api.list(table, {limit: PAGE});
     let rows = first.rows;
     let more = first.more;
     while (more && rows.length < size) {
-        const page = await api.list(type, {last: PAGE, completed: true, before: beforeKey(rows)});
-        const known = new Set(rows.map((r) => r.n));
-        const fresh = page.rows.filter((r) => !known.has(r.n));
+        const page = await api.list(table, {limit: PAGE, before: beforeKey(rows)});
+        const known = new Set(rows.map((r) => r.id));
+        const fresh = page.rows.filter((r) => !known.has(r.id));
         more = page.more;
         if (!fresh.length) break;
         rows = [...fresh, ...rows];
     }
-    return {rows, more};
+    return {rows, more, counts: first.counts};
 }
 
-export async function load(type) {
-    const held = store.paging.size[type] || 0;
-    const starting = new Set((store.rows[type] || []).map((r) => r.n));
-    const got = await rebuilt(type, held);
-    const listed = new Set(got.rows.map((r) => r.n));
-    const arriving = withoutAnswered((store.rows[type] || []).filter((r) => !starting.has(r.n) && !listed.has(r.n)), got.rows);
-    took(type, {...got, rows: [...got.rows, ...arriving].sort((a, b) => a.n - b.n)});
-    store.paging.size[type] = Math.max(held, PAGE);
-    return store.rows[type];
+export async function load(table) {
+    const held = store.paging.size[table] || 0;
+    const starting = new Set((store.rows[table] || []).map((r) => r.id));
+    const got = await rebuilt(table, held);
+    keptCounts(table, got.counts);
+    const listed = new Set(got.rows.map((r) => r.id));
+    const arriving = withoutAnswered((store.rows[table] || []).filter((r) => !starting.has(r.id) && !listed.has(r.id)), got.rows);
+    took(table, {...got, rows: [...got.rows, ...arriving].sort(byId)});
+    store.paging.size[table] = Math.max(held, PAGE);
+    return store.rows[table];
 }
 
-const keptCounts = (type, counts) => (store.counts = {...store.counts, [type]: counts});
+const keptCounts = (table, counts) => (store.counts = {...store.counts, [table]: counts});
 
-async function caughtUp(type) {
-    const since = Math.max(0, ...(store.rows[type] || []).map((r) => r.updated || 0));
-    const got = await api.list(type, {last: PAGE, completed: true, since});
-    keptCounts(type, got.counts);
-    if (got.more) return load(type);
-    const held = store.rows[type] || [];
-    const fresh = new Map(got.rows.map((r) => [r.n, r]));
-    const kept = withoutAnswered(held.filter((r) => !fresh.has(r.n)), got.rows).concat(got.rows.filter((r) => !r.deleted));
-    store.rows[type] = kept.sort((a, b) => a.n - b.n);
-    store.paging.size[type] = store.rows[type].length;
-    return store.rows[type];
+async function caughtUp(table) {
+    const since = Math.max(0, ...(store.rows[table] || []).map(updatedAt));
+    const got = await api.list(table, {limit: PAGE, since});
+    keptCounts(table, got.counts);
+    if (got.more) return load(table);
+    const held = store.rows[table] || [];
+    const fresh = new Map(got.rows.map((r) => [r.id, r]));
+    const kept = withoutAnswered(held.filter((r) => !fresh.has(r.id)), got.rows).concat(stillWhole(held, got.rows));
+    store.rows[table] = kept.sort(byId);
+    store.paging.size[table] = store.rows[table].length;
+    return store.rows[table];
 }
 
-export async function earlier(...types) {
-    const growing = types.filter((type) => store.paging.more[type]);
+export async function earlier(...tables) {
+    const growing = tables.filter((table) => store.paging.more[table]);
     await Promise.all(
-        growing.map(async (type) => {
-            const got = await api.list(type, {last: PAGE, completed: true, before: beforeKey(store.rows[type] || [])});
-            const held = store.rows[type] || [];
-            const known = new Set(held.map((r) => r.n));
-            store.rows[type] = [...got.rows.filter((r) => !known.has(r.n)), ...held].sort((a, b) => a.n - b.n);
-            store.paging.size[type] = store.rows[type].length;
-            store.paging.more[type] = got.more;
+        growing.map(async (table) => {
+            const got = await api.list(table, {limit: PAGE, before: beforeKey(store.rows[table] || [])});
+            const held = store.rows[table] || [];
+            const known = new Set(held.map((r) => r.id));
+            store.rows[table] = [...got.rows.filter((r) => !known.has(r.id)), ...held].sort(byId);
+            store.paging.size[table] = store.rows[table].length;
+            store.paging.more[table] = got.more;
         })
     );
     return growing.length > 0;
 }
 
-const closedMore = (type) => `${type}:closed`;
+const closedMore = (table) => `${table}:closed`;
 
-function addedRows(type, got) {
-    const held = store.rows[type] || [];
-    const known = new Set(held.map((r) => r.n));
-    store.rows[type] = [...got.rows.filter((r) => !known.has(r.n)), ...held].sort((a, b) => a.n - b.n);
-    store.paging.size[type] = store.rows[type].length;
+function addedRows(table, got) {
+    const held = store.rows[table] || [];
+    const known = new Set(held.map((r) => r.id));
+    store.rows[table] = [...got.rows.filter((r) => !known.has(r.id)), ...held].sort(byId);
+    store.paging.size[table] = store.rows[table].length;
 }
 
-export async function closedFirst(type) {
-    if (closedMore(type) in store.paging.more) return;
-    const got = await api.list(type, {last: PAGE, closed: true});
-    addedRows(type, got);
-    store.paging.more[closedMore(type)] = got.more;
+export async function closedFirst(table) {
+    if (closedMore(table) in store.paging.more) return;
+    const got = await api.list(table, {limit: PAGE, closed: true});
+    addedRows(table, got);
+    store.paging.more[closedMore(table)] = got.more;
 }
 
-export async function closedEarlier(type) {
-    const before = (store.rows[type] || []).filter((r) => r.completed).reduce((low, r) => Math.min(low, r.n), Infinity);
-    const got = await api.list(type, {last: PAGE, closed: true, before: Number.isFinite(before) ? before : 0});
-    addedRows(type, got);
-    store.paging.more[closedMore(type)] = got.more;
+export async function closedEarlier(table) {
+    const before = (store.rows[table] || []).filter(isClosed).reduce((low, r) => Math.min(low, r.id), Infinity);
+    const got = await api.list(table, {limit: PAGE, closed: true, before: Number.isFinite(before) ? before : 0});
+    addedRows(table, got);
+    store.paging.more[closedMore(table)] = got.more;
 }
 
-export const closedHasMore = (type) => Boolean(store.paging.more[closedMore(type)]);
+export const closedHasMore = (table) => Boolean(store.paging.more[closedMore(table)]);
 
-async function fetched(types, whole = false) {
-    types.forEach((type) => changed.delete(type));
-    types.forEach((type) => fetching.add(type));
+async function fetched(tables, whole = false) {
+    tables.forEach((table) => changed.delete(table));
+    tables.forEach((table) => fetching.add(table));
     try {
-        await pull(types, whole);
+        await pull(tables, whole);
     } finally {
-        types.forEach((type) => fetching.delete(type));
+        tables.forEach((table) => fetching.delete(table));
     }
 }
 
-async function paged(type) {
-    const got = await api.rows(type, {last: PAGE});
-    keptCounts(type, got.counts);
-    took(type, got);
+async function paged(table) {
+    const got = await api.list(table, {limit: PAGE});
+    keptCounts(table, got.counts);
+    took(table, got);
 }
 
-async function counted(type) {
-    keptCounts(type, await api.counts(type));
+async function counted(table) {
+    keptCounts(table, (await api.list(table, {limit: 1, closed: true})).counts);
 }
 
-function read(type) {
-    if (!watchedTypes.has(type)) return counted(type);
-    return (store.paging.size[type] || PAGE) === PAGE ? paged(type) : caughtUp(type);
+function read(table) {
+    if (!watchedTables.has(table)) return counted(table);
+    return (store.paging.size[table] || PAGE) === PAGE ? paged(table) : caughtUp(table);
 }
 
-async function eventsAndSettings() {
-    const [events, settings] = await Promise.all([api.recentEvents(RECENT), api.settings()]);
-    keepEvents([...remembered(eventsKey(), []), ...events]);
+async function entriesAndSettings() {
+    const [entries, settings] = await Promise.all([api.entries(0, RECENT), api.settings()]);
+    keepEntries([...remembered(entriesKey(), []), ...entries]);
     store.settings = settings;
 }
 
-const failedType = (type) =>
-    read(type).then(
+const failedTable = (table) =>
+    read(table).then(
         () => null,
-        () => type
+        () => table
     );
 
-async function pull(types, whole) {
-    const failed = (await Promise.all(types.map(failedType))).filter(Boolean);
-    failed.forEach((type) => (owed.add(type), changed.add(type)));
-    if (whole) await eventsAndSettings();
+async function pull(tables, whole) {
+    const failed = (await Promise.all(tables.map(failedTable))).filter(Boolean);
+    failed.forEach((table) => (owed.add(table), changed.add(table)));
+    if (whole) await entriesAndSettings();
     if (failed.length) throw new Error(`could not read ${failed.join(", ")}`);
 }
 
@@ -258,13 +258,13 @@ async function drain() {
         await new Promise((settle) => setTimeout(settle, 30));
         while (owed.size || owedWhole) {
             const whole = owedWhole;
-            const types = [...(whole ? Object.keys(store.rows) : owed)]
-                .filter((type) => watchedTypes.has(type) || type in store.rows)
-                .filter((type) => whole || !watchedTypes.has(type) || changed.has(type) || !loaded.has(type));
+            const tables = [...(whole ? Object.keys(store.rows) : owed)]
+                .filter((table) => TABLES[table] && (watchedTables.has(table) || table in store.rows))
+                .filter((table) => whole || !watchedTables.has(table) || changed.has(table) || !loaded.has(table));
             owed.clear();
             owedWhole = false;
             try {
-                await fetched(types, whole);
+                await fetched(tables, whole);
                 retryIn = RETRY_FIRST;
             } catch (e) {
                 owedWhole = owedWhole || whole;
@@ -276,25 +276,25 @@ async function drain() {
     return draining;
 }
 
-export function refresh(types, because = true) {
-    types
+export function refresh(tables, because = true) {
+    tables
         .filter(Boolean)
-        .filter((type) => because || !fetching.has(type))
-        .forEach((type) => {
-            owed.add(type);
-            if (because) changed.add(type);
+        .filter((table) => because || !fetching.has(table))
+        .forEach((table) => {
+            owed.add(table);
+            if (because) changed.add(table);
         });
     if (owed.has("settings")) owedWhole = true;
     return drain();
 }
 
-export async function optimistic(type, row, send) {
-    store.rows[type] = [...(store.rows[type] || []), row];
+export async function optimistic(table, row, send) {
+    store.rows[table] = [...(store.rows[table] || []), row];
     try {
         await send();
-        await refresh([type]);
+        await refresh([table]);
     } finally {
-        store.rows[type] = (store.rows[type] || []).filter((r) => toRaw(r) !== row);
+        store.rows[table] = (store.rows[table] || []).filter((r) => toRaw(r) !== row);
     }
 }
 
@@ -303,7 +303,7 @@ export async function patched(row, change, send) {
     try {
         await send();
     } finally {
-        await refresh([row.type]);
+        await refresh([row.table]);
     }
 }
 
@@ -312,32 +312,35 @@ export function reload() {
     return drain();
 }
 
-const KEPT_EVENTS = 50;
-const eventsKey = () => `events:${location.host}:${api.env()}`;
+const KEPT_ENTRIES = 50;
+const entriesKey = () => `entries:${location.host}:${api.env()}`;
 
-function keepEvents(events) {
-    const byId = new Map(events.map((e) => [e.id, e]));
-    store.events = [...byId.values()].sort((a, b) => a.id - b.id).slice(-RECENT);
-    remember(eventsKey(), store.events.slice(-KEPT_EVENTS));
+function keepEntries(entries) {
+    const byEntryId = new Map(entries.map((e) => [e.id, e]));
+    store.entries = [...byEntryId.values()].sort((a, b) => a.id - b.id).slice(-RECENT);
+    remember(entriesKey(), store.entries.slice(-KEPT_ENTRIES));
 }
 
-export function recallEvents() {
-    if (!store.events.length) store.events = remembered(eventsKey(), []);
+export function recallEntries() {
+    if (!store.entries.length) store.entries = remembered(entriesKey(), []);
 }
 
-const owedBy = (e) => (e.data && e.data.setting ? "settings" : e.type);
+const ROW_CHANGES = ["created", "updated", "deleted"];
 
-const notResources = new Set();
-const unknown = (e) => !store.spec.types[e.type] && !notResources.has(e.type);
+// The table an entry tells the viewer to read again: a row's change names its table, a setting's change the settings.
+const owedBy = (e) => (!ROW_CHANGES.includes(e.kind) ? "" : e.data.table === "settings" ? "settings" : e.data.table);
 
-export async function takeEvents(events) {
-    if (!store.spec || events.some(unknown)) {
-        store.spec = await api.manifest();
-        events.filter((e) => !store.spec.types[e.type]).forEach((e) => notResources.add(e.type));
-    }
-    keepEvents([...store.events, ...events]);
-    refresh([...new Set(events.map(owedBy))].filter((type) => type !== "agent"));
+function dropDeleted(entries) {
+    entries
+        .filter((e) => e.kind === "deleted" && store.rows[e.data.table])
+        .forEach((e) => (store.rows[e.data.table] = store.rows[e.data.table].filter((r) => r.id !== e.data.id)));
 }
 
-onWrite((type) => store.streamOpen || refresh([type]));
-onOutboxChange(() => refresh(["message"]));
+export function takeEntries(entries) {
+    keepEntries([...store.entries, ...entries]);
+    dropDeleted(entries);
+    refresh([...new Set(entries.map(owedBy))].filter((table) => table && table !== "agents"));
+}
+
+onWrite((table) => store.streamOpen || refresh([table]));
+onOutboxChange(() => refresh(["messages"]));

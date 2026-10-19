@@ -7,7 +7,7 @@ export function useCheckRun(check) {
     async function run() {
         asked.value = true;
         try {
-            await api.runCheck(check().n);
+            await api.act("checks", check().id, "run");
         } finally {
             asked.value = false;
         }

@@ -1,5 +1,5 @@
 <script setup>
-import {MENUED, meta} from "../domain/spec.js";
+import {MENUED, meta} from "../domain/tables.js";
 import {computed} from "vue";
 import Chip from "../kit/Chip.vue";
 import CloseButton from "../kit/CloseButton.vue";

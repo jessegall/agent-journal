@@ -1,5 +1,5 @@
 <script setup>
-import {MENUED, closeWord, meta, word} from "../domain/spec.js";
+import {MENUED, closeWord, meta, word} from "../domain/tables.js";
 import TextInput from "../kit/TextInput.vue";
 import Chip from "../kit/Chip.vue";
 import {computed, ref} from "vue";

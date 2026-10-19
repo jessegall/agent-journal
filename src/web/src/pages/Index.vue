@@ -1,5 +1,5 @@
 <script setup>
-import {meta, word} from "../domain/spec.js";
+import {meta, word} from "../domain/tables.js";
 import {store} from "../state/store.js";
 import {useWanted} from "../sync/wanted.js";
 import EmptyState from "../kit/EmptyState.vue";

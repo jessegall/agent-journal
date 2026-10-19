@@ -1,45 +1,25 @@
 <script setup>
-import {meta, types} from "../domain/spec.js";
-import People from "./People.vue";
-import TakeDown from "./TakeDown.vue";
-import {familyOn, hostedOn, membersOn, sharingOn} from "../composables/settings.js";
-import {ownsJournal} from "../composables/me.js";
+import {meta} from "../domain/tables.js";
+import {sharingOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
-import {demo} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
-import {computed, onUnmounted, ref} from "vue";
+import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import RailWaiting from "../rail/RailWaiting.vue";
-import PhoneDialog from "./PhoneDialog.vue";
 import ShareTunnel from "./ShareTunnel.vue";
 import {href, route} from "../route.js";
-import {choose} from "../state/environment.js";
-import {rows} from "../sync/rows.js";
-import {unreadByUser} from "../domain/records.js";
-import {connectedPhones} from "../composables/phones.js";
+import {waitingCount} from "../domain/records.js";
 import {useOutside} from "../composables/outside.js";
 import {activityVisible, toggleActivity} from "../actions/panels.js";
 import {narrow} from "../platform/view.js";
 import {project, tint} from "../state/identity.js";
 import {pageTitle as title} from "../composables/pageTitle.js";
-import {useFloatingChat, useFloatingFamily} from "../composables/floatingChat.js";
+import {useFloatingChat} from "../composables/floatingChat.js";
 
-const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
-const phoneOpen = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
-const full = computed(() => route.value.page === "kanban");
-const place = computed(() => rows("environment").find((e) => e.title === route.value.env && !e.deleted) || null);
-const owner = computed(() => (place.value && place.value.data.owner) || "");
-const from = computed(() => (place.value && place.value.data.launched_from) || "");
-const envLink = computed(() =>
-    owner.value && from.value
-        ? href.opened(owner.value.startsWith("ticket:") ? "kanban" : "", owner.value)
-        : href.page()
-);
 const {floatingChat, toggleChat} = useFloatingChat();
-const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
 </script>
 
 <template>
@@ -50,25 +30,16 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                     <Icon name="list" />
                 </button>
             </template>
-            <template v-if="full">
-                <a class="icon-btn back" :href="href.page()" v-tip="'Back to Home'"><Icon name="back" /></a>
-            </template>
-            <a
-                class="crumb-link crumb-project"
-                :href="href.page(demo ? '' : 'hub')"
-                v-tip="demo ? '' : 'The journals running on this machine'"
-            >
+            <a class="crumb-link crumb-project" :href="href.page()">
                 <span class="crumb-tint" :style="{background: tint}" />
                 <span class="crumb-name">{{ project }}</span>
             </a>
             <span class="sep crumb-wide">/</span>
-            <a class="crumb-link" :href="envLink" @click="owner && from && choose(from)" v-tip="owner ? `Open ${owner.replace(':', ' ')}, which runs here` : ''">
-                {{ route.env }}
-            </a>
+            <a class="crumb-link" :href="href.page()">{{ route.env }}</a>
             <span class="sep crumb-wide">/</span>
             <b class="crumb-wide">{{ title }}</b>
             <template v-if="route.page && meta(route.page)">
-                <span class="icon-btn help-btn" v-tip="meta(route.page).help"><Icon name="info" /></span>
+                <span class="icon-btn help-btn" v-tip="meta(route.page).abstract"><Icon name="info" /></span>
             </template>
         </div>
         <div class="top-tools">
@@ -80,43 +51,15 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
             >
                 <Icon name="chat" />
             </button>
-            <template v-if="familyOn">
-                <button
-                    type="button"
-                    :class="['icon-btn', {on: floatingFamily}]"
-                    v-tip="
-                        floatingFamily
-                            ? 'Close the agent family tree'
-                            : 'Open the agent family tree: who started, sent out or messaged which agent'
-                    "
-                    @click="toggleFamily"
-                >
-                    <Icon name="family" />
-                </button>
-            </template>
             <template v-if="sharingOn">
                 <ShareTunnel />
-                <button
-                    type="button"
-                    :class="['icon-btn', {on: phoneOpen}]"
-                    v-tip="connectedPhones.length ? `Phones: ${connectedPhones.length} connected` : 'Connect your phone'"
-                    @click="phoneOpen = true"
-                >
-                    <Icon name="phone" />
-                    <template v-if="connectedPhones.length">
-                        <span class="phone-dot" />
-                    </template>
-                </button>
-                <template v-if="phoneOpen">
-                    <PhoneDialog @close="phoneOpen = false" />
-                </template>
             </template>
             <a class="icon-btn" :href="href.page('search')" v-tip="'Search'"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
                 <button type="button" :class="['icon-btn', {on: drop}]" v-tip="'Notifications'" :aria-expanded="drop" @click="drop = !drop">
                     <Icon name="bell" />
-                    <template v-if="waiting">
-                        <CountBadge :count="waiting" />
+                    <template v-if="waitingCount()">
+                        <CountBadge :count="waitingCount()" />
                     </template>
                 </button>
                 <Transition name="drop">
@@ -126,29 +69,14 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                     </div>
                 </Transition>
             </div>
-            <template v-if="membersOn">
-                <People />
-            </template>
-            <template v-if="hostedOn">
-                <template v-if="ownsJournal">
-                    <TakeDown />
-                </template>
-                <form method="post" action="/logout" class="logout">
-                    <button type="submit" class="icon-btn" aria-label="Log out" v-tip="'Log out of this journal on its server'">
-                        <Icon name="lock" />
-                    </button>
-                </form>
-            </template>
-            <template v-if="!full">
-                <button
-                    type="button"
-                    :class="['icon-btn', {on: activityVisible()}]"
-                    v-tip="activityVisible() ? 'Hide activity' : 'Show activity'"
-                    @click="toggleActivity"
-                >
-                    <Icon name="activity" />
-                </button>
-            </template>
+            <button
+                type="button"
+                :class="['icon-btn', {on: activityVisible()}]"
+                v-tip="activityVisible() ? 'Hide activity' : 'Show activity'"
+                @click="toggleActivity"
+            >
+                <Icon name="activity" />
+            </button>
         </div>
     </div>
 </template>
@@ -221,9 +149,6 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
     width: 14px;
     height: 14px;
 }
-.icon-btn.back {
-    margin-left: -7px;
-}
 
 .icon-btn {
     position: relative;
@@ -249,9 +174,6 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
 .icon-btn .ico {
     width: 15px;
     height: 15px;
-}
-.logout {
-    display: contents;
 }
 
 .drop-wrap {
@@ -283,14 +205,4 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
     color: var(--text-2);
 }
 
-.phone-dot {
-    position: absolute;
-    right: 4px;
-    bottom: 5px;
-    width: 6px;
-    height: 6px;
-    border: 1.5px solid var(--bg);
-    border-radius: 50%;
-    background: var(--tone-good);
-}
 </style>

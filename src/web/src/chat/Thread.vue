@@ -1,6 +1,6 @@
 <script setup>
 import {subagentsOf} from "../domain/subagents.js";
-import {openQuestion, questionView, updateView} from "../state/overlays.js";
+import {openQuestion, questionView} from "../state/overlays.js";
 import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
@@ -20,24 +20,21 @@ import {usePromised} from "../composables/promised.js";
 import Icon from "../kit/Icon.vue";
 import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
-import {chatOnly, laidOut} from "../platform/view.js";
+import {laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
-import {answered} from "../domain/replies.js";
 import {DUMP_OFFER} from "../domain/dumpPile.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
-import UpdateOverlay from "./UpdateOverlay.vue";
 import OutputDialog from "./OutputDialog.vue";
-import ReportDock from "./ReportDock.vue";
 import DumpDock from "./DumpDock.vue";
-import {dockedDump, dockedReport} from "../domain/docks.js";
+import {dockedDump} from "../domain/docks.js";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import PlanCard from "./PlanCard.vue";
-import {tellExtension} from "../platform/extension.js";
+import {seconds} from "../domain/row.js";
 import {ui} from "../state/ui.js";
 
 const scroller = ref(null);
@@ -45,33 +42,21 @@ const props = defineProps({view: {type: String, default: ""}, hidden: {type: Arr
 const pane = computed(() => props.view || store.pane);
 const scope = useScope();
 const here = !scope.env;
-const rows = (type) => scope.rows(type);
-const owner = computed(() =>
-    here
-        ? agent.value
-        : [...rows("agent")].filter((a) => !a.deleted && !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null
-);
+const rows = (table) => scope.rows(table);
+const owner = computed(() => (here ? agent.value : [...rows("agents")].sort((a, b) => seconds(b.heard_at) - seconds(a.heard_at))[0] || null));
 const threadRoot = ref(null);
-const askHere = (n) => !!threadRoot.value?.offsetParent && (openQuestion(n, threadRoot.value), true);
-function showSuggestion(n) {
-    const card = threadRoot.value?.offsetParent && threadRoot.value.querySelector(`[data-ref="suggestion:${n}"]`);
-    if (!card) return false;
-    card.scrollIntoView({behavior: "smooth", block: "center"});
-    card.querySelector(".sg-title")?.focus({preventScroll: true});
-    return true;
-}
+const askHere = (id) => !!threadRoot.value?.offsetParent && (openQuestion(id, threadRoot.value), true);
 const outputOpen = ref(0);
-const showOutput = (n) => !!threadRoot.value?.offsetParent && ((outputOpen.value = n), true);
+const showOutput = (id) => !!threadRoot.value?.offsetParent && ((outputOpen.value = id), true);
 let unask = () => {};
-let unsuggest = () => {};
 let unoutput = () => {};
-onMounted(() => here && ((unask = openInChat("question", askHere)), (unsuggest = openInChat("suggestion", showSuggestion)), (unoutput = openInChat("output", showOutput))));
-onUnmounted(() => (unask(), unsuggest(), unoutput()));
+onMounted(() => here && ((unask = openInChat("questions", askHere)), (unoutput = openInChat("outputs", showOutput))));
+onUnmounted(() => (unask(), unoutput()));
 const dumpHere = computed(() => store.dumping && !props.view);
 const terminalOpen = computed(() => pane.value === "terminal" && !dumpHere.value);
 const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
 const feeding = computed(() => pane.value === "feed" && feedOn.value && Boolean(owner.value));
-const feedKey = computed(() => (owner.value ? `${owner.value.n}:${owner.value.data.transcript}` : ""));
+const feedKey = computed(() => (owner.value ? `${owner.value.id}` : ""));
 const quote = ref({text: "", ref: ""});
 watch(
     () => store.quoting,
@@ -79,27 +64,20 @@ watch(
     {immediate: true}
 );
 const editing = ref(null);
-const pageTools = chatOnly
-    ? [
-          {icon: "crosshair", title: "Point at an element on the page", go: () => point("point")},
-          {icon: "camera", title: "Send a picture of an element on the page", go: () => point("shot")},
-      ]
-    : [];
-const dumps = computed(() => rows("dump").filter((d) => !d.deleted));
-const dumpFiling = computed(() => dumps.value.filter((d) => !d.completed).sort((a, b) => a.n - b.n)[0] || null);
+const dumps = computed(() => rows("dumps"));
+const dumpFiling = computed(() => dumps.value.filter((d) => !d.completed_at).sort((a, b) => a.id - b.id)[0] || null);
 
-function openDump(n = 0) {
+function openDump(id = 0) {
     store.pane = "chat";
-    store.dumpSelected = n;
+    store.dumpSelected = id;
     store.dumping = true;
 }
 
-const composeTools = pageTools;
 const dumpIdle = computed(() => ({
     icon: "inbox",
-    label: dumpFiling.value ? `Dump ${dumpFiling.value.n} · filing` : "Dump files",
-    title: "Add many files and notes at once. The agent sorts them by subject and files them into a collection",
-    go: () => openDump(dumpFiling.value?.n || 0),
+    label: dumpFiling.value ? `Dump ${dumpFiling.value.id} · filing` : "Dump files",
+    title: "Add many files and notes at once. The agent sorts them by subject and files them",
+    go: () => openDump(dumpFiling.value?.id || 0),
 }));
 const dumpOffer = {
     icon: "inbox",
@@ -110,34 +88,25 @@ const dumpOffer = {
     },
 };
 
-function point(kind) {
-    tellExtension(kind);
-}
-const mine = computed(() => rows("message").filter((m) => !m.deleted && m.seen[0] === "user" && !m.seen.includes("agent")));
+const mine = computed(() => rows("messages").filter((m) => m.author === "user" && !m.read_at));
 
 function editLast() {
     const last = mine.value[mine.value.length - 1];
-    if (last) editing.value = {n: last.n, ...quoted(last.brief)};
+    if (last) editing.value = {id: last.id, ...quoted(last.text)};
 }
 
 function unedit() {
     editing.value = null;
 }
-const busy = computed(() => !!owner.value && ["working", "compacting"].includes(owner.value.data.status));
-const {
-    waiting: waitingNow,
-    open: waitingOpen,
-    anchor: waitingAnchor,
-    toggle: toggleWaiting,
-} = useWaiting(undefined, owner, () => rows("work"));
-const planCard = computed(() => cardPlan(rows("plan")));
-const reportDock = computed(() => dockedReport(rows("report")));
-const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dump"))));
-const dockCount = computed(() => [dumpDock.value, reportDock.value, planCard.value].filter(Boolean).length);
-const thought = computed(() => (owner.value && owner.value.data.thinking) || "");
-const helping = computed(() => (owner.value ? subagentsOf(owner.value.n) : []).filter((sub) => sub.running).at(-1));
+const busy = computed(() => !!owner.value && ["working", "compacting"].includes(owner.value.status));
+const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner);
+const planCard = computed(() => cardPlan(rows("plans")));
+const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dumps"))));
+const dockCount = computed(() => [dumpDock.value, planCard.value].filter(Boolean).length);
+const thought = computed(() => (owner.value && owner.value.thinking) || "");
+const helping = computed(() => (owner.value ? subagentsOf(owner.value.id) : []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
-    owner.value && owner.value.data.status === "compacting" ? "compacting" : helping.value ? `Waiting: ${helping.value.task}` : "working"
+    owner.value && owner.value.status === "compacting" ? "compacting" : helping.value ? `Waiting: ${helping.value.task}` : "working"
 );
 const planOpen = ref(true);
 let lastTop = 0;
@@ -156,12 +125,12 @@ const {away, missed, showNewest, follow: atTheFoot, toBottom: glideTo, left: rea
 const settledOnce = ref(false);
 const ready = ref(false);
 const unseen = computed(() =>
-    rows("message")
-        .filter((m) => !m.deleted && m.seen[0] === "agent" && !m.seen.includes("user"))
-        .map((m) => m.n)
+    rows("messages")
+        .filter((m) => m.author === "agent" && !m.read_at)
+        .map((m) => m.id)
 );
 
-watch([unseen, ready], ([numbers, isReady]) => here && isReady && markSeen("message", numbers), {immediate: true});
+watch([unseen, ready], ([ids, isReady]) => here && isReady && markSeen(ids), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
 const AHEAD = "200px 0px 0px 0px";
@@ -170,30 +139,12 @@ const NEAR_TOP = 200;
 const GLIDE = 450;
 let frame = 0;
 
-const revoke = (p) => Object.values(p.data.previews || {}).forEach(URL.revokeObjectURL);
+const revoke = (p) => Object.values(p.previews || {}).forEach(URL.revokeObjectURL);
 const {pending, promise, drop, change, keep, link, keyOf} = usePromised(revoke);
-const boardRequests = computed(
-    () =>
-        new Set(
-            rows("message")
-                .filter((m) => m.data.new_work)
-                .map((m) => m.ref)
-        )
-);
-const thread = computed(() => {
-    const made = threadTurns(
-        {
-            message: rows("message").filter((m) => !boardRequests.value.has(m.ref) && !boardRequests.value.has(answered(m))),
-        },
-        pending.value,
-        here && !!store.paging.more.message,
-        props.hidden
-    );
-    return made;
-});
+const thread = computed(() => threadTurns(rows("messages"), pending.value, here && !!store.paging.more.messages, props.hidden));
 watch(thread, (made) => made.keys.forEach((placeholder, ref) => link(ref, placeholder)), {immediate: true});
 const turns = computed(() => thread.value.turns);
-const turnsLoaded = computed(() => scope.loaded("message"));
+const turnsLoaded = computed(() => scope.loaded("messages"));
 watch(turns, keep);
 
 let glidedAt = 0;
@@ -236,7 +187,7 @@ onMounted(() => {
     });
 });
 
-const {loading: loadingOlder, older} = useScrollback(scroller, topMark, () => scope.earlier("message", "comment"), {
+const {loading: loadingOlder, older} = useScrollback(scroller, topMark, () => scope.earlier("messages"), {
     ready: () => ready.value && settledOnce.value && scrolledUp.value && Boolean(scroller.value),
     margin: AHEAD,
 });
@@ -325,13 +276,13 @@ function watchScroll() {
 
 async function post(text, files) {
     if (editing.value) {
-        await scope.api.editMessage(editing.value.n, withQuote(editing.value.quote, text));
+        await scope.api.change("messages", editing.value.id, {text: withQuote(editing.value.quote, text)});
         editing.value = null;
         return;
     }
     const replying = quote.value;
     const body = withQuote(replying.text, text);
-    const about = replying.ref || undefined;
+    const replyTo = replying.ref ? Number(replying.ref.split(":")[1]) : null;
     quote.value = {text: "", ref: ""};
     const id = token();
     const placeholder = await promised(body, files, id);
@@ -339,7 +290,7 @@ async function post(text, files) {
     toBottom(true);
     let sent;
     try {
-        sent = await sendMessage(scope.env || route.value.env, {brief: body, about}, files, id);
+        sent = await sendMessage(scope.env || route.value.env, {text: body, reply_to: replyTo}, files, id);
     } catch (e) {
         drop(placeholder);
         if (!quote.value.ref && !quote.value.text) quote.value = replying;
@@ -364,15 +315,7 @@ async function promised(body, files, idempotency) {
         const size = f.type.startsWith("image/") ? await measured(previews[f.name]) : null;
         if (size) pictures[f.name] = size;
     }
-    return promise({
-        type: "message",
-        brief: body,
-        data: {files: Object.fromEntries(files.map((f) => [f.name, ""])), previews, pictures, idempotency},
-    });
-}
-
-async function pin(text, about = "") {
-    await scope.api.pinNotice(text, about);
+    return promise("messages", {text: body, idempotency}, {author: "user", files: files.map((f) => f.name), previews, pictures, data: {}, reply_to: null, read_at: null});
 }
 
 watch(busy, async () => {
@@ -407,14 +350,11 @@ watch(
         <Transition name="terminal">
             <TerminalWindow v-if="terminalOpen" />
         </Transition>
-        <template v-if="questionView.n && questionView.owner === threadRoot">
-            <QuestionOverlay :key="questionView.n" />
-        </template>
-        <template v-if="updateView.n && threadRoot?.contains(updateView.owner)">
-            <UpdateOverlay :key="updateView.n" />
+        <template v-if="questionView.id && questionView.owner === threadRoot">
+            <QuestionOverlay :key="questionView.id" />
         </template>
         <template v-if="outputOpen">
-            <OutputDialog :key="outputOpen" :n="outputOpen" @close="outputOpen = 0" />
+            <OutputDialog :key="outputOpen" :id="outputOpen" @close="outputOpen = 0" />
         </template>
         <template v-if="chatOpen">
             <div :class="['thread-write', {hidden: feeding}]">
@@ -433,7 +373,7 @@ watch(
                 </Transition>
                 <template v-if="editing">
                     <div class="thread-answering">
-                        <span class="thread-answering-label">Editing message {{ editing.n }}</span>
+                        <span class="thread-answering-label">Editing message {{ editing.id }}</span>
                         <span class="thread-answering-text">{{ editing.text }}</span>
                         <button type="button" class="thread-answering-x" title="Leave it as it was (Esc)" @click="unedit">×</button>
                     </div>
@@ -449,7 +389,6 @@ watch(
                     :preset="editing ? editing.text : ''"
                     :up="editLast"
                     :down="unedit"
-                    :tools="composeTools"
                     :many="here ? dumpOffer : null"
                     :idle="here ? dumpIdle : null"
                     :figure-home="here"
@@ -485,19 +424,15 @@ watch(
                                 :turn="t"
                                 @reply="quote = $event"
                                 @edit="editing = $event"
-                                @pin="pin($event.text, $event.ref)"
                                 @grew="settled"
                             />
                         </TransitionGroup>
                         <div :class="['chat-docks', {docked: dockCount}]" :data-figure-docked-bars="dockCount ? '' : null">
                             <Transition name="dock">
-                                <DumpDock v-if="dumpDock" :key="dumpDock.n" :dump="dumpDock" :folded="short || !planOpen" />
+                                <DumpDock v-if="dumpDock" :key="dumpDock.id" :dump="dumpDock" :folded="short || !planOpen" />
                             </Transition>
                             <Transition name="dock">
-                                <ReportDock v-if="reportDock" :key="reportDock.n" :report="reportDock" :folded="short || !planOpen" />
-                            </Transition>
-                            <Transition name="dock">
-                                <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="short || !planOpen" />
+                                <PlanCard v-if="planCard" :key="planCard.id" :plan="planCard" :folded="short || !planOpen" />
                             </Transition>
                         </div>
                         <Transition name="status">
@@ -518,7 +453,7 @@ watch(
                 </div>
                 <Transition name="pane">
                     <template v-if="feeding">
-                        <FileFeed :key="feedKey" :agent="owner.n" :options="ui.threadFeed" @options="ui.threadFeed = $event" />
+                        <FileFeed :key="feedKey" :agent="owner.id" :options="ui.threadFeed" @options="ui.threadFeed = $event" />
                     </template>
                 </Transition>
             </div>

@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {peek} from "../route.js";
 

@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import SectionHeading from "../kit/SectionHeading.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref, watch} from "vue";

@@ -1,6 +1,6 @@
 export const AGENT_VIEWS = ["chat", "feed", "terminal"];
-export const PANEL_VIEWS = ["waiting", "question", "suggestion", "todos"];
-export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS, "family", "agents"];
+export const PANEL_VIEWS = ["waiting", "questions", "tasks"];
+export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS, "agents"];
 export const HEADER = 34;
 export const INSPECTOR_FEED = {lines: 5, flush: true, headers: false, collapse: false, editsOnly: false, removals: true, capped: false, columns: false};
 
@@ -37,7 +37,7 @@ export const PRESETS = [
                 "col",
                 0.74,
                 {
-                    ...shaped(["feed", "question", "todos"]),
+                    ...shaped(["feed", "questions", "tasks"]),
                     width: FULL,
                     feed: {
                         lines: 5,
@@ -72,8 +72,8 @@ export const PRESETS = [
     {
         key: "triage",
         name: "Inbox",
-        text: "Chat, questions, to-dos",
-        shape: split("row", 0.6, shaped(["chat"]), split("col", 0.5, shaped(["question", "waiting"]), shaped(["todos", "suggestion"]))),
+        text: "Chat, questions, tasks",
+        shape: split("row", 0.6, shaped(["chat"]), split("col", 0.5, shaped(["questions", "waiting"]), shaped(["tasks"]))),
     },
     {
         key: "orchestrator",
@@ -83,21 +83,9 @@ export const PRESETS = [
     },
 ];
 
-export const INSPECTOR_VIEWS = [
-    "chat",
-    "terminal",
-    "transcript",
-    "history",
-    "tasks",
-    "feed",
-    "todos",
-    "plan",
-    "subagents",
-    "skills",
-    "hooks",
-];
+export const INSPECTOR_VIEWS = ["chat", "terminal", "transcript", "history", "feed", "tasks", "plan", "subagents", "skills"];
 
-const WORK_TABS = ["terminal", "feed", "todos", "tasks", "plan", "history", "subagents", "skills", "hooks"];
+const WORK_TABS = ["terminal", "feed", "tasks", "plan", "history", "subagents", "skills"];
 
 export const INSPECTOR_SHAPE = split("row", 0.5, shaped(["chat", "transcript"]), shaped(WORK_TABS));
 

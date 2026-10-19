@@ -39,16 +39,6 @@ export async function saveSettings(changes, client = api) {
     }
 }
 
-const ACTIONS = {
-    async color(value) {
-        store.identity = await api.saveIdentity({color: value});
-    },
-    async relaunch(value) {
-        await api.relaunchAgent(store.settings.permission_prompts.session, value);
-        store.settings = await api.settings();
-    },
-};
-
 export function saveSetting(target, value) {
-    return target.action ? ACTIONS[target.action](value) : saveSettings(settingChanges(target, value, store.settings || {}));
+    return saveSettings(settingChanges(target, value, store.settings || {}));
 }

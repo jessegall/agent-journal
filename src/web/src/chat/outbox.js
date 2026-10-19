@@ -1,35 +1,15 @@
 import {remember, remembered} from "../platform/storage.js";
 import {api} from "../api/client.js";
-import {tellExtension} from "../platform/extension.js";
 import {pollNow, startPoll} from "../composables/poll.js";
 
-const KEY = "journal.outbox.v1";
+const KEY = "journal.outbox.v4";
 const DELIVERY = "journal.outbox.delivery";
-const BRIDGE_WAIT = 500;
 const RETRY_MS = 5000;
 const OUTBOX = "outbox";
-const bridge = new Map();
-let request = 0;
 const chains = {};
-let storageMode = "";
 let active = null;
 let polling = false;
 let changed = () => {};
-
-window.addEventListener("message", (event) => {
-    if (
-        event.source !== window ||
-        event.origin !== window.location.origin ||
-        !event.data ||
-        event.data.source !== "journal-extension" ||
-        event.data.kind !== "outbox"
-    )
-        return;
-    const resolve = bridge.get(event.data.request);
-    if (!resolve) return;
-    bridge.delete(event.data.request);
-    resolve(event.data.value);
-});
 
 function serial(lock, work) {
     const run = globalThis.navigator?.locks ? () => navigator.locks.request(lock, work) : work;
@@ -38,75 +18,10 @@ function serial(lock, work) {
     return task;
 }
 
-function bridgeCall(kind, value) {
-    const id = `outbox-${++request}`;
-    return new Promise((resolve) => {
-        const timeout = setTimeout(() => {
-            bridge.delete(id);
-            resolve(undefined);
-        }, BRIDGE_WAIT);
-        bridge.set(id, (result) => {
-            clearTimeout(timeout);
-            resolve(result);
-        });
-        tellExtension(kind, {request: id, value});
-    });
-}
-
-function directStorage() {
-    return globalThis.chrome?.storage?.local || globalThis.browser?.storage?.local || null;
-}
-
-async function remoteRead() {
-    const storage = directStorage();
-    if (storage) {
-        try {
-            const got = await storage.get(KEY);
-            return Array.isArray(got[KEY]) ? got[KEY] : [];
-        } catch (e) {}
-    }
-    const got = await bridgeCall("outbox-get");
-    return got === undefined ? undefined : Array.isArray(got) ? got : [];
-}
-
-async function remoteWrite(queue) {
-    const storage = directStorage();
-    if (storage) {
-        try {
-            await storage.set({[KEY]: queue});
-            return true;
-        } catch (e) {}
-    }
-    const got = await bridgeCall("outbox-set", queue);
-    return got === true;
-}
-
-function localRead() {
-    return remembered(KEY, []);
-}
-
-function localWrite(queue) {
-    return remember(KEY, queue);
-}
-
-async function readQueue() {
-    const remote = await remoteRead();
-    if (remote !== undefined) {
-        storageMode = "extension";
-        const local = localRead();
-        const known = new Set(remote.map((record) => record.id));
-        const merged = [...remote, ...local.filter((record) => !known.has(record.id))];
-        if (merged.length !== remote.length) await remoteWrite(merged);
-        return merged;
-    }
-    storageMode = "local";
-    return localRead();
-}
+const readQueue = async () => remembered(KEY, []);
 
 async function writeQueue(queue) {
-    const local = localWrite(queue);
-    const remote = storageMode === "extension" ? await remoteWrite(queue) : false;
-    if (!local && !remote) throw new Error("Could not save the message for retry");
+    if (!remember(KEY, queue)) throw new Error("Could not save the message for retry");
 }
 
 export function token() {
@@ -151,19 +66,13 @@ function removed(id) {
 
 async function deliver(record) {
     const server = api.at(record.origin, record.env);
-    const message = await server.create("message", {
-        title: record.title,
-        brief: record.brief,
-        about: record.about,
-        idempotency: record.id,
-        ...(record.newWork ? {new_work: true} : {}),
-    });
-    record.message = message.n;
+    const message = await server.create("messages", {text: record.text, reply_to: record.reply_to, idempotency: record.id});
+    record.message = message.id;
     record.uploaded = Array.isArray(record.uploaded) ? record.uploaded : [];
     await stored(record);
     for (let n = 0; n < record.files.length; n += 1) {
         if (record.uploaded[n]) continue;
-        await server.upload("message", record.message, fileFrom(record.files[n]));
+        await server.upload("messages", record.message, fileFrom(record.files[n]));
         record.uploaded[n] = true;
         await stored(record);
     }
@@ -211,10 +120,8 @@ export async function sendMessage(env, body, files = [], id = token()) {
         id,
         origin: location.origin,
         env,
-        title: body.title,
-        brief: body.brief,
-        about: body.about,
-        newWork: body.newWork,
+        text: body.text,
+        reply_to: body.reply_to,
         files: await Promise.all(files.map(fileRecord)),
         uploaded: [],
     };

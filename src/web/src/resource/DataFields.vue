@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import ChoiceList from "../kit/ChoiceList.vue";

@@ -2,7 +2,6 @@
 import {subagentsOf} from "../domain/subagents.js";
 import {agent} from "../composables/leadAgent.js";
 import {computed} from "vue";
-import {demo, unlessDemo} from "../platform/demo.js";
 import Spinner from "../kit/Spinner.vue";
 import AgentFact from "./AgentFact.vue";
 import {loadedSkills, modelFamily, pendingChoice, providerName, usageWindows} from "../domain/agents.js";
@@ -55,8 +54,6 @@ const toggle = (key, e) => emit("toggle", key, e);
             <AgentFact
                 class="agent-fact-lead"
                 icon="agents"
-                :disabled="demo"
-                :title="unlessDemo('')"
                 :aria-expanded="open === 'appoint'"
                 @click="toggle('appoint', $event)"
             >

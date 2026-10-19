@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {momentsOf} from "../domain/moments.js";
 import {open} from "../domain/records.js";
-import {types} from "../domain/spec.js";
+import {tables} from "../domain/tables.js";
 import {doesOf, startWords, startsOnTrigger, wordsText} from "../domain/triggerWords.js";
 import {peek} from "../route.js";
 import Btn from "../kit/Btn.vue";
@@ -30,7 +30,7 @@ const mode = computed(() => chosen.value || stored.value);
 const kind = computed(() => start.value.split(".")[0]);
 const moment = computed(() => start.value.split(".")[1] || "");
 const kinds = computed(() =>
-    types.value.filter(
+    tables.value.filter(
         (t) => (t.in_sidebar || t.needs_attention || t.name === "board") && t.moments?.length && !["sequence", "trigger"].includes(t.name)
     )
 );

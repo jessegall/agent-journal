@@ -1,5 +1,5 @@
 <script setup>
-import {label} from "../domain/spec.js";
+import {label} from "../domain/tables.js";
 import {computed} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import ResourceBlock from "./ResourceBlock.vue";

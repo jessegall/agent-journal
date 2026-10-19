@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {store} from "../state/store.js";
 import {computed, provide, ref, watch, watchEffect} from "vue";
 import SidePanel from "../kit/SidePanel.vue";

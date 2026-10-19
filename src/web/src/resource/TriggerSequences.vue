@@ -2,7 +2,7 @@
 import {computed, defineAsyncComponent, ref} from "vue";
 import {api} from "../api/client.js";
 import {open} from "../domain/records.js";
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {startWords, startedBy} from "../domain/triggerWords.js";
 import {peek} from "../route.js";
 import Btn from "../kit/Btn.vue";

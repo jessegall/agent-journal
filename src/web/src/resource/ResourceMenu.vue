@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import {DELETE_NOTE, MENUED, closeNote, closeWord, word} from "../domain/spec.js";
+import {DELETE_NOTE, MENUED, closeNote, closeWord, word} from "../domain/tables.js";
 import {startedBy} from "../domain/triggerWords.js";
 import AddToCollection from "./AddToCollection.vue";
 import AlertDialog from "../kit/AlertDialog.vue";

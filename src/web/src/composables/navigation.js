@@ -1,9 +1,7 @@
-import {boardOn} from "./settings.js";
 import {recordCount} from "../domain/records.js";
-import {types} from "../domain/spec.js";
+import {tables} from "../domain/tables.js";
 import {computed} from "vue";
 import {PAGES, RESOURCE_GROUPS, SIDEBAR, pluralTitle} from "../domain/navigation.js";
-import {demo} from "../platform/demo.js";
 
 const countOf = (t) => recordCount(t.name, t.needs_attention ? "unread" : "open");
 
@@ -20,7 +18,7 @@ const typeLink = (t) => ({
 const pageLink = (key) => ({key, page: key, count: 0, hot: false, ...PAGES[key]});
 
 export function useNavigation() {
-    const listed = computed(() => types.value.filter((t) => t.in_sidebar));
+    const listed = computed(() => tables.value.filter((t) => t.in_sidebar));
     const sidebar = computed(() => listed.value.filter((t) => t.listed_under === SIDEBAR).map((t) => ({...typeLink(t), scope: t.scope})));
     const groups = computed(() =>
         RESOURCE_GROUPS.map((g) => ({
@@ -36,10 +34,9 @@ export function useNavigation() {
             key: "project",
             label: "Project",
             links: [
-                ...(boardOn.value ? [{...pageLink("kanban"), count: recordCount("todo")}] : []),
                 ...daily("project"),
                 pageLink("code"),
-                ...(demo ? [] : [pageLink("plugins")]),
+                pageLink("plugins"),
                 pageLink("mcp"),
                 pageLink("chart"),
                 pageLink("profiles"),

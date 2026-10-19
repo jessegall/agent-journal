@@ -1,12 +1,12 @@
 import {store} from "../state/store.js";
 import {choose} from "../state/environment.js";
-import {types} from "../domain/spec.js";
+import {tables} from "../domain/tables.js";
 import {api} from "../api/client.js";
 import {knowPages, PAGES, route} from "../route.js";
-import {load, recallEvents, reload, rows} from "./rows.js";
+import {load, recallEntries, reload, rows} from "./rows.js";
 import {listen} from "./stream.js";
 
-const isPage = (name) => PAGES.includes(name) || Boolean(store.spec.types[name]);
+const isPage = (name) => PAGES.includes(name) || tables.value.some((t) => t.name === name);
 
 function adoptAsked() {
     const params = new URLSearchParams(location.search);
@@ -18,19 +18,19 @@ function adoptAsked() {
     history.replaceState(null, "", `${location.pathname}${rest ? `?${rest}` : ""}${location.hash}`);
 }
 
-const exists = (name) => rows("environment").some((e) => e.title === name && !e.deleted);
+const exists = (name) => rows("environments").some((e) => e.name === name);
 
 export async function boot() {
     adoptAsked();
-    const messages = route.value.env ? load("message") : null;
-    [store.spec, store.identity, store.pages] = await Promise.all([api.manifest(), api.identity(), api.pages()]);
+    const messages = route.value.env ? load("messages") : null;
+    [store.spec, store.identity] = await Promise.all([api.manifest(), api.identity()]);
     knowPages(isPage);
     if (!route.value.env) {
         choose(store.spec.environment);
         return boot();
     }
-    types.value.filter((t) => t.name !== "nudge").forEach((t) => (store.rows[t.name] = store.rows[t.name] || []));
-    recallEvents();
+    tables.value.filter((t) => t.name !== "nudges").forEach((t) => (store.rows[t.name] = store.rows[t.name] || []));
+    recallEntries();
     await messages;
     store.booted = true;
     listen();

@@ -1,38 +1,45 @@
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import {seconds} from "../domain/row.js";
 import {rows} from "../sync/rows.js";
 
+// Each setting's kind as the settings form draws it.
+const TYPES = {choice: "options", flag: "flag", number: "number", list: "list", secret: "secret", text: "text"};
+
+// A setting's value as the form shows it: a secret by its number, never its value.
+const shown = (value) => (value && typeof value === "object" && "secret" in value ? `secret ${value.secret}` : String(value ?? ""));
+
 export const pluginFrom = (p) => ({
-    n: p.n,
-    name: (p.data.manifest || {}).name || "",
-    title: p.title,
-    description: p.abstract || "No description.",
-    version: p.data.version || "no version",
-    source: p.data.source,
-    commit: p.data.commit ? p.data.commit.slice(0, 12) : "linked folder",
-    enabled: !!p.data.enabled,
-    state: p.state || (p.data.enabled ? "on" : "off"),
-    holds: p.data.holds || [],
-    lastFault: p.data.last_fault || "",
-    failingSince: p.data.failing_since || 0,
-    dashboards: (p.data.manifest || {}).dashboards || [],
-    settings: Object.entries((p.data.manifest || {}).settings || {}).map(([key, s]) => ({
-        key,
-        title: s.title || key,
+    id: p.id,
+    name: p.name,
+    title: p.manifest.title || p.name,
+    description: p.manifest.description || "No description.",
+    version: p.manifest.version || "no version",
+    source: p.source,
+    commit: p.commit_sha ? p.commit_sha.slice(0, 12) : "linked folder",
+    enabled: p.enabled,
+    state: p.status,
+    holds: p.manifest.holds || [],
+    lastFault: p.last_fault || "",
+    failingSince: seconds(p.failing_since),
+    dashboards: p.manifest.dashboard ? [p.manifest.dashboard] : [],
+    settings: (p.schema || []).map((s) => ({
+        key: s.key,
+        title: s.title || s.key,
         help: s.help || "",
-        type: s.type || "text",
-        options: s.options || [],
-        group: s.group || "",
-        parent: s.parent || "",
-        when: [s.when || []].flat().map((choice) => Object.entries(choice).map(([other, value]) => [other, String(value)])),
-        detail: !!s.detail,
-        value: String(((p.data.settings || {}).chosen || {})[key] ?? s.default ?? ""),
+        type: TYPES[s.kind] || "text",
+        options: s.choices || [],
+        group: "",
+        parent: "",
+        when: [],
+        detail: false,
+        value: shown(p.settings[s.key] ?? s.default ?? ""),
     })),
 });
 
 export function installedPlugins() {
     const whole = ref([]);
-    const load = () => api.list("plugin").then((got) => (whole.value = got.rows || []));
-    watch(() => rows("plugin").map((p) => `${p.n}:${p.updated}`).join(","), load, {immediate: true});
-    return computed(() => whole.value.filter((p) => !p.completed && !p.deleted).map(pluginFrom));
+    const load = () => api.list("plugins").then((got) => (whole.value = got.rows || []));
+    watch(() => rows("plugins").map((p) => `${p.id}:${p.updated_at}`).join(","), load, {immediate: true});
+    return computed(() => whole.value.map(pluginFrom));
 }

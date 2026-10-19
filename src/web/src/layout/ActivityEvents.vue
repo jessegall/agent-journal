@@ -5,11 +5,12 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import {onMounted, ref, toRef} from "vue";
 import {peek} from "../route.js";
 import {byRef} from "../domain/records.js";
+import {atOf, isRowChange} from "../domain/entries.js";
 import {age} from "../format/time.js";
 
 const settled = ref(false);
 onMounted(() => setTimeout(() => (settled.value = true), 400));
-const {items, announced, tone, unfold, expanded, toggle, heading, title, who} = useActivity(toRef(store, "events"), byRef);
+const {items, unfold, expanded, toggle, heading, title, who} = useActivity(toRef(store, "entries"), byRef);
 </script>
 
 <template>
@@ -17,28 +18,22 @@ const {items, announced, tone, unfold, expanded, toggle, heading, title, who} = 
         <template v-for="item in items" :key="item.key">
             <template v-if="item.fold">
                 <button type="button" class="activity-row activity-fold" @click="unfold(item.key)">
-                    <span class="activity-text">{{ counted(item.fold.events) }}</span>
-                    <span class="activity-age">{{ age(item.fold.events[0].at) || "just now" }}</span>
+                    <span class="activity-text">{{ counted(item.fold.entries) }}</span>
+                    <span class="activity-age">{{ age(atOf(item.fold.entries[0])) || "just now" }}</span>
                 </button>
             </template>
             <template v-else>
-                <div
-                    :class="[
-                        'activity-row',
-                        'activity-link',
-                        {'activity-update': announced(item.event), 'activity-nested': item.nested, 'activity-open': expanded(item.event)},
-                        tone(item.event) && `tone-${tone(item.event)}`,
-                    ]"
-                    @click="toggle(item.event)"
-                >
+                <div :class="['activity-row', 'activity-link', {'activity-nested': item.nested, 'activity-open': expanded(item.entry)}]" @click="toggle(item.entry)">
                     <span class="activity-text">
-                        {{ heading(item.event) }}
-                        <a class="activity-n" href="#" @click.prevent.stop="peek(item.event.type, item.event.n)">{{ item.event.n }}</a>
+                        {{ heading(item.entry) }}
+                        <template v-if="isRowChange(item.entry) && item.entry.kind !== 'deleted'">
+                            <a class="activity-n" href="#" @click.prevent.stop="peek(item.entry.data.table, item.entry.data.id)">{{ item.entry.data.id }}</a>
+                        </template>
                     </span>
-                    <template v-if="expanded(item.event) && title(item.event)">
-                        <TextDisplay inline class="activity-title" :text="title(item.event)" />
+                    <template v-if="expanded(item.entry) && title(item.entry)">
+                        <TextDisplay inline class="activity-title" :text="title(item.entry)" />
                     </template>
-                    <span class="activity-age">{{ who(item.event) }} · {{ age(item.event.at) || "just now" }}</span>
+                    <span class="activity-age">{{ who(item.entry) }} · {{ age(atOf(item.entry)) || "just now" }}</span>
                 </div>
             </template>
         </template>
@@ -61,19 +56,6 @@ const {items, announced, tone, unfold, expanded, toggle, heading, title, who} = 
 
 .activity-nested {
     padding-left: 18px;
-}
-
-.tone-warn,
-.tone-good {
-    border-left: 2px solid var(--tone);
-}
-
-.tone-warn {
-    --tone: var(--tone-warn);
-}
-
-.tone-good {
-    --tone: var(--tone-good);
 }
 
 .tone-warn .activity-text,
@@ -117,32 +99,6 @@ const {items, announced, tone, unfold, expanded, toggle, heading, title, who} = 
     opacity: 0.8;
 }
 
-.act-enter-active {
-    transition:
-        opacity 0.24s ease-out,
-        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.act-enter-from {
-    opacity: 0;
-    transform: translateY(-8px);
-}
-
-.act-leave-active {
-    position: absolute;
-    left: 0;
-    right: 0;
-    transition: opacity 0.18s ease-in;
-}
-
-.act-leave-to {
-    opacity: 0;
-}
-
-.act-move {
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
 .activity-link {
     color: inherit;
     border-radius: 7px;
@@ -178,12 +134,5 @@ a.activity-n:hover {
 .activity-n::before {
     content: "·";
     margin-right: 0.35em;
-}
-
-.activity-update {
-    margin: 2px 0;
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
-    box-shadow: inset 2px 0 0 var(--accent);
 }
 </style>

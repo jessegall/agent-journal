@@ -1,6 +1,6 @@
 <script setup>
 import {store} from "../state/store.js";
-import {word} from "../domain/spec.js";
+import {word} from "../domain/tables.js";
 import TextInput from "../kit/TextInput.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref} from "vue";

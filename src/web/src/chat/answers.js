@@ -1,4 +1,4 @@
-import {word} from "../domain/spec.js";
+import {word} from "../domain/tables.js";
 import {api} from "../api/client.js";
 import {usePromised} from "../composables/promised.js";
 

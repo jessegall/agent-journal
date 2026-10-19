@@ -3,7 +3,7 @@ import {startOutbox} from "../chat/outbox.js";
 import {wakePolls} from "../composables/poll.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
-import {reload, takeEvents} from "./rows.js";
+import {reload, takeEntries} from "./rows.js";
 
 const REOPEN_AFTER = 3000;
 const OFFLINE_AFTER = 15000;
@@ -20,7 +20,7 @@ const heard = () => (heardAt = Date.now());
 function receive(message) {
     heard();
     try {
-        takeEvents([JSON.parse(message.data)]);
+        takeEntries([JSON.parse(message.data)]);
     } catch (e) {
         reload();
     }

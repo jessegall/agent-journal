@@ -1,5 +1,5 @@
 <script setup>
-import {delegationOf, NOT_STARTED, phaseOf, planButton, rowsOf, standingOf} from "../domain/plans.js";
+import {delegationOf, NOT_STARTED, phaseOf, planButton, standingOf, statusOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
@@ -11,8 +11,8 @@ import {usePlanRows} from "../composables/planRows.js";
 import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
 
-const PARKABLE = ["approved", "active", "waiting"];
-const props = defineProps({p: Object, data: Object, error: String});
+const PARKABLE = ["approved", "started", "waiting"];
+const props = defineProps({p: Object, error: String});
 const emit = defineEmits(["runBar", "failed"]);
 const bar = ref(null);
 const menu = ref(null);
@@ -26,16 +26,15 @@ usePlanRows(() => [props.p]);
 useOutside(menu, () => (opened.value = ""));
 useOutside(withCard, () => (opened.value = ""));
 
-const delegation = computed(() =>
-    delegationOf(props.p, {todos: rows("todo"), helpers: rows("helper"), worktrees: rows("worktree"), tickets: rows("ticket")})
-);
-const count = computed(() => props.data.phases.length);
-const standing = computed(() => standingOf(props.p, rows("todo")));
+const delegation = computed(() => delegationOf(props.p, {tasks: rows("tasks"), workers: rows("workers")}));
+const status = computed(() => statusOf(props.p));
+const count = computed(() => props.p.phases.length);
+const standing = computed(() => standingOf(props.p, rows("tasks")));
 const toggle = (what) => (opened.value = opened.value === what ? "" : what);
 
 function open() {
     opened.value = "";
-    peek("plan", props.p.n);
+    peek("plans", props.p.id);
 }
 
 async function park() {
@@ -49,13 +48,13 @@ async function park() {
 </script>
 
 <template>
-    <div ref="bar" :class="['planbar', `planbar-${data.status}`, {'planbar-delegated': delegation}]">
-        <button type="button" class="planbar-link" :title="`Plan ${p.n}: ${p.title}`" @click="peek('plan', p.n)">
+    <div ref="bar" :class="['planbar', `planbar-${status}`, {'planbar-delegated': delegation}]">
+        <button type="button" class="planbar-link" :title="`Plan ${p.id}: ${p.title}`" @click="peek('plans', p.id)">
             <Icon name="plan" class="planbar-icon" />
             <span class="planbar-title">{{ p.title }}</span>
             <template v-if="phaseOf(p)">
                 <span class="planbar-phase">
-                    <b>Phase {{ data.current || 1 }} of {{ count }}</b>
+                    <b>Phase {{ p.current_phase || 1 }} of {{ count }}</b>
                     · {{ phaseOf(p) }}
                 </span>
             </template>
@@ -74,30 +73,25 @@ async function park() {
             <template v-if="hovering || opened === 'with'">
                 <MenuPanel ref="withCard" :anchor="withButton" @click.stop @close="opened = ''">
                     <div class="planbar-card">
-                        <p class="planbar-card-head">Helpers working on this phase</p>
-                        <template v-for="h in delegation.helpers" :key="h.n">
+                        <p class="planbar-card-head">Workers on this phase</p>
+                        <template v-for="w in delegation.workers" :key="w.id">
                             <div class="planbar-card-row">
-                                <b>{{ h.name }}</b>
-                                <span>{{ h.job }}</span>
-                                <template v-if="h.branch">
-                                    <small><Icon name="branch" :size="11" /> {{ h.branch }}</small>
+                                <b>{{ w.name }}</b>
+                                <span>{{ w.job }}</span>
+                                <template v-if="w.branch">
+                                    <small><Icon name="branch" :size="11" /> {{ w.branch }}</small>
                                 </template>
                             </div>
                         </template>
-                        <template v-for="n in delegation.tickets" :key="`ticket-${n}`">
-                            <div class="planbar-card-row">
-                                <b>The agent on ticket {{ n }}</b>
-                            </div>
-                        </template>
-                        <template v-if="!delegation.helpers.length && !delegation.tickets.length">
-                            <p class="planbar-card-none">No helper has been handed this phase yet. Delegated plans keep running beside the one the agent works.</p>
+                        <template v-if="!delegation.workers.length">
+                            <p class="planbar-card-none">No worker has been handed this phase yet. Delegated plans keep running beside the one the agent works.</p>
                         </template>
                     </div>
                 </MenuPanel>
             </template>
         </template>
-        <template v-if="NOT_STARTED[data.status]">
-            <span class="planbar-step">{{ NOT_STARTED[data.status] }}</span>
+        <template v-if="NOT_STARTED[status]">
+            <span class="planbar-step">{{ NOT_STARTED[status] }}</span>
         </template>
         <template v-else>
             <span class="planbar-step" :title="standing.title">
@@ -109,7 +103,7 @@ async function park() {
             </span>
         </template>
         <template v-if="planButton(p)">
-            <button type="button" :class="['planbar-act', {ack: data.status === 'done'}]" @click="$emit('runBar', p)">
+            <button type="button" class="planbar-act" @click="$emit('runBar', p)">
                 {{ planButton(p)[1] }}
                 <Icon name="arrow" />
             </button>
@@ -126,10 +120,10 @@ async function park() {
         <template v-if="opened === 'menu'">
             <MenuPanel ref="menu" :anchor="menuButton" @click.stop @close="opened = ''">
                 <MenuItem @click="open">Open plan</MenuItem>
-                <template v-if="PARKABLE.includes(data.status)">
+                <template v-if="PARKABLE.includes(status)">
                     <MenuItem class="planbar-park" @click="park">
                         <span>Pause</span>
-                        <small>Pause the plan and its open to-dos</small>
+                        <small>Pause the plan and its open tasks</small>
                     </MenuItem>
                 </template>
             </MenuPanel>

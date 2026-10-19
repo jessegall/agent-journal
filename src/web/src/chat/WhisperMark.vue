@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import {peekRef} from "../route.js";

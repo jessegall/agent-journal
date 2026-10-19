@@ -1,7 +1,6 @@
 <script setup>
 import {saveSetting} from "../actions/settings.js";
 import {stopJournal} from "../actions/stopJournal.js";
-import {demo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -47,7 +46,7 @@ const sections = computed(() =>
               extension: extension.value,
               extensionZip: api.extensionZip(),
               triggers: rows("trigger"),
-              stoppable: !demo,
+              stoppable: true,
               stopping: stopping.value,
           })
         : []

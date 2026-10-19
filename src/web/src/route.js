@@ -40,8 +40,8 @@ export const route = computed(() => {
         .filter(Boolean)
         .map((entry) => {
             const [part, env = ""] = entry.split("@");
-            const [type = "", n = "", comment = ""] = part.split(":");
-            return {type, n: Number(n), comment: Number(comment) || 0, env};
+            const [table = "", id = "", comment = ""] = part.split(":");
+            return {table, id: Number(id), comment: Number(comment) || 0, env};
         });
     return {
         env: environment.value,
@@ -61,10 +61,7 @@ export const route = computed(() => {
 export const href = {
     page: (page = "", n = 0, q = "") => `#/${page}${n ? `/${n}` : ""}${q ? `?q=${encodeURIComponent(q)}` : ""}`,
     file: (path, line = 0, sub = "") => `#/file?q=${encodeURIComponent(path)}${line ? `&line=${line}` : ""}${sub ? `&sub=${sub}` : ""}`,
-    commit: (sha) => `#/commit/${sha}`,
-    pluginPage: (page) => `#/page/${page.plugin}.${page.name}`,
-    organization: (domain = "") => `#/organization${domain ? `/${domain}` : ""}`,
-    reportUpdates: () => "#/report?sub=updates",
+    reportUpdates: () => "#/reports?sub=updates",
     opened: (page, ref) => `${href.page(page)}?open=${ref}`,
 };
 
@@ -82,7 +79,7 @@ export function showFile(path, line = 0, env = "") {
     location.hash = href.file(path, line);
 }
 
-const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
+const entry = (open) => `${open.table}:${open.id}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
 
 export function opening(stack, sub = "") {
     const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
@@ -95,24 +92,24 @@ export function opening(stack, sub = "") {
 
 const inChat = {};
 
-export function openInChat(type, open) {
-    inChat[type] = open;
-    return () => inChat[type] === open && delete inChat[type];
+export function openInChat(table, open) {
+    inChat[table] = open;
+    return () => inChat[table] === open && delete inChat[table];
 }
 
-export function peek(type, n, comment = 0, sub = "") {
-    if (type === "plugin") return (location.hash = `#/plugins?plugin=${n}`);
-    if (!comment && !sub && inChat[type]?.(n)) return;
+export function peek(table, id, comment = 0, sub = "") {
+    if (table === "plugins") return (location.hash = `#/plugins?plugin=${id}`);
+    if (!comment && !sub && inChat[table]?.(id)) return;
     const stack = route.value.stack;
-    const at = stack.findIndex((open) => open.type === type && open.n === n);
-    opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment}], sub);
+    const at = stack.findIndex((open) => open.table === table && open.id === id);
+    opening([...(at < 0 ? stack : stack.slice(0, at)), {table, id, comment}], sub);
 }
 
-export function peekThere(env, type, n, comment = 0, sub = "") {
-    if (env === route.value.env) return peek(type, n, comment, sub);
+export function peekThere(env, table, id, comment = 0, sub = "") {
+    if (env === route.value.env) return peek(table, id, comment, sub);
     const stack = route.value.stack;
-    const at = stack.findIndex((open) => open.type === type && open.n === n && open.env === env);
-    opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment, env}], sub);
+    const at = stack.findIndex((open) => open.table === table && open.id === id && open.env === env);
+    opening([...(at < 0 ? stack : stack.slice(0, at)), {table, id, comment, env}], sub);
 }
 
 const ROW_REF = /^[a-z_]+:\d+(@.+)?$/;
@@ -121,8 +118,8 @@ export const isRef = (link) => ROW_REF.test(link);
 
 export function peekRef(ref) {
     const [row, env] = ref.split("@");
-    const [type, n] = row.split(":");
-    return env ? peekThere(env, type, Number(n)) : peek(type, Number(n));
+    const [table, id] = row.split(":");
+    return env ? peekThere(env, table, Number(id)) : peek(table, Number(id));
 }
 
 export function chipTarget(event) {
@@ -138,8 +135,8 @@ export function peekChip(event) {
     if (target) peekRef(target);
 }
 
-export function swap(type, n) {
-    opening([...route.value.stack.slice(0, -1), {type, n, comment: 0}]);
+export function swap(table, id) {
+    opening([...route.value.stack.slice(0, -1), {table, id, comment: 0}]);
 }
 
 export function showSession(sub) {
@@ -162,23 +159,4 @@ export function unpeek() {
     opening(route.value.stack.slice(0, -1));
 }
 
-export const PAGES = [
-    "settings",
-    "code",
-    "search",
-    "files",
-    "commit",
-    "skills",
-    "profiles",
-    "plugins",
-    "secrets",
-    "mcp",
-    "chart",
-    "page",
-    "hub",
-    "file",
-    "kanban",
-    "organization",
-    "resources",
-    "about",
-];
+export const PAGES = ["settings", "code", "search", "files", "skills", "profiles", "plugins", "secrets", "mcp", "chart", "file", "resources", "about"];

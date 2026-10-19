@@ -1,17 +1,17 @@
+import {refOf, seconds} from "./row.js";
 import {rows} from "../sync/rows.js";
 
-const card = (m) => m.data.card || {};
-
+// The subagents an agent sent, from the cards the chat shows of them.
 export const subagentsOf = (agent) =>
-    rows("message")
-        .filter((m) => card(m).kind === "subagent" && card(m).agent === agent)
+    rows("messages")
+        .filter((m) => m.data?.kind === "subagent" && m.data.agent === agent)
         .map((m) => ({
-            id: m.ref,
-            at: m.created,
-            task: card(m).detail,
-            type: card(m).agent_type,
-            model: card(m).model,
-            session: card(m).subagent,
-            status: card(m).state,
-            running: card(m).state === "running",
+            id: refOf(m),
+            at: seconds(m.created_at),
+            task: m.data.detail,
+            type: m.data.agent_type,
+            model: m.data.model,
+            session: m.data.subagent,
+            status: m.data.state,
+            running: m.data.state === "running",
         }));

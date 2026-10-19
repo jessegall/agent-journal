@@ -5,10 +5,11 @@ import {chatOnly, narrow, soloView} from "./platform/view.js";
 import WindowBar from "./layout/WindowBar.vue";
 import {activityVisible, closeOverlays} from "./actions/panels.js";
 
-import {computed, defineAsyncComponent, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import {PAGES, route} from "./route.js";
 import {project} from "./state/identity.js";
 import {store} from "./state/store.js";
+import {meta} from "./domain/tables.js";
 import {boot} from "./sync/boot.js";
 import {usePolled, windowPolls} from "./sync/polled.js";
 import Sidebar from "./layout/Sidebar.vue";
@@ -21,19 +22,12 @@ import EmptyState from "./kit/EmptyState.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
 import ChatWindow from "./layout/ChatWindow.vue";
 import ViewWindow from "./layout/ViewWindow.vue";
-import {loadProfiles, unchosen} from "./composables/profiles.js";
 import UpdateCover from "./layout/UpdateCover.vue";
-import PluginUpdateBand from "./layout/PluginUpdateBand.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import BlockedNotice from "./layout/BlockedNotice.vue";
-import HostedBand from "./layout/HostedBand.vue";
-import {desktopActs} from "./chat/suggestionActs.js";
-import {useTurnLinks} from "./chat/turnLinks.js";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
 import AppOverlays from "./AppOverlays.vue";
 import AppPages from "./AppPages.vue";
-
-const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.vue")) : null;
 
 windowPolls().forEach(usePolled);
 const bootError = ref("");
@@ -50,47 +44,32 @@ function startBoot() {
         .finally(() => clearTimeout(bootTimer));
 }
 const retryBoot = () => location.reload();
-provide("suggestionActs", desktopActs(useTurnLinks().openRef));
 
 const page = computed(() =>
     !route.value.page
         ? "home"
         : PAGES.includes(route.value.page)
           ? route.value.page
-          : store.spec && store.spec.types[route.value.page]
+          : meta(route.value.page)
             ? "index"
             : "home"
-);
-const full = computed(() => page.value === "kanban");
-let miniBefore = store.sideMini;
-watch(
-    full,
-    (now) => {
-        if (now) {
-            miniBefore = store.sideMini;
-            store.sideMini = true;
-            return;
-        }
-        store.sideMini = miniBefore;
-    },
-    {immediate: true}
 );
 followFullscreen();
 const opened = computed(() =>
     route.value.stack.length
         ? route.value.stack
-        : [route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0}]
+        : [route.value.n && page.value === "index" ? {table: route.value.page, id: route.value.n} : {table: "", id: 0}]
 );
 watchEffect(() => {
     document.title = route.value.env ? `${project.value} · ${route.value.env}` : project.value;
 });
-const keyOf = (open) => `${open.type}:${open.n}${open.env ? `@${open.env}` : ""}`;
+const keyOf = (open) => `${open.table}:${open.id}${open.env ? `@${open.env}` : ""}`;
 const layers = ref([]);
 watch(
     opened,
     (now) => {
         const keys = now.map(keyOf);
-        const leaving = layers.value.filter((layer) => layer.type && !keys.includes(layer.key)).map((layer) => ({...layer, leaving: true}));
+        const leaving = layers.value.filter((layer) => layer.table && !keys.includes(layer.key)).map((layer) => ({...layer, leaving: true}));
         layers.value = [...now.map((open) => ({...open, key: keyOf(open), leaving: false})), ...leaving];
     },
     {immediate: true}
@@ -150,7 +129,6 @@ useWindowEvent("keydown", onSpace);
 useWindowEvent("keydown", onWide);
 useWindowEvent("keydown", onOpenFile);
 
-watch(unchosen, (empty) => empty && loadProfiles(), {immediate: true});
 onMounted(startBoot);
 onUnmounted(() => clearTimeout(bootTimer));
 watch(() => `${route.value.env}/${route.value.page}/${route.value.n}`, closeOverlays);
@@ -180,22 +158,15 @@ watch(
     </template>
     <template v-else-if="store.spec">
         <div class="viewer">
-            <template v-if="DemoBand">
-                <DemoBand />
-            </template>
             <WindowBar />
-            <div :class="['app', {wide: drawnWide, mini: store.sideMini, full, switching, narrow, 'side-open': narrow && store.sideOpen}]">
+            <div :class="['app', {wide: drawnWide, mini: store.sideMini, switching, narrow, 'side-open': narrow && store.sideOpen}]">
                 <div class="rail"><Sidebar /></div>
                 <div class="main">
                     <div class="bar"><TopBar /></div>
                     <UpgradeBand />
-                    <PluginUpdateBand />
                     <UpdateCover />
-                    <HostedBand />
                     <BlockedNotice />
-                    <template v-if="!full">
-                        <StatusBar />
-                    </template>
+                    <StatusBar />
                     <Transition name="page" mode="out-in">
                         <div :key="route.page || 'home'" class="page">
                             <AppPages :page="page" />
@@ -203,15 +174,15 @@ watch(
                     </Transition>
                 </div>
                 <Transition name="column">
-                    <Activity v-if="activityVisible() && !drawnWide && !full" />
+                    <Activity v-if="activityVisible() && !drawnWide" />
                 </Transition>
                 <template v-if="narrow && (store.sideOpen || store.activityOpen)">
                     <div class="narrow-scrim" @click="closeOverlays" />
                 </template>
                 <template v-for="layer in layers" :key="layer.key">
                     <Reader
-                        :type="layer.type"
-                        :n="layer.n"
+                        :table="layer.table"
+                        :id="layer.id"
                         :env="layer.env"
                         :depth="depthOf(layer)"
                         :over="layer.leaving || visibleLayers.indexOf(layer) > 0"

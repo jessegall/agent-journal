@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import Folded from "../kit/Folded.vue";
 import {computed, inject, nextTick, reactive, ref} from "vue";
 import {api} from "../api/client.js";

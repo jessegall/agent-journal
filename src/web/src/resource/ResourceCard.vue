@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {refParts} from "../domain/records.js";
 import {startWords} from "../domain/triggerWords.js";
 import TextDisplay from "../kit/TextDisplay.vue";

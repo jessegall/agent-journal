@@ -2,9 +2,6 @@ import {computed, effectScope, ref} from "vue";
 import {usePaneLayout} from "./paneLayout.js";
 import {listenViewTabs, openViewTab} from "./viewTabs.js";
 import {clamp} from "../format/number.js";
-import {hand, takeBack, whenPutBack} from "../platform/extension.js";
-import {route} from "../route.js";
-import {store} from "../state/store.js";
 import {broughtBack, floated, forgotten, fronted, landed, reshaped, sentAway, unfloated} from "../domain/panes.js";
 
 const LAND = 280;
@@ -29,7 +26,6 @@ function shared() {
         const x = clamp(box.x, EDGE, window.innerWidth - w - EDGE);
         const y = clamp(box.y, EDGE, window.innerHeight - h - EDGE);
         replace(floated(layout.value, view, {x, y, w, h}));
-        if (store.extension.here) hand(floats.value[floats.value.length - 1], route.value.env);
     }
 
     function move(id, to) {
@@ -62,7 +58,6 @@ function shared() {
     }
 
     function close(id) {
-        takeBack(id);
         replace(unfloated(layout.value, id));
     }
 
@@ -76,7 +71,6 @@ function shared() {
     function dock(id) {
         const change = landed(layout.value, id);
         if (!change) return;
-        takeBack(id);
         apply(change);
         const box = stage.value && stage.value.getBoundingClientRect();
         if (!box) return close(id);
@@ -91,7 +85,6 @@ function shared() {
     function sendAway(id) {
         const f = find(id);
         if (!f) return null;
-        takeBack(id);
         openViewTab(f.view, id);
         replace(sentAway(layout.value, id));
         return f;
@@ -102,10 +95,7 @@ function shared() {
         replace(broughtBack(layout.value, id));
     }
 
-    whenPutBack(dock);
-    const drawn = computed(() => floats.value.filter((f) => !store.extension.held.includes(f.id)));
-
-    return {floats, drawn, landing, detach, move, size, tune, front, close, dock, sendAway, bringBack};
+    return {floats, drawn: floats, landing, detach, move, size, tune, front, close, dock, sendAway, bringBack};
 }
 
 let one = null;

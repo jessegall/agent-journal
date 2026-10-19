@@ -36,10 +36,10 @@ const emit = defineEmits(["check-again"]);
                     </span>
                 </template>
                 <div class="link-row">
-                    <input class="link" :value="made.abstract" readonly @focus="$event.target.select()" />
-                    <CopyButton :text="made.abstract" label="Copy" />
+                    <input class="link" :value="made.link" readonly @focus="$event.target.select()" />
+                    <CopyButton :text="made.link" label="Copy" />
                     <CopyButton
-                        :text="linkMessage(title, made.abstract)"
+                        :text="linkMessage(title, made.link)"
                         icon="chat"
                         label="Copy with message"
                         hint="Copy the link with a short description"

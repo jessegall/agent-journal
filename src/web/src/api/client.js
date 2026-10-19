@@ -6,7 +6,7 @@ const encoded = (value) => encodeURIComponent(value);
 
 function query(fields) {
     const query = new URLSearchParams(
-        Object.entries(fields).filter(([, value]) => value !== undefined && value !== null && value !== false)
+        Object.entries(fields).filter(([, value]) => value !== undefined && value !== null && value !== false && value !== "")
     );
     return query.toString() ? `?${query}` : "";
 }
@@ -15,24 +15,11 @@ const NO_ENV = "the page does not know its environment yet";
 
 export const ENV_HEADER = "X-Journal-Env";
 
-// What a board asks for beyond its first page: one lane, the cursor its last page ended at, how many, the words to match, one card by number.
-const pagedBody = ({lane, after, size, query, only} = {}) => ({
-    ...(lane ? {lane} : {}),
-    ...(after ? {after} : {}),
-    ...(size ? {size} : {}),
-    ...(query ? {query} : {}),
-    ...(only ? {only} : {}),
-});
-
+// The journal's API: every path the viewer asks for is named here, under /journal, scoped to the environment by its header.
 export class ApiClient {
     constructor({env = () => route.value.env, base = ""} = {}) {
         this.env = env;
         this.base = base;
-    }
-
-    point(base, env) {
-        this.base = base;
-        this.env = env;
     }
 
     at(base, env = this.env) {
@@ -44,7 +31,7 @@ export class ApiClient {
     }
 
     url(path) {
-        return `${this.base}/api${path}`;
+        return `${this.base}/journal${path}`;
     }
 
     headers() {
@@ -68,10 +55,6 @@ export class ApiClient {
         return this.url(`${this.here(path)}${path.includes("?") ? "&" : "?"}env=${encoded(this.env())}`);
     }
 
-    newFeatures() {
-        return this.get("/new-feature");
-    }
-
     publicUrl(path) {
         return `/${path}`;
     }
@@ -89,42 +72,7 @@ export class ApiClient {
         return this.publicUrl("voices/figures/draco/");
     }
 
-    markNewFeatureSeen(id) {
-        return this.post("/new-feature", {id});
-    }
-
-    // whether a version 3 journal is kept in .journal/version-3, and where bringing it across stands
-    migration() {
-        return this.get("/migration");
-    }
-
-    putMigrationOff() {
-        return this.post("/migration/later", {});
-    }
-
-    startMigration() {
-        return this.post("/migration/start", {});
-    }
-
-    changelog(skip = 0) {
-        return this.get(`/changelog?skip=${skip}`);
-    }
-
-    cancelUpdate() {
-        return this.post("/update/cancel", {});
-    }
-
-    checkForUpdate() {
-        return this.post("/update/check", {});
-    }
-
-    update(yes = false, version = "") {
-        return this.post("/update", {yes, ...(version ? {version} : {})});
-    }
-
-    releases() {
-        return this.get("/releases");
-    }
+    // the journal as a whole
 
     manifest() {
         return this.get("/manifest");
@@ -134,737 +82,16 @@ export class ApiClient {
         return this.get("/identity");
     }
 
-    saveIdentity(body) {
-        return this.post("/identity", body);
-    }
-
-    pages() {
-        return this.get("/pages");
-    }
-
     journals() {
         return this.get("/journals");
-    }
-
-    // the journal's own routes, the workflows and the MCP servers, are scoped like the rest: every call carries the environment header
-    own(path) {
-        return `${this.base}/journal${path}`;
-    }
-
-    ownGet(path) {
-        return transport.request("GET", this.own(path), undefined, 0, this.headers());
-    }
-
-    ownPost(path, body = {}) {
-        return transport.request("POST", this.own(path), body, 0, this.headers());
-    }
-
-    chart() {
-        return this.ownGet("/chart");
-    }
-
-    chartOne(id) {
-        return this.ownGet(`/chart/${id}`);
-    }
-
-    chartStanding(id) {
-        return this.ownGet(`/chart/${id}/standing`);
-    }
-
-    chartNew(body) {
-        return this.ownPost("/chart", body);
-    }
-
-    chartSave(id, body) {
-        return this.ownPost(`/chart/${id}`, body);
-    }
-
-    chartRemove(id) {
-        return this.ownPost(`/chart/${id}/remove`, {});
-    }
-
-    chartReset(id) {
-        return this.ownPost(`/chart/${id}/reset`, {});
-    }
-
-    chartOff(id) {
-        return this.ownPost(`/chart/${id}/off`, {});
-    }
-
-    chartOn(id) {
-        return this.ownPost(`/chart/${id}/on`, {});
-    }
-
-    agentProfiles() {
-        return this.ownGet("/profiles");
-    }
-
-    agentProfile(name) {
-        return this.ownGet(`/profiles/${name}`);
-    }
-
-    saveAgentProfile(name, body) {
-        return this.ownPost(`/profiles/${name}`, body);
-    }
-
-    chartOrder(trigger, order) {
-        return this.ownPost("/chart/order", {trigger, order});
-    }
-
-    chartRuns(last = 10) {
-        return this.ownGet(`/chart/runs?last=${last}`);
-    }
-
-    chartTry(body) {
-        return this.ownPost("/chart/try", body);
-    }
-
-    mcp() {
-        return this.ownGet("/mcp");
-    }
-
-    mcpInstall(name) {
-        return this.ownPost("/mcp/install", {name});
-    }
-
-    mcpKey(name, value) {
-        return this.ownPost(`/mcp/${encoded(name)}/key`, {value});
-    }
-
-    mcpSignIn(name) {
-        return this.ownPost(`/mcp/${encoded(name)}/sign-in`, {});
-    }
-
-    mcpRemove(name) {
-        return this.ownPost(`/mcp/${encoded(name)}/remove`, {});
-    }
-
-    mcpCheck() {
-        return this.ownPost("/mcp/check", {}, LONG_WAIT_MS);
-    }
-
-    startJournal(root, agent) {
-        return this.post("/journals/start", {root, agent});
-    }
-
-    forgetJournal(root) {
-        return this.post("/journals/forget", {root});
     }
 
     summary() {
         return this.get("/summary");
     }
 
-    upstream() {
-        return this.get("/upstream");
-    }
-
-    hosting() {
-        return this.get("/hosting");
-    }
-
-    hostingUpgrade() {
-        return this.post("/hosting/upgrade", {});
-    }
-
-    hostingTakeDown() {
-        return this.post("/hosting/take-down", {});
-    }
-
-    hostingMe() {
-        return this.get("/hosting/me");
-    }
-
-    members() {
-        return this.get("/hosting/members");
-    }
-
-    inviteMember(name, role) {
-        return this.post("/hosting/members", {name, role});
-    }
-
-    assignRole(member, role) {
-        return this.post("/hosting/members/role", {member, role});
-    }
-
-    removeMember(member) {
-        return this.post("/hosting/members/remove", {member});
-    }
-
-    shareEnvironments(member, environments) {
-        return this.post("/hosting/members/environments", {member, environments});
-    }
-
-    endLogins(member) {
-        return this.post("/hosting/members/end-logins", {member});
-    }
-
-    leaveJournal() {
-        return this.post("/hosting/leave", {});
-    }
-
-    upgrade() {
-        return this.post("/upgrade");
-    }
-
-    stop() {
-        return this.post("/stop");
-    }
-
-    extension() {
-        return this.get("/extension");
-    }
-
-    extensionZip() {
-        return `${this.base}/extension.zip`;
-    }
-
-    connection(address = "") {
-        return this.command("environment", "connection", address ? {address} : {});
-    }
-
-    connectTo(address, key) {
-        return this.command("environment", "connect", key ? {address, key} : {address});
-    }
-
-    disconnectFromServer() {
-        return this.command("environment", "disconnect");
-    }
-
-    tunnelLogin(login) {
-        return this.command("share", "login", login);
-    }
-
-    tunnelLogout() {
-        return this.command("share", "logout");
-    }
-
-    tunlerVersion() {
-        return this.command("share", "version");
-    }
-
-    updateTunler() {
-        return this.command("share", "update_tunler");
-    }
-
-    installTunler(host) {
-        return this.command("share", "install_tunler", {host});
-    }
-
-    tunnelAnswering() {
-        return this.command("share", "answering");
-    }
-
-    tunnelDomains() {
-        return this.command("share", "domains");
-    }
-
-    tunnelRelease(domain) {
-        return this.command("share", "release", {domain});
-    }
-
-    tunnelReaddress() {
-        return this.command("share", "readdress");
-    }
-
-    tunnelCause() {
-        return this.command("share", "tunnel_cause");
-    }
-
-    restartTunnel() {
-        return this.command("share", "restart_tunnel");
-    }
-
-    connectPhone(days) {
-        return this.command("phone", "connect", {days});
-    }
-
-    disconnectPhone(n) {
-        return this.act("phone", n, "disconnect");
-    }
-
-    allowPhonePasskey(n) {
-        return this.act("phone", n, "allow_passkey");
-    }
-
-    refusePhonePasskey(n) {
-        return this.act("phone", n, "refuse_passkey");
-    }
-
-    shareView(view, {expires = "7d", once = false} = {}) {
-        return this.command("share", "share_view", {view, expires, once});
-    }
-
-    shareLayout(name, layout, {expires = "7d", once = false} = {}) {
-        return this.command("share", "share_layout", {name, layout: JSON.stringify(layout), expires, once});
-    }
-
-    async layoutFrom(url) {
-        const got = await fetch(url).catch(() => null);
-        if (got && got.ok) return got.json();
-        throw new Error(
-            got && got.status === 410 ? "That link was for one opening and has been used." : "That link doesn't answer any more."
-        );
-    }
-
-    services() {
-        return this.get("/services");
-    }
-
-    serviceLog(id, lines = 200) {
-        return this.get(`/services/${id}/log${query({lines})}`);
-    }
-
-    setService(id, want) {
-        return this.post(`/services/${id}`, {want});
-    }
-
-    pluginDashboard(n, name) {
-        return this.get(this.here(`/plugin/${n}/dashboard/${encodeURIComponent(name)}`));
-    }
-
-    pluginUrl(page, at) {
-        return page.url.replace(page.path, "").replace("127.0.0.1", location.hostname) + at;
-    }
-
-    diagnostics(lines = 200) {
-        return this.get(this.here(`/diagnostics?lines=${lines}`));
-    }
-
-    clearDiagnostics() {
-        return this.post(this.here("/diagnostics/clear"));
-    }
-
-    pluginLog(name, lines = 200) {
-        return this.get(`/plugins/${name}/log${query({lines})}`);
-    }
-
-    pluginRecord(name) {
-        return this.get(`/plugins/${encodeURIComponent(name)}/record`);
-    }
-
-    onlineAgents() {
-        return this.get("/agents");
-    }
-
-    agentControls(provider, model = "", effort = "") {
-        return this.get(`/agent-controls/${encoded(provider)}${query({model: model || undefined, effort: effort || undefined})}`);
-    }
-
-    agentHooks(provider) {
-        return this.get(`/agent-hooks/${provider}`);
-    }
-
-    saveAgentHooks(provider, hooks) {
-        return this.post(`/agent-hooks/${provider}`, {hooks});
-    }
-
-    list(type, {last, completed = false, closed = false, from = 0, before = 0, since = 0, only = [], by = ""} = {}) {
-        return this.get(
-            this.here(
-                `/${type}${query({last, completed: completed ? "1" : undefined, closed: closed ? "1" : undefined, from: from || undefined, before: before || undefined, since: since || undefined, n: only.join(",") || undefined, by: by || undefined})}`
-            )
-        );
-    }
-
-    all(type) {
-        return this.list(type, {completed: true}).then((got) => got.rows);
-    }
-
-    rows(type, {from = 0, last} = {}) {
-        return this.list(type, {last, completed: true, from});
-    }
-
-    counts(type) {
-        return this.list(type, {closed: true, last: 1}).then((got) => got.counts);
-    }
-
-    show(type, n) {
-        return this.get(this.here(`/${type}/${n}`));
-    }
-
-    readOutput(n) {
-        return this.get(this.here(`/output/${n}/read`));
-    }
-
-    create(type, body) {
-        return this.post(this.here(`/${type}`), body);
-    }
-
-    fieldChoices(type, n) {
-        return this.get(this.here(`/${type}/${n}/choices`));
-    }
-
-    act(type, n, action, body = {}) {
-        return this.post(this.here(`/${type}/${n}/${action}`), body);
-    }
-
-    skipSequenceStep(agent) {
-        return this.act("agent", agent, "skip_step");
-    }
-
-    endSequence(agent) {
-        return this.act("agent", agent, "end_sequence");
-    }
-
-    answerSuggestion(n, how) {
-        return this.act("suggestion", n, "decide", {how});
-    }
-
-    installSuggested(n) {
-        return this.post(this.here(`/suggestion/${n}/install`), {}, LONG_WAIT_MS);
-    }
-
-    reopenSuggestion(n) {
-        return this.act("suggestion", n, "reopen");
-    }
-
-    noteSuggestionWindow(n) {
-        return this.act("suggestion", n, "note_window");
-    }
-
-    installPlugin(source) {
-        return this.post(this.here("/plugin/install"), {source, yes: true}, LONG_WAIT_MS);
-    }
-
-    upgradePlugin(n, again) {
-        return this.post(this.here(`/plugin/${n}/upgrade`), {yes: true, again}, LONG_WAIT_MS);
-    }
-
-    collectionFiles(n) {
-        return this.command("collection", "held_files", {n});
-    }
-
-    ticketStatus(n) {
-        return this.command("ticket", "status", {n});
-    }
-
-    planTimeline(n) {
-        return this.command("plan", "timeline", {n});
-    }
-
-    hidePreview(type, n) {
-        return this.act(type, n, "set", {key: "hide_preview", value: "true"});
-    }
-
-    revision(n, number) {
-        return this.act("doc", n, "revision", {number});
-    }
-
-    createSecret(fields) {
-        return this.create("secret", fields);
-    }
-
-    updateSecret(n, fields) {
-        return this.act("secret", n, "update", fields);
-    }
-
-    fillSecret(n, field, value) {
-        return this.act("secret", n, "fill", {field, value});
-    }
-
-    deleteSecret(n) {
-        return this.act("secret", n, "delete", {why: "deleted from the viewer"});
-    }
-
-    loginSecret(n) {
-        return this.act("secret", n, "login");
-    }
-
-    allowSecretLogin(n) {
-        return this.act("secret", n, "allow_login");
-    }
-
-    forgetSecretLogin(n) {
-        return this.act("secret", n, "forget_login");
-    }
-
-    revokeSecretLogin(n) {
-        return this.act("secret", n, "revoke_login");
-    }
-
-    restoreSecret(n) {
-        return this.act("secret", n, "restore");
-    }
-
-    secretsFile() {
-        return this.command("secret", "where");
-    }
-
-    command(type, action, body = {}) {
-        return this.post(this.here(`/${type}/${action}`), body);
-    }
-
-    triggerMatching(fact, over, text) {
-        return this.command("trigger", "matching", {fact, over, text});
-    }
-
-    press(button) {
-        const path = button.n ? `/${button.type}/${button.n}/${button.action}` : `/${button.type}/${button.action}`;
-        return this.post(this.here(path), button.body || {}, LONG_WAIT_MS);
-    }
-
-    tasks(agent) {
-        return this.command("todo", "tasks", {agent});
-    }
-
-    touched(n) {
-        return this.command("todo", "touched", {n});
-    }
-
-    board({plan, agent, ...page} = {}) {
-        return this.command("todo", "board", {plan: plan || 0, agent: agent || "", ...pagedBody(page)});
-    }
-
-    shift(n, lane, {why, how} = {}) {
-        return this.act("todo", n, "shift", {lane, why: why || "", how: how || ""});
-    }
-
-    cancelWork(board) {
-        return this.act("board", board, "cancel");
-    }
-
-    reviseWork(board, text, idempotency) {
-        return this.act("board", board, "revise", {text, idempotency});
-    }
-
-    followUpWork(board, text, idempotency) {
-        return this.act("board", board, "follow_up", {text, idempotency});
-    }
-
-    requestWork(board, text, idempotency) {
-        return this.act("board", board, "request", {text, idempotency});
-    }
-
-    handWork(board, document, text, idempotency) {
-        return this.act("board", board, "hand", {document, text, idempotency});
-    }
-
-    ticketBoard(n, page = {}) {
-        return this.act("ticket", n, "board", pagedBody(page));
-    }
-
-    dismissQuestion(n, why) {
-        return this.act("question", n, "dismiss", {why});
-    }
-
-    moveTicket(n, stage) {
-        return this.act("ticket", n, "move", {stage});
-    }
-
-    stopTicket(n) {
-        return this.act("ticket", n, "stop");
-    }
-
-    confirmTicket(n) {
-        return this.act("ticket", n, "confirm");
-    }
-
-    updateTicket(n, fields) {
-        return this.act("ticket", n, "update", fields);
-    }
-
-    deleteTicket(n, why) {
-        return this.act("ticket", n, "delete", {why});
-    }
-
-    acceptDependencies(n, only = []) {
-        return this.act("ticket", n, "accept_dependencies", only.length ? {only: only.join(",")} : {});
-    }
-
-    declineDependencies(n) {
-        return this.act("ticket", n, "decline_dependencies");
-    }
-
-    buildBoard(n, name, steer) {
-        return this.act("board", n, "build", {name, steer});
-    }
-
-    startBoard(n) {
-        return this.act("board", n, "start");
-    }
-
-    retryBoard(n) {
-        return this.act("board", n, "retry");
-    }
-
-    archiveBoard(n) {
-        return this.act("board", n, "complete");
-    }
-
-    restoreBoard(n) {
-        return this.act("board", n, "reopen", {why: "Restored from the board menu"});
-    }
-
-    addedToBoard(n, tickets) {
-        return this.act("board", n, "added", {tickets: tickets.join(",")});
-    }
-
-    markStage(board, stage, meaning) {
-        return this.act("board", board, "meaning", {stage, meaning});
-    }
-
-    stopShare(n) {
-        return this.act("share", n, "stop");
-    }
-
-    approveShare(n) {
-        return this.act("share", n, "approve");
-    }
-
-    tunnelStatus() {
-        return this.command("share", "tunnel");
-    }
-
-    tunnelRecheck() {
-        return this.command("share", "check_tunnel");
-    }
-
-    shareReachable(n) {
-        return this.command("share", "reachable", {n});
-    }
-
-    shareOpens(ref) {
-        return this.command("share", "opens", {ref});
-    }
-
-    questionsLinkedTo(ref) {
-        return this.command("question", "linked_to", {ref});
-    }
-
-    planFromDoc(doc) {
-        return this.command("plan", "from_doc", {doc});
-    }
-
-    keepDoc(n) {
-        return this.act("doc", n, "keep");
-    }
-
-    runCheck(n) {
-        return this.act("check", n, "run");
-    }
-
-    setCheck(n, key, value) {
-        return this.act("check", n, "set", {key, value: String(value)});
-    }
-
-    closeNotice(n) {
-        return this.act("notice", n, "close");
-    }
-
-    pinNotice(text, about = "") {
-        return this.create("notice", {brief: text, about: about || undefined});
-    }
-
-    deleteTurn(type, n) {
-        return this.act(type, n, "delete", {why: "deleted from the viewer"});
-    }
-
-    editMessage(n, text) {
-        return this.act("message", n, "edit", {text});
-    }
-
-    stopTask(agent, task, description) {
-        return this.act("agent", agent, "stop_task", {task, description});
-    }
-
-    updateComment(n, brief) {
-        return this.act("comment", n, "update", {brief});
-    }
-
-    deleteComment(n) {
-        return this.act("comment", n, "delete", {why: "deleted from the viewer"});
-    }
-
-    addToCollection(n, refs) {
-        return this.act("collection", n, "add", {refs});
-    }
-
-    setStartsOn(n, value) {
-        return this.act("sequence", n, "set", {key: "starts_on", value});
-    }
-
-    setSteps(n, steps) {
-        return this.act("sequence", n, "steps", {steps});
-    }
-
-    profiles() {
-        return this.all("profile");
-    }
-
-    profileCallings() {
-        return this.command("profile", "callings");
-    }
-
-    profileSamples() {
-        return this.command("profile", "samples");
-    }
-
-    profileNamings() {
-        return this.command("profile", "namings");
-    }
-
-    createProfile(fields) {
-        return this.create("profile", fields);
-    }
-
-    updateProfile(n, fields) {
-        return this.act("profile", n, "update", fields);
-    }
-
-    duplicateProfile(n) {
-        return this.act("profile", n, "duplicate");
-    }
-
-    deleteProfile(n) {
-        return this.act("profile", n, "delete");
-    }
-
-    pinRule(n) {
-        return this.act("rule", n, "pin");
-    }
-
-    configurePlugin(n, key, value) {
-        return this.act("plugin", n, "configure", {key, value});
-    }
-
-    clearPluginLog(n) {
-        return this.act("plugin", n, "clear_log");
-    }
-
-    removeEnvironment(n, forced) {
-        return this.act("environment", n, "remove", {how: "removed from the viewer", ...(forced ? {yes: true} : {})});
-    }
-
-    sweepEnvironment(n, now) {
-        return this.act("environment", n, "sweep", now ? {yes: true} : {});
-    }
-
-    readAll(type, numbers) {
-        return this.post(this.here(`/${type}/read-all`), {numbers});
-    }
-
-    upload(type, n, file) {
-        if (file.size > UPLOAD_LIMIT) return Promise.reject(new Error(overLimit(file)));
-        const body = new FormData();
-        body.append("file", file, file.name);
-        return this.post(this.here(`/${type}/${n}/upload`), body);
-    }
-
-    markdownUrl(type, n) {
-        return this.address(`/${type}/${n}/markdown`);
-    }
-
-    fileUrl(type, n, name) {
-        return this.address(`/${type}/${n}/files/${encoded(name)}`);
-    }
-
-    events(since = 0) {
-        return this.get(this.here(`/events${query({since})}`));
-    }
-
-    recentEvents(last) {
-        return this.get(this.here(`/events${query({since: 0, last})}`));
+    bar() {
+        return this.get(this.here("/bar"));
     }
 
     settings() {
@@ -875,206 +102,396 @@ export class ApiClient {
         return this.post(this.here("/settings"), body);
     }
 
-    saveMode(mode) {
-        return this.post(this.here("/mode"), {mode});
+    releases() {
+        return this.get("/updates");
     }
 
-    saveNewWorkBoard(board) {
-        return this.post(this.here("/mode/board"), {board});
+    update() {
+        return this.post("/updates", {});
     }
 
-    integration(name) {
-        return this.get(this.here(`/integration/${name}`));
+    // whether a version 3 journal is kept in .journal/version-3, and where bringing it across stands
+    migration() {
+        return this.get(this.here("/migration"));
     }
 
-    integrationTeams(name) {
-        return this.get(this.here(`/integration/${name}/teams`));
+    putMigrationOff() {
+        return this.post(this.here("/migration/later"), {});
     }
 
-    integrationWebhook(name) {
-        return this.get(this.here(`/integration/${name}/webhook`));
+    startMigration() {
+        return this.post(this.here("/migration/start"), {});
     }
 
-    logInIntegration(name) {
-        return this.post(this.here(`/integration/${name}/login`));
+    // the timeline the viewer stays live by: the entries after an id, or the newest, and the same as a stream
+    entries(since = 0, last = 0) {
+        return this.get(this.here(`/entries${query({since, last})}`));
     }
 
-    logOutIntegration(name) {
-        return this.post(this.here(`/integration/${name}/logout`));
+    stream() {
+        return new EventSource(this.address("/entries/stream"));
     }
 
-    checkIntegration(name) {
-        return this.post(this.here(`/integration/${name}/check`));
+    // a resource's rows: a page with its counts, one row, a new one, a change, and an act on one
+    list(table, {limit, before, after, since, ids = [], closed = false} = {}) {
+        return this.get(this.here(`/${table}${query({limit, before, after, since, ids: ids.join(","), closed: closed ? "1" : ""})}`));
     }
 
-    search(q, archived = false, resources = []) {
-        return this.get(
-            this.here(
-                `/search${query({q, ...(archived ? {archived: true} : {}), ...(resources.length ? {resources: resources.join(",")} : {})})}`
-            )
-        );
+    show(table, id) {
+        return this.get(this.here(`/${table}/${id}`));
     }
 
-    restore(type, n) {
-        return this.act(type, n, "restore");
+    create(table, body) {
+        return this.post(this.here(`/${table}`), body);
     }
 
-    searchAttic(q) {
-        return this.get(this.here(`/search/attic${query({q})}`));
+    change(table, id, body) {
+        return this.post(this.here(`/${table}/${id}`), body);
     }
 
-    unarchive(name) {
-        return this.post(this.here("/environment/unarchive"), {name});
+    act(table, id, act, body = {}, wait = 0) {
+        return this.post(this.here(`/${table}/${id}/${act}`), body, wait);
     }
 
-    files() {
-        return this.get(this.here("/files"));
+    // a button on a message's card names the path it posts to
+    press(button) {
+        return this.post(this.here(button.path), {}, LONG_WAIT_MS);
     }
 
-    filesPage({kind, shelf, search, last, skip}) {
-        return this.get(
-            this.here(`/files/page${query({kind, shelf: shelf || undefined, search: search || undefined, last, skip: skip || undefined})}`)
-        );
+    upload(table, id, file) {
+        if (file.size > UPLOAD_LIMIT) return Promise.reject(new Error(overLimit(file)));
+        const body = new FormData();
+        body.append("file", file, file.name);
+        return this.post(this.here(`/${table}/${id}/files`), body);
     }
 
-    changes() {
-        return this.get(this.here("/changes"));
+    fileUrl(table, id, name) {
+        return this.address(`/${table}/${id}/files/${encoded(name)}`);
     }
 
-    commit(sha) {
-        return this.get(this.here(`/commit/${sha}`));
+    // messages
+
+    readMessages(ids) {
+        return this.post(this.here("/messages/read"), {ids});
     }
 
-    projectFile(path) {
-        return this.get(this.here(`/file${query({path})}`));
+    // the buttons pressed on a message's card, kept so the chat shows them spent
+    pressed(id, labels) {
+        return this.act("messages", id, "press", {pressed: labels});
     }
 
-    fileDiff(path) {
-        return this.get(this.here(`/diff${query({path})}`));
+    // comments: a message of the user's written under a row, named as tasks:12
+    comment(on, text) {
+        return this.create("comments", {on, text});
     }
 
-    previewPlugin(source) {
-        return this.post(this.here("/plugins/preview"), {source}, LONG_WAIT_MS);
+    // the documents a search finds, best first, and the files attached to messages, a page at a time
+    locateDocs(words) {
+        return this.get(this.here(`/docs/search${query({words})}`));
     }
 
-    previewUpgrade(n) {
-        return this.post(this.here(`/plugins/${n}/upgrade-preview`), {}, LONG_WAIT_MS);
+    attachments({kind, shelf, search, last, skip}) {
+        return this.get(this.here(`/attachments${query({kind, shelf, search, last, skip})}`));
+    }
+
+    // a plan's tasks
+    planTasks(id) {
+        return this.get(this.here(`/plans/${id}/tasks`));
+    }
+
+    taskLogs(id) {
+        return this.get(this.here(`/tasks/${id}/logs`));
+    }
+
+    // what starts a sequence, and its steps
+    setStartsOn(id, startsOn) {
+        return this.act("sequences", id, "starts", {starts_on: startsOn});
+    }
+
+    setSteps(id, steps) {
+        return this.act("sequences", id, "steps", {steps});
+    }
+
+    // agents
+
+    liveAgents() {
+        return this.get("/agents/live");
+    }
+
+    agentControls(provider, model = "", effort = "") {
+        return this.get(`/agents/controls/${encoded(provider)}${query({model, effort})}`);
+    }
+
+    controlAgent(id, action, value) {
+        return this.act("agents", id, "control", {action, value});
+    }
+
+    runShell(id, command) {
+        return this.act("agents", id, "shell", {command});
+    }
+
+    skipSequenceStep(id) {
+        return this.act("agents", id, "skip-step");
+    }
+
+    endSequence(id) {
+        return this.act("agents", id, "end-sequence");
+    }
+
+    transcript(agent, session, fields) {
+        return this.get(this.here(`/agents/${agent}${session ? `/subagents/${encoded(session)}` : ""}/transcript${query(fields)}`));
+    }
+
+    workerTranscript(id, fields = {}) {
+        return this.get(this.here(`/workers/${id}/transcript${query(fields)}`));
+    }
+
+    edits(agent, since) {
+        return this.get(this.here(`/agents/${agent}/edits${query({since})}`));
+    }
+
+    editedFile(agent, path) {
+        return this.get(this.here(`/agents/${agent}/edits/file${query({path})}`));
+    }
+
+    terminal(agent, after = 0) {
+        return this.get(this.here(`/agents/${agent}/terminal${query({after})}`));
+    }
+
+    launchAgent(environment, agent) {
+        return this.act("environments", environment, "launch", {agent});
+    }
+
+    stopAgentIn(environment) {
+        return this.act("environments", environment, "stop");
+    }
+
+    removeEnvironment(environment) {
+        return this.act("environments", environment, "remove");
+    }
+
+    readOutput(id) {
+        return this.get(this.here(`/outputs/${id}`));
+    }
+
+    // skills and voices
+
+    skills(agent = 0) {
+        return this.get(this.here(`/skills${query({agent})}`));
+    }
+
+    skill(name) {
+        return this.get(this.here(`/skills/${encoded(name)}`));
+    }
+
+    loadSkill(name) {
+        return this.post(this.here(`/skills/${encoded(name)}/load`));
+    }
+
+    voices() {
+        return this.get(this.here("/voices"));
+    }
+
+    chooseVoice(name) {
+        return this.post(this.here("/voices/choose"), {name});
+    }
+
+    // the project's files
+
+    projectFiles(folder = "") {
+        return this.get(this.here(`/project-files${query({folder})}`));
     }
 
     findFiles(q) {
         return this.get(this.here(`/project-files/find${query({q})}`));
     }
 
-    projectFiles(folder = "") {
-        return this.get(this.here(`/project-files${query({folder})}`));
+    projectFile(path) {
+        return this.get(this.here(`/project-files/file${query({path})}`));
     }
 
-    bar() {
-        return this.get(this.here("/bar"));
+    fileDiff(path) {
+        return this.get(this.here(`/project-files/diff${query({path})}`));
     }
 
-    agents(last) {
-        return this.list("agent", {completed: true, last, by: "updated"}).then((got) => got.rows);
+    // secrets
+
+    secretsFile() {
+        return this.get(this.here("/secrets/where"));
     }
 
-    launchAgent(n, agent) {
-        return this.act("environment", n, "launch", {agent});
+    // share links and the tunnel that carries them
+
+    shareOpens(target) {
+        return this.get(this.here(`/shares/opens${query({target})}`));
     }
 
-    stopAgentIn(n) {
-        return this.act("environment", n, "stop");
+    tunnel() {
+        return this.get("/tunnel");
     }
 
-    appoint(session) {
-        return this.post(this.here("/appoint"), {session});
+    services() {
+        return this.get("/tunnel/services");
     }
 
-    controlAgent(session, action, value) {
-        return this.post(this.here(`/agent/${encoded(session)}/control`), {action, value});
+    tunnelCause() {
+        return this.get("/tunnel/cause");
     }
 
-    forceAgent(session) {
-        return this.post(this.here(`/agent/${encoded(session)}/force`));
+    tunnelAnswering() {
+        return this.get("/tunnel/answering");
     }
 
-    pauseAgent(session) {
-        return this.post(this.here(`/agent/${encoded(session)}/pause`));
+    tunlerVersion() {
+        return this.get("/tunnel/version");
     }
 
-    resumeAgent(session) {
-        return this.post(this.here(`/agent/${encoded(session)}/resume`));
+    tunnelDomains() {
+        return this.get("/tunnel/domains");
     }
 
-    permitAgent(session, allow) {
-        return this.post(this.here(`/agent/${encoded(session)}/permit`), {allow});
+    tunnelRecheck() {
+        return this.post("/tunnel/check", {});
     }
 
-    ticketTodos() {
-        return this.post(this.here("/ticket/todos"), {});
+    restartTunnel() {
+        return this.post("/tunnel/restart", {});
     }
 
-    organization() {
-        return this.post(this.here("/ticket/organization"), {});
+    tunnelLogin(login) {
+        return this.post("/tunnel/login", login);
     }
 
-    family() {
-        return this.get(this.here("/family"));
+    tunnelLogout() {
+        return this.post("/tunnel/logout", {});
     }
 
-    agentScreen(session, since) {
-        return this.get(this.here(`/agent/${encoded(session)}/screen${query({since})}`));
+    installTunler(host) {
+        return this.post("/tunnel/install", {host}, LONG_WAIT_MS);
     }
 
-    agentKeys(session, text) {
-        return this.post(this.here(`/agent/${encoded(session)}/keys`), {text});
+    updateTunler() {
+        return this.post("/tunnel/update", {}, LONG_WAIT_MS);
     }
 
-    runShell(session, command, now = false) {
-        return this.post(this.here(`/agent/${encoded(session)}/shell`), {command, now});
+    tunnelRelease(domain) {
+        return this.post("/tunnel/release", {domain});
     }
 
-    relaunchAgent(session, skip) {
-        return this.post(this.here(`/agent/${encoded(session)}/relaunch`), {skip});
+    tunnelReaddress() {
+        return this.post("/tunnel/readdress", {});
     }
 
-    locateDocs(words) {
-        return this.get(this.here(`/doc/locate${query({words})}`));
+    // plugins
+
+    previewPlugin(source) {
+        return this.post(this.here("/plugins/preview"), {source}, LONG_WAIT_MS);
     }
 
-    helperTranscript(n, fields = {}) {
-        return this.get(this.here(`/helper/${n}/transcript${query(fields)}`));
+    installPlugin(source) {
+        return this.post(this.here("/plugins"), {source}, LONG_WAIT_MS);
     }
 
-    transcript(agent, session, fields) {
-        return this.get(this.here(`/agent/${agent}${session ? `/subagent/${session}` : ""}/transcript${query(fields)}`));
+    previewUpgrade(id) {
+        return this.act("plugins", id, "upgrade-preview", {}, LONG_WAIT_MS);
     }
 
-    agentLinks(agent, session) {
-        return this.get(this.here(`/agent/${agent}${session ? `/subagent/${encoded(session)}` : ""}/links`));
+    upgradePlugin(id) {
+        return this.act("plugins", id, "upgrade", {}, LONG_WAIT_MS);
     }
 
-    edits(agent, since, last) {
-        return this.get(this.here(`/agent/${agent}/edits${query({since, last})}`));
+    pluginLog(id, lines = 200) {
+        return this.get(this.here(`/plugins/${id}/log${query({lines})}`));
     }
 
-    olderEdits(agent, before, last) {
-        return this.get(this.here(`/agent/${agent}/edits/older${query({before, last})}`));
+    pluginRecord(id) {
+        return this.get(this.here(`/plugins/${id}/record`));
     }
 
-    editedFile(agent, id, side) {
-        return this.get(this.here(`/agent/${agent}/edits/file${query({id, side})}`));
+    pluginDashboard(id) {
+        return this.get(this.here(`/plugins/${id}/dashboard`));
     }
 
-    editedImageUrl(agent, id) {
-        return this.address(`/agent/${agent}/edits/image${query({id})}`);
+    // the workflows, the agent profiles and the MCP servers
+
+    chart() {
+        return this.get("/chart");
     }
 
-    terminal(agent, level, after = 0) {
-        return this.get(this.here(`/agent/${agent}/terminal${query({level, after: after || undefined})}`));
+    chartOne(id) {
+        return this.get(`/chart/${id}`);
     }
 
-    stream() {
-        return new EventSource(this.address("/stream"));
+    chartStanding(id) {
+        return this.get(`/chart/${id}/standing`);
+    }
+
+    chartNew(body) {
+        return this.post("/chart", body);
+    }
+
+    chartSave(id, body) {
+        return this.post(`/chart/${id}`, body);
+    }
+
+    chartRemove(id) {
+        return this.post(`/chart/${id}/remove`, {});
+    }
+
+    chartReset(id) {
+        return this.post(`/chart/${id}/reset`, {});
+    }
+
+    chartOff(id) {
+        return this.post(`/chart/${id}/off`, {});
+    }
+
+    chartOn(id) {
+        return this.post(`/chart/${id}/on`, {});
+    }
+
+    chartOrder(trigger, order) {
+        return this.post("/chart/order", {trigger, order});
+    }
+
+    chartRuns(last = 10) {
+        return this.get(`/chart/runs?last=${last}`);
+    }
+
+    chartTry(body) {
+        return this.post("/chart/try", body);
+    }
+
+    agentProfiles() {
+        return this.get("/profiles");
+    }
+
+    saveAgentProfile(name, body) {
+        return this.post(`/profiles/${encoded(name)}`, body);
+    }
+
+    mcp() {
+        return this.get("/mcp");
+    }
+
+    mcpInstall(name) {
+        return this.post("/mcp/install", {name});
+    }
+
+    mcpKey(name, value) {
+        return this.post(`/mcp/${encoded(name)}/key`, {value});
+    }
+
+    mcpSignIn(name) {
+        return this.post(`/mcp/${encoded(name)}/sign-in`, {});
+    }
+
+    mcpRemove(name) {
+        return this.post(`/mcp/${encoded(name)}/remove`, {});
+    }
+
+    mcpCheck() {
+        return this.post("/mcp/check", {}, LONG_WAIT_MS);
     }
 
     page(env = "", page = "") {
@@ -1084,34 +501,6 @@ export class ApiClient {
     origin() {
         return this.base || location.origin;
     }
-
-    journal(j) {
-        return this.at(j.current ? "" : `http://127.0.0.1:${j.port}`);
-    }
-
-    skills(agent = 0) {
-        return this.get(this.here(`/skills${query({agent})}`));
-    }
-
-    skill(name) {
-        return this.get(this.here(`/skills/${name}`));
-    }
-
-    loadSkill(name) {
-        return this.post(this.here(`/skills/${name}/load`));
-    }
-
-    alwaysSkill(name, on) {
-        return this.post(this.here(`/skills/${name}/always`), {on});
-    }
-
-    skillKeywords(name, keywords) {
-        return this.post(this.here(`/skills/${name}/keywords`), {keywords});
-    }
-
-    report(body) {
-        return this.post(this.here("/console"), body);
-    }
 }
 
 export const api = new ApiClient();
@@ -1119,5 +508,5 @@ export const onBlocked = (fn) => transport.onBlocked(fn);
 export const onWrite = (fn) =>
     transport.onWrite((url) => {
         const where = new URL(url, location.origin);
-        if (where.origin === location.origin) fn(where.pathname.slice(api.base.length).split("/")[3]);
+        if (where.origin === location.origin) fn(where.pathname.slice(api.base.length).split("/")[2]);
     });

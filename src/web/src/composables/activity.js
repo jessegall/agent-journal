@@ -1,71 +1,52 @@
 import {computed} from "vue";
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
+import {atOf, closes, isRowChange, known, tableOf, whoOf} from "../domain/entries.js";
+import {titleOf} from "../domain/row.js";
 import {useToggledSet} from "./toggledSet.js";
 
-const WORDS = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on", reopened: "Reopened"};
-const BUSY = new Set(["agent", "nudge"]);
+const WORDS = {created: "New", updated: "Updated", deleted: "Deleted"};
+const BUSY = new Set(["agents", "nudges"]);
 const SHOWN = 80;
 
-const minute = (e) => Math.floor(e.at / 60);
+const minute = (e) => Math.floor(atOf(e) / 60);
 
-// What an event came out of: the engine's name for the event whose tick dispatched it. An event the engine did not name - one
-// written outside a tick - tells the list nothing, so those fold by the minute as before.
-const causedBy = (e) => String(e.data?.caused_by || "");
-
-export const counted = (events) =>
-    Object.entries(Object.groupBy(events, (e) => e.type))
-        .map(([type, of]) => `${of.length} ${type === "agent" ? "agent update" : type}${of.length === 1 ? "" : "s"}`)
+export const counted = (entries) =>
+    Object.entries(Object.groupBy(entries, tableOf))
+        .map(([table, of]) => `${of.length} ${table === "agents" ? "agent update" : meta(table).title.toLowerCase()}${of.length === 1 ? "" : "s"}`)
         .join(", ");
 
-export function useActivity(events, find) {
-    const logged = (e) => (e.type === "notification" && e.action === "created" && find(`notification:${e.n}`)) || {data: {}};
-    const announced = (e) => logged(e).data.kind === "update";
-    const raised = (e) => e.action === "raised";
-    const written = (e) => logged(e).data.kind === "activity";
-    const tone = (e) => (raised(e) ? e.data.tone : written(e) && logged(e).data.tone);
+// The timeline as the activity rail lists it, newest first: a row's change on a line of its own, the agents' hooks and the
+// lines typed to them folded by the minute.
+export function useActivity(entries, find) {
     const {members: opened, toggle: unfold} = useToggledSet();
     const rows = computed(() => {
         const list = [];
-        for (const e of [...events.value].reverse().filter((e) => e.action !== "stamped")) {
+        for (const e of [...entries.value].reverse().filter(known)) {
             const last = list[list.length - 1];
-            const cause = causedBy(e);
-            if (cause && last && last.cause === cause) last.events.push(e);
-            else if (cause) list.push({cause, events: [e]});
-            else if (!BUSY.has(e.type)) list.push({key: e.id, event: e});
-            else if (last && last.events && !last.cause && last.minute === minute(e)) last.events.push(e);
-            else list.push({minute: minute(e), events: [e]});
+            if (!BUSY.has(tableOf(e))) list.push({key: e.id, entry: e});
+            else if (last && last.entries && last.minute === minute(e)) last.entries.push(e);
+            else list.push({minute: minute(e), entries: [e]});
         }
-        return list.slice(0, SHOWN).map((row) => (row.events ? {...row, key: `fold-${row.events[row.events.length - 1].id}`} : row));
+        return list.slice(0, SHOWN).map((row) => (row.entries ? {...row, key: `fold-${row.entries[row.entries.length - 1].id}`} : row));
     });
     const items = computed(() =>
         rows.value.flatMap((row) =>
-            row.events
-                ? [
-                      {key: row.key, fold: row},
-                      ...(opened.value.has(row.key) ? row.events.map((e) => ({key: e.id, event: e, nested: true})) : []),
-                  ]
+            row.entries
+                ? [{key: row.key, fold: row}, ...(opened.value.has(row.key) ? row.entries.map((e) => ({key: e.id, entry: e, nested: true})) : [])]
                 : [row]
         )
     );
     const {members: toggled, toggle: flip} = useToggledSet();
-    const newsworthy = (e) => raised(e) || e.type === "notification";
-    const opensAtFirst = (e) => newsworthy(e) && !(raised(e) && e.data.collapsed);
-    const expanded = (e) => opensAtFirst(e) !== toggled.value.has(e.id);
+    const expanded = (e) => toggled.value.has(e.id);
     const toggle = (e) => flip(e.id);
-    const did = (e) => (e.action === "updated" && e.data && e.data.section ? "sectioned" : e.action);
     function heading(e) {
-        if (raised(e)) return e.data.title;
-        if (announced(e)) return "Journal updated";
-        if (written(e)) return logged(e).title;
-        if (logged(e).data.label) return logged(e).data.label;
-        const labels = meta(e.type).event_labels || {};
-        const own = labels[`${e.action}.${e.data?.by}`] || labels[did(e)];
-        if (own) return own;
-        if (e.action === "completed") return `${meta(e.type).title} closed`;
-        return `${WORDS[e.action]} ${meta(e.type).title.toLowerCase()}`;
+        if (e.kind === "nudge") return "Agent instruction";
+        if (!isRowChange(e)) return `Agent ${e.kind}`;
+        const kind = meta(e.data.table);
+        if (closes(e)) return `${kind.title} closed`;
+        return `${WORDS[e.kind]} ${kind.title.toLowerCase()}`;
     }
-    const hooked = (e) => [e.data?.hook, e.data?.tool].filter(Boolean).join(" ");
-    const title = (e) => (raised(e) ? e.data.brief : written(e) ? logged(e).brief : hooked(e) || (find(`${e.type}:${e.n}`) || {}).title) || "";
-    const who = (e) => (raised(e) ? e.data.plugin : written(e) ? logged(e).data.plugin : e.actor[0].toUpperCase() + e.actor.slice(1));
-    return {items, announced, tone, unfold, expanded, toggle, heading, title, who};
+    const title = (e) => (e.kind === "nudge" ? e.data.line : isRowChange(e) ? e.data.title || titleOf(find(`${e.data.table}:${e.data.id}`) || {}) : e.data.tool_name) || "";
+    const who = (e) => whoOf(e).charAt(0).toUpperCase() + whoOf(e).slice(1);
+    return {items, expanded, toggle, heading, title, who, unfold};
 }

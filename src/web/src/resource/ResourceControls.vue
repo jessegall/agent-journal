@@ -4,7 +4,7 @@ import CommentToggle from "./CommentToggle.vue";
 import Priority from "./Priority.vue";
 import ResourceActions from "./ResourceActions.vue";
 import ShareButton from "./ShareButton.vue";
-import {SHARED} from "../domain/spec.js";
+import {SHARED} from "../domain/tables.js";
 
 defineProps({
     resource: {type: Object, required: true},

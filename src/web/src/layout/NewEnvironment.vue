@@ -24,8 +24,8 @@ async function create() {
     error.value = "";
     busy.value = true;
     try {
-        made = made || (await api.create("environment", {title: name.value.trim()}));
-        if (startAgent.value) await api.launchAgent(made.n, provider.value);
+        made = made || (await api.create("environments", {name: name.value.trim()}));
+        if (startAgent.value) await api.launchAgent(made.id, provider.value);
         emit("close");
     } catch (e) {
         error.value = e.message;

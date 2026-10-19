@@ -1,5 +1,5 @@
 <script setup>
-import {label, meta, word} from "../domain/spec.js";
+import {label, meta, word} from "../domain/tables.js";
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";

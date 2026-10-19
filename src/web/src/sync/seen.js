@@ -2,11 +2,12 @@ import {api} from "../api/client.js";
 
 let marking = false;
 
-export async function markSeen(type, numbers) {
-    if (marking || !numbers.length) return;
+// The user's own reading of the agent's messages: each one read in the chat is marked read, a few at a time.
+export async function markSeen(ids) {
+    if (marking || !ids.length) return;
     marking = true;
     try {
-        await api.readAll(type, numbers);
+        await api.readMessages(ids);
     } finally {
         marking = false;
     }

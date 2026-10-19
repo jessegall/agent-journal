@@ -1,5 +1,5 @@
 import {pluralTitle} from "../domain/navigation.js";
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {computed} from "vue";
 import {route} from "../route.js";
 
@@ -7,7 +7,6 @@ const PAGES = {
     settings: "Settings",
     search: "Search",
     files: "Files",
-    commit: "Commit",
     skills: "Skills",
     profiles: "Profiles",
     about: "About",
@@ -15,11 +14,7 @@ const PAGES = {
     mcp: "MCP",
     chart: "Workflows",
     secrets: "Secrets",
-    page: "Plugin",
-    hub: "Journals",
     file: "File",
-    kanban: "Board",
-    organization: "Organization",
     resources: "Resources",
 };
 

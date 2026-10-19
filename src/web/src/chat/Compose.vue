@@ -1,7 +1,6 @@
 <script setup>
 import {ui} from "../state/ui.js";
 import {route} from "../route.js";
-import {keepRecordedWords} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
@@ -316,7 +315,6 @@ async function use(tool) {
                     @keydown.esc="escaped"
                     @keydown.meta.enter.prevent="go"
                     @keydown.ctrl.enter.prevent="go"
-                    @beforeinput="keepRecordedWords"
                     @paste="pasted"
                 />
                 <div class="compose-foot">

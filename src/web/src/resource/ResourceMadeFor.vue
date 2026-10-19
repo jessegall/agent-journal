@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {meta} from "../domain/tables.js";
 import {computed} from "vue";
 import KeywordList from "./KeywordList.vue";
 import ResourceBlock from "./ResourceBlock.vue";
