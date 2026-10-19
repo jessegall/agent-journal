@@ -5,11 +5,11 @@ from journal.engine.machine import Machine
 from journal.engine.said import Said
 from journal.features.shell.chain import Chain
 from journal.features.skills.requiring import Requiring
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.models.sequence import Sequence
-from journal.models.ref import Ref
-from journal.models.sequence_run import SequenceRun
+from journal.support.ref import Ref
+from journal.support.sequence_run import SequenceRun
 from journal.support.refused import Refused
 from journal.repositories.agents import Agents
 from journal.repositories.rows import Rows

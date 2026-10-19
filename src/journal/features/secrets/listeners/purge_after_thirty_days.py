@@ -4,8 +4,8 @@ from datetime import datetime, timedelta, timezone
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 from journal.features.secrets.browser_logins import BrowserLogins
-from journal.models.actor import Actor
-from journal.models.secret_field import SecretField
+from journal.support.actor import Actor
+from journal.support.secret_field import SecretField
 from journal.repositories.secrets import Secrets
 from journal.support.secret_values import SecretValues
 

@@ -6,7 +6,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.support.outline import Outline
 from journal.models.link import Link
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.models.report import Report
 from journal.support.refused import Refused
 from journal.repositories.links import Links

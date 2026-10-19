@@ -11,7 +11,7 @@ from journal.config import Config
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.workers.worker_runner import WorkerRunner
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope

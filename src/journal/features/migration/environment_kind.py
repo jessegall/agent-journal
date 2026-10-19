@@ -4,10 +4,10 @@ from typing import ClassVar
 from journal.features.migration.brought import Brought
 from journal.features.migration.version_3_row import Version3Row
 from journal.features.migration.version_3_rows import Version3Rows
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.environment import Environment
 from journal.models.model import Model
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.repositories.environments import Environments
 from journal.repositories.migrated_rows import MigratedRows
 

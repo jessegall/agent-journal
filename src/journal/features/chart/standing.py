@@ -10,7 +10,7 @@ from journal.features.chart.workflow_standing import WorkflowStanding
 from journal.features.registry import Registry
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
-from journal.models.walk_record import WalkRecord
+from journal.support.walk_record import WalkRecord
 from journal.repositories.agents import Agents
 from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries

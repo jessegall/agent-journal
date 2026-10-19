@@ -9,7 +9,7 @@ from journal.config import Config
 from journal.console.where import AGENT_SHELL
 from journal.features.workers.worker_branch import WorkerBranch
 from journal.features.workers.worker_reports import WorkerReports
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
 from journal.repositories.scope import Scope

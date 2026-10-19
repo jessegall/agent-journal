@@ -5,8 +5,8 @@ from enum import Enum
 from types import UnionType
 from typing import Union, get_args, get_origin
 
-from journal.models.actor import Actor
-from journal.models.ref import Ref
+from journal.support.actor import Actor
+from journal.support.ref import Ref
 
 
 @dataclass(frozen=True)

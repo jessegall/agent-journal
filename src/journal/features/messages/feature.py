@@ -14,7 +14,7 @@ from journal.features.messages.listeners.run_tags import RunTags
 from journal.features.messages.listeners.tell_reaction import TellReaction
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
-from journal.models.option import Option
+from journal.support.option import Option
 from journal.engine.said import Said
 from journal.features.skill import Skill
 

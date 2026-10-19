@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field, fields
 
 from journal.models.entry import Entry
-from journal.models.entry_data import EntryData
-from journal.models.walk_stop import WalkStop
+from journal.models.support.entry_data import EntryData
+from journal.support.walk_stop import WalkStop
 
 
 @dataclass(frozen=True)

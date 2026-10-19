@@ -8,7 +8,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.console.where import Where
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.scope import Scope
 
 AGENT = Where("main", "s1")

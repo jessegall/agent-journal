@@ -13,10 +13,10 @@ from journal.events.models.saving import Saving
 from journal.events.models.updated import Updated
 from journal.events.models.updating import Updating
 from journal.events.bus import Bus
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.model import Model
-from journal.models.ref import Ref
-from journal.models.title import Title
+from journal.support.ref import Ref
+from journal.support.title import Title
 from journal.repositories.not_found import NotFound
 
 M = TypeVar("M", bound=Model)

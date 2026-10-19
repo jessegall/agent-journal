@@ -1,5 +1,5 @@
 from journal.features.environment_seed import EnvironmentSeed
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.plan_state import PlanState
 from journal.repositories.environments import Environments
 from journal.repositories.plans import Plans

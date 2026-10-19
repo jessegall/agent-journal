@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.command_output import CommandOutput
 from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.settings import Settings

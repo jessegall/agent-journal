@@ -1,6 +1,6 @@
 from journal.features.entry import Entry
 from journal.features.registry import Registry
-from journal.models.all_models import AllModels
+from journal.support.all_models import AllModels
 from journal.models.node_kind import NodeKind
 from journal.support.refused import Refused
 

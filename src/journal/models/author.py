@@ -1,7 +1,7 @@
 from enum import StrEnum
 
-from journal.models.actor import Actor
-from journal.models.actor_kind import ActorKind
+from journal.support.actor import Actor
+from journal.support.actor_kind import ActorKind
 
 
 class Author(StrEnum):

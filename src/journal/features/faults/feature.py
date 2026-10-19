@@ -1,6 +1,6 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
-from journal.models.option import Option
+from journal.support.option import Option
 
 
 class Faults(Feature):

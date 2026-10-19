@@ -1,6 +1,6 @@
 import re
 
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 
 NOUNS = {"task": "tasks", "plan": "plans", "message": "messages", "doc": "docs", "document": "docs", "report": "reports", "question": "questions", "worker": "workers", "check": "checks", "sequence": "sequences"}
 """The words a text names a row by, as the viewer shows them as pills, and the table each names."""

@@ -1,7 +1,7 @@
 from journal.engine.cards import Cards
 from journal.events.listener import Listener
 from journal.events.models.created import Created
-from journal.models.actor_kind import ActorKind
+from journal.support.actor_kind import ActorKind
 from journal.models.doc import Doc
 from journal.repositories.agents import Agents
 

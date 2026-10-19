@@ -3,7 +3,7 @@ from typing import TypeVar
 
 from journal.db.connection import Connection
 from journal.events.bus import Bus
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.scoped import Scoped
 from journal.repositories.repository import Repository
 from journal.repositories.scope import PROJECT, Scope

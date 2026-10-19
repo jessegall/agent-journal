@@ -7,7 +7,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.features.workers.dispatch import Dispatch
 from journal.features.workers.subagents import ENDS, Subagents
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 

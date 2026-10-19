@@ -1,7 +1,7 @@
 from journal.engine.machine import Machine
 from journal.events.agent.compacting import Compacting
 from journal.events.agent_listener import AgentListener
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 
 

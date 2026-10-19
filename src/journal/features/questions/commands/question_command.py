@@ -6,7 +6,7 @@ from journal.engine.machine import Machine
 from journal.features.questions.answering import Answering
 from journal.features.questions.states.waiting import Waiting
 from journal.models.question import Question
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions

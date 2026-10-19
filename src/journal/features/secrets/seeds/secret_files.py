@@ -4,7 +4,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.features.seed import Seed
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
 from journal.repositories.secrets import Secrets

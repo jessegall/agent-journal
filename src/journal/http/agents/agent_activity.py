@@ -9,7 +9,7 @@ from journal.http.agents.sequence_in_hand import SequenceInHand
 from journal.http.files.project_files import ProjectFiles
 from journal.http.model_fields import ModelFields
 from journal.models.agent import Agent
-from journal.models.sequence_run import SequenceRun
+from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 

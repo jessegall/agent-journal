@@ -8,7 +8,7 @@ from journal.engine.cards import Cards
 from journal.engine.deferred import Deferred
 from journal.engine.nudger import Nudger
 from journal.features.faults.feature import Faults
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.repositories.settings import Settings

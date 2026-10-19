@@ -13,9 +13,9 @@ from journal.engine.nudger import Nudger
 from journal.engine.states.ended import Ended
 from journal.features.checks.check_output import CheckOutput
 from journal.features.checks.finished_run import FinishedRun
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.check import Check
-from journal.models.check_report import CheckReport
+from journal.support.check_report import CheckReport
 from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
 from journal.supervisor_link import SupervisorLink

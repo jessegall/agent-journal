@@ -19,7 +19,7 @@ from journal.features.chart.context import Context
 from journal.features.chart.trial_result import TrialResult
 from journal.features.chart.fillers import Fillers
 from journal.features.chart.walk import Walk
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.worker_state import WorkerState
 
 TICK_QUIET = 3600.0

@@ -2,7 +2,7 @@ import time
 
 from journal.engine.features_known import FeaturesKnown
 from journal.engine.said import Said
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries

@@ -1,6 +1,6 @@
 import re
 
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 
 NAMED = re.compile(r"\b(task|todo|plan|doc|document|report|message|template|sequence|trigger|check|question|fact|rule|reminder|worker|secret|phase|chart)s?\s+#?(\d+)\b", re.IGNORECASE)
 TABLES = {"todo": "tasks", "document": "docs"}

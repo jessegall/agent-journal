@@ -3,7 +3,7 @@ from journal.events.listener import Listener
 from journal.events.models.updated import Updated
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.features.tasks.states.working import Working
-from journal.models.actor_kind import ActorKind
+from journal.support.actor_kind import ActorKind
 from journal.models.plan_state import PlanState
 from journal.models.task import Task
 from journal.models.task_state import TaskState

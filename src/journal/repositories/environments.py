@@ -1,5 +1,5 @@
-from journal.models.actor import Actor
-from journal.models.all_models import AllModels
+from journal.support.actor import Actor
+from journal.support.all_models import AllModels
 from journal.models.environment import Environment
 from journal.repositories.not_found import NotFound
 from journal.repositories.repository import Repository

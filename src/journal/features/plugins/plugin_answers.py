@@ -5,7 +5,7 @@ from journal.console.where import Where
 from journal.engine.cards import Cards
 from journal.features.plugins.plugin_steps import PluginSteps
 from journal.features.plugins.plugin_words import PluginWords
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.entry import Entry
 from journal.models.plugin import Plugin
 from journal.models.plugin_answer import PluginAnswer

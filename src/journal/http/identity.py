@@ -1,6 +1,6 @@
 from journal.http.plugin_claim import PluginClaim
 from journal.features.plugins.plugin_tokens import PluginTokens
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.users import Users
 
 LOCAL_USER = 1

@@ -9,7 +9,7 @@ from urllib.request import Request, urlopen
 
 from journal.app import App
 from journal.config import Config
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.entries import Entries
 from journal.repositories.scope import Scope

@@ -3,7 +3,7 @@ from journal.events.bus import Bus
 from journal.models.check import Check
 from journal.models.plan import Plan
 from journal.models.question import Question
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.support.refused import Refused

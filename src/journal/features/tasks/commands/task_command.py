@@ -14,7 +14,7 @@ from journal.features.tasks.task_briefing import TaskBriefing
 from journal.features.tasks.waits import Waits
 from journal.features.tasks.states.working import Working
 from journal.models.link import Link
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState

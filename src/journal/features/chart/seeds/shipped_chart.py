@@ -3,18 +3,18 @@ from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.chart.seeds.guard import Guard
 from journal.features.chart.catalogue import FORMER_TITLES, Catalogue
 from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
-from journal.models.title import LONGEST
+from journal.support.title import LONGEST
 from journal.features.chart.seeds.drawing import Drawing
 from journal.features.registry import Registry
 from journal.features.seed import Seed
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.chart import Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
-from journal.models.title import LONGEST
+from journal.support.title import LONGEST
 from journal.repositories.agents import Agents
 from journal.repositories.counts import Counts
-from journal.models.drawn_line import NO, THEN, YES
+from journal.support.drawn_line import NO, THEN, YES
 from journal.repositories.charts import Charts
 from journal.repositories.settings import Settings
 

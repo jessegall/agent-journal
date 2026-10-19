@@ -6,7 +6,7 @@ from journal.http.attachments.attachments import Attachments
 from journal.http.attachments.files_asked import FilesAsked
 from journal.http.attachments.files_shown import FilesShown
 from journal.models.message import Message
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.repositories.messages import Messages
 
 TITLE = 80

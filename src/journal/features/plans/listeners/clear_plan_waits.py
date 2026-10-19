@@ -2,8 +2,8 @@ from journal.engine.telling import Telling
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
 from journal.features.tasks.listeners.clear_waits import ClearWaits
-from journal.models.actor import Actor
-from journal.models.ref import Ref
+from journal.support.actor import Actor
+from journal.support.ref import Ref
 from journal.repositories.plans import Plans
 from journal.repositories.tasks import Tasks
 

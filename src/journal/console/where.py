@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 
 LOCAL_USER = 1
 

@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.profiles.listeners.count_profile_use import CountProfileUse
 from journal.features.profiles.listeners.refuse_worker_as_subagent import RefuseWorkerAsSubagent
-from journal.models.option import Option
+from journal.support.option import Option
 
 
 class Profiles(Feature):

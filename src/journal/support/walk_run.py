@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.models.walk_record import WalkRecord
+from journal.support.walk_record import WalkRecord
 
 ENGINE_MOVES = ("tasks.updated", "task_logs.created", "plans.updated", "questions.created", "workers.updated", "sequences.updated", "prompt_submitted", "session_started", "session_ended", "ticked")
 """The events at which the engine moves the agent itself before the workflows run, so a run there can say the journal's own move came first."""

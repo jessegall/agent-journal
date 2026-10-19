@@ -6,11 +6,11 @@ from journal.events.agent_listener import AgentListener
 from journal.features.messages.faces import Faces
 from journal.features.messages.tags import Tags
 from journal.features.registry import Registry
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
 from journal.repositories.links import Links

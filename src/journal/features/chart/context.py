@@ -5,7 +5,7 @@ from journal.engine.agent_state import AgentState
 from journal.engine.machine import Machine
 from journal.events.event import Event
 from journal.models.agent import Agent
-from journal.models.walk_stop import WalkStop
+from journal.support.walk_stop import WalkStop
 from journal.providers.provider import Provider
 from journal.providers.providers import Providers
 from journal.repositories.environments import Environments

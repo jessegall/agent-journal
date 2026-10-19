@@ -1,6 +1,6 @@
 from journal.features.seed import Seed
 from journal.features.templates.shipped import SHIPPED
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.templates import Templates
 
 

@@ -1,6 +1,6 @@
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_runner import PluginRunner
-from journal.models.plugin_service import PluginService
+from journal.support.plugin_service import PluginService
 from journal.models.plugin import Plugin
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink

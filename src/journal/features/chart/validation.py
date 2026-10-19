@@ -4,10 +4,10 @@ from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
 from journal.features.chart.fault import Fault
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
-from journal.models.drawn_line import NO, THEN, YES, DrawnLine
-from journal.models.drawn_node import DrawnNode
+from journal.support.drawn_line import NO, THEN, YES, DrawnLine
+from journal.support.drawn_node import DrawnNode
 from journal.models.node_kind import NodeKind
-from journal.models.workflow_at import WorkflowAt
+from journal.support.workflow_at import WorkflowAt
 from journal.repositories.charts import Charts
 
 TEXT_LIMIT = 500

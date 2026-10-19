@@ -6,7 +6,7 @@ from journal.engine.cards import Cards
 from journal.features.sequences.running import Running
 from journal.models.sequence import Sequence
 from journal.repositories.scope import Scope
-from journal.models.sequence_run import SequenceRun
+from journal.support.sequence_run import SequenceRun
 from journal.support.refused import Refused
 from journal.repositories.sequences import Sequences
 

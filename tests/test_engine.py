@@ -15,7 +15,7 @@ from journal.features.tasks.states.stuck import Stuck
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
 from journal.models.setting import Setting
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.settings import Settings
 
 AGENT = Where("main", "s1")
@@ -135,7 +135,7 @@ def test_one_task_in_hand_park_resume_and_await(app):
 
 
 def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(app):
-    from journal.models.actor import Actor
+    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.settings import Settings
     for key, value in (("tasks.first_nudge_after", 5), ("tasks.name_every", 10), ("tasks.log_after", 20)):

@@ -14,7 +14,7 @@ from journal.support.secret_values import SecretValues
 from journal.db.connection import Connection
 from journal.db.schema import Schema
 from journal.events.bus import Bus
-from journal.models.all_models import AllModels
+from journal.support.all_models import AllModels
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
 

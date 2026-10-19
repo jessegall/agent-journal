@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from journal.engine.cards import Cards
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.entry import Entry
 from journal.models.plugin import Plugin
 from journal.repositories.entries import Entries

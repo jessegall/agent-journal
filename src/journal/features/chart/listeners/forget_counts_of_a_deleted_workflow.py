@@ -1,6 +1,6 @@
 from journal.events.models.deleted import Deleted
 from journal.events.listener import Listener
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.chart import Chart
 from journal.repositories.counts import Counts
 

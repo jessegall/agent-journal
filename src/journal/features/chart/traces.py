@@ -5,9 +5,9 @@ from journal.features.chart.walk import FAILED, WALKED
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
 from journal.models.node_kind import NodeKind
-from journal.models.walk_failure import WalkFailure
-from journal.models.walk_record import WalkRecord
-from journal.models.walk_run import WalkRun
+from journal.support.walk_failure import WalkFailure
+from journal.support.walk_record import WalkRecord
+from journal.support.walk_run import WalkRun
 from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
 

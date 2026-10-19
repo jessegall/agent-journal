@@ -11,7 +11,7 @@ from journal.events.agent.tool_finished import ToolFinished
 from journal.features.git.head_commit import HeadCommit
 from journal.events.agent_listener import AgentListener
 from journal.events.decision import Decision
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.repositories.tasks import Tasks as TaskRows

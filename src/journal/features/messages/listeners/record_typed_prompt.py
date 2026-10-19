@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from journal.console.where import LOCAL_USER
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent_listener import AgentListener
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.message import TYPED, Message
 from journal.repositories.messages import Messages

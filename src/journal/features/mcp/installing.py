@@ -4,7 +4,7 @@ from journal.features.mcp.pending_restarts import PendingRestarts
 from journal.features.mcp.keys import Keys
 from journal.features.mcp.provider_config import ProviderConfig
 from journal.engine.nudger import Nudger
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.mcp_server import McpServer
 from journal.support.refused import Refused
 from journal.providers.providers import Providers

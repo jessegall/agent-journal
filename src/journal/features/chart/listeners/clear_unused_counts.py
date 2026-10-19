@@ -2,7 +2,7 @@ from journal.engine.cards import Cards
 from journal.events.models.updated import Updated
 from journal.features.chart.checks import COUNT_ACTIONS, COUNT_CHECKS
 from journal.events.listener import Listener
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.chart import Chart
 from journal.repositories.charts import Charts
 from journal.repositories.counts import Counts

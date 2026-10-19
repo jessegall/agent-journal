@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
-from journal.models.option import Option
+from journal.support.option import Option
 from journal.features.voices.shipped import Shipped
 from journal.features.voices.commands.voice_command import VoiceCommand
 from journal.features.voices.listeners.introduce_at_start import IntroduceAtStart

@@ -2,7 +2,7 @@ from journal.engine.machine import Machine
 from journal.events.listener import Listener
 from journal.events.models.created import Created
 from journal.features.dumps.states.sorting_dump import SortingDump
-from journal.models.actor_kind import ActorKind
+from journal.support.actor_kind import ActorKind
 from journal.models.dump import Dump
 from journal.repositories.agents import Agents
 

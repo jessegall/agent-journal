@@ -2,7 +2,7 @@ import time
 
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.statistics import Statistics
 
 

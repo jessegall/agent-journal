@@ -11,7 +11,7 @@ from journal.features.memory.listeners.keep_from_stopping_while_mark_owed import
 from journal.features.memory.listeners.review_new_rule import ReviewNewRule
 from journal.features.memory.listeners.whisper import Whisper
 from journal.engine.nudge import Nudge
-from journal.models.option import Option
+from journal.support.option import Option
 from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 

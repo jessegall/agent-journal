@@ -1,6 +1,6 @@
 from journal.features.migration.shipped_kind import ShippedKind
 from journal.features.migration.version_3_row import Version3Row
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.trigger import Trigger
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.migrated_rows import MigratedRows

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from journal.features.mcp.installing import Installing
 from journal.features.secrets.browser_logins import BrowserLogins
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.secret import Secret

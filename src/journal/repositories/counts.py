@@ -1,4 +1,4 @@
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.count import Count
 from journal.repositories.scoped_repository import ScopedRepository
 

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from journal.db.connection import Connection
 from journal.events.bus import Bus
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.repositories.links import Links

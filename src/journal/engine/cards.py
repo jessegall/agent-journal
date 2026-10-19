@@ -1,4 +1,4 @@
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.repositories.messages import Messages

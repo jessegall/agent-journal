@@ -9,7 +9,7 @@ from journal.config import Config
 from journal.features.secrets.output_mask import OutputMask
 from journal.features.secrets.programs import Programs
 from journal.models.secret import Secret
-from journal.models.secret_field import SecretField
+from journal.support.secret_field import SecretField
 from journal.support.refused import Refused
 from journal.repositories.mcp_servers import McpServers
 from journal.support.secret_values import SecretValues

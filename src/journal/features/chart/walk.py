@@ -14,16 +14,16 @@ from journal.engine.agent_state import AgentState
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.engine.states_catalogue import StatesCatalogue
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.chart import Chart
 from journal.models.entry import Entry
-from journal.models.graph import Graph
+from journal.support.graph import Graph
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
-from journal.models.walk_failure import WalkFailure
-from journal.models.walk_record import WalkRecord
-from journal.models.walk_stop import WalkStop
-from journal.models.drawn_line import NO, THEN, YES
+from journal.support.walk_failure import WalkFailure
+from journal.support.walk_record import WalkRecord
+from journal.support.walk_stop import WalkStop
+from journal.support.drawn_line import NO, THEN, YES
 from journal.repositories.charts import Charts
 from journal.repositories.entries import Entries
 

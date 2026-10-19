@@ -2,10 +2,10 @@ from journal.engine.deferred import Deferred
 from journal.events.listener import Listener
 from journal.events.models.saved import Saved
 from journal.features.mentions.mentioned import Mentioned
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.link import Link
 from journal.models.model import Model
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.repositories.links import Links
 
 MENTIONS = "mentions"

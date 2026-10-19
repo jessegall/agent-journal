@@ -2,7 +2,7 @@ from pathlib import Path
 
 from journal.features.migration.brought import Brought
 from journal.features.migration.version_3_rows import Version3Rows
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.environments import Environments
 from journal.repositories.migrated_rows import MigratedRows
 

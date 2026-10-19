@@ -1,6 +1,6 @@
 from journal.engine.cards import Cards
-from journal.models.actor import Actor
-from journal.models.actor_kind import ActorKind
+from journal.support.actor import Actor
+from journal.support.actor_kind import ActorKind
 from journal.models.question import Question
 from journal.repositories.questions import Questions
 

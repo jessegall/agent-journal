@@ -10,7 +10,7 @@ from journal.features.tasks.listeners.one_task_in_hand import OneTaskInHand
 from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
-from journal.models.option import Option
+from journal.support.option import Option
 from journal.features.skill import Skill
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.stuck import Stuck

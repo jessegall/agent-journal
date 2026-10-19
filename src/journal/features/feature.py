@@ -5,7 +5,7 @@ from journal.engine.agent_state import AgentState
 from journal.features.entry import Entry
 from journal.events.listener import Listener
 from journal.engine.nudge import Nudge
-from journal.models.option import Option
+from journal.support.option import Option
 from journal.features.seed import Seed
 from journal.features.service import Service
 from journal.features.skill import Skill

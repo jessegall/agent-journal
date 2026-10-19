@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from journal.models.check_progress import CheckProgress
-from journal.models.check_report import CheckReport
+from journal.support.check_progress import CheckProgress
+from journal.support.check_report import CheckReport
 from journal.models.model import Model
 
 

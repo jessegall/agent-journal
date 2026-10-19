@@ -15,9 +15,9 @@ from journal.app import App
 from journal.config import Config
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.worker_state import WorkerState
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.plugin import Plugin as PluginRow
-from journal.models.plugin_manifest import PluginManifest
+from journal.support.plugin_manifest import PluginManifest
 from journal.repositories.plugins import Plugins as PluginRows
 from journal.models.setting import Setting
 from journal.support.supervisor_reply import SupervisorReply
@@ -320,9 +320,9 @@ def test_a_task_waits_on_a_question_by_a_link_and_the_answer_clears_it(app):
 
 
 def test_a_plan_does_not_hand_out_a_task_whose_wait_is_open(app):
-    from journal.models.ref import Ref
+    from journal.support.ref import Ref
     from journal.models.link import Link
-    from journal.models.actor import Actor
+    from journal.support.actor import Actor
     from journal.repositories.links import Links
     from journal.repositories.plans import Plans
     from journal.repositories.tasks import Tasks, WAITS_ON
@@ -1500,7 +1500,7 @@ def test_auto_mode_answers_a_stop_with_the_next_task(app):
     app.console().run(["task", "create", "the footer"], USER)
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "task 1 next: the footer" in body["reason"]
-    from journal.models.actor import Actor as A
+    from journal.support.actor import Actor as A
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), A.user(1))
     assert hook(app, "Stop")[1] == {}, "with auto off a stop is a stop"
 
@@ -1524,7 +1524,7 @@ def test_the_providers_own_question_tool_is_refused_and_every_fiftieth_line_remi
 
 def test_a_dispatched_worker_runs_and_its_output_is_its_report(app):
     from journal.features.workers.worker_runner import WorkerRunner
-    from journal.models.actor import Actor as A
+    from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
@@ -2684,7 +2684,7 @@ def test_the_card_and_release_actions(app):
     from journal.events.agent.ticked import Ticked
     from journal.features.chart.actions import Actions
     from journal.features.chart.context import Context
-    from journal.models.actor import Actor
+    from journal.support.actor import Actor
     from journal.repositories.environments import Environments
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
@@ -2749,7 +2749,7 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
 def test_a_failing_node_is_recorded_and_the_path_goes_on_past_it(app):
     from journal.models.node import Node
     from journal.models.node_kind import NodeKind
-    from journal.models.drawn_line import NO, THEN
+    from journal.support.drawn_line import NO, THEN
     from journal.repositories.charts import Charts
     from journal.repositories.entries import Entries
     from journal.repositories.environments import Environments
@@ -3081,7 +3081,7 @@ def test_a_workflow_naming_a_check_the_catalogue_no_longer_has_is_stopped_at_boo
     from journal.models.chart import Chart
     from journal.models.node import Node
     from journal.models.node_kind import NodeKind
-    from journal.models.drawn_line import THEN
+    from journal.support.drawn_line import THEN
     from journal.repositories.charts import Charts
     charts = app.container.get(Charts)
     own = charts.save(Chart(title="From before"), Actor.user(1))
@@ -3921,7 +3921,7 @@ def test_a_block_arriving_twice_at_once_is_recorded_once(app, monkeypatch):
     assert len(said) == 1, "the transcript's copy and the display hook's copy, handled at once, make one message"
 
 def test_the_card_for_a_question_the_user_answered_is_the_users(app):
-    from journal.models.actor_kind import ActorKind
+    from journal.support.actor_kind import ActorKind
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     console = app.console()
@@ -4305,7 +4305,7 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_p
         reader.read(made({"skills": "skills"}, ("run.py", "skills/lint-rules/SKILL.md")))
 
 def test_a_plugin_is_a_row_and_writes_as_itself(app):
-    from journal.models.actor_kind import ActorKind
+    from journal.support.actor_kind import ActorKind
     from journal.models.plugin import Plugin
     from journal.models.task import Task
     from journal.repositories.plugins import Plugins
@@ -4856,8 +4856,8 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
 def test_a_workflow_of_the_older_shape_naming_a_state_to_move_to_is_rewritten_at_boot_and_still_walks(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.features.chart.validation import Validation
-    from journal.models.drawn_line import DrawnLine
-    from journal.models.drawn_node import DrawnNode
+    from journal.support.drawn_line import DrawnLine
+    from journal.support.drawn_node import DrawnNode
     from journal.models.node import Node
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
@@ -5044,7 +5044,7 @@ def test_a_cancelled_task_is_finished_and_never_counted_open(app):
 def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app):
     import subprocess
     from journal.features.workers.worker_runner import WorkerRunner
-    from journal.models.actor import Actor as A
+    from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
     from journal.repositories.scope import Scope
     from journal.repositories.workers import Workers
@@ -5431,7 +5431,7 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app):
 def test_a_worker_past_its_time_limit_is_stopped_and_reported(app):
     from journal.features.workers.feature import Workers as WorkersFeature
     from journal.features.workers.worker_runner import WorkerRunner
-    from journal.models.actor import Actor as A
+    from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
     from journal.repositories.settings import Settings
     from journal.repositories.workers import Workers
@@ -5690,7 +5690,7 @@ def test_the_mcp_list_answers_at_once_and_asks_the_program_on_a_thread_of_its_ow
 
 def test_version_3_comments_and_reactions_come_across_on_their_rows(app):
     from journal.features.migration.migrator import Migrator
-    from journal.models.ref import Ref
+    from journal.support.ref import Ref
     from journal.repositories.links import Links
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions
@@ -5970,7 +5970,7 @@ def test_no_wait_closes_a_loop_and_the_migration_drops_only_the_link_that_would(
 
 def test_a_row_whose_text_names_another_is_linked_to_it_off_the_writes_thread(app):
     from journal.engine.deferred import Deferred
-    from journal.models.ref import Ref
+    from journal.support.ref import Ref
     from journal.repositories.links import Links
     hook(app, "SessionStart")
     console = app.console()

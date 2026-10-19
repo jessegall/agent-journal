@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.check import Check
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.support.refused import Refused
 from journal.repositories.checks import Checks
 from journal.repositories.questions import Questions

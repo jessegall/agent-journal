@@ -5,7 +5,7 @@ from journal.features.plugins.manifest_reader import ManifestReader
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.skills.skill_files import HOMES
 from journal.models.plugin import Plugin
-from journal.models.plugin_manifest import PluginManifest
+from journal.support.plugin_manifest import PluginManifest
 
 STAMP = "plugin: "
 

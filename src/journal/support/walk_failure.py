@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from journal.models.entry import Entry
-from journal.models.entry_data import EntryData
+from journal.models.support.entry_data import EntryData
 
 
 @dataclass(frozen=True)

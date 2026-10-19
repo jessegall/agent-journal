@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from journal.models.dump_item import DumpItem
+from journal.models.support.dump_item import DumpItem
 from journal.models.scoped import Scoped
 
 TEXT = "text"

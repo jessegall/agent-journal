@@ -1,14 +1,14 @@
 from journal.db.connection import Connection
 from journal.events.bus import Bus
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.chart import Chart
-from journal.models.drawn_line import PORTS, THEN, DrawnLine
-from journal.models.drawn_node import DrawnNode
-from journal.models.graph import Graph
+from journal.support.drawn_line import PORTS, THEN, DrawnLine
+from journal.support.drawn_node import DrawnNode
+from journal.support.graph import Graph
 from journal.models.link import Link
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.nodes import Nodes
 from journal.repositories.repository import Repository

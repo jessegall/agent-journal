@@ -1,6 +1,6 @@
 from journal.features.migration.project_kind import ProjectKind
 from journal.features.migration.version_3_row import Version3Row
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.rule import Rule
 from journal.repositories.migrated_rows import MigratedRows
 from journal.repositories.rules import Rules

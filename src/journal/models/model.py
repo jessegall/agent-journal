@@ -3,7 +3,7 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import ClassVar
 
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 
 
 @dataclass(frozen=True)

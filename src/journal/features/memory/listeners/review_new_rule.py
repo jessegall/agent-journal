@@ -1,7 +1,7 @@
 from journal.engine.nudger import Nudger
 from journal.events.models.created import Created
 from journal.events.listener import Listener
-from journal.models.actor_kind import ActorKind
+from journal.support.actor_kind import ActorKind
 from journal.models.rule import Rule
 from journal.repositories.agents import Agents
 

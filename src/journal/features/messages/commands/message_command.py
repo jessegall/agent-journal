@@ -5,7 +5,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.models.author import Author
 from journal.models.message import Message
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.config import Config
 from journal.features.messages.faces import Faces
 from journal.repositories.not_found import NotFound

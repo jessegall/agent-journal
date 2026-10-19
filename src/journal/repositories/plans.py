@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from journal.db.connection import Connection
 from journal.events.bus import Bus
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState

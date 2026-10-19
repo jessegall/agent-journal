@@ -2,7 +2,7 @@ from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
 from journal.engine.nudge import Nudge
-from journal.models.option import Option
+from journal.support.option import Option
 from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand

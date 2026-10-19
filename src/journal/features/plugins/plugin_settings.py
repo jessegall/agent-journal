@@ -2,8 +2,8 @@ import json
 
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.plugins.plugin_setting import PluginSetting
-from journal.models.actor import Actor
-from journal.models.actor_kind import ActorKind
+from journal.support.actor import Actor
+from journal.support.actor_kind import ActorKind
 from journal.models.plugin import Plugin
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.models.actor_kind import ActorKind
+from journal.support.actor_kind import ActorKind
 
 
 @dataclass(frozen=True)

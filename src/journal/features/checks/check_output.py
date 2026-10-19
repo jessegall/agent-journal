@@ -1,6 +1,6 @@
 import re
 
-from journal.models.check_progress import CheckProgress
+from journal.support.check_progress import CheckProgress
 
 SAID_LINES = 40
 """How many of the last lines a run in progress shows."""

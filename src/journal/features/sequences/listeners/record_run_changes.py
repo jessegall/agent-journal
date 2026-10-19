@@ -2,10 +2,10 @@ from journal.engine.cards import Cards
 from journal.events.models.updated import Updated
 from journal.events.listener import Listener
 from journal.features.sequences.running import Running
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.models.entry import Entry
-from journal.models.sequence_run import SequenceRun
+from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 
 RUN = "sequence_run"

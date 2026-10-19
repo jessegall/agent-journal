@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
-from journal.models.card_kind import CardKind
-from journal.models.plugin_service import PluginService
-from journal.models.requirement import Requirement
-from journal.models.setup_step import SetupStep
+from journal.models.support.card_kind import CardKind
+from journal.support.plugin_service import PluginService
+from journal.models.support.requirement import Requirement
+from journal.models.support.setup_step import SetupStep
 
 
 @dataclass(frozen=True)

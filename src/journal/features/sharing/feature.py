@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.sharing.commands.share_command import ShareCommand
 from journal.features.sharing.seeds.tunnel_at_boot import TunnelAtBoot
-from journal.models.option import Option
+from journal.support.option import Option
 
 
 class Sharing(Feature):

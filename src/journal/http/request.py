@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, replace
 
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.support.refused import Refused
 from journal.repositories.not_found import NotFound
 

@@ -3,7 +3,7 @@ from journal.engine.nudger import Nudger
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent_listener import AgentListener
 from journal.events.decision import Decision
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 
 

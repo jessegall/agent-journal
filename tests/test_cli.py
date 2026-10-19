@@ -8,7 +8,7 @@ from journal.app import App
 from journal.repositories.scope import Scope
 from journal.config import Config
 from journal.console.where import Where
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.task_state import TaskState
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
@@ -86,7 +86,7 @@ def test_deleting_an_environment_takes_everything_recorded_in_it(app):
 def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_from(app):
     from journal.console.where import Where
     from journal.repositories.reactions import Reactions
-    from journal.models.actor import Actor
+    from journal.support.actor import Actor
     from journal.models.agent import Agent
     from journal.repositories.agents import Agents
     app.container.get(Agents).save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
@@ -108,7 +108,7 @@ def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app)
 
 def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists(app, monkeypatch, tmp_path):
     from journal.console.where import Where
-    from journal.models.actor import Actor
+    from journal.support.actor import Actor
     from journal.models.agent import Agent
     from journal.providers.claude import Claude
     from journal.repositories.agents import Agents

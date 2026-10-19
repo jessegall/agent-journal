@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from journal.features.seed import Seed
 from journal.features.sequences.shipped import RETIRED, SHIPPED, WORDS
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.trigger import Trigger
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.sequences import Sequences

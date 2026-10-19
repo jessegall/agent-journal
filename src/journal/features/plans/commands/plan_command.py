@@ -9,13 +9,13 @@ from journal.features.plans.plan_control import PlanControl
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.features.tasks.waits import Waits
 from journal.features.workers.subagents import Subagents
-from journal.models.actor_kind import ActorKind
+from journal.support.actor_kind import ActorKind
 from journal.models.link import Link
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.repositories.links import Links
 from journal.support.refused import Refused

@@ -19,7 +19,7 @@ from journal.http.routes.routes import Routes
 from journal.http.server import Server
 from journal.http.static_files import StaticFiles
 from pathlib import Path
-from journal.models.all_models import AllModels
+from journal.support.all_models import AllModels
 
 
 class App:

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from journal.engine.machine import Machine
 from journal.engine.nudge import Nudge
 from journal.features.plans.states.following_plan import FollowingPlan
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.plan import Plan
 from journal.models.task import Task
 from journal.models.task_state import TaskState

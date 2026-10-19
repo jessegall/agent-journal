@@ -6,7 +6,7 @@ from journal.engine.cards import Cards
 from journal.features.plugins.manifest_reader import MANIFEST, ManifestReader
 from journal.features.plugins.plugin_changes import PluginChanges
 from journal.features.plugins.plugin_folders import PluginFolders
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.plugin import Plugin
 from journal.support.refused import Refused
 from journal.repositories.plugins import Plugins

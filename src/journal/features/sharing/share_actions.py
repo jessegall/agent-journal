@@ -5,11 +5,11 @@ from datetime import datetime, timedelta, timezone
 from journal.features.sharing.share_password import SharePassword
 from journal.features.sharing.share_targets import ShareTargets
 from journal.features.sharing.tunnel import Tunnel
-from journal.models.actor import Actor
-from journal.models.actor_kind import ActorKind
+from journal.support.actor import Actor
+from journal.support.actor_kind import ActorKind
 from journal.models.author import Author
 from journal.models.message import Message
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.models.share import Share
 from journal.support.refused import Refused
 from journal.repositories.messages import Messages

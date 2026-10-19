@@ -1,13 +1,13 @@
 import json
 import time
 
-from journal.models.actor import Actor
-from journal.models.actor_kind import ActorKind
+from journal.support.actor import Actor
+from journal.support.actor_kind import ActorKind
 from journal.models.author import Author
 from journal.models.dump import Dump
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.support.refused import Refused
 from journal.repositories.docs import Docs
 from journal.repositories.dumps import Dumps

@@ -1,7 +1,7 @@
 import re
 
 from journal.db.connection import Connection
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 
 TABLE = re.compile(r"^[a-z_]+$")
 

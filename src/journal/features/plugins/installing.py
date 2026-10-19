@@ -19,10 +19,10 @@ from journal.features.plugins.plugin_runner import PluginRunner
 from journal.features.plugins.plugin_services import PluginServices
 from journal.features.plugins.plugin_settings import PluginSettings
 from journal.features.plugins.plugin_skills import PluginSkills
-from journal.models.actor import Actor
-from journal.models.actor_kind import ActorKind
+from journal.support.actor import Actor
+from journal.support.actor_kind import ActorKind
 from journal.models.plugin import Plugin
-from journal.models.plugin_manifest import PluginManifest
+from journal.support.plugin_manifest import PluginManifest
 from journal.support.refused import Refused
 from journal.repositories.dashboard_rows import DashboardRows
 from journal.repositories.not_found import NotFound

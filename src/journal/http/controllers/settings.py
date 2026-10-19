@@ -1,7 +1,7 @@
 from journal.features.registry import Registry
 from journal.http.request import Request
 from journal.http.response import Response
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.settings import Settings
 
 FEATURES = "features"

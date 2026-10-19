@@ -1,6 +1,6 @@
 from journal.db.connection import Connection
 from journal.events.bus import Bus
-from journal.models.option import Option
+from journal.support.option import Option
 from journal.models.setting import Setting
 from journal.repositories.scope import PROJECT, Scope
 from journal.repositories.scoped_repository import ScopedRepository

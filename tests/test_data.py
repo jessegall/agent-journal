@@ -18,9 +18,9 @@ from journal.events.models.updating import Updating
 from journal.events.listener import Listener
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
 from journal.support.refused import Refused
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.link import Link
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
@@ -127,7 +127,7 @@ def test_writes_from_many_threads_all_land(connection, bus, scope):
 def test_a_column_a_model_gained_is_added_to_a_table_made_before_it(tmp_path):
     from journal.db.connection import Connection
     from journal.db.schema import Schema
-    from journal.models.all_models import AllModels
+    from journal.support.all_models import AllModels
     old = Connection(tmp_path / "old.db", Masks(SecretValues(Config(tmp_path))))
     with old.transaction() as db:
         db.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, environment_id INTEGER)")
@@ -152,7 +152,7 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
     from journal.db.connection import Connection
     from journal.db.schema import Schema
     from journal.events.bus import Bus
-    from journal.models.all_models import AllModels
+    from journal.support.all_models import AllModels
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions
     from journal.repositories.links import Links
@@ -170,7 +170,7 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
 
 
 def test_a_title_is_one_line_of_eighty_characters_without_a_colon_and_an_old_one_is_left_alone(connection, bus, scope):
-    from journal.models.actor import Actor
+    from journal.support.actor import Actor
     from journal.models.task import Task
     from journal.support.refused import Refused
     from journal.repositories.tasks import Tasks

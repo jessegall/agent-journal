@@ -9,7 +9,7 @@ from journal.features.plugins.installing import Installing
 from journal.features.updates.release import Release
 from journal.features.updates.release_installer import ReleaseInstaller
 from journal.features.updates.release_source import ReleaseSource
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.support.refused import Refused
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins

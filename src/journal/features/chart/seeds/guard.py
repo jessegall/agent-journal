@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.models.drawn_line import NO, YES
+from journal.support.drawn_line import NO, YES
 
 
 @dataclass(frozen=True)

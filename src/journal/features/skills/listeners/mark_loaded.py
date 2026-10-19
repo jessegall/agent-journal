@@ -5,7 +5,7 @@ from journal.events.agent_listener import AgentListener
 from journal.features.skill import Skill
 from journal.features.skills.requiring import Requiring
 from journal.features.skills.skill_files import SkillFiles
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 
 

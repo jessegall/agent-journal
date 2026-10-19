@@ -3,7 +3,7 @@ from pathlib import Path
 
 from journal.features.migration.brought import Brought
 from journal.features.registry import Registry
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.migrated_rows import MigratedRows
 from journal.repositories.settings import Settings

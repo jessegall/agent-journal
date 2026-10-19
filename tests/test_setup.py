@@ -60,7 +60,7 @@ def test_setup_is_idempotent_and_keeps_other_hooks(app):
 def test_a_command_from_inside_an_agent_is_the_live_agents(app):
     import json as js
     from urllib.request import Request as HttpRequest, urlopen
-    from journal.models.actor import Actor
+    from journal.support.actor import Actor
     from journal.repositories.tasks import Tasks
     app.runtime().start()
     try:

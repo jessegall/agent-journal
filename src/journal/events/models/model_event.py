@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from journal.events.event import Event
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.model import Model
 
 

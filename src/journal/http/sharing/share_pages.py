@@ -15,7 +15,7 @@ from journal.http.share_answer import ShareAnswer
 from journal.features.sharing.shared_comments import SharedComments
 from journal.http.sharing.shared_data import SharedData
 from journal.http.sharing.visitor_comment import VisitorComment
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.share import Share
 from journal.support.refused import Refused
 from journal.repositories.scope import Scope

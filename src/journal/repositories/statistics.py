@@ -1,4 +1,4 @@
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.statistic import Statistic
 from journal.repositories.repository import Repository
 

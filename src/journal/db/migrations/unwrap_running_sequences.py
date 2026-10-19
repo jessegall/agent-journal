@@ -5,7 +5,7 @@ from typing import ClassVar
 from journal.db.connection import Connection
 from journal.db.migration import Migration
 from journal.db.migrations.stored_state import StoredState
-from journal.models.sequence_run import SequenceRun
+from journal.support.sequence_run import SequenceRun
 
 RUNNING = "running_sequence"
 

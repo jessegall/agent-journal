@@ -11,7 +11,7 @@ from journal.engine.deferred import Deferred
 from journal.providers.hook import Hook
 from journal.hooks.transcript_turns import TranscriptTurns
 from journal.hooks.translation import Translation
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries

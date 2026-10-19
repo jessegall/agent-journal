@@ -24,7 +24,7 @@ from journal.features.migration.bring_todos import BringTodos
 from journal.features.migration.bring_work import BringWork
 from journal.features.migration.brought import Brought
 from journal.features.migration.version_3_backup import Version3Backup
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.version3_migration import Version3Migration
 from journal.models.report import Report
 from journal.repositories.version3_migrations import Version3Migrations

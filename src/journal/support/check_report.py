@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.models.check_finding import CheckFinding
+from journal.support.check_finding import CheckFinding
 
 
 @dataclass(frozen=True)

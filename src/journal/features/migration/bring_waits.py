@@ -3,10 +3,10 @@ from pathlib import Path
 from journal.features.migration.brought import Brought
 from journal.features.migration.environment_kind import EnvironmentKind
 from journal.features.migration.version_3_row import Version3Row
-from journal.models.actor import Actor
+from journal.support.actor import Actor
 from journal.models.environment import Environment
 from journal.models.link import Link
-from journal.models.ref import Ref
+from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.support.refused import Refused
 from journal.repositories.environments import Environments
