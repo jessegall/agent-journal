@@ -8,8 +8,6 @@ from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import AGENT, USER, V3Row, seconds, viewer_ref
 from journal.models.author import Author
 from journal.models.message import Message
-from journal.models.ref import Ref
-from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 
 TITLE = 80
@@ -21,8 +19,8 @@ class MessagesShaper(Shaper):
 
     type = "message"
 
-    def __init__(self, messages: Messages, links: Links) -> None:
-        self.messages, self.links = messages, links
+    def __init__(self, messages: Messages) -> None:
+        self.messages = messages
 
     def rows(self) -> list[V3Row]:
         """The newest page of messages, the user's, the agent's and the system's cards alike, a reply standing at its own number with the message it answers in reply_to."""
@@ -46,9 +44,8 @@ class MessagesShaper(Shaper):
 
     def shaped(self, messages: list[Message], open_: set[int] | None = None) -> list[V3Row]:
         open_ = self.open_ids() if open_ is None else open_
-        about = self.links.targets_by_source(Message.table(), Messages.ABOUT)
-        commented = self.links.targets_by_source(Message.table(), Messages.COMMENTS_ON)
-        return [self.row(m, m.id not in open_, [f"todo:{ref.id}" for ref in about.get(Ref.to(m), [])], [viewer_ref(ref) for ref in commented.get(Ref.to(m), [])]) for m in messages]
+        about, commented = self.messages.linked(Messages.ABOUT), self.messages.linked(Messages.COMMENTS_ON)
+        return [self.row(m, m.id not in open_, [f"todo:{ref.id}" for ref in about.get(m.id, [])], [viewer_ref(ref) for ref in commented.get(m.id, [])]) for m in messages]
 
     @staticmethod
     def closed_at(author: str, answered: bool, read: float) -> float:

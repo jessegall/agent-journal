@@ -1,7 +1,6 @@
 from journal.http.v3.shapers.shaper import Shaper
 from journal.http.v3.v3_row import USER, V3Row, viewer_ref
 from journal.models.author import Author
-from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 
 
@@ -10,9 +9,13 @@ class CommentsShaper(Shaper):
 
     type = "comment"
 
-    def __init__(self, messages: Messages, links: Links) -> None:
-        self.messages, self.links = messages, links
+    def __init__(self, messages: Messages) -> None:
+        self.messages = messages
 
     def rows(self) -> list[V3Row]:
-        return [V3Row.of("comment", m, title=m.text[:80], brief=m.text, refs=[viewer_ref(target) for target in targets], seen=[USER])
-                for m in self.messages.in_() if m.author == Author.USER and (targets := self.links.targets(m, Messages.COMMENTS_ON))]
+        """The messages written under a row, found by their links in one read, not by a look at every message."""
+        on = self.messages.linked(Messages.COMMENTS_ON)
+        if not on:
+            return []
+        return [V3Row.of("comment", m, title=m.text[:80], brief=m.text, refs=[viewer_ref(target) for target in on[m.id]], seen=[USER])
+                for m in self.messages.numbered(tuple(on)) if m.author == Author.USER]
