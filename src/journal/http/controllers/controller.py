@@ -46,6 +46,6 @@ class Controller(Generic[S]):
         return Response.json(self.repository.save(row.with_(**self.fields_of(request.body)), request.actor))
 
     def fields_of(self, body: dict) -> dict:
-        """Only the model's own fields, never its id or its stamps."""
-        own = {f.name for f in fields(self.repository.model)} - {"id", "environment_id", "created_at", "created_by", "updated_at", "updated_by"}
+        """Only the model's own fields, never its id, its stamps or its state, which moves only by its own actions."""
+        own = {f.name for f in fields(self.repository.model)} - {"id", "environment_id", "created_at", "created_by", "updated_at", "updated_by", "state"}
         return {name: value for name, value in body.items() if name in own}

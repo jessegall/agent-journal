@@ -154,7 +154,9 @@ class V3Actions:
     def plan_finish(self, n: int, body: ActionBody, by):
         return self.plans.save(self.plans.find(n).done(), by)
 
-    plan_abandon = plan_finish
+    def plan_abandon(self, n: int, body: ActionBody, by):
+        self.plans.cancel(self.plans.find(n), by)
+        return self.plans.find(n)
 
     def plan_approve(self, n: int, body: ActionBody, by):
         return self.plans.approve(self.plans.find(n), by)

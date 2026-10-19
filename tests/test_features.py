@@ -2557,6 +2557,9 @@ def test_approving_a_started_plan_leaves_it_started(app):
     console.run(["plan", "start", "1"], AGENT)
     assert "plan 1 started" in console.run(["plan", "approve", "1"], USER).out
     assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a second word from the page cannot set a running plan back to approved"
+    assert "cannot become ready" in console.run(["plan", "ready", "1"], AGENT).err, "the agent cannot undo the user's approval"
+    assert "cannot become reviewing" in console.run(["plan", "review", "1"], AGENT).err
+    assert app.container.get(Plans).find(1).state == PlanState.STARTED
 
 
 def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):

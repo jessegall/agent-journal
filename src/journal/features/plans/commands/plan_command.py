@@ -118,11 +118,8 @@ class PlanCommand(Command):
         return 0
 
     def review(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.find(args.n)
-        if plan.state not in (PlanState.DRAFT, PlanState.READY, PlanState.APPROVED):
-            raise Refused(f"plan {plan.id} is {plan.state}: only a plan not yet started goes into review")
-        self.plans.save(plan.reviewing(), where.actor)
-        print(f"plan {plan.id} in review: put what the reviewers find straight into it, then journal plan ready {plan.id}")
+        self.plans.save(self.plans.find(args.n).reviewing(), where.actor)
+        print(f"plan {args.n} in review: put what the reviewers find straight into it, then journal plan ready {args.n}")
         return 0
 
     def approve(self, args: Namespace, where: Where) -> int:
