@@ -19,7 +19,6 @@ class Found:
 
     @staticmethod
     def around(text: str, words: list[str]) -> str:
-        """The stretch of the text around the first word looked for, on one line."""
         flat = " ".join(text.split())
         at = max(0, flat.lower().find(words[0].lower()) - AROUND // 4)
         cut = flat[at:at + AROUND]

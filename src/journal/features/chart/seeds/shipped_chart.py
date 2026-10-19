@@ -534,7 +534,6 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 160, 92, (Guard("parked_tasks"),), "block_stop", PARKED)
 
     def broken_wait_holds_the_stop(self, chart: Chart, ends: list) -> list:
-        """A blocked task waiting until a check that cannot run holds the stop, naming the command and why, so no wait lasts forever."""
         return self.guarded(chart, ends, 160, 92, (Guard("broken_waits"),), "block_stop", BROKEN_WAIT)
 
     def approved_plan_holds_the_stop(self, chart: Chart, ends: list) -> list:
@@ -564,7 +563,6 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 240, 92, (Guard("parked_tasks"), Guard("quiet_for_over", "1 minute")), "type", PARKED_STILL)
 
     def ask_about_blocked(self, chart: Chart, ends: list) -> list:
-        """As the clock ticks on an agent at rest with a task blocked on something outside: after an hour of quiet, ask whether it has come."""
         return self.guarded(chart, ends, 240, 92, (Guard("blocked_outside"), Guard("quiet_for_over", "1 hour")), "type", BLOCKED_STILL)
 
     def check_in(self, chart: Chart, ends: list) -> list:

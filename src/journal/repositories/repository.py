@@ -84,12 +84,10 @@ class Repository(Generic[M]):
         return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE))))
 
     def search(self, words: list[str]) -> list[M]:
-        """The newest rows whose own text holds every one of the words, any case, newest first."""
         clause, params = self.matching_words(words)
         return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, FOUND))
 
     def matching_words(self, words: list[str]) -> tuple[str, tuple]:
-        """Each word in at least one of the model's text fields."""
         each = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"
         escaped = [word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") for word in words]
         return " AND ".join(each for _ in words), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)

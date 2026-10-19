@@ -8,4 +8,3 @@ class FinishedRun:
     passed: bool
     output: str
     fault: str = ""
-    """Why the command could not run at all; empty when it ran, passing or failing."""

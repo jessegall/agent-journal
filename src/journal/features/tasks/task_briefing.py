@@ -16,5 +16,4 @@ class TaskBriefing:
         return ([f"brief: {task.brief}"] if task.brief else []) + [f"logged: {line}" for line in logged]
 
     def said(self, task: Task) -> str:
-        """The same, on one line, for a line typed to the agent."""
         return "; ".join(self.lines(task))

@@ -182,7 +182,6 @@ class Filing:
         return self.dumps.save(self.dumps.find(n).with_(completed_at=0.0, outcome="", stopped=False, queued_at=time.time()), by)
 
     def remove(self, n: int, by: Actor) -> Dump:
-        """Everything the dump's rows made since it was dropped is deleted with it; the files dropped stay."""
         self.only_user(by, "removes what a dump filed")
         dump = self.dumps.find(n)
         if dump.removed_at:
@@ -219,7 +218,6 @@ class Filing:
 
     @staticmethod
     def named_refs(text: str) -> list[str]:
-        """Every row a comma list names, as table:number; the viewer's names, doc:2 or todo:4, are taken too."""
         refs = []
         for part in (p.strip() for p in text.split(",") if p.strip()):
             kind, _, number = part.partition(":")

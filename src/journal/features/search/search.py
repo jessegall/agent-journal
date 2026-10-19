@@ -29,7 +29,6 @@ class Search:
         return [Found.of(row, words) for kind in self.kinds for row in kind.search(words)] + self.said(words)
 
     def said(self, words: list[str]) -> list[Found]:
-        """What the agents here wrote or were told in their conversations that holds every word, newest first."""
         found = []
         for agent in reversed([agent for agent in self.agents.in_() if agent.has_program()][-CONVERSATIONS:]):
             path = self.providers.named(agent.provider).transcript(self.config.root, agent.session)

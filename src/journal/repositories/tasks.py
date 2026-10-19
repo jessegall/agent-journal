@@ -1,6 +1,7 @@
 from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.models.check import Check
+from journal.models.plan import Plan
 from journal.models.question import Question
 from journal.models.ref import Ref
 from journal.models.task import Task
@@ -22,11 +23,9 @@ class Tasks(ScopedRepository[Task]):
         super().__init__(connection, bus, scope)
         self.links, self.checks = links, checks
         self.awaitable = {Task.table(): self, Question.table(): questions, Check.table(): checks}
-        """Where the row a wait link names is found, by its table."""
 
-    def open_waits(self, task: Task) -> list[Ref]:
-        """What the task waits on by a link that is still not answered, done or cancelled."""
-        return [ref for ref in self.links.targets(task, WAITS_ON) if not self.awaited(ref).is_settled()]
+    def open_waits(self, row: Task | Plan) -> list[Ref]:
+        return [ref for ref in self.links.targets(row, WAITS_ON) if not self.awaited(ref).is_settled()]
 
     def waits_reach(self, start: Ref, goal: Ref) -> bool:
         """Whether following the wait links from start ever comes to goal."""
@@ -42,25 +41,21 @@ class Tasks(ScopedRepository[Task]):
         return False
 
     def awaited(self, ref: Ref) -> Task | Question | Check:
-        """The row a wait link names: a task, a question, or the check it waits until."""
         return self.awaitable[ref.type].find(ref.id)
 
     def blocked_outside(self) -> list[Task]:
-        """The blocked tasks waiting on something outside, with no task, question or check whose end would open them by itself."""
         return [task for task in self.in_state(TaskState.BLOCKED) if not self.open_waits(task)]
 
     def broken_waits(self) -> list[tuple[Task, Check]]:
-        """The blocked tasks waiting until a check that cannot run its command, each with that check: nothing would ever open them."""
         return [(task, check) for check in self.checks.broken_waits() for task in self.waiting_on(check)]
 
     def waiting_on(self, model) -> list[Task]:
         """The tasks blocked on this row by a wait link."""
-        return [task for ref in self.links.sources(model, WAITS_ON) if (task := self.find(ref.id)).state == TaskState.BLOCKED]
+        return [task for ref in self.links.sources(model, WAITS_ON) if ref.type == Task.table() and (task := self.find(ref.id)).state == TaskState.BLOCKED]
 
-    def reason(self, task: Task) -> str:
-        """Why the task is blocked: what its wait links name, then the prose beside them."""
-        named = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(task, WAITS_ON)]
-        return ", ".join(part for part in (*named, task.blocked_why) if part)
+    def reason(self, row: Task | Plan) -> str:
+        named = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAITS_ON)]
+        return ", ".join(part for part in (*named, row.blocked_why) if part)
 
     def in_state(self, state: TaskState) -> list[Task]:
         return self.where(state=state)

@@ -11,9 +11,7 @@ class Model:
     """A row. Data only; it never touches the database. Every row says who made it and who last changed it."""
 
     text_fields: ClassVar[tuple[str, ...]] = ()
-    """The fields that hold the row's own words: what it is searched by and may name other rows in."""
     handed_to_agent: ClassVar[bool] = False
-    """A row the user makes for the agent to work through, such as a dump: a sequence that starts on one starts for the live agent."""
 
     id: int | None = None
     created_at: datetime | None = None
@@ -39,7 +37,6 @@ class Model:
         return self.id is None
 
     def mentioning_text(self) -> str:
-        """The row's own text, in which it may name other rows, such as task 12 or plan 3; empty for a row with no text of its own."""
         return "\n".join(str(getattr(self, name)) for name in self.text_fields)
 
     def with_(self, **changes) -> "Model":

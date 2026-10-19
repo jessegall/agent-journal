@@ -46,7 +46,6 @@ class WorkerCommand(Command):
         self.verb(verbs, "list", "every worker out")
 
     def own_provider(self, where: Where) -> str:
-        """The program the dispatching agent runs, so its model names fit; Claude for the user's own dispatch."""
         return self.agents.for_session(where.session).provider if where.session else "claude"
 
     def dispatch(self, args: Namespace, where: Where) -> int:

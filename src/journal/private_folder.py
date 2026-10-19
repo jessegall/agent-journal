@@ -22,7 +22,6 @@ class PrivateFolder:
 
     @staticmethod
     def made(folder: Path) -> Path:
-        """The folder a value is written into, made if it is not there, open to its user alone, with a .gitignore that leaves everything in it out of any repository it sits in."""
         folder.mkdir(parents=True, exist_ok=True)
         folder.chmod(0o700)
         ignore = folder / ".gitignore"

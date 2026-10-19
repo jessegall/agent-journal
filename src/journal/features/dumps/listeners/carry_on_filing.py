@@ -1,6 +1,6 @@
 from journal.events.clock_ticked import ClockTicked
 from journal.events.listener import Listener
-from journal.features.dumps.telling import Telling
+from journal.engine.telling import Telling
 from journal.models.dump import Dump
 from journal.repositories.agents import Agents
 from journal.repositories.dumps import Dumps

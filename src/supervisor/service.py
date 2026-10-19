@@ -15,7 +15,6 @@ class Service:
 
     def __init__(self, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path, keep: bool = True) -> None:
         self.name, self.command, self.folder, self.environ, self.log, self.keep = name, command, folder, environ, log, keep
-        """keep: started again whenever it dies."""
         self._process: subprocess.Popen | None = None
         self._last_start = 0.0
         self._deaths: list[float] = []
@@ -40,7 +39,6 @@ class Service:
         return self._process is not None and self._process.poll() is None
 
     def keep_alive(self) -> None:
-        """A kept process that died is started again, always: at once the first time in the window, then after a wait that doubles with each death, up to LONGEST_WAIT."""
         if self._process is None or self.alive():
             return
         now = time.time()

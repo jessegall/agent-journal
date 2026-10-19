@@ -1,5 +1,7 @@
 from journal.features.entry import Entry
 from journal.features.feature import Feature
+from journal.features.plans.listeners.block_plan_on_its_tasks import BlockPlanOnItsTasks
+from journal.features.plans.listeners.clear_plan_waits import ClearPlanWaits
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
@@ -20,7 +22,7 @@ class Plans(Feature):
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."
     states = (FollowingPlan,)
     commands = (PlanCommand,)
-    listeners = (AdvancePlan, TellApproved, FollowPlanAtStart, FollowPlanOnResume, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
+    listeners = (BlockPlanOnItsTasks, ClearPlanWaits, AdvancePlan, TellApproved, FollowPlanAtStart, FollowPlanOnResume, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
     checks = (
         Entry(NodeKind.CHECK, 'plan_moved_on', 'Plan moved on to its next task?', 'a task just closed and the agent follows its plan at the next one'),
         Entry(NodeKind.CHECK, 'plan_left_waiting', 'Plan has no task to start?', 'a task just closed and no task of the plan can start, the plan at no checkpoint'),
@@ -36,7 +38,10 @@ class Plans(Feature):
     APPROVED = Nudge(name, "approved", "the user approved plan {{n}}", "`journal plan start {{n}}` begins its first task", repeat_after=0)
     CHECKPOINT = Nudge(name, "checkpoint", "plan {{n}}: phase {{phase}} is complete and a checkpoint", "the user looks before the next phase; wait for their word, then `journal plan start {{n}}`", repeat_after=0)
     CHECKPOINT_PASSED = Nudge(name, "checkpoint_passed", "plan {{n}}: phase {{phase}} is complete, and in auto mode it does not stop you", "`journal plan start {{n}}` begins the next phase; carry on", repeat_after=0)
-    nudges = (NEXT, DONE, WAITING, PARKED, APPROVED, CHECKPOINT, CHECKPOINT_PASSED)
+    BLOCKED = Nudge(name, "blocked", "plan {{n}} is blocked: {{why}}", "it opens again by itself when what it waits on comes; `journal plan unblock {{n}}` opens it by hand", repeat_after=0)
+    OPEN_AGAIN = Nudge(name, "open_again", "plan {{n}} is open again: {{why}}", "`journal plan start {{n}}` goes on with it", repeat_after=0)
+    ALL_BLOCKED = "all its tasks left are blocked"
+    nudges = (NEXT, DONE, WAITING, PARKED, APPROVED, CHECKPOINT, CHECKPOINT_PASSED, BLOCKED, OPEN_AGAIN)
 
     skill = Skill("plans", 'Build and follow a plan of ordered tasks; load it when the user asks for a plan or a roadmap', """
 # Plans
@@ -56,5 +61,9 @@ by you, approved by them, and then followed: finishing one task starts the next 
   and `journal plan ready <n>` waits until every subagent is back. Put what they find straight into the plan as tasks
   under its phases, then ready it again.
 - `journal plan show <n>` lists its phases and tasks; `journal plan list` every plan; `journal plan park <n>` puts it aside.
+- A blocked task never blocks its plan: go on with the tasks that can be done. When every task left is blocked, the plan
+  blocks itself and opens again when one opens. When one thing stops all of the plan's work, block the plan on it:
+  `journal plan block <n> "<why>"`, with `--on question:N`, `--on task:N` or `--until "<command>"` as for a task, so it
+  opens by itself; `journal plan unblock <n>` opens it by hand.
 - `journal plan cancel <n>` gives it up, with the tasks that are its alone; tasks another live plan holds stay.
 """, keywords=('plan', 'plans', 'roadmap', 'phases'), required_in=('following_plan',))

@@ -5,7 +5,7 @@ from journal.supervisor_link import SupervisorLink
 
 
 class Telling:
-    """Says a line about a dump to the live agent here, typed into its terminal."""
+    """Says a line to the live agent here, typed into its terminal: a line about a row the agent did not touch, such as a dump arriving or a wait cleared."""
 
     def __init__(self, nudger: Nudger, agents: Agents, supervisor: SupervisorLink) -> None:
         self.nudger, self.agents, self.supervisor = nudger, agents, supervisor

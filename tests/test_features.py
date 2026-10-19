@@ -187,6 +187,39 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app, monkeypatch)
     assert any("task 3, tag it is next. brief: git tag v4" in line for line in typed), "the plan's next task comes with its brief"
 
 
+def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked_until_a_command_passes(app, monkeypatch):
+    from journal.features.checks.check_runner import CheckRunner
+    from journal.repositories.checks import Checks
+    from journal.repositories.plans import Plans
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "create", "release", "--brief", "ship"], USER)
+    console.run(["plan", "add", "1", "write the notes"], USER)
+    console.run(["plan", "add", "1", "tag it"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    plans = app.container.get(Plans)
+    console.run(["task", "block", "2", "the user's words first"], AGENT)
+    assert plans.find(1).state == "started", "one blocked task never blocks its plan"
+    console.run(["task", "block", "1", "the build is red"], AGENT)
+    assert plans.find(1).state == "blocked" and any("plan 1 is blocked: all its tasks left are blocked" in line for line in typed)
+    assert "is blocked, waiting on" in console.run(["plan", "start", "1"], AGENT).err
+    console.run(["task", "unblock", "2"], AGENT)
+    assert plans.find(1).state == "started" and any("plan 1 is open again: task 2 is open again" in line for line in typed)
+    marker = app.config.root / "released"
+    console.run(["plan", "block", "1", "--until", f"test -f {marker}"], AGENT)
+    assert plans.find(1).state == "blocked"
+    check = app.container.get(Checks).every()[-1]
+    marker.write_text("")
+    app.container.get(CheckRunner).run(check, Actor.system())
+    assert plans.find(1).state == "started" and any("plan 1 is open again: check" in line for line in typed), "the passing check opens the plan and the agent is told"
+
+
 def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app):
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console = app.console()
@@ -253,10 +286,10 @@ def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app, monkeypatch):
     console.run(["task", "block", "2", "the user picks the moment"], AGENT)
     out = console.run(["task", "done", "1"], AGENT).out
     app.runtime().deferred.drain()
-    assert any("plan 1: no task can start now; task 2 is parked, blocked or waiting" in line for line in typed) and "plan 1 is done" not in out, "the workflow says what waits"
-    assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a blocked task keeps the plan open"
+    assert any("plan 1 is blocked: all its tasks left are blocked" in line for line in typed) and "plan 1 is done" not in out, "the agent is told why the plan waits"
+    assert app.container.get(Plans).find(1).state == PlanState.BLOCKED, "with every task left blocked, the plan blocks itself and is not done"
     console.run(["task", "unblock", "2"], AGENT)
-    assert "task 2 is next" in console.run(["plan", "start", "1"], AGENT).out
+    assert app.container.get(Plans).find(1).state == PlanState.STARTED and "task 2 is next" in console.run(["plan", "start", "1"], AGENT).out
 
 
 def test_a_task_waits_on_a_question_by_a_link_and_the_answer_clears_it(app):
@@ -488,7 +521,8 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
     assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == ("lexer done", "sess-2")
     assert Claude().worker_outcome("plain words", "") == ("plain words", "")
     assert Codex().worker_command("x", "m", "c-9")[:3] == ["codex", "exec", "resume"] and Codex().worker_command("x", "m", "")[:2] == ["codex", "exec"]
-    assert Codex().worker_outcome("done", "session id: 0192f3a4-aaaa-bbbb\nwork") == ("done\nsession id: 0192f3a4-aaaa-bbbb\nwork", "0192f3a4-aaaa-bbbb"), "stderr stays beside stdout"
+    assert Codex().worker_outcome("done", "session id: 0192f3a4-aaaa-bbbb\nwork") == ("done", "0192f3a4-aaaa-bbbb"), "the answer is the report; the run's log only gives the session"
+    assert Codex().worker_outcome("", "session id: 0192f3a4-aaaa-bbbb\nit broke") == ("session id: 0192f3a4-aaaa-bbbb\nit broke", "0192f3a4-aaaa-bbbb"), "with no answer the log is the report"
 
 
 def test_a_dispatch_without_a_model_or_a_job_is_refused(app):
@@ -1227,6 +1261,15 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     console.run(["plan", "park", "2"], AGENT)
     assert machine.current("s1").name == "idle", "a parked plan is over for the agent following it"
 
+def test_a_reply_sent_by_command_comes_back_with_the_hint_that_it_can_be_typed(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    body = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "journal message send 'on it' --reply-to 1"}, tool_response="message 2 sent")[1]
+    assert "a reply needs no command. type it in your turn with [!reply:N]" in json.dumps(body), "the hint rides on the command's own result"
+    other = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "journal task list"}, tool_response="")[1]
+    assert "a reply needs no command" not in json.dumps(other)
+
+
 def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app):
     from journal.repositories.messages import Messages
     console = app.console()
@@ -1254,6 +1297,7 @@ def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_
     with transcript.open("a") as file:
         file.write(j.dumps(said("user", "a prompt")) + "\n" + j.dumps({"type": "response_item", "payload": {"type": "function_call", "name": "exec"}}) + "\n" + j.dumps(said("assistant", "The plan is ready.")) + "\n")
     assert Codex().texts_written(tmp_path, "s1", read)[0] == ["The plan is ready."], "only the agent's own words, from where the last look left off"
+    assert Codex().worker_outcome("the tests pass", "session id: 01a1549d-a1ac-75c3\n" + "a long log of the run\n" * 500) == ("the tests pass", "01a1549d-a1ac-75c3"), "a Codex worker's report is its answer, not its log"
 
 
 def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_the_display_hook_adds_no_second(app, monkeypatch, tmp_path):

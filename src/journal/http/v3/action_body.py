@@ -38,7 +38,6 @@ class ActionBody:
     domain: str = ""
     comments: bool = False
     pick: int = -1
-    """The number of an offered step."""
     sent: frozenset[str] = frozenset()
     """The names the viewer sent, so an update changes only those and keeps the rest."""
 

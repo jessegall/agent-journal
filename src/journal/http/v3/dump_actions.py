@@ -17,7 +17,6 @@ class DumpActions:
         return self.filing.create(body.brief, by)
 
     def upload(self, n: int, request: Request) -> Dump:
-        """The files a request carried, stored beside the dump and named on it."""
         self.dumps.find(n)
         for name, data in request.files.items():
             self.filing.attach(n, self.attachments.store("dump", n, name, data), request.actor)
