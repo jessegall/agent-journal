@@ -407,7 +407,7 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   (settings, runtime socket path, logs).
 - **Links left by a wiped environment**: `Environments.wipe` deletes the scoped rows but a link
   whose refs pointed at them is only removed if the link row itself was in the environment.
-- **Migrations from v3** records: do we import the old file rows at all, or start empty.
+- **Migrations from v3** records: decided 2026-10-19 (task 605): start empty, and bring in version 3's documents with `journal doc import <its project/doc folder>`, once; a doc already titled here is left. Other records stay in version 3.
 - **Plans**: model shape (phases, checkpoints) once tasks stand.
 - **State method injection**: a state method asks for rows by type (`task: Task`); decide
   whether the machine resolves them from the state's data before the call, or the state is
@@ -957,7 +957,7 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
 
 - Triggers are engine code. A user trigger never becomes a workflow of its own (message 3400); the Triggers page stays
   as it is.
-- Documents are project-wide, never per environment (message 3311).
+- Documents are project-wide, never per environment (message 3311): `Doc` is a `Model`, read from every environment; the Documents page also lists the files attached to messages, and its search reads every document.
 - The supervisor starts an agent that dies again, resuming its session, and keeps the journal and the services
   running; a clean exit still ends it (message 3331).
 - The supervisor stays a very thin process host; a change to it needs the whole process started again, so changes to

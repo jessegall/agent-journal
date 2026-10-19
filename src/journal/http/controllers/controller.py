@@ -3,19 +3,19 @@ from typing import Generic, TypeVar
 
 from journal.http.request import Request
 from journal.http.response import Response
-from journal.models.scoped import Scoped
+from journal.models.model import Model
 from journal.repositories.not_found import NotFound
-from journal.repositories.scoped_repository import ScopedRepository
+from journal.repositories.repository import Repository
 
-S = TypeVar("S", bound=Scoped)
+S = TypeVar("S", bound=Model)
 
 
 class Controller(Generic[S]):
-    """One per model: index, show, store and update over its repository, within the request's environment."""
+    """One per model: index, show, store and update over its repository, as the request's environment sees it."""
 
     PAGE = 50
 
-    repository: ScopedRepository[S]
+    repository: Repository[S]
 
     def index(self, request: Request) -> Response:
         """A page, newest first: ?limit= caps it and ?before=<id> asks for older rows."""

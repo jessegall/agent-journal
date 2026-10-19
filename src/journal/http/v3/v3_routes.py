@@ -1,5 +1,6 @@
 from journal.container import Container
 from journal.http.router import Router
+from journal.http.v3.documents_controller import DocumentsController
 from journal.http.v3.plugins_controller import PluginsController
 from journal.http.v3.rows_controller import RowsController
 from journal.http.v3.transcript_controller import TranscriptController
@@ -28,6 +29,9 @@ class V3Routes:
         router.get(f"{API}/events", c.get_events)
         router.get(f"{API}/stream", c.get_stream)
         router.get(f"{API}/files", c.get_empty)
+        documents = self.container.get(DocumentsController)
+        router.get(f"{API}/files/page", documents.files_page)
+        router.get(f"{API}/doc/locate", documents.located)
         router.get(f"{API}/changes", c.get_empty_list)
         router.get(f"{API}/family", c.get_empty)
         router.get(f"{API}/skills", c.get_skills)

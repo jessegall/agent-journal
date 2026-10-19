@@ -425,6 +425,31 @@ def test_a_check_keeps_its_description_for_the_page(app):
     assert (row["title"], row["brief"], row["data"]["command"], row["data"]["last"]["at"]) == ("Check for sins", "Judges the project; a failure lists the sins found", "true", 0.0), "the description is the row's brief, and a check never run says so by its last run's time"
 
 
+def test_the_documents_page_lists_the_projects_documents_their_search_and_the_attached_files(app, tmp_path):
+    from journal.http.v3.attachments import Attachments
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages
+    old = tmp_path / "doc"
+    for n, (title, deleted) in enumerate((("Audit of the package", 0), ("Gone", 1.0)), 1):
+        (old / f"{n:03}").mkdir(parents=True)
+        (old / f"{n:03}" / "doc.md").write_text(f'---\n{{"n": {n}, "title": "{title}", "abstract": "what is broken", "deleted": {deleted}}}\n---\n# Findings\n\nThe cleanup pluralises the wrong noun.\n')
+    console = app.console()
+    assert "1 documents brought in, 0 already here" in console.run(["doc", "import", str(old)], USER).out, "a deleted one stays out"
+    assert "0 documents brought in, 1 already here" in console.run(["doc", "import", str(old)], USER).out, "a second import brings nothing twice"
+    port = app.server().port
+    read = lambda path, env="main": json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}{path}", headers={"X-Journal-Env": env}), timeout=5))
+    console.run(["environment", "create", "other"], USER)
+    assert [r["title"] for r in read("/api/doc", "other")["rows"]] == ["Audit of the package"], "a document is the project's, seen from every environment"
+    hits = read("/api/doc/locate?words=pluralises+noun")
+    assert hits and hits[0]["n"] == 1 and "pluralises the wrong noun" in hits[0]["text"], "a search finds the document holding every word, with the passage"
+    message = app.container.get(Messages).save(Message(text="the screenshot of the bar"), Actor.user(1))
+    stored = app.container.get(Attachments).store("message", message.id, "bar.png", b"png")
+    app.container.get(Messages).save(message.with_(files=(stored,)), Actor.user(1))
+    page = read("/api/files/page?kind=images")
+    assert page["found"] == 1 and page["files"][0]["name"] == "bar.png" and page["files"][0]["image"] and page["counts"]["images"] == 1, "a file attached to a message is listed"
+    assert read("/api/files/page?kind=other")["found"] == 0 and read("/api/files/page?search=screenshot")["found"] == 1
+
+
 def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app):
     import time as clock
     from journal.features.checks.check_runner import CheckRunner

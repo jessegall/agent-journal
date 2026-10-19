@@ -1,6 +1,9 @@
 from journal.models.doc import Doc
-from journal.repositories.scoped_repository import ScopedRepository
+from journal.repositories.repository import Repository
 
 
-class Docs(ScopedRepository[Doc]):
+class Docs(Repository[Doc]):
     model = Doc
+
+    def titled(self, title: str) -> bool:
+        return bool(self.where(title=title))

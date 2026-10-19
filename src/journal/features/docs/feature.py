@@ -1,0 +1,21 @@
+from journal.features.docs.commands.doc_command import DocCommand
+from journal.features.feature import Feature
+from journal.features.skill import Skill
+
+
+class DocsFeature(Feature):
+    name = "docs"
+    title = "Documents"
+    help = "What the project keeps knowing: documents shared by every environment, listed on the Documents page."
+    commands = (DocCommand,)
+
+    skill = Skill("docs", "Keep lasting knowledge of the project in a document; load it when something should still be known next month", """
+# Documents
+
+A document holds what the project keeps knowing; what was checked now goes in a report, ordered work in a plan.
+Documents are the project's, the same in every environment.
+
+- `journal doc create "<title>" --file <path> --abstract "<one line>"` writes one from a markdown file, its `##` headings
+  as sections.
+- `journal doc show <n>` prints it; `journal doc list` names them.
+""", keywords=("doc", "docs", "document", "documents"))

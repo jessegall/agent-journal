@@ -58,6 +58,10 @@ class Repository(Generic[M]):
             params.append(before)
         return self.selected(f"{' AND '.join(where) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
 
+    def page_in(self, limit: int, before: int | None = None) -> list[M]:
+        """A page of the rows the request's scope sees; a model kept for the whole project is seen in every scope."""
+        return self.page(limit, before)
+
     def save(self, row: M, by: Actor) -> M:
         with self.connection.transaction():
             self.bus.dispatch(Saving(model=row, by=by))
