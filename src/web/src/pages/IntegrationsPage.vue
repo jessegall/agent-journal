@@ -97,8 +97,8 @@ function letIn(suggestion) {
                 <h1>MCP</h1>
                 <p class="integrations-lead">
                     These are the MCP servers the agents are given, from here or from Claude Code itself. Installing or removing one
-                    restarts the running agents once they are idle, so it applies at once. A key is kept outside the project and never
-                    written into it.
+                    restarts the running agents once they are idle, so it applies at once. A key restarts nothing: it is kept outside the
+                    project, never written into it, and used from the agent's next launch.
                 </p>
             </div>
             <template v-if="checkedAt">
@@ -154,11 +154,12 @@ function letIn(suggestion) {
                         <template v-if="s.managed && s.auth === 'key'">
                             <div class="integration-key">
                                 <TextInput
-                                    v-model="keys[s.name]"
+                                    :value="keys[s.name]"
                                     type="password"
                                     :placeholder="
                                         s.has_key ? `${s.key_var} is set; paste a new one to replace it` : `Paste the ${s.key_var}`
                                     "
+                                    @input="keys[s.name] = $event.target.value"
                                     @keydown.enter="saveKey(s)"
                                 />
                                 <Btn

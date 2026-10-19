@@ -1305,7 +1305,7 @@ def test_a_journal_command_chained_with_anything_else_is_refused(app):
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "python3 -m pytest -q && git commit -m x"})[0] == 200
 
 
-def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_removed_with_the_agents_restarted(app, monkeypatch, tmp_path):
+def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the_agents_restarted_and_keyed_without(app, monkeypatch, tmp_path):
     import json as j
     from urllib.request import Request as R, urlopen
     from journal.features.mcp.health import Health
@@ -1328,6 +1328,14 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     sent.clear()
     post("/journal/mcp/github/key", {"value": "first"})
+    assert sent == [] and j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))["restart_pending"] == [], "a key restarts nothing: a running agent keeps the environment it was launched with"
+    try:
+        post("/journal/mcp/github/key", {"value": "  "})
+    except HTTPError as error:
+        assert "blank" in error.read().decode()
+    else:
+        raise AssertionError("a blank key is refused")
+    post("/journal/mcp/install", {"name": "linear"})
     assert sent == [] and j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))["restart_pending"] == ["s1"], "an agent at work is not cut off"
     hook(app, "Stop")
     app.runtime().deferred.drain()
@@ -1338,7 +1346,6 @@ def test_an_integration_is_a_suggested_mcp_server_installed_keyed_checked_and_re
     keyed = post("/journal/mcp/github/key", {"value": "ghp_secret"})
     assert keyed["has_key"] is True and keyed["state"] == "installed" and j.loads((tmp_path / "keys.json").read_text()) == {"GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_secret"}
     assert "ghp_secret" not in (app.config.root / ".mcp.json").read_text(), "a key is never written into the project"
-    post("/journal/mcp/install", {"name": "linear"})
     states = {s["name"]: s["state"] for s in post("/journal/mcp/check", {})["servers"]}
     assert states == {"github": "connected", "linear": "needs_auth"}
     page = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))

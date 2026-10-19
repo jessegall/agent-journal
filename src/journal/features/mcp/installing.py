@@ -6,6 +6,7 @@ from journal.features.mcp.provider_config import ProviderConfig
 from journal.engine.nudger import Nudger
 from journal.models.actor import Actor
 from journal.models.mcp_server import McpServer
+from journal.refused import Refused
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.engine.turn import Turn
@@ -14,7 +15,7 @@ from journal.supervisor_link import SupervisorLink
 
 
 class Installing:
-    """The one way a server is added, keyed, removed or checked: the row, the configuration the agents read, and a restart of the agents running, so it applies at once."""
+    """The one way a server is added, keyed, removed or checked: the row, the configuration the agents read, and, for an added or removed server, a restart of the agents running, so it applies at once."""
 
     def __init__(self, servers: McpServers, config_files: ProviderConfig, keys: Keys, health: Health, agents: Agents, providers: Providers, supervisor: SupervisorLink, turn: Turn, pending: PendingRestarts, nudger: Nudger) -> None:
         self.servers, self.config_files, self.keys, self.health = servers, config_files, keys, health
@@ -26,10 +27,11 @@ class Installing:
         return saved
 
     def keyed(self, server: McpServer, value: str, by: Actor) -> McpServer:
-        self.keys.set(server.key_var, value)
-        saved = self.servers.save(server.unchecked("installed"), by)
-        self.applied()
-        return saved
+        """The key kept outside the project; nothing restarts, since a running agent keeps the environment it was launched with: the key applies from its next launch."""
+        if not value.strip():
+            raise Refused(f"the key for {server.title} is blank")
+        self.keys.set(server.key_var, value.strip())
+        return self.servers.save(server.unchecked("installed"), by)
 
     def remove(self, server: McpServer, by: Actor) -> None:
         self.servers.delete(server, by)

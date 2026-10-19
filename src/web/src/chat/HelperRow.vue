@@ -92,7 +92,7 @@ onMounted(() =>
                         Retire {{ name() }}? A retired helper cannot take more work. Tell why it cannot be reused: it can be given new work
                         instead, and it keeps its context.
                     </p>
-                    <TextInput v-model="why" placeholder="Why it cannot be reused" />
+                    <TextInput :value="why" placeholder="Why it cannot be reused" @input="why = $event.target.value" />
                     <div class="helper-confirm-buttons">
                         <Btn small @click="confirming = false">Keep it</Btn>
                         <Btn small kind="danger" :busy="busy" :disabled="!why.trim()" @click="retire">Retire it</Btn>
