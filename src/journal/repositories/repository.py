@@ -56,8 +56,15 @@ class Repository(Generic[M]):
 
     def linked(self, kind: str) -> dict[int, list[Ref]]:
         """What this table's rows link to by a kind, by row number, from one read of the links: every model can have links."""
+        return self._linked("kind = ? AND ", (kind,))
+
+    def every_linked(self) -> dict[int, list[Ref]]:
+        """What this table's rows link to by a link of any kind, by row number, from one read of the links."""
+        return self._linked("", ())
+
+    def _linked(self, clause: str, params: tuple) -> dict[int, list[Ref]]:
         found: dict[int, list[Ref]] = {}
-        for link in self.connection.all("SELECT source, target FROM links WHERE kind = ? AND source LIKE ? ORDER BY id", (kind, f"{self.table}:%")):
+        for link in self.connection.all(f"SELECT source, target FROM links WHERE {clause}source >= ? AND source < ? ORDER BY id", (*params, f"{self.table}:", f"{self.table};")):
             found.setdefault(Ref.parse(link["source"]).id, []).append(Ref.parse(link["target"]))
         return found
 

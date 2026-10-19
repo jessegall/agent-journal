@@ -43,6 +43,8 @@ class V3Row:
     completed: float = 0.0
     outcome: str = ""
     state: str = ""
+    summary: bool = False
+    """A list's row without its body; the viewer asks for the whole one by its number."""
 
     @classmethod
     def of(cls, type: str, model: Model, **fields) -> "V3Row":
