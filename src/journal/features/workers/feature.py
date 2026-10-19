@@ -1,5 +1,6 @@
 from journal.features.entry import Entry
 from journal.features.feature import Feature
+from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
 from journal.engine.nudge import Nudge
 from journal.models.option import Option
 from journal.models.node_kind import NodeKind
@@ -20,6 +21,7 @@ class Workers(Feature):
     options = (TIMEOUT,)
     states = (Awaiting,)
     commands = (WorkerCommand,)
+    seeds = (WorkersAtBoot,)
     listeners = (MarkSubagents, OfferKnownSubagent)
     checks = (
         Entry(NodeKind.CHECK, 'worker_reported', 'Worker reported?', 'the row is a worker that just reported'),

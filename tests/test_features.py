@@ -5275,6 +5275,33 @@ def test_a_question_asked_without_a_session_or_from_a_workers_shell_is_refused(a
     assert app.console().run(["question", "ask", "Which?"], AGENT).code == 0
 
 
+def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app):
+    import subprocess
+    import time
+    from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
+    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.models.worker import Worker
+    from journal.repositories.messages import Messages
+    from journal.repositories.scope import Scope
+    from journal.repositories.workers import Workers
+    workers, runner, scope = app.container.get(Workers), app.container.get(WorkerRunner), app.container.get(Scope)
+    with scope.of(1):
+        running = workers.save(Worker(name="Mr. Babbage", brief="the parser", model="sonnet"), Actor.system())
+        lost = workers.save(Worker(name="Mr. Brunel", brief="the bridge", model="sonnet"), Actor.system())
+    out, _ = runner.outputs(running)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    started = subprocess.run(["sh", "-c", f"(sleep 0.5; echo the parser is done) > '{out}' 2>&1 & echo $!"], capture_output=True, text=True, timeout=10)
+    workers.save(running.running_as(int(started.stdout.strip()), time.time()), Actor.system())
+    app.container.get(WorkersAtBoot).run()
+    end = time.time() + 10
+    while time.time() < end and any(w.is_out() for w in workers.across_environments()):
+        time.sleep(0.1)
+    with scope.of(1):
+        texts = [m.text for m in app.container.get(Messages).in_()]
+    assert "Mr. Babbage reports: the parser is done" in "\n".join(texts), "a worker still running when the journal came back is watched until it ends, its report read from its file"
+    assert any(t.startswith("Mr. Brunel reports: ") for t in texts) and not workers.find(lost.id).is_out(), "a worker whose process ended while the journal was down is not left out"
+
+
 def test_a_worker_past_its_time_limit_is_stopped_and_reported(app):
     from journal.features.workers.feature import Workers as WorkersFeature
     from journal.features.workers.worker_runner import WorkerRunner

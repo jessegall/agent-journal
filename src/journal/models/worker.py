@@ -21,9 +21,16 @@ class Worker(Scoped):
     """The provider's own session of its last run, so its next job is given to the same worker with its memory."""
     taken_up: bool = False
     """Whether the agent has acted on its last report: given it its next job, stopped it, or marked it done."""
+    pid: int = 0
+    """The process running its job, which outlives a restart of the journal; nought while none runs."""
+    began: float = 0.0
+    """When its job's run began, for its time limit and to find the session it wrote."""
 
     def reported(self) -> "Worker":
-        return self.with_(state=WorkerState.REPORTED, taken_up=False)
+        return self.with_(state=WorkerState.REPORTED, taken_up=False, pid=0)
+
+    def running_as(self, pid: int, began: float) -> "Worker":
+        return self.with_(pid=pid, began=began)
 
     def told(self, brief: str) -> "Worker":
         """The same worker sent out again on its next job."""
