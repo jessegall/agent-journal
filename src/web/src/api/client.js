@@ -110,6 +110,10 @@ export class ApiClient {
         return this.post("/updates", {});
     }
 
+    planTimeline(id) {
+        return this.get(this.here(`/plans/${id}/timeline`));
+    }
+
     changelog(skip) {
         return this.get(`/updates/changelog${query({skip})}`);
     }
@@ -190,8 +194,9 @@ export class ApiClient {
     }
 
     // every row and conversation line here that holds all the words
-    search(words) {
-        return this.get(this.here(`/search${query({words})}`));
+    search(words, {models = [], conversations = false} = {}) {
+        const narrowed = {words, models: models.join(","), conversations: conversations ? 1 : ""};
+        return this.get(this.here(`/search${query(narrowed)}`));
     }
 
     // the documents a search finds, best first, and the files attached to messages, a page at a time

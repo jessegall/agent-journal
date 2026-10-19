@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass
 
 from journal.models.scoped import Scoped
@@ -8,6 +9,7 @@ from journal.models.worker_state import WorkerState
 class Worker(Scoped):
     """An agent sent to write one bounded job, in a worktree of its own when it changes code. A subagent only reads; a worker writes."""
 
+    text_fields: ClassVar[tuple[str, ...]] = ("name", "brief")
     name: str = ""
     brief: str = ""
     provider: str = "claude"

@@ -578,13 +578,13 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
 def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude_reads_it(server, journal_root):
     status, read = call(server, "GET", "/journal/profiles")
     assert status == 200 and read == {"profiles": []}, "a fresh journal has no agents folder yet"
-    status, saved = call(server, "POST", "/journal/profiles/critic", {"description": "Reads a design through one lens.", "tools": "Read, Grep", "model": "sonnet", "body": "You are a critic.\n\nSay what is wrong."})
+    status, saved = call(server, "POST", "/journal/profiles/critic", {"description": "Reads a design through one lens.", "tools": "Read, Grep", "model": "sonnet", "codex_model": "gpt-6", "body": "You are a critic.\n\nSay what is wrong."})
     assert status == 200 and saved["name"] == "critic" and saved["shipped"] is False and saved["path"] == ".claude/agents/critic.md"
-    assert (journal_root / ".claude/agents/critic.md").read_text() == "---\nname: critic\ndescription: Reads a design through one lens.\ntools: Read, Grep\nkind: subagent\nmodel: sonnet\n---\n\nYou are a critic.\n\nSay what is wrong.\n"
+    assert (journal_root / ".claude/agents/critic.md").read_text() == "---\nname: critic\ndescription: Reads a design through one lens.\ntools: Read, Grep\nkind: subagent\nmodel: sonnet\ncodex-model: gpt-6\n---\n\nYou are a critic.\n\nSay what is wrong.\n"
     status, read = call(server, "GET", "/journal/profiles")
     assert [p["name"] for p in read["profiles"]] == ["critic"] and read["profiles"][0]["uses"] == 0 and read["profiles"][0]["body"] == "You are a critic.\n\nSay what is wrong."
     status, one = call(server, "GET", "/journal/profiles/critic")
-    assert status == 200 and one["model"] == "sonnet" and one["tools"] == "Read, Grep"
+    assert status == 200 and one["model"] == "sonnet" and one["codex_model"] == "gpt-6" and one["tools"] == "Read, Grep"
     assert call(server, "GET", "/journal/profiles/nobody")[0] == 404
     assert call(server, "POST", "/journal/profiles/bad.name", {})[0] == 409
 
@@ -1012,6 +1012,9 @@ def test_the_search_page_finds_a_task_by_its_words(server):
     call(server, "POST", "/journal/tasks", {"title": "rebuild the viewer", "brief": "every page"})
     status, found = call(server, "GET", "/journal/search?words=viewer%20page")
     assert status == 200 and found["found"][0]["ref"] == "task 1"
+    assert "check" in found["models"] and "message" in found["models"], "the page gets the models it can narrow to"
+    status, found = call(server, "GET", "/journal/search?words=viewer%20page&models=plan,message")
+    assert found["found"] == [], "narrowed to plans and messages, the task is not found"
 
 
 def test_the_plan_bars_work_mode_and_the_top_bars_pause_are_version_fours_own(server):
@@ -1038,3 +1041,10 @@ def test_the_about_page_reads_the_installed_version_and_the_changelog_a_page_of_
     assert status == 200 and about["installed"] == VERSION and about["changelog"].startswith("# Changelog") and about["changelog"].count("\n## ") == 2 and about["more"], "the heading and the newest releases first"
     status, older = call(server, "GET", f"/journal/updates/changelog?skip={about['shown']}")
     assert status == 200 and older["changelog"].startswith("## ") and older["shown"] == about["shown"] + 2, "then older releases, a page at a time"
+
+
+def test_a_plans_timeline_has_each_start_log_and_done_of_its_tasks_oldest_first(server):
+    call(server, "POST", "/journal/plans", {"title": "the phone"})
+    call(server, "POST", "/journal/plans/1/tasks", {"title": "pair it"})
+    status, moments = call(server, "GET", "/journal/plans/1/timeline")
+    assert status == 200 and moments == [], "nothing has happened on its tasks yet"

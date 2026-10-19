@@ -9,6 +9,7 @@ import Icon from "../kit/Icon.vue";
 import {counted} from "../format/number.js";
 import DocumentPage from "../resource/DocumentPage.vue";
 import PlanPage from "../resource/PlanPage.vue";
+import PlanTimeline from "../resource/PlanTimeline.vue";
 import CommentBar from "./CommentBar.vue";
 import ShareComments from "./ShareComments.vue";
 import ShareStrip from "./ShareStrip.vue";
@@ -130,6 +131,12 @@ watch(currentRef, () => (read.value = 0));
                         <SwitchCase :value="currentRow.table">
                             <template #plans>
                                 <PlanPage :resource="currentRow" read-only pin-progress />
+                                <template v-if="data.timeline">
+                                    <section class="share-timeline">
+                                        <h3>Timeline</h3>
+                                        <PlanTimeline :items="data.timeline" />
+                                    </section>
+                                </template>
                             </template>
                             <template #default>
                                 <ResourceBody :resource="currentRow" :comments="false" :links="false" read-only />

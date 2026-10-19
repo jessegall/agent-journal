@@ -113,6 +113,7 @@ class Routes:
         router.get(f"{API}/tasks/{{id}}/logs", tasks.logs)
         self.resource(router, "plans", plans)
         router.get(f"{API}/plans/{{id}}/tasks", plans.tasks_of)
+        router.get(f"{API}/plans/{{id}}/timeline", plans.timeline_of)
         router.post(f"{API}/plans/{{id}}/tasks", plans.add_task)
         self.acts(router, "plans", plans, "approve", "start", "park", "finish", "abandon")
         self.listed(router, "questions", questions)

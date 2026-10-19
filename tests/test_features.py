@@ -554,7 +554,13 @@ def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app):
     files = app.container.get(ProfileFiles)
     files.write_all()
     assert files.kind_of("researcher") == "subagent" and files.kind_of("nobody") == ""
-    assert files.save("builder", "writes code", "Read, Edit", "worker", "sonnet", "You write.")["kind"] == "worker"
+    from journal.features.profiles.support.profile import Profile
+    (files.config.root / ".codex").mkdir(exist_ok=True)
+    saved = files.save(Profile("builder", "writes code", "Read, Edit", "You write.\nSay \"done\".", "worker"), "sonnet", "gpt-6")
+    assert saved["kind"] == "worker" and saved["model"] == "sonnet" and saved["codex_model"] == "gpt-6"
+    import tomllib
+    codex = tomllib.loads((files.config.root / ".codex" / "agents" / "builder.toml").read_text())
+    assert codex["model"] == "gpt-6" and codex["sandbox_mode"] == "workspace-write" and codex["developer_instructions"] == "You write.\nSay \"done\"."
     assert files.read("builder")["kind"] == "worker" and files.read("planner")["kind"] == "subagent"
     hook(app, "SessionStart")
     refused = app.console().run(["worker", "dispatch", "researcher", "look it up", "--model", "fast"], AGENT)
@@ -1342,6 +1348,10 @@ def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app):
     assert console.run(["search", "for", "100%"], AGENT).out == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
     marks = [m for m in app.container.get(Messages).in_() if m.data.get("kind") == "search"]
     assert marks[0].text == 'Searched for "base REPOSITORY"' and "task 1: Scope the reads" in marks[0].data["detail"], "the mark opens what was found"
+    console.run(["check", "create", "Lint the base repository", "--command", "true", "--every", "0"], AGENT)
+    assert "check 1: Lint the base repository" in console.run(["search", "base", "repository"], AGENT).out, "every model with words of its own is searched, a check among them"
+    only = console.run(["search", "base", "repository", "--model", "plan,check"], AGENT).out
+    assert "plan 1: release" in only and "check 1" in only and "task 1" not in only, "--model narrows to the models named"
 
 
 def test_words_the_hooks_missed_are_swept_from_the_transcript_into_the_chat_once(app, monkeypatch, tmp_path):
@@ -6467,3 +6477,51 @@ def test_a_commit_made_in_a_worktree_closes_its_task_when_a_merge_lands_it_and_n
     git("merge", "-q", "worktree-main")
     status, _ = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git merge worktree-main"}, tool_response={})
     assert status == 200, "a merge that brings nothing new closes nothing twice"
+
+
+def test_a_link_in_a_commands_output_is_suggested_as_a_pin_and_again_only_after_fifty_tool_uses(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    made = lambda: hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "gh pr create"}, tool_response={"stdout": "https://github.com/acme/shop/pull/27"})[1]
+    first = made()
+    assert "https://github.com/acme/shop/pull/27 is not pinned" in str(first), "a pull request's address in a command's output is suggested as a pin"
+    assert "is not pinned" not in str(made()), "not again at once"
+    for _ in range(50):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert "is not pinned" in str(made()), "suggested again after fifty of the agent's tool uses"
+    app.console().run(["notice", "create", "Pull request 27", "--link", "https://github.com/acme/shop/pull/27", "--label", "Open it"], AGENT)
+    for _ in range(50):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert "is not pinned" not in str(made()), "a pinned link is never suggested"
+
+
+def test_dispatches_past_the_most_at_once_wait(app):
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    hook(app, "SessionStart")
+    console = app.console()
+    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_out", value=1), Actor.user(1))
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet"], AGENT)
+    refused = console.run(["worker", "dispatch", "Ada Byron", "write the lexer", "--model", "sonnet"], AGENT)
+    assert refused.code == 1 and "1 workers are out, the most at once" in refused.err, "a worker past the most out at once is refused"
+    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "Explore"})
+    hook(app, "SubagentStart", agent_id="a1", agent_type="Explore")
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the routes", "prompt": "map", "subagent_type": "Explore"})
+    assert status == 409 and "1 subagents are running, the most at once" in body["error"], "a subagent past the most at once is held"
+
+
+def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(app):
+    from journal.http.plans.plan_timeline import PlanTimeline
+    from journal.repositories.plans import Plans
+    from journal.support.scope import Scope
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["plan", "create", "the phone", "--brief", "pair it"], USER)
+    console.run(["plan", "add", "1", "pair it", "--brief", "a code pairs"], AGENT)
+    console.run(["task", "start", "1"], AGENT)
+    console.run(["task", "log", "1", "the code is hashed"], AGENT)
+    console.run(["task", "done", "1", "--how", "pairs by code"], AGENT)
+    with app.container.get(Scope).of(1):
+        moments = app.container.get(PlanTimeline).of(app.container.get(Plans).find(1))
+    assert [(m.kind, m.task, m.text) for m in moments] == [("started", 1, ""), ("log", 1, "the code is hashed"), ("done", 1, "pairs by code")], "each start, log line and end, oldest first"

@@ -7,6 +7,7 @@ from journal.models.node_kind import NodeKind
 class MigrationFeature(Feature):
     name = "migration"
     title = "Migration from version 3"
+    fixed = True
     help = "A version 3 journal the installer kept in .journal/version-3 is offered to the user to bring across; the agent is told it is there and never starts it."
 
     VERSION_3 = Nudge(name, "version_3", "a version 3 journal is kept whole in .journal/version-3, not yet brought across", "the user brings it across from the viewer; never start it yourself", repeat_after=0)

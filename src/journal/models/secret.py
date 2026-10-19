@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -11,6 +12,7 @@ from journal.support.refused import Refused
 class Secret(Model):
     """A key or a login the agent may use without seeing it: its fields and the programs it may be given to. Its values live in a file in the home folder, never here."""
 
+    text_fields: ClassVar[tuple[str, ...]] = ("title", "brief")
     title: str = ""
     brief: str = ""
     """How the secret is used, read by the agent: the commands it runs with it."""

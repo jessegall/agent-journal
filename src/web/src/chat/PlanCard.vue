@@ -6,6 +6,7 @@ import Chip from "../kit/Chip.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import Icon from "../kit/Icon.vue";
 import PlanList from "../layout/PlanList.vue";
+import PlanCritique from "../resource/PlanCritique.vue";
 import {approvePlan, startPlan} from "../actions/plans.js";
 import {flyToBar} from "../composables/planFlight.js";
 import {usePlanRows} from "../composables/planRows.js";
@@ -19,6 +20,7 @@ const listing = ref(false);
 const lifted = ref(false);
 const error = ref("");
 const status = computed(() => statusOf(props.plan));
+const critiquing = ref(false);
 const parked = computed(() => status.value === "parked");
 const reviewing = computed(() => status.value === "reviewing");
 const reviewers = computed(() => (reviewing.value ? reviewersLine(props.plan.reviewers || 0) : ""));
@@ -67,6 +69,9 @@ async function start() {
                     </span>
                 </template>
                 <Btn small @click="peek('plans', plan.id)">Open plan</Btn>
+                <template v-if="plan.state === 'ready'">
+                    <Btn small @click="critiquing = true">Ask for a critique</Btn>
+                </template>
                 <template v-if="!reviewing">
                     <Btn
                         kind="primary"
@@ -113,6 +118,9 @@ async function start() {
             <p class="plan-card-error">{{ error }}</p>
         </template>
     </ChatDock>
+    <template v-if="critiquing">
+        <PlanCritique :plan="plan" @close="critiquing = false" />
+    </template>
 </template>
 
 <style scoped>

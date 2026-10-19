@@ -10,6 +10,7 @@ from journal.features.workers.states.awaiting import Awaiting
 from journal.features.workers.listeners.offer_known_subagent import OfferKnownSubagent
 from journal.features.workers.listeners.mark_subagents import MarkSubagents
 from journal.features.workers.listeners.keep_out_of_worker_worktrees import KeepOutOfWorkerWorktrees
+from journal.features.workers.listeners.hold_past_most_subagents import HoldPastMostSubagents
 
 
 class Workers(Feature):
@@ -20,11 +21,13 @@ class Workers(Feature):
     help = "Agents sent to write one bounded job; the agent waits for their reports."
     TIMEOUT = Option("workers.timeout_minutes", "Time limit of a worker run", "Minutes a worker may run before it is stopped and its report says so; 0 sets no limit", 60, unit="min")
     MODE = Option("workers.mode", "Work mode", "Builder: the agent builds it itself and sends workers when a job is better done beside it. Orchestrator: it plans, hands the work to workers, then reviews and merges it. Solo: it does everything itself, with no workers", "builder", kind="choice", choices=("builder", "orchestrator", "solo"))
-    options = (TIMEOUT, MODE)
+    MOST_OUT = Option("workers.most_out", "Workers out at once", "The most workers out at a time; a dispatch past it is refused until one reports. 0 is no limit", 3, unit="workers")
+    MOST_SUBAGENTS = Option("workers.most_subagents", "Subagents running at once", "The most subagents running at a time; one more is held until one finishes. 0 is no limit", 5, unit="subagents")
+    options = (TIMEOUT, MODE, MOST_OUT, MOST_SUBAGENTS)
     states = (Awaiting,)
     commands = (WorkerCommand,)
     seeds = (WorkersAtBoot,)
-    listeners = (MarkSubagents, OfferKnownSubagent, KeepOutOfWorkerWorktrees)
+    listeners = (MarkSubagents, OfferKnownSubagent, KeepOutOfWorkerWorktrees, HoldPastMostSubagents)
     checks = (
         Entry(NodeKind.CHECK, 'worker_reported', 'Worker reported?', 'the row is a worker that just reported'),
         Entry(NodeKind.CHECK, 'worker_stopped', 'Worker stopped?', 'the row is a worker that just stopped before reporting'),
@@ -36,6 +39,8 @@ class Workers(Feature):
     REPORTED = Nudge(name, "reported", "worker {{n}}, {{name}}, reported in {{message}}", repeat_after=0)
     STOPPED = Nudge(name, "stopped", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)
     RETURNED = Nudge(name, "returned", "what you waited on came back: carry on", repeat_after=0)
+    TOO_MANY_SUBAGENTS = Nudge(name, "too_many_subagents", "{{running}} subagents are running, the most at once", "wait for one to finish, or keep the work yourself", repeat_after=0)
+    TOO_MANY_WORKERS = Nudge(name, "too_many_workers", "{{out}} workers are out, the most at once", "wait for one to report with `journal worker wait`, or give the job to one that reported with `journal worker say`", repeat_after=0)
     NOT_YOURS = Nudge(name, "not_yours", "that file is in worker {{n}}'s worktree", "{{name}} writes there: `journal worker say {{n}} \"<job>\"`, or wait for its report and merge", repeat_after=0)
     REPORTS_WAITING = Nudge(name, "reports_waiting", "{{reports_waiting}} reported and you have not acted on it yet", "read its report, then give it its next job, stop it, or mark it done once its work is merged or used", repeat_after=180)
     nudges = (REPORTED, STOPPED, RETURNED, REPORTS_WAITING)

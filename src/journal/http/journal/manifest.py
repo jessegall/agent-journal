@@ -28,7 +28,7 @@ class Manifest:
     def features(self) -> list[dict]:
         """Every feature as the settings page reads one: its switch, its words and its options, each option with the workflow nodes that read it."""
         readers = self.read_by()
-        return [{"name": f.name, "title": f.title, "help": f.help, "default": f.default,
+        return [{"name": f.name, "title": f.title, "help": f.help, "default": f.default, "fixed": f.fixed,
                  "options": [{"key": o.key, "name": o.name, "title": o.title, "abstract": o.abstract, "kind": o.kind, "default": o.default, "unit": o.unit, "choices": list(o.choices),
                               "provider": o.provider, "read_by": readers.get(o.key, [])} for o in f.options]}
                 for f in self.registry.features]

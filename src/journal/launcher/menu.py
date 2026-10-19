@@ -43,9 +43,9 @@ class Menu:
         rows = self.environments() if chosen not in {row.name for row in rows} else rows
         last = next((row.last_session(agent) for row in rows if row.name == chosen), "")
         resume = "" if new or not last else self._carry_on(agent, chosen, last, asking)
+        skip_prompts = skip or yes or self._prompts(agent)
         asking = asking and not resume
-        """Carrying on takes last time's answers to the other questions, as the banner promised."""
-        skip_prompts = skip or (self._prompts(agent, before.skip_prompts) if asking else before.skip_prompts)
+        """Carrying on takes last time's answer to the hooks question, as the banner promised; the prompts are asked every time."""
         hooks_aside = aside or (self._hooks(OtherHooks(self.root, agent).others(), before.hooks_aside) if asking else before.hooks_aside)
         self.remembered.write(Answers(skip_prompts, hooks_aside))
         choice = Choice(chosen, resume, hooks_aside, skip_prompts)
@@ -81,9 +81,9 @@ class Menu:
         picked = self.screen.pick("Carry on from the last session", notes, [Option("Yes, carry on", (last[:8],)), Option("No, start a new one")], 0)
         return last if picked == 0 else ""
 
-    def _prompts(self, agent: str, skipped_before: bool) -> bool:
+    def _prompts(self, agent: str) -> bool:
         notes = [f"{agent.capitalize()} then runs without stopping to ask before each tool call,", "so the journal can keep it working."]
-        return self.screen.pick("Run without permission prompts", notes, [Option("Yes, skip them"), Option("No, ask me each time")], 0 if skipped_before else 1) == 0
+        return self.screen.pick("Run without permission prompts", notes, [Option("Yes, skip them"), Option("No, ask me each time")], 0) == 0
 
     def _hooks(self, others: list[Path], aside_before: bool) -> bool:
         files = f"{len(others)} file" + ("s" if len(others) != 1 else "")
