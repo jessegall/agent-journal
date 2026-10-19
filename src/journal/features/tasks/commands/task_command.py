@@ -59,7 +59,7 @@ class TaskCommand(Command):
             self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.ABOUT), where.actor)
         if args.start:
             task = self.in_hand.start(task, where)
-        print(f"task {task.id} {task.state}: {task.title}" + (f" (from message {args.message})" if args.message else ""))
+        print(f"task {task.id} {task.state}" + (f" (from message {args.message})" if args.message else ""))
         return 0
 
     def start(self, args: Namespace, where: Where) -> int:
@@ -77,7 +77,7 @@ class TaskCommand(Command):
     def park(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).parked(args.why), where.actor)
         self.in_hand.let_go(task, where)
-        print(f"task {task.id} parked: {task.title}")
+        print(f"task {task.id} parked")
         return 0
 
     def resume(self, args: Namespace, where: Where) -> int:
@@ -85,24 +85,24 @@ class TaskCommand(Command):
 
     def taken(self, n: int, where: Where, said: str) -> int:
         task = self.in_hand.start(self.tasks.find(n), where)
-        print(f"task {task.id} {said}: {task.title}")
+        print(f"task {task.id} {said}")
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why), where.actor)
         self.in_hand.let_go(task, where)
-        print(f"task {task.id} blocked: {task.title} (waiting on: {task.blocked_why})")
+        print(f"task {task.id} blocked, waiting on: {task.blocked_why}")
         return 0
 
     def unblock(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).unblocked(), where.actor)
-        print(f"task {task.id} open again: {task.title}")
+        print(f"task {task.id} open again")
         return 0
 
     def done(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).finished(self._now(), args.how), where.actor)
         self.in_hand.let_go(task, where)
-        print(f"task {task.id} done: {task.title}")
+        print(f"task {task.id} done")
         self._name_next(task)
         return 0
 

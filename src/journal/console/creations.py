@@ -29,4 +29,4 @@ class Creations(Listener[Created]):
 
     @staticmethod
     def line(made: list[Model]) -> str:
-        return "created: " + ", ".join(f"{m.table()[:-1] if not m.table().endswith('ies') else m.table()[:-3] + 'y'} {m.id}" + (f' "{m.title}"' if getattr(m, "title", "") else "") for m in made)
+        return "created: " + ", ".join(f"{m.table()[:-1] if not m.table().endswith('ies') else m.table()[:-3] + 'y'} {m.id}" for m in made)

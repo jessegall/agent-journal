@@ -143,13 +143,13 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     hook(app, "SessionStart")
     console.run(["plan", "approve", "1"], USER)
     out = console.run(["plan", "start", "1"], AGENT).out
-    assert "task 1 is next, write the notes" in out
+    assert "task 1 is next" in out
     machine = app.container.get(Machine)
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
     console.run(["await", "the build"], AGENT)
     out = console.run(["task", "done", "1"], AGENT).out
-    assert "task 2 is next, tag it" in out, "a task finished while the agent waits on something still advances the plan"
+    assert "task 2 is next" in out, "a task finished while the agent waits on something still advances the plan"
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=2)
     out = console.run(["task", "done", "2"], AGENT).out
     assert "plan 1 is done" in out
@@ -190,6 +190,9 @@ def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
     assert messages[1].reply_to == 1 and messages[1].text == "On it, the login is next."
     assert messages[0].read_at is not None
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
+    console.run(["message", "send", "> On it, the login is next.\n> More of the agent's words.\n\nGood, and the logout too.", "--reply-to", "2"], USER)
+    shown = console.run(["message", "read", "3"], AGENT).out
+    assert "message 3 from the user, a reply to message 2: Good, and the logout too." in shown and "On it" not in shown, "a reply names what it answers by number and never repeats its words"
 
 
 def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
@@ -614,8 +617,8 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monk
 
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
-    assert 'created: plan 1 "release"' in console.run(["plan", "create", "release"], USER).out
-    assert 'created: task 1 "write the notes", link ' in console.run(["plan", "add", "1", "write the notes"], USER).out, "the link's number is after the shipped workflows' lines, which are links too"
+    assert 'created: plan 1' in console.run(["plan", "create", "release"], USER).out
+    assert 'created: task 1, link ' in console.run(["plan", "add", "1", "write the notes"], USER).out, "the link's number is after the shipped workflows' lines, which are links too"
 
 
 def test_the_skill_tool_loads_a_skill_too(skilled):
@@ -1263,6 +1266,14 @@ def test_a_message_read_through_a_pipe_is_refused(app):
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "grep 'journal message read 3' notes.md | head -2"})[0] == 200, "the words quoted inside another command are not a read"
 
 
+def test_every_line_of_the_shell_corpus_is_cut_into_its_parts():
+    """tests/shell_corpus.jsonl holds over 4,000 commands in many styles with the parts each is cut into; one marked shell is cut differently by a real shell, and is kept whole here, which runs the same."""
+    from journal.features.shell.chain import Chain
+    cases = [json.loads(line) for line in (Path(__file__).parent / "shell_corpus.jsonl").read_text().splitlines()]
+    wrong = [case["line"] for case in cases if Chain.split(case["line"]) != case["parts"]]
+    assert not wrong, f"{len(wrong)} of {len(cases)} lines cut differently, the first: {wrong[:3]}"
+
+
 def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
     from journal.features.shell.chain import Chain
     from journal.features.shell.doing import Doing
@@ -1273,7 +1284,7 @@ def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
     assert Chain.split("for x in a b; echo $x && echo y; echo z; repeat 2 echo r && echo s; echo t") == ["for x in a b; echo $x && echo y", "echo z", "repeat 2 echo r && echo s", "echo t"]
     assert Chain.split("seq 2 | while read -r n; do echo $n; done; echo after") == ["seq 2 | while read -r n; do echo $n; done", "echo after"]
     assert Chain.split("for i in 1; do echo done; done; echo fi && case a in a) echo one;& b) echo two;; esac") == ["for i in 1; do echo done; done", "echo fi", "case a in a) echo one;& b) echo two;; esac"]
-    assert Chain.split("echo a # not && split; here\necho b && echo '#not a comment' && echo c#neither") == ["echo a # not && split; here\necho b", "echo '#not a comment'", "echo c#neither"]
+    assert Chain.split("echo a # not && split; here\necho b && echo '#not a comment' && echo c#neither") == ["echo a # not && split; here", "echo b", "echo '#not a comment'", "echo c#neither"], "a newline ends a command, a comment runs to it"
     wrapped = "source /s 2>/dev/null || true && { \\builtin unalias -- 'x'; } >/dev/null 2>&1 || true && eval 'cd src && git commit -m '\"'\"'a; b'\"'\"'' < /dev/null && pwd -P >| /tmp/cwd"
     parts = Chain.parts(wrapped)
     assert [p.text for p in parts if p.recorded] == ["cd src", "git commit -m 'a; b'"]
@@ -1676,7 +1687,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     assert console.run(["plan", "approve", "1"], USER).code == 0
     app.runtime().deferred.drain()
     assert "the user approved plan 1" in sent[-1]
-    assert "task 1 is next, pour the slab" in console.run(["plan", "start", "1"], AGENT).out
+    assert "task 1 is next" in console.run(["plan", "start", "1"], AGENT).out
     console.run(["task", "done", "1"], AGENT)
     app.runtime().deferred.drain()
     assert app.container.get(Machine).current("s1").task_id == 3, "the second task of phase 1 comes before the first of phase 2"

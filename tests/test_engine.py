@@ -214,3 +214,12 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     assert watcher.look(agent) == "", "a menu that came up right after keys at the keyboard is the user's own"
     shown("Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\n", still_for=0.0)
     assert watcher.look(agent) == "", "a screen still changing is not answered yet"
+
+
+def test_a_typed_line_goes_out_on_one_line(app, monkeypatch):
+    """One with breaks would arrive as pasted text that never matches it, and be typed again."""
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append(fields))
+    app.container.get(SupervisorLink).type(1, "the command finished: cat <<EOF\nx\nEOF")
+    assert sent[-1]["line"] == "[journal] the command finished: cat <<EOF x EOF"

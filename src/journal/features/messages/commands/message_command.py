@@ -49,7 +49,7 @@ class MessageCommand(Command):
     def list(self, args: Namespace, where: Where) -> int:
         for message in self.messages.in_():
             mark = " " if message.read_at else "*"
-            print(f"{mark}{message.id:>4}  {message.author:<5} {message.text}")
+            print(f"{mark}{message.id:>4}  {message.author:<5} {message.own_words}")
         return 0
 
     def read(self, args: Namespace, where: Where) -> int:
@@ -67,7 +67,7 @@ class MessageCommand(Command):
 
     def recent(self, args: Namespace, where: Where) -> int:
         for message in self.messages.recent(RECENT):
-            print(f"{message.id:>4}  {message.author:<5} {message.text}")
+            print(f"{message.id:>4}  {message.author:<5} {message.own_words}")
         return 0
 
     def react(self, args: Namespace, where: Where) -> int:
@@ -91,9 +91,16 @@ class MessageCommand(Command):
         print(f"{args.name} on message {args.n}: {args.caption}")
         return 0
 
+    @staticmethod
+    def answering(message: Message) -> str:
+        """What the message answers, by number: the quote above it is not repeated."""
+        if message.reply_to:
+            return f", a reply to message {message.reply_to}"
+        return f", below {message.quoted_lines} quoted lines" if message.quoted_lines else ""
+
     def show(self, message: Message) -> None:
         """The message, its files with where to open them and what they show, and the rows it is linked to."""
-        print(f"message {message.id} from the {message.author}: {message.text}")
+        print(f"message {message.id} from the {message.author}{self.answering(message)}: {message.own_words}")
         for name in message.files:
             path = self.config.home / "files" / "message" / str(message.id) / name
             seen = message.captions.get(name)

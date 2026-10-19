@@ -40,7 +40,7 @@ class Tasks(Feature):
     LOG_OLD = Nudge(name, "log_old", "{{name}}, {{logged}}: log where it stands first", "{{log_command}} \"<where it stands>\"", repeat_after=0)
     OPEN = Nudge(name, "open", "{{name}} is still open: log where it stands or finish it", repeat_after=900)
     UNLOGGED = Nudge(name, "unlogged", "task {{n}} is open with nothing logged")
-    NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
+    NEXT = Nudge(name, "next", "tasks are open, and auto mode is on: task {{n}} is next", "sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
     DEFERRED = Nudge(name, "deferred", "work deferred in words, not filed: `journal task create` it")
     CLOSED_BY_COMMIT = Nudge(name, "closed_by_commit", "commit {{sha}} closed {{tasks}}")
     POLLING = Nudge(name, "polling", "you ran the same check {{times}} times in a row: {{command}}", "wait for it instead of polling")

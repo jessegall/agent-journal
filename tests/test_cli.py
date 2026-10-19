@@ -63,7 +63,7 @@ def test_the_server_runs_the_same_console_for_the_shim(app):
             outcome = json.loads(reply.read())
     finally:
         server.stop()
-    assert outcome["code"] == 0 and "task 1 open: over http" in outcome["out"]
+    assert outcome["code"] == 0 and "task 1 open" in outcome["out"]
     assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-9")
 
 

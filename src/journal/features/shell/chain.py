@@ -11,6 +11,10 @@ BODIES = {"do", "then", "{"}
 """The word that opens a compound command's body in the long form; without it zsh takes the next command, with its && chain, as the body."""
 SHORT = {"for", "select", "repeat"}
 """The openers zsh allows in that short form; an if, a while or an until reads on to its then or do."""
+BODY = {"for": "do", "while": "do", "until": "do", "select": "do", "repeat": "do", "if": "then", "case": "in"}
+"""The word each opener's body follows; its closer after that word closes it on the same line."""
+LEADS = {"do", "then", "else", "time", "!"}
+"""Words that may stand before a command's own first word, so a loop opened right after do or then, or timed, is still seen opening."""
 
 
 class Chain:
@@ -66,6 +70,9 @@ class Chain:
             if inner in ("'", "`"):
                 if c == inner:
                     stack.pop()
+            elif inner == "$'":
+                if c == "'":
+                    stack.pop()
             elif inner == '"':
                 if c == '"':
                     stack.pop()
@@ -73,6 +80,8 @@ class Chain:
                     stack.append("(")
                     current, i = current + "$(", i + 2
                     continue
+            elif c == "'" and line[i - 1:i] == "$":
+                stack.append("$'")
             elif c in "\"'`":
                 stack.append(c)
             elif line.startswith("[[", i) and not stack:
@@ -83,27 +92,34 @@ class Chain:
                 stack.pop()
                 current, i = current + "]]", i + 2
                 continue
-            elif c == "(" or (c == "{" and (line[i + 1:i + 2] in (" ", "\t") or line[i - 1:i] == "$")):
+            elif c == "(" or (c == "{" and (line[i + 1:i + 2] in (" ", "\t", "\n") or line[i - 1:i] == "$")):
                 stack.append(c)
             elif c == ")" and inner == "(" or c == "}" and inner == "{":
                 stack.pop()
             elif not stack:
-                if c == "#" and (i == 0 or line[i - 1] in " \t\n"):
+                if c == "#" and (i == 0 or line[i - 1] in " \t\n;&|"):
                     end = line.find("\n", i)
                     end = len(line) if end < 0 else end
                     current, i = current + line[i:end], end
                     continue
-                if line.startswith("<<", i) and not line.startswith("<<<", i):
+                if line.startswith("<<", i) and not line.startswith("<<<", i) and line[i - 1:i] != "<":
                     parts.append((separator, (current + line[i:]).strip()))
                     return [(s, p) for s, p in parts if p]
-                found = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i)
+                found = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i) or Chain.newline_at(line, i, current)
                 if found:
-                    parts.append((separator, current.strip()))
+                    parts.append((separator, Chain.continued(current)))
                     current, separator, i = "", found, i + len(found)
                     continue
             current, i = current + c, i + 1
-        parts.append((separator, current.strip()))
+        parts.append((separator, Chain.continued(current)))
         return [(s, p) for s, p in parts if p]
+
+    @staticmethod
+    def continued(part: str) -> str:
+        """The part without a trailing backslash that only carried it onto the next line, before the separator."""
+        part = part.strip()
+        trailing = len(part) - len(part.rstrip("\\"))
+        return part[:-1].rstrip() if trailing % 2 else part
 
     @staticmethod
     def semicolon_at(line: str, i: int) -> str:
@@ -112,31 +128,81 @@ class Chain:
         return ";" if alone else ""
 
     @staticmethod
-    def command_words(part: str) -> list[str]:
-        """The part's words from its last command position: the start, or the word after a pipe, where a keyword counts."""
+    def newline_at(line: str, i: int, current: str) -> str:
+        """A newline that ends a command: not one after a pipe or an ||, which carries the command on, nor one that ends a comment line, kept with the command below it."""
+        held = current.strip()
+        ends = line[i:i + 1] == "\n" and held and not held.endswith(("|", "||", "|&")) and not held.startswith("#")
+        return "\n" if ends else ""
+
+    @staticmethod
+    def segments(part: str) -> list[list[str]]:
+        """The part's commands as words, split where a pipe, an || or a lone & starts the next, each from its own first word."""
+        found: list[list[str]] = [[]]
+        for word in Chain.uncommented(part).split():
+            if word in ("|", "||", "|&", "&"):
+                found.append([])
+                continue
+            found[-1].append(word)
+        return [Chain.led(words) for words in found]
+
+    @staticmethod
+    def uncommented(part: str) -> str:
+        """The part from its first line that is not a comment."""
+        lines = part.split("\n")
+        return "\n".join(lines[next((i for i, line in enumerate(lines) if not line.lstrip().startswith("#")), len(lines)):])
+
+    @staticmethod
+    def is_opening(words: list[str]) -> bool:
+        """The command opens a loop, an if or a case that it does not also close."""
+        if not words or words[0] not in OPENS:
+            return False
+        closer, body = OPENS[words[0]], BODY.get(words[0])
+        if body is None:
+            return closer not in words[1:]
+        return not (body in words and closer in [w.rstrip(");`") for w in words[words.index(body) + 1:]])
+
+    @staticmethod
+    def openings(segments: list[list[str]]) -> list[list[str]]:
+        """The part's first and last commands that open a loop, an if or a case: one before an ||, or one after a pipe."""
+        ends = [segments[0]] if len(segments) == 1 else [segments[0], segments[-1]]
+        return [words for words in ends if Chain.is_opening(words)]
+
+    @staticmethod
+    def closes(part: str, segments: list[list[str]], closer: str) -> bool:
+        """The part ends what is open: its first or last command is the closing word, or an esac follows a case arm's ;;."""
         words = part.split()
-        starts = [i + 1 for i, w in enumerate(words) if w in ("|", "|&")]
-        return words[starts[-1]:] if starts and starts[-1] < len(words) and words[starts[-1]] in OPENS else words
+        after_arm = closer == "esac" and any(w == "esac" and words[i - 1].endswith((";;", ";&", ";|")) for i, w in enumerate(words) if i)
+        return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or after_arm
+
+    @staticmethod
+    def rejoined(joined: str, separator: str, part: str) -> str:
+        return {";": f"{joined}; {part}", "\n": f"{joined}\n{part}"}.get(separator, f"{joined} {separator} {part}")
+
+    @staticmethod
+    def led(words: list[str]) -> list[str]:
+        """The words from the command's own first word, past a do, then, else, time or ! before it."""
+        start = next((i for i, w in enumerate(words) if w not in LEADS), len(words))
+        return words[start:]
 
     @staticmethod
     def compound(parts: list[tuple[str, str]]) -> list[tuple[str, str]]:
         """A loop, an if or a case is one command from its opening word to its closing one, or in zsh's short form to the end of the next command's && chain; the separators inside are put back."""
         joined, closers, short = [], [], False
         for separator, part in parts:
-            words = Chain.command_words(part)
+            segments, words = Chain.segments(part), part.split()
             if short and separator != "&&":
                 closers.pop()
                 short = False
             if closers:
                 opener = joined[-1][1].split()[0]
-                joined[-1] = (joined[-1][0], f"{joined[-1][1]}{separator if separator == ';' else ' ' + separator} {part}")
+                joined[-1] = (joined[-1][0], Chain.rejoined(joined[-1][1], separator, part))
                 if len(closers) == 1 and not short and separator == ";" and opener in SHORT and words and words[0] not in BODIES | {closers[-1]} and not any(w in BODIES for w in joined[-1][1].split()):
                     short = True
             else:
                 joined.append((separator, part))
-            if words and words[0] in OPENS and not short and OPENS[words[0]] not in words[1:]:
-                closers.append(OPENS[words[0]])
-                short = words[0] == "repeat" and len(words) > 2
-            elif closers and words and words[0] == closers[-1] and not short:
+            if closers and not short and Chain.closes(part, segments, closers[-1]):
                 closers.pop()
+            for opening in [] if short else Chain.openings(segments):
+                closers.append(OPENS[opening[0]])
+                short = opening[0] == "repeat" and len(opening) > 2 and opening[2] != "do"
         return joined

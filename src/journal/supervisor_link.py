@@ -26,8 +26,8 @@ class SupervisorLink:
         self._viewer_keyed_at: dict[int, float] = {}
 
     def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
-        """A line of the journal's, marked, and noted until its prompt hook proves it arrived; held while an earlier line is still on its way."""
-        marked = f"{MARK} {line}"
+        """A line of the journal's, marked, on one line however many it was handed, and noted until its prompt hook proves it arrived; held while an earlier line is still on its way. A line with breaks reaches the agent as pasted text, which never matches it, so it would be typed again."""
+        marked = f"{MARK} {' '.join(line.split())}"
         if self.typed.is_waiting(environment_id):
             self.typed.hold(HeldLine(environment_id, marked, after))
             return

@@ -59,7 +59,7 @@ class PlanCommand(Command):
 
     def create(self, args: Namespace, where: Where) -> int:
         plan = self.plans.save(Plan(title=args.title, brief=args.brief), where.actor)
-        print(f"plan {plan.id} {plan.state}: {plan.title}")
+        print(f"plan {plan.id} {plan.state}")
         return 0
 
     def add(self, args: Namespace, where: Where) -> int:
@@ -69,7 +69,7 @@ class PlanCommand(Command):
         self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
         for other in before:
             self.relink(other, plan, where)
-        print(f"task {task.id} added to plan {plan.id}{' first' if args.first else ''}: {task.title}")
+        print(f"task {task.id} added to plan {plan.id}{' first' if args.first else ''}")
         return 0
 
     def relink(self, task: Task, plan: Plan, where: Where) -> None:
@@ -82,7 +82,7 @@ class PlanCommand(Command):
         plan = self.plans.find(args.n)
         phase = self.phases.save(Phase(environment_id=plan.environment_id, title=args.title, complete_when=args.when, checkpoint=args.checkpoint), where.actor)
         self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_OF), where.actor)
-        print(f"phase {len(self.plans.phases_of(plan))} of plan {plan.id}: {phase.title}")
+        print(f"phase {len(self.plans.phases_of(plan))} of plan {plan.id}")
         return 0
 
     def todos(self, args: Namespace, where: Where) -> int:
@@ -99,7 +99,7 @@ class PlanCommand(Command):
             for link in [link for other in phases for link in self.links.between(task, other)]:
                 self.links.delete(link, where.actor)
             self.links.save(Link(source=Ref.to(task), target=Ref.to(phase), kind=IN_PHASE), where.actor)
-        print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}: {phase.title}")
+        print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}")
         return 0
 
     def ready(self, args: Namespace, where: Where) -> int:
@@ -168,7 +168,7 @@ class PlanCommand(Command):
 
     def brief(self, args: Namespace, where: Where) -> int:
         plan = self.plans.save(replace(self.plans.find(args.n), brief=args.text), where.actor)
-        print(f"plan {plan.id} brief set: {plan.title}")
+        print(f"plan {plan.id} brief set")
         return 0
 
     def show(self, args: Namespace, where: Where) -> int:

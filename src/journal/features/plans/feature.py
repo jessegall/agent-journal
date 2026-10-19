@@ -24,7 +24,7 @@ class Plans(Feature):
     )
     seeds = (ClosedPlans,)
 
-    NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)
+    NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next", repeat_after=0)
     DONE = Nudge(name, "done", "plan {{n}} is done: its last task closed", repeat_after=0)
     WAITING = Nudge(name, "waiting", "plan {{n}}: no open task is left, and {{blocked}} on something outside", "`journal task list` names what each waits on; the plan goes on when one is unblocked", repeat_after=0)
     PARKED = Nudge(name, "parked", "the user parked plan {{n}}")

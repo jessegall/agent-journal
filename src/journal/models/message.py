@@ -30,6 +30,17 @@ class Message(Scoped):
         return self.reply_to is not None and self.author == Author.AGENT
 
     @property
+    def quoted_lines(self) -> int:
+        """How many lines the quote above a reply takes, the lines starting with > the viewer puts there."""
+        lines = self.text.split("\n")
+        return next((i for i, line in enumerate(lines) if not line.startswith(">")), len(lines))
+
+    @property
+    def own_words(self) -> str:
+        """The words without the quote above them."""
+        return "\n".join(self.text.split("\n")[self.quoted_lines:]).strip()
+
+    @property
     def is_thought(self) -> bool:
         return self.data.get("kind") == self.THOUGHT
 
