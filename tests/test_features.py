@@ -585,6 +585,28 @@ def test_a_task_the_reply_names_is_linked_to_the_message_it_answers_however_old(
     asked = app.container.get(Messages).find(1)
     assert [ref.id for ref in app.container.get(Links).targets(asked, Messages.ABOUT)] == [1], "your message carries the task the reply names, whenever it was filed"
 
+
+def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monkeypatch):
+    from journal.features.faults.slow_requests import SlowRequests
+    from journal.repositories.messages import Messages
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    hook(app, "SessionStart")
+    (app.config.root / "src" / "journal").mkdir(parents=True)
+    slow = app.container.get(SlowRequests)
+    monkeypatch.setattr("os.getloadavg", lambda: (0.0, 0.0, 0.0))
+    with app.container.get(Scope).of(MAIN):
+        slow.measured("GET", "/api/:type", 80)
+        assert [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")] == [], "nothing is judged in the first minute after a start"
+        slow.started -= 120
+        slow.measured("GET", "/api/:type", 30)
+        slow.measured("GET", "/api/:type", 80)
+        slow.measured("GET", "/api/:type", 95)
+        app.runtime().deferred.drain()
+        marks = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
+    assert [(m.text, m.data["count"], m.data["worst"]) for m in marks] == [("Slow request: GET /api/:type", 2, 95)], "one mark per route, its worst time and how often, a request inside its budget not counted"
+    assert sum("over its budget of 50 ms" in t for t in typed) == 1, "the agent is told the first time only"
+
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
     assert 'created: plan 1 "release"' in console.run(["plan", "create", "release"], USER).out

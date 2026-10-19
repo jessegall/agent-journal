@@ -1,0 +1,56 @@
+import os
+import time
+
+from journal.config import Config
+from journal.engine.cards import Cards
+from journal.engine.deferred import Deferred
+from journal.engine.nudger import Nudger
+from journal.features.faults.feature import Faults
+from journal.models.actor import Actor
+from journal.repositories.agents import Agents
+from journal.repositories.messages import Messages
+from journal.repositories.settings import Settings
+from journal.supervisor_link import SupervisorLink
+
+SETTLING_SECONDS = 60.0
+"""After the journal starts, which an update is too, nothing is judged: a cold start is always slow."""
+
+
+class SlowRequests:
+    """Measures each request against its budget where the journal develops itself, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time."""
+
+    def __init__(self, config: Config, settings: Settings, cards: Cards, messages: Messages, agents: Agents, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred) -> None:
+        self.config, self.settings, self.cards, self.messages, self.agents, self.nudger, self.supervisor, self.deferred = config, settings, cards, messages, agents, nudger, supervisor, deferred
+        self.started = time.monotonic()
+
+    def measured(self, method: str, route: str, ms: float) -> None:
+        if not self.judging():
+            return
+        budget = self.budget(method)
+        if not budget or ms <= budget:
+            return
+        self.deferred.add(lambda: self.reported(method, route, round(ms), budget))
+
+    def budget(self, method: str) -> int:
+        """The budget a request of this method has, in milliseconds: a write is given more than a read."""
+        return int(self.settings.option(Faults.WRITE if method == "POST" else Faults.REQUEST))
+
+    def judging(self) -> bool:
+        """Only in the journal's own checkout, once it has settled after a start or an update, and on a machine not busier than it has cores."""
+        settled = time.monotonic() - self.started > SETTLING_SECONDS
+        busy = os.getloadavg()[0] > (os.cpu_count() or 1)
+        return (self.config.root / "src" / "journal").is_dir() and settled and not busy
+
+    def reported(self, method: str, route: str, ms: int, budget: int) -> None:
+        key = f"slow:{method} {route}"
+        earlier = self.messages.keyed(key, Actor.system())
+        count = earlier[0].data.get("count", 0) + 1 if earlier else 1
+        worst = max(ms, earlier[0].data.get("worst", 0)) if earlier else ms
+        data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "detail": f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms", "row": "", "count": count, "worst": worst}
+        self.cards.keyed(self.messages.scope.id, key, f"Slow request: {method} {route}", data, Actor.system())
+        agent = self.agents.live()
+        if earlier or agent is None:
+            return
+        line = self.nudger.say(agent, Faults.SLOW.about(method=method, route=route, ms=ms, budget=budget))
+        if line:
+            self.supervisor.type(agent.environment_id, line)
