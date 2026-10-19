@@ -15,6 +15,7 @@ from journal.launcher.support.other_hooks import OtherHooks
 from journal.launcher.support.page_wait import PageWait
 from journal.support.project_command import ProjectCommand
 from journal.launcher.support.status_line import StatusLine
+from journal.launcher.support.worktree import Worktree
 from journal.support.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
@@ -22,7 +23,9 @@ SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-b
 STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
 REACH = {"claude": [], "codex": ["-c", "sandbox_workspace_write.network_access=true"]}
 """What a sandboxed agent needs to reach its journal's server on this machine."""
-FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0}
+FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0, "--worktree": 1, "-w": 1}
+NAMES = {"-w": "worktree"}
+"""A flag's field when it is not the flag's own name."""
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,8 @@ class Launch:
     no_open: bool = False
     no_journal: bool = False
     """Started by a journal already running: no server of its own."""
+    worktree: str = ""
+    """The worktree the agent works in, the journal's to make and keep; Claude Code never sees the flag, since it removes a worktree it made when it exits."""
 
     @classmethod
     def parse(cls, argv: list[str], root: Path) -> "Launch":
@@ -49,7 +54,7 @@ class Launch:
             if arg == "--":
                 rest.extend(it)
             elif arg in FLAGS:
-                flags[arg.lstrip("-").replace("-", "_")] = next(it) if FLAGS[arg] else True
+                flags[NAMES.get(arg, arg.lstrip("-").replace("-", "_"))] = next(it) if FLAGS[arg] else True
             else:
                 rest.append(arg)
         return cls(agent, root, tuple(rest), **flags)
@@ -60,9 +65,9 @@ class Launch:
 
     def choice(self) -> Choice:
         if not sys.stdin.isatty():
-            return Choice(self.env or "main", "", self.aside, self.skip)
+            return Choice(self.env or self.worktree or "main", "", self.aside, self.skip)
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
-        return Menu(self.root, self.package / "journal.py").choose(self.agent, self.env, self.new, self.aside, self.skip, self.yes)
+        return Menu(self.root, self.package / "journal.py").choose(self.agent, self.env or self.worktree, self.new, self.aside, self.skip, self.yes)
 
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
         """The agent's command without the arguments that resume a conversation, which the launch file carries apart so a restart can replace them."""
@@ -129,9 +134,10 @@ class Launch:
     def launch_file(self, choice: Choice, status: StatusLine) -> dict:
         """What the supervisor starts: the agent in front, the journal beside it unless one runs already, its socket, announce file and mirror, and the band's words."""
         environ = self.environ(choice)
+        folder = Worktree(self.root, self.worktree).made() if self.worktree else self.root
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
         return {
-            "front": {"command": self.agent_command(choice, status), "resume": RESUME[self.agent](choice.resume) if choice.resume else [], "folder": str(self.root), "env": environ},
+            "front": {"command": self.agent_command(choice, status), "resume": RESUME[self.agent](choice.resume) if choice.resume else [], "folder": str(folder), "env": environ},
             "services": [] if self.no_journal else [journal],
             "socket": str(self.socket(choice.environment)),
             "announce": str(self.runtime / "inboxes" / choice.environment),

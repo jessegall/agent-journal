@@ -221,3 +221,19 @@ def test_a_fault_in_a_verb_or_a_turn_is_written_down_and_the_supervisor_carries_
     assert not reply.ok and "start failed in the supervisor, which carries on" in reply.error, "a verb that raises is answered with why"
     supervisor.turn()
     assert faults.read_text().count("supervisor fault, carried on") == 2, "the verb's fault and the turn's are both written down, and neither ended the supervisor"
+
+
+def test_a_worktree_launch_makes_its_worktree_and_never_hands_the_flag_to_the_agent(tmp_path: Path):
+    import subprocess
+    from journal.launcher.support.worktree import Worktree
+    launch = Launch.parse(["claude", "--worktree", "1012-inventory-page", "--resume", "abc"], tmp_path)
+    assert launch.worktree == "1012-inventory-page" and launch.args == ("--resume", "abc"), "the journal takes --worktree; Claude Code would remove a worktree it made"
+    assert Launch.parse(["claude", "-w", "x"], tmp_path).worktree == "x"
+    git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
+    made = Worktree(tmp_path, "1012-inventory-page").made()
+    assert made == tmp_path / ".claude" / "worktrees" / "1012-inventory-page" and (made / ".git").exists(), "made at Claude Code's own place, so an older one is found"
+    assert "worktree-1012-inventory-page" in git("branch").stdout
+    subprocess.run(["rm", "-rf", str(made)], timeout=30)
+    assert Worktree(tmp_path, "1012-inventory-page").made().is_dir(), "a worktree whose folder went is made again on its branch, and nothing is lost from the branch"
