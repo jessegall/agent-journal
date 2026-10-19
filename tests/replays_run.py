@@ -751,3 +751,86 @@ def test_a_count_survives_a_stop_a_prompt_and_a_session_start(journals, monkeypa
     by_name = {s["name"]: s for s in right.record()}
     assert "new message 1" in str(by_name["read 3, the third use since the message"]["answer"]) and "new message 1" in str(by_name["read 6, the sixth"]["answer"]), "the uses since the message are read from the record across the stop, the prompt and the session start: the third and the sixth name it"
     assert differences(left.record(), right.record(), nudges=True) == [], "the record says the same"
+
+
+GIT_AT = {"GIT_AUTHOR_DATE": "2026-01-01T00:00:00Z", "GIT_COMMITTER_DATE": "2026-01-01T00:00:00Z"}
+"""A fixed time for the replays' commits, so a commit's sha is the same in every run and the record compares."""
+
+
+def project_with_git(app) -> Path:
+    """The journal's project made a git repository with one commit, as a project with worktrees is."""
+    root = app.config.root
+    for argv in (["init", "-q", "-b", "trunk"], ["config", "user.email", "t@example.com"], ["config", "user.name", "T"]):
+        git_at(root, *argv)
+    (root / ".gitignore").write_text(".journal/\n.claude/\nstatus/\n")
+    git_at(root, "add", ".gitignore")
+    git_at(root, "commit", "-qm", "start")
+    return root
+
+
+def git_at(folder: Path, *argv: str) -> None:
+    import os
+    import subprocess
+    subprocess.run(["git", *argv], cwd=folder, capture_output=True, timeout=30, env={**os.environ, **GIT_AT})
+
+
+def session_in_a_worktree(app, replay: Replay, provider: str) -> None:
+    """The steps: the environment's worktree is made, a session starts in it, the agent looks, writes inside the worktree and commits there with a trailer, then a merge lands the commit."""
+    from journal.support.worktree import Worktree
+    tree = Worktree(project_with_git(app), "main").made()
+    replay.step("session starts in the worktree", hook_as(app, provider, "SessionStart")[1])
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["task", "create", "the page", "--start"], AGENT)
+    replay.step("a write inside the worktree", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": str(tree / "page.py"), "content": "PAGE = 1"})[1])
+    (tree / "page.py").write_text("PAGE = 1\n")
+    git_at(tree, "add", "page.py")
+    git_at(tree, "commit", "-qm", "the page\n\nJournal: tasks done 1")
+    replay.step("a commit in the worktree", hook_as(app, provider, "PostToolUse", tool_name=TOOLS[provider].shell, tool_input={"command": "git commit -m 'the page'"}, tool_response={})[1])
+    git_at(app.config.root, "merge", "-q", "worktree-main")
+    replay.step("the merge that lands it", hook_as(app, provider, "PostToolUse", tool_name=TOOLS[provider].shell, tool_input={"command": "git merge worktree-main"}, tool_response={})[1])
+
+
+def test_a_session_in_a_worktree_works_its_environment_and_its_commit_closes_its_task_when_merged(journals, monkeypatch):
+    from journal.repositories.messages import Messages
+    from journal.repositories.tasks import Tasks
+    with_listener, with_workflow, provider = journals
+    left = recorded(f"session_in_a_worktree_{provider}", with_listener, monkeypatch, session_in_a_worktree, provider, nudges=True)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch)
+    session_in_a_worktree(with_workflow, right, provider)
+    with_workflow.runtime().deferred.drain()
+    by_name = {s["name"]: s for s in right.record()}
+    assert "error" not in by_name["a write inside the worktree"]["answer"], "the agent's own worktree is its to write in"
+    assert "task 1" in str(by_name["the merge that lands it"]["answer"]) and with_workflow.container.get(Tasks).find(1).state.value == "done", "the trailer closes its task when the merge lands it"
+    assert any(m.text.startswith("Working in the worktree main, on the branch worktree-main") for m in with_workflow.container.get(Messages).recent(30)), "the session is marked with its worktree and branch"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the record says the same"
+
+
+def worker_worktree_kept_out(app, replay: Replay, provider: str) -> None:
+    """The steps: a worker is dispatched with a worktree, the agent tries to write in it, a subagent writes in a worktree of its own, and the agent writes in the project."""
+    root = project_with_git(app)
+    hook_as(app, provider, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["task", "create", "the parser", "--start"], AGENT)
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet", "--worktree"], AGENT)
+    replay.step("the worker is out")
+    inside = app.config.home / "worktrees" / "1-Lady-Lovelace" / "parser.py"
+    replay.step("a write in the worker's worktree", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": str(inside), "content": "x"})[1])
+    isolated = root / ".claude" / "worktrees" / "agent-a1b2" / "a.py"
+    hook_as(app, provider, "SubagentStart", agent_id="a1b2", agent_type="Explore")
+    replay.step("a subagent writes in its own worktree", hook_as(app, provider, "PreToolUse", agent_id="a1b2", cwd=str(isolated.parent), tool_name=TOOLS[provider].write, tool_input={"file_path": str(isolated), "content": "x"})[1])
+    hook_as(app, provider, "SubagentStop", agent_id="a1b2")
+    replay.step("a write in the project", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": str(root / "elsewhere.py"), "content": "x"})[1])
+
+
+def test_a_workers_worktree_is_its_own_and_a_subagents_worktree_never_moves_the_main_conversation(journals, monkeypatch):
+    with_listener, with_workflow, provider = journals
+    left = recorded(f"worker_worktree_kept_out_{provider}", with_listener, monkeypatch, worker_worktree_kept_out, provider, nudges=True)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch)
+    worker_worktree_kept_out(with_workflow, right, provider)
+    by_name = {s["name"]: s for s in right.record()}
+    assert "worker 1's worktree" in by_name["a write in the worker's worktree"]["answer"]["error"], "the worker's worktree is refused to the agent, with how to work there"
+    assert "error" not in by_name["a subagent writes in its own worktree"]["answer"] and "error" not in by_name["a write in the project"]["answer"]
+    assert with_workflow.container.get(Machine).current("s1").name == "working", "the subagent's worktree never moved the main conversation"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the record says the same"

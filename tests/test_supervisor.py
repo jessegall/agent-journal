@@ -138,8 +138,14 @@ def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, mo
     try:
         from journal.launcher.support.page_wait import PageWait
         status = StatusLine("p", "main", tmp_path)
-        PageWait(tmp_path / ".journal" / "port", status, "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "").wait()
+        said, opened = [], []
+        PageWait(tmp_path / ".journal" / "port", status, "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "", said.append).wait()
         assert status.url == f"http://127.0.0.1:{app.server().port}/", "the launch sees the page answer, with no supervisor to tell"
+        import webbrowser
+        monkeypatch.setattr(webbrowser, "open", lambda url, new=0: opened.append(url) or True)
+        monkeypatch.setattr(PageWait, "tab_open", lambda self, url: False)
+        PageWait(tmp_path / ".journal" / "port", status, "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "?env=main", said.append).wait()
+        assert opened == [f"http://127.0.0.1:{app.server().port}/?env=main"] and said[-1] == f"viewer: opened {opened[0]}", "with no tab open the viewer is opened, and the launch log says so"
     finally:
         app.server().stop()
 
@@ -225,7 +231,7 @@ def test_a_fault_in_a_verb_or_a_turn_is_written_down_and_the_supervisor_carries_
 
 def test_a_worktree_launch_makes_its_worktree_and_never_hands_the_flag_to_the_agent(tmp_path: Path):
     import subprocess
-    from journal.launcher.support.worktree import Worktree
+    from journal.support.worktree import Worktree
     launch = Launch.parse(["claude", "--worktree", "1012-inventory-page", "--resume", "abc"], tmp_path)
     assert launch.worktree == "1012-inventory-page" and launch.args == ("--resume", "abc"), "the journal takes --worktree; Claude Code would remove a worktree it made"
     assert Launch.parse(["claude", "-w", "x"], tmp_path).worktree == "x"
@@ -256,7 +262,7 @@ def test_a_bare_worktree_flag_takes_the_chosen_environments_name(tmp_path: Path)
 def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_seeing_them(tmp_path: Path):
     import subprocess
     import threading
-    from journal.launcher.support.worktree import Worktree
+    from journal.support.worktree import Worktree
     git = lambda *args, at=tmp_path: subprocess.run(["git", "-C", str(at), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     (tmp_path / ".gitignore").write_text("/.journal\n/.claude/settings.json\n")
@@ -280,7 +286,7 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
 
 def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_files(tmp_path: Path):
     import subprocess
-    from journal.launcher.support.worktree import Worktree
+    from journal.support.worktree import Worktree
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     (tmp_path / ".journal").mkdir()
@@ -294,7 +300,7 @@ def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_
 
 def test_a_command_or_hook_inside_a_worktree_works_the_worktrees_environment(tmp_path: Path):
     import subprocess
-    from journal.launcher.support.worktree import Worktree
+    from journal.support.worktree import Worktree
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
@@ -309,7 +315,7 @@ def test_a_command_or_hook_inside_a_worktree_works_the_worktrees_environment(tmp
 
 def test_a_conversation_resumed_runs_in_its_environment_and_that_environments_worktree(tmp_path: Path, monkeypatch):
     import subprocess
-    from journal.launcher.support.worktree import Worktree
+    from journal.support.worktree import Worktree
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
@@ -326,7 +332,7 @@ def test_a_conversation_resumed_runs_in_its_environment_and_that_environments_wo
 
 def test_the_menu_marks_an_environment_with_a_worktree_and_its_branch(tmp_path: Path):
     import subprocess
-    from journal.launcher.support.worktree import Worktree
+    from journal.support.worktree import Worktree
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
@@ -336,7 +342,7 @@ def test_the_menu_marks_an_environment_with_a_worktree_and_its_branch(tmp_path: 
 
 def test_a_worktree_whose_folder_and_branch_went_is_made_again_from_its_kept_tip(tmp_path: Path):
     import subprocess
-    from journal.launcher.support.worktree import Worktree
+    from journal.support.worktree import Worktree
     git = lambda *args, at=tmp_path: subprocess.run(["git", "-C", str(at), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
@@ -349,3 +355,26 @@ def test_a_worktree_whose_folder_and_branch_went_is_made_again_from_its_kept_tip
     git("branch", "-D", "worktree-1012-inventory-page")
     again = Worktree(tmp_path, "1012-inventory-page").made()
     assert (again / "page.py").read_text() == "PAGE = 1\n", "the committed work comes back from the kept tip though the folder and the branch were removed"
+
+
+def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_make_leaves_nothing_half_made(tmp_path: Path):
+    import subprocess
+    from journal.support.worktree import Worktree
+    from journal.support.worktree_not_made import WorktreeNotMade
+    git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
+    git("init", "-q")
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
+    stray = tmp_path / ".claude" / "worktrees" / "calm-river"
+    stray.mkdir(parents=True)
+    (stray / "mine.txt").write_text("not a worktree's\n")
+    made = Worktree(tmp_path, "calm-river").made()
+    aside = [p for p in made.parent.iterdir() if p.name.startswith("calm-river.moved-aside-")]
+    assert (made / ".git").exists() and len(aside) == 1 and (aside[0] / "mine.txt").read_text() == "not a worktree's\n", "the stray folder is kept aside and the worktree made"
+    git("branch", "worktree-taken")
+    git("worktree", "add", str(tmp_path / "elsewhere"), "worktree-taken")
+    try:
+        Worktree(tmp_path, "taken").made()
+        raise AssertionError("a branch checked out elsewhere cannot be made a second time")
+    except WorktreeNotMade:
+        pass
+    assert not (tmp_path / ".claude" / "worktrees" / "taken").exists(), "nothing half made is left at the worktree's place"

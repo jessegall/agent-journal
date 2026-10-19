@@ -103,3 +103,11 @@ describe("a message from another session", () => {
         expect(turn.text).toBe("the report is ready");
     });
 });
+
+describe("a reminder whispered to the agent", () => {
+    test("is a mark with its words, never an empty one", () => {
+        const [turn] = turns([card(9, 10, {kind: "whisper", icon: "rules", row: "facts:2"}, "Reminded the agent about fact 2")]);
+        expect(turn.kind).toBe("whisper");
+        expect(turn.title).toBe("Reminded the agent about fact 2");
+    });
+});

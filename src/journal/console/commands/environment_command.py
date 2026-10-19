@@ -6,6 +6,7 @@ from pathlib import Path
 
 from journal.console.command import Command
 from journal.support.where import Where
+from journal.support.worktree import Worktree
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.features.shell.commands.shell_command import ENDED, MOVED
@@ -120,7 +121,8 @@ class EnvironmentCommand(Command):
             print(f"no environment named {args.name}")
             return 1
         self.environments.wipe(found[0], where.actor)
-        print(f"deleted environment {found[0].id}: {found[0].name}, with everything recorded in it")
+        dropped = Worktree(self.config.root, found[0].name).dropped()
+        print(f"deleted environment {found[0].id}: {found[0].name}, with everything recorded in it" + (f"; {dropped}" if dropped else ""))
         return 0
 
     @staticmethod

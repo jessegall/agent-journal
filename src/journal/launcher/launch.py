@@ -15,7 +15,7 @@ from journal.launcher.support.other_hooks import OtherHooks
 from journal.launcher.support.page_wait import PageWait
 from journal.support.project_command import ProjectCommand
 from journal.launcher.support.status_line import StatusLine
-from journal.launcher.support.worktree import Worktree
+from journal.support.worktree import Worktree
 from journal.support.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
@@ -145,7 +145,7 @@ class Launch:
         path.touch(mode=0o600)
         path.chmod(0o600)
         path.write_text(json.dumps(launch))
-        PageWait(self.runtime.parent / "port", status, launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"?env={choice.environment}").start()
+        PageWait(self.runtime.parent / "port", status, launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"?env={choice.environment}", self.log).start()
         try:
             return subprocess.run([sys.executable, "-m", "supervisor", str(path)], cwd=self.root, env={**os.environ, "PYTHONPATH": str(self.package)}).returncode
         finally:

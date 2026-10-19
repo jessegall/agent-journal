@@ -9,6 +9,7 @@ from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.states.awaiting import Awaiting
 from journal.features.workers.listeners.offer_known_subagent import OfferKnownSubagent
 from journal.features.workers.listeners.mark_subagents import MarkSubagents
+from journal.features.workers.listeners.keep_out_of_worker_worktrees import KeepOutOfWorkerWorktrees
 
 
 class Workers(Feature):
@@ -23,7 +24,7 @@ class Workers(Feature):
     states = (Awaiting,)
     commands = (WorkerCommand,)
     seeds = (WorkersAtBoot,)
-    listeners = (MarkSubagents, OfferKnownSubagent)
+    listeners = (MarkSubagents, OfferKnownSubagent, KeepOutOfWorkerWorktrees)
     checks = (
         Entry(NodeKind.CHECK, 'worker_reported', 'Worker reported?', 'the row is a worker that just reported'),
         Entry(NodeKind.CHECK, 'worker_stopped', 'Worker stopped?', 'the row is a worker that just stopped before reporting'),
@@ -35,6 +36,7 @@ class Workers(Feature):
     REPORTED = Nudge(name, "reported", "worker {{n}}, {{name}}, reported in {{message}}", repeat_after=0)
     STOPPED = Nudge(name, "stopped", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)
     RETURNED = Nudge(name, "returned", "what you waited on came back: carry on", repeat_after=0)
+    NOT_YOURS = Nudge(name, "not_yours", "that file is in worker {{n}}'s worktree", "{{name}} writes there: `journal worker say {{n}} \"<job>\"`, or wait for its report and merge", repeat_after=0)
     REPORTS_WAITING = Nudge(name, "reports_waiting", "{{reports_waiting}} reported and you have not acted on it yet", "read its report, then give it its next job, stop it, or mark it done once its work is merged or used", repeat_after=180)
     nudges = (REPORTED, STOPPED, RETURNED, REPORTS_WAITING)
 

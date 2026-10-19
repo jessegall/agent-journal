@@ -15,7 +15,7 @@ const spoken = (m) => {
 };
 
 const SYSTEM_TURNS = {
-    whisper: (card) => ({kind: "whisper", data: {row: card.row, words: "", shows: "rules"}}),
+    whisper: (card, label) => ({kind: "whisper", title: label, data: {row: card.row, words: "", shows: "rules"}}),
     skill: (card) => ({kind: "skill", title: card.detail, data: {}}),
     compacted: () => ({kind: "compacted", data: {}}),
     question: (card, label, m) => ({

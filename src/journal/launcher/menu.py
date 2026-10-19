@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from journal.launcher.support.worktree import Worktree
+from journal.support.worktree import Worktree
 from journal.launcher.support.answers import Answers
 from journal.launcher.support.choice import Choice
 from journal.support.environment_row import EnvironmentRow

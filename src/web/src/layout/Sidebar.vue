@@ -61,6 +61,9 @@ function point(e) {
                         <a :class="['item', {on: route.env === e.name}]" :href="href.page()" @click="choose(e.name)">
                             <span :class="['env-dot', {live: agentRunningIn(e.name)}]" />
                             <span class="label">{{ e.name }}</span>
+                            <template v-if="e.worktree">
+                                <span class="worktree" :title="e.worktree">{{ e.worktree }}</span>
+                            </template>
                         </a>
                         <EnvStart :env="e" :live="agentRunningIn(e.name)" />
                     </div>
@@ -327,6 +330,15 @@ function point(e) {
 .label {
     white-space: nowrap;
     transition: opacity 0.16s;
+}
+
+.worktree {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-3);
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .item {

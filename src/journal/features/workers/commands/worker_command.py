@@ -1,5 +1,6 @@
 from argparse import Namespace
 
+from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.support.worktree_not_made import WorktreeNotMade
 from journal.console.command import Command
 from journal.support.where import Where
@@ -22,8 +23,9 @@ from journal.repositories.workers import Workers
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents) -> None:
+    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch) -> None:
         self.workers, self.messages, self.machine, self.providers, self.agents = workers, messages, machine, providers, agents
+        self.branch = branch
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
@@ -112,7 +114,8 @@ class WorkerCommand(Command):
 
     def done(self, args: Namespace, where: Where) -> int:
         worker = self.workers.save(self.workers.find(args.n).done(), where.actor)
-        print(f"worker {worker.id}'s report is acted on")
+        dropped = self.branch.dropped(worker)
+        print(f"worker {worker.id}'s report is acted on" + (f"; {dropped}" if dropped else ""))
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:

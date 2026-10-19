@@ -1,6 +1,7 @@
 import subprocess
 from pathlib import Path
 
+from journal.support.kept_tips import KEPT
 from journal.config import Config
 from journal.models.worker import Worker
 
@@ -40,7 +41,8 @@ class WorkerBranch:
         commits = self.ahead(worker)
         if not commits:
             return ""
-        listed, later = "; ".join(commits), f"take them in with git merge {self.name(worker)}"
+        changed = self.git("diff", "--name-only", f"HEAD...{self.name(worker)}").stdout.split()
+        listed, later = "; ".join(commits) + f" (files: {', '.join(changed[:20])}{', and more' if len(changed) > 20 else ''})", f"take them in with git merge {self.name(worker)}"
         blocked = self.blocked(worker)
         if blocked:
             return f"its {len(commits)} commits were not taken in, since {blocked}: {listed}; {later}"
@@ -77,6 +79,20 @@ class WorkerBranch:
 
     def conflicts(self, folder: Path) -> str:
         return ", ".join(self.git("diff", "--name-only", "--diff-filter=U", cwd=folder).stdout.split())
+
+    def dropped(self, worker: Worker) -> str:
+        folder = self.folder(worker)
+        if not worker.worktree or not folder.is_dir():
+            return ""
+        if worker.is_out():
+            return f"its worktree {folder} stays while it works"
+        left = self.left(worker)
+        if left:
+            return f"its worktree {folder} stays, since {len(left)} files in it are not committed: {', '.join(left[:10])}"
+        self.git("update-ref", f"{KEPT}/{folder.name}", self.git("rev-parse", self.name(worker)).stdout.strip())
+        self.git("worktree", "remove", str(folder))
+        self.git("branch", "-D", self.name(worker))
+        return f"its worktree and branch are removed; its last commit is kept as {KEPT}/{folder.name}"
 
     def summary(self, worker: Worker) -> str:
         """What the worker's branch and worktree hold once it ended, for its report; empty for a worker with no worktree."""
