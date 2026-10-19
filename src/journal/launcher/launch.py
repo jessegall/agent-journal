@@ -16,6 +16,9 @@ from journal.launcher.support.page_wait import PageWait
 from journal.support.project_command import ProjectCommand
 from journal.launcher.support.status_line import StatusLine
 from journal.support.worktree import Worktree
+from journal.launcher.support.update_offer import UpdateOffer
+from journal.features.updates.support.release_source import ReleaseSource
+from journal.config import Config
 from journal.support.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
@@ -81,6 +84,9 @@ class Launch:
         if not sys.stdin.isatty():
             return Choice(named or "main", "", self.aside, self.skip)
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
+        if not self.yes and UpdateOffer(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
+            self.log("updated before the launch: starting again on the new version")
+            os.execv(sys.executable, [sys.executable, *sys.argv])
         return menu.choose(self.agent, named, self.new, self.aside, self.skip, self.yes)
 
     def resumed_in(self, menu: Menu) -> str:

@@ -110,6 +110,10 @@ export class ApiClient {
         return this.post("/updates", {});
     }
 
+    changelog(skip) {
+        return this.get(`/updates/changelog${query({skip})}`);
+    }
+
     // whether a version 3 journal is kept in .journal/version-3, and where bringing it across stands
     migration() {
         return this.get(this.here("/migration"));

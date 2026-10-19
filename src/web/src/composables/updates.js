@@ -37,8 +37,6 @@ export function useUpdates() {
         return a.latest ? {text: "This is the newest version."} : null;
     });
 
-    const releases = computed(() => about.value?.versions || []);
-
     async function update() {
         error.value = "";
         const problem = await runUpdate(about.value.latest);
@@ -53,5 +51,10 @@ export function useUpdates() {
         }
     }
 
-    return {about, releases, error, status, update, start};
+    async function loadMore() {
+        const next = await api.changelog(about.value.shown);
+        about.value = {...about.value, changelog: about.value.changelog + next.changelog, shown: next.shown, more: next.more};
+    }
+
+    return {about, error, status, update, start, loadMore};
 }

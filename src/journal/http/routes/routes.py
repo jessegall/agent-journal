@@ -79,6 +79,7 @@ class Routes:
         router.get(f"{API}/settings", settings.index)
         router.post(f"{API}/settings", settings.store)
         router.get(f"{API}/updates", get(UpdateController).index)
+        router.get(f"{API}/updates/changelog", get(UpdateController).changes)
         router.post(f"{API}/updates", get(UpdateController).update)
         mode = get(ModeController)
         router.get(f"{API}/mode", mode.show)

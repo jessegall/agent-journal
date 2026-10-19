@@ -1028,3 +1028,13 @@ def test_the_plan_bars_work_mode_and_the_top_bars_pause_are_version_fours_own(se
     assert call(server, "POST", f"/journal/agents/{agent['id']}/resume")[1]["state"] == agent["state"]
     assert "the user paused you" not in json.dumps(hooked("PreToolUse", tool_name="Read", tool_input={"file_path": "a"})[1])
     assert call(server, "POST", f"/journal/agents/{agent['id']}/resume")[0] == 409, "an agent not paused is not resumed"
+
+
+def test_the_about_page_reads_the_installed_version_and_the_changelog_a_page_of_releases_at_a_time(server, monkeypatch):
+    from journal.features.updates.support import changelog
+    from journal.version import VERSION
+    monkeypatch.setattr(changelog, "RELEASES_PER_PAGE", 2)
+    status, about = call(server, "GET", "/journal/updates")
+    assert status == 200 and about["installed"] == VERSION and about["changelog"].startswith("# Changelog") and about["changelog"].count("\n## ") == 2 and about["more"], "the heading and the newest releases first"
+    status, older = call(server, "GET", f"/journal/updates/changelog?skip={about['shown']}")
+    assert status == 200 and older["changelog"].startswith("## ") and older["shown"] == about["shown"] + 2, "then older releases, a page at a time"

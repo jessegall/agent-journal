@@ -378,3 +378,22 @@ def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_mak
     except WorktreeNotMade:
         pass
     assert not (tmp_path / ".claude" / "worktrees" / "taken").exists(), "nothing half made is left at the worktree's place"
+
+
+def test_the_boot_screen_offers_a_newer_release_of_the_same_major_before_the_journal_starts(tmp_path: Path, monkeypatch):
+    import io
+    from journal.config import Config
+    from journal.features.updates.support.release_installer import ReleaseInstaller
+    from journal.features.updates.support.release_source import ReleaseSource
+    from journal.launcher.support.update_offer import UpdateOffer
+    from journal.version import VERSION
+    major = VERSION.split(".")[0]
+    monkeypatch.setattr(ReleaseSource, "tags", lambda self, prefix: [f"v{VERSION}", f"v{major}.99.0", f"v{int(major) + 1}.0.0"])
+    installed = []
+    monkeypatch.setattr(ReleaseInstaller, "run", lambda self, release: installed.append(release.version))
+    answers = iter(["2", "1"])
+    monkeypatch.setattr("builtins.input", lambda: next(answers))
+    offer = UpdateOffer(Config(tmp_path), Screen(io.StringIO()), ReleaseSource())
+    assert offer.newest().version == f"{major}.99.0", "the newest of the same major, never the next major"
+    assert not offer.installed_newer() and installed == [], "Start as it is installs nothing"
+    assert offer.installed_newer() and installed == [f"{major}.99.0"], "Update installs it before the journal starts"
