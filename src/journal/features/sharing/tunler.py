@@ -11,7 +11,7 @@ from journal.engine.kept_answer import KeptAnswer
 from journal.features.sharing.tunler_login import TunlerLogin
 from journal.features.sharing.tunler_status import TunlerStatus
 from journal.features.sharing.tunler_version import TunlerVersion
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 ELSEWHERE = (Path("/opt/homebrew/bin/tunler"), Path("/usr/local/bin/tunler"))
 STATUS_SECONDS = 5

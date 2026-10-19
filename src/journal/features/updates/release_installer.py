@@ -6,7 +6,7 @@ from urllib.request import urlopen
 
 from journal.config import Config
 from journal.features.updates.release import Release
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 INSTALL_SCRIPT = "https://raw.githubusercontent.com/jessegall/agent-journal/{tag}/install.sh"
 FETCH_SECONDS = 30

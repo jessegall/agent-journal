@@ -4,7 +4,7 @@ from journal.features.voices.feature import Voices
 from journal.features.voices.shipped import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, Shipped
 from journal.http.request import Request
 from journal.http.response import Response
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.settings import Settings
 
 NAMINGS = (("Historical figures", HISTORICAL), ("Street nicknames", STREET), ("First name and role", PLAIN), ("Sporting names", SPORTING), ("Knights of the realm", KNIGHTLY))

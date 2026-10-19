@@ -6,7 +6,7 @@ from journal.console.where import Where
 from journal.support.outline import Outline
 from journal.features.docs.version3_doc import Version3Doc
 from journal.models.doc import Doc
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.docs import Docs
 
 

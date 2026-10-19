@@ -20,7 +20,7 @@ from journal.models.plugin import Plugin as PluginRow
 from journal.models.plugin_manifest import PluginManifest
 from journal.repositories.plugins import Plugins as PluginRows
 from journal.models.setting import Setting
-from journal.supervisor_reply import SupervisorReply
+from journal.support.supervisor_reply import SupervisorReply
 from journal.repositories.scope import Scope
 from journal.repositories.settings import Settings
 from journal.console.where import Where
@@ -891,7 +891,7 @@ def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_dat
 
 
 def test_the_journal_asks_its_host_to_start_every_service_the_features_declare_at_boot(app, monkeypatch):
-    from journal.service_start import ServiceStart
+    from journal.support.service_start import ServiceStart
     from journal.features.registry import Registry
     from journal.features.service import Service
     from journal.supervisor_link import SupervisorLink
@@ -4254,7 +4254,7 @@ def test_the_end_of_a_session_never_begun_makes_no_agent(app):
 
 def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_path):
     from journal.features.plugins.manifest_reader import ManifestReader
-    from journal.refused import Refused
+    from journal.support.refused import Refused
     reader = app.container.get(ManifestReader)
     good = {"name": "echo", "version": "1.0.0", "program": "run.py", "protocol": 1, "hears": ["tool_starting", "tasks.created"], "holds": ["tool_starting"],
             "services": [{"name": "serve", "command": ["bin/serve"], "restart": "always"}]}
@@ -4415,7 +4415,7 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     from journal.repositories.entries import Entries
     from journal.repositories.messages import Messages
     from journal.repositories.tasks import Tasks
-    from journal.secret_values import SecretValues
+    from journal.support.secret_values import SecretValues
     from journal.events.agent.prompt_submitted import PromptSubmitted
     plugin = echo(app)
     task = app.container.get(Tasks).save(Task(environment_id=1, title="echo me"), Actor.user(1))
@@ -4549,7 +4549,7 @@ def test_a_plugins_settings_follow_its_schema_and_its_secret_comes_from_the_user
     from journal.features.plugins.plugin_runner import PluginRunner
     from journal.repositories.plugins import Plugins
     from journal.repositories.secrets import Secrets
-    from journal.secret_values import SecretValues
+    from journal.support.secret_values import SecretValues
     console, plugins = app.console(), app.container.get(Plugins)
     console.run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
     plugin = plugins.named("echo")
@@ -5116,7 +5116,7 @@ def test_a_quiet_workflow_walks_after_the_reply_and_a_walk_ended_before_it_ends_
 def test_a_secret_row_holds_its_fields_and_its_values_live_in_a_private_file(app, tmp_path, monkeypatch):
     import stat
     from datetime import datetime, timezone
-    from journal.secret_values import SecretValues
+    from journal.support.secret_values import SecretValues
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
     from journal.repositories.secrets import Secrets
@@ -5144,7 +5144,7 @@ def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app, 
     from journal.models.message import Message
     from journal.repositories.messages import Messages
     from journal.repositories.scope import Scope
-    from journal.secret_values import SecretValues
+    from journal.support.secret_values import SecretValues
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     hook(app, "SessionStart")
     app.container.get(SecretValues).put("GITHUB_KEY", "ghp_0123456789abcdef")
@@ -5163,7 +5163,7 @@ def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app, 
 
 
 def test_the_agent_is_kept_out_of_the_secrets_and_the_mcp_keys(app, tmp_path, monkeypatch):
-    from journal.secret_values import SecretValues
+    from journal.support.secret_values import SecretValues
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     monkeypatch.setattr(Path, "home", lambda: tmp_path / "home")
     hook(app, "SessionStart")
@@ -5204,7 +5204,7 @@ def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_t
     made = tmp_path / "made.txt"
     made.write_text("  generated-password-value  \n")
     assert console.run(["secret", "store", "1", "key", str(made)], AGENT).code == 0 and not made.exists()
-    from journal.secret_values import SecretValues
+    from journal.support.secret_values import SecretValues
     assert app.container.get(SecretValues).values()["GITHUB_KEY"] == "generated-password-value"
     console.run(["secret", "delete", "2"], AGENT)
     assert "Stripe" not in console.run(["secret", "list"], AGENT).out
@@ -5294,7 +5294,7 @@ def test_a_replaced_value_stays_masked_and_a_login_that_ran_out_asks_again_once(
     from journal.models.secret_kind import SecretKind
     from journal.repositories.messages import Messages
     from journal.repositories.secrets import Secrets
-    from journal.secret_values import SecretValues
+    from journal.support.secret_values import SecretValues
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     values = app.container.get(SecretValues)
     values.put("GITHUB_KEY", "ghp_oldvalue_0001")
@@ -5319,7 +5319,7 @@ def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app, tmp
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
     from journal.repositories.secrets import Secrets
-    from journal.secret_values import AT, RETIRED, SecretValues
+    from journal.support.secret_values import AT, RETIRED, SecretValues
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     values, secrets = app.container.get(SecretValues), app.container.get(Secrets)
     long_ago = datetime.now(timezone.utc) - timedelta(days=31)

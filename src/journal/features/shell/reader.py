@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 
 @dataclass(frozen=True)

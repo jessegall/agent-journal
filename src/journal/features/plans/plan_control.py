@@ -7,7 +7,7 @@ from journal.models.actor import Actor
 from journal.models.plan import Plan
 from journal.models.task import Task
 from journal.models.task_state import TaskState
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.not_found import NotFound
 from journal.repositories.plans import Plans
 from journal.repositories.settings import Settings

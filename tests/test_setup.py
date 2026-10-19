@@ -87,7 +87,7 @@ def test_codex_hooks_count_as_trusted_once_codex_notes_them(tmp_path, monkeypatc
 
 def test_the_private_folder_keeps_keys_and_secrets_to_their_user_and_out_of_git(tmp_path, monkeypatch):
     import stat
-    from journal.private_folder import SECRETS_VARIABLE, PrivateFolder
+    from journal.support.private_folder import SECRETS_VARIABLE, PrivateFolder
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.delenv(SECRETS_VARIABLE, raising=False)
     monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)

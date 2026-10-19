@@ -11,7 +11,7 @@ from journal.features.sharing.tunler import Tunler
 from journal.features.sharing.tunler_status import TunlerStatus
 from journal.features.sharing.tunnel_cause import TunnelCause
 from journal.features.sharing.tunnel_service import TunnelService
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.settings import Settings
 from journal.repositories.shares import Shares
 from journal.supervisor_link import SupervisorLink

@@ -6,7 +6,7 @@ from journal.features.mcp.provider_config import ProviderConfig
 from journal.engine.nudger import Nudger
 from journal.models.actor import Actor
 from journal.models.mcp_server import McpServer
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.engine.turn import Turn

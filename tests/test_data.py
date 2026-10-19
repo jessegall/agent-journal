@@ -1,6 +1,6 @@
 from journal.config import Config
 from journal.db.masks import Masks
-from journal.secret_values import SecretValues
+from journal.support.secret_values import SecretValues
 """Phase one: a task is created, linked, updated and deleted in a real database, and every model event is heard with its actor."""
 
 import threading
@@ -17,7 +17,7 @@ from journal.events.models.updated import Updated
 from journal.events.models.updating import Updating
 from journal.events.listener import Listener
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.models.actor import Actor
 from journal.models.link import Link
 from journal.models.ref import Ref
@@ -172,7 +172,7 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
 def test_a_title_is_one_line_of_eighty_characters_without_a_colon_and_an_old_one_is_left_alone(connection, bus, scope):
     from journal.models.actor import Actor
     from journal.models.task import Task
-    from journal.refused import Refused
+    from journal.support.refused import Refused
     from journal.repositories.tasks import Tasks
     tasks = tasks_of(connection, bus, scope)
     with pytest.raises(Refused, match="at most 80 characters"):

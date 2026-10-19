@@ -27,7 +27,7 @@ TICK_QUIET = 3600.0
 from dataclasses import replace
 
 from journal.providers.providers import Providers
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions

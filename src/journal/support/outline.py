@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.support.section import Section
 
 

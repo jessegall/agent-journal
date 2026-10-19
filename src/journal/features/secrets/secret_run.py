@@ -10,9 +10,9 @@ from journal.features.secrets.output_mask import OutputMask
 from journal.features.secrets.programs import Programs
 from journal.models.secret import Secret
 from journal.models.secret_field import SecretField
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.mcp_servers import McpServers
-from journal.secret_values import SecretValues
+from journal.support.secret_values import SecretValues
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 THROWAWAY = ("HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "GH_CONFIG_DIR", "DOCKER_CONFIG")

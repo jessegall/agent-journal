@@ -6,7 +6,7 @@ from journal.models.author import Author
 from journal.models.link import Link
 from journal.models.message import Message
 from journal.models.ref import Ref
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 

@@ -7,10 +7,10 @@ from pathlib import Path
 from journal.config import Config
 from journal.engine.held_line import HeldLine
 from journal.engine.typed_lines import TypedLines
-from journal.old_supervisor import OldSupervisor
-from journal.supervisor_announcement import SupervisorAnnouncement
-from journal.supervisor_reply import SupervisorReply
-from journal.supervisor_socket import SupervisorSocket
+from journal.support.old_supervisor import OldSupervisor
+from journal.support.supervisor_announcement import SupervisorAnnouncement
+from journal.support.supervisor_reply import SupervisorReply
+from journal.support.supervisor_socket import SupervisorSocket
 from journal.repositories.environments import Environments
 
 MARK = "[journal]"

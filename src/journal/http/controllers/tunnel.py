@@ -5,7 +5,7 @@ from journal.features.sharing.tunler import Tunler
 from journal.features.sharing.tunnel import Tunnel
 from journal.http.request import Request
 from journal.http.response import Response
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.settings import Settings
 from journal.repositories.shares import Shares
 

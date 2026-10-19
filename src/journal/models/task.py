@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 
 @dataclass(frozen=True)

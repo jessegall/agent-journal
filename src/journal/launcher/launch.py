@@ -15,7 +15,7 @@ from journal.launcher.other_hooks import OtherHooks
 from journal.launcher.page_wait import PageWait
 from journal.launcher.project_command import ProjectCommand
 from journal.launcher.status_line import StatusLine
-from journal.private_folder import PrivateFolder
+from journal.support.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
 SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-bypass-approvals-and-sandbox"]}

@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 
 class SecretKind(StrEnum):

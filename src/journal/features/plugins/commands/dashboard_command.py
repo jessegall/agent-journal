@@ -3,7 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.console.where import Where
 from journal.models.dashboard_row import DashboardRow
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.dashboard_rows import DashboardRows
 
 TONES = ("", "good", "warn", "danger", "note", "muted")

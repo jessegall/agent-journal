@@ -10,7 +10,7 @@ from journal.models.agent import Agent
 from journal.models.sequence import Sequence
 from journal.models.ref import Ref
 from journal.models.sequence_run import SequenceRun
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.agents import Agents
 from journal.repositories.rows import Rows
 from journal.repositories.workers import Workers

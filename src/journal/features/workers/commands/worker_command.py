@@ -11,7 +11,7 @@ from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope

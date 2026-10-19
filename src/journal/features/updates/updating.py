@@ -10,7 +10,7 @@ from journal.features.updates.release import Release
 from journal.features.updates.release_installer import ReleaseInstaller
 from journal.features.updates.release_source import ReleaseSource
 from journal.models.actor import Actor
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins
 from journal.repositories.scope import Scope

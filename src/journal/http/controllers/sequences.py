@@ -4,7 +4,7 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.sequence import Sequence
 from journal.models.trigger_action import TriggerAction
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.sequences import Sequences
 from journal.repositories.triggers import Triggers
 

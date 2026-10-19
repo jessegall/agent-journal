@@ -1,4 +1,4 @@
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 LONGEST = 80
 

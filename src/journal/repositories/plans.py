@@ -5,7 +5,7 @@ from journal.models.actor import Actor
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links

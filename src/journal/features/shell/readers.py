@@ -3,7 +3,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.features.shell.reader import Reader
 from journal.features.shell.script_reader import ScriptReader
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 KINDS = {".pattern": Reader.from_file, ".sh": ScriptReader.from_file}
 """Each kind of reader by its file's suffix: a pattern, or a script the output is handed to."""

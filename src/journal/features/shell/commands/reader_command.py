@@ -6,7 +6,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.features.shell.reader import Reader
 from journal.features.shell.readers import Readers
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 NAME = re.compile(r"[a-z0-9][a-z0-9-]*")
 

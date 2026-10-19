@@ -7,7 +7,7 @@ from journal.features.secrets.browser_logins import BrowserLogins
 from journal.models.actor import Actor
 from journal.models.secret_field import SecretField
 from journal.repositories.secrets import Secrets
-from journal.secret_values import SecretValues
+from journal.support.secret_values import SecretValues
 
 KEPT = timedelta(days=30)
 EVERY = 3600.0

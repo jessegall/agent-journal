@@ -1,6 +1,6 @@
 import time
 
-from journal.secret_values import AT, RETIRED, SecretValues
+from journal.support.secret_values import AT, RETIRED, SecretValues
 
 SHORTEST = 8
 """A value shorter than this is too likely to stand in ordinary text to be masked."""

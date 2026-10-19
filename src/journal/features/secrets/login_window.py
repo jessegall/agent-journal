@@ -8,7 +8,7 @@ from journal.models.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.secret import Secret
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.mcp_servers import McpServers
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope

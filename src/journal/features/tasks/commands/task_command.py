@@ -7,7 +7,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.in_hand import InHand
 from journal.features.tasks.task_briefing import TaskBriefing

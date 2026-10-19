@@ -2,7 +2,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 TIMEOUT = 30
 """Seconds a reader script may take over one output."""

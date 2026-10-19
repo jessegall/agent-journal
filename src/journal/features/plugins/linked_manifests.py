@@ -8,7 +8,7 @@ from journal.features.plugins.plugin_changes import PluginChanges
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.models.actor import Actor
 from journal.models.plugin import Plugin
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.plugins import Plugins
 
 

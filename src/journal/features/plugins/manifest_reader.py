@@ -5,7 +5,7 @@ from pathlib import Path
 from journal.features.plugins.plugin_folders import PluginFolders
 from journal.features.registry import Registry
 from journal.models.plugin_manifest import PluginManifest
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.plugins import Plugins
 
 MANIFEST = "journal-plugin.json"

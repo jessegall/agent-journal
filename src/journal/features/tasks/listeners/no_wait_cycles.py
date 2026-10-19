@@ -1,7 +1,7 @@
 from journal.events.listener import Listener
 from journal.events.models.saving import Saving
 from journal.models.link import Link
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.tasks import WAITS_ON, Tasks
 
 

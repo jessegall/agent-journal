@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-from journal.refused import Refused
-from journal.secret_values import SecretValues
+from journal.support.refused import Refused
+from journal.support.secret_values import SecretValues
 
 PLAYWRIGHT = "playwright@1.63.0"
 OPEN_BROWSER = ("npx", "-y", PLAYWRIGHT, "open")

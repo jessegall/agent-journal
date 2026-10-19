@@ -7,10 +7,10 @@ from journal.models.actor_kind import ActorKind
 from journal.models.plugin import Plugin
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.plugins import Plugins
 from journal.repositories.secrets import Secrets
-from journal.secret_values import SecretValues
+from journal.support.secret_values import SecretValues
 
 KINDS = ("text", "number", "flag", "choice", "list", "secret")
 FLAGS = {"true": True, "on": True, "yes": True, "false": False, "off": False, "no": False}

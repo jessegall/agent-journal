@@ -7,7 +7,7 @@ from journal.features.chart.seeds.shipped_chart import EVENT_ORDER, ShippedChart
 from journal.features.chart.assumptions import Assumptions
 from journal.features.chart.trial import Trial
 from journal.features.chart.validation import LOCK_RULE, LOCK_WHY, TEXT_LIMIT, Validation
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.models.drawn_line import PORTS, THEN, DrawnLine
 from journal.models.drawn_node import DrawnNode
 from journal.models.workflow_at import WorkflowAt

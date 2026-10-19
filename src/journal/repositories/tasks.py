@@ -6,7 +6,7 @@ from journal.models.question import Question
 from journal.models.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.checks import Checks
 from journal.repositories.links import Links
 from journal.repositories.questions import Questions

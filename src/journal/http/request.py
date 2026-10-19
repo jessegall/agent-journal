@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
 
 from journal.models.actor import Actor
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.not_found import NotFound
 
 ENV_HEADER = "X-Journal-Env"

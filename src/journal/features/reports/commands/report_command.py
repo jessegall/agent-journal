@@ -8,7 +8,7 @@ from journal.support.outline import Outline
 from journal.models.link import Link
 from journal.models.ref import Ref
 from journal.models.report import Report
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.reports import Reports

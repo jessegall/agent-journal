@@ -4,7 +4,7 @@ from datetime import datetime
 from journal.models.model import Model
 from journal.models.secret_field import SecretField
 from journal.models.secret_kind import SecretKind
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 
 @dataclass(frozen=True)

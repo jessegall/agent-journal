@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from journal.models.plan_state import PlanState
 from journal.models.scoped import Scoped
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 
 @dataclass(frozen=True)

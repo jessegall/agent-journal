@@ -8,7 +8,7 @@ from journal.models.dump import Dump
 from journal.models.link import Link
 from journal.models.message import Message
 from journal.models.ref import Ref
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.docs import Docs
 from journal.repositories.dumps import Dumps
 from journal.repositories.links import Links

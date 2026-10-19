@@ -6,7 +6,7 @@ from functools import cached_property
 from pathlib import Path
 
 from journal.config import Config
-from journal.private_folder import PrivateFolder
+from journal.support.private_folder import PrivateFolder
 
 RETIRED = "RETIRED_"
 AT = "_AT_"

@@ -1,7 +1,7 @@
 import os
 from journal.engine.clock import Clock
 from journal.engine.menu_watcher import MenuWatcher
-from journal.service_start import ServiceStart
+from journal.support.service_start import ServiceStart
 from journal.engine.machine import Machine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges

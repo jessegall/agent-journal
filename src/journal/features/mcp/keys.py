@@ -1,7 +1,7 @@
 import json
 
 from journal.config import Config
-from journal.private_folder import PrivateFolder
+from journal.support.private_folder import PrivateFolder
 
 
 class Keys:

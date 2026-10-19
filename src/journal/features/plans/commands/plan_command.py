@@ -18,7 +18,7 @@ from journal.models.task_state import TaskState
 from journal.models.ref import Ref
 from journal.models.task import Task
 from journal.repositories.links import Links
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.phases import Phases
 from journal.repositories.plans import IN_PHASE, IN_PLAN, PHASE_OF, Plans
 from journal.repositories.tasks import Tasks, WAITS_ON

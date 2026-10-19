@@ -12,7 +12,7 @@ from journal.http.response import Response
 from journal.models.agent import Agent
 from journal.models.entry import Entry
 from journal.providers.providers import Providers
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.agents import Agents
 from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries

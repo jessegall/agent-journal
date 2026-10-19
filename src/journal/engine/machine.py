@@ -10,7 +10,7 @@ from journal.events.agent_listener import AgentListener
 from journal.events.decision import Decision
 from journal.models.actor import Actor
 from journal.models.agent import Agent
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.agents import Agents
 from journal.repositories.not_found import NotFound
 

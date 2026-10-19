@@ -2,7 +2,7 @@ from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.features.pausing.states.paused_by_user import PausedByUser
 from journal.models.agent import Agent
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.supervisor_link import SupervisorLink
 
 

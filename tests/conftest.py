@@ -9,7 +9,7 @@ from journal.app import App
 from journal.config import Config
 from journal.db.masks import Masks
 from journal.features.faults.slow_requests import TESTS_RUNNING
-from journal.secret_values import SecretValues
+from journal.support.secret_values import SecretValues
 
 from journal.db.connection import Connection
 from journal.db.schema import Schema

@@ -3,7 +3,7 @@ from urllib.parse import unquote
 
 from journal.features.faults.slow_requests import SlowRequests
 
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.not_found import NotFound
 from journal.http.request import Request
 from journal.http.response import Response

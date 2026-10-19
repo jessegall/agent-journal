@@ -1,7 +1,7 @@
 import json
 import socket
 
-from journal.supervisor_reply import SupervisorReply
+from journal.support.supervisor_reply import SupervisorReply
 
 WAIT = 5.0
 """How long a supervisor has to answer a request."""

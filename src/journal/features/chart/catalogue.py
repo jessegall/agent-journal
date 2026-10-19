@@ -2,7 +2,7 @@ from journal.features.entry import Entry
 from journal.features.registry import Registry
 from journal.models.all_models import AllModels
 from journal.models.node_kind import NodeKind
-from journal.refused import Refused
+from journal.support.refused import Refused
 
 FORMER_TITLES = {"Session start": "Session starts", "User prompt submit": "Prompt sent", "Pre tool use": "Tool about to run", "Post tool use": "Tool finished", "Stop": "Agent stops", "Message display": "Agent writes to you", "Subagent start": "Subagent starts", "Subagent stop": "Subagent ends", "Pre compact": "Context compacts", "Session end": "Session ends", "Tick": "Clock ticks"}
 """The agent events' titles before they took the providers' hook names: a shipped workflow still titled by one is retitled at boot."""

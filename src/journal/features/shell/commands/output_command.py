@@ -7,7 +7,7 @@ from journal.features.shell.output_files import OutputFiles
 from journal.features.shell.reader import Reader
 from journal.features.shell.readers import Readers
 from journal.models.command_output import CommandOutput
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.command_outputs import CommandOutputs
 
 ENDS = 10

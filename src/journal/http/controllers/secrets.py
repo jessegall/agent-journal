@@ -7,10 +7,10 @@ from journal.http.request import Request
 from journal.http.response import Response
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.scope import Scope
 from journal.repositories.secrets import Secrets
-from journal.secret_values import SecretValues
+from journal.support.secret_values import SecretValues
 
 
 class SecretController(Controller[Secret]):

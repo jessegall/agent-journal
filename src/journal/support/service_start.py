@@ -5,7 +5,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.features.registry import Registry
 from journal.supervisor_link import SupervisorLink
-from journal.supervisor_reply import SupervisorReply
+from journal.support.supervisor_reply import SupervisorReply
 
 
 class ServiceStart:

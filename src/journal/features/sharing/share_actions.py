@@ -11,7 +11,7 @@ from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.ref import Ref
 from journal.models.share import Share
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.messages import Messages
 from journal.repositories.shares import Shares
 

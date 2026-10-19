@@ -8,7 +8,7 @@ from journal.models.environment import Environment
 from journal.models.link import Link
 from journal.models.ref import Ref
 from journal.models.task import Task
-from journal.refused import Refused
+from journal.support.refused import Refused
 from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.migrated_rows import MigratedRows

@@ -27,7 +27,7 @@ def test_secret_run_gives_a_value_to_an_allowed_program_and_masks_every_form_of_
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
     from journal.repositories.secrets import Secrets
-    from journal.secret_values import SecretValues
+    from journal.support.secret_values import SecretValues
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     import tempfile
     tools = Path(tempfile.mkdtemp(prefix="tools-"))
