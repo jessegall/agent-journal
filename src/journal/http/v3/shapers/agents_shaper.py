@@ -4,7 +4,6 @@ from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.commands.shell_command import RAN, RUNNING
 from journal.features.tasks.states.working import Working
-from journal.features.thinking.thoughts import Thoughts
 from journal.features.workers.subagents import Subagents
 from journal.hooks.context_file import ContextFile
 from journal.http.v3.project_files import ProjectFiles
@@ -13,6 +12,7 @@ from journal.http.v3.v3_row import AGENT, SYSTEM, V3Row, seconds
 from journal.models.sequence_run import SequenceRun
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
+from journal.repositories.messages import Messages
 
 STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan"})
@@ -30,8 +30,8 @@ class AgentsShaper(Shaper):
 
     type = "agent"
 
-    def __init__(self, agents: Agents, entries: Entries, states: StatesCatalogue, context: ContextFile, files: ProjectFiles, thoughts: Thoughts, subagents: Subagents) -> None:
-        self.agents, self.entries, self.states, self.context, self.files, self.thoughts, self.subagents = agents, entries, states, context, files, thoughts, subagents
+    def __init__(self, agents: Agents, entries: Entries, states: StatesCatalogue, context: ContextFile, files: ProjectFiles, messages: Messages, subagents: Subagents) -> None:
+        self.agents, self.entries, self.states, self.context, self.files, self.messages, self.subagents = agents, entries, states, context, files, messages, subagents
 
     def rows(self) -> list[V3Row]:
         recent = list(reversed(self.entries.of_kind_in(KEPT)))
@@ -47,6 +47,14 @@ class AgentsShaper(Shaper):
         """A live agent's status: working when its state is one of work and its last hook says it is busy, else what the hook says."""
         return "working" if state in WORKING and heard == "busy" else heard
 
+    def thinking(self, session: str, hooks) -> str:
+        """What the working bubble shows: the agent's latest thought, until it next writes something visible."""
+        thoughts = self.messages.thoughts_of(session)
+        written = [e.created_at for e in hooks if e.kind == "TurnWritten"]
+        if not thoughts or (written and written[-1] > thoughts[-1].created_at):
+            return ""
+        return thoughts[-1].text
+
     def row(self, a, entries) -> V3Row:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted", "commit")]
         moves = [e for e in hooks if e.kind in STATUS]
@@ -58,7 +66,7 @@ class AgentsShaper(Shaper):
         data = {
             "status": status, "event": EVENT.get(kind, kind), "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "", "file": "", "at": at,
             "provider": a.provider, "model": self.context.model(a.session), "effort": self.context.effort(a.session), "usage": {"windows": self.context.usage(a.session)}, "branch": self.files.branch(), "context": round((self.context.of(a.session) or 0) * 100), "started": seconds(a.created_at), "asking": {} if a.state != "waiting" else {"n": a.data.get("question_id", 0)},
-            "doing": self.doing(a, state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]), "thinking": self.thoughts.latest(a.session), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
+            "doing": self.doing(a, state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]), "thinking": self.thinking(a.session, hooks), "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
             "cards": self.commit_cards(entries), "skills": list((a.skills_loaded or {}).keys()), "skill_loads": [], "compactions": [{"at": seconds(e.created_at)} for e in hooks if e.kind == "Compacting"],
             "subagent_rows": (subagents := self.subagents.rows(a.session)), "subagents": len(subagents), "shell_rows": [], "monitor_rows": [], "commands": [], "parent": "", "stuck": a.data.get("why", "") if a.state == "stuck" else "", "state": a.state,
             "sequence": self.sequence_of(a), "sequence_history": [self.change_of(e) for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],

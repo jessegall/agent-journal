@@ -90,7 +90,9 @@ const loads = (agents) => sessions(agents).flatMap((a) => (a.data.skill_loads ||
 const compactions = (agents) =>
     sessions(agents).flatMap((a) => (a.data.compactions || []).map((m) => mark("compacted", a, m.at, "Conversation compacted")));
 
-const thoughts = (agents) => sessions(agents).flatMap((a) => (a.data.thoughts || []).map((t) => mark("thought", a, t.at, t.text)));
+const isThought = (m) => (m.data.card || {}).kind === "thought";
+
+const spoken = (m) => (isThought(m) ? {...m, type: "thought", who: "agent", title: m.brief} : {...m, who: m.seen[0]});
 
 const SYSTEM_TURNS = {
     whisper: (card) => ({type: "whisper", data: {row: card.row, words: "", shows: "rules"}}),
@@ -197,7 +199,7 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
     const floor = older && live.length ? Math.min(...(paged.length ? paged : live).map((m) => m.created)) : 0;
     live.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(m.ref, p.ref)));
     const turns = [
-        ...said.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
+        ...said.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map(spoken),
         ...said.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
         ...live.filter(fromSystem).map(systemTurn),
         ...rows.comment
@@ -211,7 +213,6 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
         ...loads(rows.agent || []),
         ...compactions(rows.agent || []),
         ...subagents(rows.agent || []),
-        ...thoughts(rows.agent || []),
         ...cards(rows.agent || []),
         ...madeByAgent(rows.doc || [], env),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),

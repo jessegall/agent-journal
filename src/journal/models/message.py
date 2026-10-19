@@ -8,6 +8,7 @@ from journal.models.scoped import Scoped
 @dataclass(frozen=True)
 class Message(Scoped):
     FACE_WORDS = 6
+    THOUGHT = "thought"
 
     author: Author = Author.USER
     text: str = ""
@@ -22,11 +23,20 @@ class Message(Scoped):
     captions: dict = field(default_factory=dict)
     """What each attached picture shows, in the agent's words once it has opened it, so it can be found later."""
     data: dict = field(default_factory=dict)
-    """A system message's card: its kind, icon, tone, detail, the row it opens and the session it belongs to."""
+    """Its metadata: a system message's card (its kind, icon, tone, detail, the row it opens and the session it belongs to), or an agent's thought (kind thought)."""
 
     @property
     def is_agents_reply(self) -> bool:
         return self.reply_to is not None and self.author == Author.AGENT
+
+    @property
+    def is_thought(self) -> bool:
+        return self.data.get("kind") == self.THOUGHT
+
+    @property
+    def speaks_to_the_user(self) -> bool:
+        """The agent's own words in the chat: not a thought, and not a turn that only acknowledged a journal line."""
+        return self.author == Author.AGENT and not self.acknowledgement and not self.is_thought
 
     @property
     def takes_a_face(self) -> bool:

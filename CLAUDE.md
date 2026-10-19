@@ -22,6 +22,12 @@ of inheritance at most: `Model`, then `Scoped`, then the model.
 **Relations are rows.** Models declare no relations. A link between any two rows is a `Link`
 with a kind. Nothing gets a foreign-key column to something else.
 
+**Everything in the chat is a message.** Every bubble the chat shows is a row in the messages
+table: the user's words, the agent's, its thoughts, a chat mark, a commit, a receipt. What kind it
+is lives in its metadata, and who made it in its actor, the system for a mark. It is written where
+its event happens, so fetching the chat is fetching the latest messages; the viewer never pieces a
+bubble together from other rows.
+
 **One funnel per kind of write.** SQL runs only in `Connection`. Rows are written only through
 a repository, which stamps the actor and fires the model events. Lines reach the agent only
 through the `Nudger`. The supervisor is reached only through `SupervisorLink`. Caching,

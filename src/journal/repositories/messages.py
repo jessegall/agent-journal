@@ -34,7 +34,7 @@ class Messages(ScopedRepository[Message]):
         rows = self.in_()
         replied = {m.reply_to for m in rows if m.is_agents_reply}
         replied |= {ref.id for m in rows if m.is_agents_reply for ref in self.links.targets(m, self.ANSWERS)}
-        spoke = [m.created_at for m in rows if m.author == Author.AGENT and not m.acknowledgement]
+        spoke = [m.created_at for m in rows if m.speaks_to_the_user]
         return [m for m in rows if m.author == Author.USER and m.read_at is not None and m.id not in replied and not (m.takes_a_face and self.reacted_by_agent(m)) and not any(at > m.read_at for at in spoke)]
 
     def reacted_by_agent(self, message: Message) -> bool:
@@ -45,6 +45,9 @@ class Messages(ScopedRepository[Message]):
 
     def recent(self, last: int) -> list[Message]:
         return self.in_()[-last:]
+
+    def thoughts_of(self, session: str, last: int = 60) -> list[Message]:
+        return [m for m in self.recent(last) if m.is_thought and m.created_by == Actor.agent(session)]
 
     def mark_read(self, message: Message, by: Actor) -> Message:
         return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc)), by)

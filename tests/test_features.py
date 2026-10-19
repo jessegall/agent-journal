@@ -1218,7 +1218,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert card.text == "Finished in the background: testing" and card.data["detail"] == "pytest -q", "a last line of progress dots says nothing and is left out"
 
 
-def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app, monkeypatch, tmp_path):
+def test_each_thought_is_a_message_the_latest_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app, monkeypatch, tmp_path):
     import json as j
     from urllib.request import urlopen
     from journal.providers.claude import Claude
@@ -1240,6 +1240,11 @@ def test_the_latest_thought_stands_in_the_working_bubble_and_a_reply_in_thinking
     assert agent["thinking"] == "Now the next step."
     reply = app.container.get(Messages).all()[-1]
     assert reply.reply_to == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered() == []
+    hook(app, "PreToolUse", tool_name="Read", tool_input={})
+    app.runtime().deferred.drain()
+    thoughts = [m for m in app.container.get(Messages).all() if m.is_thought]
+    assert [m.text for m in thoughts] == ["[!reply:1]\nYes, hello.", "Now the next step."], "each thought is a message in the chat, marked a thought, and kept once"
+    assert all(m.created_by.id == "s1" for m in thoughts)
     hook(app, "MessageDisplay", message="Done.")
     app.runtime().deferred.drain()
     assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/agent?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["rows"][-1]["data"]["thinking"] == ""
