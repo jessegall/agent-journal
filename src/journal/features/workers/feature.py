@@ -1,6 +1,7 @@
 from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
+from journal.models.option import Option
 from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
@@ -14,6 +15,8 @@ class Workers(Feature):
     name = "workers"
     title = "Workers"
     help = "Agents sent to write one bounded job; the agent waits for their reports."
+    TIMEOUT = Option("workers.timeout_minutes", "Time limit of a worker run", "Minutes a worker may run before it is stopped and its report says so; 0 sets no limit", 60, unit="min")
+    options = (TIMEOUT,)
     states = (Awaiting,)
     commands = (WorkerCommand,)
     listeners = (MarkSubagents,)

@@ -9,3 +9,5 @@ class HeadCommit:
     subject: str
     branch: str
     body: str
+    committed: int
+    """Unix seconds the commit was made."""

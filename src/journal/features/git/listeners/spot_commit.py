@@ -1,5 +1,6 @@
 import re
 import subprocess
+import time
 
 from journal.config import Config
 from journal.console.console import Console
@@ -13,9 +14,13 @@ from journal.events.decision import Decision
 from journal.models.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
+from journal.repositories.tasks import Tasks as TaskRows
+from journal.models.task_state import TaskState
 from journal.repositories.environments import Environments
 
 COMMIT = "commit"
+JUST_MADE = 60
+"""Seconds a commit counts as made by the command that just ran: an older head is another's, and its trailer closes nothing."""
 TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)?)+)\s*(.*)$", re.MULTILINE)
 """The line, on its own and at column zero, that closes tasks when the commit lands: the numbers, then what was done."""
 
@@ -25,8 +30,8 @@ class SpotCommit(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, agents: Agents, nudger: Nudger) -> None:
-        self.config, self.cards, self.messages, self.console, self.environments, self.agents, self.nudger = config, cards, messages, console, environments, agents, nudger
+    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, agents: Agents, nudger: Nudger, tasks: TaskRows) -> None:
+        self.config, self.cards, self.messages, self.console, self.environments, self.agents, self.nudger, self.tasks = config, cards, messages, console, environments, agents, nudger, tasks
 
     def handle(self, event: ToolFinished) -> Decision | None:
         command = event.input.get("command", "") if event.tool == "Bash" else ""
@@ -38,11 +43,14 @@ class SpotCommit(AgentListener[ToolFinished]):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject, "shows": "commits"}, by)
+        if time.time() - head.committed > JUST_MADE:
+            return None
         return self.close_named(event, head.sha, head.body)
 
     def close_named(self, event: ToolFinished, sha: str, body: str) -> Decision | None:
         from journal.features.tasks.feature import Tasks
         numbers = [int(n) for found in TRAILER.finditer(body) for n in re.findall(r"\d+", found.group(1))]
+        numbers = [n for n in numbers if self.tasks.where(id=n, state=TaskState.OPEN) or self.tasks.where(id=n, state=TaskState.STARTED)]
         if not numbers:
             return None
         where = Where(self.environments.find(event.environment_id).name, event.session)
@@ -54,12 +62,13 @@ class SpotCommit(AgentListener[ToolFinished]):
 
     def head(self) -> HeadCommit | None:
         try:
-            out = subprocess.run(["git", "log", "-1", "--format=%H%n%s%n%B"], cwd=self.config.root, capture_output=True, text=True, timeout=5)
+            out = subprocess.run(["git", "log", "-1", "--format=%H%n%ct%n%s%n%B"], cwd=self.config.root, capture_output=True, text=True, timeout=5)
             branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=5).stdout.strip()
         except (OSError, subprocess.TimeoutExpired):
             return None
         if out.returncode != 0 or not out.stdout.strip():
             return None
         sha, _, rest = out.stdout.strip().partition("\n")
+        committed, _, rest = rest.partition("\n")
         subject, _, body = rest.partition("\n")
-        return HeadCommit(sha, subject, branch, body)
+        return HeadCommit(sha, subject, branch, body, int(committed))
