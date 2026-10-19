@@ -2,6 +2,7 @@ from journal.features.entry import Entry
 from journal.features.feature import Feature
 from journal.features.messages.listeners.hint_reply_by_tag import HintReplyByTag
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
+from journal.features.messages.listeners.sweep_transcripts import SweepTranscripts
 from journal.features.messages.commands.message_command import MessageCommand
 from journal.features.messages.listeners.deliver_message import DeliverMessage
 from journal.features.messages.listeners.deliver_unread_at_start import DeliverUnreadAtStart
@@ -25,10 +26,11 @@ class Messages(Feature):
     commands = (MessageCommand,)
     NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses with a message read and unanswered before the agent is asked to answer it; the guards' workflow reads it against the count of uses owed", 0, unit="tool uses")
     HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses with a message read and unanswered before every tool call waits for the answer; 0 holds the first; read against the count of uses owed", 0, unit="tool uses")
+    SWEEP_AFTER = Option("messages.sweep_after", "Look for missed words older than", "Seconds the hooks have to bring the agent's words to the chat before the transcript is looked through for any they missed", 10, unit="seconds")
     REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between namings of an inbox the agent has not read; the guards' workflow reads it against the count of uses since the message came", 3, unit="tool uses")
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Namings of an unread inbox before the next write waits until it is read; read against the count of namings", 5, unit="reminders")
-    options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS)
-    listeners = (HintReplyByTag, RecordTypedPrompt, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
+    options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS, SWEEP_AFTER)
+    listeners = (HintReplyByTag, SweepTranscripts, RecordTypedPrompt, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
     checks = (
         Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
         Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N', takes_text=True),

@@ -1308,6 +1308,32 @@ def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app):
     assert marks[0].text == 'Searched for "base REPOSITORY"' and "task 1: Scope the reads" in marks[0].data["detail"], "the mark opens what was found"
 
 
+def test_words_the_hooks_missed_are_swept_from_the_transcript_into_the_chat_once(app, monkeypatch, tmp_path):
+    import json as j
+    import time
+    from datetime import datetime, timezone
+    from journal.events.bus import Bus
+    from journal.events.clock_ticked import ClockTicked
+    from journal.providers.claude import Claude
+    from journal.repositories.messages import Messages
+    now = time.time()
+    stamp = lambda seconds_ago: datetime.fromtimestamp(now - seconds_ago, timezone.utc).isoformat().replace("+00:00", "Z")
+    said = lambda text, ago: j.dumps({"type": "assistant", "timestamp": stamp(ago), "message": {"content": [{"type": "text", "text": text}]}}) + "\n"
+    transcript = tmp_path / "s1.jsonl"
+    transcript.write_text(said("Hello, Sir Jesse.", 60))
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: transcript if session == "s1" else None)
+    hook(app, "SessionStart")
+    with transcript.open("a") as file:
+        file.write(said("Missed by every hook.", 20) + said("Still the hooks' to bring.", 5))
+    bus, messages = app.container.get(Bus), app.container.get(Messages)
+    bus.dispatch(ClockTicked(at=now))
+    bus.dispatch(ClockTicked(at=now + 1))
+    agents = lambda: [m.text for m in messages.across_environments() if m.author == "agent"]
+    assert agents().count("Missed by every hook.") == 1 and "Still the hooks' to bring." not in agents(), "older words the hooks did not read are swept in once; the newest are left to the hooks"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert agents().count("Missed by every hook.") == 1 and agents().count("Still the hooks' to bring.") == 1, "the next hook reads on from past the swept words, never taking them again"
+
+
 def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_path):
     import json as j
     from journal.providers.codex import Codex

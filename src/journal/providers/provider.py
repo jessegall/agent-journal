@@ -67,6 +67,23 @@ class Provider:
         """What the agent thought since the user's last prompt, when the provider writes thinking down: nothing for most."""
         return []
 
+    def texts_written_before(self, project: Path, session: str, read: int, until: float) -> tuple[list[str], int]:
+        """The text blocks written since the byte read last up to a moment, and the byte of the first line after it: what the hooks have not read and are past waiting for."""
+        path = self.transcript(project, session)
+        if path is None or read < 0:
+            return [], read
+        with path.open("rb") as file:
+            file.seek(read)
+            raw = file.read()
+        texts, at = [], read
+        for line in raw[:raw.rfind(b"\n") + 1].splitlines(keepends=True):
+            row = json.loads(line) if line.startswith(b"{") else {}
+            if self.seconds(str(row.get("timestamp", ""))) >= until:
+                break
+            texts += self.texts_in(row)
+            at += len(line)
+        return texts, at
+
     def texts_written(self, project: Path, session: str, read: int) -> tuple[list[str], int]:
         path = self.transcript(project, session)
         if path is None:
