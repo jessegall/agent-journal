@@ -12,13 +12,6 @@ class Links(Repository[Link]):
         ref = str(Ref.to(model))
         return self.selected("source = ? OR target = ? ORDER BY id", (ref, ref))
 
-    def targets_by_source(self, table: str, kind: str) -> dict[Ref, list[Ref]]:
-        """Every link of a kind from the rows of one table, in one read: what each of those rows links to."""
-        found: dict[Ref, list[Ref]] = {}
-        for link in self.selected("kind = ? AND source LIKE ? ORDER BY id", (kind, f"{table}:%")):
-            found.setdefault(link.source, []).append(link.target)
-        return found
-
     def targets(self, model: Model, kind: str) -> list[Ref]:
         return [link.target for link in self.of(model) if link.source == Ref.to(model) and link.kind == kind]
 

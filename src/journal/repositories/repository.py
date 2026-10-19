@@ -15,6 +15,7 @@ from journal.events.models.updating import Updating
 from journal.events.bus import Bus
 from journal.models.actor import Actor
 from journal.models.model import Model
+from journal.models.ref import Ref
 from journal.models.title import Title
 from journal.repositories.not_found import NotFound
 
@@ -43,6 +44,13 @@ class Repository(Generic[M]):
     def selected(self, clause: str, params: tuple = ()) -> list[M]:
         """The rows a WHERE clause picks, in the order and number it names."""
         return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE {clause}", params)]
+
+    def linked(self, kind: str) -> dict[int, list[Ref]]:
+        """What this table's rows link to by a kind, by row number, from one read of the links: every model can have links."""
+        found: dict[int, list[Ref]] = {}
+        for link in self.connection.all("SELECT source, target FROM links WHERE kind = ? AND source LIKE ? ORDER BY id", (kind, f"{self.table}:%")):
+            found.setdefault(Ref.parse(link["source"]).id, []).append(Ref.parse(link["target"]))
+        return found
 
     def where(self, **fields) -> list[M]:
         clause = " AND ".join(f"{name} = ?" for name in fields)

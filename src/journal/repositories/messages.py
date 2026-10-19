@@ -5,7 +5,6 @@ from journal.events.bus import Bus
 from journal.models.actor import Actor
 from journal.models.author import Author
 from journal.models.message import Message
-from journal.models.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions
 from journal.repositories.scope import Scope
@@ -51,10 +50,6 @@ class Messages(ScopedRepository[Message]):
 
     def reacted_by_agent(self, message: Message) -> bool:
         return any(r.author == Author.AGENT for r in self.reactions.on(message))
-
-    def linked(self, kind: str) -> dict[int, list[Ref]]:
-        """What the messages link to by a kind, by message number, from one read of the links."""
-        return {ref.id: targets for ref, targets in self.links.targets_by_source(Message.table(), kind).items()}
 
     def window(self, last: int, before: int = 0, after: int = 0) -> list[Message]:
         """At most last of the newest messages numbered above after and below before, oldest first."""
