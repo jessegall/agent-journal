@@ -175,6 +175,43 @@ def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app):
     assert "task 2 is next" in console.run(["plan", "start", "1"], AGENT).out
 
 
+def test_a_task_waits_on_a_question_by_a_link_and_the_answer_clears_it(app):
+    from journal.models.task_state import TaskState
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["plan", "create", "release", "--brief", "ship"], USER)
+    console.run(["plan", "add", "1", "pick the name"], USER)
+    console.run(["plan", "add", "1", "write the notes"], USER)
+    console.run(["question", "ask", "Which name?"], AGENT)
+    assert console.run(["task", "block", "1", "--on", "question:1"], AGENT).code == 0
+    tasks = app.container.get(Tasks)
+    assert tasks.find(1).state == TaskState.BLOCKED and tasks.reason(tasks.find(1)) == "question 1"
+    assert console.run(["task", "block", "2"], AGENT).code != 0, "a block names a wait or a reason"
+    console.run(["question", "answer", "1", "alpha"], USER)
+    app.runtime().deferred.drain()
+    assert tasks.find(1).state == TaskState.OPEN
+
+
+def test_a_plan_does_not_hand_out_a_task_whose_wait_is_open(app):
+    from journal.models.ref import Ref
+    from journal.models.link import Link
+    from journal.models.actor import Actor
+    from journal.repositories.links import Links
+    from journal.repositories.plans import Plans
+    from journal.repositories.tasks import Tasks, WAITS_ON
+    console = app.console()
+    console.run(["plan", "create", "release", "--brief", "ship"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "add", "1", "second"], USER)
+    tasks, plans = app.container.get(Tasks), app.container.get(Plans)
+    console.run(["task", "create", "dependency"], USER)
+    app.container.get(Links).save(Link(source=Ref.to(tasks.find(1)), target=Ref.to(tasks.find(3)), kind=WAITS_ON), Actor.system())
+    assert plans.next_task(plans.find(1)).id == 2
+    console.run(["task", "done", "3"], AGENT)
+    assert plans.next_task(plans.find(1)).id == 1
+
+
 def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
     from journal.repositories.messages import Messages
     console = app.console()

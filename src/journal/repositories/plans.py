@@ -90,7 +90,7 @@ class Plans(ScopedRepository[Plan]):
         return all(t.state in (TaskState.DONE, TaskState.CANCELLED) for t in self.tasks_of(plan))
 
     def next_task(self, plan: Plan) -> Task | None:
-        return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN), None)
+        return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN and not self.tasks.open_waits(t)), None)
 
     def current_phase(self, plan: Plan) -> int:
         """The number from 1 of the first phase with a task still to close, or of the last when none has."""

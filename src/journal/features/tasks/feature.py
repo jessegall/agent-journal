@@ -3,6 +3,7 @@ from journal.features.feature import Feature
 from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
+from journal.features.tasks.listeners.clear_waits import ClearWaits
 from journal.features.tasks.listeners.spot_polling import SpotPolling
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
@@ -25,7 +26,7 @@ class Tasks(Feature):
     NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between namings of the task in hand, so drift is noticed; read against the edits count", 25, unit="edits")
     LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits with nothing logged before the next write waits for a log line; read against the edits count, a held write not counted", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
-    listeners = (SpotPolling,)
+    listeners = (SpotPolling, ClearWaits)
     checks = (
         Entry(NodeKind.CHECK, 'open_tasks', 'Has open tasks?', 'the environment has open tasks the agent may take up, outside a plan not yet started'),
         Entry(NodeKind.CHECK, 'related_tasks', 'Has a task to take up meanwhile?', 'a started plan has a next task, or, with no plan started, a task is open outside a plan'),
@@ -52,7 +53,8 @@ class Tasks(Feature):
     PARKED_STILL = Nudge(name, "parked_still", "task {{n}} is still parked: can you continue it now?", "it was parked because: {{why}}. `journal task resume {{n}}` picks it up again", repeat_after=900)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step", repeat_after=300)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for half an hour: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
-    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN)
+    WAIT_CLEARED = Nudge(name, "wait_cleared", "task {{n}} is open again: {{on}} is answered or closed", "`journal task start {{n}}` takes it up", repeat_after=0)
+    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN, WAIT_CLEARED)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks
