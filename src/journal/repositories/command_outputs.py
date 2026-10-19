@@ -1,3 +1,6 @@
+from datetime import datetime, timezone
+from pathlib import Path
+
 from journal.models.command_output import CommandOutput
 from journal.support.not_found import NotFound
 from journal.repositories.scoped_repository import ScopedRepository
@@ -11,6 +14,13 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
         if not found:
             raise NotFound(self.table, chain)
         return found[-1]
+
+    def in_background(self, session: str) -> list[CommandOutput]:
+        return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if Path(o.folder).is_dir() and not (Path(o.folder) / "done").is_file()]
+
+    def in_background_over(self, session: str, seconds: int) -> list[CommandOutput]:
+        now = datetime.now(timezone.utc)
+        return [o for o in self.in_background(session) if (now - o.created_at).total_seconds() >= seconds]
 
     def beyond(self, kept: int) -> list[CommandOutput]:
         """The rows older than the newest so many, across every environment: the rolling log keeps no more."""

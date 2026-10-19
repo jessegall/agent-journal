@@ -6176,3 +6176,29 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, t
     assert app.container.get(Dumps).find(1).made_refs() == ["docs:1"]
     console.run(["dump", "remove", "1"], USER)
     assert app.container.get(Dumps).find(1).removed_refs == ("docs:1",) and console.run(["doc", "list"], AGENT).out == ""
+
+
+def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_most_every_five(app, monkeypatch, tmp_path):
+    from datetime import datetime, timedelta, timezone
+    from journal.db.connection import Connection
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    from journal.models.command_output import CommandOutput
+    from journal.repositories.command_outputs import CommandOutputs
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    hook(app, "SessionStart")
+    folder = tmp_path / "chain"
+    folder.mkdir()
+    outputs = app.container.get(CommandOutputs)
+    running = outputs.save(CommandOutput(environment_id=1, chain="c1", command="python3 -m pytest -q", session="s1", folder=str(folder), moved=True), Actor.system())
+    tick = lambda: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=time.time(), quiet_for=30.0))
+    tick()
+    assert not any("still in the background" in line for line in typed), "a command moved to the background a moment ago is left to run"
+    app.container.get(Connection).execute("UPDATE command_outputs SET created_at = ? WHERE id = ?", ((datetime.now(timezone.utc) - timedelta(minutes=6)).isoformat(), running.id))
+    tick()
+    tick()
+    named = [line for line in typed if "still in the background" in line]
+    assert len(named) == 1 and f"output {running.id}, python3 -m pytest -q, running 6 min" in named[0], "past five minutes the agent is told to look at it, once until five more pass"
+    (folder / "done").write_text("0")
+    assert outputs.in_background("s1") == [], "a command that ended is no longer in the background"

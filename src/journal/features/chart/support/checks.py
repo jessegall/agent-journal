@@ -44,6 +44,7 @@ from journal.repositories.reminders import Reminders
 from journal.repositories.agents import Agents
 from journal.repositories.questions import Questions
 from journal.repositories.task_logs import TaskLogs
+from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.tasks import Tasks
 
 
@@ -52,7 +53,7 @@ SECONDS = {"s": 1, "sec": 1, "secs": 1, "second": 1, "seconds": 1, "m": 60, "min
 """A time in a check's text, by its unit; a bare number is seconds."""
 TAKEN_OVER_WITHIN = timedelta(days=1)
 """Another session that worked here this recently makes a start a takeover."""
-COUNTERS = ("unanswered_over", "quiet_for_over", "unread_over", "log_stale_over", "context_over", "memory_older_than")
+COUNTERS = ("unanswered_over", "quiet_for_over", "background_over", "unread_over", "log_stale_over", "context_over", "memory_older_than")
 WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between")
 """The checks that read their text as words: the tool names, the words looked for, the hours."""
 """The checks that take a number: the node's text, or the setting named there."""
@@ -68,7 +69,8 @@ class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring,
-                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs, backup: Version3Backup) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs, backup: Version3Backup, outputs: CommandOutputs) -> None:
+        self.outputs = outputs
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
         self.registry, self.config, self.workers = registry, config, workers
         self.counts = counts
@@ -263,6 +265,9 @@ class Checks:
         local = time.localtime(at)
         now = local.tm_hour * 60 + local.tm_min
         return a <= now < b if a <= b else now >= a or now < b
+
+    def background_over(self, ctx: Context, seconds: int) -> bool:
+        return isinstance(ctx.event, Ticked) and bool(self.outputs.in_background_over(ctx.session, seconds))
 
     def quiet_for_over(self, ctx: Context, seconds: int) -> bool:
         """The clock ticks and the agent has been quiet for at least so many seconds."""

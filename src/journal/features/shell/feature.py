@@ -27,6 +27,7 @@ class Shell(Feature):
     listeners = (RefuseMixedJournal, ReadNarrowly, SpotHandReads)
     checks = (
         Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
+        Entry(NodeKind.CHECK, 'background_over', 'Has a command run in the background longer than N?', 'the clock ticks and one of the agent\'s commands has run in the background longer than the time in the text, with its unit: 5 minutes'),
     )
 
     MOVED = Nudge(name, "moved", "moved to the background as output {{n}}", "you are told when it ends; its output is in {{file}}. Carry on with what does not wait on it", repeat_after=0)
@@ -35,7 +36,8 @@ class Shell(Feature):
     READER_TIP = Nudge(name, "reader_tip", "you read outputs this way again: {{command}}", "a reader does it for you: `journal reader add <name> --pattern <regex> --about \"<what it picks>\"`, then `journal output read N --reader <name>`", repeat_after=0)
     NARROW = Nudge(name, "narrow", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
     ALONE = Nudge(name, "alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_after=0)
-    nudges = (MOVED, ENDED, ALONE)
+    CHECK_BACKGROUND = Nudge(name, "check_background", "{{background_outputs}} still in the background", "look at each with `journal output read <n> --tail 5`. Still going: carry on. Hung or stuck: stop it and say why", repeat_after=300)
+    nudges = (MOVED, ENDED, ALONE, CHECK_BACKGROUND)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands

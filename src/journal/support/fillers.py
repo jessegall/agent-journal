@@ -34,6 +34,7 @@ from journal.repositories.environments import Environments
 from journal.repositories.task_logs import TaskLogs
 from journal.config import Config
 from journal.repositories.tasks import Tasks
+from journal.repositories.command_outputs import CommandOutputs
 
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 VALUE = re.compile(r"\{\{value\.(\w+)\}\}")
@@ -44,7 +45,8 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue, briefing: TaskBriefing) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue, briefing: TaskBriefing, outputs: CommandOutputs) -> None:
+        self.outputs = outputs
         self.briefing = briefing
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.workers, self.states = workers, states
@@ -250,6 +252,10 @@ class Fillers:
         """The words of the sequence step in hand."""
         run = self.running.in_hand(ctx.session, ctx.environment_id) if ctx.session else None
         return run.text if run else ""
+
+    def background_outputs(self, ctx: Context) -> str:
+        now = datetime.now(timezone.utc)
+        return "; ".join(f"output {o.id}, {o.headline()}, running {int((now - o.created_at).total_seconds() // 60)} min" for o in self.outputs.in_background(ctx.session))
 
     def quiet_minutes(self, ctx: Context) -> str:
         """How many minutes the agent has been quiet, at a tick."""
