@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
 
+from journal.engine.typed_lines import TypedLines
 from journal.repositories.counts import Counts
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
@@ -45,13 +46,24 @@ def hook_as(app, provider: str, kind: str, session: str = "s1", **body):
         return error.code, json.loads(error.read())
 
 
+def catch_typed(app, monkeypatch, typed: list) -> None:
+    """Catches each line typed to the agent into typed and confirms it at once, as the agent's prompt hook would, so the next is not held behind it."""
+    lines = app.container.get(TypedLines)
+
+    def seen_back(link, environment_id: int, verb: str, fields: dict) -> None:
+        typed.append(fields["line"])
+        lines.confirm(environment_id, fields["line"])
+
+    monkeypatch.setattr(SupervisorLink, "_send", seen_back)
+
+
 class Replay:
     """One journal under replay: the lines typed to its agent are caught, and each step closes with what the step answered, typed and said."""
 
     def __init__(self, app, monkeypatch) -> None:
         """On a started journal, the lines typed to its agent caught."""
         self.app, self.typed, self.steps, self.seen, self.last_walk = app, [], [], 0, 0
-        monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, verb, fields: self.typed.append({"verb": verb, **fields}["line"]))
+        catch_typed(app, monkeypatch, self.typed)
 
     def step(self, name: str, answer=None) -> None:
         """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the agent's counts as they stand, and what the count checks of the walks since read."""

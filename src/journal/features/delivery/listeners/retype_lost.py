@@ -26,6 +26,7 @@ class RetypeLost(AgentListener[Ticked]):
         for lost in self.typed.overdue(event.environment_id, event.at - PATIENCE):
             if lost.tries >= TRIES:
                 self.typed.given_up(lost)
+                self.supervisor.release(event.environment_id)
                 self.cards.show(event.environment_id, event.session, f"A line did not reach the agent in {TRIES} tries", "terminal", "bad", lost.line)
             else:
                 again = self.typed.tried_again(lost, event.at)

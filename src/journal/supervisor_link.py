@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from journal.config import Config
+from journal.engine.held_line import HeldLine
 from journal.engine.typed_lines import TypedLines
 from journal.old_supervisor import OldSupervisor
 from journal.supervisor_announcement import SupervisorAnnouncement
@@ -25,10 +26,22 @@ class SupervisorLink:
         self._viewer_keyed_at: dict[int, float] = {}
 
     def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
-        """A line of the journal's, marked, and noted until its prompt hook proves it arrived."""
+        """A line of the journal's, marked, and noted until its prompt hook proves it arrived; held while an earlier line is still on its way."""
         marked = f"{MARK} {line}"
+        if self.typed.is_waiting(environment_id):
+            self.typed.hold(HeldLine(environment_id, marked, after))
+            return
         self.typed.typed(environment_id, marked)
         self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": after})
+
+    def release(self, environment_id: int) -> None:
+        """The next held line typed, once no earlier line is on its way."""
+        if self.typed.is_waiting(environment_id):
+            return
+        held = self.typed.next_held(environment_id)
+        if held is not None:
+            self.typed.typed(environment_id, held.line)
+            self._send(environment_id, "type", {"name": AGENT, "line": held.line, "after": held.after})
 
     def type_again(self, environment_id: int, marked: str) -> None:
         """A marked line typed once more, as it was."""

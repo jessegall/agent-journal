@@ -1,13 +1,29 @@
 import time
 
+from journal.engine.held_line import HeldLine
 from journal.engine.typed_line import TypedLine
 
 
 class TypedLines:
-    """The lines typed to the agents and not yet seen back as a prompt: a line is confirmed by the prompt that carries its words, and until then it may have been lost."""
+    """The lines typed to the agents and not yet seen back as a prompt: a line is confirmed by the prompt that carries its words, and until then it may have been lost. A line for an agent with one still unconfirmed is held, since a line typed while the agent holds another in its queue lands in its prompt box and its Enter only breaks the line."""
 
     def __init__(self) -> None:
         self._waiting: list[TypedLine] = []
+        self._held: list[HeldLine] = []
+
+    def is_waiting(self, environment_id: int) -> bool:
+        """Whether a line typed to the environment's agent is not yet seen back."""
+        return any(t.environment_id == environment_id for t in self._waiting)
+
+    def hold(self, line: HeldLine) -> None:
+        self._held.append(line)
+
+    def next_held(self, environment_id: int) -> HeldLine | None:
+        """The oldest line held for the environment, taken from the hold; none when nothing waits."""
+        held = next((h for h in self._held if h.environment_id == environment_id), None)
+        if held is not None:
+            self._held.remove(held)
+        return held
 
     def typed(self, environment_id: int, line: str) -> None:
         self._waiting.append(TypedLine(environment_id, line, time.time()))

@@ -25,6 +25,8 @@ from journal.engine.machine import Machine
 from journal.features.sequences.running import Running
 from journal.features.tasks.states.working import Working
 
+from tests.replay import catch_typed
+
 AGENT = Where("main", "s1")
 USER = Where("main")
 MAIN = 1
@@ -191,8 +193,7 @@ def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app):
 def test_a_reply_tag_counts_only_at_the_start_of_a_line(app, monkeypatch):
     from journal.repositories.messages import Messages
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     app.console().run(["message", "send", "first"], USER)
     app.console().run(["message", "send", "second"], USER)
     hook(app, "SessionStart")
@@ -282,6 +283,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
 
 
 def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
+    from journal.engine.typed_lines import TypedLines
     import threading
     import traceback
     typed, stacks = [], []
@@ -303,8 +305,13 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     assert machine.current("s1").name == "awaiting" and hook(app, "Stop")[1] == {}
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
     assert machine.current("s1").name == "awaiting" and typed == ["[journal] worker 1, Lady Lovelace, reported in the chat"], "\n".join(stacks)
+    lines, link = app.container.get(TypedLines), app.container.get(SupervisorLink)
+    lines.confirm(1, typed[0])
     console.run(["worker", "stop", "2"], USER)
     assert machine.current("s1").task_id == 1
+    assert typed[-1] == "[journal] worker 2, Dr. Einstein, stopped before it reported", "one line at a time: the next waits until this one is seen back"
+    lines.confirm(1, typed[-1])
+    link.release(1)
     assert typed[-1] == "[journal] what you waited on came back: carry on"
 
 
@@ -487,8 +494,7 @@ def test_a_check_run_reaches_the_page_though_a_check_is_the_projects(app):
 
 def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app, monkeypatch):
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     console = app.console()
     hook(app, "SessionStart")
     console.run(["check", "create", "it is fine", "--command", "true"], USER)
@@ -510,8 +516,7 @@ def test_a_due_check_runs_on_the_clock(app):
 
 def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message="I ran journal task start 3 because the user wants it.")
     app.runtime().deferred.drain()
@@ -600,8 +605,7 @@ def test_the_journal_asks_its_host_to_start_every_service_the_features_declare_a
 
 def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     console = app.console()
     console.run(["voice", "me", "--title", "Sir", "--name", "Example"], USER)
     text = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
@@ -609,6 +613,8 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     console.run(["voice", "choose", "squire"], AGENT)
     assert typed and "changed how you talk" in typed[-1] and 'Address me as "my liege"' in typed[-1]
     assert "* squire" in console.run(["voice", "list"], USER).out
+    hook(app, "UserPromptSubmit", prompt=typed[-1])
+    app.runtime().deferred.drain()
     said = len(typed)
     app.container.get(Settings).save(Setting(environment_id=0, key="voices.avatar_shown", value="never"), Actor.user(1))
     app.container.get(Settings).save(Setting(environment_id=0, key="voices.avatar", value=False), Actor.user(1))
@@ -627,8 +633,11 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, m
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["message", "send", "are you there?"], USER)
     app.console().run(["message", "send", "hello?"], USER)
-    assert typed == ["[journal] new message 2", "[journal] new message 3"]
-    assert "new messages 1, 2, 3" in hook(app, "UserPromptSubmit", prompt="hi")[1]["hookSpecificOutput"]["additionalContext"]
+    assert typed == ["[journal] new message 2"], "a second line waits while the first is on its way, or it would pile up in the prompt box"
+    told = hook(app, "UserPromptSubmit", prompt="[journal] new message 2")[1]["hookSpecificOutput"]["additionalContext"]
+    app.runtime().deferred.drain()
+    assert typed == ["[journal] new message 2", "[journal] new message 3"], "the first seen back, the next goes in"
+    assert "new messages 1, 2, 3" in told
     app.console().run(["message", "send", "four"], USER)
     assert "4 messages unread: `journal message unread`" in hook(app, "Stop")[1]["reason"]
     shown = app.console().run(["message", "unread"], AGENT).out
@@ -669,8 +678,7 @@ def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch)
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     console = app.console()
     console.run(["message", "send", "thanks, carry on"], USER)
     hook(app, "SessionStart")
@@ -692,9 +700,8 @@ def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app, monkeypatch)
 
 def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monkeypatch):
     from journal.repositories.messages import Messages
-    from journal.supervisor_link import SupervisorLink
     sent = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart", source="startup")
     hook(app, "UserPromptSubmit", prompt="[journal] the journal is ready on main")
     hook(app, "MessageDisplay", message="Noted.")
@@ -717,8 +724,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monk
 
 def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app, monkeypatch):
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message="The build — the one from last night — is green.")
     hook(app, "MessageDisplay", message=("The build is green. " * 25).strip())
@@ -732,8 +738,7 @@ def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app, m
     from journal.repositories.task_logs import TaskLogs
     from journal.repositories.tasks import Tasks
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message='[!todo="Fix the footer"]\nThe footer overlaps the form on narrow screens.')
     hook(app, "MessageDisplay", message="[!log:1] Halfway: the overlap is a margin.")
@@ -776,8 +781,7 @@ def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
     import subprocess
     from journal.repositories.tasks import Tasks
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     root = app.config.root
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship the footer\n\nJournal: tasks done 1 and 2 with the margin fixed"], cwd=root, check=True)
@@ -1046,8 +1050,7 @@ def test_a_session_silent_for_an_hour_is_ended(app):
 
 def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_questioned(app, monkeypatch):
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
     app.console().run(["fact", "create", "the login uses the old session store", "--keywords", "login,session"], USER)
     hook(app, "MessageDisplay", message="I will look at the login next.")
@@ -1183,9 +1186,8 @@ def test_the_foreground_limit_is_thirty_seconds_or_ten_while_a_message_waits(app
 def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app, monkeypatch):
     from urllib.request import urlopen
     from journal.repositories.messages import Messages
-    from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
     console, port = app.console(), app.server().port
     folder = app.config.root / "parts"
@@ -1406,10 +1408,13 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     link.type(1, "while at work")
     tick(90)
     assert len(sent) == 3, "a line typed to an agent at work waits for its turn to end"
+    link.type(1, "after it")
+    assert "[journal] after it" not in [s["line"] for s in sent], "a line waits while an earlier one is on its way"
     hook(app, "Stop")
     for later in (120, 150, 180, 210):
         tick(later)
     assert [s["line"] for s in sent].count("[journal] while at work") == 3, "three tries, then the chat is told"
+    assert [s["line"] for s in sent][-1] == "[journal] after it", "a line given up lets the one held behind it go in"
 
 
 def test_commands_run_at_the_same_moment_keep_their_own_output(app):
@@ -1522,7 +1527,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
+    catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     console = app.console()
@@ -1548,7 +1553,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     assert "only the user approves" in console.run(["plan", "approve", "1"], AGENT).err
     assert console.run(["plan", "approve", "1"], USER).code == 0
     app.runtime().deferred.drain()
-    assert "the user approved plan 1" in sent[-1]["line"]
+    assert "the user approved plan 1" in sent[-1]
     assert "task 1 is next, pour the slab" in console.run(["plan", "start", "1"], AGENT).out
     console.run(["task", "done", "1"], AGENT)
     app.runtime().deferred.drain()
@@ -1748,7 +1753,7 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, sent)
     app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     hook(app, "SessionStart")
     console = app.console()
@@ -1989,7 +1994,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, mon
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -2068,7 +2073,7 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     console = app.console()
     hook(app, "MessageDisplay", message="The design is at https://design.example/p/1 and the docs at http://127.0.0.1:8420/#/x.")
@@ -2088,8 +2093,7 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app, 
 
 def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read_is_never_piped(app, monkeypatch):
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
@@ -2104,8 +2108,7 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
 
 def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it_at_once(app, monkeypatch):
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     hook(app, "Stop")
@@ -2311,8 +2314,7 @@ def test_a_failing_node_is_recorded_and_the_path_goes_on_past_it(app):
 def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(app, monkeypatch):
     typed = []
     from journal.console.where import Where
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
@@ -2350,8 +2352,7 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
 
 def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(app, monkeypatch):
     typed = []
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -2756,9 +2757,8 @@ def test_a_read_outside_every_scope_is_refused_and_a_command_reads_its_own_envir
 
 
 def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     from journal.repositories.charts import Charts
     console, charts = app.console(), app.container.get(Charts)
     starting, start_trigger = own_workflow(console, charts, "idle", "subagent_started")
@@ -2984,9 +2984,8 @@ def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_comman
 
 def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_started_a_log_for_the_task_in_hand(app, monkeypatch):
     from journal.repositories.charts import Charts
-    from journal.supervisor_link import SupervisorLink
     typed = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, typed)
     console, charts = app.console(), app.container.get(Charts)
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
@@ -3248,7 +3247,7 @@ def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app, m
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Pitman", session="s2"), Actor.system())
@@ -3286,7 +3285,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, m
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -3319,7 +3318,7 @@ def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -3374,7 +3373,7 @@ def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(a
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}["line"]))
+    catch_typed(app, monkeypatch, sent)
 
     def api(method: str, path: str):
         request = HttpRequest(f"http://127.0.0.1:{app.server().port}/api/{path}", data=b"{}" if method == "POST" else None, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
