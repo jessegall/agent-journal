@@ -1,5 +1,3 @@
-import {store} from "../state/store.js";
-
 export const VISIBILITY_GROUPS = [
     {
         title: "Agent",
@@ -37,15 +35,16 @@ export const VISIBILITY_GROUPS = [
     },
 ];
 
-const chatKinds = () => store.spec.chat_kinds;
+// Which choice above shows or hides each kind of turn the chat draws.
+const TURN_KINDS = {thought: "thoughts", skill: "skills", subagent: "subagents", compacted: "compactions", made: "made", receipt: "filed", visitor: "visitors"};
 export const HIDDEN_KEY = "chat_hidden";
 export const DEFAULT_HIDDEN = ["acknowledgements", "sequence_steps"];
 
-export const turnKind = (type) => chatKinds().turns[type];
+export const turnKind = (kind) => TURN_KINDS[kind];
 
 export const kindOf = (turn) => {
-    if (turn.type === "message") return turn.data.acknowledgement ? "acknowledgements" : "";
-    return turn.data.shows || turnKind(turn.type) || "";
+    if (turn.kind === "message") return turn.acknowledgement ? "acknowledgements" : "";
+    return turn.data?.shows || turnKind(turn.kind) || "";
 };
 
 export const visibleIn = (hidden) => (turn) => !hidden.includes(kindOf(turn));

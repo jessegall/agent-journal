@@ -185,6 +185,11 @@ export class ApiClient {
         return this.create("comments", {on, text});
     }
 
+    // every row and conversation line here that holds all the words
+    search(words) {
+        return this.get(this.here(`/search${query({words})}`));
+    }
+
     // the documents a search finds, best first, and the files attached to messages, a page at a time
     locateDocs(words) {
         return this.get(this.here(`/docs/search${query({words})}`));

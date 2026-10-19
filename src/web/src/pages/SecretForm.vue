@@ -35,9 +35,6 @@ const removeField = (index) => props.draft.fields.splice(index, 1);
         <FormField label="Title" for="secret-title">
             <TextInput id="secret-title" :value="draft.title" placeholder="For example Stripe test key" @input="draft.title = $event.target.value" />
         </FormField>
-        <FormField label="Description" for="secret-abstract">
-            <TextInput id="secret-abstract" :value="draft.abstract" placeholder="One line" @input="draft.abstract = $event.target.value" />
-        </FormField>
         <FormField label="Instructions for the agent" for="secret-brief" help="The agent reads this. It never sees the value itself.">
             <TextArea id="secret-brief" :value="draft.brief" rows="3" @input="draft.brief = $event.target.value" />
         </FormField>

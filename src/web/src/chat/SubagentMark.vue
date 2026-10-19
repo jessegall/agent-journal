@@ -17,7 +17,7 @@ const props = defineProps({
     at: {type: Number, required: true},
 });
 
-const open = () => peek("agent", props.agent, 0, props.session);
+const open = () => peek("agents", props.agent, 0, props.session);
 const label = computed(() => {
     if (props.refusal) return "Dispatch stopped";
     if (!props.finished) return "Dispatched";

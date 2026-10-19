@@ -1,54 +1,11 @@
 <script setup>
-import {ref} from "vue";
-import {api} from "../api/client.js";
-import {route} from "../route.js";
-
-const props = defineProps({file: {type: Object, required: true}, lines: {type: Number, default: 1}});
-const editing = ref(false);
-const draft = ref("");
-
-function edit() {
-    draft.value = props.file.description || "";
-    editing.value = true;
-}
-
-function cancel() {
-    editing.value = false;
-}
-
-async function save() {
-    const tags = draft.value.trim();
-    editing.value = false;
-    if (tags !== props.file.description) {
-        await api.act(props.file.type, props.file.n, "tag", {name: props.file.name, tags});
-        props.file.description = tags;
-    }
-}
+defineProps({file: {type: Object, required: true}, lines: {type: Number, default: 1}});
 </script>
 
 <template>
-    <template v-if="editing">
-        <input
-            v-model="draft"
-            class="editor"
-            aria-label="File tags"
-            autofocus
-            @blur="save"
-            @keydown.enter.prevent="save"
-            @keydown.esc.prevent="cancel"
-        />
-    </template>
-    <template v-else>
-        <button
-            type="button"
-            :class="['tags', {empty: !file.description, clamped: lines > 1}]"
-            :style="{'--lines': lines}"
-            :title="file.description ? 'Click to change the description' : ''"
-            @click="edit"
-        >
-            {{ file.description || "Add a description" }}
-        </button>
-    </template>
+    <span :class="['tags', {empty: !file.description, clamped: lines > 1}]" :style="{'--lines': lines}">
+        {{ file.description || "No description" }}
+    </span>
 </template>
 
 <style scoped>

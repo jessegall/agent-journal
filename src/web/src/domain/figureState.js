@@ -1,4 +1,5 @@
 import {stateOf} from "./agentState.js";
+import {createdAt, refOf, seconds} from "./row.js";
 
 // What the figure does, read from the same agent row and work rows as the status bar, so the two never disagree.
 // Each held state names the clip the figure loops while it is true; a state with no clip of its own idles. The walk is never held: it plays only while the figure moves.
@@ -37,7 +38,6 @@ const TOOL_STATES = {
     Bash: "running",
 };
 
-const SHELL_STATES = {reads: "reading", searches: "searching"};
 
 const BAR_STATES = {paused: "paused", stopped: "stopped", compacting: "compacting", waiting: "waiting", running: "waiting"};
 
@@ -52,16 +52,15 @@ export const POINTED_AFTER = 180;
 
 // The held state at `now` (seconds), with when it began; `waitingSince` is when the oldest thing waiting on the user arrived, as its badges
 // count it, or 0 when nothing waits
-export function figureStateOf(agent, works, waitingSince, now = Date.now() / 1000) {
-    const bar = stateOf(agent, works);
-    const since = Number(agent?.data.at || now);
+export function figureStateOf(agent, waitingSince, now = Date.now() / 1000) {
+    const bar = stateOf(agent);
+    const since = seconds(agent?.heard_at) || now;
     if (BAR_STATES[bar]) return {state: BAR_STATES[bar], since};
     // the pose says what the agent does, so it waits on the user only while it does nothing else; where it stands says what waits
-    if (bar === "idle" && (waitingSince || agent?.data.asking)) return {state: "asking", since: waitingSince || since};
+    if (bar === "idle" && (waitingSince || agent?.awaiting)) return {state: "asking", since: waitingSince || since};
     if (bar === "idle") return {state: now - since >= ASLEEP_AFTER ? "asleep" : "idle", since};
-    const tool = agent?.data.tool;
-    const shown = agent?.data.event === "PreToolUse" || (agent?.data.event === "PostToolUse" && now - since < TOOL_LINGERS);
-    const inFlight = shown && ((tool === "Bash" && SHELL_STATES[agent.data.effect]) || TOOL_STATES[tool]);
+    const tool = agent?.tool;
+    const inFlight = Boolean(tool) && now - since < TOOL_LINGERS && TOOL_STATES[tool];
     return {state: inFlight || "thinking", since};
 }
 
@@ -127,15 +126,15 @@ const BEATS = [
 // card is the message the face is on.
 export function facesAfter(reactions, seenAt) {
     return reactions
-        .filter((row) => !row.deleted && row.seen[0] === "user" && row.created > seenAt)
-        .map((row) => ({beat: `reacted:${row.data.face}`, at: row.created, card: row.refs[0]}))
+        .filter((row) => row.author === "user" && createdAt(row) > seenAt)
+        .map((row) => ({beat: `reacted:${row.face}`, at: createdAt(row), card: `messages:${row.message_id}`}))
         .sort((a, b) => a.at - b.at);
 }
 
 // A test run's card is made when it starts and changes when it ends, so its result is a change seen between two looks: the beats for each
 // test card that has ended since `known` (card key to the state it had) was last filled in, which this fills in
 export function testResultsAfter(agent, known) {
-    const ended = (agent?.data.cards || []).filter((card) => card.key?.startsWith("tests:") && ["done", "failed"].includes(card.state));
+    const ended = (agent?.data?.cards || []).filter((card) => card.key?.startsWith("tests:") && ["done", "failed"].includes(card.state));
     const fresh = ended.filter((card) => known.get(card.key) !== card.state);
     fresh.forEach((card) => known.set(card.key, card.state));
     return fresh.map((card) => ({
@@ -150,29 +149,29 @@ export const withSystemCards = (agent, messages) =>
     agent && {
         ...agent,
         data: {
-            ...agent.data,
+            ...(agent.data || {}),
             cards: [
-                ...(agent.data.cards || []),
+                ...(agent.data?.cards || []),
                 ...messages
-                    .filter((m) => !m.deleted && m.data.author === "system" && ["", agent.title].includes(m.data.card.session))
-                    .map((m) => ({key: m.ref, at: m.created, icon: m.data.card.icon, tone: m.data.card.tone, label: m.brief})),
+                    .filter((m) => m.author === "system" && [undefined, "", agent.session].includes(m.data?.session))
+                    .map((m) => ({key: refOf(m), at: createdAt(m), icon: m.data.icon, tone: m.data.tone, label: m.text})),
             ],
         },
     };
 
 export function cardsAfter(agent, known) {
-    const cards = (agent?.data.cards || []).filter((card) => card.key && !known.has(card.key));
+    const cards = (agent?.data?.cards || []).filter((card) => card.key && !known.has(card.key));
     cards.forEach((card) => known.add(card.key));
     return cards.map((card) => ({beat: "card_arrived", at: Number(card.at), card: card.key}));
 }
 
 // The beats for what reached the agent's row after `seenAt` (seconds), oldest first: its cards, and the user's own message
 export function beatsAfter(agent, seenAt) {
-    const cards = (agent?.data.cards || []).filter((card) => card.at > seenAt);
+    const cards = (agent?.data?.cards || []).filter((card) => card.at > seenAt);
     const fired = cards
         .map((card) => ({beat: BEATS.find((rule) => rule.matches(card))?.beat, at: card.at, card: card.key}))
         .filter((fire) => fire.beat);
-    const heard = Number(agent?.data.person_at || 0);
+    const heard = Number(agent?.data?.person_at || 0);
     return [...fired, ...(heard > seenAt ? [{beat: "heard", at: heard}] : [])].sort((a, b) => a.at - b.at);
 }
 

@@ -5,22 +5,18 @@ import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
-import {peek} from "../route.js";
-import {rows} from "../sync/rows.js";
-import {dumpCollection} from "../domain/docks.js";
+import {store} from "../state/store.js";
 
 const props = defineProps({dump: Object, folded: Boolean});
 const scope = useScope();
-const collection = computed(() => rows("collection").find((c) => c.n === dumpCollection(props.dump)) || null);
 const line = computed(() => {
-    if (!collection.value) return "";
-    const things = collection.value.refs.filter((ref) => ref !== props.dump.ref).length;
-    return `${things} thing${things === 1 ? "" : "s"} in ${collection.value.title}`;
+    const things = (props.dump.filed || []).length;
+    return `${things} thing${things === 1 ? "" : "s"} filed`;
 });
 
 function open() {
-    const n = dumpCollection(props.dump);
-    if (n) peek("collection", n);
+    store.dumpSelected = props.dump.id;
+    store.dumping = true;
 }
 </script>
 
@@ -28,14 +24,12 @@ function open() {
     <ChatDock label="Filed dump" :folded="folded">
         <template #head>
             <Icon name="inbox" class="dump-dock-icon" />
-            <button type="button" class="dump-dock-label" title="Open the collection" @click="open">{{ dump.title }} filed</button>
-            <template v-if="line">
-                <span class="dump-dock-line">· {{ line }}</span>
-            </template>
+            <button type="button" class="dump-dock-label" title="Open the dump" @click="open">{{ dump.title || `Dump ${dump.id}` }} filed</button>
+            <span class="dump-dock-line">· {{ line }}</span>
             <span class="dump-dock-acts chat-dock-acts">
-                <Btn small @click="open">Open the collection</Btn>
+                <Btn small @click="open">Open the dump</Btn>
             </span>
-            <CloseButton title="Hide from chat; its collection stays" @click="scope.api.act('dump', dump.n, 'dismiss')" />
+            <CloseButton title="Hide from chat; what it filed stays" @click="scope.api.act('dumps', dump.id, 'dismiss')" />
         </template>
     </ChatDock>
 </template>

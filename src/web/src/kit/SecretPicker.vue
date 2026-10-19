@@ -11,10 +11,10 @@ const props = defineProps({
     note: {type: String, default: ""},
 });
 const emit = defineEmits(["pick"]);
-const secrets = computed(() => pickable(rows("secret").filter((row) => !row.deleted)));
+const secrets = computed(() => pickable(rows("secrets").filter((row) => !row.deleted_at)));
 const picked = computed(() => pickedBy(secrets.value, props.value));
 const choices = computed(() =>
-    secrets.value.map((row) => ({value: handedVariable(row), label: row.title, hint: row.abstract, current: row === picked.value}))
+    secrets.value.map((row) => ({value: handedVariable(row), label: row.title, hint: row.brief, current: row === picked.value}))
 );
 </script>
 

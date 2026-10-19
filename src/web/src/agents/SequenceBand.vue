@@ -15,7 +15,7 @@ const emit = defineEmits(["skip", "end"]);
     <Notice tone="info">
         <span class="sequence-band">
             <span class="sequence-label">
-                Sequence {{ sequence.n }}, {{ sequence.title }}: step {{ sequence.step }} of {{ sequence.steps }}
+                Sequence {{ sequence.sequence_id }}, {{ sequence.title }}: step {{ sequence.step }} of {{ sequence.steps }}
                 <template v-if="sequence.about">· about {{ sequence.about }}</template>
             </span>
             <span class="sequence-step">{{ sequence.text }}</span>

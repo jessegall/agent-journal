@@ -58,18 +58,18 @@ const sections = computed(() =>
 );
 
 async function change(key, value) {
-    await api.configurePlugin(plugin.value.n, key, value);
+    await api.act("plugins", plugin.value.id, "configure", {key, value});
     emit("saved", key);
 }
 
 async function all(group, on) {
     const next = String(on);
-    await Promise.all(group.flags.filter((s) => s.value !== next).map((s) => api.configurePlugin(plugin.value.n, s.key, next)));
+    await Promise.all(group.flags.filter((s) => s.value !== next).map((s) => api.act("plugins", plugin.value.id, "configure", {key: s.key, value: next})));
     emit("saved", group.name || "Settings");
 }
 
 async function toggle(on) {
-    await api.act("plugin", plugin.value.n, on ? "enable" : "disable");
+    await api.act("plugins", plugin.value.id, on ? "enable" : "disable");
     emit("saved", plugin.value.title);
 }
 

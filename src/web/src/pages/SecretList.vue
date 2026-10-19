@@ -17,40 +17,39 @@ const {failure, attempt} = useAttempt();
 const kept = ref([]);
 const path = ref("");
 
-const secrets = computed(() => rows("secret").filter((row) => !row.deleted));
+const secrets = computed(() => rows("secrets").filter((row) => !row.deleted_at));
 const waiting = computed(() => asking(secrets.value));
 
 async function load() {
-    const got = await api.list("secret", {completed: true, since: 1});
-    kept.value = got.rows.filter((row) => row.deleted);
+    const got = await api.list("secrets", {closed: true});
+    kept.value = got.rows.filter((row) => row.deleted_at);
 }
 
 async function restore(row) {
-    const {done} = await attempt(() => api.restoreSecret(row.n));
+    const {done} = await attempt(() => api.act("secrets", row.id, "restore"));
     if (done) await load();
 }
 
-watch(() => rows("secret").length, load);
+watch(() => rows("secrets").length, load);
 onMounted(async () => {
     load();
-    path.value = await api.secretsFile();
+    path.value = (await api.secretsFile()).path;
 });
 </script>
 
 <template>
     <div class="secrets">
-        <template v-for="row in waiting" :key="row.n">
+        <template v-for="row in waiting" :key="row.id">
             <Notice tone="ask" icon="key">
                 <b>The agent is waiting for a secret: {{ row.title }}</b>
-                <span class="secrets-reason">{{ row.data.asked }}</span>
-                <template #actions>
-                    <Btn kind="primary" small @click="emit('open', row.n)">Enter the values</Btn>
+                                <template #actions>
+                    <Btn kind="primary" small @click="emit('open', row.id)">Enter the values</Btn>
                 </template>
             </Notice>
         </template>
         <ListBox title="Secrets" :count="secrets.length">
-            <template v-for="row in secrets" :key="row.n">
-                <button type="button" class="secret-row" @click="emit('open', row.n)">
+            <template v-for="row in secrets" :key="row.id">
+                <button type="button" class="secret-row" @click="emit('open', row.id)">
                     <Icon :name="kindOf(row).icon" :size="16" />
                     <span class="secret-row-text">
                         <b>{{ row.title }}</b>
@@ -63,7 +62,7 @@ onMounted(async () => {
                 </button>
             </template>
             <template v-if="!secrets.length">
-                <EmptyState :loading="!hasLoaded('secret')">
+                <EmptyState :loading="!hasLoaded('secrets')">
                     No secrets yet. Add a key or a login the agent may use without seeing it.
                 </EmptyState>
             </template>
@@ -84,7 +83,7 @@ onMounted(async () => {
         </div>
         <template v-if="kept.length">
             <ListBox title="Deleted secrets" :count="kept.length">
-                <template v-for="row in kept" :key="row.n">
+                <template v-for="row in kept" :key="row.id">
                     <div class="secret-row">
                         <Icon :name="kindOf(row).icon" :size="16" />
                         <span class="secret-row-text">

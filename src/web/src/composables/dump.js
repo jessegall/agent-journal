@@ -260,6 +260,7 @@ export function useDump(every, selected, rowsOf) {
         removed,
         phase,
         collection,
+        hasCollection: named,
         filedRows,
         lines,
         reportTitle,

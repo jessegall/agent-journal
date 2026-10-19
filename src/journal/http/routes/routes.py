@@ -27,6 +27,7 @@ from journal.http.controllers.reactions import ReactionController
 from journal.http.controllers.reminders import ReminderController
 from journal.http.controllers.reports import ReportController
 from journal.http.controllers.rules import RuleController
+from journal.http.controllers.search import SearchController
 from journal.http.controllers.secrets import SecretController
 from journal.http.controllers.sequences import SequenceController
 from journal.http.controllers.settings import SettingController
@@ -91,6 +92,7 @@ class Routes:
         router.get(f"{API}/project-files/find", files.find)
         router.get(f"{API}/project-files/file", files.show)
         router.get(f"{API}/project-files/diff", files.diff)
+        router.get(f"{API}/search", get(SearchController).index)
         router.get(f"{API}/attachments", get(AttachmentController).index)
         router.get(f"{API}/{{table}}/{{id}}/files/{{name}}", get(AttachmentController).file)
         environments = get(EnvironmentController)

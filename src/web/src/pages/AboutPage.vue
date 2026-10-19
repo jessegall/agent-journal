@@ -1,4 +1,5 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
 import {computed, onMounted} from "vue";
 import {store} from "../state/store.js";
 import {useUpdates} from "../composables/updates.js";
@@ -8,7 +9,7 @@ import StateDot from "../kit/StateDot.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {locked} from "../state/updating.js";
 
-const branch = computed(() => store.spec.branch || "");
+const branch = computed(() => agent.value?.branch || "");
 const {about, changed, releases, error, status, loadMore, update, start} = useUpdates();
 
 onMounted(start);

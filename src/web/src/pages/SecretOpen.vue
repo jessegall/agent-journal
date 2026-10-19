@@ -11,15 +11,15 @@ import SecretFieldRow from "./SecretFieldRow.vue";
 import SecretForm from "./SecretForm.vue";
 import SecretLogin from "./SecretLogin.vue";
 
-const props = defineProps({n: {type: Number, required: true}});
+const props = defineProps({id: {type: Number, required: true}});
 const emit = defineEmits(["back"]);
 const {busy, failure, attempt} = useAttempt();
-const one = computed(() => rows("secret").find((row) => row.n === props.n && !row.deleted) || null);
+const one = computed(() => rows("secrets").find((row) => row.id === props.id && !row.deleted_at) || null);
 const draft = ref(null);
 watch(one, (row) => (draft.value = draft.value || (row && drafted(row))), {immediate: true});
 
 async function keep() {
-    const {done, got} = await attempt(() => api.updateSecret(props.n, saved(draft.value)));
+    const {done, got} = await attempt(() => api.change("secrets", props.id, saved(draft.value)));
     if (done && !programsKept(draft.value, got)) {
         failure.value = "The programs you allowed were not kept. Reload the page and allow them again.";
         return false;
@@ -32,23 +32,23 @@ async function save() {
 }
 
 async function logIn() {
-    await attempt(() => api.loginSecret(props.n));
+    await attempt(() => api.act("secrets", props.id, "login"));
 }
 
 async function letLogIn() {
-    await attempt(() => api.allowSecretLogin(props.n));
+    await attempt(() => api.act("secrets", props.id, "allow-login"));
 }
 
 async function forget() {
-    await attempt(() => api.forgetSecretLogin(props.n));
+    await attempt(() => api.act("secrets", props.id, "forget-login"));
 }
 
 async function askEachTime() {
-    await attempt(() => api.revokeSecretLogin(props.n));
+    await attempt(() => api.act("secrets", props.id, "revoke-login"));
 }
 
 async function remove() {
-    const {done} = await attempt(() => api.deleteSecret(props.n));
+    const {done} = await attempt(() => api.act("secrets", props.id, "delete"));
     if (done) emit("back");
 }
 </script>
@@ -74,7 +74,7 @@ async function remove() {
                 </div>
             </SecretForm>
             <SecretLogin
-                :login="one.data"
+                :login="one"
                 :busy="busy"
                 @log-in="logIn"
                 @let-log-in="letLogIn"

@@ -1,72 +1,46 @@
 <script setup>
-import Btn from "../kit/Btn.vue";
-import MenuPanel from "../kit/MenuPanel.vue";
-import ToggleItem from "../kit/ToggleItem.vue";
-import {useAnchoredAction} from "../composables/anchored.js";
-import {store} from "../state/store.js";
-import Skeleton from "../kit/Skeleton.vue";
 import EmptyState from "../kit/EmptyState.vue";
-import Switch from "../kit/Switch.vue";
-import {computed, nextTick, onMounted, ref, watch} from "vue";
-import {api} from "../api/client.js";
-import Icon from "../kit/Icon.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import TextInput from "../kit/TextInput.vue";
+import Icon from "../kit/Icon.vue";
+import {nextTick, onMounted, ref, watch} from "vue";
+import {api} from "../api/client.js";
+import {tableOfWord} from "../domain/tables.js";
 import {go, peek, route} from "../route.js";
-import ResourceCard from "../resource/ResourceCard.vue";
-import {moreHits} from "../domain/search.js";
 
 const q = ref(route.value.q);
-const hits = ref([]);
-const more = ref(0);
-const attic = ref(false);
-const archived = ref(false);
-const picked = ref([]);
-const {anchor, toggle} = useAnchoredAction();
-const types = computed(() => (store.spec?.searchable || []).map((key) => ({key, title: store.spec.types[key]?.title || key})));
-const typesWord = computed(() => (picked.value.length ? `${picked.value.length} of ${types.value.length} types` : "Every type"));
-const pick = (key) => (picked.value = picked.value.includes(key) ? picked.value.filter((k) => k !== key) : [...picked.value, key]);
-const brought = ref({});
-const removed = ref([]);
-const restored = ref({});
+const found = ref([]);
 const searching = ref(false);
 const input = ref(null);
 let request = 0;
 
 onMounted(() => nextTick(() => input.value?.focus()));
 
+// A find names its row as "task 12"; a line of a conversation names no row and opens nothing.
+const opens = (find) => {
+    const [, word, id] = /^(\w+) (\d+)$/.exec(find.ref) || [];
+    return word && tableOfWord(word) ? {table: tableOfWord(word), id: Number(id)} : null;
+};
+
 async function run() {
     const current = ++request;
-    const query = q.value.trim();
+    const words = q.value.trim();
     go("search", 0, q.value);
-    hits.value = [];
-    more.value = 0;
-    removed.value = [];
-    searching.value = !!query;
-    if (!query) {
-        return;
-    }
+    found.value = [];
+    searching.value = Boolean(words);
+    if (!words) return;
     try {
-        const [found, gone] = await Promise.all([
-            api.search(query, archived.value, picked.value),
-            attic.value ? api.searchAttic(query) : [],
-        ]);
-        if (current === request) [hits.value, more.value, removed.value] = [found.hits, found.more, gone];
+        const got = await api.search(words);
+        if (current === request) found.value = got.found;
     } finally {
         if (current === request) searching.value = false;
     }
 }
 
-async function restore(r) {
-    await api.restore(r.type, r.n);
-    brought.value = {...brought.value, [r.ref]: true};
+function open(find) {
+    const row = opens(find);
+    if (row) peek(row.table, row.id);
 }
-
-async function bringBack(name) {
-    await api.unarchive(name);
-    restored.value = {...restored.value, [name]: true};
-}
-
-watch([attic, archived, picked], run);
 
 watch(
     () => route.value.q,
@@ -82,82 +56,24 @@ watch(
     <section class="search">
         <form class="box" @submit.prevent="run">
             <Icon name="search" />
-            <TextInput
-                ref="input"
-                :value="q"
-                placeholder="Search everything on this environment…"
-                autofocus
-                @input="q = $event.target.value"
-            />
+            <TextInput ref="input" :value="q" placeholder="Search everything on this environment…" autofocus @input="q = $event.target.value" />
         </form>
-        <div class="switches">
-            <Btn small :aria-expanded="!!anchor" @click="toggle">{{ typesWord }}</Btn>
-            <template v-if="anchor">
-                <MenuPanel :anchor="anchor" :min-width="200" :max-width="260" @click.stop @close="anchor = null">
-                    <template v-for="t in types" :key="t.key">
-                        <ToggleItem :on="picked.includes(t.key)" @click="pick(t.key)">{{ t.title }}</ToggleItem>
-                    </template>
-                </MenuPanel>
-            </template>
-            <Switch :on="archived" word="Include archived items" @change="(on) => (archived = on)" />
-            <Switch :on="attic" word="Include removed environments" @change="(on) => (attic = on)" />
-        </div>
         <template v-if="searching">
             <Skeleton class="cards" shape="cards" :count="3" label="Searching" />
         </template>
-        <template v-if="route.q && !searching && !hits.length && !removed.length">
+        <template v-if="route.q && !searching && !found.length">
             <EmptyState class="empty">Nothing matches “{{ route.q }}”.</EmptyState>
         </template>
-        <div class="cards">
-            <template v-for="r in hits" :key="r.ref">
-                <div :class="['hit', {filed: r.matches.length}]">
-                    <ResourceCard :resource="r" @click="peek(r.type, r.n)" />
-                    <template v-if="r.deleted">
-                        <div class="archived">
-                            <span>Archived</span>
-                            <template v-if="brought[r.ref]">
-                                <small>Restored</small>
-                            </template>
-                            <template v-else>
-                                <Btn small @click="restore(r)">Restore</Btn>
-                            </template>
-                        </div>
-                    </template>
-                    <template v-if="r.matches.length">
-                        <div class="matches">
-                            <template v-for="f in r.matches" :key="f.name">
-                                <a :href="f.url" target="_blank">
-                                    <span>{{ f.name }}</span>
-                                    <template v-if="f.tags">
-                                        <small>{{ f.tags }}</small>
-                                    </template>
-                                </a>
-                            </template>
-                        </div>
-                    </template>
-                </div>
+        <ul class="found">
+            <template v-for="(find, i) in found" :key="`${find.ref}-${i}`">
+                <li>
+                    <button type="button" class="found-row" :disabled="!opens(find)" @click="open(find)">
+                        <span class="found-ref">{{ find.ref }}</span>
+                        <span class="found-passage">{{ find.passage }}</span>
+                    </button>
+                </li>
             </template>
-        </div>
-        <template v-if="more">
-            <p class="more">{{ moreHits(more) }}</p>
-        </template>
-        <template v-if="removed.length">
-            <h3 class="removed-head">In removed environments</h3>
-            <ul class="removed">
-                <template v-for="hit in removed" :key="`${hit.environment}-${hit.ref}`">
-                    <li>
-                        <span class="removed-place">{{ hit.environment }} · {{ hit.ref.replace(":", " ") }}</span>
-                        <span class="removed-title">{{ hit.title }}</span>
-                        <template v-if="restored[hit.environment]">
-                            <small>Restored</small>
-                        </template>
-                        <template v-else>
-                            <Btn small @click="bringBack(hit.environment)">Restore {{ hit.environment }}</Btn>
-                        </template>
-                    </li>
-                </template>
-            </ul>
-        </template>
+        </ul>
     </section>
 </template>
 
@@ -299,5 +215,49 @@ watch(
 
 .matches small {
     color: var(--text-3);
+}
+</style>
+
+<style scoped>
+.found {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.found-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--raised);
+    color: var(--text-2);
+    text-align: left;
+    cursor: pointer;
+}
+
+.found-row:disabled {
+    cursor: default;
+}
+
+.found-row:not(:disabled):hover {
+    border-color: var(--border-2);
+}
+
+.found-ref {
+    color: var(--text-3);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.found-passage {
+    font-size: 13px;
 }
 </style>

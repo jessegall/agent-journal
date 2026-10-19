@@ -16,7 +16,7 @@ const queued = computed(() => [...listed.value, ...sending.value.filter((s) => !
 const drop = (at) => (sending.value = sending.value.filter((s) => s.at !== at));
 
 watch(
-    () => agent.value && agent.value.updated,
+    () => agent.value && agent.value.updated_at,
     () => (sending.value = sending.value.filter((s) => !s.sent))
 );
 const lines = useTerminal(props.level, () => agent.value, scope.api);

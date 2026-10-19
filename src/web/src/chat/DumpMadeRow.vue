@@ -4,6 +4,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import InlineName from "../kit/InlineName.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import {bodyOf, titleOf} from "../domain/row.js";
 
 const props = defineProps({
     made: {type: Object, required: true},
@@ -15,9 +16,9 @@ const props = defineProps({
 const emit = defineEmits(["toggle", "peek", "rename", "merge", "select"]);
 const renaming = ref(false);
 const forming = computed(() => props.made.writing || !props.made.row);
-const title = computed(() => props.made.row?.title || props.made.making || props.made.ref);
+const title = computed(() => (props.made.row && titleOf(props.made.row)) || props.made.making || props.made.ref);
 const gist = computed(() => props.made.row?.abstract || "");
-const text = computed(() => props.made.row?.brief || "");
+const text = computed(() => (props.made.row ? bodyOf(props.made.row) : ""));
 
 function clicked() {
     if (renaming.value || forming.value) return;
