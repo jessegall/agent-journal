@@ -39,6 +39,7 @@ from journal.http.controllers.templates import TemplateController
 from journal.http.controllers.transcripts import TranscriptController
 from journal.http.controllers.triggers import TriggerController
 from journal.http.controllers.tunnel import TunnelController
+from journal.http.controllers.phones import PhoneController
 from journal.http.controllers.updates import UpdateController
 from journal.http.controllers.viewer import ViewerController
 from journal.http.controllers.voices import VoiceController
@@ -192,6 +193,9 @@ class Routes:
         get = self.container.get
         shares, tunnel, secrets = get(ShareController), get(TunnelController), get(SecretController)
         router.get(f"{API}/shares/opens", shares.opens)
+        phones = get(PhoneController)
+        router.get(f"{API}/phones", phones.index)
+        router.post(f"{API}/phones/connect", phones.connect)
         self.listed(router, "shares", shares)
         router.post(f"{API}/shares", shares.store)
         self.acts(router, "shares", shares, "approve", "stop")

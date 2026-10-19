@@ -1,0 +1,11 @@
+from dataclasses import dataclass
+from datetime import datetime
+
+
+@dataclass(frozen=True)
+class PairingOffer:
+    """What the desk shows to pair a phone: the link the phone opens, the short code it may type instead, and when both stop working."""
+
+    link: str
+    short: str
+    until: datetime

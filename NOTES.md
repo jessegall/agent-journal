@@ -1049,3 +1049,7 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The state of an agent that ran `journal await` is named Waiting, beside Waiting on a question and Waiting on a worker.
 - A setting's help says what it does in plain words; the workflows that read it show under it as links (message 7014).
 - Tunler's version and domains, and the MCP servers' check, are kept for an hour and asked again after a change.
+- The phone (plan 17) ports version 3's server side as it was, which worked; its screens are the viewer's own pages
+  and components with phone styling, not version 3's separate app; only what touch needs gets a phone component
+  (messages 7314, 7327; tasks 901 to 903). Plan 17 may be merged by the agent once landed and tested, and released as
+  4.2.0; plan 18 waits for Sir Jesse to merge (message 7301).

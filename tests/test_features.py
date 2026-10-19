@@ -6550,3 +6550,48 @@ def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(a
     with app.container.get(Scope).of(1):
         moments = app.container.get(PlanTimeline).of(app.container.get(Plans).find(1))
     assert [(m.kind, m.task, m.text) for m in moments] == [("started", 1, ""), ("log", 1, "the code is hashed"), ("done", 1, "pairs by code")], "each start, log line and end, oldest first"
+
+
+def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
+    from datetime import datetime, timedelta, timezone
+    from journal.features.phone.support.pairing import Pairing
+    from journal.repositories.messages import Messages
+    from journal.repositories.settings import Settings
+    from journal.support.refused import Refused
+    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
+    with pytest.raises(Refused, match="only the user pairs"):
+        pairing.offer(7, Actor.agent("s1"), now)
+    with pytest.raises(Refused, match="1, 7, 30 days"):
+        pairing.offer(3, Actor.user(1), now)
+    first = pairing.offer(7, Actor.user(1), now)
+    assert first.link.startswith("https://") and ".tunler.example/p/#" in first.link and len(first.short) == 9, "a link through the tunnel and a short code in two halves"
+    newer = pairing.offer(7, Actor.user(1), now)
+    with pytest.raises(Refused, match="pairs no phone"):
+        pairing.pair(first.link.split("#")[1], "iPhone", now)
+    paired = pairing.pair(newer.short.lower(), "  iPhone   of Jesse ", now)
+    assert paired.phone.name == "iPhone of Jesse" and paired.phone.key != paired.key and paired.phone.expires_at - now == timedelta(days=7), "the short code typed in any case pairs; the key is kept only as its hash"
+    assert any(m.text == "A phone paired: iPhone of Jesse" for m in app.container.get(Messages).in_()), "the desk is told"
+    with pytest.raises(Refused, match="one phone at a time"):
+        pairing.offer(7, Actor.user(1), now)
+    with pytest.raises(Refused, match="pairs no phone"):
+        pairing.pair(newer.short, "Android", now)
+
+
+def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):
+    from datetime import datetime, timedelta, timezone
+    from journal.features.phone.support.pairing import Pairing
+    from journal.repositories.settings import Settings
+    from journal.support.refused import Refused
+    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
+    late = pairing.offer(1, Actor.user(1), now)
+    with pytest.raises(Refused):
+        pairing.pair(late.short, "iPhone", now + timedelta(minutes=11))
+    guessed = pairing.offer(1, Actor.user(1), now)
+    for _ in range(10):
+        with pytest.raises(Refused):
+            pairing.pair("WRONGCODE", "iPhone", now)
+    with pytest.raises(Refused):
+        pairing.pair(guessed.short, "iPhone", now)
+    assert viewer(app, "phones/connect", {"days": 30})["short"], "the viewer asks for a code as the user"
