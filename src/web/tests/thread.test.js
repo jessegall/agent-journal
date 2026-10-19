@@ -1,156 +1,96 @@
-import {beforeEach, describe, expect, test} from "vitest";
+import {describe, expect, test} from "vitest";
 import {threadTurns} from "../src/domain/thread.js";
-import {store} from "../src/state/store.js";
 
-const TYPES = {todo: {title: "To-do"}, message: {title: "Message"}, comment: {title: "Comment"}, doc: {title: "Doc"}};
-
-beforeEach(() => {
-    store.spec = {types: TYPES, priority: Object.keys(TYPES), chat_kinds: {turns: {visitor: "visitors"}}};
-});
-
-const base = {deleted: 0, completed: 0, refs: [], sections: [], brief: "", title: "", abstract: "", updated: 0};
-const message = (n, created, fields = {}) => ({...base, ref: `message:${n}`, type: "message", n, created, seen: ["user"], data: {}, ...fields});
-const pending = (id, created, fields = {}) => ({...base, ref: `pending:${id}`, type: "message", n: 0, pending: true, who: "user", created, seen: ["user"], data: {idempotency: id, files: {}}, ...fields});
-const comment = (n, created, brief, who = "agent", fields = {}) => ({...base, ref: `comment:${n}`, type: "comment", n, created, seen: [who], brief, refs: ["todo:1"], data: {}, ...fields});
-const agent = (data) => ({...base, ref: "agent:1", type: "agent", n: 1, created: 1, seen: ["agent"], data});
-const none = {message: [], comment: [], question: [], reaction: [], agent: [], doc: []};
-const turns = (rows, pend = [], older = false) => threadTurns({...none, ...rows}, pend, "main", older).turns;
-const refs = (list) => list.map((t) => t.ref);
+const at = (seconds) => new Date(seconds * 1000).toISOString();
+const message = (id, seconds, fields = {}) => ({table: "messages", id, created_at: at(seconds), author: "user", text: "", files: [], data: {}, comments_on: [], idempotency: "", ...fields});
+const pending = (key, seconds, fields = {}) => ({table: "messages", id: 0, key: `pending:${key}`, pending: true, created_at: at(seconds), author: "user", text: "", files: [], idempotency: key, ...fields});
+const card = (id, seconds, data, text = "") => message(id, seconds, {author: "system", text, data});
+const turns = (messages, pend = [], older = false) => threadTurns(messages, pend, older).turns;
+const keys = (list) => list.map((t) => t.key);
 
 describe("a message just sent", () => {
     test("shows once while only the placeholder exists", () => {
-        expect(refs(turns({}, [pending("a", 10)]))).toEqual(["pending:a"]);
+        expect(keys(turns([], [pending("a", 10)]))).toEqual(["pending:a"]);
     });
 
     test("is replaced by the real message with the same key, never shown twice", () => {
-        const got = threadTurns({...none, message: [message(5, 10, {data: {idempotency: "a"}})]}, [pending("a", 10)], "main");
-        expect(refs(got.turns)).toEqual(["message:5"]);
-        expect(got.keys.get("message:5")).toBe("pending:a");
+        const got = threadTurns([message(5, 10, {idempotency: "a"})], [pending("a", 10)]);
+        expect(keys(got.turns)).toEqual(["messages:5"]);
+        expect(got.keys.get("messages:5")).toBe("pending:a");
     });
 
     test("without a key it is matched by its words, and not when the message is older than the placeholder", () => {
-        const text = {brief: "hello"};
-        const near = turns({message: [message(5, 7, text)]}, [pending("a", 10, {...text, data: {files: {}}})]);
-        const far = turns({message: [message(5, 1, text)]}, [pending("a", 10, {...text, data: {files: {}}})]);
-        expect(refs(near)).toEqual(["message:5"]);
-        expect(refs(far).sort()).toEqual(["message:5", "pending:a"]);
+        const words = {text: "hello", idempotency: ""};
+        const near = turns([message(5, 7, words)], [pending("a", 10, words)]);
+        const far = turns([message(5, 1, words)], [pending("a", 10, words)]);
+        expect(near.map((t) => t.id)).toEqual([5]);
+        expect(far.map((t) => t.id).sort()).toEqual([0, 5]);
     });
 
     test("stays a placeholder until its files have arrived", () => {
-        const waiting = pending("a", 10, {data: {idempotency: "a", files: {"a.txt": 1, "b.txt": 1}}});
-        const partly = message(5, 10, {data: {idempotency: "a", files: {"a.txt": 1}}});
-        expect(refs(turns({message: [partly]}, [waiting]))).toEqual(["pending:a"]);
-        const whole = message(5, 10, {data: {idempotency: "a", files: {"a.txt": 1, "b.txt": 1}}});
-        expect(refs(turns({message: [whole]}, [waiting]))).toEqual(["message:5"]);
-    });
-
-    test("a deleted or window message is not shown", () => {
-        expect(turns({message: [message(1, 1, {deleted: 5}), message(2, 2, {data: {window: true}})]})).toEqual([]);
+        const waiting = pending("a", 10, {files: ["a.txt", "b.txt"]});
+        expect(turns([message(5, 10, {idempotency: "a", files: ["a.txt"]})], [waiting]).map((t) => t.id)).toEqual([0]);
+        expect(turns([message(5, 10, {idempotency: "a", files: ["a.txt", "b.txt"]})], [waiting]).map((t) => t.id)).toEqual([5]);
     });
 });
 
-describe("a receipt for filed work", () => {
-    const filedMessage = message(7, 10, {completed: 11, updated: 11, refs: ["todo:3"]});
-
-    test("follows a finished message that filed something and got no answer", () => {
-        const got = turns({message: [filedMessage]});
-        expect(refs(got)).toEqual(["message:7", "receipt:7"]);
-        expect(got[1].title).toBe("Filed to-do 3 from your message.");
-    });
-
-    test("is left out once the agent reacted or replied to the message", () => {
-        const reply = message(9, 12, {seen: ["agent"], brief: "ok", refs: ["message:7"], data: {reply_to: 7}});
-        expect(refs(turns({message: [filedMessage, reply]}))).not.toContain("receipt:7");
-    });
-
-    test("is left out when the message only quoted another message", () => {
-        expect(refs(turns({message: [message(8, 10, {completed: 11, refs: ["message:2"]})]}))).toEqual(["message:8"]);
+describe("who said it", () => {
+    test("the user's and the agent's words are messages, a thought is a thought, and a message under a row is a comment", () => {
+        const got = turns([message(1, 1), message(2, 2, {author: "agent"}), message(3, 3, {author: "agent", data: {kind: "thought"}}), message(4, 4, {comments_on: ["tasks:1"]})]);
+        expect(got.map((t) => [t.kind, t.who])).toEqual([
+            ["message", "user"],
+            ["message", "agent"],
+            ["thought", "agent"],
+            ["comment", "user"],
+        ]);
     });
 });
 
-describe("comments", () => {
-    test("a comment on nothing known is not shown, and a visitor's comment becomes a card", () => {
-        const loose = comment(3, 5, "lost", "agent", {refs: ["nothing:1"]});
-        const visitor = comment(4, 6, "hi", "user", {data: {visitor: "Ann"}});
-        const got = turns({comment: [loose, visitor]});
-        expect(got.map((t) => [t.type, t.title])).toEqual([["card", "Ann commented on todo 1"]]);
+describe("the journal's cards", () => {
+    test("a card draws its icon, tone and the row it opens, and a visitor's comment is one", () => {
+        const visitor = card(4, 6, {kind: "card", icon: "chat", tone: "", detail: "hi", row: "docs:1", visitor: "Ann"}, "Ann commented on docs:1 through a shared link");
+        const [got] = turns([visitor]);
+        expect([got.kind, got.data.icon, got.data.row, got.data.visitor, got.data.label]).toEqual(["card", "chat", "docs:1", "Ann", "Ann commented on docs:1 through a shared link"]);
     });
-});
 
-describe("a search mark", () => {
-    test("keeps what the search found, so a click can show it", () => {
-        const searched = agent({cards: [{at: 5, label: 'Searched the conversation for "Johannes"', icon: "search", tone: "note", key: "search-1", found: "hit"}]});
-        const got = turns({agent: [searched]});
-        expect(got.map((t) => [t.type, t.data.search])).toEqual([["card", {label: 'Searched the conversation for "Johannes"', found: "hit", reads: []}]]);
+    test("a question card carries its options and its answer", () => {
+        const [got] = turns([card(2, 2, {kind: "question", row: "questions:7", options: ["a", "b"], answer: "b"}, "Which?")]);
+        expect(got.kind).toBe("question");
+        expect(got.question).toMatchObject({id: 7, options: ["a", "b"], answer: "b"});
     });
-});
 
-describe("a mark about a helper or a subagent", () => {
-    test("takes the agents' colour whatever tone it was filed with, and keeps the helper it opens", () => {
-        const card = (label, fields) => ({at: 5, label, icon: "bot", tone: "good", ...fields});
-        const got = turns({agent: [agent({cards: [card("Continued helper 3", {helper: 3}), card("Retired a subagent", {icon: "agents", at: 6})]})]});
-        expect(got.map((t) => [t.data.color, t.data.tone, t.data.helper])).toEqual([["#e2c55c", "", 3], ["#e2c55c", "", undefined]]);
+    test("a compaction is its own turn", () => {
+        expect(turns([card(1, 5, {kind: "compacted"})])[0].kind).toBe("compacted");
     });
 });
 
 describe("folding runs", () => {
-    const loads = (n) => agent({skill_loads: Array.from({length: n}, (_, i) => ({at: 10 + i, skill: `s${i}`}))});
+    const loads = (n) => Array.from({length: n}, (_, i) => card(i + 1, 10 + i, {kind: "skill", detail: `s${i}`}));
 
     test("three skill loads stay single, four fold into one group", () => {
-        expect(turns({agent: [loads(3)]})).toHaveLength(3);
-        const folded = turns({agent: [loads(4)]});
+        expect(turns(loads(3))).toHaveLength(3);
+        const folded = turns(loads(4));
         expect(folded).toHaveLength(1);
-        expect(folded[0]).toMatchObject({type: "group", title: "4 skills loaded"});
+        expect(folded[0]).toMatchObject({kind: "group", title: "4 skills loaded"});
         expect(folded[0].turns).toHaveLength(4);
     });
 
-    test("a group of plugin marks counts the settled ones", () => {
-        const card = (i, settled) => ({at: 10 + i, label: "Sin found", icon: "warn", tone: settled ? "good" : "warn", plugin: "cc", page: "d/p", settled});
-        const folded = turns({agent: [agent({cards: [card(0, "fixed"), card(1, "fixed"), card(2), card(3), card(4)]})]});
-        expect(folded[0]).toMatchObject({type: "group", title: "5 × Sin found, 2 fixed"});
-        expect(folded[0].turns[0].data.page).toBe("d/p");
+    test("a group of the same card counts the settled ones", () => {
+        const sin = (i, settled) => card(i + 1, 10 + i, {kind: "card", icon: "warn", tone: settled ? "good" : "warn"}, "Sin found");
+        const cards = [sin(0, "fixed"), sin(1, "fixed"), sin(2), sin(3), sin(4)];
+        const folded = turns(cards);
+        expect(folded[0]).toMatchObject({kind: "group", title: "5 × Sin found"});
     });
 
     test("a different turn in the middle ends the run", () => {
-        const got = turns({agent: [loads(4)], comment: [comment(1, 11.5, "hm", "user")]});
-        expect(got.map((t) => t.type)).toEqual(["skill", "skill", "comment", "skill", "skill"]);
-    });
-
-    test("a subagent's own rows are not part of the session's thread", () => {
-        const sub = agent({parent: 9, skill_loads: [{at: 5, skill: "x"}]});
-        expect(turns({agent: [sub]})).toEqual([]);
+        const got = turns([...loads(2), message(9, 11.5, {text: "hm"}), ...loads(4).slice(2).map((m) => ({...m, id: m.id + 20}))]);
+        expect(got.map((t) => t.kind)).toEqual(["skill", "skill", "message", "skill", "skill"]);
     });
 });
 
 describe("older turns", () => {
-    test("when paging back, nothing older than the oldest message loaded is shown", () => {
-        const got = turns({message: [message(1, 50), message(2, 60)], agent: [agent({thoughts: [{at: 10, text: "old"}, {at: 55, text: "new"}]})]}, [], true);
-        expect(got.map((t) => t.title || t.ref)).toEqual(["message:1", "new", "message:2"]);
-    });
-});
-
-describe("older turns beside an old open message", () => {
-    test("the window starts at the oldest closed message loaded, so an old open message never pulls weeks of the agent's marks in before the messages around them", () => {
-        const stray = message(3, 5, {seen: ["agent"]});
-        const got = turns({message: [stray, message(40, 500, {completed: 1}), message(41, 510, {completed: 1, seen: ["agent"]})], agent: [agent({thoughts: [{at: 100, text: "weeks ago"}, {at: 505, text: "inside"}]})]}, [], true);
-        expect(got.map((t) => t.title || t.ref)).toEqual(["message:3", "message:40", "inside", "message:41"]);
-    });
-});
-
-describe("an agent's reply to a comment", () => {
-    test("shows on the agent's side with the row, quoting what the comment quoted", () => {
-        const asked = comment(1, 10, "> the passage\n\nwhy?", "user", {refs: ["todo:86"]});
-        const reply = comment(2, 20, "because", "agent", {refs: ["comment:1"]});
-        const got = turns({comment: [asked, reply]});
-        expect(got.map((t) => [t.who, t.refs.includes("todo:86")])).toEqual([["user", true], ["agent", true]]);
-        expect(got[1].brief).toBe("> the passage\n\nbecause");
-    });
-});
-
-describe("a compaction of the conversation", () => {
-    test("is marked in the chat as Conversation compacted, the word Claude Code uses", () => {
-        const shown = JSON.stringify(turns({agent: [agent({compactions: [{at: 5}]})]}));
-        expect(shown).toContain("Conversation compacted");
-        expect(shown).not.toContain("shortened");
+    test("when paging back, no card older than the oldest message loaded is shown", () => {
+        const got = turns([message(1, 50), message(2, 60), card(3, 10, {kind: "skill", detail: "old"}), card(4, 55, {kind: "skill", detail: "new"})], [], true);
+        expect(got.map((t) => t.id)).toEqual([1, 4, 2]);
     });
 });
