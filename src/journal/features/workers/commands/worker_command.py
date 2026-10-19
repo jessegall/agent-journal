@@ -10,6 +10,7 @@ from journal.features.workers.named_paths import NamedPaths
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
+from journal.repositories.agents import Agents
 from journal.refused import Refused
 from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
@@ -20,15 +21,15 @@ from journal.repositories.workers import Workers
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers) -> None:
-        self.workers, self.messages, self.machine, self.providers = workers, messages, machine, providers
+    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents) -> None:
+        self.workers, self.messages, self.machine, self.providers, self.agents = workers, messages, machine, providers, agents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
         dispatch = self.verb(verbs, "dispatch", "send a worker to write one bounded job")
         dispatch.add_argument("name")
         dispatch.add_argument("brief")
-        dispatch.add_argument("--provider", default="claude")
+        dispatch.add_argument("--provider", choices=("claude", "codex"), help="the program the worker runs; the dispatching agent's own when not named")
         dispatch.add_argument("--model", required=True)
         dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code")
         dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
@@ -44,13 +45,17 @@ class WorkerCommand(Command):
         self.verb(verbs, "done", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
         self.verb(verbs, "list", "every worker out")
 
+    def own_provider(self, where: Where) -> str:
+        """The program the dispatching agent runs, so its model names fit; Claude for the user's own dispatch."""
+        return self.agents.for_session(where.session).provider if where.session else "claude"
+
     def dispatch(self, args: Namespace, where: Where) -> int:
         if self.profiles.kind_of(args.name) == "subagent":
             raise Refused(f"{args.name} is a subagent profile: it only reads, so send it with the Agent tool, naming it as subagent_type; a worker is for work that writes")
         knowing = [] if args.fresh else self.knowing(args.brief)
         if knowing:
             raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
-        worker = Worker(name=args.name, brief=args.brief, provider=args.provider, model=args.model, worktree=args.worktree, dispatched_by=where.session)
+        worker = Worker(name=args.name, brief=args.brief, provider=args.provider or self.own_provider(where), model=args.model, worktree=args.worktree, dispatched_by=where.session)
         worker = self.workers.save(worker, where.actor)
         if args.task:
             self.workers.put_on(worker, args.task, where.actor)
@@ -103,6 +108,10 @@ class WorkerCommand(Command):
         return 0
 
     def list(self, args: Namespace, where: Where) -> int:
-        for worker in self.workers.in_():
+        workers = self.workers.in_()
+        for worker in workers:
             print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {worker.brief}")
+        out = [str(worker.id) for worker in workers if worker.is_out()]
+        if out:
+            print(f"`journal worker wait {' '.join(out)}` waits for a report; listing again does not bring it sooner")
         return 0

@@ -167,19 +167,17 @@ def test_a_typed_lines_enter_waits_until_the_line_has_gone_in(tmp_path: Path):
     os.close(write_end)
 
 
-def test_a_service_that_keeps_dying_is_started_again_less_often_then_left_down_as_failed(tmp_path: Path, monkeypatch):
+def test_a_service_that_keeps_dying_is_started_again_less_often_and_never_left_down(tmp_path: Path, monkeypatch):
     import supervisor.service as service
     monkeypatch.setattr(service, "BACKOFF", 0.05)
+    monkeypatch.setattr(service, "LONGEST_WAIT", 0.2)
     crashing = Service("crashing", ["sh", "-c", "exit 1"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "crash.log")
     crashing.start()
     began = time.time()
-    while not crashing.failed() and time.time() - began < 5:
+    while crashing.described()["restarts"] < 8 and time.time() - began < 5:
         crashing.keep_alive()
         time.sleep(0.02)
-    shown = crashing.described()
-    assert shown["failed"] and not shown["running"] and shown["restarts"] == service.GIVE_UP - 1, "started again four times, then left down"
-    crashing.keep_alive()
-    assert crashing.described()["restarts"] == service.GIVE_UP - 1, "a failed process is not started again"
+    assert crashing.described()["restarts"] >= 8, "a kept service is started again however often it dies"
     once = Service("once", ["true"], tmp_path, {}, tmp_path / "once.log", keep=False)
     once.start()
     time.sleep(0.2)

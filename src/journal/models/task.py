@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import ClassVar
 
 from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
@@ -8,6 +9,8 @@ from journal.refused import Refused
 
 @dataclass(frozen=True)
 class Task(Scoped):
+    text_fields: ClassVar[tuple[str, ...]] = ("title", "brief", "outcome")
+
     title: str = ""
     brief: str = ""
     state: TaskState = TaskState.OPEN
@@ -51,5 +54,3 @@ class Task(Scoped):
     def finished(self, at: datetime, outcome: str) -> "Task":
         return self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome)
 
-    def mentioning_text(self) -> str | None:
-        return f"{self.title}\n{self.brief}"

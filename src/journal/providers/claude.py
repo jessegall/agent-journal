@@ -3,12 +3,10 @@ import shlex
 from pathlib import Path
 
 from journal.providers.claude_row import ClaudeRow
-from journal.providers.provider import Provider
+from journal.providers.provider import TAIL, Provider
 from journal.providers.turn import Turn
 
 
-TAIL = 400_000
-"""How much of the transcript's end is read for the thoughts of one turn."""
 
 
 class Claude(Provider):
@@ -73,33 +71,9 @@ class Claude(Provider):
                 thoughts += [b.thinking for b in row.of_type("thinking")]
         return thoughts
 
-    def texts_written(self, project: Path, session: str, read: int) -> tuple[list[str], int]:
-        """Every text block of an assistant row written since the byte read last, whole lines only; the first look at a transcript starts at its last line, the turn in hand, so a session's past is not replayed but the block that brought the hook is."""
-        path = self.transcript(project, session)
-        if path is None:
-            return [], read
-        size = path.stat().st_size
-        if read > size:
-            return [], size
-        if read < 0:
-            read = self.last_line_start(path, size)
-        with path.open("rb") as file:
-            file.seek(read)
-            raw = file.read()
-        whole = raw.rfind(b"\n") + 1
-        rows = [ClaudeRow.from_json(json.loads(line)) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
-        texts = [block.text for row in rows if row.type == "assistant" for block in row.of_type("text") if block.text.strip()]
-        return texts, read + whole
-
-    @staticmethod
-    def last_line_start(path: Path, size: int) -> int:
-        """The byte the transcript's last line begins at."""
-        with path.open("rb") as file:
-            file.seek(max(0, size - TAIL))
-            tail = file.read()
-        body = tail[:-1] if tail.endswith(b"\n") else tail
-        cut = body.rfind(b"\n")
-        return max(0, size - TAIL) + cut + 1 if cut != -1 else max(0, size - TAIL)
+    def texts_in(self, line: dict) -> list[str]:
+        row = ClaudeRow.from_json(line)
+        return [block.text for block in row.of_type("text") if block.text.strip()] if row.type == "assistant" else []
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)

@@ -36,6 +36,8 @@ class Tasks(Feature):
         Entry(NodeKind.CHECK, 'task_in_hand', 'Has a task in hand?', 'the agent has a task started'),
         Entry(NodeKind.CHECK, 'parked_tasks', 'Has parked tasks?', 'a task is parked'),
         Entry(NodeKind.CHECK, 'blocked_tasks', 'Has blocked tasks?', 'a task waits on something outside'),
+        Entry(NodeKind.CHECK, 'blocked_outside', 'Has a task blocked on something outside?', 'a blocked task waits on nothing that opens it by itself: no task, question or check'),
+        Entry(NodeKind.CHECK, 'broken_waits', 'Has a task waiting on a check that cannot run?', 'a blocked task waits until a check whose command could not run, a missing program or a time-out, so it would wait forever'),
         Entry(NodeKind.CHECK, 'log_stale_over', 'Is the log older than N?', 'the task in hand was last logged longer ago than the time in the text, with its unit: 10 minutes, 2 hours; a bare number is seconds; or never', takes_text=True),
         Entry(NodeKind.CHECK, 'task_just_started', 'Task just started by this agent?', 'the row is a task this agent has just started: this write set when it started, by the agent walking'),
         Entry(NodeKind.CHECK, 'log_for_task_in_hand', 'Log is for the task in hand?', 'the row is a log line of the task this agent has in hand'),
@@ -57,7 +59,9 @@ class Tasks(Feature):
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step", repeat_after=300)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for half an hour: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
     WAIT_CLEARED = Nudge(name, "wait_cleared", "task {{n}} is open again: {{on}} is answered or closed", "`journal task start {{n}}` takes it up", repeat_after=0)
-    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN, WAIT_CLEARED)
+    BROKEN_WAIT = Nudge(name, "broken_wait", "{{waits}}", "so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat_after=0)
+    BLOCKED_STILL = Nudge(name, "blocked_still", "blocked on something outside: {{tasks}}", "has it come? `journal task unblock <n>` when it has", repeat_after=0)
+    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN, WAIT_CLEARED, BROKEN_WAIT, BLOCKED_STILL)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks
@@ -76,7 +80,8 @@ needs no task; file one for work that is an item of its own, that waits, or that
 - A task that waits on something outside your hands, a decision, an answer, a dependency, is blocked:
   `journal task block <n> "<what it waits on>"`. Blocked is neither offered nor nudged, only listed with its reason;
   `journal task unblock <n>` opens it again when what it waited on came. `journal task block <n> --on question:12`
-  (or `--on task:7`) opens it by itself once that row is answered or closed.
+  (or `--on task:7`) opens it by itself once that row is answered or closed; `--until "<command>"` runs the command
+  every two minutes, such as a check that a pull request is merged, and opens it once the command passes.
 - Waiting on something outside your hands, a command, a run or a person: `journal await "<what you wait for>"` and end
   your turn; working again lifts it, and every five quiet minutes you are asked to look.
 - Log as you go, counted in edits: after twenty-five with nothing logged you are asked to, every twenty-five the work in hand is named

@@ -24,6 +24,8 @@ M = TypeVar("M", bound=Model)
 
 PAGE = 500
 """The most rows a read returns unless it asks for every one by name."""
+FOUND = 40
+"""The most rows a search returns of one kind."""
 
 
 class Repository(Generic[M]):
@@ -80,6 +82,17 @@ class Repository(Generic[M]):
     def newest(self, clause: str, params: tuple) -> list[M]:
         """At most a page of the newest rows the clause picks, oldest first."""
         return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE))))
+
+    def search(self, words: list[str]) -> list[M]:
+        """The newest rows whose own text holds every one of the words, any case, newest first."""
+        clause, params = self.matching_words(words)
+        return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, FOUND))
+
+    def matching_words(self, words: list[str]) -> tuple[str, tuple]:
+        """Each word in at least one of the model's text fields."""
+        each = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"
+        escaped = [word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") for word in words]
+        return " AND ".join(each for _ in words), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
 
     def matching(self, fields: dict) -> tuple[str, tuple]:
         return " AND ".join(f"{name} = ?" for name in fields), tuple(self._column(name).to_sql(value) for name, value in fields.items())

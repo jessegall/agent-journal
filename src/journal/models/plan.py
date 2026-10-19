@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from journal.models.plan_state import PlanState
 from journal.models.scoped import Scoped
@@ -8,6 +9,8 @@ from journal.refused import Refused
 @dataclass(frozen=True)
 class Plan(Scoped):
     """Ordered work: its phases and tasks are linked to it. Built as draft, made ready by the agent, held in review while reviewers read it, approved by the user, then followed: finishing one task starts the next."""
+
+    text_fields: ClassVar[tuple[str, ...]] = ("title", "brief")
 
     title: str = ""
     brief: str = ""
@@ -39,5 +42,3 @@ class Plan(Scoped):
             raise Refused(f"plan {self.id} is {self.state} and cannot become {state}")
         return self.with_(state=state)
 
-    def mentioning_text(self) -> str | None:
-        return f"{self.title}\n{self.brief}"

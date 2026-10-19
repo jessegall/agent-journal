@@ -211,6 +211,12 @@ class Checks:
     def blocked_tasks(self, ctx: Context) -> bool:
         return bool(self.tasks.in_state(TaskState.BLOCKED))
 
+    def blocked_outside(self, ctx: Context) -> bool:
+        return bool(self.tasks.blocked_outside())
+
+    def broken_waits(self, ctx: Context) -> bool:
+        return bool(self.tasks.broken_waits())
+
     def tool_named(self, ctx: Context, names: str) -> bool:
         """The tool about to run is one of the names in the text, as the provider names it, in any case."""
         wanted = {n.strip().lower() for n in names.replace(",", " ").split() if n.strip()}

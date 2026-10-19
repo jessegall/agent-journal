@@ -1,10 +1,13 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from journal.models.scoped import Scoped
 
 
 @dataclass(frozen=True)
 class Question(Scoped):
+    text_fields: ClassVar[tuple[str, ...]] = ("text", "answer")
+
     text: str = ""
     options: tuple[str, ...] = ()
     answer: str | None = None
@@ -19,5 +22,3 @@ class Question(Scoped):
     def answered(self, answer: str) -> "Question":
         return self.with_(answer=answer)
 
-    def mentioning_text(self) -> str | None:
-        return self.text

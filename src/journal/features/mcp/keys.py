@@ -14,6 +14,7 @@ class Keys:
         return json.loads(self.path.read_text()) if self.path.is_file() else {}
 
     def set(self, var: str, value: str) -> None:
+        PrivateFolder.made(self.path.parent)
         self.path.write_text(json.dumps({**self.all(), var: value}, indent=2) + "\n")
         self.path.chmod(0o600)
 

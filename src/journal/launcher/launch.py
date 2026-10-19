@@ -20,6 +20,8 @@ from journal.private_folder import PrivateFolder
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
 SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-bypass-approvals-and-sandbox"]}
 STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
+REACH = {"claude": [], "codex": ["-c", "sandbox_workspace_write.network_access=true"]}
+"""What a sandboxed agent needs to reach its journal's server on this machine."""
 FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0}
 
 
@@ -65,7 +67,8 @@ class Launch:
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
         """The agent's command without the arguments that resume a conversation, which the launch file carries apart so a restart can replace them."""
         skip = [flag for flag in SKIP[self.agent] if choice.skip_prompts and flag not in self.args]
-        return [self.agent, *skip, *STATUS[self.agent](status), *self.args]
+        reach = [] if choice.skip_prompts else REACH[self.agent]
+        return [self.agent, *skip, *reach, *STATUS[self.agent](status), *self.args]
 
     def journal_command(self) -> list[str]:
         return [sys.executable, str(self.package / "journal.py"), "serve"]

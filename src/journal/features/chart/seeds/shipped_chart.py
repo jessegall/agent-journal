@@ -44,9 +44,11 @@ STATELESS = (
 """The Always workflows the journal ships, one subject each, in the order they run at their event: the drawing's name, its title and the builder that draws it."""
 OWN = (
     ("idle", "idle", "parked", "Hold the stop while a task is parked", "parked_holds_the_stop"),
+    ("idle", "idle", "broken_wait", "Hold the stop while a blocked task waits on a check that cannot run", "broken_wait_holds_the_stop"),
     ("idle", "idle", "approved", "Hold the stop while an approved plan is not started", "approved_plan_holds_the_stop"),
     ("idle", "idle", "open", "Hold the stop in auto mode while tasks are open", "open_tasks_hold_the_stop"),
     ("idle", "ticked", "parked", "Ask about a parked task after a minute of quiet", "ask_about_parked"),
+    ("idle", "ticked", "blocked", "Ask about a task blocked on something outside after an hour of quiet", "ask_about_blocked"),
     ("idle", "ticked", "check_in", "Check in after half an hour of quiet in auto mode", "check_in"),
     ("working", "tool_starting", "log_held", "Hold the write when the task log is overdue", "hold_write_when_log_overdue"),
     ("working", "tool_starting", "log", "Ask for a task log after {tasks.first_nudge_after} edits", "ask_for_a_log_after_edits"),
@@ -114,6 +116,8 @@ UNREAD_HELD = "[messages.unread_held] you have {{unread_count}} unread messages.
 ANSWER = "[messages.answer] answer message {{owed}} before you do anything else. a reply with [!reply:N]; an emoji reaction answers only a short message"
 ANSWER_HELD = "[messages.answer_held] your tool calls are held: answer message {{owed}} first. a reply with [!reply:N] in words, or `journal message send '<words>' --reply-to N`, which always counts; an emoji reaction answers only a short message; only a journal command and a look at the message's own files go through"
 PARKED = "[tasks.parked] parked tasks, still open: {{parked_tasks}}. `journal task resume <n>` picks one up; leave them parked only on purpose"
+BROKEN_WAIT = "[tasks.broken_wait] {{broken_waits}}. so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`"
+BLOCKED_STILL = "[tasks.blocked_still] blocked on something outside: {{blocked_outside}}. has it come? `journal task unblock <n>` when it has"
 CHECKPOINT = "[plans.checkpoint] plan {{plan_n}}: phase {{checkpoint_phase}} is complete and a checkpoint. the user looks before the next phase; wait for their word, then `journal plan start {{plan_n}}`"
 CHECKPOINT_PASSED = "[plans.checkpoint_passed] plan {{plan_n}}: phase {{checkpoint_phase}} is complete, and in auto mode it does not stop you. `journal plan start {{plan_n}}` begins the next phase; carry on"
 NEXT = "[tasks.next] tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"
@@ -529,6 +533,10 @@ class ShippedChart(Seed):
         """A parked task holds the stop, in any mode, naming the parked ones."""
         return self.guarded(chart, ends, 160, 92, (Guard("parked_tasks"),), "block_stop", PARKED)
 
+    def broken_wait_holds_the_stop(self, chart: Chart, ends: list) -> list:
+        """A blocked task waiting until a check that cannot run holds the stop, naming the command and why, so no wait lasts forever."""
+        return self.guarded(chart, ends, 160, 92, (Guard("broken_waits"),), "block_stop", BROKEN_WAIT)
+
     def approved_plan_holds_the_stop(self, chart: Chart, ends: list) -> list:
         """A plan the user approved and the agent has not started holds the stop, in any mode, until it is started."""
         return self.guarded(chart, ends, 160, 92, (Guard("approved_plan"),), "block_stop", APPROVED_UNSTARTED)
@@ -554,6 +562,10 @@ class ShippedChart(Seed):
     def ask_about_parked(self, chart: Chart, ends: list) -> list:
         """As the clock ticks on an agent at rest with a parked task: after a minute of quiet, ask whether it can go on."""
         return self.guarded(chart, ends, 240, 92, (Guard("parked_tasks"), Guard("quiet_for_over", "1 minute")), "type", PARKED_STILL)
+
+    def ask_about_blocked(self, chart: Chart, ends: list) -> list:
+        """As the clock ticks on an agent at rest with a task blocked on something outside: after an hour of quiet, ask whether it has come."""
+        return self.guarded(chart, ends, 240, 92, (Guard("blocked_outside"), Guard("quiet_for_over", "1 hour")), "type", BLOCKED_STILL)
 
     def check_in(self, chart: Chart, ends: list) -> list:
         """As the clock ticks on an agent at rest in auto mode: after half an hour of quiet, check in."""

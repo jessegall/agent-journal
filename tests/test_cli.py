@@ -49,7 +49,9 @@ def test_the_environment_is_made_on_first_use(app):
 
 def test_bad_arguments_answer_with_usage_not_an_exit(app):
     outcome = app.console().run(["task", "nope"], MAIN)
-    assert outcome.code == 2 and "usage" in outcome.err
+    assert outcome.code == 2 and "usage: journal task" in outcome.err and "usage: journal [-h]" not in outcome.err, "the noun's own usage, once"
+    helped = app.console().run(["plan", "--help"], MAIN)
+    assert helped.code == 0 and "approve" in helped.out and "usage: journal [-h]" not in helped.out + helped.err, "a noun's help is its verbs, and no failure"
 
 
 def test_the_server_runs_the_same_console_for_the_shim(app):

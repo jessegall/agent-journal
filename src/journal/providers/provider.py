@@ -17,6 +17,8 @@ from journal.providers.turn import Turn
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
 
+TAIL = 400_000
+"""How far from its end a transcript is read for its last turn."""
 PATH_KEYS = ("file_path", "path", "notebook_path")
 """The keys an editing tool names its file by."""
 
@@ -66,8 +68,35 @@ class Provider:
         return []
 
     def texts_written(self, project: Path, session: str, read: int) -> tuple[list[str], int]:
-        """The text blocks the agent wrote for the user since the byte of its transcript read last, and the byte to read from next; a provider with no transcript writes none."""
-        return [], read
+        """The text blocks the agent wrote for the user since the byte of its transcript read last, whole lines only, and the byte to read from next; the first look starts at the transcript's last line, the turn in hand, so a session's past is not replayed but the block that brought the hook is."""
+        path = self.transcript(project, session)
+        if path is None:
+            return [], read
+        size = path.stat().st_size
+        if read > size:
+            return [], size
+        if read < 0:
+            read = self.last_line_start(path, size)
+        with path.open("rb") as file:
+            file.seek(read)
+            raw = file.read()
+        whole = raw.rfind(b"\n") + 1
+        lines = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
+        return [text for line in lines for text in self.texts_in(line)], read + whole
+
+    def texts_in(self, line: dict) -> list[str]:
+        """The text blocks one transcript line holds for the user."""
+        return []
+
+    @staticmethod
+    def last_line_start(path: Path, size: int) -> int:
+        """The byte the transcript's last line begins at."""
+        with path.open("rb") as file:
+            file.seek(max(0, size - TAIL))
+            tail = file.read()
+        body = tail[:-1] if tail.endswith(b"\n") else tail
+        cut = body.rfind(b"\n")
+        return max(0, size - TAIL) + cut + 1 if cut != -1 else max(0, size - TAIL)
 
     def resume(self, session: str) -> tuple[str, ...]: ...
 

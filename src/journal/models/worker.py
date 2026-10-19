@@ -36,6 +36,10 @@ class Worker(Scoped):
         """Its report acted on: merged, used or set aside."""
         return self.with_(taken_up=True)
 
+    def is_out(self) -> bool:
+        """Sent and not yet back."""
+        return self.state == WorkerState.DISPATCHED
+
     def has_report_waiting(self) -> bool:
         """Reported, and its report not yet acted on."""
         return self.state == WorkerState.REPORTED and not self.taken_up

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import ClassVar
 
 from journal.models.author import Author
 from journal.models.scoped import Scoped
@@ -7,6 +8,8 @@ from journal.models.scoped import Scoped
 
 @dataclass(frozen=True)
 class Message(Scoped):
+    text_fields: ClassVar[tuple[str, ...]] = ("text",)
+
     FACE_WORDS = 6
     THOUGHT = "thought"
 
@@ -54,5 +57,3 @@ class Message(Scoped):
         """A message of a few words, an ok or a thanks, is answered by a face; anything longer wants words."""
         return len(self.text.split()) <= self.FACE_WORDS
 
-    def mentioning_text(self) -> str | None:
-        return self.text

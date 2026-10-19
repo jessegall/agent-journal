@@ -33,6 +33,10 @@ class ScopedRepository(Repository[S]):
     def page_in(self, limit: int, before: int | None = None) -> list[S]:
         return self.page(limit, before, environment_id=self.scope.id)
 
+    def matching_words(self, words: list[str]) -> tuple[str, tuple]:
+        clause, params = super().matching_words(words)
+        return f"environment_id = ? AND {clause}", (self.scope.id, *params)
+
     def _insert(self, row: S, by: Actor, now: datetime) -> S:
         return super()._insert(self._placed(row), by, now)
 

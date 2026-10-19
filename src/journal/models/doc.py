@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from journal.models.model import Model
 
@@ -7,9 +8,9 @@ from journal.models.model import Model
 class Doc(Model):
     """A document of the project, the same in every environment: a title, a line that says what it is, and its text."""
 
+    text_fields: ClassVar[tuple[str, ...]] = ("title", "abstract", "body")
+
     title: str = ""
     abstract: str = ""
     body: str = ""
 
-    def mentioning_text(self) -> str | None:
-        return self.body

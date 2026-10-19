@@ -11,6 +11,7 @@ from journal.features.delivery.feature import Delivery
 from journal.features.mcp.feature import Mcp
 from journal.features.secrets.feature import Secrets
 from journal.features.mentions.feature import MentionsFeature
+from journal.features.search.feature import SearchFeature
 from journal.features.migration.feature import MigrationFeature
 from journal.features.pins.feature import Pins
 from journal.features.docs.feature import DocsFeature
@@ -36,7 +37,7 @@ from journal.features.voices.feature import Voices
 class Standard:
     """The features the journal ships with, in the order they register."""
 
-    FEATURES = (Skills, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Triggers, Checks, Shell, Thinking, Mcp, Secrets, Sharing, Delivery, TemplatesFeature, ReportsFeature, DocsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature, ChartFeature, PluginsFeature, Faults, MigrationFeature, MentionsFeature, Updates)
+    FEATURES = (Skills, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, Workers, Laws, Triggers, Checks, Shell, Thinking, Mcp, Secrets, Sharing, Delivery, TemplatesFeature, ReportsFeature, DocsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature, ChartFeature, PluginsFeature, Faults, MigrationFeature, MentionsFeature, SearchFeature, Updates)
     """The engine's own listeners first, the skill, the look and the mark each owed and held by its feature, the workflows' walk after them, so a workflow reads the facts the engine set at this very event, and the plugins last, so the journal's own holds answer first."""
 
     @classmethod

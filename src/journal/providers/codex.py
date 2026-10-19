@@ -41,6 +41,10 @@ class Codex(Provider):
             return Turn(number, "tool", "tool", at, row.output)
         return None
 
+    def texts_in(self, line: dict) -> list[str]:
+        row = CodexRow.from_json(line)
+        return [row.text] if row.type == "response_item" and row.item == "message" and row.role == "assistant" and row.text.strip() else []
+
     def resume(self, session: str) -> tuple[str, ...]:
         return ("resume", session)
 

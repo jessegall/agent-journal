@@ -35,7 +35,7 @@ class Workers(ScopedRepository[Worker]):
     def holding(self, task_ids: set[int]) -> dict[int, Worker]:
         """By task number, the worker still out on each of these tasks."""
         held = {}
-        for worker in self.where(environment_id=self.scope.id, state=WorkerState.DISPATCHED):
+        for worker in self.where(state=WorkerState.DISPATCHED):
             for ref in self.links.targets(worker, WORKS_ON):
                 if ref.id in task_ids:
                     held[ref.id] = worker

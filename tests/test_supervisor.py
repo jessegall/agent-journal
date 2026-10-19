@@ -102,6 +102,9 @@ def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
     status = StatusLine("p", "spike", tmp_path)
     assert launch.agent_command(Choice("spike", "s-1", True), status) == ["claude", "--settings", status.settings(), "--model", "x"], "the resume goes in the launch file apart"
     assert launch.agent_command(Choice("spike", "", True, skip_prompts=True), status) == ["claude", "--dangerously-skip-permissions", "--settings", status.settings(), "--model", "x"]
+    codex = Launch.parse(["codex"], tmp_path)
+    assert codex.agent_command(Choice("spike", "", True), status) == ["codex", "-c", "sandbox_workspace_write.network_access=true"], "a sandboxed Codex reaches its journal's server"
+    assert codex.agent_command(Choice("spike", "", True, skip_prompts=True), status) == ["codex", "--dangerously-bypass-approvals-and-sandbox"]
     environ = launch.environ(Choice("spike", "", True))
     assert environ["AGENT_JOURNAL_ACTIVE"] == "1" and environ["JOURNAL_ENV"] == "spike", "the journal's own hooks always run"
     assert environ["PATH"].startswith(str(tmp_path / ".journal" / "bin")), "the project's own journal command is on the agent's PATH, and nowhere else"

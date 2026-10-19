@@ -94,7 +94,8 @@ def test_the_private_folder_keeps_keys_and_secrets_to_their_user_and_out_of_git(
     folder = PrivateFolder(tmp_path / "proj")
     keys, secrets = folder.keys_file(), folder.secrets()
     assert keys.parent == tmp_path / ".journal" / "keys" and secrets == tmp_path / ".config" / "agent-journal" / "secrets", "version 3's secrets folder, so its values open unchanged"
-    for made in (keys.parent, secrets):
+    assert not keys.parent.exists() and not secrets.exists(), "naming the folders makes nothing, so a read never writes into the home folder"
+    for made in (PrivateFolder.made(keys.parent), PrivateFolder.made(secrets)):
         assert stat.S_IMODE(made.stat().st_mode) == 0o700 and (made / ".gitignore").read_text() == "*\n"
     monkeypatch.setenv(SECRETS_VARIABLE, str(tmp_path / "moved"))
     assert folder.secrets() == tmp_path / "moved"

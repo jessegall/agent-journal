@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from journal.models.model import Model
 
@@ -7,10 +8,10 @@ from journal.models.model import Model
 class Rule(Model):
     """Project-wide: binds every environment."""
 
+    text_fields: ClassVar[tuple[str, ...]] = ("text", "reason")
+
     text: str = ""
     reason: str = ""
     keywords: tuple[str, ...] = ()
     """Words that, when the agent writes one, bring the rule back to it as a whisper."""
 
-    def mentioning_text(self) -> str | None:
-        return self.text

@@ -55,6 +55,7 @@ class SecretValues:
 
     def write(self, values: dict[str, str]) -> None:
         path = self.path
+        PrivateFolder.made(path.parent)
         writing = path.with_suffix(".writing")
         handle = os.open(writing, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         with os.fdopen(handle, "w") as out:

@@ -54,6 +54,8 @@ lists the verbs.
   `journal reader add` keeps a reader that picks the lines worth seeing.
 - `journal environment here` after a compaction or a takeover lists what is in flight.
 - `journal await "<what>"` when you wait on something outside your hands, then end your turn.
+- `journal search "<words>"` finds every task, plan, message, document, report and agent conversation here that holds
+  all the words: look there before saying you do not know or asking the user again.
 - Also: **report**, **doc**, **check**, **chart**, **plugin**, **secret**, **template**, **notice**; `journal <noun> --help` lists the verbs.
 - `journal stuck "<why>"` when you are truly stuck: the journal stays quiet until your next tool use.
 

@@ -71,10 +71,12 @@ class Console:
             try:
                 args = self.parser().parse_args(argv)
                 code = self.commands[args.noun].perform(args, self.attributed(where))
-            except (argparse.ArgumentError, SystemExit) as refused:
+            except argparse.ArgumentError as refused:
                 self.parser().print_usage(err)
                 print(refused, file=err)
                 code = 2
+            except SystemExit as ended:
+                code = ended.code
             except (NotFound, Refused) as refused:
                 print(refused, file=err)
                 code = 1

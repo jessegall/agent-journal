@@ -11,11 +11,13 @@ from journal.refused import Refused
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.in_hand import InHand
 from journal.features.tasks.states.working import Working
+from journal.models.check import Check
 from journal.models.link import Link
 from journal.models.ref import Ref
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
+from journal.repositories.checks import Checks
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.not_found import NotFound
@@ -28,8 +30,8 @@ from journal.repositories.tasks import Tasks, WAITS_ON
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions) -> None:
-        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions = tasks, logs, machine, messages, links, plans, in_hand, questions
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, checks: Checks) -> None:
+        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.checks = tasks, logs, machine, messages, links, plans, in_hand, questions, checks
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "file a task")
@@ -51,6 +53,8 @@ class TaskCommand(Command):
         block.add_argument("n", type=int)
         block.add_argument("why", nargs="?", default="")
         block.add_argument("--on", action="append", default=[], metavar="question:N|task:N", help="a question or task it waits on; it is unblocked when that is answered or closed; to wait on the user, ask a question and name it here")
+        block.add_argument("--until", default="", metavar="COMMAND", help="a shell command that passes once the wait is over, such as a check that a pull request is merged; run every --every minutes, it unblocks the task when it passes")
+        block.add_argument("--every", type=int, default=2, help="minutes between two runs of the --until command")
         self.verb(verbs, "unblock", "what it waited on came: the task is open again").add_argument("n", type=int)
         park = self.verb(verbs, "park", "set a task aside for something else first, by choice; it stays open and stops being nudged")
         park.add_argument("n", type=int)
@@ -100,9 +104,11 @@ class TaskCommand(Command):
 
     def block(self, args: Namespace, where: Where) -> int:
         waits = [self.awaited(text) for text in args.on]
-        if not args.why and not waits:
-            raise Refused("say what it waits on: --on question:N or --on task:N, or a reason in words")
+        if not args.why and not waits and not args.until:
+            raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why), where.actor)
+        if args.until:
+            waits.append(Ref.to(self.checks.save(Check(title=f"task {task.id} waits until this passes", command=args.until, every=args.every, waited_on=True), where.actor)))
         for ref in waits:
             self.links.save(Link(source=Ref.to(task), target=ref, kind=WAITS_ON), where.actor)
         self.in_hand.let_go(task, where)

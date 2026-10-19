@@ -12,17 +12,17 @@ class PrivateFolder:
         self.root = root
 
     def keys_file(self) -> Path:
-        return self.made(Path.home() / ".journal" / "keys") / f"{str(self.root.resolve()).strip('/').replace('/', '-')}.json"
+        return Path.home() / ".journal" / "keys" / f"{str(self.root.resolve()).strip('/').replace('/', '-')}.json"
 
     def secrets(self) -> Path:
         """The folder the variable names, else agent-journal/secrets under the config home."""
         if SECRETS_VARIABLE in os.environ:
-            return self.made(Path(os.environ[SECRETS_VARIABLE]))
-        return self.made(Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "agent-journal" / "secrets")
+            return Path(os.environ[SECRETS_VARIABLE])
+        return Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "agent-journal" / "secrets"
 
     @staticmethod
     def made(folder: Path) -> Path:
-        """The folder, made if it is not there, open to its user alone, with a .gitignore that leaves everything in it out of any repository it sits in."""
+        """The folder a value is written into, made if it is not there, open to its user alone, with a .gitignore that leaves everything in it out of any repository it sits in."""
         folder.mkdir(parents=True, exist_ok=True)
         folder.chmod(0o700)
         ignore = folder / ".gitignore"

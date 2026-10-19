@@ -178,6 +178,37 @@ def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app):
     assert "side work" not in out and "parked" not in out, "a plan's task leaves the next to the plan"
 
 
+def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_is_named(app, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    from journal.features.chart.fillers import Fillers
+    from journal.features.checks.check_runner import CheckRunner
+    from journal.repositories.checks import Checks
+    from journal.repositories.tasks import Tasks
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    marker = app.config.root / "merged"
+    console.run(["task", "create", "release after the merge"], AGENT)
+    console.run(["task", "create", "deploy"], AGENT)
+    console.run(["task", "block", "1", "the pull request is merged", "--until", f"test -f {marker}"], AGENT)
+    console.run(["task", "block", "2", "--until", "no-such-program-here"], AGENT)
+    checks, tasks, runner = app.container.get(Checks), app.container.get(Tasks), app.container.get(CheckRunner)
+    assert checks.all() == [] and "waits until" not in console.run(["check", "list"], AGENT).out, "a wait's check is the task's, off the checks list"
+    runner.run(checks.find(1), Actor.system())
+    assert tasks.find(1).state == "blocked" and checks.find(1).last_fault == "", "not passing yet is no fault"
+    runner.run(checks.find(2), Actor.system())
+    assert "task 2 waits until `no-such-program-here`, which cannot run: the command is not there" in app.container.get(Fillers).broken_waits(None), "a check that cannot run is named"
+    assert [t.id for t in tasks.blocked_outside()] == [], "a task waiting on a check is not blocked on something outside"
+    marker.write_text("")
+    runner.run(checks.find(1), Actor.system())
+    assert tasks.find(1).state == "open" and any("task 1 is open again: check 1" in line for line in typed), "the passing check opens the task and the agent is told"
+    assert not checks.find(1).due_at(datetime.now(timezone.utc) + timedelta(hours=1)), "a passed wait runs no more"
+
+
 def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app, monkeypatch):
     from journal.models.plan_state import PlanState
     from journal.repositories.plans import Plans
@@ -389,6 +420,21 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     lines.confirm(1, typed[-1])
     link.release(1)
     assert typed[-1] == "[journal] what you waited on came back: carry on"
+
+
+def test_a_worker_runs_the_dispatching_agents_own_program(app, monkeypatch):
+    from journal.features.workers.worker_runner import WorkerRunner
+    from journal.models.agent import Agent
+    from journal.repositories.agents import Agents
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
+    app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
+    console = app.console()
+    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--model", "gpt-5"], Where("main", "c1"))
+    console.run(["worker", "dispatch", "Mr. Babbage", "write cli.py", "--model", "sonnet"], USER)
+    workers = app.container.get(Workers)
+    assert workers.find(1).provider == "codex" and workers.find(2).provider == "claude", "a Codex agent's worker runs Codex, so its model names fit"
+    assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Where("main", "c1")).out, "a list of workers out points at the wait"
 
 
 def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, monkeypatch):
@@ -1153,6 +1199,35 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     assert any("plan 2: task 4, q second is next" in line for line in typed), "the workflow tells the agent its next task"
     console.run(["plan", "park", "2"], AGENT)
     assert machine.current("s1").name == "idle", "a parked plan is over for the agent following it"
+
+def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app):
+    from journal.repositories.messages import Messages
+    console = app.console()
+    console.run(["task", "create", "Scope the reads", "--brief", "the base repository adds the environment"], AGENT)
+    console.run(["plan", "create", "release", "--brief", "ship the base Repository change"], USER)
+    console.run(["message", "send", "make it laravel style: the scope applies by itself"], USER)
+    console.run(["fact", "create", "the base model is data only"], AGENT)
+    out = console.run(["search", "base", "REPOSITORY"], AGENT).out
+    assert "task 1: Scope the reads" in out and "plan 1: release" in out, "every word, any case, in any text field"
+    assert "fact" not in out and "message" not in out.split("Searched")[0], "a row missing a word is not found"
+    assert console.run(["search", "for", "100%"], AGENT).out == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
+    marks = [m for m in app.container.get(Messages).in_() if m.data.get("kind") == "search"]
+    assert marks[0].text == 'Searched for "base REPOSITORY"' and "task 1: Scope the reads" in marks[0].data["detail"], "the mark opens what was found"
+
+
+def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_path):
+    import json as j
+    from journal.providers.codex import Codex
+    transcript = tmp_path / "rollout.jsonl"
+    said = lambda role, text: {"type": "response_item", "payload": {"type": "message", "role": role, "content": [{"type": "output_text", "text": text}]}}
+    transcript.write_text(j.dumps(said("assistant", "Long ago.")) + "\n" + j.dumps(said("assistant", "On it, Sir Jesse.")) + "\n")
+    monkeypatch.setattr(Codex, "transcript", lambda self, project, session: transcript)
+    texts, read = Codex().texts_written(tmp_path, "s1", -1)
+    assert texts == ["On it, Sir Jesse."], "the first look reads the turn in hand"
+    with transcript.open("a") as file:
+        file.write(j.dumps(said("user", "a prompt")) + "\n" + j.dumps({"type": "response_item", "payload": {"type": "function_call", "name": "exec"}}) + "\n" + j.dumps(said("assistant", "The plan is ready.")) + "\n")
+    assert Codex().texts_written(tmp_path, "s1", read)[0] == ["The plan is ready."], "only the agent's own words, from where the last look left off"
+
 
 def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_the_display_hook_adds_no_second(app, monkeypatch, tmp_path):
     import json as j
@@ -2150,7 +2225,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "1, 2, 4, 5, 7, 8, 9, 10" in out, "one path through Idle's own: the parked check, the approved plan check, auto mode, the open task held, after the Always inbox check found nothing unread"
+    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "1, 2, 4, 5, 7, 8, 10, 11, 12, 13" in out, "one path through Idle's own: the parked check, the broken wait check, the approved plan check, auto mode, the open task held, after the Always inbox check found nothing unread"
     assert "plugins not asked: a test run walks the workflows alone" in out, "a test run says it asked no plugin"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err

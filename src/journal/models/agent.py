@@ -23,3 +23,7 @@ class Agent(Scoped):
     """The skills the agent owes a read of, by name."""
     sequence_runs: tuple = ()
     """The sequences the agent is working through, the one in hand last; each a SequenceRun as a dict, kept beside the state so no move of the agent loses it."""
+
+    def has_program(self) -> bool:
+        """Whether a hook named the program it runs; an agent a command made alone has none, and no conversation."""
+        return bool(self.provider)

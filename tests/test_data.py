@@ -25,6 +25,7 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
 from journal.repositories.not_found import NotFound
+from journal.repositories.checks import Checks
 from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks
 
@@ -41,7 +42,7 @@ class Heard(Listener[ModelEvent]):
 
 
 def tasks_of(connection, bus, scope) -> Tasks:
-    return Tasks(connection, bus, scope, Links(connection, bus), Questions(connection, bus, scope))
+    return Tasks(connection, bus, scope, Links(connection, bus), Questions(connection, bus, scope), Checks(connection, bus))
 
 
 class SayNo(Listener[Creating]):

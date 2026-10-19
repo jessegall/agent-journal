@@ -22,6 +22,8 @@ from journal.supervisor_link import SupervisorLink
 
 TIMEOUT = 600
 TAIL = 20
+FAULTS = {126: "the command cannot be run", 127: "the command is not there"}
+"""Exit codes the shell gives when it could not run the command at all."""
 KEPT = 4000
 """How much of the end of a run's output its row keeps."""
 EVERY = 1.0
@@ -54,7 +56,9 @@ class CheckRunner:
         ended = self.executed(check, report, by)
         was_failing = check.last_passed is False
         took = time.time() - check.running.at
-        ran = self.checks.save(self.checks.find(check.id).ran(ended.passed, ended.output[-KEPT:], datetime.now(timezone.utc), took, self.report_of(report)), by)
+        ran = self.checks.save(self.checks.find(check.id).ran(ended.passed, ended.output[-KEPT:], datetime.now(timezone.utc), took, self.report_of(report), ended.fault), by)
+        if ran.waited_on:
+            return ran
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
         for agent in self.agents.all():
             if agent.state != Ended.name:
@@ -81,8 +85,8 @@ class CheckRunner:
         code = process.wait()
         late.cancel()
         if code == -signal.SIGKILL:
-            return FinishedRun(False, f"{output}\ntimed out after {TIMEOUT}s")
-        return FinishedRun(code == 0, output)
+            return FinishedRun(False, f"{output}\ntimed out after {TIMEOUT}s", f"it timed out after {TIMEOUT}s")
+        return FinishedRun(code == 0, output, FAULTS.get(code, ""))
 
     @staticmethod
     def report_of(path: Path) -> CheckReport | None:
