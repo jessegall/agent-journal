@@ -1,4 +1,4 @@
-from journal.features.questions.answering import Answering
+from journal.features.questions.support.answering import Answering
 from journal.http.controllers.controller import Controller
 from journal.http.support.request import Request
 from journal.support.response import Response

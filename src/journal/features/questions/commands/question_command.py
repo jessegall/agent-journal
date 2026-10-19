@@ -3,7 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.engine.machine import Machine
-from journal.features.questions.answering import Answering
+from journal.features.questions.support.answering import Answering
 from journal.features.questions.states.waiting import Waiting
 from journal.models.question import Question
 from journal.support.ref import Ref
