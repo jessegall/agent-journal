@@ -117,6 +117,7 @@ class V3Actions:
         return repository.find(n) if repository else None
 
     any_restore = any_read
+    any_set = any_read
     any_priority = any_read
 
     def any_update(self, type: str, n: int, body: ActionBody, by):

@@ -874,3 +874,9 @@ def test_the_tunnel_says_what_keeps_links_from_reaching_the_journal(server, tmp_
     assert call(server, "POST", "/api/share/domains")[1] == []
     assert call(server, "POST", "/api/share/share_view", {"view": "agents"})[0] == 409
     assert call(server, "POST", "/api/share/_tunnel")[0] == 409, "only the commands are reachable, nothing the commands keep"
+
+
+def test_the_rails_open_marks_a_notification_kept_and_read_on_any_row(server):
+    call(server, "POST", "/api/todo", {"title": "the footer", "idempotency": "t1"})
+    assert call(server, "POST", "/api/todo/1/set", {"key": "kept", "value": "true"})[0] == 200
+    assert call(server, "POST", "/api/todo/1/read", {})[0] == 200
