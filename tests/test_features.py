@@ -24,6 +24,8 @@ from journal.repositories.settings import Settings
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.sequences.running import Running
+from journal.features.updates.release import Release
+from journal.features.updates.updating import Updating
 from journal.features.tasks.states.working import Working
 from journal.features.workers.subagents import Subagents
 
@@ -5689,3 +5691,58 @@ def test_a_row_whose_text_names_another_is_linked_to_it_off_the_writes_thread(ap
     with app.container.get(Scope).of(MAIN):
         mentions = [(link.source.type, link.target) for link in app.container.get(Links).every() if link.kind == "mentions"]
     assert ("messages", Ref("tasks", 1)) in mentions and Ref("tasks", 99) not in [t for _, t in mentions], "linked to what exists, not to what does not"
+
+
+class Source:
+    def __init__(self, *tags: str) -> None:
+        self.tags_asked = []
+        self.found = list(tags)
+
+    def tags(self, prefix: str) -> list[str]:
+        self.tags_asked.append(prefix)
+        return self.found
+
+
+class Installer:
+    def __init__(self) -> None:
+        self.ran = []
+
+    def run(self, release: Release) -> None:
+        self.ran.append(release.tag)
+
+
+def updating_with(app, source: Source, installer: Installer, auto: bool) -> Updating:
+    app.container.get(Settings).set("updates.auto", auto, Actor.system())
+    updating = app.container.get(Updating)
+    updating.source, updating.installer = source, installer
+    return updating
+
+
+def test_releases_compare_by_number_and_pre_releases_are_left_out():
+    named = Release.named(["v4.10.0", "v4.9.2", "v4.1.0-rc1", "nightly", "v4.9.10"])
+    assert [release.version for release in named] == ["4.9.2", "4.9.10", "4.10.0"]
+    assert Release("v4.0.1").upgrades(Release("4.0.0")) and not Release("4.0.0").upgrades(Release("v4.0.0"))
+
+
+def test_an_update_never_crosses_a_major_version(app):
+    updating = app.container.get(Updating)
+    updating.releases = Release.named(["v3.9.0", "v4.0.0", "v4.2.0", "v5.0.0"])
+    assert [release.tag for release in updating.newer()] == ["v4.2.0"]
+    updating.releases = Release.named(["v5.0.0"])
+    assert updating.newer() == [] and not updating.standing()["newer"]
+
+
+def test_a_newer_release_is_installed_on_its_own_only_when_the_setting_is_on(app):
+    source, installer = Source("v4.0.0", "v4.1.0", "v4.1.1", "v5.0.0"), Installer()
+    off = updating_with(app, source, installer, auto=False)
+    off.checked()
+    assert installer.ran == [] and off.standing()["latest"] == "4.1.1" and source.tags_asked == ["v4."]
+    on = updating_with(app, source, installer, auto=True)
+    on.checked()
+    assert installer.ran == ["v4.1.1"] and on.problem == ""
+
+
+def test_nothing_is_installed_on_its_own_when_no_release_is_newer(app):
+    installer = Installer()
+    updating_with(app, Source("v4.0.0", "v5.0.0"), installer, auto=True).checked()
+    assert installer.ran == []

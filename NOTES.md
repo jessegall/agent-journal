@@ -993,3 +993,5 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   check (`HealthReport`). What the page reads back is a `TypedDict` where it is a JSON shape.
 - code-commandments v5.19.3: an attribute that overrides a base class's `ClassVar` is a constant, so a feature's
   nudges built from its `name` are in order.
+
+- **Updates (task 28).** `features/updates`: `Updating` reads the v4.* tags from GitHub at most hourly on a thread of its own (first look a minute after boot), and with `updates.auto` on installs the newest release of the same major by running its `install.sh` (`AGENT_JOURNAL_REF`, `AGENT_JOURNAL_YES`) from the project root; the install's own `journal setup` restarts the journal. The code-commandments plugin, when installed, is upgraded first through `Installing.upgrade`. The viewer's `/releases`, `/update` and `/changelog` are in `http/v3/updates_controller.py`. Open: the plugin is pulled to its newest commit, not its newest tag; `src/web/dist` needs a rebuild for the new UpgradeBand.

@@ -6,11 +6,11 @@ from journal.config import Config
 from journal.features.registry import Registry
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import Charts
+from journal.version import VERSION
 
 FIXTURE = Path(__file__).with_name("manifest.json")
 DIST = Path(__file__).resolve().parents[3] / "web" / "dist" / "index.html"
 RENAMED = {"todo": ("Task", "One unit of work with a life: open, started, done"), "helper": ("Worker", "An agent sent to write one bounded job"), "work": ("Work", "A task in hand and its log")}
-VERSION = "4.0.0"
 PLACED = {"sharing": ("Sharing", "sharing")}
 """Features the settings page shows in a tab of their own, by name: the section and the tab."""
 SYSTEM_GROUPS = [{"key": "project", "title": "Project", "line": "Settings for the whole project, in every environment", "section": "Project", "tab": "system", "lead": ""}]
