@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.features.edits.patch_row import PatchRow
+from journal.features.edits.support.patch_row import PatchRow
 
 
 @dataclass(frozen=True)
