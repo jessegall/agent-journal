@@ -1,6 +1,4 @@
 import re
-from datetime import datetime, timedelta, timezone
-
 from journal.events.models.created import Created
 from journal.events.listener import Listener
 from journal.models.author import Author
@@ -13,11 +11,10 @@ from journal.repositories.not_found import NotFound
 from journal.repositories.tasks import Tasks
 
 NAMED = re.compile(r"\btask (\d+)\b", re.IGNORECASE)
-FRESH = timedelta(minutes=5)
 
 
 class LinkNamedTasks(Listener[Created]):
-    """A task filed in the last five minutes that the agent's reply names is linked to the message it answers, so the chat shows it above the message."""
+    """A task the agent's reply names is linked to the message it answers, so the chat shows it above that message."""
 
     def __init__(self, messages: Messages, tasks: Tasks, links: Links) -> None:
         self.messages, self.tasks, self.links = messages, tasks, links
@@ -26,7 +23,6 @@ class LinkNamedTasks(Listener[Created]):
         reply = event.model
         if not isinstance(reply, Message) or reply.author != Author.AGENT or not reply.reply_to:
             return
-        since = datetime.now(timezone.utc) - FRESH
         try:
             asked = self.messages.find(reply.reply_to)
         except NotFound:
@@ -36,5 +32,5 @@ class LinkNamedTasks(Listener[Created]):
                 task = self.tasks.find(n)
             except NotFound:
                 continue
-            if task.created_at >= since and Ref.to(task) not in self.links.targets(asked, Messages.ABOUT):
+            if Ref.to(task) not in self.links.targets(asked, Messages.ABOUT):
                 self.links.save(Link(source=Ref.to(asked), target=Ref.to(task), kind=Messages.ABOUT), event.by)

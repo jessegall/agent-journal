@@ -1,11 +1,9 @@
 from dataclasses import replace
 
-from journal.http.v3.row_counts import RowCounts
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.v3.listing import Listing
 from journal.http.v3.shapers.shapers import Shapers
-from journal.http.v3.v3_row import USER, V3Row
 
 TIMELINES = ("message", "comment")
 """The lists that are a chat or a feed: they page by number alone, so opening the journal loads the last page and the rest comes on scrolling up."""
@@ -22,10 +20,4 @@ class RowsController:
         listing = Listing.from_query(request.query)
         if shaper.type in TIMELINES:
             listing = replace(listing, timeline=True)
-        rows = shaper.rows()
-        return Response.json({**listing.listed(rows), "counts": self.counts(rows)})
-
-    @staticmethod
-    def counts(rows: list[V3Row]) -> RowCounts:
-        open_ = [r for r in rows if r.is_open]
-        return RowCounts(all=len(rows), open=len(open_), unread=len([r for r in open_ if USER not in r.seen]))
+        return Response.json(shaper.answer(listing))

@@ -27,18 +27,50 @@ class Messages(ScopedRepository[Message]):
 
     def unread(self) -> list[Message]:
         """What the user left that the agent has not read."""
-        return [m for m in self.in_() if m.read_at is None and m.author == Author.USER]
+        return self.selected("environment_id = ? AND author = ? AND read_at IS NULL ORDER BY id", (self.scope.id, Author.USER.value))
 
     def unanswered(self) -> list[Message]:
-        """The user's messages read and not heard back on: no reply, no face on one of a few words, and no message of the agent's in the chat since the read."""
-        rows = self.in_()
-        replied = {m.reply_to for m in rows if m.is_agents_reply}
-        replied |= {ref.id for m in rows if m.is_agents_reply for ref in self.links.targets(m, self.ANSWERS)}
-        spoke = [m.created_at for m in rows if m.speaks_to_the_user]
-        return [m for m in rows if m.author == Author.USER and m.read_at is not None and m.id not in replied and not (m.takes_a_face and self.reacted_by_agent(m)) and not any(at > m.read_at for at in spoke)]
+        """The user's messages read and not heard back on: no reply, no face on one of a few words, and no message of the agent's in the chat since the read; only those read after the agent last spoke can be one."""
+        spoke = self.last_spoken()
+        since = "" if spoke is None else " AND read_at > ?"
+        params = (self.scope.id, Author.USER.value) + (() if spoke is None else (spoke,))
+        read = self.selected(f"environment_id = ? AND author = ? AND read_at IS NOT NULL{since} ORDER BY id", params)
+        return [m for m in read if not self.answered(m) and not (m.takes_a_face and self.reacted_by_agent(m))]
+
+    def last_spoken(self) -> str | None:
+        """When the agent last said something to the user: not a thought, not a turn that only acknowledged a journal line."""
+        row = self.connection.one("SELECT max(created_at) AS at FROM messages WHERE environment_id = ? AND author = ? AND acknowledgement = 0 AND coalesce(json_extract(data, '$.kind'), '') != ?",
+                                  (self.scope.id, Author.AGENT.value, Message.THOUGHT))
+        return row["at"] if row else None
+
+    def answered(self, message: Message) -> bool:
+        """A reply names it, or a reply's link answers it."""
+        replied = self.connection.one("SELECT id FROM messages WHERE reply_to = ? AND author = ? LIMIT 1", (message.id, Author.AGENT.value))
+        return replied is not None or bool(self.links.sources(message, self.ANSWERS))
 
     def reacted_by_agent(self, message: Message) -> bool:
         return any(r.author == Author.AGENT for r in self.reactions.on(message))
+
+    def window(self, last: int, before: int = 0, after: int = 0) -> list[Message]:
+        """At most last of the newest messages numbered above after and below before, oldest first."""
+        clause, params = ["environment_id = ?", "id > ?"], [self.scope.id, after]
+        if before:
+            clause.append("id < ?")
+            params.append(before)
+        return list(reversed(self.selected(f"{' AND '.join(clause)} ORDER BY id DESC LIMIT ?", (*params, last))))
+
+    def changed_since(self, at: datetime) -> list[Message]:
+        return self.selected("environment_id = ? AND updated_at > ? ORDER BY id LIMIT 500", (self.scope.id, at.isoformat()))
+
+    def numbered(self, ids: tuple[int, ...]) -> list[Message]:
+        return self.selected(f"environment_id = ? AND id IN ({', '.join('?' for _ in ids)}) ORDER BY id", (self.scope.id, *ids))
+
+    def count_in(self) -> int:
+        return self.connection.one("SELECT count(*) AS n FROM messages WHERE environment_id = ?", (self.scope.id,))["n"]
+
+    def unseen_by_user(self) -> int:
+        """How many of the agent's messages the user has not seen yet."""
+        return self.connection.one("SELECT count(*) AS n FROM messages WHERE environment_id = ? AND author = ? AND read_at IS NULL", (self.scope.id, Author.AGENT.value))["n"]
 
     def keyed(self, key: str, by: Actor) -> list[Message]:
         return self.selected("environment_id = ? AND json_extract(data, '$.key') = ? AND created_by = ?", (self.scope.id, key, by.stamp))

@@ -572,6 +572,19 @@ def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_tu
     send("SessionEnd")
     assert [r["running"] for r in rows()] == [False, False], "a subagent with no stop ends with its session"
 
+
+def test_a_task_the_reply_names_is_linked_to_the_message_it_answers_however_old(app):
+    from journal.repositories.links import Links
+    from journal.repositories.messages import Messages
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the old one"], AGENT)
+    console.run(["message", "send", "don't forget it"], USER)
+    console.run(["message", "send", "I won't: it is task 1, next.", "--reply-to", "1"], AGENT)
+    app.runtime().deferred.drain()
+    asked = app.container.get(Messages).find(1)
+    assert [ref.id for ref in app.container.get(Links).targets(asked, Messages.ABOUT)] == [1], "your message carries the task the reply names, whenever it was filed"
+
 def test_a_command_reports_every_row_it_caused(app):
     console = app.console()
     assert 'created: plan 1 "release"' in console.run(["plan", "create", "release"], USER).out
