@@ -165,7 +165,7 @@ def test_the_mirror_goes_with_its_supervisor(tmp_path: Path):
 
 def test_the_inbox_announces_where_the_screen_is_mirrored(tmp_path: Path):
     inbox = Inbox(Path(f"/tmp/journal-{os.getuid()}") / f"test-{os.getpid()}.sock", tmp_path / "inboxes" / "main")
-    inbox.open(screen=str(tmp_path / "screens" / "main.out"))
+    inbox.open_mirrored(tmp_path / "screens" / "main.out")
     try:
         assert json.loads(inbox.announced_at.read_text())["screen"] == str(tmp_path / "screens" / "main.out"), "the journal reads the screen where the supervisor says it is"
     finally:
@@ -196,3 +196,12 @@ def test_the_supervisor_imports_nothing_but_the_standard_library_and_itself():
             names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module] if isinstance(node, ast.ImportFrom) and node.module else []
             foreign += [f"{path.name}: {name}" for name in names if name.split(".")[0] not in (*sys.stdlib_module_names, "supervisor")]
     assert foreign == [], "the supervisor knows no journal module and needs nothing installed"
+
+
+def test_a_service_that_cannot_start_dies_in_its_log_and_never_takes_the_supervisor_down(tmp_path: Path):
+    from supervisor.service import Service
+    from supervisor.services import Services
+    services = Services(Service("mypy", ["bin/gone", "serve"], tmp_path / "moved-mid-upgrade", {}, tmp_path / "mypy.log"))
+    services.start_all()
+    services.keep_alive()
+    assert not services.runs("mypy") and "mypy could not start" in (tmp_path / "mypy.log").read_text(), "its folder gone, as mid-upgrade, the start dies at once and says why"

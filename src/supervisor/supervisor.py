@@ -6,6 +6,7 @@ import time
 import tty
 
 from supervisor.band import Band
+from supervisor.band_words import BandWords
 from supervisor.inbox import Inbox
 from supervisor.mirror import Mirror
 from supervisor.services import Services
@@ -38,7 +39,10 @@ class Supervisor:
 
     def run(self) -> int:
         saved = self._raw()
-        self.inbox.open(**({"screen": str(self.mirror.path)} if self.mirror else {}))
+        if self.mirror:
+            self.inbox.open_mirrored(self.mirror.path)
+        else:
+            self.inbox.open()
         self.services.start_all()
         self.terminal.start()
         self.fit()
@@ -67,7 +71,7 @@ class Supervisor:
         self.terminal.resize(rows, columns)
 
     def relay_once(self, timeout: float) -> None:
-        reads = [self.terminal.fd, self.inbox.fd, *([self.stdin] if self.stdin is not None else [])]
+        reads = [fd for fd in (self.terminal.fd, self.inbox.fd, self.stdin) if fd is not None]
         writes = [self.terminal.fd] if self.terminal.has_pending else []
         readable, writable, _ = select.select(reads, writes, [], timeout)
         self.terminal.pump()
@@ -118,10 +122,10 @@ class Supervisor:
         self._stopping = False
         self.fit()
 
-    def say(self, left: str, middle: str, right: str) -> None:
+    def say(self, words: BandWords) -> None:
         """New words for the band, when there is one."""
         if self.band:
-            self.band.say(left, middle, right)
+            self.band.say(words)
 
     def stop_named(self, name: str) -> None:
         """A service stopped and taken off the table, or the agent stopped and the supervisor with it: it is the process in front."""

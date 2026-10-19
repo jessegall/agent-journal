@@ -3,6 +3,9 @@ import socket
 from collections.abc import Callable
 from pathlib import Path
 
+from supervisor.reply import Reply
+from supervisor.request import Request
+
 LONGEST = 1 << 20
 PROTOCOL = 1
 WAIT = 2.0
@@ -20,8 +23,15 @@ class Inbox:
     def fd(self) -> int:
         return self._socket.fileno()
 
-    def open(self, **told: str) -> None:
-        """The socket opened and announced, with what else the journal is told about this supervisor, such as where its screen is mirrored."""
+    def open(self) -> None:
+        """The socket opened and announced."""
+        self.announce({})
+
+    def open_mirrored(self, screen: Path) -> None:
+        """The socket opened and announced with where the agent's screen is mirrored."""
+        self.announce({"screen": str(screen)})
+
+    def announce(self, told: dict[str, str]) -> None:
         self.path.parent.mkdir(mode=0o700, exist_ok=True)
         self.path.parent.chmod(0o700)
         self.path.unlink(missing_ok=True)
@@ -33,7 +43,7 @@ class Inbox:
         self.announced_at.parent.mkdir(parents=True, exist_ok=True)
         self.announced_at.write_text(json.dumps({"socket": str(self.path), "protocol": PROTOCOL, **told}))
 
-    def answer(self, handle: Callable[[dict], dict]) -> None:
+    def answer(self, handle: Callable[[Request], Reply]) -> None:
         """Every request waiting, each answered on its own connection."""
         while True:
             try:
@@ -44,20 +54,20 @@ class Inbox:
                 connection.settimeout(WAIT)
                 reply = self.handled(connection, handle)
                 try:
-                    connection.sendall((json.dumps(reply) + "\n").encode())
+                    connection.sendall((json.dumps(reply.to_json()) + "\n").encode())
                 except OSError:
                     continue
 
     @staticmethod
-    def handled(connection: socket.socket, handle: Callable[[dict], dict]) -> dict:
+    def handled(connection: socket.socket, handle: Callable[[Request], Reply]) -> Reply:
         """The request's answer; one that is no JSON object, or that did not arrive in time, is answered with why."""
         try:
-            request = json.loads(connection.makefile("rb").readline(LONGEST))
+            payload = json.loads(connection.makefile("rb").readline(LONGEST))
         except (ValueError, OSError) as fault:
-            return {"ok": False, "error": f"the request is no line of JSON: {fault}"}
-        if not isinstance(request, dict):
-            return {"ok": False, "error": "the request is no JSON object"}
-        return handle(request)
+            return Reply.refused(f"the request is no line of JSON: {fault}")
+        if not isinstance(payload, dict):
+            return Reply.refused("the request is no JSON object")
+        return handle(Request.from_json(payload))
 
     def close(self) -> None:
         if self._socket:

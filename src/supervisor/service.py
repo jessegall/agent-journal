@@ -24,10 +24,15 @@ class Service:
         self._restarts = 0
 
     def start(self) -> None:
+        """Started in a session of its own; a program or folder that is not there, as mid-upgrade, is a start that died at once, written to its log, never a fault of the supervisor's."""
         self.log.parent.mkdir(parents=True, exist_ok=True)
-        with self.log.open("ab") as out:
-            self._process = subprocess.Popen(self.command, cwd=self.folder, env=self.environ, stdin=subprocess.PIPE, stdout=out, stderr=out, start_new_session=True)
         self._last_start = time.time()
+        with self.log.open("ab") as out:
+            try:
+                self._process = subprocess.Popen(self.command, cwd=self.folder, env=self.environ, stdin=subprocess.PIPE, stdout=out, stderr=out, start_new_session=True)
+            except OSError as fault:
+                out.write(f"{self.name} could not start: {fault}\n".encode())
+                self._deaths = [at for at in self._deaths if self._last_start - at < WINDOW] + [self._last_start]
 
     def restart(self) -> None:
         self.stop()
