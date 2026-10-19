@@ -3,7 +3,6 @@ import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {computed, inject} from "vue";
 import Icon from "../kit/Icon.vue";
-import ShareViewButton from "../kit/ShareViewButton.vue";
 import AgentFact from "./AgentFact.vue";
 
 defineProps({open: {type: String, default: ""}});
@@ -60,8 +59,6 @@ const viewGroups = computed(() =>
             Presets
             <Icon name="caret" />
         </AgentFact>
-        <ShareViewButton view="agents" title="Copy a read-only link to the agents view" />
-        <ShareViewButton view="chat" title="Copy a read-only link to the chat" />
     </template>
     <template v-else>
         <div class="agent-panes">

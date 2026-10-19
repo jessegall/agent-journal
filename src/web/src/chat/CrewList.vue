@@ -1,9 +1,8 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
+import {computed} from "vue";
 import {span} from "../format/time.js";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
-import {api} from "../api/client.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 
 const props = defineProps({
@@ -11,7 +10,6 @@ const props = defineProps({
     total: {type: Number, default: 0},
     started: {type: String, default: "started"},
     heading: {type: String, default: ""},
-    agent: {type: Number, default: 0},
 });
 const emit = defineEmits(["open"]);
 const now = useNow();
@@ -25,13 +23,6 @@ const summary = computed(
         `${running.value} running, ${props.total} ${props.started} in this session` +
         (hidden.value ? `, ${hidden.value} earlier not shown.` : ".")
 );
-
-const asked = ref(new Set());
-
-async function stop(row) {
-    asked.value = new Set([...asked.value, row.task_id]);
-    await api.stopTask(props.agent, row.task_id, row.task || row.command || row.task_id);
-}
 
 function lasted(row) {
     if (!row.at) return "";
@@ -62,16 +53,6 @@ function detail(row) {
                 <small>{{ detail(row) }}</small>
             </span>
             <small class="crew-when">{{ lasted(row) }}</small>
-            <template v-if="row.running && row.task_id && agent">
-                <span
-                    role="button"
-                    :class="['crew-stop', {asked: asked.has(row.task_id)}]"
-                    :title="asked.has(row.task_id) ? 'The agent was asked to stop it' : 'Stop it'"
-                    @click.stop="!asked.has(row.task_id) && stop(row)"
-                >
-                    {{ asked.has(row.task_id) ? "Stopping…" : "Stop" }}
-                </span>
-            </template>
         </button>
     </template>
 </template>

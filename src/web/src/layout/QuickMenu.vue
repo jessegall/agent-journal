@@ -1,6 +1,5 @@
 <script setup>
-import {agent, agentOnline} from "../composables/leadAgent.js";
-import {autoOn, steered} from "../composables/settings.js";
+import {autoOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import QuickRow from "./QuickRow.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
@@ -11,7 +10,7 @@ import {sendMessage} from "../chat/outbox.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route, showFile} from "../route.js";
-import {open} from "../domain/records.js";
+import {heldTask} from "../domain/agentState.js";
 import {showAway} from "../platform/visibility.js";
 import {setAuto} from "../actions/work.js";
 import {useNavigation} from "../composables/navigation.js";
@@ -127,7 +126,7 @@ const fileCommand = {label: "Open project file", keys: "file files open", hk: "f
 
 async function send(text, files) {
     emit("close");
-    await sendMessage(route.value.env, {brief: text}, files);
+    await sendMessage(route.value.env, {text}, files);
 }
 
 defineExpose({spaceAgain: () => !q.value && write(""), findInProject: () => browseFiles("", true)});
@@ -143,12 +142,8 @@ async function switchAuto(on) {
 }
 
 const {everywhere} = useNavigation();
-const inHand = computed(() => open("work").find((w) => !w.data.parked) || null);
+const inHand = computed(() => heldTask(store.summary, route.value.env));
 
-async function pauseOrResume(paused) {
-    emit("close");
-    await (paused ? api.resumeAgent(agent.value.title) : api.pauseAgent(agent.value.title));
-}
 const commands = computed(() => {
     const pages = everywhere.value.map((link) => ({page: link.page, label: link.title, icon: link.icon}));
     const rows = pages.map((p, n) => ({
@@ -169,23 +164,14 @@ const commands = computed(() => {
     });
     if (inHand.value) {
         rows.push({
-            label: `Open the work in hand: ${inHand.value.title}`,
-            keys: "work current doing",
+            label: `Open the task in hand: ${inHand.value.title}`,
+            keys: "task work current doing",
             hk: "w",
             icon: "work",
             run: () => {
                 emit("close");
-                peek("work", inHand.value.n);
+                peek("tasks", inHand.value.id);
             },
-        });
-    }
-    if (agentOnline.value) {
-        const paused = Boolean(agent.value.data.paused);
-        rows.push({
-            label: paused ? "Resume the agent" : "Pause the agent",
-            keys: "pause resume stop agent interrupt",
-            icon: paused ? "resume" : "pause",
-            run: () => pauseOrResume(paused),
         });
     }
     rows.push({
@@ -197,8 +183,7 @@ const commands = computed(() => {
             store.wide = !store.wide;
         },
     });
-    if (!steered.value)
-        rows.push({
+    rows.push({
             label: autoOn.value ? "Pause auto mode" : "Resume auto mode",
             keys: "auto mode",
             icon: "auto",

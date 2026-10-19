@@ -13,9 +13,6 @@ import SubagentChat from "../chat/SubagentChat.vue";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import Thread from "../chat/Thread.vue";
 import RailTodos from "../rail/RailTodos.vue";
-import AgentHooks from "../resource/AgentHooks.vue";
-import PlanPage from "../resource/PlanPage.vue";
-import TaskList from "../resource/TaskList.vue";
 import TranscriptLog from "../resource/TranscriptLog.vue";
 import AgentInspectorBands from "./AgentInspectorBands.vue";
 import AgentInspectorHead from "./AgentInspectorHead.vue";
@@ -27,9 +24,8 @@ import {briefOf} from "../domain/transcript.js";
 import {INSPECTOR_FEED, INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
 import {agentOf, plainRefusal} from "../domain/agents.js";
-import {age} from "../format/time.js";
 import {pollKey, usePoll} from "../composables/poll.js";
-import {PAGE, holding, rows} from "../sync/rows.js";
+import {holding, rows} from "../sync/rows.js";
 import {go, route} from "../route.js";
 
 const props = defineProps({
@@ -39,35 +35,27 @@ const props = defineProps({
     agent: {type: Object, default: null},
     session: {type: String, default: ""},
     chatSession: {type: String, default: ""},
-    plan: {type: Number, default: 0},
     subagents: {type: Array, default: () => []},
     skills: {type: Array, default: () => []},
-    provider: {type: String, default: ""},
     run: {type: Function, default: async () => {}},
-    recorded: {type: Number, default: 0},
 });
 const emit = defineEmits(["back", "close", "open-subagent"]);
 const EVERY = 5000;
-const CHAT_TYPES = ["message", "comment", "question", "reaction", "doc", "agent", "work", "plan", "report", "todo", "notice"];
-const HISTORY = PAGE;
+const CHAT_TABLES = ["messages", "comments", "questions", "reactions", "notices"];
 const VIEWS = {
     chat: {title: "Chat", icon: "chat"},
     terminal: {title: "Terminal", icon: "terminal"},
     transcript: {title: "Transcript", icon: "list"},
-    history: {title: "History", icon: "clock"},
-    tasks: {title: "Its tasks", icon: "todos"},
     feed: {title: "Files changed", icon: "edits"},
-    todos: {title: "To-dos", icon: "todos"},
-    plan: {title: "Plan", icon: "flag"},
+    tasks: {title: "Tasks", icon: "todos"},
     subagents: {
         title: "Subagents",
         icon: "agents",
     },
     skills: {title: "Skills", icon: "book"},
-    hooks: {title: "Hooks", icon: "activity"},
 };
 const subagent = props.kind === "subagent";
-const ownTranscript = subagent || Boolean(props.recorded);
+const ownTranscript = subagent;
 
 const elsewhere = Boolean(props.env) && props.env !== route.value.env;
 const scope = elsewhere ? scopeIn(props.env) : null;
@@ -83,7 +71,7 @@ const found = ref(null);
 const looked = ref(false);
 usePoll(
     pollKey(),
-    () => (!props.agent && elsewhere ? there.list("agent", {last: 20, completed: true}) : Promise.resolve(null)),
+    () => (!props.agent && elsewhere ? there.list("agents", {limit: 20}) : Promise.resolve(null)),
     EVERY,
     (got) => {
         looked.value = true;
@@ -91,54 +79,18 @@ usePoll(
     }
 );
 const agent = computed(() => props.agent || found.value);
-const sequence = computed(() => (ownTranscript ? null : agent.value?.data?.sequence));
-const sequenceHistory = computed(() => agent.value?.data?.sequence_history || []);
+const sequence = computed(() => (ownTranscript ? null : agent.value?.sequence));
+const sequenceHistory = computed(() => agent.value?.sequence_history || []);
 
-const works = ref([]);
-const worksLoaded = ref(false);
-const worked = (w) => (subagent ? w.data.agent === props.session : !w.data.agent);
-refreshers.push([
-    () => shown("history"),
-    usePoll(
-        pollKey(),
-        () => there.list("work", {last: HISTORY, completed: true}),
-        EVERY,
-        (got) => {
-            if (!got) return;
-            works.value = [...got.rows].filter((w) => !w.deleted && worked(w)).sort((a, b) => b.created - a.created);
-            worksLoaded.value = true;
-        },
-        () => shown("history")
-    ),
-]);
 
-const tasks = ref([]);
-const tasksLoaded = ref(false);
-refreshers.push([
-    () => shown("tasks"),
-    usePoll(
-        pollKey(),
-        () => (subagent ? there.tasks(props.session) : Promise.resolve(null)),
-        EVERY,
-        (got) => {
-            if (!got) return;
-            tasks.value = got;
-            tasksLoaded.value = true;
-        },
-        () => shown("tasks")
-    ),
-]);
-
-const planRow = computed(() => (scope && props.plan ? scope.rows("plan").find((p) => p.n === props.plan) : null));
-const rowViews = () => shown("chat", "todos", "plan");
+const rowViews = () => shown("chat", "tasks");
 refreshers.push([
     rowViews,
     usePoll(
         pollKey(),
         async () => {
             if (!scope) return null;
-            if (props.plan) await scope.holding("plan", [props.plan]);
-            return scope.recentAll(CHAT_TYPES, PAGE);
+            return scope.recentAll(CHAT_TABLES, 50);
         },
         EVERY,
         () => {},
@@ -148,15 +100,8 @@ refreshers.push([
 
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
-const recordedReader = {env: () => api.env(), transcript: (_agent, _session, fields) => api.helperTranscript(props.recorded, fields)};
 const transcriptViews = () => shown("transcript") || (ownTranscript && shown("chat"));
-const transcript = useTranscript(
-    () => props.recorded || (agent.value ? agent.value.n : 0),
-    props.session,
-    scroller,
-    props.recorded ? recordedReader : there,
-    transcriptViews
-);
+const transcript = useTranscript(() => (agent.value ? agent.value.id : 0), props.session, scroller, there, transcriptViews);
 refreshers.push([transcriptViews, transcript.refresh]);
 watch(
     () => (panes.value ? panes.value.shown.join() : ""),
@@ -165,19 +110,16 @@ watch(
 const {turns, total, loading: transcriptLoading, atStart, earlier} = transcript;
 
 const AVAILABLE = {
-    main: ["chat", "transcript", "terminal", "feed", "todos", "history", "subagents", "skills", "hooks"],
-    subagent: ["chat", "transcript", "terminal", "tasks", "history"],
-    helper: ["chat", "transcript", "terminal", "feed", "todos", "history"],
-    ticket: ["chat", "transcript", "terminal", "feed", "todos", "history"],
-    plan: ["chat", "transcript", "terminal", "feed", "todos", "history"],
+    main: ["chat", "transcript", "terminal", "feed", "tasks", "subagents", "skills"],
+    subagent: ["chat", "transcript", "terminal"],
 };
-const available = computed(() => [...(AVAILABLE[props.kind] || AVAILABLE.helper), ...(props.plan ? ["plan"] : [])]);
+const available = computed(() => AVAILABLE[props.kind] || AVAILABLE.main);
 
-const todoN = ref(0);
-const todo = computed(() => rowsHere("todo").find((row) => row.n === todoN.value) || null);
-async function loadTodo(n) {
-    todoN.value = n;
-    await (scope ? scope.holding : holding)("todo", [n]);
+const taskId = ref(0);
+const task = computed(() => rowsHere("tasks").find((row) => row.id === taskId.value) || null);
+async function loadTask(id) {
+    taskId.value = id;
+    await (scope ? scope.holding : holding)("tasks", [id]);
 }
 const layoutMenu = ref(false);
 const layoutOpener = ref(null);
@@ -225,7 +167,7 @@ async function onSequence(key) {
     refusal.value = "";
     sequenceBusy.value = key;
     try {
-        await SEQUENCE_ACTIONS[key](agent.value.n);
+        await SEQUENCE_ACTIONS[key](agent.value.id);
     } catch (e) {
         refusal.value = e.message;
     } finally {
@@ -277,14 +219,12 @@ const openSkills = () => go("skills");
             :report="info.report"
             :refusal="refusal"
             :state-key="stateKey"
-            :plan="plan"
-            :resume="actionOf('resume')"
+                        :resume="actionOf('resume')"
             :sequence="sequence"
             :sequence-history="sequenceHistory"
             :sequence-busy="sequenceBusy"
             @cancel="asking = ''"
             @confirmed="perform(question.key)"
-            @show-plan="showing('plan')"
             @resume="choose('resume')"
             @skip-step="onSequence('skip')"
             @end-sequence="onSequence('end')"
@@ -317,43 +257,17 @@ const openSkills = () => go("skills");
                             </EmptyState>
                         </template>
                         <template v-else-if="agent">
-                            <TerminalWindow :key="`${agent.n}:${levelOf(pane)}`" class="fill" :agent="agent" :level="levelOf(pane)" />
+                            <TerminalWindow :key="`${agent.id}:${levelOf(pane)}`" class="fill" :agent="agent" :level="levelOf(pane)" />
                         </template>
                         <template v-else>
                             <EmptyState :loading="!looked" title="No agent yet">Its terminal shows here once the agent starts.</EmptyState>
                         </template>
                     </template>
-                    <template #history>
-                        <template v-if="!works.length">
-                            <EmptyState :loading="!worksLoaded" title="No work logged yet">
-                                What this agent starts and finishes shows here.
-                            </EmptyState>
-                        </template>
-                        <div class="fill scroll">
-                            <template v-for="w in works" :key="w.n">
-                                <ListRow
-                                    :kind="w.completed ? 'Closed' : 'Working'"
-                                    :title="w.title"
-                                    :text="age(w.completed || w.created)"
-                                />
-                            </template>
-                        </div>
-                    </template>
-                    <template #tasks>
-                        <template v-if="todo">
-                            <AgentTodo :resource="todo" @close="todoN = 0" />
-                        </template>
-                        <template v-else>
-                            <div class="fill scroll padded">
-                                <TaskList :tasks="tasks" :loading="!tasksLoaded" @open="loadTodo" />
-                            </div>
-                        </template>
-                    </template>
                     <template #feed>
                         <template v-if="agent">
                             <FileFeed
-                                :key="agent.n"
-                                :agent="agent.n"
+                                :key="agent.id"
+                                :agent="agent.id"
                                 :flush="!!pane.flush"
                                 :options="pane.feed || null"
                                 :defaults="INSPECTOR_FEED"
@@ -364,21 +278,21 @@ const openSkills = () => go("skills");
                             <EmptyState :loading="!looked" title="No agent yet">Its edits show here once the agent starts.</EmptyState>
                         </template>
                     </template>
-                    <template #todos>
-                        <template v-if="todo">
-                            <AgentTodo :resource="todo" @close="todoN = 0" />
+                    <template #tasks>
+                        <template v-if="task">
+                            <AgentTodo :resource="task" @close="taskId = 0" />
                         </template>
                         <template v-else>
                             <div class="fill scroll rail-gutter">
-                                <RailTodos finished @open="loadTodo" />
+                                <RailTodos finished @open="loadTask" />
                             </div>
                         </template>
                     </template>
                     <template #subagents>
                         <p class="pane-note">
                             A subagent is a short job this agent hands off inside its own session. It answers only to this agent and you
-                            can't send it messages. Helper agents are different: separate agents with their own environment, listed under
-                            Helpers.
+                            can't send it messages. Workers are different: separate agents with a working copy of their own, listed under
+                            Workers.
                         </p>
                         <template v-if="!subagents.length">
                             <EmptyState :title="`No subagents yet`">Subagents this agent starts show here.</EmptyState>
@@ -405,21 +319,6 @@ const openSkills = () => go("skills");
                             </template>
                             <Btn kind="text" class="skill-link" @click="openSkills">Open the Skills page</Btn>
                         </div>
-                    </template>
-                    <template #hooks>
-                        <div class="fill scroll padded">
-                            <AgentHooks :provider="provider" />
-                        </div>
-                    </template>
-                    <template #plan>
-                        <template v-if="planRow">
-                            <div class="fill scroll padded">
-                                <PlanPage :resource="planRow" :closable="false" />
-                            </div>
-                        </template>
-                        <template v-else>
-                            <EmptyState loading shape="text" />
-                        </template>
                     </template>
                 </SwitchCase>
             </template>

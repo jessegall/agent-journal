@@ -1,98 +1,72 @@
 <script setup>
 import {meta, tables} from "../domain/tables.js";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import {store} from "../state/store.js";
-import {api} from "../api/client.js";
-import {peek, peekThere, route} from "../route.js";
-import {finishedUnread, happened, open as openRows, unreadByUser} from "../domain/records.js";
-import {hasLoaded, patched, rows} from "../sync/rows.js";
+import {peek} from "../route.js";
+import {happened, open as openRows, unreadByUser} from "../domain/records.js";
+import {bodyOf, createdAt, refOf, titleOf} from "../domain/row.js";
+import {hasLoaded} from "../sync/rows.js";
 import {age} from "../format/time.js";
 import {focusTurn} from "../platform/view.js";
+import {remember, remembered} from "../platform/storage.js";
 
-const TINT = {
-    question: "var(--blocking)",
-    plan: "var(--progress)",
-    report: "var(--open)",
-    doc: "var(--open)",
-    pin: "var(--open)",
-    rule: "var(--open)",
-    reminder: "var(--open)",
-};
-const props = defineProps({type: {type: String, default: ""}});
-const OWN_TABS = ["question", "suggestion"];
-const waiting = computed(() => openRows(props.type).sort((a, b) => b.created - a.created));
+const props = defineProps({table: {type: String, default: ""}});
+const DISMISSED = "journal.notifications.dismissed";
+const dismissed = ref(new Set(remembered(DISMISSED, [])));
+const newest = (a, b) => createdAt(b) - createdAt(a);
+const waiting = computed(() => openRows(props.table).sort(newest));
 const notifications = computed(() =>
     tables.value
-        .filter((t) => t.needs_attention && !OWN_TABS.includes(t.name))
-        .flatMap((t) => [
-            ...unreadByUser(t.name),
-            ...(t.lists_completed_unread ? finishedUnread(t.name) : []),
-            ...rows(t.name).filter((r) => r.data.kept && !r.deleted),
-        ])
-        .filter((r, i, all) => all.findIndex((other) => other.ref === r.ref) === i)
-        .sort((a, b) => b.created - a.created)
+        .filter((t) => t.needs_attention && t.name !== "questions")
+        .flatMap((t) => unreadByUser(t.name))
+        .filter((r) => !dismissed.value.has(refOf(r)))
+        .sort(newest)
 );
-const cards = computed(() => (props.type ? waiting.value : notifications.value));
-const loaded = computed(() => (props.type ? hasLoaded(props.type) : store.booted));
+const cards = computed(() => (props.table ? waiting.value : notifications.value));
+const loaded = computed(() => (props.table ? hasLoaded(props.table) : store.booted));
 
-async function open(r) {
-    if (r.env) return peekThere(r.env, r.type, r.n);
-    if (props.type) {
-        if (r.type === "question" || !focusTurn(r.ref, {instant: true})) peek(r.type, r.n);
-        return;
-    }
-    if (r.type === "question" || !focusTurn(r.ref)) peek(r.type, r.n);
-    if (!r.data.kept) await api.act(r.type, r.n, "set", {key: "kept", value: "true"});
-    await api.act(r.type, r.n, "read");
+function dismiss(r) {
+    dismissed.value = new Set([...dismissed.value, refOf(r)]);
+    remember(DISMISSED, [...dismissed.value]);
 }
 
-async function dismiss(r) {
-    await patched(
-        r,
-        (row) => {
-            row.data.kept = false;
-            if (!row.seen.includes("user")) row.seen.push("user");
-        },
-        async () => {
-            await api.act(r.type, r.n, "set", {key: "kept", value: "false"});
-            await api.act(r.type, r.n, "read");
-        }
-    );
+function open(r) {
+    if (r.table === "questions" || !focusTurn(refOf(r), {instant: Boolean(props.table)})) peek(r.table, r.id);
 }
 </script>
 
 <template>
     <template v-if="!cards.length && !loaded">
-        <Skeleton :label="type ? `Loading what waits on you` : `Loading the notifications`" />
+        <Skeleton :label="table ? `Loading what waits on you` : `Loading the notifications`" />
     </template>
     <template v-else-if="!cards.length">
         <div class="home-rail-empty">
             <Icon name="todos" />
-            <p>{{ type ? "Nothing waiting on you." : "No notifications." }}</p>
+            <p>{{ table ? "Nothing waiting on you." : "No notifications." }}</p>
         </div>
     </template>
     <template v-else>
         <section class="home-section">
             <TransitionGroup name="qrow" tag="div" class="needs-slot">
-                <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="open(r)">
+                <div v-for="r in cards" :key="refOf(r)" :class="['needs-card', r.table]" @click="open(r)">
                     <div class="needs-card-top">
                         <span class="needs-card-kind">{{ happened(r) }}</span>
-                        <template v-if="!type && (meta(r.type).cleared_by !== 'completed' || r.completed || r.data.kept)">
+                        <template v-if="!table">
                             <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
                                 <Icon name="close" />
                             </button>
                         </template>
                     </div>
-                    <p class="needs-card-title">{{ r.title }}</p>
-                    <template v-if="r.abstract">
-                        <TextDisplay class="needs-card-text" :text="r.abstract" />
+                    <p class="needs-card-title">{{ titleOf(r) }}</p>
+                    <template v-if="r.abstract || bodyOf(r)">
+                        <TextDisplay class="needs-card-text" :text="(r.abstract || bodyOf(r)).slice(0, 240)" />
                     </template>
                     <p class="needs-card-foot">
-                        <span class="needs-card-meta">{{ r.env ? `${r.env} \u00b7 ` : "" }}{{ r.type }} {{ r.n }}</span>
-                        <span class="needs-card-when">{{ age(r.created) || "just now" }}</span>
+                        <span class="needs-card-meta">{{ meta(r.table).title.toLowerCase() }} {{ r.id }}</span>
+                        <span class="needs-card-when">{{ age(createdAt(r)) || "just now" }}</span>
                     </p>
                 </div>
             </TransitionGroup>

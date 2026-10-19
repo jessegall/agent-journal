@@ -10,7 +10,6 @@ import TextInput from "../kit/TextInput.vue";
 import PluginCard from "./PluginCard.vue";
 import PluginDashboard from "./PluginDashboard.vue";
 import PluginGuide from "./PluginGuide.vue";
-import ServicesPanel from "./ServicesPanel.vue";
 import PluginInstallDialog from "./PluginInstallDialog.vue";
 import LogDialog from "../kit/LogDialog.vue";
 import PluginMakeCard from "./PluginMakeCard.vue";
@@ -21,14 +20,12 @@ import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {installedPlugins} from "../composables/plugins.js";
 import {usePluginInstall} from "../composables/pluginInstall.js";
-import {usePoll} from "../composables/poll.js";
 import {sendMessage} from "../chat/outbox.js";
 import {hasLoaded} from "../sync/rows.js";
 
 const source = ref("");
 const guide = ref(false);
 const making = ref(false);
-const servicesFor = ref("");
 const repository = ref("");
 const wish = ref("");
 const asked = ref(false);
@@ -37,31 +34,14 @@ const recording = ref(null);
 const viewing = ref(null);
 const busy = ref("");
 const plugins = installedPlugins();
-const services = ref([]);
 const reading = ref("");
 const logged = ref("");
-const EVERY = 3000;
-const WHILE_BUSY = 1000;
 const pagesOf = (p) => (store.pages || []).filter((page) => page.plugin === p.name);
 
-function servicesOf(p) {
-    return services.value.filter((s) => s.plugin === p.name);
-}
-
-const look = usePoll(
-    "services",
-    () => api.services(),
-    () => (busy.value ? WHILE_BUSY : EVERY),
-    (got) => {
-        services.value = got;
-        if (busy.value) readLog();
-    }
-);
-watch(busy, () => look());
 
 function installed(name, got) {
     source.value = "";
-    if (got && got.n) {
+    if (got && got.id) {
         closePreview();
         settingsOf(name);
     }
@@ -72,9 +52,9 @@ const preview = () => checkSource(source.value);
 const install = () => runInstall(source.value);
 
 async function act(p, action, body = {}) {
-    busy.value = `${p.n}`;
+    busy.value = `${p.id}`;
     try {
-        await api.act("plugin", p.n, action, body);
+        await api.act("plugins", p.id, action, body);
     } catch (e) {
         previewText.value = e.message;
     }
@@ -97,16 +77,11 @@ async function remove(everything) {
 
 const settingsOf = (name) => (location.hash = `#/${route.value.env}/settings?sub=plugins&plugin=${encodeURIComponent(name)}`);
 
-async function clearLog() {
-    const p = plugins.value.find((row) => row.name === reading.value);
-    if (p) await api.clearPluginLog(p.n);
-    await readLog();
-}
-
 async function readLog() {
     if (!reading.value) return;
     try {
-        logged.value = (await api.pluginLog(reading.value)).log;
+        const p = plugins.value.find((row) => row.name === reading.value);
+        logged.value = (await api.pluginLog(p.id)).log;
     } catch (e) {
         logged.value = e.message;
     }
@@ -124,7 +99,7 @@ function readGuide() {
 }
 
 async function askAgent() {
-    await sendMessage(route.value.env, {brief: pluginRequest(repository.value, wish.value)});
+    await sendMessage(route.value.env, {text: pluginRequest(repository.value, wish.value)});
     making.value = false;
     repository.value = "";
     wish.value = "";
@@ -177,16 +152,15 @@ watch(
                 <p class="note">Sent to the agent; its answer comes in the chat.</p>
             </template>
             <template v-if="!plugins.length">
-                <EmptyState :loading="!hasLoaded('plugin')" title="No plugin is installed">Paste a repository above to see what it would run.</EmptyState>
+                <EmptyState :loading="!hasLoaded('plugins')" title="No plugin is installed">Paste a repository above to see what it would run.</EmptyState>
             </template>
             <div class="cards">
-                <template v-for="p in plugins" :key="p.n">
+                <template v-for="p in plugins" :key="p.id">
                     <PluginCard
-                        :data-plugin="p.n"
+                        :data-plugin="p.id"
                         :plugin="p"
-                        :services="servicesOf(p)"
                         :pages="pagesOf(p)"
-                        :busy="busy === `${p.n}`"
+                        :busy="busy === `${p.id}`"
                         :reading="reading === p.name"
                         @toggle="(on) => plugin(p, on ? 'enable' : 'disable')"
                         @upgrade="upgrade(p)"
@@ -196,16 +170,12 @@ watch(
                         @log="toggleLog(p)"
                         @record="recording = p"
                         @remove="removing = p"
-                        @services="servicesFor = p.name"
                     />
                 </template>
                 <PluginMakeCard @click="((making = true), (asked = false))" />
             </div>
         </div>
 
-        <template v-if="servicesFor">
-            <ServicesPanel :plugin="servicesFor" @close="servicesFor = ''" />
-        </template>
         <template v-if="making">
             <PluginMakeDialog
                 v-model:repository="repository"
@@ -236,7 +206,7 @@ watch(
             <PluginRemoveDialog :title="removing.title" @close="removing = null" @remove="remove" />
         </template>
         <template v-if="reading">
-            <LogDialog :title="`${reading} log`" :logged="logged" :busy="Boolean(busy)" @close="reading = ''" @clear="clearLog" />
+            <LogDialog :title="`${reading} log`" :logged="logged" :busy="Boolean(busy)" @close="reading = ''" />
         </template>
         <template v-if="guide">
             <PluginGuide @close="guide = false" />

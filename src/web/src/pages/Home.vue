@@ -1,16 +1,15 @@
 <script setup>
+import {createdAt} from "../domain/row.js";
 import {store} from "../state/store.js";
-import {saveViewerSetting, viewerSetting, workMode} from "../composables/settings.js";
+import {saveViewerSetting, viewerSetting} from "../composables/settings.js";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import {narrow} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import {open} from "../domain/records.js";
 import Skeleton from "../kit/Skeleton.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import HomeView from "./HomeView.vue";
 import DumpWindow from "../chat/DumpWindow.vue";
-import {ORCHESTRATOR} from "../domain/modes.js";
 import PaneMenu from "../panes/PaneMenu.vue";
 import HintBubble from "../kit/HintBubble.vue";
 import {useMenuHint} from "../composables/menuHint.js";
@@ -177,11 +176,6 @@ const updatePreset = (key) =>
         savedPresets.value.map((p) => (p.key === key ? {...p, shape: snapshot(layout.value), scheme: layout.value.scheme || ""} : p))
     );
 const layoutOf = (preset) => ({name: preset.name, shape: preset.shape, scheme: preset.scheme || ""});
-const linkPreset = async (key, lasting) => {
-    const preset = savedPresets.value.find((p) => p.key === key);
-    return (await api.shareLayout(preset.name, layoutOf(preset), lasting)).abstract;
-};
-const readLayoutLink = (url) => api.layoutFrom(url);
 const sharePreset = (key) => {
     const preset = savedPresets.value.find((p) => p.key === key);
     if (!preset) return;
@@ -235,8 +229,6 @@ provide("views", {
     removePreset,
     sharePreset,
     importPreset,
-    linkPreset,
-    readLayoutLink,
     schemes: computed(() => schemeChoices(layout.value.scheme)),
     scheme: (key) => replace(schemed(layout.value, key)),
 });
@@ -297,12 +289,6 @@ const offerText = (id) => {
     return `Put ${views.value[offer.value.view].title} beside ${views.value[pane.active].title} in two panes, or add it here as a tab.`;
 };
 
-watch(
-    () => [api.env(), store.settings && workMode.value],
-    ([env, now], [was, before]) => {
-        if (env === was && before && before !== now && now === ORCHESTRATOR) applyPreset(ORCHESTRATOR);
-    }
-);
 
 function applyPreset(key) {
     const preset = everyPreset.value.find((p) => p.key === key);
@@ -373,13 +359,13 @@ const shutPane = (id) => layout.value.panes[id] && apply(paneClosed(layout.value
 const pageOpened = Date.now() / 1000;
 watch(
     () =>
-        open("question")
-            .filter((q) => !q.env && q.created > pageOpened)
-            .map((q) => q.n),
+        open("questions")
+            .filter((q) => createdAt(q) > pageOpened)
+            .map((q) => q.id),
     (now, before) => {
         if (!now.some((n) => !(before || []).includes(n))) return;
-        const at = holding(layout.value, "question");
-        if (at !== null && layout.value.panes[at].active !== "question") apply(activated(layout.value, at, "question"));
+        const at = holding(layout.value, "questions");
+        if (at !== null && layout.value.panes[at].active !== "questions") apply(activated(layout.value, at, "questions"));
     }
 );
 </script>

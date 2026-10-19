@@ -1,15 +1,12 @@
 <script setup>
-import {planMeter} from "../domain/journals.js";
 import {computed} from "vue";
 import Folded from "../kit/Folded.vue";
-import Meter from "../kit/Meter.vue";
 import StateDot from "../kit/StateDot.vue";
 import Tile from "../kit/Tile.vue";
 import JobTimer from "../kit/JobTimer.vue";
-import {agentState} from "../domain/ticketAgents.js";
 import {clock} from "../format/time.js";
 import {useNow} from "../composables/now.js";
-import {quietOf} from "../domain/orchestra.js";
+import {agentState, quietOf} from "../domain/orchestra.js";
 
 const props = defineProps({entry: {type: Object, required: true}});
 const emit = defineEmits(["open"]);
@@ -43,15 +40,12 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
                 <p class="aw-says">{{ entry.says }}</p>
             </Folded>
         </template>
-        <template v-if="entry.plan">
-            <Meter v-bind="planMeter(entry.plan)" />
-        </template>
         <div class="aw-lines">
             <template v-if="status">
                 <p :class="['aw-status', {asks}]" :title="status">{{ status }}</p>
             </template>
             <p class="aw-line">
-                <span class="aw-key">Branch</span>
+                <span class="aw-key">Environment</span>
                 <span class="aw-branch">{{ entry.env }}</span>
             </p>
             <template v-if="entry.model">
@@ -65,7 +59,6 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
                     <span class="aw-key">Kind</span>
                     <span class="aw-kind">
                         <span class="aw-label">{{ entry.label }}</span>
-                        <template v-if="entry.of">{{ entry.of }}</template>
                     </span>
                 </p>
             </template>

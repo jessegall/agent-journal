@@ -3,10 +3,9 @@ import {subagentsOf} from "../domain/subagents.js";
 import {agent} from "../composables/leadAgent.js";
 import {store} from "../state/store.js";
 import {computed, inject, ref, watch} from "vue";
-import {loadedSkills, runningData, usageWindows} from "../domain/agents.js";
+import {loadedSkills, usageWindows} from "../domain/agents.js";
 import MenuPanel from "../kit/MenuPanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import AgentAppoint from "./AgentAppoint.vue";
 import AgentBarViews from "./AgentBarViews.vue";
 import AgentControls from "./AgentControls.vue";
 import AgentFacts from "./AgentFacts.vue";
@@ -15,14 +14,13 @@ import AgentPresets from "./AgentPresets.vue";
 import AgentSkills from "./AgentSkills.vue";
 import AgentUsage from "./AgentUsage.vue";
 import CrewList from "./CrewList.vue";
-import LoopList from "./LoopList.vue";
 import "./drop.css";
 import {go, peek, route} from "../route.js";
 
 const open = ref("");
 const schemesOpen = ref(false);
 watch(open, () => (schemesOpen.value = false));
-const data = computed(() => runningData(agent.value));
+const data = computed(() => (agent.value && agent.value.status !== "stopped" ? agent.value : null));
 const skills = computed(() => loadedSkills(data.value));
 const usage = computed(() => usageWindows(data.value));
 const views = inject("views", null);
@@ -34,7 +32,7 @@ function readSkill(name) {
 
 function openSession(row) {
     open.value = "";
-    peek("agent", agent.value.n, 0, row.session);
+    peek("agents", agent.value.id, 0, row.session);
 }
 const anchor = ref(null);
 const dropHeight = Math.round(window.innerHeight * 0.6);
@@ -67,7 +65,7 @@ function openSkills() {
                 <AgentBarViews :open="open" @toggle="toggle" />
             </div>
         </template>
-        <template v-if="open && anchor && (data || open === 'appoint')">
+        <template v-if="open && anchor && data">
             <MenuPanel
                 :anchor="anchor"
                 :min-width="open === 'presets' ? 360 : 320"
@@ -77,9 +75,6 @@ function openSkills() {
                 @close="open = ''"
             >
                 <SwitchCase :value="CONTROLS.includes(open) ? 'model' : open">
-                    <template #appoint>
-                        <AgentAppoint @done="open = ''" />
-                    </template>
                     <template #agent>
                         <AgentMenu :agent="agent" @done="open = ''" />
                     </template>
@@ -95,31 +90,11 @@ function openSkills() {
                     <template #usage>
                         <AgentUsage :usage="usage" />
                     </template>
-                    <template #loops>
-                        <LoopList :loops="data.loops" />
-                    </template>
-                    <template #monitors>
-                        <CrewList
-                            heading="Monitors"
-                            :agent="agent ? agent.n : 0"
-                            :rows="data.monitor_rows || []"
-                            :total="data.monitors || 0"
-                        />
-                    </template>
-                    <template #shells>
-                        <CrewList
-                            heading="Background commands"
-                            :agent="agent ? agent.n : 0"
-                            :rows="data.shell_rows || []"
-                            :total="data.shells || 0"
-                        />
-                    </template>
                     <template #default>
                         <CrewList
                             heading="Subagents"
-                            :agent="agent ? agent.n : 0"
-                            :rows="subagentsOf(agent ? agent.n : 0)"
-                            :total="subagentsOf(agent ? agent.n : 0).length"
+                            :rows="subagentsOf(agent ? agent.id : 0)"
+                            :total="subagentsOf(agent ? agent.id : 0).length"
                             started="dispatched"
                             @open="openSession"
                         />

@@ -24,13 +24,10 @@ const emit = defineEmits(["back"]);
     </template>
     <MenuLabel>Working for</MenuLabel>
     <template v-for="s in KIND_SWITCHES" :key="s.key">
-        <PaneMenuToggle :on="ui.agentView.kinds[s.key]" :icon="s.icon" @click="ui.agentView.kinds[s.key] = !ui.agentView.kinds[s.key]">
+        <PaneMenuToggle :on="ui.agentView.kinds[s.key] !== false" :icon="s.icon" @click="ui.agentView.kinds[s.key] = ui.agentView.kinds[s.key] === false">
             {{ s.label }}
         </PaneMenuToggle>
     </template>
-    <ToggleItem :on="ui.agentView.unfinished" icon="flag" @click="ui.agentView.unfinished = !ui.agentView.unfinished">
-        Only with an unfinished plan
-    </ToggleItem>
     <MenuLabel>Order</MenuLabel>
     <template v-for="o in ORDERS" :key="o.key">
         <PaneMenuPick :icon="o.icon" :label="o.label" :current="ui.agentView.order === o.key" @click="ui.agentView.order = o.key" />

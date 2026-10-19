@@ -3,102 +3,71 @@ import {subagentsOf} from "../domain/subagents.js";
 import {computed} from "vue";
 import AgentInspector from "../agents/AgentInspector.vue";
 import {stopAgentNamed} from "../actions/agents.js";
-import {useAgentLinks} from "../composables/agentLinks.js";
-import {usePoll} from "../composables/poll.js";
 import {useScope} from "../composables/scope.js";
-import {modelFamily, providerName} from "../domain/agents.js";
-import {ending} from "../domain/agentState.js";
+import {loadedSkills, modelFamily, providerName} from "../domain/agents.js";
+import {ending, heldTask} from "../domain/agentState.js";
+import {createdAt, updatedAt} from "../domain/row.js";
 import {project} from "../state/identity.js";
 import {store} from "../state/store.js";
 import {span} from "../format/time.js";
 import {route, showSession} from "../route.js";
-import {PAGE} from "../sync/rows.js";
 import CommentToggle from "./CommentToggle.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
-const {env, api, rows, recent} = useScope();
-const ELSEWHERE_EVERY = 5000;
-if (env)
-    usePoll(
-        `agent-elsewhere:${env}`,
-        () => Promise.all(["work", "nudge", "notice", "message"].map((type) => recent(type, PAGE))),
-        ELSEWHERE_EVERY
-    );
-const data = computed(() => props.resource.data);
+const {env, api} = useScope();
 const environment = computed(() => env || route.value.env);
-const subagents = computed(() => subagentsOf(props.resource.n).filter((r) => r.session));
+const subagents = computed(() => subagentsOf(props.resource.id).filter((r) => r.session));
 const picked = computed(() => subagents.value.find((r) => r.session === route.value.sub) || null);
-const skills = computed(() => (picked.value ? picked.value.skills : data.value.skills) || []);
-const links = useAgentLinks(api, () => [props.resource.n, picked.value ? picked.value.session : ""]);
-const sessionLink = computed(() => links.value.find((href) => /claude\.ai\/code\/(?!artifact)/.test(href)) || "");
-const family = computed(() => modelFamily(data.value.model));
-const running = computed(() =>
-    rows("work").some((w) => !w.completed && !w.data.agent && (w.data.session === props.resource.title || !w.data.session))
-);
+const skills = computed(() => loadedSkills(props.resource));
+const family = computed(() => modelFamily(props.resource.model));
 
 const STATES = {
     working: {word: "Working", dot: "running"},
     busy: {word: "Working", dot: "running"},
     idle: {word: "Idle", dot: "queued"},
     compacting: {word: "Compacting its context", dot: "running"},
-    paused: {word: "Paused", dot: "queued"},
 };
-const stateKey = computed(() => {
-    const reported = data.value.status;
-    if (data.value.paused) return "paused";
-    if (["stopped", "idle", "compacting"].includes(reported)) return reported;
-    return running.value ? "working" : "busy";
-});
+const stateKey = computed(() => (props.resource.status in STATES || props.resource.status === "stopped" ? props.resource.status : "busy"));
+const task = computed(() => heldTask(store.summary, environment.value)?.title || props.resource.doing || "Waiting: next task");
 
-const task = computed(() => {
-    const open = rows("work").find((w) => !w.completed && !w.data.agent && (w.data.session === props.resource.title || !w.data.session));
-    return open ? open.title : "Waiting: next task";
-});
-
-const factsOf = computed(() => {
-    const d = data.value;
+const facts = computed(() => {
+    const a = props.resource;
     return [
-        family.value ? `${providerName(d.provider)} · ${family.value}` : providerName(d.provider),
-        `agent ${props.resource.n}`,
-        `session ${props.resource.title}`,
+        family.value ? `${providerName(a.provider)} · ${family.value}` : providerName(a.provider),
+        `agent ${a.id}`,
+        `session ${a.session}`,
         environment.value,
-        ...(d.branch ? [d.branch] : []),
-        d.started ? `running for ${span(Date.now() / 1000 - d.started)}` : "just started",
-        `context ${Math.round(Number(d.context || 0))}% full`,
+        ...(a.branch ? [a.branch] : []),
+        `running for ${span(Date.now() / 1000 - createdAt(a))}`,
+        `context ${Math.round(Number(a.context || 0))}% full`,
     ];
 });
-
-const online = computed(() => store.online.some((live) => live.session === props.resource.title && live.environment === environment.value));
 
 const mainInfo = computed(() => ({
     kind: "Main agent",
     name: project.value,
     title: task.value,
-    state: {key: stateKey.value, ...(stateKey.value === "stopped" ? ending("stopped", props.resource.updated) : STATES[stateKey.value])},
-    facts: factsOf.value,
-    counts: {subagents: data.value.subagents || 0, skills: (data.value.skills || []).length},
-    link: sessionLink.value ? {href: sessionLink.value, label: "Open its session on claude.ai"} : null,
-    actions: [
-        ...(online.value
-            ? [
-                  data.value.paused
-                      ? {key: "resume", label: "Resume its agent", title: "It carries on from where it waited."}
-                      : {key: "pause", label: "Pause its agent", title: "It finishes the step it is on, then waits until you resume it."},
-              ]
-            : []),
-        {
-            key: "stop",
-            label: "Stop its agent",
-            title: "It stops at once. Its chat, commits and files stay here.",
-            danger: true,
-            confirm: {
-                text: "Stop this agent now? It stops in the middle of what it is doing. Its chat, its commits and its files stay here.",
-                button: "Stop now",
-                cancel: "Keep it running",
-            },
-        },
-    ],
+    state: {key: stateKey.value, ...(stateKey.value === "stopped" ? ending("stopped", updatedAt(props.resource)) : STATES[stateKey.value])},
+    facts: facts.value,
+    counts: {subagents: subagents.value.length, skills: skills.value.length},
+    link: null,
+    actions:
+        stateKey.value === "stopped"
+            ? []
+            : [
+                  {
+                      key: "stop",
+                      label: "Stop its agent",
+                      title: "It stops at once. Its chat, commits and files stay here.",
+                      danger: true,
+                      confirm: {
+                          text: "Stop this agent now? It stops in the middle of what it is doing. Its chat, its commits and its files stay here.",
+                          button: "Stop now",
+                          cancel: "Keep it running",
+                      },
+                  },
+              ],
 }));
 
 const subagentInfo = computed(() => ({
@@ -106,16 +75,12 @@ const subagentInfo = computed(() => ({
     name: picked.value.type || "general",
     title: picked.value.task,
     back: "Main agent",
-    state: picked.value.running ? {key: "working", word: "Working", dot: "running"} : {key: "idle", ...ending(picked.value.status, picked.value.ended)},
-    facts: [picked.value.model || "its parent's model", `subagent of agent ${props.resource.n}`, environment.value],
+    state: picked.value.running ? {key: "working", word: "Working", dot: "running"} : {key: "idle", ...ending(picked.value.status, picked.value.at)},
+    facts: [picked.value.model || "its parent's model", `subagent of agent ${props.resource.id}`, environment.value],
     actions: [],
 }));
 
-const ACTIONS = {
-    pause: () => api.pauseAgent(props.resource.title),
-    resume: () => api.resumeAgent(props.resource.title),
-    stop: () => stopAgentNamed(api, environment.value),
-};
+const ACTIONS = {stop: () => stopAgentNamed(api, environment.value)};
 </script>
 
 <template>
@@ -141,7 +106,6 @@ const ACTIONS = {
             :agent="resource"
             :subagents="subagents"
             :skills="skills"
-            :provider="data.provider"
             :run="(key) => ACTIONS[key]()"
             @open-subagent="showSession"
             @close="emit('close')"
