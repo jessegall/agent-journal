@@ -1,8 +1,12 @@
+from pathlib import Path
+
 from journal.config import Config
 from journal.features.shell.reader import Reader
+from journal.features.shell.script_reader import ScriptReader
 from journal.refused import Refused
 
-SUFFIX = ".pattern"
+KINDS = {".pattern": Reader.from_file, ".sh": ScriptReader.from_file}
+"""Each kind of reader by its file's suffix: a pattern, or a script the output is handed to."""
 
 
 class Readers:
@@ -11,17 +15,22 @@ class Readers:
     def __init__(self, config: Config) -> None:
         self.config = config
 
-    def all(self) -> list[Reader]:
+    def all(self) -> list[Reader | ScriptReader]:
         if not self.config.readers.is_dir():
             return []
-        return [Reader.from_file(path) for path in sorted(self.config.readers.glob(f"*{SUFFIX}"))]
+        return [KINDS[path.suffix](path) for path in sorted(self.config.readers.iterdir()) if path.suffix in KINDS]
 
-    def named(self, name: str) -> Reader:
-        path = self.config.readers / f"{name}{SUFFIX}"
-        if not path.is_file():
+    def named(self, name: str) -> Reader | ScriptReader:
+        found = [path for suffix in KINDS if (path := self.config.readers / f"{name}{suffix}").is_file()]
+        if not found:
             raise Refused(f"no reader named {name}: `journal reader list` names them")
-        return Reader.from_file(path)
+        return KINDS[found[0].suffix](found[0])
 
     def add(self, reader: Reader) -> None:
         self.config.readers.mkdir(parents=True, exist_ok=True)
-        (self.config.readers / f"{reader.name}{SUFFIX}").write_text(reader.text())
+        (self.config.readers / f"{reader.name}.pattern").write_text(reader.text())
+
+    def add_script(self, name: str, about: str, script: Path) -> None:
+        """The script copied in under the reader's name, what it prints said in its first line."""
+        self.config.readers.mkdir(parents=True, exist_ok=True)
+        (self.config.readers / f"{name}.sh").write_text(f"# {about}\n{script.read_text()}")

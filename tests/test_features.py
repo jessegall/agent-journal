@@ -5191,6 +5191,11 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     assert console.run(["reader", "list"], AGENT).out == "forties: lines in the early forties\n"
     assert console.run(["output", "read", "1", "--reader", "forties"], AGENT).out == "40: line 40\n41: line 41\n"
     assert console.run(["output", "read", "1", "--reader", "nothing"], AGENT).code == 1, "an unknown reader is refused"
+    script = app.config.root / "count.sh"
+    script.write_text("wc -l | tr -d ' '\n")
+    assert console.run(["reader", "add", "count", "--script", str(script), "--about", "how many lines"], AGENT).code == 0
+    assert console.run(["output", "read", "1", "--reader", "count"], AGENT).out == "50\n", "a script reader is handed the output and prints what matters"
+    assert console.run(["reader", "list"], AGENT).out == "count: how many lines\nforties: lines in the early forties\n"
 
 
 def test_a_trailing_tail_is_dropped_before_the_command_runs_and_a_head_is_left(app):
@@ -5251,3 +5256,24 @@ def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task
     console.run(["task", "start", "2"], AGENT)
     console.run(["task", "done", "2", "--how", "h"], AGENT)
     assert app.container.get(Plans).find(1).state == "done", "a parked plan whose last task closes is done"
+
+
+def test_a_plan_started_with_every_task_closed_is_done_and_one_with_no_task_is_not(app):
+    from journal.repositories.plans import Plans
+    console = app.console()
+    for title in ("closed", "empty"):
+        console.run(["plan", "create", title, "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "only"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "approve", "2"], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "park", "1"], AGENT)
+    console.run(["task", "start", "1"], AGENT)
+    console.run(["task", "done", "1", "--how", "h"], AGENT)
+    plans = app.container.get(Plans)
+    assert plans.find(1).state == "done", "a parked plan whose last task closes is done"
+    console.run(["plan", "start", "2"], AGENT)
+    assert plans.find(2).state == "started", "a plan with no task yet is not finished"

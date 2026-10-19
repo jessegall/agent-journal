@@ -46,6 +46,10 @@ Every shell command you run goes through the journal's runner.
 - Every command's output is kept as a numbered output, the newest 250 of them: `journal output read N` shows how it
   ended and its first and last lines; `--lines 100-160`, `--grep <pattern>`, `--head N` and `--tail N` read part of it.
   `journal output list` names the newest. Read an output this way rather than running the command again.
+- A reader reads outputs of one shape, such as a test run's failures: `journal reader add <name> --pattern <regex>
+  --about "<what it picks>"`, or `--script <file>` for a shell script handed the output on its input. Use it with
+  `journal output read N --reader <name>`; `journal reader list` names the project's readers. The second time you
+  read the same shape of output by hand, add a reader for it and say so in the chat.
 - A test run, a build or any other command's output is shown whole up to 200 characters; past that you see only
   `output N: X characters`, and read it with `journal output read N`. A command that reads (cat, grep, sed, git diff)
   is shown up to 8,000 characters, past that by its two ends. A line of

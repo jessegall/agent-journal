@@ -135,6 +135,10 @@ class PlanCommand(Command):
         plan = self.plans.find(args.n)
         if plan.state not in (PlanState.APPROVED, PlanState.PARKED, PlanState.STARTED):
             raise Refused(f"plan {plan.id} is {plan.state}, not approved: the user approves it first")
+        if self.plans.finished(plan):
+            self.plans.save(plan.done(), where.actor)
+            print(PlansFeature.DONE.about(n=plan.id).rendered())
+            return 0
         task = self.plans.next_task(plan)
         if task is not None:
             self.tasks.refuse_second(task.started(datetime.now(timezone.utc)))

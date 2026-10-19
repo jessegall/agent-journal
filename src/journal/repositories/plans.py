@@ -86,8 +86,9 @@ class Plans(ScopedRepository[Plan]):
         return [t for t in self.tasks.in_state(TaskState.OPEN) if not self.links.targets(t, IN_PLAN)]
 
     def finished(self, plan: Plan) -> bool:
-        """Every task of the plan done or cancelled: a blocked or parked one keeps it open."""
-        return all(t.is_closed() for t in self.tasks_of(plan))
+        """Every task of the plan done or cancelled: a blocked or parked one keeps it open, and a plan with no task yet is not finished."""
+        tasks = self.tasks_of(plan)
+        return bool(tasks) and all(t.is_closed() for t in tasks)
 
     def next_task(self, plan: Plan) -> Task | None:
         return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN and not self.tasks.open_waits(t)), None)
