@@ -2059,7 +2059,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "1, 2, 4, 5, 6" in out, "one path through Idle's own: the parked check, auto mode, the open task held, after the Always inbox check found nothing unread"
+    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "1, 2, 4, 5, 7, 8, 9, 10" in out, "one path through Idle's own: the parked check, the approved plan check, auto mode, the open task held, after the Always inbox check found nothing unread"
     assert "plugins not asked: a test run walks the workflows alone" in out, "a test run says it asked no plugin"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
@@ -5030,3 +5030,18 @@ def test_an_agent_waiting_in_auto_mode_is_pointed_to_the_next_task_after_a_quiet
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=70.0))
     app.runtime().deferred.drain()
     assert any("while you wait for the suite, task 2 is next" in line and "waiting is fine" in line for line in typed), typed
+
+
+def test_an_approved_plan_not_started_holds_the_stop_until_it_is(app):
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "only"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    assert "plan 1 is approved and not started" in hook(app, "Stop")[1]["reason"]
+    console.run(["plan", "start", "1"], AGENT)
+    assert "is approved and not started" not in json.dumps(hook(app, "Stop")[1]), "a started plan holds nothing"

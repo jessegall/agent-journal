@@ -193,8 +193,10 @@ watch(
     left: 0;
 }
 
-.document.quick .document-body {
-    padding-bottom: 72px;
+.document.quick .document-body::after {
+    content: "";
+    display: block;
+    height: 120px;
 }
 
 .document-links {

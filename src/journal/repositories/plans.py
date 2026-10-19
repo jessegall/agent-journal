@@ -69,6 +69,10 @@ class Plans(ScopedRepository[Plan]):
         ids = {t.id for t in phased}
         return phased + [t for t in self.tasks_of(plan) if t.id not in ids]
 
+    def approved(self) -> list[Plan]:
+        """The plans the user approved that are not started yet."""
+        return self.where(environment_id=self.scope.id, state=PlanState.APPROVED)
+
     def related(self) -> list[Task]:
         """What an agent waiting on something may take up meanwhile: a started plan's next task while a plan is followed, else the free ones."""
         started = [plan for plan in self.in_() if plan.state == PlanState.STARTED]

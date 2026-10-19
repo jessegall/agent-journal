@@ -168,6 +168,9 @@ class Checks:
     def related_tasks(self, ctx: Context) -> bool:
         return bool(self.plans.related())
 
+    def approved_plan(self, ctx: Context) -> bool:
+        return bool(self.plans.approved())
+
     def plan_at_checkpoint(self, ctx: Context) -> bool:
         """A started plan here stands at a completed checkpoint phase, its next phase not begun."""
         return any(self.plans.at_checkpoint(p) for p in self.plans.in_() if p.state == PlanState.STARTED)

@@ -101,6 +101,11 @@ class Fillers:
     def numbered(texts) -> str:
         return "; ".join(f"{n}. {text}" for n, text in enumerate(texts, 1))
 
+    def approved_plan(self, ctx: Context) -> str:
+        """The number of a plan the user approved that is not started yet."""
+        approved = self.plans.approved()
+        return str(approved[0].id) if approved else ""
+
     def plan_n(self, ctx: Context) -> str:
         """The number of the started plan standing at a checkpoint."""
         plan = self.plan_at_checkpoint()

@@ -20,6 +20,7 @@ class Plans(Feature):
     commands = (PlanCommand,)
     listeners = (AdvancePlan, TellApproved, FollowPlanAtStart, ReopenFinishedPlan)
     checks = (
+        Entry(NodeKind.CHECK, 'approved_plan', 'Has an approved plan not started?', 'the user approved a plan here that is not started yet'),
         Entry(NodeKind.CHECK, 'plan_at_checkpoint', 'Plan at a checkpoint?', 'a started plan stands at a completed checkpoint phase, its next phase not begun'),
     )
     seeds = (ClosedPlans,)

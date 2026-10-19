@@ -39,12 +39,14 @@ STATELESS = (
 """The Always workflows the journal ships, one subject each, in the order they run at their event: the drawing's name, its title and the builder that draws it."""
 OWN = (
     ("idle", "idle", "parked", "Hold the stop while a task is parked", "parked_holds_the_stop"),
+    ("idle", "idle", "approved", "Hold the stop while an approved plan is not started", "approved_plan_holds_the_stop"),
     ("idle", "idle", "open", "Hold the stop in auto mode while tasks are open", "open_tasks_hold_the_stop"),
     ("idle", "ticked", "parked", "Ask about a parked task after a minute of quiet", "ask_about_parked"),
     ("idle", "ticked", "check_in", "Check in after half an hour of quiet in auto mode", "check_in"),
     ("working", "tool_starting", "log_held", "Hold the write when the task log is overdue", "hold_write_when_log_overdue"),
     ("working", "tool_starting", "log", "Ask for a task log after {tasks.first_nudge_after} edits", "ask_for_a_log_after_edits"),
     ("working", "tool_starting", "in_hand", "Name the task in hand every {tasks.name_every} edits", "name_the_task_in_hand"),
+    ("working", "idle", "approved", "Hold the stop while an approved plan is not started", "approved_plan_holds_the_stop"),
     ("working", "idle", "carry_on", "Tell the agent to carry on with its task", "carry_on"),
     ("working", "idle", "log", "Ask for a log when the task's log is old", "ask_for_a_log"),
     ("working", "session_started", "carry_on", "Tell the agent to carry on with its task", "carry_on"),
@@ -118,6 +120,7 @@ REPORTED = "[workers.reported] worker {{worker_n}}, {{worker_name}}, reported in
 STOPPED = "[workers.stopped] worker {{worker_n}}, {{worker_name}}, stopped before it reported"
 RETURNED = "[workers.returned] what you waited on came back: carry on"
 ANSWERED = "question {{question_n}} is answered. `journal question show {{question_n}}` reads it whole, with the messages linked to it; act on the answer"
+APPROVED_UNSTARTED = "[plans.approved_unstarted] plan {{approved_plan}} is approved and not started: `journal plan start {{approved_plan}}` begins its first task"
 MEANWHILE = "[tasks.meanwhile] while you wait for {{awaited}}, task {{related_task}} is next: if you can work on it meanwhile, carry on with it; if you need the output first, waiting is fine"
 CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{quiet_minutes}} min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
 class ShippedChart(Seed):
@@ -495,6 +498,10 @@ class ShippedChart(Seed):
     def parked_holds_the_stop(self, chart: Chart, ends: list) -> list:
         """A parked task holds the stop, in any mode, naming the parked ones."""
         return self.guarded(chart, ends, 160, 92, (Guard("parked_tasks"),), "block_stop", PARKED)
+
+    def approved_plan_holds_the_stop(self, chart: Chart, ends: list) -> list:
+        """A plan the user approved and the agent has not started holds the stop, in any mode, until it is started."""
+        return self.guarded(chart, ends, 160, 92, (Guard("approved_plan"),), "block_stop", APPROVED_UNSTARTED)
 
     def open_tasks_hold_the_stop(self, chart: Chart, ends: list) -> list:
         """In auto mode an open task holds the stop, naming the next one."""

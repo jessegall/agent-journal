@@ -45,8 +45,7 @@ export function leadingPlan(plans) {
 }
 
 export function cardPlan(plans) {
-    const lead = leadingPlan(plans.filter((plan) => !plan.data.dismissed));
-    return lead && !PLAN_RUNNING.includes(lead.data.status) ? lead : null;
+    return leadingPlan(plans.filter((plan) => !plan.data.dismissed && !PLAN_RUNNING.includes(plan.data.status)));
 }
 
 const MAX_BARS = 3;
