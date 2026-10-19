@@ -7,4 +7,4 @@ class TaskLogs(ScopedRepository[TaskLog]):
     model = TaskLog
 
     def of(self, task: Task) -> list[TaskLog]:
-        return self.where(task_id=task.id)
+        return self.across_environments(task_id=task.id)

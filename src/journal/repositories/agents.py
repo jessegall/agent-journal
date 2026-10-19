@@ -13,11 +13,16 @@ class Agents(ScopedRepository[Agent]):
         alive = [a for a in self.in_() if a.state != "ended"]
         return alive[-1] if alive else None
 
+    def everywhere(self) -> list[Agent]:
+        """Every agent in every environment, for what the whole project hears, such as a check's result or a change of voice."""
+        return self.across_environments()
+
     def in_state(self, name: str) -> list[Agent]:
         return self.where(state=name)
 
     def for_session(self, session: str) -> Agent:
-        found = self.where(session=session)
+        """The agent of a session, in whichever environment: a session is the project's own."""
+        found = self.across_environments(session=session)
         if not found:
             raise NotFound(self.table, session)
         return found[0]

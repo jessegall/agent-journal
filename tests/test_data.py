@@ -28,6 +28,7 @@ from journal.repositories.not_found import NotFound
 from journal.repositories.checks import Checks
 from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks
+from journal.repositories.unscoped import Unscoped
 
 USER = Actor.user(1)
 AGENT = Actor.agent("abc")
@@ -78,7 +79,8 @@ def test_a_refusing_listener_stops_the_write(connection, bus, scope):
     tasks = tasks_of(connection, bus, scope)
     with pytest.raises(Refused):
         tasks.save(Task(environment_id=1, title="t"), by=USER)
-    assert tasks.all() == []
+    with scope.of(1):
+        assert tasks.all() == []
 
 
 def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, scope):
@@ -101,7 +103,10 @@ def test_where_reads_typed_values_back(connection, bus, scope):
     with scope.of(1):
         assert tasks.in_state(TaskState.STARTED) == [started]
     with scope.of(2):
-        assert tasks.in_() == []
+        assert tasks.in_() == [] and tasks.where(title="open") == [] and tasks.search(["open"]) == [] and tasks.counted_in() == 0, "every read is the scope's, whatever it asks"
+    with pytest.raises(Unscoped):
+        tasks.where(title="open")
+    assert [t.title for t in tasks.across_environments(title="open")] == ["open"], "a read across environments says so by its name"
 
 
 def test_writes_from_many_threads_all_land(connection, bus, scope):
@@ -115,7 +120,8 @@ def test_writes_from_many_threads_all_land(connection, bus, scope):
         t.start()
     for t in threads:
         t.join()
-    assert len(tasks.all()) == 20
+    with scope.of(1):
+        assert len(tasks.all()) == 20
 
 
 def test_a_column_a_model_gained_is_added_to_a_table_made_before_it(tmp_path):

@@ -4,7 +4,7 @@ from journal.events.listener import Listener
 from journal.features.registry import Registry
 from journal.models.scoped import Scoped
 from journal.repositories.scope import Scope
-from journal.repositories.settings import PROJECT
+from journal.repositories.scope import PROJECT
 
 
 class Switched(Listener[Event]):

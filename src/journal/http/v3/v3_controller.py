@@ -232,7 +232,7 @@ class V3Controller:
 
     def post_agent_control(self, request: Request) -> Response:
         """A pick in the agent bar is the provider's own command, typed into the agent as the user would."""
-        provider = self.providers.named(next((a.provider for a in self.agents.all() if a.session == request.params["session"]), "claude") or "claude")
+        provider = self.providers.named(next((a.provider for a in self.agents.everywhere() if a.session == request.params["session"]), "claude") or "claude")
         action, value = request.body.get("action", ""), request.body.get("value", "")
         choice = next((c for g in provider.controls["groups"] if g["key"] == action for c in g["choices"] if c["value"] == value), None)
         if choice is None:
@@ -242,7 +242,7 @@ class V3Controller:
 
     def get_skills(self, request: Request) -> Response:
         """The journal's skills, with whether the agent asked for has read each, as the skills page lists them."""
-        agent = next((a for a in self.agents.all() if str(a.id) == request.query.get("agent", "")), None)
+        agent = next((a for a in self.agents.everywhere() if str(a.id) == request.query.get("agent", "")), None)
         loaded = set((agent.skills_loaded or {}).keys()) if agent else set()
         return Response.json([{"name": skill.name, "description": skill.description, "loaded": skill.name in loaded, "always": False, "stale": False, "depth": 0} for skill in self.registry.skills()])
 

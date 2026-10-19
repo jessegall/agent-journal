@@ -38,7 +38,7 @@ class MenuWatcher:
 
     def _run(self) -> None:
         while not self._stopping.wait(EVERY):
-            for agent in self.agents.all():
+            for agent in self.agents.everywhere():
                 if not isinstance(self.states.named(agent.state, agent.data), Ended):
                     with self.scope.of(agent.environment_id):
                         self.look(agent)

@@ -3999,7 +3999,7 @@ def test_counts_of_the_old_shape_are_cleared_at_boot(tmp_path: Path, monkeypatch
     second.runtime().start()
     try:
         from journal.repositories.counts import Counts
-        assert [c.name for c in second.container.get(Counts).all()] == ["charts:4:subs"], "a count named without its workflow is cleared, a workflow's own kept"
+        assert [c.name for c in second.container.get(Counts).across_environments()] == ["charts:4:subs"], "a count named without its workflow is cleared, a workflow's own kept"
     finally:
         second.runtime().stop()
 

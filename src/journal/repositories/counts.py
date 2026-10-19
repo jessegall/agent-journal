@@ -8,8 +8,8 @@ class Counts(ScopedRepository[Count]):
 
     def named(self, session: str, name: str) -> Count:
         """The agent's count by name, at nought when no node has started it yet."""
-        rows = self.where(environment_id=self.scope.id, session=session, name=name)
-        return rows[0] if rows else Count(environment_id=self.scope.id, session=session, name=name)
+        rows = self.where(session=session, name=name)
+        return rows[0] if rows else Count(session=session, name=name)
 
     def set(self, session: str, name: str, value: int, by: Actor) -> Count:
         with self.connection.transaction():
@@ -28,5 +28,5 @@ class Counts(ScopedRepository[Count]):
 
     def forget(self, session: str, by: Actor) -> None:
         """A session's counts gone with it."""
-        for count in self.where(environment_id=self.scope.id, session=session):
+        for count in self.where(session=session):
             self.delete(count, by)

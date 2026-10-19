@@ -60,12 +60,12 @@ class CheckRunner:
         if ran.waited_on:
             return ran
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
-        for agent in self.agents.all():
+        for agent in self.agents.everywhere():
             if agent.state != Ended.name:
                 self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"check:{ran.id}")
         if not ended.passed:
             said = ChecksFeature.FAILING if was_failing else ChecksFeature.FAILED
-            for agent in self.agents.all():
+            for agent in self.agents.everywhere():
                 if agent.state != Ended.name and (line := self.nudger.say(agent, said.about(n=ran.id, title=ran.title, tail=tail))):
                     self.supervisor.type(agent.environment_id, line)
         return ran

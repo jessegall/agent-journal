@@ -76,7 +76,7 @@ class Plans(ScopedRepository[Plan]):
 
     def approved(self) -> list[Plan]:
         """The plans the user approved that are not started yet."""
-        return self.where(environment_id=self.scope.id, state=PlanState.APPROVED)
+        return self.where(state=PlanState.APPROVED)
 
     def related(self) -> list[Task]:
         """What an agent waiting on something may take up meanwhile: a started plan's next task while a plan is followed, else the free ones."""

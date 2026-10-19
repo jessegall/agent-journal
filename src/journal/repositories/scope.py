@@ -6,6 +6,8 @@ from typing import Callable, Iterator
 from journal.repositories.environments import Environments
 from journal.repositories.unscoped import Unscoped
 
+PROJECT = 0
+"""The environment number of a row kept for the whole project, seen in every scope."""
 _current: ContextVar[Callable[[], int]] = ContextVar("environment")
 
 

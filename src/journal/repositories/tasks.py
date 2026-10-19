@@ -63,7 +63,7 @@ class Tasks(ScopedRepository[Task]):
         return ", ".join(part for part in (*named, task.blocked_why) if part)
 
     def in_state(self, state: TaskState) -> list[Task]:
-        return self.where(environment_id=self.scope.id, state=state)
+        return self.where(state=state)
 
     def in_hand(self) -> Task | None:
         """The one task started here, when one is."""
@@ -77,8 +77,8 @@ class Tasks(ScopedRepository[Task]):
 
     def unfinished_count(self) -> int:
         """How many tasks under no plan are not yet done or cancelled, counted by the database: a plan's tasks are counted on the plan."""
-        return self.connection.one("SELECT count(*) AS n FROM tasks WHERE environment_id = ? AND state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
-                                   (self.scope.id, TaskState.DONE.value, TaskState.CANCELLED.value))["n"]
+        return self.counted_in("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
+                               (TaskState.DONE.value, TaskState.CANCELLED.value))
 
     def unseen_by_user(self) -> int:
         """How many unfinished tasks the user did not make, so has not yet seen."""
@@ -87,5 +87,5 @@ class Tasks(ScopedRepository[Task]):
     def shown(self) -> list[Task]:
         """What a list of tasks shows: every one not yet finished, however old, and the newest page of the finished ones, by number."""
         finished = (TaskState.DONE.value, TaskState.CANCELLED.value)
-        unfinished = self.selected("environment_id = ? AND state NOT IN (?, ?) ORDER BY id", (self.scope.id, *finished))
-        return sorted([*unfinished, *self.newest("environment_id = ? AND state IN (?, ?)", (self.scope.id, *finished))], key=lambda t: t.id)
+        unfinished = self.selected("state NOT IN (?, ?) ORDER BY id", (*finished,))
+        return sorted([*unfinished, *self.newest("state IN (?, ?)", (*finished,))], key=lambda t: t.id)

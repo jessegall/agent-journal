@@ -28,7 +28,7 @@ class Clock:
     def tick(self) -> None:
         now = time.time()
         self.bus.dispatch(ClockTicked(at=now))
-        for agent in self.agents.all():
+        for agent in self.agents.everywhere():
             if isinstance(self.states.named(agent.state, agent.data), Ended):
                 continue
             with self.scope.of(agent.environment_id):

@@ -95,7 +95,7 @@ class Repository(Generic[M]):
         return " AND ".join(each for _ in words), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
 
     def matching(self, fields: dict) -> tuple[str, tuple]:
-        return " AND ".join(f"{name} = ?" for name in fields), tuple(self._column(name).to_sql(value) for name, value in fields.items())
+        return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).to_sql(value) for name, value in fields.items())
 
     def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
         """The newest rows first, at most limit of them, older than the id before when given; so a list never loads more than a screen."""

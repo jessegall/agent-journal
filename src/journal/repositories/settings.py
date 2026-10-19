@@ -2,10 +2,9 @@ from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.models.option import Option
 from journal.models.setting import Setting
-from journal.repositories.scope import Scope
+from journal.repositories.scope import PROJECT, Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
-PROJECT = 0
 
 
 class Settings(ScopedRepository[Setting]):
@@ -66,7 +65,7 @@ class Settings(ScopedRepository[Setting]):
     def rows_of(self, environment_id: int) -> list[Setting]:
         """A scope's settings, read once and kept until a setting is written: every listener asks whether its feature is on, many times a hook."""
         if environment_id not in self._kept:
-            self._kept[environment_id] = self.every_where(environment_id=environment_id)
+            self._kept[environment_id] = self.across_environments(environment_id=environment_id)
         return self._kept[environment_id]
 
     def written(self) -> None:

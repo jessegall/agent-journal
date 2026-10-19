@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from journal.app import App
+from journal.repositories.scope import Scope
 from journal.config import Config
 from journal.console.where import Where
 from journal.models.actor import Actor
@@ -77,7 +78,8 @@ def test_deleting_an_environment_takes_everything_recorded_in_it(app):
     outcome = app.console().run(["environment", "delete", "spike"], MAIN)
     assert "deleted environment" in outcome.out and outcome.code == 0
     assert [e.name for e in app.container.get(Environments).all()] == ["main"]
-    assert [t.title for t in app.container.get(Tasks).all()] == ["kept"]
+    with app.container.get(Scope).of(1):
+        assert [t.title for t in app.container.get(Tasks).all()] == ["kept"]
     assert app.console().run(["environment", "delete", "spike"], MAIN).code == 1
 
 
@@ -90,7 +92,8 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
     app.container.get(Agents).save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
     app.console().run(["message", "send", "hi"], Where("main"))
     app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"}))
-    assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"
 
 
 def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app):
@@ -98,7 +101,8 @@ def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app)
     from journal.repositories.reactions import Reactions
     app.console().run(["message", "send", "hi"], Where("main"))
     assert app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"})).code == 0
-    assert app.container.get(Reactions).all()[-1].created_by.kind == "user", "a shell outside the journal is the user's"
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Reactions).all()[-1].created_by.kind == "user", "a shell outside the journal is the user's"
 
 
 def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists(app, monkeypatch, tmp_path):

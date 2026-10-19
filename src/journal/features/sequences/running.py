@@ -98,7 +98,7 @@ class Running:
         """Every run here that can no longer finish, as gone says, taken off its agent: each agent with the line that tells it why."""
         from journal.features.sequences.feature import Sequences
         told = []
-        for agent in [a for a in self.agents.where(environment_id=environment_id) if a.sequence_runs]:
+        for agent in [a for a in self.agents.across_environments(environment_id=environment_id) if a.sequence_runs]:
             runs = self.runs(agent)
             kept = [run for run in runs if not gone(run)]
             if len(kept) < len(runs):
@@ -108,7 +108,7 @@ class Running:
 
     def environments_running(self, sequence_id: int) -> set[int]:
         """The environments where an agent runs the sequence."""
-        return {a.environment_id for a in self.agents.all() if any(run.sequence_id == sequence_id for run in self.runs(a))}
+        return {a.environment_id for a in self.agents.everywhere() if any(run.sequence_id == sequence_id for run in self.runs(a))}
 
     def follow(self, session: str, environment_id: int) -> SequenceRun:
         """The step in hand taken up now, and a parked run resumed with it."""
@@ -148,7 +148,7 @@ class Running:
 
     def typed_to(self, session: str, environment_id: int) -> bool:
         """Whether a line for this session may be typed to it: a worker's cannot, it is told at its next stop."""
-        return not any(session in (w.session, w.resume) for w in self.workers.where(environment_id=environment_id))
+        return not any(session in (w.session, w.resume) for w in self.workers.across_environments(environment_id=environment_id))
 
     @classmethod
     def reminder(cls, run: SequenceRun) -> Said:

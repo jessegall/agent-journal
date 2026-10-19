@@ -18,10 +18,10 @@ class Edits(ScopedRepository[Edit]):
     def record(self, edit: Edit, by: Actor) -> Edit:
         """An edit kept, and the oldest beyond the last five hundred let go."""
         kept = self.save(edit, by)
-        for row in self.connection.all(f"SELECT id FROM {self.table} WHERE environment_id = ? ORDER BY id DESC LIMIT -1 OFFSET ?", (self.scope.id, KEEP)):
-            self.delete(self.find(row["id"]), by)
+        for old in self.selected("1 ORDER BY id DESC LIMIT -1 OFFSET ?", (KEEP,)):
+            self.delete(old, by)
         return kept
 
     def of_agent(self, session: str, since: float) -> list[Edit]:
         """An agent's edits after the moment given, oldest first."""
-        return self.selected("environment_id = ? AND session = ? AND at > ? ORDER BY id", (self.scope.id, session, since))
+        return self.selected("session = ? AND at > ? ORDER BY id", (session, since))

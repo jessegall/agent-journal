@@ -23,7 +23,7 @@ class Workers(ScopedRepository[Worker]):
         self.links = links
 
     def out(self) -> list[Worker]:
-        return self.where(environment_id=self.scope.id, state=WorkerState.DISPATCHED)
+        return self.where(state=WorkerState.DISPATCHED)
 
     def put_on(self, worker: Worker, task: int, by: Actor) -> None:
         """The worker recorded as working on the task, which must be there."""
@@ -35,7 +35,7 @@ class Workers(ScopedRepository[Worker]):
     def holding(self, task_ids: set[int]) -> dict[int, Worker]:
         """By task number, the worker still out on each of these tasks."""
         held = {}
-        for worker in self.where(state=WorkerState.DISPATCHED):
+        for worker in self.across_environments(state=WorkerState.DISPATCHED):
             for ref in self.links.targets(worker, WORKS_ON):
                 if ref.id in task_ids:
                     held[ref.id] = worker
@@ -46,7 +46,7 @@ class Workers(ScopedRepository[Worker]):
         return [worker for worker in self.in_state_reported() if worker.has_report_waiting()]
 
     def in_state_reported(self) -> list[Worker]:
-        return self.where(environment_id=self.scope.id, state=WorkerState.REPORTED)
+        return self.where(state=WorkerState.REPORTED)
 
     def by_session(self, session: str) -> list[Worker]:
         """The workers whose own session this is: a command run from a worker's shell."""
