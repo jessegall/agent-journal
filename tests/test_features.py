@@ -5293,3 +5293,9 @@ def test_a_hand_read_that_does_a_readers_work_is_pointed_at_the_reader(app):
     said = lambda command: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": command})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
     assert "reader failed-tests already reads this: the failing tests" in said("journal output read 7 --grep '^FAILED'")
     assert "already reads this" not in said("journal output read 9 --grep '^FAILED'"), "said once"
+
+
+def test_a_sequence_ported_from_version_3_is_written_at_boot(app):
+    from journal.repositories.sequences import Sequences
+    filing = next(s for s in app.container.get(Sequences).all() if s.title == "Filing a document that is already written")
+    assert filing.starts_on == "doc.created" and len(filing.steps) == 2

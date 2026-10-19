@@ -27,6 +27,14 @@ CHECKING_THE_INSTRUCTION_FILES = Sequence(
         "Tell the user in one short line how many contradictions you found, with the report's reference on a line of its own, like report 3; the user decides which fixes to make",
     ),
 )
+FILING_A_WRITTEN_DOCUMENT = Sequence(
+    title="Filing a document that is already written",
+    starts_on="doc.created",
+    steps=(
+        "Check the document you filed reads as you meant: `journal doc show <doc n>` lists its sections, one for each ## heading of the file",
+        "Tell the user in one or two plain lines what the document concludes, then its reference on a line of its own, like doc 41, never in backticks",
+    ),
+)
 UPDATE_WORDS = ("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up", "what happened since",
                 "geef me een update", "update graag", "nog updates", "statusupdate", "stand van zaken", "praat me bij", "bijpraten", "wat is er gebeurd")
 """The words that start Writing an update, as a shipped trigger."""
@@ -35,5 +43,5 @@ CHECKING_WORDS = ("check the instruction files", "check agents.md", "check claud
 """The words that start Checking the instruction files, as a shipped trigger."""
 WORDS = {WRITING_AN_UPDATE.title: UPDATE_WORDS, CHECKING_THE_INSTRUCTION_FILES.title: CHECKING_WORDS}
 """The words each shipped sequence starts on, written as a trigger with the sequence and never again, so a project may take them off."""
-SHIPPED = (BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES)
+SHIPPED = (BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FILING_A_WRITTEN_DOCUMENT)
 """The sequences the journal ships: written at boot when a sequence of that title is not there yet, and brought up to date while nobody but the journal has changed it, so a project may edit its copy."""
