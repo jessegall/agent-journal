@@ -16,10 +16,11 @@ class PlanOutline:
 
     def of(self, plan: Plan) -> dict:
         tasks = self.plans.tasks_of(plan)
-        phases = [{**ModelFields.of(phase), "task_ids": [t.id for t in self.plans.tasks_in(phase)]} for phase in self.plans.phases_of(plan)]
+        in_phases = [(phase, self.plans.tasks_in(phase)) for phase in self.plans.phases_of(plan)]
+        phases = [{**ModelFields.of(phase), "task_ids": [t.id for t in held]} for phase, held in in_phases]
         phased = {id for phase in phases for id in phase["task_ids"]}
         return {**ModelFields.of(plan), "task_ids": [t.id for t in tasks], "phases": phases, "unphased_task_ids": [t.id for t in tasks if t.id not in phased],
-                "current_phase": self.plans.current_phase(plan), "held": plan.state == PlanState.STARTED and self.control.holds(plan),
+                "current_phase": Plans.current_of([held for _, held in in_phases]), "held": plan.state == PlanState.STARTED and self.control.holds(plan),
                 "delegated": bool(self.workers.holding({t.id for t in tasks})), "reviewers": self.reviewers(plan)}
 
     def reviewers(self, plan: Plan) -> int:

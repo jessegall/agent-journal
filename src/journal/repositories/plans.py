@@ -64,14 +64,14 @@ class Plans(ScopedRepository[Plan]):
 
     def tasks_of(self, plan: Plan) -> list[Task]:
         """In the order they were added."""
-        return [self.tasks.find(ref.id) for ref in self.links.sources(plan, IN_PLAN)]
+        return self.tasks.numbered(ref.id for ref in self.links.sources(plan, IN_PLAN))
 
     def phases_of(self, plan: Plan) -> list[Phase]:
         """In the order they were added."""
-        return [self.phases.find(ref.id) for ref in self.links.sources(plan, PHASE_OF)]
+        return self.phases.numbered(ref.id for ref in self.links.sources(plan, PHASE_OF))
 
     def tasks_in(self, phase: Phase) -> list[Task]:
-        return [self.tasks.find(ref.id) for ref in self.links.sources(phase, IN_PHASE)]
+        return self.tasks.numbered(ref.id for ref in self.links.sources(phase, IN_PHASE))
 
     def in_order(self, plan: Plan) -> list[Task]:
         """Phase by phase, then the tasks under no phase."""
@@ -112,8 +112,12 @@ class Plans(ScopedRepository[Plan]):
 
     def current_phase(self, plan: Plan) -> int:
         """The number from 1 of the first phase with a task still to close, or of the last when none has."""
-        phases = self.phases_of(plan)
-        return next((i for i, phase in enumerate(phases, 1) if any(not t.is_closed() for t in self.tasks_in(phase))), len(phases) or 1)
+        return self.current_of([self.tasks_in(phase) for phase in self.phases_of(plan)])
+
+    @staticmethod
+    def current_of(phases: list[list[Task]]) -> int:
+        """Given each phase's tasks in order: the number from 1 of the first with a task still to close, or of the last when none has."""
+        return next((i for i, tasks in enumerate(phases, 1) if any(not t.is_closed() for t in tasks)), len(phases) or 1)
 
     def at_checkpoint(self, plan: Plan) -> Phase | None:
         """The checkpoint phase the plan stands at: every task of it closed, marked for the user's look, and no task of the phase after it started or done, whatever else they are; None when the plan stands at no checkpoint."""

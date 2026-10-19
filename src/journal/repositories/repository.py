@@ -83,6 +83,14 @@ class Repository(Generic[M]):
         """At most a page of the newest rows the clause picks, oldest first."""
         return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE))))
 
+    def numbered(self, ids) -> list[M]:
+        """The rows of these numbers in one read, in the order asked; a number with no row is left out."""
+        ids = list(ids)
+        if not ids:
+            return []
+        found = {row.id: row for row in self.selected(f"id IN ({', '.join('?' for _ in ids)})", tuple(ids))}
+        return [found[n] for n in ids if n in found]
+
     def search(self, words: list[str]) -> list[M]:
         clause, params = self.matching_words(words)
         return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, FOUND))

@@ -65,9 +65,6 @@ class Messages(ScopedRepository[Message]):
     def changed_since(self, at: datetime) -> list[Message]:
         return self.selected("updated_at > ? ORDER BY id LIMIT 500", (at.isoformat(),))
 
-    def numbered(self, ids: tuple[int, ...]) -> list[Message]:
-        return self.selected(f"id IN ({', '.join('?' for _ in ids)}) ORDER BY id", (*ids,))
-
     def count_in(self) -> int:
         return self.counted_in()
 

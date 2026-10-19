@@ -13,18 +13,18 @@ class Links(Repository[Link]):
         return self.selected("source = ? OR target = ? ORDER BY id", (ref, ref))
 
     def targets(self, model: Model, kind: str) -> list[Ref]:
-        return [link.target for link in self.of(model) if link.source == Ref.to(model) and link.kind == kind]
+        return [link.target for link in self.selected("source = ? AND kind = ? ORDER BY id", (str(Ref.to(model)), kind))]
 
     def every_target(self, model: Model) -> list[Ref]:
         """What the model links to, by a link of any kind."""
-        return [link.target for link in self.of(model) if link.source == Ref.to(model)]
+        return [link.target for link in self.selected("source = ? ORDER BY id", (str(Ref.to(model)),))]
 
     def every_source(self, model: Model) -> list[Ref]:
         """What links to the model, by a link of any kind."""
-        return [link.source for link in self.of(model) if link.target == Ref.to(model)]
+        return [link.source for link in self.selected("target = ? ORDER BY id", (str(Ref.to(model)),))]
 
     def sources(self, model: Model, kind: str) -> list[Ref]:
-        return [link.source for link in self.of(model) if link.target == Ref.to(model) and link.kind == kind]
+        return [link.source for link in self.selected("target = ? AND kind = ? ORDER BY id", (str(Ref.to(model)), kind))]
 
     def is_row(self, ref: Ref) -> bool:
         """Whether the row a ref names is there, so a link never points at nothing."""
