@@ -1,72 +1,39 @@
-import {meta} from "./spec.js";
 import {withoutChips} from "../text/words.js";
-import {turnKind, visibleIn} from "./chatVisibility.js";
+import {visibleIn} from "./chatVisibility.js";
 
 const PROMISED_WITHIN = 5;
 
-const hasParent = (c) =>
-    c.refs.some((ref) => {
-        const [type] = ref.split(":");
-        return type !== "comment" && meta(type);
-    });
-
-const quotedLines = (text) =>
-    text
-        .split("\n")
-        .map((line) => `> ${line}`)
-        .join("\n");
-
-const asked = (c, comments) => comments.find((p) => !p.deleted && p !== c && c.refs.includes(p.ref));
-
-function onItsRow(c, comments) {
-    if (hasParent(c)) return c;
-    const parent = asked(c, comments);
-    const row = parent && onItsRow(parent, comments);
-    if (!row) return null;
-    const passage = quotesOf(row) || quotedLines(row.brief);
-    return {
-        ...c,
-        refs: [...c.refs, ...row.refs.filter((ref) => ref !== c.ref)],
-        brief: c.brief.startsWith(">") ? c.brief : `${passage}\n\n${c.brief}`,
-    };
-}
-
-const mark = (type, a, at, title, data = {}) => ({
-    ref: `${type}:${a.n}:${at}`,
-    type,
-    n: a.n,
-    who: "agent",
-    created: at,
-    seen: ["agent"],
-    refs: [],
-    data,
-    sections: [],
-    title,
-    brief: "",
-});
-
-const visitorComments = (comments) =>
-    comments
-        .filter((c) => !c.deleted && c.data.visitor)
-        .map((c) =>
-            mark("card", c, c.created, `${c.data.visitor} commented on ${c.refs[0].replace(":", " ")}`, {
-                icon: "bubble",
-                label: `${c.data.visitor} commented on ${c.refs[0].replace(":", " ")}`,
-                row: c.refs[0],
-                shows: turnKind("visitor"),
-            })
-        );
-
-const sessions = (agents) => agents.filter((a) => !a.data.parent);
-
 const isThought = (m) => (m.data.card || {}).kind === "thought";
 
-const spoken = (m) => (isThought(m) ? {...m, type: "thought", who: "agent", title: m.brief} : {...m, who: m.seen[0]});
+const comments = (m) => m.data.comments_on || [];
+
+const spoken = (m) => {
+    if (isThought(m)) return {...m, type: "thought", who: "agent", title: m.brief};
+    if (comments(m).length) return {...m, type: "comment", who: m.seen[0], refs: [...comments(m), ...m.refs]};
+    return {...m, who: m.seen[0]};
+};
 
 const SYSTEM_TURNS = {
     whisper: (card) => ({type: "whisper", data: {row: card.row, words: "", shows: "rules"}}),
     skill: (card) => ({type: "skill", title: card.detail, data: {}}),
     compacted: () => ({type: "compacted", data: {}}),
+    question: (card, label, m) => ({
+        type: "question",
+        ref: card.row,
+        n: card.n,
+        outcome: card.answer || "",
+        completed: card.answer == null ? 0 : m.updated,
+        data: {
+            options: card.options.map((title) => ({title, description: ""})),
+            pick: 1,
+            chosen: card.answer == null ? 0 : card.options.indexOf(card.answer) + 1,
+            kept: false,
+            answered_by: card.answer == null ? "" : "user",
+            reason: "",
+            final: false,
+            dismissed: false,
+        },
+    }),
     made: (card, label) => ({type: "made", made: {type: card.made_type, n: card.n, title: label, abstract: card.abstract}, data: {shows: card.shows}}),
     subagent: (card) => ({
         type: "subagent",
@@ -93,7 +60,7 @@ const byUser = (m) => (m.data.actor || "").startsWith("user");
 
 const systemTurn = (m) => {
     const card = m.data.card || {};
-    const turn = (SYSTEM_TURNS[card.kind] || ((_, label) => plainTurn(m, label)))(card, m.brief);
+    const turn = (SYSTEM_TURNS[card.kind] || ((_, label) => plainTurn(m, label)))(card, m.brief, m);
     return {
         ...m,
         who: byUser(m) ? "user" : "agent",
@@ -120,14 +87,6 @@ export function threadTurns(rows, pending, older = false, hidden = []) {
     const turns = [
         ...said.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map(spoken),
         ...live.filter(fromSystem).map(systemTurn),
-        ...rows.comment
-            .filter((c) => !c.deleted && !c.data.visitor)
-            .map((c) => onItsRow(c, rows.comment))
-            .filter(Boolean)
-            .map((c) => ({...c, who: c.seen[0]})),
-        ...visitorComments(rows.comment),
-        ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
-        ...(rows.suggestion || []).filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ]
         .filter((t) => t.type === "message" || t.created >= floor)
@@ -190,9 +149,3 @@ function grouped(turns) {
     close();
     return out;
 }
-
-const quotesOf = (t) =>
-    (t.brief || "")
-        .split("\n")
-        .filter((line) => line.startsWith(">"))
-        .join("\n");

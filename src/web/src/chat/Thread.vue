@@ -179,9 +179,6 @@ const thread = computed(() => {
     const made = threadTurns(
         {
             message: rows("message").filter((m) => !boardRequests.value.has(m.ref) && !boardRequests.value.has(answered(m))),
-            comment: rows("comment").filter((c) => !c.refs.some((ref) => boardRequests.value.has(ref))),
-            question: rows("question").filter((q) => !q.env),
-            suggestion: rows("suggestion"),
         },
         pending.value,
         here && !!store.paging.more.message,

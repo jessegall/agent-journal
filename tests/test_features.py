@@ -221,7 +221,11 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
     assert isinstance(machine.current("s1"), Waiting) and machine.current("s1").question_id == 1
     assert hook(app, "Stop")[1] == {}, "idle while waiting is fine"
     assert "Which name?  [alpha / beta]" in console.run(["question", "list"], USER).out
+    from journal.repositories.messages import Messages
+    asked = lambda: [(m.text, m.data["options"], m.data["answer"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "question"]
+    assert asked() == [("Which name?", ["alpha", "beta"], None)], "a question asked is a message in the chat"
     console.run(["question", "answer", "1", "beta"], USER)
+    assert asked() == [("Which name?", ["alpha", "beta"], "beta")], "and the same message is settled when it is answered"
     assert machine.current("s1").task_id == 1
     assert console.run(["question", "list"], USER).out == ""
 

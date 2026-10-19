@@ -4,6 +4,7 @@ from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.features.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand
+from journal.features.questions.listeners.mark_question import MarkQuestion
 from journal.features.questions.listeners.refuse_question_tool import RefuseQuestionTool
 from journal.features.questions.states.waiting import Waiting
 
@@ -14,7 +15,7 @@ class Questions(Feature):
     help = "The agent asks you a question and waits; your answer sends it back to work."
     states = (Waiting,)
     commands = (QuestionCommand,)
-    listeners = (RefuseQuestionTool,)
+    listeners = (RefuseQuestionTool, MarkQuestion)
     checks = (
         Entry(NodeKind.CHECK, 'question_answered', 'Question answered?', 'the row is a question the user just answered'),
         Entry(NodeKind.CHECK, 'agent_waits_on_the_question', 'Agent waits on this question?', 'the agent waits on the question of this row'),
