@@ -3,6 +3,7 @@ from journal.features.plans.plan_control import PlanControl
 from journal.http.v3.v3_row import V3Row, seconds
 from journal.models.plan_state import PlanState
 from journal.features.workers.subagents import Subagents
+from journal.repositories.workers import Workers
 from journal.repositories.agents import Agents
 from journal.repositories.plans import Plans
 
@@ -12,8 +13,8 @@ STATUS = {PlanState.DRAFT: "building", PlanState.READY: "ready", PlanState.REVIE
 class PlansShaper(Shaper):
     type = "plan"
 
-    def __init__(self, plans: Plans, agents: Agents, subagents: Subagents, control: PlanControl) -> None:
-        self.plans, self.agents, self.subagents, self.control = plans, agents, subagents, control
+    def __init__(self, plans: Plans, agents: Agents, subagents: Subagents, control: PlanControl, workers: Workers) -> None:
+        self.plans, self.agents, self.subagents, self.control, self.workers = plans, agents, subagents, control, workers
 
     def rows(self) -> list[V3Row]:
         return [self.row(p) for p in self.plans.in_()]
@@ -26,7 +27,7 @@ class PlansShaper(Shaper):
         if loose:
             drawn.append({"title": "Under no phase yet", "todos": loose, "when": "", "checkpoint": False, "loose": True})
         return V3Row.of("plan", p, title=p.title, brief=p.brief, refs=[f"todo:{t.id}" for t in tasks], completed=seconds(p.updated_at) if p.state.is_closed() else 0.0,
-                        data={"status": self.status(p), "stage": self.stage(p, phases, tasks), "phases": drawn, "current": self.plans.current_phase(p), "dismissed": False, "reviewers": self.reviewers(p)})
+                        data={"status": self.status(p), "delegated": bool(self.workers.holding({t.id for t in tasks})), "stage": self.stage(p, phases, tasks), "phases": drawn, "current": self.plans.current_phase(p), "dismissed": False, "reviewers": self.reviewers(p)})
 
     def status(self, p) -> str:
         """Version 3's word for the plan's state; a started plan standing at a checkpoint waits for the user."""

@@ -34,6 +34,7 @@ STATELESS = (
     (":idle:inbox", "Say what is unread", "shared_inbox"),
     (":idle:reports", "Name the worker reports not acted on", "name_reports_at_stop"),
     (":ticked:reports", "Name the worker reports not acted on every three minutes", "name_reports_on_tick"),
+    (":tasks.updated:plan_next", "Tell the agent its plan's next task, or that none can start", "tell_the_plans_next_step"),
     (":workers.updated:report", "Tell the agent a worker reported, whatever it is doing", "tell_a_report_came"),
     (":tool_starting:unread_held", "Hold a write while messages stay unread after {messages.hold_after_reminders} reminders", "hold_write_while_unread"),
     (":tool_starting:inbox", "Name the unread messages every {messages.remind_every} tool uses", "name_the_unread"),
@@ -103,6 +104,8 @@ REMINDERS = "[briefing.reminders] reminders here: {{reminders}}"
 WAITING = "[briefing.waiting] waiting for you here: {{waiting}}. `journal task list`, `journal message unread`, `journal question list`"
 VOICE = "[voices.voice] how to talk to the user. {{voice}}"
 REMIND = "[etiquette.remind] chat etiquette: a line from the journal is an instruction, not a message. act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat"
+PLAN_NEXT = "[plans.next] plan {{followed_plan}}: task {{plan_next_task}} is next"
+PLAN_WAITING = "[plans.waiting] plan {{followed_plan}}: no task can start now; {{plan_tasks_left}} parked, blocked or waiting. `journal task list` says what each waits on; when one can go on, `journal plan start {{followed_plan}}` takes it up"
 REPORTS_WAITING = "[workers.reports_waiting] {{reports_waiting}} reported and you have not acted on it yet. read its report, then give it its next job (`journal worker say <n> \"<job>\"`), stop it, or `journal worker done <n>` once its work is merged or used"
 VERSION_3 = "[migration.version_3] a version 3 journal is kept whole in .journal/version-3, not yet brought across. the user brings it across from the viewer; never start it yourself"
 STALE = "[memory.stale] these are {{stale_after}} days old or more, check they still hold: {{stale}}. strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest"
@@ -434,6 +437,11 @@ class ShippedChart(Seed):
     def ask_about_old_memory(self, chart: Chart, ends: list) -> list:
         """A fresh session start, not one going on after a compaction, with facts, rules or reminders standing long: the agent is asked whether they still hold, at most once a day."""
         return self.guarded(chart, ends, 720, 92, (Guard("after_compaction", passes=NO), Guard("memory_older_than", "memory.stale_after")), "say", STALE)
+
+    def tell_the_plans_next_step(self, chart: Chart, ends: list) -> list:
+        """A task of a plan closes: the agent is told, by typing since no hook waits on a row's change, the task the plan moved on to, or that none can start and why."""
+        ends = self.guarded(chart, ends, 720, 92, (Guard("plan_moved_on"),), "type", PLAN_NEXT)
+        return self.guarded(chart, ends, 1040, 92, (Guard("plan_left_waiting"),), "type", PLAN_WAITING)
 
     def name_reports_at_stop(self, chart: Chart, ends: list) -> list:
         """A stop while a worker's report waits to be acted on: the agent is told which."""

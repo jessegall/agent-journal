@@ -32,6 +32,7 @@ class WorkerCommand(Command):
         dispatch.add_argument("--model", required=True)
         dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code")
         dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
+        dispatch.add_argument("--task", type=int, help="the task it works on, which its plan then leaves to it")
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
@@ -51,6 +52,8 @@ class WorkerCommand(Command):
             raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         worker = Worker(name=args.name, brief=args.brief, provider=args.provider, model=args.model, worktree=args.worktree, dispatched_by=where.session)
         worker = self.workers.save(worker, where.actor)
+        if args.task:
+            self.workers.put_on(worker, args.task, where.actor)
         self.runner.start(worker, where.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0

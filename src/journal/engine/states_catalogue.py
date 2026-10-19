@@ -43,6 +43,10 @@ class StatesCatalogue:
         state = self._states.get(name) or self._states["idle"]
         return state.from_data(data or {})
 
+    def underneath(self, state: AgentState) -> AgentState:
+        """The state an agent is in, or goes back to once its pause ends."""
+        return self.resumed(state) if isinstance(state, Paused) else state
+
     def resumed(self, paused: Paused) -> AgentState:
         """The state a pause goes back to."""
         return self.named(paused.resume.get("state", "idle"), paused.resume.get("data", {}))

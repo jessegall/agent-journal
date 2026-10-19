@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta, timezone
 import time
+from journal.features.plans.states.following_plan import FollowingPlan
 from journal.config import Config
 from journal.engine.machine import Machine
 from journal.events.agent.idle import Idle
@@ -182,6 +183,23 @@ class Checks:
     def plan_at_checkpoint(self, ctx: Context) -> bool:
         """A started plan here stands at a completed checkpoint phase, its next phase not begun."""
         return any(self.plans.at_checkpoint(p) for p in self.plans.in_() if p.state == PlanState.STARTED)
+
+    def followed(self, ctx: Context) -> FollowingPlan | None:
+        """The plan the agent follows, now or once its pause ends."""
+        state = self.machine.states.underneath(self.state(ctx)) if self.state(ctx) else None
+        return state if isinstance(state, FollowingPlan) else None
+
+    def plan_moved_on(self, ctx: Context) -> bool:
+        """A task just closed and the agent follows its plan at a new task: the plan moved on."""
+        state = self.followed(ctx)
+        task = ctx.event.model if isinstance(ctx.event, Updated) else None
+        return isinstance(task, Task) and task.has_just_closed(ctx.event.was) and state is not None and state.task_id not in (0, task.id)
+
+    def plan_left_waiting(self, ctx: Context) -> bool:
+        """A task just closed and the agent follows its plan with no task to start, the plan not at a checkpoint: what is left waits."""
+        state = self.followed(ctx)
+        task = ctx.event.model if isinstance(ctx.event, Updated) else None
+        return isinstance(task, Task) and task.has_just_closed(ctx.event.was) and state is not None and not state.task_id and not self.plans.finished(self.plans.find(state.plan_id)) and self.plans.at_checkpoint(self.plans.find(state.plan_id)) is None
 
     def task_in_hand(self, ctx: Context) -> bool:
         state = self.state(ctx)

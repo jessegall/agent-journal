@@ -13,6 +13,7 @@ from journal.repositories.phases import Phases
 from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 from journal.repositories.tasks import Tasks
+from journal.repositories.workers import Workers
 
 IN_PLAN = "in_plan"
 PHASE_OF = "phase_of"
@@ -22,9 +23,9 @@ IN_PHASE = "in_phase"
 class Plans(ScopedRepository[Plan]):
     model = Plan
 
-    def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links, tasks: Tasks, phases: Phases) -> None:
+    def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links, tasks: Tasks, phases: Phases, workers: Workers) -> None:
         super().__init__(connection, bus, scope)
-        self.links, self.tasks, self.phases = links, tasks, phases
+        self.links, self.tasks, self.phases, self.workers = links, tasks, phases, workers
 
     def approve(self, plan: Plan, by: Actor) -> Plan:
         """The user's word on a plan: approved from ready, refused while it is in review, and left as it is once started, so a second word cannot set a running plan back."""
@@ -95,7 +96,10 @@ class Plans(ScopedRepository[Plan]):
         return next((t for t in self.in_order(plan) if t.state == TaskState.PARKED), None) or self.next_task(plan)
 
     def next_task(self, plan: Plan) -> Task | None:
-        return next((t for t in self.in_order(plan) if t.state == TaskState.OPEN and not self.tasks.open_waits(t)), None)
+        """The plan's next open task with nothing to wait on and no worker out on it."""
+        open_ = [t for t in self.in_order(plan) if t.state == TaskState.OPEN and not self.tasks.open_waits(t)]
+        held = self.workers.holding({t.id for t in open_})
+        return next((t for t in open_ if t.id not in held), None)
 
     def current_phase(self, plan: Plan) -> int:
         """The number from 1 of the first phase with a task still to close, or of the last when none has."""

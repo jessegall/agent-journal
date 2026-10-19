@@ -153,7 +153,6 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
     console.run(["await", "the build"], AGENT)
     out = console.run(["task", "done", "1"], AGENT).out
-    assert "task 2 is next" in out, "a task finished while the agent waits on something still advances the plan"
     assert machine.current("s1").resume == {"state": "following_plan", "data": FollowingPlan(plan_id=1, task_id=2).to_data()}, "the wait stands, and the agent goes on to task 2 when it ends"
     out = console.run(["task", "done", "2"], AGENT).out
     assert "plan 1 is done" in out
@@ -161,9 +160,13 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     assert app.container.get(Plans).find(1).state == PlanState.DONE
 
 
-def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app):
+def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app, monkeypatch):
     from journal.models.plan_state import PlanState
     from journal.repositories.plans import Plans
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     console = app.console()
     console.run(["plan", "create", "release", "--brief", "ship 4.0"], USER)
     console.run(["plan", "add", "1", "write the notes"], USER)
@@ -173,7 +176,8 @@ def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app):
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "block", "2", "the user picks the moment"], AGENT)
     out = console.run(["task", "done", "1"], AGENT).out
-    assert "plan 1: no task can start now; task 2 is parked, blocked or waiting" in out and "plan 1 is done" not in out
+    app.runtime().deferred.drain()
+    assert any("plan 1: no task can start now; task 2 is parked, blocked or waiting" in line for line in typed) and "plan 1 is done" not in out, "the workflow says what waits"
     assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a blocked task keeps the plan open"
     console.run(["task", "unblock", "2"], AGENT)
     assert "task 2 is next" in console.run(["plan", "start", "1"], AGENT).out
@@ -1096,7 +1100,9 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     from journal.repositories.plans import Plans
     from journal.repositories.tasks import Tasks
     from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -1125,6 +1131,8 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     console.run(["plan", "start", "2"], AGENT)
     console.run(["task", "done", "3"], AGENT)
     assert app.container.get(Tasks).find(4).state == "started" and machine.current("s1") == FollowingPlan(plan_id=2, task_id=4), "in auto mode a checkpoint never stops the plan"
+    app.runtime().deferred.drain()
+    assert any("plan 2: task 4, q second is next" in line for line in typed), "the workflow tells the agent its next task"
     console.run(["plan", "park", "2"], AGENT)
     assert machine.current("s1").name == "idle", "a parked plan is over for the agent following it"
 
@@ -5848,3 +5856,19 @@ def test_the_plugin_is_moved_only_to_its_latest_release_when_newer_than_the_reco
     rows.save(row.with_(release=""), Actor.system())
     updating.pull_plugin(Actor.user(1))
     assert plugins.upgraded[-1] == ("code-commandments", "v5.19.4")
+
+
+def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app):
+    from journal.repositories.plans import Plans
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "delegated"], USER)
+    console.run(["plan", "add", "1", "mine"], USER)
+    console.run(["worker", "dispatch", "Lady Lovelace", "do the delegated one", "--model", "sonnet", "--task", "1"], AGENT)
+    plans = app.container.get(Plans)
+    assert plans.next_task(plans.find(1)).title == "mine", "the plan leaves a task a worker is out on to it"
+    with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/api/todo?last=50", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
+        assigned = {row["title"]: row["data"]["assigned"] for row in json.loads(reply.read())["rows"]}
+    assert assigned == {"delegated": "helper:1", "mine": ""}, "the viewer sees which worker holds which task"

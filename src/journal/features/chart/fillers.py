@@ -3,6 +3,8 @@ from copy import copy
 from datetime import datetime, timezone
 import re
 
+from journal.engine.states_catalogue import StatesCatalogue
+from journal.features.plans.states.following_plan import FollowingPlan
 from journal.events.agent.ticked import Ticked
 from journal.features.chart.checks import Checks
 from journal.features.chart.context import Context
@@ -41,9 +43,9 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers) -> None:
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue) -> None:
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
-        self.workers = workers
+        self.workers, self.states = workers, states
         self.agents, self.requiring, self.files, self.registry = agents, requiring, files, registry
         self.rule_rows, self.fact_rows, self.reminder_rows, self.questions, self.environments = rules, facts, reminders, questions, environments
         self.chosen, self.checks, self.task_logs, self.config, self.running = chosen, checks, task_logs, config, running
@@ -131,6 +133,32 @@ class Fillers:
         from journal.features.messages.feature import Messages as MessagesFeature
         unread = self.messages.unread()
         return MessagesFeature.inbox(unread).rendered() if unread else ""
+
+    def followed(self, ctx: Context) -> FollowingPlan | None:
+        """The plan the agent follows, now or once its pause ends."""
+        state = self.states.underneath(ctx.state) if ctx.state else None
+        return state if isinstance(state, FollowingPlan) else None
+
+    def followed_plan(self, ctx: Context) -> str:
+        """The plan the agent follows, by number."""
+        state = self.followed(ctx)
+        return str(state.plan_id) if state else ""
+
+    def plan_next_task(self, ctx: Context) -> str:
+        """The plan's task the agent now has in hand, by number and title."""
+        state = self.followed(ctx)
+        if not state or not state.task_id:
+            return ""
+        task = self.tasks.find(state.task_id)
+        return f"{task.id}, {task.title}"
+
+    def plan_tasks_left(self, ctx: Context) -> str:
+        """The plan's tasks still open, as a line says them: task 2 is, or tasks 2, 3 are."""
+        state = self.followed(ctx)
+        if not state:
+            return ""
+        left = [str(t.id) for t in self.plans.tasks_of(self.plans.find(state.plan_id)) if not t.is_closed()]
+        return f"task {left[0]} is" if len(left) == 1 else f"tasks {', '.join(left)} are"
 
     def reports_waiting(self, ctx: Context) -> str:
         """The workers whose reports wait to be acted on, by number and name."""
