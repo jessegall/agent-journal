@@ -1276,6 +1276,12 @@ def test_a_line_typed_in_the_terminal_reaches_the_chat_and_a_face_answers_any_me
     assert messages.unanswered() == [], "a face on a message answers it, whatever its length"
 
 
+def test_wispr_flow_is_among_the_suggested_mcp_services():
+    from journal.features.mcp.catalogue import SUGGESTED
+    suggested = {s.name: s for s in SUGGESTED}
+    assert suggested["wispr-flow"].url == "https://api.wisprflow.ai/connect/mcp" and suggested["wispr-flow"].auth == "oauth"
+
+
 def test_a_question_whose_options_say_i_or_you_is_refused(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)

@@ -4,6 +4,7 @@ SUGGESTED = (
     Suggestion("linear", "Linear", "Issues, projects and cycles in Linear.", transport="http", url="https://mcp.linear.app/mcp", auth="oauth"),
     Suggestion("github", "GitHub", "Repositories, issues and pull requests.", command="npx", args=("-y", "@modelcontextprotocol/server-github"), key_var="GITHUB_PERSONAL_ACCESS_TOKEN", auth="key"),
     Suggestion("sentry", "Sentry", "Errors and traces from Sentry.", transport="http", url="https://mcp.sentry.dev/mcp", auth="oauth"),
+    Suggestion("wispr-flow", "Wispr Flow", "Meetings, notes and transcripts from Wispr Flow.", transport="http", url="https://api.wisprflow.ai/connect/mcp", auth="oauth"),
     Suggestion("notion", "Notion", "Pages and databases in Notion.", transport="http", url="https://mcp.notion.com/mcp", auth="oauth"),
     Suggestion("slack", "Slack", "Channels and messages in Slack.", command="npx", args=("-y", "@modelcontextprotocol/server-slack"), key_var="SLACK_BOT_TOKEN", auth="key"),
     Suggestion("playwright", "Playwright", "A browser the agent can drive.", command="npx", args=("-y", "@playwright/mcp@latest", "--headless")),
