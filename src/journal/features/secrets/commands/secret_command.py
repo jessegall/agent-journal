@@ -16,7 +16,7 @@ from journal.models.secret_kind import SecretKind
 from journal.support.refused import Refused
 from journal.repositories.mcp_servers import McpServers
 from journal.repositories.messages import Messages
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.secrets import Secrets
 from journal.repositories.workers import Workers
 from journal.support.secret_values import SecretValues

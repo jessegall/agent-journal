@@ -11,7 +11,7 @@ from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
 from journal.support.refused import Refused
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.workers import Workers
 
 

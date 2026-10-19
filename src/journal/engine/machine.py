@@ -12,7 +12,7 @@ from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.support.refused import Refused
 from journal.repositories.agents import Agents
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 
 
 class Machine(AgentListener[AgentEvent]):

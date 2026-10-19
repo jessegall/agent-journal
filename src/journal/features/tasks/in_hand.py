@@ -7,7 +7,7 @@ from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.features.tasks.states.working import Working
 from journal.models.task import Task
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.tasks import Tasks
 
 

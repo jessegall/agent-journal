@@ -5,7 +5,7 @@ from journal.console.where import Where
 from journal.support.cards import Cards
 from journal.engine.machine import Machine
 from journal.features.tasks.states.stuck import Stuck
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class StuckCommand(Command):

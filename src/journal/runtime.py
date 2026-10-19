@@ -16,7 +16,7 @@ from journal.features.switched import Switched
 from journal.support.deferred import Deferred
 from journal.config import Config
 from journal.container import Container
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.http.server import Server
 from journal.http.share_server import ShareServer
 

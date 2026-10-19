@@ -10,7 +10,7 @@ from journal.http.response import Response
 from journal.models.plugin import Plugin
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class PluginController(Controller[Plugin]):

@@ -7,7 +7,7 @@ from journal.models.author import Author
 from journal.models.message import Message
 from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 

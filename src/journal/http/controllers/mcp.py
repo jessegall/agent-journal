@@ -7,7 +7,7 @@ from journal.http.controllers.listed_server import ListedServer
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.repositories.mcp_servers import McpServers
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 
 
 class McpController:

@@ -3,7 +3,7 @@ from journal.support.actor import Actor
 from journal.models.plan_state import PlanState
 from journal.repositories.environments import Environments
 from journal.repositories.plans import Plans
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class ClosedPlans(EnvironmentSeed):

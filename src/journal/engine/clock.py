@@ -9,7 +9,7 @@ from journal.events.bus import Bus
 from journal.events.decision import Decision
 from journal.models.agent import Agent
 from journal.repositories.agents import Agents
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.supervisor_link import SupervisorLink
 
 

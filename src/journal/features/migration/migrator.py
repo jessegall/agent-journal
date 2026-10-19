@@ -29,7 +29,7 @@ from journal.models.version3_migration import Version3Migration
 from journal.models.report import Report
 from journal.repositories.version3_migrations import Version3Migrations
 from journal.repositories.reports import Reports
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class Migrator:

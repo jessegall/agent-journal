@@ -15,7 +15,7 @@ from journal.models.chart import Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import Charts
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class ChartCommand(Command):

@@ -14,7 +14,7 @@ from journal.features.workers.worker_runner import WorkerRunner
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.environments import Environments
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from tests.replay import PROVIDERS, TOOLS, Replay, differences, hook_as, recorded
 from tests.test_features import AGENT, MAIN, USER, context

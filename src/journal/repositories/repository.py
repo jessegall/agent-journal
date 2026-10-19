@@ -17,7 +17,7 @@ from journal.support.actor import Actor
 from journal.models.model import Model
 from journal.support.ref import Ref
 from journal.support.title import Title
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 
 M = TypeVar("M", bound=Model)
 

@@ -10,7 +10,7 @@ from journal.support.refused import Refused
 from journal.repositories.checks import Checks
 from journal.repositories.links import Links
 from journal.repositories.questions import Questions
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 WAITS_ON = "waits_on"

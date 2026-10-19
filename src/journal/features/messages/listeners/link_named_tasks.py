@@ -7,7 +7,7 @@ from journal.models.message import Message
 from journal.support.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.tasks import Tasks
 
 NAMED = re.compile(r"\btask (\d+)\b", re.IGNORECASE)

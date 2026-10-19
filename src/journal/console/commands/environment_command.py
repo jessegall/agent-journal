@@ -17,11 +17,11 @@ from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.questions import Questions
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 

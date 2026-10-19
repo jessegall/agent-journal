@@ -3,7 +3,7 @@ from journal.features.skills.skill_files import SkillFiles
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.repositories.agents import Agents
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.supervisor_link import SupervisorLink
 
 

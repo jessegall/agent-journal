@@ -7,7 +7,7 @@ from journal.support.states_catalogue import StatesCatalogue
 from journal.models.agent import Agent
 from journal.providers.menu import ESCAPE, Menu
 from journal.repositories.agents import Agents
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.supervisor_link import SupervisorLink
 
 EVERY = 1.0

@@ -6,7 +6,7 @@ from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 NUDGE = "nudge"
 

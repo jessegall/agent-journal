@@ -1,6 +1,6 @@
 from journal.features.seed import Seed
 from journal.repositories.environments import Environments
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class EnvironmentSeed(Seed):

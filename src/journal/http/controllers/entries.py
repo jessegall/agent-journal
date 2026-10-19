@@ -8,7 +8,7 @@ from journal.http.response import Response
 from journal.http.stream_response import StreamResponse
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 TOLD = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "Compacting", "Idle", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnWritten",
                   "nudge", "created", "updated", "deleted"})

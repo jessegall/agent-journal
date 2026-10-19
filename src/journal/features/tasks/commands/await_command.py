@@ -4,7 +4,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.features.tasks.states.expecting import Expecting
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class AwaitCommand(Command):

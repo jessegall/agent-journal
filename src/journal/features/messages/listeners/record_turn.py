@@ -15,7 +15,7 @@ from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.supervisor_link import SupervisorLink
 
 REPLY_TAG = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!reply:(\d+(?:,\d+)*)\](?:\*\*)?[ \t]*", re.MULTILINE)

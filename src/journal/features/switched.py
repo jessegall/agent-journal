@@ -3,8 +3,8 @@ from journal.features.feature import Feature
 from journal.events.listener import Listener
 from journal.features.registry import Registry
 from journal.models.scoped import Scoped
-from journal.repositories.scope import Scope
-from journal.repositories.scope import PROJECT
+from journal.support.scope import Scope
+from journal.support.scope import PROJECT
 
 
 class Switched(Listener[Event]):

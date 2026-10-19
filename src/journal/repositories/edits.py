@@ -2,7 +2,7 @@ from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.support.actor import Actor
 from journal.models.edit import Edit
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 KEEP = 500

@@ -16,7 +16,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.version import VERSION
 

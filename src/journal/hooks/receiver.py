@@ -16,7 +16,7 @@ from journal.models.entry import Entry
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 GUARD_FAILED = "guard_failed"

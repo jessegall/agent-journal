@@ -206,7 +206,7 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     assert watcher.look(agent) == "", "and answered once"
     shown("Something new?\r\n❯ 1. Turn it on\r\n  2. Leave it\r\n")
     assert watcher.look(agent) == "\x1b", "a menu it cannot place is closed with Escape"
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     with app.container.get(Scope).of(1):
         assert any("closed it with Escape" in m.text for m in app.container.get(Messages).in_()), "and a card says so"
     (screens / "main.keyed").touch()

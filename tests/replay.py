@@ -14,7 +14,7 @@ from journal.support.typed_lines import TypedLines
 from journal.repositories.counts import Counts
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.supervisor_link import SupervisorLink
 
 RECORDS = Path(__file__).with_name("replays")

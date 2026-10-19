@@ -7,7 +7,7 @@ from journal.models.message import Message
 from journal.models.reaction import Reaction
 from journal.support.ref import Ref
 from journal.repositories.links import Links
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 REACTS = "reacts"

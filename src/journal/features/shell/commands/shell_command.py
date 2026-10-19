@@ -19,7 +19,7 @@ from journal.models.edit import Edit
 from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink
 

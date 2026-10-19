@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from journal.app import App
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.config import Config
 from journal.console.where import Where
 from journal.support.actor import Actor

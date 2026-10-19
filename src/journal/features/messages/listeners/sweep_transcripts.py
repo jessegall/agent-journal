@@ -4,7 +4,7 @@ from journal.events.clock_ticked import ClockTicked
 from journal.events.listener import Listener
 from journal.hooks.transcript_turns import TranscriptTurns
 from journal.repositories.agents import Agents
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 
 

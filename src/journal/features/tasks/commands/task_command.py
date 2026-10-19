@@ -20,7 +20,7 @@ from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions

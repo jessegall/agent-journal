@@ -10,7 +10,7 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
 from journal.repositories.phases import Phases
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 from journal.repositories.tasks import WAITS_ON, Tasks
 from journal.repositories.workers import Workers

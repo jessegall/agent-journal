@@ -4,12 +4,12 @@ from urllib.parse import unquote
 from journal.features.faults.slow_requests import SlowRequests
 
 from journal.support.refused import Refused
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.http.request import Request
 from journal.http.response import Response
 from journal.http.route import Handler, Route
 from journal.http.viewer_seen import ViewerSeen
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class Router:

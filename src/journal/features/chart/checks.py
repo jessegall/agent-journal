@@ -34,7 +34,7 @@ from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.plans import Plans
 from journal.repositories.counts import Counts
 from journal.repositories.settings import Settings

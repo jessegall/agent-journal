@@ -5,7 +5,7 @@ from journal.repositories.agents import Agents
 from journal.features.memory.commands.memory_command import MemoryCommand
 from journal.models.rule import Rule
 from journal.repositories.rules import Rules
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class RuleCommand(MemoryCommand):

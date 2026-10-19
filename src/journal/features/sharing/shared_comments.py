@@ -9,7 +9,7 @@ from journal.models.share import Share
 from journal.support.refused import Refused
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 NAME_LIMIT = 40
 TEXT_LIMIT = 2000

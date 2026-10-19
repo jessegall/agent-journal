@@ -12,7 +12,7 @@ from journal.support.deferred import Deferred
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.models.task import Task
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.repositories.tasks import Tasks
 from tests.replay import Replay, differences, hook_as, recorded

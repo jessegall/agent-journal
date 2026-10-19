@@ -12,7 +12,7 @@ from journal.features.workers.worker_reports import WorkerReports
 from journal.support.actor import Actor
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.repositories.workers import Workers
 

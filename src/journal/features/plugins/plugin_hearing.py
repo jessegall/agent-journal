@@ -17,7 +17,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.support.deferred import Deferred
 
 LATER = 10

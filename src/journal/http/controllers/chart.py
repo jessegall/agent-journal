@@ -21,7 +21,7 @@ from journal.models.node import Node
 from journal.support.walk_run import WalkRun
 from journal.support.workflow_at import WorkflowAt
 from journal.repositories.charts import Charts
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.environments import Environments
 
 

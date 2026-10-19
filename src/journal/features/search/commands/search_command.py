@@ -4,7 +4,7 @@ from journal.console.command import Command
 from journal.console.where import Where
 from journal.support.cards import Cards
 from journal.features.search.search import Search
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class SearchCommand(Command):

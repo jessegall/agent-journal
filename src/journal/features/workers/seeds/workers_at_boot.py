@@ -4,7 +4,7 @@ from journal.features.seed import Seed
 from journal.features.workers.worker_runner import WorkerRunner
 from journal.support.actor import Actor
 from journal.models.worker_state import WorkerState
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.workers import Workers
 
 

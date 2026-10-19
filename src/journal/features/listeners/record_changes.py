@@ -6,7 +6,7 @@ from journal.events.listener import Listener
 from journal.models.entry import Entry
 from journal.models.scoped import Scoped
 from journal.repositories.entries import Entries
-from journal.repositories.scope import PROJECT
+from journal.support.scope import PROJECT
 
 ACTIONS = {Created: "created", Updated: "updated", Deleted: "deleted"}
 

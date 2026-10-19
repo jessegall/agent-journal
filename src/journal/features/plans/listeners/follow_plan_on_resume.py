@@ -7,7 +7,7 @@ from journal.support.actor_kind import ActorKind
 from journal.models.plan_state import PlanState
 from journal.models.task import Task
 from journal.models.task_state import TaskState
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.plans import Plans
 
 

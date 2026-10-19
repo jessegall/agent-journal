@@ -766,7 +766,7 @@ def test_where_each_agent_stands_in_a_workflow_is_served(server):
 def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_report(tmp_path: Path):
     import time
     from journal.repositories.reports import Reports
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     app = App(Config(tmp_path, port=0))
     app.runtime().boot()
     server = app.server()
@@ -931,7 +931,7 @@ def test_an_output_is_read_by_its_id(tmp_path: Path):
     from journal.support.actor import Actor
     from journal.models.command_output import CommandOutput
     from journal.repositories.command_outputs import CommandOutputs
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()

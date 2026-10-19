@@ -6,8 +6,8 @@ from journal.support.ref import Ref
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.links import Links
-from journal.repositories.not_found import NotFound
-from journal.repositories.scope import Scope
+from journal.support.not_found import NotFound
+from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 

@@ -25,7 +25,7 @@ from journal.models.plugin import Plugin
 from journal.support.plugin_manifest import PluginManifest
 from journal.support.refused import Refused
 from journal.repositories.dashboard_rows import DashboardRows
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.plugins import Plugins
 
 FETCH_SECONDS = 120

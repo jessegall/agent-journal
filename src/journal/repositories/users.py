@@ -1,5 +1,5 @@
 from journal.models.user import User
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.repository import Repository
 
 

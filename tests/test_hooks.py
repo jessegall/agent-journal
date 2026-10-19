@@ -16,7 +16,7 @@ from journal.events.bus import Bus
 from journal.events.decision import Decision
 from journal.support.deferred import Deferred
 from journal.repositories.entries import Entries
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 MAIN = 1
 """The id of main, made by the first hook: what a test reads directly, it reads there."""

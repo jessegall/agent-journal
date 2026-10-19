@@ -6,7 +6,7 @@ from journal.features.plugins.plugin_updated import PluginUpdated
 from journal.support.deferred import Deferred
 from journal.support.actor import Actor
 from journal.models.plugin import Plugin
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class TellAPluginItsSettings(Listener[Updated]):

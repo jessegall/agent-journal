@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from journal.models.agent import Agent
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.scoped_repository import ScopedRepository
 
 

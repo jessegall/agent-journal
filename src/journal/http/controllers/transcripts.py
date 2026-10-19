@@ -9,7 +9,7 @@ from journal.http.transcripts.transcript_page import TranscriptPage
 from journal.providers.provider import Provider
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.workers import Workers
 
 

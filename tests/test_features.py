@@ -21,7 +21,7 @@ from journal.support.plugin_manifest import PluginManifest
 from journal.repositories.plugins import Plugins as PluginRows
 from journal.models.setting import Setting
 from journal.support.supervisor_reply import SupervisorReply
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.console.where import Where
 from journal.engine.machine import Machine
@@ -1747,7 +1747,7 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     from journal.features.chart.checks import Checks
     from journal.features.chart.context import Context
     from journal.events.agent.idle import Idle as IdleEvent
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     with app.container.get(Scope).of(1):
         at = Context(event=IdleEvent(session="s1", environment_id=1), session="s1", environment_id=1, state=app.container.get(Machine).current("s1"))
         assert app.container.get(Checks).count_of(at, "edits") == 1, "a shell line that writes counts as an edit toward the log; a read does not"
@@ -2638,7 +2638,7 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
     for _ in range(26):
         hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     at = Context(event=ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     with app.container.get(Scope).of(env):
         assert checks.answer("count_at", at, "edits tasks.log_after") and checks.answer("count_every", at, "edits 6") and not checks.answer("count_over", at, "edits 13"), "the edits read from the record: twelve writes counted, the rest held at the log threshold and not counted"
 
@@ -3207,7 +3207,7 @@ def test_a_refused_dispatch_leaves_no_running_subagent_behind(app):
 def test_a_read_outside_every_scope_is_refused_and_a_command_reads_its_own_environment_only(app):
     from contextvars import Context
     from journal.repositories.tasks import Tasks
-    from journal.repositories.unscoped import Unscoped
+    from journal.support.unscoped import Unscoped
     console = app.console()
     console.run(["task", "create", "main's own"], USER)
     console.run(["task", "create", "other's own"], Where("other"))
@@ -3249,7 +3249,7 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
     from journal.repositories.counts import Counts
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     counts, scope = app.container.get(Counts), app.container.get(Scope)
     hook(app, "SubagentStart", agent_id="a1")
     with scope.of(1):
@@ -3616,7 +3616,7 @@ def test_an_agent_standing_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact
     try:
         from journal.features.skills.requiring import Requiring
         from journal.repositories.agents import Agents
-        from journal.repositories.scope import Scope
+        from journal.support.scope import Scope
         with second.container.get(Scope).of(MAIN):
             agent = second.container.get(Agents).for_session("s1")
             assert agent.state == "working" and agent.data.get("task_id") == 1 and agent.mark_owed == 50 and agent.oriented is True, "unwrapped to the work it held, the mark owed, never dropped to idle"
@@ -3646,7 +3646,7 @@ def test_an_agent_in_the_old_running_sequence_state_is_unwrapped_at_boot_with_th
     second.runtime().start()
     try:
         from journal.repositories.agents import Agents
-        from journal.repositories.scope import Scope
+        from journal.support.scope import Scope
         with second.container.get(Scope).of(MAIN):
             agent = second.container.get(Agents).for_session("s1")
             run = second.container.get(Running).runs(agent)[-1]
@@ -3935,7 +3935,7 @@ def test_the_card_for_a_question_the_user_answered_is_the_users(app):
 def test_two_workflows_counting_the_same_name_keep_their_own_counts(app):
     from journal.repositories.charts import Charts
     from journal.repositories.counts import Counts
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     console, charts = app.console(), app.container.get(Charts)
 
     def counting(times: int) -> int:
@@ -3958,7 +3958,7 @@ def test_two_workflows_counting_the_same_name_keep_their_own_counts(app):
 def test_a_count_started_only_when_not_started_keeps_counting(app):
     from journal.repositories.charts import Charts
     from journal.repositories.counts import Counts
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     console = app.console()
     made, trigger = own_workflow(console, app.container.get(Charts), "idle", "tool_finished")
     node = lambda key: int(console.run(["chart", "node", "action", key, "--text", "tools", "--in", str(made)], USER).out.split()[1].rstrip(":"))
@@ -4010,7 +4010,7 @@ def test_a_workflow_that_only_counts_walks_after_the_reply(app):
 def test_a_row_event_with_no_agent_keeps_no_count(app):
     from journal.repositories.charts import Charts
     from journal.repositories.counts import Counts
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     console, charts = app.console(), app.container.get(Charts)
     made = int(console.run(["chart", "new", "Tasks made", "--on", "tasks.created"], USER).out.split()[1].rstrip(":"))
     trigger = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tasks.created")
@@ -4041,7 +4041,7 @@ def test_the_walk_records_where_each_workflow_stopped_with_its_counts(app):
     from journal.features.chart.walk import WALKED
     from journal.repositories.charts import Charts
     from journal.repositories.entries import Entries
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     console = app.console()
     made, trigger = own_workflow(console, app.container.get(Charts), "idle", "tool_finished")
     node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, "--text", text, "--in", str(made)], USER).out.split()[1].rstrip(":"))
@@ -4073,7 +4073,7 @@ def test_a_workflow_waits_at_a_count_until_it_reaches_its_number(app):
     assert "would say: [chart] three reminders" not in console.run(["chart", "try", "tool_finished", "--value", "reminders=0"], USER).out, "a trial with the count at nought, one more, would wait"
     assert "three reminders" in console.run(["chart", "try", "tool_finished", "--value", "reminders=2"], USER).out, "a trial with the count at two, one more, goes on"
     assert "takes name=n" in console.run(["chart", "try", "tool_finished", "--value", "reminders"], USER).err
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     with app.container.get(Scope).of(1):
         runs = json.loads(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/chart/runs?last=10", headers={"X-Journal-Env": "main"}), timeout=5).read())["runs"]
     assert any("reminders 3" in r["counts"] for r in runs), "Recent runs says the count a walk left"
@@ -4082,7 +4082,7 @@ def test_editing_keeps_a_workflows_counts_and_clears_one_no_node_names(app):
     from journal.repositories.charts import Charts
     from journal.repositories.counts import Counts
     from journal.repositories.messages import Messages
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     console, charts = app.console(), app.container.get(Charts)
     made, trigger = own_workflow(console, charts, "idle", "tool_finished")
     one = int(console.run(["chart", "node", "action", "count_one", "--text", "reminders", "--in", str(made)], USER).out.split()[1].rstrip(":"))
@@ -4244,7 +4244,7 @@ def test_the_mcp_page_shows_a_servers_state_as_last_checked_and_check_all_reads_
 
 def test_the_end_of_a_session_never_begun_makes_no_agent(app):
     from journal.repositories.agents import Agents
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     hook(app, "SessionStart")
     hook(app, "SessionEnd", session_id="one-off", reason="other")
     app.runtime().deferred.drain()
@@ -4949,7 +4949,7 @@ def test_the_counts_the_inbox_reminders_read_come_from_the_record_and_no_workflo
     from journal.features.chart.checks import Checks
     from journal.features.chart.context import Context
     from journal.repositories.charts import Charts
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     console, checks, charts = app.console(), app.container.get(Checks), app.container.get(Charts)
     assert not any(n.key in ("count_start", "count_one") for c in charts.shipped() for n in charts.nodes_of(c)), "no shipped workflow keeps a count: the ones they read come from the record"
     hook(app, "SessionStart")
@@ -5004,7 +5004,7 @@ def test_a_start_after_a_compaction_says_where_the_work_stands(app):
 def test_a_fresh_start_asks_whether_old_facts_rules_and_reminders_still_hold(app):
     from datetime import datetime, timedelta, timezone
     from journal.repositories.facts import Facts
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     console = app.console()
     console.run(["fact", "create", "the api lives on port 9"], USER)
     console.run(["fact", "create", "the login is new"], USER)
@@ -5023,7 +5023,7 @@ def test_a_fresh_start_asks_whether_old_facts_rules_and_reminders_still_hold(app
 def test_a_cancelled_task_is_finished_and_never_counted_open(app):
     from journal.db.migrations.finish_cancelled_tasks import FinishCancelledTasks
     from journal.db.connection import Connection
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     from journal.repositories.tasks import Tasks
     console = app.console()
     console.run(["plan", "create", "p", "--brief", "b"], USER)
@@ -5046,7 +5046,7 @@ def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app
     from journal.features.workers.worker_runner import WorkerRunner
     from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     from journal.repositories.workers import Workers
     root = app.config.root
     git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
@@ -5143,7 +5143,7 @@ def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app, 
     from journal.events.bus import Bus
     from journal.models.message import Message
     from journal.repositories.messages import Messages
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     from journal.support.secret_values import SecretValues
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     hook(app, "SessionStart")
@@ -5184,7 +5184,7 @@ def test_the_agent_is_kept_out_of_the_secrets_and_the_mcp_keys(app, tmp_path, mo
 
 def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_takes_a_value(app, tmp_path, monkeypatch):
     from journal.repositories.messages import Messages
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     console = app.console()
     import shutil
@@ -5408,7 +5408,7 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app):
     from journal.features.workers.worker_runner import WorkerRunner
     from journal.models.worker import Worker
     from journal.repositories.messages import Messages
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     from journal.repositories.workers import Workers
     workers, runner, scope = app.container.get(Workers), app.container.get(WorkerRunner), app.container.get(Scope)
     with scope.of(1):

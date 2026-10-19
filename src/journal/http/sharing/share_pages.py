@@ -18,7 +18,7 @@ from journal.http.sharing.visitor_comment import VisitorComment
 from journal.support.actor import Actor
 from journal.models.share import Share
 from journal.support.refused import Refused
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.shares import Shares
 
 APP = Path(__file__).resolve().parents[3] / "web" / "dist"

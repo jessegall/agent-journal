@@ -13,7 +13,7 @@ from journal.support.actor import Actor
 from journal.support.refused import Refused
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.version import VERSION
 

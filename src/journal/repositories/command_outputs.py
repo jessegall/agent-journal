@@ -1,5 +1,5 @@
 from journal.models.command_output import CommandOutput
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.scoped_repository import ScopedRepository
 
 

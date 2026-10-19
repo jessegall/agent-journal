@@ -9,7 +9,7 @@ from journal.app import App
 from journal.config import Config
 from journal.console.where import Where
 from journal.support.actor import Actor
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 AGENT = Where("main", "s1")
 

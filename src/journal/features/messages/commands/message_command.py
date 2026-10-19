@@ -8,7 +8,7 @@ from journal.models.message import Message
 from journal.support.ref import Ref
 from journal.config import Config
 from journal.features.messages.faces import Faces
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.messages import Messages
 from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions

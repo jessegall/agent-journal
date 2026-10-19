@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 
 from journal.http.json_out import JsonOut
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 
 
 @dataclass(frozen=True)

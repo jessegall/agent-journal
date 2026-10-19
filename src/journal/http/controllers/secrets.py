@@ -8,7 +8,7 @@ from journal.http.response import Response
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
 from journal.support.refused import Refused
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 from journal.repositories.secrets import Secrets
 from journal.support.secret_values import SecretValues
 

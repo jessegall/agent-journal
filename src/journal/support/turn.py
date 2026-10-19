@@ -1,6 +1,6 @@
 from journal.models.agent import Agent
 from journal.repositories.entries import Entries
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 MOVES = ("Idle", "SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished")
 

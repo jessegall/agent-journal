@@ -24,11 +24,11 @@ from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.checks import Checks
 from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks
-from journal.repositories.unscoped import Unscoped
+from journal.support.unscoped import Unscoped
 
 USER = Actor.user(1)
 AGENT = Actor.agent("abc")
@@ -157,7 +157,7 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
     from journal.repositories.reactions import Reactions
     from journal.repositories.links import Links
     from journal.repositories.environments import Environments
-    from journal.repositories.scope import Scope
+    from journal.support.scope import Scope
     old = Connection(tmp_path / "old.db", Masks(SecretValues(Config(tmp_path))))
     with old.transaction() as db:
         db.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, environment_id INTEGER, author TEXT, text TEXT, created_at TEXT, updated_at TEXT, created_by TEXT, updated_by TEXT)")

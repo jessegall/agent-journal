@@ -5,7 +5,7 @@ from journal.console.where import Where
 from journal.engine.machine import Machine
 from journal.repositories.agents import Agents
 from journal.features.memory.commands.memory_command import MemoryCommand
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 class NothingCommand(Command):

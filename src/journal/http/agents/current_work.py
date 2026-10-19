@@ -5,7 +5,7 @@ from journal.support.states_catalogue import StatesCatalogue
 from journal.features.tasks.states.working import Working
 from journal.models.agent import Agent
 from journal.models.task import Task
-from journal.repositories.not_found import NotFound
+from journal.support.not_found import NotFound
 from journal.repositories.tasks import Tasks
 
 

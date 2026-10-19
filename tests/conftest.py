@@ -16,7 +16,7 @@ from journal.db.schema import Schema
 from journal.events.bus import Bus
 from journal.support.all_models import AllModels
 from journal.repositories.environments import Environments
-from journal.repositories.scope import Scope
+from journal.support.scope import Scope
 
 
 os.environ["AGENT_JOURNAL_SECRETS"] = tempfile.mkdtemp(prefix="journal-test-values-")
