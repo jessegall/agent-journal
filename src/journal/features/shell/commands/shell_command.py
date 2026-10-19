@@ -70,7 +70,10 @@ class ShellCommand(Command):
     def split(self, args: Namespace, where: Where) -> int:
         """A part may span lines, so each goes to a file of its own; the printed index says which are the agent's."""
         folder = Path(args.into)
-        parts = Chain.parts(args.line)
+        cuts = [cut for part in Chain.parts(args.line) if (cut := part.cut())]
+        parts = [part.uncut() for part in Chain.parts(args.line)]
+        if cuts:
+            (folder / "dropped").write_text(f"[journal] {', '.join(cuts)} dropped: the whole output is kept, so read it by its number instead of cutting it\n")
         for i, part in enumerate(parts):
             (folder / f"{i}.part").write_text(part.text)
             print(part.kind() + ("w" if part.recorded and Writes.part(part.text) else "-"))

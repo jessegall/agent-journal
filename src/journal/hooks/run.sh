@@ -99,6 +99,7 @@ folder="$root/runtime/outputs/$id"
 mkdir -p "$folder"
 printf '%s' "$1" > "$folder/line"
 sh "$__journal_cli" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
+[ -f "$folder/dropped" ] && cat "$folder/dropped"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
 limit=$(sh "$__journal_cli" shell limit --line "$1" 2>/dev/null); limit=${limit:-30}
 cap=$(sh "$__journal_cli" shell cap 2>/dev/null); cap=${cap:-200}

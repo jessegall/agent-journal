@@ -43,6 +43,8 @@ Every shell command you run goes through the journal's runner.
 - Every command's output is kept as a numbered output, the newest 250 of them: `journal output read N` shows how it
   ended and its first and last lines; `--lines 100-160`, `--grep <pattern>`, `--head N` and `--tail N` read part of it.
   `journal output list` names the newest. Read an output this way rather than running the command again.
+- A trailing `| tail` is dropped before the command runs, since the output is kept whole; a long output is still cut to
+  its ends on screen, with its number to read the rest.
 - A test suite is a long runner: run it on its own and chain the commit behind its result in a second call.
 - A journal command runs on its own, or chained only with other journal commands; chained with anything else it is
   refused, since it would move to the background with the rest and its answer lost.

@@ -1360,7 +1360,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     folder = app.config.root / "c1"
     folder.mkdir()
     assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&-\nR&;-\nR;;-\n"
-    assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q | tail -1", "git commit -m 'a\nb'"]
+    assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q", "git commit -m 'a\nb'"]
     console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
     bar = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/api/bar?env=main", headers={"X-Journal-Env": "main"}), timeout=5))["queue"]
     assert bar[-1]["parts"][0]["value"] == "committing" and bar[-1]["done"] is False
@@ -5186,6 +5186,19 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     assert console.run(["output", "read", "1", "--grep", "line 4[29]"], AGENT).out == "42: line 42\n49: line 49\n"
     assert console.run(["output", "read", "1", "--tail", "1"], AGENT).out == "line 50\n"
     assert "failed with code 1" in console.run(["output", "list"], AGENT).out
+
+
+def test_a_trailing_tail_is_dropped_before_the_command_runs_and_a_head_is_left(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    for name, line in (("cut", "python3 -m pytest -q 2>&1 | tail -4"), ("head", "yes | head -3"), ("quoted", 'echo "a | tail -1"')):
+        folder = app.config.root / name
+        folder.mkdir()
+        console.run(["shell", "split", line, "--into", str(folder)], AGENT)
+    assert (app.config.root / "cut" / "0.part").read_text() == "python3 -m pytest -q 2>&1", "the tail goes; the output is kept whole"
+    assert "| tail -4 dropped" in (app.config.root / "cut" / "dropped").read_text()
+    assert (app.config.root / "head" / "0.part").read_text() == "yes | head -3", "a head may be what stops an endless command"
+    assert not (app.config.root / "quoted" / "dropped").exists(), "a pipe inside quotes is text"
 
 
 def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app):
