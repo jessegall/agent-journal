@@ -1041,3 +1041,10 @@ def test_the_about_page_reads_the_installed_version_and_the_changelog_a_page_of_
     assert status == 200 and about["installed"] == VERSION and about["changelog"].startswith("# Changelog") and about["changelog"].count("\n## ") == 2 and about["more"], "the heading and the newest releases first"
     status, older = call(server, "GET", f"/journal/updates/changelog?skip={about['shown']}")
     assert status == 200 and older["changelog"].startswith("## ") and older["shown"] == about["shown"] + 2, "then older releases, a page at a time"
+
+
+def test_a_plans_timeline_has_each_start_log_and_done_of_its_tasks_oldest_first(server):
+    call(server, "POST", "/journal/plans", {"title": "the phone"})
+    call(server, "POST", "/journal/plans/1/tasks", {"title": "pair it"})
+    status, moments = call(server, "GET", "/journal/plans/1/timeline")
+    assert status == 200 and moments == [], "nothing has happened on its tasks yet"

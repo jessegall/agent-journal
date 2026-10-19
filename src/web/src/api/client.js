@@ -110,6 +110,10 @@ export class ApiClient {
         return this.post("/updates", {});
     }
 
+    planTimeline(id) {
+        return this.get(this.here(`/plans/${id}/timeline`));
+    }
+
     changelog(skip) {
         return this.get(`/updates/changelog${query({skip})}`);
     }

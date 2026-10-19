@@ -1,6 +1,7 @@
 from journal.features.sharing.share_targets import ShareTargets
 from journal.features.sharing.shared_comments import SharedComments
 from journal.http.plans.plan_outline import PlanOutline
+from journal.http.plans.plan_timeline import PlanTimeline
 from journal.models.share import Share
 from journal.repositories.docs import Docs
 from journal.repositories.plans import Plans
@@ -11,7 +12,8 @@ from journal.support.scope import Scope
 class SharedData:
     """What the share page reads of a link: the row it opens, a plan in outline with its tasks, and the comments visitors left, as the journal holds each."""
 
-    def __init__(self, targets: ShareTargets, docs: Docs, reports: Reports, plans: Plans, outline: PlanOutline, scope: Scope, comments: SharedComments) -> None:
+    def __init__(self, targets: ShareTargets, docs: Docs, reports: Reports, plans: Plans, outline: PlanOutline, scope: Scope, comments: SharedComments, timeline: PlanTimeline) -> None:
+        self.timeline = timeline
         self.targets, self.docs, self.reports, self.plans, self.outline, self.scope, self.comments = targets, docs, reports, plans, outline, scope, comments
 
     def of(self, share: Share) -> dict:
@@ -28,4 +30,4 @@ class SharedData:
         if target.type == "reports":
             return {"reports": [self.reports.find(target.id)]}
         plan = self.plans.find(target.id)
-        return {"plans": [self.outline.of(plan)], "tasks": self.plans.tasks_of(plan)}
+        return {"plans": [self.outline.of(plan)], "tasks": self.plans.tasks_of(plan), "timeline": self.timeline.of(plan)}

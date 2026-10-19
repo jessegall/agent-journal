@@ -17,6 +17,8 @@ class Feature:
     name: ClassVar[str]
     title: ClassVar[str] = ""
     help: ClassVar[str] = ""
+    fixed: ClassVar[bool] = False
+    """Always on: the settings page shows it with no switch, since turning it off would only break what it does."""
     states: ClassVar[tuple[type[AgentState], ...]] = ()
     nudges: ClassVar[tuple[Nudge, ...]] = ()
     options: ClassVar[tuple[Option, ...]] = ()

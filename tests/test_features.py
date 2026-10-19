@@ -6487,3 +6487,35 @@ def test_a_link_in_a_commands_output_is_suggested_as_a_pin_and_again_only_after_
     for _ in range(50):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert "is not pinned" not in str(made()), "a pinned link is never suggested"
+
+
+def test_dispatches_past_the_most_at_once_wait(app):
+    from journal.models.setting import Setting
+    from journal.repositories.settings import Settings
+    hook(app, "SessionStart")
+    console = app.console()
+    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_out", value=1), Actor.user(1))
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--model", "sonnet"], AGENT)
+    refused = console.run(["worker", "dispatch", "Ada Byron", "write the lexer", "--model", "sonnet"], AGENT)
+    assert refused.code == 1 and "1 workers are out, the most at once" in refused.err, "a worker past the most out at once is refused"
+    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "Explore"})
+    hook(app, "SubagentStart", agent_id="a1", agent_type="Explore")
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the routes", "prompt": "map", "subagent_type": "Explore"})
+    assert status == 409 and "1 subagents are running, the most at once" in body["error"], "a subagent past the most at once is held"
+
+
+def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(app):
+    from journal.http.plans.plan_timeline import PlanTimeline
+    from journal.repositories.plans import Plans
+    from journal.support.scope import Scope
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["plan", "create", "the phone", "--brief", "pair it"], USER)
+    console.run(["plan", "add", "1", "pair it", "--brief", "a code pairs"], AGENT)
+    console.run(["task", "start", "1"], AGENT)
+    console.run(["task", "log", "1", "the code is hashed"], AGENT)
+    console.run(["task", "done", "1", "--how", "pairs by code"], AGENT)
+    with app.container.get(Scope).of(1):
+        moments = app.container.get(PlanTimeline).of(app.container.get(Plans).find(1))
+    assert [(m.kind, m.task, m.text) for m in moments] == [("started", 1, ""), ("log", 1, "the code is hashed"), ("done", 1, "pairs by code")], "each start, log line and end, oldest first"

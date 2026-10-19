@@ -1,5 +1,6 @@
 from argparse import Namespace
 
+from journal.repositories.settings import Settings
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.support.worktree_not_made import WorktreeNotMade
 from journal.console.command import Command
@@ -23,9 +24,9 @@ from journal.repositories.workers import Workers
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch) -> None:
+    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: Settings) -> None:
         self.workers, self.messages, self.machine, self.providers, self.agents = workers, messages, machine, providers, agents
-        self.branch = branch
+        self.branch, self.settings = branch, settings
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
@@ -55,6 +56,11 @@ class WorkerCommand(Command):
     def dispatch(self, args: Namespace, where: Where) -> int:
         if self.profiles.kind_of(args.name) == "subagent":
             raise Refused(f"{args.name} is a subagent profile: it only reads, so send it with the Agent tool, naming it as subagent_type; a worker is for work that writes")
+        from journal.features.workers.feature import Workers as Feature
+        out = [w for w in self.workers.in_() if w.is_out()]
+        most = int(self.settings.option(Feature.MOST_OUT))
+        if most and len(out) >= most:
+            raise Refused(Feature.TOO_MANY_WORKERS.about(out=len(out)).rendered())
         knowing = [] if args.fresh else self.knowing(args.brief)
         if knowing:
             raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
