@@ -665,7 +665,7 @@ def ended_restarts(app, replay: Replay, provider: str) -> None:
 
 
 def session_starts(app, replay: Replay, provider: str) -> None:
-    """The steps: the whole start block as a session starts fresh with rules, facts, reminders and a task in hand on record; a second session taking the environment over; the first starting again after a compaction, then resumed."""
+    """The steps: the whole start block as a session starts fresh with rules, facts, reminders and a task in hand on record; a second session taking the environment over, which ends the first; the first starting again after a compaction, then resumed."""
     console = app.console()
     console.run(["rule", "create", "Never skip the gate", "--reason", "it broke once"], USER)
     console.run(["fact", "create", "the login is flaky"], USER)
@@ -847,7 +847,7 @@ def test_a_workflow_frozen_before_it_is_drawn_from_parts_still_holds(journals, m
 
 
 def two_agents(app, replay: Replay, provider: str) -> None:
-    """The steps: two agents in one environment, the first idle and the second awaiting a worker; a message arrives, then the worker reports."""
+    """The steps: a second session starts in the environment of the first, which it ends, and awaits a worker; a message arrives, then the worker reports."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -882,7 +882,7 @@ def two_lines_on_one_write(app, replay: Replay, provider: str) -> None:
     replay.step("a write held twice over", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
 
 
-def test_two_agents_in_one_environment_each_walk_as_their_own_state_and_a_line_is_typed_once(journals, monkeypatch):
+def test_a_second_session_in_one_environment_takes_the_first_ones_place_and_a_line_is_typed_once(journals, monkeypatch):
     with_listener, with_workflow, provider = journals
     left = recorded(f"two_agents_{provider}", with_listener, monkeypatch, two_agents, provider, nudges=True)
     with_workflow.runtime().start()
@@ -891,7 +891,7 @@ def test_two_agents_in_one_environment_each_walk_as_their_own_state_and_a_line_i
     by_name = {s["name"]: s for s in left.record()}
     assert by_name["a message arrives"]["typed"] == ["[journal] new message 1"], "named once for the environment"
     assert by_name["the worker reports"]["typed"] == ["[journal] worker 1, Lady Lovelace, reported in the chat", "[journal] what you waited on came back: carry on"], "the awaiting agent is told and released, once"
-    assert with_workflow.container.get(Machine).current("s2").task_id == 1 and with_workflow.container.get(Machine).current("s1").name == "idle"
+    assert with_workflow.container.get(Machine).current("s2").task_id == 1 and with_workflow.container.get(Machine).current("s1").name == "ended", "an environment keeps one session: the second took the first one's place"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
 
 
