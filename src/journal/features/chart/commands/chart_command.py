@@ -15,14 +15,21 @@ from journal.models.chart import Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import Charts
+from journal.repositories.counts import Counts
+from journal.repositories.environments import Environments
+from journal.repositories.noted_times import NotedTimes
+from journal.engine.clock import Clock
+from journal.features.chart.support.checks import VALUE_STEPS
 from journal.support.scope import Scope
+from journal.support.value_name import ValueName
 
 
 class ChartCommand(Command):
     noun = "chart"
 
-    def __init__(self, charts: Charts, catalogue: ChartCatalogue, validation: Validation, shipped: ShippedChart, trial: Trial, scope: Scope) -> None:
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, validation: Validation, shipped: ShippedChart, trial: Trial, scope: Scope, counts: Counts, times: NotedTimes, environments: Environments, clock: Clock) -> None:
         self.charts, self.entries, self.validation, self.shipped, self.trial, self.scope = charts, catalogue, validation, shipped, trial, scope
+        self.counts, self.times, self.environments, self.clock = counts, times, environments, clock
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "show", "every workflow: its nodes and lines")
@@ -74,6 +81,8 @@ class ChartCommand(Command):
                 print(f"{node.id:>4}  {node.kind:<8} {shown}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
             for line in self.charts.lines_of(chart):
                 print(f"      {line.source.id} --{line.kind}--> {line.target.id}")
+            for shown in self.values_shown(chart):
+                print(shown)
         return 0
 
     def in_order(self) -> list[Chart]:
@@ -120,9 +129,24 @@ class ChartCommand(Command):
         return chart
 
     def catalogue(self, args: Namespace, where: Where) -> int:
-        for entry in self.entries.all():
+        """Every entry by its kind, the steps on a workflow's own counts and times after the rest, under a heading of their own."""
+        entries = self.entries.all()
+        for entry in [e for e in entries if e.key not in VALUE_STEPS]:
+            print(f"{entry.kind:<8} {entry.key:<28} {entry.title}: {entry.about}")
+        print("counts and times, what a workflow keeps between events:")
+        for entry in [e for e in entries if e.key in VALUE_STEPS]:
             print(f"{entry.kind:<8} {entry.key:<28} {entry.title}: {entry.about}")
         return 0
+
+    def values_shown(self, chart: Chart) -> list[str]:
+        """The counts and times a workflow keeps, a line for each environment that has any."""
+        now, prefix = self.clock.now(), ValueName.prefix(chart.id)
+        rows = [*self.counts.everywhere_of_workflow(chart.id), *self.times.everywhere_of_workflow(chart.id)]
+        names = {e.id: e.name for e in self.environments.all()}
+        kept = {}
+        for row in rows:
+            kept.setdefault(row.environment_id, []).append(f"{row.name[len(prefix):]} {row.said(now)}")
+        return [f"      values in {names.get(env, env)}: {', '.join(values)}" for env, values in sorted(kept.items())]
 
     def node(self, args: Namespace, where: Where) -> int:
         kind = NodeKind(args.kind)

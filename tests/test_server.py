@@ -766,6 +766,30 @@ def test_where_each_agent_stands_in_a_workflow_is_served(server):
     assert {"number": 3, "setting": ""} in standing["limits"].values() and {"number": 5, "setting": ""} in standing["limits"].values(), "each count check's number is served"
 
 
+def test_a_workflow_with_two_triggers_is_listed_at_each_its_values_are_served_and_a_run_names_its_event(server):
+    call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
+    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Seen tools"})
+    trigger = made["nodes"][0]["id"]
+    nodes = [*made["nodes"], {"id": "tick", "kind": "trigger", "key": "ticked", "text": ""}, {"id": "one", "kind": "action", "key": "count_one", "text": "seen"}, {"id": "noted", "kind": "action", "key": "time_note", "text": "last_seen"}, {"id": "many", "kind": "check", "key": "count_over", "text": "seen 100"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] a hundred tools"}]
+    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "noted"}, {"from": "noted", "to": "many"}, {"from": "many", "to": "say", "port": "yes"}]
+    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
+    assert status == 200, saved
+    listed = next(w for w in call(server, "GET", "/journal/chart")[1]["workflows"] if w["id"] == made["id"])
+    assert set(listed["places"]) == {"tool_finished", "ticked"}, "a workflow with two triggers has a place at each of its events"
+    call(server, "POST", "/hooks/claude", {"hook_event_name": "PostToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a"}})
+    import time
+    for _ in range(30):
+        standing = call(server, "GET", f"/journal/chart/{made['id']}/standing")[1]
+        if standing["values"]:
+            break
+        time.sleep(0.1)
+    values = {v["name"]: v for v in standing["values"]}
+    assert values["seen"]["kind"] == "count" and values["seen"]["value"] == 1 and values["seen"]["set_at"] and values["last_seen"]["kind"] == "time", "the environment's counts and times are served, when each was set and by which steps"
+    assert values["seen"]["set_by"] == [n["id"] for n in saved["nodes"] if n["key"] == "count_one"]
+    runs = call(server, "GET", "/journal/chart/runs?last=20")[1]["runs"]
+    assert any(r["event"] == "tool_finished" and r["event_title"] == "Post tool use" and "Seen tools" in r["titles"] for r in runs), "a run names the event that started it"
+
+
 def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_report(tmp_path: Path):
     import time
     from journal.repositories.reports import Reports

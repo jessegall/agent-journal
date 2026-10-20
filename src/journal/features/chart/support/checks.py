@@ -71,6 +71,7 @@ TIME_ACTIONS = ("time_note", "time_forget")
 VALUE_CHECKS = (*COUNT_CHECKS, *TIME_CHECKS)
 VALUE_ACTIONS = (*COUNT_ACTIONS, *TIME_ACTIONS)
 """The steps on the values a workflow keeps in an environment, its counts and its times."""
+VALUE_STEPS = (*VALUE_ACTIONS, *VALUE_CHECKS)
 
 
 class Checks:

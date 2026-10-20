@@ -27,6 +27,7 @@ const emit = defineEmits(["close", "open"]);
                                 </template>
                             </span>
                             <span class="chart-run-title">{{ run.titles.join(" and ") }}</span>
+                            <span class="chart-run-said">On {{ run.event_title }}</span>
                             <template v-if="run.change">
                                 <span class="chart-run-said">{{ run.change }}</span>
                             </template>
@@ -34,7 +35,7 @@ const emit = defineEmits(["close", "open"]);
                                 <span class="chart-run-said">{{ run.answer }}</span>
                             </template>
                             <template v-if="run.counts">
-                                <span class="chart-run-said">Counts: {{ run.counts }}</span>
+                                <span class="chart-run-said">Values: {{ run.counts }}</span>
                             </template>
                         </button>
                     </li>

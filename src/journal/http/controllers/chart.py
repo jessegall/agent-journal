@@ -43,9 +43,9 @@ class ChartController:
         return self.states.listed()
 
     def runs(self, request: Request) -> Response:
-        """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
-        titles = {c.id: c.title for c in self.charts.all()}
-        runs = [{**self.shown(run), "event": run.record.trigger, "failed": run.failed, "titles": [titles.get(n, f"workflow {n}") for n in run.record.workflows],
+        """The newest walks across every workflow, each naming the event that started it and the workflows it ran, so a line the agent heard leads to the workflow that said it."""
+        titles, events = {c.id: c.title for c in self.charts.all()}, {e.key: e.title for e in self.catalogue.triggers()}
+        runs = [{**self.shown(run), "event": run.record.trigger, "event_title": events.get(run.record.trigger, run.record.trigger), "failed": run.failed, "titles": [titles.get(n, f"workflow {n}") for n in run.record.workflows],
                  "change": run.change_words(), "answer": run.record.answer_words(), "counts": run.record.count_words()} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
         return Response.json({"runs": runs})
 

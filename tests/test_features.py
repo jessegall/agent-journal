@@ -4283,6 +4283,21 @@ def test_the_upgrade_to_parts_stops_a_workflow_on_a_retired_check_and_carries_a_
         assert app.container.get(NotedTimes).at(ValueName(log.id, "last_log")) == logged_at, "the log time of the task in hand carries across, so the log ask goes on rather than starting over"
 
 
+def test_the_command_line_shows_the_counts_and_times_and_the_values_kept(app):
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    catalogue = console.run(["chart", "catalogue"], USER).out
+    head = catalogue.index("counts and times, what a workflow keeps between events:")
+    assert all(catalogue.index(f" {key} ") > head for key in ("count_one", "time_note", "time_over")) and catalogue.index(" say ") < head, "the steps on a workflow's own values are listed under a heading of their own"
+    made = int(console.run(["chart", "new", "Tasks made", "--on", "tasks.created"], USER).out.split()[1].rstrip(":"))
+    trigger = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tasks.created")
+    one = int(console.run(["chart", "node", "action", "count_one", "--text", "made", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    console.run(["task", "create", "a task"], USER)
+    app.runtime().deferred.drain()
+    assert "      values in main: made 1" in console.run(["chart", "show"], USER).out, "journal chart show prints each environment's values under the workflow"
+
+
 def test_a_line_says_a_workflows_count_by_name(app):
     from journal.repositories.charts import Charts
     console = app.console()

@@ -18,6 +18,7 @@ defineProps({
     waiting: {type: String, default: ""},
     counted: {type: String, default: ""},
     read: {type: String, default: ""},
+    names: {type: Array, default: () => []},
 });
 const emit = defineEmits(["drag", "remove", "open-message", "select", "text", "port-down", "port-enter", "port-leave"]);
 </script>
@@ -95,17 +96,25 @@ const emit = defineEmits(["drag", "remove", "open-message", "select", "text", "p
                     {{ node.text ? messageShown(node.text) : placeholderOf(node) }}
                 </button>
             </template>
-            <template v-else>
+            <template v-else-if="selected || !node.text || title === entry.title">
                 <input
                     class="chart-node-text"
                     :value="node.text"
                     :placeholder="placeholderOf(node)"
                     :disabled="node.locked"
                     :title="node.locked ? LOCK_WHY : null"
+                    :list="names.length ? `names-${node.id}` : null"
                     @pointerdown.stop
                     @focus="emit('select')"
                     @input="emit('text', $event.target.value)"
                 />
+                <template v-if="names.length">
+                    <datalist :id="`names-${node.id}`">
+                        <template v-for="name in names" :key="name">
+                            <option :value="name" />
+                        </template>
+                    </datalist>
+                </template>
             </template>
         </template>
         <template v-if="node.kind !== 'trigger'">
