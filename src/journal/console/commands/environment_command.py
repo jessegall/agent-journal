@@ -49,7 +49,7 @@ class EnvironmentCommand(Command):
         for environment in self.environments.all() or [self.environments.named("main")]:
             with self.scope.of(environment.id):
                 agents = self.agents.in_()
-            last = agents[-1] if agents else None
+            last = max(agents, key=lambda a: a.updated_at) if agents else None
             resumable = [a for a in agents if a.session and self.providers.named(a.provider or "claude").transcript(self.config.root, a.session)]
             rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.ago(last.updated_at) if last else "", {a.provider or "claude": a.session for a in resumable}))
         return rows

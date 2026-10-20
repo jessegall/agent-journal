@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from journal.features.updates.support.updating import Updating
 from journal.features.updates.support.changelog import Changelog
 from journal.http.support.request import Request
@@ -12,7 +14,7 @@ class UpdateController:
 
     def index(self, request: Request) -> Response:
         page = self.changelog.page(0)
-        return Response.json({**self.updating.standing(), "changelog": page.text, "shown": page.shown, "more": page.more})
+        return Response.json({**asdict(self.updating.standing()), "changelog": page.text, "shown": page.shown, "more": page.more})
 
     def changes(self, request: Request) -> Response:
         page = self.changelog.page(int(request.queried("skip")))

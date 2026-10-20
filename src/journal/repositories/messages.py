@@ -79,6 +79,10 @@ class Messages(ScopedRepository[Message]):
     def keyed(self, key: str, by: Actor) -> list[Message]:
         return self.selected("json_extract(data, '$.key') = ? AND created_by = ?", (key, by.stamp))
 
+    def keyed_anywhere(self, key: str, by: Actor) -> list[Message]:
+        """The writer's cards of this key in every environment: one the project's, such as a suggestion's, stands in whichever it was shown."""
+        return self.selected_everywhere("json_extract(data, '$.key') = ? AND created_by = ?", (key, by.stamp))
+
     def first_reply(self, message: Message) -> Message | None:
         """The agent's first reply to the message: one that names it, or one whose link answers it."""
         named = self.selected("reply_to = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))

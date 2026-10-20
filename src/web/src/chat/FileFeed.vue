@@ -19,7 +19,7 @@ const DEFAULTS = {
     lines: 0,
     flush: false,
     headers: false,
-    collapse: true,
+    collapse: false,
     editsOnly: false,
     removals: true,
     capped: false,

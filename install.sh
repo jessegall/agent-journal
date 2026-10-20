@@ -15,28 +15,40 @@ set -e
 # start of the journal runs, so an older python3 first on the PATH is never the one that runs it.
 find_python() {
   PY=""
-  for candidate in python3.14 python3 "$(command -v uv >/dev/null 2>&1 && uv python find 3.14 2>/dev/null)"; do
+  for candidate in python3.14 python3 /Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14 "$(command -v uv >/dev/null 2>&1 && uv python find 3.14 2>/dev/null)"; do
     [ -n "$candidate" ] && command -v "$candidate" >/dev/null 2>&1 || continue
     "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 14))' 2>/dev/null && { PY="$(command -v "$candidate")"; return 0; }
   done
   return 1
 }
-# What the journal needs and is missing is offered and, on a yes, installed: Python 3.14 with Homebrew or uv, git with
-# Homebrew or, on a Mac without it, the command line tools.
+# Python 3.14 from python.org's installer for the Mac, the newest release of 3.14 that has one: it needs no Xcode, where
+# Homebrew builds Python from source on a macOS it no longer has packages for, and fails on an old Xcode.
+python_org() {
+  for version in $(curl -fsSL https://www.python.org/ftp/python/ | grep -o '3\.14\.[0-9]*/' | tr -d / | sort -u -t. -k3,3nr | head -3); do
+    package="${TMPDIR:-/tmp}/python-$version-macos11.pkg"
+    curl -fsSL -o "$package" "https://www.python.org/ftp/python/$version/python-$version-macos11.pkg" || continue
+    sudo installer -pkg "$package" -target / && rm -f "$package" && return 0
+  done
+  echo "Python 3.14 could not be installed from python.org: install it from https://www.python.org/downloads/, then run this again." >&2
+  exit 1
+}
+# What the journal needs and is missing is offered and, on a yes, installed: Python 3.14 with uv, python.org's installer
+# on a Mac or Homebrew elsewhere; git with Homebrew or, on a Mac without it, the command line tools.
 offer() {
-  what="$1"; way="$2"
+  what="$1"; way="$2"; said="${3:-$2}"
   [ -n "$way" ] || { echo "agent-journal needs $what, and nothing here can install it: install $what, then run this again." >&2; exit 1; }
   echo "agent-journal needs $what, and none is installed here."
   answer="${AGENT_JOURNAL_YES:+y}"
   if [ -z "$answer" ]; then
-    printf 'Install %s now, with: %s? [y/N] ' "$what" "$way"
+    printf 'Install %s now, with: %s? [y/N] ' "$what" "$said"
     { read -r answer < /dev/tty; } 2>/dev/null || true
   fi
   case "$answer" in y|Y|yes|Yes) $way ;; *) echo "Nothing changed. Install $what, then run this again."; exit 0 ;; esac
 }
 if ! find_python; then
-  if command -v brew >/dev/null 2>&1; then offer "Python 3.14" "brew install python@3.14"
-  elif command -v uv >/dev/null 2>&1; then offer "Python 3.14" "uv python install 3.14"
+  if command -v uv >/dev/null 2>&1; then offer "Python 3.14" "uv python install 3.14"
+  elif [ "$(uname)" = Darwin ]; then offer "Python 3.14" python_org "python.org's installer, which asks for your password"
+  elif command -v brew >/dev/null 2>&1; then offer "Python 3.14" "brew install python@3.14"
   else offer "Python 3.14" ""; fi
   find_python || { echo "Python 3.14 is still not found after its install" >&2; exit 1; }
 fi

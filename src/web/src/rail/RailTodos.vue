@@ -109,8 +109,12 @@ onMounted(() => props.finished && scope.recent && scope.recent("tasks", FINISHED
 }
 
 .rail-list {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .rail-group {

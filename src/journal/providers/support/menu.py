@@ -8,11 +8,14 @@ OPTION = re.compile(r"^[ \t]*(?P<cursor>[❯›>])?[ \t]*(?P<number>\d{1,2})[.)]
 FOOTER = re.compile(r"Enter to (?:select|confirm|continue)|Esc to (?:cancel|exit|go back)|↑/↓|to navigate|press enter", re.I)
 QUESTION = re.compile(r"\?\s*$")
 TRUSTED = re.compile(r"\btrust\b", re.I)
+SWITCHING_MODEL = re.compile(r"\bswitch model\b", re.I)
 OWN = re.compile(r"do you want to (?:proceed|make|create)|would you like to run|allow command|approve", re.I)
 PAST = re.compile(r"\(current\)|rewind|restore|resume|checkpoint", re.I)
 ACCEPT = re.compile(r"^(?:yes|trust|i am using|continue|ok)\b", re.I)
 DECLINE = re.compile(r"^(?:no\b|don't|do not|decline|deny|skip|not now|later|cancel|never|reject|disable)", re.I)
 QUESTION_LINES = 6
+RULE = re.compile(r"^[─━═\-_]{5,}$")
+"""The line the program draws above a menu: what stands over it, a spinner still counting its seconds among it, is no part of the question."""
 UP, DOWN, ENTER, ESCAPE = "\x1b[A", "\x1b[B", "\r", "\x1b"
 
 
@@ -46,8 +49,15 @@ class Menu:
             return None
         if not footers and above[found[-1].end():].strip() and not any(m["cursor"] for m in block):
             return None
-        asked = " ".join([line.strip() for line in above[:block[0].start()].splitlines() if line.strip()][-QUESTION_LINES:])
+        asked = " ".join(cls.asked_lines(above[:block[0].start()]))
         return cls(asked, tuple(Option(int(m["number"]), m["label"], bool(m["cursor"])) for m in block))
+
+    @staticmethod
+    def asked_lines(above: str) -> list[str]:
+        """The question's lines over the options: the last few, never reaching past the rule drawn above the menu."""
+        lines = [line.strip() for line in above.splitlines() if line.strip()]
+        ruled = [i for i, line in enumerate(lines) if RULE.match(line)]
+        return lines[ruled[-1] + 1:][-QUESTION_LINES:] if ruled else lines[-QUESTION_LINES:]
 
     def foreign(self) -> bool:
         """Whether the menu is the program's own: not a permission question the agent's tool asks, nor a list of past messages, sessions or checkpoints a person opened."""
@@ -69,6 +79,10 @@ class Menu:
     def trusting(self) -> bool:
         """A question whether to trust the folder the journal launched the agent in."""
         return bool(TRUSTED.search(self.question))
+
+    def switching_model(self) -> bool:
+        """Claude Code's question whether to switch the model, which comes only after a model change was asked for."""
+        return bool(SWITCHING_MODEL.search(self.question))
 
     def keys_for(self, taken: Option) -> str:
         """The arrow keys from the option under the cursor to the one taken, by where the labels stand, then Enter."""

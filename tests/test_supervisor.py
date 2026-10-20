@@ -409,3 +409,18 @@ def test_a_start_command_that_skips_the_prompts_itself_is_not_asked(tmp_path: Pa
     assert Launch.parse(["claude", "--dangerously-skip-permissions"], tmp_path).is_skipping()
     assert Launch.parse(["codex", "--dangerously-bypass-approvals-and-sandbox"], tmp_path).is_skipping()
     assert Launch.parse(["claude", "--skip"], tmp_path).is_skipping() and not Launch.parse(["claude"], tmp_path).is_skipping()
+
+
+def test_a_closed_window_stops_the_supervisor_without_writing_to_the_screen_that_went(tmp_path: Path):
+    from supervisor.band import Band
+    from supervisor.band_words import BandWords
+    from supervisor.services import Services
+    from supervisor.supervisor import Supervisor
+    from supervisor.terminal import Terminal
+    read, write = os.pipe()
+    os.close(read)
+    os.close(write)
+    supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(), stdin=None, stdout=write, band=Band(BandWords("a", "b", "c"), write))
+    supervisor.hung_up()
+    supervisor.stop()
+    assert supervisor.band is None, "a hang-up leaves no band to clear on a terminal that is gone"

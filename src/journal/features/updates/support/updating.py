@@ -9,6 +9,7 @@ from journal.support.plugin_installing import PluginInstalling
 from journal.features.updates.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
 from journal.features.updates.support.release_source import ReleaseSource
+from journal.features.updates.support.update_standing import UpdateStanding
 from journal.support.actor import Actor
 from journal.support.refused import Refused
 from journal.repositories.environments import Environments
@@ -45,9 +46,9 @@ class Updating:
         from journal.features.updates.feature import Updates
         return bool(self.settings.option(Updates.AUTO)) and bool(self.newer())
 
-    def standing(self) -> dict:
+    def standing(self) -> UpdateStanding:
         newer = self.newer()
-        return {"installed": VERSION, "latest": newer[-1].version if newer else VERSION, "newer": bool(newer), "versions": [release.version for release in newer], "updating": self.under_way, "problem": self.problem}
+        return UpdateStanding(installed=VERSION, latest=newer[-1].version if newer else VERSION, newer=bool(newer), versions=[release.version for release in newer], updating=self.under_way, problem=self.problem)
 
     def tick(self, now: float) -> None:
         """On the clock: once an hour, the releases are read and, when the user wants updates on their own, the newest is installed."""
@@ -55,9 +56,21 @@ class Updating:
             self._checked_at = now
             self.apart(self.checked)
 
-    def update_now(self, by: Actor) -> None:
-        if not self.newer():
+    def newest(self) -> Release:
+        newer = self.newer()
+        if not newer:
             raise Refused(f"there is no release newer than {VERSION} to install")
+        return newer[-1]
+
+    def said(self) -> str:
+        """Whether a newer release is out, in words, or why the releases could not be read."""
+        if self.problem:
+            return self.problem
+        newer = self.newer()
+        return f"{newer[-1].version} is out; {VERSION} is installed. journal update installs it" if newer else f"{VERSION} is the newest release of version {self.running().major}"
+
+    def update_now(self, by: Actor) -> None:
+        self.newest()
         if not self.apart(lambda: self.install_newest(by)):
             raise Refused("an update is under way already")
 
@@ -88,7 +101,7 @@ class Updating:
 
     def install_newest(self, by: Actor) -> None:
         """The code-commandments plugin, when installed, pulled first, since the install restarts the journal; then the release itself."""
-        release = self.newer()[-1]
+        release = self.newest()
         self.under_way, problems = release.version, []
         with self.scope.of(self.environments.existing(Where().environment).id):
             try:

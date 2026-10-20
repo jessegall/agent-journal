@@ -1,7 +1,7 @@
 <script setup>
 import {saveSetting} from "../actions/settings.js";
 import {narrow} from "../platform/view.js";
-import {computed, nextTick, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import PageBar from "../kit/PageBar.vue";
@@ -102,34 +102,43 @@ async function change(target, label, value) {
 }
 
 const save = (row, value) => change(row.target, row.label, value);
+
+// Both bars stay in sight as one band at the top, and the nav beside the settings sticks just under them.
+const page = ref(null);
+const bars = ref(null);
+const sized = new ResizeObserver(([entry]) => page.value && page.value.style.setProperty("--page-bar-height", `${entry.target.offsetHeight}px`));
+onMounted(() => bars.value && sized.observe(bars.value));
+onUnmounted(() => sized.disconnect());
 const saveTiming = (row, next) => change(row.timing.target, row.label, next);
 </script>
 
 <template>
-    <section :class="['settings', {narrow}]">
-        <PageBar>
-            <TabBar :tabs="tabs" :model-value="across ? '' : tab" @update:model-value="openTab" />
-            <span class="settings-scope">
-                Applies to environment
-                <span class="settings-env">{{ route.env }}</span>
-            </span>
-        </PageBar>
-        <PageBar>
-            <TextInput
-                ref="field"
-                class="settings-find"
-                icon="search"
-                :value="query"
-                :placeholder="asking"
-                :aria-label="asking"
-                @input="query = $event.target.value"
-                @keydown.esc="query = ''"
-            />
-            <template v-if="listed">
-                <Segmented :options="filters" :value="filter" :fill="narrow" @pick="filter = $event" />
-            </template>
-            <span class="settings-saved">Changes are saved as you make them</span>
-        </PageBar>
+    <section ref="page" :class="['settings', {narrow}]">
+        <div ref="bars" class="settings-bars">
+            <PageBar>
+                <TabBar :tabs="tabs" :model-value="across ? '' : tab" @update:model-value="openTab" />
+                <span class="settings-scope">
+                    Applies to environment
+                    <span class="settings-env">{{ route.env }}</span>
+                </span>
+            </PageBar>
+            <PageBar>
+                <TextInput
+                    ref="field"
+                    class="settings-find"
+                    icon="search"
+                    :value="query"
+                    :placeholder="asking"
+                    :aria-label="asking"
+                    @input="query = $event.target.value"
+                    @keydown.esc="query = ''"
+                />
+                <template v-if="listed">
+                    <Segmented :options="filters" :value="filter" :fill="narrow" @pick="filter = $event" />
+                </template>
+                <span class="settings-saved">Changes are saved as you make them</span>
+            </PageBar>
+        </div>
 
         <template v-if="back">
             <Btn kind="text" class="settings-back" @click="chosen = ''">
@@ -172,6 +181,17 @@ const saveTiming = (row, next) => change(row.timing.target, row.label, next);
     display: flex;
     flex-direction: column;
     padding-bottom: 48px;
+}
+
+.settings-bars {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--bg);
+}
+
+.settings-bars > :deep(.page-bar) {
+    position: static;
 }
 
 .settings-find {

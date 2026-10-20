@@ -52,7 +52,7 @@ class Supervisor:
         self.fit()
         signal.signal(signal.SIGWINCH, lambda *_: self.fit())
         signal.signal(signal.SIGTERM, lambda *_: self.stop())
-        signal.signal(signal.SIGHUP, lambda *_: self.stop())
+        signal.signal(signal.SIGHUP, lambda *_: self.hung_up())
         try:
             while self._code is None:
                 self.turn()
@@ -159,6 +159,11 @@ class Supervisor:
         self._code = self.terminal.stop(3.0)
         if self.band:
             self.band.end()
+
+    def hung_up(self) -> None:
+        """The window the agent ran in was closed: the agent is stopped, and nothing is written to a screen that is gone."""
+        self.band = None
+        self.stop()
 
     def _ended(self) -> None:
         """The agent's terminal closed: its exit code decides what follows, waited for a moment, and an agent that has not ended by then is stopped and its own code taken."""

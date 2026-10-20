@@ -2,6 +2,15 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.3
+
+- On a Mac the installer installs Python 3.14 from python.org's own installer, which needs no Xcode; Homebrew builds Python from source on a macOS it no longer has packages for, and failed there on an older Xcode. uv is still used first where it is installed.
+- `journal update` installs the newest release of this major version as Install update does and restarts the journal on it; `journal update check` says whether one is out.
+- Claude Code's "Switch model?" question is answered while a busy spinner still counts above it; the question read from the screen stops at the line drawn above the menu.
+- Closing the terminal window an agent runs in no longer leaves a fault in the supervisor's log.
+- The Settings tabs stay in view while the page scrolls, and Updates and Record sit on the System tab; the tasks list in the rail scrolls; a file edit opened in the chat stays open after a tab switch.
+- An accepted suggestion settles its card in whichever environment it was shown.
+
 ## 4.4.2
 
 - Where git is missing, the installer offers to install it, with Homebrew or, on a Mac without it, the command line tools, as it does for Python 3.14.

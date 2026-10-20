@@ -228,7 +228,13 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     shown(switch.replace("Opus 5.5", "Sonnet 5.5") + "\r\n──────\r\n❯ \r\n──────\r\n  agent-journal · main\r\n")
     assert watcher.look(agent) == "\r", "a yes-or-no confirmation of what the user just asked at the keyboard is confirmed, seen by its cursor though the prompt box is drawn below it"
     shown("Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\n", still_for=0.0)
-    assert watcher.look(agent) == "", "a screen still changing is not answered yet"
+    assert watcher.look(agent) == "", "a menu just drawn is not answered yet"
+    busy = lambda seconds: f"· Shimmying… ({seconds}s · ↓ 3.9k tokens)\r\n\r\n────────────────\r\n" + switch.replace("Opus 5.5", "Fable 5.1")
+    shown(busy(49), still_for=0.0)
+    assert watcher.look(agent) == ""
+    watcher._seen_at[1] -= 2
+    shown(busy(51), still_for=0.0)
+    assert watcher.look(agent) == "\r", "the switch of model is confirmed while the agent works, its spinner counting above the rule: the menu stood the same, whatever the screen did, and only a model change asks it"
 
 
 def test_a_typed_line_goes_out_on_one_line(app, monkeypatch):

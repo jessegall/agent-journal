@@ -14,6 +14,7 @@ from journal.support.actor import Actor
 from journal.support.cards import Cards
 from journal.support.not_found import NotFound
 from journal.support.refused import Refused
+from journal.support.scope import Scope
 from journal.support.chat_mark import ChatMark
 
 MINUTE = 60
@@ -22,8 +23,8 @@ MINUTE = 60
 class Suggesting:
     """Rounds of suggestions: the first a while after the journal started, then one each interval; a round makes each suggestion that applies and was never made, as one card in the chat the user answers once."""
 
-    def __init__(self, settings: Settings, suggestions: Suggestions, cards: Cards, agents: Agents, environments: Environments, messages: Messages, commandments: PackageCommandments) -> None:
-        self.settings, self.suggestions, self.cards, self.agents, self.environments, self.messages = settings, suggestions, cards, agents, environments, messages
+    def __init__(self, settings: Settings, suggestions: Suggestions, cards: Cards, agents: Agents, environments: Environments, messages: Messages, scope: Scope, commandments: PackageCommandments) -> None:
+        self.settings, self.suggestions, self.cards, self.agents, self.environments, self.messages, self.scope = settings, suggestions, cards, agents, environments, messages, scope
         self.suggesters: tuple[Suggester, ...] = (commandments,)
         self.started_at = time.time()
         self.last_round: float | None = None
@@ -46,7 +47,9 @@ class Suggesting:
 
     def made(self, suggester: Suggester) -> Suggestion:
         row = self.suggestions.save(Suggestion(key=suggester.key, title=suggester.title()), Actor.system())
-        self.shown(row, suggester, self.where_shown().id)
+        environment_id = self.where_shown().id
+        with self.scope.of(environment_id):
+            self.shown(row, suggester, environment_id)
         return row
 
     def answer(self, suggestion: Suggestion, answer: SuggestionAnswer, by: Actor) -> str:
@@ -55,7 +58,9 @@ class Suggesting:
             raise Refused(f"suggestion {suggestion.id} was answered already: {suggestion.answer}")
         answered = self.suggestions.save(suggestion.answered(answer), by)
         suggester = self.named(suggestion.key)
-        self.shown(answered, suggester, self.card_environment(answered))
+        environment_id = self.card_environment(answered)
+        with self.scope.of(environment_id):
+            self.shown(answered, suggester, environment_id)
         return suggester.goes_to() if answer == SuggestionAnswer.ACCEPTED else ""
 
     def shown(self, suggestion: Suggestion, suggester: Suggester, environment_id: int) -> None:
@@ -64,7 +69,7 @@ class Suggesting:
 
     def card_environment(self, suggestion: Suggestion) -> int:
         """The environment the suggestion's card stands in."""
-        return self.messages.keyed(self.card_key(suggestion), Actor.system())[0].environment_id
+        return self.messages.keyed_anywhere(self.card_key(suggestion), Actor.system())[0].environment_id
 
     def named(self, key: str) -> Suggester:
         found = [s for s in self.suggesters if s.key == key]

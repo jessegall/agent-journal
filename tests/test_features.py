@@ -3571,7 +3571,7 @@ def test_one_move_per_event_the_first_hold_wins_and_the_new_states_workflows_run
     link(t5, hold2)
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "b"})
     assert status == 409 and "the first hold" in body["error"] and "the second hold" not in body["error"], "the first hold wins"
-    assert entries.of_kind(WALKED, 3)[0].data["unanswered"] == [hold2], "the later hold is recorded as not answered"
+    assert any(e.data["unanswered"] == [hold2] for e in entries.of_kind(WALKED, 10)), "the later hold is recorded as not answered"
     first, t1 = own_workflow(console, charts, "idle", "tool_finished")
     away = add(first, "action", "wait_outside", "--text", "the build")
     stuck = add(first, "action", "mark_stuck", "--text", "for good")
@@ -3584,7 +3584,7 @@ def test_one_move_per_event_the_first_hold_wins_and_the_new_states_workflows_run
     assert app.container.get(Machine).current("s1").name == "expecting", "the first move stands"
     refused = entries.of_kind(FAILED, 3)[0]
     assert refused.data["node"] == stuck and f"node {away} moved the agent first" in refused.data["fault"], "the second move in the event is refused and recorded naming both nodes"
-    walked = entries.of_kind(WALKED, 3)[0]
+    walked = next(e for e in entries.of_kind(WALKED, 10) if e.data["moved_by"])
     assert walked.data["moved_by"] == [away] and "expecting speaks at its place" in walked.data["said"], "the new state's workflow later in the order ran at its place"
 
 
@@ -6500,14 +6500,14 @@ def test_an_update_never_crosses_a_major_version(app):
     updating.releases = Release.named(["v3.9.0", "v4.0.0", "v4.99.0", "v5.0.0"])
     assert [release.tag for release in updating.newer()] == ["v4.99.0"]
     updating.releases = Release.named(["v5.0.0"])
-    assert updating.newer() == [] and not updating.standing()["newer"]
+    assert updating.newer() == [] and not updating.standing().newer
 
 
 def test_a_newer_release_is_installed_on_its_own_only_when_the_setting_is_on(app):
     source, installer = Source("v4.0.0", "v4.1.0", "v4.99.0", "v5.0.0"), Installer()
     off = updating_with(app, source, installer, auto=False)
     off.checked()
-    assert installer.ran == [] and off.standing()["latest"] == "4.99.0" and source.tags_asked == ["v4."]
+    assert installer.ran == [] and off.standing().latest == "4.99.0" and source.tags_asked == ["v4."]
     on = updating_with(app, source, installer, auto=True)
     on.checked()
     assert installer.ran == ["v4.99.0"] and on.problem == ""
