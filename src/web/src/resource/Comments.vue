@@ -28,13 +28,33 @@ const discussion = inject("discussion", null);
 const scope = useScope();
 const list = ref(null);
 const on = computed(() => refOf(props.resource));
-const thread = computed(() =>
+const onRow = computed(() =>
     scope
         .rows("comments")
         .filter((c) => (c.on || []).includes(on.value))
         .sort((a, b) => createdAt(a) - createdAt(b))
         .map((c) => ({...c, ...quoted(c.data?.visitor ? c.data.detail : c.text)}))
 );
+// the thread: each comment that answers none, followed by the replies under it, in order; a reply whose comment is gone stands on its own
+const thread = computed(() => {
+    const ids = new Set(onRow.value.map((c) => c.id));
+    const tops = onRow.value.filter((c) => !c.reply_to || !ids.has(c.reply_to));
+    return tops.flatMap((top) => [top, ...onRow.value.filter((c) => c.reply_to === top.id && c !== top).map((c) => ({...c, under: top.id}))]);
+});
+const replying = reactive({id: 0, text: "", error: ""});
+const replyTo = (c) => Object.assign(replying, {id: c.id, text: "", error: ""});
+
+async function sendReply() {
+    const text = replying.text.trim();
+    if (!text) return;
+    replying.error = "";
+    try {
+        await scope.api.create("comments", {on: on.value, text, reply_to: replying.id});
+        Object.assign(replying, {id: 0, text: ""});
+    } catch (e) {
+        replying.error = e.message;
+    }
+}
 const WHO = {user: "You", agent: "Agent"};
 const who = (c) => c.data?.visitor || WHO[c.author] || "Someone";
 const plain = (text) => text.replace(/`/g, "");
@@ -132,20 +152,25 @@ async function send(text) {
             </template>
             <template v-for="c in thread" :key="c.key || c.id">
                 <article
-                    :class="['comment', {focused: c.id && c.id === props.focus}]"
+                    :class="['comment', {focused: c.id && c.id === props.focus, under: c.under}]"
                     :data-comment="c.id || c.key"
                     @mouseenter="hover(c)"
                     @mouseleave="hover(null)"
                 >
                     <Byline :side="c.author" :name="who(c)" :when="age(createdAt(c))">
-                        <template v-if="!c.pending && c.author === 'user'">
+                        <template v-if="!c.pending">
                             <span class="tools">
-                                <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
-                                    <Icon name="pencil" :size="12" />
+                                <button type="button" class="tool" title="Reply under this comment" @click="replyTo(c)">
+                                    <Icon name="bubble" :size="12" />
                                 </button>
-                                <button type="button" class="tool" title="Delete this comment" @click="remove(c)">
-                                    <Icon name="close" :size="12" />
-                                </button>
+                                <template v-if="c.author === 'user'">
+                                    <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
+                                        <Icon name="pencil" :size="12" />
+                                    </button>
+                                    <button type="button" class="tool" title="Delete this comment" @click="remove(c)">
+                                        <Icon name="close" :size="12" />
+                                    </button>
+                                </template>
                             </span>
                         </template>
                     </Byline>
@@ -166,6 +191,16 @@ async function send(text) {
                     </template>
                     <template v-else>
                         <TextDisplay class="said" :text="c.text" />
+                    </template>
+                    <template v-if="replying.id && replying.id === c.id">
+                        <textarea v-model="replying.text" rows="2" placeholder="Reply…" @keydown.esc="replying.id = 0" @keydown.meta.enter.prevent="sendReply" />
+                        <span class="edit-row">
+                            <Btn kind="primary" small @click="sendReply">Reply</Btn>
+                            <Btn small @click="replying.id = 0">Cancel</Btn>
+                            <template v-if="replying.error">
+                                <span class="error">{{ replying.error }}</span>
+                            </template>
+                        </span>
                     </template>
                 </article>
             </template>
@@ -446,6 +481,12 @@ textarea {
 textarea:focus {
     border-color: var(--accent);
     outline: none;
+}
+
+.comment.under {
+    margin-left: 18px;
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
 }
 
 .edit-row {

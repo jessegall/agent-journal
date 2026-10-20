@@ -1208,3 +1208,21 @@ def test_a_comment_is_deleted_from_its_column(server):
     status, gone = call(server, "POST", f"/journal/comments/{made['id']}/delete", {})
     assert status == 200, gone
     assert made["id"] not in [c["id"] for c in call(server, "GET", "/journal/comments")[1]["rows"]], "the comment is gone from the column"
+
+
+def test_a_reply_under_a_comment_is_part_of_the_rows_thread_from_either_side(tmp_path: Path):
+    from journal.support.where import Where
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        call(server, "POST", "/journal/tasks", {"title": "the footer"})
+        status, comment = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "is the footer fixed?"})
+        status, reply = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "and the header?", "reply_to": comment["id"]})
+        assert status == 201 and reply["reply_to"] == comment["id"] and reply["on"] == ["tasks:1"], "a reply written in the column hangs under its comment, on the same row"
+        app.console().run(["message", "send", "Yes, both are fixed.", "--reply-to", str(comment["id"])], Where("main", "s1"))
+        app.runtime().deferred.drain()
+        rows = call(server, "GET", "/journal/comments")[1]["rows"]
+        assert [(r["author"], r["reply_to"], r["on"]) for r in rows] == [("user", None, ["tasks:1"]), ("user", comment["id"], ["tasks:1"]), ("agent", comment["id"], ["tasks:1"])], "the agent's reply to the comment is in the thread too, linked to the row by its answer"
+    finally:
+        app.runtime().stop()

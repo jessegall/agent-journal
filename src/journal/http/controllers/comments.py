@@ -23,18 +23,21 @@ class CommentController(Controller[Message]):
         self.repository, self.links = messages, links
 
     def rows(self) -> list[Message]:
-        """The user's messages written under a row, found by their links in one read."""
+        """The messages written under a row, found by their links in one read: the user's comments, and the replies under them from either side."""
         on = self.repository.linked(Messages.COMMENTS_ON)
-        return [m for m in self.repository.numbered(tuple(on)) if m.author == Author.USER] if on else []
+        return [m for m in self.repository.numbered(tuple(on)) if m.author == Author.USER or m.reply_to] if on else []
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
         on = self.repository.linked(Messages.COMMENTS_ON)
         return [{**ModelFields.of(m), "on": [str(ref) for ref in on.get(m.id, [])]} for m in rows]
 
     def store(self, request: Request) -> Response:
+        """A comment under a row, or with reply_to a reply under another comment of the row's thread, which takes its rows from the comment it answers."""
         on = self.row(str(request.body.get("on", "")))
-        message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", "")), request.actor)
-        self.links.save(Link(source=Ref.to(message), target=on, kind=Messages.COMMENTS_ON), request.actor)
+        reply_to = request.body.get("reply_to")
+        message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_to=int(reply_to) if reply_to else None), request.actor)
+        if not reply_to:
+            self.links.save(Link(source=Ref.to(message), target=on, kind=Messages.COMMENTS_ON), request.actor)
         return Response.json(self.shown(message), 201)
 
     def row(self, named: str) -> Ref:

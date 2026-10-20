@@ -328,19 +328,25 @@ export function recallEntries() {
 
 const ROW_CHANGES = ["created", "updated", "deleted"];
 
-// The table an entry tells the viewer to read again: a row's change names its table, a setting's change the settings.
-const owedBy = (e) => (!ROW_CHANGES.includes(e.kind) ? "" : e.data.table === "settings" ? "settings" : e.data.table);
+// The tables a row's change touches in the viewer: a comment is a message read through its own table, so a message's change is a comment's too.
+const SHOWN_AS = {messages: ["messages", "comments"]};
+export const tablesOf = (table) => SHOWN_AS[table] || [table];
+
+// The tables an entry tells the viewer to read again: a row's change names its table, a setting's change the settings.
+const owedBy = (e) => (!ROW_CHANGES.includes(e.kind) ? [] : tablesOf(e.data.table));
 
 function dropDeleted(entries) {
-    entries
-        .filter((e) => e.kind === "deleted" && store.rows[e.data.table])
-        .forEach((e) => (store.rows[e.data.table] = store.rows[e.data.table].filter((r) => r.id !== e.data.id)));
+    for (const e of entries.filter((e) => e.kind === "deleted")) {
+        for (const table of tablesOf(e.data.table).filter((t) => store.rows[t])) {
+            store.rows[table] = store.rows[table].filter((r) => r.id !== e.data.id);
+        }
+    }
 }
 
 export function takeEntries(entries) {
     keepEntries([...store.entries, ...entries]);
     dropDeleted(entries);
-    refresh([...new Set(entries.map(owedBy))].filter((table) => table && table !== "agents"));
+    refresh([...new Set(entries.flatMap(owedBy))].filter((table) => table && table !== "agents"));
 }
 
 onWrite((table) => store.streamOpen || refresh([table]));

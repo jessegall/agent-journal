@@ -113,6 +113,14 @@ describe("entries", () => {
         expect(store.rows.tasks.map((r) => r.id)).toEqual([2]);
     });
 
+    test("a deleted message leaves the comments too, since a comment is a message read through its own table", () => {
+        store.rows.messages = [row(1), row(2)];
+        store.rows.comments = [row(1)];
+        takeEntries([{id: 1, kind: "deleted", data: {table: "messages", id: 1}}]);
+        expect(store.rows.messages.map((r) => r.id)).toEqual([2]);
+        expect(store.rows.comments).toEqual([]);
+    });
+
     test("a table that fails to read leaves the others read, and only it is asked again", async () => {
         store.rows.messages = [];
         api.list.mockImplementation(async (table) => {
