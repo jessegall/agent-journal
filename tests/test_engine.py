@@ -537,8 +537,8 @@ def test_the_models_carry_the_events_their_changes_mean():
     now = datetime(2026, 10, 20, 23, 0, tzinfo=timezone.utc)
     task = Task(id=7, environment_id=1, title="t", state=TaskState.STARTED)
     assert [type(e) for e in task.finished(now, "x").events] == [TaskClosed, RowSettled] and task.finished(now, "x").events[1].ref == "tasks:7"
-    assert task.parked("later", now).events[0] == TaskClosed(environment_id=1, at=now.timestamp(), task_id=7)
-    assert Task(id=8, environment_id=1, title="u").started(now).events == (TaskStarted(environment_id=1, at=now.timestamp(), task_id=8),)
+    assert task.parked("later", now).events[0] == TaskClosed(environment_id=1, at=now.timestamp(), task_id=7, how="parked")
+    assert Task(id=8, environment_id=1, title="u").started(now).events == (TaskStarted(environment_id=1, at=now.timestamp(), task_id=8, title="u", plan_id=0),)
     assert TaskLog.of(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, at=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
     assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowSettled] and question.asked(1.0).events[0].question_id == 4
@@ -633,3 +633,32 @@ def test_the_features_conduct_is_folded_into_the_base_state_and_every_matching_l
     finally:
         BaseState.fold(())
     assert all("laws" not in method.__name__ for _, method in Ended.listeners())
+
+
+def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_from_the_standing():
+    from journal.features.plans.support.plans_conduct import PlansConduct
+    from journal.features.plans.support.plans_standing import PlansStanding
+    from journal.features.tasks.support.tasks_standing import TasksStanding
+    from journal.features.plans.states.following_plan import FollowingPlan
+    from journal.events.rows.plan_approved import PlanApproved
+    from journal.events.rows.task_started import TaskStarted
+    settings = SettingsValue({})
+    from journal.features.plans.support.started_plan import StartedPlan
+    plans = PlansStanding(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), tasks_left=2, at_checkpoint=False))
+    tasks = TasksStanding(in_hand=7, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=())
+    standing = Standing({"plans": plans, "tasks": tasks})
+    assert Idle().on(SessionStarted().with_standing(standing), settings).pushed == FollowingPlan(plan_id=5, task_id=7)
+    assert Idle().on(SessionStarted().with_standing(Standing({"plans": PlansStanding((), None), "tasks": tasks})), settings).pushed is None
+    started = TaskStarted(environment_id=1, at=1.0, task_id=7, title="t", plan_id=0).with_standing(standing)
+    assert Working(task_id=7, logged_at=2.0).on(started, settings).to == FollowingPlan(plan_id=5, task_id=7, logged_at=2.0)
+    assert FollowingPlan(plan_id=5, task_id=7).on(started, settings).to == FollowingPlan(plan_id=5, task_id=7)
+    BaseState.fold((PlansConduct,))
+    try:
+        approved = Idle().on(PlanApproved(environment_id=1, at=1.0, plan_id=5, by_user=True).with_standing(standing), settings)
+        assert [nudge.key for nudge in approved.nudges] == ["plans.the_user_approved_the_plan"]
+        by_agent = Idle().on(PlanApproved(environment_id=1, at=1.0, plan_id=5, by_user=False).with_standing(standing), settings)
+        assert by_agent.nudges == ()
+        next_task = Idle().on(TaskStarted(environment_id=1, at=1.0, task_id=8, title="the next", plan_id=5).with_standing(standing), settings)
+        assert next_task.nudges[0].rendered() == "plan 5: task 8, the next is next. it has no brief and nothing logged yet"
+    finally:
+        BaseState.fold(())

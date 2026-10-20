@@ -47,7 +47,7 @@ class AdvancePlan(Listener[Updated]):
         if self.tasks.in_hand() is not None:
             self.moved(session, task, FollowingPlan(plan_id=plan.id, moved_from=task.id))
             return
-        started = self.tasks.save(following.started(datetime.now(timezone.utc)), event.by)
+        started = self.tasks.save(following.started_by_plan(datetime.now(timezone.utc), plan.id), event.by)
         self.moved(session, task, FollowingPlan(plan_id=plan.id, task_id=started.id, moved_from=task.id))
 
     def follower(self, task: Task) -> tuple[str, FollowingPlan] | None:

@@ -9,7 +9,7 @@ from journal.features.tasks.listeners.end_settled_waits import EndSettledWaits
 from journal.features.tasks.listeners.let_go_of_closed_task import LetGoOfClosedTask
 from journal.features.tasks.listeners.no_wait_cycles import NoWaitCycles
 from journal.features.tasks.listeners.one_task_in_hand import OneTaskInHand
-from journal.features.tasks.listeners.spot_polling import SpotPolling
+from journal.features.tasks.support.tasks_conduct import TasksConduct
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.support.option import Option
@@ -31,7 +31,8 @@ class Tasks(Feature):
     NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between reminders of the task in hand, so drift is noticed", 25, unit="edits")
     LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits without a log line before the agent's next write waits for one", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
-    listeners = (SpotPolling, ClearWaits, EndSettledWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
+    listeners = (ClearWaits, EndSettledWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
+    conduct = (TasksConduct,)
     standing = (TasksStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'open_tasks', 'Has open tasks?', 'the environment has open tasks the agent may take up, outside a plan not yet started'),

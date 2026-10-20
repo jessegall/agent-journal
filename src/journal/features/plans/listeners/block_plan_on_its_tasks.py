@@ -1,4 +1,4 @@
-from journal.support.typed_nudges import TypedNudges
+from datetime import datetime, timezone
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
 from journal.support.actor import Actor
@@ -10,8 +10,8 @@ from journal.repositories.plans import Plans
 class BlockPlanOnItsTasks(Listener[Updated]):
     """A started plan whose every task left is blocked blocks itself, since none of its work can go on, and opens again the moment one of them opens; a single blocked task never blocks its plan. The agent is told either way."""
 
-    def __init__(self, plans: Plans, typed: TypedNudges) -> None:
-        self.plans, self.typed = plans, typed
+    def __init__(self, plans: Plans) -> None:
+        self.plans = plans
 
     def handle(self, event: Updated) -> None:
         from journal.features.plans.feature import Plans as PlansFeature
@@ -20,8 +20,6 @@ class BlockPlanOnItsTasks(Listener[Updated]):
             return
         for plan in self.plans.holding(task):
             if plan.state == PlanState.STARTED and self.plans.all_left_blocked(plan):
-                self.plans.save(plan.blocked(PlansFeature.ALL_BLOCKED), Actor.system())
-                self.typed.type(PlansFeature.PLAN_BLOCKED.create(n=plan.id, why=PlansFeature.ALL_BLOCKED))
+                self.plans.save(plan.blocked(PlansFeature.ALL_BLOCKED, datetime.now(timezone.utc).timestamp()), Actor.system())
             elif plan.is_blocked() and plan.blocked_why == PlansFeature.ALL_BLOCKED and not self.plans.all_left_blocked(plan):
-                self.plans.save(plan.unblocked(), Actor.system())
-                self.typed.type(PlansFeature.PLAN_OPEN_AGAIN.create(n=plan.id, why=f"task {task.id} is open again"))
+                self.plans.save(plan.unblocked(f"task {task.id} is open again", datetime.now(timezone.utc).timestamp()), Actor.system())

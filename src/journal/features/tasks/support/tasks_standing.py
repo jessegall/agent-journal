@@ -9,3 +9,5 @@ class TasksStanding:
     parked: tuple[int, ...]
     blocked: tuple[int, ...]
     broken_waits: tuple[int, ...]
+    first_parked_why: str
+    last_commands: tuple[str, ...]

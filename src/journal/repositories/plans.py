@@ -33,7 +33,7 @@ class Plans(ScopedRepository[Plan]):
             raise Refused(f"plan {plan.id} is in review: it can be approved once its reviewers are back and their findings are in it")
         if plan.state in (PlanState.STARTED, PlanState.DONE, PlanState.CANCELLED):
             return plan
-        return self.save(plan.approved(), by)
+        return self.save(plan.approved(self._now().timestamp(), by.is_the_user()), by)
 
     def cancel(self, plan: Plan, by: Actor) -> list[Task]:
         """The plan cancelled with the tasks that are its alone: a task not done that another live plan also holds stays; the cancelled tasks are returned."""

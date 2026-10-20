@@ -120,7 +120,7 @@ class TaskCommand(Command):
         return 0
 
     def unblock(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).unblocked(), where.actor)
+        task = self.tasks.save(self.tasks.find(args.n).unblocked("the user opened it", self._now().timestamp()), where.actor)
         print(f"task {task.id} open again")
         return 0
 

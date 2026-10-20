@@ -8,3 +8,5 @@ class TaskStarted(RowEvent):
     """A task was started."""
 
     task_id: int
+    title: str
+    plan_id: int

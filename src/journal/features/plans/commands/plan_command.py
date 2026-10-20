@@ -167,14 +167,14 @@ class PlanCommand(Command):
 
     def block(self, args: Namespace, where: Where) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
-        plan = self.plans.save(self.plans.find(args.n).blocked(args.why), where.actor)
+        plan = self.plans.save(self.plans.find(args.n).blocked(args.why, datetime.now(timezone.utc).timestamp()), where.actor)
         for ref in self.waits.named(args.on, args.until, args.every, f"plan {plan.id}", where.actor):
             self.links.save(Link(source=Ref.to(plan), target=ref, kind=WAITS_ON), where.actor)
         print(f"plan {plan.id} blocked, waiting on: {self.tasks.reason(plan)}")
         return 0
 
     def unblock(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.save(self.plans.find(args.n).unblocked(), where.actor)
+        plan = self.plans.save(self.plans.find(args.n).unblocked("the user opened it", datetime.now(timezone.utc).timestamp()), where.actor)
         print(f"plan {plan.id} open again: `journal plan start {plan.id}` goes on with it")
         return 0
 

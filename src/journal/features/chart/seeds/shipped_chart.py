@@ -36,8 +36,6 @@ STATELESS = (
     (":idle:reports", "Name the worker reports not acted on", "name_reports_at_stop"),
     (":ticked:reports", "Name the worker reports not acted on every three minutes", "name_reports_on_tick"),
     (":ticked:background", "Ask the agent to look at a command running in the background every five minutes", "check_the_background"),
-    (":tasks.updated:plan_next", "Tell the agent its plan's next task, or that none can start", "tell_the_plans_next_step"),
-    (":tasks.updated:parked_at_close", "Name a parked task when a task closes", "name_parked_at_close"),
     (":workers.updated:report", "Tell the agent a worker reported, whatever it is doing", "tell_a_report_came"),
     (":tool_starting:unread_held", "Hold a write while messages stay unread after {messages.hold_after_reminders} reminders", "hold_write_while_unread"),
     (":tool_starting:inbox", "Name the unread messages every {messages.remind_every} tool uses", "name_the_unread"),
@@ -456,15 +454,6 @@ class ShippedChart(Seed):
     def ask_about_old_memory(self, chart: Chart, ends: list) -> list:
         """A fresh session start, not one going on after a compaction, with facts, rules or reminders standing long: the agent is asked whether they still hold, at most once a day."""
         return self.guarded(chart, ends, 720, 92, (Guard("after_compaction", passes=NO), Guard("memory_older_than", "memory.stale_after")), "say", STALE)
-
-    def tell_the_plans_next_step(self, chart: Chart, ends: list) -> list:
-        """A task of a plan closes: the agent is told, by typing since no hook waits on a row's change, the task the plan moved on to, or that none can start and why."""
-        ends = self.guarded(chart, ends, 720, 92, (Guard("plan_moved_on"),), "type", PLAN_NEXT)
-        return self.guarded(chart, ends, 1040, 92, (Guard("plan_left_waiting"),), "type", PLAN_WAITING)
-
-    def name_parked_at_close(self, chart: Chart, ends: list) -> list:
-        """A task closes, by command or by a commit, with no task in hand and no plan going on: the agent is told, by typing since no hook waits on a row's change, of a task still parked."""
-        return self.guarded(chart, ends, 720, 92, (Guard("task_just_done"), Guard("task_in_hand", passes=NO), Guard("plan_moved_on", passes=NO), Guard("parked_tasks")), "type", PARKED_AT_CLOSE)
 
     def name_reports_at_stop(self, chart: Chart, ends: list) -> list:
         """A stop while a worker's report waits to be acted on: the agent is told which."""

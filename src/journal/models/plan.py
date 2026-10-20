@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from journal.models.plan_state import PlanState
+from journal.events.rows.plan_approved import PlanApproved
+from journal.events.rows.plan_blocked import PlanBlocked
+from journal.events.rows.plan_opened_again import PlanOpenedAgain
 from journal.events.rows.plan_started import PlanStarted
 from journal.models.scoped import Scoped
 from journal.models.task import Task
@@ -26,8 +29,8 @@ class Plan(Scoped):
     def reviewing(self) -> "Plan":
         return self.moved(PlanState.REVIEWING)
 
-    def approved(self) -> "Plan":
-        return self.moved(PlanState.APPROVED)
+    def approved(self, at: float, by_user: bool) -> "Plan":
+        return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, at=at, plan_id=self.id, by_user=by_user))
 
     def started(self, first: Task, at: float) -> "Plan":
         return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, at=at, plan_id=self.id, task_id=first.id))
@@ -38,11 +41,11 @@ class Plan(Scoped):
     def parked(self) -> "Plan":
         return self.moved(PlanState.PARKED)
 
-    def blocked(self, why: str) -> "Plan":
-        return self.moved(PlanState.BLOCKED).with_(blocked_why=why)
+    def blocked(self, why: str, at: float) -> "Plan":
+        return self.moved(PlanState.BLOCKED).with_(blocked_why=why).with_event(PlanBlocked(environment_id=self.environment_id, at=at, plan_id=self.id, why=why))
 
-    def unblocked(self) -> "Plan":
-        return self.moved(PlanState.STARTED).with_(blocked_why="")
+    def unblocked(self, why: str, at: float) -> "Plan":
+        return self.moved(PlanState.STARTED).with_(blocked_why="").with_event(PlanOpenedAgain(environment_id=self.environment_id, at=at, plan_id=self.id, why=why))
 
     def is_blocked(self) -> bool:
         return self.state == PlanState.BLOCKED

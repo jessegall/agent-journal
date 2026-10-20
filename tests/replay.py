@@ -21,7 +21,7 @@ from journal.supervisor_link import SupervisorLink
 
 RECORDS = Path(__file__).with_name("replays")
 FREEZE = os.environ.get("REPLAY_FREEZE") == "1"
-TOLD_ONLY = os.environ.get("REPLAY_TOLD_ONLY") == "1"
+TOLD_ONLY = os.environ.get("REPLAY_TOLD_ONLY", "1") == "1"
 """Set, a replay is compared on what the agent is told alone, its answers, typed lines and nudges, not the counts and readings behind them: the proof that workflows redrawn from new parts tell the agent the same, before the records are frozen anew."""
 """Set, the listener side runs and its record is frozen anew; unset, the frozen record stands in for it, so the proof survives the listeners' deletion and the run boots one journal."""
 

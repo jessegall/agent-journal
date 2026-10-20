@@ -1,16 +1,28 @@
 from journal.features.plans.support.plans_standing import PlansStanding
+from journal.features.plans.support.started_plan import StartedPlan
 from journal.models.agent import Agent
+from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
+from journal.models.task_state import TaskState
 from journal.repositories.plans import Plans
+from journal.support.task_briefing import TaskBriefing
+
+NOTHING_YET = "it has no brief and nothing logged yet"
 
 
 class PlansStandingReader:
     """Reads the plans feature's part of the Standing for an agent."""
 
-    def __init__(self, plans: Plans) -> None:
-        self.plans = plans
+    def __init__(self, plans: Plans, briefing: TaskBriefing) -> None:
+        self.plans, self.briefing = plans, briefing
 
     def read(self, agent: Agent) -> PlansStanding:
         started = next((p for p in self.plans.in_() if p.state == PlanState.STARTED), None)
-        task = (self.plans.resumable(started) or self.plans.next_task(started)) if started else None
-        return PlansStanding(approved=tuple(p.id for p in self.plans.approved()), started=started.id if started else 0, next_task=task.id if task else 0)
+        return PlansStanding(approved=tuple(p.id for p in self.plans.approved()), started=self.started_plan(started) if started else None)
+
+    def started_plan(self, plan: Plan) -> StartedPlan:
+        tasks = self.plans.tasks_of(plan)
+        task = self.plans.resumable(plan) or self.plans.next_task(plan)
+        in_hand = next((t for t in tasks if t.state == TaskState.STARTED), None)
+        briefing = (self.briefing.said(in_hand) or NOTHING_YET) if in_hand else ""
+        return StartedPlan(plan_id=plan.id, next_task=task.id if task else 0, started_task=in_hand.id if in_hand else 0, started_task_briefing=briefing, tasks=tuple(t.id for t in tasks), tasks_left=sum(1 for t in tasks if not t.is_closed()), at_checkpoint=self.plans.at_checkpoint(plan) is not None)

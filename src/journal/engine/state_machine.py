@@ -50,7 +50,9 @@ class StateMachine(AgentListener[AgentEvent]):
     def row_event(self, event: RowEvent) -> None:
         with self.scope.of(event.environment_id):
             for agent in self.agents.live_in(event.environment_id):
-                self.answer(agent, event)
+                answered = self.answer(agent, event)
+                if answered.context:
+                    self.supervisor.type(event.environment_id, answered.context)
 
     def answer(self, agent: Agent, event: Event) -> Decision:
         stack, settings = self.states.stack_of(agent), self.taken()

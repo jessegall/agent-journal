@@ -9,11 +9,9 @@ from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 from journal.features.plans.commands.plan_command import PlanCommand
 from journal.features.plans.listeners.advance_plan import AdvancePlan
-from journal.features.plans.listeners.follow_plan_at_start import FollowPlanAtStart
-from journal.features.plans.listeners.follow_plan_on_resume import FollowPlanOnResume
 from journal.features.plans.listeners.reopen_finished_plan import ReopenFinishedPlan
 from journal.features.plans.listeners.reopen_plan_of_reopened_task import ReopenPlanOfReopenedTask
-from journal.features.plans.listeners.tell_approved import TellApproved
+from journal.features.plans.support.plans_conduct import PlansConduct
 from journal.features.plans.seeds.closed_plans import ClosedPlans
 from journal.features.plans.states.following_plan import FollowingPlan
 
@@ -24,7 +22,8 @@ class Plans(Feature):
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."
     states = (FollowingPlan,)
     commands = (PlanCommand,)
-    listeners = (BlockPlanOnItsTasks, ClearPlanWaits, CountPlanReviewers, AdvancePlan, TellApproved, FollowPlanAtStart, FollowPlanOnResume, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
+    listeners = (BlockPlanOnItsTasks, ClearPlanWaits, CountPlanReviewers, AdvancePlan, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
+    conduct = (PlansConduct,)
     standing = (PlansStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'plan_moved_on', 'Plan moved on to its next task?', 'a task just closed and the agent follows its plan at the next one'),
@@ -35,7 +34,7 @@ class Plans(Feature):
     )
     seeds = (ClosedPlans,)
 
-    NEXT_TASK_OF_THE_PLAN = Nudge(name, "next_task_of_the_plan", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)
+    NEXT_TASK_OF_THE_PLAN = Nudge(name, "next_task_of_the_plan", "plan {{n}}: task {{task}}, {{title}} is next. {{briefing}}", repeat_after=0)
     PLAN_DONE = Nudge(name, "plan_done", "plan {{n}} is done: its last task closed", repeat_after=0)
     PLAN_WAITS_ON_ITS_TASKS = Nudge(name, "plan_waits_on_its_tasks", "plan {{n}}: no task can start now; {{left}} parked, blocked or waiting", "`journal task list` says what each waits on; when one can go on, `journal plan start {{n}}` takes it up", repeat_after=0)
     THE_USER_PARKED_THE_PLAN = Nudge(name, "the_user_parked_the_plan", "the user parked plan {{n}}")

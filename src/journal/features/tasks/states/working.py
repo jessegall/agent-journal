@@ -1,6 +1,9 @@
 from dataclasses import dataclass, replace
 
 from journal.engine.agent_state import AgentState
+from journal.engine.support.settings import Settings
+from journal.engine.support.transition import Transition
+from journal.events.rows.task_started import TaskStarted
 from journal.support.permission import Permission
 
 
@@ -29,3 +32,11 @@ class Working(AgentState):
 
     def logged(self, at: float) -> "Working":
         return replace(self, logged_at=at)
+
+    def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
+        from journal.features.plans.feature import Plans
+        from journal.features.plans.states.following_plan import FollowingPlan
+        started = event.standing.of(Plans).started
+        if self.follows_a_plan() or started is None or event.task_id != self.task_id or event.task_id not in started.tasks:
+            return self.stay()
+        return self.go(FollowingPlan(plan_id=started.plan_id, task_id=self.task_id, logged_at=self.logged_at))
