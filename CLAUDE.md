@@ -72,7 +72,10 @@ and not as a note; a workflow is drawn on the canvas, in the user's order, and c
 task's log, a plan's next step. Never a chain of subjects drawn as one workflow because they happen
 at the same event; each is its own workflow in the event's run order. A workflow is self-contained: it checks
 every condition it acts on itself, auto mode among them, so it reads whole on its own. Stop the later workflows is
-a side effect a workflow may opt into, never what another workflow counts on to keep from acting. What the agent owes the journal before it may write or stop,
+a side effect a workflow may opt into, never what another workflow counts on to keep from acting. A workflow is
+made only of parts on the canvas: whatever it remembers, it keeps in values it names and sets itself, counts and
+times kept per environment, and it never reads another workflow's value; no check keeps a clock or works out a
+count out of sight. What the agent owes the journal before it may write or stop,
 the journal skill, the look at what is in flight, a decision at a context mark, is the engine's:
 each feature sets its own debt and holds a write and a stop on it through listeners, and no node on the canvas carries it.
 

@@ -51,7 +51,7 @@ class SlowRequests:
             return False
         settled = time.monotonic() - self.started > SETTLING_SECONDS
         busy = os.getloadavg()[0] > (os.cpu_count() or 1)
-        return (self.config.root / "src" / "journal").is_dir() and settled and not busy and not self.is_testing()
+        return Faults.applies_in(self.config.root) and settled and not busy and not self.is_testing()
 
     def is_testing(self) -> bool:
         """A test run is on: one of the marks the runs leave, each named by its own process, names a process still running; a mark left by a run that died is stale."""

@@ -68,3 +68,21 @@ describe("an event's workflows in the order they run", () => {
         expect(MARKS.map((m) => m.mark)).toEqual(["default", "yours", "off", "failed", "none"]);
     });
 });
+
+describe("a workflow with several triggers", () => {
+    const twice = shipped(9, "", "ticked", 0, {places: {ticked: 4, idle: 0}});
+    const later = shipped(10, "", "idle", 0, {places: {idle: 1}});
+    const off = shipped(11, "", "idle", 0, {places: {}, off: true});
+    const pairing = pairs([twice, later, off], states, catalogue);
+
+    it("is listed under each event it holds a trigger for, in its own place at each", () => {
+        expect(pairing.answering("idle").map((w) => w.id)).toEqual([9, 11, 10]);
+        expect(pairing.answering("ticked").map((w) => w.id)).toEqual([9]);
+    });
+
+    it("is marked with the other events it runs at", () => {
+        expect(pairing.alsoOn(twice, "idle")).toEqual(["Clock ticks"]);
+        expect(pairing.alsoOn(twice, "ticked")).toEqual(["Agent stops"]);
+        expect(pairing.alsoOn(later, "idle")).toEqual([]);
+    });
+});

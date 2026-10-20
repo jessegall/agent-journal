@@ -21,6 +21,10 @@ class DocCommand(Command):
         create.add_argument("title")
         create.add_argument("--file", required=True, help="a markdown file holding its text; ## headings are its sections")
         create.add_argument("--abstract", default="", help="one line that says what it is")
+        update = self.verb(verbs, "update", "write a document's text anew from a markdown file, its title kept")
+        update.add_argument("n", type=int)
+        update.add_argument("--file", required=True, help="a markdown file holding its whole new text; ## headings are its sections")
+        update.add_argument("--abstract", default=None, help="a new one line that says what it is")
         show = self.verb(verbs, "show", "a document: its outline, then one section at a time")
         show.add_argument("n", type=int)
         Outline.arguments(show)
@@ -31,6 +35,12 @@ class DocCommand(Command):
     def create(self, args: Namespace, where: Where) -> int:
         doc = self.docs.save(Doc(title=args.title, abstract=args.abstract, body=Path(args.file).read_text()), where.actor)
         print(f"doc {doc.id}: {doc.title}")
+        return 0
+
+    def update(self, args: Namespace, where: Where) -> int:
+        standing = self.docs.find(args.n)
+        doc = self.docs.save(standing.with_(body=Path(args.file).read_text(), abstract=standing.abstract if args.abstract is None else args.abstract), where.actor)
+        print(f"doc {doc.id} written anew: {doc.title}")
         return 0
 
     def show(self, args: Namespace, where: Where) -> int:

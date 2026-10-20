@@ -8,9 +8,18 @@ export const refOf = (row) => `${row.table}:${row.id}`;
 
 const firstLine = (text) => (text || "").split("\n").find((line) => line.trim()) || "";
 
+export const TITLE_CHARACTERS = 80;
+
+// A line short enough for a title: cut after the last whole word that fits, with an ellipsis where it was cut.
+export function cutShort(line) {
+    if (line.length <= TITLE_CHARACTERS) return line;
+    const cut = line.slice(0, TITLE_CHARACTERS + 1).replace(/\s+\S*$/, "");
+    return `${cut || line.slice(0, TITLE_CHARACTERS)}…`;
+}
+
 const TITLES = {
-    messages: (r) => firstLine(r.text),
-    comments: (r) => firstLine(r.text),
+    messages: (r) => cutShort(firstLine(r.text)),
+    comments: (r) => cutShort(firstLine(r.text)),
     questions: (r) => r.text,
     facts: (r) => r.text,
     rules: (r) => r.text,

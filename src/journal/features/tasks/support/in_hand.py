@@ -1,8 +1,8 @@
-import time
 from dataclasses import replace
 from datetime import datetime, timezone
 
 from journal.support.where import Where
+from journal.engine.clock import Clock
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.features.tasks.states.working import Working
@@ -14,8 +14,8 @@ from journal.repositories.tasks import Tasks
 class InHand:
     """The work an agent has in hand, taken up and let go of in one place for the task and the work commands alike."""
 
-    def __init__(self, tasks: Tasks, machine: Machine) -> None:
-        self.tasks, self.machine = tasks, machine
+    def __init__(self, tasks: Tasks, machine: Machine, clock: Clock) -> None:
+        self.tasks, self.machine, self.clock = tasks, machine, clock
 
     def current(self, where: Where) -> Working | None:
         if not where.session:
@@ -31,7 +31,7 @@ class InHand:
         started = task.started(datetime.now(timezone.utc))
         self.tasks.refuse_second(started)
         if where.session:
-            self.machine.move(where.session, task.environment_id, Working(task_id=task.id, logged_at=time.time()))
+            self.machine.move(where.session, task.environment_id, Working(task_id=task.id, logged_at=self.clock.now()))
         return self.tasks.save(started, where.actor)
 
     def let_go(self, task: Task, where: Where) -> None:

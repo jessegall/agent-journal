@@ -1,6 +1,6 @@
-import time
 from datetime import datetime, timezone
 
+from journal.engine.clock import Clock
 from journal.engine.machine import Machine
 from journal.features.tasks.states.working import Working
 from journal.http.controllers.controller import Controller
@@ -21,8 +21,8 @@ from journal.repositories.workers import Workers
 class TaskController(Controller[Task]):
     """Tasks with the plan each is in and the worker that holds it; started from the viewer, a task is taken up by the live agent."""
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, agents: Agents, machine: Machine) -> None:
-        self.repository, self.task_logs, self.workers, self.agents, self.machine = tasks, logs, workers, agents, machine
+    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, agents: Agents, machine: Machine, clock: Clock) -> None:
+        self.repository, self.task_logs, self.workers, self.agents, self.machine, self.clock = tasks, logs, workers, agents, machine, clock
 
     def rows(self) -> list[Task]:
         return self.repository.shown()
@@ -42,7 +42,7 @@ class TaskController(Controller[Task]):
         task = self.repository.save(self.repository.find(request.number("id")).started(self.now()), request.actor)
         live = self.agents.live()
         if live:
-            self.machine.move(live.session, task.environment_id, Working(task_id=task.id, logged_at=time.time()))
+            self.machine.move(live.session, task.environment_id, Working(task_id=task.id, logged_at=self.clock.now()))
         return Response.json(self.shown(task))
 
     def finish(self, request: Request) -> Response:

@@ -14,7 +14,7 @@ class TrialAsked:
 
     @classmethod
     def from_payload(cls, payload: dict) -> "TrialAsked":
-        assumed = Assumptions(quiet=payload.get("quiet"), edits=payload.get("edits"), unread=payload.get("unread"), state=payload.get("state"), provider=payload.get("provider"),
-                              counts={name: int(value) for name, value in (payload.get("counts") or {}).items()})
+        assumed = Assumptions(quiet=payload.get("quiet"), unread=payload.get("unread"), state=payload.get("state"), provider=payload.get("provider"),
+                              counts={name: int(value) for name, value in (payload.get("counts") or {}).items()}, since={name: int(value) for name, value in (payload.get("since") or {}).items()})
         given = {name: payload[name] for name in ("trigger", "environment", "row") if payload.get(name)}
         return cls(**given, assumed=assumed)

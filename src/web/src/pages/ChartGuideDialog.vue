@@ -3,7 +3,7 @@ import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 
 const LEAD =
-    "The journal answers the agent with one workflow per state per event: pick what the agent is doing, then what happens, and the workflow for that pair shows. A state with a parent uses the parent's workflow where it has none of its own.";
+    "The journal answers the agent with workflows: pick an event on the left, and the workflows that run at it are listed in the order they run, each for one state or for every state. A state with a parent runs the parent's workflows too.";
 
 const emit = defineEmits(["close"]);
 </script>
@@ -15,6 +15,19 @@ const emit = defineEmits(["close"]);
             A trigger is an event, such as the agent stopping. A check is a yes or no question the journal answers from what it knows, and
             the flow goes on by the Yes or the No line. An action is what the journal does: send a message to the agent, block its stop,
             block a tool, type into its terminal or start a sequence.
+        </p>
+        <p class="chart-dialog-text">
+            A workflow remembers only in values it sets itself, each environment its own: a count, which Add one to a count raises and Set
+            a count to zero starts again, and a time, which Note the time keeps and Has N passed since a noted time? asks about. A check
+            on a value no step of the same workflow sets is refused, so no workflow reads another's. A workflow may hold a trigger for
+            several events, sharing its values between them: it is listed under each, marked with the others, in its own place at each.
+            The line under the title says the values in the environment picked in the bar, and Change the order lets you drag the list.
+        </p>
+        <p class="chart-dialog-text">
+            Two built from parts. Remind to commit after 20 writes: at Pre tool use, Tool changes files? then Add one to writes, then Has
+            writes reached 20? then a message; a second trigger, Commit made, sets writes to zero. Ask about an open question after 10
+            quiet minutes: at Pre tool use, Note the time as last_tool_use; a second trigger, Tick, asks Has an open question? and Has 10
+            minutes passed since last_tool_use? before a message.
         </p>
         <p class="chart-dialog-text">
             The page opens read-only; Edit switches editing on. Add step puts a step below the selected one and connects it. Drag from a

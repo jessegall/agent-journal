@@ -1,0 +1,73 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "waiting on the build",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice"
+      ],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
+    },
+    {
+      "name": "half a minute",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
+    },
+    {
+      "name": "a minute and a half",
+      "answer": null,
+      "typed": [
+        "[journal] while you wait for the build, task 2 is next: if you can work on it meanwhile, carry on with it; if you need the output first, waiting is fine"
+      ],
+      "nudges": [
+        "chart.line"
+      ],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "179": 90,
+          "195": 90,
+          "196": null
+        }
+      ]
+    },
+    {
+      "name": "two minutes",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
+    }
+  ]
+}

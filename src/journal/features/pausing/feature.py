@@ -10,6 +10,7 @@ class PausingFeature(Feature):
 
     name = NAME
     title = "Pausing the agent"
+    fixed = True
     help = "The pause button on the top bar holds the agent: it finishes the step it is on, then waits until you resume it or write to it."
     states = (PausedByUser,)
     nudges = (PAUSED, RESUMED)

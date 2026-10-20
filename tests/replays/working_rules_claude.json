@@ -12,7 +12,12 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -25,8 +30,18 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "113": 0,
+          "114": 0
+        }
+      ]
     },
     {
       "name": "the session starts again",
@@ -45,8 +60,18 @@
         "voices.voice",
         "tasks.carry_on"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 12,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "118": 0,
+          "119": 0
+        }
+      ]
     },
     {
       "name": "quiet for a quarter of an hour",
@@ -57,8 +82,17 @@
       "nudges": [
         "tasks.open"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 13,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "139": 900
+        }
+      ]
     }
   ]
 }

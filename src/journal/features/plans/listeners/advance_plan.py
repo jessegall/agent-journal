@@ -38,17 +38,17 @@ class AdvancePlan(Listener[Updated]):
             self.moved(session, task, self.machine.states.first())
             return
         if self.control.holds(plan):
-            self.moved(session, task, FollowingPlan(plan_id=plan.id))
+            self.moved(session, task, FollowingPlan(plan_id=plan.id, moved_from=task.id))
             return
         following = self.plans.next_task(plan)
         if following is None:
-            self.moved(session, task, FollowingPlan(plan_id=plan.id))
+            self.moved(session, task, FollowingPlan(plan_id=plan.id, moved_from=task.id))
             return
         if self.tasks.in_hand() is not None:
-            self.moved(session, task, FollowingPlan(plan_id=plan.id))
+            self.moved(session, task, FollowingPlan(plan_id=plan.id, moved_from=task.id))
             return
         started = self.tasks.save(following.started(datetime.now(timezone.utc)), event.by)
-        self.moved(session, task, FollowingPlan(plan_id=plan.id, task_id=started.id))
+        self.moved(session, task, FollowingPlan(plan_id=plan.id, task_id=started.id, moved_from=task.id))
 
     def follower(self, task: Task) -> tuple[str, FollowingPlan] | None:
         """The session following a plan with this task in hand, now or once its pause ends."""

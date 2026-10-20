@@ -5,11 +5,13 @@ and, when asked, the keys of the nudges said. A record can be frozen to a file, 
 import json
 import os
 import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
 
+from journal.engine.clock import Clock
 from journal.support.typed_lines import TypedLines
 from journal.repositories.counts import Counts
 from journal.repositories.entries import Entries
@@ -19,6 +21,8 @@ from journal.supervisor_link import SupervisorLink
 
 RECORDS = Path(__file__).with_name("replays")
 FREEZE = os.environ.get("REPLAY_FREEZE") == "1"
+TOLD_ONLY = os.environ.get("REPLAY_TOLD_ONLY") == "1"
+"""Set, a replay is compared on what the agent is told alone, its answers, typed lines and nudges, not the counts and readings behind them: the proof that workflows redrawn from new parts tell the agent the same, before the records are frozen anew."""
 """Set, the listener side runs and its record is frozen anew; unset, the frozen record stands in for it, so the proof survives the listeners' deletion and the run boots one journal."""
 
 
@@ -57,6 +61,35 @@ def catch_typed(app, monkeypatch, typed: list) -> None:
     monkeypatch.setattr(SupervisorLink, "_send", seen_back)
 
 
+def drive_the_clock(app, monkeypatch) -> None:
+    """The engine's clock held at the moment the replay starts, so every hook notes its time there and a tick says how long after it was."""
+    clock = app.container.get(Clock)
+    clock.driven_at = time.time()
+    clock.held_at = clock.driven_at
+    monkeypatch.setattr(Clock, "now", lambda self: getattr(self, "driven_at", time.time()))
+
+
+def pass_time(app, seconds: float) -> None:
+    """The held moment moved on, so the hooks after it come so many seconds later."""
+    clock = app.container.get(Clock)
+    clock.held_at += seconds
+    clock.driven_at = clock.held_at
+
+
+def tick_after(app, quiet: float) -> list:
+    """A tick so many seconds after the held moment, once what came before it has settled on the worker thread, as the clock gives it, its answers handed back; the clock is held again after it."""
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    app.runtime().deferred.drain()
+    clock = app.container.get(Clock)
+    env = app.container.get(Environments).named("main").id
+    clock.driven_at = clock.held_at + quiet
+    try:
+        return app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, at=clock.driven_at, quiet_for=quiet))
+    finally:
+        clock.driven_at = clock.held_at
+
+
 class Replay:
     """One journal under replay: the lines typed to its agent are caught, and each step closes with what the step answered, typed and said."""
 
@@ -64,18 +97,21 @@ class Replay:
         """On a started journal, the lines typed to its agent caught."""
         self.app, self.typed, self.steps, self.seen, self.last_walk = app, [], [], 0, 0
         catch_typed(app, monkeypatch, self.typed)
+        drive_the_clock(app, monkeypatch)
 
     def step(self, name: str, answer=None) -> None:
-        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the agent's counts as they stand, and what the count checks of the walks since read."""
+        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the environment's counts as they stand once the worker has settled, so a count raised after the reply is in, and what the count checks of the walks since read."""
+        typed = list(self.typed)
         with self.app.container.get(Scope).of(self.app.container.get(Environments).named("main").id):
             entries = list(reversed(self.app.container.get(Entries).of_kind_in(1000)))
             nudges = [e.data["key"] for e in entries if e.kind == "nudge"]
             walks = [e for e in entries if e.kind == "walk"]
-            counts = {c.name: c.value for c in sorted(self.app.container.get(Counts).where(session="s1"), key=lambda c: c.name)}
+            self.app.runtime().deferred.drain()
+            counts = {c.name: c.value for c in sorted(self.app.container.get(Counts).all(), key=lambda c: c.name)}
         read = [w.data["read"] for w in walks if w.id > self.last_walk and w.data.get("read")]
-        self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:], "counts": counts, "read": read})
+        self.steps.append({"name": name, "answer": answer, "typed": typed, "nudges": nudges[self.seen:], "counts": counts, "read": read})
         self.seen, self.last_walk = len(nudges), max([self.last_walk, *(w.id for w in walks)])
-        self.typed.clear()
+        del self.typed[:len(typed)]
 
     def record(self) -> list[dict]:
         return list(self.steps)
@@ -144,9 +180,9 @@ def differences(left: list[dict], right: list[dict], nudges: bool = False) -> li
         if nudges and sorted(a["nudges"]) != sorted(b["nudges"]):
             found.append(f"{a['name']}: the nudges said differ: {a['nudges']} against {b['nudges']}")
         kept = lambda counts: {k: v for k, v in counts.items() if k not in DERIVED}
-        if "counts" in a and "counts" in b and kept(a["counts"]) != kept(b["counts"]):
+        if not TOLD_ONLY and "counts" in a and "counts" in b and kept(a["counts"]) != kept(b["counts"]):
             found.append(f"{a['name']}: the counts differ: {a['counts']} against {b['counts']}")
-        if "read" in a and "read" in b and a["read"] != b["read"]:
+        if not TOLD_ONLY and "read" in a and "read" in b and a["read"] != b["read"]:
             found.append(f"{a['name']}: what the count checks read differs: {a['read']} against {b['read']}")
     if len(left) != len(right):
         found.append(f"{len(left)} steps against {len(right)}")

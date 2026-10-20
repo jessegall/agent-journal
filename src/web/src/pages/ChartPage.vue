@@ -6,26 +6,24 @@ import {overlapping, tidy} from "../domain/tidy.js";
 import {LOCK_RULE, LOCK_WHY, stayOn} from "../domain/workflowLocks.js";
 import {markOf, pairs, statusOf} from "../domain/workflowPairs.js";
 import {nodeRunWords, readWords} from "../domain/workflowRuns.js";
-import {countWords, limitOf, readingLines, standingLines, waitingWords} from "../domain/workflowStanding.js";
+import {countWords, limitOf, standingLines, valueLines, valueWords, waitingWords} from "../domain/workflowStanding.js";
 import {usePoll} from "../composables/poll.js";
 import {cardTitle, limitNote, messageShown} from "../domain/cardTitle.js";
-import {CARD, KIND, PORT_AT, placeholderOf, STOPS_WHY, stopsTheWalk, WORD} from "../domain/chartCard.js";
+import {CARD, KIND, PORT_AT, placeholderOf, SETTERS, STOPS_WHY, stopsTheWalk, VALUE_KEYS, WORD} from "../domain/chartCard.js";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
-import DropList from "../kit/DropList.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
-import PageBar from "../kit/PageBar.vue";
 import Segmented from "../kit/Segmented.vue";
 import SidePanel from "../kit/SidePanel.vue";
 import ChartAddList from "./ChartAddList.vue";
 import ChartEventsColumn from "./ChartEventsColumn.vue";
 import ChartEmptyCanvas from "./ChartEmptyCanvas.vue";
-import ChartEditControls from "./ChartEditControls.vue";
+import ChartPageBar from "./ChartPageBar.vue";
 import ChartFaults from "./ChartFaults.vue";
 import ChartGuideDialog from "./ChartGuideDialog.vue";
 import ChartWorkflowActions from "./ChartWorkflowActions.vue";
@@ -47,9 +45,32 @@ const loaded = ref(false);
 const workflows = ref([]);
 const current = ref(0);
 const standing = ref(null);
+// whose values the canvas shows: the environment in view unless another is picked
+const valuesEnv = ref(route.value.env);
+const environments = ref([]);
+const environmentItems = computed(() => environments.value.map((e) => ({key: e.name, label: e.name})));
+onMounted(async () => {
+    environments.value = (await api.list("environments", {limit: 50}).catch(() => ({rows: []}))).rows || [];
+});
+// the standing is asked again at once when another workflow opens or another environment is picked, so no other workflow's values show meanwhile
+async function standAgain() {
+    standing.value = null;
+    standing.value = current.value ? await api.in(valuesEnv.value).chartStanding(current.value).catch(() => null) : null;
+}
+watch([current, valuesEnv], standAgain);
+// what the workflow keeps in the environment shown, in a line; nothing for a workflow that keeps no value
+const valuesWords = computed(() => {
+    const keeps = nodes.value.some((n) => VALUE_KEYS.includes(n.key));
+    if (!keeps || !standing.value) return "";
+    const values = standing.value.values || [];
+    const agents = standing.value.agents || [];
+    const none = agents.length ? "" : ` No agent works in ${valuesEnv.value} now.`;
+    if (!values.length) return `No value is set yet in ${valuesEnv.value}.${none}`;
+    return `Values in ${valuesEnv.value}: ${values.map(valueWords).join(", ")}.${none}`;
+});
 usePoll(
     "chart-standing",
-    () => (current.value ? api.chartStanding(current.value) : Promise.resolve(null)),
+    () => (current.value ? api.in(valuesEnv.value).chartStanding(current.value) : Promise.resolve(null)),
     5000,
     (got) => (standing.value = got),
     () => Boolean(current.value)
@@ -107,16 +128,16 @@ const detailLines = computed(() => {
     if (isLit(node.id) && readWords(litRead.value, node.id))
         lines.push({label: "On the run shown", words: readWords(litRead.value, node.id)});
     if (node.runs) lines.push({label: "Ran", words: `${nodeRunWords(node)}${node.last ? `, last ${ago(node.last)}` : ""}`});
+    const startedBy = triggersOf(node);
+    if (node.kind !== "trigger" && nodes.value.filter((n) => n.kind === "trigger").length > 1)
+        lines.push({label: "Runs on", words: startedBy.length ? startedBy.map((t) => entryOf(t).title).join(" and ") : "no trigger: nothing leads here"});
     lines.push(...standingLines(standing.value, node.id));
-    if (node.kind === "check" && countWords(standing.value, node))
-        lines.push({label: "Count now", words: countWords(standing.value, node)});
-    if (node.kind === "check")
-        lines.push(...readingLines(standing.value).filter((l) => (node.text || "").startsWith(l.label.split(",")[0])));
+    lines.push(...valueLines(standing.value, node));
     if (node.locked) lines.push({label: "Locked", words: LOCK_WHY});
     if (stopsTheWalk(node)) lines.push({label: "Stops the later workflows", words: STOPS_WHY});
     return lines;
 });
-const MAIN_LINES = ["Message", "Count now"];
+const MAIN_LINES = ["Message", "Value now"];
 const detailMain = computed(() => detailLines.value.find((l) => MAIN_LINES.includes(l.label)) || detailLines.value[0] || null);
 const detailRest = computed(() => detailLines.value.filter((l) => l !== detailMain.value));
 const messageText = ref("");
@@ -126,6 +147,8 @@ const entries = computed(() => Object.fromEntries(catalogue.value.map((e) => [`$
 const entryOf = (node) => entries.value[`${node.kind}:${node.key}`] || {title: node.key, about: "", takes_text: false, providers: []};
 const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [String(n.id), n])));
 const trigger = computed(() => nodes.value.find((n) => n.kind === "trigger") || null);
+// the names the workflow's own steps give its counts and times, for a value step to pick from
+const valueNames = computed(() => [...new Set(nodes.value.filter((n) => SETTERS.includes(n.key) && n.text.trim()).map((n) => n.text.trim().split(/\s+/)[0]))]);
 const selectedNode = computed(() => (selected.value ? byId.value[String(selected.value)] || null : null));
 const matches = (e) => !search.value || `${e.key} ${e.title} ${e.about}`.toLowerCase().includes(search.value.toLowerCase());
 const offeredChecks = computed(() => catalogue.value.filter((e) => e.kind === "check" && matches(e)));
@@ -317,6 +340,23 @@ const path = (from, to) => {
     return `M ${from.x} ${from.y} C ${from.x} ${from.y + bow}, ${to.x} ${to.y - bow}, ${to.x} ${to.y}`;
 };
 const hooked = (node, port) => lines.value.some((l) => String(l.from) === String(node.id) && l.port === port);
+// the triggers a step hangs from: every trigger whose path leads to it, in a workflow that holds more than one
+function triggersOf(node) {
+    const seen = new Set([String(node.id)]);
+    const queue = [String(node.id)];
+    const found = [];
+    while (queue.length) {
+        const at = queue.shift();
+        for (const line of lines.value.filter((l) => String(l.to) === at)) {
+            const from = String(line.from);
+            if (seen.has(from)) continue;
+            seen.add(from);
+            if (byId.value[from]?.kind === "trigger") found.push(byId.value[from]);
+            queue.push(from);
+        }
+    }
+    return found;
+}
 const lineOf = (node, port) => lines.value.find((l) => String(l.from) === String(node.id) && l.port === port);
 const wires = computed(() =>
     lines.value
@@ -560,6 +600,7 @@ const listRows = computed(() =>
         mark: markOf(w),
         locked: Boolean(w.locked),
         warnings: w.warnings,
+        also: pairing.value.alsoOn(w, pickedEvent.value),
     }))
 );
 const filterItems = computed(() => [{key: "", label: "Every state"}, ...states.value.map((s) => ({key: s.key, label: s.title}))]);
@@ -784,29 +825,25 @@ function closeMessage() {
 
 <template>
     <section class="chart">
-        <PageBar class="chart-bar">
-            <Btn kind="ghost" small :busy="busy === 'runs'" title="The last ten runs across every workflow" @click="openRuns">
-                Recent runs
-            </Btn>
-            <Btn kind="ghost" small @click="showLead = true">How it works</Btn>
-            <span class="chart-grow" />
-            <template v-if="unlocked">
-                <ChartEditControls
-                    :event-title="eventTitle"
-                    :also-words="alsoWords"
-                    :unsaved="past.length"
-                    :replaces="conflict ? conflict.revised_by : ''"
-                    :saving="busy === 'save'"
-                    @undo="undo"
-                    @discard="discard"
-                    @save="save"
-                    @done="stopEditing"
-                />
-            </template>
-            <template v-else>
-                <Btn kind="ghost" small :disabled="!current" title="Change what the journal does here" @click="unlock">Edit</Btn>
-            </template>
-        </PageBar>
+        <ChartPageBar
+            :busy="busy"
+            :unlocked="unlocked"
+            :current="current"
+            :values-env="valuesEnv"
+            :environment-items="environmentItems"
+            :event-title="eventTitle"
+            :also-words="alsoWords"
+            :unsaved="past.length"
+            :replaces="conflict ? conflict.revised_by : ''"
+            @runs="openRuns"
+            @lead="showLead = true"
+            @env="valuesEnv = $event"
+            @undo="undo"
+            @discard="discard"
+            @save="save"
+            @done="stopEditing"
+            @unlock="unlock"
+        />
         <template v-if="faults.length">
             <ChartFaults :faults="faults" :words-of="faultWords" @select="selected = $event" />
         </template>
@@ -884,6 +921,9 @@ function closeMessage() {
                 <template v-for="note in pageNotes" :key="note.text">
                     <p :class="note.kind">{{ note.text }}</p>
                 </template>
+                <template v-if="valuesWords">
+                    <p class="chart-trace chart-values">{{ valuesWords }}</p>
+                </template>
 
                 <template v-if="view === 'list'">
                     <ChartList
@@ -928,6 +968,7 @@ function closeMessage() {
                                     :waiting="waitingWords(standing, node.id)"
                                     :counted="countWords(standing, node)"
                                     :read="readWords(litRead, node.id)"
+                                    :names="VALUE_KEYS.includes(node.key) ? valueNames : []"
                                     @drag="dragNode(node, $event)"
                                     @remove="remove(node)"
                                     @open-message="openMessage(node)"
@@ -1046,10 +1087,6 @@ function closeMessage() {
 .chart-bar :deep(.page-bar-inner),
 .chart-bar {
     gap: 8px;
-}
-
-.chart-grow {
-    flex: 1;
 }
 
 .chart-page {

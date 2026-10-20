@@ -18,7 +18,9 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 6
+      },
       "read": []
     },
     {
@@ -28,22 +30,32 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {},
-      "read": [
-        {
-          "179": 0
-        }
-      ]
+      "counts": {
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
+      "read": []
     },
     {
       "name": "the journal skill read",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "130": 6
+          "234": 6
         }
       ]
     },
@@ -54,19 +66,29 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {},
-      "read": [
-        {
-          "179": 0
-        }
-      ]
+      "counts": {
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
+      "read": []
     },
     {
       "name": "looked at what is in flight",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": []
     },
     {
@@ -78,7 +100,14 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 7,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": []
     },
     {
@@ -94,7 +123,14 @@
         "skills.required",
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 9,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": []
     },
     {
@@ -104,11 +140,19 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 9,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 1,
+        "charts:43:tools_used": 1,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "174": 0,
-          "179": 1
+          "290": 1,
+          "292": 0,
+          "304": 1
         }
       ]
     },
@@ -117,10 +161,17 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 9,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 1,
+        "charts:43:tools_used": 1,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "130": 9
+          "234": 9
         }
       ]
     },
@@ -129,11 +180,19 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 9,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 2,
+        "charts:43:tools_used": 2,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "174": 0,
-          "179": 2
+          "290": 2,
+          "292": 0,
+          "304": 2
         }
       ]
     }

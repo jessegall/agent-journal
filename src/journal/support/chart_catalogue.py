@@ -17,10 +17,15 @@ AGENT_EVENTS = (
     ("subagent_ended", "Subagent stop", "a subagent reported back"),
     ("compacting", "Pre compact", "the conversation is about to be summarised"),
     ("session_ended", "Session end", "the agent's process is gone"),
-    ("ticked", "Tick", "every few seconds for each live agent"),
+    ("ticked", "Tick", "every five seconds for each live agent, by the engine's clock, the clock every time step reads"),
+    ("awaited", "Await", "the agent says with journal await that it waits for something outside its hands"),
+    ("command_moved", "Command moved to the background", "a command of the agent's ran past its limit and goes on in the background"),
+    ("command_ended", "Background command ended", "a command of the agent's that ran in the background ended"),
+    ("commit_made", "Commit made", "the agent made a commit, seen at the head after its command ran"),
+    ("line_said", "Journal line said", "the journal said the agent a line; a workflow it starts may count and note, never say a line itself"),
 )
-OWN = ("agents", "entries", "links", "counts")
-"""The engine's own tables, which a walk writes itself when it moves an agent, records itself, draws a line or counts: a trigger on them would walk without end, so no workflow may name them."""
+OWN = ("agents", "entries", "links", "counts", "noted_times")
+"""The engine's own tables, which a walk writes itself when it moves an agent, records itself, draws a line, counts or notes a time: a trigger on them would walk without end, so no workflow may name them."""
 
 
 class ChartCatalogue:

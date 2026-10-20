@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {LOCK_WHY} from "../domain/workflowLocks.js";
+import Btn from "../kit/Btn.vue";
 import DropList from "../kit/DropList.vue";
 import Icon from "../kit/Icon.vue";
 import Skeleton from "../kit/Skeleton.vue";
@@ -17,17 +18,33 @@ defineProps({
 });
 const emit = defineEmits(["filter", "pick", "move", "start"]);
 const dragging = ref(0);
+const over = ref(0);
+// the order is changed in a mode of its own, so a stray drag while reading moves nothing
+const editing = ref(false);
 
 // a workflow dropped on another takes its place in the run order
 function dropOn(row) {
     const from = dragging.value;
     dragging.value = 0;
+    over.value = 0;
     if (from && from !== row.id) emit("move", from, row);
 }
 
-function titleOf(row, filtered) {
+function ended() {
+    dragging.value = 0;
+    over.value = 0;
+}
+
+// the order moves only while editing, never by a stray drag while reading
+function titleOf(row, filtered, editing) {
     if (row.locked) return "Locked: this one always runs here";
+    if (!editing) return "Click Change the order to drag it";
     return filtered ? "Pick Every state to drag the order" : "Drag to change the order";
+}
+
+// the ghost of the workflow being dragged, shown where it would land
+function ghostBefore(row, rows) {
+    return dragging.value && over.value === row.id && dragging.value !== row.id ? rows.find((r) => r.id === dragging.value) : null;
 }
 </script>
 
@@ -43,6 +60,9 @@ function titleOf(row, filtered) {
                 @pick="emit('filter', $event.key)"
             />
         </div>
+        <Btn kind="ghost" small class="chart-order-toggle" :class="{on: editing}" @click="editing = !editing">
+            {{ editing ? "Done changing the order" : "Change the order" }}
+        </Btn>
         <template v-if="!loaded">
             <Skeleton :count="5" label="Loading the workflows" />
         </template>
@@ -50,15 +70,23 @@ function titleOf(row, filtered) {
             <p class="chart-list-empty">Nothing answers {{ eventTitle.toLowerCase() }} yet.</p>
         </template>
         <template v-for="row in loaded ? rows : []" :key="row.id">
+            <template v-if="ghostBefore(row, rows)">
+                <div class="chart-row chart-item chart-ghost" aria-hidden="true">
+                    <span class="chart-item-place" />
+                    <span class="chart-item-words">
+                        <span class="chart-row-name">{{ ghostBefore(row, rows).title }}</span>
+                    </span>
+                </div>
+            </template>
             <button
                 type="button"
                 :class="['chart-row', 'chart-item', row.mark, {on: row.id === current, dragging: dragging === row.id, locked: row.locked}]"
                 :aria-current="row.id === current ? 'true' : null"
-                :draggable="!row.locked && !stateFilter"
-                :title="titleOf(row, Boolean(stateFilter))"
+                :draggable="editing && !row.locked && !stateFilter"
+                :title="titleOf(row, Boolean(stateFilter), editing)"
                 @dragstart="dragging = row.id"
-                @dragend="dragging = 0"
-                @dragover.prevent
+                @dragend="ended"
+                @dragover.prevent="over = row.id"
                 @drop.prevent="dropOn(row)"
                 @click="emit('pick', row.id)"
             >
@@ -72,6 +100,9 @@ function titleOf(row, filtered) {
                         {{ row.who }}
                         <template v-if="row.words">· {{ row.words }}</template>
                     </span>
+                    <template v-if="row.also.length">
+                        <span class="chart-row-sub chart-row-also">also on {{ row.also.join(", ") }}</span>
+                    </template>
                 </span>
                 <span :class="['chart-mark', row.mark]" aria-hidden="true" />
             </button>
@@ -132,6 +163,17 @@ function titleOf(row, filtered) {
 
 .chart-item.dragging {
     opacity: 0.5;
+}
+
+.chart-ghost {
+    border: 1px dashed var(--line);
+    opacity: 0.55;
+    cursor: grabbing;
+}
+
+.chart-row-also {
+    color: var(--text-3);
+    font-size: 11.5px;
 }
 
 .chart-item-place {
@@ -213,5 +255,10 @@ function titleOf(row, filtered) {
 
 .chart-add-event {
     margin-top: 8px;
+}
+
+.chart-order-toggle {
+    align-self: flex-start;
+    margin: 2px 4px 6px;
 }
 </style>
