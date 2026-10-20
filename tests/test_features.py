@@ -5976,6 +5976,9 @@ def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_i
     console = app.console()
     cap = lambda line: console.run(["shell", "cap", "--line", line], AGENT).out.strip()
     assert cap("journal task list") == "whole 0" and cap("cat a.py && git diff") == "ends 8000" and cap("python3 -m pytest -q") == "hint 200"
+    script = "python3 - <<'EOF'\nfrom pathlib import Path\nPath(\"src/journal/app.py\").write_text(\"x\")\nEOF"
+    assert cap("sed -i '' 's/a/b/' src/journal/app.py") == "ends 8000" and cap(script) == "ends 8000" and cap(f"{script} && cat src/journal/app.py") == "ends 8000", "a line that edits the project's own code is shown as a read of it is"
+    assert cap("echo hi > /tmp/notes.txt") == "hint 200" and cap("cp a.bin b.bin") == "hint 200" and cap(f"{script} && python3 -m pytest -q") == "hint 200", "a write outside the project, of no code file, or chained with a run is not"
     folder = app.config.root / "journal-line"
     folder.mkdir()
     console.run(["shell", "split", "journal task list", "--into", str(folder)], AGENT)

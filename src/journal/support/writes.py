@@ -1,5 +1,7 @@
+from pathlib import Path
 import re
 
+from journal.features.shell.support.part import CODE
 from journal.support.chain import Chain
 
 COMMANDS = {"sed": ("-i",), "tee": (), "cp": (), "mv": (), "rm": (), "mkdir": (), "touch": (), "rsync": (), "ln": (), "chmod": (), "chown": (), "truncate": (), "dd": (), "patch": (), "install": (), "rmdir": ()}
@@ -46,8 +48,19 @@ class Writes:
         return any(cls.part(piped) for piped in cls.unquoted(text).split("|")[1:])
 
     @classmethod
+    def is_code_write_line(cls, line: str) -> bool:
+        own = [p for p in Chain.parts(line) if p.recorded]
+        writing = [p for p in own if cls.part(p.text)]
+        return bool(writing) and all(p.is_read() or cls.writes_code_inside(p.text) for p in own)
+
+    @classmethod
+    def writes_code_inside(cls, text: str) -> bool:
+        targets = cls.part_targets(text)
+        inside = str(Path.cwd())
+        return bool(targets) and all(CODE.search(t) and (not t.startswith(("/", "~", "..")) or t.startswith(inside)) for t in targets)
+
+    @classmethod
     def targets(cls, line: str) -> list[str]:
-        """The words a shell line writes to: each redirection's file, the arguments of a command that writes files, and every path an interpreter's script names when it writes."""
         return [target for p in Chain.parts(line) if p.recorded for target in cls.part_targets(p.text)]
 
     @classmethod
@@ -66,7 +79,6 @@ class Writes:
 
     @staticmethod
     def script_of(text: str) -> str:
-        """What an interpreter is handed to run: a heredoc's body up to its end line, else the whole line; commands after the heredoc are not the script."""
         found = HEREDOC.search(text)
         if not found:
             return text
@@ -76,5 +88,4 @@ class Writes:
 
     @staticmethod
     def unquoted(text: str) -> str:
-        """The text with its quoted stretches blanked, so a > inside quotes is not a redirection."""
         return re.sub(r"'[^']*'|\"(?:\\\\.|[^\"\\\\])*\"", " ", text)

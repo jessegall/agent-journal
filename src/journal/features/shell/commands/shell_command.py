@@ -60,7 +60,7 @@ class ShellCommand(Command):
         split.add_argument("--into", required=True)
         limit = self.verb(verbs, "limit", "the seconds a command may run in the foreground now; none, 0, for a line of journal commands alone, whose answer must reach the agent")
         limit.add_argument("--line", default="")
-        cap = self.verb(verbs, "cap", "how a part's output is shown, and how many characters of it: whole for a line of journal commands, its ends for a command that reads, and for any other whole up to the number or else only a line naming the output to read")
+        cap = self.verb(verbs, "cap", "how a part's output is shown, and how many characters of it: whole for a line of journal commands, its ends for a command that reads or one that edits the project's own code, and for any other whole up to the number or else only a line naming the output to read")
         cap.add_argument("--line", default="")
         started = self.verb(verbs, "started", "a part of a chain has started")
         started.add_argument("part")
@@ -116,7 +116,7 @@ class ShellCommand(Command):
         if Chain.is_journal_line(args.line):
             print("whole 0")
             return 0
-        if Chain.is_read_line(args.line):
+        if Chain.is_read_line(args.line) or Writes.is_code_write_line(args.line):
             print(f"ends {int(self.settings.option(Shell.READ_SHOWN))}")
             return 0
         print(f"hint {int(self.settings.option(Shell.COMMAND_SHOWN))}")
