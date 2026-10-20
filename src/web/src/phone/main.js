@@ -13,7 +13,8 @@ async function start() {
         await import("../main.js");
         createApp(PhoneNotify).mount("#phone-notify");
     } else {
-        createApp(PhonePair).mount("#app");
+        const refused = answer ? await answer.json().catch(() => ({})) : {};
+        createApp(PhonePair, {pairedBefore: Boolean(refused.paired_before)}).mount("#app");
     }
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js", {scope: "./"}).catch(() => {});
 }

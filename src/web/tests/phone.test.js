@@ -14,3 +14,20 @@ test("on the phone the viewer speaks through /p, finds its files beside the page
     for (const desk of ["settings", "plugins", "mcp", "chart", "profiles", "secrets"]) expect(keys).not.toContain(desk);
     document.documentElement.classList.remove("phone");
 });
+
+test("the phone's chat, home and acts go through /p/journal with the phone's own header, never the desk's", async () => {
+    document.documentElement.classList.add("phone");
+    vi.resetModules();
+    const fetched = vi.fn(async () => new Response("{}", {status: 200, headers: {"Content-Type": "application/json"}}));
+    vi.stubGlobal("fetch", fetched);
+    const {api} = await import("../src/api/client.js");
+    (await import("../src/state/environment.js")).choose("main");
+    await api.create("messages", {text: "from the train"});
+    await api.list("tasks", {limit: 50});
+    await api.act("questions", 3, "answer", {answer: "beta"});
+    expect(fetched.mock.calls.map(([url]) => url.split("?")[0])).toEqual(["/p/journal/messages", "/p/journal/tasks", "/p/journal/questions/3/answer"]);
+    for (const [, sent] of fetched.mock.calls) expect(sent.headers["X-Phone"]).toBe("1");
+    for (const [, sent] of fetched.mock.calls) expect(sent.headers["X-Journal-Viewer"]).toBeUndefined();
+    vi.unstubAllGlobals();
+    document.documentElement.classList.remove("phone");
+});

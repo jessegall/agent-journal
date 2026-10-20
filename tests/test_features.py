@@ -6644,6 +6644,19 @@ def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):
     assert viewer(app, "phones/connect", {"days": 30})["short"], "the viewer asks for a code as the user"
 
 
+def test_a_phone_whose_days_ran_out_is_told_so_and_reaches_nothing(app):
+    from datetime import datetime, timedelta, timezone
+    from journal.features.phone.support.pairing import Pairing
+    from journal.http.phone.phone_pages import COOKIE, PhonePages
+    from journal.http.phone.phone_request import PhoneRequest
+    from journal.repositories.settings import Settings
+    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    pairing, then = app.container.get(Pairing), datetime.now(timezone.utc) - timedelta(days=2)
+    paired = pairing.pair(pairing.offer(1, Actor.user(1), then).short, "iPhone", then)
+    answer = app.container.get(PhonePages).through(PhoneRequest("GET", "/p/journal/messages", f"{COOKIE}={paired.key}"))
+    assert answer.status == 410 and b"run out" in answer.body, "a phone past its days is told so and reads nothing"
+
+
 def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, monkeypatch, tmp_path):
     import stat
     from datetime import datetime, timedelta, timezone

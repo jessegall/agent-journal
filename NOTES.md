@@ -254,7 +254,7 @@ F. **The viewer reads version 4's rows**: its catalogue of tables (titles, icons
    listed) is its own (`src/web/src/domain/tables.js`), the manifest holds only the journal's
    facts and the features with their options; `domain/row.js` reads what every row answers alike
    (title, body, closed, times as ISO strings); `domain/acts.js` names what each table offers.
-   Deleted with version 3's API, having no version 4 server: the phone, the board and tickets,
+   Deleted with version 3's API, having no version 4 server (the phone came back in 4.2.0): the board and tickets,
    the organisation, the hub of journals, hosting and members, the browser extension,
    suggestions, collections, document revisions, update reports, layout links, agent pause and
    appoint, agent hooks, work modes, priorities, the plugin services panel, replies on shares.
@@ -336,7 +336,7 @@ Still to do, in rough order:
   the thin supervisor, but its hooks did not reach the journal in a fresh project, so its resume is untried (task 461).
 - The context figure needs Claude's statusline, which runs only interactively; untested.
 - Reports and docs have models and routes but no page; no page for workers, checks, sequences,
-  triggers; no hub of journals; no phone; no sharing; no plugins.
+  triggers; no hub of journals; no sharing; no plugins.
 - Memory keyword whispers and the rule review; put-off-work; closed-by-commit; auto mode and
   work mode settings; permission prompts routed to the viewer.
 - Panes read from the entries: file edits and the terminal.
@@ -617,7 +617,7 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   made with comments, is posted to `/s/<token>/comment` and becomes a card of the system's in the chat, linked to the row as
   `comments_on`; it is never a message of the user's, so it never reaches the agent as the user's words. Version 3's hold
   until the agent agrees, the user's button letting the agent act on it, and trusted comments through a password are not
-  ported. Not ported yet either: shared views and layouts, the phone, the watchdog that restarts the tunnel.
+  ported. Not ported yet either: shared views and layouts, the watchdog that restarts the tunnel. The phone is back in 4.2.0.
 - **A read never makes an environment**: `Environments.existing(name)` is the one lookup for every route and answers not
   found; the runtime makes `main` at boot. The browser's stray `#/settings` had made four environments named settings.
 - **The supervisor's Enter**: typed half a second after the line has reached the terminal, each piece in a write of its own;

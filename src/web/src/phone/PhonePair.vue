@@ -2,6 +2,9 @@
 import {onMounted, ref} from "vue";
 import "../tokens.css";
 
+// a phone paired with version 3, or forgotten, still holds a key this journal does not know
+defineProps({pairedBefore: Boolean});
+
 // Pairs this phone: the code from the link it was opened by, at once, or the short code the computer shows, typed.
 const code = ref("");
 const failure = ref("");
@@ -41,6 +44,9 @@ onMounted(() => {
 <template>
     <main class="pair">
         <h1>Pair this phone</h1>
+        <template v-if="pairedBefore">
+            <p class="pair-again">This phone was paired with an earlier version of the journal, or was forgotten. Pair it once more.</p>
+        </template>
         <p class="pair-how">On your computer, open the journal and click the phone in the top bar. Scan its code, or type the short code here.</p>
         <form class="pair-form" @submit.prevent="pair(code)">
             <input v-model="code" class="pair-input" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" aria-label="The short code" />
@@ -68,6 +74,11 @@ h1 {
     margin: 0;
     font-size: 22px;
     font-weight: 600;
+}
+
+.pair-again {
+    margin: 0;
+    color: var(--tone-warn);
 }
 
 .pair-how {

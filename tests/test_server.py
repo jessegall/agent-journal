@@ -865,7 +865,9 @@ def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(shari
     assert status == 200 and standing["phone"] == "iPhone" and cookie.startswith("__Host-phone=") and all(part in cookie for part in ("Secure", "HttpOnly", "SameSite=Strict", "Path=/", "Max-Age=")), "the key lives in a __Host- cookie the page's scripts cannot read"
     kept = cookie.split(";", 1)[0]
     assert phone_call(share_server, "GET", "/p/state", cookie=kept)[1]["phone"] == "iPhone", "the phone is known by its cookie"
-    assert phone_call(share_server, "GET", "/p/state")[0] == 401 and phone_call(share_server, "GET", "/p/state", cookie="__Host-phone=guessed")[0] == 401, "without its key, no phone"
+    assert phone_call(share_server, "GET", "/p/state")[:2] == (401, {"error": "this phone is not connected"}), "without its key, no phone"
+    status, refused, _ = phone_call(share_server, "GET", "/p/state", cookie="__Host-phone=paired-under-version-3")
+    assert status == 401 and refused["paired_before"], "a key this journal does not know, as a phone paired under version 3 holds, is asked to pair again"
     status, sent, _ = phone_call(share_server, "POST", "/p/journal/messages", {"text": "from the train"}, origin=origin, cookie=kept)
     assert status == 201 and sent["created_by"] == f"phone:{standing['id']}" and sent["author"] == "user", "the phone writes as itself, its words the user's"
     assert any(m["text"] == "from the train" for m in phone_call(share_server, "GET", "/p/journal/messages", cookie=kept)[1]["rows"]), "the phone reads the journal through version 4's own controllers"
@@ -873,6 +875,10 @@ def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(shari
     assert phone_call(share_server, "POST", "/p/journal/settings", {"messages": {"hold_after": 9}}, origin=origin, cookie=kept)[0] == 403, "nor a setting changed"
     assert phone_call(share_server, "GET", "/p/journal/messages?env=elsewhere", cookie=kept)[0] == 403, "nor another environment reached"
     assert phone_call(share_server, "GET", "/p/journal/messages")[0] == 401, "nothing at all without the phone's key"
+    call(server, "POST", "/journal/questions", {"text": "Which name?", "options": ["alpha", "beta"]})
+    asked = call(server, "GET", "/journal/questions")[1]["rows"][-1]
+    assert phone_call(share_server, "POST", f"/p/journal/questions/{asked['id']}/answer", {"answer": "beta"}, origin=origin, cookie=kept)[0] in (200, 201), "the phone answers the agent's question"
+    assert phone_call(share_server, "POST", f"/p/journal/questions/{asked['id']}/answer", {"answer": "alpha"}, origin=origin, cookie=kept)[0] >= 400, "and only once"
     assert len(phone_call(share_server, "GET", "/p/push-key", cookie=kept)[1]["key"]) == 87, "the journal's public push key, for the phone to subscribe with"
     assert phone_call(share_server, "POST", "/p/push", {"endpoint": "https://evil.example/push"}, origin=origin, cookie=kept)[0] == 422, "pushes go only through the phone makers' services"
     assert phone_call(share_server, "POST", "/p/push", {"endpoint": "https://web.push.apple.com/abc"}, origin=origin, cookie=kept)[0] == 201

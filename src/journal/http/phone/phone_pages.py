@@ -153,11 +153,13 @@ class PhonePages:
         return self.json(200, asdict(self.standing(paired.phone)), {"Set-Cookie": cookie})
 
     def phone(self, request: PhoneRequest) -> Phone | ShareAnswer:
-        """The phone the request's cookie names, before anything else is read: none is a 401, one that ended or ran out a 410."""
+        """The phone the request's cookie names, before anything else is read: none is a 401, a key this journal does not know a 401 that asks it to pair again, as a phone paired under version 3 is, and one that ended or ran out a 410."""
         kept = SimpleCookie(request.cookies).get(COOKIE)
-        phone = self.phones.by_key(Pairing.hashed(kept.value)) if kept and kept.value else None
-        if phone is None:
+        if not (kept and kept.value):
             return self.json(401, {"error": "this phone is not connected"})
+        phone = self.phones.by_key(Pairing.hashed(kept.value))
+        if phone is None:
+            return self.json(401, {"error": "this phone was paired with an earlier version of the journal, or was forgotten: pair it again", "paired_before": True})
         now = datetime.now(timezone.utc)
         if not phone.is_live(now):
             return self.json(410, {"error": "this phone was disconnected" if phone.ended_at else "this phone's connection has run out"})
