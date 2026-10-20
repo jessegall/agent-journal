@@ -35,8 +35,8 @@ from journal.support.chat_mark import ChatMark
 TAIL = 2000
 ROWS_KEPT = 200
 """How many changed lines of a shell command's change are kept, as for a tool's."""
-CUTS = re.compile(r"\|\s*(head|tail)\b")
-"""A pipe into head or tail anywhere in the line: its output is cut, so the whole is kept as a numbered output."""
+PIPED = re.compile(r"(?<!\|)\|(?!\|)")
+"""A pipe anywhere in the line, into head, tail, grep or any filter: its output is cut or shaped, so the whole is kept as a numbered output."""
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
 WORDS_IN = re.compile(r"[A-Za-z]{3,}")
 """A word of three letters or more: a line holding one says something."""
@@ -76,7 +76,7 @@ class ShellCommand(Command):
         moved.add_argument("chain")
         moved.add_argument("part")
         moved.add_argument("--file", required=True)
-        forget = self.verb(verbs, "forget", "a chain ended in the foreground with this many characters of output: an output under the short limit, from a line with no head or tail pipe, is kept as no output")
+        forget = self.verb(verbs, "forget", "a chain ended in the foreground with this many characters of output: an output under the short limit, from a line with no pipe, is kept as no output")
         forget.add_argument("chain")
         forget.add_argument("--size", type=int, required=True)
         ended = self.verb(verbs, "ended", "a chain in the background has ended")
@@ -157,7 +157,7 @@ class ShellCommand(Command):
         from journal.features.shell.feature import Shell
         output = self.outputs.of_chain(args.chain)
         line = Path(output.folder, "line").read_text() if Path(output.folder, "line").is_file() else output.command
-        if args.size >= int(self.settings.option(Shell.SHORT)) or CUTS.search(line):
+        if args.size >= int(self.settings.option(Shell.SHORT)) or PIPED.search(line):
             print("kept")
             return 0
         self.outputs.delete(output, where.actor)
