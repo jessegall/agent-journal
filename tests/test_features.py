@@ -7020,3 +7020,31 @@ def test_a_line_naming_a_list_that_changes_is_said_once_inside_its_window(app):
     assert nudger.say(agent, Tasks.BLOCKED_STILL.about(tasks="task 4 on the deploy")), "the blocked ask is said once"
     assert nudger.say(agent, Tasks.BLOCKED_STILL.about(tasks="task 4 on the deploy")) is None, "and not again at the next tick five seconds later"
     assert nudger.say(agent, Tasks.UNLOGGED.about(n=3)) and nudger.say(agent, Tasks.UNLOGGED.about(n=4)), "a line about one row is still held by its words: another task is named"
+
+
+def test_a_package_install_of_code_commandments_is_suggested_once_as_the_journal_plugin(app):
+    from journal.features.suggestions.support.suggesting import Suggesting
+    from journal.models.plugin import Plugin
+    from journal.models.suggestion_answer import SuggestionAnswer
+    from journal.repositories.messages import Messages
+    from journal.repositories.plugins import Plugins
+    from journal.support.plugin_manifest import PluginManifest
+    from journal.support.refused import Refused
+    hook(app, "SessionStart")
+    suggesting = app.container.get(Suggesting)
+    (app.config.root / "composer.lock").write_text(json.dumps({"packages": [{"name": "jessegall/code-commandments", "version": "v4.2.0"}]}))
+    suggesting.tick(suggesting.started_at + 60)
+    assert suggesting.last_round is None, "nothing is suggested in the first minutes after the journal starts"
+    suggesting.tick(suggesting.started_at + 15 * 60)
+    cards = [m for m in app.container.get(Messages).all() if m.data.get("kind") == "suggestion"]
+    assert len(cards) == 1 and "v4.2.0" in cards[0].data["detail"], "fifteen minutes in, the package install is suggested once as the plugin, naming the version it runs"
+    suggesting.tick(suggesting.started_at + 75 * 60)
+    assert len([m for m in app.container.get(Messages).all() if m.data.get("kind") == "suggestion"]) == 1, "the next round an hour later does not suggest it again"
+    suggestion = suggesting.suggestions.all()[0]
+    assert "install=https%3A%2F%2Fgithub.com%2Fjessegall%2Fcode-commandments" in suggesting.answer(suggestion, SuggestionAnswer.ACCEPTED, Actor.user(1)), "accepted, it opens the plugin's install for the user to finish"
+    assert app.container.get(Messages).find(cards[0].id).data["answer"] == "accepted", "the card is settled in place with the answer"
+    with pytest.raises(Refused):
+        suggesting.answer(suggesting.suggestions.find(suggestion.id), SuggestionAnswer.DECLINED, Actor.user(1))
+    suggesting.suggestions.delete(suggesting.suggestions.find(suggestion.id), Actor.user(1))
+    app.container.get(Plugins).save(Plugin(name="code-commandments", source="https://github.com/jessegall/code-commandments", manifest=PluginManifest(name="code-commandments")), Actor.user(1))
+    assert suggesting.round() == [], "with the plugin installed there is nothing to suggest"

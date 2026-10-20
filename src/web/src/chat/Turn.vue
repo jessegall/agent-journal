@@ -5,6 +5,7 @@ import ChatMark from "../kit/ChatMark.vue";
 import SubagentMark from "./SubagentMark.vue";
 import WhisperMark from "./WhisperMark.vue";
 import MadeCard from "./MadeCard.vue";
+import SuggestionCard from "./SuggestionCard.vue";
 import TurnGroup from "./TurnGroup.vue";
 import TurnMessage from "./TurnMessage.vue";
 import TurnThought from "./TurnThought.vue";
@@ -69,6 +70,11 @@ function markClick(data) {
         <template #made>
             <div class="thread-turn made" :data-ref="turn.key">
                 <MadeCard :made="turn.made" />
+            </div>
+        </template>
+        <template #suggestion>
+            <div class="thread-turn suggestion" :data-ref="turn.key">
+                <SuggestionCard :suggestion="turn.suggestion" />
             </div>
         </template>
         <template #default>
