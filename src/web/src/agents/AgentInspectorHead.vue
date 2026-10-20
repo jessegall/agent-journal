@@ -73,7 +73,9 @@ function pick(key) {
                 </template>
             </MenuPanel>
         </template>
-        <h2 class="inspector-title">{{ info.title }}</h2>
+        <template v-if="info.title">
+            <h2 class="inspector-title">{{ info.title }}</h2>
+        </template>
         <Byline small side="agent" :name="model" :when="rest">
             <slot name="facts" />
         </Byline>

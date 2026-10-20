@@ -72,7 +72,6 @@ const mainInfo = computed(() => ({
 const subagentInfo = computed(() => ({
     kind: "Subagent",
     name: picked.value.type || "general",
-    title: picked.value.task,
     back: "Main agent",
     state: picked.value.running
         ? {key: "working", word: "Working", dot: "running"}

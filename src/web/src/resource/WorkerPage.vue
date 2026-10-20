@@ -22,7 +22,6 @@ const info = computed(() => {
     return {
         kind: "Worker",
         name: workerName(row),
-        title: row.brief.split("\n")[0],
         state: isWorking(row) ? {key: "working", word: "Working", dot: "running"} : {key: "idle", ...ending(ENDED[workerState(row)], stateAt(row))},
         facts: [workerLine(row), `worker ${row.id}`, row.worktree ? "in a worktree of its own" : "in the project", environment.value].filter(Boolean),
         brief: {text: row.brief, at: seconds(row.created_at)},
