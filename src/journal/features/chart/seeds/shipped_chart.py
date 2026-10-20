@@ -50,7 +50,7 @@ OWN = (
     ("idle", "idle", "approved", "Hold the stop while an approved plan is not started", "approved_plan_holds_the_stop"),
     ("idle", "idle", "open", "Hold the stop in auto mode while tasks are open", "open_tasks_hold_the_stop"),
     ("idle", "ticked", "parked", "Ask about a parked task after a minute of quiet", "ask_about_parked"),
-    ("idle", "ticked", "blocked", "Ask about a task blocked on something outside after an hour of quiet", "ask_about_blocked"),
+    ("idle", "ticked", "blocked", "Ask about a task blocked on something outside after 45 minutes of quiet", "ask_about_blocked"),
     ("idle", "ticked", "check_in", "Check in after half an hour of quiet in auto mode", "check_in"),
     ("working", "tool_starting", "log_held", "Hold the write when the task log is overdue", "hold_write_when_log_overdue"),
     ("working", "tool_starting", "log", "Ask for a task log after {tasks.first_nudge_after} edits", "ask_for_a_log_after_edits"),
@@ -68,7 +68,7 @@ OWN = (
     ("awaiting", "workers.updated", "back", "Send the agent back to its work when the last worker is back", "back_when_the_last_worker_is_back"),
     ("waiting", "questions.updated", "question", "Send the agent back to its work when the question is answered", "waiting_at_question"),
     ("expecting", "ticked", "remind", "Remind the agent what it waits for after five minutes of quiet", "expecting_at_tick"),
-    ("expecting", "ticked", "meanwhile", "Point to the next task after a minute of waiting in auto mode", "next_while_waiting"),
+    ("expecting", "ticked", "meanwhile", "Point to the next task once per wait, after a minute of it, in auto mode", "next_while_waiting"),
     ("expecting", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
     ("stuck", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
     ("awaiting", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
@@ -85,7 +85,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 28
+DRAWINGS_VERSION = 29
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -611,8 +611,8 @@ class ShippedChart(Seed):
         return self.asked_after_quiet(chart, ends, "task_just_parked", "parked_tasks", "1 minute", PARKED_STILL)
 
     def ask_about_blocked(self, chart: Chart, ends: list) -> list:
-        """As the clock ticks on an agent at rest with a task blocked on something outside: after an hour of quiet, ask whether it has come."""
-        return self.asked_after_quiet(chart, ends, "task_just_blocked", "blocked_outside", "1 hour", BLOCKED_STILL)
+        """As the clock ticks on an agent at rest with a task blocked on something outside: after 45 minutes of quiet, before an hour of it ends the session, ask whether it has come."""
+        return self.asked_after_quiet(chart, ends, "task_just_blocked", "blocked_outside", "45 minutes", BLOCKED_STILL)
 
     def asked_after_quiet(self, chart: Chart, ends: list, moved: str, waiting: str, quiet: str, line: str) -> list:
         """A task's move into its wait and the agent's own events note when it was last active; on the tick, with a task still so, after so long a quiet the agent is asked by typing."""
@@ -710,10 +710,12 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 400, 92, (Guard("time_over", "waiting_since 5 minutes"),), "say", CHECK_AWAITED)
 
     def next_while_waiting(self, chart: Chart, ends: list) -> list:
-        """An agent waiting on something in auto mode, after a quiet minute: the next task is named, to take up if it can go on meanwhile. Await and the agent's own events note when it was last active."""
-        self.guarded(chart, self.also_on(chart, "awaited", 1040, 0), 1040, 92, (), "time_note", "waiting_since")
+        """An agent waiting on something in auto mode, after a quiet minute: the next task is named once for the wait, to take up if it can go on meanwhile. Await and the agent's own events note when it was last active; await forgets that the line was said, so a new wait names it again."""
+        awaited = self.guarded(chart, self.also_on(chart, "awaited", 1040, 0), 1040, 92, (), "time_note", "waiting_since")
+        self.guarded(chart, awaited, 1200, 92, (), "time_forget", "meanwhile_said")
         self.noted_on_activity(chart, "waiting_since", 240)
-        return self.guarded(chart, ends, 400, 92, (Guard("auto_mode"), Guard("related_tasks"), Guard("time_over", "waiting_since 1 minute")), "say", MEANWHILE)
+        told = self.guarded(chart, ends, 400, 92, (Guard("auto_mode"), Guard("related_tasks"), Guard("time_over", "waiting_since 1 minute"), Guard("time_noted", "meanwhile_said", passes=NO)), "say", MEANWHILE)
+        return [*told[:-1], *self.guarded(chart, told[-1:], 400, 460, (), "time_note", "meanwhile_said")]
 
     def working_again(self, chart: Chart, ends: list) -> list:
         """The agent's own tool use ends a wait on something outside: the wait is released, with no line."""

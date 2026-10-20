@@ -51,31 +51,23 @@
       "read": [
         {
           "179": 90,
-          "194": 90
+          "195": 90,
+          "196": null
         }
       ]
     },
     {
       "name": "two minutes",
       "answer": null,
-      "typed": [
-        "[journal] while you wait for the build, task 2 is next: if you can work on it meanwhile, carry on with it; if you need the output first, waiting is fine"
-      ],
-      "nudges": [
-        "chart.line"
-      ],
+      "typed": [],
+      "nudges": [],
       "counts": {
         "charts:10:writes": 0,
-        "charts:32:said": 7,
+        "charts:32:said": 6,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
-      "read": [
-        {
-          "179": 120,
-          "194": 120
-        }
-      ]
+      "read": []
     }
   ]
 }
