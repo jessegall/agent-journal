@@ -6603,10 +6603,14 @@ def test_dispatches_past_the_most_at_once_wait(app):
     refused = console.run(["worker", "dispatch", "Ada Byron", "write the lexer", "--model", "sonnet"], AGENT)
     assert refused.code == 1 and "1 workers are out, the most at once" in refused.err, "a worker past the most out at once is refused"
     app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
-    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "Explore"})
+    assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "Explore", "model": "haiku"})[0] == 200, "the first under a most of one passes: the start being judged is not counted among the running"
     hook(app, "SubagentStart", agent_id="a1", agent_type="Explore")
-    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the routes", "prompt": "map", "subagent_type": "Explore"})
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the routes", "prompt": "map", "subagent_type": "Explore", "model": "haiku"})
     assert status == 409 and "1 subagents are running, the most at once" in body["error"], "a subagent past the most at once is held"
+    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=2), Actor.user(1))
+    assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the views", "prompt": "map", "subagent_type": "Explore", "model": "haiku"})[0] == 200, "one running and a second passes a most of two"
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the tests", "prompt": "map", "subagent_type": "Explore", "model": "haiku"})
+    assert status == 409 and "2 subagents are running" in body["error"], "two running and a third is held"
 
 
 def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(app):

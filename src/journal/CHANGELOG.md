@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.2.4
+
+- The most subagents at once counts only those already running: the one being started is no longer counted among them, so four running and a fifth pass a most of five.
+
 ## 4.2.3
 
 - A question's options are each their own quoted argument, `--options "first" "second"`, so a comma inside a choice stays in it; one option holding a comma is refused as the old comma list, and the options asked are printed back numbered.
