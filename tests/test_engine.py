@@ -349,3 +349,11 @@ def test_every_agent_event_carries_the_time_it_was_placed_and_a_tick_carries_its
     placed = ToolStarting(tool="Write", input={}).placed("s1", 1, "claude", None, 12.5)
     assert placed.at == 12.5 and placed.session == "s1"
     assert Ticked(session="s1", environment_id=1, at=3.0, quiet_for=0.0).at == 3.0
+
+
+def test_a_renamed_state_answers_as_before_through_its_on_listeners_and_a_plain_method_is_none():
+    settings = SettingsValue({})
+    assert Ended().on(ToolStarting(tool="Write", input={}), settings).to.name == "resume"
+    assert Ended().on(SessionEnded(), settings).to == Ended()
+    names = [method.__name__ for _, method in Ended.listeners()]
+    assert set(names[:3]) == {"on_session_started", "on_prompt_submitted", "on_tool_starting"} and names[3:] == ["on_compaction", "on_session_ended"]

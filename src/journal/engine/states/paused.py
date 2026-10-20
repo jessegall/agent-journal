@@ -5,6 +5,7 @@ from journal.engine.agent_state import AgentState
 from journal.engine.resume import Resume
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
+from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.support.said import Said
 
@@ -16,19 +17,15 @@ class Paused(AgentState):
     """A state the agent goes back from: it holds the state it left, serialised, and back() returns there. What two pauses share lives here."""
 
     leaves_by_itself: ClassVar[bool] = False
-    """True when the state goes back on its own, by what the agent does in it, so no workflow has to release it."""
     resume: dict = field(default_factory=dict)
 
     def awaiting(self) -> tuple[str, str]:
-        """What the agent waits for while paused here, in words, and the rows it waits on as refs; the viewer's status line reads both."""
         return "", ""
 
-    def idle(self, event: Idle) -> Transition:
-        """A stop while paused is the workflows' to hold: a wait stays as it is."""
+    def on_idle(self, event: Idle, settings: Settings) -> Transition:
         return self.stay()
 
-    def prompt_submitted(self, event: PromptSubmitted) -> Transition:
-        """A word from the user frees any wait: the engine's way out of a wait whose workflow no longer releases it. A line the journal typed is no word from the user."""
+    def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.back() if event.by_user else self.stay()
 
     def back(self, *says: Said) -> Transition:

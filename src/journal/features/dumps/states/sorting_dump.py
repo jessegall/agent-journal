@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from journal.engine.states.paused import Paused
+from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
@@ -19,9 +20,9 @@ class SortingDump(Paused):
     def awaiting(self) -> tuple[str, str]:
         return (f"your answer on dump {self.dump_id}", f"dump:{self.dump_id}") if self.asking else ("", "")
 
-    def idle(self, event: Idle) -> Transition:
+    def on_idle(self, event: Idle, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         return self.stay() if self.asking else self.refuse(DumpsFeature.STILL_OPEN.about(n=self.dump_id))
 
-    def prompt_submitted(self, event: PromptSubmitted) -> Transition:
+    def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.stay()

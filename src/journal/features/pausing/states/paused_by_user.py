@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from journal.engine.states.paused import Paused
+from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
 
@@ -15,6 +16,6 @@ class PausedByUser(Paused):
     def awaiting(self) -> tuple[str, str]:
         return "you to resume it", ""
 
-    def tool_starting(self, event: ToolStarting) -> Transition:
+    def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.pausing.feature import PausingFeature
         return self.refuse(PausingFeature.PAUSED.about())

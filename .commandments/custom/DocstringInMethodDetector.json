@@ -19,7 +19,14 @@
                         },
                         {
                             "descendant": {
-                                "is": "literal"
+                                "all": [
+                                    {
+                                        "is": "literal"
+                                    },
+                                    {
+                                        "textMatches": "[A-Za-z]"
+                                    }
+                                ]
                             }
                         }
                     ]

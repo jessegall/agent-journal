@@ -25,3 +25,6 @@ class Nudge:
     # @righteous DocstringInMethodDetector
     def create(self, n: int) -> str:
         return str(n)
+
+    # @righteous DocstringInMethodDetector
+    def states(self) -> list: ...

@@ -1,5 +1,8 @@
 from journal.engine.agent_state import AgentState
 from journal.engine.nudger import Nudger
+from journal.engine.support.settings import Settings
+from journal.repositories.settings import Settings as SettingRows
+from journal.support.features_known import FeaturesKnown
 from journal.engine.resume import Resume
 from journal.support.states_catalogue import StatesCatalogue
 from journal.engine.support.transition import Transition
@@ -20,12 +23,13 @@ class Machine(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus) -> None:
+    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeaturesKnown) -> None:
         self.agents, self.states, self.nudger, self.bus = agents, states, nudger, bus
+        self.settings, self.features = settings, features
 
     def handle(self, event: AgentEvent) -> Decision:
         agent = self.agent(event.session, event.environment_id, event.provider)
-        transition = self.states.named(agent.state, agent.data).on(event)
+        transition = self.states.named(agent.state, agent.data).on(event, Settings.taken(self.settings, self.features.options()))
         agent = self._settle(agent, transition.to)
         lines = [line for said in transition.nudges if (line := self.nudger.say(agent, said))]
         if transition.held:

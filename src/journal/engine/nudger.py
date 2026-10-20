@@ -20,7 +20,6 @@ class Nudger:
         self.features, self.entries, self.scope, self.bus, self.deferred, self.clock = features, entries, scope, bus, deferred, clock
 
     def say(self, agent: Agent, said: Said) -> str | None:
-        """The rendered line when it goes out, None when it is dropped."""
         with self.scope.of(agent.environment_id):
             return self._said(agent, said)
 
@@ -34,8 +33,7 @@ class Nudger:
         return line
 
     def _repeat(self, agent: Agent, said: Said) -> bool:
-        """The same words to the same agent within the window, or the same line whatever its values when it is held so: not again."""
         if not said.repeat_after:
             return False
         last = self.entries.last_said_of(agent.session, said.key) if said.held_whatever_its_values else self.entries.last_said(agent.session, said.key, said.rendered())
-        return last > time.time() - said.repeat_after
+        return last > self.clock.now() - said.repeat_after

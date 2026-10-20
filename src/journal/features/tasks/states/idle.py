@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from journal.engine.agent_state import AgentState
 from journal.support.permission import Permission
+from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
 
@@ -14,6 +15,5 @@ class Idle(AgentState):
     title = "Idle"
     allows = frozenset({Permission.RUN_COMMANDS})
 
-    def tool_starting(self, event: ToolStarting) -> Transition:
-        """A write needs no task: a quick edit is the agent's own; a task is for work worth tracking."""
+    def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return self.stay()

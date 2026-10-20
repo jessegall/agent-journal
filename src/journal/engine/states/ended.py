@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from journal.engine.agent_state import AgentState
 from journal.engine.resume import Resume
+from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
@@ -15,11 +16,11 @@ class Ended(AgentState):
     name = "ended"
     title = "Ended"
 
-    def session_started(self, event: SessionStarted) -> Transition:
+    def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         return self.go(Resume(state="idle", data={}))
 
-    def prompt_submitted(self, event: PromptSubmitted) -> Transition:
+    def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.go(Resume(state="idle", data={}))
 
-    def tool_starting(self, event: ToolStarting) -> Transition:
+    def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return self.go(Resume(state="idle", data={}))
