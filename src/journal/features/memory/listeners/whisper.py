@@ -41,4 +41,4 @@ class Whisper(AgentListener[AgentEvent]):
     @staticmethod
     def said(noun: str, row):
         from journal.features.memory.feature import Memory
-        return Memory.WHISPER.create(noun=noun, n=row.id, text=row.text)
+        return Memory.MEMORY_WHISPERED_BACK.create(noun=noun, n=row.id, text=row.text)

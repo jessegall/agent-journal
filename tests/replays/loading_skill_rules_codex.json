@@ -11,12 +11,12 @@
       },
       "typed": [],
       "nudges": [
-        "skills.required",
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "skills.read_the_skill_first",
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user"
       ],
       "counts": {
         "charts:31:said": 6
@@ -98,7 +98,7 @@
         "[journal] new message 2"
       ],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:31:said": 7,
@@ -120,8 +120,8 @@
       },
       "typed": [],
       "nudges": [
-        "skills.required",
-        "messages.new"
+        "skills.read_the_skill_first",
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:31:said": 9,

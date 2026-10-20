@@ -21,5 +21,5 @@ class HoldWritesUntilOriented(AgentListener[ToolStarting]):
         agent = self.machine.agent(event.session, event.environment_id)
         if agent.oriented:
             return None
-        said = Briefing.ORIENT.create()
+        said = Briefing.LOOK_BEFORE_THE_FIRST_WRITE.create()
         return None if self.registry.silenced(said) else Decision.refuse(said.rendered())

@@ -28,7 +28,7 @@ class AdvancePlan(Listener[Updated]):
             return
         for plan in [p for p in self.plans.holding(task) if self.plans.finished(p)]:
             self.plans.save(plan.done(), event.by)
-            print(PlansFeature.DONE.create(n=plan.id).rendered())
+            print(PlansFeature.PLAN_DONE.create(n=plan.id).rendered())
         follower = self.follower(task)
         if follower is None:
             return

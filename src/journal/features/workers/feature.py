@@ -36,14 +36,14 @@ class Workers(Feature):
         Entry(NodeKind.CHECK, 'worker_report_waiting', 'Has a worker report not acted on?', 'a worker here reported and the agent has not given it its next job, stopped it or marked it done'),
     )
 
-    REPORTED = Nudge(name, "reported", "worker {{n}}, {{name}}, reported in {{message}}", repeat_after=0)
-    STOPPED = Nudge(name, "stopped", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)
-    RETURNED = Nudge(name, "returned", "what you waited on came back: carry on", repeat_after=0)
+    WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in {{message}}", repeat_after=0)
+    WORKER_STOPPED_UNREPORTED = Nudge(name, "worker_stopped_unreported", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)
+    WAITED_ON_CAME_BACK = Nudge(name, "waited_on_came_back", "what you waited on came back: carry on", repeat_after=0)
     TOO_MANY_SUBAGENTS = Nudge(name, "too_many_subagents", "{{running}} subagents are running, the most at once", "wait for one to finish, or keep the work yourself", repeat_after=0)
     TOO_MANY_WORKERS = Nudge(name, "too_many_workers", "{{out}} workers are out, the most at once", "wait for one to report with `journal worker wait`, or give the job to one that reported with `journal worker say`", repeat_after=0)
-    NOT_YOURS = Nudge(name, "not_yours", "that file is in worker {{n}}'s worktree", "{{name}} writes there: `journal worker say {{n}} \"<job>\"`, or wait for its report and merge", repeat_after=0)
-    REPORTS_WAITING = Nudge(name, "reports_waiting", "{{reports_waiting}} reported and you have not acted on it yet", "read its report, then give it its next job, stop it, or mark it done once its work is merged or used", repeat_after=180, held_whatever_its_values=True)
-    nudges = (REPORTED, STOPPED, RETURNED, REPORTS_WAITING, TOO_MANY_SUBAGENTS, TOO_MANY_WORKERS, NOT_YOURS)
+    FILE_IS_THE_WORKERS = Nudge(name, "file_is_the_workers", "that file is in worker {{n}}'s worktree", "{{name}} writes there: `journal worker say {{n}} \"<job>\"`, or wait for its report and merge", repeat_after=0)
+    ACT_ON_THE_REPORTS = Nudge(name, "act_on_the_reports", "{{reports_waiting}} reported and you have not acted on it yet", "read its report, then give it its next job, stop it, or mark it done once its work is merged or used", repeat_after=180, held_whatever_its_values=True)
+    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, WAITED_ON_CAME_BACK, ACT_ON_THE_REPORTS, TOO_MANY_SUBAGENTS, TOO_MANY_WORKERS, FILE_IS_THE_WORKERS)
 
     skill = Skill("workers", 'Send a worker to write a bounded job and wait for its report; load it before dispatching one', """
 # Workers

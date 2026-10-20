@@ -21,7 +21,7 @@ class BlockPlanOnItsTasks(Listener[Updated]):
         for plan in self.plans.holding(task):
             if plan.state == PlanState.STARTED and self.plans.all_left_blocked(plan):
                 self.plans.save(plan.blocked(PlansFeature.ALL_BLOCKED), Actor.system())
-                self.telling.tell(PlansFeature.BLOCKED.create(n=plan.id, why=PlansFeature.ALL_BLOCKED))
+                self.telling.tell(PlansFeature.PLAN_BLOCKED.create(n=plan.id, why=PlansFeature.ALL_BLOCKED))
             elif plan.is_blocked() and plan.blocked_why == PlansFeature.ALL_BLOCKED and not self.plans.all_left_blocked(plan):
                 self.plans.save(plan.unblocked(), Actor.system())
-                self.telling.tell(PlansFeature.OPEN_AGAIN.create(n=plan.id, why=f"task {task.id} is open again"))
+                self.telling.tell(PlansFeature.PLAN_OPEN_AGAIN.create(n=plan.id, why=f"task {task.id} is open again"))

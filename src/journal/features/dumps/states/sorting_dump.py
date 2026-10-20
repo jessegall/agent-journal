@@ -22,7 +22,7 @@ class SortingDump(Paused):
 
     def on_idle(self, event: Idle, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
-        return self.stay() if self.asking else self.refuse(DumpsFeature.STILL_OPEN.create(n=self.dump_id))
+        return self.stay() if self.asking else self.refuse(DumpsFeature.DUMP_STILL_OPEN_CARRY_ON.create(n=self.dump_id))
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.stay()

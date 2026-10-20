@@ -16,7 +16,7 @@ class RequireAtPrompt(AgentListener[PromptSubmitted]):
 
     def handle(self, event: PromptSubmitted) -> Decision | None:
         from journal.features.skills.feature import Skills
-        if self.registry.silenced(Skills.REQUIRED):
+        if self.registry.silenced(Skills.READ_THE_SKILL_FIRST):
             return None
         agent = self.machine.agent(event.session, event.environment_id)
         lines = self.requiring.require(agent, self.requiring.owed(agent, self.requiring.named_in(event.prompt)))

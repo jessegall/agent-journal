@@ -18,6 +18,6 @@ class ReviewNewRule(Listener[Created]):
         if not isinstance(rule, Rule) or event.by.kind != ActorKind.AGENT:
             return
         agent = self.agents.for_session(event.by.id)
-        line = self.nudger.say(agent, Memory.RULE_REVIEW.create(n=rule.id))
+        line = self.nudger.say(agent, Memory.DOES_THE_RULE_APPLY_PROJECT_WIDE.create(n=rule.id))
         if line:
             print(line)

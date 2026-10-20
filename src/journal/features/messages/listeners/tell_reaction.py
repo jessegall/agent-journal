@@ -23,6 +23,6 @@ class TellReaction(Listener[Created]):
         agent = self.agents.live()
         if reaction.author != Author.USER or agent is None:
             return
-        line = self.nudger.say(agent, MessagesFeature.REACTED.create(face=reaction.face, n=link.target.id))
+        line = self.nudger.say(agent, MessagesFeature.THE_USER_REACTED.create(face=reaction.face, n=link.target.id))
         if line:
             self.supervisor.type(reaction.environment_id, line)

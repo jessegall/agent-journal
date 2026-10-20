@@ -13,17 +13,17 @@
         "[journal] introduce yourself to the user in the chat. one or two lines in your voice, then ask what to do, unless the user has already asked for something: then go on with it"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "briefing.rules",
-        "briefing.facts",
-        "briefing.reminders",
-        "briefing.waiting",
-        "messages.new",
-        "voices.voice",
-        "voices.introduce"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.rules_in_force",
+        "briefing.facts_here",
+        "briefing.reminders_here",
+        "briefing.waiting_for_you",
+        "messages.new_message_to_answer",
+        "voices.how_to_talk_to_the_user",
+        "voices.introduce_yourself"
       ],
       "counts": {
         "charts:31:said": 11,
@@ -45,18 +45,18 @@
         "[journal] introduce yourself to the user in the chat. one or two lines in your voice, then ask what to do, unless the user has already asked for something: then go on with it"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "briefing.takeover",
-        "briefing.rules",
-        "briefing.facts",
-        "briefing.reminders",
-        "briefing.waiting",
-        "messages.new",
-        "voices.voice",
-        "voices.introduce"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.you_took_over",
+        "briefing.rules_in_force",
+        "briefing.facts_here",
+        "briefing.reminders_here",
+        "briefing.waiting_for_you",
+        "messages.new_message_to_answer",
+        "voices.how_to_talk_to_the_user",
+        "voices.introduce_yourself"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -79,16 +79,16 @@
       },
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "briefing.rules",
-        "briefing.facts",
-        "briefing.reminders",
-        "briefing.waiting",
-        "messages.new",
-        "voices.voice"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.rules_in_force",
+        "briefing.facts_here",
+        "briefing.reminders_here",
+        "briefing.waiting_for_you",
+        "messages.new_message_to_answer",
+        "voices.how_to_talk_to_the_user"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -113,17 +113,17 @@
         "[journal] you are back in a conversation that went on before: say so to the user in a line, in your voice. then carry on with what was in hand, or ask what to do"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "briefing.rules",
-        "briefing.facts",
-        "briefing.reminders",
-        "briefing.waiting",
-        "messages.new",
-        "voices.voice",
-        "voices.back"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.rules_in_force",
+        "briefing.facts_here",
+        "briefing.reminders_here",
+        "briefing.waiting_for_you",
+        "messages.new_message_to_answer",
+        "voices.how_to_talk_to_the_user",
+        "voices.say_you_are_back"
       ],
       "counts": {
         "charts:10:writes": 0,

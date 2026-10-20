@@ -8,12 +8,12 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "messages.new"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user",
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -59,7 +59,7 @@
       },
       "typed": [],
       "nudges": [
-        "messages.answer"
+        "messages.answer_before_anything_else"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -228,7 +228,7 @@
       },
       "typed": [],
       "nudges": [
-        "tasks.in_hand"
+        "tasks.task_in_hand_named_back"
       ],
       "counts": {
         "charts:10:writes": 3,
@@ -259,7 +259,7 @@
       },
       "typed": [],
       "nudges": [
-        "tasks.log_soon"
+        "tasks.log_where_it_stands"
       ],
       "counts": {
         "charts:10:writes": 4,
@@ -290,7 +290,7 @@
       },
       "typed": [],
       "nudges": [
-        "tasks.in_hand"
+        "tasks.task_in_hand_named_back"
       ],
       "counts": {
         "charts:10:writes": 5,
@@ -342,7 +342,7 @@
       },
       "typed": [],
       "nudges": [
-        "tasks.in_hand"
+        "tasks.task_in_hand_named_back"
       ],
       "counts": {
         "charts:10:writes": 6,

@@ -27,13 +27,13 @@ class StartLines:
         from journal.features.briefing.feature import Briefing
         taken_over_at, rules, facts, reminders, waiting = self.taken_over_at(event), self.rules_said(), self.facts_said(), self.reminders_said(), self.waiting()
         optional = (
-            (taken_over_at, lambda: Briefing.TAKEOVER.create(at=taken_over_at)),
-            (rules, lambda: Briefing.RULES.create(count=len(self.rules.all()), rows=rules)),
-            (facts, lambda: Briefing.FACTS.create(rows=facts)),
-            (reminders, lambda: Briefing.REMINDERS.create(rows=reminders)),
-            (waiting, lambda: Briefing.WAITING.create(rows=waiting)),
+            (taken_over_at, lambda: Briefing.YOU_TOOK_OVER.create(at=taken_over_at)),
+            (rules, lambda: Briefing.RULES_IN_FORCE.create(count=len(self.rules.all()), rows=rules)),
+            (facts, lambda: Briefing.FACTS_HERE.create(rows=facts)),
+            (reminders, lambda: Briefing.REMINDERS_HERE.create(rows=reminders)),
+            (waiting, lambda: Briefing.WAITING_FOR_YOU.create(rows=waiting)),
         )
-        return [Briefing.READY.create(env=self.environments.find(event.environment_id).name), Briefing.QUIET.create(), Briefing.LAWS.create(), *(line() for named, line in optional if named)]
+        return [Briefing.JOURNAL_READY.create(env=self.environments.find(event.environment_id).name), Briefing.HANDLE_THE_JOURNAL_QUIETLY.create(), Briefing.THE_LAWS_APPLY.create(), *(line() for named, line in optional if named)]
 
     def taken_over_at(self, event: SessionStarted) -> str:
         """The time of day another session that worked here within a day last did anything, when this start is not the same session going on after a compaction; empty when none did."""

@@ -19,10 +19,10 @@ class JudgeDispatch(AgentListener[ToolStarting]):
         if event.tool not in DISPATCH_TOOLS:
             return None
         if not event.input.get("model"):
-            return Decision.refuse(Laws.NO_MODEL.create().rendered())
+            return Decision.refuse(Laws.NAME_THE_MODEL.create().rendered())
         asked = event.input.get("subagent_type", "")
         if asked not in self.profiles.names():
-            return Decision.refuse(Laws.NO_PROFILE.create(asked=asked or "none", profiles=", ".join(self.profiles.subagents())).rendered())
+            return Decision.refuse(Laws.NAME_A_PROFILE.create(asked=asked or "none", profiles=", ".join(self.profiles.subagents())).rendered())
         if not event.input.get("description") or not event.input.get("prompt"):
-            return Decision.refuse(Laws.NO_JOB.create().rendered())
+            return Decision.refuse(Laws.BIND_THE_JOB.create().rendered())
         return None

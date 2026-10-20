@@ -23,4 +23,4 @@ class ClearWaits(Listener[Updated]):
 
     def cleared(self, task: Task, ref: Ref) -> None:
         from journal.features.tasks.feature import Tasks as TasksFeature
-        self.telling.tell(TasksFeature.WAIT_CLEARED.create(n=task.id, on=f"{ref.type[:-1]} {ref.id}"))
+        self.telling.tell(TasksFeature.TASK_OPEN_AGAIN.create(n=task.id, on=f"{ref.type[:-1]} {ref.id}"))

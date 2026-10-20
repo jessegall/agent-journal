@@ -56,10 +56,10 @@ class Requiring:
     def require(self, agent: Agent, skills: list[Skill]) -> list[str]:
         """Each skill owed is noted on the agent's row, with the line that says where its file is; nothing is owed while the skills feature is off, as nothing would pay it."""
         from journal.features.skills.feature import Skills
-        if self.registry.silenced(Skills.REQUIRED):
+        if self.registry.silenced(Skills.READ_THE_SKILL_FIRST):
             return []
         self.owe(agent, skills)
-        return [line for skill in skills if (line := self.nudger.say(agent, Skills.REQUIRED.create(skill=skill.name, path=self.path_of(skill))))]
+        return [line for skill in skills if (line := self.nudger.say(agent, Skills.READ_THE_SKILL_FIRST.create(skill=skill.name, path=self.path_of(skill))))]
 
     def path_of(self, skill: Skill):
         """Where the skill's file is, from the project's root."""

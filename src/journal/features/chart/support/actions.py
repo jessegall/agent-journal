@@ -30,7 +30,7 @@ from journal.support.skill import Skill
 
 
 NAMED = re.compile(r"^\[([a-z_]+\.[a-z_]+)\]\s*(.*)$", re.S)
-"""A say or type node whose text opens with a nudge's key in brackets, [messages.new], speaks as that nudge: the same key in the record, the same repeat window and the same answered-in-chat flag, with the node's own words."""
+"""A say or type node whose text opens with a nudge's key in brackets, [messages.new_message_to_answer], speaks as that nudge: the same key in the record, the same repeat window and the same answered-in-chat flag, with the node's own words."""
 
 
 class Actions:
@@ -76,7 +76,7 @@ class Actions:
     def require_skill(self, text: str, ctx: Context) -> Decision:
         """The agent owes a read of a skill: the one named, or the ones the prompt names at a prompt, else the skill of its state; each owed one is a link from the agent and a line that says where its file is. With the skills switched off here, nothing is owed."""
         from journal.features.skills.feature import Skills
-        if not ctx.session or self.registry.silenced(Skills.REQUIRED):
+        if not ctx.session or self.registry.silenced(Skills.READ_THE_SKILL_FIRST):
             return Decision()
         agent = ctx.agent_in(self.machine)
         skills = self.requiring.named(text.strip()) if text.strip() else self.skills_asked(ctx)

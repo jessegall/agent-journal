@@ -18,5 +18,5 @@ class OweTheLookAtStart(AgentListener[SessionStarted]):
     def handle(self, event: SessionStarted) -> Decision | None:
         from journal.features.briefing.feature import Briefing
         agent = self.agents.touch(self.machine.agent(event.session, event.environment_id), Actor.system(), oriented=False)
-        line = self.nudger.say(agent, Briefing.ORIENT.create())
+        line = self.nudger.say(agent, Briefing.LOOK_BEFORE_THE_FIRST_WRITE.create())
         return Decision.tell(line) if line else None

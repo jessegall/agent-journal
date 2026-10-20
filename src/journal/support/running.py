@@ -52,7 +52,7 @@ class Running:
         self.refuse_an_unfinished_end(run)
         if not run.last:
             return self.said(self.changed(session, environment_id, lambda now: now.moved_on().said(self.now())))
-        return self.ended(agent, runs, Sequences.ENDED.create(n=run.sequence_id).rendered())
+        return self.ended(agent, runs, Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered())
 
     def ended(self, agent: Agent, runs: list[SequenceRun], ended: str) -> str:
         """The run in hand taken off, the line that says so, and the step of the run it was started inside, if any."""
@@ -68,9 +68,9 @@ class Running:
         agent = self.machine.agent(session, environment_id)
         runs = self.runs(agent)
         run = runs[-1]
-        skipped = Sequences.SKIPPED.create(n=run.sequence_id, step=run.step + 1).rendered()
+        skipped = Sequences.THE_USER_SKIPPED_A_STEP.create(n=run.sequence_id, step=run.step + 1).rendered()
         if run.last:
-            return self.ended(agent, runs, f"{skipped}\n{Sequences.ENDED.create(n=run.sequence_id).rendered()}")
+            return self.ended(agent, runs, f"{skipped}\n{Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered()}")
         moved = self.changed(session, environment_id, lambda now: now.moved_on().said(self.now()))
         return f"{skipped}\n{self.said(moved)}"
 
@@ -79,7 +79,7 @@ class Running:
         from journal.features.sequences.feature import Sequences
         agent = self.machine.agent(session, environment_id)
         runs = self.runs(agent)
-        return self.ended(agent, runs, Sequences.ENDED_BY_USER.create(n=runs[-1].sequence_id).rendered())
+        return self.ended(agent, runs, Sequences.THE_USER_ENDED_THE_SEQUENCE.create(n=runs[-1].sequence_id).rendered())
 
     def refuse_an_unfinished_end(self, run: SequenceRun) -> None:
         """The last step may not be done while the row the run is about stands short of the states the sequence names; a row gone no longer holds it."""
@@ -92,7 +92,7 @@ class Running:
         from journal.features.sequences.feature import Sequences
         agent = self.machine.agent(session, environment_id)
         runs = self.runs(agent)
-        return runs[-1], self.ended(agent, runs, Sequences.ABANDONED.create(n=runs[-1].sequence_id).rendered())
+        return runs[-1], self.ended(agent, runs, Sequences.SEQUENCE_ABANDONED.create(n=runs[-1].sequence_id).rendered())
 
     def end_where(self, environment_id: int, gone, why: str) -> list[tuple[Agent, str]]:
         """Every run here that can no longer finish, as gone says, taken off its agent: each agent with the line that tells it why."""
@@ -103,7 +103,7 @@ class Running:
             kept = [run for run in runs if not gone(run)]
             if len(kept) < len(runs):
                 self.kept(agent, kept)
-                told.append((agent, "\n".join(Sequences.CANNOT_FINISH.create(n=run.sequence_id, why=why).rendered() for run in runs if gone(run))))
+                told.append((agent, "\n".join(Sequences.SEQUENCE_CANNOT_FINISH.create(n=run.sequence_id, why=why).rendered() for run in runs if gone(run))))
         return told
 
     def environments_running(self, sequence_id: int) -> set[int]:
@@ -154,12 +154,12 @@ class Running:
     def reminder(cls, run: SequenceRun) -> Nudge:
         """The step in hand, or for a parked run, that it is parked and why."""
         from journal.features.sequences.feature import Sequences
-        return Sequences.PARKED.create(n=run.sequence_id, step=run.step + 1, why=run.parked_why) if run.parked_why else cls.step(run)
+        return Sequences.SEQUENCE_PARKED.create(n=run.sequence_id, step=run.step + 1, why=run.parked_why) if run.parked_why else cls.step(run)
 
     @staticmethod
     def step(run: SequenceRun) -> Nudge:
         from journal.features.sequences.feature import Sequences
-        return Sequences.STEP.create(n=run.sequence_id, step=run.step + 1, text=run.text)
+        return Sequences.STEP_TO_FOLLOW.create(n=run.sequence_id, step=run.step + 1, text=run.text)
 
     def said(self, run: SequenceRun) -> str:
         return self.step(run).rendered()

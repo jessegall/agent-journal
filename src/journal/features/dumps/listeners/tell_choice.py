@@ -17,6 +17,6 @@ class TellChoice(Listener[Updated]):
         if not isinstance(dump, Dump) or not dump.chosen or dump.chosen == event.was.chosen or dump.chosen["pick"] == OWN_WORDS:
             return
         if dump.chosen["pick"] < 0:
-            self.telling.tell(DumpsFeature.DECIDE.create(n=dump.id))
+            self.telling.tell(DumpsFeature.DUMP_LEFT_TO_YOU_FINISH_IT.create(n=dump.id))
         else:
-            self.telling.tell(DumpsFeature.CHOSE.create(n=dump.id, label=dump.chosen["label"]))
+            self.telling.tell(DumpsFeature.THE_USER_CHOSE_A_STEP.create(n=dump.id, label=dump.chosen["label"]))

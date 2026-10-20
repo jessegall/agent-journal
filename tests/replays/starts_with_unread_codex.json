@@ -23,13 +23,13 @@
       },
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "briefing.waiting",
-        "messages.some",
-        "voices.voice"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.waiting_for_you",
+        "messages.new_messages_to_answer",
+        "voices.how_to_talk_to_the_user"
       ],
       "counts": {
         "charts:31:said": 7,

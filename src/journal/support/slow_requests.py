@@ -87,6 +87,6 @@ class SlowRequests:
         agent = self.agents.live()
         if earlier or agent is None:
             return
-        line = self.nudger.say(agent, Faults.SLOW.create(method=method, route=route, ms=ms, budget=budget))
+        line = self.nudger.say(agent, Faults.SLOW_REQUEST_TO_FIX.create(method=method, route=route, ms=ms, budget=budget))
         if line:
             self.supervisor.type(agent.environment_id, line)

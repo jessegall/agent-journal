@@ -25,5 +25,5 @@ class HoldAtMark(AgentListener[AgentEvent]):
             return None
         mark = max(due)
         agent = self.agents.touch(agent, Actor.system(), context_mark=mark, mark_owed=mark)
-        line = self.nudger.say(agent, Memory.DECIDE.create(percent=mark))
+        line = self.nudger.say(agent, Memory.DECIDE_AT_THE_MARK.create(percent=mark))
         return Decision.tell(line) if line else None

@@ -26,7 +26,7 @@ class LinkSuggestions:
         every = int(self.settings.option(Pins.SUGGEST_EVERY))
         said = []
         for url in dict.fromkeys(loose):
-            suggestion = Pins.UNPINNED.create(url=url)
+            suggestion = Pins.PIN_THE_LINK.create(url=url)
             last = self.entries.last_said(session, suggestion.key, suggestion.rendered())
             if last and self.uses_since(session, last) < every:
                 continue

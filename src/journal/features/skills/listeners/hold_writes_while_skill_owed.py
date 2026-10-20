@@ -23,5 +23,5 @@ class HoldWritesWhileSkillOwed(AgentListener[ToolStarting]):
         if not owed:
             return None
         from journal.features.skills.feature import Skills
-        said = [Skills.REQUIRED.create(skill=skill.name, path=self.requiring.path_of(skill)) for skill in owed]
+        said = [Skills.READ_THE_SKILL_FIRST.create(skill=skill.name, path=self.requiring.path_of(skill)) for skill in owed]
         return None if self.registry.silenced(said[0]) else Decision.refuse("\n".join(s.rendered() for s in said))

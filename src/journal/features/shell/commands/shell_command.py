@@ -150,7 +150,7 @@ class ShellCommand(Command):
         if where.session:
             self.bus.dispatch(CommandMoved(output=output.id).placed(where.session, self.scope.id, "", None, self.clock.now()))
         self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", key=f"background:{args.chain}", command=args.part, shows=ChatMark.COMMANDS)
-        print(Shell.MOVED.create(n=output.id, file=args.file).rendered())
+        print(Shell.MOVED_TO_THE_BACKGROUND.create(n=output.id, file=args.file).rendered())
         return 0
 
     def forget(self, args: Namespace, where: Where) -> int:

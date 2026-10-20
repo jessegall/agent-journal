@@ -30,4 +30,4 @@ class KeepOutOfWorkerWorktrees(AgentListener[ToolStarting]):
         owner = next((w for w in self.workers.in_() if self.branch.folder(w).name == folder), None)
         if owner is None:
             return None
-        return Decision.refuse(Feature.NOT_YOURS.create(n=owner.id, name=owner.name).rendered())
+        return Decision.refuse(Feature.FILE_IS_THE_WORKERS.create(n=owner.id, name=owner.name).rendered())

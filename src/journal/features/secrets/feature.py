@@ -14,9 +14,9 @@ class Secrets(Feature):
     name = "secrets"
     title = "Secrets"
     help = "A key or a login the agent may use without seeing it: its values live in a file in your home folder, never in the journal, and you fill them in on the Secrets page."
-    KEPT_OUT = Nudge(name, "kept_out", "the secrets and the MCP keys in the private folder are out of your reach", "a secret reaches a program through `journal secret run <n> -- <program>`; its value is never yours to read", repeat_after=0)
-    ALLOWED = Nudge(name, "allowed", "the user let secret {{n}}, {{title}}, go to {{programs}}", "run it with `journal secret run {{n}} -- <program> ...`", repeat_after=0)
-    nudges = (KEPT_OUT, ALLOWED)
+    SECRETS_OUT_OF_REACH = Nudge(name, "secrets_out_of_reach", "the secrets and the MCP keys in the private folder are out of your reach", "a secret reaches a program through `journal secret run <n> -- <program>`; its value is never yours to read", repeat_after=0)
+    SECRET_ALLOWED_FOR_PROGRAMS = Nudge(name, "secret_allowed_for_programs", "the user let secret {{n}}, {{title}}, go to {{programs}}", "run it with `journal secret run {{n}} -- <program> ...`", repeat_after=0)
+    nudges = (SECRETS_OUT_OF_REACH, SECRET_ALLOWED_FOR_PROGRAMS)
     commands = (SecretCommand,)
     seeds = (SecretFiles,)
     skill = Skill("secrets", "Keys and logins the agent uses without seeing them; load it when a task needs a key, a login or a site you must be logged in to", """

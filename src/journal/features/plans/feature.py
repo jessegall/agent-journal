@@ -33,17 +33,17 @@ class Plans(Feature):
     )
     seeds = (ClosedPlans,)
 
-    NEXT = Nudge(name, "next", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)
-    DONE = Nudge(name, "done", "plan {{n}} is done: its last task closed", repeat_after=0)
-    WAITING = Nudge(name, "waiting", "plan {{n}}: no task can start now; {{left}} parked, blocked or waiting", "`journal task list` says what each waits on; when one can go on, `journal plan start {{n}}` takes it up", repeat_after=0)
-    PARKED = Nudge(name, "parked", "the user parked plan {{n}}")
-    APPROVED = Nudge(name, "approved", "the user approved plan {{n}}", "`journal plan start {{n}}` begins its first task", repeat_after=0)
-    CHECKPOINT = Nudge(name, "checkpoint", "plan {{n}}: phase {{phase}} is complete and a checkpoint", "the user looks before the next phase; wait for their word, then `journal plan start {{n}}`", repeat_after=0)
-    CHECKPOINT_PASSED = Nudge(name, "checkpoint_passed", "plan {{n}}: phase {{phase}} is complete, and in auto mode it does not stop you", "`journal plan start {{n}}` begins the next phase; carry on", repeat_after=0)
-    BLOCKED = Nudge(name, "blocked", "plan {{n}} is blocked: {{why}}", "it opens again by itself when what it waits on comes; `journal plan unblock {{n}}` opens it by hand", repeat_after=0)
-    OPEN_AGAIN = Nudge(name, "open_again", "plan {{n}} is open again: {{why}}", "`journal plan start {{n}}` goes on with it", repeat_after=0)
+    NEXT_TASK_OF_THE_PLAN = Nudge(name, "next_task_of_the_plan", "plan {{n}}: task {{task}} is next, {{title}}", repeat_after=0)
+    PLAN_DONE = Nudge(name, "plan_done", "plan {{n}} is done: its last task closed", repeat_after=0)
+    PLAN_WAITS_ON_ITS_TASKS = Nudge(name, "plan_waits_on_its_tasks", "plan {{n}}: no task can start now; {{left}} parked, blocked or waiting", "`journal task list` says what each waits on; when one can go on, `journal plan start {{n}}` takes it up", repeat_after=0)
+    THE_USER_PARKED_THE_PLAN = Nudge(name, "the_user_parked_the_plan", "the user parked plan {{n}}")
+    THE_USER_APPROVED_THE_PLAN = Nudge(name, "the_user_approved_the_plan", "the user approved plan {{n}}", "`journal plan start {{n}}` begins its first task", repeat_after=0)
+    PHASE_COMPLETE_AT_A_CHECKPOINT = Nudge(name, "phase_complete_at_a_checkpoint", "plan {{n}}: phase {{phase}} is complete and a checkpoint", "the user looks before the next phase; wait for their word, then `journal plan start {{n}}`", repeat_after=0)
+    PHASE_COMPLETE_GO_ON = Nudge(name, "phase_complete_go_on", "plan {{n}}: phase {{phase}} is complete, and in auto mode it does not stop you", "`journal plan start {{n}}` begins the next phase; carry on", repeat_after=0)
+    PLAN_BLOCKED = Nudge(name, "plan_blocked", "plan {{n}} is blocked: {{why}}", "it opens again by itself when what it waits on comes; `journal plan unblock {{n}}` opens it by hand", repeat_after=0)
+    PLAN_OPEN_AGAIN = Nudge(name, "plan_open_again", "plan {{n}} is open again: {{why}}", "`journal plan start {{n}}` goes on with it", repeat_after=0)
     ALL_BLOCKED = "all its tasks left are blocked"
-    nudges = (NEXT, DONE, WAITING, PARKED, APPROVED, CHECKPOINT, CHECKPOINT_PASSED, BLOCKED, OPEN_AGAIN)
+    nudges = (NEXT_TASK_OF_THE_PLAN, PLAN_DONE, PLAN_WAITS_ON_ITS_TASKS, THE_USER_PARKED_THE_PLAN, THE_USER_APPROVED_THE_PLAN, PHASE_COMPLETE_AT_A_CHECKPOINT, PHASE_COMPLETE_GO_ON, PLAN_BLOCKED, PLAN_OPEN_AGAIN)
 
     skill = Skill("plans", 'Build and follow a plan of ordered tasks; load it when the user asks for a plan or a roadmap', """
 # Plans

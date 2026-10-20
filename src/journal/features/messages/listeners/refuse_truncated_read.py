@@ -16,4 +16,4 @@ class RefuseTruncatedRead(AgentListener[ToolStarting]):
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.messages.feature import Messages
         command = event.input.get("command", "") if event.tool == "Bash" else ""
-        return Decision.refuse(Messages.WHOLE.create().rendered()) if TRUNCATED.search(command) else None
+        return Decision.refuse(Messages.READ_THE_WORDS_WHOLE.create().rendered()) if TRUNCATED.search(command) else None

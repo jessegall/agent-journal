@@ -22,9 +22,9 @@ class Questions(Feature):
         Entry(NodeKind.CHECK, 'open_question', 'Has an open question?', 'a question to the user here waits for its answer'),
     )
 
-    ANSWERED = Nudge(name, "answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
-    OWN_TOOL = Nudge(name, "own_tool", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options \"a\" \"b\"`; the user answers in the viewer and the answer reaches you", repeat_after=0)
-    nudges = (ANSWERED, OWN_TOOL)
+    QUESTION_ANSWERED = Nudge(name, "question_answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
+    ASK_THROUGH_THE_JOURNAL = Nudge(name, "ask_through_the_journal", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options \"a\" \"b\"`; the user answers in the viewer and the answer reaches you", repeat_after=0)
+    nudges = (QUESTION_ANSWERED, ASK_THROUGH_THE_JOURNAL)
 
     skill = Skill("questions", 'Ask the user a question and wait for the answer; load it before offering the user choices', """
 # Questions

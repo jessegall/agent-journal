@@ -37,9 +37,9 @@ class HoldWritesForTheStep(AgentListener[ToolStarting]):
         from journal.features.sequences.feature import Sequences
         values = {"n": run.sequence_id, "step": run.step + 1, "text": run.text}
         if not run.taken_up_at:
-            return self.refused(Sequences.HELD.create(**values))
+            return self.refused(Sequences.WRITE_HELD_FOR_THE_STEP.create(**values))
         writes = self.writes_since(event, run, provider)
-        return self.refused(Sequences.STALE.create(writes=writes, **values)) if writes >= int(self.settings.option(Sequences.STALE_AFTER)) else None
+        return self.refused(Sequences.STEP_STALE_MOVE_IT_ON.create(writes=writes, **values)) if writes >= int(self.settings.option(Sequences.STALE_AFTER)) else None
 
     def refused(self, said: Nudge) -> Decision | None:
         return None if self.registry.silenced(said) else Decision.refuse(said.rendered())

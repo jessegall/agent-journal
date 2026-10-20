@@ -9,11 +9,11 @@
       },
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user",
         "tasks.carry_on"
       ],
       "counts": {
@@ -38,7 +38,7 @@
       "typed": [],
       "nudges": [
         "tasks.carry_on",
-        "tasks.log_old"
+        "tasks.log_first_at_stop"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -63,12 +63,12 @@
       },
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "tasks.log_old",
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user",
+        "tasks.log_first_at_stop",
         "tasks.carry_on"
       ],
       "counts": {
@@ -94,7 +94,7 @@
         "[journal] you are back in a conversation that went on before: say so to the user in a line, in your voice. then carry on with what was in hand, or ask what to do"
       ],
       "nudges": [
-        "voices.back",
+        "voices.say_you_are_back",
         "tasks.carry_on"
       ],
       "counts": {

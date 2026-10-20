@@ -32,14 +32,14 @@ class Shell(Feature):
         Entry(NodeKind.CHECK, 'background_running', 'N or more commands running in the background?', "at least N of the agent's commands run in the background now; the text is N", takes_text=True),
     )
 
-    MOVED = Nudge(name, "moved", "moved to the background as output {{n}}", "you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
-    ENDED = Nudge(name, "ended", "{{outputs}}", "`journal output read {{n}} --summary` says how; --tail 20 or --grep reads the part you need", repeat_after=0)
-    USE_READER = Nudge(name, "use_reader", "reader {{reader}} already reads this: {{about}}", "`journal output read N --reader {{reader}}`", repeat_after=0)
-    READER_TIP = Nudge(name, "reader_tip", "you read outputs this way again: {{command}}", "a reader does it for you: `journal reader add <name> --pattern <regex> --about \"<what it picks>\"`, then `journal output read N --reader <name>`", repeat_after=0)
-    NARROW = Nudge(name, "narrow", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
-    ALONE = Nudge(name, "alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_after=0)
-    CHECK_BACKGROUND = Nudge(name, "check_background", "output {{background_outputs}} still running", "look at it; hung or stuck: stop it and say why", repeat_after=300, held_whatever_its_values=True)
-    nudges = (MOVED, ENDED, ALONE, CHECK_BACKGROUND, USE_READER, READER_TIP, NARROW)
+    MOVED_TO_THE_BACKGROUND = Nudge(name, "moved_to_the_background", "moved to the background as output {{n}}", "you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
+    OUTPUTS_ENDED = Nudge(name, "outputs_ended", "{{outputs}}", "`journal output read {{n}} --summary` says how; --tail 20 or --grep reads the part you need", repeat_after=0)
+    USE_THE_READER = Nudge(name, "use_the_reader", "reader {{reader}} already reads this: {{about}}", "`journal output read N --reader {{reader}}`", repeat_after=0)
+    ADD_A_READER = Nudge(name, "add_a_reader", "you read outputs this way again: {{command}}", "a reader does it for you: `journal reader add <name> --pattern <regex> --about \"<what it picks>\"`, then `journal output read N --reader <name>`", repeat_after=0)
+    READ_THE_FILE_IN_PARTS = Nudge(name, "read_the_file_in_parts", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
+    JOURNAL_COMMAND_RUNS_ALONE = Nudge(name, "journal_command_runs_alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_after=0)
+    CHECK_THE_BACKGROUND = Nudge(name, "check_the_background", "output {{background_outputs}} still running", "look at it; hung or stuck: stop it and say why", repeat_after=300, held_whatever_its_values=True)
+    nudges = (MOVED_TO_THE_BACKGROUND, OUTPUTS_ENDED, JOURNAL_COMMAND_RUNS_ALONE, CHECK_THE_BACKGROUND, USE_THE_READER, ADD_A_READER, READ_THE_FILE_IN_PARTS)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands

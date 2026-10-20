@@ -13,13 +13,13 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "messages.new",
-        "messages.new"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user",
+        "messages.new_message_to_answer",
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:10:writes": 1,
@@ -50,7 +50,7 @@
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:10:writes": 1,
@@ -81,7 +81,7 @@
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:10:writes": 1,
@@ -112,7 +112,7 @@
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:10:writes": 1,

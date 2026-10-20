@@ -45,19 +45,19 @@ class Messages(Feature):
         Entry(NodeKind.CHECK, 'tool_reads_their_files', "Tool reads the message's own files?", 'the tool about to run reads a file attached to a message read and left unanswered'),
     )
 
-    NEW = Nudge(name, "new", "new message {{n}}", repeat_after=0, answered_in_chat=True)
-    SOME = Nudge(name, "some", "new messages {{ns}}", repeat_after=60, answered_in_chat=True)
-    MANY = Nudge(name, "many", "{{count}} messages unread: `journal message unread`", repeat_after=60, answered_in_chat=True)
-    REACTED = Nudge(name, "reacted", "the user put {{face}} on message {{n}}", "act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it", repeat_after=0)
-    ONLY_A_FACE = Nudge(name, "only_a_face", "your reply was only {{face}}, so it was not posted", "an emoji on its own is a reaction: `journal message react <n> \"{{face}}\"` puts it on the message it answers; write words when there is something to say", repeat_after=0)
-    UNREAD_HELD = Nudge(name, "unread_held", "you have {{count}} unread messages", "`journal message unread` before any other write", repeat_after=0)
-    ANSWER = Nudge(name, "answer", "answer or react to message {{messages}} before you do anything else", "", repeat_after=300, answered_in_chat=True)
-    ANSWER_HELD = Nudge(name, "answer_held", "answer or react to message {{messages}} first", "your tool calls wait until you do", repeat_after=0, answered_in_chat=True)
-    WHOLE = Nudge(name, "whole", "read the user's words whole: no pipe after `journal message read` or `journal question show`", "run it on its own; every word is for you", repeat_after=0)
-    REPLIED_ALREADY = Nudge(name, "replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_after=0)
-    REPEATED_REPLY = Nudge(name, "repeated_reply", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_after=0)
+    NEW_MESSAGE_TO_ANSWER = Nudge(name, "new_message_to_answer", "new message {{n}}", repeat_after=0, answered_in_chat=True)
+    NEW_MESSAGES_TO_ANSWER = Nudge(name, "new_messages_to_answer", "new messages {{ns}}", repeat_after=60, answered_in_chat=True)
+    UNREAD_MESSAGES_TO_READ = Nudge(name, "unread_messages_to_read", "{{count}} messages unread: `journal message unread`", repeat_after=60, answered_in_chat=True)
+    THE_USER_REACTED = Nudge(name, "the_user_reacted", "the user put {{face}} on message {{n}}", "act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it", repeat_after=0)
+    REPLY_WAS_ONLY_A_FACE = Nudge(name, "reply_was_only_a_face", "your reply was only {{face}}, so it was not posted", "an emoji on its own is a reaction: `journal message react <n> \"{{face}}\"` puts it on the message it answers; write words when there is something to say", repeat_after=0)
+    WRITE_HELD_UNTIL_READ = Nudge(name, "write_held_until_read", "you have {{count}} unread messages", "`journal message unread` before any other write", repeat_after=0)
+    ANSWER_BEFORE_ANYTHING_ELSE = Nudge(name, "answer_before_anything_else", "answer or react to message {{messages}} before you do anything else", "", repeat_after=300, answered_in_chat=True)
+    TOOLS_HELD_UNTIL_ANSWERED = Nudge(name, "tools_held_until_answered", "answer or react to message {{messages}} first", "your tool calls wait until you do", repeat_after=0, answered_in_chat=True)
+    READ_THE_WORDS_WHOLE = Nudge(name, "read_the_words_whole", "read the user's words whole: no pipe after `journal message read` or `journal question show`", "run it on its own; every word is for you", repeat_after=0)
+    REPLY_KEPT_OUT_AS_REPLIED_ALREADY = Nudge(name, "reply_kept_out_as_replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_after=0)
+    CLOSING_WORDS_KEPT_OUT_AS_REPEATED = Nudge(name, "closing_words_kept_out_as_repeated", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_after=0)
     REPLY_BY_TAG = Nudge(name, "reply_by_tag", "a reply needs no command", "type it in your turn with [!reply:N] opening its line, and it reaches the chat as your reply", repeat_after=0)
-    nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE, REPLIED_ALREADY, REPEATED_REPLY, REPLY_BY_TAG)
+    nudges = (NEW_MESSAGE_TO_ANSWER, NEW_MESSAGES_TO_ANSWER, UNREAD_MESSAGES_TO_READ, THE_USER_REACTED, REPLY_WAS_ONLY_A_FACE, WRITE_HELD_UNTIL_READ, ANSWER_BEFORE_ANYTHING_ELSE, TOOLS_HELD_UNTIL_ANSWERED, READ_THE_WORDS_WHOLE, REPLY_KEPT_OUT_AS_REPLIED_ALREADY, CLOSING_WORDS_KEPT_OUT_AS_REPEATED, REPLY_BY_TAG)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
 # Messages
@@ -98,7 +98,7 @@ The user leaves messages; you answer them before anything else.
     def inbox(cls, unread: list) -> "Nudge":
         """The shortest line that names what waits: one by its number, a few by theirs, more than three by their count and the command that prints them."""
         if len(unread) == 1:
-            return cls.NEW.create(n=unread[0].id)
+            return cls.NEW_MESSAGE_TO_ANSWER.create(n=unread[0].id)
         if len(unread) <= 3:
-            return cls.SOME.create(ns=", ".join(str(m.id) for m in unread))
-        return cls.MANY.create(count=len(unread))
+            return cls.NEW_MESSAGES_TO_ANSWER.create(ns=", ".join(str(m.id) for m in unread))
+        return cls.UNREAD_MESSAGES_TO_READ.create(count=len(unread))

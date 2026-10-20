@@ -29,7 +29,7 @@ class ChartFeature(Feature):
         Entry(NodeKind.CHECK, 'prompt_has', 'Prompt contains N?', 'the prompt the user sent holds the words in the text, in any case', takes_text=True),
         Entry(NodeKind.CHECK, 'time_between', 'Time of day within N?', 'the local time of day falls within the span in the text, such as 22:00-06:00; a tick reads its own time, any other event now', takes_text=True),
         Entry(NodeKind.CHECK, 'held_already', 'Tool held already?', 'an earlier step of this event held the tool, so a count of what the agent did leaves it out'),
-        Entry(NodeKind.CHECK, 'line_is', 'Line said is N?', 'the journal line just said is the one named in the text by its key, such as etiquette.remind', takes_text=True),
+        Entry(NodeKind.CHECK, 'line_is', 'Line said is N?', 'the journal line just said is the one named in the text by its key, such as etiquette.a_line_is_an_instruction', takes_text=True),
         Entry(NodeKind.CHECK, 'count_over', 'Has a count reached N?', "this workflow's count named first in the text has reached N in this environment; the text is the count's name, then N or a setting's name, such as reads messages.hold_after", takes_text=True, named='Has {name} reached {n}?'),
         Entry(NodeKind.CHECK, 'count_at', 'Is a count at N?', "this workflow's count named first in the text stands at exactly N; the text is the count's name, then N or a setting's name", takes_text=True, named='Is {name} at {n}?'),
         Entry(NodeKind.CHECK, 'count_wait', 'Wait here until a count reaches N?', "the workflow goes on past here once this workflow's count named first in the text reaches N, and waits here until then; the text is the count's name, then N or a setting's name", takes_text=True, named='Wait here until {name} reaches {n}?'),
@@ -38,7 +38,7 @@ class ChartFeature(Feature):
         Entry(NodeKind.CHECK, 'time_over', 'Has N passed since a noted time?', "at least the time given has passed since this workflow noted the time named first in the text, in this environment; the text is the time's name, then how long with its unit, such as last_log 10 minutes; a time never noted answers no", takes_text=True, named='Has {n} passed since {name}?'),
     )
     actions = (
-        Entry(NodeKind.ACTION, 'say', 'Send the agent a message', "sends the message to the agent once; repeats are skipped for a set time; a message opening with a nudge's key in brackets, [messages.new], speaks as that nudge, with its repeat window and record", takes_text=True),
+        Entry(NodeKind.ACTION, 'say', 'Send the agent a message', "sends the message to the agent once; repeats are skipped for a set time; a message opening with a nudge's key in brackets, [messages.new_message_to_answer], speaks as that nudge, with its repeat window and record", takes_text=True),
         Entry(NodeKind.ACTION, 'hold', 'Hold the tool', 'stops the tool and sends the message, until what the message names is done', takes_text=True),
         Entry(NodeKind.ACTION, 'block_stop', 'Keep the agent from stopping', 'the agent carries on, with the message', takes_text=True),
         Entry(NodeKind.ACTION, 'type', 'Type to the agent', "types the text into the agent's terminal as its next prompt; a text opening with a nudge's key in brackets speaks as that nudge first", takes_text=True),

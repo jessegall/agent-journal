@@ -6,11 +6,11 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -27,7 +27,7 @@
         "[journal] worker 1, Lady Lovelace, reported in the chat"
       ],
       "nudges": [
-        "workers.reported"
+        "workers.worker_reported"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -45,8 +45,8 @@
         "[journal] what you waited on came back: carry on"
       ],
       "nudges": [
-        "workers.stopped",
-        "workers.returned"
+        "workers.worker_stopped_unreported",
+        "workers.waited_on_came_back"
       ],
       "counts": {
         "charts:10:writes": 0,

@@ -6,17 +6,17 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "briefing.takeover",
-        "voices.voice"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user",
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.you_took_over",
+        "voices.how_to_talk_to_the_user"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -33,7 +33,7 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -54,8 +54,8 @@
         "[journal] what you waited on came back: carry on"
       ],
       "nudges": [
-        "workers.reported",
-        "workers.returned"
+        "workers.worker_reported",
+        "workers.waited_on_came_back"
       ],
       "counts": {
         "charts:10:writes": 0,

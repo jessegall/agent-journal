@@ -28,9 +28,9 @@ class Skills(Feature):
         Entry(NodeKind.ACTION, 'require_skill', 'Require a skill to be read', 'the agent owes a read of the skill named in the text, told where its file is; with no text, the skills the prompt names at a prompt, else the skill of the state the agent is in', takes_text=True),
     )
 
-    REQUIRED = Nudge(name, "required", "read the {{skill}} skill before anything else: {{path}}", "writes wait until you have", repeat_after=0)
+    READ_THE_SKILL_FIRST = Nudge(name, "read_the_skill_first", "read the {{skill}} skill before anything else: {{path}}", "writes wait until you have", repeat_after=0)
     STOPPED_OWING = Nudge(name, "stopped_owing", "you stopped while the journal awaits the {{skills}} skill to be read", "do that first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
-    nudges = (REQUIRED, STOPPED_OWING)
+    nudges = (READ_THE_SKILL_FIRST, STOPPED_OWING)
 
     skill = Skill("journal", "The journal, its commands and when each applies; load it first in every session", """
 # The journal

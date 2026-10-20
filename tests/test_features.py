@@ -2573,7 +2573,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "free work"], USER)
     out = console.run(["chart", "try", "idle"], AGENT).out
-    assert "would block stop as tasks.next: tasks are open, and auto mode is on: task 1 next: free work" in out and "1, 2, 4, 5, 7, 8, 10, 11, 12, 13" in out, "one path through Idle's own: the parked check, the broken wait check, the approved plan check, auto mode, the open task held, after the Always inbox check found nothing unread"
+    assert "would block stop as tasks.next_task_holds_the_stop: tasks are open, and auto mode is on: task 1 next: free work" in out and "1, 2, 4, 5, 7, 8, 10, 11, 12, 13" in out, "one path through Idle's own: the parked check, the broken wait check, the approved plan check, auto mode, the open task held, after the Always inbox check found nothing unread"
     assert "plugins not asked: a test run walks the workflows alone" in out, "a test run says it asked no plugin"
     assert not sent and hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})[0] == 200, "nothing was done"
     assert "one of session_started" in console.run(["chart", "try", "flying"], AGENT).err
@@ -7086,11 +7086,11 @@ def test_a_line_naming_a_list_that_changes_is_said_once_inside_its_window(app):
     from journal.features.tasks.feature import Tasks
     hook(app, "SessionStart")
     agent, nudger = app.container.get(Machine).agent("s1", 1), app.container.get(Nudger)
-    assert nudger.say(agent, Shell.CHECK_BACKGROUND.create(background_outputs="12, 15")), "the first naming of the commands still running is said"
-    assert nudger.say(agent, Shell.CHECK_BACKGROUND.create(background_outputs="12, 15, 18")) is None, "a command joining the list inside the window says nothing again: Redmar's flood"
-    assert nudger.say(agent, Tasks.BLOCKED_STILL.create(tasks="task 4 on the deploy")), "the blocked ask is said once"
-    assert nudger.say(agent, Tasks.BLOCKED_STILL.create(tasks="task 4 on the deploy")) is None, "and not again at the next tick five seconds later"
-    assert nudger.say(agent, Tasks.UNLOGGED.create(n=3)) and nudger.say(agent, Tasks.UNLOGGED.create(n=4)), "a line about one row is still held by its words: another task is named"
+    assert nudger.say(agent, Shell.CHECK_THE_BACKGROUND.create(background_outputs="12, 15")), "the first naming of the commands still running is said"
+    assert nudger.say(agent, Shell.CHECK_THE_BACKGROUND.create(background_outputs="12, 15, 18")) is None, "a command joining the list inside the window says nothing again: Redmar's flood"
+    assert nudger.say(agent, Tasks.UNBLOCK_WHAT_HAS_COME.create(tasks="task 4 on the deploy")), "the blocked ask is said once"
+    assert nudger.say(agent, Tasks.UNBLOCK_WHAT_HAS_COME.create(tasks="task 4 on the deploy")) is None, "and not again at the next tick five seconds later"
+    assert nudger.say(agent, Tasks.TASK_OPEN_WITH_NOTHING_LOGGED.create(n=3)) and nudger.say(agent, Tasks.TASK_OPEN_WITH_NOTHING_LOGGED.create(n=4)), "a line about one row is still held by its words: another task is named"
 
 
 def test_a_package_install_of_code_commandments_is_suggested_once_as_the_journal_plugin(app):

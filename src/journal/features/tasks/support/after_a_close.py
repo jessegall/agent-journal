@@ -18,4 +18,4 @@ class AfterAClose:
         if self.tasks.in_state(TaskState.PARKED):
             return None
         open_ = self.plans.free()
-        return TasksFeature.NEXT.create(n=open_[0].id, title=open_[0].title) if open_ else None
+        return TasksFeature.NEXT_TASK_HOLDS_THE_STOP.create(n=open_[0].id, title=open_[0].title) if open_ else None

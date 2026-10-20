@@ -6,11 +6,11 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -630,8 +630,8 @@
       },
       "typed": [],
       "nudges": [
-        "tasks.log_soon",
-        "tasks.in_hand"
+        "tasks.log_where_it_stands",
+        "tasks.task_in_hand_named_back"
       ],
       "counts": {
         "charts:10:writes": 26,
@@ -1304,8 +1304,8 @@
       },
       "typed": [],
       "nudges": [
-        "tasks.log_soon",
-        "tasks.in_hand"
+        "tasks.log_where_it_stands",
+        "tasks.task_in_hand_named_back"
       ],
       "counts": {
         "charts:10:writes": 26,
@@ -1909,7 +1909,7 @@
       },
       "typed": [],
       "nudges": [
-        "tasks.in_hand"
+        "tasks.task_in_hand_named_back"
       ],
       "counts": {
         "charts:10:writes": 50,

@@ -23,10 +23,10 @@ class ReadTurn(AgentListener[TurnWritten]):
         if not event.final:
             return
         agent = self.machine.agent(event.session, event.environment_id)
-        for pattern, said in ((SHOP_TALK, Etiquette.SHOP_TALK), (THIRD_PERSON, Etiquette.THIRD_PERSON), (EM_DASHES, Etiquette.DASHES)):
+        for pattern, said in ((SHOP_TALK, Etiquette.NO_SHOP_TALK), (THIRD_PERSON, Etiquette.SAY_YOU_NOT_THE_USER), (EM_DASHES, Etiquette.NO_EM_DASHES)):
             if pattern.search(event.text) and (line := self.nudger.say(agent, said.create())):
                 self.supervisor.type(event.environment_id, line)
-        if self.run_together(event.text) and (line := self.nudger.say(agent, Etiquette.PARAGRAPHS.create())):
+        if self.run_together(event.text) and (line := self.nudger.say(agent, Etiquette.BLANK_LINES_BETWEEN_PARAGRAPHS.create())):
             self.supervisor.type(event.environment_id, line)
 
     @staticmethod

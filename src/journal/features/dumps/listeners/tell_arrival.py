@@ -18,4 +18,4 @@ class TellArrival(Listener[Saved]):
             return
         in_hand, waiting = self.dumps.in_hand(), dump.waiting()
         if in_hand and in_hand.id == dump.id and waiting:
-            self.telling.tell(DumpsFeature.ARRIVED.create(n=dump.id, count=Dump.items_in(waiting)))
+            self.telling.tell(DumpsFeature.DUMP_ARRIVED_FILE_IT.create(n=dump.id, count=Dump.items_in(waiting)))

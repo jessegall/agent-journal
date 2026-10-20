@@ -16,7 +16,7 @@ class IntroduceAtStart(AgentListener[JournalStarted]):
 
     def handle(self, event: JournalStarted) -> None:
         from journal.features.voices.feature import Voices
-        said = Voices.BACK if event.source == "resume" else Voices.INTRODUCE
+        said = Voices.SAY_YOU_ARE_BACK if event.source == "resume" else Voices.INTRODUCE_YOURSELF
         line = self.nudger.say(self.machine.agent(event.session, event.environment_id), said.create())
         if line:
             self.supervisor.type(event.environment_id, line, after=PROMPT_UP_AFTER)

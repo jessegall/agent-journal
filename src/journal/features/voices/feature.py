@@ -24,8 +24,8 @@ class Voices(Feature):
     options = (PROFILE, TITLE, NAME, AVATAR, AVATAR_SHOWN)
     listeners = (SayVoiceWhenChanged, IntroduceAtStart)
 
-    VOICE = Nudge(name, "voice", "how to talk to the user", "{{voice}}", repeat_after=0)
-    INTRODUCE = Nudge(name, "introduce", "introduce yourself to the user in the chat", "one or two lines in your voice, then ask what to do, unless the user has already asked for something: then go on with it", repeat_after=0, answered_in_chat=True)
-    CHANGED = Nudge(name, "changed", "the user changed how you talk to them", "From now on: {{voice}} Answer this with one opening sentence in the new voice in the chat, so the user hears the change, and add nothing else about it.", repeat_after=0, answered_in_chat=True)
-    BACK = Nudge(name, "back", "you are back in a conversation that went on before: say so to the user in a line, in your voice", "then carry on with what was in hand, or ask what to do", repeat_after=0)
-    nudges = (VOICE, CHANGED, INTRODUCE, BACK)
+    HOW_TO_TALK_TO_THE_USER = Nudge(name, "how_to_talk_to_the_user", "how to talk to the user", "{{voice}}", repeat_after=0)
+    INTRODUCE_YOURSELF = Nudge(name, "introduce_yourself", "introduce yourself to the user in the chat", "one or two lines in your voice, then ask what to do, unless the user has already asked for something: then go on with it", repeat_after=0, answered_in_chat=True)
+    THE_VOICE_CHANGED = Nudge(name, "the_voice_changed", "the user changed how you talk to them", "From now on: {{voice}} Answer this with one opening sentence in the new voice in the chat, so the user hears the change, and add nothing else about it.", repeat_after=0, answered_in_chat=True)
+    SAY_YOU_ARE_BACK = Nudge(name, "say_you_are_back", "you are back in a conversation that went on before: say so to the user in a line, in your voice", "then carry on with what was in hand, or ask what to do", repeat_after=0)
+    nudges = (HOW_TO_TALK_TO_THE_USER, THE_VOICE_CHANGED, INTRODUCE_YOURSELF, SAY_YOU_ARE_BACK)

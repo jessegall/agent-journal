@@ -8,12 +8,12 @@
         "[journal] the user approved plan 1. `journal plan start 1` begins its first task"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "plans.approved"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user",
+        "plans.the_user_approved_the_plan"
       ],
       "counts": {
         "charts:31:said": 6
@@ -27,7 +27,7 @@
         "[journal] plan 1: task 2, second is next. it has no brief and nothing logged yet"
       ],
       "nudges": [
-        "plans.next"
+        "plans.next_task_of_the_plan"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -46,7 +46,7 @@
       "typed": [],
       "nudges": [
         "tasks.carry_on",
-        "tasks.log_old"
+        "tasks.log_first_at_stop"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -69,7 +69,7 @@
       "typed": [],
       "nudges": [
         "tasks.carry_on",
-        "tasks.log_old"
+        "tasks.log_first_at_stop"
       ],
       "counts": {
         "charts:10:writes": 0,
@@ -106,13 +106,13 @@
       },
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "briefing.takeover",
-        "voices.voice",
-        "tasks.log_old",
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.you_took_over",
+        "voices.how_to_talk_to_the_user",
+        "tasks.log_first_at_stop",
         "tasks.carry_on"
       ],
       "counts": {
@@ -147,7 +147,7 @@
         "[journal] the user approved plan 2. `journal plan start 2` begins its first task"
       ],
       "nudges": [
-        "plans.approved"
+        "plans.the_user_approved_the_plan"
       ],
       "counts": {
         "charts:10:writes": 0,

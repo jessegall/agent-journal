@@ -16,7 +16,7 @@ class RequireAtStart(AgentListener[SessionStarted]):
 
     def handle(self, event: SessionStarted) -> Decision | None:
         from journal.features.skills.feature import Skills
-        if self.registry.silenced(Skills.REQUIRED):
+        if self.registry.silenced(Skills.READ_THE_SKILL_FIRST):
             return None
         agent = self.machine.agent(event.session, event.environment_id)
         state = self.machine.states.named(agent.state, agent.data)

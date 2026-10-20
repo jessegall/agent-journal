@@ -8,12 +8,12 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "messages.new"
+        "briefing.look_before_the_first_write",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "voices.how_to_talk_to_the_user",
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:31:said": 6,
@@ -31,7 +31,7 @@
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:31:said": 7,
@@ -50,9 +50,9 @@
         "[journal] new message 4"
       ],
       "nudges": [
-        "messages.new",
-        "messages.new",
-        "messages.new"
+        "messages.new_message_to_answer",
+        "messages.new_message_to_answer",
+        "messages.new_message_to_answer"
       ],
       "counts": {
         "charts:31:said": 10,
@@ -70,7 +70,7 @@
       },
       "typed": [],
       "nudges": [
-        "messages.many"
+        "messages.unread_messages_to_read"
       ],
       "counts": {
         "charts:31:said": 11,

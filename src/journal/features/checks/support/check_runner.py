@@ -65,7 +65,7 @@ class CheckRunner:
             if agent.state != Ended.name:
                 self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{ran.id}", shows=ChatMark.CHECKS)
         if not ended.passed:
-            said = ChecksFeature.FAILING if was_failing else ChecksFeature.FAILED
+            said = ChecksFeature.CHECK_STILL_FAILING if was_failing else ChecksFeature.CHECK_FAILED
             for agent in self.agents.everywhere():
                 if agent.state != Ended.name and (line := self.nudger.say(agent, said.create(n=ran.id, title=ran.title, tail=CheckOutput.told(ended.output)))):
                     self.supervisor.type(agent.environment_id, line)
