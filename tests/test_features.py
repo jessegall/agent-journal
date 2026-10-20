@@ -162,7 +162,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
     assert machine.current("s1").name == "expecting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
     out = console.run(["task", "done", "1"], AGENT).out
-    assert machine.current("s1").resume == {"state": "following_plan", "data": FollowingPlan(plan_id=1, task_id=2).to_data()}, "the wait stands, and the agent goes on to task 2 when it ends"
+    assert machine.current("s1").resume == {"state": "following_plan", "data": FollowingPlan(plan_id=1, task_id=2, moved_from=1).to_data()}, "the wait stands, and the agent goes on to task 2 when it ends"
     out = console.run(["task", "done", "2"], AGENT).out
     assert "plan 1 is done" in out
     assert machine.current("s1").resume["state"] == "idle", "done with the plan, the agent goes to rest when its wait ends"
@@ -194,6 +194,25 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app, monkeypatch)
     console.run(["task", "done", "2"], AGENT)
     app.runtime().deferred.drain()
     assert any("task 3, tag it is next. brief: git tag v4" in line for line in typed), "the plan's next task comes with its brief"
+
+
+def test_the_plans_next_task_is_named_once_when_another_of_its_tasks_closes_beside_the_one_in_hand(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "create", "release", "--brief", "ship"], USER)
+    for title in ("write the notes", "tag it", "announce it", "check the docs"):
+        console.run(["plan", "add", "1", title], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["task", "done", "1"], AGENT)
+    console.run(["task", "done", "4"], AGENT)
+    app.runtime().deferred.drain()
+    assert len([line for line in typed if "task 2, tag it is next" in line]) == 1, "closing a task not in hand says nothing about where the plan went"
 
 
 def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked_until_a_command_passes(app, monkeypatch):
@@ -1283,7 +1302,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1"], AGENT)
     machine, plans = app.container.get(Machine), app.container.get(Plans)
-    assert machine.current("s1") == FollowingPlan(plan_id=1) and plans.at_checkpoint(plans.find(1)).title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
+    assert machine.current("s1") == FollowingPlan(plan_id=1, moved_from=1) and plans.at_checkpoint(plans.find(1)).title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "phase one is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "the checkpoint waits for the user's look, said at the stop"
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1") == FollowingPlan(plan_id=1, task_id=2), "plan start goes on past the checkpoint"
@@ -1293,7 +1312,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     settings.save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
     console.run(["plan", "start", "2"], AGENT)
     console.run(["task", "done", "3"], AGENT)
-    assert app.container.get(Tasks).find(4).state == "started" and machine.current("s1") == FollowingPlan(plan_id=2, task_id=4), "in auto mode a checkpoint never stops the plan"
+    assert app.container.get(Tasks).find(4).state == "started" and machine.current("s1") == FollowingPlan(plan_id=2, task_id=4, moved_from=3), "in auto mode a checkpoint never stops the plan"
     app.runtime().deferred.drain()
     assert any("plan 2: task 4, q second is next" in line for line in typed), "the workflow tells the agent its next task"
     console.run(["plan", "park", "2"], AGENT)
@@ -1557,7 +1576,7 @@ def test_a_task_named_in_a_reply_is_linked_to_the_message_it_answers(app):
 def test_the_providers_own_question_tool_is_refused_and_every_fiftieth_line_reminds(app, monkeypatch):
     hook(app, "SessionStart")
     status, body = hook(app, "PreToolUse", tool_name="AskUserQuestion", tool_input={"question": "which?"})
-    assert status == 409 and "`journal question ask \"<one line>\" --options a,b`" in body["error"]
+    assert status == 409 and "`journal question ask \"<one line>\" --options \"a\" \"b\"`" in body["error"]
 
 
 def test_a_dispatched_worker_runs_and_its_output_is_its_report(app):
@@ -5999,7 +6018,7 @@ def test_a_plan_moves_on_whoever_closes_its_task_and_an_approved_plan_with_every
     console.run(["environment", "here"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1", "--how", "the user closed it"], USER)
-    assert app.container.get(Tasks).find(2).state == "started" and app.container.get(Machine).current("s1") == FollowingPlan(plan_id=1, task_id=2), "the user's close moves the agent's plan on"
+    assert app.container.get(Tasks).find(2).state == "started" and app.container.get(Machine).current("s1") == FollowingPlan(plan_id=1, task_id=2, moved_from=1), "the user's close moves the agent's plan on"
     console.run(["task", "done", "2", "--how", "h"], AGENT)
     console.run(["task", "start", "3"], USER)
     console.run(["task", "done", "3", "--how", "h"], USER)

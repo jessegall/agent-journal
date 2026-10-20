@@ -192,16 +192,22 @@ class Checks:
         return state if isinstance(state, FollowingPlan) else None
 
     def plan_moved_on(self, ctx: Context) -> bool:
-        """A task just closed and the agent follows its plan at a new task: the plan moved on."""
-        state = self.followed(ctx)
-        task = ctx.event.model if isinstance(ctx.event, Updated) else None
-        return isinstance(task, Task) and task.has_just_closed(ctx.event.was) and state is not None and state.task_id not in (0, task.id)
+        """The task in hand just closed and the agent follows its plan at a new task: the plan moved on."""
+        state = self.moved_by(ctx)
+        return state is not None and state.task_id != 0
 
     def plan_left_waiting(self, ctx: Context) -> bool:
-        """A task just closed and the agent follows its plan with no task to start, the plan not at a checkpoint: what is left waits."""
+        """The task in hand just closed and the agent follows its plan with no task to start, the plan not at a checkpoint: what is left waits."""
+        state = self.moved_by(ctx)
+        return state is not None and not state.task_id and not self.plans.finished(self.plans.find(state.plan_id)) and self.plans.at_checkpoint(self.plans.find(state.plan_id)) is None
+
+    def moved_by(self, ctx: Context) -> FollowingPlan | None:
+        """The plan the agent follows, when the task this event closed is the one whose closing moved it on; none for a close of any other task."""
         state = self.followed(ctx)
         task = ctx.event.model if isinstance(ctx.event, Updated) else None
-        return isinstance(task, Task) and task.has_just_closed(ctx.event.was) and state is not None and not state.task_id and not self.plans.finished(self.plans.find(state.plan_id)) and self.plans.at_checkpoint(self.plans.find(state.plan_id)) is None
+        if not isinstance(task, Task) or not task.has_just_closed(ctx.event.was) or state is None:
+            return None
+        return state if state.moved_from == task.id else None
 
     def task_in_hand(self, ctx: Context) -> bool:
         state = self.state(ctx)
