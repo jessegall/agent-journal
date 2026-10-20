@@ -10,9 +10,8 @@ py=$(cat "$here/../python" 2>/dev/null)
 case "$1" in
     claude|codex|serve|setup) cd "$root" && exec "$py" "$here/journal.py" "$@" ;;
 esac
-# Who runs the command: JOURNAL_ACTOR is agent, sub-agent or worker-agent. A sub-agent's command reaches nothing, for now.
-# A subagent of Claude Code inherits the agent's shell whole, so nothing in its environment tells it apart here; its hooks do.
-[ "${JOURNAL_ACTOR:-agent}" = sub-agent ] && exit 0
+# Who runs the command: JOURNAL_ACTOR is agent, sub-agent or worker-agent, sent to the server as a header, with a Codex thread's id.
+# A subagent of Claude Code inherits the agent's shell whole, so nothing in its environment tells it apart here; the server pairs the command with its hook.
 . "$here/journal/hooks/environment.sh"
 JOURNAL_ENV=$(journal_environment)
 export JOURNAL_ENV
@@ -25,8 +24,9 @@ from journal.support.where import Where
 where = Where.from_environ(os.environ)
 print(json.dumps({"argv": sys.argv[2:], "env": where.environment, "session": where.session, "agent": where.from_agent_shell, "plugin": where.plugin, "token": os.environ.get("JOURNAL_PLUGIN_TOKEN", "")}))
 ' "$here" "$@") &&
-    reply=$(curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" --data-binary "$body") &&
+    reply=$(curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" -H "X-Journal-Actor: ${JOURNAL_ACTOR:-agent}" -H "X-Journal-Thread: ${CODEX_THREAD_ID:-}" --data-binary "$body") &&
     { printf '%s' "$reply" | "$py" -c 'import json,sys; o=json.load(sys.stdin); sys.stdout.write(o.get("out", "")); sys.stderr.write(o.get("err", "the journal failed: " + str(o.get("error", o)) + "\n")); sys.exit(o.get("code", 1))'; exit $?; }
 fi
-# No server answered (none up, or a port file left by one that died): the package runs the command itself.
+# No server answered (none up, or a port file left by one that died): the package runs the command itself, unless a sub-agent runs it.
+[ "${JOURNAL_ACTOR:-agent}" = sub-agent ] && exit 0
 cd "$root" && exec "$py" "$here/journal.py" "$@"

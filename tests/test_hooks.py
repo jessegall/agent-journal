@@ -129,3 +129,32 @@ def test_a_guard_that_raises_fails_open_and_is_reported_loudly(app):
     failed = [e for e in app.container.get(Entries).in_() if e.kind == GUARD_FAILED]
     assert len(failed) == 1 and failed[0].data["listener"] == "Raising" and failed[0].data["event"] == "ToolStarting"
     assert any("A guard failed and let the event through" in m.text for m in app.container.get(Messages).in_()), "and the user sees a card in the chat"
+
+
+def post_command(app, argv: list[str], headers: dict | None = None) -> dict:
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/cli", data=json.dumps({"argv": argv, "env": "main"}).encode(), method="POST", headers={"Content-Type": "application/json", **(headers or {})})
+    with urlopen(request, timeout=5) as reply:
+        return json.loads(reply.read())
+
+
+def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app):
+    status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Bash", "tool_input": {"command": "journal task list"}})
+    assert status == 200 and body == {} and app.container.get(Entries).in_() == [], "announced, never recorded as the agent's"
+    refused = post_command(app, ["task", "list"], {"X-Journal-Env": "main"})
+    assert refused["code"] == 1 and "a subagent runs no journal command" in refused["err"]
+    assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"})["code"] == 0, "the announcement is used up by its command"
+
+
+def test_a_command_under_the_sub_agent_actor_is_refused(app):
+    refused = post_command(app, ["task", "list"], {"X-Journal-Actor": "sub-agent"})
+    assert refused["code"] == 1 and "writes nothing" in refused["err"]
+    assert post_command(app, ["task", "list"], {"X-Journal-Actor": "worker-agent"})["code"] == 0
+
+
+def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_subagents(app):
+    from journal.models.agent import Agent
+    from journal.support.actor import Actor
+    from journal.repositories.agents import Agents
+    app.container.get(Agents).save(Agent(session="thread-1", provider="codex"), Actor.system())
+    assert "a subagent runs no journal command" in post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-2"})["err"]
+    assert post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-1"})["code"] == 0

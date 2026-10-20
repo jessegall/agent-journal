@@ -54,7 +54,7 @@ class WorkerRunner:
             self.run(worker, command, by)
 
     def run(self, worker: Worker, command: list[str], by: Actor) -> None:
-        environ = {**{k: v for k, v in os.environ.items() if k not in NOT_HANDED}, AGENT_SHELL: "1", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
+        environ = {**{k: v for k, v in os.environ.items() if k not in NOT_HANDED}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
         out, err = self.outputs(worker)
         out.parent.mkdir(parents=True, exist_ok=True)
         try:
