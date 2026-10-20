@@ -7075,3 +7075,28 @@ def test_a_message_gets_one_reply_unless_the_agent_confirms_a_second(app, monkey
     assert len([m for m in app.container.get(Messages).in_() if m.author == "agent"]) == 1, "a typed tag on a message already answered is kept out too"
     assert any("message 1 already has your reply 2" in line for line in typed)
     assert console.run(["message", "send", "Something new after all.", "--reply-to", "1", "--confirm"], AGENT).code == 0, "confirmed, a second reply goes out"
+
+
+def test_a_thread_that_ends_without_releasing_gives_its_connection_back(app):
+    import gc
+    import threading
+    from journal.db.connection import Connection
+    connection = app.container.get(Connection)
+
+    def query():
+        connection.one("SELECT 1")
+
+    for _ in range(5):
+        worker = threading.Thread(target=query)
+        worker.start()
+        worker.join()
+        del worker
+        gc.collect()
+    opened = len(connection._open)
+    for _ in range(5):
+        worker = threading.Thread(target=query)
+        worker.start()
+        worker.join()
+        del worker
+        gc.collect()
+    assert len(connection._open) == opened, "a check's or a worker's thread that never released its connection gives it back once it is gone, and the next thread takes it"

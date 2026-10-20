@@ -1,5 +1,6 @@
 import sqlite3
 import threading
+import weakref
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable, Iterator
@@ -8,7 +9,7 @@ from journal.support.masks import Masks
 
 
 class Connection:
-    """The one place SQL is executed, a secret value masked out of every text it writes. Each thread reads on a sqlite connection leased from a pool and returned with release(), so a server thread that ends leaves nothing open; writes take the one lock, so the threaded server never contends."""
+    """The one place SQL is executed, a secret value masked out of every text it writes. Each thread reads on a sqlite connection leased from a pool, returned with release() or, by any thread that never says so, once the thread is gone, so no thread that ends leaves one open; writes take the one lock, so the threaded server never contends."""
 
     def __init__(self, path: Path, masks: Masks) -> None:
         self.path, self.masks = path, masks
@@ -24,6 +25,10 @@ class Connection:
         if local is None:
             return
         self._threads.connection = None
+        self._threads.returned.detach()
+        self._given_back(local)
+
+    def _given_back(self, local: sqlite3.Connection) -> None:
         with self._pooling:
             self._free.append(local)
 
@@ -74,6 +79,7 @@ class Connection:
         if local is None:
             local = self._leased()
             self._threads.connection = local
+            self._threads.returned = weakref.finalize(threading.current_thread(), self._given_back, local)
         return local
 
     def _leased(self) -> sqlite3.Connection:
