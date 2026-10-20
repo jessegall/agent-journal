@@ -107,6 +107,16 @@ async function askAgent() {
 }
 
 watch(
+    () => route.value.install,
+    (wanted) => {
+        if (!wanted) return;
+        source.value = wanted;
+        preview();
+    },
+    {immediate: true}
+);
+
+watch(
     () => [route.value.plugin, plugins.value.length],
     async ([n]) => {
         if (!n) return;

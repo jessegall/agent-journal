@@ -19,6 +19,7 @@ from journal.models.plugin import Plugin
 from journal.models.dashboard_row import DashboardRow
 from journal.models.plan import Plan
 from journal.models.plan_review import PlanReview
+from journal.models.suggestion import Suggestion
 from journal.models.question import Question
 from journal.models.edit import Edit
 from journal.models.reaction import Reaction
@@ -46,5 +47,5 @@ from journal.models.worker import Worker
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, PlanReview, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, NotedTime, Doc, Dump, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic, Phone, PairingCode)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, PlanReview, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, NotedTime, Doc, Dump, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic, Phone, PairingCode, Suggestion)
     SCOPED = tuple(model for model in MODELS if issubclass(model, Scoped))

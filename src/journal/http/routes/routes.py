@@ -17,6 +17,7 @@ from journal.http.controllers.messages import MessageController
 from journal.http.controllers.migration import MigrationController
 from journal.http.controllers.mode import ModeController
 from journal.http.controllers.notices import NoticeController
+from journal.http.controllers.suggestions import SuggestionController
 from journal.http.controllers.nudges import NudgeController
 from journal.http.controllers.outputs import OutputController
 from journal.http.controllers.plans import PlanController
@@ -147,6 +148,8 @@ class Routes:
         router.get(f"{API}/nudges", get(NudgeController).index)
         self.listed(router, "notices", notices)
         self.acts(router, "notices", notices, "close")
+        self.listed(router, "suggestions", get(SuggestionController))
+        self.acts(router, "suggestions", get(SuggestionController), "accept", "decline")
 
     def writing(self, router: Router) -> None:
         get = self.container.get

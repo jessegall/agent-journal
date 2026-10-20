@@ -111,3 +111,12 @@ describe("a reminder whispered to the agent", () => {
         expect(turn.title).toBe("Reminded the agent about fact 2");
     });
 });
+
+describe("a suggestion", () => {
+    test("is a turn of its own, with its row, words and the answer it came to", () => {
+        const data = {kind: "suggestion", row: "suggestions:3", detail: "As the journal's plugin it runs inside the journal.", accept: "Install it as a plugin", answer: ""};
+        const [turn] = turns([card(9, 10, data, "Run it as a journal plugin instead?")]);
+        expect(turn.kind).toBe("suggestion");
+        expect(turn.suggestion).toEqual({id: 3, title: "Run it as a journal plugin instead?", detail: data.detail, accept: "Install it as a plugin", answer: ""});
+    });
+});

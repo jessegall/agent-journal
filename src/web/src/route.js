@@ -51,6 +51,7 @@ export const route = computed(() => {
         sub: params.get("sub") || "",
         tab: params.get("tab") || "",
         plugin: params.get("plugin") || "",
+        install: params.get("install") || "",
         line: Number(params.get("line") || 0),
         at: params.get("at") || "",
         stack,
