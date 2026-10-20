@@ -13,7 +13,7 @@ from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.support.chain import Chain
-from journal.support.hook import Hook
+from journal.support.announced_commands import AnnouncedCommands
 from journal.features.edits.support.file_snapshots import FileSnapshots
 from journal.features.edits.support.patch_rows import PatchRows
 from journal.features.shell.support.doing import Doing
@@ -34,8 +34,6 @@ from journal.support.chat_mark import ChatMark
 TAIL = 2000
 ROWS_KEPT = 200
 """How many changed lines of a shell command's change are kept, as for a tool's."""
-STARTS_LOOKED_AT = 20
-"""How many of the session's newest tool starts are looked through for the one a line the runner is handed came from."""
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
 WORDS_IN = re.compile(r"[A-Za-z]{3,}")
 """A word of three letters or more: a line holding one says something."""
@@ -47,7 +45,8 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus, snapshots: FileSnapshots, clock: Clock) -> None:
+    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus, snapshots: FileSnapshots, clock: Clock, announced: AnnouncedCommands) -> None:
+        self.announced = announced
         self.entries, self.messages, self.settings, self.agents, self.bus, self.clock = entries, messages, settings, agents, bus, clock
         self.edits, self.log, self.outputs = edits, log, outputs
         self.cards, self.scope, self.snapshots = cards, scope, snapshots
@@ -107,11 +106,8 @@ class ShellCommand(Command):
         return 0
 
     def is_subagents(self, line: str, where: Where) -> bool:
-        """Whether a subagent runs the line: the newest start of a tool in the session with the same commands was a subagent's. A subagent is never told a command ended, so its line is never moved to the background."""
-        own = Chain.own(line)
-        starts = (Hook.parse(entry.data, where.environment, "claude") for entry in self.entries.tool_starts(where.session, STARTS_LOOKED_AT))
-        start = next((hook for hook in starts if Chain.own(hook.input.get("command", "")) == own), None)
-        return start is not None and bool(start.subagent)
+        """Whether a subagent runs the line: it announced the same commands and the agent has not run them since. A subagent is never told a command ended, so its line is never moved to the background."""
+        return self.announced.holds_line(where.environment, line)
 
     def cap(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell

@@ -15,6 +15,8 @@ class HookController:
         hook = Hook.parse(request.body, request.environment, request.params["agent"])
         if hook.subagent and hook.kind == HookKind.PRE_TOOL_USE:
             return self.announce(hook)
+        if hook.kind == HookKind.PRE_TOOL_USE and hook.tool == "Bash":
+            self.announced.withdraw(hook.environment, hook.input.get("command", ""))
         return self.providers.named(hook.provider).answer(hook, self.receiver.receive(hook))
 
     def announce(self, hook: Hook) -> Response:
