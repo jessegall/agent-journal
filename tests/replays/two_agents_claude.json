@@ -20,7 +20,7 @@
       ],
       "counts": {
         "charts:10:writes": 0,
-        "charts:32:said": 11,
+        "charts:31:said": 11,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
@@ -37,10 +37,10 @@
       ],
       "counts": {
         "charts:10:writes": 0,
-        "charts:32:said": 12,
-        "charts:42:times_named": 0,
+        "charts:31:said": 12,
+        "charts:41:times_named": 0,
+        "charts:41:tools_used": 0,
         "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
@@ -59,10 +59,10 @@
       ],
       "counts": {
         "charts:10:writes": 0,
-        "charts:32:said": 14,
-        "charts:42:times_named": 0,
+        "charts:31:said": 14,
+        "charts:41:times_named": 0,
+        "charts:41:tools_used": 0,
         "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },

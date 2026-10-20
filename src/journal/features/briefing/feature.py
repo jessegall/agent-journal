@@ -2,6 +2,7 @@ from journal.features.briefing.listeners.end_silent_sessions import EndSilentSes
 from journal.features.briefing.listeners.hold_writes_until_oriented import HoldWritesUntilOriented
 from journal.features.briefing.listeners.keep_from_stopping_until_oriented import KeepFromStoppingUntilOriented
 from journal.features.briefing.listeners.owe_the_look_at_start import OweTheLookAtStart
+from journal.features.briefing.listeners.start_briefing import StartBriefing
 from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
@@ -11,8 +12,8 @@ from journal.models.node_kind import NodeKind
 class Briefing(Feature):
     name = "briefing"
     title = "Session briefing"
-    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, drawn in the Always workflow at Session start."
-    listeners = (OweTheLookAtStart, HoldWritesUntilOriented, KeepFromStoppingUntilOriented, EndSilentSessions)
+    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any Session start workflow."
+    listeners = (OweTheLookAtStart, StartBriefing, HoldWritesUntilOriented, KeepFromStoppingUntilOriented, EndSilentSessions)
     checks = (
         Entry(NodeKind.CHECK, 'not_oriented', 'Has not yet looked at what is in flight?', 'the agent has not looked at what is in flight here since its session started'),
         Entry(NodeKind.CHECK, 'taken_over', 'Another session worked here lately?', 'another session worked this environment within a day, and this start is not the same session going on after a compaction'),

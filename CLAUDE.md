@@ -68,7 +68,7 @@ drives the agent: the canvas shows what it does and why, a run lights the path i
 runs says what was said. Engine behaviour lives in the engine and never appears on the canvas, not as a node
 and not as a note; a workflow is drawn on the canvas, in the user's order, and can be edited.
 
-**One subject per workflow.** A workflow is about one thing: the inbox, the start block, the voice, a
+**One subject per workflow.** A workflow is about one thing: the inbox, the voice, a
 task's log, a plan's next step. Never a chain of subjects drawn as one workflow because they happen
 at the same event; each is its own workflow in the event's run order. A workflow is self-contained: it checks
 every condition it acts on itself, auto mode among them, so it reads whole on its own. Stop the later workflows is

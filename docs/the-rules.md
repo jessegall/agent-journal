@@ -52,7 +52,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Stop | messages.new / some / many | messages unread | say on the stop | the Always workflow Say what is unread at Stop |
 | Stop | tasks (chart): parked tasks, next task | at rest; parked tasks; auto mode; open tasks | block the stop | Idle's two workflows at Stop: hold the stop while a task is parked, and in auto mode while tasks are open; a held stop runs no later workflows |
 | Stop | chart.awaiting: "you stopped while the journal awaits ..." | something owed: a skill, the look at what is in flight, a decision at a mark | block the stop, naming the debt | in the workflow the Always workflow at Stop (Something owed?, locked); the pause's own stop rule is deleted |
-| Session start | briefing.ready, quiet, laws (locked), takeover, rules, facts, reminders, waiting | always; the rows that exist; another session lately | say | in the Always workflow at Session start, the start block drawn line by line after the look is owed (plan 7, task 395); its listener is deleted; the orient line is the Require a look node's |
+| Session start | briefing.ready, quiet, laws, takeover, rules, facts, reminders, waiting | always; the rows that exist; another session lately | say | the engine's: the briefing feature's StartBriefing listener says the start block after the look is owed, before any Session start workflow (task 842); the chart's checks and fillers of the same names read the same StartLines |
 | Session start | messages.new / some / many | messages unread | say | the engine's delivery: the messages feature catches a starting session up on what is unread (DeliverUnreadAtStart), on the user's ruling of message 1672 |
 | Session start | voices.voice | the voice chosen | say | the Always workflow Tell the agent how to talk to the user at Session start, with the filler {{voice}} (plan 7, task 396); its listener is deleted |
 | Session start | voices.introduce | a fresh conversation | type, after a delay | stays with the voices feature: a typed line after a delay, which no node does |
@@ -146,7 +146,7 @@ Idle from a state that owns something is refused, and no node enters a state tha
   holds; the engine drops the refusal and keeps the words (chart/walk).
 - A session's start: the journal skill and the look at what is in flight are owed by the Always workflow at
   Session start, as facts on the agent's row, and held by the guards until the read and `journal environment
-  here`; the start block itself is that workflow's nodes.
+  here`; the start block itself is the engine's, said by the briefing feature before any workflow (task 842).
 - Skills forgotten at a compaction, so a start owes them again (skills); a state's skill is required by its own
   workflow at Session start, the ones a prompt names by the Always workflow at User prompt submit.
 - A new rule questioned once (memory/review_new_rule); the context mark is the workflows' now, as a fact on the agent's row.
