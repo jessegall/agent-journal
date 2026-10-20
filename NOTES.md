@@ -1086,7 +1086,13 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   mechanism and the shared listeners (compaction pushes Compacting, the session's end pushes Ended); listeners are
   methods named on_<moment>, bound to their event by the annotation and found by type, overridden on purpose; a
   journal panic command always allowed; Tuning as a frozen snapshot of the options; Standing on the stop and the
-  tick. Plan 19 waits for his approval.
+  tick. Plan 19 waits for his approval. Later the same evening (messages 9491 to 9516): only the states move the
+  agent, answering events; a command writes rows and the feature dispatches a named event beside the write
+  (PlanStarted, TaskClosed, QuestionAnswered, WorkerBack), and a state never reads a row as it was before; the
+  state machine is the engine's alone, `journal panic` the one hand on it from outside; the class is StateMachine;
+  the options reach a state as a frozen Settings value; the lifecycle hooks on_push, on_suspend, on_resume and
+  on_pop are always called, and on_push may refuse the push; no docstring and no comment inside a method, and none
+  on a field, a class keeps its one line at the top.
 
 ## Workflow parts (plan 18, 2026-10-20)
 
