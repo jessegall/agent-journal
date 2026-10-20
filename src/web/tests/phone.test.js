@@ -31,3 +31,16 @@ test("the phone's chat, home and acts go through /p/journal with the phone's own
     vi.unstubAllGlobals();
     document.documentElement.classList.remove("phone");
 });
+
+test("the phone refuses a file at once, and the desk's Project menu keeps its order", async () => {
+    vi.resetModules();
+    const {useNavigation} = await import("../src/composables/navigation.js");
+    const project = useNavigation().sections.value.find((section) => section.key === "project").links.map((link) => link.key);
+    expect(project.slice(-8)).toEqual(["code", "plugins", "mcp", "chart", "profiles", "secrets", "resources", "settings"]);
+    document.documentElement.classList.add("phone");
+    vi.resetModules();
+    const {api} = await import("../src/api/client.js");
+    const {PHONE_SENDS_TEXT} = await import("../src/platform/phone.js");
+    await expect(api.upload("messages", 1, new File(["x"], "x.txt"))).rejects.toMatchObject({status: 403, message: PHONE_SENDS_TEXT});
+    document.documentElement.classList.remove("phone");
+});

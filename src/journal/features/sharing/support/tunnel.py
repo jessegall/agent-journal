@@ -45,6 +45,8 @@ class Tunnel:
         self.phones, self.codes = phones, codes
         self.log = config.home / "runtime" / f"{SERVICE}.log"
         self._answer = KeptAnswer(lambda: self.reaches_address(), ANSWER_KEPT, False)
+        self.wanted = False
+        """Whether the tunnel was wanted when it was last settled."""
 
     def saved_host(self) -> str:
         from journal.features.sharing.feature import Sharing
@@ -81,11 +83,20 @@ class Tunnel:
         return []
 
     def settle(self) -> None:
+        self.settle_at(datetime.now(timezone.utc))
+
+    def settle_at(self, now: datetime) -> None:
         """Running while a link opens, a phone is paired or a code to pair one is live; stopped while none is."""
-        if self.is_wanted(datetime.now(timezone.utc)):
+        self.wanted = self.is_wanted(now)
+        if self.wanted:
             self.start()
         else:
             self.stop()
+
+    def settle_when_changed(self, now: datetime) -> None:
+        """Settled again only when what keeps it open changed since it last was, as when a code or a phone runs out."""
+        if self.is_wanted(now) != self.wanted:
+            self.settle_at(now)
 
     def is_wanted(self, now: datetime) -> bool:
         return self.shares.open_anywhere() or bool(self.phones.live(now)) or bool(self.codes.open(now))

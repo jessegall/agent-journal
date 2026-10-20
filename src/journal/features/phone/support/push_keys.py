@@ -1,12 +1,14 @@
 import base64
 import hashlib
 import json
+import os
 import secrets
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
 
 from journal.features.phone.support.p256 import G, N, P256
+from journal.support.private_folder import PrivateFolder
 
 VALID_FOR = 12 * 3600
 """Seconds a push service may take a token for."""
@@ -23,9 +25,9 @@ class PushKeys:
         if path.is_file():
             return cls(int(json.loads(path.read_text())["secret"], 16))
         keys = cls(secrets.randbelow(N - 1) + 1)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({"secret": format(keys.secret, "x")}))
-        path.chmod(0o600)
+        PrivateFolder.made(path.parent)
+        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as kept:
+            kept.write(json.dumps({"secret": format(keys.secret, "x")}))
         return keys
 
     @property

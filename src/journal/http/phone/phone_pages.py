@@ -40,6 +40,8 @@ PUBLIC = ("voices", "announcements")
 COOKIE = "__Host-phone"
 HEADER = "X-Phone"
 """The header only the phone app sends, which a form on another site cannot set."""
+FILE_HEADERS = {"Content-Security-Policy": "sandbox", "X-Content-Type-Options": "nosniff"}
+"""A file of the journal's opened on the phone runs no script and has no origin of its own, so an attached page cannot act as the phone; a picture still shows."""
 
 
 class PhonePages:
@@ -180,7 +182,7 @@ class PhonePages:
             return self.json(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})
         answer = self.router.dispatch(asked)
         if isinstance(answer, FileResponse):
-            return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS})
+            return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS, **FILE_HEADERS})
         return ShareAnswer(answer.status, answer.encoded(), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})
 
     def waiting(self, request: PhoneRequest) -> ShareAnswer:

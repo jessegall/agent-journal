@@ -26,7 +26,8 @@ useOutside(wrap, () => (drop.value = false));
 const {floatingChat, toggleChat} = useFloatingChat();
 const phoneOpen = ref(false);
 const PHONES_EVERY = 30000;
-usePoll("phones", () => (sharingOn.value && !onPhone ? loadPhones() : null), PHONES_EVERY);
+// a paired phone keeps the tunnel open even with sharing off, so its button stays while one is connected
+usePoll("phones", () => (onPhone ? null : loadPhones()), PHONES_EVERY);
 </script>
 
 <template>
@@ -60,6 +61,8 @@ usePoll("phones", () => (sharingOn.value && !onPhone ? loadPhones() : null), PHO
             </button>
             <template v-if="sharingOn && !onPhone">
                 <ShareTunnel />
+            </template>
+            <template v-if="(sharingOn || connectedPhones.length) && !onPhone">
                 <button
                     type="button"
                     :class="['icon-btn', {on: phoneOpen}]"

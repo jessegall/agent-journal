@@ -1053,3 +1053,11 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   and components with phone styling, not version 3's separate app; only what touch needs gets a phone component
   (messages 7314, 7327; tasks 901 to 903). Plan 17 may be merged by the agent once landed and tested, and released as
   4.2.0; plan 18 waits for Sir Jesse to merge (message 7301).
+- The phone after its review (task 909): a phone's reads are named one by one, as its writes are, never every read
+  but a few; no read that starts a program (the MCP check) and no page that sets how the journal runs. A project file
+  is never read from a hidden folder (.env, .journal) nor outside the project, on the desk too. The push keys live in
+  the private folder beside the MCP keys. The clock closes the tunnel once a code or a phone runs out, and a paired
+  phone keeps the tunnel, and its button in the top bar, even with sharing off. The phone sends text only: a file is
+  attached on the computer. A failed push is tried again a minute later; an address the service no longer knows is
+  forgotten. A file opened on the phone is sandboxed. Left as it is: anyone who reaches the tunnel can void an open
+  pairing code with ten wrong tries; the user makes another, and a code lives ten minutes.

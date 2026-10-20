@@ -1,4 +1,4 @@
-import {onPhone} from "../platform/phone.js";
+import {onPhone, PHONE_SENDS_TEXT} from "../platform/phone.js";
 import {href, route} from "../route.js";
 import {UPLOAD_LIMIT, overLimit} from "../chat/attachments.js";
 import {LONG_WAIT_MS, transport} from "./transport.js";
@@ -169,6 +169,7 @@ export class ApiClient {
     }
 
     upload(table, id, file) {
+        if (onPhone) return Promise.reject(Object.assign(new Error(PHONE_SENDS_TEXT), {status: 403}));
         if (file.size > UPLOAD_LIMIT) return Promise.reject(new Error(overLimit(file)));
         const body = new FormData();
         body.append("file", file, file.name);

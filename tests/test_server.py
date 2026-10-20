@@ -853,7 +853,8 @@ def phone_call(share_server, method: str, path: str, body: dict | None = None, o
     return answer
 
 
-def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(sharing):
+def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(sharing, monkeypatch, tmp_path):
+    monkeypatch.setenv("HOME", str(tmp_path))
     server, share_server = sharing
     call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})
     origin = f"https://{call(server, 'GET', '/journal/tunnel')[1]['address']}"
@@ -872,6 +873,9 @@ def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(shari
     assert status == 201 and sent["created_by"] == f"phone:{standing['id']}" and sent["author"] == "user", "the phone writes as itself, its words the user's"
     assert any(m["text"] == "from the train" for m in phone_call(share_server, "GET", "/p/journal/messages", cookie=kept)[1]["rows"]), "the phone reads the journal through version 4's own controllers"
     assert phone_call(share_server, "GET", "/p/journal/secrets", cookie=kept)[0] == 403, "no secret is ever read from a phone"
+    assert [phone_call(share_server, "GET", f"/p/journal/{path}", cookie=kept)[0] for path in ("mcp", "chart", "plugins", "profiles", "tunnel", "checks")] == [403] * 6, "a phone reads only what its pages show: nothing that starts a program or sets how the journal runs"
+    for hidden in (".env", ".journal/settings.json", "../elsewhere/.env"):
+        assert phone_call(share_server, "GET", f"/p/journal/project-files/file?path={hidden}", cookie=kept)[0] == 404, f"{hidden} is not a project file the phone may read"
     assert phone_call(share_server, "POST", "/p/journal/settings", {"messages": {"hold_after": 9}}, origin=origin, cookie=kept)[0] == 403, "nor a setting changed"
     assert phone_call(share_server, "GET", "/p/journal/messages?env=elsewhere", cookie=kept)[0] == 403, "nor another environment reached"
     assert phone_call(share_server, "GET", "/p/journal/messages")[0] == 401, "nothing at all without the phone's key"

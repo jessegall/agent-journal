@@ -9,6 +9,7 @@ import {store} from "../state/store.js";
 import Icon from "../kit/Icon.vue";
 import WaitEdge from "../kit/WaitEdge.vue";
 import {attach, overLimit, refusal} from "./attachments.js";
+import {onPhone, PHONE_SENDS_TEXT} from "../platform/phone.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 
 const props = defineProps({
@@ -177,6 +178,10 @@ function escaped(e) {
 }
 
 function attached(files) {
+    if (onPhone && files.length) {
+        draft.error = PHONE_SENDS_TEXT;
+        return;
+    }
     const {added, refused, oversized} = attach(draft.files, files);
     draft.files.push(...added);
     draft.error = [...oversized.map(overLimit), ...(refused.length ? [refusal(refused)] : [])].join(" ");
@@ -318,10 +323,12 @@ async function use(tool) {
                     @paste="pasted"
                 />
                 <div class="compose-foot">
-                    <label class="compose-attach" title="Attach files" aria-label="Attach files">
-                        <Icon name="paperclip" />
-                        <input type="file" multiple hidden @change="picked" />
-                    </label>
+                    <template v-if="!onPhone">
+                        <label class="compose-attach" title="Attach files" aria-label="Attach files">
+                            <Icon name="paperclip" />
+                            <input type="file" multiple hidden @change="picked" />
+                        </label>
+                    </template>
                     <template v-for="action in tools" :key="action.icon">
                         <button type="button" class="compose-attach" :title="action.title" :aria-label="action.title" @click="use(action)">
                             <Icon :name="action.icon" />

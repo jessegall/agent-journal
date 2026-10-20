@@ -20,6 +20,7 @@ const typeLink = (t) => ({
 const CONFIGURING = ["plugins", "mcp", "chart", "profiles", "secrets", "settings"];
 
 const pageLink = (key) => ({key, page: key, count: 0, hot: false, ...PAGES[key]});
+const deskLinks = (keys) => keys.filter((key) => !(onPhone && CONFIGURING.includes(key))).map(pageLink);
 
 export function useNavigation() {
     const listed = computed(() => tables.value.filter((t) => t.in_sidebar));
@@ -28,7 +29,7 @@ export function useNavigation() {
         RESOURCE_GROUPS.map((g) => ({
             key: g.key,
             title: g.title,
-            links: [...listed.value.filter((t) => t.listed_under === g.key).map(typeLink), ...g.pages.filter((key) => !(onPhone && CONFIGURING.includes(key))).map(pageLink)],
+            links: [...listed.value.filter((t) => t.listed_under === g.key).map(typeLink), ...deskLinks(g.pages)],
         })).filter((g) => g.links.length)
     );
     const daily = (scope) => sidebar.value.filter((link) => link.scope === scope);
@@ -37,7 +38,7 @@ export function useNavigation() {
         {
             key: "project",
             label: "Project",
-            links: [...daily("project"), pageLink("code"), ...(onPhone ? [] : CONFIGURING.map(pageLink)), pageLink("resources")],
+            links: [...daily("project"), ...deskLinks(["code", "plugins", "mcp", "chart", "profiles", "secrets", "resources", "settings"])],
         },
     ]);
     const everywhere = computed(() => [...sections.value.flatMap((s) => s.links), ...groups.value.flatMap((g) => g.links)]);

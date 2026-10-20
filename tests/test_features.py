@@ -6627,12 +6627,17 @@ def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
 
 def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):
     from datetime import datetime, timedelta, timezone
+    from journal.features.sharing.support.tunnel import Tunnel
     from journal.features.phone.support.pairing import Pairing
     from journal.repositories.settings import Settings
     from journal.support.refused import Refused
     app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
     pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
     late = pairing.offer(1, Actor.user(1), now)
+    tunnel = app.container.get(Tunnel)
+    assert tunnel.wanted, "a live code keeps the tunnel open"
+    tunnel.settle_when_changed(now + timedelta(minutes=11))
+    assert not tunnel.wanted, "and once it runs out, the clock closes the tunnel again"
     with pytest.raises(Refused):
         pairing.pair(late.short, "iPhone", now + timedelta(minutes=11))
     guessed = pairing.offer(1, Actor.user(1), now)
@@ -6672,8 +6677,8 @@ def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, 
     assert P256.is_on_curve(keys.public) and P256.is_signed(keys.public, b"a journal", signed) and not P256.is_signed(keys.public, b"another", signed), "a token's signature checks out, and only for what it signed"
     assert WebPush.is_allowed("https://web.push.apple.com/abc") and WebPush.is_allowed("https://wns2.notify.windows.com/x")
     assert not WebPush.is_allowed("http://web.push.apple.com/abc") and not WebPush.is_allowed("https://evil.example/push"), "a push goes only to the phone makers' services, over https"
-    sent = []
-    monkeypatch.setattr(WebPush, "send", lambda self, endpoint: sent.append(endpoint) or True)
+    sent, answers = [], [201]
+    monkeypatch.setattr(WebPush, "send", lambda self, endpoint: sent.append(endpoint) or answers[0])
     phones, now = app.container.get(Phones), datetime.now(timezone.utc)
     phones.save(Phone(name="iPhone", key="k", expires_at=now + timedelta(days=1), push="https://web.push.apple.com/abc"), Actor.user(1))
     hook(app, "SessionStart")
@@ -6684,3 +6689,13 @@ def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, 
     tell.handle(None)
     tell.handle(None)
     assert sent == ["https://web.push.apple.com/abc"], "a new question is pushed once, not on every tick"
+    answers[0] = 0
+    app.console().run(["question", "ask", "Which colour?"], AGENT)
+    tell.handle(None)
+    tell.handle(None)
+    failed = phones.where(name="iPhone")[0]
+    assert len(sent) == 2 and failed.push_failed_at and failed.has_news(["questions:2"]), "a push that did not reach the service stays owed and waits a minute before it is tried again"
+    phones.save(failed.push_failed(now - timedelta(minutes=2)), Actor.system())
+    answers[0] = 410
+    tell.handle(None)
+    assert len(sent) == 3 and phones.where(name="iPhone")[0].push == "", "an address the service no longer knows is forgotten until the phone subscribes again"
