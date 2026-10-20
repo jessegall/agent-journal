@@ -1,3 +1,4 @@
+from journal.engine.support.trail import Trail
 from journal.engine.states.paused import Paused
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
@@ -31,13 +32,11 @@ class AgentActivity:
         self.entries, self.states, self.context, self.files, self.messages, self.current = entries, states, context, files, messages, current
 
     def page(self, agents: list[Agent]) -> list[dict]:
-        """Each agent, the live ones read from one read of the recent entries; an ended one from its own row alone."""
         recent = list(reversed(self.entries.of_kind_in(KEPT))) if any(a.state != ENDED for a in agents) else []
         return [self.of(a, [] if a.state == ENDED else [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in agents]
 
     @staticmethod
     def work_of(entry) -> str:
-        """What a shell tool's line does, reading, searching or running, so the figure shows it; empty for any other tool, which its name says."""
         tool = entry.data.get("tool_input", {})
         return Chain.work_of(str(tool.get("command", ""))) if entry.data.get("tool_name") == "Bash" else ""
 
@@ -64,16 +63,16 @@ class AgentActivity:
             "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
             "stuck": agent.data.get("why", "") if agent.state == "stuck" else "",
             "sequence": self.sequence_of(agent),
+            "stack": self.stack_of(agent),
+            "trail": [self.trail_entry(e) for e in [e for e in entries if e.kind == Trail.KIND][-HISTORY:]],
             "sequence_history": [{"at": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
         }
 
     @staticmethod
     def status_of(state: str, heard: str) -> str:
-        """A live agent's status: working when its state is one of work and its last hook says it is busy, else what the hook says."""
         return "working" if state in WORKING and heard == "busy" else heard
 
     def thinking(self, session: str, hooks) -> str:
-        """What the working bubble shows: the agent's latest thought of the turn in progress, until it next writes something visible; a thought from before the turn's prompt is never shown as now."""
         thoughts = self.messages.thoughts_of(session, 1)
         if not thoughts:
             return ""
@@ -83,7 +82,6 @@ class AgentActivity:
 
     @staticmethod
     def sequence_of(agent: Agent) -> SequenceInHand | None:
-        """The run in hand, as the agent's panel shows it: the step, and what it holds."""
         runs = [SequenceRun.of(raw) for raw in agent.sequence_runs or ()]
         if not runs:
             return None
@@ -91,7 +89,6 @@ class AgentActivity:
         return SequenceInHand(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.holds, about=run.about, under=len(runs) - 1)
 
     def doing(self, state, hooks) -> str:
-        """What the agent is doing this moment: the shell part it runs, the tool it uses, or what its state says."""
         last = hooks[-1] if hooks else None
         if last and last.kind == RUNNING:
             return last.data["doing"]
@@ -100,7 +97,17 @@ class AgentActivity:
         return self.described(state) or ("at work" if hooks else "")
 
     def described(self, state) -> str:
-        """The work a state names: what a pause awaits, else the work it holds underneath, else the work declared without a task."""
         if isinstance(state, Paused):
             return state.awaiting()[0] or (self.described(self.states.named(state.resume["state"], state.resume["data"])) if state.resume else "")
         return state.what if isinstance(state, Working) else ""
+
+    def stack_of(self, agent: Agent) -> list[dict]:
+        shown = []
+        for state in reversed(self.states.stack_of(agent).states):
+            awaits = state.awaiting()[0] if isinstance(state, Paused) else ""
+            shown.append({"name": state.name, "title": self.states.title_of(state.name), "values": state.to_data(), "awaits": awaits})
+        return shown
+
+    @staticmethod
+    def trail_entry(entry) -> dict:
+        return {"at": entry.created_at, "before": [row["state"] for row in entry.data.get("before", [])], "after": [row["state"] for row in entry.data.get("after", [])], "cause": entry.data.get("cause", ""), "refused": entry.data.get("refused", ""), "line": entry.data.get("line", "")}

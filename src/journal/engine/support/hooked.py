@@ -12,3 +12,4 @@ class Hooked:
     stack: Stack
     nudges: tuple[Nudge, ...] = ()
     held: Held | None = None
+    refused: str = ""

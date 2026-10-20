@@ -19,6 +19,9 @@ from journal.models.setting import Setting
 from journal.db.migrations.seed_the_stack import SeedTheStack
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
+from journal.http.agents.agent_activity import AgentActivity
+from journal.engine.support.trail import Trail
+from journal.support.scope import Scope
 from journal.support.actor import Actor
 from journal.repositories.settings import Settings
 from dataclasses import dataclass
@@ -441,3 +444,18 @@ def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catc
     with pytest.raises(Refused):
         machine.move("s1", 1, Refusing.leaving(Idle()))
     assert [row["state"] for row in app.container.get(Agents).for_session("s1").stack] == ["idle"]
+
+
+def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_top_first(app):
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "t", "--start"], AGENT)
+    app.console().run(["stuck", "lost"], AGENT)
+    with app.container.get(Scope).of(1):
+        row = next(a for a in app.container.get(AgentActivity).page(app.container.get(Agents).in_()) if a["session"] == "s1")
+    assert [s["name"] for s in row["stack"]] == ["stuck", "working", "idle"] and row["stack"][0]["awaits"]
+    assert [(t["before"], t["after"]) for t in row["trail"]] == [([], ["idle"]), (["idle"], ["idle", "working"]), (["idle", "working"], ["idle", "working", "stuck"])]
+    write(app)
+    with app.container.get(Scope).of(1):
+        trail = [e.data for e in app.container.get(Entries).of_kind(Trail.KIND) if e.data["session"] == "s1"]
+    popped = next(e for e in trail if [row["state"] for row in e["before"]] == ["idle", "working", "stuck"])
+    assert popped["after"][-1]["state"] == "working" and popped["cause"]
