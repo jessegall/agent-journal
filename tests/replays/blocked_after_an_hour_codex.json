@@ -24,14 +24,16 @@
       "name": "fifty quiet minutes",
       "answer": null,
       "typed": [
+        "[journal] blocked on something outside: 1 the footer (waiting on: the designer's answer). has it come? `journal task unblock <n>` when it has",
         "[journal] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
       ],
       "nudges": [
+        "tasks.blocked_still",
         "tasks.check_in"
       ],
       "counts": {
         "charts:10:writes": 0,
-        "charts:32:said": 6,
+        "charts:32:said": 7,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
@@ -49,7 +51,7 @@
       "nudges": [],
       "counts": {
         "charts:10:writes": 0,
-        "charts:32:said": 6,
+        "charts:32:said": 7,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
