@@ -18,7 +18,11 @@
         "SentenceLabelDetector",
         "SentenceLabelScriptDetector",
         "SearchMarkLabelDetector",
-        "QueryOutsideRepositoryDetector"
+        "QueryOutsideRepositoryDetector",
+        "PoeticTypeNameDetector",
+        "PoeticMethodNameDetector",
+        "DocstringInMethodDetector",
+        "FieldDocstringDetector"
     ],
     "parallel": 2,
     "configure": {

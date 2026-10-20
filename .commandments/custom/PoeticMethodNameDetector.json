@@ -1,0 +1,18 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "nameMatches": "^(about|worded|meaning|whisper|muse|spoken|telling|utter|tell|says|said|hear|heard)$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "poetic-method-name",
+        "description": "A method is named by a word that does not say what it does: about, worded, meaning, whisper, tell.",
+        "rule": "Name a method for what it does, in an ordinary word: create, rendered, with_values, on_tool_starting.",
+        "skill": "plain-code-words"
+    }
+}

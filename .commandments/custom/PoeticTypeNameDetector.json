@@ -1,0 +1,18 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "nameMatches": "^(Said|Worded|Meaning|Whisper|Muse|Telling|Spoken|Utterance)$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "poetic-type-name",
+        "description": "A class is named by a word that does not say what it is: Said, Worded, Meaning, Whisper.",
+        "rule": "Name a class for what it holds or does, in an ordinary word: a line with its values is a Nudge, a snapshot of the options is Settings.",
+        "skill": "plain-code-words"
+    }
+}
