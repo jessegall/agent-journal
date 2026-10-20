@@ -7524,3 +7524,20 @@ def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_
         tick(later)
     cards = [m.text for m in app.container.get(Messages).in_() if m.author == "system" and "line" in m.text]
     assert sent.count("[journal] look at the build") == 6 and cards == ["A line did not reach the agent, typed 6 times over five minutes"], "six tries, and the chat hears of it once, when the line is given up"
+
+
+def test_a_fact_a_rule_or_a_reminder_recorded_or_struck_is_a_card_in_the_chat(app):
+    from journal.repositories.messages import Messages
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["fact", "create", "the tests run on port 8431"], AGENT)
+    console.run(["rule", "create", "Always run the suite before a commit", "--reason", "a red commit costs a day"], USER)
+    console.run(["reminder", "strike", "1"], AGENT) if console.run(["reminder", "create", "check the log after the restart"], AGENT).code == 0 else None
+    app.runtime().deferred.drain()
+    cards = [(m.text, m.data.get("row"), m.data.get("detail")) for m in app.container.get(Messages).in_() if m.data.get("kind") == "card" and m.data.get("row", "").split(":")[0] in ("facts", "rules", "reminders")]
+    assert cards == [
+        ("Fact recorded", "facts:1", "the tests run on port 8431"),
+        ("Rule recorded", "rules:1", "Always run the suite before a commit"),
+        ("Reminder recorded", "reminders:1", "check the log after the restart"),
+        ("Reminder struck", "reminders:1", "check the log after the restart"),
+    ], "each memory row recorded or struck is a card opening the row"
