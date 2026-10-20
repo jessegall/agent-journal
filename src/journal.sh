@@ -10,6 +10,9 @@ py=$(cat "$here/../python" 2>/dev/null)
 case "$1" in
     claude|codex|serve|setup) cd "$root" && exec "$py" "$here/journal.py" "$@" ;;
 esac
+# Who runs the command: JOURNAL_ACTOR is agent, sub-agent or worker-agent. A sub-agent's command reaches nothing, for now.
+# A subagent of Claude Code inherits the agent's shell whole, so nothing in its environment tells it apart here; its hooks do.
+[ "${JOURNAL_ACTOR:-agent}" = sub-agent ] && exit 0
 . "$here/journal/hooks/environment.sh"
 JOURNAL_ENV=$(journal_environment)
 export JOURNAL_ENV

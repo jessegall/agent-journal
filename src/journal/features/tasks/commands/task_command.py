@@ -41,6 +41,9 @@ class TaskCommand(Command):
         rename = self.verb(verbs, "rename", "a task's title said again, when the first one was wrong")
         rename.add_argument("n", type=int)
         rename.add_argument("title")
+        brief = self.verb(verbs, "brief", "a task's brief written anew, when what done looks like has changed")
+        brief.add_argument("n", type=int)
+        brief.add_argument("brief")
         create.add_argument("--brief", default="")
         create.add_argument("--start", action="store_true", help="start it at once")
         create.add_argument("--from", dest="message", type=int, default=0, help="the user's message it was filed from")
@@ -77,6 +80,11 @@ class TaskCommand(Command):
     def rename(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).with_(title=args.title), where.actor)
         print(f"task {task.id} is now: {task.title}")
+        return 0
+
+    def brief(self, args: Namespace, where: Where) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).with_(brief=args.brief), where.actor)
+        print(f"task {task.id} brief written anew")
         return 0
 
     def log(self, args: Namespace, where: Where) -> int:

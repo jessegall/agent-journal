@@ -7541,3 +7541,11 @@ def test_a_fact_a_rule_or_a_reminder_recorded_or_struck_is_a_card_in_the_chat(ap
         ("Reminder recorded", "reminders:1", "check the log after the restart"),
         ("Reminder struck", "reminders:1", "check the log after the restart"),
     ], "each memory row recorded or struck is a card opening the row"
+
+
+def test_a_tasks_brief_is_written_anew(app):
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    console.run(["task", "create", "the footer", "--brief", "done when it stays at the bottom"], AGENT)
+    assert console.run(["task", "brief", "1", "done when it stays at the bottom on every page"], AGENT).out == "task 1 brief written anew\n"
+    assert app.container.get(Tasks).find(1).brief == "done when it stays at the bottom on every page"
