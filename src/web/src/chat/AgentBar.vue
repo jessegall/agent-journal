@@ -12,6 +12,7 @@ import AgentFacts from "./AgentFacts.vue";
 import AgentMenu from "./AgentMenu.vue";
 import AgentPresets from "./AgentPresets.vue";
 import AgentSkills from "./AgentSkills.vue";
+import AgentStack from "./AgentStack.vue";
 import AgentUsage from "./AgentUsage.vue";
 import CrewList from "./CrewList.vue";
 import "./drop.css";
@@ -86,6 +87,9 @@ function openSkills() {
                     </template>
                     <template #presets>
                         <AgentPresets v-model:schemes-open="schemesOpen" @preset="pickPreset" @scheme="pickScheme" />
+                    </template>
+                    <template #states>
+                        <AgentStack :agent="agent" />
                     </template>
                     <template #usage>
                         <AgentUsage :usage="usage" />

@@ -102,3 +102,21 @@ const PHRASES = {
 export function phrase(kind) {
     return PHRASES[kind] || PHRASES.bearings;
 }
+
+const namesOf = (names) => (names.length ? names.join(", ") : "nothing");
+
+const valueWords = (values) =>
+    Array.isArray(values)
+        ? values.map(String)
+        : Object.entries(values || {})
+              .filter(([, value]) => value !== "" && value !== null && value !== undefined)
+              .map(([key, value]) => `${key.replaceAll("_", " ")} ${value}`);
+
+// The agent's stack of states top first, each with the words of its own values and what it waits for.
+export const stackOf = (agent) => (agent?.stack || []).map((s) => ({name: s.name, title: s.title, values: valueWords(s.values).join(" · "), awaits: s.awaits ? `Waiting for ${s.awaits}` : ""}));
+
+// The last changes of the stack, newest first, each in one plain line.
+export const trailOf = (agent) =>
+    [...(agent?.trail || [])]
+        .reverse()
+        .map((t) => (t.refused ? `push of ${t.refused} refused: ${t.line}` : `${namesOf(t.before)} > ${namesOf(t.after)}, by ${t.cause}`));

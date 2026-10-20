@@ -46,6 +46,17 @@ const toggle = (key, e) => emit("toggle", key, e);
             >
                 {{ name }}
             </AgentFact>
+            <template v-if="data.stack && data.stack.length">
+                <AgentFact
+                    :class="['agent-fact', 'agent-count', {open: open === 'states'}]"
+                    icon="activity"
+                    title="The states the agent is in and its latest changes"
+                    :aria-expanded="open === 'states'"
+                    @click="toggle('states', $event)"
+                >
+                    {{ data.stack[0].title }}
+                </AgentFact>
+            </template>
             <template v-if="['claude', 'codex'].includes(data.provider)">
                 <AgentFact
                     :class="['agent-fact', 'agent-count', 'agent-usage', {open: open === 'usage'}]"
