@@ -58,7 +58,9 @@ class Runtime:
         self.share_server.start()
         self.boot()
         from journal.support.skill_files import SkillFiles
+        from journal.support.profile_files import ProfileFiles
         self.container.get(SkillFiles).write_all()
+        self.container.get(ProfileFiles).write_all()
         self.deferred.start()
         self.clock.start()
         self.watcher.start()

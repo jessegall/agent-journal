@@ -12,6 +12,7 @@ from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
+from journal.support.profile_files import ProfileFiles
 from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.repositories.workers import Workers
@@ -30,14 +31,20 @@ ENDINGS = {TIMED_OUT: "stopped after {minutes:g} minutes without ending: {report
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: Settings, workers: Workers, environments: Environments) -> None:
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: Settings, workers: Workers, environments: Environments, profiles: ProfileFiles) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
-        self.environments = environments
+        self.environments, self.profiles = environments, profiles
         self._running: dict[int, subprocess.Popen] = {}
 
     def start(self, worker: Worker, by: Actor) -> None:
-        command = self.providers.named(worker.provider).worker_command(worker.brief, worker.model, worker.resume)
+        command = self.providers.named(worker.provider).worker_command(self.instructed(worker), worker.model, worker.resume)
         threading.Thread(target=self.run_in_scope, args=(worker, command, by), name=f"worker-{worker.id}", daemon=True).start()
+
+    def instructed(self, worker: Worker) -> str:
+        """The job as the worker is given it: on its first run, after the instructions of its profile, which a resumed worker remembers."""
+        if worker.resume or worker.profile is None:
+            return worker.brief
+        return f"{self.profiles.read(worker.profile)['body']}\n\n{worker.brief}"
 
     def run_in_scope(self, worker: Worker, command: list[str], by: Actor) -> None:
         """The thread starts in no scope: the worker's report is filed in the worker's environment."""

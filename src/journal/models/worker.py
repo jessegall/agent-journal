@@ -14,6 +14,7 @@ class Worker(Scoped):
     brief: str = ""
     provider: str = "claude"
     model: str = ""
+    profile: str | None = None
     worktree: bool = False
     state: WorkerState = WorkerState.DISPATCHED
     session: str = ""

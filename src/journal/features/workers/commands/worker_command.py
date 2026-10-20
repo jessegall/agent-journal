@@ -34,7 +34,8 @@ class WorkerCommand(Command):
         dispatch.add_argument("name")
         dispatch.add_argument("brief")
         dispatch.add_argument("--provider", choices=("claude", "codex"), help="the program the worker runs; the dispatching agent's own when not named")
-        dispatch.add_argument("--model", required=True)
+        dispatch.add_argument("--profile", required=True, help="the worker profile it works by: senior, on Opus, for a job that needs judgement; medior, on Sonnet, for one whose shape is settled")
+        dispatch.add_argument("--model", help="a model other than the profile's")
         dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code")
         dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
         dispatch.add_argument("--task", type=int, help="the task it works on, which its plan then leaves to it")
@@ -54,8 +55,8 @@ class WorkerCommand(Command):
         return self.agents.for_session(where.session).provider if where.session else "claude"
 
     def dispatch(self, args: Namespace, where: Where) -> int:
-        if self.profiles.kind_of(args.name) == "subagent":
-            raise Refused(f"{args.name} is a subagent profile: it only reads, so send it with the Agent tool, naming it as subagent_type; a worker is for work that writes")
+        if self.profiles.kind_of(args.profile) != "worker":
+            raise Refused(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
         out = [w for w in self.workers.in_() if w.is_out()]
         most = int(self.settings.option(Feature.MOST_OUT))
@@ -64,7 +65,8 @@ class WorkerCommand(Command):
         knowing = [] if args.fresh else self.knowing(args.brief)
         if knowing:
             raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
-        worker = Worker(name=args.name, brief=args.brief, provider=args.provider or self.own_provider(where), model=args.model, worktree=args.worktree, dispatched_by=where.session)
+        provider = args.provider or self.own_provider(where)
+        worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model_of(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatched_by=where.session)
         worker = self.workers.save(worker, where.actor)
         try:
             self.runner.workplace(worker)
@@ -76,6 +78,10 @@ class WorkerCommand(Command):
         self.runner.start(worker, where.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
+
+    def model_of(self, profile: str, provider: str) -> str:
+        shown = self.profiles.read(profile)
+        return shown["codex_model"] if provider == "codex" else shown["model"]
 
     def report(self, args: Namespace, where: Where) -> int:
         worker = self.workers.find(args.n)

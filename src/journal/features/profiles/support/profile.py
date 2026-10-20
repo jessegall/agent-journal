@@ -11,6 +11,11 @@ class Profile:
     tools: str
     body: str
     kind: str = "subagent"
+    model: str | None = None
+
+    def model_or(self, chosen: str) -> str:
+        """The Claude model this profile is pinned to, or the one chosen in the settings when it is pinned to none."""
+        return chosen if self.model is None else self.model
 
     def claude_text(self, model: str, codex_model: str) -> str:
         return f"---\nname: {self.name}\ndescription: {self.description}\ntools: {self.tools}\nkind: {self.kind}\nmodel: {model}\ncodex-model: {codex_model}\n---\n\n{self.body}\n"
