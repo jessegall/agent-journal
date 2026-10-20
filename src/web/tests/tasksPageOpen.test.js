@@ -10,6 +10,14 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
+globalThis.IntersectionObserver ??= class {
+    observe() {}
+
+    unobserve() {}
+
+    disconnect() {}
+};
+
 vi.mock("../src/resource/RowGroups.vue", () => ({
     default: {props: ["groups"], render() {
         return h("ul", this.groups.flatMap((g) => g.list.map((r) => h("li", {class: "listed"}, r.title))));
