@@ -7,6 +7,9 @@ from journal.support.hook_kind import HookKind
 class Hook:
     """What the agent's hook script posts, as the agent sent it."""
 
+    KEPT = 4000
+    """Characters of each text in a tool's response the stored record keeps: what is read back from it later, an agent id or a short answer, fits well inside."""
+
     kind: HookKind
     session: str
     environment: str
@@ -16,6 +19,22 @@ class Hook:
     @classmethod
     def parse(cls, body: dict, environment: str, provider: str) -> "Hook":
         return cls(HookKind(body["hook_event_name"]), body["session_id"], environment, provider, body)
+
+    def stored(self) -> dict:
+        """The body as the record keeps it: a tool's response cut to KEPT characters a text, so a long read or a command's whole output is not stored once more for every call."""
+        if "tool_response" not in self.body:
+            return self.body
+        return {**self.body, "tool_response": self.cut(self.body["tool_response"])}
+
+    @classmethod
+    def cut(cls, value):
+        if isinstance(value, str):
+            return value[: cls.KEPT]
+        if isinstance(value, dict):
+            return {key: cls.cut(inner) for key, inner in value.items()}
+        if isinstance(value, list):
+            return [cls.cut(inner) for inner in value]
+        return value
 
     @property
     def tool(self) -> str:

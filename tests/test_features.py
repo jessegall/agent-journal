@@ -7110,3 +7110,14 @@ def test_work_that_may_be_left_undone_is_skipped_once_the_deferred_work_is_far_b
     assert deferred.depth() == Deferred.BEHIND and deferred.skipped == 50, "a plugin hearing past the bound is skipped and counted, so a slow plugin never grows the queue without end"
     deferred.add(lambda: ran.append("own"))
     assert deferred.depth() == Deferred.BEHIND + 1, "the journal's own work is always added"
+
+
+def test_a_long_tool_response_is_kept_cut_in_the_record(app):
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    long = "x" * 50_000
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "cat big.log"}, tool_response={"stdout": long, "stderr": ""})
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "look"}, tool_response={"agentId": "a1", "isAsync": True, "content": [{"type": "text", "text": long}]})
+    finished = app.container.get(Entries).of_kind("ToolFinished")
+    assert all(len(json.dumps(e.data)) < 10_000 for e in finished), "a whole command's output or a subagent's answer is not stored again with every call"
+    assert finished[0].data["tool_response"]["agentId"] == "a1" and finished[0].data["tool_response"]["isAsync"] is True, "what is read back from the record, a subagent's id, stays whole"

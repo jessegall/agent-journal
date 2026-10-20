@@ -38,7 +38,7 @@ class Receiver:
             for written in self.transcript.events(hook, environment):
                 self._now(written)
             event = self.translation.event(hook, environment)
-            entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.body), Actor.agent(hook.session))
+            entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data=hook.stored()), Actor.agent(hook.session))
             if self.stray(event):
                 return Decision()
             decision = self._blocking(event)
