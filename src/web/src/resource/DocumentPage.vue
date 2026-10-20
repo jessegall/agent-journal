@@ -153,13 +153,16 @@ watch(
     --comments-width: clamp(280px, 34%, 400px);
     container-type: inline-size;
     position: relative;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     overflow: hidden;
 }
 
 .document-body {
     position: relative;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     min-width: 0;
     overflow-x: hidden;
     overflow-y: auto;
@@ -185,16 +188,13 @@ watch(
 }
 
 .document-quick {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    flex: none;
 }
 
 .document.quick .document-body::after {
     content: "";
     display: block;
-    height: 120px;
+    height: 28px;
 }
 
 .document-links {
