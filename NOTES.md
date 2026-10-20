@@ -927,6 +927,8 @@ The agent proposes a program (`journal secret propose`), the user allows it on t
 
 ## A workflow's counts (plan 12, 2026-10-17)
 
+(Superseded where it says per agent or names the readings: see Workflow parts, plan 18, below.)
+
 - A workflow keeps its own counts for each agent, named `charts:<id>:<name>` in the counts table (question 9:
   no sharing by name across workflows). A count started at one event and counted at another is one workflow with
   a trigger for each event (question 10); `Charts.for_event` lists a workflow under every event it holds a
@@ -1061,3 +1063,36 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   attached on the computer. A failed push is tried again a minute later; an address the service no longer knows is
   forgotten. A file opened on the phone is sandboxed. Left as it is: anyone who reaches the tunnel can void an open
   pairing code with ten wrong tries; the user makes another, and a code lives ten minutes.
+
+## Workflow parts (plan 18, 2026-10-20)
+
+- Sir Jesse's answers (message 7237): a workflow's values are kept per environment, in its own record, and no
+  workflow reads another's. Counts and times are rows named `charts:<workflow>:<name>` (ValueName, one home), in
+  the counts and noted_times tables, kept out of the timeline since they change on nearly every tool use.
+- A value lives as long as its workflow: a session's end, a restart, a takeover and an edit that keeps its step
+  leave it; the last step naming it gone, a reset or a deletion clear it, in every environment. Two agents in one
+  environment share its values; a row event sets a value once however many agents it walks about.
+- Times are read through Clock.now(), which every tick, log time and background check reads too, so the replays
+  drive one clock. A time never noted has no since: Has N passed since a noted time? answers no, and Was a time
+  noted? says so. Has N passed is at least N, as the quiet check it replaces was.
+- A workflow's place is per event it holds a trigger for, on its own record (Chart.places), kept in step with its
+  triggers; a row per event was not made, since it would need a link back to its workflow and the places are the
+  workflow's own data. Chart.event stays the event it was made for, the key a shipped drawing is known by.
+- The shipped workflows are drawn from parts (DRAWINGS_VERSION 28). Each quiet clock is still bound to its state and
+  notes its time on the move that starts its wait and on the agent's own session start, prompt, tool use and stop;
+  quiet now means no event of the agent's own, where it meant no change to the agent's row. A reminder repeats by
+  its line's repeat window, as before, not by noting its time again. The log ask forgets its time for a task a plan
+  took in hand (Follows a plan?), so it asks at once as an empty Working.logged_at did. The log ask's start trigger
+  now belongs to the stop's workflow, so at a session start the log line comes before carry on: the one change in
+  what the agent is told, and only in order.
+- Retired: Has the agent been quiet for N?, Is the log older than N?, Has a command run in the background longer
+  than N?, and the readings edits, uses, owed, namings and lines. A user's workflow, or an edited shipped copy,
+  naming one is stopped at boot with its title saying which; it is not rewritten to the parts, since a clock needs
+  triggers the user's drawing does not have. At the upgrade the times are seeded from what the retired checks read
+  (ValuesAtUpgrade); counts start at zero.
+- Journal line said and the others no row speaks for are agent events (Await, Command moved to the background,
+  Background command ended, Commit made); a task's or a message's move is its row's trigger with a check naming
+  the move. A path from Journal line said may not say a line, or it would start itself again.
+- The run order changes in a mode of its own on its column, since the page's Edit folds the lists for the canvas.
+  The workflows page stays on the computer, as the phone leaves every page that sets how the journal runs there.
+- The blocked-task ask after an hour of quiet never speaks, since an hour of quiet ends the session first: task 911.
