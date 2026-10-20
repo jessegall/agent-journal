@@ -482,8 +482,11 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         assert {g["key"] for g in manifest["groups"]} == {*named, "project"}, "one group per feature, and the System tab's own"
         status, tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": 60}})
         assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"
-        tree = call(server, "POST", "/journal/settings", {"tasks": {}})[1]
-        assert "tasks" not in tree and app.container.get(Settings).option(Tasks.LOG_AFTER) == 50, "dropped from the page, back to its default"
+        tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": None}})[1]
+        assert "tasks" not in tree and app.container.get(Settings).option(Tasks.LOG_AFTER) == 50, "sent as null, back to its default"
+        call(server, "POST", "/journal/settings", {"viewer": {"tour_seen": True}})
+        tree = call(server, "POST", "/journal/settings", {"viewer": {"scheme": "dark"}})[1]
+        assert tree["viewer"] == {"tour_seen": True, "scheme": "dark"}, "a save names only what it sets: the other keys under the heading stay, so the tour is not replayed by a layout save"
     finally:
         app.runtime().stop()
 

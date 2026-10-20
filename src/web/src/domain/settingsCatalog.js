@@ -62,13 +62,12 @@ export function settingChanges(target, value, settings) {
     const base = target.defaults
         ? Object.fromEntries(
               Object.keys(target.defaults)
-                  .filter((k) => k in saved && !same(saved[k], target.defaults[k]))
-                  .map((k) => [k, saved[k]])
+                  .filter((k) => k in saved)
+                  .map((k) => [k, same(saved[k], target.defaults[k]) ? null : saved[k]])
           )
         : {...saved};
     const stored = target.provider ? {...target.saved, [target.provider]: value} : target.invert ? !value : value;
-    if (target.sparse && same(stored, target.shipped)) delete base[key];
-    else base[key] = stored;
+    base[key] = target.sparse && same(stored, target.shipped) ? null : stored;
     return {[top]: base};
 }
 

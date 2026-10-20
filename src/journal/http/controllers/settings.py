@@ -17,18 +17,20 @@ class SettingController:
         return Response.json(self.tree())
 
     def store(self, request: Request) -> Response:
-        """The page keeps the answer as its whole settings tree, so a change answers with all of it."""
+        """A change names only the keys it sets, null for one that goes back to its default; the keys it leaves out stay. The page keeps the answer as its whole settings tree, so a change answers with all of it."""
         for top, inner in request.body.items():
             if isinstance(inner, dict):
                 self.saved(top, inner, request.actor)
         return Response.json(self.tree())
 
     def saved(self, top: str, inner: dict, by: Actor) -> None:
-        for name in set(self.settings.project_tree().get(top, {})) - set(inner):
-            self.settings.unset(f"{top}.{name}", by)
         known = {f.name for f in self.registry.features}
         for name, value in inner.items():
-            if top != FEATURES or name in known:
+            if top == FEATURES and name not in known:
+                continue
+            if value is None:
+                self.settings.unset(f"{top}.{name}", by)
+            else:
                 self.settings.set(f"{top}.{name}", value, by)
 
     def tree(self) -> dict:

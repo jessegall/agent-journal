@@ -5,6 +5,7 @@ What each release of agent-journal version 4 brought, newest first.
 ## Unreleased, on the development branch
 
 - The journal can follow a branch: Settings, Updates, Follow this branch names it (and Install from this repository the repository), and Install update, `journal update` and the hourly check then install that branch's newest commit instead of a release. The installer records the commit it installed in `.journal/src/commit`, and the About page says which branch the journal follows. `journal update follow <branch>` sets the branch from the terminal, `journal update unfollow` follows the releases again.
+- The tour no longer plays again after an update or a layout change. A settings save from the viewer named only the key it set, and the server dropped every other key under the same heading, so a pane layout or a colour scheme saved after the tour took its finished mark away. A save now changes only the keys it names, null clearing one; the viewer sends a value back at its default as null.
 - A comment on a document's passage is read with the passage: `journal message read` prints the quoted lines under the comment, where it said only how many there were. The inspector's page keeps room under its content, so a long document's Show more button no longer sits under the comment box.
 
 ## 4.4.9

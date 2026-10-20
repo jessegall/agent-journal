@@ -72,15 +72,16 @@ describe("setting changes", () => {
         expect(settingChanges({path: ["a", "b"], invert: true}, true, {})).toEqual({a: {b: false}});
     });
 
-    test("a sparse value equal to its shipped one is removed", () => {
+    test("a sparse value equal to its shipped one is sent as null, which clears it; the other keys are untouched", () => {
         const target = {path: ["a", "b"], sparse: true, shipped: 5};
-        expect(settingChanges(target, 5, {a: {b: 9, c: 1}})).toEqual({a: {c: 1}});
+        expect(settingChanges(target, 5, {a: {b: 9, c: 1}})).toEqual({a: {c: 1, b: null}});
         expect(settingChanges(target, 6, {a: {c: 1}})).toEqual({a: {c: 1, b: 6}});
     });
 
-    test("defaults keep only the saved values that differ", () => {
+    test("defaults keep the saved values that differ and clear the ones equal to their default", () => {
         const target = {path: ["a", "b"], defaults: {b: 1, c: 2}};
         expect(settingChanges(target, 3, {a: {b: 1, c: 9, other: 7}})).toEqual({a: {c: 9, b: 3}});
+        expect(settingChanges(target, 4, {a: {b: 7, c: 2}})).toEqual({a: {c: null, b: 4}});
     });
 });
 

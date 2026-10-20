@@ -4,11 +4,12 @@ import {store} from "../state/store.js";
 
 let latest = 0;
 
+// the settings with the changes laid over them: a key sent as null is one going back to its default, so it leaves
 function merged(settings, changes) {
     const next = {...settings};
     for (const [key, value] of Object.entries(changes)) {
         const plain = value && typeof value === "object" && !Array.isArray(value);
-        next[key] = plain ? {...(settings[key] || {}), ...value} : value;
+        next[key] = plain ? Object.fromEntries(Object.entries({...(settings[key] || {}), ...value}).filter(([, v]) => v !== null)) : value;
     }
     return next;
 }
