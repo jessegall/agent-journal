@@ -1,5 +1,6 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.plans.support.plans_standing_reader import PlansStandingReader
 from journal.features.plans.listeners.block_plan_on_its_tasks import BlockPlanOnItsTasks
 from journal.features.plans.listeners.clear_plan_waits import ClearPlanWaits
 from journal.features.plans.listeners.count_plan_reviewers import CountPlanReviewers
@@ -24,6 +25,7 @@ class Plans(Feature):
     states = (FollowingPlan,)
     commands = (PlanCommand,)
     listeners = (BlockPlanOnItsTasks, ClearPlanWaits, CountPlanReviewers, AdvancePlan, TellApproved, FollowPlanAtStart, FollowPlanOnResume, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
+    standing = (PlansStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'plan_moved_on', 'Plan moved on to its next task?', 'a task just closed and the agent follows its plan at the next one'),
         Entry(NodeKind.CHECK, 'plan_left_waiting', 'Plan has no task to start?', 'a task just closed and no task of the plan can start, the plan at no checkpoint'),

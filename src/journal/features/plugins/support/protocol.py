@@ -13,7 +13,7 @@ from journal.features.plugins.support.plugin_card import PluginCard
 ANSWERS = ("allow", "refuse", "tell")
 MOST_COMMANDS = 20
 """The most journal commands one answer may run."""
-PLACED = ("session", "environment_id", "provider", "context", "subagent")
+PLACED = ("session", "environment_id", "provider", "context", "subagent", "at", "standing")
 """An agent event's fields that say where it happened, sent beside its own fields rather than among them."""
 
 

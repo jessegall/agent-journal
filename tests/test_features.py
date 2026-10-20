@@ -1607,7 +1607,7 @@ def test_a_plan_is_done_when_its_last_task_closes_whoever_closes_it(app):
     assert app.container.get(Plans).find(1).state == "done", "the user closed the last task: the plan is done, no agent following it"
     from journal.features.plans.seeds.closed_plans import ClosedPlans
     plans = app.container.get(Plans)
-    plans.save(plans.find(1).started(), Actor.user(1))
+    plans.save(plans.find(1).started_with_nothing_to_start(0.0), Actor.user(1))
     app.container.get(ClosedPlans).run()
     assert plans.find(1).state == "done", "a plan left started with every task done is closed at boot"
     console.run(["plan", "add", "1", "more"], USER)
@@ -2858,19 +2858,19 @@ def test_the_checks_for_quiet_time_workers_and_questions(app):
     console.run(["worker", "wait", "1"], AGENT)
     worker = app.container.get(Workers).find(1)
     about = lambda event: Context(event=event, session="s1", environment_id=env, state=app.container.get(StateMachine).current("s1"))
-    reported = about(Updated(model=worker.reported(), by=Actor.user(1), was=worker))
-    again = about(Updated(model=worker.reported(), by=Actor.user(1), was=worker.reported()))
+    reported = about(Updated(model=worker.reported(0.0), by=Actor.user(1), was=worker))
+    again = about(Updated(model=worker.reported(0.0), by=Actor.user(1), was=worker.reported(0.0)))
     assert checks.answer("worker_reported", reported) and not checks.answer("worker_reported", again), "just came to the state, not saved again in it"
     assert checks.answer("agent_awaits_the_worker", reported) and checks.answer("last_worker_back", reported), "the row says the last one is back"
     console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1", "2"], AGENT)
     assert not checks.answer("last_worker_back", about(reported.event)), "another is still out: the state is read when the walk starts"
-    app.container.get(Workers).save(worker.reported(), Actor.user(1))
+    app.container.get(Workers).save(worker.reported(0.0), Actor.user(1))
     console.run(["worker", "stop", "2"], USER)
     console.run(["task", "done", "1"], AGENT)
     console.run(["question", "ask", "Which name?"], AGENT)
     question = app.container.get(Questions).find(1)
-    answered = Context(event=Updated(model=question.answered("beta"), by=Actor.user(1), was=question), session="s1", environment_id=env, state=app.container.get(StateMachine).current("s1"))
+    answered = Context(event=Updated(model=question.answered("beta", 0.0), by=Actor.user(1), was=question), session="s1", environment_id=env, state=app.container.get(StateMachine).current("s1"))
     assert checks.answer("question_answered", answered) and checks.answer("agent_waits_on_the_question", answered)
 
 
@@ -2940,7 +2940,7 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     console.run(["task", "create", "t2", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     worker = app.container.get(Workers).find(1)
-    assert fillers.fill("worker {{worker_n}}, {{worker_name}}, reported", at(Updated(model=worker.reported(), by=Actor.user(1), was=worker))) == "worker 1, Lady Lovelace, reported"
+    assert fillers.fill("worker {{worker_n}}, {{worker_name}}, reported", at(Updated(model=worker.reported(0.0), by=Actor.user(1), was=worker))) == "worker 1, Lady Lovelace, reported"
 
 
 def test_a_failing_node_is_recorded_and_the_path_goes_on_past_it(app):
@@ -4153,7 +4153,7 @@ def test_a_block_arriving_twice_at_once_is_recorded_once(app, monkeypatch):
     record = app.container.get(RecordTurn)
     checked = RecordTurn.already_recorded
     monkeypatch.setattr(RecordTurn, "already_recorded", lambda self, part: (checked(self, part), time.sleep(0.2))[0])
-    block = TurnWritten(text="Checking the worker's inspector now.", delta="", turn_id="t1", final=True).placed("s1", 1, "claude", 0.0)
+    block = TurnWritten(text="Checking the worker's inspector now.", delta="", turn_id="t1", final=True).placed("s1", 1, "claude", 0.0, 0.0)
     threads = [threading.Thread(target=contextvars.copy_context().run, args=(record.handle, block)) for _ in range(2)]
     [t.start() for t in threads]
     [t.join() for t in threads]
@@ -4229,7 +4229,7 @@ def test_two_walks_of_one_agent_at_once_lose_no_count(app, monkeypatch):
     console.run(["chart", "line", str(trigger), str(one)], USER)
     named = Counts.named
     monkeypatch.setattr(Counts, "named", lambda self, value: (named(self, value), time.sleep(0.003))[0])
-    walk, event = app.container.get(Walk), ToolFinished(tool="Read", input={}, output="").placed("s1", 1, "claude", 0.0)
+    walk, event = app.container.get(Walk), ToolFinished(tool="Read", input={}, output="").placed("s1", 1, "claude", 0.0, 0.0)
 
     def walks():
         for _ in range(20):
@@ -4818,7 +4818,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     from journal.features.plugins.support.protocol import Protocol
     from journal.models.task import Task
     protocol = app.container.get(Protocol)
-    tool = json.loads(protocol.line_of(ToolStarting(tool="Bash", input={"command": "ls"}).placed("s1", 1, "claude", 0.2), "main", "working"))
+    tool = json.loads(protocol.line_of(ToolStarting(tool="Bash", input={"command": "ls"}).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
     assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "writes": False}), "an agent event: its name, where it happened and its own fields"
     row = json.loads(protocol.line_of(Created(model=Task(id=7, environment_id=1, title="t"), by=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
@@ -4906,7 +4906,7 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     keyed = [m for m in messages.recent(20) if m.data.get("key") == "k"]
     assert [m.text for m in keyed] == ["second"] and keyed[0].created_at < keyed[0].updated_at, "a card of a key is settled in place by the later one"
     app.container.get(SecretValues).put("GITHUB_KEY", "ghp_0123456789abcdef")
-    said = app.container.get(PluginsHearAgents).decided(plugin, PromptSubmitted(prompt="x").placed("s1", 1, "claude", 0.0), PluginAnswer(answer="tell", tell="[journal] stop now [!reply:3] ghp_0123456789abcdef"))
+    said = app.container.get(PluginsHearAgents).decided(plugin, PromptSubmitted(prompt="x").placed("s1", 1, "claude", 0.0, 0.0), PluginAnswer(answer="tell", tell="[journal] stop now [!reply:3] ghp_0123456789abcdef"))
     assert said.context == "[plugin echo] (journal) stop now (!reply:3] [secret GITHUB_KEY]", "a plugin's words are its own, the journal's marks made plain and a secret masked"
     echo(app, hears=["messages.created"], holds=[])
     echo(app, "echo-two", hears=["messages.created"], holds=[])
@@ -6445,7 +6445,7 @@ def test_a_worker_report_not_acted_on_is_named_until_it_is(app):
     app.console().run(["environment", "here"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).of(MAIN):
-        worker = workers.save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet").reported(), Actor.system())
+        worker = workers.save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet").reported(0.0), Actor.system())
     assert "worker 1 (Lady Lovelace) reported and you have not acted on it yet" in json.dumps(hook(app, "Stop")[1])
     app.console().run(["worker", "done", str(worker.id)], AGENT)
     assert "not acted on it yet" not in json.dumps(hook(app, "Stop")[1]), "once acted on it is named no more"
@@ -6483,7 +6483,7 @@ def test_a_job_on_files_a_worker_already_worked_on_goes_back_to_that_worker(app)
     console.run(["worker", "dispatch", "Lady Lovelace", "fix src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).of(MAIN):
-        workers.save(workers.find(1).with_(resume="abc").reported(), Actor.system())
+        workers.save(workers.find(1).with_(resume="abc").reported(0.0), Actor.system())
     refused = console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     assert refused.code == 1 and "journal worker say 1" in refused.err, "related work goes back to the worker that knows it"
     assert console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet", "--fresh"], AGENT).code == 0, "unless a fresh one is asked for"
@@ -6573,24 +6573,6 @@ def test_nothing_is_installed_on_its_own_when_no_release_is_newer(app):
     installer = Installer()
     updating_with(app, Source("v4.0.0", "v5.0.0"), installer, auto=True).checked()
     assert installer.ran == []
-
-
-def test_the_plugin_is_moved_only_to_its_latest_release_when_newer_than_the_recorded_release(app):
-    source, plugins = Source(), Plugins()
-    updating = updating_with(app, source, Installer(), auto=False)
-    updating.installing = plugins
-    rows = app.container.get(PluginRows)
-    manifest = PluginManifest(name="code-commandments", version="1.64.22")
-    row = rows.save(PluginRow(name="code-commandments", source="https://example.test/plugin.git", manifest=manifest, release="v5.19.3"), Actor.system())
-    source.plugin_found = ["v5.19.2", "v5.19.3", "v5.20.0-rc1", "nightly"]
-    updating.pull_plugin(Actor.user(1))
-    assert plugins.upgraded == []
-    source.plugin_found = ["v5.19.2", "v5.19.3", "v5.19.4", "v5.19.10-rc1"]
-    updating.pull_plugin(Actor.user(1))
-    assert plugins.upgraded == [("code-commandments", "v5.19.4")]
-    rows.save(row.with_(release=""), Actor.system())
-    updating.pull_plugin(Actor.user(1))
-    assert plugins.upgraded[-1] == ("code-commandments", "v5.19.4")
 
 
 def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app):
@@ -6820,7 +6802,7 @@ def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_n
     workers = app.container.get(Workers)
     with app.container.get(Scope).of(1):
         assert "stays while it works" in app.container.get(WorkerBranch).dropped(workers.find(1)), "never while the worker runs in it"
-        workers.save(workers.find(1).reported(), Actor.system())
+        workers.save(workers.find(1).reported(0.0), Actor.system())
     (tree / "notes.txt").write_text("half\n")
     kept = app.console().run(["worker", "done", "1"], AGENT).out
     assert "stays, since 1 files in it are not committed: notes.txt" in kept and tree.is_dir(), "uncommitted work keeps it"

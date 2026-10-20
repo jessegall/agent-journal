@@ -1,5 +1,6 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.memory.support.memory_standing_reader import MemoryStandingReader
 from journal.features.memory.commands.fact_command import FactCommand
 from journal.features.memory.commands.nothing_command import NothingCommand
 from journal.features.memory.commands.reminder_command import ReminderCommand
@@ -27,6 +28,7 @@ class Memory(Feature):
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
     listeners = (HoldAtMark, HoldWritesWhileMarkOwed, KeepFromStoppingWhileMarkOwed, Whisper, ReviewNewRule, MarkCompacted, MarkMemoryRowMade, MarkMemoryRowStruck)
+    standing = (MemoryStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'context_over_mark', 'Context reached the next mark?', "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
         Entry(NodeKind.CHECK, 'memory_older_than', 'Facts, rules or reminders N days old?', "a fact, rule or reminder here has stood at least N days; the text is N or a setting's name", takes_text=True),

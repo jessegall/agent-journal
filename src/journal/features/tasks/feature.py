@@ -1,5 +1,6 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.tasks.support.tasks_standing_reader import TasksStandingReader
 from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
@@ -31,6 +32,7 @@ class Tasks(Feature):
     LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits without a log line before the agent's next write waits for one", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
     listeners = (SpotPolling, ClearWaits, EndSettledWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
+    standing = (TasksStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'open_tasks', 'Has open tasks?', 'the environment has open tasks the agent may take up, outside a plan not yet started'),
         Entry(NodeKind.CHECK, 'related_tasks', 'Has a task to take up meanwhile?', 'a started plan has a next task, or, with no plan started, a task is open outside a plan'),

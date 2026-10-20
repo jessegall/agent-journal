@@ -1142,3 +1142,29 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   hook or the walk that said it; its walks that only count are not recorded.
 - A downgrade past 4.3.0 is not supported: migrations 15 and 16 merge the agents' counts per environment and move a
   workflow's one place onto each of its events, and an older version reads neither.
+
+## Plan 19, phase 1, as built (2026-10-20, night)
+
+- The stack machine's values, `Stack`, `Transition`, `Held`, `Hooked`, `Settings`, `StandingReaders`, live under
+  `engine/support/`, not `support/`: only the engine builds them, and `support/` may not import the engine. `Standing`
+  is an event's payload and lives in `events/standing.py`.
+- Until phase 2 moves the features' conduct, the old `AgentState` extends `BaseState` and the pause chain (`Paused.resume`)
+  stays what the old states express; the stack on the agent's row is kept as its mirror: a pause that resumes the top is
+  pushed on it, a resume that names the state beneath pops to it, anything else stands on its own chain with Idle at the
+  floor. `StateMachine.move` is that bridge and goes with the commands' moves.
+- Every change of the stack is a trail entry of kind `state`, with the stack before and after, the cause (the event's name,
+  `a feature moved the agent`, or the panic command's words) and a refused push with its line; the agents page carries
+  `stack` top first and `trail`.
+- `journal panic` lives under `console/commands/`, since the engine imports nothing from the console; the rule that keeps
+  the state machine inside the engine excepts it and `runtime.py`.
+- One nudge registry (`engine/nudge_registry.py`): every feature's nudges and the engine's are registered at boot, the
+  nudger refuses an unregistered one, `journal nudge list` prints them. A nudge's name says what the line does; a
+  hundred and four were renamed by one map, the replay records and the shipped drawings rewritten by it.
+- Twelve guard rules under the custom `stack-machine` skill and two more poetry rules (parameters and variables); the
+  custom docstring rule looks at a statement's own literal. The worklist the judge writes is cleared on purpose: the
+  pre-existing findings are phase 4's (task 1052).
+- Phase 1's commits were pushed to `development` as they landed, since this journal follows that branch; the plan's
+  "nothing pushed until the migration is proved" was not kept, and task 1053 still proves the migration on a copy before
+  the pull request.
+- The files of task 1002 were wiped from the working tree before their commit while a worker's commit was taken into the
+  branch (task 1082); they were written again from the record.

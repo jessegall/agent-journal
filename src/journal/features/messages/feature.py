@@ -1,5 +1,6 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.messages.support.messages_standing_reader import MessagesStandingReader
 from journal.features.messages.listeners.hint_reply_by_tag import HintReplyByTag
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
 from journal.features.messages.listeners.record_peer_message import RecordPeerMessage
@@ -33,6 +34,7 @@ class Messages(Feature):
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS, SWEEP_AFTER)
     listeners = (HintReplyByTag, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, LinkReplyUnderComment, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
+    standing = (MessagesStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
         Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N', takes_text=True),

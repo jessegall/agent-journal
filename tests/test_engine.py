@@ -52,12 +52,18 @@ from journal.engine.base_state import BaseState
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.engine.support.held import Held
-from journal.engine.support.standing import Standing
+from journal.events.standing import Standing
 from journal.support.refused import Refused
 from journal.engine.nudge import Nudge
 from journal.engine.states.compacting import Compacting as CompactingState
 from journal.engine.states.ended import Ended
 from journal.features.registry import Registry
+from journal.engine.support.standing_readers import StandingReaders
+from journal.features.tasks.feature import Tasks as TasksFeature
+from journal.features.messages.feature import Messages as MessagesFeature
+from journal.features.briefing.feature import Briefing as BriefingFeature
+from journal.features.shell.feature import Shell as ShellFeature
+from journal.features.workers.feature import Workers as WorkersFeature
 from journal.engine.nudger import Nudger
 from journal.engine.nudge_registry import NudgeRegistry
 from journal.engine.engine import Engine
@@ -77,6 +83,7 @@ from journal.support.states_catalogue import StatesCatalogue
 from journal.engine.support.transition import Transition
 
 AGENT = Where("main", "s1")
+USER = Where("main")
 
 
 @pytest.fixture
@@ -579,3 +586,18 @@ def test_a_nudge_is_one_class_whose_create_fills_its_blanks_and_rendered_says_th
     assert nudge.create(n=3, what="them").rendered() == "3 of them. read them"
     assert nudge.create(n=3, what="them").key == "tests.two_blanks" and nudge.create().rendered() == "{{n}} of {{what}}. read {{what}}"
     assert nudge.in_words("its own words").rendered() == "its own words"
+
+
+def test_the_standing_is_read_per_feature_and_travels_on_the_event_the_machine_asks(app):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["task", "create", "the standing", "--start"], AGENT)
+    console.run(["message", "send", "a word from the user"], USER)
+    agent = app.container.get(Agents).for_session("s1")
+    with app.container.get(Scope).of(1):
+        standing = app.container.get(StandingReaders).for_agent(agent)
+    assert standing.of(TasksFeature).in_hand == 1 and standing.of(TasksFeature).parked == ()
+    assert len(standing.of(MessagesFeature).unread) == 1 and standing.of(BriefingFeature).oriented is False
+    assert standing.of(ShellFeature).background == () and standing.of(WorkersFeature).reports_waiting == ()
+    event = ToolStarting(tool="Write", input={}).with_standing(standing)
+    assert event.standing.of(TasksFeature).in_hand == 1 and ToolStarting(tool="Write", input={}).standing.readings == {}

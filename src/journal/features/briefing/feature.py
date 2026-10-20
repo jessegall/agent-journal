@@ -7,6 +7,7 @@ from journal.features.briefing.listeners.owe_the_look_at_start import OweTheLook
 from journal.features.briefing.listeners.start_briefing import StartBriefing
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.briefing.support.briefing_standing_reader import BriefingStandingReader
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 
@@ -16,6 +17,7 @@ class Briefing(Feature):
     title = "Session briefing"
     help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any Session start workflow."
     listeners = (AnnounceStart, OweTheLookAtStart, StartBriefing, EndOtherSessions, HoldWritesUntilOriented, KeepFromStoppingUntilOriented, EndSilentSessions)
+    standing = (BriefingStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'not_oriented', 'Has not yet looked at what is in flight?', 'the agent has not looked at what is in flight here since its session started'),
         Entry(NodeKind.CHECK, 'taken_over', 'Another session worked here lately?', 'another session worked this environment within a day, and this start is not the same session going on after a compaction'),

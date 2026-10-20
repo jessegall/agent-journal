@@ -1,5 +1,6 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.workers.support.workers_standing_reader import WorkersStandingReader
 from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
@@ -28,6 +29,7 @@ class Workers(Feature):
     commands = (WorkerCommand,)
     seeds = (WorkersAtBoot,)
     listeners = (MarkSubagents, OfferKnownSubagent, KeepOutOfWorkerWorktrees, HoldPastMostSubagents)
+    standing = (WorkersStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'worker_reported', 'Worker reported?', 'the row is a worker that just reported'),
         Entry(NodeKind.CHECK, 'worker_stopped', 'Worker stopped?', 'the row is a worker that just stopped before reporting'),

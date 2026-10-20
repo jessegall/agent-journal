@@ -9,7 +9,8 @@ from journal.engine.states.ended import Ended
 from journal.engine.support.hooked import Hooked
 from journal.engine.support.held import Held
 from journal.engine.support.stack import Stack
-from journal.engine.support.standing import Standing
+from journal.engine.support.standing_readers import StandingReaders
+from journal.events.standing import Standing
 from journal.engine.states.paused import Paused
 from journal.supervisor_link import SupervisorLink
 from journal.events.event import Event
@@ -39,9 +40,9 @@ class StateMachine(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeaturesKnown, scope: Scope, supervisor: SupervisorLink, entries: Entries) -> None:
+    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeaturesKnown, scope: Scope, supervisor: SupervisorLink, entries: Entries, readers: StandingReaders) -> None:
         self.agents, self.states, self.nudger, self.bus = agents, states, nudger, bus
-        self.settings, self.features, self.scope, self.supervisor, self.entries = settings, features, scope, supervisor, entries
+        self.settings, self.features, self.scope, self.supervisor, self.entries, self.readers = settings, features, scope, supervisor, entries, readers
 
     def handle(self, event: AgentEvent) -> Decision:
         return self.answer(self.agent(event.session, event.environment_id, event.provider), event)
@@ -53,6 +54,7 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def answer(self, agent: Agent, event: Event) -> Decision:
         stack, settings = self.states.stack_of(agent), self.taken()
+        event = event.with_standing(self.readers.for_agent(agent))
         transition = stack.top().on(event, settings)
         hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings)
         agent = self._settle(agent, hooked, event.key, Actor.system())

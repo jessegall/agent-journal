@@ -53,7 +53,7 @@ class SharedComments:
         return name
 
     @staticmethod
-    def worded(given: str) -> str:
+    def in_words(given: str) -> str:
         text = str(given).strip()
         if not text or len(text) > TEXT_LIMIT:
             raise Refused(f"a comment is 1 to {TEXT_LIMIT} characters")

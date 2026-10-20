@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 
 from journal.events.event import Event
+from journal.events.standing import Standing
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -9,3 +10,7 @@ class RowEvent(Event):
 
     environment_id: int = 0
     at: float = 0.0
+    standing: Standing = field(default_factory=lambda: Standing({}), compare=False)
+
+    def with_standing(self, standing: Standing) -> "RowEvent":
+        return replace(self, standing=standing)

@@ -23,12 +23,12 @@ class Subagents:
 
     def running_about(self, session: str, subject: str) -> int:
         """The subagents still out whose brief names the subject, such as plan 9: the reviewers of that plan and no others."""
-        return sum(1 for row in self.create(session, subject) if row.running)
+        return sum(1 for row in self.named_in_brief(session, subject) if row.running)
 
     def dispatched_about(self, session: str, subject: str, since: float) -> list[Dispatch]:
-        return [row for row in self.create(session, subject) if row.at >= since]
+        return [row for row in self.named_in_brief(session, subject) if row.at >= since]
 
-    def about(self, session: str, subject: str) -> list[Dispatch]:
+    def named_in_brief(self, session: str, subject: str) -> list[Dispatch]:
         named = re.compile(rf"\b{re.escape(subject)}\b", re.IGNORECASE)
         return [row for row in self.rows(session) if named.search(row.brief)]
 

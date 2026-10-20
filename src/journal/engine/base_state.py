@@ -5,7 +5,7 @@ from typing import Callable, ClassVar, get_type_hints
 
 from journal.engine.nudge import Nudge
 from journal.engine.support.held import Held
-from journal.engine.support.standing import Standing
+from journal.events.standing import Standing
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.session_ended import SessionEnded
 from journal.events.event import Event

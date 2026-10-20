@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from journal.events.listener import Listener
 from journal.events.models.created import Created
 from journal.models.link import Link
@@ -17,4 +19,4 @@ class ReopenFinishedPlan(Listener[Created]):
             return
         plan = self.plans.find(link.target.id)
         if plan.state == PlanState.DONE and not self.plans.finished(plan):
-            self.plans.save(plan.started(), event.by)
+            self.plans.save(plan.started_with_nothing_to_start(datetime.now(timezone.utc).timestamp()), event.by)
