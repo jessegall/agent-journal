@@ -1533,6 +1533,21 @@ def test_a_session_silent_for_an_hour_is_ended(app):
     assert app.container.get(Machine).current("s1").name != "ended", "a session that goes on after an hour's silence lives: it is not left ended"
 
 
+def test_the_agent_a_supervisor_runs_stays_live_however_long_it_is_idle_and_is_told_a_message(app, monkeypatch):
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    hook(app, "SessionStart")
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=36000.0))
+    assert app.container.get(Machine).current("s1").name != "ended", "an agent idle for ten hours under a supervisor is waiting, not gone"
+    app.console().run(["message", "send", "are you there?"], USER)
+    app.runtime().deferred.drain()
+    assert any("new message" in line for line in typed), "a message left for an idle agent is typed into its terminal"
+
+
 def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_questioned(app, monkeypatch):
     typed = []
     catch_typed(app, monkeypatch, typed)

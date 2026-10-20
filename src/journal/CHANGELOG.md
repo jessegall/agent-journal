@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.2.5
+
+- A message always reaches an idle agent. The agent a supervisor runs is no longer taken for gone after an hour without a hook, which had left it ended and every message after that untyped; only a session no supervisor runs, a terminal closed without its end hook, is still ended after an hour.
+
 ## 4.2.4
 
 - The most subagents at once counts only those already running: the one being started is no longer counted among them, so four running and a fifth pass a most of five.
