@@ -1819,6 +1819,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert len(typed) == told + 1, "an end is named once"
     cards = [m for m in app.container.get(Messages).in_() if m.author == "system"]
     assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["command"] == "pytest -q" and cards[-1].data["detail"] == "2 failed", "the one mark of the moved command is settled in place: it names the command, on a line of its own, and how it ended"
+    assert cards[-1].data["shows"] == "commands", "a card names the Show in chat switch that hides it"
     (app.config.root / "c2").mkdir()
     console.run(["shell", "split", "pytest -q", "--into", str(app.config.root / "c2")], AGENT)
     console.run(["shell", "moved", "c2", "pytest -q", "--file", "/tmp/out/c2"], AGENT)
@@ -2859,7 +2860,7 @@ def test_the_card_and_release_actions(app):
     actions.perform("show_card", "The journal did a thing", ctx())
     card = app.container.get(Messages).in_()[-1]
     assert card.author == "system" and card.created_by == Actor.system() and card.text == "The journal did a thing"
-    assert card.data == {"kind": "card", "session": "s1", "icon": "bolt", "tone": "", "detail": "", "row": "", "command": "", "key": ""}
+    assert card.data == {"kind": "card", "session": "s1", "icon": "bolt", "tone": "", "detail": "", "row": "", "command": "", "key": "", "shows": "workflows"}
 
 
 def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_rows(app):
@@ -4966,7 +4967,8 @@ def test_only_the_user_installs_or_switches_on_a_plugin(app, tmp_path):
         assert (status == 409 and "plugin's files" in body.get("error", "")) == held, f"{line} held {status == 409}, should be {held}: running a plugin's program is no write to it"
     (folder / "run.py").write_text((folder / "run.py").read_text() + "\n# changed\n")
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[0] == 200, "a changed program is not run"
-    assert not plugins.named("echo").enabled and "run.py changed since you installed it" in app.container.get(Messages).recent(1)[0].text
+    app.runtime().deferred.drain()
+    assert not plugins.named("echo").enabled and any("run.py changed since you installed it" in m.text for m in app.container.get(Messages).recent(5)), "the plugin is switched off and the card says why, once the hearings after the reply have run"
 
 
 def test_a_plugins_settings_follow_its_schema_and_its_secret_comes_from_the_user(app):

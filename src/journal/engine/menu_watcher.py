@@ -10,6 +10,7 @@ from journal.repositories.agents import Agents
 from journal.support.scope import Scope
 from journal.supervisor_link import SupervisorLink
 from journal.engine.support.menu_answers import MenuAnswers
+from journal.support.chat_mark import ChatMark
 
 EVERY = 1.0
 """How often the watcher looks at each agent's screen."""
@@ -69,7 +70,7 @@ class MenuWatcher:
         if caused:
             self.supervisor.confirmed(env)
         self._answered[env] = menu.signature()
-        self.cards.show(env, agent.session, f'A menu in the agent\'s terminal was answered: "{menu.question[-160:]}" The journal {said}.', "bolt")
+        self.cards.show(env, agent.session, f'A menu in the agent\'s terminal was answered: "{menu.question[-160:]}" The journal {said}.', "bolt", shows=ChatMark.MENUS)
         return keys
 
     def decided(self, menu: Menu, caused: bool, agent: Agent) -> tuple[str, str] | None:

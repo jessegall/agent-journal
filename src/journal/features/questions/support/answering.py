@@ -3,6 +3,7 @@ from journal.support.actor import Actor
 from journal.models.question import Question
 from journal.repositories.questions import Questions
 from journal.support.refused import Refused
+from journal.support.chat_mark import ChatMark
 
 
 class Answering:
@@ -16,5 +17,5 @@ class Answering:
             raise Refused(f"question {question.id} is answered already")
         answered = self.questions.save(question.answered(text), by)
         label = f"You answered question {answered.id}" if by.is_the_user() else f"Question {answered.id} answered by {by.named}"
-        self.cards.show(answered.environment_id, "", label, "question", "good", "", f"questions:{answered.id}", by=by)
+        self.cards.show(answered.environment_id, "", label, "questions", "good", "", f"questions:{answered.id}", by=by, shows=ChatMark.QUESTIONS)
         return answered

@@ -5,9 +5,10 @@ export const VISIBILITY_GROUPS = [
             {key: "thoughts", label: "Thoughts", icon: "bulb"},
             {key: "skills", label: "Skills the agent loads", icon: "book"},
             {key: "subagents", label: "Subagents", icon: "agents"},
-            {key: "helpers", label: "Helpers the agent sends", icon: "bot"},
             {key: "compactions", label: "Conversation compacted", icon: "gauge"},
             {key: "made", label: "Documents the agent made", icon: "docs"},
+            {key: "searches", label: "Searches the agent ran", icon: "search"},
+            {key: "stuck", label: "Agent stuck", icon: "warn"},
             {key: "acknowledgements", label: "Acknowledged reminders", icon: "check"},
         ],
     },
@@ -20,23 +21,35 @@ export const VISIBILITY_GROUPS = [
         ],
     },
     {
-        title: "Other",
+        title: "Work",
         kinds: [
             {key: "commands", label: "Long commands and outputs", icon: "terminal"},
             {key: "commits", label: "Commits", icon: "branch"},
+            {key: "worktrees", label: "Worktrees", icon: "branch"},
+            {key: "checks", label: "Checks passing and failing", icon: "check"},
+            {key: "questions", label: "Questions asked and answered", icon: "questions"},
+            {key: "filed", label: "Filed from your messages", icon: "inbox"},
+        ],
+    },
+    {
+        title: "The journal",
+        kinds: [
             {key: "sequences", label: "Sequences starting and finishing", icon: "list"},
             {key: "sequence_steps", label: "Every step of a sequence", icon: "list"},
             {key: "triggers", label: "Triggers", icon: "bolt"},
+            {key: "workflows", label: "Workflow notes", icon: "bolt"},
+            {key: "menus", label: "Menus the journal answered", icon: "bolt"},
+            {key: "suggestions", label: "Suggestions", icon: "bulb"},
             {key: "plugins", label: "Plugin notes", icon: "plug"},
+            {key: "phones", label: "Phones paired", icon: "phone"},
+            {key: "faults", label: "The journal's own faults", icon: "warn"},
             {key: "visitors", label: "Visitor comments", icon: "chat"},
-            {key: "filed", label: "Filed from your messages", icon: "inbox"},
-            {key: "notes", label: "Notices", icon: "bell"},
         ],
     },
 ];
 
 // Which choice above shows or hides each kind of turn the chat draws.
-const TURN_KINDS = {thought: "thoughts", skill: "skills", subagent: "subagents", compacted: "compactions", made: "made", receipt: "filed", visitor: "visitors"};
+const TURN_KINDS = {thought: "thoughts", receipt: "filed", visitor: "visitors"};
 export const HIDDEN_KEY = "chat_hidden";
 export const DEFAULT_HIDDEN = ["acknowledgements", "sequence_steps"];
 

@@ -10,6 +10,7 @@ from journal.support.subagents import ENDS, Subagents
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
+from journal.support.chat_mark import ChatMark
 
 DISPATCHING = ("Agent", "Task")
 SETTLING = ENDS | {"SubagentEnded"}
@@ -39,4 +40,4 @@ class MarkSubagents(AgentListener[AgentEvent]):
         earlier = self.messages.keyed(key, by)
         if earlier and all(earlier[0].data.get(k) == v for k, v in data.items()):
             return
-        self.cards.keyed(event.environment_id, key, f"Subagent {row.type}: {row.task}", data, by)
+        self.cards.keyed(event.environment_id, key, f"Subagent {row.type}: {row.task}", data, by, ChatMark.SUBAGENTS)

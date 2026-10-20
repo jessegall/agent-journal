@@ -1,0 +1,30 @@
+from enum import StrEnum
+
+
+class ChatMark(StrEnum):
+    """What a mark in the chat is, by the switch in Show in chat that hides it: every card names one."""
+
+    SKILLS = "skills"
+    SUBAGENTS = "subagents"
+    COMPACTIONS = "compactions"
+    MADE = "made"
+    STUCK = "stuck"
+    RULES = "rules"
+    FACTS = "facts"
+    REMINDERS = "reminders"
+    COMMANDS = "commands"
+    COMMITS = "commits"
+    WORKTREES = "worktrees"
+    CHECKS = "checks"
+    QUESTIONS = "questions"
+    SEQUENCES = "sequences"
+    SEQUENCE_STEPS = "sequence_steps"
+    TRIGGERS = "triggers"
+    WORKFLOWS = "workflows"
+    MENUS = "menus"
+    SEARCHES = "searches"
+    SUGGESTIONS = "suggestions"
+    PLUGINS = "plugins"
+    PHONES = "phones"
+    FILED = "filed"
+    FAULTS = "faults"

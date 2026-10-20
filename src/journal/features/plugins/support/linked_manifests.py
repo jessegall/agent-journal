@@ -10,6 +10,7 @@ from journal.support.actor import Actor
 from journal.models.plugin import Plugin
 from journal.support.refused import Refused
 from journal.repositories.plugins import Plugins
+from journal.support.chat_mark import ChatMark
 
 
 class LinkedManifests:
@@ -33,4 +34,4 @@ class LinkedManifests:
         if not changes:
             return
         self.plugins.save(plugin.with_(waiting=seen), Actor.system())
-        self.cards.show(environment_id, "", f"Plugin {plugin.name}'s manifest changed in its folder; it runs as installed until you apply it with journal plugin upgrade {plugin.name} --yes", "plug", tone="warn", detail="\n".join(changes))
+        self.cards.show(environment_id, "", f"Plugin {plugin.name}'s manifest changed in its folder; it runs as installed until you apply it with journal plugin upgrade {plugin.name} --yes", "plug", tone="warn", detail="\n".join(changes), shows=ChatMark.PLUGINS)

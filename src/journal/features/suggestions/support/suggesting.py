@@ -14,6 +14,7 @@ from journal.support.actor import Actor
 from journal.support.cards import Cards
 from journal.support.not_found import NotFound
 from journal.support.refused import Refused
+from journal.support.chat_mark import ChatMark
 
 MINUTE = 60
 
@@ -59,7 +60,7 @@ class Suggesting:
 
     def shown(self, suggestion: Suggestion, suggester: Suggester, environment_id: int) -> None:
         data = {"kind": "suggestion", "icon": "bulb", "detail": suggester.detail(), "row": f"suggestions:{suggestion.id}", "accept": suggester.accept_label, "answer": suggestion.answer or ""}
-        self.cards.keyed(environment_id, self.card_key(suggestion), suggestion.title, data, Actor.system())
+        self.cards.keyed(environment_id, self.card_key(suggestion), suggestion.title, data, Actor.system(), ChatMark.SUGGESTIONS)
 
     def card_environment(self, suggestion: Suggestion) -> int:
         """The environment the suggestion's card stands in."""

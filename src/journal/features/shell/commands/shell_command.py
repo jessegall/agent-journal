@@ -23,6 +23,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.support.scope import Scope
 from journal.repositories.settings import Settings
+from journal.support.chat_mark import ChatMark
 
 TAIL = 2000
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
@@ -124,7 +125,7 @@ class ShellCommand(Command):
         output = self.outputs.save(self.outputs.of_chain(args.chain).moved_out(), where.actor)
         if where.session:
             self.bus.dispatch(CommandMoved(output=output.id).placed(where.session, self.scope.id, "", None))
-        self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", key=f"background:{args.chain}", command=args.part)
+        self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", key=f"background:{args.chain}", command=args.part, shows=ChatMark.COMMANDS)
         print(Shell.MOVED.about(n=output.id, file=args.file).rendered())
         return 0
 
@@ -134,7 +135,7 @@ class ShellCommand(Command):
         part = self.moved_part(args.chain)
         outcome = OutputFiles.ended(args.status)
         said = self.said_last(args.last)
-        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", said, key=f"background:{args.chain}", command=part)
+        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", said, key=f"background:{args.chain}", command=part, shows=ChatMark.COMMANDS)
         live = self.agents.live()
         if live:
             output = self.outputs.save(self.outputs.of_chain(args.chain).ended_with(args.status), where.actor)

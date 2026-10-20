@@ -5,6 +5,7 @@ from journal.support.typed_lines import TypedLines
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 from journal.supervisor_link import SupervisorLink
+from journal.support.chat_mark import ChatMark
 
 PATIENCE = 10.0
 """Seconds a typed line may go unconfirmed while the agent sits between turns before it is typed again."""
@@ -27,8 +28,8 @@ class RetypeLost(AgentListener[Ticked]):
             if lost.tries >= TRIES:
                 self.typed.given_up(lost)
                 self.supervisor.release(event.environment_id)
-                self.cards.show(event.environment_id, event.session, f"A line did not reach the agent in {TRIES} tries", "terminal", "bad", lost.line)
+                self.cards.show(event.environment_id, event.session, f"A line did not reach the agent in {TRIES} tries", "terminal", "bad", lost.line, shows=ChatMark.FAULTS)
             else:
                 again = self.typed.tried_again(lost, event.at)
                 self.supervisor.type_again(event.environment_id, again.line)
-                self.cards.show(event.environment_id, event.session, f"Typed again, try {again.tries}: the line had not reached the agent", "terminal", "", lost.line)
+                self.cards.show(event.environment_id, event.session, f"Typed again, try {again.tries}: the line had not reached the agent", "terminal", "", lost.line, shows=ChatMark.FAULTS)

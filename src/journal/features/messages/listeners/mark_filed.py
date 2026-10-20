@@ -6,6 +6,7 @@ from journal.models.link import Link
 from journal.models.message import Message
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
+from journal.support.chat_mark import ChatMark
 
 
 class MarkFiled(Listener[Created]):
@@ -21,4 +22,4 @@ class MarkFiled(Listener[Created]):
         message = self.messages.find(link.source.id)
         filed = ", ".join(f"{ref.type.rstrip('s')} {ref.id}" for ref in self.links.targets(message, Messages.ABOUT))
         key = f"filed:{message.id}"
-        self.cards.keyed(message.environment_id, key, f"Filed {filed} from your message", {"kind": "card", "session": "", "icon": "inbox", "row": f"messages:{message.id}", "shows": "filed"}, Actor.system())
+        self.cards.keyed(message.environment_id, key, f"Filed {filed} from your message", {"kind": "card", "session": "", "icon": "inbox", "row": f"messages:{message.id}"}, Actor.system(), ChatMark.FILED)

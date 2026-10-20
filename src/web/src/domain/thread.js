@@ -15,7 +15,7 @@ const spoken = (m) => {
 };
 
 const SYSTEM_TURNS = {
-    whisper: (card, label) => ({kind: "whisper", title: label, data: {row: card.row, words: "", shows: "rules"}}),
+    whisper: (card, label) => ({kind: "whisper", title: label, data: {row: card.row, words: ""}}),
     skill: (card) => ({kind: "skill", title: card.detail, data: {}}),
     compacted: () => ({kind: "compacted", data: {}}),
     question: (card, label, m) => ({
@@ -23,7 +23,7 @@ const SYSTEM_TURNS = {
         question: {id: Number(card.row.split(":")[1]), options: card.options, answer: card.answer ?? null, closedAt: card.answer == null ? 0 : seconds(m.updated_at)},
         data: {},
     }),
-    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.abstract}, data: {shows: card.shows}}),
+    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.abstract}, data: {}}),
     subagent: (card) => ({
         kind: "subagent",
         title: card.detail,
@@ -31,7 +31,7 @@ const SYSTEM_TURNS = {
     }),
     card: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, command: card.command, title: card.detail || card.command, row: card.row, shows: card.shows, visitor: card.visitor},
+        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, command: card.command, title: card.detail || card.command, row: card.row, visitor: card.visitor},
     }),
     peer: (card) => ({kind: "message", data: {peer: card.peer}}),
     suggestion: (card, label) => ({
@@ -56,7 +56,7 @@ const byUser = (m) => (m.created_by || "").startsWith("user");
 const systemTurn = (m) => {
     const card = m.data || {};
     const turn = (SYSTEM_TURNS[card.kind] || ((_, label) => plainTurn(m, label)))(card, m.text, m);
-    return turnOf(m, turn.kind, byUser(m) ? "user" : "agent", {...turn, data: {...turn.data, side: byUser(m) ? "user" : ""}});
+    return turnOf(m, turn.kind, byUser(m) ? "user" : "agent", {...turn, data: {...turn.data, shows: card.shows || "", side: byUser(m) ? "user" : ""}});
 };
 
 const promisedFor = (p, m) =>

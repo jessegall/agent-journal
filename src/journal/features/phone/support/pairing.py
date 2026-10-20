@@ -13,6 +13,7 @@ from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
 from journal.support.cards import Cards
 from journal.support.refused import Refused
+from journal.support.chat_mark import ChatMark
 
 CODE_MINUTES = 10
 DAYS = (1, 7, 30)
@@ -58,7 +59,7 @@ class Pairing:
         self.codes.save(found.closed(now), Actor.system())
         name = " ".join(device.split())[:DEVICE_LONGEST] or "A phone"
         phone = self.phones.save(Phone(environment_id=found.environment_id, name=name, key=self.hashed(key), expires_at=now + timedelta(days=found.days), last_seen_at=now), Actor.system())
-        self.cards.show(found.environment_id, "", f"A phone paired: {name}", "phone")
+        self.cards.show(found.environment_id, "", f"A phone paired: {name}", "phone", shows=ChatMark.PHONES)
         self.tunnel.settle()
         return PairedPhone(phone, key)
 

@@ -11,6 +11,7 @@ from journal.repositories.facts import Facts
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
 from journal.supervisor_link import SupervisorLink
+from journal.support.chat_mark import ChatMark
 
 
 class Whisper(AgentListener[AgentEvent]):
@@ -25,16 +26,17 @@ class Whisper(AgentListener[AgentEvent]):
             return None
         words = set(re.findall(r"[a-z][a-z0-9_-]*", text.lower()))
         agent = self.machine.agent(event.session, event.environment_id)
-        for noun, row in [(noun, row) for noun, row in self.rows() if words & set(row.keywords)]:
+        for noun, mark, row in [(noun, mark, row) for noun, mark, row in self.rows() if words & set(row.keywords)]:
             line = self.nudger.say(agent, self.said(noun, row))
             if not line:
                 continue
             self.supervisor.type(event.environment_id, line)
-            self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {row.id}", "rules", "", "", str(Ref.to(row)), kind="whisper")
+            self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {row.id}", "rules", "", "", str(Ref.to(row)), kind="whisper", shows=mark)
         return None
 
     def rows(self):
-        return [*(("fact", f) for f in self.facts.in_()), *(("rule", r) for r in self.rules.all()), *(("reminder", r) for r in self.reminders.in_())]
+        """Each fact, rule and reminder with its noun and the chat's switch for it."""
+        return [*(("fact", ChatMark.FACTS, f) for f in self.facts.in_()), *(("rule", ChatMark.RULES, r) for r in self.rules.all()), *(("reminder", ChatMark.REMINDERS, r) for r in self.reminders.in_())]
 
     @staticmethod
     def said(noun: str, row):

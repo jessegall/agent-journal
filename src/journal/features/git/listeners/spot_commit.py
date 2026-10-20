@@ -21,6 +21,7 @@ from journal.repositories.tasks import Tasks as TaskRows
 from journal.models.task_state import TaskState
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
+from journal.support.chat_mark import ChatMark
 
 COMMIT = "commit"
 JUST_MADE = 60
@@ -49,7 +50,7 @@ class SpotCommit(AgentListener[ToolFinished]):
         if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", by):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
-        self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject, "shows": "commits"}, by)
+        self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject}, by, ChatMark.COMMITS)
         self.bus.dispatch(CommitMade(sha=head.sha).placed(event.session, event.environment_id, event.provider, event.context))
         if folder != self.config.root or time.time() - head.committed > JUST_MADE:
             return None

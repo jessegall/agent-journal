@@ -7,6 +7,7 @@ from journal.support.plugin_manifest import PluginManifest
 from journal.support.actor import Actor
 from journal.models.plugin import Plugin
 from journal.repositories.plugins import Plugins
+from journal.support.chat_mark import ChatMark
 
 
 class PluginHashes:
@@ -23,7 +24,7 @@ class PluginHashes:
         if not changed:
             return True
         self.plugins.save(self.plugins.named(plugin.name).with_(enabled=False), Actor.system())
-        self.cards.show(environment_id, "", f"Plugin {plugin.name} is off: {', '.join(changed)} changed since you installed it or switched it on. Read the change, then switch it on with journal plugin enable {plugin.name}", "bolt", tone="bad")
+        self.cards.show(environment_id, "", f"Plugin {plugin.name} is off: {', '.join(changed)} changed since you installed it or switched it on. Read the change, then switch it on with journal plugin enable {plugin.name}", "bolt", tone="bad", shows=ChatMark.PLUGINS)
         return False
 
     @staticmethod
