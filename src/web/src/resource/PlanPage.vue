@@ -9,6 +9,7 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import Folded from "../kit/Folded.vue";
 import PlanPageActions from "./PlanPageActions.vue";
 import PlanPhase from "./PlanPhase.vue";
+import PlanReviewRounds from "./PlanReviewRounds.vue";
 import PlanTimelinePanel from "./PlanTimelinePanel.vue";
 import {useWorkersHolding} from "../composables/workers.js";
 import ProgressBar from "../kit/ProgressBar.vue";
@@ -116,6 +117,7 @@ async function run(act) {
                 />
             </template>
         </ol>
+        <PlanReviewRounds :plan="resource" />
         <template v-if="!readOnly">
             <PlanTimelinePanel :plan="resource" />
         </template>
