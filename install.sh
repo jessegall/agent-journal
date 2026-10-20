@@ -21,27 +21,36 @@ find_python() {
   done
   return 1
 }
-# Where no Python 3.14 is found, it is offered and, on a yes, installed with Homebrew or with uv, whichever is at hand.
-if ! find_python; then
-  if command -v brew >/dev/null 2>&1; then way="brew install python@3.14"
-  elif command -v uv >/dev/null 2>&1; then way="uv python install 3.14"
-  else way=""; fi
-  [ -n "$way" ] || { echo "agent-journal needs Python 3.14, and neither Homebrew nor uv is here to install it: install Python 3.14, then run this again." >&2; exit 1; }
-  echo "agent-journal needs Python 3.14, and none is installed here."
+# What the journal needs and is missing is offered and, on a yes, installed: Python 3.14 with Homebrew or uv, git with
+# Homebrew or, on a Mac without it, the command line tools.
+offer() {
+  what="$1"; way="$2"
+  [ -n "$way" ] || { echo "agent-journal needs $what, and nothing here can install it: install $what, then run this again." >&2; exit 1; }
+  echo "agent-journal needs $what, and none is installed here."
   answer="${AGENT_JOURNAL_YES:+y}"
   if [ -z "$answer" ]; then
-    printf 'Install Python 3.14 now, with: %s? [y/N] ' "$way"
+    printf 'Install %s now, with: %s? [y/N] ' "$what" "$way"
     { read -r answer < /dev/tty; } 2>/dev/null || true
   fi
-  case "$answer" in y|Y|yes|Yes) $way ;; *) echo "Nothing changed. Install Python 3.14, then run this again."; exit 0 ;; esac
-  find_python || { echo "Python 3.14 is still not found after: $way" >&2; exit 1; }
+  case "$answer" in y|Y|yes|Yes) $way ;; *) echo "Nothing changed. Install $what, then run this again."; exit 0 ;; esac
+}
+if ! find_python; then
+  if command -v brew >/dev/null 2>&1; then offer "Python 3.14" "brew install python@3.14"
+  elif command -v uv >/dev/null 2>&1; then offer "Python 3.14" "uv python install 3.14"
+  else offer "Python 3.14" ""; fi
+  find_python || { echo "Python 3.14 is still not found after its install" >&2; exit 1; }
+fi
+if ! command -v git >/dev/null 2>&1; then
+  if command -v brew >/dev/null 2>&1; then offer git "brew install git"
+  elif [ "$(uname)" = Darwin ]; then offer git "xcode-select --install"
+  else offer git ""; fi
+  command -v git >/dev/null 2>&1 || { echo "git is not found yet: once its install has finished, run this again." >&2; exit 1; }
 fi
 HERE="$(cd "$(dirname "$0")" 2>/dev/null && pwd)"
 TMP=""
 if [ -d "$HERE/src/journal" ]; then
   SRC="$HERE/src"
 else
-  command -v git >/dev/null 2>&1 || { echo "git is required" >&2; exit 1; }
   REPO="${AGENT_JOURNAL_REPO:-https://github.com/jessegall/agent-journal}"
   REF="${AGENT_JOURNAL_REF:-main}"
   TMP="$(mktemp -d)"

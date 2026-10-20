@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.2
+
+- Where git is missing, the installer offers to install it, with Homebrew or, on a Mac without it, the command line tools, as it does for Python 3.14.
+
 ## 4.4.1
 
 - The journal runs on Python 3.14. The installer looks for it, records the one it found in .journal/python for every start of the journal, and where none is installed offers to install it with Homebrew or uv. 4.4.0 named a type it never imported, which Python 3.13 and older stop at, so the install failed and put the old journal back.

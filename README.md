@@ -37,5 +37,5 @@ Then start your agent under the journal:
 
 or `journal codex`. The viewer opens in your browser. That is all.
 
-It needs Python 3.14 and git; where Python 3.14 is missing, the installer offers to install it for you. Running the same line again upgrades the journal. If you switch on
+It needs Python 3.14 and git; where either is missing, the installer offers to install it for you. Running the same line again upgrades the journal. If you switch on
 auto-update in the viewer's settings, a new release installs itself.
