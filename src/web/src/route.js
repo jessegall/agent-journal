@@ -117,6 +117,14 @@ const ROW_REF = /^[a-z_]+:\d+(@.+)?$/;
 
 export const isRef = (link) => ROW_REF.test(link);
 
+// the row ref a link to this journal's own address names with open=, or "": such a link opens in place, not in a new tab
+export function refOfOwnLink(link, origin = window.location.origin) {
+    if (!link.startsWith(origin)) return "";
+    const open = new URL(link).searchParams.get("open") || "";
+    const first = open.split(",")[0];
+    return isRef(first) ? first : "";
+}
+
 export function peekRef(ref) {
     const [row, env] = ref.split("@");
     const [table, id] = row.split(":");

@@ -83,3 +83,14 @@ describe("addresses the viewer builds", () => {
         expect(await settled()).toBe("#/tasks?open=tasks:4@other");
     });
 });
+
+describe("a pin's link into this journal", () => {
+    test("a row ref, or the journal's own address opening one, names the row to open in place; an outside link names none", async () => {
+        const {refOfOwnLink, isRef} = await import("../src/route.js");
+        expect(isRef("docs:55")).toBe(true);
+        expect(refOfOwnLink("http://127.0.0.1:8420/?open=docs:55", "http://127.0.0.1:8420")).toBe("docs:55");
+        expect(refOfOwnLink("http://127.0.0.1:8420/?open=tasks:3,docs:55#?open=docs:55", "http://127.0.0.1:8420")).toBe("tasks:3");
+        expect(refOfOwnLink("http://127.0.0.1:8420/#/docs", "http://127.0.0.1:8420")).toBe("");
+        expect(refOfOwnLink("https://design.example/p/1?open=docs:55", "http://127.0.0.1:8420")).toBe("");
+    });
+});

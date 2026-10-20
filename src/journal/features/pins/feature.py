@@ -24,6 +24,8 @@ class Pins(Feature):
 
 Whenever you point the user at something outside the journal, a design, a hosted page, a document, any link they
 will come back to, pin it above the chat: `journal notice create "<what it is>" --link "<url>" --label "Open the design"`.
+A row of the journal, a document or a plan you want kept in view, is pinned by its ref, `--link docs:55`, and its
+button opens the row in place, as a click on its card does; an outside address opens in a new tab.
 A link in your chat text or in a command's output that no pin carries, a pull request's address among them, is suggested
 as a pin, and the same link again only after a stretch of your tool uses. The user closes a pin when done.
 
