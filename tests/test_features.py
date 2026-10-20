@@ -2858,14 +2858,14 @@ def test_the_checks_for_quiet_time_workers_and_questions(app):
     console.run(["worker", "wait", "1"], AGENT)
     worker = app.container.get(Workers).find(1)
     about = lambda event: Context(event=event, session="s1", environment_id=env, state=app.container.get(StateMachine).current("s1"))
-    reported = about(Updated(model=worker.reported(0.0), by=Actor.user(1), was=worker))
-    again = about(Updated(model=worker.reported(0.0), by=Actor.user(1), was=worker.reported(0.0)))
+    reported = about(Updated(model=worker.reported(0.0, 0), by=Actor.user(1), was=worker))
+    again = about(Updated(model=worker.reported(0.0, 0), by=Actor.user(1), was=worker.reported(0.0, 0)))
     assert checks.answer("worker_reported", reported) and not checks.answer("worker_reported", again), "just came to the state, not saved again in it"
     assert checks.answer("agent_awaits_the_worker", reported) and checks.answer("last_worker_back", reported), "the row says the last one is back"
     console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1", "2"], AGENT)
     assert not checks.answer("last_worker_back", about(reported.event)), "another is still out: the state is read when the walk starts"
-    app.container.get(Workers).save(worker.reported(0.0), Actor.user(1))
+    app.container.get(Workers).save(worker.reported(0.0, 0), Actor.user(1))
     console.run(["worker", "stop", "2"], USER)
     console.run(["task", "done", "1"], AGENT)
     console.run(["question", "ask", "Which name?"], AGENT)
@@ -2940,7 +2940,7 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     console.run(["task", "create", "t2", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     worker = app.container.get(Workers).find(1)
-    assert fillers.fill("worker {{worker_n}}, {{worker_name}}, reported", at(Updated(model=worker.reported(0.0), by=Actor.user(1), was=worker))) == "worker 1, Lady Lovelace, reported"
+    assert fillers.fill("worker {{worker_n}}, {{worker_name}}, reported", at(Updated(model=worker.reported(0.0, 0), by=Actor.user(1), was=worker))) == "worker 1, Lady Lovelace, reported"
 
 
 def test_a_failing_node_is_recorded_and_the_path_goes_on_past_it(app):
@@ -4819,7 +4819,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     from journal.models.task import Task
     protocol = app.container.get(Protocol)
     tool = json.loads(protocol.line_of(ToolStarting(tool="Bash", input={"command": "ls"}).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
-    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "writes": False, "written_paths": []}), "an agent event: its name, where it happened and its own fields"
+    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0}), "an agent event: its name, where it happened and its own fields"
     row = json.loads(protocol.line_of(Created(model=Task(id=7, environment_id=1, title="t"), by=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.answer_of("").answer == "allow", "an empty answer lets the event through"
@@ -6448,7 +6448,7 @@ def test_a_worker_report_not_acted_on_is_named_until_it_is(app):
     app.console().run(["environment", "here"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).of(MAIN):
-        worker = workers.save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet").reported(0.0), Actor.system())
+        worker = workers.save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet").reported(0.0, 0), Actor.system())
     assert "worker 1 (Lady Lovelace) reported and you have not acted on it yet" in json.dumps(hook(app, "Stop")[1])
     app.console().run(["worker", "done", str(worker.id)], AGENT)
     assert "not acted on it yet" not in json.dumps(hook(app, "Stop")[1]), "once acted on it is named no more"
@@ -6486,7 +6486,7 @@ def test_a_job_on_files_a_worker_already_worked_on_goes_back_to_that_worker(app)
     console.run(["worker", "dispatch", "Lady Lovelace", "fix src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).of(MAIN):
-        workers.save(workers.find(1).with_(resume="abc").reported(0.0), Actor.system())
+        workers.save(workers.find(1).with_(resume="abc").reported(0.0, 0), Actor.system())
     refused = console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     assert refused.code == 1 and "journal worker say 1" in refused.err, "related work goes back to the worker that knows it"
     assert console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet", "--fresh"], AGENT).code == 0, "unless a fresh one is asked for"
@@ -6805,7 +6805,7 @@ def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_n
     workers = app.container.get(Workers)
     with app.container.get(Scope).of(1):
         assert "stays while it works" in app.container.get(WorkerBranch).dropped(workers.find(1)), "never while the worker runs in it"
-        workers.save(workers.find(1).reported(0.0), Actor.system())
+        workers.save(workers.find(1).reported(0.0, 0), Actor.system())
     (tree / "notes.txt").write_text("half\n")
     kept = app.console().run(["worker", "done", "1"], AGENT).out
     assert "stays, since 1 files in it are not committed: notes.txt" in kept and tree.is_dir(), "uncommitted work keeps it"

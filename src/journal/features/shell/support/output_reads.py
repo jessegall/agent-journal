@@ -1,0 +1,18 @@
+import re
+
+OUTPUT = re.compile(r"outputs/[\w.-]+|(?<=journal output read )\d+")
+"""Where a command names one output: its folder or its number."""
+WHOLE = re.compile(r"\s*journal output read \d+\s*")
+"""A plain read of an output's summary, which no reader could do better."""
+
+
+class OutputReads:
+    """A shell line that reads an output by hand, and its shape with the output's number taken out, so two reads of the same kind look alike."""
+
+    @staticmethod
+    def is_one(command: str) -> bool:
+        return bool(OUTPUT.search(command)) and "--reader" not in command and not WHOLE.fullmatch(command)
+
+    @staticmethod
+    def shape(command: str) -> str:
+        return OUTPUT.sub("<output>", command)

@@ -69,8 +69,8 @@ class AgentActivity:
         }
 
     @staticmethod
-    def status_of(state: str, heard: str) -> str:
-        return "working" if state in WORKING and heard == "busy" else heard
+    def status_of(state: str, reported: str) -> str:
+        return "working" if state in WORKING and reported == "busy" else reported
 
     def thinking(self, session: str, hooks) -> str:
         thoughts = self.messages.thoughts_of(session, 1)

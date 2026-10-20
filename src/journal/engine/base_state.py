@@ -39,9 +39,9 @@ class BaseState:
     @cache
     def listeners(cls) -> tuple[tuple[type, Callable], ...]:
         own = [(get_type_hints(method)["event"], method, method.__name__ not in cls.__dict__) for name, method in getmembers(cls, isfunction) if cls.is_listener(name, method)]
-        folded = [(get_type_hints(method)["event"], method, 2) for conduct in BaseState.conducts for name, method in getmembers(conduct, isfunction) if cls.is_listener(name, method)]
+        folded = [(get_type_hints(method)["event"], method, 2) for conduct in BaseState.conducts for name, method in getmembers(conduct, isfunction) if cls.is_listener(name, method) and not hasattr(cls, name)]
         ranked = sorted([*own, *folded], key=lambda entry: (int(entry[2]), -len(entry[0].__mro__)))
-        return tuple((heard, method) for heard, method, rank in ranked)
+        return tuple((event_kind, method) for event_kind, method, rank in ranked)
 
     @classmethod
     def is_listener(cls, name: str, method: Callable) -> bool:
@@ -49,7 +49,7 @@ class BaseState:
 
     @classmethod
     def listeners_for(cls, event: type) -> tuple[Callable, ...]:
-        return tuple(method for heard, method in cls.listeners() if issubclass(event, heard))
+        return tuple(method for event_kind, method in cls.listeners() if issubclass(event, event_kind))
 
     def unchanged(self, *nudges: Nudge) -> Transition:
         return Transition(self, nudges=nudges)

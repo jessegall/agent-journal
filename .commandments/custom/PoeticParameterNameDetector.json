@@ -5,13 +5,13 @@
         "select": "parameter",
         "where": [
             {
-                "nameMatches": "^(said|worded|meaning|whisper|muse|spoken|telling|utter|stay)$"
+                "nameMatches": "^(said|worded|meaning|whisper|whispered|murmur|mutter|muse|mused|spoken|spoke|telling|told|utter|uttered|stay|stayed|dwell|linger|tarry|made|done|seen|taken|heard|noted|got|met|gone|lost|borne|wrought|bestowed|beheld|thing|things|stuff|foo|bar|baz|tmp|temp|misc|obj|val|res|ret|blob|dummy|junk|whatever|bunch|lot|result|info|element|object|chunk|bits|magic|gist|essence|soul|spirit|heart|tale|story|lore|saga|legend|myth|fable|echo|hush|mood|vibe|wish|hope|fear|worry|joy|bliss|blessed|curse|cursed|doom|fate|destiny|luck|charm|spell|ghost|phantom|dawn|dusk|twilight|journey|voyage|quest|realm|kingdom|hero|beast|whim|fancy|dream|glimpse)$"
             }
         ]
     },
     "sin": {
         "name": "poetic-parameter-name",
-        "description": "A parameter is named by a word that does not say what it is: said, worded, meaning, whisper.",
+        "description": "A parameter is named by a word that does not say what it is: said, whisper, tale, magic, made, thing, stuff, got, done.",
         "rule": "Name a parameter for what it holds, in an ordinary word: nudge, line, values.",
         "skill": "plain-code-words"
     }

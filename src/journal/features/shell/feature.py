@@ -1,5 +1,7 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.shell.listeners.mark_outputs_told import MarkOutputsTold
+from journal.features.shell.support.shell_conduct import ShellConduct
 from journal.features.shell.support.shell_standing_reader import ShellStandingReader
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
@@ -7,10 +9,6 @@ from journal.support.option import Option
 from journal.features.shell.commands.output_command import OutputCommand
 from journal.features.shell.commands.reader_command import ReaderCommand
 from journal.features.shell.commands.shell_command import ShellCommand
-from journal.features.shell.listeners.read_narrowly import ReadNarrowly
-from journal.features.shell.listeners.spot_hand_reads import SpotHandReads
-from journal.features.shell.listeners.refuse_mixed_journal import RefuseMixedJournal
-from journal.features.shell.listeners.tell_ended_outputs import TellEndedOutputs
 from journal.support.skill import Skill
 
 
@@ -27,8 +25,9 @@ class Shell(Feature):
     SHORT = Option("shell.short_output", "Keep no output under", "A command whose whole output is under this many characters, with no pipe in its line, is shown as it is and kept as no numbered output; a longer one, or a line with a pipe into head, tail, grep or any filter, is kept", 200, unit="characters")
     KEPT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
     options = (FOREGROUND, WHILE_WAITING, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, KEPT)
-    listeners = (RefuseMixedJournal, ReadNarrowly, SpotHandReads, TellEndedOutputs)
+    listeners = (MarkOutputsTold,)
     standing = (ShellStandingReader,)
+    conduct = (ShellConduct,)
     checks = (
         Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
         Entry(NodeKind.CHECK, 'background_running', 'N or more commands running in the background?', "at least N of the agent's commands run in the background now; the text is N", takes_text=True),

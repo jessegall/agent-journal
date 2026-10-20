@@ -12,6 +12,8 @@ class ToolStarting(AgentEvent):
     input: dict
     writes: bool = False
     written_paths: tuple[str, ...] = ()
+    read_paths: tuple[str, ...] = ()
+    file_lines: int = 0
 
     @property
     def words(self) -> str:

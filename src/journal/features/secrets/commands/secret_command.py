@@ -67,7 +67,7 @@ class SecretCommand(Command):
         self.verb(verbs, "restore", "a deleted secret back, with its values").add_argument("n", type=int)
 
     def create(self, args: Namespace, where: Where) -> int:
-        secret = self.made(args.title, args.brief, SecretKind.named(args.kind), where)
+        secret = self.file(args.title, args.brief, SecretKind.named(args.kind), where)
         proposed = f"; proposed for the user to allow: {', '.join(secret.proposed)}" if secret.proposed else ""
         print(f"secret {secret.id} made: {secret.title}, waiting for the user to fill {', '.join(f['name'] for f in secret.fields) or 'its fields'} on the Secrets page{proposed}")
         return 0
@@ -76,13 +76,13 @@ class SecretCommand(Command):
         reaching = [s.name for s in self.servers.all() if args.title.lower() in (s.name.lower(), s.title.lower())]
         if reaching:
             raise Refused(f"{args.title} is reached through the MCP server {', '.join(reaching)} already: use its tools, and if they cannot do what you need, say what is missing in the chat")
-        secret = self.secrets.save(self.made(args.title, "", SecretKind.named(args.kind), where).with_(url=args.url, asked_at=datetime.now(timezone.utc)), where.actor)
+        secret = self.secrets.save(self.file(args.title, "", SecretKind.named(args.kind), where).with_(url=args.url, asked_at=datetime.now(timezone.utc)), where.actor)
         asking = f"Please log in to {secret.title} with the Log in button on the Secrets page; a browser opens on your computer, and the login is saved when you close it" if secret.kind == SecretKind.BROWSER_LOGIN else f"Please fill in the secret {secret.title} on the Secrets page, never in the chat"
         self.messages.save(Message(author=Author.AGENT, text=f"{asking}: I need it {args.why}.\n\nsecret {secret.id}"), where.actor)
         print(f"secret {secret.id} asked for: the user fills it on the Secrets page")
         return 0
 
-    def made(self, title: str, brief: str, kind: SecretKind, where: Where) -> Secret:
+    def file(self, title: str, brief: str, kind: SecretKind, where: Where) -> Secret:
         return self.secrets.save(Secret(title=title, brief=brief, kind=kind, fields=kind.first_fields(title), proposed=Programs.named_in(brief)), where.actor)
 
     def update(self, args: Namespace, where: Where) -> int:
@@ -96,11 +96,11 @@ class SecretCommand(Command):
 
     def store(self, args: Namespace, where: Where) -> int:
         secret = self.secrets.find(args.n)
-        made = Path(args.file)
-        if not made.is_file():
+        file = Path(args.file)
+        if not file.is_file():
             raise Refused(f"no file at {args.file}: write the value you made to a file, and the journal moves it into the secret")
-        value = made.read_text().strip()
-        made.unlink()
+        value = file.read_text().strip()
+        file.unlink()
         if not value:
             raise Refused(f"{args.file} held no value; it is deleted all the same")
         self.values.put(secret.field(args.field).variable, value)

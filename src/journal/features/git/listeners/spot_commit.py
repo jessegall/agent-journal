@@ -52,12 +52,12 @@ class SpotCommit(AgentListener[ToolFinished]):
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject}, by, ChatMark.COMMITS)
         closed = self.close_named(event, head.sha, head.body) if folder == self.config.root and time.time() - head.committed <= JUST_MADE else []
-        return self.made(event, head.sha, closed)
+        return self.commit(event, head.sha, closed)
 
-    def made(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
+    def commit(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
         next_open = self.after.next_open(self.tasks.find(closed[-1])) if closed else None
-        made = CommitMade(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.at)
-        return next((answer for answer in self.bus.dispatch(made) if isinstance(answer, Decision)), None)
+        commit = CommitMade(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.at)
+        return next((answer for answer in self.bus.dispatch(commit) if isinstance(answer, Decision)), None)
 
     def folder(self, event: ToolFinished) -> Path:
         tree = Worktree(self.config.root, self.environments.find(event.environment_id).name)
@@ -67,7 +67,7 @@ class SpotCommit(AgentListener[ToolFinished]):
         landed = subprocess.run(["git", "log", "--format=%H%x00%B%x01", "ORIG_HEAD..HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=5)
         if landed.returncode != 0:
             return None
-        decisions = [self.made(event, sha, closed) for sha, _, body in (entry.strip().partition("\0") for entry in landed.stdout.split("\x01") if entry.strip()) if (closed := self.close_named(event, sha, body))]
+        decisions = [self.commit(event, sha, closed) for sha, _, body in (entry.strip().partition("\0") for entry in landed.stdout.split("\x01") if entry.strip()) if (closed := self.close_named(event, sha, body))]
         return next((decision for decision in decisions if decision), None)
 
     def close_named(self, event: ToolFinished, sha: str, body: str) -> list[int]:

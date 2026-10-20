@@ -22,9 +22,9 @@ class ReaderCommand(Command):
     def arguments(self, verbs) -> None:
         add = self.verb(verbs, "add", "a reader kept in .journal/readers/: the lines a pattern matches, or what a script handed the output prints")
         add.add_argument("name")
-        made = add.add_mutually_exclusive_group(required=True)
-        made.add_argument("--pattern")
-        made.add_argument("--script", type=Path, help="a shell script given the output on its input")
+        source = add.add_mutually_exclusive_group(required=True)
+        source.add_argument("--pattern")
+        source.add_argument("--script", type=Path, help="a shell script given the output on its input")
         add.add_argument("--about", required=True, help="what it picks, in a few words")
         self.verb(verbs, "list", "the project's readers, each with what it picks")
 

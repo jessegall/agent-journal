@@ -1,6 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.laws.listeners.judge_dispatch import JudgeDispatch
-from journal.features.laws.listeners.measure_result import MeasureResult
+from journal.features.laws.support.laws_conduct import LawsConduct
 from journal.engine.nudge import Nudge
 
 
@@ -10,7 +9,7 @@ class Laws(Feature):
     name = "laws"
     title = "Journal laws"
     help = "A dispatch without a model or a job is refused; a large result is named."
-    listeners = (JudgeDispatch, MeasureResult)
+    conduct = (LawsConduct,)
 
     NAME_THE_MODEL = Nudge(name, "name_the_model", "the dispatch names no model", "name the least expensive model that reliably fits the work")
     NAME_A_PROFILE = Nudge(name, "name_a_profile", "the dispatch names no profile of this project: {{asked}}", "a subagent is one of the project's profiles, never a generic agent: {{profiles}}")

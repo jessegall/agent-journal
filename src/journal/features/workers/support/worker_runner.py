@@ -89,9 +89,9 @@ class WorkerRunner:
         printed, resume = provider.worker_outcome(self.read(out), self.read(err))
         resume = resume or provider.latest_session(self.place(worker), worker.began)
         report = printed[-TAIL:] or "(nothing printed)"
-        said = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
+        outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
         branch = self.branch.summary(worker)
-        self.reports.file(worker.with_(resume=resume or worker.resume), f"{said}\n\n{branch}" if branch else said, by)
+        self.reports.file(worker.with_(resume=resume or worker.resume), f"{outcome}\n\n{branch}" if branch else outcome, by)
 
     def limit_left(self, worker: Worker) -> float | None:
         limit = self.minutes() * 60
@@ -140,7 +140,7 @@ class WorkerRunner:
     def cut(self, worker: Worker, folder: Path) -> None:
         if subprocess.run(["git", "rev-parse", "--verify", "-q", "HEAD"], cwd=self.config.root, capture_output=True, timeout=60).returncode != 0:
             raise WorktreeNotMade(worker.name, "the project has no commit yet, so there is no tip to cut a worktree from; make a first commit")
-        made = subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder), "HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=60)
-        if made.returncode != 0:
+        added = subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder), "HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=60)
+        if added.returncode != 0:
             subprocess.run(["git", "worktree", "prune"], cwd=self.config.root, capture_output=True, timeout=60)
-            raise WorktreeNotMade(worker.name, made.stderr.strip())
+            raise WorktreeNotMade(worker.name, added.stderr.strip())

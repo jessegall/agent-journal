@@ -156,16 +156,16 @@ class Validation:
     def value_faults(nodes: list[DrawnNode]) -> list[Fault]:
         """A value's name is checked: one name is a count or a time but not both, and a workflow reads only its own values, so a check on one that no step of the same workflow sets is refused."""
         named = lambda keys: {n.text.strip().partition(" ")[0] for n in nodes if n.key in keys}
-        counted, noted = named(COUNT_ACTIONS), named(TIME_ACTIONS)
-        both = (counted | named(COUNT_CHECKS)) & (noted | named(TIME_CHECKS))
+        count_names, time_names = named(COUNT_ACTIONS), named(TIME_ACTIONS)
+        both = (count_names | named(COUNT_CHECKS)) & (time_names | named(TIME_CHECKS))
         faults = []
         for n in nodes:
             name = n.text.strip().partition(" ")[0]
             if n.key in (*TIME_ACTIONS, *TIME_CHECKS) and name in both:
                 faults.append(Fault(f"{name} is both a count and a time in this workflow: give each its own name", n.id))
-            if n.key in COUNT_CHECKS and name and name not in counted:
+            if n.key in COUNT_CHECKS and name and name not in count_names:
                 faults.append(Fault(f"step {n.id} reads the count {name}, which no step of this workflow sets: give the workflow an Add one to a count or a Set a count to zero for {name}, since a workflow reads only its own counts", n.id))
-            if n.key in TIME_CHECKS and name and name not in noted:
+            if n.key in TIME_CHECKS and name and name not in time_names:
                 faults.append(Fault(f"step {n.id} asks how long since {name}, which no step of this workflow notes: give the workflow a Note the time for {name}, since a workflow reads only its own times", n.id))
         return faults
 

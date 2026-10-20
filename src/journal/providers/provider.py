@@ -11,6 +11,7 @@ from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
 from journal.support.response import Response
 from journal.models.entry import Entry
+from journal.support.file_lines import FileLines
 from journal.support.tool_input import ToolInput
 from journal.events.agent.message_crossed import MessageCrossed
 from journal.providers.support.turn import Turn
@@ -32,30 +33,22 @@ class Provider:
 
     name: ClassVar[str]
     home: ClassVar[str]
-    """The folder the program keeps in a project, such as .claude."""
     settings_file: ClassVar[str]
-    """The file in that folder that holds the hooks."""
     write_tools: ClassVar[frozenset[str]]
     read_tool: ClassVar[str]
     shell_tool: ClassVar[str] = "Bash"
     skip_prompts: ClassVar[tuple[str, ...]] = ()
-    """The flags that start the provider with its permission prompts skipped."""
     settings_extras: ClassVar[dict] = {}
     other_settings: ClassVar[tuple[str, ...]] = ()
-    """Settings files beside the main one that may still hold an older hook of ours."""
-    """What else the program's settings file must say for the journal's sake, such as taking the project's MCP servers without asking."""
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
     controls: ClassVar[dict] = {"groups": [], "note": ""}
-    """The model, effort and context choices the viewer's agent bar offers, each with the line typed into the agent to take it."""
 
     def transcript(self, project: Path, session: str) -> Path | None: ...
 
     def latest_session(self, project: Path, since: float) -> str:
-        """The session of the newest conversation the provider wrote for the project since a time, for a run whose answer named none; none for a provider that keeps no such file."""
         return ""
 
     def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
-        """The file a subagent of the parent session wrote its conversation in; none for a provider that keeps no such file."""
         return None
 
     def turns(self, path: Path) -> list[Turn]:
@@ -65,13 +58,11 @@ class Provider:
 
     @staticmethod
     def json_lines(path: Path) -> Iterator[tuple[int, dict]]:
-        """Each whole line of a transcript with its number; a last line still being written is left for the next read."""
         text = path.read_text(errors="replace")
         return Provider.rows_of(text[: text.rfind("\n") + 1], 0)
 
     @staticmethod
     def rows_of(text: str, before: int) -> Iterator[tuple[int, dict]]:
-        """Each line of whole lines of a transcript with its number, counted on from the lines before them."""
         for number, line in enumerate(text.splitlines(), before + 1):
             if line.startswith("{"):
                 yield number, json.loads(line)
@@ -81,11 +72,9 @@ class Provider:
         return datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() if stamp else 0.0
 
     def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
-        """What the agent thought since the user's last prompt, when the provider writes thinking down: nothing for most."""
         return []
 
     def texts_written_before(self, project: Path, session: str, read: int, until: float) -> Written:
-        """The text blocks and messages from other sessions written since the byte read last up to a moment, and the byte of the first line after it: what the hooks have not read and are past waiting for."""
         path = self.transcript(project, session)
         if path is None or read < 0:
             return Written([], [], read)
@@ -124,7 +113,6 @@ class Provider:
         return []
 
     def crossed_in(self, line: dict) -> list[MessageCrossed]:
-        """The messages another session's agent sent in this line of the transcript: none for a provider that has no such road."""
         return []
 
     @staticmethod
@@ -139,15 +127,12 @@ class Provider:
     def resume(self, session: str) -> tuple[str, ...]: ...
 
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
-        """The program run headless on one job, printing its report; given a session, the same worker again with its memory."""
         ...
 
     def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
-        """What a finished worker printed, as its report, and the session a next job can resume, when the provider names one."""
         return out.strip() or err.strip(), ""
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
-        """The hook's reply in this program's shape. A refusal is 409, which the script turns into exit 2 and the reason on stderr; on Stop a line to say holds the stop in the form the program shows as feedback, not as an error, since that is how the program is told to go on, and a stop already refused once is let through."""
         kind = hook.kind
         if kind == HookKind.STOP and (not decision.allowed or decision.context):
             return Response(200, {"decision": "block", "reason": "\n".join(part for part in (decision.reason, decision.context) if part)})
@@ -163,7 +148,6 @@ class Provider:
         return {kind.value: [{"hooks": [{"type": "command", "command": command}]}] for kind in self.hook_kinds}
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
-        """Writes the journal's hook into the program's settings file, replacing any older block of ours and keeping everything else."""
         for other in self.other_settings:
             self.unwired(project / self.home / other)
         path = project / self.home / self.settings_file
@@ -187,36 +171,35 @@ class Provider:
 
     @staticmethod
     def ours(block: dict) -> bool:
-        """The journal's own hook, by the one path only this package's script has, or version 3's; a hook.sh of another package is somebody else's."""
         text = json.dumps(block)
         return "journal/hooks/hook.sh" in text or any(old in text for old in VERSION_3_HOOKS)
 
     def hooks_trusted(self, project: Path) -> bool:
-        """Whether the program runs the journal's hooks in this project without asking the user first."""
         return True
 
     def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
-        """The files this tool use reads: the read tool's file, or those a shell line prints."""
         if tool == self.read_tool:
             return tuple(p for p in (ToolInput.from_json(input).file,) if p)
         return Reads.of(ToolInput.from_json(input).command) if tool == self.shell_tool else ()
 
+    def file_lines(self, tool: str, input: dict) -> int:
+        given = ToolInput.from_json(input)
+        if tool != self.read_tool or not given.file or given.limit or given.offset:
+            return 0
+        return FileLines.of(Path(given.file).expanduser())
+
     def written_paths(self, tool: str, input: dict) -> list[str]:
-        """The files this tool use writes: the targets a shell line writes to, or the path an editing tool names."""
         if tool == self.shell_tool:
             return Writes.targets(ToolInput.from_json(input).command)
         return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)]
 
     def skill_loaded(self, tool: str, input: dict) -> str:
-        """The skill folder a skill tool call loaded, or empty."""
         return ToolInput.from_json(input).skill if tool == "Skill" else ""
 
     def wrote(self, use: Entry) -> bool:
-        """A recorded tool use that changed files and was not held."""
         return not use.data.get("refused") and self.writes(use.data.get("tool_name", ""), use.data.get("tool_input", {}) or {})
 
     def writes(self, tool: str, input: dict) -> bool:
-        """Whether this tool use changes files: the editor's writing tools, or a shell line that writes."""
         return tool in self.write_tools or (tool == self.shell_tool and Writes.of(ToolInput.from_json(input).command))
 
     @staticmethod

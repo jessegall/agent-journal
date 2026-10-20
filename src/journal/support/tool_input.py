@@ -9,10 +9,12 @@ class ToolInput:
     file_path: str = ""
     path: str = ""
     skill: str = ""
+    limit: str = ""
+    offset: str = ""
 
     @classmethod
     def from_json(cls, data: dict) -> "ToolInput":
-        return cls(**{name: str(data[name]) for name in ("command", "file_path", "path", "skill") if data.get(name) is not None})
+        return cls(**{name: str(data[name]) for name in ("command", "file_path", "path", "skill", "limit", "offset") if data.get(name) is not None})
 
     @property
     def file(self) -> str:

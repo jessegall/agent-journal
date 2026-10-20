@@ -542,7 +542,7 @@ def test_the_models_carry_the_events_their_changes_mean():
     assert TaskLog.of(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, at=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
     assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowSettled] and question.asked(1.0).events[0].question_id == 4
-    assert Worker(id=9, environment_id=1, name="w").reported(5.0).events == (WorkerBack(environment_id=1, at=5.0, worker_id=9),)
+    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerBack(environment_id=1, at=5.0, worker_id=9, name="w", report=4),)
 
 
 def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_reaches_no_state(app):
@@ -745,5 +745,119 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
         held = Idle().on(ToolStarting(tool="Edit", input={"file_path": plugin_file}, writes=True, written_paths=(plugin_file,)).with_standing(standing), settings)
         assert held.held is not None and held.held.key == "plugins.plugin_files_are_the_users"
         assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "src/a.py"}, writes=True, written_paths=("src/a.py",)).with_standing(standing), settings).held is None
+    finally:
+        BaseState.fold(())
+
+
+def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_workers_speak_and_hold_from_the_standing(tmp_path):
+    from pathlib import Path
+    from journal.features.messages.feature import Messages as MessagesFeature
+    from journal.features.messages.support.messages_conduct import MessagesConduct
+    from journal.features.messages.support.messages_standing import MessagesStanding
+    from journal.features.laws.support.laws_conduct import LawsConduct
+    from journal.features.shell.feature import Shell
+    from journal.features.shell.support.shell_conduct import ShellConduct
+    from journal.features.shell.support.shell_standing import ShellStanding
+    from journal.features.shell.support.ended_output import EndedOutput
+    from journal.features.shell.support.reader import Reader
+    from journal.features.secrets.support.secrets_conduct import SecretsConduct
+    from journal.features.secrets.support.secrets_standing import SecretsStanding
+    from journal.features.questions.support.questions_conduct import QuestionsConduct
+    from journal.features.profiles.support.profiles_conduct import ProfilesConduct
+    from journal.features.profiles.support.profiles_standing import ProfilesStanding
+    from journal.features.workers.feature import Workers as WorkersFeature
+    from journal.features.workers.support.workers_conduct import WorkersConduct
+    from journal.features.workers.support.workers_standing import WorkersStanding
+    from journal.features.workers.support.worker_worktree import WorkerWorktree
+    from journal.features.workers.support.dispatch import Dispatch
+    from journal.features.plans.support.plans_standing import PlansStanding
+    from journal.features.tasks.support.tasks_standing import TasksStanding
+    from journal.events.agent.idle import Idle as IdleEvent
+    from journal.events.agent.ticked import Ticked
+    from journal.events.agent.tool_finished import ToolFinished
+    from journal.events.rows.reaction_given import ReactionGiven
+    from journal.events.rows.secret_allowed import SecretAllowed
+    from journal.events.rows.worker_back import WorkerBack
+    settings = SettingsValue({MessagesFeature.HOLD_AFTER.key: 10, MessagesFeature.NUDGE_AFTER.key: 3, MessagesFeature.REMIND_EVERY.key: 3, MessagesFeature.HOLD_AFTER_REMINDERS.key: 5, Shell.SHOWN.key: 100, WorkersFeature.MOST_SUBAGENTS.key: 2})
+    private = tmp_path / "private"
+    readings = {
+        "plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()),
+        "messages": MessagesStanding(unread=(7, 8), unanswered=(5,), unanswered_files=(f"{tmp_path}/files/message/5/",), uses_since_newest=3, times_named=1, uses_unanswered=4),
+        "profiles": ProfilesStanding(names=("journal-researcher", "journal-medior"), subagents=("journal-researcher",), workers=("journal-medior",)),
+        "shell": ShellStanding(background=(12,), background_since=100.0, ended_untold=(EndedOutput(3, 0), EndedOutput(4, 1)), output_reads=("journal output read <output> --grep x", "journal output read <output> --grep x"), readers=(Reader("tests", "the failures", "FAILED"),), tipped=()),
+        "secrets": SecretsStanding(root=tmp_path, folders=(private.resolve(),), spellings=(str(private),)),
+        "workers": WorkersStanding(out=(), reports_waiting=(2,), reports_waiting_named="worker 2 (Lady Lovelace)", subagents_running=2, dispatches=(Dispatch(id="d1", at=1.0, task="read the plan", brief="look at src/a.py", type="journal-researcher", model="sonnet", session="sub-1", running=False),), worktrees_root=tmp_path / "worktrees", worktrees=(WorkerWorktree("3-Lady-Lovelace", 3, "Lady Lovelace"),)),
+    }
+    standing = Standing(readings)
+    BaseState.fold((MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    try:
+        prompt = Idle().on(PromptSubmitted(prompt="go on").with_standing(standing), settings)
+        assert [n.rendered() for n in prompt.nudges] == ["new messages 7, 8"]
+        stop = Idle().on(IdleEvent().with_standing(standing), settings)
+        assert [n.key for n in stop.nudges] == ["messages.new_messages_to_answer", "workers.act_on_the_reports"]
+        piped = Idle().on(ToolStarting(tool="Bash", input={"command": "journal message read 7 | head -3"}).with_standing(standing), settings)
+        assert piped.held is not None and piped.held.key == "messages.read_the_words_whole"
+        read = Idle().on(ToolStarting(tool="Bash", input={"command": "ls"}).with_standing(standing), settings)
+        assert read.held is None and [n.key for n in read.nudges] == ["messages.answer_before_anything_else", "messages.new_messages_to_answer"], "asked for the answer after three uses, and the inbox named every third use"
+        their_file = Idle().on(ToolStarting(tool="Read", input={"file_path": f"{tmp_path}/files/message/5/a.png"}, read_paths=(f"{tmp_path}/files/message/5/a.png",)).with_standing(standing), settings)
+        assert "messages.answer_before_anything_else" not in [n.key for n in their_file.nudges]
+        held_unanswered = Standing({**readings, "messages": MessagesStanding(unread=(), unanswered=(5,), unanswered_files=(), uses_since_newest=0, times_named=0, uses_unanswered=10)})
+        assert Idle().on(ToolStarting(tool="Bash", input={"command": "ls"}).with_standing(held_unanswered), settings).held.key == "messages.tools_held_until_answered"
+        assert Idle().on(ToolStarting(tool="Bash", input={"command": "journal task list"}).with_standing(held_unanswered), settings).held is None
+        held_unread = Standing({**readings, "messages": MessagesStanding(unread=(7,), unanswered=(), unanswered_files=(), uses_since_newest=1, times_named=5, uses_unanswered=0)})
+        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_standing(held_unread), settings).held.key == "messages.write_held_until_read"
+        assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}).with_standing(held_unread), settings).held is None
+        sent = Idle().on(ToolFinished(tool="Bash", input={"command": "journal message send hi --reply-to 7"}, output="sent").with_standing(standing), settings)
+        assert [n.key for n in sent.nudges] == ["messages.reply_by_tag"]
+        face = Idle().on(ReactionGiven(environment_id=1, at=1.0, face="👍", message_id=7, by_user=True).with_standing(standing), settings)
+        assert [n.rendered() for n in face.nudges][0].startswith("the user put 👍 on message 7")
+        assert Idle().on(ReactionGiven(environment_id=1, at=1.0, face="👍", message_id=7, by_user=False).with_standing(standing), settings).nudges == ()
+        dispatch = lambda **given: Idle().on(ToolStarting(tool="Agent", input=given).with_standing(standing), settings)
+        assert dispatch(subagent_type="journal-researcher", description="d", prompt="p").held.key == "laws.name_the_model"
+        assert dispatch(model="sonnet", subagent_type="general-purpose", description="d", prompt="p").held.key == "laws.name_a_profile"
+        assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d").held.key == "laws.bind_the_job"
+        assert dispatch(model="sonnet", subagent_type="journal-medior", description="d", prompt="p").held.key == "profiles.worker_profile_is_not_a_subagent"
+        assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d", prompt="p").held.key == "workers.too_many_subagents"
+        fewer = Standing({**readings, "workers": WorkersStanding(**{**readings["workers"].__dict__, "subagents_running": 1})})
+        known = Idle().on(ToolStarting(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/a.py again"}).with_standing(fewer), settings)
+        assert known.held.key == "workers.send_the_job_to_the_subagent" and "sub-1" in known.held.rendered()
+        assert Idle().on(ToolStarting(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/b.py"}).with_standing(fewer), settings).held is None
+        big = Idle().on(ToolFinished(tool="Bash", input={"command": "ls"}, output="\n" * 400).with_standing(standing), settings)
+        assert [n.key for n in big.nudges] == ["laws.cap_the_output"]
+        assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}, file_lines=201).with_standing(standing), settings).held.key == "shell.read_the_file_in_parts"
+        assert Idle().on(ToolStarting(tool="Bash", input={"command": "journal task list && ls"}).with_standing(standing), settings).held.key == "shell.journal_command_runs_alone"
+        reader = Idle().on(ToolStarting(tool="Bash", input={"command": "journal output read 9 --grep FAILED"}).with_standing(standing), settings)
+        shell_lines = lambda answered: [n.key for n in answered.nudges if n.key.startswith("shell.")]
+        assert shell_lines(reader) == ["shell.use_the_reader"]
+        again = Idle().on(ToolStarting(tool="Bash", input={"command": "journal output read 9 --grep x"}).with_standing(standing), settings)
+        assert shell_lines(again) == ["shell.add_a_reader"]
+        tipped = Standing({**readings, "shell": ShellStanding(**{**readings["shell"].__dict__, "tipped": (Shell.ADD_A_READER.create(command="journal output read <output> --grep x").rendered(),)})})
+        assert shell_lines(Idle().on(ToolStarting(tool="Bash", input={"command": "journal output read 9 --grep x"}).with_standing(tipped), settings)) == []
+        tick = Idle().on(Ticked(quiet_for=6.0, at=500.0).with_standing(standing), settings)
+        by_key = {n.key: n.rendered() for n in tick.nudges}
+        assert by_key["shell.outputs_ended"].startswith("output 3 finished; output 4 failed with code 1") and by_key["shell.check_the_background"].startswith("output 12 still running")
+        assert sorted(by_key) == ["shell.check_the_background", "shell.outputs_ended", "workers.act_on_the_reports"]
+        assert [n.key for n in Idle().on(Ticked(quiet_for=1.0, at=200.0).with_standing(standing), settings).nudges] == ["workers.act_on_the_reports"]
+        assert Idle().on(ToolStarting(tool="Read", input={"file_path": str(private / "keys.json")}).with_standing(standing), settings).held.key == "secrets.secrets_out_of_reach"
+        allowed = Idle().on(SecretAllowed(environment_id=0, at=1.0, secret_id=2, title="GitHub", programs=("gh",)).with_standing(standing), settings)
+        assert [n.rendered() for n in allowed.nudges][0].startswith("the user let secret 2, GitHub, go to gh")
+        assert Idle().on(ToolStarting(tool="AskUserQuestion", input={}).with_standing(standing), settings).held.key == "questions.ask_through_the_journal"
+        worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
+        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": worktree_file}, writes=True, written_paths=(worktree_file,)).with_standing(standing), settings).held.key == "workers.file_is_the_workers"
+        back = Idle().on(WorkerBack(environment_id=1, at=1.0, worker_id=2, name="Lady Lovelace", report=40).with_standing(standing), settings)
+        assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in 40"]
+    finally:
+        BaseState.fold(())
+
+
+def test_a_state_that_defines_a_conduct_listeners_name_answers_in_its_place():
+    class Quiet(Listening):
+        def on_tool_starting_inbox(self, event: ToolStarting, settings: SettingsValue) -> Transition:
+            return self.unchanged()
+
+    BaseState.fold((InboxConduct,))
+    try:
+        assert Listening().on(ToolStarting(tool="Write", input={}), SettingsValue({})).nudges == (LINE, OTHER, OTHER)
+        assert Quiet().on(ToolStarting(tool="Write", input={}), SettingsValue({})).nudges == (LINE, OTHER), "the state's own answer stands where the conduct's would have"
     finally:
         BaseState.fold(())

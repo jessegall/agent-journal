@@ -92,10 +92,10 @@ class MessageCommand(Command):
             return 1
         author = Author.of(where.actor)
         message = self.messages.find(args.n)
-        made = self.reactions.toggle(message, args.face, author, where.actor)
-        if made and author == Author.AGENT:
+        reaction = self.reactions.toggle(message, args.face, author, where.actor)
+        if reaction and author == Author.AGENT:
             self.messages.mark_read(message, where.actor)
-        print(f"{args.face} {'on' if made else 'off'} message {args.n}")
+        print(f"{args.face} {'on' if reaction else 'off'} message {args.n}")
         return 0
 
     def tag(self, args: Namespace, where: Where) -> int:

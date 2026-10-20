@@ -27,11 +27,10 @@ class Reactions(ScopedRepository[Reaction]):
         return self.counted_in("author = ?", (author.value,))
 
     def toggle(self, message: Message, face: str, author: Author, by: Actor) -> Reaction | None:
-        """The same face by the same side again takes it off; otherwise it goes on."""
-        for made in self.on(message):
-            if made.face == face and made.author == author:
-                self.delete(made, by)
+        for reaction in self.on(message):
+            if reaction.face == face and reaction.author == author:
+                self.delete(reaction, by)
                 return None
-        made = self.save(Reaction(environment_id=message.environment_id, face=face, author=author), by)
-        self.links.save(Link(source=Ref.to(made), target=Ref.to(message), kind=REACTS), by)
-        return made
+        reaction = self.save(Reaction(environment_id=message.environment_id, face=face, author=author).given_on(message.id), by)
+        self.links.save(Link(source=Ref.to(reaction), target=Ref.to(message), kind=REACTS), by)
+        return reaction

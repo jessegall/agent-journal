@@ -50,8 +50,8 @@ class Hook:
 
     @property
     def response(self) -> dict:
-        got = self.body.get("tool_response", "")
-        return got if isinstance(got, dict) else {}
+        response = self.body.get("tool_response", "")
+        return response if isinstance(response, dict) else {}
 
     @staticmethod
     def printed(response) -> str:

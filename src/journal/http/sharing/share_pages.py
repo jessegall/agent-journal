@@ -62,10 +62,10 @@ class SharePages:
         if parts[2:] != ["comment"]:
             return self.gone(404)
         try:
-            made = self.comments.leave(self.shares.by_token(parts[1]), comment.on, comment.name, comment.text)
+            comment = self.comments.leave(self.shares.by_token(parts[1]), comment.on, comment.name, comment.text)
         except Refused as refused:
             return ShareAnswer(409, json.dumps({"error": str(refused)}).encode(), "application/json")
-        return ShareAnswer(201, json.dumps(made, cls=JsonOut).encode(), "application/json")
+        return ShareAnswer(201, json.dumps(comment, cls=JsonOut).encode(), "application/json")
 
     @staticmethod
     def parts(path: str) -> list[str]:

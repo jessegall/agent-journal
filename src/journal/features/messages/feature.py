@@ -1,7 +1,7 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.messages.support.messages_standing_reader import MessagesStandingReader
-from journal.features.messages.listeners.hint_reply_by_tag import HintReplyByTag
+from journal.features.messages.support.messages_conduct import MessagesConduct
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
 from journal.features.messages.listeners.record_peer_message import RecordPeerMessage
 from journal.features.messages.listeners.record_sent_message import RecordSentMessage
@@ -13,9 +13,7 @@ from journal.features.messages.listeners.link_named_tasks import LinkNamedTasks
 from journal.features.messages.listeners.link_reply_under_comment import LinkReplyUnderComment
 from journal.features.messages.listeners.mark_filed import MarkFiled
 from journal.features.messages.listeners.record_turn import RecordTurn
-from journal.features.messages.listeners.refuse_truncated_read import RefuseTruncatedRead
 from journal.features.messages.listeners.run_tags import RunTags
-from journal.features.messages.listeners.tell_reaction import TellReaction
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.support.option import Option
@@ -33,8 +31,9 @@ class Messages(Feature):
     REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between reminders of messages the agent has not read", 3, unit="tool uses")
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS, SWEEP_AFTER)
-    listeners = (HintReplyByTag, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, LinkReplyUnderComment, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
+    listeners = (SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RecordTurn, RunTags, LinkNamedTasks, LinkReplyUnderComment, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
     standing = (MessagesStandingReader,)
+    conduct = (MessagesConduct,)
     checks = (
         Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
         Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N', takes_text=True),
@@ -59,6 +58,7 @@ class Messages(Feature):
     REPLY_KEPT_OUT_AS_REPLIED_ALREADY = Nudge(name, "reply_kept_out_as_replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_after=0)
     CLOSING_WORDS_KEPT_OUT_AS_REPEATED = Nudge(name, "closing_words_kept_out_as_repeated", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_after=0)
     REPLY_BY_TAG = Nudge(name, "reply_by_tag", "a reply needs no command", "type it in your turn with [!reply:N] opening its line, and it reaches the chat as your reply", repeat_after=0)
+    INBOX_LINES = (NEW_MESSAGE_TO_ANSWER, NEW_MESSAGES_TO_ANSWER, UNREAD_MESSAGES_TO_READ)
     nudges = (NEW_MESSAGE_TO_ANSWER, NEW_MESSAGES_TO_ANSWER, UNREAD_MESSAGES_TO_READ, THE_USER_REACTED, REPLY_WAS_ONLY_A_FACE, WRITE_HELD_UNTIL_READ, ANSWER_BEFORE_ANYTHING_ELSE, TOOLS_HELD_UNTIL_ANSWERED, READ_THE_WORDS_WHOLE, REPLY_KEPT_OUT_AS_REPLIED_ALREADY, CLOSING_WORDS_KEPT_OUT_AS_REPEATED, REPLY_BY_TAG)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
@@ -97,10 +97,9 @@ The user leaves messages; you answer them before anything else.
 """, keywords=('message', 'messages', 'inbox', 'reply'))
 
     @classmethod
-    def inbox(cls, unread: list) -> "Nudge":
-        """The shortest line that names what waits: one by its number, a few by theirs, more than three by their count and the command that prints them."""
+    def inbox(cls, unread: tuple[int, ...]) -> "Nudge":
         if len(unread) == 1:
-            return cls.NEW_MESSAGE_TO_ANSWER.create(n=unread[0].id)
+            return cls.NEW_MESSAGE_TO_ANSWER.create(n=unread[0])
         if len(unread) <= 3:
-            return cls.NEW_MESSAGES_TO_ANSWER.create(ns=", ".join(str(m.id) for m in unread))
+            return cls.NEW_MESSAGES_TO_ANSWER.create(ns=", ".join(str(n) for n in unread))
         return cls.UNREAD_MESSAGES_TO_READ.create(count=len(unread))

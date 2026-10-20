@@ -29,11 +29,11 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
 
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
-        heard = self.hearing.heard_by(event, event.environment_id)
+        hearers = self.hearing.heard_by(event, event.environment_id)
         deadline = monotonic() + float(self.settings.option(PluginsFeature.DEADLINE))
         waiting = self.hearing.waiting_for(event.session) if event.key in CARRIES else []
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
-        for plugin in heard:
+        for plugin in hearers:
             if decision.allowed and self.holds(plugin, event):
                 decision = decision.merged(self.decided(plugin, event, self.hearing.ask(plugin, event, event.environment_id, deadline - monotonic())))
             else:

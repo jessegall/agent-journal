@@ -5,7 +5,7 @@
         "select": "function",
         "where": [
             {
-                "nameMatches": "^(about|worded|meaning|whisper|muse|spoken|telling|utter|tell|says|said|hear|heard|stay)$"
+                "nameMatches": "^(about|worded|meaning|whisper|murmur|mutter|muse|ponder|wonder|dream|spoken|telling|utter|tell|says|said|speak|spoke|hear|heard|heed|recite|chant|sing|stay|dwell|linger|tarry|behold|glance|gaze|peek|glimpse|grok|munge|wrangle|fiddle|massage|tinker|bless|curse|conjure|summon|enchant|forge|craft|weave|wield|kindle|awaken)$"
             }
         ]
     },

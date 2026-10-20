@@ -14,8 +14,8 @@ class Container:
     def bind(self, kind: type[T], factory: Callable[[], T]) -> None:
         self._factories[kind] = factory
 
-    def instance(self, kind: type[T], obj: T) -> None:
-        self._instances[kind] = obj
+    def instance(self, kind: type[T], value: T) -> None:
+        self._instances[kind] = value
 
     def get(self, kind: type[T]) -> T:
         if kind not in self._instances:

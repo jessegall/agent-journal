@@ -111,8 +111,8 @@ class Checks:
 
     def seconds_since(self, ctx: Context, name: str) -> int | None:
         """How long ago the workflow being walked noted the time by that name, by the engine's clock; None when it never did."""
-        noted = self.times.at(ctx.value(name))
-        return None if noted is None else int(self.clock.now() - noted)
+        at = self.times.at(ctx.value(name))
+        return None if at is None else int(self.clock.now() - at)
 
     def time_noted(self, ctx: Context, name: str, limit: int) -> bool:
         """The workflow noted the time by that name, and has not forgotten it since."""

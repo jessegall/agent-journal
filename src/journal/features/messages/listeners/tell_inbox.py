@@ -23,5 +23,5 @@ class TellInbox(AgentListener[A]):
         unread = self.messages.unread()
         if not unread:
             return None
-        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), MessagesFeature.inbox(unread))
+        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), MessagesFeature.inbox(tuple(m.id for m in unread)))
         return Decision.allowed_with(line) if line else None

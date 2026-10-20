@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+from journal.engine.support.settings import Settings
+from journal.engine.support.transition import Transition
+from journal.events.rows.worker_back import WorkerBack
 from journal.support.permission import Permission
 from journal.engine.states.paused import Paused
 
@@ -12,6 +15,9 @@ class Awaiting(Paused):
     title = "Waiting on a worker"
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     workers: tuple[int, ...] = ()
+
+    def on_worker_back_workers(self, event: WorkerBack, settings: Settings) -> Transition:
+        return self.unchanged()
 
     def awaiting(self) -> tuple[str, str]:
         return f"workers {", ".join(str(n) for n in self.workers)}", ",".join(f"workers:{n}" for n in self.workers)

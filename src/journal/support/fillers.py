@@ -145,7 +145,7 @@ class Fillers:
         """The inbox as the listeners name it: one message by its number, a few by theirs, more than three by their count and the command that prints them."""
         from journal.features.messages.feature import Messages as MessagesFeature
         unread = self.messages.unread()
-        return MessagesFeature.inbox(unread).rendered() if unread else ""
+        return MessagesFeature.inbox(tuple(m.id for m in unread)).rendered() if unread else ""
 
     def followed(self, ctx: Context) -> FollowingPlan | None:
         """The plan the agent follows, now or once its pause ends."""

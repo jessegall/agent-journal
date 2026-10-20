@@ -2,6 +2,7 @@ from typing import ClassVar
 from dataclasses import dataclass
 from datetime import datetime
 
+from journal.events.rows.secret_allowed import SecretAllowed
 from journal.models.model import Model
 from journal.support.secret_field import SecretField
 from journal.models.secret_kind import SecretKind
@@ -15,16 +16,12 @@ class Secret(Model):
     text_fields: ClassVar[tuple[str, ...]] = ("title", "brief")
     title: str = ""
     brief: str = ""
-    """How the secret is used, read by the agent: the commands it runs with it."""
     kind: SecretKind = SecretKind.CUSTOM
     fields: tuple = ()
-    """Each field as {name, hidden, variable}."""
     filled: tuple[str, ...] = ()
-    """The names of the fields that hold a value."""
     programs: tuple[str, ...] = ()
     proposed: tuple[str, ...] = ()
     helpers: bool = False
-    """Whether subagents and workers may be given it as well as the main agent."""
     url: str = ""
     auto_login: bool = False
     asked_at: datetime | None = None
@@ -33,7 +30,6 @@ class Secret(Model):
     session_expires: datetime | None = None
     logging_in_at: datetime | None = None
     deleted_at: datetime | None = None
-    """Set when deleted: the values are kept thirty days for a restore."""
 
     def field(self, name: str) -> SecretField:
         found = next((SecretField.of(raw) for raw in self.fields if raw["name"] == name), None)
@@ -42,17 +38,17 @@ class Secret(Model):
         return found
 
     def waiting(self) -> bool:
-        """A field without a value: the secret waits for the user."""
         return any(raw["name"] not in self.filled for raw in self.fields)
 
     def allowing(self, programs: tuple[str, ...] | None, proposed: tuple[str, ...] | None) -> "Secret":
-        """The programs it goes to and the ones proposed for it, each kept when not given; a program allowed is no longer proposed."""
         allowed = self.programs if programs is None else programs
+        new = tuple(p for p in allowed if p not in self.programs)
+        if new:
+            return self.with_(programs=allowed, proposed=tuple(p for p in (self.proposed if proposed is None else proposed) if p not in allowed)).with_event(SecretAllowed(secret_id=self.id, title=self.title, programs=new))
         asked = self.proposed if proposed is None else proposed
         return self.with_(programs=allowed, proposed=tuple(p for p in asked if p not in allowed))
 
     def login_ran_out_unasked(self, now: datetime) -> bool:
-        """The saved login ran out, and the user was not yet asked to log in again since."""
         if self.session_expires is None or self.session_expires >= now:
             return False
         return self.asked_at is None or self.asked_at < self.session_expires

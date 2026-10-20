@@ -35,8 +35,8 @@ class Filing:
         self.removable = {"docs": docs, "reports": reports, "tasks": tasks, "plans": plans}
 
     def create(self, brief: str, by: Actor) -> Dump:
-        made = self.dumps.save(Dump(title="Dump", brief=brief.strip(), queued_at=time.time()), by)
-        return self.dumps.save(made.with_(title=f"Dump {made.id}"), by)
+        dump = self.dumps.save(Dump(title="Dump", brief=brief.strip(), queued_at=time.time()), by)
+        return self.dumps.save(dump.with_(title=f"Dump {dump.id}"), by)
 
     def attach(self, n: int, name: str, by: Actor) -> Dump:
         dump = self.open(n, f"dump {n} is already filed: start a new dump for more")
@@ -165,10 +165,10 @@ class Filing:
         if not how.strip():
             raise Refused('say what should happen next: journal dump direct <n> "<what to do>"')
         dump = self.dumps.find(n)
-        said = {"label": how.strip(), "pick": OWN_WORDS, "at": time.time()}
+        choice = {"label": how.strip(), "pick": OWN_WORDS, "at": time.time()}
         message = self.messages.save(Message(author=Author.USER, text=how.strip()).arrived(), by)
         self.links.save(Link(source=Ref.to(message), target=Ref.to(dump), kind=Messages.COMMENTS_ON), by)
-        return self.dumps.save(dump.with_(said=(*dump.said, said), chosen=said), by)
+        return self.dumps.save(dump.with_(said=(*dump.said, choice), chosen=choice), by)
 
     def stop(self, n: int, by: Actor) -> Dump:
         self.only_user(by, "stops a dump")

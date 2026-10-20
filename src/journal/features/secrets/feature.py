@@ -2,11 +2,11 @@ from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.secrets.commands.secret_command import SecretCommand
-from journal.features.secrets.listeners.keep_out_of_private import KeepOutOfPrivate
+from journal.features.secrets.support.secrets_conduct import SecretsConduct
+from journal.features.secrets.support.secrets_standing_reader import SecretsStandingReader
 from journal.features.secrets.listeners.alarm_on_leak import AlarmOnLeak
 from journal.features.secrets.listeners.ask_when_expired import AskWhenExpired
 from journal.features.secrets.listeners.purge_after_thirty_days import PurgeAfterThirtyDays
-from journal.features.secrets.listeners.tell_allowed import TellAllowed
 from journal.features.secrets.seeds.secret_files import SecretFiles
 
 
@@ -50,4 +50,6 @@ outside the project, and never in the journal; the journal masks a value anywher
 - `journal secret where` names the file the values live in; `journal secret delete <n>` puts one away.
 - A deleted secret keeps its values thirty days for `journal secret restore <n>`, then they go.
 """, keywords=("secret", "secrets", "api key", "token", "password", "login"))
-    listeners = (AlarmOnLeak, KeepOutOfPrivate, TellAllowed, AskWhenExpired, PurgeAfterThirtyDays)
+    listeners = (AlarmOnLeak, AskWhenExpired, PurgeAfterThirtyDays)
+    standing = (SecretsStandingReader,)
+    conduct = (SecretsConduct,)
