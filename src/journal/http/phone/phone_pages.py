@@ -1,4 +1,5 @@
 import json
+import mimetypes
 from dataclasses import asdict
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
@@ -24,14 +25,18 @@ from journal.http.support.share_answer import ShareAnswer
 from journal.repositories.environments import Environments
 from journal.models.phone import Phone
 from journal.repositories.phones import Phones
+from journal.support.share_place import SharePlace
 from journal.support.actor import Actor
 from journal.support.refused import Refused
 
 PAGE = "phone.html"
 WORKER = "phone-sw.js"
 ICONS = {"icon-180.png": 180, "icon-192.png": 192, "icon-512.png": 512}
-PAGE_HEADERS = {"Content-Security-Policy": APP_HEADERS["Content-Security-Policy"] + "; manifest-src 'self'; worker-src 'self'"}
+PAGE_HEADERS = {"Content-Security-Policy": APP_HEADERS["Content-Security-Policy"].replace("script-src 'self'", "script-src 'self' 'wasm-unsafe-eval'") + "; manifest-src 'self'; worker-src 'self' blob:"}
+"""The share page's policy, with what the viewer the phone runs needs besides: its figure's WebAssembly, its timer worker, the manifest."""
 BACKGROUND = "#131416"
+PUBLIC = ("voices", "announcements")
+"""The folders of files the build carries beside its pages, which the phone's page fetches under /p/."""
 COOKIE = "__Host-phone"
 HEADER = "X-Phone"
 """The header only the phone app sends, which a form on another site cannot set."""
@@ -40,8 +45,8 @@ HEADER = "X-Phone"
 class PhonePages:
     """What the tunnel's listener answers under /p/, as version 3 did: the phone page, its files, its service worker, its manifest and its icons, so the page installs on a phone as an app; the pairing, which sets the phone's cookie; and the phone's own standing, read by that cookie alone."""
 
-    def __init__(self, config: Config, pairing: Pairing, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, push: WebPush, waits: PhoneWaits) -> None:
-        self.config, self.pairing, self.phones, self.tunnel = config, pairing, phones, tunnel
+    def __init__(self, config: Config, pairing: Pairing, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, push: WebPush, waits: PhoneWaits, place: SharePlace) -> None:
+        self.config, self.pairing, self.phones, self.tunnel, self.place = config, pairing, phones, tunnel, place
         self.router, self.environments, self.allow, self.push, self.waits = router, environments, allow, push, waits
 
     def get(self, request: PhoneRequest) -> ShareAnswer:
@@ -54,10 +59,12 @@ class PhonePages:
             return self.json(200, {"key": PushKeys.unpadded(self.push.keys().public)})
         if rest == ["waiting"]:
             return self.waiting(request)
-        if rest[0] == "api":
+        if rest[0] == "journal":
             return self.through(request)
         if rest[0] == "assets" and len(rest) == 2:
             return SharePages.asset(rest[1])
+        if rest[0] in PUBLIC:
+            return self.public(rest)
         if rest == ["sw.js"]:
             return self.worker()
         if rest == ["manifest.webmanifest"]:
@@ -75,6 +82,16 @@ class PhonePages:
         if not page.is_file():
             return SharePages.gone(404)
         return ShareAnswer(200, page.read_bytes(), headers=PAGE_HEADERS)
+
+    @staticmethod
+    def public(rest: list[str]) -> ShareAnswer:
+        """A file the build carries in one of its public folders, never a path outside them."""
+        root = (APP / rest[0]).resolve()
+        found = (APP / "/".join(rest)).resolve()
+        if root not in found.parents or not found.is_file():
+            return SharePages.gone(404)
+        kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
+        return ShareAnswer(200, found.read_bytes(), kind, {"Cache-Control": "public, max-age=3600", **APP_HEADERS})
 
     @staticmethod
     def worker() -> ShareAnswer:
@@ -101,7 +118,7 @@ class PhonePages:
         phone = self.phone(request)
         if not isinstance(phone, Phone):
             return phone
-        if request.rest[:1] == ["api"]:
+        if request.rest[:1] == ["journal"]:
             return self.forward(request, phone, given)
         if request.rest == ["push"]:
             return self.subscribe(phone, str(given.get("endpoint", "")))
@@ -112,13 +129,18 @@ class PhonePages:
 
     def given(self, request: PhoneRequest) -> dict | None:
         """The body of a write the phone app sent, as version 3 trusted one: from https at the tunnel's address, with the app's header, as JSON; none otherwise."""
-        if request.origin != f"https://{self.tunnel.address()}" or request.app_header != "1" or not request.content_type.startswith("application/json"):
+        if not self.is_trusted(request.origin) or request.app_header != "1" or not request.content_type.startswith("application/json"):
             return None
         try:
             loaded = json.loads(request.body or b"{}")
         except ValueError:
             return None
         return loaded if isinstance(loaded, dict) else None
+
+    def is_trusted(self, origin: str) -> bool:
+        """The phone app's own origin: the tunnel's https address, or, as version 3 allowed, the listener's own address on this machine, which nothing outside it can reach."""
+        port = self.place.kept().port
+        return origin in (f"https://{self.tunnel.address()}", f"http://127.0.0.1:{port}", f"http://localhost:{port}")
 
     def pair(self, asked: PairRequest) -> ShareAnswer:
         now = datetime.now(timezone.utc)
@@ -147,7 +169,7 @@ class PhonePages:
 
     def forward(self, request: PhoneRequest, phone: Phone, body: dict) -> ShareAnswer:
         """A call of the journal's own API, made as the phone in the environment it was paired in, if the allow list names it: version 4's controllers answer it, as the viewer's would."""
-        url = urlsplit(request.path.removeprefix("/p/api"))
+        url = urlsplit(request.path.removeprefix("/p"))
         query = {name: values[-1] for name, values in parse_qs(url.query).items()}
         environment = self.environments.find(phone.environment_id).name
         asked = Request(request.method, url.path, query, body, {}, {ENV_HEADER.lower(): environment}, Actor.phone(phone.id))
@@ -175,7 +197,7 @@ class PhonePages:
         return self.json(200, asdict(self.standing(phone))) if isinstance(phone, Phone) else phone
 
     def standing(self, phone: Phone) -> PhoneStanding:
-        return PhoneStanding(phone.name, phone.id, phone.expires_at.isoformat(), self.config.root.name, COLOR)
+        return PhoneStanding(phone.name, phone.id, phone.expires_at.isoformat(), self.environments.find(phone.environment_id).name, self.config.root.name, COLOR)
 
     @staticmethod
     def json(status: int, body: dict, headers: dict | None = None) -> ShareAnswer:

@@ -100,12 +100,15 @@ function report(ids) {
 
 const retry = async () => active && report(await flush(active.env, active.origin));
 
+// the server a message goes to: this page's origin with the client's own base, /p on the phone
+const here = () => `${location.origin}${api.base}`;
+
 export function onOutboxChange(fn) {
     changed = fn;
 }
 
 export function startOutbox(env) {
-    active = {env, origin: location.origin};
+    active = {env, origin: here()};
     if (polling) {
         pollNow(OUTBOX);
         return;
@@ -118,7 +121,7 @@ export function startOutbox(env) {
 export async function sendMessage(env, body, files = [], id = token()) {
     const record = {
         id,
-        origin: location.origin,
+        origin: here(),
         env,
         text: body.text,
         reply_to: body.reply_to,

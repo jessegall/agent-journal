@@ -1,3 +1,4 @@
+import {onPhone} from "../platform/phone.js";
 import {computed} from "vue";
 
 // How the viewer shows each of the journal's tables: its name in words, its icon, where it is listed and what it is for.
@@ -139,7 +140,8 @@ export const TABLES = {
     secrets: kind("Secret", "key", "A key or login the agent may use without ever seeing it", {scope: "project"}),
 };
 
-const ORDER = Object.keys(TABLES);
+// the phone never reads a secret, so it never lists or counts them
+const ORDER = Object.keys(TABLES).filter((name) => !(onPhone && name === "secrets"));
 
 export const tables = computed(() => ORDER.map((name) => ({name, ...TABLES[name]})));
 export const meta = (table) => TABLES[table];

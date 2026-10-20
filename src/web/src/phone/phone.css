@@ -4,3 +4,10 @@ html.phone body {
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     -webkit-text-size-adjust: 100%;
 }
+
+/* a finger, not a pointer: every control the phone shows is at least 40 points each way */
+html.phone .icon-btn,
+html.phone button {
+    min-width: 40px;
+    min-height: 40px;
+}

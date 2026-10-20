@@ -1,3 +1,4 @@
+import {onPhone} from "../platform/phone.js";
 import {href, route} from "../route.js";
 import {UPLOAD_LIMIT, overLimit} from "../chat/attachments.js";
 import {LONG_WAIT_MS, transport} from "./transport.js";
@@ -55,8 +56,9 @@ export class ApiClient {
         return this.url(`${this.here(path)}${path.includes("?") ? "&" : "?"}env=${encoded(this.env())}`);
     }
 
+    // a file the build carries, beside the page: at the root for the viewer, under /p/ for the phone
     publicUrl(path) {
-        return `/${path}`;
+        return onPhone ? `./${path}` : `/${path}`;
     }
 
     // each voice's 3D figure file, by voice; a file is named by a hash of its content
@@ -543,7 +545,7 @@ export class ApiClient {
     }
 }
 
-export const api = new ApiClient();
+export const api = new ApiClient({base: onPhone ? "/p" : ""});
 export const onBlocked = (fn) => transport.onBlocked(fn);
 export const onWrite = (fn) =>
     transport.onWrite((url) => {

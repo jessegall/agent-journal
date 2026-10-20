@@ -1,4 +1,5 @@
 <script setup>
+import {onPhone} from "../platform/phone.js";
 import {meta} from "../domain/tables.js";
 import {sharingOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
@@ -25,7 +26,7 @@ useOutside(wrap, () => (drop.value = false));
 const {floatingChat, toggleChat} = useFloatingChat();
 const phoneOpen = ref(false);
 const PHONES_EVERY = 30000;
-usePoll("phones", () => (sharingOn.value ? loadPhones() : null), PHONES_EVERY);
+usePoll("phones", () => (sharingOn.value && !onPhone ? loadPhones() : null), PHONES_EVERY);
 </script>
 
 <template>
@@ -57,7 +58,7 @@ usePoll("phones", () => (sharingOn.value ? loadPhones() : null), PHONES_EVERY);
             >
                 <Icon name="chat" />
             </button>
-            <template v-if="sharingOn">
+            <template v-if="sharingOn && !onPhone">
                 <ShareTunnel />
                 <button
                     type="button"

@@ -866,13 +866,13 @@ def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(shari
     kept = cookie.split(";", 1)[0]
     assert phone_call(share_server, "GET", "/p/state", cookie=kept)[1]["phone"] == "iPhone", "the phone is known by its cookie"
     assert phone_call(share_server, "GET", "/p/state")[0] == 401 and phone_call(share_server, "GET", "/p/state", cookie="__Host-phone=guessed")[0] == 401, "without its key, no phone"
-    status, sent, _ = phone_call(share_server, "POST", "/p/api/journal/messages", {"text": "from the train"}, origin=origin, cookie=kept)
+    status, sent, _ = phone_call(share_server, "POST", "/p/journal/messages", {"text": "from the train"}, origin=origin, cookie=kept)
     assert status == 201 and sent["created_by"] == f"phone:{standing['id']}" and sent["author"] == "user", "the phone writes as itself, its words the user's"
-    assert any(m["text"] == "from the train" for m in phone_call(share_server, "GET", "/p/api/journal/messages", cookie=kept)[1]["rows"]), "the phone reads the journal through version 4's own controllers"
-    assert phone_call(share_server, "GET", "/p/api/journal/secrets", cookie=kept)[0] == 403, "no secret is ever read from a phone"
-    assert phone_call(share_server, "POST", "/p/api/journal/settings", {"messages": {"hold_after": 9}}, origin=origin, cookie=kept)[0] == 403, "nor a setting changed"
-    assert phone_call(share_server, "GET", "/p/api/journal/messages?env=elsewhere", cookie=kept)[0] == 403, "nor another environment reached"
-    assert phone_call(share_server, "GET", "/p/api/journal/messages")[0] == 401, "nothing at all without the phone's key"
+    assert any(m["text"] == "from the train" for m in phone_call(share_server, "GET", "/p/journal/messages", cookie=kept)[1]["rows"]), "the phone reads the journal through version 4's own controllers"
+    assert phone_call(share_server, "GET", "/p/journal/secrets", cookie=kept)[0] == 403, "no secret is ever read from a phone"
+    assert phone_call(share_server, "POST", "/p/journal/settings", {"messages": {"hold_after": 9}}, origin=origin, cookie=kept)[0] == 403, "nor a setting changed"
+    assert phone_call(share_server, "GET", "/p/journal/messages?env=elsewhere", cookie=kept)[0] == 403, "nor another environment reached"
+    assert phone_call(share_server, "GET", "/p/journal/messages")[0] == 401, "nothing at all without the phone's key"
     assert len(phone_call(share_server, "GET", "/p/push-key", cookie=kept)[1]["key"]) == 87, "the journal's public push key, for the phone to subscribe with"
     assert phone_call(share_server, "POST", "/p/push", {"endpoint": "https://evil.example/push"}, origin=origin, cookie=kept)[0] == 422, "pushes go only through the phone makers' services"
     assert phone_call(share_server, "POST", "/p/push", {"endpoint": "https://web.push.apple.com/abc"}, origin=origin, cookie=kept)[0] == 201
