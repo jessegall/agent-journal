@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.resume import Resume
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
@@ -13,7 +13,7 @@ from journal.repositories.dumps import Dumps
 class FollowDump(Listener[Updated]):
     """The agent sorting a dump follows it: free to stop while the user's answer is awaited, and back where it was once the dump is filed, or on to the next dump waiting."""
 
-    def __init__(self, agents: Agents, machine: Machine, dumps: Dumps) -> None:
+    def __init__(self, agents: Agents, machine: StateMachine, dumps: Dumps) -> None:
         self.agents, self.machine, self.dumps = agents, machine, dumps
 
     def handle(self, event: Updated) -> None:

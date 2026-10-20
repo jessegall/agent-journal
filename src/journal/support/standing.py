@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.chart.support.agent_standing import AgentStanding
 from journal.features.chart.support.checks import COUNT_CHECKS, VALUE_ACTIONS, Checks
 from journal.features.chart.support.value_shown import ValueShown
@@ -25,7 +25,7 @@ LOOKED_BACK = 300
 class Standing:
     """Where each live agent stands in a workflow: the node its last walk of it stopped at, whether it waits there (a count check that answered no), and the counts and times the workflow keeps in its environment."""
 
-    def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: Machine, registry: Registry, counts: Counts, times: NotedTimes, clock: Clock) -> None:
+    def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: StateMachine, registry: Registry, counts: Counts, times: NotedTimes, clock: Clock) -> None:
         self.charts, self.agents, self.entries, self.checks, self.machine, self.registry = charts, agents, entries, checks, machine, registry
         self.counts, self.times, self.clock = counts, times, clock
 

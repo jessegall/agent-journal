@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.paused import Paused
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent_listener import AgentListener
@@ -15,7 +15,7 @@ class FollowPlanAtStart(AgentListener[SessionStarted]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, plans: Plans) -> None:
+    def __init__(self, machine: StateMachine, plans: Plans) -> None:
         self.machine, self.plans = machine, plans
 
     def handle(self, event: SessionStarted) -> None:

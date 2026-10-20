@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.support.refused import Refused
 from journal.support.scope import Scope
 from journal.support.states_catalogue import StatesCatalogue
@@ -18,7 +18,7 @@ class PanicCommand(Command):
     default_verb = "now"
     always_allowed = True
 
-    def __init__(self, machine: Machine, states: StatesCatalogue, scope: Scope) -> None:
+    def __init__(self, machine: StateMachine, states: StatesCatalogue, scope: Scope) -> None:
         self.machine, self.states, self.scope = machine, states, scope
 
     def arguments(self, verbs) -> None:

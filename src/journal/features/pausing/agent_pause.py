@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.features.pausing.states.paused_by_user import PausedByUser
 from journal.models.agent import Agent
@@ -9,7 +9,7 @@ from journal.supervisor_link import SupervisorLink
 class AgentPause:
     """The user's pause of an agent: the agent finishes the step it is on and its next tool call is held; a resume puts it back where it was and tells it to carry on."""
 
-    def __init__(self, machine: Machine, nudger: Nudger, supervisor: SupervisorLink) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, supervisor: SupervisorLink) -> None:
         self.machine, self.nudger, self.supervisor = machine, nudger, supervisor
 
     def pause(self, agent: Agent) -> Agent:

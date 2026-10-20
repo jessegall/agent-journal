@@ -2,7 +2,7 @@ import re
 from dataclasses import replace
 
 from journal.support.cards import Cards
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.features.tasks.states.expecting import Expecting
@@ -36,7 +36,7 @@ NAMED = re.compile(r"^\[([a-z_]+\.[a-z_]+)\]\s*(.*)$", re.S)
 class Actions:
     """The catalogue's actions, one method per key: each says, holds, blocks, types or starts through the funnel that owns it, and answers the hook when one waits."""
 
-    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences, fillers: Fillers, cards: Cards, registry: Registry, counts: Counts, requiring: Requiring, agents: Agents, checks: Checks, times: NotedTimes, clock: Clock) -> None:
+    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: StateMachine, running: Running, sequences: Sequences, fillers: Fillers, cards: Cards, registry: Registry, counts: Counts, requiring: Requiring, agents: Agents, checks: Checks, times: NotedTimes, clock: Clock) -> None:
         self.nudger, self.supervisor, self.machine, self.running, self.sequences, self.fillers, self.cards = nudger, supervisor, machine, running, sequences, fillers, cards
         self.registry, self.counts, self.requiring, self.agents, self.checks, self.times, self.clock = registry, counts, requiring, agents, checks, times, clock
 

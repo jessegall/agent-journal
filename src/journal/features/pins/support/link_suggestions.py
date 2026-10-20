@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timezone
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.repositories.entries import Entries
 from journal.repositories.notices import Notices
@@ -15,7 +15,7 @@ OWN = re.compile(r"^https?://(?:localhost|127\.0\.0\.1)[:/]")
 class LinkSuggestions:
     """The links in some words that no pin carries, each suggested as a pin once, and again only after so many of the agent's own tool uses."""
 
-    def __init__(self, notices: Notices, nudger: Nudger, machine: Machine, entries: Entries, settings: SettingRows) -> None:
+    def __init__(self, notices: Notices, nudger: Nudger, machine: StateMachine, entries: Entries, settings: SettingRows) -> None:
         self.notices, self.nudger, self.machine, self.entries, self.settings = notices, nudger, machine, entries, settings
 
     def lines(self, session: str, environment_id: int, text: str) -> list[str]:

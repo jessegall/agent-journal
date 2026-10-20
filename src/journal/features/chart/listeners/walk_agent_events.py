@@ -1,7 +1,7 @@
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent_listener import AgentListener
 from journal.features.chart.support.context import Context
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.chart.support.walk import ALL, BEFORE, Walk
 from journal.support.decision import Decision
 
@@ -11,7 +11,7 @@ class WalkAgentEvents(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, walk: Walk, machine: Machine) -> None:
+    def __init__(self, walk: Walk, machine: StateMachine) -> None:
         self.walk, self.machine = walk, machine
 
     def handle(self, event: AgentEvent) -> Decision | None:

@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict, deque
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
@@ -21,7 +21,7 @@ class SpotHandReads(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, readers: Readers) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, readers: Readers) -> None:
         self.machine, self.nudger, self.readers = machine, nudger, readers
         self._reads: dict[str, deque] = defaultdict(lambda: deque(maxlen=KEPT))
         self._tipped: dict[str, set] = defaultdict(set)

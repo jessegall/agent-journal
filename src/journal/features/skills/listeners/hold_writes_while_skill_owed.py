@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.registry import Registry
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
@@ -12,7 +12,7 @@ class HoldWritesWhileSkillOwed(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, requiring: Requiring, providers: Providers, registry: Registry) -> None:
+    def __init__(self, machine: StateMachine, requiring: Requiring, providers: Providers, registry: Registry) -> None:
         self.machine, self.requiring, self.providers, self.registry = machine, requiring, providers, registry
 
     def handle(self, event: ToolStarting) -> Decision | None:

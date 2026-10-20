@@ -3,7 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.tasks.states.stuck import Stuck
 from journal.support.scope import Scope
 from journal.support.chat_mark import ChatMark
@@ -15,7 +15,7 @@ class StuckCommand(Command):
     noun = "stuck"
     default_verb = "now"
 
-    def __init__(self, machine: Machine, cards: Cards, scope: Scope) -> None:
+    def __init__(self, machine: StateMachine, cards: Cards, scope: Scope) -> None:
         self.machine, self.cards, self.scope = machine, cards, scope
 
     def arguments(self, verbs) -> None:

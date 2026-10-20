@@ -11,7 +11,7 @@ from journal.features.chart.support.dry_actions import DryActions
 from journal.support.decision import Decision
 from journal.support.floor import Floor
 from journal.engine.agent_state import AgentState
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.paused import Paused
 from journal.support.states_catalogue import StatesCatalogue
 from journal.support.actor import Actor
@@ -42,7 +42,7 @@ FAILED = "walk_failed"
 class Walk:
     """The engine walking every workflow for one event: each trigger node for the event starts a path; a check sends it on by its answer; an action acts and sends it on by then. The workflows are read fresh each time, so an edit applies at the next event."""
 
-    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: Machine, floor: Floor) -> None:
+    def __init__(self, charts: Charts, checks: Checks, actions: Actions, entries: Entries, states: StatesCatalogue, machine: StateMachine, floor: Floor) -> None:
         self.charts, self.checks, self.actions, self.entries, self.states, self.machine, self.floor = charts, checks, actions, entries, states, machine, floor
         self._stopped_at: dict[int, int] = {}
 

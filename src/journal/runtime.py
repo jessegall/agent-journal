@@ -3,7 +3,7 @@ import time
 from journal.engine.clock import Clock
 from journal.engine.menu_watcher import MenuWatcher
 from journal.support.service_start import ServiceStart
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
@@ -34,7 +34,7 @@ STANDBY_EVERY = 2.0
 class Runtime:
     """What the server process keeps alive: the HTTP server and the share server beside it, the deferred worker, the clock and the menu watcher, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
 
-    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: Machine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, standby: Standby) -> None:
+    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: StateMachine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, standby: Standby) -> None:
         self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
         self.watcher, self.share_server, self.standby = watcher, share_server, standby
 

@@ -5,7 +5,7 @@ from journal.console.command import Command
 from journal.support.awaitables import Awaitables
 from journal.support.refused import Refused
 from journal.support.where import Where
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.clock import Clock
 from journal.events.agent.awaited import Awaited
 from journal.events.bus import Bus
@@ -26,7 +26,7 @@ class AwaitCommand(Command):
     noun = "await"
     default_verb = "now"
 
-    def __init__(self, machine: Machine, scope: Scope, bus: Bus, awaitables: Awaitables, clock: Clock) -> None:
+    def __init__(self, machine: StateMachine, scope: Scope, bus: Bus, awaitables: Awaitables, clock: Clock) -> None:
         self.machine, self.scope, self.bus, self.awaitables, self.clock = machine, scope, bus, awaitables, clock
 
     def arguments(self, verbs) -> None:

@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.agent.compacting import Compacting
 from journal.events.agent_listener import AgentListener
 from journal.support.actor import Actor
@@ -10,7 +10,7 @@ class ForgetAtCompaction(AgentListener[Compacting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, agents: Agents) -> None:
+    def __init__(self, machine: StateMachine, agents: Agents) -> None:
         self.machine, self.agents = machine, agents
 
     def handle(self, event: Compacting) -> None:

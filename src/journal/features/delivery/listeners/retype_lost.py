@@ -1,5 +1,5 @@
 from journal.support.cards import Cards
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.support.turn import Turn
 from journal.support.typed_lines import TypedLines
 from journal.events.agent.ticked import Ticked
@@ -16,7 +16,7 @@ TRIES = 6
 class RetypeLost(AgentListener[Ticked]):
     """A line not seen back while the agent has sat between turns for a while was lost, to a menu, a dialog or a program still loading: it is typed again, each time after twice the wait, up to six times; the chat gets one card when it is given up on."""
 
-    def __init__(self, typed: TypedLines, turn: Turn, machine: Machine, supervisor: SupervisorLink, cards: Cards) -> None:
+    def __init__(self, typed: TypedLines, turn: Turn, machine: StateMachine, supervisor: SupervisorLink, cards: Cards) -> None:
         self.typed, self.turn, self.machine, self.supervisor, self.cards = typed, turn, machine, supervisor, cards
 
     def handle(self, event: Ticked) -> None:

@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.ended import Ended
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
@@ -12,7 +12,7 @@ QUIET_FOR = 3600.0
 class EndSilentSessions(AgentListener[Ticked]):
     """A session that has sent nothing for an hour is ended, so a closed terminal does not stay the live agent for good; the live agent a supervisor still runs is only idle, and stays live."""
 
-    def __init__(self, machine: Machine, agents: Agents, supervisor: SupervisorLink) -> None:
+    def __init__(self, machine: StateMachine, agents: Agents, supervisor: SupervisorLink) -> None:
         self.machine, self.agents, self.supervisor = machine, agents, supervisor
 
     def handle(self, event: Ticked) -> None:

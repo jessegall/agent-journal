@@ -1,6 +1,6 @@
 import re
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.turn_written import TurnWritten
 from journal.events.agent_listener import AgentListener
@@ -15,7 +15,7 @@ RUN_ON, SENTENCES = 400, 3
 class ReadTurn(AgentListener[TurnWritten]):
     """Every turn for the user is read once: talk about the work, not the journal's commands, and say you, never the user."""
 
-    def __init__(self, machine: Machine, nudger: Nudger, supervisor: SupervisorLink) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, supervisor: SupervisorLink) -> None:
         self.machine, self.nudger, self.supervisor = machine, nudger, supervisor
 
     def handle(self, event: TurnWritten) -> None:

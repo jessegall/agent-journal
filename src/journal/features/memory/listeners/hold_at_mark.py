@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent_listener import AgentListener
@@ -12,7 +12,7 @@ class HoldAtMark(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, agents: Agents) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, agents: Agents) -> None:
         self.machine, self.nudger, self.agents = machine, nudger, agents
 
     def handle(self, event: AgentEvent) -> Decision | None:

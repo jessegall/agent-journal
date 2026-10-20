@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.repositories.agents import Agents
 from journal.repositories.repository import Repository
 from journal.support.scope import Scope
@@ -15,7 +15,7 @@ class MemoryCommand(Command):
     scoped: ClassVar[bool] = True
     repository: Repository
 
-    def __init__(self, machine: Machine, scope: Scope, agents: Agents) -> None:
+    def __init__(self, machine: StateMachine, scope: Scope, agents: Agents) -> None:
         self.machine, self.scope, self.agents = machine, scope, agents
 
     def arguments(self, verbs) -> None:

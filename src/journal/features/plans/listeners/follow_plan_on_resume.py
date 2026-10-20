@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
 from journal.features.plans.states.following_plan import FollowingPlan
@@ -14,7 +14,7 @@ from journal.repositories.plans import Plans
 class FollowPlanOnResume(Listener[Updated]):
     """An agent that takes up a task of a started plan, by start or resume, follows the plan again, so finishing the task starts the next."""
 
-    def __init__(self, machine: Machine, plans: Plans) -> None:
+    def __init__(self, machine: StateMachine, plans: Plans) -> None:
         self.machine, self.plans = machine, plans
 
     def handle(self, event: Updated) -> None:

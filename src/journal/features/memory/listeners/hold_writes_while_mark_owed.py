@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.registry import Registry
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
@@ -11,7 +11,7 @@ class HoldWritesWhileMarkOwed(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, registry: Registry, providers: Providers) -> None:
+    def __init__(self, machine: StateMachine, registry: Registry, providers: Providers) -> None:
         self.machine, self.registry, self.providers = machine, registry, providers
 
     def handle(self, event: ToolStarting) -> Decision | None:

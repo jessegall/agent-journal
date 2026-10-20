@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from journal.engine.clock import Clock
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.tasks.states.working import Working
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts
@@ -21,7 +21,7 @@ from journal.repositories.workers import Workers
 class TaskController(Controller[Task]):
     """Tasks with the plan each is in and the worker that holds it; started from the viewer, a task is taken up by the live agent."""
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, agents: Agents, machine: Machine, clock: Clock) -> None:
+    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, agents: Agents, machine: StateMachine, clock: Clock) -> None:
         self.repository, self.task_logs, self.workers, self.agents, self.machine, self.clock = tasks, logs, workers, agents, machine, clock
 
     def rows(self) -> list[Task]:

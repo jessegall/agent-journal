@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
@@ -15,7 +15,7 @@ QUIET_FOR = 5.0
 class TellEndedOutputs(AgentListener[Ticked]):
     """The commands that ended in the background are named to the agent once it is quiet, every one that ended by then in one line, so a busy hour of them is not a line each mid-turn."""
 
-    def __init__(self, outputs: CommandOutputs, machine: Machine, nudger: Nudger, supervisor: SupervisorLink) -> None:
+    def __init__(self, outputs: CommandOutputs, machine: StateMachine, nudger: Nudger, supervisor: SupervisorLink) -> None:
         self.outputs, self.machine, self.nudger, self.supervisor = outputs, machine, nudger, supervisor
 
     def handle(self, event: Ticked) -> None:

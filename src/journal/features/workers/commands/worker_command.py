@@ -5,7 +5,7 @@ from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.support.worktree_not_made import WorktreeNotMade
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.support.profile_files import ProfileFiles
 from journal.features.workers.states.awaiting import Awaiting
 from journal.features.workers.support.worker_reports import WorkerReports
@@ -24,7 +24,7 @@ from journal.repositories.workers import Workers
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows) -> None:
+    def __init__(self, workers: Workers, messages: Messages, machine: StateMachine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows) -> None:
         self.workers, self.messages, self.machine, self.providers, self.agents = workers, messages, machine, providers, agents
         self.branch, self.settings = branch, settings
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.plans.support.plan_control import PlanControl
 from journal.features.plans.support.review_rounds import ReviewRounds
 from journal.features.plans.states.following_plan import FollowingPlan
@@ -27,7 +27,7 @@ from journal.repositories.tasks import Tasks, WAITS_ON
 class PlanCommand(Command):
     noun = "plan"
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine, subagents: Subagents, control: PlanControl, waits: Waits, rounds: ReviewRounds) -> None:
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: StateMachine, subagents: Subagents, control: PlanControl, waits: Waits, rounds: ReviewRounds) -> None:
         self.plans, self.phases, self.tasks, self.links, self.machine, self.subagents, self.control, self.waits = plans, phases, tasks, links, machine, subagents, control, waits
         self.rounds = rounds
 

@@ -1,5 +1,5 @@
 from journal.support.cards import Cards
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
 from journal.events.agent.session_ended import SessionEnded
@@ -88,5 +88,5 @@ class Receiver:
     def _split(self, event: AgentEvent) -> tuple[list[AgentListener], list[Listener]]:
         """The listeners of this event: the machine first, so every other sees the state the event led to, the other blocking ones next and the deferred ones last."""
         listeners = self.bus.listeners(type(event))
-        blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: not isinstance(l, Machine))
+        blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: not isinstance(l, StateMachine))
         return blocking, [l for l in listeners if not getattr(l, "blocking", False)]

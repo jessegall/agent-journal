@@ -2,7 +2,7 @@ import re
 
 from journal.support.cards import Cards
 from journal.support.ref import Ref
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent_listener import AgentListener
@@ -17,7 +17,7 @@ from journal.support.chat_mark import ChatMark
 class Whisper(AgentListener[AgentEvent]):
     """A fact, rule or reminder whose keyword appears in what the agent writes or runs is whispered back to it once, and shown in the chat as a mark. The agent hears it with the next line; the tool call goes through."""
 
-    def __init__(self, machine: Machine, nudger: Nudger, facts: Facts, rules: Rules, reminders: Reminders, cards: Cards, supervisor: SupervisorLink) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, facts: Facts, rules: Rules, reminders: Reminders, cards: Cards, supervisor: SupervisorLink) -> None:
         self.machine, self.nudger, self.facts, self.rules, self.reminders, self.cards, self.supervisor = machine, nudger, facts, rules, reminders, cards, supervisor
 
     def handle(self, event: AgentEvent) -> Decision | None:

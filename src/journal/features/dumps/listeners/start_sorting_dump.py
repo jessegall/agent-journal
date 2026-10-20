@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.listener import Listener
 from journal.events.models.created import Created
 from journal.features.dumps.states.sorting_dump import SortingDump
@@ -9,7 +9,7 @@ from journal.repositories.agents import Agents
 class StartSortingDump(Listener[Created]):
     """A dump the user drops moves the live agent here into sorting it, from whatever it was doing, which it goes back to once the dump is filed; one dump is sorted at a time."""
 
-    def __init__(self, agents: Agents, machine: Machine) -> None:
+    def __init__(self, agents: Agents, machine: StateMachine) -> None:
         self.agents, self.machine = agents, machine
 
     def handle(self, event: Created) -> None:

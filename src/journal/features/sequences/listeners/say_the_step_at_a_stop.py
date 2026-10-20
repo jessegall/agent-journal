@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.paused import Paused
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
@@ -18,7 +18,7 @@ class SayTheStepAtAStop(AgentListener[Idle]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, running: Running, questions: Questions, entries: Entries, requiring: Requiring, registry: Registry) -> None:
+    def __init__(self, machine: StateMachine, running: Running, questions: Questions, entries: Entries, requiring: Requiring, registry: Registry) -> None:
         self.machine, self.running, self.questions, self.entries, self.requiring, self.registry = machine, running, questions, entries, requiring, registry
 
     def handle(self, event: Idle) -> Decision | None:

@@ -1,5 +1,5 @@
 from journal.support.cards import Cards
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.support.running import Running
 from journal.models.trigger import Trigger
@@ -11,7 +11,7 @@ from journal.support.chat_mark import ChatMark
 class Firing:
     """What met triggers do, wherever the words came up: a card for each, a nudge or an instruction said, a sequence started at its first step. The lines to give the agent come back."""
 
-    def __init__(self, machine: Machine, nudger: Nudger, cards: Cards, running: Running, sequences: Sequences) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, cards: Cards, running: Running, sequences: Sequences) -> None:
         self.machine, self.nudger, self.cards, self.running, self.sequences = machine, nudger, cards, running, sequences
 
     def lines(self, met: list[Trigger], session: str, environment_id: int) -> list[str]:

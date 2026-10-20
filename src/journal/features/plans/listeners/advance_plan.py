@@ -1,7 +1,7 @@
 from dataclasses import replace
 from datetime import datetime, timezone
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.events.models.updated import Updated
@@ -18,7 +18,7 @@ from journal.repositories.tasks import Tasks
 class AdvancePlan(Listener[Updated]):
     """A plan is done when its last task closes, whoever closes it. The agent following the plan with that task in hand, whoever closed it, goes on: to the next open task, which is started for it; at a checkpoint's end it keeps following the plan with no task in hand, the workflows saying what the mode makes of it; when no task can start, it is told which wait; a plan no longer started lets it go. A paused agent keeps its pause and goes on when it ends."""
 
-    def __init__(self, machine: Machine, plans: Plans, tasks: Tasks, agents: Agents, control: PlanControl) -> None:
+    def __init__(self, machine: StateMachine, plans: Plans, tasks: Tasks, agents: Agents, control: PlanControl) -> None:
         self.machine, self.plans, self.tasks, self.agents, self.control = machine, plans, tasks, agents, control
 
     def handle(self, event: Updated) -> None:

@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
@@ -12,7 +12,7 @@ class MeasureResult(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger) -> None:
         self.machine, self.nudger = machine, nudger
 
     def handle(self, event: ToolFinished) -> Decision | None:

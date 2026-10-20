@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.models.created import Created
 from journal.events.listener import Listener
@@ -11,7 +11,7 @@ from journal.supervisor_link import SupervisorLink
 class DeliverMessage(Listener[Created]):
     """A message the user leaves is typed into the live agent's terminal by number: the engine's own delivery, not a workflow."""
 
-    def __init__(self, agents: Agents, machine: Machine, nudger: Nudger, supervisor: SupervisorLink) -> None:
+    def __init__(self, agents: Agents, machine: StateMachine, nudger: Nudger, supervisor: SupervisorLink) -> None:
         self.agents, self.machine, self.nudger, self.supervisor = agents, machine, nudger, supervisor
 
     def handle(self, event: Created) -> None:

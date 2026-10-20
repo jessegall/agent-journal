@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timezone
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudge import Nudge
 from journal.support.chain import Chain
 from journal.support.requiring import Requiring
@@ -22,7 +22,7 @@ NAMED = re.compile(r"`([^`<]+)")
 class Running:
     """The sequences an agent works through, kept on its row as a stack: one started inside another is the one in hand, and when it ends the other comes back. Every start goes through here."""
 
-    def __init__(self, machine: Machine, agents: Agents, requiring: Requiring, workers: Workers, rows: Rows) -> None:
+    def __init__(self, machine: StateMachine, agents: Agents, requiring: Requiring, workers: Workers, rows: Rows) -> None:
         self.machine, self.agents, self.requiring, self.workers, self.rows = machine, agents, requiring, workers, rows
 
     def runs(self, agent: Agent) -> list[SequenceRun]:

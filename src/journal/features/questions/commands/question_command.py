@@ -3,7 +3,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.questions.support.answering import Answering
 from journal.features.questions.states.waiting import Waiting
 from journal.models.question import Question
@@ -19,7 +19,7 @@ from journal.repositories.workers import Workers
 class QuestionCommand(Command):
     noun = "question"
 
-    def __init__(self, questions: Questions, machine: Machine, answering: Answering, messages: Messages, links: Links, scope: Scope, workers: Workers) -> None:
+    def __init__(self, questions: Questions, machine: StateMachine, answering: Answering, messages: Messages, links: Links, scope: Scope, workers: Workers) -> None:
         self.questions, self.machine, self.answering, self.messages, self.links, self.scope, self.workers = questions, machine, answering, messages, links, scope, workers
 
     def arguments(self, verbs) -> None:

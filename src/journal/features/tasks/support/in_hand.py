@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from journal.support.where import Where
 from journal.engine.clock import Clock
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.paused import Paused
 from journal.features.tasks.states.working import Working
 from journal.models.task import Task
@@ -14,7 +14,7 @@ from journal.repositories.tasks import Tasks
 class InHand:
     """The work an agent has in hand, taken up and let go of in one place for the task and the work commands alike."""
 
-    def __init__(self, tasks: Tasks, machine: Machine, clock: Clock) -> None:
+    def __init__(self, tasks: Tasks, machine: StateMachine, clock: Clock) -> None:
         self.tasks, self.machine, self.clock = tasks, machine, clock
 
     def current(self, where: Where) -> Working | None:

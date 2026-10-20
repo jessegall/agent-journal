@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
@@ -19,7 +19,7 @@ class HoldWritesForTheStep(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, running: Running, requiring: Requiring, providers: Providers, entries: Entries, settings: SettingRows, registry: Registry) -> None:
+    def __init__(self, machine: StateMachine, running: Running, requiring: Requiring, providers: Providers, entries: Entries, settings: SettingRows, registry: Registry) -> None:
         self.machine, self.running, self.requiring, self.providers = machine, running, requiring, providers
         self.entries, self.settings, self.registry = entries, settings, registry
 

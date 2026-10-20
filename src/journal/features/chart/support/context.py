@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from journal.engine.agent_state import AgentState
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.event import Event
 from journal.models.agent import Agent
 from journal.support.value_name import ValueName
@@ -51,7 +51,7 @@ class Context:
             return self.calling[-1]
         return self.walked[-1] if self.walked else 0
 
-    def agent_in(self, machine: Machine) -> Agent:
+    def agent_in(self, machine: StateMachine) -> Agent:
         """The agent the walk is about, as the machine holds it now."""
         return machine.agent(self.session, self.environment_id)
 

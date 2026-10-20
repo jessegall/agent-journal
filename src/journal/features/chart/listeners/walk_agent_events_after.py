@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent_listener import AgentListener
 from journal.features.chart.support.context import Context
@@ -8,7 +8,7 @@ from journal.features.chart.support.walk import AFTER, Walk
 class WalkAgentEventsAfter(AgentListener[AgentEvent]):
     """The quiet workflows of an agent event, those that only type, show a card or start a sequence, walked after the hook is answered, so the agent never waits on them."""
 
-    def __init__(self, walk: Walk, machine: Machine) -> None:
+    def __init__(self, walk: Walk, machine: StateMachine) -> None:
         self.walk, self.machine = walk, machine
 
     def handle(self, event: AgentEvent) -> None:

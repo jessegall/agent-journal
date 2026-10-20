@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudge import Nudge
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.support.actor import Actor
@@ -17,7 +17,7 @@ from journal.repositories.tasks import Tasks
 class PlanControl:
     """Starting, parking and abandoning a plan, the one way for the command and the viewer alike: the task in hand and the agent following the plan move with it. The session is the agent's that follows, empty when none does."""
 
-    def __init__(self, plans: Plans, tasks: Tasks, machine: Machine, settings: SettingRows) -> None:
+    def __init__(self, plans: Plans, tasks: Tasks, machine: StateMachine, settings: SettingRows) -> None:
         self.plans, self.tasks, self.machine, self.settings = plans, tasks, machine, settings
 
     def holds(self, plan: Plan) -> bool:

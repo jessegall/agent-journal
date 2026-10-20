@@ -34,7 +34,7 @@ from journal.support.not_found import NotFound
 MOVED = "a feature moved the agent"
 
 
-class Machine(AgentListener[AgentEvent]):
+class StateMachine(AgentListener[AgentEvent]):
     """The one blocking listener on every agent event: loads the agent's state, asks it, saves the new state, and turns the transition into the decision, with what it says sent through the nudger."""
 
     blocking = True

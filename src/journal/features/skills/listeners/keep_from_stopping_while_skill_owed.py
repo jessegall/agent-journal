@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.registry import Registry
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
@@ -11,7 +11,7 @@ class KeepFromStoppingWhileSkillOwed(AgentListener[Idle]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, registry: Registry, requiring: Requiring) -> None:
+    def __init__(self, machine: StateMachine, registry: Registry, requiring: Requiring) -> None:
         self.machine, self.registry, self.requiring = machine, registry, requiring
 
     def handle(self, event: Idle) -> Decision | None:

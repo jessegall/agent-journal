@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.ended import Ended
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent_listener import AgentListener
@@ -11,7 +11,7 @@ class EndOtherSessions(AgentListener[SessionStarted]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, machine: Machine) -> None:
+    def __init__(self, agents: Agents, machine: StateMachine) -> None:
         self.agents, self.machine = agents, machine
 
     def handle(self, event: SessionStarted) -> Decision | None:

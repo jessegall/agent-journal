@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
@@ -58,7 +58,7 @@ NOT_ASKED = "plugins not asked: a test run walks the workflows alone and never r
 class Trial:
     """A dry walk of the chart for an agent event, about the live agent of an environment: the path it would take and what it would do, nothing done."""
 
-    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks, machine: Machine, providers: Providers, scope: Scope) -> None:
+    def __init__(self, walk: Walk, fillers: Fillers, agents: Agents, messages: Messages, workers: Workers, questions: Questions, checks: Checks, machine: StateMachine, providers: Providers, scope: Scope) -> None:
         self.repositories = {"messages": messages, "workers": workers, "questions": questions}
         self.checks, self.machine, self.providers = checks, machine, providers
         self.walk, self.fillers, self.agents, self.scope = walk, fillers, agents, scope

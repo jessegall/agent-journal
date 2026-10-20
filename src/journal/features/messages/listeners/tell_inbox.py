@@ -1,6 +1,6 @@
 from typing import TypeVar
 
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent_listener import AgentListener
@@ -15,7 +15,7 @@ class TellInbox(AgentListener[A]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, messages: Messages) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, messages: Messages) -> None:
         self.machine, self.nudger, self.messages = machine, nudger, messages
 
     def handle(self, event: A) -> Decision | None:

@@ -1,5 +1,5 @@
 from journal.support.cards import Cards
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
 from journal.support.skill import Skill
@@ -15,7 +15,7 @@ class MarkLoaded(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, agents: Agents, files: SkillFiles, cards: Cards, requiring: Requiring) -> None:
+    def __init__(self, machine: StateMachine, agents: Agents, files: SkillFiles, cards: Cards, requiring: Requiring) -> None:
         self.machine, self.agents, self.files, self.cards, self.requiring = machine, agents, files, cards, requiring
 
     def handle(self, event: ToolFinished) -> None:

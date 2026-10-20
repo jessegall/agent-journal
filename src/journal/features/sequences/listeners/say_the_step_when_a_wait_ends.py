@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.paused import Paused
 from journal.events.models.updated import Updated
 from journal.events.listener import Listener
@@ -11,7 +11,7 @@ from journal.supervisor_link import SupervisorLink
 class SayTheStepWhenAWaitEnds(Listener[Updated]):
     """An agent that leaves a wait with a step open is typed the step, so it picks the sequence up again."""
 
-    def __init__(self, machine: Machine, running: Running, registry: Registry, supervisor: SupervisorLink) -> None:
+    def __init__(self, machine: StateMachine, running: Running, registry: Registry, supervisor: SupervisorLink) -> None:
         self.machine, self.running, self.registry, self.supervisor = machine, running, registry, supervisor
 
     def handle(self, event: Updated) -> None:

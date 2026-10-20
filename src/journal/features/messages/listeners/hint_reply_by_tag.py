@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
@@ -13,7 +13,7 @@ class HintReplyByTag(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, nudger: Nudger, providers: Providers) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, providers: Providers) -> None:
         self.machine, self.nudger, self.providers = machine, nudger, providers
 
     def handle(self, event: ToolFinished) -> Decision | None:

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.engine.clock import Clock
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.paused import Paused
 from journal.support.refused import Refused
 from journal.features.tasks.states.idle import Idle
@@ -31,7 +31,7 @@ from journal.features.tasks.support.after_a_close import AfterAClose
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, after: AfterAClose) -> None:
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: StateMachine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, after: AfterAClose) -> None:
         self.clock, self.after = clock, after
         self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.waits, self.briefing = tasks, logs, machine, messages, links, plans, in_hand, questions, waits, briefing
 

@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
 from journal.features.tasks.states.working import Working
@@ -9,7 +9,7 @@ from journal.repositories.agents import Agents
 class LetGoOfClosedTask(Listener[Updated]):
     """An agent working on a task that closes, whoever closed it, goes back to rest; one following a plan with it is moved on by the plan instead."""
 
-    def __init__(self, machine: Machine, agents: Agents) -> None:
+    def __init__(self, machine: StateMachine, agents: Agents) -> None:
         self.machine, self.agents = machine, agents
 
     def handle(self, event: Updated) -> None:

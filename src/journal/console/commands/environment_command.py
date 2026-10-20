@@ -8,7 +8,7 @@ from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.worktree import Worktree
 from journal.config import Config
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.shell.commands.shell_command import ENDED, MOVED
 from journal.support.environment_row import EnvironmentRow
 from journal.models.task_state import TaskState
@@ -33,7 +33,7 @@ TAKEN_OVER_WITHIN = timedelta(hours=12)
 class EnvironmentCommand(Command):
     noun = "environment"
 
-    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, machine: Machine, providers: Providers, config: Config, scope: Scope) -> None:
+    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, machine: StateMachine, providers: Providers, config: Config, scope: Scope) -> None:
         self.environments, self.agents, self.tasks, self.messages, self.questions, self.workers, self.entries = environments, agents, tasks, messages, questions, workers, entries
         self.rules, self.facts, self.reminders, self.machine, self.providers, self.config, self.scope = rules, facts, reminders, machine, providers, config, scope
 

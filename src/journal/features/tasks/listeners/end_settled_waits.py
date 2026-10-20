@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
 from journal.features.tasks.states.expecting import Expecting
@@ -11,7 +11,7 @@ from journal.support.telling import Telling
 class EndSettledWaits(Listener[Updated]):
     """An output ended or a wait's script passed: an agent whose wait names it, with nothing it names still out, goes back to what it was doing and is told what each came to."""
 
-    def __init__(self, agents: Agents, machine: Machine, awaitables: Awaitables, telling: Telling) -> None:
+    def __init__(self, agents: Agents, machine: StateMachine, awaitables: Awaitables, telling: Telling) -> None:
         self.agents, self.machine, self.awaitables, self.telling = agents, machine, awaitables, telling
 
     def handle(self, event: Updated) -> None:

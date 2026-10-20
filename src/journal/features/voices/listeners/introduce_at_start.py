@@ -1,4 +1,4 @@
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.agent.journal_started import JournalStarted
 from journal.events.agent_listener import AgentListener
@@ -11,7 +11,7 @@ PROMPT_UP_AFTER = 4.0
 class IntroduceAtStart(AgentListener[JournalStarted]):
     """When the journal has started the agent, the agent makes itself known in the chat, in its voice: an introduction in a new conversation, a word that it is back in a resumed one; the journal types the request once the prompt is up."""
 
-    def __init__(self, machine: Machine, nudger: Nudger, supervisor: SupervisorLink) -> None:
+    def __init__(self, machine: StateMachine, nudger: Nudger, supervisor: SupervisorLink) -> None:
         self.machine, self.nudger, self.supervisor = machine, nudger, supervisor
 
     def handle(self, event: JournalStarted) -> None:

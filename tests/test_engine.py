@@ -10,7 +10,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.support.where import Where
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.features.tasks.states.stuck import Stuck
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
@@ -106,7 +106,7 @@ def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app)
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "ship it", "--start"], AGENT)
-    assert app.container.get(Machine).current("s1").task_id == 1
+    assert app.container.get(StateMachine).current("s1").task_id == 1
     assert write(app)[0] == 200
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "task 1 is in hand, last logged just now: carry on" in body["reason"], "a stop with work in hand is held, which is how Claude is told to go on"
@@ -119,7 +119,7 @@ def test_done_makes_the_agent_idle_again(app):
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["task", "done", "1"], AGENT)
-    assert isinstance(app.container.get(Machine).current("s1"), Idle)
+    assert isinstance(app.container.get(StateMachine).current("s1"), Idle)
     assert hook(app, "Stop")[1] == {}
 
 
@@ -128,7 +128,7 @@ def test_stuck_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app):
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "stuck on the login"], AGENT)
-    machine = app.container.get(Machine)
+    machine = app.container.get(StateMachine)
     assert isinstance(machine.current("s1"), Stuck) and machine.current("s1").why == "stuck on the login"
     assert hook(app, "Stop")[1] == {}
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
@@ -144,10 +144,10 @@ def test_a_feature_switched_off_takes_its_gate_with_it(app):
 def test_the_session_end_ends_the_agent_and_a_new_start_of_the_same_session_revives_it(app):
     hook(app, "SessionStart")
     hook(app, "SessionEnd")
-    assert app.container.get(Machine).current("s1").name == "ended"
+    assert app.container.get(StateMachine).current("s1").name == "ended"
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
-    assert app.container.get(Machine).current("s1").name == "idle"
+    assert app.container.get(StateMachine).current("s1").name == "idle"
 
 
 def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
@@ -161,7 +161,7 @@ def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
     second = App(Config(tmp_path, port=0))
     second.runtime().start()
     try:
-        assert second.container.get(Machine).current("s1").task_id == 1
+        assert second.container.get(StateMachine).current("s1").task_id == 1
         assert write(second)[0] == 200
     finally:
         second.runtime().stop()
@@ -172,7 +172,7 @@ def test_a_tick_reaches_the_machine_without_a_hook(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.container.get(Clock).tick()
-    assert isinstance(app.container.get(Machine).current("s1"), Idle)
+    assert isinstance(app.container.get(StateMachine).current("s1"), Idle)
 
 
 def test_one_task_in_hand_park_resume_and_await(app):
@@ -184,12 +184,12 @@ def test_one_task_in_hand_park_resume_and_await(app):
     refused = console.run(["task", "start", "2"], AGENT)
     assert refused.code == 1 and "task 1 is in hand" in refused.err
     console.run(["task", "park", "1", "waiting for the designer"], AGENT)
-    assert isinstance(app.container.get(Machine).current("s1"), Idle), "parked: nothing in hand"
-    assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(Machine).current("s1").task_id == 1
+    assert isinstance(app.container.get(StateMachine).current("s1"), Idle), "parked: nothing in hand"
+    assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(StateMachine).current("s1").task_id == 1
     assert console.run(["await", "the deploy to finish", "--until", "false"], AGENT).code == 0
-    assert app.container.get(Machine).current("s1").name == "expecting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
+    assert app.container.get(StateMachine).current("s1").name == "expecting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert app.container.get(Machine).current("s1").task_id == 1, "working again lifts the wait"
+    assert app.container.get(StateMachine).current("s1").task_id == 1, "working again lifts the wait"
 
 
 def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(app):
@@ -227,7 +227,7 @@ def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nu
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "the tree", "--start"], AGENT)
     assert "waiting on: a talk with the user" in console.run(["task", "block", "1", "a talk with the user"], AGENT).out
-    assert app.container.get(Tasks).find(1).state == TaskState.BLOCKED and app.container.get(Machine).current("s1").name == "idle"
+    assert app.container.get(Tasks).find(1).state == TaskState.BLOCKED and app.container.get(StateMachine).current("s1").name == "idle"
     assert hook(app, "Stop")[1].get("decision") != "block", "a blocked task is not offered, in auto mode or not"
     assert "blocked tasks: 1 the tree (waiting on: a talk with the user)" in console.run(["environment", "here"], AGENT).out
     assert "open again" in console.run(["task", "unblock", "1"], AGENT).out and app.container.get(Tasks).find(1).state == TaskState.OPEN
@@ -248,7 +248,7 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     watcher, link = app.container.get(MenuWatcher), app.container.get(SupervisorLink)
-    agent = app.container.get(Machine).agent("s1", 1)
+    agent = app.container.get(StateMachine).agent("s1", 1)
     screens = app.config.home / "runtime" / "screens"
     screens.mkdir(parents=True, exist_ok=True)
     (app.config.home / "runtime" / "inboxes").mkdir(parents=True, exist_ok=True)
@@ -461,7 +461,7 @@ class Catching(AgentState):
 def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catch_up_beneath_a_pop(app):
     CALLS.clear()
     hook(app, "SessionStart")
-    machine, settings = app.container.get(Machine), SettingsValue({})
+    machine, settings = app.container.get(StateMachine), SettingsValue({})
     standing = Stack((Idle(), Catching()))
     pushed = machine.through_hooks(standing, standing.pushed(Noting()), settings)
     assert pushed.stack == standing.pushed(Noting()) and pushed.nudges == (LINE.create(),) and pushed.held is None
@@ -544,7 +544,7 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
     agents, bus = app.container.get(Agents), app.container.get(Bus)
     assert [a.session for a in agents.live_in(1)] == ["s2"]
     assert any(isinstance(listener, RowEventsToTheTop) for listener in bus.listeners(RowEvent))
-    assert not any(isinstance(listener, (RowEventsToTheTop, Machine)) for listener in bus.listeners(Updated))
+    assert not any(isinstance(listener, (RowEventsToTheTop, StateMachine)) for listener in bus.listeners(Updated))
     bus.dispatch(PlanStarted(environment_id=1, at=1.0, plan_id=1, task_id=0))
     assert [row["state"] for row in agents.for_session("s2").stack] == ["idle"]
 

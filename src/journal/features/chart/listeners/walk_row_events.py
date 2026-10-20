@@ -4,7 +4,7 @@ from journal.events.models.model_event import ModelEvent
 from journal.events.models.updated import Updated
 from journal.support.chart_catalogue import OWN
 from journal.features.chart.support.context import Context
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.states.ended import Ended
 from journal.features.chart.support.walk import Walk
 from journal.events.listener import Listener
@@ -15,7 +15,7 @@ from journal.repositories.agents import Agents
 class WalkRowEvents(Listener[ModelEvent]):
     """Every row created, updated or deleted walks the chart on the worker thread, in the row's environment, which the feature's switch puts it in, about every agent there that has not ended, the live one first; no hook waits, so a line is typed and a value set once per environment, and nothing is refused."""
 
-    def __init__(self, walk: Walk, agents: Agents, machine: Machine) -> None:
+    def __init__(self, walk: Walk, agents: Agents, machine: StateMachine) -> None:
         self.walk, self.agents, self.machine = walk, agents, machine
 
     def handle(self, event: ModelEvent) -> None:

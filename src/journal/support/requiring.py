@@ -1,7 +1,7 @@
 import re
 
 from journal.engine.agent_state import AgentState
-from journal.engine.machine import Machine
+from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.features.registry import Registry
 from journal.support.skill import Skill
@@ -14,7 +14,7 @@ from journal.repositories.agents import Agents
 class Requiring:
     """What every moment of requiring shares: which skills an agent still owes, as a fact on its row, and the line that says where each file is."""
 
-    def __init__(self, machine: Machine, registry: Registry, files: SkillFiles, nudger: Nudger, agents: Agents) -> None:
+    def __init__(self, machine: StateMachine, registry: Registry, files: SkillFiles, nudger: Nudger, agents: Agents) -> None:
         self.machine, self.registry, self.files, self.nudger, self.agents = machine, registry, files, nudger, agents
 
     def owes_anything(self, agent: Agent) -> bool:
