@@ -13,8 +13,11 @@ import {choose} from "../state/environment.js";
 import {store} from "../state/store.js";
 import {useNavigation} from "../composables/navigation.js";
 import {rows} from "../sync/rows.js";
+import {pluginPages} from "../domain/pluginPages.js";
 
 const envs = computed(() => rows("environments"));
+const pages = computed(() => pluginPages(rows("plugins")));
+const openPage = (page) => (store.pluginPage = {plugin: page.plugin, open: page.open, settled: null});
 const release = computed(() => store.spec.version || "");
 const creating = ref(false);
 const folded = reactive({});
@@ -53,6 +56,19 @@ function point(e) {
                             <span class="label">{{ link.title }}</span>
                             <span :class="['count', {hot: link.hot}]">{{ link.count || "" }}</span>
                         </a>
+                    </template>
+                    <template v-if="g.key === 'project'">
+                        <template v-for="page in pages" :key="page.key">
+                            <button
+                                type="button"
+                                :class="['item', 'item-page', {on: store.pluginPage && store.pluginPage.plugin === page.plugin}]"
+                                @click="openPage(page)"
+                            >
+                                <Icon :name="page.icon" />
+                                <span class="label">{{ page.title }}</span>
+                                <span :class="['plugin-dot', page.state]" />
+                            </button>
+                        </template>
                     </template>
                 </FoldGroup>
             </template>
@@ -245,6 +261,32 @@ function point(e) {
     background: var(--hover);
     color: var(--text-2);
 }
+.item-page {
+    width: 100%;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.plugin-dot {
+    width: 6px;
+    height: 6px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: var(--tone-good);
+}
+
+.plugin-dot.failing {
+    background: var(--danger);
+}
+
+.side-wrap.mini .plugin-dot {
+    display: none;
+}
+
 .env-row {
     position: relative;
 }
