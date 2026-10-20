@@ -22,7 +22,8 @@
         "PoeticTypeNameDetector",
         "PoeticMethodNameDetector",
         "DocstringInMethodDetector",
-        "FieldDocstringDetector"
+        "FieldDocstringDetector",
+        "StateMachineOutsideEngineDetector"
     ],
     "parallel": 2,
     "configure": {

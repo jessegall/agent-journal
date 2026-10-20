@@ -29,6 +29,9 @@ else: no docstring inside a method, no comment inside a method, no docstring und
 - **`field-docstring`** - a docstring under a field or a constant. Name the field so it needs none, or say it in
   the class's one line.
 
+- **`state-machine-outside-engine`** - a file outside `journal/engine` imports the state machine. Only the engine
+  and `journal panic` touch it: a command writes rows, the model names the event, the state answers it.
+
 ## The fix
 
 Trace the name to where the thing is born and name it there for what it is. A docstring or a comment in a body goes;
