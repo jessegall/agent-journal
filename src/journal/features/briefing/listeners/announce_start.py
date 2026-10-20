@@ -16,4 +16,4 @@ class AnnounceStart(AgentListener[SessionStarted]):
     def handle(self, event: SessionStarted) -> None:
         if event.source not in STARTS:
             return
-        self.bus.dispatch(JournalStarted(source=event.source).placed(event.session, event.environment_id, event.provider, event.context, event.subagent))
+        self.bus.dispatch(JournalStarted(source=event.source).placed(event.session, event.environment_id, event.provider, event.context, event.at, event.subagent))

@@ -1,6 +1,7 @@
 import threading
 
 from journal.config import Config
+from journal.engine.clock import Clock
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.turn_written import TurnWritten
 from journal.providers.support.written import Written
@@ -17,8 +18,8 @@ FIRST_LOOK = -1
 class TranscriptTurns:
     """The text blocks an agent writes before a tool call never reach the display hook, which brings only a turn's last block; so at every other hook the agent's transcript is read from where it was left, and each block written since becomes a whole turn of its own, before the hook's event is handled."""
 
-    def __init__(self, config: Config, providers: Providers, context: ContextFile) -> None:
-        self.config, self.providers, self.context = config, providers, context
+    def __init__(self, config: Config, providers: Providers, context: ContextFile, clock: Clock) -> None:
+        self.config, self.providers, self.context, self.clock = config, providers, context, clock
         self._read: dict[str, int] = {}
         self._reading = threading.Lock()
 
@@ -30,7 +31,7 @@ class TranscriptTurns:
             written = self.providers.named(hook.provider).texts_written(self.config.root, hook.session, self._read.get(hook.session, FIRST_LOOK))
             self._read[hook.session] = written.at
         turns = [TurnWritten(text=text, delta=text, turn_id=f"transcript:{hook.session}:{i}", final=True) for i, text in enumerate(written.texts)]
-        return [event.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), hook.subagent) for event in [*written.crossed, *turns]]
+        return [event.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.now(), hook.subagent) for event in [*written.crossed, *turns]]
 
     def missed(self, session: str, provider: str, until: float) -> Written:
         """What no hook has read yet that was written before a moment, read on from where the hooks left off, so neither reads one twice."""

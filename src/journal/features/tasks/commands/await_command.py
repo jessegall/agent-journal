@@ -6,6 +6,7 @@ from journal.support.awaitables import Awaitables
 from journal.support.refused import Refused
 from journal.support.where import Where
 from journal.engine.machine import Machine
+from journal.engine.clock import Clock
 from journal.events.agent.awaited import Awaited
 from journal.events.bus import Bus
 from journal.features.tasks.states.expecting import Expecting
@@ -25,8 +26,8 @@ class AwaitCommand(Command):
     noun = "await"
     default_verb = "now"
 
-    def __init__(self, machine: Machine, scope: Scope, bus: Bus, awaitables: Awaitables) -> None:
-        self.machine, self.scope, self.bus, self.awaitables = machine, scope, bus, awaitables
+    def __init__(self, machine: Machine, scope: Scope, bus: Bus, awaitables: Awaitables, clock: Clock) -> None:
+        self.machine, self.scope, self.bus, self.awaitables, self.clock = machine, scope, bus, awaitables, clock
 
     def arguments(self, verbs) -> None:
         now = self.verb(verbs, "now", "say what you wait for, and name what ends the wait")
@@ -43,6 +44,6 @@ class AwaitCommand(Command):
         environment = self.scope.id
         current = self.machine.agent(where.session, environment)
         self.machine.move(where.session, environment, Expecting.leaving(self.machine.states.named(current.state, current.data), what=args.what, ends_on=",".join(names)))
-        self.bus.dispatch(Awaited(what=args.what).placed(where.session, environment, current.provider, None))
+        self.bus.dispatch(Awaited(what=args.what).placed(where.session, environment, current.provider, None, self.clock.now()))
         print(f"waiting for {args.what}, on {', '.join(names)}; it ends by itself once all of it has settled, or when you work again")
         return 0

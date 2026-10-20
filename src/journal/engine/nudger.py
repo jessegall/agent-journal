@@ -1,5 +1,4 @@
-import time
-
+from journal.engine.clock import Clock
 from journal.events.agent.line_said import LineSaid
 from journal.events.bus import Bus
 from journal.support.deferred import Deferred
@@ -17,8 +16,8 @@ NUDGE = "nudge"
 class Nudger:
     """Says a line to an agent, in the agent's environment: drops it when its feature is off or it was said lately, writes the entry, tells the bus a line was said once the reply has gone, and hands back the words. The caller picks the road: a hook's answer, or the supervisor."""
 
-    def __init__(self, features: FeaturesKnown, entries: Entries, scope: Scope, bus: Bus, deferred: Deferred) -> None:
-        self.features, self.entries, self.scope, self.bus, self.deferred = features, entries, scope, bus, deferred
+    def __init__(self, features: FeaturesKnown, entries: Entries, scope: Scope, bus: Bus, deferred: Deferred, clock: Clock) -> None:
+        self.features, self.entries, self.scope, self.bus, self.deferred, self.clock = features, entries, scope, bus, deferred, clock
 
     def say(self, agent: Agent, said: Said) -> str | None:
         """The rendered line when it goes out, None when it is dropped."""
@@ -29,8 +28,8 @@ class Nudger:
         if self.features.silenced(said) or self._repeat(agent, said):
             return None
         line = said.rendered()
-        self.entries.save(Entry(environment_id=agent.environment_id, kind=NUDGE, actor=Actor.system(), data={"key": said.key, "session": agent.session, "line": line, "at": time.time()}), Actor.system())
-        said_now = LineSaid(nudge=said.key).placed(agent.session, agent.environment_id, agent.provider, None)
+        self.entries.save(Entry(environment_id=agent.environment_id, kind=NUDGE, actor=Actor.system(), data={"key": said.key, "session": agent.session, "line": line, "at": self.clock.now()}), Actor.system())
+        said_now = LineSaid(nudge=said.key).placed(agent.session, agent.environment_id, agent.provider, None, self.clock.now())
         self.deferred.add(lambda: self.bus.dispatch(said_now))
         return line
 

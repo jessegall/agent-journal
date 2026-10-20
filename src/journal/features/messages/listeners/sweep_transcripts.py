@@ -22,4 +22,4 @@ class SweepTranscripts(Listener[ClockTicked]):
                 written = self.turns.missed(agent.session, agent.provider, until)
                 turns = [TurnWritten(text=text, delta=text, turn_id=f"swept:{agent.session}:{event.at}:{i}", final=True) for i, text in enumerate(written.texts)]
                 for swept in [*written.crossed, *turns]:
-                    self.bus.dispatch(swept.placed(agent.session, agent.environment_id, agent.provider, None))
+                    self.bus.dispatch(swept.placed(agent.session, agent.environment_id, agent.provider, None, event.at))

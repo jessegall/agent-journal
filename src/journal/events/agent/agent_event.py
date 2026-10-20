@@ -16,6 +16,8 @@ class AgentEvent(Event):
     provider: str = ""
     context: float | None = None
     """How full the agent's context window is, 0 to 1, when its provider reports it."""
+    at: float = 0.0
+    """The clock's time when the event was recorded."""
     subagent: str = ""
     """The subagent that did this, by its id, when the hook came from one rather than from the agent itself; a subagent's doing is not the agent working."""
 
@@ -24,5 +26,5 @@ class AgentEvent(Event):
         """What the agent wrote in this event that the journal reads for its words: nothing, unless the event says otherwise."""
         return ""
 
-    def placed(self, session: str, environment_id: int, provider: str, context: float | None, subagent: str = "") -> "AgentEvent":
-        return replace(self, session=session, environment_id=environment_id, provider=provider, context=context, subagent=subagent)
+    def placed(self, session: str, environment_id: int, provider: str, context: float | None, at: float, subagent: str = "") -> "AgentEvent":
+        return replace(self, session=session, environment_id=environment_id, provider=provider, context=context, at=at, subagent=subagent)

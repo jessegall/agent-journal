@@ -2,6 +2,8 @@ import re
 from argparse import Namespace
 from dataclasses import asdict
 from datetime import datetime, timezone
+
+from journal.engine.clock import Clock
 from pathlib import Path
 
 from journal.events.agent.command_ended import CommandEnded
@@ -45,8 +47,8 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus, snapshots: FileSnapshots) -> None:
-        self.entries, self.messages, self.settings, self.agents, self.bus = entries, messages, settings, agents, bus
+    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus, snapshots: FileSnapshots, clock: Clock) -> None:
+        self.entries, self.messages, self.settings, self.agents, self.bus, self.clock = entries, messages, settings, agents, bus, clock
         self.edits, self.log, self.outputs = edits, log, outputs
         self.cards, self.scope, self.snapshots = cards, scope, snapshots
 
@@ -148,7 +150,7 @@ class ShellCommand(Command):
         self.record(where, MOVED, {"chain": args.chain, "part": args.part, "file": args.file})
         output = self.outputs.save(self.outputs.of_chain(args.chain).moved_out(), where.actor)
         if where.session:
-            self.bus.dispatch(CommandMoved(output=output.id).placed(where.session, self.scope.id, "", None))
+            self.bus.dispatch(CommandMoved(output=output.id).placed(where.session, self.scope.id, "", None, self.clock.now()))
         self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", key=f"background:{args.chain}", command=args.part, shows=ChatMark.COMMANDS)
         print(Shell.MOVED.about(n=output.id, file=args.file).rendered())
         return 0
@@ -163,7 +165,7 @@ class ShellCommand(Command):
         live = self.agents.live()
         if live:
             output = self.outputs.save(self.outputs.of_chain(args.chain).ended_with(args.status), where.actor)
-            self.bus.dispatch(CommandEnded(output=output.id, status=args.status).placed(live.session, self.scope.id, live.provider, None))
+            self.bus.dispatch(CommandEnded(output=output.id, status=args.status).placed(live.session, self.scope.id, live.provider, None, self.clock.now()))
         return 0
 
     def moved_part(self, chain: str) -> str:

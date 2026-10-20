@@ -10,5 +10,4 @@ class Ticked(AgentEvent):
 
     answers_hook: ClassVar[bool] = False
 
-    at: float
     quiet_for: float

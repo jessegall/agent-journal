@@ -1,3 +1,4 @@
+from journal.engine.clock import Clock
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.idle import Idle
@@ -34,10 +35,10 @@ class Translation:
         HookKind.SESSION_END: lambda hook, provider: SessionEnded(),
     }
 
-    def __init__(self, context: ContextFile, providers: Providers, turns: TurnGatherer, entries: Entries) -> None:
+    def __init__(self, context: ContextFile, providers: Providers, turns: TurnGatherer, entries: Entries, clock: Clock) -> None:
         self.context, self.providers, self.turns = context, providers, turns
-        self.entries = entries
+        self.entries, self.clock = entries, clock
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
         bare = self.EVENTS[hook.kind](hook, self.providers.named(hook.provider))
-        return self.turns.fold(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), hook.subagent))
+        return self.turns.fold(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.now(), hook.subagent))

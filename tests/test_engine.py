@@ -26,6 +26,7 @@ from journal.engine.states.ended import Ended
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.session_ended import SessionEnded
+from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.event import Event
 from journal.support.option import Option
@@ -342,3 +343,9 @@ def test_every_listener_whose_event_matches_runs_the_most_specific_first_and_the
 def test_settings_is_a_frozen_value_of_the_options_read_by_option():
     option = Option("tasks.log_after", "Log after", "", 50)
     assert SettingsValue.taken(Rows(), [option]).of(option) == 7
+
+
+def test_every_agent_event_carries_the_time_it_was_placed_and_a_tick_carries_its_own():
+    placed = ToolStarting(tool="Write", input={}).placed("s1", 1, "claude", None, 12.5)
+    assert placed.at == 12.5 and placed.session == "s1"
+    assert Ticked(session="s1", environment_id=1, at=3.0, quiet_for=0.0).at == 3.0
