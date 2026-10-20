@@ -24,6 +24,12 @@ const emit = defineEmits(["close"]);
             The line under the title says the values in the environment picked in the bar, and Change the order lets you drag the list.
         </p>
         <p class="chart-dialog-text">
+            Two built from parts. Remind to commit after 20 writes: at Pre tool use, Tool changes files? then Add one to writes, then Has
+            writes reached 20? then a message; a second trigger, Commit made, sets writes to zero. Ask about an open question after 10
+            quiet minutes: at Pre tool use, Note the time as last_tool_use; a second trigger, Tick, asks Has an open question? and Has 10
+            minutes passed since last_tool_use? before a message.
+        </p>
+        <p class="chart-dialog-text">
             The page opens read-only; Edit switches editing on. Add step puts a step below the selected one and connects it. Drag from a
             port onto another step to connect them, click a line to remove it, and drag a step to move it. Nothing changes until you save.
             Turn off keeps a workflow's steps but stops it answering; Reset to default brings a default workflow back; Delete removes one

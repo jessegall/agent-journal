@@ -135,7 +135,8 @@ a workflow already running in the same call is refused and recorded.
   it at N, at a multiple of N (never zero), and Wait here until a count reaches N, which goes on once it has and waits
   there until then, its No needing no line. A time check asks whether so long has passed since the workflow noted a
   time, or whether it noted it at all; a time never noted has no since and answers no. Each workflow keeps its own
-  counts and times, per environment, so two workflows' values of one name never meet and no workflow reads another's;
+  counts and times, per environment, stored as `charts:<workflow>:<name>` in the counts and noted_times tables, so two
+  workflows' values of one name never meet and no workflow reads another's;
   one workflow may hold a trigger for each event it needs, its values shared by all of them: a count started when a
   message comes and counted at each tool is one workflow with two triggers, with its own place at each event. A
   check on a value no step of the same workflow sets is refused when it is saved, as is one name for a count and a

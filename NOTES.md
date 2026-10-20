@@ -1096,3 +1096,5 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The run order changes in a mode of its own on its column, since the page's Edit folds the lists for the canvas.
   The workflows page stays on the computer, as the phone leaves every page that sets how the journal runs there.
 - The blocked-task ask after an hour of quiet never speaks, since an hour of quiet ends the session first: task 911.
+- A downgrade past 4.3.0 is not supported: migrations 15 and 16 merge the agents' counts per environment and move a
+  workflow's one place onto each of its events, and an older version reads neither.

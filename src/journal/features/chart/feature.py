@@ -74,7 +74,11 @@ sets itself: counts (Set a count to zero, Add one to a count, Has a count reache
 passed since a noted time?), kept per environment; it never reads another workflow's value, and a check on a value no
 step of its own sets is refused. A workflow may hold a trigger for each event it needs, its values shared by them,
 with its own place in each event's order; the canvas shows each environment's values, and a line says a count with
-{{value.<name>}} and the minutes since a time with {{minutes.<name>}}.
+{{value.<name>}} and the minutes since a time with {{minutes.<name>}}. Two built from parts: remind to commit after 20
+writes is Pre tool use → Tool changes files? → Add one to writes → Has writes reached 20? → Send the agent a message,
+with a Commit made trigger → Set writes to zero; ask about an open question after 10 quiet minutes is Pre tool use →
+Note the time as last_tool_use, with a Tick trigger → Has an open question? → Has 10 minutes passed since
+last_tool_use? → Send the agent a message.
 
 - `journal chart show` prints every workflow in its event's order; `journal chart catalogue` lists everything a node may be.
 - `journal chart new "<title>" --on <event> [--for <state>]` makes one, at the end of its event's list; `journal chart order <event> <n>...` sets the order;
