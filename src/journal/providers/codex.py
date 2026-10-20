@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Iterator
 
@@ -18,6 +19,13 @@ class Codex(Provider):
     read_tool = "read_file"
     hook_kinds = tuple(kind for kind in HookKind if kind != HookKind.MESSAGE_DISPLAY)
 
+    def __init__(self) -> None:
+        self._rollouts: dict[str, Path] = {}
+
+    @property
+    def sessions(self) -> Path:
+        return Path.home() / ".codex" / "sessions"
+
     def hooks_trusted(self, project: Path) -> bool:
         """Codex runs a project's hooks only once the user trusted them, which it notes in its own settings by the hooks file."""
         settings = Path.home() / ".codex" / "config.toml"
@@ -25,14 +33,25 @@ class Codex(Provider):
         return settings.is_file() and f'[hooks.state."{hooks}:session_start' in settings.read_text()
 
     def transcript(self, project: Path, session: str) -> Path | None:
-        return next((Path.home() / ".codex" / "sessions").glob(f"**/rollout-*-{session}.jsonl"), None)
+        kept = self._rollouts.get(session)
+        if kept and kept.is_file():
+            return kept
+        found = next(self.sessions.glob(f"**/rollout-*-{session}.jsonl"), None)
+        if found:
+            self._rollouts[session] = found
+        return found
 
     def latest_session(self, project: Path, since: float) -> str:
-        rollouts = [path for path in (Path.home() / ".codex" / "sessions").glob("**/rollout-*.jsonl") if path.stat().st_mtime >= since]
+        rollouts = [path for day in self.days_since(since) for path in (self.sessions / day).glob("rollout-*.jsonl") if path.stat().st_mtime >= since]
         for path in sorted(rollouts, key=lambda path: path.stat().st_mtime, reverse=True):
             if self.rollout_folder(path) == str(project.resolve()):
                 return path.stem[-36:]
         return ""
+
+    @staticmethod
+    def days_since(since: float) -> list[str]:
+        first, last = date.fromtimestamp(since) - timedelta(days=1), date.today() + timedelta(days=1)
+        return [(first + timedelta(days=n)).strftime("%Y/%m/%d") for n in range((last - first).days + 1)]
 
     @staticmethod
     def rollout_folder(path: Path) -> str:

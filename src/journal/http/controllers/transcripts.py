@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from journal.config import Config
+from journal.models.worker import Worker
+from journal.support.actor import Actor
 from journal.support.subagents import Subagents
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.http.support.request import Request
@@ -37,8 +39,14 @@ class TranscriptController:
         worker = self.workers.find(request.number("id"))
         provider = self.providers.named(worker.provider)
         place = self.runner.place(worker)
-        session = worker.resume or (provider.latest_session(place, worker.began) if worker.began else "")
+        session = worker.resume or worker.found_session or self.found_session(worker, provider, place)
         return self.answer(request, provider, provider.transcript(place, session) if session else None)
+
+    def found_session(self, worker: Worker, provider: Provider, place: Path) -> str:
+        session = provider.latest_session(place, worker.began) if worker.began else ""
+        if session:
+            self.workers.touch(worker, Actor.system(), found_session=session)
+        return session
 
     def answer(self, request: Request, provider: Provider, path: Path | None) -> Response:
         page = TranscriptPage(self.turns.of(provider, path) if path else [])

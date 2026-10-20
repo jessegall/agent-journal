@@ -26,12 +26,13 @@ class Worker(Scoped):
     """Whether the agent has acted on its last report: given it its next job, stopped it, or marked it done."""
     pid: int = 0
     began: float = 0.0
+    found_session: str = ""
 
     def reported(self) -> "Worker":
         return self.with_(state=WorkerState.REPORTED, taken_up=False, pid=0)
 
     def running_as(self, pid: int, began: float) -> "Worker":
-        return self.with_(pid=pid, began=began)
+        return self.with_(pid=pid, began=began, found_session="")
 
     def told(self, brief: str) -> "Worker":
         """The same worker sent out again on its next job."""

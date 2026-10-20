@@ -575,6 +575,29 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
     assert Codex().worker_outcome("", "session id: 0192f3a4-aaaa-bbbb\nit broke") == ("session id: 0192f3a4-aaaa-bbbb\nit broke", "0192f3a4-aaaa-bbbb"), "with no answer the log is the report"
 
 
+def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app, monkeypatch, tmp_path):
+    from datetime import date
+    from journal.models.agent import Agent
+    from journal.repositories.agents import Agents
+    from journal.repositories.workers import Workers
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
+    app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Where("main", "c1"))
+    workers = app.container.get(Workers)
+    worker = workers.save(workers.find(1).running_as(1, time.time() - 5), Actor.system())
+    session = "01a15a25-535e-7cc2-993e-d38deedb6b40"
+    rollout = tmp_path / "home" / ".codex" / "sessions" / date.today().strftime("%Y/%m/%d") / f"rollout-2026-10-20T18-29-18-{session}.jsonl"
+    rollout.parent.mkdir(parents=True)
+    said = {"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "Storage is written."}]}}
+    rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": str(app.container.get(WorkerRunner).place(worker).resolve())}}) + "\n" + json.dumps(said) + "\n")
+    read = lambda: json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/workers/1/transcript", headers={"X-Journal-Env": "main"}), timeout=5))
+    assert [turn["text"] for turn in read()["turns"]] == ["Storage is written."]
+    assert workers.find(1).found_session == session, "the session found in Codex's files is kept on the worker's row"
+    rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": "/elsewhere"}}) + "\n" + json.dumps(said) + "\n")
+    assert [turn["text"] for turn in read()["turns"]] == ["Storage is written."], "the next read takes the kept session and does not look through the rollouts again"
+    assert workers.save(workers.find(1).running_as(2, time.time()), Actor.system()).found_session == "", "a new run looks for its own session"
+
+
 def test_a_dispatch_without_a_model_a_profile_or_a_job_is_refused(app):
     from journal.support.profile_files import ProfileFiles
     app.container.get(ProfileFiles).write_all()
