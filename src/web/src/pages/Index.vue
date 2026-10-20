@@ -9,7 +9,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, peek, route} from "../route.js";
-import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
+import {groupOf, GROUPS, listedOpen, recordCount} from "../domain/records.js";
 import {closedAt, createdAt, isClosed} from "../domain/row.js";
 import {closedEarlier, closedFirst, closedHasMore, earlier, hasLoaded, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
@@ -28,7 +28,7 @@ const filter = ref("open");
 const adding = ref(false);
 const all = computed(() => rows(props.table));
 const SHOWS = {
-    open: () => open(props.table),
+    open: () => listedOpen(props.table),
     closed: () => all.value.filter(isClosed),
     every: () => all.value,
 };

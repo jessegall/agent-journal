@@ -16,6 +16,9 @@ const UNSTARTED = ["draft", "ready", "reviewing", "approved"];
 
 export const open = (table) => rows(table).filter((r) => !isClosed(r));
 
+// The open rows a page lists, which its open count counts: a plan's tasks stay behind their plan.
+export const listedOpen = (table) => open(table).filter((r) => !r.plan_id);
+
 // What the user has not seen: the agent's messages not read yet, and the open rows of a table that someone else made.
 const unseen = (r) => (r.table === "messages" ? r.author === "agent" && !r.read_at : madeBy(r) !== "user");
 export const unreadByUser = (table) => open(table).filter(unseen);
