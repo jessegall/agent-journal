@@ -58,6 +58,16 @@ class Message(Scoped):
         return next((i for i, line in enumerate(lines) if not line.startswith(">")), len(lines))
 
     @property
+    def quotes_a_passage(self) -> bool:
+        """Whether the quote above the words is a passage of a document or a row, not the words of the message it replies to."""
+        return self.quoted_lines > 0 and self.reply_to is None
+
+    @property
+    def quote(self) -> str:
+        """The passage the message comments on, the lines starting with > the viewer puts above it, without the marks."""
+        return "\n".join(line.removeprefix(">").strip() for line in self.text.split("\n")[: self.quoted_lines])
+
+    @property
     def own_words(self) -> str:
         """The words without the quote above them."""
         return "\n".join(self.text.split("\n")[self.quoted_lines:]).strip()

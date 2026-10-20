@@ -112,11 +112,13 @@ class MessageCommand(Command):
         """What the message answers, by number: the quote above it is not repeated."""
         if message.reply_to:
             return f", a reply to message {message.reply_to}"
-        return f", below {message.quoted_lines} quoted lines" if message.quoted_lines else ""
+        return ", on the passage quoted below it" if message.quoted_lines else ""
 
     def show(self, message: Message) -> None:
-        """The message, its files with where to open them and what they show, and the rows it is linked to."""
+        """The message, the passage it comments on, its files with where to open them and what they show, and the rows it is linked to."""
         print(f"message {message.id} from {message.sender}{self.answering(message)}: {message.own_words}")
+        for line in message.quote.split("\n") if message.quotes_a_passage else ():
+            print(f"  > {line}")
         for name in message.files:
             path = self.config.files / "message" / str(message.id) / name
             seen = message.captions.get(name)

@@ -198,6 +198,7 @@ watch(
     bottom: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    padding-bottom: 44px;
     background: var(--bg);
 }
 
