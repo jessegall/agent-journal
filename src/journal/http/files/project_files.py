@@ -11,7 +11,7 @@ HIDDEN = ("node_modules", "__pycache__")
 
 
 class ProjectFiles:
-    """The project's files as the Code page reads them: a folder's entries, a file's text, its uncommitted diff, and a find by name. Nothing outside the project is ever read."""
+    """The project's files as the Files page reads them: a folder's entries, a file's text, its uncommitted diff, and a find by name. Nothing outside the project is ever read."""
 
     def __init__(self, config: Config) -> None:
         self.root = config.root.resolve()

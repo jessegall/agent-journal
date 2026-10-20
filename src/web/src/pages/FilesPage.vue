@@ -1,294 +1,178 @@
 <script setup>
-import {meta} from "../domain/tables.js";
-import {computed, reactive, ref, watch} from "vue";
-import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
-import PagedList from "../kit/PagedList.vue";
-import SectionHeading from "../kit/SectionHeading.vue";
-import Segmented from "../kit/Segmented.vue";
-import TextInput from "../kit/TextInput.vue";
-import FileTile from "../resource/FileTile.vue";
-import FileRow from "../resource/FileRow.vue";
-import {api} from "../api/client.js";
+import Icon from "../kit/Icon.vue";
+import FilePage from "./FilePage.vue";
+import ProjectTree from "../resource/ProjectTree.vue";
+import {computed, ref, watch} from "vue";
 import {href, route} from "../route.js";
-import {ageGroups} from "../format/time.js";
-import {openPictures} from "../platform/view.js";
-import {useSlashFocus} from "../composables/slashFocus.js";
+import {kept, remembered} from "../platform/storage.js";
+import {closed, opened, shownAfterClosing, tabName} from "../domain/openFiles.js";
 
-const PAGE = 60;
-const SEARCH_WAIT = 250;
-const query = ref("");
-const kind = ref("all");
-const shelf = ref("");
-const search = ref(null);
-useSlashFocus(search);
+const path = computed(() => route.value.q || "");
+const tabs = ref(remembered("files.tabs", []));
+kept("files.tabs", tabs);
 
-const counts = ref(null);
-const views = reactive({});
-const words = computed(() => query.value.trim());
-const key = computed(() => `${kind.value}|${shelf.value}|${words.value}`);
-const view = computed(() => views[key.value] || null);
+const show = (file) => (window.location.hash = href.page("files", 0, file).slice(1));
 
-// A file is served under its row, so the address names the environment for the browser to open it.
-const addressed = (file) => {
-    const [table, id] = file.row.split(":");
-    return {...file, url: api.fileUrl(table, Number(id), file.name)};
-};
-
-async function fetchPage(at, skip) {
-    const asked = {kind: kind.value, shelf: shelf.value, search: words.value, last: PAGE, skip};
-    const got = await api.attachments(asked);
-    const held = views[at] || {files: []};
-    views[at] = {files: [...held.files, ...got.files.map(addressed)], more: got.more, found: got.found};
-    counts.value = got.counts;
+function close(file) {
+    const next = shownAfterClosing(tabs.value, file, path.value);
+    tabs.value = closed(tabs.value, file);
+    if (next !== path.value) show(next);
 }
 
-let waiting = 0;
-function open() {
-    clearTimeout(waiting);
-    if (views[key.value]) return;
-    const at = key.value;
-    waiting = setTimeout(() => fetchPage(at, 0), words.value ? SEARCH_WAIT : 0);
-}
-watch(key, open, {immediate: true});
-
-const loadMore = () => fetchPage(key.value, view.value.files.length);
-const kinds = computed(() => [
-    {key: "all", label: `All ${counts.value ? counts.value.all : ""}`.trim()},
-    {key: "images", label: `Images ${counts.value ? counts.value.images : ""}`.trim()},
-    {key: "other", label: `Other files ${counts.value ? counts.value.other : ""}`.trim()},
-]);
-const shelves = computed(() => [
-    {key: "", label: `Anywhere ${Object.values(counts.value ? counts.value.shelves : {}).reduce((sum, n) => sum + n, 0)}`},
-    ...Object.entries(counts.value ? counts.value.shelves : {})
-        .sort((a, b) => b[1] - a[1])
-        .map(([type, n]) => ({key: type, label: `${meta(type)?.title || type}s ${n}`})),
-]);
-const listedFiles = computed(() => (view.value ? view.value.files : []));
-const groups = computed(() =>
-    ageGroups(listedFiles.value, (f) => f.at).map((g) => ({
-        ...g,
-        images: g.list.filter((f) => f.image),
-        others: g.list.filter((f) => !f.image),
-    }))
-);
-const pictures = computed(() => listedFiles.value.filter((f) => f.image).map((f) => ({url: f.url, name: f.description || f.name})));
-const show = (f) =>
-    openPictures(
-        pictures.value,
-        pictures.value.findIndex((p) => p.url === f.url)
-    );
-const pickKind = (picked) => {
-    kind.value = picked;
-    shelf.value = "";
-};
+watch(path, (file) => (tabs.value = opened(tabs.value, file)), {immediate: true});
 </script>
 
 <template>
-    <section class="files">
-        <div class="bar">
-            <TextInput
-                ref="search"
-                class="search"
-                icon="search"
-                type="search"
-                :value="query"
-                placeholder="Search file names, descriptions and attached items"
-                aria-label="Find a file"
-                @input="query = $event.target.value"
-                @keydown.esc="query = ''"
-            />
-            <Segmented class="kinds" :options="kinds" :value="kind" @pick="pickKind" />
-            <span class="grow" />
-            <a class="flat" :href="href.page('doc')">Documents</a>
-        </div>
-        <template v-if="!view">
-            <EmptyState class="none" loading shape="rows" />
-        </template>
-        <template v-else-if="counts && !counts.all">
-            <EmptyState class="none">No files are stored on this environment yet. Files attached to a message or added to a document show here.</EmptyState>
-        </template>
-        <template v-else>
-            <nav class="shelves" aria-label="Attachments">
-                <span class="shelves-label">Attached to</span>
-                <Segmented :options="shelves" :value="shelf" @pick="shelf = $event" />
-            </nav>
-            <template v-if="!listedFiles.length">
-                <EmptyState class="none">
-                    No file matches “{{ words }}”.
-                    <Btn small @click="query = ''">Clear the search</Btn>
-                </EmptyState>
+    <section class="ide">
+        <aside class="ide-tree">
+            <h2 class="ide-heading">Files</h2>
+            <ProjectTree :open="path" @pick="(entry) => show(entry.path)" />
+        </aside>
+        <div class="ide-main">
+            <template v-if="tabs.length">
+                <nav class="ide-tabs" aria-label="Open files">
+                    <template v-for="file in tabs" :key="file">
+                        <div :class="['ide-tab', {shown: file === path}]">
+                            <a class="ide-tab-name" :href="href.page('files', 0, file)" :title="file">
+                                <Icon name="file" :size="12" />
+                                {{ tabName(file) }}
+                            </a>
+                            <button type="button" class="ide-tab-close" :title="`Close ${tabName(file)}`" @click="close(file)">
+                                <Icon name="x" :size="11" />
+                            </button>
+                        </div>
+                    </template>
+                </nav>
             </template>
-            <template v-if="words && listedFiles.length">
-                <SectionHeading class="group-head">
-                    {{ view.found }} {{ view.found === 1 ? "file matches" : "files match" }}
-                </SectionHeading>
-            </template>
-            <PagedList :shown="listedFiles.length" :total="view.found" :more="view.more" :load="loadMore">
-                <template v-for="g in groups" :key="g.title">
-                    <section class="group">
-                        <SectionHeading class="group-head">
-                            {{ g.title }}
-                            <span class="group-n">{{ g.list.length }}</span>
-                        </SectionHeading>
-                        <template v-if="g.images.length">
-                            <div class="gallery">
-                                <template v-for="f in g.images" :key="f.url">
-                                    <FileTile :file="f" @view="show(f)" />
-                                </template>
-                            </div>
-                        </template>
-                        <template v-if="g.others.length">
-                            <div class="rows">
-                                <template v-for="f in g.others" :key="f.url">
-                                    <FileRow :file="f" />
-                                </template>
-                            </div>
-                        </template>
-                    </section>
+            <div class="ide-file">
+                <template v-if="path">
+                    <FilePage :key="path" />
                 </template>
-            </PagedList>
-        </template>
+                <template v-else>
+                    <EmptyState>Choose a file on the left to open it.</EmptyState>
+                </template>
+            </div>
+        </div>
     </section>
 </template>
 
 <style scoped>
-.files {
-    --sticky-top: 44px;
-    padding-bottom: 40px;
+.ide {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    border-top: 1px solid var(--border);
 }
 
-.bar {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    height: 44px;
-    padding: 0 14px 0 22px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--text-2);
+.ide-tree {
+    overflow-y: auto;
+    padding: 10px 6px 24px;
+    border-right: 1px solid var(--border);
+    background: var(--raised);
 }
 
-.search {
-    flex: 0 1 460px;
-}
-
-.kinds {
-    flex: none;
-}
-
-.grow {
-    flex: 1;
-}
-
-.flat {
+.ide-heading {
+    margin: 0 0 6px;
+    padding: 0 8px;
     color: var(--text-3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
-.flat:hover {
+.ide-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.ide-tabs {
+    display: flex;
+    flex: none;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+    background: var(--raised);
+}
+
+.ide-tab {
+    display: flex;
+    flex: none;
+    align-items: center;
+    border-right: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 12.5px;
+}
+
+.ide-tab.shown {
+    background: var(--bg);
+    box-shadow: inset 0 2px 0 var(--accent);
     color: var(--text);
 }
 
-.shelves {
+.ide-tab-name {
     display: flex;
     align-items: center;
-    gap: 10px;
-    overflow-x: auto;
-    padding: 18px 22px 4px;
-    scrollbar-width: none;
-    white-space: nowrap;
+    gap: 6px;
+    padding: 8px 4px 8px 12px;
+    color: inherit;
+    text-decoration: none;
 }
 
-.shelves-label {
-    flex: none;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.group {
-    max-width: 1100px;
-    margin-top: 14px;
-    padding: 0 22px;
-}
-
-.group-head {
-    position: sticky;
-    top: var(--sticky-top);
-    z-index: 1;
-    margin: 0;
-    padding: 8px 0 8px;
-    background: var(--bg);
-}
-
-.files > .group-head {
-    position: static;
-    padding: 18px 22px 0;
-}
-
-.group-n {
-    margin-left: 4px;
-    color: var(--text-4);
-    font-weight: 400;
-}
-
-.gallery {
+.ide-tab-close {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 22px 16px;
-    padding: 4px 0 10px;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
 }
 
-.rows {
-    margin: 4px -14px 0;
+.ide-tab-close:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
-.none {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    margin: 18px 22px;
+.ide-file {
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
 }
 
-@media (max-width: 640px) {
-    .files {
-        --sticky-top: 88px;
+.ide-file :deep(.filepage) {
+    max-width: none;
+    padding: 0 0 48px;
+}
+
+.ide-file :deep(.filepage .head) {
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.ide-file :deep(.filepage .text) {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+}
+
+@media (max-width: 760px) {
+    .ide {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
     }
 
-    .bar {
-        flex-wrap: wrap;
-        gap: 8px;
-        height: auto;
-        padding: 6px 10px;
-    }
-
-    .flat,
-    .grow {
-        display: none;
-    }
-
-    .search {
-        flex: 1 1 100%;
-    }
-
-    .shelves {
-        padding: 14px 12px 4px;
-    }
-
-    .group {
-        padding: 0 12px;
-    }
-
-    .gallery {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 18px 12px;
-    }
-
-    .rows {
-        margin: 4px -12px 0;
+    .ide-tree {
+        max-height: 40vh;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
     }
 }
 </style>

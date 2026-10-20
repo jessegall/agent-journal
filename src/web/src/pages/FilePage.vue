@@ -11,6 +11,7 @@ import Diff from "../kit/Diff.vue";
 import {sendMessage} from "../chat/outbox.js";
 import {aboutLines} from "../format/quote.js";
 import {href, route} from "../route.js";
+import {counted} from "../format/number.js";
 
 const file = ref(null);
 const error = ref("");
@@ -96,7 +97,7 @@ watch(() => route.value.line, reveal);
             <header class="head">
                 <Icon name="file" />
                 <code class="path">{{ file.path }}</code>
-                <span class="when">{{ file.gone ? "deleted" : `${file.lines ? `${file.lines} lines · ` : ""}${file.size} bytes` }}</span>
+                <span class="when">{{ file.gone ? "deleted" : `${file.lines ? `${counted(file.lines, "line")} · ` : ""}${counted(file.size, "byte")}` }}</span>
                 <template v-if="!file.project">
                     <a class="mode" :href="modeHref(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
                 </template>
@@ -118,7 +119,7 @@ watch(() => route.value.line, reveal);
                 </template>
             </template>
             <template v-else-if="file.kind.startsWith('image/')">
-                <EmptyState class="empty">An image; open it from Files if it is an attachment.</EmptyState>
+                <EmptyState class="empty">An image; open it from Attachments if it is an attachment.</EmptyState>
             </template>
             <template v-else>
                 <template v-if="picked">

@@ -1,7 +1,7 @@
 import {expect, test, vi} from "vitest";
 import {createApp, h, nextTick} from "vue";
 
-test("the Code page lists the project's folders and files, and opening one puts its path in the address", async () => {
+test("the Files page lists the project's folders and files, and opening one puts its path in the address", async () => {
     window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
     const {api} = await import("../src/api/client.js");
     api.projectFiles = vi.fn(async (folder) =>
@@ -34,7 +34,7 @@ test("the Code page lists the project's folders and files, and opening one puts 
 
     const {PAGES} = await import("../src/route.js");
     const {PAGES: SIDEBAR} = await import("../src/domain/navigation.js");
-    expect([PAGES.includes("code"), SIDEBAR.code.title]).toEqual([true, "Code"]);
+    expect([PAGES.includes("files"), SIDEBAR.files.title, SIDEBAR.attachments.title, PAGES.includes("code")]).toEqual([true, "Files", "Attachments", false]);
 
     app.unmount();
     host.remove();

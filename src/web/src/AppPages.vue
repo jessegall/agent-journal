@@ -1,8 +1,8 @@
 <script setup>
 import SwitchCase from "./kit/SwitchCase.vue";
 import AboutPage from "./pages/AboutPage.vue";
-import CodePage from "./pages/CodePage.vue";
 import FilePage from "./pages/FilePage.vue";
+import AttachmentsPage from "./pages/AttachmentsPage.vue";
 import FilesPage from "./pages/FilesPage.vue";
 import Home from "./pages/Home.vue";
 import Index from "./pages/Index.vue";
@@ -25,8 +25,8 @@ defineProps({page: {type: String, required: true}});
         <template #home><Home /></template>
         <template #settings><SettingsPage /></template>
         <template #search><SearchPage /></template>
+        <template #attachments><AttachmentsPage /></template>
         <template #files><FilesPage /></template>
-        <template #code><CodePage /></template>
         <template #skills><SkillsPage /></template>
         <template #profiles><AgentProfilesPage /></template>
         <template #about><AboutPage /></template>
