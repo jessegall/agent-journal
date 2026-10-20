@@ -96,7 +96,7 @@ class PlanCommand(Command):
 
     def rephase(self, args: Namespace, where: Where) -> int:
         plan = self.plans.find(args.n)
-        phase = self.phases.of_plan(plan)[args.phase - 1]
+        phase = self.plans.phases_of(plan)[args.phase - 1]
         changed = phase.with_(title=args.title or phase.title, complete_when=args.when or phase.complete_when)
         self.phases.save(changed, where.actor)
         print(f"phase {args.phase} of plan {plan.id} is now: {changed.title}")

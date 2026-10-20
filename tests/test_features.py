@@ -7581,3 +7581,14 @@ def test_a_plugins_linked_skill_folder_is_unlinked_when_withdrawn_and_its_target
     app.container.get(PluginSkills).withdraw(Plugin(name="echo"))
     assert not (home / "echo-guide").exists() and not (home / "echo-guide").is_symlink(), "the link is taken away"
     assert (target / "SKILL.md").is_file(), "what it pointed at is left as it was"
+
+
+def test_a_plans_phase_is_retitled_and_its_complete_when_line_written_anew(app):
+    from journal.repositories.plans import Plans
+    console = app.console()
+    console.run(["plan", "create", "release"], USER)
+    console.run(["plan", "phase", "1", "Build it", "--when", "it builds"], USER)
+    assert console.run(["plan", "rephase", "1", "1", "--title", "Build and prove it", "--when", "it builds and the suite is green"], USER).out == "phase 1 of plan 1 is now: Build and prove it\n"
+    plans = app.container.get(Plans)
+    phase = plans.phases_of(plans.find(1))[0]
+    assert (phase.title, phase.complete_when) == ("Build and prove it", "it builds and the suite is green")
