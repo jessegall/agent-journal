@@ -102,7 +102,9 @@ refreshers.push([
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const transcriptViews = () => shown("transcript") || (ownTranscript && shown("chat"));
-const transcript = useTranscript(() => (agent.value ? agent.value.id : 0), props.session, scroller, props.transcripts || there, transcriptViews);
+// a worker's transcript is read by the worker's own road, whether or not it has an agent row yet; the others need the agent
+const transcriptOwner = () => (props.kind === "worker" ? "worker" : agent.value ? agent.value.id : 0);
+const transcript = useTranscript(transcriptOwner, props.session, scroller, props.transcripts || there, transcriptViews);
 refreshers.push([transcriptViews, transcript.refresh]);
 watch(
     () => (panes.value ? panes.value.shown.join() : ""),
