@@ -58,6 +58,14 @@ describe("addresses the viewer builds", () => {
         expect(await settled()).toBe("#/tasks?open=tasks:5,tasks:6");
     });
 
+    test("a ref opened at a place in the row rides the place after the stack, and an open row is only scrolled there", async () => {
+        const {peekRef} = await import("../src/route.js");
+        peekRef("docs:55", "120");
+        expect(await settled()).toBe("#/tasks?open=docs:55&sub=120");
+        peekRef("docs:55", "section 3");
+        expect(await settled()).toBe("#/tasks?open=docs:55&sub=section%203");
+    });
+
     test("swap and unpeek keep the stack", async () => {
         swap("tasks", 9);
         expect(await settled()).toBe("#/tasks?open=tasks:9");

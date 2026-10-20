@@ -5,6 +5,7 @@ What each release of agent-journal version 4 brought, newest first.
 ## Unreleased, on the development branch
 
 - The journal can follow a branch: Settings, Updates, Follow this branch names it (and Install from this repository the repository), and Install update, `journal update` and the hourly check then install that branch's newest commit instead of a release. The installer records the commit it installed in `.journal/src/commit`, and the About page says which branch the journal follows. `journal update follow <branch>` sets the branch from the terminal, `journal update unfollow` follows the releases again.
+- A row named with a place in it, doc 55:120, doc 55:10-14 or doc 55:section 3, is a chip in the chat that opens the document scrolled to that line or section, and only scrolls when the document is already open in the inspector or in discussion mode.
 - A command's created trailer names only the rows the command's own words did not name: `journal message send` no longer says `message 9 sent` and `created: message 9` both.
 - A new-message line typed to the agent counts as arrived once the agent reads the message, whatever the prompt hook saw, so a dead hook no longer has it typed again six times; and the chat gets one card when a line is given up on, instead of one per try.
 - A document's Show more stays as the user left it while the agent writes the document: the fold's state was made anew with every redraw of the row, so each update of a document being read folded it shut again.

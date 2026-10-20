@@ -85,6 +85,8 @@ const LIT_FOR = 2500;
 
 function sectionAt(part) {
     const sections = [...(body.value?.querySelectorAll(".section") || [])];
+    const numbered = part.match(/^section (\d+)$/i);
+    if (numbered) return sections[Number(numbered[1]) - 1];
     const lines = part.match(/^(\d+)(?:-\d+)?$/);
     if (!lines) return sections.find((el) => el.querySelector("h3")?.textContent.trim().toLowerCase() === part.toLowerCase());
     let at = 0;

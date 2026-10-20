@@ -125,10 +125,11 @@ export function refOfOwnLink(link, origin = window.location.origin) {
     return isRef(first) ? first : "";
 }
 
-export function peekRef(ref) {
+// opens the row a ref names, at the place `sub` names in it, a line or a section; a row already open is only scrolled there
+export function peekRef(ref, sub = "") {
     const [row, env] = ref.split("@");
     const [table, id] = row.split(":");
-    return env ? peekThere(env, table, Number(id)) : peek(table, Number(id));
+    return env ? peekThere(env, table, Number(id), 0, sub) : peek(table, Number(id), 0, sub);
 }
 
 export function chipTarget(event) {
@@ -141,7 +142,7 @@ export function chipTarget(event) {
 
 export function peekChip(event) {
     const target = chipTarget(event);
-    if (target) peekRef(target);
+    if (target) peekRef(target, event.target.closest("[data-peek]").dataset.sub || "");
 }
 
 export function swap(table, id) {
