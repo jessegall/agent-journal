@@ -11,12 +11,31 @@
 # wires the hooks of every agent present, writes the skills and the law, and puts the journal
 # dispatcher in ~/.local/bin, which runs whichever version each project holds. Running it again upgrades.
 set -e
-PY=""
-for candidate in python3.14 python3.13 python3.12 python3.11 python3; do
-  command -v "$candidate" >/dev/null 2>&1 || continue
-  "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null && { PY="$candidate"; break; }
-done
-[ -n "$PY" ] || { echo "agent-journal needs Python 3.11 or newer: brew install python@3.13, then run this again." >&2; exit 1; }
+# The journal runs on Python 3.14 and nothing older; the interpreter found is written to .journal/python, which every
+# start of the journal runs, so an older python3 first on the PATH is never the one that runs it.
+find_python() {
+  PY=""
+  for candidate in python3.14 python3 "$(command -v uv >/dev/null 2>&1 && uv python find 3.14 2>/dev/null)"; do
+    [ -n "$candidate" ] && command -v "$candidate" >/dev/null 2>&1 || continue
+    "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 14))' 2>/dev/null && { PY="$(command -v "$candidate")"; return 0; }
+  done
+  return 1
+}
+# Where no Python 3.14 is found, it is offered and, on a yes, installed with Homebrew or with uv, whichever is at hand.
+if ! find_python; then
+  if command -v brew >/dev/null 2>&1; then way="brew install python@3.14"
+  elif command -v uv >/dev/null 2>&1; then way="uv python install 3.14"
+  else way=""; fi
+  [ -n "$way" ] || { echo "agent-journal needs Python 3.14, and neither Homebrew nor uv is here to install it: install Python 3.14, then run this again." >&2; exit 1; }
+  echo "agent-journal needs Python 3.14, and none is installed here."
+  answer="${AGENT_JOURNAL_YES:+y}"
+  if [ -z "$answer" ]; then
+    printf 'Install Python 3.14 now, with: %s? [y/N] ' "$way"
+    { read -r answer < /dev/tty; } 2>/dev/null || true
+  fi
+  case "$answer" in y|Y|yes|Yes) $way ;; *) echo "Nothing changed. Install Python 3.14, then run this again."; exit 0 ;; esac
+  find_python || { echo "Python 3.14 is still not found after: $way" >&2; exit 1; }
+fi
 HERE="$(cd "$(dirname "$0")" 2>/dev/null && pwd)"
 TMP=""
 if [ -d "$HERE/src/journal" ]; then
@@ -91,6 +110,7 @@ if [ -n "$installed" ] && [ -n "$bringing" ] && "$PY" -c 'import sys; v = lambda
   fi
 fi
 mkdir -p .journal/src
+printf '%s\n' "$PY" > .journal/python
 # Each part is copied beside the one in use and renamed into place, so the running hooks and shell runner never find it gone.
 swap() {
   rm -rf "$2.new" "$2.old"

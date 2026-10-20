@@ -26,6 +26,7 @@ from journal.support.refused import Refused
 from journal.repositories.sequences import Sequences
 from journal.supervisor_link import SupervisorLink
 from journal.support.chat_mark import ChatMark
+from journal.support.skill import Skill
 
 
 NAMED = re.compile(r"^\[([a-z_]+\.[a-z_]+)\]\s*(.*)$", re.S)

@@ -45,5 +45,3 @@ class Standard:
     FEATURES = (Skills, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, PausingFeature, Workers, Laws, Triggers, Checks, Shell, Thinking, Mcp, Secrets, Sharing, Delivery, TemplatesFeature, ReportsFeature, DocsFeature, DumpsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature, ChartFeature, PluginsFeature, Faults, PhoneFeature, MigrationFeature, MentionsFeature, SearchFeature, Updates, SuggestionsFeature, Record)
     """The engine's own listeners first, the skill, the look and the mark each owed and held by its feature, the workflows' walk after them, so a workflow reads the facts the engine set at this very event, and the plugins last, so the journal's own holds answer first."""
 
-    @classmethod
-    def registry(cls) -> Registry: ...

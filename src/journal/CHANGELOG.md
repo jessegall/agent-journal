@@ -2,6 +2,13 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.1
+
+- The journal runs on Python 3.14. The installer looks for it, records the one it found in .journal/python for every start of the journal, and where none is installed offers to install it with Homebrew or uv. 4.4.0 named a type it never imported, which Python 3.13 and older stop at, so the install failed and put the old journal back.
+- An install over a journal numbered 2.x keeps it whole in .journal/version-3, as one numbered 3.x always was.
+- The Terminal pane shows the commands the agent runs; the thinking line shows only a thought of the turn in progress.
+- An answer to the journal's intro, an MCP sign-in or a worker's limit reaches the chat: those lines were never registered, so their answers were kept out as acknowledgements.
+
 ## 4.4.0
 
 - An environment keeps one main agent session for each provider: a session that starts there ends the others of its provider. Installing, signing in to or removing an MCP server restarts only the session on screen, never an older one, whose conversation came back in its place and could end the launch.
