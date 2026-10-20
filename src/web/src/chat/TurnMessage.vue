@@ -33,10 +33,11 @@ const {scope, env, open, openChip} = useTurnLinks();
 const rowsOf = (table) => scope.rows(table);
 const {words, html} = useTurnText(() => props.turn, env);
 
-const peer = computed(() => Boolean(props.turn.data?.peer || props.turn.data?.sent_to));
-const fromMain = computed(() => Boolean(props.turn.data?.from_main) || peer.value);
+const sent = computed(() => Boolean(props.turn.data?.sent_to));
+const received = computed(() => Boolean(props.turn.data?.peer || props.turn.data?.from_main));
+const fromMain = computed(() => sent.value || received.value);
 const opening = computed(() => Boolean(props.turn.data?.opening));
-const mine = computed(() => props.turn.who === "user" || fromMain.value);
+const mine = computed(() => props.turn.who === "user" || received.value);
 const bubbled = computed(() => Boolean(words.value.text || quoteText.value || files.value.length || filed.value.length || resourceComment.value || props.turn.kind !== "message"));
 const LONG_TEXT = 600;
 const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
@@ -89,7 +90,7 @@ async function drop() {
 
 <template>
     <div
-        :class="['thread-turn', {mine, peer, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
+        :class="['thread-turn', {mine, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
         :data-ref="turn.key"
         @mouseleave="picking = false"
     >
@@ -118,7 +119,7 @@ async function drop() {
             <template v-if="quoteText">
                 <TurnQuote :html="quoteHtml" @go="resourceComment ? openComment() : toQuoted()" />
             </template>
-            <TurnText :html="html" :fold-at="FOLD_AT" :keep="320" @activate="openChip" />
+            <TurnText :html="html" :name="turn.key" :fold-at="FOLD_AT" :keep="320" @activate="openChip" />
             <template v-if="turn.kind === 'question'">
                 <TurnQuestion :turn="turn" />
             </template>
@@ -148,26 +149,6 @@ async function drop() {
 <style scoped>
 .thread-turn.has-update {
     width: min(78%, calc(100% - var(--turn-gutter)));
-}
-
-.thread-turn.peer {
-    align-self: stretch;
-    width: 100%;
-}
-
-.thread-turn.peer .thread-bubble {
-    width: 100%;
-
-    --pill-text: var(--text-4);
-    --pill-border: var(--border);
-    --pill-size: 0.92em;
-
-    padding: 7px 10px;
-    border-color: #1d1e22;
-    background: none;
-    color: var(--text-3);
-    font-size: 12px;
-    line-height: 1.5;
 }
 
 .thread-turn > .thread-from {
