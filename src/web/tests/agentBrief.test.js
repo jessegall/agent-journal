@@ -16,3 +16,9 @@ test("a subagent's first user line is the brief from the main agent and later on
         ["user", true, false],
     ]);
 });
+
+test("a transcript line carries its words as text, which the chat bubble reads", () => {
+    const [line] = chatTurns([{line: 13, who: "agent", kind: "agent", at: 1, tools: [], text: "I will inspect the journal first.", has_text: true}]);
+    expect(line.type).toBe("line");
+    expect(line.text).toBe("I will inspect the journal first.");
+});

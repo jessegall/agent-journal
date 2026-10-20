@@ -22,6 +22,7 @@ const line = (t) => ({
     n: t.line,
     who: SPEAKERS[t.kind],
     title: "",
+    text: t.said || t.text,
     brief: t.said || t.text,
     abstract: "",
     refs: [],
