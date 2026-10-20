@@ -1168,3 +1168,13 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   the pull request.
 - The files of task 1002 were wiped from the working tree before their commit while a worker's commit was taken into the
   branch (task 1082); they were written again from the record.
+
+## Plan 19, phase 2, task 1035: the speaking listeners become conduct (2026-10-21)
+
+- Voices, etiquette, pins, migration, git, checks, triggers and plugins each have a conduct mixin and, where the lines need facts, a standing reader: the voice's instruction, the lines said since the last reminder, the pinned and lately suggested links, whether a version 3 journal waits, every trigger, the plugins folder. The listeners that said those lines are gone: IntroduceAtStart, SayVoiceWhenChanged, ReadTurn, UnpinnedLink, UnpinnedLinkInOutput, LinkSuggestions, HoldPluginFolders; the drawings say_voice, remind_what_a_line_is and tell_of_version_3 with them.
+- A setting's write, a check's run and a user's message are row events the models carry: SettingChanged, CheckRan, MessageArrived. A row that is new when it carries its event has no environment or time yet, so the repository's carried() places the event by the saved row (RowEvent.placed_by); that is the one place it happens.
+- A commit stays an agent event: SpotCommit records the card, closes the tasks the trailer names and dispatches CommitMade with what it closed and the task open next; the git conduct says the lines, and because they ride the reply of the command that committed (never typed, as ruled on 2026-10-17), CommitMade answers the hook and SpotCommit hands the machine's decision back. The dispatch in SpotCommit is the one agent event a feature listener makes; the DispatchOutsideFunnels rule still names it, and phase 6 gives the rule a principled reject for an agent event that answers a hook.
+- The tool call carries the paths it writes (ToolStarting.written_paths, filled in the hook translation from the provider), so the plugins conduct holds a write into the plugins folder with nothing but the event and the standing.
+- PluginsHearAgents stays a listener on purpose: it is the funnel through which each plugin's own words and holds reach the agent, never the journal's conduct. Watching still hands back the first step of a sequence a trigger starts; task 1034 makes sequences states and takes that line with it. Both are named by the FeatureListenerSpeaks rule until then.
+- AfterAClose answers with the next open task as a value (OpenTask, in models); the task command and the git conduct each render the line from it.
+- A stopped runtime takes its conducts off the base state, so a hand-built state in a test answers with its own listeners alone.

@@ -23,7 +23,6 @@ class MessageController(Controller[Message]):
         self.repository, self.reactions, self.attachments = messages, reactions, attachments
 
     def listed(self, listing: Listing) -> Listed:
-        """The page asked for, read by id from the database alone, and the counts from queries: the chat never loads the whole history."""
         page = listing.listed(self.asked(listing), lambda m: True, timeline=True)
         unread = self.repository.unseen_by_user()
         counts = Counts(all=self.repository.count_in(), open=len(self.open_ids()) + unread, unread=unread)
@@ -37,22 +36,19 @@ class MessageController(Controller[Message]):
         return self.repository.window(listing.limit + 1, listing.before, listing.after)
 
     def open_ids(self) -> set[int]:
-        """The user's messages the agent has not answered or not read."""
         return {m.id for m in self.repository.unanswered()} | {m.id for m in self.repository.unread()}
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
-        """Each message with whether the agent answered it, the tasks filed from it, the rows it is a comment on and the rows its text names."""
         filed, commented, unanswered = self.repository.linked(Messages.ABOUT), self.repository.linked(Messages.COMMENTS_ON), {m.id for m in self.repository.unanswered()}
         return [{**ModelFields.of(m), "answered": m.id not in unanswered, "filed": [ref.id for ref in filed.get(m.id, [])],
                  "comments_on": [str(ref) for ref in commented.get(m.id, [])], "mentions": [str(ref) for ref in Mentions.in_(m.text)]} for m in rows]
 
     def store(self, request: Request) -> Response:
-        """A message of the user's; one sent again with the same key lands once."""
         key = request.body.get("idempotency", "")
         already = self.repository.sent_with(key) if key else []
         if already:
             return Response.json(self.shown(already[0]), 201)
-        message = Message(author=Author.USER, text=request.body.get("text", ""), reply_to=request.body.get("reply_to"), idempotency=key)
+        message = Message(author=Author.USER, text=request.body.get("text", ""), reply_to=request.body.get("reply_to"), idempotency=key).arrived()
         return Response.json(self.shown(self.repository.save(message, request.actor)), 201)
 
     def read(self, request: Request) -> Response:
@@ -67,22 +63,19 @@ class MessageController(Controller[Message]):
 
     def reply(self, request: Request) -> Response:
         answered = self.repository.find(request.number("id"))
-        message = Message(environment_id=answered.environment_id, author=Author.USER, text=request.body.get("text", ""), reply_to=answered.id)
+        message = Message(environment_id=answered.environment_id, author=Author.USER, text=request.body.get("text", ""), reply_to=answered.id).arrived()
         return Response.json(self.shown(self.repository.save(message, request.actor)), 201)
 
     def react(self, request: Request) -> Response:
-        """A face of the user's on the message, or the same face taken off again."""
         made = self.reactions.toggle(self.repository.find(request.number("id")), request.body.get("face", ""), Author.USER, request.actor)
         return Response.json(made or {})
 
     def press(self, request: Request) -> Response:
-        """The buttons pressed on a message's card, so the chat shows them spent."""
         message = self.repository.find(request.number("id"))
         pressed = [str(label) for label in request.body.get("pressed", [])]
         return Response.json(self.shown(self.repository.save(message.with_(data={**message.data, "pressed": pressed}), request.actor)))
 
     def attach(self, request: Request) -> Response:
-        """The files a multipart request carried, stored beside the message and named on it."""
         message = self.repository.find(request.number("id"))
         names = tuple(self.attachments.store(Message.table(), message.id, name, data) for name, data in request.files.items())
         saved = self.repository.save(message.with_(files=(*message.files, *names)), request.actor) if names else message

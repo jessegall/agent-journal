@@ -15,7 +15,7 @@ class TasksConduct(Conduct):
         from journal.features.tasks.feature import Tasks
         command = event.input.get("command", "") if event.tool == "Bash" else ""
         last = event.standing.of(Tasks).last_commands
-        if not command or len(last) < SAME - 1 or any(seen != command for seen in last):
+        if not command or len(last) < SAME or any(seen != command for seen in last):
             return self.unchanged()
         return self.unchanged(Tasks.STOP_POLLING.create(times=SAME, command=command))
 

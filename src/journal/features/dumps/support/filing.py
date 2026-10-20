@@ -166,7 +166,7 @@ class Filing:
             raise Refused('say what should happen next: journal dump direct <n> "<what to do>"')
         dump = self.dumps.find(n)
         said = {"label": how.strip(), "pick": OWN_WORDS, "at": time.time()}
-        message = self.messages.save(Message(author=Author.USER, text=how.strip()), by)
+        message = self.messages.save(Message(author=Author.USER, text=how.strip()).arrived(), by)
         self.links.save(Link(source=Ref.to(message), target=Ref.to(dump), kind=Messages.COMMENTS_ON), by)
         return self.dumps.save(dump.with_(said=(*dump.said, said), chosen=said), by)
 

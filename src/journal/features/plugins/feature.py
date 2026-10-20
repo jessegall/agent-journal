@@ -3,11 +3,13 @@ from journal.support.option import Option
 from journal.support.skill import Skill
 from journal.features.plugins.commands.dashboard_command import DashboardCommand
 from journal.features.plugins.commands.plugin_command import PluginCommand
-from journal.features.plugins.listeners.hold_plugin_folders import HoldPluginFolders
 from journal.features.plugins.listeners.plugins_hear_agents import PluginsHearAgents
 from journal.features.plugins.listeners.plugins_hear_rows import PluginsHearRows
 from journal.features.plugins.listeners.tell_a_plugin_its_settings import TellAPluginItsSettings
 from journal.features.plugins.seeds.plugin_services_at_boot import PluginServicesAtBoot
+from journal.features.plugins.support.plugins_conduct import PluginsConduct
+from journal.features.plugins.support.plugins_standing_reader import PluginsStandingReader
+from journal.engine.nudge import Nudge
 
 
 class PluginsFeature(Feature):
@@ -16,7 +18,11 @@ class PluginsFeature(Feature):
     help = "Programs you install that hear the journal's events and answer them: refuse a tool, say a line to the agent, show a card or run journal commands, each as itself."
     DEADLINE = Option("plugins.deadline", "Wait for plugins at most", "The time every plugin that holds one event shares, below the hook's own ten seconds; a plugin not reached in it is skipped and its fault recorded", 6, unit="seconds")
     options = (DEADLINE,)
-    listeners = (HoldPluginFolders, PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
+    listeners = (PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
+    standing = (PluginsStandingReader,)
+    conduct = (PluginsConduct,)
+    PLUGIN_FILES_ARE_THE_USERS = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_after=0)
+    nudges = (PLUGIN_FILES_ARE_THE_USERS,)
     commands = (PluginCommand, DashboardCommand)
     seeds = (PluginServicesAtBoot,)
     skill = Skill("plugins", "Plugins the user installs that hear the journal's events; load it when a plugin holds you, a plugin's card or line appears, or a plugin would help", """

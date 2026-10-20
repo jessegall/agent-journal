@@ -35,7 +35,7 @@ class CommentController(Controller[Message]):
         """A comment under a row, or with reply_to a reply under another comment of the row's thread, which takes its rows from the comment it answers."""
         on = self.row(str(request.body.get("on", "")))
         reply_to = request.body.get("reply_to")
-        message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_to=int(reply_to) if reply_to else None), request.actor)
+        message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_to=int(reply_to) if reply_to else None).arrived(), request.actor)
         if not reply_to:
             self.links.save(Link(source=Ref.to(message), target=on, kind=Messages.COMMENTS_ON), request.actor)
         return Response.json(self.shown(message), 201)

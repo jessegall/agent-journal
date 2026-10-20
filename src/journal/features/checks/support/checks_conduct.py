@@ -1,0 +1,16 @@
+from journal.engine.conduct import Conduct
+from journal.engine.support.settings import Settings
+from journal.engine.support.transition import Transition
+from journal.events.rows.check_ran import CheckRan
+from journal.features.checks.support.check_output import CheckOutput
+
+
+class ChecksConduct(Conduct):
+    """The checks feature's conduct in every state: a check that failed is told with the end of what it printed, as still failing when it was failing before; one a task waits on is left to the wait."""
+
+    def on_check_ran_checks(self, event: CheckRan, settings: Settings) -> Transition:
+        from journal.features.checks.feature import Checks
+        if event.passed or event.waited_on:
+            return self.unchanged()
+        failure = Checks.CHECK_STILL_FAILING if event.failed_before else Checks.CHECK_FAILED
+        return self.unchanged(failure.create(n=event.check_id, title=event.title, tail=CheckOutput.told(event.output)))

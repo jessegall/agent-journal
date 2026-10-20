@@ -1026,10 +1026,10 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     hook(app, "UserPromptSubmit", prompt=typed[-1])
     app.runtime().deferred.drain()
     said = len(typed)
-    app.container.get(SettingRows).save(Setting(environment_id=0, key="voices.avatar_shown", value="never"), Actor.user(1))
-    app.container.get(SettingRows).save(Setting(environment_id=0, key="voices.avatar", value=False), Actor.user(1))
+    app.container.get(SettingRows).set("voices.avatar_shown", "never", Actor.user(1))
+    app.container.get(SettingRows).set("voices.avatar", False, Actor.user(1))
     assert len(typed) == said, "a change to the figure's look is no change of voice: nothing is typed"
-    app.container.get(SettingRows).save(Setting(environment_id=0, key="voices.title", value="Captain"), Actor.user(1))
+    app.container.get(SettingRows).set("voices.title", "Captain", Actor.user(1))
     assert len(typed) == said + 1 and "changed how you talk" in typed[-1], "a change to the words is typed once"
 
 
@@ -4819,7 +4819,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     from journal.models.task import Task
     protocol = app.container.get(Protocol)
     tool = json.loads(protocol.line_of(ToolStarting(tool="Bash", input={"command": "ls"}).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
-    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "writes": False}), "an agent event: its name, where it happened and its own fields"
+    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "writes": False, "written_paths": []}), "an agent event: its name, where it happened and its own fields"
     row = json.loads(protocol.line_of(Created(model=Task(id=7, environment_id=1, title="t"), by=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.answer_of("").answer == "allow", "an empty answer lets the event through"

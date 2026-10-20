@@ -19,7 +19,7 @@ REFUSABLE = ("tool_starting", "idle")
 
 
 class PluginsHearAgents(AgentListener[AgentEvent]):
-    """The plugins that hear an agent event: those that hold it are asked now, in the order they were installed, within one deadline for them all; the rest hear it after the reply, and so does every one once the event is held."""
+    """The plugins that hear an agent event: those that hold it are asked now, in the order they were installed, within one deadline for them all; the rest hear it after the reply, and so does every one once the event is held. It stays a listener on purpose: it is the one funnel through which a plugin's words and holds reach the agent, and what it says is each plugin's, never the journal's conduct."""
 
     blocking = True
     asked_while_free = True
@@ -42,7 +42,6 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
 
     @staticmethod
     def holds(plugin: Plugin, event: AgentEvent) -> bool:
-        """It holds what its manifest says; a subagent's event only at a tool."""
         return event.key in plugin.manifest.holds and (not event.subagent or event.key == "tool_starting")
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:

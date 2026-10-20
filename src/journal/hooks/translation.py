@@ -25,7 +25,7 @@ class Translation:
     EVENTS = {
         HookKind.SESSION_START: lambda hook, provider: SessionStarted(source=hook.source),
         HookKind.USER_PROMPT: lambda hook, provider: PromptSubmitted(prompt=hook.text),
-        HookKind.PRE_TOOL_USE: lambda hook, provider: ToolStarting(tool=hook.tool, input=hook.input, writes=provider.writes(hook.tool, hook.input)),
+        HookKind.PRE_TOOL_USE: lambda hook, provider: ToolStarting(tool=hook.tool, input=hook.input, writes=provider.writes(hook.tool, hook.input), written_paths=tuple(provider.written_paths(hook.tool, hook.input))),
         HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(tool=hook.tool, input=hook.input, output=hook.output, response=hook.response, read_paths=provider.read_paths(hook.tool, hook.input), skill_loaded=provider.skill_loaded(hook.tool, hook.input)),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
         HookKind.STOP: lambda hook, provider: Idle(held_before=hook.stop_held_before),

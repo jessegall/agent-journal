@@ -703,3 +703,47 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_stand
         assert Idle().on(ToolFinished(tool="Bash", input={}, output="nothing").with_standing(quiet), settings).nudges == ()
     finally:
         BaseState.fold(())
+
+
+def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_event_and_the_standing():
+    from pathlib import Path
+    from journal.features.git.support.git_conduct import GitConduct
+    from journal.features.checks.support.checks_conduct import ChecksConduct
+    from journal.features.triggers.support.triggers_conduct import TriggersConduct
+    from journal.features.triggers.support.triggers_standing import TriggersStanding
+    from journal.features.plugins.support.plugins_conduct import PluginsConduct
+    from journal.features.plugins.support.plugins_standing import PluginsStanding
+    from journal.models.open_task import OpenTask
+    from journal.features.plans.support.plans_standing import PlansStanding
+    from journal.features.tasks.support.tasks_standing import TasksStanding
+    from journal.events.agent.commit_made import CommitMade
+    from journal.events.agent.prompt_submitted import PromptSubmitted
+    from journal.events.rows.check_ran import CheckRan
+    from journal.events.rows.message_arrived import MessageArrived
+    from journal.models.trigger import Trigger
+    from journal.models.trigger_action import TriggerAction
+    settings = SettingsValue({})
+    triggers = (Trigger(id=1, words=("deploy",), action=TriggerAction.DENY, text="no deploys tonight"), Trigger(id=2, words=("release",), action=TriggerAction.INSTRUCT, text="bump the version"), Trigger(id=3, words=("plan",), action=TriggerAction.SEQUENCE, text="Building a plan"))
+    plugin_file = str(Path(".journal", "plugins", "x", "run.sh"))
+    standing = Standing({"plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()), "triggers": TriggersStanding(triggers=triggers), "plugins": PluginsStanding(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
+    BaseState.fold((GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    try:
+        assert Idle().on(CommitMade(sha="abcdef0123").with_standing(standing), settings).nudges == ()
+        closed = Idle().on(CommitMade(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next")).with_standing(standing), settings)
+        assert [n.rendered() for n in closed.nudges] == ["commit abcdef01 closed task 4, task 5", "tasks are open, and auto mode is on: task 6 is next. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"]
+        failed = Idle().on(CheckRan(environment_id=0, at=1.0, check_id=2, title="lint", passed=False, output="a\nb c", failed_before=False, waited_on=False).with_standing(standing), settings)
+        assert [n.key for n in failed.nudges] == ["checks.check_failed"] and "b c" in failed.nudges[0].rendered()
+        again = Idle().on(CheckRan(environment_id=0, at=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=False).with_standing(standing), settings)
+        assert [n.key for n in again.nudges] == ["checks.check_still_failing"]
+        assert Idle().on(CheckRan(environment_id=0, at=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=True).with_standing(standing), settings).nudges == ()
+        prompt = Idle().on(PromptSubmitted(prompt="release it and plan the rest").with_standing(standing), settings)
+        assert [n.rendered() for n in prompt.nudges] == ["do this now: bump the version"]
+        arrived = Idle().on(MessageArrived(environment_id=1, at=1.0, text="deploy now").with_standing(standing), settings)
+        assert [n.rendered() for n in arrived.nudges] == ["no deploys tonight"]
+        denied = Idle().on(ToolStarting(tool="Bash", input={"command": "deploy prod"}).with_standing(standing), settings)
+        assert denied.held is not None and denied.held.rendered() == "a trigger denies this: no deploys tonight"
+        held = Idle().on(ToolStarting(tool="Edit", input={"file_path": plugin_file}, writes=True, written_paths=(plugin_file,)).with_standing(standing), settings)
+        assert held.held is not None and held.held.key == "plugins.plugin_files_are_the_users"
+        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "src/a.py"}, writes=True, written_paths=("src/a.py",)).with_standing(standing), settings).held is None
+    finally:
+        BaseState.fold(())

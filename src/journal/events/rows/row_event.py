@@ -14,3 +14,6 @@ class RowEvent(Event):
 
     def with_standing(self, standing: Standing) -> "RowEvent":
         return replace(self, standing=standing)
+
+    def placed_by(self, environment_id: int, at: float) -> "RowEvent":
+        return replace(self, environment_id=self.environment_id or environment_id, at=self.at or at)

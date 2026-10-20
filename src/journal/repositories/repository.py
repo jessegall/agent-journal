@@ -11,6 +11,7 @@ from journal.events.models.deleting import Deleting
 from journal.events.models.saved import Saved
 from journal.events.models.saving import Saving
 from journal.events.models.updated import Updated
+from journal.events.rows.row_event import RowEvent
 from journal.events.models.updating import Updating
 from journal.events.bus import Bus
 from journal.support.actor import Actor
@@ -169,7 +170,7 @@ class Repository(Generic[M]):
 
     def carried(self, row: M) -> M:
         for event in row.events:
-            self.bus.dispatch(event)
+            self.bus.dispatch(event.placed_by(getattr(row, "environment_id", 0), row.created_at.timestamp()) if isinstance(event, RowEvent) else event)
         return row.without_events()
 
     def written(self) -> None:

@@ -4,6 +4,8 @@ from journal.features.triggers.commands.trigger_command import TriggerCommand
 from journal.features.triggers.listeners.watch_prompt import WatchPrompt
 from journal.features.triggers.listeners.watch_message import WatchMessage
 from journal.features.triggers.listeners.watch_tool import WatchTool
+from journal.features.triggers.support.triggers_conduct import TriggersConduct
+from journal.features.triggers.support.triggers_standing_reader import TriggersStandingReader
 
 
 class Triggers(Feature):
@@ -12,6 +14,8 @@ class Triggers(Feature):
     help = "Words you choose, and what the journal does when one comes up."
     commands = (TriggerCommand,)
     listeners = (WatchPrompt, WatchTool, WatchMessage)
+    standing = (TriggersStandingReader,)
+    conduct = (TriggersConduct,)
 
     NUDGE = Nudge(name, "nudge", "{{title}}")
     INSTRUCT = Nudge(name, "instruct", "do this now: {{title}}", repeat_after=0)

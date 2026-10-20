@@ -4,6 +4,7 @@ from datetime import datetime
 
 from journal.support.check_progress import CheckProgress
 from journal.support.check_report import CheckReport
+from journal.events.rows.check_ran import CheckRan
 from journal.models.model import Model
 
 
@@ -14,19 +15,14 @@ class Check(Model):
     text_fields: ClassVar[tuple[str, ...]] = ("title", "brief", "command")
     title: str = ""
     brief: str = ""
-    """What it checks and what its failure means, in a few lines."""
     command: str = ""
     every: float = 0
-    """Minutes between runs; 0 runs it only by hand."""
     last_passed: bool | None = None
     last_output: str = ""
     last_ran_at: datetime | None = None
     last_took: float = 0.0
-    """Seconds the last run took, so the next run's bar can estimate before the check says how far it is."""
     last_report: CheckReport | None = None
-    """What the last run wrote to its report file; None when it wrote none."""
     running: CheckProgress | None = None
-    """The run under way; None while none runs."""
     last_fault: str = ""
     waited_on: bool = False
 
@@ -34,7 +30,8 @@ class Check(Model):
         return self.with_(running=CheckProgress(at))
 
     def ran(self, passed: bool, output: str, at: datetime, took: float, report: CheckReport | None, fault: str) -> "Check":
-        return self.with_(last_passed=passed, last_output=output, last_ran_at=at, last_took=took, last_report=report, running=None, last_fault=fault)
+        ran = CheckRan(environment_id=0, at=at.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, failed_before=self.last_passed is False, waited_on=self.waited_on)
+        return self.with_(last_passed=passed, last_output=output, last_ran_at=at, last_took=took, last_report=report, running=None, last_fault=fault).with_event(ran)
 
     def due_at(self, now: datetime) -> bool:
         if self.every <= 0 or (self.waited_on and self.is_settled()):

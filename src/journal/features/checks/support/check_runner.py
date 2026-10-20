@@ -9,16 +9,14 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.support.cards import Cards
-from journal.engine.nudger import Nudger
-from journal.engine.states.ended import Ended
 from journal.features.checks.support.check_output import CheckOutput
 from journal.features.checks.support.finished_run import FinishedRun
 from journal.support.actor import Actor
 from journal.models.check import Check
 from journal.support.check_report import CheckReport
+from journal.engine.states.ended import Ended
 from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
-from journal.supervisor_link import SupervisorLink
 from journal.support.chat_mark import ChatMark
 
 TIMEOUT = 600
@@ -32,17 +30,15 @@ EVERY = 1.0
 
 
 class CheckRunner:
-    """Runs one check in the project root, its progress on its row while it runs, keeps its result and report, and tells every live agent when it fails."""
+    """Runs one check in the project root, its progress on its row while it runs, and keeps its result and report; the run is a row event the check carries, and what the agent is told of a failure is the checks conduct's."""
 
-    def __init__(self, config: Config, checks: Checks, agents: Agents, nudger: Nudger, supervisor: SupervisorLink, cards: Cards) -> None:
-        self.config, self.checks, self.agents, self.nudger, self.supervisor, self.cards = config, checks, agents, nudger, supervisor, cards
+    def __init__(self, config: Config, checks: Checks, agents: Agents, cards: Cards) -> None:
+        self.config, self.checks, self.agents, self.cards = config, checks, agents, cards
 
     def run(self, check: Check, by: Actor) -> Check:
-        """The check run now, waited for."""
         return self.finished(self.checks.save(check.started(time.time()), by), by)
 
     def start(self, check: Check, by: Actor) -> Check:
-        """The check run on a thread of its own, answered at once; one already running is left to finish."""
         if check.running is not None:
             return check
         begun = self.checks.save(check.started(time.time()), by)
@@ -50,7 +46,6 @@ class CheckRunner:
         return begun
 
     def finished(self, check: Check, by: Actor) -> Check:
-        from journal.features.checks.feature import Checks as ChecksFeature
         report = self.config.home / "runtime" / "check-reports" / f"{check.id}.json"
         report.parent.mkdir(parents=True, exist_ok=True)
         report.unlink(missing_ok=True)
@@ -64,15 +59,9 @@ class CheckRunner:
         for agent in self.agents.everywhere():
             if agent.state != Ended.name:
                 self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{ran.id}", shows=ChatMark.CHECKS)
-        if not ended.passed:
-            said = ChecksFeature.CHECK_STILL_FAILING if was_failing else ChecksFeature.CHECK_FAILED
-            for agent in self.agents.everywhere():
-                if agent.state != Ended.name and (line := self.nudger.say(agent, said.create(n=ran.id, title=ran.title, tail=CheckOutput.told(ended.output)))):
-                    self.supervisor.type(agent.environment_id, line)
         return ran
 
     def executed(self, check: Check, report: Path, by: Actor) -> FinishedRun:
-        """The command run with its output read as it comes, its progress saved on the row now and then, cut off past the time-out."""
         process = subprocess.Popen(check.command, shell=True, cwd=self.config.root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace",
                                    env={**os.environ, "JOURNAL_REPORT": str(report)}, start_new_session=True)
         late = threading.Timer(TIMEOUT, os.killpg, (process.pid, signal.SIGKILL))
@@ -92,7 +81,6 @@ class CheckRunner:
 
     @staticmethod
     def report_of(path: Path) -> CheckReport | None:
-        """What the run wrote to its report file; none when it wrote none or wrote no JSON."""
         if not path.is_file():
             return None
         try:

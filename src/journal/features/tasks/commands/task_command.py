@@ -105,9 +105,9 @@ class TaskCommand(Command):
     def resume(self, args: Namespace, where: Where) -> int:
         return self.taken(args.n, where, "resumed")
 
-    def taken(self, n: int, where: Where, said: str) -> int:
+    def taken(self, n: int, where: Where, how: str) -> int:
         task = self.in_hand.start(self.tasks.find(n), where)
-        print("\n".join([f"task {task.id} {said}", *self.briefing.lines(task)]))
+        print("\n".join([f"task {task.id} {how}", *self.briefing.lines(task)]))
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:
@@ -137,9 +137,10 @@ class TaskCommand(Command):
         return 0
 
     def _name_next(self, done: Task) -> None:
-        said = self.after.said(done)
-        if said:
-            print(said.rendered())
+        from journal.features.tasks.feature import Tasks as TasksFeature
+        next_open = self.after.next_open(done)
+        if next_open:
+            print(TasksFeature.NEXT_TASK_HOLDS_THE_STOP.create(n=next_open.id, title=next_open.title).rendered())
 
     @staticmethod
     def _now() -> datetime:
