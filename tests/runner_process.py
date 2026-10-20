@@ -13,7 +13,7 @@ from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.entries import Entries
 from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 SRC = Path(__file__).resolve().parent.parent / "src"
 
@@ -28,7 +28,7 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
     (tmp_path / ".journal").mkdir()
     (tmp_path / ".journal" / "src").symlink_to(SRC)
     app = App(Config(tmp_path, port=0))
-    settings = app.container.get(Settings)
+    settings = app.container.get(SettingRows)
     settings.save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     try:
@@ -147,9 +147,9 @@ def test_the_runner_agrees_with_the_shell_on_every_line_of_the_corpus(tmp_path: 
     (tmp_path / ".journal").mkdir()
     (tmp_path / ".journal" / "src").symlink_to(SRC)
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     for key in ("shell.command_characters", "shell.read_characters"):
-        app.container.get(Settings).save(Setting(environment_id=0, key=key, value=10 ** 9), Actor.system())
+        app.container.get(SettingRows).save(Setting(environment_id=0, key=key, value=10 ** 9), Actor.system())
     app.runtime().start()
     try:
         port = app.server().port

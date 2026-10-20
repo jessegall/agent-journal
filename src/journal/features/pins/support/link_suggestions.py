@@ -5,7 +5,7 @@ from journal.engine.machine import Machine
 from journal.engine.nudger import Nudger
 from journal.repositories.entries import Entries
 from journal.repositories.notices import Notices
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
 OWN = re.compile(r"^https?://(?:localhost|127\.0\.0\.1)[:/]")
@@ -15,7 +15,7 @@ OWN = re.compile(r"^https?://(?:localhost|127\.0\.0\.1)[:/]")
 class LinkSuggestions:
     """The links in some words that no pin carries, each suggested as a pin once, and again only after so many of the agent's own tool uses."""
 
-    def __init__(self, notices: Notices, nudger: Nudger, machine: Machine, entries: Entries, settings: Settings) -> None:
+    def __init__(self, notices: Notices, nudger: Nudger, machine: Machine, entries: Entries, settings: SettingRows) -> None:
         self.notices, self.nudger, self.machine, self.entries, self.settings = notices, nudger, machine, entries, settings
 
     def lines(self, session: str, environment_id: int, text: str) -> list[str]:

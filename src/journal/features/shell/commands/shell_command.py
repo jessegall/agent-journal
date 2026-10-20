@@ -28,7 +28,7 @@ from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.support.chat_mark import ChatMark
 
 TAIL = 2000
@@ -45,7 +45,7 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus, snapshots: FileSnapshots, clock: Clock, announced: AnnouncedCommands) -> None:
+    def __init__(self, entries: Entries, messages: Messages, settings: SettingRows, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus, snapshots: FileSnapshots, clock: Clock, announced: AnnouncedCommands) -> None:
         self.announced = announced
         self.entries, self.messages, self.settings, self.agents, self.bus, self.clock = entries, messages, settings, agents, bus, clock
         self.edits, self.log, self.outputs = edits, log, outputs

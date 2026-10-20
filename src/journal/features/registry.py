@@ -3,13 +3,13 @@ from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.features.support.service import Service
 from journal.support.skill import Skill
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 class Registry:
     """Every feature, and whether each is on in an environment. The catalogue, the bus and the console are filled from here at boot."""
 
-    def __init__(self, features: tuple[type[Feature], ...], settings: Settings) -> None:
+    def __init__(self, features: tuple[type[Feature], ...], settings: SettingRows) -> None:
         self.features, self.settings = features, settings
         self._by_name = {feature.name: feature for feature in features}
         self._by_state = {state.name: feature for feature in features for state in feature.states}

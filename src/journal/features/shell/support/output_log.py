@@ -4,13 +4,13 @@ from pathlib import Path
 from journal.support.actor import Actor
 from journal.models.command_output import CommandOutput
 from journal.repositories.command_outputs import CommandOutputs
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 class OutputLog:
     """The runner's outputs as numbered rows, a rolling log: each line it runs is a row, and past the kept number the oldest go with their folders."""
 
-    def __init__(self, outputs: CommandOutputs, settings: Settings) -> None:
+    def __init__(self, outputs: CommandOutputs, settings: SettingRows) -> None:
         self.outputs, self.settings = outputs, settings
 
     def began(self, chain: str, command: str, folder: Path, session: str, by: Actor) -> CommandOutput:

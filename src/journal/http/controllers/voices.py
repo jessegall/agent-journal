@@ -5,7 +5,7 @@ from journal.support.shipped import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREE
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.support.refused import Refused
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 NAMINGS = (("Historical figures", HISTORICAL), ("Street nicknames", STREET), ("First name and role", PLAIN), ("Sporting names", SPORTING), ("Knights of the realm", KNIGHTLY))
 
@@ -13,7 +13,7 @@ NAMINGS = (("Historical figures", HISTORICAL), ("Street nicknames", STREET), ("F
 class VoiceController:
     """The voices the agent can talk in, each with a sample in the words it would call the user by, the one chosen, and the choice written back."""
 
-    def __init__(self, chosen: ChosenVoice, settings: Settings) -> None:
+    def __init__(self, chosen: ChosenVoice, settings: SettingRows) -> None:
         self.chosen, self.settings = chosen, settings
 
     def index(self, request: Request) -> Response:

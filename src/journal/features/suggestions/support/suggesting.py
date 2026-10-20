@@ -8,7 +8,7 @@ from journal.models.suggestion_answer import SuggestionAnswer
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.repositories.suggestions import Suggestions
 from journal.support.actor import Actor
 from journal.support.cards import Cards
@@ -23,7 +23,7 @@ MINUTE = 60
 class Suggesting:
     """Rounds of suggestions: the first a while after the journal started, then one each interval; a round makes each suggestion that applies and was never made, as one card in the chat the user answers once."""
 
-    def __init__(self, settings: Settings, suggestions: Suggestions, cards: Cards, agents: Agents, environments: Environments, messages: Messages, scope: Scope, commandments: PackageCommandments) -> None:
+    def __init__(self, settings: SettingRows, suggestions: Suggestions, cards: Cards, agents: Agents, environments: Environments, messages: Messages, scope: Scope, commandments: PackageCommandments) -> None:
         self.settings, self.suggestions, self.cards, self.agents, self.environments, self.messages, self.scope = settings, suggestions, cards, agents, environments, messages, scope
         self.suggesters: tuple[Suggester, ...] = (commandments,)
         self.started_at = time.time()

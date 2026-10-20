@@ -8,7 +8,7 @@ from journal.config import Config
 from journal.engine.support.typed_line import TypedLine
 from journal.support.held_line import HeldLine
 from journal.support.typed_lines import BATCH_SECONDS, TypedLines
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.support.old_supervisor import OldSupervisor
 from journal.support.supervisor_announcement import SupervisorAnnouncement
 from journal.support.supervisor_reply import SupervisorReply
@@ -23,7 +23,7 @@ AGENT, JOURNAL = "agent", "journal"
 class SupervisorLink:
     """The journal's end of each supervisor's inbox: a request a line of JSON, its answer a line back, or, to a supervisor that takes datagrams, a datagram with nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
 
-    def __init__(self, config: Config, environments: Environments, typed: TypedLines, settings: Settings) -> None:
+    def __init__(self, config: Config, environments: Environments, typed: TypedLines, settings: SettingRows) -> None:
         self.config, self.environments, self.typed, self.settings = config, environments, typed, settings
         self._chosen_at: dict[int, float] = {}
         self._viewer_keyed_at: dict[int, float] = {}

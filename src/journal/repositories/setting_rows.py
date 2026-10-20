@@ -7,7 +7,7 @@ from journal.repositories.scoped_repository import ScopedRepository
 
 
 
-class Settings(ScopedRepository[Setting]):
+class SettingRows(ScopedRepository[Setting]):
     """Reads a key with the project's value over the environment's; writes to whichever scope is asked."""
 
     model = Setting

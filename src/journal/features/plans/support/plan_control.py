@@ -10,14 +10,14 @@ from journal.models.task_state import TaskState
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound
 from journal.repositories.plans import Plans
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.repositories.tasks import Tasks
 
 
 class PlanControl:
     """Starting, parking and abandoning a plan, the one way for the command and the viewer alike: the task in hand and the agent following the plan move with it. The session is the agent's that follows, empty when none does."""
 
-    def __init__(self, plans: Plans, tasks: Tasks, machine: Machine, settings: Settings) -> None:
+    def __init__(self, plans: Plans, tasks: Tasks, machine: Machine, settings: SettingRows) -> None:
         self.plans, self.tasks, self.machine, self.settings = plans, tasks, machine, settings
 
     def holds(self, plan: Plan) -> bool:

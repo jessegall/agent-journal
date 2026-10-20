@@ -45,7 +45,7 @@ from journal.http.agents.agent_activity import AgentActivity
 from journal.engine.support.trail import Trail
 from journal.support.scope import Scope
 from journal.support.actor import Actor
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from dataclasses import dataclass
 
 from journal.engine.base_state import BaseState
@@ -75,7 +75,7 @@ AGENT = Where("main", "s1")
 @pytest.fixture
 def app(journal_root: Path):
     app = App(Config(journal_root, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     yield app
     app.runtime().stop()
@@ -129,7 +129,7 @@ def test_stuck_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app):
 
 
 def test_a_feature_switched_off_takes_its_gate_with_it(app):
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.tasks", value=False), Actor.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.tasks", value=False), Actor.user(1))
     app.console().run(["task", "create", "t", "--start"], AGENT)
     assert hook(app, "Stop")[1] == {}
 
@@ -145,7 +145,7 @@ def test_the_session_end_ends_the_agent_and_a_new_start_of_the_same_session_revi
 
 def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
     first = App(Config(tmp_path, port=0))
-    first.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    first.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     first.runtime().start()
     hook(first, "SessionStart")
     first.console().run(["environment", "here"], AGENT)
@@ -188,9 +188,9 @@ def test_one_task_in_hand_park_resume_and_await(app):
 def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(app):
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     for key, value in (("tasks.first_nudge_after", 5), ("tasks.name_every", 10), ("tasks.log_after", 20)):
-        app.container.get(Settings).save(Setting(environment_id=0, key=key, value=value), Actor.system())
+        app.container.get(SettingRows).save(Setting(environment_id=0, key=key, value=value), Actor.system())
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)

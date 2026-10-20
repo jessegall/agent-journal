@@ -5,13 +5,13 @@ from journal.events.listener import Listener
 from journal.hooks.support.transcript_turns import TranscriptTurns
 from journal.repositories.agents import Agents
 from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 class SweepTranscripts(Listener[ClockTicked]):
     """At every tick the words each live agent wrote, and the messages other sessions sent it, that no hook has brought, once they are past the seconds the hooks have, reach the chat as a turn; the hooks' own reading of the transcript is moved on past them, so nothing is read twice."""
 
-    def __init__(self, agents: Agents, turns: TranscriptTurns, bus: Bus, scope: Scope, settings: Settings) -> None:
+    def __init__(self, agents: Agents, turns: TranscriptTurns, bus: Bus, scope: Scope, settings: SettingRows) -> None:
         self.agents, self.turns, self.bus, self.scope, self.settings = agents, turns, bus, scope, settings
 
     def handle(self, event: ClockTicked) -> None:

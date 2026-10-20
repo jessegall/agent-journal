@@ -4,7 +4,7 @@ from journal.config import Config
 from journal.features.profiles.support.profile import Profile
 from journal.features.profiles.support.profile_shown import ProfileShown
 from journal.providers.providers import Providers
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 PREFIX = "journal-"
 """Every profile the journal ships is named with it, so none is ever taken for a profile of the project's own."""
@@ -39,7 +39,7 @@ class ProfileFiles:
                 f"You are a medium worker on one bounded job whose shape the brief settles. Do what it says and no more; where it leaves a choice open, take the plainest one and name it in your report. {WRITES}", "worker", "sonnet"),
     )
 
-    def __init__(self, config: Config, providers: Providers, settings: Settings) -> None:
+    def __init__(self, config: Config, providers: Providers, settings: SettingRows) -> None:
         self.config, self.providers, self.settings = config, providers, settings
 
     def folder(self) -> Path:

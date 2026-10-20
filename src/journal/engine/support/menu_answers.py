@@ -9,7 +9,7 @@ from journal.models.agent import Agent
 from journal.providers.providers import Providers
 from journal.providers.support.menu import Menu
 from journal.providers.support.option import Option
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.support.actor import Actor
 
 CHOICES = "menu_choices"
@@ -22,7 +22,7 @@ ASKING_MODEL = {"claude": "haiku"}
 class MenuAnswers:
     """The answers to menus the word rules cannot settle: remembered from the last time, or worked out by a standalone agent asked off the watcher's thread, outside the project and with no hooks of the journal's, whose pick is kept."""
 
-    def __init__(self, settings: Settings, providers: Providers) -> None:
+    def __init__(self, settings: SettingRows, providers: Providers) -> None:
         self.settings, self.providers = settings, providers
         self._asked: dict[str, Option | None] = {}
         self._running: set[str] = set()

@@ -12,7 +12,7 @@ from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.supervisor_link import SupervisorLink
 from journal.support.scope import Scope
 from journal.support.chat_mark import ChatMark
@@ -28,7 +28,7 @@ TESTS_RUNNING = "tests.running"
 class SlowRequests:
     """Measures each request against its budget where the journal develops itself, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time."""
 
-    def __init__(self, config: Config, settings: Settings, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred) -> None:
+    def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred) -> None:
         self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudger, self.supervisor, self.deferred = config, settings, cards, messages, agents, environments, scope, nudger, supervisor, deferred
         self.started = time.monotonic()
 

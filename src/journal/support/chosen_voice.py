@@ -3,13 +3,13 @@ import subprocess
 from journal.config import Config
 from journal.support.shipped import Shipped
 from journal.features.voices.support.voice import Voice
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 class ChosenVoice:
     """The voice, title and first name the user chose, as settings on the project; the first name falls back to what git knows the user by."""
 
-    def __init__(self, settings: Settings, config: Config) -> None:
+    def __init__(self, settings: SettingRows, config: Config) -> None:
         self.settings, self.config = settings, config
 
     def voice(self) -> Voice:

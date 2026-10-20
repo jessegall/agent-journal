@@ -108,9 +108,9 @@ def test_a_taken_port_sends_the_next_journal_to_the_next_one(tmp_path: Path):
 def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     server = app.server()
     try:
@@ -178,9 +178,9 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
     """Settings answer with the whole tree, a read message is read and not closed, a running plan is active, a check carries its last run, a sequence its steps, the hub its counts, the Code page its files."""
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     server = app.server()
     try:
@@ -247,9 +247,9 @@ def test_a_started_plans_phase_shown_advances_when_its_tasks_are_all_done(tmp_pa
 def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     server = app.server()
     try:
@@ -269,12 +269,12 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
 def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: Path, monkeypatch):
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     from journal.supervisor_link import SupervisorLink
     typed = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     server = app.server()
     hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
@@ -310,9 +310,9 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
 def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     server = app.server()
     try:
@@ -370,12 +370,12 @@ def test_a_viewer_polling_from_an_id_ahead_of_a_reset_record_is_brought_back_in_
 def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_what_it_answers(tmp_path: Path, monkeypatch):
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     from journal.supervisor_link import SupervisorLink
     typed = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append({"verb": verb, **fields}["line"]))
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     server = app.server()
     try:
@@ -396,9 +396,9 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_wha
 def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_path: Path):
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     server = app.server()
     try:
@@ -419,9 +419,9 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
     from journal.support.chat_mark import ChatMark
     from journal.support.actor import Actor
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     server = app.server()
     try:
@@ -467,7 +467,7 @@ def test_the_manifest_names_the_workflow_node_that_reads_each_setting_and_says_w
 
 def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_it(tmp_path: Path):
     from journal.features.tasks.feature import Tasks
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()
@@ -481,9 +481,9 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         assert next(f for f in manifest["features"] if f["name"] == "pausing")["fixed"], "pausing is no setting: the pause button is always there"
         assert {g["key"] for g in manifest["groups"]} == {*named, "project"}, "one group per feature, and the System tab's own"
         status, tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": 60}})
-        assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"
+        assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(SettingRows).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"
         tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": None}})[1]
-        assert "tasks" not in tree and app.container.get(Settings).option(Tasks.LOG_AFTER) == 50, "sent as null, back to its default"
+        assert "tasks" not in tree and app.container.get(SettingRows).option(Tasks.LOG_AFTER) == 50, "sent as null, back to its default"
         call(server, "POST", "/journal/settings", {"viewer": {"tour_seen": True}})
         tree = call(server, "POST", "/journal/settings", {"viewer": {"scheme": "dark"}})[1]
         assert tree["viewer"] == {"tour_seen": True, "scheme": "dark"}, "a save names only what it sets: the other keys under the heading stay, so the tour is not replayed by a layout save"

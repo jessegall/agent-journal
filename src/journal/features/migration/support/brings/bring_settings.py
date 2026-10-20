@@ -6,13 +6,13 @@ from journal.features.registry import Registry
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.migrated_rows import MigratedRows
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 class BringSettings:
     """The features the project switched on or off in version 3, where version 4 has a feature of the same name; the rest of version 3's settings have no home here."""
 
-    def __init__(self, settings: Settings, registry: Registry, ledger: MigratedRows) -> None:
+    def __init__(self, settings: SettingRows, registry: Registry, ledger: MigratedRows) -> None:
         self.settings, self.registry, self.ledger = settings, registry, ledger
 
     def bring(self, folder: Path, by: Actor) -> Brought:

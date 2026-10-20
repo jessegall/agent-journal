@@ -4,13 +4,13 @@ from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.chosen_voice import ChosenVoice
 from journal.support.shipped import Shipped
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 class VoiceCommand(Command):
     noun = "voice"
 
-    def __init__(self, settings: Settings, chosen: ChosenVoice) -> None:
+    def __init__(self, settings: SettingRows, chosen: ChosenVoice) -> None:
         self.settings, self.chosen = settings, chosen
 
     def arguments(self, verbs) -> None:

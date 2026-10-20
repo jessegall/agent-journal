@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.support.worktree_not_made import WorktreeNotMade
 from journal.console.command import Command
@@ -24,7 +24,7 @@ from journal.repositories.workers import Workers
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: Settings) -> None:
+    def __init__(self, workers: Workers, messages: Messages, machine: Machine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows) -> None:
         self.workers, self.messages, self.machine, self.providers, self.agents = workers, messages, machine, providers, agents
         self.branch, self.settings = branch, settings
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles

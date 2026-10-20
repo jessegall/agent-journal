@@ -20,7 +20,7 @@ from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
 from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from tests.replay import PROVIDERS, TOOLS, Replay, differences, hook_as, pass_time, recorded, tick_after
 from tests.test_features import AGENT, MAIN, USER, context
 
@@ -33,8 +33,8 @@ def journals(tmp_path: Path, monkeypatch, request):
     apps = []
     for name in ("listener", "workflow"):
         app = App(Config(tmp_path / name, port=0))
-        app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
-        app.container.get(Settings).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
+        app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+        app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
         apps.append(app)
     with apps[0].container.get(Scope).of(MAIN):
         yield [*apps, request.param]
@@ -271,7 +271,7 @@ TOOL_LISTENERS = ("HoldUnread", "HoldUnanswered", "LogCadence")
 
 def tool_uses_with_changed_settings(app, replay: Replay, provider: str) -> None:
     """The steps, with the cadences changed: the answer asked for after two uses and held after four; the task named every two edits, the log asked for at three and held at six."""
-    settings = app.container.get(Settings)
+    settings = app.container.get(SettingRows)
     for key, value in (("messages.nudge_after", 2), ("messages.hold_after", 4), ("tasks.name_every", 2), ("tasks.first_nudge_after", 3), ("tasks.log_after", 6)):
         settings.set(key, value, Actor.system())
     hook_as(app, provider, "SessionStart")
@@ -497,7 +497,7 @@ def read_skill(app, provider: str, folder: str):
 
 def loading_skill_rules(app, replay: Replay, provider: str) -> None:
     """The steps, with the skills on: a session starts and requires the journal skill, a write is held until the file is read, the start's look follows; a message arrives and a prompt naming plans requires that skill, the inbox named under the hold, a write held until the file is read, then allowed."""
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=True), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=True), Actor.system())
     write = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1]
     replay.step("the session starts", hook_as(app, provider, "SessionStart")[1])
     replay.step("a write before the skill is read", write())
@@ -572,9 +572,9 @@ def plan_rules(app, replay: Replay, provider: str) -> None:
     console.run(["task", "done", "1"], AGENT)
     app.runtime().deferred.drain()
     replay.step("the first task is done, the phase a checkpoint")
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     replay.step("a stop at the checkpoint, auto off", hook_as(app, provider, "Stop")[1])
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
     replay.step("a stop at the checkpoint, auto on", hook_as(app, provider, "Stop")[1])
     console.run(["plan", "start", "1"], AGENT)
     replay.step("the next phase started")
@@ -796,7 +796,7 @@ def log_ask_at_stop_and_start(app, replay: Replay, provider: str) -> None:
 
 def line_reminder(app, replay: Replay, provider: str) -> None:
     """The steps, with the reminder every three lines: messages arrive and are named, and the agent's own tool uses come after."""
-    app.container.get(Settings).set("etiquette.remind_every", 3, Actor.system())
+    app.container.get(SettingRows).set("etiquette.remind_every", 3, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -807,7 +807,7 @@ def line_reminder(app, replay: Replay, provider: str) -> None:
 
 def hold_after_namings(app, replay: Replay, provider: str) -> None:
     """The steps, the unread named every use and a write held after two namings: a message waits unread while the agent writes."""
-    settings = app.container.get(Settings)
+    settings = app.container.get(SettingRows)
     for key, value in (("messages.remind_every", 1), ("messages.hold_after_reminders", 2)):
         settings.set(key, value, Actor.system())
     hook_as(app, provider, "SessionStart")
@@ -821,7 +821,7 @@ def hold_after_namings(app, replay: Replay, provider: str) -> None:
 
 def a_subagents_tool_use(app, replay: Replay, provider: str) -> None:
     """The steps, the unread named every use: a subagent's tool uses and writes are not the agent's, and the agent's own are."""
-    app.container.get(Settings).set("messages.remind_every", 1, Actor.system())
+    app.container.get(SettingRows).set("messages.remind_every", 1, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -870,7 +870,7 @@ def two_agents(app, replay: Replay, provider: str) -> None:
 
 def two_lines_on_one_write(app, replay: Replay, provider: str) -> None:
     """The steps: with the log held after two edits, a task in hand, two writes, a message read and left unanswered, then a write that is held twice over."""
-    app.container.get(Settings).set("tasks.log_after", 2, Actor.system())
+    app.container.get(SettingRows).set("tasks.log_after", 2, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)

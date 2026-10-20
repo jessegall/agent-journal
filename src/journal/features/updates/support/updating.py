@@ -16,7 +16,7 @@ from journal.features.updates.support.update_target import UpdateTarget
 from journal.supervisor_link import SupervisorLink
 from journal.support.actor import Actor
 from journal.support.refused import Refused
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.version import VERSION
 
 PLUGIN = "code-commandments"
@@ -27,7 +27,7 @@ FIRST_CHECK_AFTER = 60
 class Updating:
     """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, and its install: on its own when the user has switched that on, or when they say so."""
 
-    def __init__(self, settings: Settings, source: ReleaseSource, installer: ReleaseInstaller, mark: UpdateMark, supervisor: SupervisorLink, config: Config) -> None:
+    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, mark: UpdateMark, supervisor: SupervisorLink, config: Config) -> None:
         self.settings, self.source, self.installer = settings, source, installer
         self.mark, self.supervisor, self.config = mark, supervisor, config
         self.releases: list[Release] = []

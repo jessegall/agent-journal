@@ -2,7 +2,7 @@ from journal.features.registry import Registry
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.support.actor import Actor
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 FEATURES = "features"
 
@@ -10,7 +10,7 @@ FEATURES = "features"
 class SettingController:
     """The settings as the settings page holds them: every option under its feature, nested on the first dot, and every feature's switch under features; a save sends a top whole, so a key it drops goes back to its default."""
 
-    def __init__(self, settings: Settings, registry: Registry) -> None:
+    def __init__(self, settings: SettingRows, registry: Registry) -> None:
         self.settings, self.registry = settings, registry
 
     def index(self, request: Request) -> Response:

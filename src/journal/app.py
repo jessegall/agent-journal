@@ -13,7 +13,7 @@ from journal.runtime import Runtime
 from journal.features.registry import Registry
 from journal.features.standard import Standard
 from journal.support.context_file import ContextFile
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.http.router import Router
 from journal.http.routes.routes import Routes
 from journal.http.server import Server
@@ -36,7 +36,7 @@ class App:
         self.container.bind(Router, lambda: Routes(self.container).mount(self.container.call(Router)))
         self.container.bind(Console, self._console)
         self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))
-        self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(Settings)))
+        self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(SettingRows)))
         self.container.bind(FeaturesKnown, lambda: self.container.get(Registry))
 
     def connection(self) -> Connection:

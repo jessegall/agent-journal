@@ -14,7 +14,7 @@ from journal.models.worker import Worker
 from journal.providers.providers import Providers
 from journal.support.profile_files import ProfileFiles
 from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
 from journal.support.worktree_not_made import WorktreeNotMade
@@ -33,7 +33,7 @@ NOT_HANDED = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "CLAUDE_CODE_SHELL_PREF
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: Settings, workers: Workers, environments: Environments, profiles: ProfileFiles) -> None:
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
         self.environments, self.profiles = environments, profiles
         self._running: dict[int, subprocess.Popen] = {}

@@ -7,13 +7,13 @@ from journal.features.sharing.support.tunnel import Tunnel
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.support.refused import Refused
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 class TunnelController:
     """The tunnel that carries links to the journal: its standing and what keeps it from answering, a restart, tunler's login, version and domains, and the journal's address."""
 
-    def __init__(self, tunnel: Tunnel, tunler: Tunler, settings: Settings) -> None:
+    def __init__(self, tunnel: Tunnel, tunler: Tunler, settings: SettingRows) -> None:
         self.tunnel, self.tunler, self.settings = tunnel, tunler, settings
 
     def show(self, request: Request) -> Response:

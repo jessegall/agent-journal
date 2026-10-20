@@ -11,7 +11,7 @@ from journal.support.decision import Decision
 from journal.support.sequence_run import SequenceRun
 from journal.providers.providers import Providers
 from journal.repositories.entries import Entries
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 class HoldWritesForTheStep(AgentListener[ToolStarting]):
@@ -19,7 +19,7 @@ class HoldWritesForTheStep(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, machine: Machine, running: Running, requiring: Requiring, providers: Providers, entries: Entries, settings: Settings, registry: Registry) -> None:
+    def __init__(self, machine: Machine, running: Running, requiring: Requiring, providers: Providers, entries: Entries, settings: SettingRows, registry: Registry) -> None:
         self.machine, self.running, self.requiring, self.providers = machine, running, requiring, providers
         self.entries, self.settings, self.registry = entries, settings, registry
 

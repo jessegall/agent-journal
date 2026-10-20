@@ -3,7 +3,7 @@ from pathlib import Path
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.support.decision import Decision
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 
 
@@ -12,7 +12,7 @@ class ReadNarrowly(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: SettingRows) -> None:
         self.settings = settings
 
     def handle(self, event: ToolStarting) -> Decision | None:

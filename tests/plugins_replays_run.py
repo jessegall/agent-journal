@@ -13,7 +13,7 @@ from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.models.task import Task
 from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.repositories.tasks import Tasks
 from tests.replay import Replay, differences, hook_as, recorded
 from tests.test_features import AGENT, MAIN, USER
@@ -29,7 +29,7 @@ def journals(tmp_path: Path, monkeypatch):
     apps = []
     for name in ("recorded", "anew"):
         app = App(Config(tmp_path / name, port=0))
-        app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+        app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
         apps.append(app)
     with apps[0].container.get(Scope).of(MAIN):
         yield apps

@@ -7,7 +7,7 @@ from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
 from journal.support.running import Running
 from journal.repositories.questions import Questions
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.supervisor_link import SupervisorLink
 
 QUIET_FOR = 60.0
@@ -19,7 +19,7 @@ WAITING_SLOWER = 3
 class SayTheStepAtAPace(AgentListener[Ticked]):
     """A step unheard for the set minutes is typed again to a quiet agent, three times as slow while the agent waits; nothing is said for a parked run or while a question to the user is open."""
 
-    def __init__(self, machine: Machine, running: Running, settings: Settings, questions: Questions, registry: Registry, supervisor: SupervisorLink) -> None:
+    def __init__(self, machine: Machine, running: Running, settings: SettingRows, questions: Questions, registry: Registry, supervisor: SupervisorLink) -> None:
         self.machine, self.running, self.settings, self.questions, self.registry, self.supervisor = machine, running, settings, questions, registry, supervisor
 
     def handle(self, event: Ticked) -> None:

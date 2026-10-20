@@ -17,7 +17,7 @@ from journal.support.validation import Validation
 from journal.support.drawn_node import DrawnNode
 from journal.support.drawn_line import NO, THEN, YES
 from journal.repositories.charts import Charts
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "ended")
 """The states the journal ships workflows for."""
@@ -138,7 +138,7 @@ CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
-    def __init__(self, charts: Charts, catalogue: ChartCatalogue, settings: Settings, states: StatesCatalogue, agents: Agents, values: WorkflowValues, registry: Registry, seeding: ValuesAtUpgrade) -> None:
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, settings: SettingRows, states: StatesCatalogue, agents: Agents, values: WorkflowValues, registry: Registry, seeding: ValuesAtUpgrade) -> None:
         self.states, self.agents, self.values, self.registry, self.seeding = states, agents, values, registry, seeding
         self.charts, self.catalogue, self.settings = charts, catalogue, settings
         self.drawings: dict[str, Drawing] = {}

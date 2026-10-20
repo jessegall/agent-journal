@@ -15,7 +15,7 @@ from journal.features.sharing.support.tunnel_service import TunnelService
 from journal.support.refused import Refused
 from journal.repositories.pairing_codes import PairingCodes
 from journal.repositories.phones import Phones
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.repositories.shares import Shares
 from journal.supervisor_link import SupervisorLink
 
@@ -40,7 +40,7 @@ OWN_ADDRESS = "{domain} is this journal's own address. Move the journal to a new
 class Tunnel:
     """The tunler process that gives the share server its web address: started under the supervisor that hosts the journal while a link is open, stopped while none is, and asked whether its address answers."""
 
-    def __init__(self, tunler: Tunler, place: SharePlace, settings: Settings, link: SupervisorLink, shares: Shares, phones: Phones, codes: PairingCodes, config: Config) -> None:
+    def __init__(self, tunler: Tunler, place: SharePlace, settings: SettingRows, link: SupervisorLink, shares: Shares, phones: Phones, codes: PairingCodes, config: Config) -> None:
         self.tunler, self.place, self.settings, self.link, self.shares, self.config = tunler, place, settings, link, shares, config
         self.phones, self.codes = phones, codes
         self.log = config.home / "runtime" / f"{SERVICE}.log"
@@ -176,7 +176,7 @@ class Tunnel:
     def cause(self) -> TunnelCause:
         host, address = self.host(), self.address()
         if host and not self.reached(f"https://{host}/"):
-            return TunnelCause("host", f"The tunler server {host} does not answer, so the tunnel cannot open. Check the server in Settings, or try again once it is back.")
+            return TunnelCause("host", f"The tunler server {host} does not answer, so the tunnel cannot open. Check the server in SettingRows, or try again once it is back.")
         if self.link.hosting() is None:
             return TunnelCause("stopped", NO_SUPERVISOR)
         version = self.tunler.versions(host)

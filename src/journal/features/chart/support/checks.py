@@ -41,7 +41,7 @@ from journal.repositories.plans import Plans
 from journal.repositories.counts import Counts
 from journal.repositories.noted_times import NotedTimes
 from journal.engine.clock import Clock
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.repositories.rules import Rules
 from journal.repositories.facts import Facts
 from journal.repositories.reminders import Reminders
@@ -76,7 +76,7 @@ VALUE_STEPS = (*VALUE_ACTIONS, *VALUE_CHECKS)
 class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring,
+    def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: SettingRows, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring,
                  rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs, backup: Version3Backup, outputs: CommandOutputs, times: NotedTimes, clock: Clock, start: StartLines) -> None:
         self.outputs, self.times, self.clock, self.start = outputs, times, clock, start
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries

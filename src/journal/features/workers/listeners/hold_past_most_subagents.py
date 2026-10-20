@@ -1,7 +1,7 @@
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.features.workers.listeners.mark_subagents import DISPATCHING
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.support.decision import Decision
 from journal.support.subagents import Subagents
 
@@ -11,7 +11,7 @@ class HoldPastMostSubagents(AgentListener[ToolStarting]):
 
     blocking = True
 
-    def __init__(self, subagents: Subagents, settings: Settings) -> None:
+    def __init__(self, subagents: Subagents, settings: SettingRows) -> None:
         self.subagents, self.settings = subagents, settings
 
     def handle(self, event: ToolStarting) -> Decision | None:

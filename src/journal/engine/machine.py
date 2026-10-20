@@ -1,8 +1,8 @@
 from journal.engine.agent_state import AgentState
 from journal.engine.base_state import BaseState
 from journal.engine.nudger import Nudger
-from journal.engine.support.settings import Settings
-from journal.repositories.settings import Settings as SettingRows
+from journal.engine.support.settings import SettingRows
+from journal.repositories.setting_rows import SettingRows
 from journal.support.features_known import FeaturesKnown
 from journal.engine.resume import Resume
 from journal.engine.states.ended import Ended
@@ -97,21 +97,21 @@ class Machine(AgentListener[AgentEvent]):
     def taken(self) -> Settings:
         return Settings.taken(self.settings, self.features.options())
 
-    def through_hooks(self, before: Stack, after: Stack, settings: Settings) -> Hooked:
+    def through_hooks(self, before: Stack, after: Stack, settings: SettingRows) -> Hooked:
         if after.states[:-1] == before.states and len(after.states) == len(before.states) + 1:
             return self.pushed_through(before, after, settings)
         if after == before.popped() and len(before.states) > 1:
             return self.popped_through(before, after, settings)
         return Hooked(after)
 
-    def pushed_through(self, before: Stack, after: Stack, settings: Settings) -> Hooked:
+    def pushed_through(self, before: Stack, after: Stack, settings: SettingRows) -> Hooked:
         suspended = before.top().on_suspend(settings)
         pushed = after.top().on_push(settings)
         if isinstance(pushed, Held):
             return Hooked(before, held=pushed, refused=after.top().name)
         return Hooked(after, (*suspended, *pushed))
 
-    def popped_through(self, before: Stack, after: Stack, settings: Settings) -> Hooked:
+    def popped_through(self, before: Stack, after: Stack, settings: SettingRows) -> Hooked:
         popped = before.top().on_pop(settings)
         resumed = after.top().on_resume(Standing({}), settings)
         if isinstance(resumed, Transition) and resumed.popped and len(after.states) > 1:

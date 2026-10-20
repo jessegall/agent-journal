@@ -22,7 +22,7 @@ from journal.repositories.plugins import Plugins as PluginRows
 from journal.models.setting import Setting
 from journal.support.supervisor_reply import SupervisorReply
 from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 from journal.support.where import Where
 from journal.engine.machine import Machine
 from journal.support.running import Running
@@ -53,8 +53,8 @@ def app(journal_root: Path, monkeypatch):
     monkeypatch.setattr(Config, "status_home", property(lambda self: journal_root / "status"))
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
     app = App(Config(journal_root, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
-    app.container.get(Settings).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
     app.runtime().start()
     with app.container.get(Scope).of(MAIN):
         yield app
@@ -256,7 +256,7 @@ def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked
 
 
 def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app):
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console = app.console()
     console.run(["task", "create", "side work", "--start"], AGENT)
     console.run(["task", "park", "1", "the plan first"], AGENT)
@@ -483,7 +483,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     assert app.container.get(Running).in_hand("s1", 1).taken_up_at, "and takes the step up"
     assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
     console.run(["sequence", "follow"], AGENT)
-    app.container.get(Settings).set("sequences.stale_after", 2, Actor.user(1))
+    app.container.get(SettingRows).set("sequences.stale_after", 2, Actor.user(1))
     edit(), edit()
     assert "2 writes since sequence" in json.dumps(edit()), "a step taken up and not moved on holds again after the set writes"
     assert "parked at step 3" in console.run(["sequence", "park", "--why", "the user wants the docs first"], AGENT).out
@@ -1026,10 +1026,10 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     hook(app, "UserPromptSubmit", prompt=typed[-1])
     app.runtime().deferred.drain()
     said = len(typed)
-    app.container.get(Settings).save(Setting(environment_id=0, key="voices.avatar_shown", value="never"), Actor.user(1))
-    app.container.get(Settings).save(Setting(environment_id=0, key="voices.avatar", value=False), Actor.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="voices.avatar_shown", value="never"), Actor.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="voices.avatar", value=False), Actor.user(1))
     assert len(typed) == said, "a change to the figure's look is no change of voice: nothing is typed"
-    app.container.get(Settings).save(Setting(environment_id=0, key="voices.title", value="Captain"), Actor.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="voices.title", value="Captain"), Actor.user(1))
     assert len(typed) == said + 1 and "changed how you talk" in typed[-1], "a change to the words is typed once"
 
 
@@ -1257,7 +1257,7 @@ def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_wai
 def test_a_feature_switched_off_here_silences_the_lines_and_the_holds_its_workflow_carries(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
-    app.container.get(Settings).save(Setting(environment_id=1, key="features.messages", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=1, key="features.messages", value=False), Actor.system())
     app.console().run(["message", "send", "look at the footer"], USER)
     answers = [json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1]) for _ in range(6)]
     assert not any("message 1" in answer for answer in answers), "with messages off, the inbox is never named"
@@ -1388,7 +1388,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
         console.run(["plan", "todos", str(n), "1", str(2 * n - 1)], USER)
         console.run(["plan", "todos", str(n), "2", str(2 * n)], USER)
         console.run(["plan", "approve", str(n)], USER)
-    settings = app.container.get(Settings)
+    settings = app.container.get(SettingRows)
     settings.save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1"], AGENT)
@@ -1665,7 +1665,7 @@ def test_auto_mode_answers_a_stop_with_the_next_task(app):
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "task 1 next: the footer" in body["reason"]
     from journal.support.actor import Actor as A
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), A.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), A.user(1))
     assert hook(app, "Stop")[1] == {}, "with auto off a stop is a stop"
 
 
@@ -1821,7 +1821,7 @@ def test_the_foreground_limit_is_thirty_seconds_or_ten_while_a_message_waits(app
     console.run(["message", "send", "are you there?"], USER)
     assert console.run(["shell", "limit"], AGENT).out.strip() == "10"
     console.run(["message", "read", "1"], AGENT)
-    app.container.get(Settings).save(Setting(environment_id=0, key="shell.foreground", value=5), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="shell.foreground", value=5), Actor.system())
     assert console.run(["shell", "limit"], AGENT).out.strip() == "5"
 
 
@@ -1917,7 +1917,7 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "park", "1", "the header first"], AGENT)
     status, body = hook(app, "Stop")
@@ -2437,7 +2437,7 @@ def test_the_engine_walks_the_chart_at_each_event_and_an_edit_applies_at_the_nex
     sent = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, sent)
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -2493,7 +2493,7 @@ def test_the_shipped_chart_carries_the_stop_rules_the_states_used_to(app):
     body = hook(app, "Stop")[1]
     assert body.get("decision") == "block" and "tasks are open, and auto mode is on: task 1 next: free work" in body["reason"], "the next open task, in auto mode, through the chart"
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "and again: `journal stuck` is the way out"
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
     assert hook(app, "Stop")[1] == {}, "auto off: an open task says nothing"
     console.run(["task", "start", "1"], AGENT)
@@ -2815,7 +2815,7 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
     checks = app.container.get(Checks)
     env = app.container.get(Environments).named("main").id
     assert checks.number("tasks.log_after") == 50 and checks.number("7") == 7, "a setting's name reads through its option, so an unset key is the default, never 0"
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.log_after", value=12), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.log_after", value=12), Actor.system())
     assert checks.number("tasks.log_after") == 12, "and the user's value once set"
     console.run(["message", "send", "look at the picture, the chart and the footer please"], USER)
     console.run(["message", "read", "1"], AGENT)
@@ -3738,7 +3738,7 @@ def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_star
 
 def test_the_edits_since_the_log_are_read_from_the_record_the_task_named_the_log_asked_for_and_the_write_held(app):
     for key, value in (("tasks.log_after", 3), ("tasks.first_nudge_after", 1), ("tasks.name_every", 2), ("tasks.auto", False)):
-        app.container.get(Settings).save(Setting(environment_id=0, key=key, value=value), Actor.system())
+        app.container.get(SettingRows).save(Setting(environment_id=0, key=key, value=value), Actor.system())
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -3995,7 +3995,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, m
         app.runtime().deferred.drain()
     tick()
     assert sent == [], "a step just said is not said again"
-    app.container.get(Settings).set("sequences.say_every", 0, Actor.user(1))
+    app.container.get(SettingRows).set("sequences.say_every", 0, Actor.user(1))
     tick()
     assert any("step 1: bump" in line for line in sent), "a step unheard for the set minutes is typed again to a quiet agent"
     console.run(["sequence", "park", "--why", "docs first"], AGENT)
@@ -4429,7 +4429,7 @@ def test_the_upgrade_to_parts_stops_a_workflow_on_a_retired_check_and_carries_a_
     logged_at = app.container.get(Machine).current("s1").logged_at
     with app.container.get(Scope).of(1):
         app.container.get(NotedTimes).forget(ValueName(log.id, "last_log"), Actor.system())
-    app.container.get(Settings).set(DRAWINGS_VERSION_KEY, 27, Actor.system())
+    app.container.get(SettingRows).set(DRAWINGS_VERSION_KEY, 27, Actor.system())
     app.container.get(ShippedChart).run()
     assert charts.find(mine).title.endswith("(stopped, check quiet_for_over is no longer in the catalogue)") and not [n for n in charts.nodes_of(charts.find(mine)) if n.kind == NodeKind.TRIGGER], "a workflow on a retired check is stopped, its title saying which"
     with app.container.get(Scope).of(1):
@@ -4657,7 +4657,7 @@ def test_a_hold_after_reminders_drawn_by_hand_holds_where_the_shipped_one_does(a
     from journal.support.standing import Standing
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
-    console, charts, settings = app.console(), app.container.get(Charts), app.container.get(Settings)
+    console, charts, settings = app.console(), app.container.get(Charts), app.container.get(SettingRows)
     settings.set("messages.remind_every", 3, Actor.user(1))
     settings.set("messages.hold_after_reminders", 2, Actor.user(1))
     shipped = next(c for c in charts.for_event("tool_starting") if c.title.startswith("Hold a write while messages stay unread"))
@@ -5059,7 +5059,7 @@ def test_plugins_come_back_when_the_journal_starts_again(app):
     app.console().run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
     (app.config.home / "plugin-data" / "echo" / "kept.txt").write_text("kept")
     again = App(Config(app.config.root, port=0))
-    again.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    again.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     again.runtime().start()
     try:
         hook(again, "SessionStart")
@@ -5223,7 +5223,7 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     from journal.repositories.entries import Entries
     from journal.repositories.messages import Messages
     from journal.repositories.plugins import Plugins
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     plugins, messages = app.container.get(Plugins), app.container.get(Messages)
     plugins.save(echo(app).with_(settings={"mode": "broken"}), Actor.user(1))
     hook(app, "SessionStart")
@@ -5235,7 +5235,7 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     plugins.save(row.with_(settings={}), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
     assert plugins.named("echo").faults_in_a_row == 0 and "Plugin echo answers again" in [m.text for m in messages.recent(5)]
-    app.container.get(Settings).set(PluginsFeature.DEADLINE.key, 1, Actor.user(1))
+    app.container.get(SettingRows).set(PluginsFeature.DEADLINE.key, 1, Actor.user(1))
     plugins.save(plugins.named("echo").with_(settings={"mode": "slow"}), Actor.user(1))
     plugins.save(echo(app, "echo-two").with_(settings={"mode": "slow"}), Actor.user(1))
     began = time.monotonic()
@@ -5426,7 +5426,7 @@ def test_a_shipped_title_says_its_settings_number_and_a_changed_setting_retitles
     charts = app.container.get(Charts)
     named = lambda: next(c for c in charts.shipped() if c.drawing == ":tool_starting:inbox")
     assert named().title == "Name the unread messages every 3 tool uses", "the title says the number, never N"
-    app.container.get(Settings).save(Setting(environment_id=0, key="messages.remind_every", value=5), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="messages.remind_every", value=5), Actor.system())
     ShippedChart.__init__(app.container.get(ShippedChart), *[getattr(app.container.get(ShippedChart), a) for a in ("charts", "catalogue", "settings", "states", "agents", "values", "registry", "seeding")])
     app.container.get(ShippedChart).run()
     assert named().title == "Name the unread messages every 5 tool uses", "a changed setting retitles the workflow at boot"
@@ -5879,11 +5879,11 @@ def test_a_worker_past_its_time_limit_is_stopped_and_reported(app):
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
     app.console().run(["worker", "dispatch", "Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    app.container.get(Settings).set(WorkersFeature.TIMEOUT.key, 0.02, USER.actor)
+    app.container.get(SettingRows).set(WorkersFeature.TIMEOUT.key, 0.02, USER.actor)
     worker = app.container.get(Workers).find(1)
     app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo half done; sleep 30"], A.agent("s1"))
     assert any("stopped after" in m.text and "half done" in m.text for m in app.container.get(Messages).in_())
@@ -5912,7 +5912,7 @@ def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app, mo
 
 def test_command_outputs_are_a_rolling_log_that_drops_the_oldest_with_its_folder(app):
     from journal.repositories.command_outputs import CommandOutputs
-    app.container.get(Settings).save(Setting(environment_id=0, key="shell.outputs_kept", value=2), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="shell.outputs_kept", value=2), Actor.system())
     hook(app, "SessionStart")
     console = app.console()
     folders = [app.config.root / f"run{i}" for i in range(3)]
@@ -6253,7 +6253,7 @@ def test_version_3_checks_triggers_sequences_templates_and_settings_come_across_
     from journal.features.migration.support.migrator import Migrator
     from journal.repositories.checks import Checks
     from journal.repositories.sequences import Sequences
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     from journal.repositories.templates import Templates
     from journal.repositories.triggers import Triggers
     kept = app.config.home / "version-3"
@@ -6277,7 +6277,7 @@ def test_version_3_checks_triggers_sequences_templates_and_settings_come_across_
     titles = {s.title: s for s in app.container.get(Sequences).every()}
     assert titles["Releasing"].steps == ("Tag it", "Push it: with the tags") and "Shipped one" not in titles, "version 3's shipped sequences stay behind"
     assert any(t.title == "Report" and t.purpose == "critique" for t in app.container.get(Templates).every())
-    assert app.container.get(Settings).project("features.checks") is False and app.container.get(Settings).project("features.boards") is None, "only a feature version 4 has"
+    assert app.container.get(SettingRows).project("features.checks") is False and app.container.get(SettingRows).project("features.boards") is None, "only a feature version 4 has"
 
 
 def test_a_small_version_3_journal_comes_across_counted_kind_by_kind_and_a_second_run_brings_nothing(app):
@@ -6465,12 +6465,12 @@ def test_the_tasks_list_and_its_open_count_leave_out_a_plans_tasks(app):
 def test_an_update_never_overwrites_a_setting_the_user_set(app):
     from journal.app import App
     from journal.config import Config
-    settings = app.container.get(Settings)
+    settings = app.container.get(SettingRows)
     settings.save(Setting(environment_id=0, key="shell.command_characters", value=500), Actor.user(1))
     settings.save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.user(1))
     updated = App(Config(app.config.root, port=0))
     updated.runtime().boot()
-    kept = updated.container.get(Settings)
+    kept = updated.container.get(SettingRows)
     assert kept.project("shell.command_characters") == 500 and kept.project("tasks.auto") is False, "booting the new code, as an update does, keeps what the user set"
 
 
@@ -6538,7 +6538,7 @@ class Installer:
 
 
 def updating_with(app, source: Source, installer: Installer, auto: bool) -> Updating:
-    app.container.get(Settings).set("updates.auto", auto, Actor.system())
+    app.container.get(SettingRows).set("updates.auto", auto, Actor.system())
     updating = app.container.get(Updating)
     updating.source, updating.installer = source, installer
     return updating
@@ -6936,19 +6936,19 @@ def test_a_link_in_a_commands_output_is_suggested_as_a_pin_and_again_only_after_
 
 def test_dispatches_past_the_most_at_once_wait(app):
     from journal.models.setting import Setting
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     hook(app, "SessionStart")
     console = app.console()
-    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_out", value=1), Actor.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="workers.most_out", value=1), Actor.user(1))
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     refused = console.run(["worker", "dispatch", "Ada Byron", "write the lexer", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     assert refused.code == 1 and "1 workers are out, the most at once" in refused.err, "a worker past the most out at once is refused"
-    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "journal-researcher", "model": "haiku"})[0] == 200, "the first under a most of one passes: the start being judged is not counted among the running"
     hook(app, "SubagentStart", agent_id="a1", agent_type="Explore")
     status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the routes", "prompt": "map", "subagent_type": "journal-researcher", "model": "haiku"})
     assert status == 409 and "1 subagents are running, the most at once" in body["error"], "a subagent past the most at once is held"
-    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=2), Actor.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="workers.most_subagents", value=2), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the views", "prompt": "map", "subagent_type": "journal-researcher", "model": "haiku"})[0] == 200, "one running and a second passes a most of two"
     status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the tests", "prompt": "map", "subagent_type": "journal-researcher", "model": "haiku"})
     assert status == 409 and "2 subagents are running" in body["error"], "two running and a third is held"
@@ -6975,9 +6975,9 @@ def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
     from journal.features.sharing.support.tunnel import Tunnel
     from journal.features.phone.support.pairing import Pairing
     from journal.repositories.messages import Messages
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     from journal.support.refused import Refused
-    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    app.container.get(SettingRows).set("sharing.host", "tunler.example", Actor.user(1))
     pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
     with pytest.raises(Refused, match="only the user pairs"):
         pairing.offer(7, Actor.agent("s1"), now)
@@ -7008,9 +7008,9 @@ def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):
     from datetime import datetime, timedelta, timezone
     from journal.features.sharing.support.tunnel import Tunnel
     from journal.features.phone.support.pairing import Pairing
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     from journal.support.refused import Refused
-    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    app.container.get(SettingRows).set("sharing.host", "tunler.example", Actor.user(1))
     pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
     late = pairing.offer(1, Actor.user(1), now)
     tunnel = app.container.get(Tunnel)
@@ -7033,8 +7033,8 @@ def test_a_phone_whose_days_ran_out_is_told_so_and_reaches_nothing(app):
     from journal.features.phone.support.pairing import Pairing
     from journal.http.phone.phone_pages import COOKIE, PhonePages
     from journal.http.phone.phone_request import PhoneRequest
-    from journal.repositories.settings import Settings
-    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    from journal.repositories.setting_rows import SettingRows
+    app.container.get(SettingRows).set("sharing.host", "tunler.example", Actor.user(1))
     pairing, then = app.container.get(Pairing), datetime.now(timezone.utc) - timedelta(days=2)
     paired = pairing.pair(pairing.offer(1, Actor.user(1), then).short, "iPhone", then)
     answer = app.container.get(PhonePages).through(PhoneRequest("GET", "/p/journal/messages", f"{COOKIE}={paired.key}"))
@@ -7264,11 +7264,11 @@ def test_an_environment_keeps_one_session_for_each_provider(app):
 def test_the_record_is_a_rolling_log_of_its_newest_entries_and_the_projects_rows_stay(app):
     from journal.repositories.entries import Entries
     from journal.repositories.messages import Messages
-    from journal.repositories.settings import Settings
+    from journal.repositories.setting_rows import SettingRows
     hook(app, "SessionStart")
     entries = app.container.get(Entries)
     assert len(entries.selected_everywhere("1")) > 5
-    app.container.get(Settings).set("record.kept", 5, Actor.user(1))
+    app.container.get(SettingRows).set("record.kept", 5, Actor.user(1))
     for _ in range(4):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     app.console().run(["message", "send", "keep me"], USER)
@@ -7494,7 +7494,7 @@ def test_a_shell_line_says_whether_it_reads_searches_or_runs():
 def test_a_journal_set_to_follow_a_branch_installs_that_branchs_newest_commit(app):
     (app.config.home / "src").mkdir(parents=True, exist_ok=True)
     (app.config.home / "src" / "commit").write_text("aaaaaaa1111\n")
-    app.container.get(Settings).set("updates.branch", "development", Actor.user(1))
+    app.container.get(SettingRows).set("updates.branch", "development", Actor.user(1))
     source, installer = Source("v4.99.0", head="aaaaaaa1111"), Installer()
     updating = updating_with(app, source, installer, auto=True)
     updating.checked()
@@ -7522,7 +7522,7 @@ def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_
     from journal.supervisor_link import SupervisorLink
     typed = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append(fields["line"]))
-    app.container.get(Settings).set("delivery.batch_seconds", 5, Actor.user(1))
+    app.container.get(SettingRows).set("delivery.batch_seconds", 5, Actor.user(1))
     link = app.container.get(SupervisorLink)
     link.type(1, "new message 2")
     hook(app, "UserPromptSubmit", prompt="[journal] new message 2")
@@ -7531,7 +7531,7 @@ def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_
     link.type(1, "the user put 👍 on message 2")
     app.container.get(Clock).tick()
     assert typed == ["[journal] new message 2"], "a line within five seconds of the last waits, even once the last is confirmed"
-    app.container.get(Settings).set("delivery.batch_seconds", 0, Actor.user(1))
+    app.container.get(SettingRows).set("delivery.batch_seconds", 0, Actor.user(1))
     app.container.get(Clock).tick()
     assert typed == ["[journal] new message 2", "[journal] new message 3 | the user put 👍 on message 2"], "the window up, the held lines go as one line"
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.repositories.settings import Settings as SettingRows
+from journal.repositories.setting_rows import SettingRows
 from journal.support.option import Option
 
 

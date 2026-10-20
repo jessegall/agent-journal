@@ -10,7 +10,7 @@ from journal.support.deferred import Deferred
 from journal.support.floor import Floor
 from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
-from journal.repositories.settings import Settings
+from journal.repositories.setting_rows import SettingRows
 
 CARRIES = ("tool_starting", "tool_finished", "prompt_submitted", "session_started")
 """The hooks whose answer can carry a line to the agent without holding it, where a plugin's waiting lines are handed over."""
@@ -24,7 +24,7 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     blocking = True
     asked_while_free = True
 
-    def __init__(self, hearing: PluginHearing, deferred: Deferred, settings: Settings, floor: Floor, words: PluginWords) -> None:
+    def __init__(self, hearing: PluginHearing, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords) -> None:
         self.hearing, self.deferred, self.settings, self.floor, self.words = hearing, deferred, settings, floor, words
 
     def handle(self, event: AgentEvent) -> Decision | None:
