@@ -2,6 +2,7 @@
 const N = /\bN(th)?\b/;
 
 export function cardTitle(entry, node, limit = null) {
+    if (entry.named && node.text) return namedTitle(entry.named, node.text, limit) || entry.title;
     const title = entry.title || "";
     if (!N.test(title) || !node.text) return title;
     const [name, written] = node.text.trim().split(/\s+/);
@@ -9,6 +10,14 @@ export function cardTitle(entry, node, limit = null) {
     const numbered = (value) => title.replace(N, (match, th) => `${value}${th || ""}`);
     if (title.includes("a count")) return number ? numbered(number).replace("a count", `the count ${name}`) : title;
     return numbered(node.text.trim());
+}
+
+// a count or time step's title with its value's name, read as words, and the number or time after it; nothing while one it needs is missing
+function namedTitle(named, text, limit) {
+    const [name, ...rest] = text.trim().split(/\s+/);
+    const n = limit ? String(limit.number) : rest.join(" ");
+    if (named.includes("{n}") && !n) return "";
+    return named.replace("{name}", name.replaceAll("_", " ")).replace("{n}", n);
 }
 
 // what a count check's number is, when it comes from a setting

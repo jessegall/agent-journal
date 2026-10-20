@@ -12,7 +12,12 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -24,7 +29,12 @@
       "nudges": [
         "chart.line"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     }
   ]

@@ -1,5 +1,6 @@
 <script setup>
 import {computed} from "vue";
+import {VALUE_KEYS} from "../domain/chartCard.js";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -15,10 +16,13 @@ const props = defineProps({
 });
 const emit = defineEmits(["search", "add"]);
 
+// the steps on a workflow's own counts and times are a group of their own, so a count or a clock is found where it is looked for
+const isValue = (entry) => VALUE_KEYS.includes(entry.key);
 const groups = computed(() => [
     {kind: "trigger", label: "Triggers", note: "", entries: props.triggers},
-    {kind: "check", label: "Checks", note: "— a yes or no question", entries: props.checks},
-    {kind: "action", label: "Actions", note: "— something the workflow does", entries: props.actions},
+    {kind: "check", label: "Checks", note: "— a yes or no question", entries: props.checks.filter((e) => !isValue(e))},
+    {kind: "action", label: "Actions", note: "— something the workflow does", entries: props.actions.filter((e) => !isValue(e))},
+    {kind: "value", label: "Counts and times", note: "— what the workflow keeps between events", entries: [...props.actions, ...props.checks].filter(isValue)},
 ]);
 </script>
 
@@ -40,11 +44,11 @@ const groups = computed(() => [
             </template>
         </MenuLabel>
         <template v-if="group.kind === 'trigger' && hasTrigger">
-            <p class="chart-menu-about">A trigger for another event makes this workflow answer that event too, sharing its counts.</p>
+            <p class="chart-menu-about">A trigger for another event makes this workflow answer that event too, sharing its counts and times.</p>
         </template>
         <template v-for="entry in group.entries" :key="`${group.kind}:${entry.key}`">
             <MenuItem :description="described(entry)" @click="emit('add', entry)">
-                <span :class="['chart-glyph', group.kind]" />
+                <span :class="['chart-glyph', entry.kind]" />
                 {{ entry.title }}
             </MenuItem>
         </template>

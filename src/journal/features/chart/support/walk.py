@@ -1,11 +1,11 @@
 from dataclasses import replace
 
-from journal.events.agent.ticked import Ticked
+from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.event import Event
 from journal.events.models.model_event import ModelEvent
 from journal.features.chart.support.actions import Actions
-from journal.features.chart.support.checks import COUNT_CHECKS, Checks
+from journal.features.chart.support.checks import COUNT_CHECKS, TIME_CHECKS, VALUE_ACTIONS, Checks
 from journal.features.chart.support.context import Context
 from journal.features.chart.support.dry_actions import DryActions
 from journal.support.decision import Decision
@@ -68,11 +68,11 @@ class Walk:
             for start in graph.triggers.get(key, ()):
                 decision = decision.merged(self.follow(graph.nodes[start], graph.nodes, graph.after, ctx, passed))
             if ctx.stopped:
-                self._stopped_at[id(ctx.event)] = chart.place
+                self._stopped_at[id(ctx.event)] = chart.place_at(key)
                 queue = []
             elif len(ctx.moves) > moves_before:
                 ctx = replace(ctx, state=ctx.moves[-1][1])
-                queue = [c for c in self.in_part(self.workflows_for(ctx, key), ctx.event, part) if c not in walked and c.place > chart.place]
+                queue = [c for c in self.in_part(self.workflows_for(ctx, key), ctx.event, part) if c not in walked and c.place_at(key) > chart.place_at(key)]
         if self.worth_recording(ctx.event, graphs, passed) and not isinstance(self.actions, DryActions):
             record = WalkRecord(session=ctx.session, state=ctx.state.name if ctx.state else "", started=started.name if started else "", workflows=tuple(c.id for c in walked), trigger=key, nodes=tuple(passed), allowed=decision.allowed, said=decision.context or decision.reason,
                                 unanswered=tuple(ctx.unanswered), moved_by=tuple(n for n, _ in ctx.moves), stopped_at=ctx.stopped[0] if ctx.stopped else 0, moved_to=ctx.moves[-1][1].name if ctx.moves else "",
@@ -86,17 +86,17 @@ class Walk:
             return [c for c in charts if self.charts.graph(c).answers]
         if part == AFTER:
             stopped = self._stopped_at.pop(id(event), None)
-            return [c for c in charts if not self.charts.graph(c).answers and (stopped is None or c.place < stopped)]
+            return [c for c in charts if not self.charts.graph(c).answers and (stopped is None or c.place_at(event.key) < stopped)]
         return charts
 
     @staticmethod
     def worth_recording(event: Event, graphs: list[Graph], passed: list) -> bool:
-        """A walk that passed a node is recorded, a tick's only when it acted: the clock ticks every few seconds and a quiet tick is no news."""
+        """A walk that passed a node is recorded; one of an event no hook waits on, a tick or a line said, only when it did more than keep a value, since they come every few seconds and a quiet one is no news."""
         if not passed:
             return False
-        if not isinstance(event, Ticked):
+        if not isinstance(event, AgentEvent) or event.answers_hook:
             return True
-        return any(graph.nodes[n].kind == NodeKind.ACTION for graph in graphs for n in passed if n in graph.nodes)
+        return any(graph.nodes[n].kind == NodeKind.ACTION and graph.nodes[n].key not in VALUE_ACTIONS for graph in graphs for n in passed if n in graph.nodes)
 
     def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
         """The event's workflows in the order the user set: the ones bound to no state always, and the ones bound to the agent's state or to any state it inherits from, so following a plan runs Working's workflows and its own."""
@@ -138,6 +138,8 @@ class Walk:
         if node.kind == NodeKind.CHECK:
             if node.key in COUNT_CHECKS:
                 ctx.read[node.id] = self.checks.count_of(ctx, node.text.strip().partition(" ")[0])
+            if node.key in TIME_CHECKS:
+                ctx.read[node.id] = self.checks.seconds_since(ctx, node.text.strip().partition(" ")[0])
             return (YES if self.checks.answer(node.key, ctx, node.text) else NO), decision
         if node.kind != NodeKind.ACTION:
             return THEN, decision
@@ -148,6 +150,10 @@ class Walk:
             return THEN, decision.merged(self.run_workflow(node, ctx, passed))
         if node.key in MOVERS and ctx.moves:
             return THEN, decision.merged(self.second_move(node, ctx))
+        if node.key in VALUE_ACTIONS:
+            if node.id in ctx.valued:
+                return THEN, decision
+            ctx.valued.add(node.id)
         acted = self.actions.perform(node.key, node.text, ctx)
         if node.key in MOVERS:
             landed = self.landed(node, ctx)

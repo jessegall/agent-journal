@@ -1,5 +1,5 @@
 import {counted} from "../format/number.js";
-import {isClosed} from "./row.js";
+import {createdAt, isClosed} from "./row.js";
 
 // A plan's standing: its state, or waiting while a started plan holds at a checkpoint for the user.
 export const statusOf = (p) => (p.state === "started" && p.held ? "waiting" : p.state);
@@ -27,6 +27,22 @@ export const PLAN_STATES = {
 const openPlans = (plans) => plans.filter((p) => !isClosed(p) && statusOf(p) in PLAN_STATES).sort((a, b) => a.id - b.id);
 
 export const reviewersLine = (n) => (n ? `${n} ${n === 1 ? "reviewer" : "reviewers"} still reviewing` : "");
+
+const roundWhen = (at) => new Date(at * 1000).toLocaleString(undefined, {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
+
+// A plan's review rounds, newest first as the server sends them, each numbered from the first and said in plain words.
+export function reviewRounds(plan) {
+    const rounds = plan.reviews || [];
+    return rounds.map((review, i) => ({
+        id: review.id,
+        title: `Review round ${rounds.length - i}`,
+        when: roundWhen(createdAt(review)),
+        reviewers: review.reviewers.length ? counted(review.reviewers.length, "reviewer") : "",
+        names: review.reviewers.join(", "),
+        changed: review.changed ?? "Still in review",
+        reports: review.report_ids,
+    }));
+}
 
 export function leadingPlan(plans) {
     const open = openPlans(plans);

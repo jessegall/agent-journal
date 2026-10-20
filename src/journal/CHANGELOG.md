@@ -2,6 +2,21 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.3.0
+
+- Workflows are built from parts you can see. Whatever a workflow remembers it keeps in values it names and sets with steps on its canvas: counts (Set a count to zero, Start a count at zero once, Add one to a count, Has a count reached N?, Is a count at a multiple of N?) and times (Note the time, Forget a noted time, Has N passed since a noted time?, Was a time noted?). Each environment keeps its own, and a workflow never reads another's.
+- Every shipped workflow is drawn from these parts, telling the agent what it did before: the quiet clocks note their time on the move that starts the wait and on the agent's own events, and the cadences count their own tool uses, writes and lines. No check keeps a clock or works out a count out of sight any more.
+- The ask about a task blocked on something outside speaks after 45 minutes of quiet; at an hour it never spoke, since an hour of quiet ends the session first.
+- While the agent waits, the next task is named once for the wait, not after every turn.
+- A workflow holds a trigger for each event it needs, with its own place in each event's run order, and is listed under each of them, marked with the others. New triggers: Await, Command moved to the background, Background command ended, Commit made and Journal line said. New checks: a task just taken in hand, parked or blocked, the agent's reply, a message typed in the terminal, an open question, a plan followed, a tool held already, and how many commands run in the background.
+- The workflows page shows each environment's values, picked in its bar, with when each was set and by which step; the run order changes in a mode of its own, with a ghost where the workflow will land; a run names the event that started it.
+- The upgrade, for your own workflows: one that names Has the agent been quiet for N?, Is the log older than N? or Has a command run in the background longer than N?, or a count the journal used to read from its record (edits, uses, owed, namings, lines), is turned off at the upgrade, its title saying which, for you to draw again from counts and times; a shipped workflow you edited is treated the same. A clock running in a session goes on across the upgrade; a cadence starts its count afresh.
+- journal chart try takes --since name=seconds; journal chart show prints each environment's values; journal doc update writes a document anew from a file.
+
+## 4.2.5
+
+- A message always reaches an idle agent. The agent a supervisor runs is no longer taken for gone after an hour without a hook, which had left it ended and every message after that untyped; only a session no supervisor runs, a terminal closed without its end hook, is still ended after an hour.
+
 ## 4.2.4
 
 - The most subagents at once counts only those already running: the one being started is no longer counted among them, so four running and a fifth pass a most of five.

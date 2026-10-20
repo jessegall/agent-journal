@@ -30,8 +30,10 @@ to is rewritten at boot to the action its outcome names.
 
 A trial, `journal chart try <event>`, walks the workflows dry and says the path and what it would do, nothing done; it
 walks as the live agent, or as the state given with `--state`, with the agent's own data when it is in that state, and as
-a `--provider` whose tool names the tool event takes; `--quiet`, `--edits` and `--unread` lay a state over the live rows,
-and the trial says everything it assumed.
+a `--provider` whose tool names the tool event takes; `--unread`, `--value <name>=<n>` for a count, `--since
+<name>=<seconds>` for a time and `--quiet <seconds>` for every time at once lay a state over the live rows, and the trial
+says everything it assumed. A trial never writes a value: a count it starts or adds to is kept in its own ledger, so a
+check after it on the dry path reads what the live walk would.
 
 Each workflow is compiled once into a graph in memory and walked from there; a write to any workflow through the
 journal clears the compiled graphs, so the next walk reads the edit.
@@ -41,22 +43,26 @@ journal clears the compiled graphs, so the next walk reads the edit.
 Every shipped workflow holds one concern, and the run order and the end of a walk carry the design: at an event the
 Always workflows run first, then each state's in the order its state ships at, a child state before its parent (the
 agent following a plan runs its own workflows and then Working's), and the first workflow that keeps the agent from
-stopping, or says Stop the later workflows, ends the walk so nothing after it runs. Two kinds of number are read: the
-readings, which the journal takes from its own record (edits since the log, uses since the newest unread message,
-owed since a message was read and left unanswered, namings of an unread inbox, lines since the etiquette reminder),
-and the counts a workflow keeps itself, each its own and for each agent. What the agent owes the journal, the journal skill and a state's skill, the
+stopping, or says Stop the later workflows, ends the walk so nothing after it runs. Every number a workflow reads it
+keeps itself, in values it names and sets with steps on its canvas: counts and times, kept per environment in rows
+named for the workflow, so each environment has its own and no workflow reads another's. No check keeps a clock or
+works out a count of its own: a quiet clock notes the time on the event that starts its wait and on the agent's own
+events, and asks on the tick how long ago that was; a cadence adds one at each event it counts and starts at zero on
+the event that restarts it. What the agent owes the journal, the journal skill and a state's skill, the
 look at what is in flight, a decision at a context mark, is the engine's: the skills, briefing and memory features
 set each debt and hold a write and a stop on it, with no node on the canvas.
 
 At Session start: tell the agent the journal's rules, facts and what waits; tell the agent how to talk to the user;
 what is unread is the engine's delivery there, catching the agent up on a line it may have missed. At User prompt submit and Stop: say what is unread. At Pre tool use: hold a write while
 messages stay unread after a number of reminders; name the unread messages every so many tool uses; hold the tools
-while a read message stays unanswered; ask for an answer after so many tool uses; each on the agent's own tool use, never a subagent's.
-Idle at a stop holds it while a task is parked, then in auto mode while tasks are open; at a tick it asks about a
-parked task after a minute and checks in after half an hour in auto mode. Following a plan holds the stop at a
+while a read message stays unanswered; ask for an answer after so many tool uses; each on the agent's own tool use, never a subagent's,
+each counting its own tool uses from the message event that starts it. Idle at a stop holds it while a task is
+parked, then in auto mode while tasks are open; at a tick it asks about a parked task after a minute and checks in
+after half an hour in auto mode, each from the time it noted at the park or at the agent's last own event. Following a plan holds the stop at a
 checkpoint in auto mode, or says the user looks first and stops the walk. Working, at a stop and a start, tells the
-agent to carry on and asks for a log when the log is old; at a write it holds the write when the log is overdue,
-asks for a log after N edits and names the task in hand every N edits; at a tick it asks how the task stands after
+agent to carry on and asks for a log when the time it noted at the task's start or last log is old, or was never noted;
+at a write it holds the write when the log is overdue, asks for a log after N edits and names the task in hand every N
+edits, each counting its own writes from the task's start or last log; at a tick it asks how the task stands after
 fifteen quiet minutes. The waits tell the agent a worker reported or a question was answered and send it back. A title that
 reads a setting says the setting's number, drawn from it, and a boot retitles the workflow when the setting changed;
 a title you give stays.
@@ -72,7 +78,7 @@ what survives, and the mark owed is a fact on its row until it does. Then the co
 state, one Always workflow per event, bound to no state and placed after the locked ones: the Always workflow at Session start
 requires the journal skill (locked), names the inbox, requires a look at what is in flight (locked) and then says the start block line by line, ready, quiet, the laws (locked), a takeover when another session worked here lately, the rules, facts and reminders when there are any, what waits, and how to talk to the user, owing the look that
 `journal environment here` pays, the Always workflow at User prompt submit requires the skills a prompt names
-(locked) and names the inbox, the Always workflow at Stop holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox. Delivering a message to the agent is the engine's, not a workflow: the messages feature types a message you leave into the agent's terminal by number and starts its counts of tool uses and inbox namings, and starts the count of uses it owes an answer on at the first message read and left unanswered; nothing is shipped at Message created or Message updated. A state whose feature has a
+(locked) and names the inbox, the Always workflow at Stop holds a stop while the agent owes the journal something, naming what it awaits (locked), before the mark, so a mark crossed at that very stop is told once and not yet held for, and names the inbox. Delivering a message to the agent is the engine's, not a workflow: the messages feature types a message you leave into the agent's terminal by number; the inbox workflows hold a trigger at Message created only to start their own counts of tool uses again. A state whose feature has a
 skill requires it at Session start in that state, in the state's own workflow there. Require a skill names the
 skill in its text; empty, it takes the skills the prompt names at a prompt and the state's skill elsewhere. A state's workflow at an event carries only the state's own
 steps, and a state with nothing of its own at an event has no workflow there; a copy from before, edited by you,
@@ -80,10 +86,10 @@ keeps your steps and the state's and loses the shared ones at the boot that move
 
 - **Idle**: at a stop, parked tasks hold it in any mode and the next open task in auto mode; as the clock ticks, the
   parked ask after a minute and the check-in after half an hour.
-- **Working**: the edits since the log counted on the canvas, started at nought when this agent starts a task and
+- **Working**: the writes since the log counted on the canvas, started at zero when a task is taken in hand and
   when a log line comes for the task in hand; at a write the task is named every so many edits, the log asked for
   at the first threshold and the write held when the log is overdue, a held write not counted; carry on at a stop
-  and a start, with the log asked for when stale; the task still open after a quiet quarter hour. Following a plan
+  and a start, with the log asked for when stale or never noted; the task still open after a quiet quarter hour. Following a plan
   inherits it.
 - **Following a plan**: the plan's state for the plan's whole life; at a stop or a start, a plan standing at a
   checkpoint waits for the user's look, or in auto mode holds the stop and carries on, and with a task in hand it
@@ -91,8 +97,8 @@ keeps your steps and the state's and loses the shared ones at the boot that move
 - **Waiting on a worker**: a worker reporting or stopping is told, and the agent is released when its last worker
   is back.
 - **Waiting on a question**: the answer releases the agent, told how to read it.
-- **Expecting something outside**: after five quiet minutes the agent is told to check what it awaits; its own
-  next tool use is working again and releases it.
+- **Expecting something outside**: after five quiet minutes since Await or its last own event, the agent is told to
+  check what it awaits; its own next tool use is working again and releases it.
 - **Stuck**: nothing is said until the agent's own next tool use, which releases it.
 - **Ended**: at a start, nothing of its own yet; the workflow holds its trigger alone, so the state is on the page
   with something to open, until the session's end and start move into the workflows.
@@ -102,12 +108,12 @@ A workflow of your own is for a state at an event no default covers, made with N
 ## Three kinds of box
 
 Every check and action a box may name is declared by the feature it belongs to, in that feature's own file: the
-tasks feature declares Has open tasks? and the log's age, the messages feature the inbox checks, the skills
-feature Require a skill to be read, the chart feature the counts, the holds and the moves. The catalogue gathers
+tasks feature declares Has open tasks? and a task's moves, the messages feature the inbox checks, the skills
+feature Require a skill to be read, the chart feature the counts and times, the holds and the moves. The catalogue gathers
 them from the features and defines none itself; the chart's checks and actions answer and perform them. The checks
 that read the event's own content take words: Tool is one of Write, Edit; Tool input contains git push; Prompt contains
 deploy; Context over 60 percent; Time of day within 22:00-06:00, a tick reading its own time and any other event now. A check
-on time takes its unit: Has the agent been quiet for 30 minutes?, Is the log older than 2 hours?; a bare number is seconds.
+on time takes its unit: Has 30 minutes passed since last tool use?; a bare number is seconds.
 
 A workflow can run another: the action Run a workflow names one by its title, and the walk runs that workflow's
 steps from its trigger on, in place, as part of the event that reached the caller, so one drawing serves several
@@ -116,32 +122,39 @@ a workflow already running in the same call is refused and recorded.
 
 - A **trigger** is an event. Every hook the agent sends is one: the session starts, a prompt is sent, a tool is
   about to run, a tool finished, the agent stops, a subagent starts or ends, the context compacts, the session
-  ends, the clock ticks. Every row is one too: a task created, a plan updated, a message deleted, and so on for
-  each kind of row. A trigger only starts a path; no line leads into it.
+  ends, the clock ticks, every five seconds by the engine's clock that every time step reads. The journal's own are
+  too: Await, Command moved to the background, Background command ended, Commit made and Journal line said, a path
+  from which may count, note or show a card but never say a line, or it would start itself again. Every row is one
+  too: a task created, a plan updated, a message deleted, and so on for each kind of row; a task's move or a message's
+  is its row's trigger with a check naming the move. A trigger only starts a path; no line leads into it.
 - A **check** is a yes or no question the journal answers from its rows: are tasks open, is a task in hand, is a
   message unread, is auto mode on, does the tool about to run write. A check leaves
   by a yes line and a no line; one of them may be left out, and the path then ends on that answer. Counter
-  checks take a number in their text, or the name of a setting that holds it: four or more messages unread, quiet
-  for so many seconds, the log older than so many seconds. A count check reads a count the workflow keeps for the
-  agent, or a reading, named first in its text, against the number after it: is the count over N, at N, at every
-  Nth (a multiple of N, never nought), and Wait here until a count reaches N, which goes on once it has and waits
-  there until then, its No needing no line. Each workflow keeps its own counts, so two workflows' counts of one
-  name never meet, and one workflow may hold a trigger for each event it needs, its counts shared by all of them: a
-  count started when a message comes and counted at each tool is one workflow with two triggers. A count may not take
-  a reading's name. No workflow starts at a count's write, a session's counts go when it ends, a count no node of its
-  workflow names any more is cleared and the chat says so, and a workflow reading a count none of its own nodes
-  keeps is turned off at boot with its title saying why. A row event's checks read the row the
-  event is about: a message just read, a task just started by this agent, a log line for the task in hand, a
-  message written by you.
+  checks take a number in their text, or the name of a setting that holds it: four or more messages unread. A count
+  check reads a count the workflow keeps, named first in its text, against the number after it: has it reached N, is
+  it at N, at a multiple of N (never zero), and Wait here until a count reaches N, which goes on once it has and waits
+  there until then, its No needing no line. A time check asks whether so long has passed since the workflow noted a
+  time, or whether it noted it at all; a time never noted has no since and answers no. Each workflow keeps its own
+  counts and times, per environment, stored as `charts:<workflow>:<name>` in the counts and noted_times tables, so two
+  workflows' values of one name never meet and no workflow reads another's;
+  one workflow may hold a trigger for each event it needs, its values shared by all of them: a count started when a
+  message comes and counted at each tool is one workflow with two triggers, with its own place at each event. A
+  check on a value no step of the same workflow sets is refused when it is saved, as is one name for a count and a
+  time. No workflow starts at a value's write; a session's end, a restart or a takeover leave a value; a value no node
+  of its workflow names any more is cleared and the chat says so, and a reset or a deletion clears them all. A row
+  event's checks read the row the event is about: a message just read, a task just taken in hand, parked or blocked,
+  a log line for the task in hand, a message written by you, the agent's reply.
 - An **action** is what the journal does, with the line it says: say a line to the agent, hold the tool it was
-  about to use, block its stop, type a line into its terminal, start a sequence by its title. Start a count, Start a
-  count if not started and Count one keep a number for the agent between events, named in their text: Start a count
-  sets it to nought every time, so it is how a count starts again where its reason ends; Start a count if not started
-  only the first time. A workflow that only counts walks after the hook's reply. A line says a count or a reading
-  with `{{value.<name>}}`. The line may name
+  about to use, block its stop, type a line into its terminal, start a sequence by its title. Set a count to zero,
+  Start a count at zero once and Add one to a count keep a number between events, named in their text: Set a count
+  to zero sets it every time, so it is how a count starts again where its reason ends; Start a count at zero once
+  only the first time. Note the time keeps the engine clock's time under its name, and Forget a noted time makes it
+  read as never noted. A workflow that only counts or notes walks after the hook's reply. A line says a count with
+  `{{value.<name>}}`, the minutes since a noted time with `{{minutes.<name>}}`, how long ago in the stop lines' words
+  with `{{ago.<name>}}`, and a log's time or that nothing was logged with `{{logged.<name>}}`. The line may name
   rows with placeholders: `{{next_task}}`, `{{next_task_title}}`, `{{parked_tasks}}`, `{{parked_n}}`, `{{parked_title}}`, `{{parked_why}}`,
-  `{{inbox}}`, `{{unread_count}}`, `{{unread_numbers}}`, `{{owed}}`, `{{task}}`, `{{task_edits}}`, `{{log_command}}`, `{{awaited}}`,
-  `{{quiet_minutes}}`, `{{row}}`, `{{worker_n}}`, `{{worker_name}}`, `{{question_n}}`, `{{sequence_n}}`, `{{sequence_step}}` and
+  `{{inbox}}`, `{{unread_count}}`, `{{unread_numbers}}`, `{{owed}}`, `{{task}}`, `{{log_command}}`, `{{awaited}}`,
+  `{{row}}`, `{{worker_n}}`, `{{worker_name}}`, `{{question_n}}`, `{{sequence_n}}`, `{{sequence_step}}` and
   `{{sequence_step_text}}`. A say or type line that opens with a nudge's key
   in brackets, `[messages.new]`, speaks as that nudge.
 
@@ -185,15 +198,20 @@ parked"); the line under it says when it runs (always, or when the agent is in i
 is born "New workflow", takes the title of its first action when you save one, and keeps the name you give it.
 A journal whose shipped workflows still carry the older "State at Event" titles, never renamed, takes the plain
 titles at boot. The moves the engine makes itself, such as moving the agent to Working when a task starts, are not workflows and are
-not shown among them. Recent runs names a
-state change in words, by the step that moved the agent or the journal's own move that came first, and the answer
-the agent was given, said or held, with the counts each walk left. On the canvas each card says how often it ran; a
-count check shows each agent's count against its number, reminders 2 of 3, the number read from its setting, and
-where an agent's last walk stopped on a count check's No the card says Waiting here; the step's side panel lists the
-waiting agents' counts and what each reading counts. Opening a run lights its path and, on each count card it
-passed, the number the check read. Test run says which workflows it would run, in order, where it would stop, and
-reads the counts as the live walk would, a count started or counted on the dry path included; `journal chart try
---value <name>=<n>` stands a count in. A mark says the one
+not shown among them. Recent runs names the event
+that started each run, a state change in words, by the step that moved the agent or the journal's own move that came
+first, and the answer the agent was given, said or held, with the values each walk left. A workflow is listed under
+every event it holds a trigger for, in its own place at each, marked with the other events it runs at; the order is
+changed in a mode of its own, Change the order, with a ghost of the workflow where it will land. On the canvas each
+card says how often it ran; a count check shows the environment's count against its number, reminders 2 of 3, the
+number read from its setting, and where an agent's last walk stopped on a count check's No the card says Waiting
+here. Under the page notes a line says the workflow's values in the environment picked in the bar, Values in main
+by default: each count, and each time by how long ago it was noted, or that none is set yet or no agent works
+there; a step's side panel says its value now, when it was last set and by which step, and in a workflow with
+several triggers the triggers it runs on. Opening a run lights its path and, on each card it passed, what the check
+read. Test run says which workflows it would run, in order, where it would stop, and reads the values as the live
+walk would, a count started or counted on the dry path included, writing none; `journal chart try --value
+<name>=<n>` stands a count in, `--since <name>=<seconds>` a time. A mark says the one
 thing that sets a workflow apart: nothing for a default, a diamond for one changed or made by you, a crossed ring
 for one turned off, a red ring when its last run failed, a dash for none. Under the title the status and when the
 workflow runs, when it last ran and what it said, the last step that failed since, and the warning of a wait

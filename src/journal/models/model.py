@@ -11,6 +11,8 @@ class Model:
     """A row. Data only; it never touches the database. Every row says who made it and who last changed it."""
 
     text_fields: ClassVar[tuple[str, ...]] = ()
+    in_timeline: ClassVar[bool] = True
+    """Whether each change of a row of this model is an entry in the timeline the viewer's live updates read."""
 
     id: int | None = None
     created_at: datetime | None = None

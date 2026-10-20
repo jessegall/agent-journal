@@ -20,6 +20,6 @@ class Statistics(Repository[Statistic]):
             return self.save(self.of(key).with_(value=value), by)
 
     def of(self, key: str) -> Statistic:
-        """The statistic of that key, a fresh one at nought before anything counted it."""
+        """The statistic of that key, a fresh one at zero before anything counted it."""
         found = self.where(key=key)
         return found[0] if found else Statistic(key=key)

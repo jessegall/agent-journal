@@ -20,6 +20,16 @@ describe("a card's title says its own number", () => {
         expect(cardTitle({title: "Is a count over N?"}, {text: "edits"})).toBe("Is a count over N?");
     });
 
+    it("says a count or time step by its value's name and number", () => {
+        expect(cardTitle({title: "Add one to a count", named: "Add one to {name}"}, {text: "edits"})).toBe("Add one to edits");
+        expect(cardTitle({title: "Set a count to zero", named: "Set {name} to zero"}, {text: "edits"})).toBe("Set edits to zero");
+        expect(cardTitle({title: "Has a count reached N?", named: "Has {name} reached {n}?"}, {text: "edits 20"})).toBe("Has edits reached 20?");
+        expect(cardTitle({title: "Is it more than N since a noted time?", named: "Is it more than {n} since {name}?"}, {text: "last_tool_use 15 minutes"})).toBe(
+            "Is it more than 15 minutes since last tool use?"
+        );
+        expect(cardTitle({title: "Has a count reached N?", named: "Has {name} reached {n}?"}, {text: "edits"})).toBe("Has a count reached N?");
+    });
+
     it("leaves a title with no N, or a card with no text, as it is", () => {
         expect(cardTitle({title: "Has unread messages?"}, {text: ""})).toBe("Has unread messages?");
         expect(cardTitle({title: "N or more messages unread?"}, {text: ""})).toBe("N or more messages unread?");

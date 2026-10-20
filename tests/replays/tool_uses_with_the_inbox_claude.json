@@ -12,7 +12,12 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -24,7 +29,15 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -32,11 +45,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 1,
+        "charts:43:tools_used": 1,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 0,
-          "179": 1
+          "290": 1,
+          "292": 0,
+          "304": 1
         }
       ]
     },
@@ -45,11 +69,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 2,
+        "charts:43:tools_used": 2,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 0,
-          "179": 2
+          "290": 2,
+          "292": 0,
+          "304": 2
         }
       ]
     },
@@ -65,11 +100,22 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 7,
+        "charts:42:times_named": 1,
+        "charts:42:tools_used": 3,
+        "charts:43:tools_used": 3,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 1,
-          "179": 3
+          "290": 3,
+          "292": 1,
+          "304": 3
         }
       ]
     },
@@ -78,11 +124,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 7,
+        "charts:42:times_named": 1,
+        "charts:42:tools_used": 4,
+        "charts:43:tools_used": 4,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 1,
-          "179": 4
+          "290": 4,
+          "292": 1,
+          "304": 4
         }
       ]
     },
@@ -91,11 +148,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 7,
+        "charts:42:times_named": 1,
+        "charts:42:tools_used": 5,
+        "charts:43:tools_used": 5,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 1,
-          "179": 5
+          "290": 5,
+          "292": 1,
+          "304": 5
         }
       ]
     },
@@ -111,11 +179,22 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 8,
+        "charts:42:times_named": 2,
+        "charts:42:tools_used": 6,
+        "charts:43:tools_used": 6,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 2,
-          "179": 6
+          "290": 6,
+          "292": 2,
+          "304": 6
         }
       ]
     },
@@ -124,11 +203,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 8,
+        "charts:42:times_named": 2,
+        "charts:42:tools_used": 7,
+        "charts:43:tools_used": 7,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 2,
-          "179": 7
+          "290": 7,
+          "292": 2,
+          "304": 7
         }
       ]
     },
@@ -137,11 +227,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 8,
+        "charts:42:times_named": 2,
+        "charts:42:tools_used": 8,
+        "charts:43:tools_used": 8,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 2,
-          "179": 8
+          "290": 8,
+          "292": 2,
+          "304": 8
         }
       ]
     },
@@ -157,11 +258,22 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 9,
+        "charts:42:times_named": 3,
+        "charts:42:tools_used": 9,
+        "charts:43:tools_used": 9,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 3,
-          "179": 9
+          "290": 9,
+          "292": 3,
+          "304": 9
         }
       ]
     },
@@ -170,11 +282,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 9,
+        "charts:42:times_named": 3,
+        "charts:42:tools_used": 10,
+        "charts:43:tools_used": 10,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 3,
-          "179": 10
+          "290": 10,
+          "292": 3,
+          "304": 10
         }
       ]
     },
@@ -183,11 +306,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 9,
+        "charts:42:times_named": 3,
+        "charts:42:tools_used": 11,
+        "charts:43:tools_used": 11,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 3,
-          "179": 11
+          "290": 11,
+          "292": 3,
+          "304": 11
         }
       ]
     },
@@ -203,11 +337,22 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 10,
+        "charts:42:times_named": 4,
+        "charts:42:tools_used": 12,
+        "charts:43:tools_used": 12,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 4,
-          "179": 12
+          "290": 12,
+          "292": 4,
+          "304": 12
         }
       ]
     },
@@ -216,11 +361,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 10,
+        "charts:42:times_named": 4,
+        "charts:42:tools_used": 13,
+        "charts:43:tools_used": 13,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 4,
-          "179": 13
+          "290": 13,
+          "292": 4,
+          "304": 13
         }
       ]
     },
@@ -229,11 +385,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 10,
+        "charts:42:times_named": 4,
+        "charts:42:tools_used": 14,
+        "charts:43:tools_used": 14,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 4,
-          "179": 14
+          "290": 14,
+          "292": 4,
+          "304": 14
         }
       ]
     },
@@ -249,11 +416,22 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 11,
+        "charts:42:times_named": 5,
+        "charts:42:tools_used": 15,
+        "charts:43:tools_used": 15,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 5,
-          "179": 15
+          "290": 15,
+          "292": 5,
+          "304": 15
         }
       ]
     },
@@ -262,11 +440,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 11,
+        "charts:42:times_named": 5,
+        "charts:42:tools_used": 16,
+        "charts:43:tools_used": 16,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 5,
-          "179": 16
+          "290": 16,
+          "292": 5,
+          "304": 16
         }
       ]
     },
@@ -277,14 +466,25 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 11,
+        "charts:42:times_named": 5,
+        "charts:42:tools_used": 17,
+        "charts:43:tools_used": 17,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "174": 5,
-          "179": 17,
-          "29": 0,
-          "34": 0,
-          "39": 0
+          "290": 17,
+          "292": 5,
+          "304": 17,
+          "67": 0,
+          "80": 0,
+          "93": 0
         }
       ]
     },
@@ -293,7 +493,17 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 11,
+        "charts:42:times_named": 5,
+        "charts:42:tools_used": 17,
+        "charts:43:tools_used": 17,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -305,12 +515,21 @@
       "nudges": [
         "messages.answer"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 12,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 1,
+        "charts:45:uses_unanswered": 1,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "179": 0,
-          "191": 1,
-          "196": 1
+          "318": 1,
+          "325": 1
         }
       ]
     },
@@ -319,11 +538,20 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 12,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 2,
+        "charts:45:uses_unanswered": 2,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "179": 0,
-          "196": 2
+          "325": 2
         }
       ]
     },
@@ -332,11 +560,20 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 12,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 3,
+        "charts:45:uses_unanswered": 3,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": [
         {
-          "179": 0,
-          "196": 3
+          "325": 3
         }
       ]
     },
@@ -345,7 +582,17 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 12,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 3,
+        "charts:45:uses_unanswered": 3,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -353,12 +600,18 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
-      "read": [
-        {
-          "179": 0
-        }
-      ]
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 12,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
     }
   ]
 }

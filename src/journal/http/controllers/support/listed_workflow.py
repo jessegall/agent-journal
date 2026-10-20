@@ -11,6 +11,7 @@ class ListedWorkflow(TypedDict):
     event: str
     state: str
     place: int
+    places: dict
     off: bool
     edited: bool
     failed: bool
