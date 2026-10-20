@@ -1,13 +1,12 @@
 from journal.support.cards import Cards
-from journal.engine.state_machine import StateMachine
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
 from journal.support.skill import Skill
-from journal.support.requiring import Requiring
 from journal.support.skill_files import SkillFiles
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.support.chat_mark import ChatMark
+from journal.engine.clock import Clock
 
 
 class MarkLoaded(AgentListener[ToolFinished]):
@@ -15,8 +14,8 @@ class MarkLoaded(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, machine: StateMachine, agents: Agents, files: SkillFiles, cards: Cards, requiring: Requiring) -> None:
-        self.machine, self.agents, self.files, self.cards, self.requiring = machine, agents, files, cards, requiring
+    def __init__(self, agents: Agents, files: SkillFiles, cards: Cards, clock: Clock) -> None:
+        self.agents, self.files, self.cards, self.clock = agents, files, cards, clock
 
     def handle(self, event: ToolFinished) -> None:
         read = [self.files.skill_read(path) for path in event.read_paths] + [self.files.skill_in_folder(event.skill_loaded) if event.skill_loaded else None]
@@ -24,8 +23,6 @@ class MarkLoaded(AgentListener[ToolFinished]):
             self.loaded(event, skill)
 
     def loaded(self, event: ToolFinished, skill: Skill) -> None:
-        agent = self.machine.agent(event.session, event.environment_id)
-        digest = self.files.hash_of(skill)
-        self.agents.touched(agent, Actor.system(), lambda now: {"skills_loaded": {**(now.skills_loaded or {}), skill.name: digest}})
-        self.requiring.paid(agent, skill)
+        agent = self.agents.for_session(event.session)
+        self.agents.save(agent.skill_read(skill.name, self.files.hash_of(skill), self.clock.now()), Actor.system())
         self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good", skill.name, kind="skill", shows=ChatMark.SKILLS)

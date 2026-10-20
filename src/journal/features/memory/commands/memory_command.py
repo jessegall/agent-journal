@@ -1,4 +1,5 @@
 from argparse import Namespace
+from datetime import datetime, timezone
 from typing import ClassVar
 
 from journal.console.command import Command
@@ -27,7 +28,7 @@ class MemoryCommand(Command):
         self.verb(verbs, "strike", f"a {self.noun} that no longer holds").add_argument("n", type=int)
 
     def create(self, args: Namespace, where: Where) -> int:
-        row = self.repository.save(self.new(args), where.actor)
+        row = self.repository.save(self.carrying(self.new(args), where), where.actor)
         self.decided(where)
         print(f"{self.noun} {row.id}: {row.text}")
         return 0
@@ -43,6 +44,9 @@ class MemoryCommand(Command):
         print(f"{self.noun} {args.n} struck")
         return 0
 
+    def carrying(self, row, where: Where):
+        return row
+
     def new(self, args: Namespace):
         return self.repository.model(text=args.text, keywords=self.keywords(args))
 
@@ -54,4 +58,6 @@ class MemoryCommand(Command):
         """An agent held at a mark has decided: the mark owed is paid."""
         if not where.session:
             return
-        self.agents.touch(self.machine.agent(where.session, self.scope.id), where.actor, mark_owed=0)
+        agent = self.machine.agent(where.session, self.scope.id)
+        if agent.mark_owed:
+            self.agents.save(agent.mark_decided(datetime.now(timezone.utc).timestamp()), where.actor)

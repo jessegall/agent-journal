@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
+from journal.events.rows.rule_made import RuleMade
 from journal.models.model import Model
 
 
@@ -15,3 +16,5 @@ class Rule(Model):
     keywords: tuple[str, ...] = ()
     """Words that, when the agent writes one, bring the rule back to it as a whisper."""
 
+    def made(self, by_agent: bool) -> "Rule":
+        return self.with_event(RuleMade(by_agent=by_agent))

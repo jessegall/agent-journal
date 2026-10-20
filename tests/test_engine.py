@@ -528,7 +528,7 @@ def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_non
         task = tasks.save(Task(environment_id=1, title="first"), Actor.system())
         plan = plans.save(Plan(environment_id=1, title="p", state=PlanState.APPROVED), Actor.system())
         started = plans.save(plan.started(task, 5.0), Actor.system())
-        assert started.events == () and hearing.heard == [PlanStarted(environment_id=1, at=5.0, plan_id=plan.id, task_id=task.id)]
+        assert started.events == () and hearing.heard == [PlanStarted(environment_id=1, at=5.0, row_id=plan.id, plan_id=plan.id, task_id=task.id)]
         plans.save(started.with_(title="renamed"), Actor.system())
         assert len(hearing.heard) == 1
 
@@ -675,7 +675,6 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_stand
     from journal.features.pins.support.pins_standing import PinsStanding
     from journal.features.migration.support.migration_conduct import MigrationConduct
     from journal.features.migration.support.migration_standing import MigrationStanding
-    from journal.events.agent.journal_started import JournalStarted
     from journal.events.agent.tool_finished import ToolFinished
     from journal.events.agent.turn_written import TurnWritten
     from journal.events.rows.setting_changed import SettingChanged
@@ -688,7 +687,7 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_stand
         started = Idle().on(SessionStarted().with_standing(standing), settings)
         assert [nudge.key for nudge in started.nudges] == ["voices.how_to_talk_to_the_user", "migration.version_3_not_brought_across"]
         assert "as a butler" in started.nudges[0].rendered()
-        assert [n.key for n in Idle().on(JournalStarted(source="resume").with_standing(standing), settings).nudges] == ["voices.say_you_are_back"]
+        assert [n.key for n in Idle().on(SessionStarted(source="resume").with_standing(standing), settings).typed] == ["voices.say_you_are_back"]
         changed = Idle().on(SettingChanged(environment_id=1, at=1.0, setting=Voices.SPOKEN[0].key).with_standing(standing), settings)
         assert [n.key for n in changed.nudges] == ["voices.the_voice_changed"]
         assert Idle().on(SettingChanged(environment_id=1, at=1.0, setting="shell.short_output").with_standing(standing), settings).nudges == ()
@@ -859,5 +858,65 @@ def test_a_state_that_defines_a_conduct_listeners_name_answers_in_its_place():
     try:
         assert Listening().on(ToolStarting(tool="Write", input={}), SettingsValue({})).nudges == (LINE, OTHER, OTHER)
         assert Quiet().on(ToolStarting(tool="Write", input={}), SettingsValue({})).nudges == (LINE, OTHER), "the state's own answer stands where the conduct's would have"
+    finally:
+        BaseState.fold(())
+
+
+def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_and_whisper_from_the_standing():
+    from journal.features.skills.support.skills_conduct import SkillsConduct
+    from journal.features.skills.support.skills_standing import SkillsStanding
+    from journal.features.skills.support.skill_card import SkillCard
+    from journal.features.briefing.support.briefing_conduct import BriefingConduct
+    from journal.features.briefing.support.briefing_standing import BriefingStanding
+    from journal.features.memory.support.memory_conduct import MemoryConduct
+    from journal.features.memory.support.memory_standing import MemoryStanding
+    from journal.features.memory.support.memory_row import MemoryRow
+    from journal.features.plans.support.plans_standing import PlansStanding
+    from journal.features.tasks.support.tasks_standing import TasksStanding
+    from journal.events.agent.idle import Idle as IdleEvent
+    from journal.events.rows.rule_made import RuleMade
+    from journal.support.chat_mark import ChatMark
+    settings = SettingsValue({})
+    cards = (SkillCard("journal", ".claude/skills/journal/SKILL.md", "h1", (), ()), SkillCard("plans", ".claude/skills/journal-plans/SKILL.md", "h2", ("plan", "roadmap"), ("following_plan",)))
+    readings = {
+        "plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()),
+        "skills": SkillsStanding(owed=("journal",), loaded={"plans": "h2"}, skills=cards),
+        "briefing": BriefingStanding(oriented=False, environment="main", others_lately_at="09:12", rules="1. Always test", rules_count=1, facts="", reminders="1. Log often", waiting="2 tasks"),
+        "memory": MemoryStanding(mark_owed=50, context_mark=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), ChatMark.FACTS),)),
+    }
+    standing = Standing(readings)
+    BaseState.fold((SkillsConduct, BriefingConduct, MemoryConduct))
+    try:
+        started = Idle().on(SessionStarted(source="startup").with_standing(standing), settings)
+        keys = [n.key for n in started.nudges]
+        assert keys[:4] == ["skills.read_the_skill_first", "briefing.journal_ready", "briefing.handle_the_journal_quietly", "briefing.the_laws_apply"]
+        assert "briefing.you_took_over" in keys and "briefing.rules_in_force" in keys and "briefing.facts_here" not in keys and "briefing.reminders_here" in keys and "briefing.waiting_for_you" in keys and keys[-1] == "briefing.look_before_the_first_write"
+        assert ".claude/skills/journal/SKILL.md" in started.nudges[0].rendered()
+        compacted = Idle().on(SessionStarted(source="compact").with_standing(standing), settings)
+        assert "briefing.you_took_over" not in [n.key for n in compacted.nudges]
+        prompt = Idle().on(PromptSubmitted(prompt="draw me a roadmap").with_standing(standing), settings)
+        assert [n.key for n in prompt.nudges] == [], "the plans skill is read already, by its hash"
+        unread = Standing({**readings, "skills": SkillsStanding(owed=(), loaded={}, skills=cards)})
+        assert [n.rendered() for n in Idle().on(PromptSubmitted(prompt="draw me a roadmap").with_standing(unread), settings).nudges][0].startswith("read the plans skill before anything else")
+        held = Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_standing(standing), settings)
+        assert held.held is not None and held.held.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
+        assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}).with_standing(standing), settings).held is None
+        stop = Idle().on(IdleEvent().with_standing(standing), settings)
+        assert stop.held is not None and stop.held.key == "skills.stopped_owing"
+        paid = Standing({**readings, "skills": SkillsStanding(owed=(), loaded={}, skills=cards)})
+        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_standing(paid), settings).held.key == "briefing.look_before_the_first_write"
+        looked = Standing({**paid.readings, "briefing": BriefingStanding(**{**readings["briefing"].__dict__, "oriented": True})})
+        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_standing(looked), settings).held.key == "memory.write_held_until_decided"
+        assert Idle().on(IdleEvent().with_standing(looked), settings).held.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
+        decided = Standing({**looked.readings, "memory": MemoryStanding(mark_owed=0, context_mark=50, rows=readings["memory"].rows)})
+        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_standing(decided), settings).held is None
+        crossed = Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}, context=0.81, session="s1").with_standing(decided), settings)
+        assert [n.rendered() for n in crossed.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal nothing survives \"<why>\"`"] or crossed.nudges[0].key == "memory.decide_at_the_mark"
+        assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}, context=0.6, session="s1").with_standing(decided), settings).nudges == ()
+        whispered = Idle().on(ToolStarting(tool="Bash", input={"command": "lsof -i :port"}).with_standing(decided), settings)
+        assert [n.rendered() for n in whispered.typed] == ["fact 3: the port is 8420"]
+        rule = Idle().on(RuleMade(environment_id=0, at=1.0, row_id=7, by_agent=True).with_standing(decided), settings)
+        assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
+        assert Idle().on(RuleMade(environment_id=0, at=1.0, row_id=7, by_agent=False).with_standing(decided), settings).nudges == ()
     finally:
         BaseState.fold(())

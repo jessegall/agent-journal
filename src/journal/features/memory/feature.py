@@ -1,18 +1,16 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.memory.listeners.mark_whispered import MarkWhispered
+from journal.features.memory.listeners.take_the_mark import TakeTheMark
+from journal.features.memory.support.memory_conduct import MemoryConduct
 from journal.features.memory.support.memory_standing_reader import MemoryStandingReader
 from journal.features.memory.commands.fact_command import FactCommand
 from journal.features.memory.commands.nothing_command import NothingCommand
 from journal.features.memory.commands.reminder_command import ReminderCommand
 from journal.features.memory.commands.rule_command import RuleCommand
-from journal.features.memory.listeners.hold_at_mark import HoldAtMark
-from journal.features.memory.listeners.hold_writes_while_mark_owed import HoldWritesWhileMarkOwed
 from journal.features.memory.listeners.mark_compacted import MarkCompacted
 from journal.features.memory.listeners.mark_memory_row_made import MarkMemoryRowMade
 from journal.features.memory.listeners.mark_memory_row_struck import MarkMemoryRowStruck
-from journal.features.memory.listeners.keep_from_stopping_while_mark_owed import KeepFromStoppingWhileMarkOwed
-from journal.features.memory.listeners.review_new_rule import ReviewNewRule
-from journal.features.memory.listeners.whisper import Whisper
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.models.node_kind import NodeKind
@@ -27,7 +25,8 @@ class Memory(Feature):
     name = "memory"
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
-    listeners = (HoldAtMark, HoldWritesWhileMarkOwed, KeepFromStoppingWhileMarkOwed, Whisper, ReviewNewRule, MarkCompacted, MarkMemoryRowMade, MarkMemoryRowStruck)
+    conduct = (MemoryConduct,)
+    listeners = (TakeTheMark, MarkWhispered, MarkCompacted, MarkMemoryRowMade, MarkMemoryRowStruck)
     standing = (MemoryStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'context_over_mark', 'Context reached the next mark?', "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
@@ -38,7 +37,6 @@ class Memory(Feature):
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
 
     MARKS = (25, 50, 80)
-    """Percent of the context window at which the agent is asked to decide what survives."""
 
     DECIDE_AT_THE_MARK = Nudge(name, "decide_at_the_mark", "context {{percent}}% full: decide what to keep from it", "`journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal nothing \"<why>\"`; writes wait until you do", repeat_after=0)
     WRITE_HELD_UNTIL_DECIDED = Nudge(name, "write_held_until_decided", "writes wait until you decide what to keep from the context", "`journal fact create`, `journal rule create`, or `journal nothing \"<why>\"`")
@@ -64,3 +62,7 @@ At a mark of the context window, writes wait until you decide what must survive 
 - `--keywords a,b` on any of them: when you write or run one of those words, the row is whispered back to you.
 - Facts, rules and reminders are handed to you at every session start.
 """, keywords=('fact', 'facts', 'rule', 'rules', 'reminder', 'remember', 'memory'), required_in=('at_mark',))
+
+    @classmethod
+    def mark_due(cls, context: float, highest: int) -> int:
+        return max([mark for mark in cls.MARKS if context * 100 >= mark > highest], default=0)

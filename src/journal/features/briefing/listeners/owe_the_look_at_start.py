@@ -1,22 +1,16 @@
-from journal.engine.state_machine import StateMachine
-from journal.engine.nudger import Nudger
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent_listener import AgentListener
-from journal.support.decision import Decision
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 
 
 class OweTheLookAtStart(AgentListener[SessionStarted]):
-    """Every start of a session owes a look at what is in flight here before any other write: the fact on the agent's row, and the line that says so."""
+    """Every start of a session owes a look at what is in flight here before any other write: the fact on the agent's row; the briefing conduct says so."""
 
     blocking = True
 
-    def __init__(self, machine: StateMachine, nudger: Nudger, agents: Agents) -> None:
-        self.machine, self.nudger, self.agents = machine, nudger, agents
+    def __init__(self, agents: Agents) -> None:
+        self.agents = agents
 
-    def handle(self, event: SessionStarted) -> Decision | None:
-        from journal.features.briefing.feature import Briefing
-        agent = self.agents.touch(self.machine.agent(event.session, event.environment_id), Actor.system(), oriented=False)
-        line = self.nudger.say(agent, Briefing.LOOK_BEFORE_THE_FIRST_WRITE.create())
-        return Decision.allowed_with(line) if line else None
+    def handle(self, event: SessionStarted) -> None:
+        self.agents.touch(self.agents.for_session(event.session), Actor.system(), oriented=False)

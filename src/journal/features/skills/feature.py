@@ -1,16 +1,14 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.skills.listeners.owe_skills import OweSkills
+from journal.features.skills.support.skills_conduct import SkillsConduct
 from journal.features.skills.support.skills_standing_reader import SkillsStandingReader
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 from journal.features.skills.commands.skill_command import SkillCommand
 from journal.features.skills.listeners.forget_at_compaction import ForgetAtCompaction
-from journal.features.skills.listeners.hold_writes_while_skill_owed import HoldWritesWhileSkillOwed
-from journal.features.skills.listeners.keep_from_stopping_while_skill_owed import KeepFromStoppingWhileSkillOwed
 from journal.features.skills.listeners.mark_loaded import MarkLoaded
-from journal.features.skills.listeners.require_at_prompt import RequireAtPrompt
-from journal.features.skills.listeners.require_at_start import RequireAtStart
 
 
 class Skills(Feature):
@@ -20,8 +18,9 @@ class Skills(Feature):
     title = "Skills"
     help = "The journal's skills are written for the agent and required by the workflows at the moments they matter: the journal's at a start, a state's at a start in it, the ones a prompt names; a write waits until the file is read."
     commands = (SkillCommand,)
-    listeners = (RequireAtStart, RequireAtPrompt, HoldWritesWhileSkillOwed, KeepFromStoppingWhileSkillOwed, MarkLoaded, ForgetAtCompaction)
+    listeners = (OweSkills, MarkLoaded, ForgetAtCompaction)
     standing = (SkillsStandingReader,)
+    conduct = (SkillsConduct,)
     checks = (
         Entry(NodeKind.CHECK, 'prompt_names_skill', "Prompt names a skill's keyword?", "the prompt the user sent names a keyword of one of the journal's skills"),
         Entry(NodeKind.CHECK, 'skill_owed', 'Has a skill still to read?', "the agent owes a read of a skill's file: required and not read since"),

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import json
 from argparse import Namespace
 from dataclasses import asdict
@@ -101,7 +102,7 @@ class EnvironmentCommand(Command):
         if not where.session:
             return
         try:
-            self.agents.touch(self.agents.for_session(where.session), where.actor, oriented=True)
+            self.agents.save(self.agents.for_session(where.session).look_taken(datetime.now(timezone.utc).timestamp()), where.actor)
         except NotFound:
             return
 

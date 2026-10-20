@@ -1,12 +1,9 @@
-from journal.features.briefing.listeners.announce_start import AnnounceStart
 from journal.features.briefing.listeners.end_other_sessions import EndOtherSessions
 from journal.features.briefing.listeners.end_silent_sessions import EndSilentSessions
-from journal.features.briefing.listeners.hold_writes_until_oriented import HoldWritesUntilOriented
-from journal.features.briefing.listeners.keep_from_stopping_until_oriented import KeepFromStoppingUntilOriented
 from journal.features.briefing.listeners.owe_the_look_at_start import OweTheLookAtStart
-from journal.features.briefing.listeners.start_briefing import StartBriefing
 from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.briefing.support.briefing_conduct import BriefingConduct
 from journal.features.briefing.support.briefing_standing_reader import BriefingStandingReader
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
@@ -16,7 +13,8 @@ class Briefing(Feature):
     name = "briefing"
     title = "Session briefing"
     help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any Session start workflow."
-    listeners = (AnnounceStart, OweTheLookAtStart, StartBriefing, EndOtherSessions, HoldWritesUntilOriented, KeepFromStoppingUntilOriented, EndSilentSessions)
+    conduct = (BriefingConduct,)
+    listeners = (OweTheLookAtStart, EndOtherSessions, EndSilentSessions)
     standing = (BriefingStandingReader,)
     checks = (
         Entry(NodeKind.CHECK, 'not_oriented', 'Has not yet looked at what is in flight?', 'the agent has not looked at what is in flight here since its session started'),

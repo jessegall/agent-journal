@@ -66,6 +66,9 @@ class StateMachine(AgentListener[AgentEvent]):
             self.entries.save(Trail.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
         agent = self._settle(agent, hooked, event.key, Actor.system())
         lines = [line for nudge in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, nudge))]
+        typed = [line for nudge in transition.typed if (line := self.nudger.say(agent, nudge))]
+        if typed:
+            self.supervisor.type(agent.environment_id, "\n".join(typed), after=event.typed_after)
         if transition.held:
             return Decision.refuse(transition.held.rendered())
         if hooked.held:

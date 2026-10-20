@@ -10,10 +10,11 @@ class RowEvent(Event):
 
     environment_id: int = 0
     at: float = 0.0
+    row_id: int = 0
     standing: Standing = field(default_factory=lambda: Standing({}), compare=False)
 
     def with_standing(self, standing: Standing) -> "RowEvent":
         return replace(self, standing=standing)
 
-    def placed_by(self, environment_id: int, at: float) -> "RowEvent":
-        return replace(self, environment_id=self.environment_id or environment_id, at=self.at or at)
+    def placed_by(self, environment_id: int, at: float, row_id: int) -> "RowEvent":
+        return replace(self, environment_id=self.environment_id or environment_id, at=self.at or at, row_id=self.row_id or row_id)

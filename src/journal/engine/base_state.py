@@ -18,10 +18,9 @@ LISTENER = "on_"
 
 
 @dataclass(frozen=True)
-class BaseState:
+class BaseState(Conduct):
     """The parent of every state. Its listeners are its on_ methods, bound to the event each hears by its annotation; its answers are unchanged, changed, push, pop and hold. It hears what every state hears: the context about to be compacted pushes Compacting, the session's end pushes Ended."""
 
-    name: ClassVar[str]
     title: ClassVar[str] = ""
     allows: ClassVar[frozenset[Permission]] = frozenset()
     conducts: ClassVar[tuple[type[Conduct], ...]] = ()
@@ -50,21 +49,6 @@ class BaseState:
     @classmethod
     def listeners_for(cls, event: type) -> tuple[Callable, ...]:
         return tuple(method for event_kind, method in cls.listeners() if issubclass(event, event_kind))
-
-    def unchanged(self, *nudges: Nudge) -> Transition:
-        return Transition(self, nudges=nudges)
-
-    def changed(self, now: "BaseState", *nudges: Nudge) -> Transition:
-        return Transition(now, nudges=nudges)
-
-    def push(self, to: "BaseState", *nudges: Nudge) -> Transition:
-        return Transition(self, pushed=to, nudges=nudges)
-
-    def pop(self, *nudges: Nudge) -> Transition:
-        return Transition(self, popped=True, nudges=nudges)
-
-    def hold(self, why: Nudge) -> Transition:
-        return Transition(self, held=why)
 
     def on_compaction(self, event: Compacting, settings: Settings) -> Transition:
         from journal.engine.states.compacting import Compacting as CompactingState

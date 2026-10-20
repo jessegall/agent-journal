@@ -170,7 +170,7 @@ class Repository(Generic[M]):
 
     def carried(self, row: M) -> M:
         for event in row.events:
-            self.bus.dispatch(event.placed_by(getattr(row, "environment_id", 0), row.created_at.timestamp()) if isinstance(event, RowEvent) else event)
+            self.bus.dispatch(event.placed_by(getattr(row, "environment_id", 0), row.created_at.timestamp(), row.id) if isinstance(event, RowEvent) else event)
         return row.without_events()
 
     def written(self) -> None:
