@@ -50,7 +50,7 @@ lists the verbs.
 - **fact**, **rule**, **reminder**: what must survive the context window. At a context mark, writes wait
   until you record one or say `journal nothing survives "<why>"`.
 - **sequence**, **worker**, **skill**: steps to follow, agents that write for you, and these files.
-- **shell**: a long command moves to the background; read any output by its number with `journal output read <n>`;
+- **shell**: a long command moves to the background; read any output by its number with `journal output read <n> --tail 20` (or --grep, --summary, --all);
   `journal reader add` keeps a reader that picks the lines worth seeing.
 - `journal environment here` after a compaction or a takeover lists what is in flight.
 - `journal await "<what>"` when you wait on something outside your hands, then end your turn.

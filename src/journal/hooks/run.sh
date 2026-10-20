@@ -43,7 +43,12 @@ __journal_show() {
         tail -c $((cap / 2)) "$1"
         return
     fi
-    printf '[journal] output %s: %s characters. journal output read %s reads it\n' "$__journal_n" "$__journal_size" "$__journal_n"
+    # the flags are taught on the first kept output of every 25; the rest say only where it is kept
+    if [ $((__journal_n % 25)) -eq 1 ]; then
+        printf '[journal] output %s: %s characters, kept. read the part you need: journal output read %s --grep "<words>", --head 20, --tail 20, --lines 40-80, --summary or --all, never its files raw\n' "$__journal_n" "$__journal_size" "$__journal_n"
+    else
+        printf '[journal] output %s kept: journal output read %s --tail 20\n' "$__journal_n" "$__journal_n"
+    fi
 }
 
 # The worker. Its own variables carry a prefix, since the parts run in the same shell and may set i or code.

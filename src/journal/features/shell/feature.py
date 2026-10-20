@@ -30,8 +30,8 @@ class Shell(Feature):
         Entry(NodeKind.CHECK, 'background_over', 'Has a command run in the background longer than N?', 'the clock ticks and one of the agent\'s commands has run in the background longer than the time in the text, with its unit: 5 minutes'),
     )
 
-    MOVED = Nudge(name, "moved", "moved to the background as output {{n}}", "you are told when it ends; its output is in {{file}}. Carry on with what does not wait on it", repeat_after=0)
-    ENDED = Nudge(name, "ended", "output {{n}} {{outcome}}", "its output is in {{file}}", repeat_after=0)
+    MOVED = Nudge(name, "moved", "moved to the background as output {{n}}", "you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
+    ENDED = Nudge(name, "ended", "output {{n}} {{outcome}}", "`journal output read {{n}} --summary` says how; --tail 20 or --grep reads the part you need", repeat_after=0)
     USE_READER = Nudge(name, "use_reader", "reader {{reader}} already reads this: {{about}}", "`journal output read N --reader {{reader}}`", repeat_after=0)
     READER_TIP = Nudge(name, "reader_tip", "you read outputs this way again: {{command}}", "a reader does it for you: `journal reader add <name> --pattern <regex> --about \"<what it picks>\"`, then `journal output read N --reader <name>`", repeat_after=0)
     NARROW = Nudge(name, "narrow", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
@@ -48,17 +48,19 @@ Every shell command you run goes through the journal's runner.
   and a failing part stops the chain where the shell would have.
 - A command that runs past thirty seconds, or ten while a message of the user's waits, is moved to the background with
   the rest of its chain: the tool call returns with its output number, and you are told when output N ends.
-- Every command's output is kept as a numbered output, the newest 250 of them: `journal output read N` shows how it
-  ended and its first and last lines; `--lines 100-160`, `--grep <pattern>`, `--head N` and `--tail N` read part of it.
-  `journal output list` names the newest. Read an output this way rather than running the command again.
+- Every command's output is kept as a numbered output, the newest 250 of them. `journal output read N` needs a flag
+  naming the part: `--tail 20`, `--head 20`, `--grep "<words>"`, `--lines 100-160`, `--reader <name>`, `--summary` for
+  how it ended with its first and last lines, or `--all` for every line when you truly need it whole. `journal output
+  list` names the newest. Read an output this way, never by running the command again nor by reading its files raw.
 - A reader reads outputs of one shape, such as a test run's failures: `journal reader add <name> --pattern <regex>
   --about "<what it picks>"`, or `--script <file>` for a shell script handed the output on its input. Use it with
   `journal output read N --reader <name>`; `journal reader list` names the project's readers. The second time you
   read the same shape of output by hand, add a reader for it and say so in the chat.
-- A test run, a build or any other command's output is shown whole up to 200 characters; past that you see only
-  `output N: X characters`, and read it with `journal output read N`. A command that reads (cat, grep, sed, git diff)
-  is shown up to 8,000 characters, past that by its two ends. A line of
-  journal commands is shown whole and kept as no output. A trailing `| tail` is dropped before the command runs.
+- A test run, a build or any other command's output is shown whole up to 200 characters; past that you see only a
+  line naming the output to read by its number. A command that reads (cat, grep, sed, git diff) is shown up to 8,000
+  characters, past that by its two ends. A line of journal commands is shown whole and kept as no output.
+- A command that only reads the project's own code runs as written, pipes and all: `grep -n x src/app.py | tail -5`
+  answers at once. Any other command's trailing `| tail` is dropped, since its whole output is kept.
 - A test suite is a long runner: run it on its own and chain the commit behind its result in a second call.
 - A journal command runs on its own, or chained only with other journal commands; chained with anything else it is
   refused, since it would move to the background with the rest and its answer lost.

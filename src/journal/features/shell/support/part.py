@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 from dataclasses import dataclass, replace
 
 TRAILING_CUT = re.compile(r"\s*\|\s*tail(?:\s+(?:-[nc]\s*\+?\d+|-\d+))?\s*$")
@@ -7,6 +8,10 @@ READERS = {"cat", "sed", "grep", "egrep", "fgrep", "rg", "ag", "head", "tail", "
 """Commands run to read on purpose, whose output the agent asked to see."""
 GIT_READS = {"show", "diff", "log", "status", "blame", "grep", "ls-files"}
 """The git subcommands that only read."""
+CODE = re.compile(r"\.(py|pyi|vue|js|mjs|cjs|jsx|ts|tsx|cs|go|rs|swift|kt|kts|java|scala|php|rb|ex|exs|erl|hs|ml|clj|c|h|cc|cpp|hpp|m|mm|lua|dart|r|jl|sh|bash|zsh|fish|ps1|sql|css|scss|sass|less|html|htm|svelte|astro|json|jsonl|yaml|yml|toml|ini|cfg|xml|gradle|tf|proto|graphql|md|txt)\b")
+"""A file the agent reads as code or as the project's own text: reading it is the work itself, so it is run as written, pipes and all."""
+WRITING = re.compile(r"(^|\s)-i(\s|$)|>|\btee\b")
+"""A reading command that writes after all: an in-place edit, a redirect into a file, or a tee."""
 
 
 @dataclass(frozen=True)
@@ -27,10 +32,16 @@ class Part:
         program = words[0].rsplit("/", 1)[-1] if words else ""
         return len(words) > 1 and words[1] in GIT_READS if program == "git" else program in READERS
 
+    def is_reading_code(self) -> bool:
+        """A command that only reads, and names code files of the project's own, by a path inside its folder or a glob of a code type, and none outside it."""
+        named = [word.strip("'\"") for word in self.text.split() if CODE.search(word)]
+        inside = str(Path.cwd())
+        return self.is_read() and not WRITING.search(self.text) and bool(named) and all(not word.startswith(("/", "~", "..")) or word.startswith(inside) for word in named)
+
     def cut(self) -> str:
-        """The trailing | tail of the agent's own command, outside quotes and before any heredoc; empty when there is none."""
+        """The trailing | tail of the agent's own command, outside quotes and before any heredoc; empty when there is none, and when the command reads code, which runs as written."""
         found = TRAILING_CUT.search(self.text)
-        if not self.recorded or found is None or "<<" in self.text:
+        if not self.recorded or found is None or "<<" in self.text or self.is_reading_code():
             return ""
         before = self.text[:found.start()]
         return found.group(0).strip() if before.count("'") % 2 == 0 and before.count('"') % 2 == 0 else ""

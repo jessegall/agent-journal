@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.1.9
+
+- An agent that works again is no longer waiting: a tool use of its own ends a wait on a question or on a worker, as it already ended a wait on something outside, so the status bar never stays on Waiting while the agent works.
+- A command that only reads the project's own code runs as written, pipes and all, and answers at once; other commands still lose a trailing | tail, since their whole output is kept.
+- journal output read needs a flag naming the part (--tail, --head, --grep, --lines, --reader), --summary for how it ended or --all for every line; the line that names a kept output teaches the flags on the first of every 25 and is short the rest of the time.
+
 ## 4.1.8
 
 - Resetting a shipped workflow puts it back at its shipped place in the run order too, an Always one included; a shipped workflow's place comes from the shipped table alone, so drawing it and resetting it agree.

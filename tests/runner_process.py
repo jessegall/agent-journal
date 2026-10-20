@@ -49,7 +49,7 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
         settings.save(Setting(environment_id=0, key="shell.foreground", value=1), Actor.system())
         run = subprocess.run([runner, wrapped("seq 1 1000", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=60)
         shown = run.stdout.splitlines()
-        assert len(shown) == 1 and re.fullmatch(r"\[journal\] output (\d+): 3893 characters\. journal output read \1 reads it", shown[0]), "past the cap a command's output is not shown, only named"
+        assert len(shown) == 1 and re.fullmatch(r"\[journal\] output (\d+)(: 3893 characters, kept\. read the part you need: journal output read \1 --grep .*| kept: journal output read \1 --tail 20)", shown[0]), "past the cap a command's output is not shown, only named"
         (cwd.parent / "numbers").write_text("\n".join(str(i) for i in range(1, 3001)) + "\n")
         run = subprocess.run([runner, wrapped(f"cat {cwd.parent / 'numbers'}", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=60)
         assert run.stdout.startswith("1\n2\n") and run.stdout.rstrip().endswith("3000") and "cut from the middle" in run.stdout, "a read is cut to its two ends"

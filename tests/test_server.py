@@ -514,6 +514,9 @@ def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no
     nodes = [{"id": "t", "kind": "trigger", "key": "workers.updated"}, {"id": "h", "kind": "action", "key": "hold", "text": "wait"}]
     status, body = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "h"}]})
     assert status == 409 and "action h holds the agent at every workers.updated: put a check before it" in body["error"]
+    by_tool = next(w for w in read["workflows"] if w["state"] == "awaiting" and w["event"] == "tool_starting")
+    quiet = [{"id": "t", "kind": "trigger", "key": "tool_starting"}, {"id": "s", "kind": "action", "key": "say", "text": "still waiting"}]
+    assert call(server, "POST", f"/journal/chart/{by_tool['id']}", {"revision": by_tool["revision"], "nodes": quiet, "lines": [{"from": "t", "to": "s"}]})[0] == 200
     nodes = [{"id": "t", "kind": "trigger", "key": "workers.updated"}, {"id": "s", "kind": "action", "key": "say", "text": "still waiting"}]
     status, saved = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "s"}]})
     assert status == 200 and saved["warnings"] == ["nothing ends this wait: no workflow of Waiting on a worker releases the agent or changes its state, so an agent waiting on a worker stays so until you release it by hand"]
