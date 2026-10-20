@@ -4,6 +4,8 @@ from inspect import getmembers, isfunction
 from typing import Callable, ClassVar, get_type_hints
 
 from journal.engine.nudge import Nudge
+from journal.engine.support.held import Held
+from journal.engine.support.standing import Standing
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.session_ended import SessionEnded
 from journal.events.event import Event
@@ -62,6 +64,18 @@ class BaseState:
     def on_session_ended(self, event: SessionEnded, settings: Settings) -> Transition:
         from journal.engine.states.ended import Ended
         return self.push(Ended())
+
+    def on_push(self, settings: Settings) -> tuple[Nudge, ...] | Held:
+        return ()
+
+    def on_suspend(self, settings: Settings) -> tuple[Nudge, ...]:
+        return ()
+
+    def on_resume(self, standing: Standing, settings: Settings) -> tuple[Nudge, ...] | Transition:
+        return ()
+
+    def on_pop(self, settings: Settings) -> tuple[Nudge, ...]:
+        return ()
 
     def to_data(self) -> dict:
         return {field.name: getattr(self, field.name) for field in fields(self)}

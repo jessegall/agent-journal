@@ -6,7 +6,12 @@ from journal.repositories.settings import Settings as SettingRows
 from journal.support.features_known import FeaturesKnown
 from journal.engine.resume import Resume
 from journal.engine.states.ended import Ended
+from journal.engine.support.hooked import Hooked
+from journal.engine.support.held import Held
 from journal.engine.support.stack import Stack
+from journal.engine.support.standing import Standing
+from journal.engine.states.paused import Paused
+from journal.supervisor_link import SupervisorLink
 from journal.events.event import Event
 from journal.support.scope import Scope
 from journal.support.states_catalogue import StatesCatalogue
@@ -28,9 +33,9 @@ class Machine(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeaturesKnown, scope: Scope) -> None:
+    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeaturesKnown, scope: Scope, supervisor: SupervisorLink) -> None:
         self.agents, self.states, self.nudger, self.bus = agents, states, nudger, bus
-        self.settings, self.features, self.scope = settings, features, scope
+        self.settings, self.features, self.scope, self.supervisor = settings, features, scope, supervisor
 
     def handle(self, event: AgentEvent) -> Decision:
         return self.answer(self.agent(event.session, event.environment_id, event.provider), event)
@@ -42,17 +47,51 @@ class Machine(AgentListener[AgentEvent]):
                     self.answer(agent, event)
 
     def answer(self, agent: Agent, event: Event) -> Decision:
-        stack = self.states.stack_of(agent)
-        transition = stack.top().on(event, Settings.taken(self.settings, self.features.options()))
-        agent = self._settle(agent, self.moved(self.placed(stack, transition.to), transition))
-        lines = [line for said in transition.nudges if (line := self.nudger.say(agent, said))]
+        stack, settings = self.states.stack_of(agent), self.taken()
+        transition = stack.top().on(event, settings)
+        hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings)
+        agent = self._settle(agent, hooked.stack)
+        lines = [line for said in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, said))]
         if transition.held:
             return Decision.refuse(transition.held.rendered())
+        if hooked.held:
+            return Decision.refuse(hooked.held.nudge.rendered())
         return Decision.tell("\n".join(lines))
 
     def move(self, session: str, environment_id: int, to: AgentState) -> Agent:
         agent = self.agent(session, environment_id)
-        return self._settle(agent, self.placed(self.states.stack_of(agent), to))
+        hooked = self.through_hooks(self.states.stack_of(agent), self.placed(self.states.stack_of(agent), to), self.taken())
+        if hooked.held:
+            raise Refused(hooked.held.nudge.rendered())
+        settled = self._settle(agent, hooked.stack)
+        for line in [line for said in hooked.nudges if (line := self.nudger.say(settled, said))]:
+            self.supervisor.type(environment_id, line)
+        return settled
+
+    def taken(self) -> Settings:
+        return Settings.taken(self.settings, self.features.options())
+
+    def through_hooks(self, before: Stack, after: Stack, settings: Settings) -> Hooked:
+        if after.states[:-1] == before.states and len(after.states) == len(before.states) + 1:
+            return self.pushed_through(before, after, settings)
+        if after == before.popped() and len(before.states) > 1:
+            return self.popped_through(before, after, settings)
+        return Hooked(after)
+
+    def pushed_through(self, before: Stack, after: Stack, settings: Settings) -> Hooked:
+        suspended = before.top().on_suspend(settings)
+        pushed = after.top().on_push(settings)
+        if isinstance(pushed, Held):
+            return Hooked(before, held=pushed)
+        return Hooked(after, (*suspended, *pushed))
+
+    def popped_through(self, before: Stack, after: Stack, settings: Settings) -> Hooked:
+        popped = before.top().on_pop(settings)
+        resumed = after.top().on_resume(Standing({}), settings)
+        if isinstance(resumed, Transition) and resumed.popped and len(after.states) > 1:
+            beneath = self.popped_through(after, after.popped(), settings)
+            return Hooked(beneath.stack, (*popped, *resumed.nudges, *beneath.nudges))
+        return Hooked(after, (*popped, *resumed))
 
     def moved(self, stack: Stack, transition: Transition) -> Stack:
         if transition.pushed:
@@ -63,8 +102,18 @@ class Machine(AgentListener[AgentEvent]):
 
     def placed(self, stack: Stack, to: BaseState) -> Stack:
         if isinstance(to, Resume):
-            return self.states.stack_under(self.states.named(to.state, to.data))
+            return self.resumed(stack, to)
+        if type(to) is type(stack.top()):
+            return stack.with_top(to)
+        if isinstance(to, Paused) and to.resumes(stack.top().name):
+            return stack.pushed(to)
         return self.states.stack_under(to)
+
+    def resumed(self, stack: Stack, to: Resume) -> Stack:
+        beneath = stack.popped()
+        if beneath is not stack and beneath.top().name == to.state:
+            return beneath
+        return self.states.stack_under(self.states.named(to.state, to.data))
 
     def current(self, session: str) -> AgentState:
         agent = self.agents.for_session(session)

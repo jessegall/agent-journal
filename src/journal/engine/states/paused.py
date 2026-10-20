@@ -28,6 +28,9 @@ class Paused(AgentState):
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.back() if event.by_user else self.stay()
 
+    def resumes(self, state: str) -> bool:
+        return self.resume.get("state", "idle") == state
+
     def back(self, *says: Said) -> Transition:
         return self.go(Resume(state=self.resume.get("state", "idle"), data=self.resume.get("data", {})), *says)
 

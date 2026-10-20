@@ -18,11 +18,17 @@ from journal.models.agent import Agent
 from journal.models.setting import Setting
 from journal.db.migrations.seed_the_stack import SeedTheStack
 from journal.repositories.agents import Agents
+from journal.repositories.entries import Entries
 from journal.support.actor import Actor
 from journal.repositories.settings import Settings
 from dataclasses import dataclass
 
 from journal.engine.base_state import BaseState
+from journal.engine.agent_state import AgentState
+from journal.engine.states.paused import Paused
+from journal.engine.support.held import Held
+from journal.engine.support.standing import Standing
+from journal.support.refused import Refused
 from journal.engine.nudge import Nudge
 from journal.engine.states.compacting import Compacting as CompactingState
 from journal.engine.states.ended import Ended
@@ -381,3 +387,57 @@ def test_the_session_end_pushes_ended_on_the_stack_and_a_new_start_pops_it(app):
     assert [row["state"] for row in agents.for_session("s1").stack] == ["idle", "ended"]
     hook(app, "SessionStart")
     assert [row["state"] for row in agents.for_session("s1").stack] == ["idle"]
+
+
+CALLS: list[str] = []
+
+
+@dataclass(frozen=True)
+class Noting(Paused):
+    name = "noting"
+
+    def on_push(self, settings):
+        CALLS.append("push noting")
+        return (LINE.about(),)
+
+    def on_pop(self, settings):
+        CALLS.append("pop noting")
+        return ()
+
+
+@dataclass(frozen=True)
+class Refusing(Paused):
+    name = "refusing"
+
+    def on_push(self, settings):
+        return Held(WHY.about())
+
+
+@dataclass(frozen=True)
+class Catching(AgentState):
+    name = "catching"
+
+    def on_suspend(self, settings):
+        CALLS.append("suspend catching")
+        return ()
+
+    def on_resume(self, standing: Standing, settings):
+        CALLS.append("resume catching")
+        return self.pop()
+
+
+def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catch_up_beneath_a_pop(app):
+    CALLS.clear()
+    hook(app, "SessionStart")
+    machine, settings = app.container.get(Machine), SettingsValue({})
+    standing = Stack((Idle(), Catching()))
+    pushed = machine.through_hooks(standing, standing.pushed(Noting()), settings)
+    assert pushed.stack == standing.pushed(Noting()) and pushed.nudges == (LINE.about(),) and pushed.held is None
+    refused = machine.through_hooks(standing, standing.pushed(Refusing()), settings)
+    assert refused.stack == standing and refused.held == Held(WHY.about())
+    popped = machine.through_hooks(standing.pushed(Noting()), standing, settings)
+    assert popped.stack == Stack((Idle(),)) and popped.nudges == ()
+    assert CALLS == ["suspend catching", "push noting", "suspend catching", "pop noting", "resume catching"]
+    with pytest.raises(Refused):
+        machine.move("s1", 1, Refusing.leaving(Idle()))
+    assert [row["state"] for row in app.container.get(Agents).for_session("s1").stack] == ["idle"]
