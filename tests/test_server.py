@@ -209,6 +209,8 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         assert call(server, "GET", "/journal/project-files/file?path=hello.py")[1]["lines"] == 1
         assert "diff" in call(server, "GET", "/journal/project-files/diff?path=hello.py")[1]
         assert call(server, "GET", "/journal/project-files/find?q=hello")[1][0]["name"] == "hello.py"
+        root = [entry["name"] for entry in call(server, "GET", "/journal/project-files")[1]]
+        assert "hello.py" in root and not any(name.startswith(".") for name in root), "the Code page's tree opens on the project's root, its hidden folders left out"
         listed = call(server, "GET", f"/journal/messages?ids={n}")[1]["rows"]
         assert [r["id"] for r in listed] == [n]
     finally:

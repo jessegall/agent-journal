@@ -26,7 +26,8 @@ class ProjectFiles:
         return self._branch[0]
 
     def folder(self, given: str) -> list[ProjectEntry]:
-        path = self.inside(given)
+        """A folder's entries, the project's own when none is named."""
+        path = self.inside(given) if given.strip("/") else self.root
         if path is None or not path.is_dir():
             return []
         entries = sorted(path.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))

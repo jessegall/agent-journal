@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.2.3
+
+- A question's options are each their own quoted argument, `--options "first" "second"`, so a comma inside a choice stays in it; one option holding a comma is refused as the old comma list, and the options asked are printed back numbered.
+- A plan's next task is named once: closing another of its tasks beside the one in hand no longer names it again.
+- The Code page's file tree shows the project again; since 4.2.0 its root listed nothing.
+
 ## 4.2.2
 
 - A link is suggested as a pin only from what a shell command printed; a file edit or read no longer suggests every link in the file.
