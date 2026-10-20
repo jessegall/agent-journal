@@ -13,8 +13,10 @@ class Counts(WorkflowValueRows[Count]):
         return rows[0] if rows else Count(name=value.stored)
 
     def set(self, value: ValueName, to: int, by: Actor) -> Count:
+        """The count at the number given; one kept at it already is left as it is, so a reset on every tool use writes nothing."""
         with self.connection.transaction():
-            return self.save(self.named(value).with_(value=to), by)
+            standing = self.named(value)
+            return standing if standing.id is not None and standing.value == to else self.save(standing.with_(value=to), by)
 
     def begin(self, value: ValueName, by: Actor) -> Count:
         """The count at zero unless it is already kept."""

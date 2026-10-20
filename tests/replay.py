@@ -100,16 +100,18 @@ class Replay:
         drive_the_clock(app, monkeypatch)
 
     def step(self, name: str, answer=None) -> None:
-        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the environment's counts as they stand, and what the count checks of the walks since read."""
+        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the environment's counts as they stand once the worker has settled, so a count raised after the reply is in, and what the count checks of the walks since read."""
+        typed = list(self.typed)
         with self.app.container.get(Scope).of(self.app.container.get(Environments).named("main").id):
             entries = list(reversed(self.app.container.get(Entries).of_kind_in(1000)))
             nudges = [e.data["key"] for e in entries if e.kind == "nudge"]
             walks = [e for e in entries if e.kind == "walk"]
+            self.app.runtime().deferred.drain()
             counts = {c.name: c.value for c in sorted(self.app.container.get(Counts).all(), key=lambda c: c.name)}
         read = [w.data["read"] for w in walks if w.id > self.last_walk and w.data.get("read")]
-        self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:], "counts": counts, "read": read})
+        self.steps.append({"name": name, "answer": answer, "typed": typed, "nudges": nudges[self.seen:], "counts": counts, "read": read})
         self.seen, self.last_walk = len(nudges), max([self.last_walk, *(w.id for w in walks)])
-        self.typed.clear()
+        del self.typed[:len(typed)]
 
     def record(self) -> list[dict]:
         return list(self.steps)

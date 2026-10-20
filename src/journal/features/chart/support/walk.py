@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from journal.events.agent.ticked import Ticked
+from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.event import Event
 from journal.events.models.model_event import ModelEvent
@@ -91,12 +91,12 @@ class Walk:
 
     @staticmethod
     def worth_recording(event: Event, graphs: list[Graph], passed: list) -> bool:
-        """A walk that passed a node is recorded, a tick's only when it acted: the clock ticks every few seconds and a quiet tick is no news."""
+        """A walk that passed a node is recorded; one of an event no hook waits on, a tick or a line said, only when it did more than keep a value, since they come every few seconds and a quiet one is no news."""
         if not passed:
             return False
-        if not isinstance(event, Ticked):
+        if not isinstance(event, AgentEvent) or event.answers_hook:
             return True
-        return any(graph.nodes[n].kind == NodeKind.ACTION for graph in graphs for n in passed if n in graph.nodes)
+        return any(graph.nodes[n].kind == NodeKind.ACTION and graph.nodes[n].key not in VALUE_ACTIONS for graph in graphs for n in passed if n in graph.nodes)
 
     def workflows_for(self, ctx: Context, key: str) -> list[Chart]:
         """The event's workflows in the order the user set: the ones bound to no state always, and the ones bound to the agent's state or to any state it inherits from, so following a plan runs Working's workflows and its own."""

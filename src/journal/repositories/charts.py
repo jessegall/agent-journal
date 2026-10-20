@@ -93,9 +93,9 @@ class Charts(Repository[Chart]):
             self.placed_by_triggers(chart, by)
 
     def placed_by_triggers(self, chart: Chart, by: Actor) -> Chart:
-        """The workflow placed at each event it holds a trigger for: a new trigger's event at the end of its list, an event whose trigger is gone no longer placed."""
+        """The workflow placed at each event it holds a trigger for, and always at the event it was made for, so one turned off keeps its place in that list: a new trigger's event at the end of its list, another event whose trigger is gone no longer placed."""
         standing = self.find(chart.id)
-        events = {n.key for n in self.nodes_of(standing) if n.kind == NodeKind.TRIGGER}
+        events = {n.key for n in self.nodes_of(standing) if n.kind == NodeKind.TRIGGER} | ({standing.event} if standing.event else set())
         settled = standing
         for event in sorted(events - set(standing.places)):
             settled = settled.placed(event, self.next_place(event))

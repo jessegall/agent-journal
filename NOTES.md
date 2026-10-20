@@ -1096,5 +1096,10 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The run order changes in a mode of its own on its column, since the page's Edit folds the lists for the canvas.
   The workflows page stays on the computer, as the phone leaves every page that sets how the journal runs there.
 - The blocked-task ask after an hour of quiet never speaks, since an hour of quiet ends the session first: task 911.
+- Tool held already? sees the holds of workflows only: a write held by the engine's own debts (a skill, the look, a
+  mark) or by a plugin still counts toward a workflow's writes, where the retired edits reading left it out. Left as
+  it is: such a hold is paid within a step or two, and the count is at most that many ahead.
+- Journal line said is told on the bus after the reply, on the worker thread, so a line said never walks inside the
+  hook or the walk that said it; its walks that only count are not recorded.
 - A downgrade past 4.3.0 is not supported: migrations 15 and 16 merge the agents' counts per environment and move a
   workflow's one place onto each of its events, and an older version reads neither.

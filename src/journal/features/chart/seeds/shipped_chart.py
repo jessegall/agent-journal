@@ -10,7 +10,6 @@ from journal.support.actor import Actor
 from journal.models.chart import Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
-from journal.support.title import LONGEST
 from journal.repositories.agents import Agents
 from journal.features.chart.support.values_at_upgrade import ValuesAtUpgrade
 from journal.features.chart.support.workflow_values import WorkflowValues
@@ -236,7 +235,7 @@ class ShippedChart(Seed):
                 continue
             self.strip(chart, by)
             self.strip_what_its_drawings_carry(chart, by)
-            self.charts.save(chart.with_(shipped=False, locked=False, drawing="", title=chart.title + KEPT), by)
+            self.charts.save(chart.with_(shipped=False, locked=False, drawing="", title=self.noted_title(chart, KEPT)), by)
 
     def strip_what_its_drawings_carry(self, chart: Chart, by: Actor) -> None:
         """The shipped nodes of a released workflow that a current shipped workflow of its state and event carries, taken out, so no line is said twice."""
@@ -307,6 +306,11 @@ class ShippedChart(Seed):
         self.settings.set(RETIRED_DRAWINGS_KEY, sorted(self.retired() - {key}), by)
         return self.draw(key, by)
 
+    @staticmethod
+    def noted_title(chart: Chart, note: str) -> str:
+        """The workflow's title with a note of what boot did to it, the title cut so the whole stays within a title's length."""
+        return chart.title[:LONGEST - len(note)].rstrip() + note
+
     def users(self) -> list[Chart]:
         """The workflows that are the user's: their own, and shipped ones they edited."""
         return [c for c in self.charts.all() if not c.shipped or not all(n.shipped for n in self.charts.nodes_of(c))]
@@ -336,7 +340,7 @@ class ShippedChart(Seed):
             return
         for node in [n for n in nodes if n.kind == NodeKind.TRIGGER]:
             self.charts.remove_node(node, by)
-        self.charts.save(chart.with_(shipped=False, state="", event="", title=chart.title + KEPT), by)
+        self.charts.save(chart.with_(shipped=False, state="", event="", title=self.noted_title(chart, KEPT)), by)
 
     def rewrite_retired_checks(self, by: Actor) -> None:
         """A user's workflow naming a counter check that read a hidden count is rewritten to the count check on the count the workflows keep, its number kept, and one naming the older move is rewritten to the outcome-named action; its title says what was rewritten."""
@@ -352,7 +356,7 @@ class ShippedChart(Seed):
                 self.charts.nodes.save(node.with_(key=key, text=words.strip() if key != "go_idle" else ""), by)
                 rewritten.append("move_to")
             if rewritten:
-                self.charts.save(chart.with_(title=f"{chart.title} (upgrade rewrote {', '.join(rewritten)} to count checks)"), by)
+                self.charts.save(chart.with_(title=self.noted_title(chart, f" (upgrade rewrote {', '.join(rewritten)} to count checks)")), by)
                 self.charts.revised(chart, by)
 
     def retire_workflows_of_states_gone(self, by: Actor) -> None:
@@ -361,7 +365,7 @@ class ShippedChart(Seed):
             for trigger in [n for n in self.charts.nodes_of(chart) if n.kind == NodeKind.TRIGGER]:
                 self.charts.remove_node(trigger, by)
             note = f" (turned off, {RETIRED_STATES[chart.state]})"
-            self.charts.save(chart.with_(state="", title=chart.title[:LONGEST - len(note)] + note), by)
+            self.charts.save(chart.with_(state="", title=self.noted_title(chart, note)), by)
             self.charts.revised(chart, by)
 
     def stop_what_names_an_unknown_entry(self, by: Actor) -> None:
@@ -374,7 +378,7 @@ class ShippedChart(Seed):
                 continue
             for trigger in triggers:
                 self.charts.remove_node(trigger, by)
-            self.charts.save(chart.with_(title=f"{chart.title} (stopped, {unknown.kind.value} {unknown.key} is no longer in the catalogue)"), by)
+            self.charts.save(chart.with_(title=self.noted_title(chart, f" (stopped, {unknown.kind.value} {unknown.key} is no longer in the catalogue)")), by)
 
     def stop_what_reads_a_count_it_does_not_keep(self, by: Actor) -> None:
         """A user's workflow, or a shipped one the user edited, reading a count or a time none of its own nodes sets, as one could read another workflow's or a reading of the record before each kept its own, is stopped at boot, its triggers taken out and its title saying why."""
@@ -388,7 +392,7 @@ class ShippedChart(Seed):
                 self.charts.remove_node(trigger, by)
             name = next(n.text.strip().partition(" ")[0] for n in nodes if str(n.id) == foreign[0].node)
             why = f" (off, reads {name}, a value it does not keep)"
-            self.charts.save(chart.with_(title=chart.title[:LONGEST - len(why)].rstrip() + why), by)
+            self.charts.save(chart.with_(title=self.noted_title(chart, why)), by)
 
     def reset(self, chart: Chart, by: Actor) -> Chart:
         """A shipped workflow as shipped again: every node and line gone, its counts and times with them, its drawing drawn anew at the place it ships at, one more revision."""

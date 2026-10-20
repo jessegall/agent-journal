@@ -2927,10 +2927,13 @@ def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app):
     after_tool = lambda: hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
     for i in range(50):
         nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
-    assert "chat etiquette" in after_tool(), "fifty lines since the last reminder bring it at the next tool use"
+    app.runtime().deferred.drain()
+    assert "chat etiquette" in after_tool(), "fifty lines since the last reminder, counted once the replies have gone, bring it at the next tool use"
+    app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "said, the count starts again"
     for i in range(1000):
         nudger.say(agent, ChartFeature.LINE.about(text=f"more {i}"))
+    app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "a thousand lines later but inside the reminder's own window, none again: no flood"
 
 
@@ -3115,7 +3118,7 @@ def test_a_walk_never_triggers_on_the_rows_it_writes_itself(app):
     app.runtime().deferred.drain()
     walks = entries.of_kind("walk", 1000)
     since = [w.data["trigger"] for w in walks[: len(walks) - before]]
-    assert set(since) == {"workers.updated", "messages.created", "line_said"}, "the report's worker row was walked, its message is delivered by the engine and only asks the inbox workflows whether it is yours, a line said walks the reminder's count; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
+    assert set(since) == {"workers.updated", "messages.created"}, "the report's worker row was walked, its message is delivered by the engine and only asks the inbox workflows whether it is yours, a line said only counts and is no news; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
 
 
 def test_every_command_line_write_to_a_workflow_raises_its_revision_so_a_page_save_from_an_older_read_is_refused(app):
@@ -4298,6 +4301,26 @@ def test_the_command_line_shows_the_counts_and_times_and_the_values_kept(app):
     assert "      values in main: made 1" in console.run(["chart", "show"], USER).out, "journal chart show prints each environment's values under the workflow"
 
 
+def test_what_the_review_of_plan_18_found_stays_fixed(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    from journal.support.title import LONGEST
+    console, charts = app.console(), app.container.get(Charts)
+    long = int(console.run(["chart", "new", "Ask about the background command after a long while of nothing at all", "--on", "ticked"], USER).out.split()[1].rstrip(":"))
+    charts.add_node(charts.find(long), Node(kind=NodeKind.CHECK, key="background_over", text="5 minutes"), Actor.user(1))
+    app.container.get(ShippedChart).run()
+    stopped = charts.find(long)
+    assert len(stopped.title) <= LONGEST and stopped.title.endswith("is no longer in the catalogue)"), "a long title stopped at boot is cut so the note fits, and the boot goes on"
+    assert stopped.id in [c.id for c in charts.for_event("ticked")], "a workflow with no trigger left keeps its place in the list of the event it was made for, so the order can still be saved"
+    with app.container.get(Scope).of(1):
+        counts = app.container.get(Counts)
+        first = counts.set(ValueName(long, "seen"), 0, Actor.system())
+        assert counts.set(ValueName(long, "seen"), 0, Actor.system()).updated_at == first.updated_at, "setting a count to what it holds writes nothing"
+
+
 def test_a_line_says_a_workflows_count_by_name(app):
     from journal.repositories.charts import Charts
     console = app.console()
@@ -4432,7 +4455,7 @@ def test_a_workflows_one_place_becomes_its_place_at_each_event_at_boot(tmp_path:
     try:
         from journal.repositories.charts import Charts
         charts = second.container.get(Charts)
-        assert all(c.places == {n.key: 7 for n in charts.nodes_of(c) if n.kind == "trigger"} for c in charts.all()), "the place a workflow had is its place at each event it has a trigger for"
+        assert all(c.places == {**{n.key: 7 for n in charts.nodes_of(c) if n.kind == "trigger"}, **({c.event: 7} if c.event else {})} for c in charts.all()), "the place a workflow had is its place at each event it has a trigger for and at the one it was made for"
     finally:
         second.runtime().stop()
 
