@@ -102,7 +102,7 @@ async function run(act) {
         </template>
         <template v-if="resource.brief">
             <div class="brief">
-                <Folded :at="220" :keep="160">
+                <Folded :name="`plans:${resource.id}:brief`" :at="220" :keep="160">
                     <TextDisplay :text="resource.brief" />
                 </Folded>
             </div>

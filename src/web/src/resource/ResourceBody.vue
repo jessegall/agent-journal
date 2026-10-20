@@ -122,7 +122,7 @@ async function follow() {
             </template>
         </template>
         <template v-else-if="sections.length && kind.view === 'document'">
-            <Folded :key="resource.id" :at="PAGE" :keep="PAGE">
+            <Folded :key="resource.id" :name="`${table}:${resource.id}`" :at="PAGE" :keep="PAGE">
                 <Sections :sections="sections" :writing="writing?.section || ''" document />
             </Folded>
         </template>
