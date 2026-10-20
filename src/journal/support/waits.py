@@ -21,6 +21,12 @@ class Waits:
         parser.add_argument("--until", default="", metavar="COMMAND", help=f"a shell command that passes once the wait is over, such as a check that a pull request is merged; run every --every minutes, it opens the {what} when it passes")
         parser.add_argument("--every", type=int, default=2, help="minutes between two runs of the --until command")
 
+    @staticmethod
+    def refuse_unnamed(why: str, on: list[str], until: str) -> None:
+        """A block says what it waits on: in words, by a row, or by a command."""
+        if not why and not on and not until:
+            raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
+
     def named(self, on: list[str], until: str, every: int, about: str, by: Actor) -> list[Ref]:
         refs = [self.awaited(text) for text in on]
         if until:

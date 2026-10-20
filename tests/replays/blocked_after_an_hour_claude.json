@@ -1,0 +1,59 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "a task blocked, the agent idle",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice"
+      ],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
+    },
+    {
+      "name": "fifty quiet minutes",
+      "answer": null,
+      "typed": [
+        "[journal] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
+      ],
+      "nudges": [
+        "tasks.check_in"
+      ],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "42": 3000,
+          "56": 3000
+        }
+      ]
+    },
+    {
+      "name": "an hour and a minute",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
+    }
+  ]
+}

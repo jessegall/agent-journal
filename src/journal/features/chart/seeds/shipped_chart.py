@@ -12,6 +12,7 @@ from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.support.title import LONGEST
 from journal.repositories.agents import Agents
+from journal.features.chart.support.values_at_upgrade import ValuesAtUpgrade
 from journal.features.chart.support.workflow_values import WorkflowValues
 from journal.support.validation import Validation
 from journal.support.drawn_node import DrawnNode
@@ -59,7 +60,6 @@ OWN = (
     ("working", "idle", "carry_on", "Tell the agent to carry on with its task", "carry_on"),
     ("working", "idle", "log", "Ask for a log when the task's log is old", "ask_for_a_log"),
     ("working", "session_started", "carry_on", "Tell the agent to carry on with its task", "carry_on"),
-    ("working", "session_started", "log", "Ask for a log when the task's log is old", "ask_for_a_log"),
     ("working", "session_started", "where", "Tell the agent where the work stands after a compaction", "where_the_work_stands"),
     ("working", "ticked", "quiet", "Ask how the task stands after 15 quiet minutes", "working_at_tick"),
     ("following_plan", "idle", "checkpoint_auto", "Hold the stop at a plan's checkpoint in auto mode", "checkpoint_in_auto_mode"),
@@ -77,6 +77,8 @@ OWN = (
     ("ended", "session_started", "nothing", "No workflow for this state yet", "nothing_own"),
 )
 """The workflows the journal ships for a state, one concern each: the state, the event, the drawing's name, what it does in plain words, and the builder that draws it."""
+ACTIVE = ("session_started", "prompt_submitted", "tool_starting", "idle")
+"""The agent's own events that show it is not quiet: a start, a prompt, a tool use and a stop."""
 HEAD = -1000
 """Where a locked workflow is placed: before anything the user orders; the journal ships none now, a user's own may be locked."""
 ALWAYS_PLACE = -500
@@ -84,7 +86,7 @@ ALWAYS_PLACE = -500
 EVENT_ORDER = ("idle", "session_started", "prompt_submitted", "tool_starting", "tool_finished", "ticked", "messages.created", "messages.updated", "tasks.updated", "task_logs.created", "workers.updated", "questions.updated")
 """The order a state's workflows are made and listed in: the stop first, so the first workflow of all is Idle at Agent stops."""
 KEPT = " (kept from the older shape)"
-DRAWINGS_VERSION = 27
+DRAWINGS_VERSION = 28
 """Raised when a shipped drawing changes, so an unedited shipped workflow is redrawn at the next boot."""
 DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
@@ -128,11 +130,11 @@ CHECKPOINT_PASSED = "[plans.checkpoint_passed] plan {{plan_n}}: phase {{checkpoi
 NEXT = "[tasks.next] tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"
 PARKED_STILL = "[tasks.parked_still] task {{parked_n}} is still parked: can you continue it now? It was parked because: {{parked_why}}. `journal task resume {{parked_n}}` picks it up again"
 CHECK_IN = "[tasks.check_in] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
-LOG_OVERDUE = "[tasks.log_overdue] {{task_edits}} edits since you logged {{task}}. {{log_command}} \"<what was decided or done, and why>\" before any other write"
-LOG_SOON = "[tasks.log_soon] {{task_edits}} edits since you logged {{task}}: say where it stands. {{log_command}} \"<where it stands>\""
-IN_HAND = "[tasks.in_hand] {{task}} in hand, {{task_edits}} edits. if this is not what you are doing, finish it or park it and start the work you are on"
+LOG_OVERDUE = "[tasks.log_overdue] {{value.writes}} edits since you logged {{task}}. {{log_command}} \"<what was decided or done, and why>\" before any other write"
+LOG_SOON = "[tasks.log_soon] {{value.writes}} edits since you logged {{task}}: say where it stands. {{log_command}} \"<where it stands>\""
+IN_HAND = "[tasks.in_hand] {{task}} in hand, {{value.writes}} edits. if this is not what you are doing, finish it or park it and start the work you are on"
 CARRY_ON = "[tasks.carry_on] {{task}} is in hand, {{logged}}: carry on. `journal stuck \"<why>\"` if you are truly stuck"
-LOG_OLD = "[tasks.log_old] {{task}}, {{logged}}: log where it stands first. {{log_command}} \"<where it stands>\""
+LOG_OLD = "[tasks.log_old] {{task}}, {{logged.last_log}}: log where it stands first. {{log_command}} \"<where it stands>\""
 STILL_OPEN = "[tasks.open] {{task}} is still open: log where it stands or finish it"
 REPORTED = "[workers.reported] worker {{worker_n}}, {{worker_name}}, reported in the chat"
 STOPPED = "[workers.stopped] worker {{worker_n}}, {{worker_name}}, stopped before it reported"
@@ -140,12 +142,12 @@ RETURNED = "[workers.returned] what you waited on came back: carry on"
 ANSWERED = "question {{question_n}} is answered. `journal question show {{question_n}}` reads it whole, with the messages linked to it; act on the answer"
 APPROVED_UNSTARTED = "[plans.approved_unstarted] plan {{approved_plan}} is approved and not started: `journal plan start {{approved_plan}}` begins its first task"
 MEANWHILE = "[tasks.meanwhile] while you wait for {{awaited}}, task {{related_task}} is next: if you can work on it meanwhile, carry on with it; if you need the output first, waiting is fine"
-CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{quiet_minutes}} min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
+CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{minutes.waiting_since}} min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
-    def __init__(self, charts: Charts, catalogue: ChartCatalogue, settings: Settings, states: StatesCatalogue, agents: Agents, values: WorkflowValues, registry: Registry) -> None:
-        self.states, self.agents, self.values, self.registry = states, agents, values, registry
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, settings: Settings, states: StatesCatalogue, agents: Agents, values: WorkflowValues, registry: Registry, seeding: ValuesAtUpgrade) -> None:
+        self.states, self.agents, self.values, self.registry, self.seeding = states, agents, values, registry, seeding
         self.charts, self.catalogue, self.settings = charts, catalogue, settings
         self.drawings: dict[str, Drawing] = {}
         self.templates: dict[str, str] = {}
@@ -202,6 +204,7 @@ class ShippedChart(Seed):
 
     def run(self) -> None:
         by = Actor.system()
+        drawn_before = int(self.settings.project(DRAWINGS_VERSION_KEY, 0))
         self.retire_the_older_shape(by)
         self.retire_unpaired(by)
         self.rewrite_retired_checks(by)
@@ -222,6 +225,7 @@ class ShippedChart(Seed):
         self.strip_the_shared_conduct(by)
         self.rewrite_retired_checks(by)
         self.stop_what_names_an_unknown_entry(by)
+        self.seeding.seed(drawn_before, by)
         self.settings.set(DRAWINGS_VERSION_KEY, DRAWINGS_VERSION, by)
 
     def release_what_no_drawing_names(self, by: Actor) -> None:
@@ -303,6 +307,10 @@ class ShippedChart(Seed):
         self.settings.set(RETIRED_DRAWINGS_KEY, sorted(self.retired() - {key}), by)
         return self.draw(key, by)
 
+    def users(self) -> list[Chart]:
+        """The workflows that are the user's: their own, and shipped ones they edited."""
+        return [c for c in self.charts.all() if not c.shipped or not all(n.shipped for n in self.charts.nodes_of(c))]
+
     def outdated(self, chart: Chart) -> bool:
         """An unedited shipped workflow drawn by an older shipping is redrawn; one the user edited is theirs and stays, and the page says the shipping moved past it."""
         return int(self.settings.project(DRAWINGS_VERSION_KEY, 0)) < DRAWINGS_VERSION and all(n.shipped for n in self.charts.nodes_of(chart))
@@ -357,8 +365,8 @@ class ShippedChart(Seed):
             self.charts.revised(chart, by)
 
     def stop_what_names_an_unknown_entry(self, by: Actor) -> None:
-        """A kept or user workflow naming a check, action or trigger the catalogue no longer has is stopped at boot, its triggers taken out and its title saying why, rather than left to fail on every walk."""
-        for chart in [c for c in self.charts.all() if not c.shipped]:
+        """A kept or user workflow, or a shipped one the user edited, naming a check, action or trigger the catalogue no longer has is stopped at boot, its triggers taken out and its title saying why, rather than left to fail on every walk."""
+        for chart in self.users():
             nodes = self.charts.nodes_of(chart)
             unknown = next((n for n in nodes if not self.catalogue.has(n.kind, n.key)), None)
             triggers = [n for n in nodes if n.kind == NodeKind.TRIGGER]
@@ -369,8 +377,8 @@ class ShippedChart(Seed):
             self.charts.save(chart.with_(title=f"{chart.title} (stopped, {unknown.kind.value} {unknown.key} is no longer in the catalogue)"), by)
 
     def stop_what_reads_a_count_it_does_not_keep(self, by: Actor) -> None:
-        """A user's workflow reading a count or a time none of its own nodes sets, as one could read another workflow's before each kept its own, is stopped at boot, its triggers taken out and its title saying why."""
-        for chart in [c for c in self.charts.all() if not c.shipped]:
+        """A user's workflow, or a shipped one the user edited, reading a count or a time none of its own nodes sets, as one could read another workflow's or a reading of the record before each kept its own, is stopped at boot, its triggers taken out and its title saying why."""
+        for chart in self.users():
             nodes = self.charts.nodes_of(chart)
             foreign = Validation.value_faults([DrawnNode.of(n) for n in nodes])
             triggers = [n for n in nodes if n.kind == NodeKind.TRIGGER]
@@ -415,6 +423,15 @@ class ShippedChart(Seed):
             self.line(check, following, guard.passes)
         return [*((check, guard.stops) for guard, check in zip(guards, checks)), (done, THEN)]
 
+    def also_on(self, chart: Chart, event: str, x: int, y: int) -> list:
+        """Another trigger of the workflow, for an event one of its values is set at; its open end."""
+        return [(self.node(chart, NodeKind.TRIGGER, event, x=x, y=y), THEN)]
+
+    def noted_on_activity(self, chart: Chart, name: str, x: int, guards: tuple[Guard, ...] = ()) -> None:
+        """The time noted under the name at each of the agent's own events that show it is active."""
+        for i, event in enumerate(ACTIVE):
+            self.guarded(chart, self.also_on(chart, event, x + 200 * i, 460), x + 200 * i, 552, guards, "time_note", name)
+
     def chain(self, ends: list, target: Node) -> None:
         """Every open end given leads on to the node: a check's unused answer, an action's then, so one path runs through every part in order."""
         for source, port in ends:
@@ -441,8 +458,13 @@ class ShippedChart(Seed):
         return ends
 
     def remind_what_a_line_is(self, chart: Chart, ends: list) -> list:
-        """After the agent's own tool use, once the journal has said so many lines since the last reminder: a journal line is an instruction, not a message."""
-        return self.guarded(chart, ends, 720, 92, (Guard("own_tool"), Guard("count_over", "lines etiquette.remind_every")), "say", REMIND)
+        """After the agent's own tool use, once the journal has said so many lines since the last reminder: a journal line is an instruction, not a message. Every line said counts one, the reminder itself starting the count at zero."""
+        said = self.also_on(chart, "line_said", 1040, 0)
+        reminder = self.node(chart, NodeKind.CHECK, "line_is", "etiquette.remind", x=1040, y=92)
+        self.chain(said, reminder)
+        self.line(reminder, self.node(chart, NodeKind.ACTION, "count_start", "said", x=880, y=184), YES)
+        self.line(reminder, self.node(chart, NodeKind.ACTION, "count_one", "said", x=1200, y=184), NO)
+        return self.guarded(chart, ends, 720, 92, (Guard("own_tool"), Guard("count_over", "said etiquette.remind_every")), "say", REMIND)
 
     def ask_about_old_memory(self, chart: Chart, ends: list) -> list:
         """A fresh session start, not one going on after a compaction, with facts, rules or reminders standing long: the agent is asked whether they still hold, at most once a day."""
@@ -458,7 +480,9 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 720, 92, (Guard("worker_report_waiting"),), "say", REPORTS_WAITING)
 
     def check_the_background(self, chart: Chart, ends: list) -> list:
-        return self.guarded(chart, ends, 720, 92, (Guard("background_over", "5 minutes"),), "type", CHECK_BACKGROUND)
+        """A command moved to the background with none running before it notes the time; as the clock ticks while one still runs, five minutes after, the agent is asked to look."""
+        self.guarded(chart, self.also_on(chart, "command_moved", 1040, 0), 1040, 92, (Guard("background_running", "2", passes=NO),), "time_note", "running_since")
+        return self.guarded(chart, ends, 720, 92, (Guard("background_running", "1"), Guard("time_over", "running_since 5 minutes")), "type", CHECK_BACKGROUND)
 
     def name_reports_on_tick(self, chart: Chart, ends: list) -> list:
         """As the clock ticks while a worker's report waits to be acted on: the agent is told which, by typing, at most every three minutes."""
@@ -481,46 +505,63 @@ class ShippedChart(Seed):
         return self.draw_inbox(chart, ends, x=720, y=92)
 
     def hold_write_while_unread(self, chart: Chart, ends: list) -> list:
-        """The agent's own write while messages stay unread after so many reminders: held until they are read."""
+        """The agent's own write while messages stay unread after so many reminders: held until they are read. It counts the agent's own tool uses since the newest message came, and a naming at every reminder's interval, as the inbox workflow names them."""
+        arrived = self.also_on(chart, "messages.created", 1200, 0)
+        restart = self.guarded(chart, arrived, 1200, 92, (Guard("message_by_user"), Guard("message_typed_in_terminal", passes=NO)), "count_start", "tools_used")
+        self.guarded(chart, [end for end in restart if end[0].key == "count_start"], 1200, 368, (), "count_start", "times_named")
         own = self.node(chart, NodeKind.CHECK, "own_tool", x=720, y=92)
         unread = self.node(chart, NodeKind.CHECK, "unread_messages", x=720, y=184)
-        reminded = self.node(chart, NodeKind.CHECK, "count_over", "namings messages.hold_after_reminders", x=720, y=276)
-        writes = self.node(chart, NodeKind.CHECK, "tool_writes", x=720, y=368)
-        held = self.node(chart, NodeKind.ACTION, "hold", UNREAD_HELD, x=720, y=460)
         self.chain(ends, own)
         self.line(own, unread, YES)
-        self.line(unread, reminded, YES)
-        self.line(reminded, writes, YES)
-        self.line(writes, held, YES)
-        return [(own, NO), (unread, NO), (reminded, NO), (writes, NO), (held, THEN)]
+        self.guarded(chart, self.guarded(chart, [(unread, NO)], 960, 276, (), "count_start", "tools_used"), 960, 368, (), "count_start", "times_named")
+        counted = self.guarded(chart, [(unread, YES)], 720, 276, (), "count_one", "tools_used")
+        every = self.node(chart, NodeKind.CHECK, "count_every", "tools_used messages.remind_every", x=720, y=368)
+        self.chain(counted, every)
+        named = self.guarded(chart, [(every, YES)], 560, 460, (), "count_one", "times_named")
+        reminded = self.node(chart, NodeKind.CHECK, "count_over", "times_named messages.hold_after_reminders", x=720, y=552)
+        self.chain([*named, (every, NO)], reminded)
+        return [(own, NO), *self.guarded(chart, [(reminded, YES)], 720, 644, (Guard("tool_writes"),), "hold", UNREAD_HELD), (reminded, NO)]
 
     def name_the_unread(self, chart: Chart, ends: list) -> list:
-        """The agent's own tool use every so many since the newest message came: the unread messages are named."""
+        """The agent's own tool use every so many since the newest message came: the unread messages are named. A message from you starts the count again; with nothing unread it stands at zero."""
+        arrived = self.also_on(chart, "messages.created", 1200, 0)
+        self.guarded(chart, arrived, 1200, 92, (Guard("message_by_user"), Guard("message_typed_in_terminal", passes=NO)), "count_start", "tools_used")
         own = self.node(chart, NodeKind.CHECK, "own_tool", x=720, y=0)
-        every = self.node(chart, NodeKind.CHECK, "count_every", "uses messages.remind_every", x=720, y=92)
+        unread = self.node(chart, NodeKind.CHECK, "unread_messages", x=720, y=92)
         self.chain(ends, own)
-        self.line(own, every, YES)
-        return [(own, NO), (every, NO), *self.draw_inbox(chart, [(every, YES)], x=720, y=184)]
+        self.line(own, unread, YES)
+        self.guarded(chart, [(unread, NO)], 960, 184, (), "count_start", "tools_used")
+        counted = self.guarded(chart, [(unread, YES)], 720, 184, (), "count_one", "tools_used")
+        every = self.node(chart, NodeKind.CHECK, "count_every", "tools_used messages.remind_every", x=720, y=276)
+        self.chain(counted, every)
+        return [(own, NO), (every, NO), *self.draw_inbox(chart, [(every, YES)], x=720, y=368)]
 
     def hold_while_unanswered(self, chart: Chart, ends: list) -> list:
-        """The agent's own tool use while a read message stays unanswered past so many uses: held, a journal command and a read of the message's own files going through."""
-        own = self.node(chart, NodeKind.CHECK, "own_tool", x=720, y=0)
-        owed = self.node(chart, NodeKind.CHECK, "unanswered_messages", x=720, y=92)
-        journal = self.node(chart, NodeKind.CHECK, "journal_command", x=720, y=184)
-        theirs = self.node(chart, NodeKind.CHECK, "tool_reads_their_files", x=720, y=276)
-        past = self.node(chart, NodeKind.CHECK, "count_over", "owed messages.hold_after", x=720, y=368)
-        held = self.node(chart, NodeKind.ACTION, "hold", ANSWER_HELD, x=720, y=460)
-        self.chain(ends, own)
-        self.line(own, owed, YES)
-        self.line(owed, journal, YES)
+        """The agent's own tool use while a read message stays unanswered past so many uses: held, a journal command and a read of the message's own files going through. It counts the agent's own tool uses while one stays unanswered, at zero while none does."""
+        own, owed = self.owed_counted(chart, ends)
+        journal = self.node(chart, NodeKind.CHECK, "journal_command", x=720, y=276)
+        theirs = self.node(chart, NodeKind.CHECK, "tool_reads_their_files", x=720, y=368)
+        past = self.node(chart, NodeKind.CHECK, "count_over", "uses_unanswered messages.hold_after", x=720, y=460)
+        held = self.node(chart, NodeKind.ACTION, "hold", ANSWER_HELD, x=720, y=552)
+        self.chain(owed, journal)
         self.line(journal, theirs, NO)
         self.line(theirs, past, NO)
         self.line(past, held, YES)
-        return [(own, NO), (owed, NO), (journal, YES), (theirs, YES), (past, NO), (held, THEN)]
+        return [(own, NO), (journal, YES), (theirs, YES), (past, NO), (held, THEN)]
 
     def ask_for_an_answer(self, chart: Chart, ends: list) -> list:
-        """The agent's own tool use after so many with a read message unanswered: it is asked to answer."""
-        return self.guarded(chart, ends, 720, 0, (Guard("own_tool"), Guard("unanswered_messages"), Guard("count_over", "owed messages.nudge_after")), "say", ANSWER)
+        """The agent's own tool use after so many with a read message unanswered: it is asked to answer. It counts as the hold does, on its own."""
+        own, owed = self.owed_counted(chart, ends)
+        return [(own, NO), *self.guarded(chart, owed, 720, 276, (Guard("count_over", "uses_unanswered messages.nudge_after"),), "say", ANSWER)]
+
+    def owed_counted(self, chart: Chart, ends: list) -> tuple[Node, list]:
+        """The agent's own tool use counted one up under uses_unanswered while a read message stays unanswered, uses_unanswered set to zero while none does; the own-tool check and the open end after the count."""
+        own = self.node(chart, NodeKind.CHECK, "own_tool", x=720, y=0)
+        unanswered = self.node(chart, NodeKind.CHECK, "unanswered_messages", x=720, y=92)
+        self.chain(ends, own)
+        self.line(own, unanswered, YES)
+        self.guarded(chart, [(unanswered, NO)], 960, 184, (), "count_start", "uses_unanswered")
+        return own, self.guarded(chart, [(unanswered, YES)], 720, 184, (), "count_one", "uses_unanswered")
 
     def draw_inbox(self, chart: Chart, ends: list, x: int, y: int) -> list:
         """What waits unread, named after the ends given: one message by its number, a few by theirs, more than three by their count."""
@@ -563,26 +604,44 @@ class ShippedChart(Seed):
 
     def ask_about_parked(self, chart: Chart, ends: list) -> list:
         """As the clock ticks on an agent at rest with a parked task: after a minute of quiet, ask whether it can go on."""
-        return self.guarded(chart, ends, 240, 92, (Guard("parked_tasks"), Guard("quiet_for_over", "1 minute")), "type", PARKED_STILL)
+        return self.asked_after_quiet(chart, ends, "task_just_parked", "parked_tasks", "1 minute", PARKED_STILL)
 
     def ask_about_blocked(self, chart: Chart, ends: list) -> list:
-        return self.guarded(chart, ends, 240, 92, (Guard("blocked_outside"), Guard("quiet_for_over", "1 hour")), "type", BLOCKED_STILL)
+        """As the clock ticks on an agent at rest with a task blocked on something outside: after an hour of quiet, ask whether it has come."""
+        return self.asked_after_quiet(chart, ends, "task_just_blocked", "blocked_outside", "1 hour", BLOCKED_STILL)
+
+    def asked_after_quiet(self, chart: Chart, ends: list, moved: str, waiting: str, quiet: str, line: str) -> list:
+        """A task's move into its wait and the agent's own events note when it was last active; on the tick, with a task still so, after so long a quiet the agent is asked by typing."""
+        self.guarded(chart, self.also_on(chart, "tasks.updated", 1040, 0), 1040, 92, (Guard(moved),), "time_note", "last_active")
+        self.noted_on_activity(chart, "last_active", 240)
+        return self.guarded(chart, ends, 240, 92, (Guard(waiting), Guard("time_over", f"last_active {quiet}")), "type", line)
 
     def check_in(self, chart: Chart, ends: list) -> list:
-        """As the clock ticks on an agent at rest in auto mode: after half an hour of quiet, check in."""
-        return self.guarded(chart, ends, 240, 92, (Guard("auto_mode"), Guard("quiet_for_over", "30 minutes")), "type", CHECK_IN)
+        """As the clock ticks on an agent at rest in auto mode: after half an hour of quiet, check in. A task's change and the agent's own events note when it was last active."""
+        self.guarded(chart, self.also_on(chart, "tasks.updated", 1040, 0), 1040, 92, (), "time_note", "last_active")
+        self.noted_on_activity(chart, "last_active", 240)
+        return self.guarded(chart, ends, 240, 92, (Guard("auto_mode"), Guard("time_over", "last_active 30 minutes")), "type", CHECK_IN)
 
     def hold_write_when_log_overdue(self, chart: Chart, ends: list) -> list:
-        """A write with the task's log overdue, by the edits since it: held until the log."""
-        return self.guarded(chart, ends, 160, 0, (Guard("own_tool"), Guard("tool_writes"), Guard("count_over", "edits tasks.log_after")), "hold", LOG_OVERDUE)
+        """A write with the task's log overdue, by the writes since it: held until the log."""
+        return self.writes_counted(chart, ends, Guard("count_over", "writes tasks.log_after"), "hold", LOG_OVERDUE)
 
     def ask_for_a_log_after_edits(self, chart: Chart, ends: list) -> list:
-        """A write at the first threshold of edits since the log: say where the task stands."""
-        return self.guarded(chart, ends, 160, 0, (Guard("own_tool"), Guard("tool_writes"), Guard("count_at", "edits tasks.first_nudge_after")), "say", LOG_SOON)
+        """A write at the first threshold of writes since the log: say where the task stands."""
+        return self.writes_counted(chart, ends, Guard("count_at", "writes tasks.first_nudge_after"), "say", LOG_SOON)
 
     def name_the_task_in_hand(self, chart: Chart, ends: list) -> list:
-        """A write every so many edits since the log: the task in hand is named, so drift is noticed."""
-        return self.guarded(chart, ends, 160, 0, (Guard("own_tool"), Guard("tool_writes"), Guard("count_every", "edits tasks.name_every")), "say", IN_HAND)
+        """A write every so many writes since the log: the task in hand is named, so drift is noticed."""
+        return self.writes_counted(chart, ends, Guard("count_every", "writes tasks.name_every"), "say", IN_HAND)
+
+    def writes_counted(self, chart: Chart, ends: list, asked: Guard, action: str, text: str) -> list:
+        """The agent's own writes since its task was taken in hand or last logged: a write asks the count as it stands, then, when no step held it, counts one up."""
+        for i, (event, guard) in enumerate((("tasks.updated", "task_just_taken"), ("task_logs.created", "log_for_task_in_hand"))):
+            self.guarded(chart, self.also_on(chart, event, 640 + 240 * i, 0), 640 + 240 * i, 92, (Guard(guard),), "count_start", "writes")
+        written = self.guarded(chart, ends, 160, 0, (Guard("own_tool"), Guard("tool_writes"), asked), action, text)
+        counted = self.node(chart, NodeKind.CHECK, "held_already", x=160, y=368)
+        self.chain([end for end in written if end[0].key == action or end[0].key == asked.key], counted)
+        return [*(end for end in written if end[0].key not in (action, asked.key)), *self.guarded(chart, [(counted, NO)], 160, 460, (), "count_one", "writes"), (counted, YES)]
 
     def nothing_own(self, chart: Chart, ends: list) -> list:
         """A state with nothing of its own yet: its workflow holds the trigger alone, so the state is on the page with something to open; the Always workflows carry the rest."""
@@ -597,12 +656,34 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 240, 92, (Guard("after_compaction"),), "say", WHERE)
 
     def ask_for_a_log(self, chart: Chart, ends: list) -> list:
-        """A task in hand whose log is old, at a stop or a session start: log where it stands."""
-        return self.guarded(chart, ends, 240, 92, (Guard("task_in_hand"), Guard("log_stale_over", "10 minutes")), "say", LOG_OLD)
+        """A task in hand whose log is old or that was never logged, at a stop or a session start: log where it stands. The agent taking a task in hand itself and logging it note the time; a task a plan took in hand forgets it."""
+        taken = self.node(chart, NodeKind.CHECK, "task_just_taken", x=640, y=92)
+        self.chain(self.also_on(chart, "tasks.updated", 640, 0), taken)
+        planned = self.node(chart, NodeKind.CHECK, "follows_a_plan", x=640, y=184)
+        self.line(taken, planned, YES)
+        self.line(planned, self.node(chart, NodeKind.ACTION, "time_forget", "last_log", x=560, y=276), YES)
+        self.line(planned, self.node(chart, NodeKind.ACTION, "time_note", "last_log", x=720, y=276), NO)
+        self.guarded(chart, self.also_on(chart, "task_logs.created", 880, 0), 880, 92, (Guard("log_for_task_in_hand"),), "time_note", "last_log")
+        return [*self.log_asked(chart, ends, 240), *self.log_asked(chart, self.also_on(chart, "session_started", 400, 0), 400)]
+
+    def log_asked(self, chart: Chart, ends: list, x: int) -> list:
+        """With a task in hand, a log time never noted or ten minutes old: log where it stands."""
+        held = self.node(chart, NodeKind.CHECK, "task_in_hand", x=x, y=92)
+        noted = self.node(chart, NodeKind.CHECK, "time_noted", "last_log", x=x, y=184)
+        old = self.node(chart, NodeKind.CHECK, "time_over", "last_log 10 minutes", x=x, y=276)
+        said = self.node(chart, NodeKind.ACTION, "say", LOG_OLD, x=x, y=368)
+        self.chain(ends, held)
+        self.line(held, noted, YES)
+        self.line(noted, old, YES)
+        self.line(noted, said, NO)
+        self.line(old, said, YES)
+        return [(held, NO), (old, NO), (said, THEN)]
 
     def working_at_tick(self, chart: Chart, ends: list) -> list:
-        """A task in hand as the clock ticks: still open after a quiet quarter hour."""
-        return self.guarded(chart, ends, 400, 92, (Guard("quiet_for_over", "15 minutes"),), "say", STILL_OPEN)
+        """A task in hand as the clock ticks: still open after a quiet quarter hour. Taking a task in hand and the agent's own events note when it was last active."""
+        self.guarded(chart, self.also_on(chart, "tasks.updated", 1040, 0), 1040, 92, (Guard("task_just_taken"),), "time_note", "last_active")
+        self.noted_on_activity(chart, "last_active", 240)
+        return self.guarded(chart, ends, 400, 92, (Guard("time_over", "last_active 15 minutes"),), "say", STILL_OPEN)
 
     def tell_a_worker_is_back(self, chart: Chart, ends: list) -> list:
         """A worker the agent awaits reports or stops: the agent is told, by typing, since it may be sitting at its prompt."""
@@ -619,12 +700,16 @@ class ShippedChart(Seed):
         return self.guarded(chart, ends, 400, 92, (Guard("question_answered"), Guard("agent_waits_on_the_question")), "release", ANSWERED)
 
     def expecting_at_tick(self, chart: Chart, ends: list) -> list:
-        """An agent awaiting something outside: after five quiet minutes it is told to check it, with what it awaits and how long."""
-        return self.guarded(chart, ends, 400, 92, (Guard("quiet_for_over", "5 minutes"),), "say", CHECK_AWAITED)
+        """An agent awaiting something outside: after five quiet minutes it is told to check it, with what it awaits and how long. Await and the agent's own events note when it was last active."""
+        self.guarded(chart, self.also_on(chart, "awaited", 1040, 0), 1040, 92, (), "time_note", "waiting_since")
+        self.noted_on_activity(chart, "waiting_since", 240)
+        return self.guarded(chart, ends, 400, 92, (Guard("time_over", "waiting_since 5 minutes"),), "say", CHECK_AWAITED)
 
     def next_while_waiting(self, chart: Chart, ends: list) -> list:
-        """An agent waiting on something in auto mode, after a quiet minute: the next task is named, to take up if it can go on meanwhile."""
-        return self.guarded(chart, ends, 400, 92, (Guard("auto_mode"), Guard("related_tasks"), Guard("quiet_for_over", "1 minute")), "say", MEANWHILE)
+        """An agent waiting on something in auto mode, after a quiet minute: the next task is named, to take up if it can go on meanwhile. Await and the agent's own events note when it was last active."""
+        self.guarded(chart, self.also_on(chart, "awaited", 1040, 0), 1040, 92, (), "time_note", "waiting_since")
+        self.noted_on_activity(chart, "waiting_since", 240)
+        return self.guarded(chart, ends, 400, 92, (Guard("auto_mode"), Guard("related_tasks"), Guard("time_over", "waiting_since 1 minute")), "say", MEANWHILE)
 
     def working_again(self, chart: Chart, ends: list) -> list:
         """The agent's own tool use ends a wait on something outside: the wait is released, with no line."""

@@ -594,9 +594,9 @@ def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude
 
 def test_an_events_workflows_are_put_in_order_by_the_user_and_a_stale_order_names_who_saved_first(server):
     status, read = call(server, "GET", "/journal/chart")
-    stops = sorted([w for w in read["workflows"] if w["event"] == "idle"], key=lambda w: w["place"])
+    stops = sorted([w for w in read["workflows"] if "idle" in w["places"]], key=lambda w: w["places"]["idle"])
     status, mine = call(server, "POST", "/journal/chart", {"state": "", "trigger": "idle", "title": "Always at a stop"})
-    assert status == 201 and mine["place"] > stops[-1]["place"], "a new workflow takes the last place of its event"
+    assert status == 201 and mine["place"] > stops[-1]["places"]["idle"], "a new workflow takes the last place of its event"
     rows = [{"id": w["id"], "revision": w["revision"]} for w in stops]
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": mine["revision"]}] + rows})
     assert status == 200 and [w["id"] for w in body["workflows"]][0] == mine["id"] and body["workflows"][0]["place"] == 0, "dragged first, it runs first"
@@ -751,8 +751,8 @@ def test_where_each_agent_stands_in_a_workflow_is_served(server):
     call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
     status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Counting"})
     trigger = made["nodes"][0]["id"]
-    nodes = [*made["nodes"], {"id": "one", "kind": "action", "key": "count_one", "text": "reminders"}, {"id": "enough", "kind": "check", "key": "count_over", "text": "reminders 3"}, {"id": "uses", "kind": "check", "key": "count_over", "text": "uses 5"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] enough"}]
-    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "enough"}, {"from": "enough", "to": "uses", "port": "no"}, {"from": "enough", "to": "say", "port": "yes"}, {"from": "uses", "to": "say", "port": "yes"}]
+    nodes = [*made["nodes"], {"id": "one", "kind": "action", "key": "count_one", "text": "reminders"}, {"id": "enough", "kind": "check", "key": "count_over", "text": "reminders 3"}, {"id": "uses", "kind": "check", "key": "count_over", "text": "reminders 5"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] enough"}, {"id": "seen", "kind": "action", "key": "time_note", "text": "seen"}]
+    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "seen"}, {"from": "seen", "to": "enough"}, {"from": "enough", "to": "uses", "port": "no"}, {"from": "enough", "to": "say", "port": "yes"}, {"from": "uses", "to": "say", "port": "yes"}]
     status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
     assert status == 200, saved
     for path in ("a", "b"):
@@ -762,7 +762,7 @@ def test_where_each_agent_stands_in_a_workflow_is_served(server):
     standing = call(server, "GET", f"/journal/chart/{made['id']}/standing")[1]
     agent = standing["agents"][0]
     assert agent["counts"] == {"reminders": 2} and agent["waits"] is True and agent["port"] == "no", "the agent waits at the last check's No with its count"
-    assert "uses" in agent["readings"] and "uses" in standing["readings"] and standing["readings"]["uses"], "a reading a check compares is served with what it counts"
+    assert list(agent["times"]) == ["seen"] and agent["times"]["seen"] >= 0, "the workflow's times are served, each as the seconds since it was noted"
     assert {"number": 3, "setting": ""} in standing["limits"].values() and {"number": 5, "setting": ""} in standing["limits"].values(), "each count check's number is served"
 
 

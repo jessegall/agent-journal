@@ -1,0 +1,89 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "a command in the background",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice"
+      ],
+      "counts": {
+        "charts:32:said": 5
+      },
+      "read": []
+    },
+    {
+      "name": "four minutes",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:32:said": 5
+      },
+      "read": []
+    },
+    {
+      "name": "five minutes and some",
+      "answer": null,
+      "typed": [
+        "[journal] output 1 still running. look at it; hung or stuck: stop it and say why"
+      ],
+      "nudges": [
+        "shell.check_background"
+      ],
+      "counts": {
+        "charts:32:said": 6
+      },
+      "read": [
+        {
+          "265": 310,
+          "56": 310
+        }
+      ]
+    },
+    {
+      "name": "ten minutes and some",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:32:said": 6
+      },
+      "read": [
+        {
+          "265": 610,
+          "56": 610
+        }
+      ]
+    },
+    {
+      "name": "it ended",
+      "answer": null,
+      "typed": [
+        "[journal] output 1 finished. `journal output read 1 --summary` says how; --tail 20 or --grep reads the part you need"
+      ],
+      "nudges": [
+        "shell.ended"
+      ],
+      "counts": {
+        "charts:32:said": 7
+      },
+      "read": []
+    },
+    {
+      "name": "fifteen minutes, nothing running",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:32:said": 7
+      },
+      "read": []
+    }
+  ]
+}

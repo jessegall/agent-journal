@@ -15,7 +15,12 @@
         "voices.voice",
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0
+      },
       "read": []
     },
     {
@@ -23,11 +28,19 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 1,
+        "charts:43:tools_used": 1,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "174": 0,
-          "179": 1
+          "287": 1,
+          "289": 0,
+          "301": 1
         }
       ]
     },
@@ -36,11 +49,19 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 2,
+        "charts:43:tools_used": 2,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "174": 0,
-          "179": 2
+          "287": 2,
+          "289": 0,
+          "301": 2
         }
       ]
     },
@@ -54,7 +75,14 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 7,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 2,
+        "charts:43:tools_used": 2,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": []
     },
     {
@@ -69,7 +97,14 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 8,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 2,
+        "charts:43:tools_used": 2,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": []
     },
     {
@@ -84,11 +119,19 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 9,
+        "charts:42:times_named": 1,
+        "charts:42:tools_used": 3,
+        "charts:43:tools_used": 3,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "174": 1,
-          "179": 3
+          "287": 3,
+          "289": 1,
+          "301": 3
         }
       ]
     },
@@ -110,7 +153,14 @@
         "briefing.waiting",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 16,
+        "charts:42:times_named": 1,
+        "charts:42:tools_used": 3,
+        "charts:43:tools_used": 3,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": []
     },
     {
@@ -118,11 +168,19 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 16,
+        "charts:42:times_named": 1,
+        "charts:42:tools_used": 4,
+        "charts:43:tools_used": 4,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "174": 1,
-          "179": 4
+          "287": 4,
+          "289": 1,
+          "301": 4
         }
       ]
     },
@@ -131,11 +189,19 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 16,
+        "charts:42:times_named": 1,
+        "charts:42:tools_used": 5,
+        "charts:43:tools_used": 5,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "174": 1,
-          "179": 5
+          "287": 5,
+          "289": 1,
+          "301": 5
         }
       ]
     },
@@ -151,11 +217,19 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 17,
+        "charts:42:times_named": 2,
+        "charts:42:tools_used": 6,
+        "charts:43:tools_used": 6,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": [
         {
-          "174": 2,
-          "179": 6
+          "287": 6,
+          "289": 2,
+          "301": 6
         }
       ]
     }

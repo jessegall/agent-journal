@@ -127,24 +127,30 @@ class Actions:
     def count_start(self, text: str, ctx: Context) -> Decision:
         """The workflow's count by that name back at zero in the environment."""
         if ctx.keeps_value(text):
-            self.counts.set(ctx.counted(text.strip()), 0, Actor.system())
+            self.counts.set(ctx.value(text.strip()), 0, Actor.system())
         return Decision()
 
     def count_begin(self, text: str, ctx: Context) -> Decision:
         """The workflow's count by that name at zero, unless it is already kept here."""
         if ctx.keeps_value(text):
-            self.counts.begin(ctx.counted(text.strip()), Actor.system())
+            self.counts.begin(ctx.value(text.strip()), Actor.system())
         return Decision()
 
     def count_one(self, text: str, ctx: Context) -> Decision:
         if ctx.keeps_value(text):
-            self.counts.count_one(ctx.counted(text.strip()), Actor.system())
+            self.counts.count_one(ctx.value(text.strip()), Actor.system())
+        return Decision()
+
+    def time_forget(self, text: str, ctx: Context) -> Decision:
+        """The time kept under the name forgotten, so it reads as never noted."""
+        if ctx.keeps_value(text):
+            self.times.forget(ctx.value(text.strip()), Actor.system())
         return Decision()
 
     def time_note(self, text: str, ctx: Context) -> Decision:
         """The engine clock's time kept under the name for the workflow in the environment, the one before it replaced."""
         if ctx.keeps_value(text):
-            self.times.note(ctx.counted(text.strip()), self.clock.now(), Actor.system())
+            self.times.note(ctx.value(text.strip()), self.clock.now(), Actor.system())
         return Decision()
 
     def show_card(self, text: str, ctx: Context) -> Decision:

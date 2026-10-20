@@ -4,8 +4,7 @@ from journal.features.chart.support.agent_standing import AgentStanding
 
 
 class WorkflowStanding(TypedDict):
-    """Where each live agent stands in a workflow, with what its count checks read and the numbers they compare against."""
+    """Where each live agent stands in a workflow, with the numbers its count checks compare against."""
 
     agents: list[AgentStanding]
-    readings: dict[str, str]
     limits: dict[str, str]

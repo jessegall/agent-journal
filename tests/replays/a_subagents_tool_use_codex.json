@@ -1,0 +1,77 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "the subagent's write 1",
+      "answer": {},
+      "typed": [
+        "[journal] new message 1"
+      ],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice",
+        "messages.new"
+      ],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
+    },
+    {
+      "name": "the subagent's write 2",
+      "answer": {},
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
+    },
+    {
+      "name": "the agent's own read",
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "new message 1"
+        }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 7,
+        "charts:42:times_named": 1,
+        "charts:42:tools_used": 1,
+        "charts:43:tools_used": 1,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "287": 1,
+          "289": 1,
+          "301": 1
+        }
+      ]
+    }
+  ]
+}

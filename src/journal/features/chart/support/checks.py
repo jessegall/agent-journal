@@ -7,6 +7,7 @@ from journal.engine.machine import Machine
 from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
+from journal.events.agent.line_said import LineSaid
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
@@ -55,23 +56,21 @@ SECONDS = {"s": 1, "sec": 1, "secs": 1, "second": 1, "seconds": 1, "m": 60, "min
 """A time in a check's text, by its unit; a bare number is seconds."""
 TAKEN_OVER_WITHIN = timedelta(days=1)
 """Another session that worked here this recently makes a start a takeover."""
-COUNTERS = ("unanswered_over", "quiet_for_over", "background_over", "unread_over", "log_stale_over", "context_over", "memory_older_than")
-WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between")
+COUNTERS = ("unanswered_over", "unread_over", "context_over", "memory_older_than", "background_running")
+WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between", "line_is")
 """The checks that read their text as words: the tool names, the words looked for, the hours."""
 """The checks that take a number: the node's text, or the setting named there."""
 COUNT_CHECKS = ("count_over", "count_at", "count_every", "count_wait")
 """The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
 COUNT_ACTIONS = ("count_start", "count_begin", "count_one")
 """The actions on a count the workflow keeps: the text names the count."""
-TIME_CHECKS = ("time_over",)
+TIME_CHECKS = ("time_over", "time_noted")
 """The checks on a time the workflow noted: the text names the time, then how long, with its unit."""
-TIME_ACTIONS = ("time_note",)
+TIME_ACTIONS = ("time_note", "time_forget")
 """The actions that note a time: the text names it."""
 VALUE_CHECKS = (*COUNT_CHECKS, *TIME_CHECKS)
 VALUE_ACTIONS = (*COUNT_ACTIONS, *TIME_ACTIONS)
 """The steps on the values a workflow keeps in an environment, its counts and its times."""
-READINGS = ("edits", "uses", "owed", "namings", "lines")
-"""The counts the journal reads from its record rather than a workflow keeping them: no workflow's count takes one of these names."""
 
 
 class Checks:
@@ -98,61 +97,35 @@ class Checks:
         return bool(check(ctx, text.strip()) if key in WORD_CHECKS else check(ctx))
 
     def count_of(self, ctx: Context, name: str) -> int:
-        """The count by that name: edits, uses, owed and namings are the agent's, read from the journal's own record; any other name is a count the workflow being walked keeps in the environment."""
-        derived = getattr(self, f"derived_{name}", None)
-        if derived:
-            return derived(ctx) if ctx.session else 0
-        return self.counts.named(ctx.counted(name)).value
+        """The count by that name the workflow being walked keeps in the environment."""
+        return self.counts.named(ctx.value(name)).value
 
     def counts_kept(self, workflow: int) -> dict[str, int]:
         """The counts a workflow keeps in the environment, by their names."""
         return self.counts.of_workflow(workflow)
 
+    def times_kept(self, workflow: int) -> dict[str, int]:
+        """The times a workflow noted in the environment, each as the seconds since, by their names."""
+        now = self.clock.now()
+        return {name: int(now - at) for name, at in self.times.of_workflow(workflow).items()}
+
     def seconds_since(self, ctx: Context, name: str) -> int | None:
         """How long ago the workflow being walked noted the time by that name, by the engine's clock; None when it never did."""
-        noted = self.times.at(ctx.counted(name))
+        noted = self.times.at(ctx.value(name))
         return None if noted is None else int(self.clock.now() - noted)
 
+    def time_noted(self, ctx: Context, name: str, limit: int) -> bool:
+        """The workflow noted the time by that name, and has not forgotten it since."""
+        return self.seconds_since(ctx, name) is not None
+
+    def follows_a_plan(self, ctx: Context) -> bool:
+        """The agent follows a plan, which took its task in hand for it."""
+        return isinstance(self.state(ctx), FollowingPlan)
+
     def time_over(self, ctx: Context, name: str, limit: int) -> bool:
-        """More than the time given has passed since the workflow noted the time by that name; a time never noted has no since, and answers no."""
+        """At least the time given has passed since the workflow noted the time by that name; a time never noted has no since, and answers no."""
         since = self.seconds_since(ctx, name)
-        return since is not None and since > limit
-
-    def derived_edits(self, ctx: Context) -> int:
-        """Writes since the task in hand was last logged, or started, a held one not counted; at a write, the ones before it, so the write in hand is read against the edits so far."""
-        state = ctx.state
-        if not isinstance(state, Working):
-            return 0
-        task = self.tasks.find(state.task_id)
-        logs = self.task_logs.of(task)
-        since = max([t for t in (task.started_at, *(log.created_at for log in logs)) if t], default=None)
-        provider = ctx.provider_in(self.providers)
-        before_this = self.tool_uses_since(ctx.session, since)[1:] if isinstance(ctx.event, ToolStarting) else self.tool_uses_since(ctx.session, since)
-        return sum(1 for e in before_this if provider.wrote(e))
-
-    def derived_uses(self, ctx: Context) -> int:
-        """Tool uses since the newest unread message came."""
-        unread = self.messages.unread()
-        return len(self.tool_uses_since(ctx.session, max(m.created_at for m in unread))) if unread else 0
-
-    def derived_owed(self, ctx: Context) -> int:
-        """Tool uses since the first message read and left unanswered was read."""
-        unanswered = [m for m in self.messages.unanswered() if m.read_at]
-        return len(self.tool_uses_since(ctx.session, min(m.read_at for m in unanswered))) if unanswered else 0
-
-    def derived_namings(self, ctx: Context) -> int:
-        """The reminders of the unread messages the agent has had: its tool uses since the newest one came, by the reminder interval; read from the record, so no workflow's lines change it."""
-        every = self.number("messages.remind_every")
-        return self.derived_uses(ctx) // every if every else 0
-
-    def derived_lines(self, ctx: Context) -> int:
-        """Lines the journal said to the agent since it last reminded it what a journal line is."""
-        from journal.features.etiquette.feature import Etiquette
-        return self.entries.said_since(ctx.session, Etiquette.REMIND.key)
-
-    def tool_uses_since(self, session: str, since) -> list:
-        """The agent's own tool uses since the moment, newest first: a subagent's share the session and are not counted."""
-        return [e for e in self.entries.tool_starts(session) if not (e.data.get("agent_id") or e.data.get("subagent_id")) and (since is None or (e.created_at and e.created_at > since))]
+        return since is not None and since >= limit
 
     def count_over(self, ctx: Context, name: str, limit: int) -> bool:
         """The count by that name has reached the number."""
@@ -179,11 +152,6 @@ class Checks:
         if option:
             return int(self.settings.option(option))
         return int(self.settings.project(text.strip(), 0)) if text.strip() else 0
-
-    def log_stale_over(self, ctx: Context, seconds: int) -> bool:
-        """The task in hand was last logged longer ago than so many seconds, or never."""
-        state = self.state(ctx)
-        return isinstance(state, Working) and (not state.logged_at or time.time() - state.logged_at > seconds)
 
     def open_tasks(self, ctx: Context) -> bool:
         return bool(self.plans.free())
@@ -279,17 +247,10 @@ class Checks:
             a, b = self.minute_of_day(start), self.minute_of_day(end)
         except ValueError:
             return False
-        at = ctx.event.at if isinstance(ctx.event, Ticked) and ctx.event.at else time.time()
+        at = ctx.event.at if isinstance(ctx.event, Ticked) and ctx.event.at else self.clock.now()
         local = time.localtime(at)
         now = local.tm_hour * 60 + local.tm_min
         return a <= now < b if a <= b else now >= a or now < b
-
-    def background_over(self, ctx: Context, seconds: int) -> bool:
-        return isinstance(ctx.event, Ticked) and bool(self.outputs.in_background_over(ctx.session, seconds))
-
-    def quiet_for_over(self, ctx: Context, seconds: int) -> bool:
-        """The clock ticks and the agent has been quiet for at least so many seconds."""
-        return isinstance(ctx.event, Ticked) and ctx.event.quiet_for >= seconds
 
     def worker_reported(self, ctx: Context) -> bool:
         return self.worker_now(ctx, WorkerState.REPORTED)
@@ -428,8 +389,8 @@ class Checks:
         return isinstance(event, Updated) and isinstance(event.model, Task) and event.model.started_at is not None and event.was is not None and event.was.started_at is None and event.by.id == ctx.session
 
     def task_just_taken(self, ctx: Context) -> bool:
-        """The row event is a task this agent took in hand with this write: started, resumed after a park, or claimed."""
-        return self.task_became(ctx, TaskState.STARTED) and ctx.event.by.id == ctx.session
+        """The row event is a task this write took in hand: started, resumed after a park, or claimed, by an agent or by a plan going on."""
+        return self.task_became(ctx, TaskState.STARTED)
 
     def task_just_parked(self, ctx: Context) -> bool:
         return self.task_became(ctx, TaskState.PARKED)
@@ -440,9 +401,27 @@ class Checks:
     def task_became(self, ctx: Context, state: TaskState) -> bool:
         return self.row_became(ctx, Task, state)
 
+    def background_running(self, ctx: Context, least: int) -> bool:
+        """At least so many of the agent's commands run in the background now."""
+        return len(self.outputs.in_background(ctx.session)) >= least
+
+    @staticmethod
+    def held_already(ctx: Context) -> bool:
+        """An earlier step of this event held the tool."""
+        return bool(ctx.held)
+
+    @staticmethod
+    def line_is(ctx: Context, key: str) -> bool:
+        """The line just said is the nudge named in the text."""
+        return isinstance(ctx.event, LineSaid) and ctx.event.nudge == key
+
     def open_question(self, ctx: Context) -> bool:
         """A question to the user here waits for its answer."""
         return bool(self.questions.open())
+
+    def message_typed_in_terminal(self, ctx: Context) -> bool:
+        """The row event is a message typed at the agent's own prompt, which the agent reads as it comes, not one sent in the chat."""
+        return isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Message) and ctx.event.model.is_typed_in_terminal
 
     def message_is_reply(self, ctx: Context) -> bool:
         """The row event is a reply the agent wrote to a message."""

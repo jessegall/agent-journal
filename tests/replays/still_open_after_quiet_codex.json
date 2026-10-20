@@ -1,0 +1,81 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "stopped with a task in hand",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice",
+        "tasks.carry_on"
+      ],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "113": 0,
+          "114": 0
+        }
+      ]
+    },
+    {
+      "name": "fourteen quiet minutes",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
+    },
+    {
+      "name": "sixteen quiet minutes",
+      "answer": null,
+      "typed": [
+        "[journal] task 1 is still open: log where it stands or finish it"
+      ],
+      "nudges": [
+        "tasks.open"
+      ],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 7,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "139": 960
+        }
+      ]
+    },
+    {
+      "name": "twenty quiet minutes",
+      "answer": null,
+      "typed": [],
+      "nudges": [],
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 7,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "139": 1200
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ from journal.models.chart import Chart
 from journal.repositories.counts import Counts
 from journal.repositories.noted_times import NotedTimes
 from journal.support.actor import Actor
+from journal.support.value_name import ValueName
 
 
 class WorkflowValues:
@@ -15,7 +16,7 @@ class WorkflowValues:
 
     def forget_unnamed(self, chart: Chart, named: set[str], by: Actor) -> list[tuple[str, int]]:
         """The values no node of the workflow names any more, gone; each by its name and environment."""
-        prefix = f"charts:{chart.id}:"
+        prefix = ValueName.prefix(chart.id)
         counts = [c for c in self.counts.everywhere_of_workflow(chart.id) if c.name[len(prefix):] not in named]
         times = [t for t in self.times.everywhere_of_workflow(chart.id) if t.name[len(prefix):] not in named]
         for count in counts:

@@ -1,6 +1,6 @@
 import re
 from journal.support.chart_catalogue import ChartCatalogue
-from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS, TIME_ACTIONS, TIME_CHECKS
+from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS, TIME_ACTIONS, TIME_CHECKS
 from journal.features.chart.support.fault import Fault
 from journal.support.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
@@ -26,6 +26,8 @@ RELEASES = ("release", "wait_outside", "mark_stuck", "go_idle")
 def law_words(text: str) -> str:
     """A locked node's text without its numbers: the words are the law, the numbers are the user's to tune."""
     return re.sub(r"\d+", "", text)
+NAME_ONLY = ("time_noted",)
+"""The value checks whose text is the value's name alone, with no number or time after it."""
 LINE_SAID = "line_said"
 SPEAKING = ("say", "type", "hold", "block_stop", "require_skill", "start_sequence", "run_workflow", "release")
 """The steps that say the agent a line, or may: none of them is reached from Journal line said."""
@@ -104,7 +106,7 @@ class Validation:
     @staticmethod
     def wants_amount(node: DrawnNode) -> bool:
         """A check on a value that names the value and nothing after it: no number, no time."""
-        return node.kind == NodeKind.CHECK and len(node.text.split()) < 2
+        return node.kind == NodeKind.CHECK and node.key not in NAME_ONLY and len(node.text.split()) < 2
 
     @staticmethod
     def line_said_faults(nodes: list[DrawnNode], lines: list[DrawnLine]) -> list[Fault]:
@@ -152,7 +154,7 @@ class Validation:
 
     @staticmethod
     def value_faults(nodes: list[DrawnNode]) -> list[Fault]:
-        """A value's name is checked: one name is a count or a time but not both, and a workflow reads only its own values, so a check on one that no step of the same workflow sets is refused, a reading of the journal's record aside."""
+        """A value's name is checked: one name is a count or a time but not both, and a workflow reads only its own values, so a check on one that no step of the same workflow sets is refused."""
         named = lambda keys: {n.text.strip().partition(" ")[0] for n in nodes if n.key in keys}
         counted, noted = named(COUNT_ACTIONS), named(TIME_ACTIONS)
         both = (counted | named(COUNT_CHECKS)) & (noted | named(TIME_CHECKS))
@@ -161,7 +163,7 @@ class Validation:
             name = n.text.strip().partition(" ")[0]
             if n.key in (*TIME_ACTIONS, *TIME_CHECKS) and name in both:
                 faults.append(Fault(f"{name} is both a count and a time in this workflow: give each its own name", n.id))
-            if n.key in COUNT_CHECKS and name and name not in counted and name not in READINGS:
+            if n.key in COUNT_CHECKS and name and name not in counted:
                 faults.append(Fault(f"step {n.id} reads the count {name}, which no step of this workflow sets: give the workflow an Add one to a count or a Set a count to zero for {name}, since a workflow reads only its own counts", n.id))
             if n.key in TIME_CHECKS and name and name not in noted:
                 faults.append(Fault(f"step {n.id} asks how long since {name}, which no step of this workflow notes: give the workflow a Note the time for {name}, since a workflow reads only its own times", n.id))
@@ -250,8 +252,6 @@ class Validation:
             words = n.text.split()
             if not words:
                 faults.append(Fault(f"node {n.id} names no count: its text is the count's name", n.id))
-            elif n.key in COUNT_ACTIONS and words[0] in READINGS:
-                faults.append(Fault(f"{words[0]} is a reading of the journal's record, not a count a workflow keeps: name the count something else", n.id))
             elif self.wants_amount(n):
                 faults.append(Fault(f"node {n.id} names no number: its text is the count's name, then N or a setting's name", n.id))
         for n in (n for n in nodes if n.kind == NodeKind.ACTION and n.key in ("wait_outside", "mark_stuck") and not n.text.strip()):

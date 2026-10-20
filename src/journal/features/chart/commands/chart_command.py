@@ -57,16 +57,17 @@ class ChartCommand(Command):
         try_ = self.verb(verbs, "try", "a dry run for an agent event here, or a row event with its row: the path and what it would do, nothing done")
         try_.add_argument("trigger")
         try_.add_argument("--row", type=int, default=0, help="the row a row event is about, such as the message's number for messages.created")
-        try_.add_argument("--quiet", type=float, default=None, help="how long the agent has been quiet, in seconds, for ticked")
-        try_.add_argument("--edits", type=int, default=None, help="the edits since the task in hand was logged, instead of the live count")
+        try_.add_argument("--quiet", type=float, default=None, help="seconds since every time a workflow noted, and for ticked how long the agent has been quiet")
         try_.add_argument("--unread", type=int, default=None, help="how many messages are unread, instead of the live inbox")
-        try_.add_argument("--value", action="append", default=[], help="a workflow's count as name=n, instead of the agent's own; may be given more than once")
+        try_.add_argument("--value", action="append", default=[], help="a workflow's count as name=n, instead of the environment's own; may be given more than once")
+        try_.add_argument("--since", action="append", default=[], help="a workflow's time as name=seconds since it was noted, instead of the noted one; may be given more than once")
         try_.add_argument("--state", default=None, help="the state to walk as, instead of the live agent's: working, awaiting, idle and the rest")
         try_.add_argument("--provider", default=None, help="the provider whose agent is tried, claude or codex, whose tool names the tool event takes")
 
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.in_order():
-            bound = f" [{chart.state or 'always'} at " + ", ".join(f"{event}, place {place}" for event, place in sorted(chart.places.items())) + "]"
+            also = "".join(f", also at {event}, place {place}" for event, place in sorted(chart.places.items()) if event != chart.event)
+            bound = f" [{chart.state or 'always'} at {chart.event}, place {chart.places.get(chart.event, '-')}{also}]"
             print(f"workflow {chart.id}{bound}, revision {chart.revision} by {chart.updated_by.stamp if chart.updated_by else 'nobody'}: {chart.title}")
             for node in self.charts.nodes_of(chart):
                 shown = f"{node.key} ({self.entries.entry(node.kind, node.key).title})" if node.kind == NodeKind.TRIGGER else node.key
@@ -164,16 +165,16 @@ class ChartCommand(Command):
         return 0
 
     @staticmethod
-    def values(given: list[str]) -> dict[str, int]:
-        """Each --value name=n as a count to stand in for the agent's own."""
+    def values(given: list[str], flag: str) -> dict[str, int]:
+        """Each name=n given with the flag, as a value to stand in for the environment's own."""
         pairs = [v.partition("=") for v in given]
         wrong = [v for v, (_, eq, n) in zip(given, pairs) if not eq or not n.lstrip("-").isdigit()]
         if wrong:
-            raise Refused(f"--value takes name=n, a whole number: {', '.join(wrong)}")
+            raise Refused(f"{flag} takes name=n, a whole number: {', '.join(wrong)}")
         return {name.strip(): int(n) for name, _, n in pairs}
 
     def try_(self, args: Namespace, where: Where) -> int:
-        ran = self.trial.run(args.trigger, self.scope.id, args.row, Assumptions(quiet=args.quiet, edits=args.edits, unread=args.unread, state=args.state, provider=args.provider, counts=self.values(args.value)))
+        ran = self.trial.run(args.trigger, self.scope.id, args.row, Assumptions(quiet=args.quiet, unread=args.unread, state=args.state, provider=args.provider, counts=self.values(args.value, "--value"), since=self.values(args.since, "--since")))
         title = self.entries.entry(NodeKind.TRIGGER, args.trigger).title
         print(f"{title}{f' of row {args.row}' if args.row else ''}, walked as the state {ran['state'] or 'of no agent'}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
         if ran["assumed"]:

@@ -12,13 +12,22 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 1,
+        "charts:32:said": 5,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 1,
+        "charts:9:writes": 1
+      },
       "read": [
         {
-          "179": 0,
-          "29": 0,
-          "34": 0,
-          "39": 0
+          "67": 0,
+          "80": 0,
+          "93": 0
         }
       ]
     },
@@ -27,13 +36,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 2,
+        "charts:32:said": 5,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 2,
+        "charts:9:writes": 2
+      },
       "read": [
         {
-          "179": 0,
-          "29": 1,
-          "34": 1,
-          "39": 1
+          "67": 1,
+          "80": 1,
+          "93": 1
         }
       ]
     },
@@ -46,7 +64,17 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 2,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 2,
+        "charts:9:writes": 2
+      },
       "read": []
     },
     {
@@ -58,15 +86,24 @@
       "nudges": [
         "messages.answer"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 2,
+        "charts:32:said": 7,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 1,
+        "charts:45:uses_unanswered": 1,
+        "charts:8:writes": 2,
+        "charts:9:writes": 2
+      },
       "read": [
         {
-          "179": 0,
-          "191": 1,
-          "196": 1,
-          "29": 2,
-          "34": 2,
-          "39": 2
+          "315": 1,
+          "322": 1,
+          "67": 2,
+          "80": 2,
+          "93": 2
         }
       ]
     }

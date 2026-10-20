@@ -1,27 +1,23 @@
 from journal.support.actor import Actor
 from journal.models.noted_time import NotedTime
-from journal.repositories.scoped_repository import ScopedRepository
+from journal.repositories.workflow_value_rows import WorkflowValueRows
+from journal.support.value_name import ValueName
 
 
-class NotedTimes(ScopedRepository[NotedTime]):
+class NotedTimes(WorkflowValueRows[NotedTime]):
     model = NotedTime
 
-    def note(self, name: str, at: float, by: Actor) -> NotedTime:
-        """The moment kept under the name, the one before it replaced, in one transaction."""
+    def note(self, value: ValueName, at: float, by: Actor) -> NotedTime:
+        """The moment kept under the workflow's name for it, the one before it replaced, in one transaction."""
         with self.connection.transaction():
-            rows = self.where(name=name)
-            return self.save((rows[0] if rows else NotedTime(name=name)).with_(at=at), by)
+            rows = self.where(name=value.stored)
+            return self.save((rows[0] if rows else NotedTime(name=value.stored)).with_(at=at), by)
 
-    def at(self, name: str) -> float | None:
-        """When the name was last noted here; None when it never was."""
-        rows = self.where(name=name)
+    def forget(self, value: ValueName, by: Actor) -> None:
+        for row in self.where(name=value.stored):
+            self.delete(row, by)
+
+    def at(self, value: ValueName) -> float | None:
+        """When the workflow last noted the time by that name here; None when it never did."""
+        rows = self.where(name=value.stored)
         return rows[0].at if rows else None
-
-    def of_workflow(self, workflow: int) -> dict[str, float]:
-        """The times a workflow noted in this environment, by their names."""
-        prefix = f"charts:{workflow}:"
-        return {t.name[len(prefix):]: t.at for t in self.selected("name LIKE ? ORDER BY id", (f"{prefix}%",))}
-
-    def everywhere_of_workflow(self, workflow: int) -> list[NotedTime]:
-        """A workflow's times in every environment, for what ends them all."""
-        return self.selected_everywhere("name LIKE ? ORDER BY id", (f"charts:{workflow}:%",))

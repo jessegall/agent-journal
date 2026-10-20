@@ -1,10 +1,10 @@
-import time
 from argparse import Namespace
 from dataclasses import replace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.support.where import Where
+from journal.engine.clock import Clock
 from journal.engine.machine import Machine
 from journal.engine.states.paused import Paused
 from journal.support.refused import Refused
@@ -30,7 +30,8 @@ from journal.repositories.tasks import Tasks, WAITS_ON
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing) -> None:
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock) -> None:
+        self.clock = clock
         self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.waits, self.briefing = tasks, logs, machine, messages, links, plans, in_hand, questions, waits, briefing
 
     def arguments(self, verbs) -> None:
@@ -82,7 +83,7 @@ class TaskCommand(Command):
         self.logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=args.line), where.actor)
         current = self.in_hand.current(where)
         if current and current.task_id == task.id:
-            self.machine.move(where.session, task.environment_id, current.logged(time.time()))
+            self.machine.move(where.session, task.environment_id, current.logged(self.clock.now()))
         print(f"task {task.id} logged")
         return 0
 
@@ -101,8 +102,7 @@ class TaskCommand(Command):
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:
-        if not args.why and not args.on and not args.until:
-            raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
+        self.waits.refuse_unnamed(args.why, args.on, args.until)
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why), where.actor)
         for ref in self.waits.named(args.on, args.until, args.every, f"task {task.id}", where.actor):
             self.links.save(Link(source=Ref.to(task), target=ref, kind=WAITS_ON), where.actor)

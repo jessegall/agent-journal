@@ -5,6 +5,7 @@ from journal.engine.agent_state import AgentState
 from journal.engine.machine import Machine
 from journal.events.event import Event
 from journal.models.agent import Agent
+from journal.support.value_name import ValueName
 from journal.support.walk_stop import WalkStop
 from journal.providers.provider import Provider
 from journal.providers.providers import Providers
@@ -69,6 +70,6 @@ class Context:
         """A count or time step's text names a value, and there is an environment to keep it in."""
         return bool(self.environment_id and text.strip())
 
-    def counted(self, name: str) -> str:
-        """A value's name as kept for the workflow being walked: each workflow keeps its own counts and times, and reads no other's."""
-        return f"charts:{self.workflow}:{name}"
+    def value(self, name: str) -> ValueName:
+        """A value of the workflow being walked, by its name: each workflow keeps its own counts and times, and reads no other's."""
+        return ValueName(self.workflow, name)
