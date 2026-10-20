@@ -2,13 +2,14 @@
 import Icon from "../kit/Icon.vue";
 import {ref} from "vue";
 import {api} from "../api/client.js";
+import {foldersAbove} from "../domain/openFiles.js";
 
 const props = defineProps({folder: {type: String, default: ""}, open: {type: String, default: ""}, depth: {type: Number, default: 0}});
 const emit = defineEmits(["pick"]);
 
 const entries = ref(null);
 const failure = ref("");
-const opened = ref(new Set());
+const opened = ref(new Set(foldersAbove(props.open)));
 
 async function read() {
     try {

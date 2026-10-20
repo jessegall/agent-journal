@@ -10,7 +10,7 @@ test("on the phone the viewer speaks through /p, finds its files beside the page
     expect(api.url("/messages")).toBe("/p/journal/messages");
     expect(api.publicUrl("voices/figures/figures.json")).toBe("./voices/figures/figures.json");
     const keys = useNavigation().everywhere.value.map((link) => link.key);
-    expect(keys).toContain("code");
+    expect(keys).toContain("files");
     for (const desk of ["settings", "plugins", "mcp", "chart", "profiles", "secrets"]) expect(keys).not.toContain(desk);
     document.documentElement.classList.remove("phone");
 });
@@ -36,7 +36,7 @@ test("the phone refuses a file at once, and the desk's Project menu keeps its or
     vi.resetModules();
     const {useNavigation} = await import("../src/composables/navigation.js");
     const project = useNavigation().sections.value.find((section) => section.key === "project").links.map((link) => link.key);
-    expect(project.slice(-8)).toEqual(["code", "plugins", "mcp", "chart", "profiles", "secrets", "resources", "settings"]);
+    expect(project.slice(-8)).toEqual(["files", "plugins", "mcp", "chart", "profiles", "secrets", "resources", "settings"]);
     document.documentElement.classList.add("phone");
     vi.resetModules();
     const {api} = await import("../src/api/client.js");

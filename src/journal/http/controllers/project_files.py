@@ -4,7 +4,7 @@ from journal.support.response import Response
 
 
 class ProjectFileController:
-    """The project's files as the Code page reads them: a folder's entries, a file's text, its uncommitted diff, and a find by name."""
+    """The project's files as the Files page reads them: a folder's entries, a file's text, its uncommitted diff, and a find by name."""
 
     def __init__(self, files: ProjectFiles) -> None:
         self.files = files

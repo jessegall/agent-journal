@@ -114,7 +114,7 @@ function select(id) {
             </template>
             <template v-if="kind.view === 'document'">
                 <span class="sep" />
-                <a class="flat" :href="href.page('files')">Files</a>
+                <a class="flat" :href="href.page('attachments')">Attachments</a>
             </template>
             <span class="grow" />
             <template v-if="kind.created_in_viewer">
