@@ -222,6 +222,15 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     from journal.support.scope import Scope
     with app.container.get(Scope).of(1):
         assert any("closed it with Escape" in m.text for m in app.container.get(Messages).in_()), "and a card says so"
+    permission = "Bash command\r\nrm -f build/*.log\r\n\r\nDo you want to proceed?\r\n❯ 1. Yes\r\n  2. Yes, and don't ask again for rm commands in build\r\n  3. No, and tell Claude what to do differently (esc)\r\n"
+    launches = app.config.home / "runtime" / "launches"
+    launches.mkdir(parents=True, exist_ok=True)
+    (launches / "main.json").write_text(json.dumps({"front": {"command": ["claude", "--settings", "{}"]}}))
+    shown(permission)
+    assert watcher.look(agent) != "\r", "a permission question under a launch that keeps the prompts is the user's to answer"
+    (launches / "main.json").write_text(json.dumps({"front": {"command": ["claude", "--dangerously-skip-permissions", "--settings", "{}"]}}))
+    shown(permission.replace("build", "dist"))
+    assert watcher.look(agent) == "\r", "a permission question the provider asks anyway under a launch that skips the prompts is answered with yes"
     (screens / "main.keyed").touch()
     shown("Pick a theme\r\n❯ 1. Dark\r\n  2. Light\r\n")
     assert watcher.look(agent) == "", "a picker that came up right after keys at the keyboard is the user's own"

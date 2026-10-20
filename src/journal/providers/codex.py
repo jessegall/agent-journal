@@ -10,6 +10,7 @@ from journal.providers.support.turn import Turn
 
 class Codex(Provider):
     name = "codex"
+    skip_prompts = ("--dangerously-bypass-approvals-and-sandbox",)
     home = ".codex"
     settings_file = "hooks.json"
     write_tools = frozenset({"apply_patch", "write_file"})

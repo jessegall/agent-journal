@@ -16,6 +16,7 @@ FROM_NAME, FROM_ADDRESS = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bf
 
 class Claude(Provider):
     name = "claude"
+    skip_prompts = ("--dangerously-skip-permissions",)
     home = ".claude"
     settings_file = "settings.json"
     other_settings = ("settings.local.json",)

@@ -19,10 +19,12 @@ from journal.support.worktree import Worktree
 from journal.launcher.support.update_offer import UpdateOffer
 from journal.features.updates.support.release_source import ReleaseSource
 from journal.config import Config
+from journal.providers.claude import Claude
+from journal.providers.codex import Codex
 from journal.support.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
-SKIP = {"claude": ["--dangerously-skip-permissions"], "codex": ["--dangerously-bypass-approvals-and-sandbox"]}
+SKIP = {provider.name: list(provider.skip_prompts) for provider in (Claude, Codex)}
 STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
 LOCAL = {"claude": [], "codex": ["--no-daemon"]}
 """A shared Codex daemon keeps the environment of its first launch, so each journal runs its own process."""

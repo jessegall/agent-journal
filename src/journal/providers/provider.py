@@ -38,6 +38,8 @@ class Provider:
     write_tools: ClassVar[frozenset[str]]
     read_tool: ClassVar[str]
     shell_tool: ClassVar[str] = "Bash"
+    skip_prompts: ClassVar[tuple[str, ...]] = ()
+    """The flags that start the provider with its permission prompts skipped."""
     settings_extras: ClassVar[dict] = {}
     other_settings: ClassVar[tuple[str, ...]] = ()
     """Settings files beside the main one that may still hold an older hook of ours."""

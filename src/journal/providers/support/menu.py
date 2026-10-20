@@ -9,6 +9,7 @@ FOOTER = re.compile(r"Enter to (?:select|confirm|continue)|Esc to (?:cancel|exit
 QUESTION = re.compile(r"\?\s*$")
 TRUSTED = re.compile(r"\btrust\b", re.I)
 SWITCHING_MODEL = re.compile(r"\bswitch model\b", re.I)
+PERMISSION = re.compile(r"do you want to (?:proceed|make this edit|create|run|allow|read)|allow .* to\b", re.I)
 OWN = re.compile(r"do you want to (?:proceed|make|create)|would you like to run|allow command|approve", re.I)
 PAST = re.compile(r"\(current\)|rewind|restore|resume|checkpoint", re.I)
 ACCEPT = re.compile(r"^(?:yes|trust|i am using|continue|ok)\b", re.I)
@@ -79,6 +80,10 @@ class Menu:
     def trusting(self) -> bool:
         """A question whether to trust the folder the journal launched the agent in."""
         return bool(TRUSTED.search(self.question))
+
+    def asking_permission(self) -> bool:
+        """The provider's own question whether a tool may run, as Claude Code asks before a dangerous command even when told to skip its prompts."""
+        return bool(PERMISSION.search(self.question))
 
     def switching_model(self) -> bool:
         """Claude Code's question whether to switch the model, which comes only after a model change was asked for."""

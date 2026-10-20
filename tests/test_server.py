@@ -1199,3 +1199,12 @@ def test_a_second_journal_of_the_same_project_stands_by_while_the_first_answers(
     finally:
         one.server().stop()
     assert standby.another() == "", "the first gone, the port is free to take"
+
+
+def test_a_comment_is_deleted_from_its_column(server):
+    call(server, "POST", "/journal/tasks", {"title": "the footer"})
+    status, made = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "a passing thought"})
+    assert status == 201, made
+    status, gone = call(server, "POST", f"/journal/comments/{made['id']}/delete", {})
+    assert status == 200, gone
+    assert made["id"] not in [c["id"] for c in call(server, "GET", "/journal/comments")[1]["rows"]], "the comment is gone from the column"
