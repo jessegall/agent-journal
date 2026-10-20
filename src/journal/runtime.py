@@ -12,6 +12,7 @@ from journal.events.agent.agent_event import AgentEvent
 from journal.events.rows.row_event import RowEvent
 from journal.engine.row_events_to_the_top import RowEventsToTheTop
 from journal.engine.engine import Engine
+from journal.engine.base_state import BaseState
 from journal.engine.nudge_registry import NudgeRegistry
 from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
@@ -47,6 +48,7 @@ class Runtime:
 
     def boot(self) -> None:
         self.register_nudges()
+        BaseState.fold(self.registry.conducts())
         self.bus.listen(AgentEvent, self.machine)
         self.bus.listen(RowEvent, self.container.get(RowEventsToTheTop))
         self.bus.listen(Created, Creations())

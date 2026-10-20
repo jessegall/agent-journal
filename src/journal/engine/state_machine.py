@@ -57,6 +57,8 @@ class StateMachine(AgentListener[AgentEvent]):
         event = event.with_standing(self.readers.for_agent(agent))
         transition = stack.top().on(event, settings)
         hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings)
+        if transition.dropped:
+            self.entries.save(Trail.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
         agent = self._settle(agent, hooked, event.key, Actor.system())
         lines = [line for nudge in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, nudge))]
         if transition.held:

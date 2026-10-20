@@ -37,7 +37,7 @@ __journal_show() {
         __journal_cut_out=$(eval "cat \"$1\" | $(cat "$folder/$shown.cut")")
         if [ "${#__journal_cut_out}" -le "$cap" ]; then
             printf '%s\n' "$__journal_cut_out"
-            printf '[journal] the whole output, before your %s, is kept as output %s: journal output read %s --tail 20\n' "$(cat "$folder/$shown.cut")" "$__journal_n" "$__journal_n"
+            printf '[journal] the whole output is kept as output %s\n' "$__journal_n"
             return
         fi
     fi
@@ -51,14 +51,10 @@ __journal_show() {
         tail -c $((cap / 2)) "$1"
         return
     fi
-    # said once for the chain, however many parts were kept; the flags are taught on the first kept output of every 25, the rest say only where it is kept
+    # said once for the chain, however many parts were kept
     [ -z "$__journal_said_kept" ] || return
     __journal_said_kept=1
-    if [ $((__journal_n % 25)) -eq 1 ]; then
-        printf '[journal] output %s: %s characters, kept. read the part you need: journal output read %s --grep "<words>", --head 20, --tail 20, --lines 40-80, --summary or --all, never its files raw\n' "$__journal_n" "$__journal_size" "$__journal_n"
-    else
-        printf '[journal] output %s kept: journal output read %s --tail 20\n' "$__journal_n" "$__journal_n"
-    fi
+    printf '[journal] output %s kept, %s characters\n' "$__journal_n" "$__journal_size"
 }
 
 # The worker. Its own variables carry a prefix, since the parts run in the same shell and may set i or code.

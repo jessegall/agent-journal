@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from journal.console.command import Command
+from journal.engine.conduct import Conduct
 from journal.engine.agent_state import AgentState
 from journal.support.entry import Entry
 from journal.events.listener import Listener
@@ -25,6 +26,7 @@ class Feature:
     options: ClassVar[tuple[Option, ...]] = ()
     listeners: ClassVar[tuple[type[Listener], ...]] = ()
     standing: ClassVar[tuple[type, ...]] = ()
+    conduct: ClassVar[tuple[type[Conduct], ...]] = ()
     checks: ClassVar[tuple[Entry, ...]] = ()
     actions: ClassVar[tuple[Entry, ...]] = ()
     commands: ClassVar[tuple[type[Command], ...]] = ()

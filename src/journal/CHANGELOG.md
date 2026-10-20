@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- The runner's line after a long command says only 'output N kept' with its size, and after a cut 'the whole output is kept as output N'; it no longer teaches the read command every time.
 - A command's trailing head or tail is taken off the line, the command runs whole and the whole output is kept under its number, and the cut is applied to it before the agent sees it, with a line naming the kept number; before, the agent was shown only the number in place of the lines it asked for.
 - A command whose whole output is under 200 characters, with no pipe in its line, prints as it is and keeps no numbered output and names no number; a longer output, or a line with a pipe into head, tail, grep or any filter, is kept as before. The limit is the setting Keep no output under.
 - The journal can follow a branch: Settings, Updates, Follow this branch names it (and Install from this repository the repository), and Install update, `journal update` and the hourly check then install that branch's newest commit instead of a release. The installer records the commit it installed in `.journal/src/commit`, and the About page says which branch the journal follows. `journal update follow <branch>` sets the branch from the terminal, `journal update unfollow` follows the releases again.

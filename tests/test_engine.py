@@ -49,6 +49,7 @@ from journal.repositories.setting_rows import SettingRows
 from dataclasses import dataclass
 
 from journal.engine.base_state import BaseState
+from journal.engine.conduct import Conduct
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
 from journal.engine.support.held import Held
@@ -601,3 +602,34 @@ def test_the_standing_is_read_per_feature_and_travels_on_the_event_the_machine_a
     assert standing.of(ShellFeature).background == () and standing.of(WorkersFeature).reports_waiting == ()
     event = ToolStarting(tool="Write", input={}).with_standing(standing)
     assert event.standing.of(TasksFeature).in_hand == 1 and ToolStarting(tool="Write", input={}).standing.readings == {}
+
+
+class InboxConduct(Conduct):
+    def on_tool_starting_inbox(self, event: ToolStarting, settings: SettingsValue) -> Transition:
+        return self.unchanged(OTHER)
+
+
+class LawsConduct(Conduct):
+    def on_tool_starting_laws(self, event: ToolStarting, settings: SettingsValue) -> Transition:
+        return self.hold(WHY)
+
+    def on_anything_laws(self, event: AgentEvent, settings: SettingsValue) -> Transition:
+        return self.pop()
+
+    def named(self) -> str:
+        return "not a listener"
+
+
+def test_the_features_conduct_is_folded_into_the_base_state_and_every_matching_listener_runs_the_states_own_first():
+    BaseState.fold((InboxConduct, LawsConduct))
+    try:
+        settings, event = SettingsValue({}), ToolStarting(tool="Write", input={})
+        answered = Listening().on(event, settings)
+        assert answered.nudges == (LINE, OTHER, OTHER) and answered.held is WHY and answered.popped and answered.dropped == ()
+        pushing = Catching().on(event, settings)
+        assert [method.__name__ for _, method in Catching.listeners()][-3:] == ["on_tool_starting_inbox", "on_tool_starting_laws", "on_anything_laws"]
+        assert pushing.popped
+        assert Ended().on(event, settings).popped and Ended().on(event, settings).dropped == ("pop",)
+    finally:
+        BaseState.fold(())
+    assert all("laws" not in method.__name__ for _, method in Ended.listeners())

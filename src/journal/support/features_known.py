@@ -1,6 +1,7 @@
 from typing import Protocol
 
 from journal.engine.agent_state import AgentState
+from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 
@@ -11,5 +12,7 @@ class FeaturesKnown(Protocol):
     def states(self) -> list[type[AgentState]]: ...
 
     def options(self) -> list[Option]: ...
+
+    def conducts(self) -> tuple[type[Conduct], ...]: ...
 
     def silenced(self, nudge: Nudge) -> bool: ...

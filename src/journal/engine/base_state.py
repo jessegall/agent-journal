@@ -3,6 +3,7 @@ from functools import cache
 from inspect import getmembers, isfunction
 from typing import Callable, ClassVar, get_type_hints
 
+from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.engine.support.held import Held
 from journal.events.standing import Standing
@@ -23,16 +24,24 @@ class BaseState:
     name: ClassVar[str]
     title: ClassVar[str] = ""
     allows: ClassVar[frozenset[Permission]] = frozenset()
+    conducts: ClassVar[tuple[type[Conduct], ...]] = ()
 
     def on(self, event: Event, settings: Settings) -> Transition:
         answers = [listener(self, event, settings) for listener in self.listeners_for(type(event))]
         return Transition.merged(self, answers)
 
     @classmethod
+    def fold(cls, conducts: tuple[type[Conduct], ...]) -> None:
+        BaseState.conducts = conducts
+        BaseState.listeners.__func__.cache_clear()
+
+    @classmethod
     @cache
     def listeners(cls) -> tuple[tuple[type, Callable], ...]:
-        found = [(get_type_hints(method)["event"], method) for name, method in getmembers(cls, isfunction) if cls.is_listener(name, method)]
-        return tuple(sorted(found, key=lambda pair: (pair[1].__name__ not in cls.__dict__, -len(pair[0].__mro__))))
+        own = [(get_type_hints(method)["event"], method, method.__name__ not in cls.__dict__) for name, method in getmembers(cls, isfunction) if cls.is_listener(name, method)]
+        folded = [(get_type_hints(method)["event"], method, 2) for conduct in BaseState.conducts for name, method in getmembers(conduct, isfunction) if cls.is_listener(name, method)]
+        ranked = sorted([*own, *folded], key=lambda entry: (int(entry[2]), -len(entry[0].__mro__)))
+        return tuple((heard, method) for heard, method, rank in ranked)
 
     @classmethod
     def is_listener(cls, name: str, method: Callable) -> bool:
