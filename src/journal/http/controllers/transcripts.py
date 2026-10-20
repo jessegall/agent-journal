@@ -36,7 +36,9 @@ class TranscriptController:
     def of_worker(self, request: Request) -> Response:
         worker = self.workers.find(request.number("id"))
         provider = self.providers.named(worker.provider)
-        return self.answer(request, provider, provider.transcript(self.runner.place(worker), worker.resume) if worker.resume else None)
+        place = self.runner.place(worker)
+        session = worker.resume or (provider.latest_session(place, worker.began) if worker.began else "")
+        return self.answer(request, provider, provider.transcript(place, session) if session else None)
 
     def answer(self, request: Request, provider: Provider, path: Path | None) -> Response:
         page = TranscriptPage(self.turns.of(provider, path) if path else [])

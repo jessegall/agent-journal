@@ -7549,3 +7549,21 @@ def test_a_tasks_brief_is_written_anew(app):
     console.run(["task", "create", "the footer", "--brief", "done when it stays at the bottom"], AGENT)
     assert console.run(["task", "brief", "1", "done when it stays at the bottom on every page"], AGENT).out == "task 1 brief written anew\n"
     assert app.container.get(Tasks).find(1).brief == "done when it stays at the bottom on every page"
+
+
+def test_a_running_codex_workers_transcript_is_found_by_its_rollouts_folder_before_its_session_is_known(app, tmp_path, monkeypatch):
+    import json as js
+    from pathlib import Path
+    from journal.providers.codex import Codex
+    home = tmp_path / "home"
+    day = home / ".codex" / "sessions" / "2026" / "10" / "20"
+    day.mkdir(parents=True)
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+    elsewhere = day / "rollout-2026-10-20T21-00-00-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.jsonl"
+    elsewhere.write_text(js.dumps({"type": "session_meta", "payload": {"cwd": "/somewhere/else"}}) + "\n")
+    ours = day / "rollout-2026-10-20T21-58-57-01a15ae5-449b-7131-9ee4-edd40f4e3dc3.jsonl"
+    ours.write_text(js.dumps({"type": "session_meta", "payload": {"cwd": str(app.config.root.resolve())}}) + "\n")
+    codex = Codex()
+    assert codex.latest_session(app.config.root, 0.0) == "01a15ae5-449b-7131-9ee4-edd40f4e3dc3", "the newest rollout whose first line names the project's folder is the worker's conversation"
+    assert codex.transcript(app.config.root, "01a15ae5-449b-7131-9ee4-edd40f4e3dc3") == ours
+    assert codex.latest_session(app.config.root, ours.stat().st_mtime + 60) == "", "nothing newer than the time asked for"

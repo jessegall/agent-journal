@@ -1,3 +1,4 @@
+import json
 import re
 from pathlib import Path
 from typing import Iterator
@@ -25,6 +26,22 @@ class Codex(Provider):
 
     def transcript(self, project: Path, session: str) -> Path | None:
         return next((Path.home() / ".codex" / "sessions").glob(f"**/rollout-*-{session}.jsonl"), None)
+
+    def latest_session(self, project: Path, since: float) -> str:
+        rollouts = [path for path in (Path.home() / ".codex" / "sessions").glob("**/rollout-*.jsonl") if path.stat().st_mtime >= since]
+        for path in sorted(rollouts, key=lambda path: path.stat().st_mtime, reverse=True):
+            if self.rollout_folder(path) == str(project.resolve()):
+                return path.stem[-36:]
+        return ""
+
+    @staticmethod
+    def rollout_folder(path: Path) -> str:
+        with path.open() as lines:
+            first = lines.readline()
+        try:
+            return str(json.loads(first).get("payload", {}).get("cwd", ""))
+        except ValueError:
+            return ""
 
     def turns_in(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
         return [turn for number, row in rows if (turn := self.turn(number, CodexRow.from_json(row)))]
