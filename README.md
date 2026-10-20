@@ -18,7 +18,7 @@ session picks up where the last one left off.
   compaction, so it does not relearn your project each session.
 - **Workflows you can see and edit.** How the journal treats the agent is drawn as flowcharts: when it reminds,
   what it says, what it holds back. You change them in the viewer.
-- **Workers and subagents.** The agent hands jobs to helpers, each named, each on the model that fits the job, and
+- **Workers and subagents.** The agent hands jobs to workers and subagents, each named, each on the model that fits the job, and
   each coding worker in its own git worktree.
 - **Every command kept.** Long commands move to the background, and each output is numbered, so the agent reads
   the part it needs instead of running the command again.
