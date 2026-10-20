@@ -5,6 +5,19 @@ import {pollKey, usePoll} from "./poll.js";
 import {PAGE} from "../sync/rows.js";
 
 const EVERY = 3000;
+const KEPT = 1000;
+
+// The newest turns a live transcript holds, so a tab left open on a long session does not grow without end; paging earlier
+// brings older ones back.
+export function newestTurns(turns, kept = KEPT) {
+    return turns.length > kept ? turns.slice(turns.length - kept) : turns;
+}
+
+// A map keyed by turn line without the lines no longer held.
+export function heldOnly(byLine, turns) {
+    const held = new Set(turns.map((turn) => String(turn.line)));
+    return Object.fromEntries(Object.entries(byLine).filter(([line]) => held.has(line)));
+}
 
 export function useTranscript(agent, session, scroller, client = api, active = () => true) {
     const following = useFollowing(scroller);
@@ -69,7 +82,10 @@ export function useTranscript(agent, session, scroller, client = api, active = (
             first.value = got.first;
             if (!got.turns.length) return;
             foldTools(got.turns);
-            turns.value = [...turns.value, ...got.turns];
+            turns.value = newestTurns([...turns.value, ...got.turns]);
+            bodies.value = heldOnly(bodies.value, turns.value);
+            unread.value = heldOnly(unread.value, turns.value);
+            folded.value = new Set(turns.value.filter((turn) => folded.value.has(turn.line)).map((turn) => turn.line));
             requestAnimationFrame(() => following.arrived(got.turns.length));
         } catch (reason) {
             error.value = reason.message;

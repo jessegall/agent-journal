@@ -53,6 +53,7 @@ function forget() {
     watchedTables.forEach(trimmed);
     watchedTables.clear();
     asked.clear();
+    absent.clear();
     seen.value += 1;
 }
 
