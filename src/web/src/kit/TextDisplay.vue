@@ -82,18 +82,23 @@ const html = computed(() => {
 }
 
 .md :deep(table) {
+    display: block;
     width: 100%;
+    max-width: 100%;
     margin: 0 0 12px;
+    overflow-x: auto;
     border-collapse: collapse;
     font-size: 12.5px;
 }
 
 .md :deep(th),
 .md :deep(td) {
+    min-width: 8rem;
     padding: 5px 8px;
     border: 1px solid var(--border);
     text-align: left;
     vertical-align: top;
+    overflow-wrap: normal;
 }
 
 .md :deep(th) {
