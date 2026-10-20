@@ -17,6 +17,10 @@ class Phone(Scoped):
     last_seen_at: datetime | None = None
     ended_at: datetime | None = None
     """When it was disconnected, from the desk or from the phone."""
+    push: str = ""
+    """The push service's address the phone subscribed with; empty while it has not."""
+    pushed: str = ""
+    """What the phone was last pushed about, by reference, a space between each, so the next push names only what is new."""
 
     def is_live(self, now: datetime) -> bool:
         return self.ended_at is None and self.expires_at is not None and self.expires_at > now
@@ -27,6 +31,19 @@ class Phone(Scoped):
 
     def seen(self, at: datetime) -> "Phone":
         return self.with_(last_seen_at=at)
+
+    def pushed_refs(self) -> list[str]:
+        return self.pushed.split()
+
+    def is_owed_a_push(self, owed: list[str]) -> bool:
+        return bool(set(owed) - set(self.pushed_refs()))
+
+    def subscribed(self, endpoint: str, owed: list[str]) -> "Phone":
+        """Subscribed to pushes, what already waits counted as pushed, so it is told only of what comes after."""
+        return self.with_(push=endpoint, pushed=" ".join(owed))
+
+    def told(self, owed: list[str]) -> "Phone":
+        return self.with_(pushed=" ".join(owed))
 
     def ended(self, at: datetime) -> "Phone":
         return self.with_(ended_at=at)

@@ -6642,3 +6642,32 @@ def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):
     with pytest.raises(Refused):
         pairing.pair(guessed.short, "iPhone", now)
     assert viewer(app, "phones/connect", {"days": 30})["short"], "the viewer asks for a code as the user"
+
+
+def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, monkeypatch, tmp_path):
+    import stat
+    from datetime import datetime, timedelta, timezone
+    from journal.features.phone.listeners.tell_the_phone import TellThePhone
+    from journal.features.phone.support.p256 import P256
+    from journal.features.phone.support.push_keys import PushKeys
+    from journal.features.phone.support.web_push import WebPush
+    from journal.models.phone import Phone
+    from journal.repositories.phones import Phones
+    keys = PushKeys.kept(tmp_path / "push.json")
+    assert PushKeys.kept(tmp_path / "push.json") == keys and stat.S_IMODE((tmp_path / "push.json").stat().st_mode) == 0o600, "made once, kept where only its owner reads"
+    signed = keys.signed(b"a journal")
+    assert P256.is_on_curve(keys.public) and P256.is_signed(keys.public, b"a journal", signed) and not P256.is_signed(keys.public, b"another", signed), "a token's signature checks out, and only for what it signed"
+    assert WebPush.is_allowed("https://web.push.apple.com/abc") and WebPush.is_allowed("https://wns2.notify.windows.com/x")
+    assert not WebPush.is_allowed("http://web.push.apple.com/abc") and not WebPush.is_allowed("https://evil.example/push"), "a push goes only to the phone makers' services, over https"
+    sent = []
+    monkeypatch.setattr(WebPush, "send", lambda self, endpoint: sent.append(endpoint) or True)
+    phones, now = app.container.get(Phones), datetime.now(timezone.utc)
+    phones.save(Phone(name="iPhone", key="k", expires_at=now + timedelta(days=1), push="https://web.push.apple.com/abc"), Actor.user(1))
+    hook(app, "SessionStart")
+    tell = app.container.get(TellThePhone)
+    tell.handle(None)
+    assert sent == [], "nothing waits, nothing is pushed"
+    app.console().run(["question", "ask", "Which name?"], AGENT)
+    tell.handle(None)
+    tell.handle(None)
+    assert sent == ["https://web.push.apple.com/abc"], "a new question is pushed once, not on every tick"

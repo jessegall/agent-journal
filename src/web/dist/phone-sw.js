@@ -69,7 +69,7 @@ self.addEventListener("fetch", (event) => {
 
 async function told() {
     try {
-        const answer = await fetch("./feed", {credentials: "same-origin", cache: "no-store"});
+        const answer = await fetch("./waiting", {credentials: "same-origin", cache: "no-store"});
         const waiting = (await answer.json()).waiting || [];
         return waiting;
     } catch (error) {

@@ -7,6 +7,9 @@ from urllib.parse import parse_qs, urlsplit
 from journal.config import Config
 from journal.features.phone.support.pairing import Pairing
 from journal.features.phone.support.phone_allow_list import PhoneAllowList
+from journal.features.phone.support.phone_waits import PhoneWaits
+from journal.features.phone.support.push_keys import PushKeys
+from journal.features.phone.support.web_push import WebPush
 from journal.features.sharing.support.tunnel import Tunnel
 from journal.http.controllers.journal import COLOR
 from journal.http.phone.pair_request import PairRequest
@@ -37,9 +40,9 @@ HEADER = "X-Phone"
 class PhonePages:
     """What the tunnel's listener answers under /p/, as version 3 did: the phone page, its files, its service worker, its manifest and its icons, so the page installs on a phone as an app; the pairing, which sets the phone's cookie; and the phone's own standing, read by that cookie alone."""
 
-    def __init__(self, config: Config, pairing: Pairing, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList) -> None:
+    def __init__(self, config: Config, pairing: Pairing, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, push: WebPush, waits: PhoneWaits) -> None:
         self.config, self.pairing, self.phones, self.tunnel = config, pairing, phones, tunnel
-        self.router, self.environments, self.allow = router, environments, allow
+        self.router, self.environments, self.allow, self.push, self.waits = router, environments, allow, push, waits
 
     def get(self, request: PhoneRequest) -> ShareAnswer:
         rest = request.rest
@@ -47,6 +50,10 @@ class PhonePages:
             return self.page(request.path.split("?", 1)[0])
         if rest == ["state"]:
             return self.state(request)
+        if rest == ["push-key"]:
+            return self.json(200, {"key": PushKeys.unpadded(self.push.keys().public)})
+        if rest == ["waiting"]:
+            return self.waiting(request)
         if rest[0] == "api":
             return self.through(request)
         if rest[0] == "assets" and len(rest) == 2:
@@ -96,6 +103,8 @@ class PhonePages:
             return phone
         if request.rest[:1] == ["api"]:
             return self.forward(request, phone, given)
+        if request.rest == ["push"]:
+            return self.subscribe(phone, str(given.get("endpoint", "")))
         if request.rest == ["disconnect"]:
             self.pairing.disconnect(phone, Actor.phone(phone.id), datetime.now(timezone.utc))
             return self.json(200, {"disconnected": phone.id}, {"Set-Cookie": f"{COOKIE}=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Strict"})
@@ -149,6 +158,17 @@ class PhonePages:
         if isinstance(answer, FileResponse):
             return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS})
         return ShareAnswer(answer.status, answer.encoded(), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})
+
+    def waiting(self, request: PhoneRequest) -> ShareAnswer:
+        """What waits for the user, by reference, for the service worker to count after a push; what each is stays inside the app."""
+        phone = self.phone(request)
+        return self.json(200, {"waiting": [{"ref": ref} for ref in self.waits.refs(phone)]}) if isinstance(phone, Phone) else phone
+
+    def subscribe(self, phone: Phone, endpoint: str) -> ShareAnswer:
+        if not self.push.is_allowed(endpoint):
+            return self.json(422, {"error": "a phone's notifications come only through Apple's, Google's, Mozilla's or Microsoft's push service"})
+        self.phones.save(phone.subscribed(endpoint, self.waits.refs(phone)), Actor.phone(phone.id))
+        return self.json(201, {"subscribed": True})
 
     def state(self, request: PhoneRequest) -> ShareAnswer:
         phone = self.phone(request)

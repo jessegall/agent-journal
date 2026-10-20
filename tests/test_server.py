@@ -873,6 +873,10 @@ def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(shari
     assert phone_call(share_server, "POST", "/p/api/journal/settings", {"messages": {"hold_after": 9}}, origin=origin, cookie=kept)[0] == 403, "nor a setting changed"
     assert phone_call(share_server, "GET", "/p/api/journal/messages?env=elsewhere", cookie=kept)[0] == 403, "nor another environment reached"
     assert phone_call(share_server, "GET", "/p/api/journal/messages")[0] == 401, "nothing at all without the phone's key"
+    assert len(phone_call(share_server, "GET", "/p/push-key", cookie=kept)[1]["key"]) == 87, "the journal's public push key, for the phone to subscribe with"
+    assert phone_call(share_server, "POST", "/p/push", {"endpoint": "https://evil.example/push"}, origin=origin, cookie=kept)[0] == 422, "pushes go only through the phone makers' services"
+    assert phone_call(share_server, "POST", "/p/push", {"endpoint": "https://web.push.apple.com/abc"}, origin=origin, cookie=kept)[0] == 201
+    assert phone_call(share_server, "GET", "/p/waiting", cookie=kept)[1] == {"waiting": []}, "the service worker counts what waits, never what it is"
     assert phone_call(share_server, "POST", "/p/disconnect", {}, origin=origin, cookie=kept)[0] == 200, "the phone disconnects itself"
     assert phone_call(share_server, "GET", "/p/state", cookie=kept)[0] == 410, "a disconnected phone is told so"
 
