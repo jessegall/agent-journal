@@ -10,9 +10,11 @@ from journal.engine.nudger import Nudger
 from journal.features.faults.feature import Faults
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
+from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink
+from journal.support.scope import Scope
 
 SETTLING_SECONDS = 60.0
 """After the journal starts, which an update is too, nothing is judged: a cold start is always slow."""
@@ -25,8 +27,8 @@ TESTS_RUNNING = "tests.running"
 class SlowRequests:
     """Measures each request against its budget where the journal develops itself, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time."""
 
-    def __init__(self, config: Config, settings: Settings, cards: Cards, messages: Messages, agents: Agents, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred) -> None:
-        self.config, self.settings, self.cards, self.messages, self.agents, self.nudger, self.supervisor, self.deferred = config, settings, cards, messages, agents, nudger, supervisor, deferred
+    def __init__(self, config: Config, settings: Settings, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred) -> None:
+        self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudger, self.supervisor, self.deferred = config, settings, cards, messages, agents, environments, scope, nudger, supervisor, deferred
         self.started = time.monotonic()
 
     def measured(self, method: str, path: str, ms: float) -> None:
@@ -69,12 +71,18 @@ class SlowRequests:
         return True
 
     def reported(self, method: str, route: str, ms: int, budget: int) -> None:
+        """Marked in the live agent's environment, else the first: a request need not name one, and the report is the journal's own."""
+        agent = self.agents.live_anywhere()
+        with self.scope.of(agent.environment_id if agent else self.environments.all()[0].id):
+            self.marked(method, route, ms, budget)
+
+    def marked(self, method: str, route: str, ms: int, budget: int) -> None:
         key = f"slow:{method} {route}"
         earlier = self.messages.keyed(key, Actor.system())
         count = earlier[0].data.get("count", 0) + 1 if earlier else 1
         worst = max(ms, earlier[0].data.get("worst", 0)) if earlier else ms
         data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "detail": f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms", "row": "", "count": count, "worst": worst}
-        self.cards.keyed(self.messages.scope.id, key, f"Slow request: {method} {route}", data, Actor.system())
+        self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system())
         agent = self.agents.live()
         if earlier or agent is None:
             return

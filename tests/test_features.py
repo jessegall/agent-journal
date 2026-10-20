@@ -863,6 +863,9 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monk
         marks = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
     assert [(m.text, m.data["count"], m.data["worst"]) for m in marks] == [("Slow request: GET /journal/plans", 2, 95), ("Slow request: GET /journal/messages/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted"
     assert sum("over its budget of 50 ms" in t for t in typed) == 2, "the agent is told the first time of each"
+    slow.measured("GET", "/journal/environments", 90)
+    app.runtime().deferred.drain()
+    assert any(m.text == "Slow request: GET /journal/environments" for m in app.container.get(Messages).all()), "a request that named no environment is marked in the live agent's, never failing on the missing one"
     runtime = app.config.home / "runtime"
     runtime.mkdir(parents=True, exist_ok=True)
     (runtime / "tests.running.999999").touch()

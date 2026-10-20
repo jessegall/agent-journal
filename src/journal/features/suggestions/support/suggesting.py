@@ -73,8 +73,8 @@ class Suggesting:
 
     def where_shown(self) -> Environment:
         """The environment of the agent most lately at work, else the first: a suggestion is the project's, shown once."""
-        live = sorted((a for a in self.agents.everywhere() if a.state != "ended"), key=lambda a: a.updated_at)
-        return self.environments.find(live[-1].environment_id) if live else self.environments.all()[0]
+        live = self.agents.live_anywhere()
+        return self.environments.find(live.environment_id) if live else self.environments.all()[0]
 
     @staticmethod
     def card_key(suggestion: Suggestion) -> str:
