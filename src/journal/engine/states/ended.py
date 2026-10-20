@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from journal.engine.agent_state import AgentState
 from journal.engine.resume import Resume
-from journal.support.transition import Transition
+from journal.engine.support.transition import Transition
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting

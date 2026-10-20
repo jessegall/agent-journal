@@ -17,6 +17,22 @@ from journal.features.tasks.states.working import Working
 from journal.models.setting import Setting
 from journal.support.actor import Actor
 from journal.repositories.settings import Settings
+from dataclasses import dataclass
+
+from journal.engine.base_state import BaseState
+from journal.engine.nudge import Nudge
+from journal.engine.states.compacting import Compacting as CompactingState
+from journal.engine.states.ended import Ended
+from journal.events.agent.agent_event import AgentEvent
+from journal.events.agent.compacting import Compacting
+from journal.events.agent.session_ended import SessionEnded
+from journal.events.agent.tool_starting import ToolStarting
+from journal.events.event import Event
+from journal.support.option import Option
+from journal.engine.support.settings import Settings as SettingsValue
+from journal.engine.support.stack import Stack
+from journal.support.states_catalogue import StatesCatalogue
+from journal.engine.support.transition import Transition
 
 AGENT = Where("main", "s1")
 
@@ -253,3 +269,76 @@ def test_a_typed_line_goes_out_on_one_line(app, monkeypatch):
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append(fields))
     app.container.get(SupervisorLink).type(1, "the command finished: cat <<EOF\nx\nEOF")
     assert sent[-1]["line"] == "[journal] the command finished: cat <<EOF x EOF"
+
+
+LINE = Nudge("tests", "line", "a line")
+OTHER = Nudge("tests", "other", "another line")
+WHY = Nudge("tests", "why", "held here")
+
+
+class Known:
+    def states(self):
+        return [Idle, Working]
+
+    def silenced(self, nudge):
+        return False
+
+
+class Rows:
+    def option(self, option):
+        return {"tasks.log_after": 7}.get(option.key, option.default)
+
+
+@dataclass(frozen=True)
+class Listening(BaseState):
+    name = "listening"
+
+    def on_tool_starting(self, event: ToolStarting, settings: SettingsValue) -> Transition:
+        return self.unchanged(LINE)
+
+    def on_anything(self, event: AgentEvent, settings: SettingsValue) -> Transition:
+        return self.unchanged(OTHER)
+
+    def on_push(self, settings):
+        return ()
+
+    def named(self) -> str:
+        return "not a listener"
+
+
+def test_the_stack_keeps_its_floor_changes_only_its_top_and_comes_back_from_its_data():
+    stack = Stack((Idle(), Working(task_id=3)))
+    assert stack.top() == Working(task_id=3)
+    assert stack.pushed(Ended()).to_data()[-1] == {"state": "ended", "data": {}}
+    assert stack.popped().to_data() == [{"state": "idle", "data": {}}]
+    assert stack.popped().popped() == stack.popped()
+    assert stack.with_top(Working(task_id=4)).top().task_id == 4
+    assert Stack.from_data(stack.to_data(), StatesCatalogue(Known())) == stack
+
+
+def test_merged_answers_say_every_nudge_in_order_hold_on_the_first_and_move_once():
+    idle = Idle()
+    answers = [idle.unchanged(LINE), idle.push(Working(task_id=1), OTHER), idle.hold(WHY), idle.pop(), idle.hold(OTHER)]
+    merged = Transition.merged(idle, answers)
+    assert merged.nudges == (LINE, OTHER)
+    assert merged.pushed == Working(task_id=1) and not merged.popped
+    assert merged.held is WHY
+    assert merged.dropped == ("pop",)
+    assert merged.to is idle
+    assert Transition.merged(idle, [idle.changed(Working(task_id=2))]).to == Working(task_id=2)
+    assert Transition.merged(idle, []).to is idle
+
+
+def test_every_listener_whose_event_matches_runs_the_most_specific_first_and_the_base_hears_compaction_and_the_end():
+    settings, state = SettingsValue({}), Listening()
+    assert state.on(ToolStarting(tool="Write", input={}), settings).nudges == (LINE, OTHER)
+    assert state.on(SessionEnded(), settings).nudges == (OTHER,)
+    assert state.on(Event(), settings) == state.unchanged()
+    assert state.on(Compacting(), settings).pushed == CompactingState()
+    assert state.on(SessionEnded(), settings).pushed == Ended()
+    assert [method.__name__ for _, method in Listening.listeners()] == ["on_tool_starting", "on_anything", "on_compaction", "on_session_ended"]
+
+
+def test_settings_is_a_frozen_value_of_the_options_read_by_option():
+    option = Option("tasks.log_after", "Log after", "", 50)
+    assert SettingsValue.taken(Rows(), [option]).of(option) == 7

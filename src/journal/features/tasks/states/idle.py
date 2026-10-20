@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from journal.engine.agent_state import AgentState
 from journal.support.permission import Permission
-from journal.support.transition import Transition
+from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
 
 

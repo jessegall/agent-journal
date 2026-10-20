@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from journal.engine.states.paused import Paused
-from journal.support.transition import Transition
+from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
 
 
