@@ -1175,3 +1175,24 @@ def test_a_plans_timeline_has_each_start_log_and_done_of_its_tasks_oldest_first(
     call(server, "POST", "/journal/plans/1/tasks", {"title": "pair it"})
     status, moments = call(server, "GET", "/journal/plans/1/timeline")
     assert status == 200 and moments == [], "nothing has happened on its tasks yet"
+
+
+def test_a_second_journal_of_the_same_project_stands_by_while_the_first_answers(tmp_path: Path):
+    import socket
+    from journal.support.standby import Standby
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        first = probe.getsockname()[1]
+    one = App(Config(tmp_path / "one", port=first, span=3))
+    standby = Standby(Config(tmp_path / "one", port=first, span=3))
+    assert standby.another() == "", "no port file, no other journal"
+    one.server().start()
+    try:
+        assert standby.another() == f"http://127.0.0.1:{first}", "the first journal answers on the port its file names, so a second stands by"
+        assert Standby(Config(tmp_path / "two", port=first, span=3)).another() == "", "another project's journal on that port is no reason to stand by"
+        App(Config(tmp_path / "one", port=first, span=3)).server()
+        with socket.socket() as probe:
+            assert probe.connect_ex(("127.0.0.1", first + 1)) != 0, "a journal built to stand by holds no port until it starts"
+    finally:
+        one.server().stop()
+    assert standby.another() == "", "the first gone, the port is free to take"
