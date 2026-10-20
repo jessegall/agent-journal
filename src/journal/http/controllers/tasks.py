@@ -34,7 +34,6 @@ class TaskController(Controller[Task]):
         return Counts(all=self.repository.counted_in(), open=self.repository.unfinished_count(), unread=self.repository.unseen_by_user())
 
     def shown_page(self, rows: list[Task]) -> list[dict]:
-        """Each task with the plan it is in and the worker that holds it."""
         plans, holders = self.repository.linked(IN_PLAN), self.workers.holding({t.id for t in rows})
         return [{**ModelFields.of(t), "plan_id": plans[t.id][0].id if t.id in plans else None, "worker_id": holders[t.id].id if t.id in holders else None} for t in rows]
 
@@ -58,7 +57,7 @@ class TaskController(Controller[Task]):
 
     def log(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
-        return Response.json(self.task_logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=request.body.get("line", "")), request.actor), 201)
+        return Response.json(self.task_logs.save(TaskLog.of(task, request.body.get("line", ""), self.now().timestamp()), request.actor), 201)
 
     @staticmethod
     def now() -> datetime:

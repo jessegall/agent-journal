@@ -9,6 +9,8 @@ from journal.features.listeners.record_changes import RecordChanges
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
 from journal.events.models.model_event import ModelEvent
 from journal.events.agent.agent_event import AgentEvent
+from journal.events.rows.row_event import RowEvent
+from journal.engine.row_events_to_the_top import RowEventsToTheTop
 from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
 from journal.events.bus import Bus
@@ -35,8 +37,8 @@ class Runtime:
         self.watcher, self.share_server, self.standby = watcher, share_server, standby
 
     def boot(self) -> None:
-        """Resolves everything once: the machine and every feature's listeners go on the bus, so the first request pays nothing."""
         self.bus.listen(AgentEvent, self.machine)
+        self.bus.listen(RowEvent, self.container.get(RowEventsToTheTop))
         self.bus.listen(Created, Creations())
         self.bus.listen(ModelEvent, self.container.get(RecordChanges))
         self.bus.listen(Deleted, self.container.get(UnlinkDeleted))
@@ -50,7 +52,6 @@ class Runtime:
             self.container.get(Environments).named("main")
 
     def start(self) -> None:
-        """Everything up, with the starting mark kept until it is, so the slow-request reports measure nothing meanwhile."""
         from journal.support.slow_requests import STARTING
         starting = self.container.get(Config).home / "runtime" / STARTING
         starting.parent.mkdir(parents=True, exist_ok=True)
@@ -74,7 +75,6 @@ class Runtime:
         self.container.get(ServiceStart).run()
 
     def run(self) -> None:
-        """Blocks until stop(), or until the process that started it is gone, so a journal never outlives its supervisor. While another journal of this project answers, it stands by and takes over the moment that one is gone."""
         parent = os.getppid()
         other = self.standby.another()
         if other:

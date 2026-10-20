@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.link import Link
@@ -23,11 +25,10 @@ class WorkerReports:
     def file(self, worker: Worker, text: str, by: Actor, session: str = "") -> Message:
         message = self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=f"{self.lead(worker)}{text}", data={"kind": Message.REPORT, "worker": worker.name, "worker_id": worker.id}), by)
         self.links.save(Link(source=Ref.to(worker), target=Ref.to(message), kind=REPORTED), by)
-        self.workers.save(worker.with_(session=session).reported(), by)
+        self.workers.save(worker.with_(session=session).reported(datetime.now(timezone.utc).timestamp()), by)
         return message
 
     def last(self, worker: Worker) -> str:
-        """What the worker reported last; none while it works on a next job."""
         reports = self.links.targets(worker, REPORTED)
         if worker.state == WorkerState.DISPATCHED or not reports:
             return ""

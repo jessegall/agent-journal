@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from journal.support.cards import Cards
 from journal.support.actor import Actor
 from journal.models.question import Question
@@ -15,7 +17,7 @@ class Answering:
     def answer(self, question: Question, text: str, by: Actor) -> Question:
         if question.is_answered():
             raise Refused(f"question {question.id} is answered already")
-        answered = self.questions.save(question.answered(text), by)
+        answered = self.questions.save(question.answered(text, datetime.now(timezone.utc).timestamp()), by)
         label = f"You answered question {answered.id}" if by.is_the_user() else f"Question {answered.id} answered by {by.named}"
         self.cards.show(answered.environment_id, "", label, "questions", "good", "", f"questions:{answered.id}", by=by, shows=ChatMark.QUESTIONS)
         return answered

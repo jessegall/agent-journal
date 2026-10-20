@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar
 
+from journal.events.rows.row_settled import RowSettled
+from journal.events.rows.task_closed import TaskClosed
+from journal.events.rows.task_started import TaskStarted
 from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
 from journal.support.refused import Refused
@@ -19,31 +22,29 @@ class Task(Scoped):
     outcome: str = ""
     parked_why: str = ""
     blocked_why: str = ""
-    """What outside the agent's hands the task waits on; blocked is neither offered nor nudged, only listed."""
 
     def is_closed(self) -> bool:
         return self.state.is_closed()
 
     def has_just_closed(self, was: "Task | None") -> bool:
-        """Closed now, and open before this change."""
         return self.is_closed() and (was is None or not was.is_closed())
 
     def is_settled(self) -> bool:
-        """Nothing waiting on it waits any longer."""
         return self.is_closed()
 
     def started(self, at: datetime) -> "Task":
-        return self.with_(state=TaskState.STARTED, started_at=at, parked_why="", blocked_why="")
+        return self.with_(state=TaskState.STARTED, started_at=at, parked_why="", blocked_why="").with_event(TaskStarted(environment_id=self.environment_id, at=at.timestamp(), task_id=self.id))
 
-    def parked(self, why: str) -> "Task":
-        """Put aside after it was started; a task never started is not parked, it is still open."""
+    def parked(self, why: str, at: datetime) -> "Task":
         if self.state != TaskState.STARTED:
             raise Refused(f"task {self.id} is {self.state}: only a started task is parked")
-        return self.with_(state=TaskState.PARKED, parked_why=why)
+        return self.closed(self.with_(state=TaskState.PARKED, parked_why=why), at)
 
     def cancelled(self, at: datetime) -> "Task":
-        """Given up: finished, with no outcome, so nothing counts it as open."""
-        return self.with_(state=TaskState.CANCELLED, finished_at=self.finished_at or at)
+        return self.closed(self.with_(state=TaskState.CANCELLED, finished_at=self.finished_at or at), at)
+
+    def closed(self, task: "Task", at: datetime) -> "Task":
+        return task.with_event(TaskClosed(environment_id=self.environment_id, at=at.timestamp(), task_id=self.id)).with_event(RowSettled(environment_id=self.environment_id, at=at.timestamp(), ref=f"tasks:{self.id}"))
 
     def blocked(self, why: str) -> "Task":
         return self.with_(state=TaskState.BLOCKED, blocked_why=why)
@@ -52,5 +53,5 @@ class Task(Scoped):
         return self.with_(state=TaskState.OPEN, blocked_why="")
 
     def finished(self, at: datetime, outcome: str) -> "Task":
-        return self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome)
+        return self.closed(self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome), at)
 

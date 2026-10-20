@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from argparse import Namespace
 
 from journal.console.command import Command
@@ -41,7 +42,7 @@ class QuestionCommand(Command):
         asked = Question(text=args.text, options=options)
         if asked.unclear_options():
             raise Refused(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(asked.unclear_options())}")
-        question = self.questions.save(asked, where.actor)
+        question = self.questions.save(self.questions.save(asked, where.actor).asked(datetime.now(timezone.utc).timestamp()), where.actor)
         if where.session:
             agent = self.machine.agent(where.session, environment)
             self.machine.move(where.session, environment, Waiting.leaving(self.machine.states.named(agent.state, agent.data), question_id=question.id))
@@ -56,7 +57,6 @@ class QuestionCommand(Command):
         return 0
 
     def show(self, args: Namespace, where: Where) -> int:
-        """The question reaches the agent here, whole: its words, its choices, the answer, and every message linked to it in full."""
         question = self.questions.find(args.n)
         choices = f"  [{' / '.join(question.options)}]" if question.options else ""
         print(f"question {question.id}: {question.text}{choices}")

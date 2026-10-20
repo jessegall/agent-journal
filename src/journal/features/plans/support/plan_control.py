@@ -53,7 +53,7 @@ class PlanControl:
     def park(self, plan: Plan, session: str, by: Actor) -> Plan:
         parked = self.plans.save(plan.parked(), by)
         for task in [t for t in self.plans.tasks_of(parked) if t.state == TaskState.STARTED]:
-            self.tasks.save(task.parked(f"plan {parked.id} was parked"), by)
+            self.tasks.save(task.parked(f"plan {parked.id} was parked", datetime.now(timezone.utc)), by)
         self.let_go(session, parked)
         return parked
 

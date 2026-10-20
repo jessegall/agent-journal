@@ -26,6 +26,20 @@ from journal.models.task import Task
 from journal.events.listener import Listener
 from journal.events.bus import Bus
 from journal.events.rows.plan_started import PlanStarted
+from journal.events.rows.row_event import RowEvent
+from journal.events.rows.row_settled import RowSettled
+from journal.events.rows.task_closed import TaskClosed
+from journal.events.rows.task_logged import TaskLogged
+from journal.events.rows.task_started import TaskStarted
+from journal.events.rows.question_answered import QuestionAnswered
+from journal.events.rows.worker_back import WorkerBack
+from journal.events.models.updated import Updated
+from journal.engine.row_events_to_the_top import RowEventsToTheTop
+from journal.models.question import Question
+from journal.models.task_log import TaskLog
+from journal.models.task_state import TaskState
+from journal.models.worker import Worker
+from datetime import datetime, timezone
 from journal.repositories.entries import Entries
 from journal.http.agents.agent_activity import AgentActivity
 from journal.engine.support.trail import Trail
@@ -502,3 +516,27 @@ def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_non
         assert started.events == () and hearing.heard == [PlanStarted(environment_id=1, at=5.0, plan_id=plan.id, task_id=task.id)]
         plans.save(started.with_(title="renamed"), Actor.system())
         assert len(hearing.heard) == 1
+
+
+def test_the_models_carry_the_events_their_changes_mean():
+    now = datetime(2026, 10, 20, 23, 0, tzinfo=timezone.utc)
+    task = Task(id=7, environment_id=1, title="t", state=TaskState.STARTED)
+    assert [type(e) for e in task.finished(now, "x").events] == [TaskClosed, RowSettled] and task.finished(now, "x").events[1].ref == "tasks:7"
+    assert task.parked("later", now).events[0] == TaskClosed(environment_id=1, at=now.timestamp(), task_id=7)
+    assert Task(id=8, environment_id=1, title="u").started(now).events == (TaskStarted(environment_id=1, at=now.timestamp(), task_id=8),)
+    assert TaskLog.of(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, at=3.0, task_id=7),)
+    question = Question(id=4, environment_id=1, text="?")
+    assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowSettled] and question.asked(1.0).events[0].question_id == 4
+    assert Worker(id=9, environment_id=1, name="w").reported(5.0).events == (WorkerBack(environment_id=1, at=5.0, worker_id=9),)
+
+
+def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_reaches_no_state(app):
+    hook(app, "SessionStart")
+    hook(app, "SessionEnd")
+    hook(app, "SessionStart", session_id="s2")
+    agents, bus = app.container.get(Agents), app.container.get(Bus)
+    assert [a.session for a in agents.live_in(1)] == ["s2"]
+    assert any(isinstance(listener, RowEventsToTheTop) for listener in bus.listeners(RowEvent))
+    assert not any(isinstance(listener, (RowEventsToTheTop, Machine)) for listener in bus.listeners(Updated))
+    bus.dispatch(PlanStarted(environment_id=1, at=1.0, plan_id=1, task_id=0))
+    assert [row["state"] for row in agents.for_session("s2").stack] == ["idle"]

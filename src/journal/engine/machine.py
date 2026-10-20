@@ -13,6 +13,7 @@ from journal.engine.support.standing import Standing
 from journal.engine.states.paused import Paused
 from journal.supervisor_link import SupervisorLink
 from journal.events.event import Event
+from journal.events.rows.row_event import RowEvent
 from journal.support.scope import Scope
 from journal.support.states_catalogue import StatesCatalogue
 from journal.engine.support.transition import Transition
@@ -45,11 +46,10 @@ class Machine(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> Decision:
         return self.answer(self.agent(event.session, event.environment_id, event.provider), event)
 
-    def row_event(self, event: Event, environment_id: int) -> None:
-        with self.scope.of(environment_id):
-            for agent in self.agents.in_():
-                if not isinstance(self.states.stack_of(agent).top(), Ended):
-                    self.answer(agent, event)
+    def row_event(self, event: RowEvent) -> None:
+        with self.scope.of(event.environment_id):
+            for agent in self.agents.live_in(event.environment_id):
+                self.answer(agent, event)
 
     def answer(self, agent: Agent, event: Event) -> Decision:
         stack, settings = self.states.stack_of(agent), self.taken()

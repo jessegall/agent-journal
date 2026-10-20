@@ -13,6 +13,9 @@
                 "file": "src/journal/engine/**"
             },
             {
+                "file": "src/journal/runtime.py"
+            },
+            {
                 "file": "**/panic_command.py"
             },
             {

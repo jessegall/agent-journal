@@ -9,19 +9,19 @@ class Agents(ScopedRepository[Agent]):
     model = Agent
 
     def live(self) -> Agent | None:
-        """The latest agent here whose session has not ended."""
         alive = [a for a in self.in_() if a.state != "ended"]
         return alive[-1] if alive else None
 
     def everywhere(self) -> list[Agent]:
         return self.across_environments()
 
+    def live_in(self, environment_id: int) -> list[Agent]:
+        return [a for a in self.across_environments(environment_id=environment_id) if a.state != "ended"]
+
     def others_running(self, session: str, environment_id: int, provider: str) -> list[Agent]:
-        """The sessions of the provider in the environment, other than this one, that have not ended."""
         return [a for a in self.across_environments(environment_id=environment_id) if a.session != session and (a.provider or "claude") == (provider or "claude") and a.state != "ended"]
 
     def live_anywhere(self) -> Agent | None:
-        """The agent most lately at work in any environment whose session has not ended."""
         alive = sorted((a for a in self.everywhere() if a.state != "ended"), key=lambda a: a.updated_at)
         return alive[-1] if alive else None
 
@@ -35,5 +35,4 @@ class Agents(ScopedRepository[Agent]):
         return found[0]
 
     def others_lately(self, session: str, since: datetime) -> list[Agent]:
-        """The other sessions that worked here since: a launch that ended within a minute of starting did no work and is not one."""
         return [a for a in self.in_() if a.session != session and a.updated_at >= since and not (a.state == "ended" and a.updated_at - a.created_at < timedelta(minutes=1))]

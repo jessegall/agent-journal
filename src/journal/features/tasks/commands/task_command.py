@@ -89,7 +89,7 @@ class TaskCommand(Command):
 
     def log(self, args: Namespace, where: Where) -> int:
         task = self.tasks.find(args.n)
-        self.logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=args.line), where.actor)
+        self.logs.save(TaskLog.of(task, args.line, self._now().timestamp()), where.actor)
         current = self.in_hand.current(where)
         if current and current.task_id == task.id:
             self.machine.move(where.session, task.environment_id, current.logged(self.clock.now()))
@@ -97,7 +97,7 @@ class TaskCommand(Command):
         return 0
 
     def park(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).parked(args.why), where.actor)
+        task = self.tasks.save(self.tasks.find(args.n).parked(args.why, self._now()), where.actor)
         self.in_hand.let_go(task, where)
         print(f"task {task.id} parked")
         return 0
