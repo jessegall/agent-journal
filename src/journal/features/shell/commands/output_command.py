@@ -23,8 +23,10 @@ class OutputCommand(Command):
         self.outputs, self.readers = outputs, readers
 
     def arguments(self, verbs) -> None:
-        read = self.verb(verbs, "read", "an output: its command, how it ended, its length and its first and last lines, or the part the options name")
+        read = self.verb(verbs, "read", "the part of an output a flag names; one flag is needed, so reading it whole is a choice: --summary for how it ended with its ends, --all for every line")
         read.add_argument("n", type=int)
+        read.add_argument("--summary", action="store_true", help="its command, how it ended, its length and its first and last lines")
+        read.add_argument("--all", action="store_true", help="every line, for an output you truly need whole")
         read.add_argument("--head", type=int, help="the first so many lines")
         read.add_argument("--tail", type=int, help="the last so many lines")
         read.add_argument("--lines", help="a range of lines, such as 100-160")
@@ -52,8 +54,13 @@ class OutputCommand(Command):
         if args.head or args.tail:
             print("\n".join(lines[:args.head] if args.head else lines[-args.tail:]))
             return 0
-        print(self.summary(output, files, lines))
-        return 0
+        if args.all:
+            print("\n".join(lines))
+            return 0
+        if args.summary:
+            print(self.summary(output, files, lines))
+            return 0
+        raise Refused(f"name the part of output {output.id} to read: --tail 20, --head 20, --grep \"<words>\", --lines 40-80, --reader <name>, --summary for how it ended, or --all for every line")
 
     def summary(self, output: CommandOutput, files: OutputFiles, lines: list[str]) -> str:
         head = [f"output {output.id}: {files.outcome()}, {len(lines):,} lines", f"command: {output.headline()}"]

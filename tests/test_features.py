@@ -411,6 +411,15 @@ def test_a_prompt_answers_a_question_in_other_words(app):
     assert app.container.get(Machine).current("s1").name == "idle"
 
 
+def test_an_agent_that_works_again_is_no_longer_waiting_on_a_question(app):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["question", "ask", "Which name?"], AGENT)
+    assert app.container.get(Machine).current("s1").name == "waiting"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "notes.md"})
+    assert app.container.get(Machine).current("s1").name != "waiting", "an agent using a tool of its own is not waiting, whatever it asked"
+
+
 def test_the_same_check_three_times_is_named(app):
     hook(app, "SessionStart")
     for _ in range(2):
@@ -1572,6 +1581,33 @@ def test_a_reply_naming_several_messages_answers_each_and_a_journal_command_afte
         hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message react 4 \"👍\"; journal task list"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls"})[0] == 409
+
+
+def test_a_command_that_reads_the_projects_code_runs_as_written_and_answers_at_once(app):
+    from pathlib import Path
+    from journal.features.shell.support.part import Part
+    here = str(Path.cwd())
+    kept = [
+        "grep -n foo src/journal/app.py | tail -5", "grep -rn 'def x' src --include=*.py | tail -20", "rg -n token src/web/src/App.vue | tail -3",
+        "sed -n 1,40p src/journal/models/plan.py | tail -10", "cat tests/test_server.py | tail -2", "head -50 src/web/src/main.js | tail -5",
+        "awk 'NR<9' src/journal/config.py | tail -1", "git show HEAD:src/journal/version.py | tail -1", "git diff -- src/journal/models/phone.py | tail -30",
+        'grep -n "a | b" "src/journal/support/chain.py" | tail -4', f"cat {here}/src/journal/models/task.py | tail -3", "wc -l src/journal/*.py | tail -1",
+        "grep -c x NOTES.md | tail -1", "cat src/web/package.json | tail -3",
+    ]
+    cut = [
+        "pytest -q | tail -3", "python3 src/journal.py setup | tail -2", "cat ~/notes.py | tail -2", "cat /etc/hosts | tail -1", "grep x ../other/app.py | tail -2",
+        "cat src/journal/app.py ~/secret.py | tail -5", "cat .journal/runtime/supervisor.log | tail -5", "sed -i '' 's/a/b/' src/journal/app.py | tail -1",
+        "npm run build | tail -3",
+    ]
+    assert [line for line in kept if Part(line).cut()] == [], "a read of the project's own code keeps its tail and runs as written"
+    assert [line for line in cut if not Part(line).cut()] == [], "a test run, a build, a log, a file outside the project and a read that writes keep their tail cut"
+    console = app.console()
+    for i, line in enumerate(kept[:4]):
+        folder = app.config.root / f"code{i}"
+        folder.mkdir()
+        console.run(["shell", "split", line, "--into", str(folder)], AGENT)
+        assert (folder / "0.part").read_text() == line and not (folder / "dropped").exists(), f"run whole, nothing dropped: {line}"
+        assert console.run(["shell", "cap", "--line", line], AGENT).out.startswith("ends "), f"its output comes straight back, its ends shown past the limit: {line}"
 
 
 def test_reading_a_message_names_its_files_links_and_captions(app):
@@ -5531,7 +5567,10 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     (folder / "0.status").write_text("1\n")
     (folder / "done").write_text("1")
     assert (folder / "number").read_text() == "1", "the runner names a cut output by the number the split leaves"
-    whole = console.run(["output", "read", "1"], AGENT).out
+    bare = console.run(["output", "read", "1"], AGENT)
+    assert bare.code != 0 and "--tail 20" in bare.err and "--all" in bare.err, "an output is read in the part a flag names, never whole by default"
+    assert console.run(["output", "read", "1", "--all"], AGENT).out.count("\n") == 50, "--all reads every line, by choice"
+    whole = console.run(["output", "read", "1", "--summary"], AGENT).out
     assert "output 1: failed with code 1, 50 lines" in whole and "command: make test" in whole, whole
     assert "line 10\n... 30 lines" in whole and whole.rstrip().endswith("line 50"), "the first and last ten, the middle named"
     assert console.run(["output", "read", "1", "--lines", "20-22"], AGENT).out == "line 20\nline 21\nline 22\n"
