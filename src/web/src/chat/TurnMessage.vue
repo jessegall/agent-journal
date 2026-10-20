@@ -8,6 +8,7 @@ import TurnHeader from "./TurnHeader.vue";
 import TurnQuote from "./TurnQuote.vue";
 import TurnParent from "./TurnParent.vue";
 import TurnFromMain from "./TurnFromMain.vue";
+import TurnReport from "./TurnReport.vue";
 import TurnBriefMarker from "./TurnBriefMarker.vue";
 import TurnText from "./TurnText.vue";
 import TurnQuestion from "./TurnQuestion.vue";
@@ -17,6 +18,7 @@ import {useTurnLinks} from "./turnLinks.js";
 import {useTurnText} from "./turnText.js";
 import {useTurnShape} from "./turnShape.js";
 import {quoted} from "../format/quote.js";
+import {reportOf} from "../domain/report.js";
 import {EARLIER, answered} from "../domain/thread.js";
 import {pendingRow} from "../domain/placeholders.js";
 import {focusTurn, laidOut} from "../platform/view.js";
@@ -31,7 +33,8 @@ const FOLD_AT = 420;
 
 const {scope, env, open, openChip} = useTurnLinks();
 const rowsOf = (table) => scope.rows(table);
-const {words, html} = useTurnText(() => props.turn, env);
+const report = computed(() => reportOf(props.turn));
+const {words, html} = useTurnText(() => (report.value ? {...props.turn, text: report.value.text} : props.turn), env);
 
 const sent = computed(() => Boolean(props.turn.data?.sent_to));
 const received = computed(() => Boolean(props.turn.data?.peer || props.turn.data?.from_main));
@@ -90,7 +93,7 @@ async function drop() {
 
 <template>
     <div
-        :class="['thread-turn', {mine, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
+        :class="['thread-turn', {mine, report, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
         :data-ref="turn.key"
         @mouseleave="picking = false"
     >
@@ -100,6 +103,9 @@ async function drop() {
         <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" data-figure-bubble :data-figure-mark="turn.key" @click="resourceComment && openComment()">
             <template v-if="fromMain">
                 <TurnFromMain :at="turn.at" :data="turn.data" />
+            </template>
+            <template v-if="report">
+                <TurnReport :worker="report.worker" :at="turn.at" />
             </template>
             <template v-if="resourceComment">
                 <TurnParent :label="commentParent.label" @open="openComment" />
@@ -194,6 +200,12 @@ async function drop() {
 .thread-turn.mine .thread-bubble {
     border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.thread-turn.report .thread-bubble {
+    border-color: color-mix(in srgb, var(--tone-good, var(--green)) 40%, var(--border-2));
+    border-left-width: 3px;
+    background: color-mix(in srgb, var(--tone-good, var(--green)) 7%, #161719);
 }
 
 .thread-turn.comment-origin .thread-bubble {
