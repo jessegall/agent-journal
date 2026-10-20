@@ -61,7 +61,8 @@ by you, approved by them, and then followed: finishing one task starts the next 
   `journal plan approve <n>`; you are told, and `journal plan start <n>` begins its first task, and also goes on past a checkpoint.
 - Asked for a review of a plan: `journal plan review <n>` before the reviewers go out. In review it cannot be approved,
   and `journal plan ready <n>` waits until every subagent is back. Put what they find straight into the plan as tasks
-  under its phases, then ready it again.
+  under its phases, then ready it again with `--changed "<what the round changed, in one line>"`: each round is kept on the
+  plan, with its reviewers, the reports filed about the plan while it ran, and that line.
 - `journal plan show <n>` lists its phases and tasks; `journal plan list` every plan; `journal plan park <n>` puts it aside.
 - A blocked task never blocks its plan: go on with the tasks that can be done. When every task left is blocked, the plan
   blocks itself and opens again when one opens. When one thing stops all of the plan's work, block the plan on it:

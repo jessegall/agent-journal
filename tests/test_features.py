@@ -2191,7 +2191,7 @@ def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved
     hook(app, "SubagentStop", agent_id="r1")
     app.runtime().deferred.drain()
     assert app.container.get(Plans).find(1).reviewers == 0, "the reviewer back, the plan says so without anything else changing it"
-    assert console.run(["plan", "ready", "1"], AGENT).code == 0, "the reviewer back, its findings in, the plan is ready again"
+    assert console.run(["plan", "ready", "1", "--changed", "task 1 reworded"], AGENT).code == 0, "the reviewer back, its findings in, the plan is ready again"
     assert console.run(["plan", "approve", "1"], USER).code == 0
 
 
@@ -3049,6 +3049,28 @@ def test_approving_a_started_plan_leaves_it_started(app):
     assert "cannot become ready" in console.run(["plan", "ready", "1"], AGENT).err, "the agent cannot undo the user's approval"
     assert "cannot become reviewing" in console.run(["plan", "review", "1"], AGENT).err
     assert app.container.get(Plans).find(1).state == PlanState.STARTED
+
+
+def test_each_review_round_is_kept_on_the_plan_with_its_reviewers_report_and_changes(app):
+    from journal.http.plans.plan_outline import PlanOutline
+    from journal.repositories.plans import Plans
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1"], USER)
+    hook(app, "SessionStart")
+    console.run(["plan", "review", "1"], AGENT)
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lady Lovelace reads plan 1", "prompt": "read plan 1", "model": "sonnet"}, tool_use_id="t-1")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lady Lovelace reads plan 1", "prompt": "read plan 1"}, tool_use_id="t-1", tool_response="found two gaps")
+    console.run(["report", "create", "Plan 1, first review", "--body", "two gaps", "--about", "plans:1"], AGENT)
+    assert "--changed" in console.run(["plan", "ready", "1"], AGENT).err, "a plan back from review says what the round changed"
+    assert "ready" in console.run(["plan", "ready", "1", "--changed", "task 1 reworded"], AGENT).out
+    console.run(["plan", "review", "1"], AGENT)
+    outline = app.container.get(PlanOutline).of(app.container.get(Plans).find(1))
+    open_, first = outline["reviews"]
+    assert (first["reviewers"], first["changed"], first["report_ids"]) == (("Lady Lovelace reads plan 1",), "task 1 reworded", [1]), "the closed round names its reviewer, its change and its report"
+    assert (open_["changed"], open_["report_ids"]) == (None, []), "the round in progress is first, still open"
 
 
 def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):
