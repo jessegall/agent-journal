@@ -4109,6 +4109,16 @@ def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app):
         worker = json.loads(reply.read())["rows"][0]
     assert worker["report"] == "the parser is written", "the report is linked from the worker, not found among the recent messages"
 
+def test_a_workers_report_message_carries_the_report_kind_and_its_worker(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    console.run(["worker", "report", "1", "the parser is written"], Where("main", "w1"))
+    report = next(m for m in app.container.get(Messages).all() if m.data.get("kind") == "report")
+    assert (report.text, report.data["worker"], report.data["worker_id"]) == ("Lady Lovelace reports: the parser is written", "Lady Lovelace", 1)
+
 def test_a_block_arriving_twice_at_once_is_recorded_once(app, monkeypatch):
     import contextvars
     import threading

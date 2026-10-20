@@ -12,6 +12,8 @@ class Message(Scoped):
     text_fields: ClassVar[tuple[str, ...]] = ("text",)
 
     THOUGHT = "thought"
+    REPORT = "report"
+    """The data kind of a worker's report; its data also names the worker and its number."""
     PEER = "peer"
     """The data key naming the agent that sent the message, when another agent did."""
     SENT_TO = "sent_to"

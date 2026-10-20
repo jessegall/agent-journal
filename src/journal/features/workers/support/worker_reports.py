@@ -21,7 +21,7 @@ class WorkerReports:
         self.workers, self.messages, self.links = workers, messages, links
 
     def file(self, worker: Worker, text: str, by: Actor, session: str = "") -> Message:
-        message = self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=f"{self.lead(worker)}{text}"), by)
+        message = self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=f"{self.lead(worker)}{text}", data={"kind": Message.REPORT, "worker": worker.name, "worker_id": worker.id}), by)
         self.links.save(Link(source=Ref.to(worker), target=Ref.to(message), kind=REPORTED), by)
         self.workers.save(worker.with_(session=session).reported(), by)
         return message

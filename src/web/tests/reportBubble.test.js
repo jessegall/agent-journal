@@ -12,8 +12,8 @@ globalThis.ResizeObserver ??= class {
 };
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
-const message = (id, text) => ({table: "messages", id, created_at: at(id), author: "agent", text, files: [], data: {}, comments_on: [], idempotency: "", reply_to: null});
-const messages = [message(1, "Lady Montagu reports: the footer is fixed"), message(2, "I will look at the header next")];
+const message = (id, text, data = {}) => ({table: "messages", id, created_at: at(id), author: "agent", text, files: [], data, comments_on: [], idempotency: "", reply_to: null});
+const messages = [message(1, "Lady Montagu reports: the footer is fixed", {kind: "report", worker: "Lady Montagu", worker_id: 7}), message(2, "Montagu reports: not a report")];
 const scope = {env: "", api: {}, rows: () => messages, loaded: () => true, holding: () => {}, earlier: () => {}};
 
 async function drawn(turn) {
