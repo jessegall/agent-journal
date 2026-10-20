@@ -18,15 +18,18 @@
                             "is": "function"
                         },
                         {
-                            "descendant": {
-                                "all": [
-                                    {
-                                        "is": "literal"
-                                    },
-                                    {
-                                        "textMatches": "[A-Za-z]"
-                                    }
-                                ]
+                            "count": {
+                                "child": {
+                                    "all": [
+                                        {
+                                            "is": "literal"
+                                        },
+                                        {
+                                            "textMatches": "[A-Za-z]"
+                                        }
+                                    ]
+                                },
+                                "atLeast": 1
                             }
                         }
                     ]

@@ -57,6 +57,13 @@ from journal.support.refused import Refused
 from journal.engine.nudge import Nudge
 from journal.engine.states.compacting import Compacting as CompactingState
 from journal.engine.states.ended import Ended
+from journal.features.registry import Registry
+from journal.engine.nudger import Nudger
+from journal.engine.nudge_registry import NudgeRegistry
+from journal.engine.engine import Engine
+from journal.events.agent.session_started import SessionStarted
+from journal.events.agent.prompt_submitted import PromptSubmitted
+from journal.engine.states.wait import Wait
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.session_ended import SessionEnded
@@ -390,10 +397,10 @@ def test_every_agent_event_carries_the_time_it_was_placed_and_a_tick_carries_its
 
 def test_a_renamed_state_answers_as_before_through_its_on_listeners_and_a_plain_method_is_none():
     settings = SettingsValue({})
-    assert Ended().on(ToolStarting(tool="Write", input={}), settings).to.name == "resume"
-    assert Ended().on(SessionEnded(), settings).to == Ended()
+    assert Ended().on(ToolStarting(tool="Write", input={}), settings).popped
+    assert Ended().on(SessionEnded(), settings) == Ended().unchanged()
     names = [method.__name__ for _, method in Ended.listeners()]
-    assert set(names[:3]) == {"on_session_started", "on_prompt_submitted", "on_tool_starting"} and names[3:] == ["on_compaction", "on_session_ended"]
+    assert set(names[:4]) == {"on_session_started", "on_prompt_submitted", "on_tool_starting", "on_session_ended"} and names[4:] == ["on_compaction"]
 
 
 def test_the_stack_is_seeded_from_the_state_and_its_pause_chain_unwound_with_idle_at_the_floor(connection, bus, scope):
@@ -540,3 +547,28 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
     assert not any(isinstance(listener, (RowEventsToTheTop, Machine)) for listener in bus.listeners(Updated))
     bus.dispatch(PlanStarted(environment_id=1, at=1.0, plan_id=1, task_id=0))
     assert [row["state"] for row in agents.for_session("s2").stack] == ["idle"]
+
+
+def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_refuses_one_it_does_not_hold(app):
+    registry, own = app.container.get(NudgeRegistry), Nudge("engine", "test_line", "a line of the test")
+    assert registry.register(LINE) == "tests.line" and registry.named("tests.line") is LINE and registry.register(own) == "engine.test_line"
+    assert registry.named("engine.nothing_while_compacting") is Engine.NOTHING_WHILE_COMPACTING
+    assert all(nudge.key in registry.nudges for feature in app.container.get(Registry).features for nudge in feature.nudges)
+    listed = app.console().run(["nudge", "list"], AGENT).out
+    assert "tests.line  [tests]  a line" in listed and "tasks.carry_on  [tasks]" in listed and listed.strip().endswith("nudges")
+    hook(app, "SessionStart")
+    agent = app.container.get(Agents).for_session("s1")
+    with pytest.raises(Refused):
+        app.container.get(Nudger).say(agent, OTHER.about())
+    assert app.container.get(Nudger).say(agent, own.about()) == "a line of the test"
+
+
+def test_the_engines_own_states_wait_compacting_and_ended_answer_hand_built_events():
+    settings, own, subagents = SettingsValue({}), ToolStarting(tool="Write", input={}), ToolStarting(tool="Write", input={}, subagent="a1")
+    assert Wait().on(PromptSubmitted(prompt="go on"), settings).popped
+    assert not Wait().on(PromptSubmitted(prompt="[journal] a line"), settings).popped
+    assert Wait().on(own, settings).popped and not Wait().on(subagents, settings).popped
+    assert Wait().awaiting() == ("", "")
+    assert CompactingState().on(own, settings).held == Engine.NOTHING_WHILE_COMPACTING.about()
+    assert CompactingState().on(SessionStarted(), settings).popped
+    assert all(Ended().on(event, settings).popped for event in (SessionStarted(), PromptSubmitted(prompt="hi"), own))

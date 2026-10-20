@@ -11,6 +11,8 @@ from journal.events.models.model_event import ModelEvent
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.rows.row_event import RowEvent
 from journal.engine.row_events_to_the_top import RowEventsToTheTop
+from journal.engine.engine import Engine
+from journal.engine.nudge_registry import NudgeRegistry
 from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
 from journal.events.bus import Bus
@@ -36,7 +38,15 @@ class Runtime:
         self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
         self.watcher, self.share_server, self.standby = watcher, share_server, standby
 
+    def register_nudges(self) -> None:
+        nudges = self.container.get(NudgeRegistry)
+        nudges.register(Engine.NOTHING_WHILE_COMPACTING)
+        for feature in self.registry.features:
+            for nudge in feature.nudges:
+                nudges.register(nudge)
+
     def boot(self) -> None:
+        self.register_nudges()
         self.bus.listen(AgentEvent, self.machine)
         self.bus.listen(RowEvent, self.container.get(RowEventsToTheTop))
         self.bus.listen(Created, Creations())

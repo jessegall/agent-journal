@@ -18,21 +18,18 @@ class Registry:
         return name in self._by_name
 
     def is_on(self, feature: type[Feature]) -> bool:
-        """On in the scope's environment; a fixed feature is always on, whatever an older setting holds."""
         return feature.fixed or bool(self.settings.get(f"features.{feature.name}", feature.default))
 
     def skill_required_in(self, state: str) -> Skill | None:
         return next((skill for skill in self.skills() if state in skill.required_in), None)
 
     def options(self) -> list:
-        """Every option a feature declares, across features."""
         return [option for feature in self.features for option in feature.options]
 
     def states(self) -> list[type[AgentState]]:
         return [state for feature in self.features for state in feature.states]
 
     def services(self) -> list[Service]:
-        """The processes the features need beside the agent: one runs for the whole journal, so a feature switched off in one environment still has its service."""
         return [service for feature in self.features for service in feature.services]
 
     def skills(self) -> list[Skill]:
@@ -48,5 +45,4 @@ class Registry:
         return self._by_name[nudge.feature]
 
     def silenced(self, nudge: Nudge) -> bool:
-        """A feature's nudge is silenced with its feature; the engine's own, with no feature, never are."""
-        return bool(nudge.feature) and not self.is_on(self.owner_of(nudge))
+        return nudge.feature in self._by_name and not self.is_on(self.owner_of(nudge))

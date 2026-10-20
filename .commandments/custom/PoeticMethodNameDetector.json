@@ -5,7 +5,7 @@
         "select": "function",
         "where": [
             {
-                "nameMatches": "^(about|worded|meaning|whisper|muse|spoken|telling|utter|tell|says|said|hear|heard)$"
+                "nameMatches": "^(about|worded|meaning|whisper|muse|spoken|telling|utter|tell|says|said|hear|heard|stay)$"
             }
         ]
     },

@@ -28,3 +28,20 @@ class Nudge:
 
     # @righteous DocstringInMethodDetector
     def states(self) -> list: ...
+
+
+    # @sin PoeticParameterNameDetector
+    def say(self, said: str) -> str:
+        # @sin PoeticVariableNameDetector
+        meaning = said
+        return meaning
+
+    # @righteous PoeticParameterNameDetector
+    def render(self, line: str) -> str:
+        # @righteous PoeticVariableNameDetector
+        words = line
+        return words
+
+    # @righteous DocstringInMethodDetector
+    def arguments(self, verbs) -> None:
+        self.verb(verbs, "list", "every registered nudge")

@@ -1,0 +1,18 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "nameMatches": "^(said|worded|meaning|whisper|muse|spoken|telling|utter|stay)$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "poetic-variable-name",
+        "description": "A variable, an attribute or an argument is named by a word that does not say what it is: said, worded, meaning, whisper.",
+        "rule": "Name it for what it holds, in an ordinary word: nudge, line, values.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "parameter",
+        "where": [
+            {
+                "nameMatches": "^(said|worded|meaning|whisper|muse|spoken|telling|utter|stay)$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "poetic-parameter-name",
+        "description": "A parameter is named by a word that does not say what it is: said, worded, meaning, whisper.",
+        "rule": "Name a parameter for what it holds, in an ordinary word: nudge, line, values.",
+        "skill": "plain-code-words"
+    }
+}
