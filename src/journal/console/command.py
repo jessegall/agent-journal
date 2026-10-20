@@ -9,14 +9,12 @@ class Command:
 
     noun: ClassVar[str]
     default_verb: ClassVar[str] = ""
-    """The verb taken when the line names none, so journal stuck "<why>" needs no verb; empty for a noun whose verbs must be named."""
+    always_allowed: ClassVar[bool] = False
 
     def arguments(self, verbs) -> None:
-        """Adds a parser per verb to the noun's subparsers."""
         ...
 
     def perform(self, args: Namespace, where: Where) -> int:
-        """Runs the verb's method; a verb that is a Python keyword, such as await, has its method named with a trailing underscore."""
         return (getattr(self, f"{args.verb}_", None) or getattr(self, args.verb))(args, where)
 
     @staticmethod

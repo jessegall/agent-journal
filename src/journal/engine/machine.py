@@ -55,7 +55,7 @@ class Machine(AgentListener[AgentEvent]):
         stack, settings = self.states.stack_of(agent), self.taken()
         transition = stack.top().on(event, settings)
         hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings)
-        agent = self._settle(agent, hooked, event.key)
+        agent = self._settle(agent, hooked, event.key, Actor.system())
         lines = [line for said in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, said))]
         if transition.held:
             return Decision.refuse(transition.held.rendered())
@@ -66,11 +66,32 @@ class Machine(AgentListener[AgentEvent]):
     def move(self, session: str, environment_id: int, to: AgentState) -> Agent:
         agent = self.agent(session, environment_id)
         hooked = self.through_hooks(self.states.stack_of(agent), self.placed(self.states.stack_of(agent), to), self.taken())
-        settled = self._settle(agent, hooked, MOVED)
+        settled = self._settle(agent, hooked, MOVED, Actor.system())
         if hooked.held:
             raise Refused(hooked.held.nudge.rendered())
         for line in [line for said in hooked.nudges if (line := self.nudger.say(settled, said))]:
             self.supervisor.type(environment_id, line)
+        return settled
+
+    def push(self, session: str, environment_id: int, to: BaseState, by: Actor, words: str) -> Agent:
+        agent = self.agent(session, environment_id)
+        return self.by_hand(agent, self.states.stack_of(agent).pushed(to), by, words)
+
+    def pop(self, session: str, environment_id: int, by: Actor, words: str) -> Agent:
+        agent = self.agent(session, environment_id)
+        return self.by_hand(agent, self.states.stack_of(agent).popped(), by, words)
+
+    def reset(self, session: str, environment_id: int, by: Actor, words: str) -> Agent:
+        agent = self.agent(session, environment_id)
+        return self.by_hand(agent, Stack((self.states.first(),)), by, words)
+
+    def by_hand(self, agent: Agent, after: Stack, by: Actor, words: str) -> Agent:
+        hooked = self.through_hooks(self.states.stack_of(agent), after, self.taken())
+        settled = self._settle(agent, hooked, words, by)
+        if hooked.held:
+            raise Refused(hooked.held.nudge.rendered())
+        for line in [line for said in hooked.nudges if (line := self.nudger.say(settled, said))]:
+            self.supervisor.type(agent.environment_id, line)
         return settled
 
     def taken(self) -> Settings:
@@ -133,14 +154,14 @@ class Machine(AgentListener[AgentEvent]):
             first = self.states.first()
             return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.to_data()), Actor.system())
 
-    def _settle(self, agent: Agent, hooked: Hooked, cause: str) -> Agent:
+    def _settle(self, agent: Agent, hooked: Hooked, cause: str, by: Actor) -> Agent:
         stack, to = hooked.stack, hooked.stack.top()
         if hooked.held:
-            self.entries.save(Trail.entry(agent, list(agent.stack), cause, refused=hooked.refused, line=hooked.held.nudge.rendered()), Actor.system())
+            self.entries.save(Trail.entry(agent, list(agent.stack), cause, by, refused=hooked.refused, line=hooked.held.nudge.rendered()), by)
         if to.name == agent.state and to.to_data() == agent.data and stack.to_data() == list(agent.stack):
             return agent
-        settled = self.agents.save(agent.with_(state=to.name, data=to.to_data(), stack=tuple(stack.to_data())), Actor.system())
-        self.entries.save(Trail.entry(agent, stack.to_data(), cause), Actor.system())
+        settled = self.agents.save(agent.with_(state=to.name, data=to.to_data(), stack=tuple(stack.to_data())), by)
+        self.entries.save(Trail.entry(agent, stack.to_data(), cause, by), by)
         if to.name != agent.state:
             self.bus.dispatch(StateEntered(session=agent.session, environment_id=agent.environment_id, left=agent.state, entered=to.name))
         return settled

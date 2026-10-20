@@ -459,3 +459,17 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
         trail = [e.data for e in app.container.get(Entries).of_kind(Trail.KIND) if e.data["session"] == "s1"]
     popped = next(e for e in trail if [row["state"] for row in e["before"]] == ["idle", "working", "stuck"])
     assert popped["after"][-1]["state"] == "working" and popped["cause"]
+
+
+def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_names_the_agent(app):
+    hook(app, "SessionStart")
+    console, agents = app.console(), app.container.get(Agents)
+    assert console.run(["panic", "working", "task_id=3"], AGENT).out.strip() == "the stack, bottom to top: idle, working(task_id=3, what=, logged_at=0.0)"
+    assert console.run(["panic", "stuck", "why=lost"], AGENT).out.startswith("the stack, bottom to top: idle, working(task_id=3, what=, logged_at=0.0), stuck(")
+    assert console.run(["panic", "pop"], AGENT).out.strip().endswith("idle, working(task_id=3, what=, logged_at=0.0)")
+    assert console.run(["panic", "nowhere"], AGENT).code != 0
+    assert console.run(["panic", "idle"], AGENT).out.strip() == "the stack, bottom to top: idle"
+    assert [row["state"] for row in agents.for_session("s1").stack] == ["idle"]
+    with app.container.get(Scope).of(1):
+        newest = app.container.get(Entries).of_kind(Trail.KIND)[0]
+    assert newest.data["cause"] == "journal panic idle" and newest.actor == AGENT.actor

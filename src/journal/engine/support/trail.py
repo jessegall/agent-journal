@@ -9,6 +9,6 @@ class Trail:
     KIND = "state"
 
     @staticmethod
-    def entry(agent: Agent, after: list[dict], cause: str, **more) -> Entry:
+    def entry(agent: Agent, after: list[dict], cause: str, by: Actor, **more) -> Entry:
         data = {"session": agent.session, "before": list(agent.stack), "after": after, "cause": cause, **more}
-        return Entry(environment_id=agent.environment_id, kind=Trail.KIND, actor=Actor.system(), data=data)
+        return Entry(environment_id=agent.environment_id, kind=Trail.KIND, actor=by, data=data)
