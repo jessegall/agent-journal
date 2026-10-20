@@ -146,15 +146,14 @@ class Launch:
 
     def supervise(self, choice: Choice) -> int:
         """The supervisor run as a process of its own from the launch file, this process waiting on it and watching for the journal's page meanwhile; the file holds the agent's keys, so only its user reads it, and it goes when the supervisor ends."""
-        status = StatusLine(self.root.name, choice.environment, self.root)
-        status.begin()
+        status = StatusLine(self.root)
         launch = self.launch_file(choice, status)
         path = self.runtime / "launches" / f"{choice.environment}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.touch(mode=0o600)
         path.chmod(0o600)
         path.write_text(json.dumps(launch))
-        PageWait(self.runtime.parent / "port", status, launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"?env={choice.environment}", self.log).start()
+        PageWait(self.runtime.parent / "port", launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"?env={choice.environment}", self.log).start()
         try:
             return subprocess.run([sys.executable, "-m", "supervisor", str(path)], cwd=self.root, env={**os.environ, "PYTHONPATH": str(self.package)}).returncode
         finally:

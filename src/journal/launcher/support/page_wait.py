@@ -6,7 +6,6 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 
-from journal.launcher.support.status_line import StatusLine
 from journal.support.supervisor_socket import SupervisorSocket
 
 PATIENCE = 600.0
@@ -16,10 +15,10 @@ TAB_WAIT = 8.0
 
 
 class PageWait:
-    """The launch's watch for the journal's page: the first time the port in the port file answers, the status line and the band show its address and the viewer opens in the browser; a port file a dead journal left answers nothing."""
+    """The launch's watch for the journal's page: the first time the port in the port file answers, the band shows its address and the viewer opens in the browser; a port file a dead journal left answers nothing."""
 
-    def __init__(self, port_file: Path, status: StatusLine, socket: str, band: tuple[str, str], viewer: str, log: Callable[[str], None]) -> None:
-        self.port_file, self.status, self.socket, self.band, self.viewer, self.log = port_file, status, socket, band, viewer, log
+    def __init__(self, port_file: Path, socket: str, band: tuple[str, str], viewer: str, log: Callable[[str], None]) -> None:
+        self.port_file, self.socket, self.band, self.viewer, self.log = port_file, socket, band, viewer, log
         """band: the left and middle words of the band, the address going on the right; viewer: the page to open, empty for none."""
 
     def start(self) -> None:
@@ -46,8 +45,7 @@ class PageWait:
             return ""
 
     def shown(self, url: str) -> None:
-        """The address in the status line and the band, and the viewer opened unless a tab of it is open already: that tab asks the new journal within seconds and carries on."""
-        self.status.set_url(url)
+        """The address in the band, and the viewer opened unless a tab of it is open already: that tab asks the new journal within seconds and carries on."""
         try:
             SupervisorSocket.ask(self.socket, {"verb": "band", "left": self.band[0], "middle": self.band[1], "right": url})
         except OSError:

@@ -27,7 +27,7 @@ const matching = computed(() => {
 });
 const panel = computed(() =>
     making.value
-        ? {name: "", description: "", tools: "Read, Grep, Glob", kind: "subagent", model: "sonnet", codex_model: "gpt-6-sol", body: "", shipped: false, uses: 0}
+        ? {name: "", description: "", tools: "Read, Grep, Glob", kind: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0}
         : rows.value.find((p) => p.name === opened.value) || null
 );
 const usedWords = (p) =>

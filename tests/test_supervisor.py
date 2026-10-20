@@ -57,13 +57,9 @@ def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
     assert ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
 
 
-def test_the_status_line_names_the_project_the_environment_and_the_url_in_a_file_claude_reads(tmp_path):
-    status = StatusLine("agent-journal", "main", tmp_path)
-    status.begin()
-    assert status.path.read_text() == "agent-journal · agent-journal · main · journal starting…"
-    status.set_url("http://127.0.0.1:8420/")
-    assert status.path.read_text().endswith("http://127.0.0.1:8420/")
-    assert json.loads(status.settings())["statusLine"]["command"] == f"sh '{tmp_path / '.journal' / 'src' / 'journal' / 'hooks' / 'status.sh'}'", "one status script keeps the session's JSON and prints the bar"
+def test_the_status_line_keeps_claudes_status_json_through_the_journals_script(tmp_path):
+    status = StatusLine(tmp_path)
+    assert json.loads(status.settings())["statusLine"]["command"] == f"sh '{tmp_path / '.journal' / 'src' / 'journal' / 'hooks' / 'status.sh'}'", "one status script keeps the session's JSON; the band says where the agent is"
 
 
 def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_agent_works(tmp_path: Path, monkeypatch):
@@ -99,7 +95,7 @@ def test_the_picker_moves_with_the_arrow_keys_and_jumps_by_number(tmp_path: Path
 def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
     launch = Launch.parse(["claude", "--env", "spike", "--aside", "--", "--model", "x"], tmp_path)
     assert launch.env == "spike" and launch.aside and launch.args == ("--model", "x")
-    status = StatusLine("p", "spike", tmp_path)
+    status = StatusLine(tmp_path)
     assert launch.agent_command(Choice("spike", "s-1", True), status) == ["claude", "--settings", status.settings(), "--model", "x"], "the resume goes in the launch file apart"
     assert launch.agent_command(Choice("spike", "", True, skip_prompts=True), status) == ["claude", "--dangerously-skip-permissions", "--settings", status.settings(), "--model", "x"]
     codex = Launch.parse(["codex"], tmp_path)
@@ -137,14 +133,14 @@ def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, mo
     app.server().start()
     try:
         from journal.launcher.support.page_wait import PageWait
-        status = StatusLine("p", "main", tmp_path)
         said, opened = [], []
-        PageWait(tmp_path / ".journal" / "port", status, "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "", said.append).wait()
-        assert status.url == f"http://127.0.0.1:{app.server().port}/", "the launch sees the page answer, with no supervisor to tell"
+        waiting = PageWait(tmp_path / ".journal" / "port", "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "", said.append)
+        assert waiting.answering() == f"http://127.0.0.1:{app.server().port}/", "the launch sees the page answer, with no supervisor to tell"
+        waiting.wait()
         import webbrowser
         monkeypatch.setattr(webbrowser, "open", lambda url, new=0: opened.append(url) or True)
         monkeypatch.setattr(PageWait, "tab_open", lambda self, url: False)
-        PageWait(tmp_path / ".journal" / "port", status, "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "?env=main", said.append).wait()
+        PageWait(tmp_path / ".journal" / "port", "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "?env=main", said.append).wait()
         assert opened == [f"http://127.0.0.1:{app.server().port}/?env=main"] and said[-1] == f"viewer: opened {opened[0]}", "with no tab open the viewer is opened, and the launch log says so"
     finally:
         app.server().stop()
@@ -184,10 +180,10 @@ def test_the_inbox_announces_where_the_screen_is_mirrored(tmp_path: Path):
 def test_the_launch_writes_what_the_supervisor_starts_and_a_bad_launch_file_is_refused(tmp_path: Path, capsys):
     from supervisor.__main__ import main
     launch = Launch.parse(["claude", "--env", "spike", "--no-journal"], tmp_path)
-    written = launch.launch_file(Choice("spike", "s1"), StatusLine("p", "spike", tmp_path))
+    written = launch.launch_file(Choice("spike", "s1"), StatusLine(tmp_path))
     assert written["front"]["command"][0] == "claude" and written["front"]["resume"] == ["--resume", "s1"] and written["services"] == [], "a launch with a journal running already starts none of its own; the resume apart, for a restart to replace"
     assert written["announce"].endswith("runtime/inboxes/spike") and written["screen"].endswith("runtime/screens/spike.out") and f"journal-{os.getuid()}" in written["socket"]
-    with_journal = Launch.parse(["claude", "--env", "spike"], tmp_path).launch_file(Choice("spike", ""), StatusLine("p", "spike", tmp_path))
+    with_journal = Launch.parse(["claude", "--env", "spike"], tmp_path).launch_file(Choice("spike", ""), StatusLine(tmp_path))
     assert [s["name"] for s in with_journal["services"]] == ["journal"]
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"front": {"command": ["claude"]}}))
@@ -254,7 +250,7 @@ def test_a_bare_worktree_flag_takes_the_chosen_environments_name(tmp_path: Path)
         launch = Launch.parse(argv, tmp_path)
         assert launch.in_worktree and launch.worktree == "" and "--worktree" not in launch.args and "-w" not in launch.args
     launch = Launch.parse(["claude", "-w"], tmp_path)
-    made = launch.launch_file(Choice("calm-river", "", False, False), StatusLine(tmp_path.name, "calm-river", tmp_path))
+    made = launch.launch_file(Choice("calm-river", "", False, False), StatusLine(tmp_path))
     assert made["front"]["folder"] == str(tmp_path / ".claude" / "worktrees" / "calm-river"), "the worktree is named after the environment the menu chose"
     assert "worktree-calm-river" in git("branch").stdout
 
@@ -324,7 +320,7 @@ def test_a_conversation_resumed_runs_in_its_environment_and_that_environments_wo
     menu.environments = lambda: [EnvironmentRow("main", last_sessions={"claude": "abc"}), EnvironmentRow("calm-river", last_sessions={"claude": "def"})]
     assert Launch.parse(["claude", "--resume", "def"], tmp_path).resumed_in(menu) == "calm-river", "a conversation is resumed in the environment it last ran in"
     assert Launch.parse(["claude", "--resume", "zzz"], tmp_path).resumed_in(menu) == "" and Launch.parse(["claude"], tmp_path).resumed_in(menu) == ""
-    status = StatusLine(tmp_path.name, "calm-river", tmp_path)
+    status = StatusLine(tmp_path)
     plain = Launch.parse(["claude", "--resume", "def"], tmp_path)
     assert plain.launch_file(Choice("calm-river", "", False, False), status)["front"]["folder"] == str(tree), "an environment with a worktree runs its agent there, where its conversations are"
     assert plain.launch_file(Choice("main", "", False, False), status)["front"]["folder"] == str(tmp_path)

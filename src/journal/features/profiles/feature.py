@@ -9,8 +9,8 @@ class Profiles(Feature):
 
     name = "profiles"
     title = "Agent profiles"
-    CLAUDE_MODEL = Option("profiles.model.claude", "Model on Claude", "The model the researcher, planner and debugger run on under Claude Code", "sonnet", kind="model", provider="claude")
-    CODEX_MODEL = Option("profiles.model.codex", "Model on Codex", "The model the researcher, planner and debugger run on under Codex", "gpt-6-sol", kind="model", provider="codex")
+    CLAUDE_MODEL = Option("profiles.model.claude", "Model on Claude", "The model the journal's subagent profiles run on under Claude Code", "sonnet", kind="model", provider="claude")
+    CODEX_MODEL = Option("profiles.model.codex", "Model on Codex", "The model the journal's subagent profiles run on under Codex", "gpt-6.1-sol", kind="model", provider="codex")
     options = (CLAUDE_MODEL, CODEX_MODEL)
     listeners = (RefuseWorkerAsSubagent, CountProfileUse)
     help = "A researcher, a planner and a debugger are written as read-only subagent profiles for Claude and Codex."
