@@ -9,6 +9,7 @@ from journal.support.scope import Scope
 from journal.config import Config
 from journal.support.where import Where
 from journal.support.actor import Actor
+from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
@@ -166,3 +167,27 @@ def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists
     import json as j
     rows = j.loads(app.console().run(["environment", "json"], Where("main")).out)
     assert rows[0]["last_sessions"] == {"claude": "s1"}, "a codex launch finds no Claude session to carry on"
+
+
+def test_an_environment_is_renamed_with_everything_in_it_and_never_while_an_agent_works_there(app):
+    from journal.models.agent import Agent
+    from journal.repositories.agents import Agents
+    from journal.repositories.environments import Environments
+    from journal.repositories.tasks import Tasks
+    console, environments = app.console(), app.container.get(Environments)
+    assert console.run(["environment", "create", "spike"], MAIN).code == 0
+    spike = environments.named("spike")
+    with app.container.get(Scope).of(spike.id):
+        app.container.get(Tasks).save(Task(title="in spike"), Actor.user(1))
+    taken = console.run(["environment", "rename", "spike", "main"], MAIN)
+    assert taken.code == 1 and "exists already" in taken.err
+    with app.container.get(Scope).of(spike.id):
+        app.container.get(Agents).save(Agent(session="s-spike", environment_id=spike.id, provider="claude", state="idle"), Actor.system())
+    busy = console.run(["environment", "rename", "spike", "probe"], MAIN)
+    assert busy.code == 1 and "an agent works in spike" in busy.err
+    with app.container.get(Scope).of(spike.id):
+        app.container.get(Agents).save(app.container.get(Agents).for_session("s-spike").with_(state="ended"), Actor.system())
+    assert console.run(["environment", "rename", "spike", "probe"], MAIN).code == 0
+    with app.container.get(Scope).of(environments.named("probe").id):
+        assert [t.title for t in app.container.get(Tasks).all()] == ["in spike"], "its rows go with it"
+    assert not environments.where(name="spike")

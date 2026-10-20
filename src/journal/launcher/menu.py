@@ -40,7 +40,9 @@ class Menu:
         rows, before = self.environments(), self.remembered.read()
         asking = not yes
         chosen = env or (self._environment(agent, rows) if asking else "main")
-        rows = self.environments() if chosen not in {row.name for row in rows} else rows
+        if chosen not in {row.name for row in rows}:
+            self.journal("environment", "create", chosen)
+            rows = self.environments()
         last = next((row.last_session(agent) for row in rows if row.name == chosen), "")
         resume = "" if new or not last else self._carry_on(agent, chosen, last, asking)
         skip_prompts = skip or yes or self._prompts(agent)

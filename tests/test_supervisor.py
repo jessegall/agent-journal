@@ -424,3 +424,14 @@ def test_a_closed_window_stops_the_supervisor_without_writing_to_the_screen_that
     supervisor.hung_up()
     supervisor.stop()
     assert supervisor.band is None, "a hang-up leaves no band to clear on a terminal that is gone"
+
+
+def test_a_new_environment_named_at_the_launch_gets_its_row_before_the_agent_starts(tmp_path: Path, monkeypatch):
+    made = []
+    menu = menu_answering(tmp_path, monkeypatch, [])
+    menu.journal = lambda *argv: made.append(argv) or ""
+    assert menu.choose("codex", env="providers", yes=True).environment == "providers"
+    assert made == [("environment", "create", "providers")], "a hook or command in an environment with no row is refused, so the launch makes the row first"
+    made.clear()
+    menu.choose("codex", env="main", yes=True)
+    assert made == [], "an environment that exists is not made again"

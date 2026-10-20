@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.7
+
+- A new environment named at the launch gets its row before the agent starts. Without it every hook and command in that environment was refused, so the agent seemed to run in no environment at all.
+- `journal environment rename <name> <new>` gives an environment a new name with everything recorded in it; refused while an agent works there or while it has a worktree named after it.
+- The Codex launch runs without Codex's shared daemon (4.4.6), checked live: its hooks and commands now land in the environment chosen at the launch, where the daemon kept the environment of its first launch days ago and sent everything to main.
+
 ## 4.4.6
 
 - Codex starts in the environment chosen in the launch menu. Each launch uses its own process, so a shared background server cannot carry over another project's environment or connection.

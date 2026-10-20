@@ -19,6 +19,7 @@ from journal.repositories.environments import Environments
 from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.support.not_found import NotFound
+from journal.support.refused import Refused
 from journal.repositories.questions import Questions
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
@@ -42,6 +43,9 @@ class EnvironmentCommand(Command):
         self.verb(verbs, "json", "the same, for the boot menu")
         self.verb(verbs, "create", "a new line of work").add_argument("name")
         self.verb(verbs, "delete", "an environment and everything recorded in it").add_argument("name")
+        rename = self.verb(verbs, "rename", "give an environment a new name; everything recorded in it stays")
+        rename.add_argument("name")
+        rename.add_argument("new")
 
     def rows(self) -> list[EnvironmentRow]:
         """Each environment for the boot menu: for each agent program, its newest session whose conversation it can still find, so a carry-on never names one it has lost nor one of another program."""
@@ -123,6 +127,20 @@ class EnvironmentCommand(Command):
         self.environments.wipe(found[0], where.actor)
         dropped = Worktree(self.config.root, found[0].name).dropped()
         print(f"deleted environment {found[0].id}: {found[0].name}, with everything recorded in it" + (f"; {dropped}" if dropped else ""))
+        return 0
+
+    def rename(self, args: Namespace, where: Where) -> int:
+        """Refused while an agent works in it, since its running journal, its terminal and its typed lines are named after it, and when it has a worktree, whose folder and branch carry its name."""
+        found = self.environments.existing(args.name)
+        if self.environments.where(name=args.new):
+            raise Refused(f"an environment named {args.new} exists already")
+        with self.scope.of(found.id):
+            if self.agents.live() is not None:
+                raise Refused(f"an agent works in {found.name}: stop it first, then rename")
+        if Worktree(self.config.root, found.name).path.is_dir():
+            raise Refused(f"{found.name} has a worktree named after it: an environment with a worktree keeps its name")
+        renamed = self.environments.save(found.with_(name=args.new), where.actor)
+        print(f"environment {renamed.id} renamed: {args.name} is now {renamed.name}")
         return 0
 
     @staticmethod
