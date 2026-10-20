@@ -1,4 +1,5 @@
 import re
+import shutil
 from argparse import Namespace
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -34,6 +35,8 @@ from journal.support.chat_mark import ChatMark
 TAIL = 2000
 ROWS_KEPT = 200
 """How many changed lines of a shell command's change are kept, as for a tool's."""
+CUTS = re.compile(r"\|\s*(head|tail)\b")
+"""A pipe into head or tail anywhere in the line: its output is cut, so the whole is kept as a numbered output."""
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
 WORDS_IN = re.compile(r"[A-Za-z]{3,}")
 """A word of three letters or more: a line holding one says something."""
@@ -73,6 +76,9 @@ class ShellCommand(Command):
         moved.add_argument("chain")
         moved.add_argument("part")
         moved.add_argument("--file", required=True)
+        forget = self.verb(verbs, "forget", "a chain ended in the foreground with this many characters of output: an output under the short limit, from a line with no head or tail pipe, is kept as no output")
+        forget.add_argument("chain")
+        forget.add_argument("--size", type=int, required=True)
         ended = self.verb(verbs, "ended", "a chain in the background has ended")
         ended.add_argument("chain")
         ended.add_argument("--status", type=int, required=True)
@@ -80,7 +86,6 @@ class ShellCommand(Command):
         ended.add_argument("--last", default="")
 
     def split(self, args: Namespace, where: Where) -> int:
-        """A part may span lines, so each goes to a file of its own; the printed index says which are the agent's."""
         folder = Path(args.into)
         cuts = [cut for part in Chain.parts(args.line) if (cut := part.cut())]
         parts = [part.uncut() for part in Chain.parts(args.line)]
@@ -96,7 +101,6 @@ class ShellCommand(Command):
         return 0
 
     def limit(self, args: Namespace, where: Where) -> int:
-        """Ten seconds while a message of the user's waits, thirty otherwise, as the settings say; a line of journal commands alone is never moved."""
         from journal.features.shell.feature import Shell
         if Chain.is_journal_line(args.line) or self.is_subagents(args.line, where):
             print(0)
@@ -106,7 +110,6 @@ class ShellCommand(Command):
         return 0
 
     def is_subagents(self, line: str, where: Where) -> bool:
-        """Whether a subagent runs the line: it announced the same commands and the agent has not run them since. A subagent is never told a command ended, so its line is never moved to the background."""
         return self.announced.holds_line(where.environment, line)
 
     def cap(self, args: Namespace, where: Where) -> int:
@@ -133,7 +136,6 @@ class ShellCommand(Command):
         return 0
 
     def edit_of(self, path: str, added: int, removed: int, part: str, session: str, at: float) -> Edit:
-        """A change a shell command made, its lines told against the last version the journal saw; a file gone or too large is counted alone."""
         text = self.snapshots.now(path)
         if text is None:
             return Edit(session=session, path=path, at=at, added=added, removed=removed, command=part)
@@ -151,8 +153,19 @@ class ShellCommand(Command):
         print(Shell.MOVED.about(n=output.id, file=args.file).rendered())
         return 0
 
+    def forget(self, args: Namespace, where: Where) -> int:
+        from journal.features.shell.feature import Shell
+        output = self.outputs.of_chain(args.chain)
+        line = Path(output.folder, "line").read_text() if Path(output.folder, "line").is_file() else output.command
+        if args.size >= int(self.settings.option(Shell.SHORT)) or CUTS.search(line):
+            print("kept")
+            return 0
+        self.outputs.delete(output, where.actor)
+        shutil.rmtree(output.folder, ignore_errors=True)
+        print("forgotten")
+        return 0
+
     def ended(self, args: Namespace, where: Where) -> int:
-        """The card settled with how it ended and the output marked ended; the agent is told of it, with every other that ended by then, once it is quiet."""
         self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file, "last": args.last})
         part = self.moved_part(args.chain)
         outcome = OutputFiles.ended(args.status)
@@ -165,12 +178,10 @@ class ShellCommand(Command):
         return 0
 
     def moved_part(self, chain: str) -> str:
-        """The command a chain was running when it moved to the background."""
         return next((e.data["part"] for e in self.entries.of_kind(MOVED, 200) if e.data.get("chain") == chain), "")
 
     @staticmethod
     def said_last(last: str) -> str:
-        """The last line of output when it says something in words, not a row of progress dots or a percentage."""
         line = next((l.strip() for l in reversed(last.splitlines()) if l.strip()), "")
         return line if WORDS_IN.search(line) else ""
 

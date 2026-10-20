@@ -131,7 +131,7 @@ while :; do
     done
     if [ -f "$folder/done" ]; then
         code=$(cat "$folder/done")
-        [ "$show" = whole ] && rm -rf "$folder"
+        if [ "$show" = whole ]; then rm -rf "$folder"; else sh "$__journal_cli" shell forget "$id" --size "$(cat "$folder"/*.out "$folder"/*.err 2>/dev/null | wc -c | tr -d ' ')" >/dev/null 2>&1; fi
         exit "$code"
     fi
     if [ "$limit" -gt 0 ] && [ $((SECONDS - began)) -ge "$limit" ]; then

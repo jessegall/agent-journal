@@ -23,8 +23,9 @@ class Shell(Feature):
     SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")
     READ_SHOWN = Option("shell.read_characters", "Show of a command that reads", "The characters of a reading command's output shown, half from each end, such as cat, grep or git diff; past it the agent reads the rest by the output's number", 8000, unit="characters")
     COMMAND_SHOWN = Option("shell.command_characters", "Show any other command's output up to", "Any other command's output, such as a test run or a build, is shown whole up to this; past it only a line naming the output, which the agent reads by its number", 200, unit="characters")
+    SHORT = Option("shell.short_output", "Keep no output under", "A command whose whole output is under this many characters, with no head or tail pipe in its line, is shown as it is and kept as no numbered output; a longer one, or a line that cuts with head or tail, is kept", 200, unit="characters")
     KEPT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
-    options = (FOREGROUND, WHILE_WAITING, SHOWN, READ_SHOWN, COMMAND_SHOWN, KEPT)
+    options = (FOREGROUND, WHILE_WAITING, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, KEPT)
     listeners = (RefuseMixedJournal, ReadNarrowly, SpotHandReads, TellEndedOutputs)
     checks = (
         Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
@@ -49,7 +50,8 @@ Every shell command you run goes through the journal's runner.
   and a failing part stops the chain where the shell would have.
 - A command that runs past thirty seconds, or ten while a message of the user's waits, is moved to the background with
   the rest of its chain: the tool call returns with its output number, and you are told when output N ends.
-- Every command's output is kept as a numbered output, the newest 250 of them. `journal output read N` needs a flag
+- A command whose whole output is under 200 characters, with no head or tail pipe in its line, prints as it is and is
+  kept as no output. Any other command's output is kept as a numbered output, the newest 250 of them. `journal output read N` needs a flag
   naming the part: `--tail 20`, `--head 20`, `--grep "<words>"`, `--lines 100-160`, `--reader <name>`, `--summary` for
   how it ended with its first and last lines, or `--all` for every line when you truly need it whole. `journal output
   list` names the newest. Read an output this way, never by running the command again nor by reading its files raw.

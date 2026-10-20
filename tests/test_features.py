@@ -7626,3 +7626,19 @@ def test_a_plans_phase_is_retitled_and_its_complete_when_line_written_anew(app):
     plans = app.container.get(Plans)
     phase = plans.phases_of(plans.find(1))[0]
     assert (phase.title, phase.complete_when) == ("Build and prove it", "it builds and the suite is green")
+
+
+def test_a_short_output_with_no_head_or_tail_pipe_keeps_no_output_row(app):
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.support.not_found import NotFound
+    console, outputs = app.console(), app.container.get(CommandOutputs)
+    for chain, line in (("short", "git status --short"), ("cut", "grep -n x src/app.py | tail -5"), ("long", "pytest -q")):
+        folder = app.config.root / chain
+        folder.mkdir()
+        (folder / "line").write_text(line)
+        console.run(["shell", "split", line, "--into", str(folder)], AGENT)
+    assert console.run(["shell", "forget", "short", "--size", "120"], AGENT).out.strip() == "forgotten"
+    with pytest.raises(NotFound):
+        outputs.of_chain("short")
+    assert console.run(["shell", "forget", "cut", "--size", "120"], AGENT).out.strip() == "kept" and outputs.of_chain("cut")
+    assert console.run(["shell", "forget", "long", "--size", "400"], AGENT).out.strip() == "kept" and outputs.of_chain("long")
