@@ -6174,8 +6174,8 @@ def test_releases_compare_by_number_and_pre_releases_are_left_out():
 
 def test_an_update_never_crosses_a_major_version(app):
     updating = app.container.get(Updating)
-    updating.releases = Release.named(["v3.9.0", "v4.0.0", "v4.2.0", "v5.0.0"])
-    assert [release.tag for release in updating.newer()] == ["v4.2.0"]
+    updating.releases = Release.named(["v3.9.0", "v4.0.0", "v4.99.0", "v5.0.0"])
+    assert [release.tag for release in updating.newer()] == ["v4.99.0"]
     updating.releases = Release.named(["v5.0.0"])
     assert updating.newer() == [] and not updating.standing()["newer"]
 
