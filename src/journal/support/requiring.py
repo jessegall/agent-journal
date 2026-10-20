@@ -26,15 +26,15 @@ class Requiring:
         return list(agent.skills_owed)
 
     def owe(self, agent: Agent, skills: list[Skill]) -> None:
-        """The skills owed beside those already owed, in one write, so none owed in the same moment is lost."""
-        owed = (*agent.skills_owed, *(skill.name for skill in skills if skill.name not in agent.skills_owed))
-        if owed != agent.skills_owed:
-            self.agents.touch(agent, Actor.system(), skills_owed=tuple(dict.fromkeys(owed)))
+        """The skills owed beside those already owed, worked out under the write lock, so none owed or paid in the same moment is lost."""
+        names = tuple(skill.name for skill in skills)
+        if set(names) - set(agent.skills_owed):
+            self.agents.touched(agent, Actor.system(), lambda now: {"skills_owed": tuple(dict.fromkeys((*now.skills_owed, *names)))})
 
     def paid(self, agent: Agent, skill: Skill) -> None:
-        owed = self.owed_names(agent)
-        if skill.name in owed:
-            self.agents.touch(agent, Actor.system(), skills_owed=tuple(name for name in owed if name != skill.name))
+        """The skill taken off what is owed under the write lock, so skills read at once each stay paid."""
+        if skill.name in agent.skills_owed:
+            self.agents.touched(agent, Actor.system(), lambda now: {"skills_owed": tuple(name for name in now.skills_owed if name != skill.name)})
 
     def owed(self, agent: Agent, skills: list[Skill]) -> list[Skill]:
         loaded = agent.skills_loaded
