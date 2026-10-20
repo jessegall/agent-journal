@@ -4,6 +4,8 @@ from journal.support.check_progress import CheckProgress
 
 SAID_LINES = 40
 """How many of the last lines a run in progress shows."""
+TOLD = 300
+"""How many of the last characters of a failing check's output the line that tells the agent carries; the card and the check's page show more."""
 PERCENT = re.compile(r"(\d{1,3})%")
 COUNTED = re.compile(r"\b(\d+)\s*/\s*(\d+)\b")
 ITEMS = re.compile(r"\[(\d+) items?\]|collected (\d+) items?")
@@ -12,6 +14,12 @@ STEPS = re.compile(r"^[.FEsxX]+(?=\s*(?:\[\s*\d+%\])?\s*$)", re.M)
 
 class CheckOutput:
     """What a running check has printed, read for how far it is: a count such as 120/983, test dots against the items collected, or a percent."""
+
+    @staticmethod
+    def told(output: str) -> str:
+        """The end of what a check printed, short enough for one line typed to the agent."""
+        text = " ".join(output.split())
+        return text if len(text) <= TOLD else f"... {text[-TOLD:]}"
 
     @staticmethod
     def tail(output: str) -> str:

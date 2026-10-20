@@ -3,9 +3,10 @@ import {api} from "../api/client.js";
 import {wait} from "../platform/timing.js";
 import {begin, fail, runLate, updating} from "../state/updating.js";
 
-const UPDATE_TRIES = 150;
+const UPDATE_TRIES = 450;
 
-// The newer release installed: the update is asked for, and the page reloads once the journal answers as that version.
+// The newer release installed: the update is asked for, and the page reloads once the journal answers as that version; an
+// update the journal says is no longer under way, with a problem, failed, and the cover comes down with why.
 export async function runUpdate(version) {
     begin(version);
     try {
@@ -18,6 +19,10 @@ export async function runUpdate(version) {
         await wait(2000);
         const now = await api.releases().catch(() => null);
         if (now && now.installed === version) return location.reload();
+        if (now && !now.updating && now.problem) {
+            fail(now.problem);
+            return now.problem;
+        }
     }
     runLate();
     return "The update is taking longer than expected. It carries on in the background; reload this page in a while.";
@@ -45,7 +50,7 @@ export function useUpdates() {
 
     async function start() {
         try {
-            about.value = await api.releases();
+            about.value = await api.freshReleases();
         } catch (failed) {
             error.value = failed.message;
         }

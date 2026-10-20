@@ -10,6 +10,7 @@ import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
 import Dialog from "../kit/Dialog.vue";
 import AgentPage from "./AgentPage.vue";
+import WorkerPage from "./WorkerPage.vue";
 import Comments from "./Comments.vue";
 import {scopeIn} from "../composables/scope.js";
 import {useKept} from "../composables/kept.js";
@@ -47,7 +48,8 @@ const kind = computed(() => (props.table ? meta(props.table) : null));
 const kindTitle = computed(() => (kind.value ? kind.value.title : "item"));
 const takesComments = computed(() => !!kind.value?.takes_comments);
 const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment || 0));
-const SHAPES = {plans: "plan", agents: "agent"};
+const SHAPES = {plans: "plan", agents: "agent", workers: "worker"};
+const DIALOG_PAGES = {agent: AgentPage, worker: WorkerPage};
 const shape = computed(() => (!props.table ? "" : SHAPES[props.table] || kind.value?.view));
 const WIDTHS = {small: "normal", wide: "wide"};
 const panelWidth = computed(() => WIDTHS[shape.value] || "page");
@@ -73,11 +75,11 @@ watch(
 </script>
 
 <template>
-    <template v-if="shape === 'agent'">
+    <template v-if="DIALOG_PAGES[shape]">
         <Dialog large bare :open="!!resource && !leaving" @dismiss="close" @close="emit('gone')">
             <template v-if="resource">
                 <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                    <AgentPage :resource="resource" @close="close" />
+                    <component :is="DIALOG_PAGES[shape]" :resource="resource" @close="close" />
                 </DocumentPage>
             </template>
         </Dialog>

@@ -1,4 +1,5 @@
 <script setup>
+import BubbleHeader from "../kit/BubbleHeader.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import ReplyTool from "./ReplyTool.vue";
 import {useTurnLinks} from "./turnLinks.js";
@@ -12,7 +13,10 @@ const {words} = useTurnText(() => props.turn, env);
 
 <template>
     <div class="thread-turn thought" :data-ref="turn.key">
-        <TextDisplay class="thought-text" :text="turn.text" />
+        <div class="thought-text">
+            <BubbleHeader icon="bulb" label="Agent thought" tone="muted" small />
+            <TextDisplay :text="turn.text" />
+        </div>
         <div class="thread-tools">
             <ReplyTool title="Reply to this thought, quoting it" @reply="emit('reply', {text: words.text, ref: turn.key})" />
         </div>

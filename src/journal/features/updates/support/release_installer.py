@@ -18,16 +18,22 @@ class ReleaseInstaller:
 
     def __init__(self, config: Config) -> None:
         self.config = config
+        self.log = config.home / "runtime" / "update.log"
 
     def run(self, release: Release) -> None:
-        with tempfile.TemporaryDirectory(prefix="journal-install-") as folder:
+        """What the install prints is written to the update log, kept until the next update, so an update that did not take can be read back after the restart."""
+        self.log.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="journal-install-") as folder, self.log.open("w") as log:
             script = Path(folder) / "install.sh"
+            log.write(f"installing {release.version}\n")
+            log.flush()
             try:
                 with urlopen(INSTALL_SCRIPT.format(tag=release.tag), timeout=FETCH_SECONDS) as answer:
                     script.write_bytes(answer.read())
                 ran = subprocess.run(["sh", str(script)], cwd=self.config.root, env={**os.environ, "AGENT_JOURNAL_REF": release.tag, "AGENT_JOURNAL_YES": "1"},
-                                     capture_output=True, text=True, timeout=INSTALL_SECONDS)
+                                     stdout=log, stderr=subprocess.STDOUT, timeout=INSTALL_SECONDS)
             except (OSError, subprocess.TimeoutExpired) as error:
+                log.write(f"the install could not run: {error}\n")
                 raise Refused(f"the install of {release.version} could not run: {error}") from error
         if ran.returncode != 0:
-            raise Refused(f"the install of {release.version} failed: {(ran.stderr or ran.stdout).strip()[-300:]}")
+            raise Refused(f"the install of {release.version} failed: {self.log.read_text(errors='replace').strip()[-300:]}")

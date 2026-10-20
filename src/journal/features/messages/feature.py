@@ -3,6 +3,7 @@ from journal.features.feature import Feature
 from journal.features.messages.listeners.hint_reply_by_tag import HintReplyByTag
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
 from journal.features.messages.listeners.record_peer_message import RecordPeerMessage
+from journal.features.messages.listeners.record_sent_message import RecordSentMessage
 from journal.features.messages.listeners.sweep_transcripts import SweepTranscripts
 from journal.features.messages.commands.message_command import MessageCommand
 from journal.features.messages.listeners.deliver_message import DeliverMessage
@@ -31,7 +32,7 @@ class Messages(Feature):
     REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between reminders of messages the agent has not read", 3, unit="tool uses")
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS, SWEEP_AFTER)
-    listeners = (HintReplyByTag, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
+    listeners = (HintReplyByTag, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RefuseTruncatedRead, RecordTurn, RunTags, TellReaction, LinkNamedTasks, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
     checks = (
         Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
         Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N', takes_text=True),

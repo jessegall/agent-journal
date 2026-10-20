@@ -45,7 +45,7 @@ function close() {
         <span class="chat-notice-dot" />
         <span class="chat-notice-text">{{ notice.title }}</span>
         <template v-if="notice.link === MIGRATION">
-            <Btn small :busy="working" @click="bringAcross">Bring it across</Btn>
+            <Btn small :busy="working" @click="bringAcross">Copy into version 4</Btn>
         </template>
         <template v-else-if="notice.link && isRef(notice.link)">
             <button type="button" class="chat-notice-go" @click="peekRef(notice.link)">{{ notice.label || "open" }}</button>

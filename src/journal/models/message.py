@@ -12,6 +12,10 @@ class Message(Scoped):
     text_fields: ClassVar[tuple[str, ...]] = ("text",)
 
     THOUGHT = "thought"
+    PEER = "peer"
+    """The data key naming the agent that sent the message, when another agent did."""
+    SENT_TO = "sent_to"
+    """The data key naming the agent the agent sent the message to."""
 
     author: Author = Author.USER
     text: str = ""
@@ -26,7 +30,22 @@ class Message(Scoped):
     captions: dict = field(default_factory=dict)
     """What each attached picture shows, in the agent's words once it has opened it, so it can be found later."""
     data: dict = field(default_factory=dict)
-    """Its metadata: a system message's card (its kind, icon, tone, detail, the row it opens and the session it belongs to), an agent's thought (kind thought), or the buttons a message offers and those pressed."""
+    """Its metadata: a system message's card (its kind, icon, tone, detail, the row it opens and the session it belongs to), an agent's thought (kind thought), the agent that sent it (peer), or the buttons a message offers and those pressed."""
+
+    @classmethod
+    def from_agent(cls, sender: str, text: str, session: str, at: datetime) -> "Message":
+        """A message another session's agent sent the agent here, which came to it by Claude Code's own road: read as it came, named as that agent's, never the user's."""
+        return cls(author=Author.SYSTEM, text=text, read_at=at, data={"kind": cls.PEER, cls.PEER: sender, "session": session})
+
+    @classmethod
+    def sent_to(cls, receiver: str, text: str, session: str) -> "Message":
+        """A message the agent sent another agent, kept in this chat beside the rest."""
+        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.SENT_TO: receiver, "session": session})
+
+    @property
+    def sender(self) -> str:
+        """Who wrote it, as the agent reading it is told: the agent that sent it, or its author."""
+        return self.data[self.PEER] if self.PEER in self.data else f"the {self.author}"
 
     @property
     def is_agents_reply(self) -> bool:

@@ -12,7 +12,9 @@ from journal.support.hook_kind import HookKind
 from journal.support.response import Response
 from journal.models.entry import Entry
 from journal.support.tool_input import ToolInput
+from journal.events.agent.message_crossed import MessageCrossed
 from journal.providers.support.turn import Turn
+from journal.providers.support.written import Written
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
@@ -80,30 +82,30 @@ class Provider:
         """What the agent thought since the user's last prompt, when the provider writes thinking down: nothing for most."""
         return []
 
-    def texts_written_before(self, project: Path, session: str, read: int, until: float) -> tuple[list[str], int]:
-        """The text blocks written since the byte read last up to a moment, and the byte of the first line after it: what the hooks have not read and are past waiting for."""
+    def texts_written_before(self, project: Path, session: str, read: int, until: float) -> Written:
+        """The text blocks and messages from other sessions written since the byte read last up to a moment, and the byte of the first line after it: what the hooks have not read and are past waiting for."""
         path = self.transcript(project, session)
         if path is None or read < 0:
-            return [], read
+            return Written([], [], read)
         with path.open("rb") as file:
             file.seek(read)
             raw = file.read()
-        texts, at = [], read
+        rows, at = [], read
         for line in raw[:raw.rfind(b"\n") + 1].splitlines(keepends=True):
             row = json.loads(line) if line.startswith(b"{") else {}
             if self.seconds(str(row.get("timestamp", ""))) >= until:
                 break
-            texts += self.texts_in(row)
+            rows.append(row)
             at += len(line)
-        return texts, at
+        return self.written_in(rows, at)
 
-    def texts_written(self, project: Path, session: str, read: int) -> tuple[list[str], int]:
+    def texts_written(self, project: Path, session: str, read: int) -> Written:
         path = self.transcript(project, session)
         if path is None:
-            return [], read
+            return Written([], [], read)
         size = path.stat().st_size
         if read > size:
-            return [], size
+            return Written([], [], size)
         if read < 0:
             read = self.last_line_start(path, size)
         with path.open("rb") as file:
@@ -111,9 +113,16 @@ class Provider:
             raw = file.read()
         whole = raw.rfind(b"\n") + 1
         lines = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
-        return [text for line in lines for text in self.texts_in(line)], read + whole
+        return self.written_in(lines, read + whole)
+
+    def written_in(self, rows: list[dict], at: int) -> Written:
+        return Written([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.crossed_in(row)], at)
 
     def texts_in(self, line: dict) -> list[str]:
+        return []
+
+    def crossed_in(self, line: dict) -> list[MessageCrossed]:
+        """The messages another session's agent sent in this line of the transcript: none for a provider that has no such road."""
         return []
 
     @staticmethod

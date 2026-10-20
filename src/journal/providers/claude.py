@@ -1,13 +1,17 @@
 import json
+import re
 import shlex
 from pathlib import Path
 from typing import Iterator
 
+from journal.events.agent.message_crossed import MessageCrossed
 from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.provider import TAIL, Provider
 from journal.providers.support.turn import Turn
 
-
+CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
+"""A message another Claude session sent this one, as Claude Code wraps it: its attributes, then its words."""
+FROM_NAME, FROM_ADDRESS = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
 
 
 class Claude(Provider):
@@ -76,6 +80,17 @@ class Claude(Provider):
     def texts_in(self, line: dict) -> list[str]:
         row = ClaudeRow.from_json(line)
         return [block.text for block in row.of_type("text") if block.text.strip()] if row.type == "assistant" else []
+
+    def crossed_in(self, line: dict) -> list[MessageCrossed]:
+        """A message another Claude session sent, as Claude Code queues it: once, at its enqueue, whether it then came as a prompt or mid-turn."""
+        row = ClaudeRow.from_json(line)
+        if not row.is_enqueued:
+            return []
+        crossed = CROSS_SESSION.match(row.queued.strip())
+        if crossed is None:
+            return []
+        named = FROM_NAME.search(crossed[1]) or FROM_ADDRESS.search(crossed[1])
+        return [MessageCrossed(sender=named[1] if named else "another session", text=crossed[2].strip())]
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)

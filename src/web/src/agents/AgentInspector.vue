@@ -38,6 +38,7 @@ const props = defineProps({
     subagents: {type: Array, default: () => []},
     skills: {type: Array, default: () => []},
     run: {type: Function, default: async () => {}},
+    transcripts: {type: Object, default: null},
 });
 const emit = defineEmits(["back", "close", "open-subagent"]);
 const EVERY = 5000;
@@ -55,7 +56,7 @@ const VIEWS = {
     skills: {title: "Skills", icon: "book"},
 };
 const subagent = props.kind === "subagent";
-const ownTranscript = subagent;
+const ownTranscript = subagent || props.kind === "worker";
 
 const elsewhere = Boolean(props.env) && props.env !== route.value.env;
 const scope = elsewhere ? scopeIn(props.env) : null;
@@ -101,7 +102,7 @@ refreshers.push([
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const transcriptViews = () => shown("transcript") || (ownTranscript && shown("chat"));
-const transcript = useTranscript(() => (agent.value ? agent.value.id : 0), props.session, scroller, there, transcriptViews);
+const transcript = useTranscript(() => (agent.value ? agent.value.id : 0), props.session, scroller, props.transcripts || there, transcriptViews);
 refreshers.push([transcriptViews, transcript.refresh]);
 watch(
     () => (panes.value ? panes.value.shown.join() : ""),
@@ -112,6 +113,7 @@ const {turns, total, loading: transcriptLoading, atStart, earlier} = transcript;
 const AVAILABLE = {
     main: ["chat", "transcript", "terminal", "feed", "tasks", "subagents", "skills"],
     subagent: ["chat", "transcript", "terminal"],
+    worker: ["chat", "transcript"],
 };
 const available = computed(() => AVAILABLE[props.kind] || AVAILABLE.main);
 

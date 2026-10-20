@@ -33,7 +33,8 @@ const {scope, env, open, openChip} = useTurnLinks();
 const rowsOf = (table) => scope.rows(table);
 const {words, html} = useTurnText(() => props.turn, env);
 
-const fromMain = computed(() => Boolean(props.turn.data?.from_main || props.turn.data?.peer));
+const peer = computed(() => Boolean(props.turn.data?.peer || props.turn.data?.sent_to));
+const fromMain = computed(() => Boolean(props.turn.data?.from_main) || peer.value);
 const opening = computed(() => Boolean(props.turn.data?.opening));
 const mine = computed(() => props.turn.who === "user" || fromMain.value);
 const bubbled = computed(() => Boolean(words.value.text || quoteText.value || files.value.length || filed.value.length || resourceComment.value || props.turn.kind !== "message"));
@@ -88,7 +89,7 @@ async function drop() {
 
 <template>
     <div
-        :class="['thread-turn', {mine, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
+        :class="['thread-turn', {mine, peer, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
         :data-ref="turn.key"
         @mouseleave="picking = false"
     >
@@ -97,7 +98,7 @@ async function drop() {
         </template>
         <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" data-figure-bubble :data-figure-mark="turn.key" @click="resourceComment && openComment()">
             <template v-if="fromMain">
-                <TurnFromMain :at="turn.at" :from="turn.data?.peer || undefined" />
+                <TurnFromMain :at="turn.at" :data="turn.data" />
             </template>
             <template v-if="resourceComment">
                 <TurnParent :label="commentParent.label" @open="openComment" />
@@ -149,7 +150,14 @@ async function drop() {
     width: min(78%, calc(100% - var(--turn-gutter)));
 }
 
+.thread-turn.peer {
+    align-self: stretch;
+    width: 100%;
+}
+
 .thread-turn.peer .thread-bubble {
+    width: 100%;
+
     --pill-text: var(--text-4);
     --pill-border: var(--border);
     --pill-size: 0.92em;

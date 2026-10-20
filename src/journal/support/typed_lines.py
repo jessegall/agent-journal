@@ -35,14 +35,13 @@ class TypedLines:
         self._recent = [t for t in self._recent if now - t.at < RECENT] + [TypedLine(environment_id, line, now)]
 
     def carries(self, environment_id: int, prompt: str) -> bool:
-        words = prompt.strip()
-        return bool(words) and any(t.environment_id == environment_id and words in t.line for t in self._recent if time.time() - t.at < RECENT)
+        """Whether the prompt is a line the journal typed lately, or a piece of one, the terminal's line breaks aside."""
+        return any(t.environment_id == environment_id and t.holds(prompt) for t in self._recent if time.time() - t.at < RECENT)
 
     def confirm(self, environment_id: int, prompt: str) -> bool:
-        """The oldest waiting line with these words is confirmed; False when none was waiting."""
-        words = prompt.strip()
+        """The oldest waiting line the prompt is, or a piece of, is confirmed: a piece arrived means the line did, and typing it again would only bring another piece; False when none was waiting."""
         for typed in self._waiting:
-            if typed.environment_id == environment_id and typed.line.strip() == words:
+            if typed.environment_id == environment_id and typed.holds(prompt):
                 self._waiting.remove(typed)
                 return True
         return False
@@ -51,8 +50,10 @@ class TypedLines:
         return [t for t in self._waiting if t.environment_id == environment_id and t.at <= before]
 
     def tried_again(self, typed: TypedLine, at: float) -> TypedLine:
+        """The line typed once more, known again as the journal's own from now, so a piece of it the terminal split later is never the user's."""
         again = TypedLine(typed.environment_id, typed.line, at, typed.tries + 1)
         self._waiting[self._waiting.index(typed)] = again
+        self._recent = [t for t in self._recent if at - t.at < RECENT] + [again]
         return again
 
     def given_up(self, typed: TypedLine) -> None:

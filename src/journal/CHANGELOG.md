@@ -2,6 +2,19 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.4
+
+- An update keeps a marker file while it runs, `.journal/runtime/updating.json`: a second update waits for the first, the viewer's update cover stays up through the restart and cannot be dismissed, and the journal that comes up says whether the update finished. What the install printed is kept in `.journal/runtime/update.log`, and an install that did not restart the journal is followed by a restart.
+- The About page reads the releases fresh from GitHub each time it opens, and no longer says the journal follows a branch.
+- A worker's shell commands are its own: they are never moved to the background as the main agent's, nor their ends typed into the main agent's terminal. A subagent's command is never moved to the background either.
+- A worker opens in its own near full-screen dialog, with its brief, report and conversation.
+- Messages between agents' sessions reach the chat both ways: one the agent sends with Claude Code's own messaging, and one another session sends it, mid-turn or as a prompt, each in a full-width bubble saying who sent it or to whom. A message from another session is written by an external agent, never by the user.
+- A line typed to the agent is never longer than one line holds, a failing check tells the agent only the end of its output, and a piece of a typed line that reaches the agent is the journal's, never taken for the user's words.
+- Each thought in the chat carries an Agent thought header.
+- A parked task is named when a task closes, by a workflow on the canvas.
+- `journal output read --tail` and the viewer's transcript read only as far as they need, so a long output or transcript no longer costs a whole read each time.
+- The version 3 notice says plainly that it copies your version 3 data into version 4.
+
 ## 4.4.3
 
 - On a Mac the installer installs Python 3.14 from python.org's own installer, which needs no Xcode; Homebrew builds Python from source on a macOS it no longer has packages for, and failed there on an older Xcode. uv is still used first where it is installed.

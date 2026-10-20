@@ -33,7 +33,7 @@ const SYSTEM_TURNS = {
         kind: "card",
         data: {icon: card.icon, tone: card.tone, label, detail: card.detail, command: card.command, title: card.detail || card.command, row: card.row, visitor: card.visitor},
     }),
-    peer: (card) => ({kind: "message", data: {peer: card.peer}}),
+    peer: (card) => ({kind: "message", data: {peer: card.peer, sent_to: card.sent_to}}),
     suggestion: (card, label) => ({
         kind: "suggestion",
         suggestion: {id: Number(String(card.row).split(":")[1]), title: label, detail: card.detail, accept: card.accept, answer: card.answer},

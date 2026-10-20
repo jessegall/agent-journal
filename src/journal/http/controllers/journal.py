@@ -2,6 +2,7 @@ import os
 import time
 
 from journal.config import Config
+from journal.features.updates.support.update_mark import UpdateMark
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.bar_row import BarRow
 from journal.http.agents.current_work import CurrentWork
@@ -31,9 +32,9 @@ class JournalController:
     """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the live agent is doing this moment."""
 
     def __init__(self, config: Config, manifest: Manifest, environments: Environments, agents: Agents, activity: AgentActivity, current: CurrentWork,
-                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope) -> None:
+                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateMark) -> None:
         self.config, self.boot, self.environments, self.agents, self.activity, self.current = config, manifest, environments, agents, activity, current
-        self.entries, self.messages, self.questions, self.tasks, self.scope = entries, messages, questions, tasks, scope
+        self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, mark
 
     def manifest(self, request: Request) -> Response:
         return Response.json(self.boot.of(self.first().name))
@@ -49,8 +50,10 @@ class JournalController:
         return Response.json([{"port": self.config.port, "project": self.config.root.name, "version": VERSION, "root": str(self.config.home), "current": True}])
 
     def summary(self, request: Request) -> Response:
-        """How each environment stands: its live agent and the task it holds, what waits for the user, and whether a busy agent went quiet."""
+        """How each environment stands: its live agent and the task it holds, what waits for the user, and whether a busy agent went quiet; and an update under way, with its step, which keeps the viewer's cover up through the restart."""
+        held = self.mark.held()
         return Response.json({"project": self.config.root.name, "root": str(self.config.home), "version": VERSION, "started": STARTED, "color": COLOR,
+                              "updating": held.to if held else "", "step": held.step if held else "",
                               "environments": [self.standing(e) for e in (self.environments.all() or [self.environments.named("main")])]})
 
     def standing(self, environment: Environment) -> EnvironmentStanding:

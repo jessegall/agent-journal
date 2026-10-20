@@ -108,6 +108,10 @@ export class ApiClient {
         return this.get("/updates");
     }
 
+    freshReleases() {
+        return this.get("/updates/fresh");
+    }
+
     update() {
         return this.post("/updates", {});
     }

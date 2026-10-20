@@ -67,7 +67,7 @@ class CheckRunner:
         if not ended.passed:
             said = ChecksFeature.FAILING if was_failing else ChecksFeature.FAILED
             for agent in self.agents.everywhere():
-                if agent.state != Ended.name and (line := self.nudger.say(agent, said.about(n=ran.id, title=ran.title, tail=tail))):
+                if agent.state != Ended.name and (line := self.nudger.say(agent, said.about(n=ran.id, title=ran.title, tail=CheckOutput.told(ended.output)))):
                     self.supervisor.type(agent.environment_id, line)
         return ran
 

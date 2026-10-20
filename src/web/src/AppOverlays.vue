@@ -45,10 +45,10 @@ if (!voicesLoaded.value) loadVoicesUntilLoaded();
     <ProjectFlash />
     <template v-if="migrationOffered">
         <NewFeatureDialog
-            eyebrow="Version 3"
-            title="This project has a version 3 journal"
-            text="It is kept whole in .journal/version-3. Bring everything across into this journal? The backup stays as it is."
-            button="Bring it across"
+            eyebrow="From version 3"
+            title="Copy your version 3 data into version 4"
+            text="This project's version 3 journal is kept in .journal/version-3: its tasks, plans, messages, documents and memory. Copy all of it into this version 4 journal? The version 3 copy is left as it is."
+            button="Copy into version 4"
             @use="startMigration"
             @dismiss="putMigrationOff"
         />

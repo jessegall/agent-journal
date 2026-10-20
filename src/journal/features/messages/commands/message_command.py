@@ -116,7 +116,7 @@ class MessageCommand(Command):
 
     def show(self, message: Message) -> None:
         """The message, its files with where to open them and what they show, and the rows it is linked to."""
-        print(f"message {message.id} from the {message.author}{self.answering(message)}: {message.own_words}")
+        print(f"message {message.id} from {message.sender}{self.answering(message)}: {message.own_words}")
         for name in message.files:
             path = self.config.files / "message" / str(message.id) / name
             seen = message.captions.get(name)

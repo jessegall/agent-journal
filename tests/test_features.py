@@ -1487,11 +1487,12 @@ def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_
     said = lambda role, text: {"type": "response_item", "payload": {"type": "message", "role": role, "content": [{"type": "output_text", "text": text}]}}
     transcript.write_text(j.dumps(said("assistant", "Long ago.")) + "\n" + j.dumps(said("assistant", "On it, Sir Jesse.")) + "\n")
     monkeypatch.setattr(Codex, "transcript", lambda self, project, session: transcript)
-    texts, read = Codex().texts_written(tmp_path, "s1", -1)
+    first = Codex().texts_written(tmp_path, "s1", -1)
+    texts, read = first.texts, first.at
     assert texts == ["On it, Sir Jesse."], "the first look reads the turn in hand"
     with transcript.open("a") as file:
         file.write(j.dumps(said("user", "a prompt")) + "\n" + j.dumps({"type": "response_item", "payload": {"type": "function_call", "name": "exec"}}) + "\n" + j.dumps(said("assistant", "The plan is ready.")) + "\n")
-    assert Codex().texts_written(tmp_path, "s1", read)[0] == ["The plan is ready."], "only the agent's own words, from where the last look left off"
+    assert Codex().texts_written(tmp_path, "s1", read).texts == ["The plan is ready."], "only the agent's own words, from where the last look left off"
     assert Codex().worker_outcome("the tests pass", "session id: 01a1549d-a1ac-75c3\n" + "a long log of the run\n" * 500) == ("the tests pass", "01a1549d-a1ac-75c3"), "a Codex worker's report is its answer, not its log"
 
 
@@ -6712,16 +6713,14 @@ def test_a_worktree_for_a_worker_in_a_project_with_no_commit_is_refused_in_plain
     assert refused.code == 1 and "the project has no commit yet" in refused.err
 
 
-def test_another_sessions_message_is_shown_as_theirs_and_claude_codes_notices_are_not_the_users_words(app):
+def test_another_sessions_prompt_and_claude_codes_notices_are_not_the_users_words(app):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     hook(app, "UserPromptSubmit", prompt='<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="Coco" from-mode="bypass">\nthe report is ready\n</cross-session-message>')
     hook(app, "UserPromptSubmit", prompt="[Cross-session delivery notice] Your message to another session was held by that session (recipient: uds:/tmp/cc-socks/2.sock).")
     app.runtime().deferred.drain()
     said = app.container.get(Messages).recent(10)
-    peer = [m for m in said if m.data.get("kind") == "peer"]
-    assert len(peer) == 1 and peer[0].author == "system" and peer[0].data["peer"] == "Coco" and peer[0].text == "the report is ready", "named as the session that sent it"
-    assert not [m for m in said if m.author == "user"], "neither the peer's words nor Claude Code's notice is the user's"
+    assert not [m for m in said if m.author == "user"], "neither the peer's words nor Claude Code's notice is the user's; the peer's message is read from the transcript, where it is queued once"
 
 
 def test_a_piece_of_a_line_the_journal_typed_is_never_taken_for_the_users_words(app):
@@ -7333,3 +7332,67 @@ def test_a_subagents_shell_line_is_never_moved_to_the_background(app):
     assert console.run(["shell", "limit", "--line", wrapped], AGENT).out.strip() == "0", "a subagent is never told a command ended, so its line stays in its foreground"
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sleep 60 && echo done"})
     assert console.run(["shell", "limit", "--line", wrapped], AGENT).out.strip() == "30", "the same line run by the agent itself moves as ever"
+
+
+def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(app):
+    import dataclasses
+    import time
+    from journal.features.updates.support.update_held import UpdateHeld
+    from journal.features.updates.support.update_mark import UpdateMark
+    from journal.support.refused import Refused
+    from journal.version import VERSION
+    mark = app.container.get(UpdateMark)
+    updating = updating_with(app, Source("v4.0.0", "v4.99.0"), Installer(), auto=True)
+    updating.checked()
+    assert mark.held().to == "4.99.0" and updating.standing().updating == "4.99.0", "the update keeps its mark through the restart it asks for"
+    try:
+        updating.update_now(Actor.user(1))
+        raise AssertionError("a second update started beside the first")
+    except Refused as refused:
+        assert "an update to 4.99.0 is under way" in str(refused), "a second update waits for the first"
+    mark.write(dataclasses.replace(mark.held(), pid=-1))
+    updating.settle(time.time())
+    assert mark.held() is None and "did not finish" in updating.problem and "update.log" in updating.problem, "a journal that came back on the old version says the update did not finish"
+    mark.write(UpdateHeld("4.0.0", VERSION, "Restarting the journal", time.time(), -1))
+    updating.settle(time.time())
+    assert mark.held() is None and updating.problem == "", "a journal that came back on the version it went to takes the mark off"
+
+
+def test_a_typed_line_is_cut_short_and_a_piece_of_one_typed_again_is_still_the_journals():
+    import time
+    from journal.engine.support.typed_line import TypedLine
+    from journal.features.checks.support.check_output import CheckOutput
+    from journal.support.typed_lines import TypedLines
+    issues = " ".join(f"#{n} [detector-report] ArrayBagDetector - Opened by somebody, handle with care" for n in range(600, 700))
+    told = CheckOutput.told(issues)
+    assert len(told) <= 310 and told.endswith("handle with care"), "a failing check tells the agent only the end of its output"
+    line = TypedLine.cut("[journal] " + issues)
+    assert len(line) <= TypedLine.LONGEST and line.endswith("..."), "no line typed to an agent is longer than one line holds"
+    typed = TypedLines()
+    typed.typed(1, line)
+    first = typed.overdue(1, time.time())[0]
+    typed._recent = []
+    typed.tried_again(first, time.time())
+    piece = line[200:320].replace(" ", "\n", 1)
+    assert typed.carries(1, piece), "a piece of a line typed again, broken by the terminal, is the journal's, not the user's"
+    assert not typed.carries(1, "handle with care"), "a short answer of the user's that sits inside a typed line stays the user's"
+    assert typed.confirm(1, piece) and not typed.is_waiting(1), "a piece arriving is the line arriving, so it is not typed a third time"
+
+
+def test_messages_between_sessions_reach_the_chat_both_ways_named_by_their_agents(app):
+    from journal.events.agent.message_crossed import MessageCrossed
+    from journal.events.bus import Bus
+    from journal.providers.claude import Claude
+    from journal.repositories.messages import Messages as MessageRows
+    enqueued = {"type": "queue-operation", "operation": "enqueue", "content": '<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="code-commandments-12" from-mode="bypass">\nthe fix is on main\n</cross-session-message>'}
+    removed = {**enqueued, "operation": "remove"}
+    assert Claude().crossed_in(enqueued) == [MessageCrossed(sender="code-commandments-12", text="the fix is on main")] and Claude().crossed_in(removed) == [], "a message across is read once, at its enqueue"
+    hook(app, "SessionStart")
+    app.container.get(Bus).dispatch(MessageCrossed(sender="code-commandments-12", text="the fix is on main").placed("s1", 1, "claude", None))
+    came = app.container.get(MessageRows).all()[-1]
+    assert came.data["peer"] == "code-commandments-12" and came.created_by.stamp == "external:code-commandments-12" and came.read_at is not None, "it is the other agent's, written by it as an external agent, never the user's"
+    hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "code-commandments-12", "message": "thank you"}, tool_response={})
+    hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "code-commandments-12", "notify_when_idle": True}, tool_response={})
+    app.runtime().deferred.drain()
+    sent = [m for m in app.container.get(MessageRows).all() if m.data.get("sent_to")]
+    assert [(m.text, m.data["sent_to"]) for m in sent] == [("thank you", "code-commandments-12")], "a message the agent sent is kept as sent to that agent; a bare idle subscription is not"

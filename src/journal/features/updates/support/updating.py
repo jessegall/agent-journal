@@ -1,4 +1,5 @@
 import contextvars
+import os
 import subprocess
 import threading
 import time
@@ -9,7 +10,9 @@ from journal.support.plugin_installing import PluginInstalling
 from journal.features.updates.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
 from journal.features.updates.support.release_source import ReleaseSource
+from journal.features.updates.support.update_mark import UpdateMark
 from journal.features.updates.support.update_standing import UpdateStanding
+from journal.supervisor_link import SupervisorLink
 from journal.support.actor import Actor
 from journal.support.refused import Refused
 from journal.repositories.environments import Environments
@@ -26,11 +29,12 @@ FIRST_CHECK_AFTER = 60
 class Updating:
     """The newest release of the installed major version, asked of GitHub at most hourly on a thread of its own, and its install: on its own when the user has switched that on, or when they say so."""
 
-    def __init__(self, settings: Settings, source: ReleaseSource, installer: ReleaseInstaller, installing: PluginInstalling, plugins: Plugins, environments: Environments, scope: Scope) -> None:
+    def __init__(self, settings: Settings, source: ReleaseSource, installer: ReleaseInstaller, installing: PluginInstalling, plugins: Plugins, environments: Environments, scope: Scope,
+                 mark: UpdateMark, supervisor: SupervisorLink) -> None:
         self.settings, self.source, self.installer, self.installing, self.plugins, self.environments, self.scope = settings, source, installer, installing, plugins, environments, scope
+        self.mark, self.supervisor = mark, supervisor
         self.releases: list[Release] = []
         self.problem = ""
-        self.under_way = ""
         self._checked_at = time.time() - CHECK_EVERY + FIRST_CHECK_AFTER
         self._working = threading.Lock()
 
@@ -48,10 +52,13 @@ class Updating:
 
     def standing(self) -> UpdateStanding:
         newer = self.newer()
-        return UpdateStanding(installed=VERSION, latest=newer[-1].version if newer else VERSION, newer=bool(newer), versions=[release.version for release in newer], updating=self.under_way, problem=self.problem)
+        held = self.mark.held()
+        return UpdateStanding(installed=VERSION, latest=newer[-1].version if newer else VERSION, newer=bool(newer), versions=[release.version for release in newer],
+                              updating=held.to if held else "", step=held.step if held else "", problem=self.problem)
 
     def tick(self, now: float) -> None:
-        """On the clock: once an hour, the releases are read and, when the user wants updates on their own, the newest is installed."""
+        """On the clock: an update's mark is settled, and once an hour the releases are read and, when the user wants updates on their own, the newest is installed."""
+        self.settle(now)
         if now - self._checked_at >= CHECK_EVERY:
             self._checked_at = now
             self.apart(self.checked)
@@ -69,8 +76,17 @@ class Updating:
         newer = self.newer()
         return f"{newer[-1].version} is out; {VERSION} is installed. journal update installs it" if newer else f"{VERSION} is the newest release of version {self.running().major}"
 
+    def settle(self, now: float) -> None:
+        """An update's mark comes off once this journal runs the version it went to; one whose journal went without bringing it, or that ran past its time, comes off as an update that did not finish."""
+        held = self.mark.held()
+        if held is None or (held.pid == os.getpid() and not held.is_stale(now)):
+            return
+        self.mark.clear()
+        self.problem = "" if held.to == VERSION else f"The update to {held.to} did not finish: .journal/runtime/update.log says how it went"
+
     def update_now(self, by: Actor) -> None:
-        self.newest()
+        release = self.newest()
+        self.mark.claim(VERSION, release.version)
         if not self.apart(lambda: self.install_newest(by)):
             raise Refused("an update is under way already")
 
@@ -89,8 +105,14 @@ class Updating:
 
     def checked(self) -> None:
         self.read()
-        if self.automatic():
-            self.install_newest(Where().actor)
+        if not self.automatic():
+            return
+        try:
+            self.mark.claim(VERSION, self.newest().version)
+        except Refused as refused:
+            self.problem = str(refused)
+            return
+        self.install_newest(Where().actor)
 
     def read(self) -> None:
         try:
@@ -100,19 +122,30 @@ class Updating:
             self.problem = f"The releases could not be read from GitHub: {error}"
 
     def install_newest(self, by: Actor) -> None:
-        """The code-commandments plugin, when installed, pulled first, since the install restarts the journal; then the release itself."""
-        release = self.newest()
-        self.under_way, problems = release.version, []
+        """Under the update's mark: the code-commandments plugin, when installed, pulled first, since the install restarts the journal; then the release itself, and the journal restarted on it when the install did not."""
+        release, problems = self.newest(), []
+        self.mark.step(f"Upgrading the {PLUGIN} plugin")
         with self.scope.of(self.environments.existing(Where().environment).id):
             try:
                 self.pull_plugin(by)
             except Refused as refused:
                 problems.append(f"The {PLUGIN} plugin was not upgraded: {refused}")
+        self.mark.step("Installing the new version")
         try:
             self.installer.run(release)
         except Refused as refused:
-            problems.append(str(refused))
-        self.problem, self.under_way = " ".join(problems), ""
+            self.problem = " ".join([*problems, str(refused)])
+            self.mark.clear()
+            return
+        self.problem = " ".join(problems)
+        self.mark.step("Restarting the journal")
+        self.restart()
+
+    def restart(self) -> None:
+        """The journal started again on the code just installed, by the supervisor that hosts it; one no supervisor hosts is left to its next start."""
+        host = self.supervisor.hosting()
+        if host is not None:
+            self.supervisor.restart_journal(host)
 
     def pull_plugin(self, by: Actor) -> None:
         """A fetched plugin is only ever moved to a release: its newest tag, when newer than the release tag recorded on its row, or when none is recorded yet."""
