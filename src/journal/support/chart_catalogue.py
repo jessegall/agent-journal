@@ -8,6 +8,7 @@ FORMER_TITLES = {"Session start": "Session starts", "User prompt submit": "Promp
 """The agent events' titles before they took the providers' hook names: a shipped workflow still titled by one is retitled at boot."""
 AGENT_EVENTS = (
     ("session_started", "Session start", "Claude or Codex starts or resumes a conversation here"),
+    ("journal_started", "Journal started", "the journal started the agent here and sent its start block: a new conversation or one resumed, never a compaction or a clear"),
     ("prompt_submitted", "User prompt submit", "you, or a typed line, send the agent a prompt"),
     ("tool_starting", "Pre tool use", "before a read, a write, a command or a dispatch; where a tool can be held or denied"),
     ("tool_finished", "Post tool use", "after a tool ran, with its result"),

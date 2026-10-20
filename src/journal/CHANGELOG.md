@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.8
+
+- The journal dispatches a journal started event once it has started the agent here and sent its start block, on a new conversation and on a resumed one; it is a trigger on the canvas, Journal started. The agent's greeting is a listener on it: an introduction in a new conversation, and in a resumed one a word that it is back, which 4.4.7 never typed.
+- A line typed to the agent that was lost, to a dialog or a program still loading its conversation, is typed again up to six times, each after twice the wait, over five minutes; three tries in thirty seconds gave up while Claude Code was still loading, and the first lines of a session were lost.
+
 ## 4.4.7
 
 - A new environment named at the launch gets its row before the agent starts. Without it every hook and command in that environment was refused, so the agent seemed to run in no environment at all.

@@ -73,7 +73,7 @@
       ],
       "counts": {
         "charts:10:writes": 0,
-        "charts:31:said": 15,
+        "charts:31:said": 16,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
@@ -90,13 +90,16 @@
         "decision": "block",
         "reason": "you stopped while the journal awaits a look at what is in flight here. run `journal environment here` first, or `journal stuck \"<why>\"` if you are truly stuck\ntask 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
-      "typed": [],
+      "typed": [
+        "[journal] you are back in a conversation that went on before: say so to the user in a line, in your voice. then carry on with what was in hand, or ask what to do"
+      ],
       "nudges": [
+        "voices.back",
         "tasks.carry_on"
       ],
       "counts": {
         "charts:10:writes": 0,
-        "charts:31:said": 16,
+        "charts:31:said": 17,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },

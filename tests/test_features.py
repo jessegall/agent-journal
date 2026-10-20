@@ -1147,18 +1147,24 @@ def test_notable_moments_are_cards_in_the_chat(app):
     assert [c.text for c in cards] == ["Agent stuck"] and cards[0].data["detail"] == "stuck on the login" and cards[0].data["tone"] == "bad"
 
 
-def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_does_not(app, monkeypatch):
+def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_with_a_word_that_the_agent_is_back(app, monkeypatch):
     sent = []
     from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart", source="startup")
     app.runtime().deferred.drain()
     assert sent[-1]["line"].startswith("[journal] introduce yourself to the user in the chat") and sent[-1]["after"] == 4.0
+    hook(app, "UserPromptSubmit", prompt=sent[-1]["line"])
     count = len(sent)
     data = json.dumps({"hook_event_name": "SessionStart", "session_id": "s2", "source": "resume"}).encode()
     urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
     app.runtime().deferred.drain()
     assert not any("introduce yourself" in s["line"] for s in sent[count:])
+    assert any(s["line"].startswith("[journal] you are back in a conversation that went on before") for s in sent[count:]), "a resumed conversation is greeted with a word that the agent is back, on the journal started event"
+    count = len(sent)
+    hook(app, "SessionStart", source="compact")
+    app.runtime().deferred.drain()
+    assert not any("introduce yourself" in s["line"] or "you are back" in s["line"] for s in sent[count:]), "a compaction is no start of the journal's"
 
 
 def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
@@ -2058,9 +2064,9 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     link.type(1, "after it")
     assert "[journal] after it" not in [s["line"] for s in sent], "a line waits while an earlier one is on its way"
     hook(app, "Stop")
-    for later in (120, 150, 180, 210):
+    for later in (120, 150, 200, 300, 500, 900):
         tick(later)
-    assert [s["line"] for s in sent].count("[journal] while at work") == 3, "three tries, then the chat is told"
+    assert [s["line"] for s in sent].count("[journal] while at work") == 6, "six tries, each after twice the wait, then the chat is told"
     assert [s["line"] for s in sent][-1] == "[journal] after it", "a line given up lets the one held behind it go in"
 
 
@@ -3972,6 +3978,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, m
     assert sent == [], "a parked run is not said at a pace"
     assert "is parked at step 1" in json.dumps(hook(app, "SessionStart", source="resume")[1]), "and at a start"
     console.run(["sequence", "follow"], AGENT)
+    app.runtime().deferred.drain()
     sent.clear()
     console.run(["question", "ask", "Which name?"], AGENT)
     tick()

@@ -56,6 +56,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Session start | messages.new / some / many | messages unread | say | the engine's delivery: the messages feature catches a starting session up on what is unread (DeliverUnreadAtStart), on the user's ruling of message 1672 |
 | Session start | voices.voice | the voice chosen | say | the Always workflow Tell the agent how to talk to the user at Session start, with the filler {{voice}} (plan 7, task 396); its listener is deleted |
 | Session start | voices.introduce | a fresh conversation | type, after a delay | stays with the voices feature: a typed line after a delay, which no node does |
+| Journal started, a resumed conversation | voices.back: "you are back in a conversation that went on before: say so to the user in a line, in your voice" | the journal started the agent here on a resumed conversation | type | the engine's: the voices feature's IntroduceAtStart listener, on the journal started event |
 | Tick | tasks.check_in: "nothing has happened for half an hour" | auto mode; idle; quiet for 30 min | say | in Idle's workflows; its listener is deleted |
 | Tick | tasks.parked_still: "task N is still parked: can you continue it now?" | idle; a parked task; now and then | say | in Idle's workflows; its listener is deleted |
 | Tick | tasks.check_awaited: "check X now: you have waited N min" | waiting on something; quiet for 5 min | say | Expecting's workflow at Tick, Remind the agent what it waits for after five minutes of quiet |
