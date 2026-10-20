@@ -7468,3 +7468,13 @@ def test_a_journal_set_to_follow_a_branch_installs_that_branchs_newest_commit(ap
     updating.checked()
     assert installer.ran == ["development"] and updating.standing().latest == "bbbbbbb" and updating.standing().branch == "development", "the branch moved on, so its head is installed, by its name"
     assert updating.label() == "development at aaaaaaa", "what is installed is named by the branch and its commit"
+
+
+def test_journal_update_follow_sets_the_branch_the_journal_follows_and_unfollow_the_releases_again(app):
+    source, installer = Source("v4.99.0", head="ccccccc3333"), Installer()
+    updating = updating_with(app, source, installer, auto=False)
+    console = app.console()
+    followed = console.run(["update", "follow", "development"], AGENT)
+    assert followed.code == 0 and followed.out.startswith("following the branch development: development at ccccccc is out") and updating.branch() == "development", "the branch is set and its head read at once"
+    assert source.branches_asked == [("https://github.com/jessegall/agent-journal", "development")], "the followed branch's head is asked for"
+    assert console.run(["update", "unfollow"], AGENT).out == "following the releases again\n" and updating.branch() == "", "unfollow clears the branch"

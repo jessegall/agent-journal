@@ -4,7 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
-- The journal can follow a branch: Settings, Updates, Follow this branch names it (and Install from this repository the repository), and Install update, `journal update` and the hourly check then install that branch's newest commit instead of a release. The installer records the commit it installed in `.journal/src/commit`, and the About page says which branch the journal follows.
+- The journal can follow a branch: Settings, Updates, Follow this branch names it (and Install from this repository the repository), and Install update, `journal update` and the hourly check then install that branch's newest commit instead of a release. The installer records the commit it installed in `.journal/src/commit`, and the About page says which branch the journal follows. `journal update follow <branch>` sets the branch from the terminal, `journal update unfollow` follows the releases again.
 
 ## 4.4.9
 

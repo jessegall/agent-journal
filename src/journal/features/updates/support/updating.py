@@ -54,6 +54,12 @@ class Updating:
         from journal.features.updates.feature import Updates
         return str(self.settings.option(Updates.REPOSITORY)).strip()
 
+    def follow(self, branch: str, by: Actor) -> None:
+        """Sets the branch the journal follows; empty follows the releases again."""
+        from journal.features.updates.feature import Updates
+        self.settings.set(Updates.BRANCH.key, branch.strip(), by)
+        self.head = ""
+
     def installed_commit(self) -> str:
         """The commit the installer recorded; empty for an install from before it was recorded."""
         kept = self.config.home / "src" / "commit"
