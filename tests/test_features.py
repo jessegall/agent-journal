@@ -906,6 +906,20 @@ def test_two_skill_reads_sent_together_are_both_kept(skilled):
     assert {"tasks", "checks"} <= set(app.container.get(Agents).for_session("s1").skills_loaded), "each read adds to what the agent holds, never writes over the other"
 
 
+def test_skills_paid_from_one_look_at_the_agent_each_stay_paid(app):
+    from journal.repositories.agents import Agents
+    from journal.support.requiring import Requiring
+    from journal.support.skill import Skill
+    hook(app, "SessionStart")
+    agents, requiring = app.container.get(Agents), app.container.get(Requiring)
+    skills = [Skill(name, "", "") for name in ("tasks", "checks", "chart", "plugins")]
+    requiring.owe(agents.for_session("s1"), skills)
+    seen = agents.for_session("s1")
+    for skill in skills:
+        requiring.paid(seen, skill)
+    assert not set(agents.for_session("s1").skills_owed) & {"tasks", "checks", "chart", "plugins"}, "four skills read at once, each paid from the same look at the agent, are all paid: none is put back by the others"
+
+
 def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_datagrams(app):
     import socket
     import threading
@@ -6993,3 +7007,16 @@ def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, 
     answers[0] = 410
     tell.handle(None)
     assert len(sent) == 3 and phones.where(name="iPhone")[0].push == "", "an address the service no longer knows is forgotten until the phone subscribes again"
+
+
+def test_a_line_naming_a_list_that_changes_is_said_once_inside_its_window(app):
+    from journal.engine.nudger import Nudger
+    from journal.features.shell.feature import Shell
+    from journal.features.tasks.feature import Tasks
+    hook(app, "SessionStart")
+    agent, nudger = app.container.get(Machine).agent("s1", 1), app.container.get(Nudger)
+    assert nudger.say(agent, Shell.CHECK_BACKGROUND.about(background_outputs="12, 15")), "the first naming of the commands still running is said"
+    assert nudger.say(agent, Shell.CHECK_BACKGROUND.about(background_outputs="12, 15, 18")) is None, "a command joining the list inside the window says nothing again: Redmar's flood"
+    assert nudger.say(agent, Tasks.BLOCKED_STILL.about(tasks="task 4 on the deploy")), "the blocked ask is said once"
+    assert nudger.say(agent, Tasks.BLOCKED_STILL.about(tasks="task 4 on the deploy")) is None, "and not again at the next tick five seconds later"
+    assert nudger.say(agent, Tasks.UNLOGGED.about(n=3)) and nudger.say(agent, Tasks.UNLOGGED.about(n=4)), "a line about one row is still held by its words: another task is named"

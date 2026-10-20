@@ -35,7 +35,8 @@ class Nudger:
         return line
 
     def _repeat(self, agent: Agent, said: Said) -> bool:
-        """The same words to the same agent within the window: not again."""
+        """The same words to the same agent within the window, or the same line whatever its values when it is held so: not again."""
         if not said.repeat_after:
             return False
-        return self.entries.last_said(agent.session, said.key, said.rendered()) > time.time() - said.repeat_after
+        last = self.entries.last_said_of(agent.session, said.key) if said.held_whatever_its_values else self.entries.last_said(agent.session, said.key, said.rendered())
+        return last > time.time() - said.repeat_after

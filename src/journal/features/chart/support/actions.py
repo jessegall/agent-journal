@@ -44,7 +44,7 @@ class Actions:
         named = NAMED.match(text)
         nudge = self.registry.nudge_keyed(named.group(1)) if named else None
         if nudge:
-            return Said(feature=nudge.feature, name=nudge.name, title=named.group(2), repeat_after=nudge.repeat_after, answered_in_chat=nudge.answered_in_chat)
+            return nudge.worded(named.group(2))
         return ChartFeature.LINE.about(text=named.group(2) if named else text)
 
     def perform(self, key: str, text: str, ctx: Context) -> Decision:

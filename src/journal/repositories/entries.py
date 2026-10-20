@@ -18,6 +18,11 @@ class Entries(ScopedRepository[Entry]):
         row = self.aggregate("COALESCE(MAX(json_extract(data, '$.at')), 0) AS at", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (session, key, line))
         return float(row["at"])
 
+    def last_said_of(self, session: str, key: str) -> float:
+        """When this session was last told the line under this key, whatever its words; 0 when never."""
+        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.at')), 0) AS at", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
+        return float(row["at"])
+
     def tool_starts(self, session: str, last: int = 500) -> list[Entry]:
         """The newest tool uses of this session, newest first, as the hooks recorded them."""
         return self.selected("kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))

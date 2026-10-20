@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, replace
 
 
 @dataclass(frozen=True)
@@ -13,10 +13,16 @@ class Nudge:
     """Seconds before the same line may be said again to the same agent; 0 says it every time."""
     answered_in_chat: bool = False
     """Whether the agent's answer to this line is for the user and belongs in the chat, as an introduction or a reply does; otherwise a turn that only acknowledges the line is kept out of it."""
+    held_whatever_its_values: bool = False
+    """Whether the repeat window holds the line whatever its values say, as for a line naming a list or a count that changes; otherwise only the same words wait."""
 
     def about(self, **values) -> "Said":
         from journal.support.said import Said
-        return Said(feature=self.feature, name=self.name, title=self.title, brief=self.brief, repeat_after=self.repeat_after, answered_in_chat=self.answered_in_chat, values=values)
+        return Said(**{f.name: getattr(self, f.name) for f in fields(Nudge)}, values=values)
+
+    def worded(self, title: str) -> "Said":
+        """This nudge said in a workflow's own words, its brief among them."""
+        return replace(self.about(), title=title, brief="")
 
     @property
     def key(self) -> str:

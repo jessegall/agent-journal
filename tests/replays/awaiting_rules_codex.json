@@ -64,16 +64,15 @@
       "name": "a stop after",
       "answer": {
         "decision": "block",
-        "reason": "worker 1 (Lady Lovelace), worker 2 (Dr. Einstein) reported and you have not acted on it yet. read its report, then give it its next job (`journal worker say <n> \"<job>\"`), stop it, or `journal worker done <n>` once its work is merged or used\ntask 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
       "nudges": [
-        "workers.reports_waiting",
         "tasks.carry_on"
       ],
       "counts": {
         "charts:10:writes": 0,
-        "charts:32:said": 11,
+        "charts:32:said": 10,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
