@@ -7121,3 +7121,19 @@ def test_a_long_tool_response_is_kept_cut_in_the_record(app):
     finished = app.container.get(Entries).of_kind("ToolFinished")
     assert all(len(json.dumps(e.data)) < 10_000 for e in finished), "a whole command's output or a subagent's answer is not stored again with every call"
     assert finished[0].data["tool_response"]["agentId"] == "a1" and finished[0].data["tool_response"]["isAsync"] is True, "what is read back from the record, a subagent's id, stays whole"
+
+
+def test_a_read_that_asks_a_server_outside_is_not_judged_against_the_budget(app, monkeypatch):
+    from journal.http.router import Router
+    from journal.http.support.request import Request
+    from journal.support.response import Response
+    from journal.support.slow_requests import SlowRequests
+    measured = []
+    monkeypatch.setattr(SlowRequests, "measured", lambda self, method, path, ms: measured.append(path))
+    router = app.container.get(Router)
+    router.get_outward("/journal/far", lambda request: Response.json({}))
+    router.get("/journal/near", lambda request: Response.json({}))
+    ask = lambda path: router.dispatch(Request("GET", path, {}, {}, {}, {"X-Journal-Env": "main"}, Actor.user(1)))
+    ask("/journal/far")
+    ask("/journal/near")
+    assert measured == ["/journal/near"], "the tunnel's answer waits on the network, so only the journal's own reads are held to a budget"

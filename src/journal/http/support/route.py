@@ -15,6 +15,8 @@ class Route:
     method: str
     pattern: str
     handler: Handler
+    outward: bool = False
+    """Its answer waits on a server outside the journal, so its time is the network's and never judged against a budget."""
 
     def params(self, method: str, path: str) -> dict | None:
         """The named parts when this route matches, None when it does not."""

@@ -203,8 +203,10 @@ class Routes:
         self.listed(router, "shares", shares)
         router.post(f"{API}/shares", shares.store)
         self.acts(router, "shares", shares, "approve", "stop")
-        for path, handler in (("", tunnel.show), ("/services", tunnel.services), ("/cause", tunnel.cause), ("/answering", tunnel.answering), ("/version", tunnel.version), ("/domains", tunnel.domains)):
+        for path, handler in (("", tunnel.show), ("/services", tunnel.services)):
             router.get(f"{API}/tunnel{path}", handler)
+        for path, handler in (("/cause", tunnel.cause), ("/answering", tunnel.answering), ("/version", tunnel.version), ("/domains", tunnel.domains)):
+            router.get_outward(f"{API}/tunnel{path}", handler)
         for path, handler in (("/check", tunnel.check), ("/restart", tunnel.restart), ("/login", tunnel.login), ("/logout", tunnel.logout), ("/install", tunnel.install),
                               ("/update", tunnel.update), ("/release", tunnel.release), ("/readdress", tunnel.readdress)):
             router.post(f"{API}/tunnel{path}", handler)
