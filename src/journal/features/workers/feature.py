@@ -50,7 +50,7 @@ class Workers(Feature):
 
 A subagent only reads. A worker writes: code in a worktree of its own, a document, a change.
 
-- `journal worker dispatch "<Name>" "<bounded brief>" --profile senior|medior [--provider claude|codex] [--worktree]`: name it
+- `journal worker dispatch "<Name>" "<bounded brief>" --profile journal-senior|journal-medior [--provider claude|codex] [--worktree]`: name it
   after a distinguished figure with a twist on their trade and give it one job. The profile sets its model and what it is told:
   medior, on Sonnet, for a job whose shape is settled; senior, on Opus, only for one that needs judgement. `--model` overrides it.
 - `journal worker wait <n> [<n>...]` waits until they have reported; stopping is fine while you wait.

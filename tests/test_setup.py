@@ -29,7 +29,7 @@ def test_setup_wires_hooks_skills_and_the_law(app, monkeypatch):
     command = settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
     assert command.startswith("test -f ") and f"hook.sh claude {root}; exit 0" in command and settings["statusLine"]["command"].endswith("status.sh")
     assert (root / ".claude/skills/journal/SKILL.md").is_file() and (root / ".agents/skills/journal-tasks/SKILL.md").is_file()
-    assert (root / ".claude/agents/researcher.md").read_text().startswith("---\nname: researcher")
+    assert (root / ".claude/agents/journal-researcher.md").read_text().startswith("---\nname: journal-researcher")
     agents = (root / "AGENTS.md").read_text()
     assert agents.startswith("# my project") and "My own rules." in agents and "L9 - A subagent only reads" in agents
     assert (root / "CLAUDE.md").read_text().strip() == "@AGENTS.md"
