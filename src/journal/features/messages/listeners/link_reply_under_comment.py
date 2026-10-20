@@ -9,7 +9,7 @@ from journal.support.not_found import NotFound
 
 
 class LinkReplyUnderComment(Listener[Created]):
-    """A reply to a comment on a row is a comment on that row too, so the thread under the row shows the answer beneath what it answers."""
+    """A reply to a comment on a row is a comment on that row too, so the thread under the row shows the answer beneath what it answers; a reply to that reply is talk in the chat, not a comment."""
 
     def __init__(self, messages: Messages, links: Links) -> None:
         self.messages, self.links = messages, links
@@ -21,6 +21,8 @@ class LinkReplyUnderComment(Listener[Created]):
         try:
             answered = self.messages.find(reply.reply_to)
         except NotFound:
+            return
+        if answered.reply_to:
             return
         already = self.links.targets(reply, Messages.COMMENTS_ON)
         for row in self.links.targets(answered, Messages.COMMENTS_ON):

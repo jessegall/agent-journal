@@ -1224,5 +1224,9 @@ def test_a_reply_under_a_comment_is_part_of_the_rows_thread_from_either_side(tmp
         app.runtime().deferred.drain()
         rows = call(server, "GET", "/journal/comments")[1]["rows"]
         assert [(r["author"], r["reply_to"], r["on"]) for r in rows] == [("user", None, ["tasks:1"]), ("user", comment["id"], ["tasks:1"]), ("agent", comment["id"], ["tasks:1"])], "the agent's reply to the comment is in the thread too, linked to the row by its answer"
+        agents_reply = rows[-1]["id"]
+        call(server, "POST", "/journal/messages", {"text": "Good, then the menu next.", "reply_to": agents_reply})
+        rows = call(server, "GET", "/journal/comments")[1]["rows"]
+        assert len(rows) == 3, "the user's reply in the chat to the agent's answer is talk in the chat, not a comment on the row"
     finally:
         app.runtime().stop()
