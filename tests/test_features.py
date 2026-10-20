@@ -7172,3 +7172,32 @@ def test_a_closing_line_of_a_few_words_is_never_taken_for_a_repeated_reply():
     reply = "Only Thoughts and Skills still hide anything; the test run is still going and the rest waits."
     assert WordOverlap.share("The test run is still going.", reply) == 0.0, "a short status line shares its few words by chance"
     assert WordOverlap.share("Only Thoughts and Skills still hide anything, and the test run is still going while the rest waits.", reply) >= 0.6
+
+
+def test_an_mcp_change_restarts_the_conversation_on_screen_never_an_older_session(app, monkeypatch):
+    import time
+    from journal.models.mcp_server import McpServer
+    from journal.support.mcp_installing import McpInstalling
+    from journal.supervisor_link import SupervisorLink
+    restarted = []
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    monkeypatch.setattr(SupervisorLink, "restart_agent", lambda self, environment_id, resume: restarted.append(resume))
+    hook(app, "SessionStart")
+    hook(app, "Stop")
+    time.sleep(0.01)
+    hook(app, "SessionStart", session_id="s2")
+    hook(app, "Stop", session_id="s2")
+    app.container.get(McpInstalling).add(McpServer(name="context7", title="Context7", transport="http", url="https://mcp.context7.com/mcp"), Actor.user(1))
+    assert restarted == [("--resume", "s2")], f"the session the supervisor shows is restarted once; an older one whose row has not ended is never brought back in its place: {restarted}"
+
+
+def test_an_environment_keeps_one_session_for_each_provider(app):
+    machine = app.container.get(Machine)
+    hook(app, "SessionStart")
+    hook(app, "SessionStart", session_id="s2")
+    assert machine.current("s1").name == "ended" and machine.current("s2").name != "ended", "a newer session takes the environment's place, and the one before it ends"
+    hook(app, "SessionStart", session_id="s2", source="resume")
+    assert machine.current("s2").name != "ended", "a session going on is not ended by itself"
+    codex = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/codex", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "c1"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+    urlopen(codex, timeout=5).read()
+    assert machine.current("s2").name != "ended" and machine.current("c1").name != "ended", "another provider's session in the same environment keeps its own"

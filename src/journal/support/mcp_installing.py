@@ -12,6 +12,7 @@ from journal.repositories.agents import Agents
 from journal.support.turn import Turn
 from journal.repositories.mcp_servers import McpServers
 from journal.supervisor_link import SupervisorLink
+from journal.models.agent import Agent
 
 
 class McpInstalling:
@@ -75,8 +76,10 @@ class McpInstalling:
                 return True
         return False
 
-    def running(self):
-        return [a for a in self.agents.everywhere() if a.state != "ended" and self.supervisor.runs(a.environment_id)]
+    def running(self) -> list[Agent]:
+        """The agent each supervisor runs: its environment's session most lately at work and not ended, never an older one whose row has not ended yet, which a restart would bring back in place of the conversation on screen."""
+        newest = {agent.environment_id: agent for agent in sorted(self.agents.everywhere(), key=lambda a: a.updated_at) if agent.state != "ended"}
+        return [agent for environment_id, agent in newest.items() if self.supervisor.runs(environment_id)]
 
     def applied(self) -> None:
         """The configuration written and every running agent restarted on its own conversation: at once when it sits idle, else the moment its turn ends."""

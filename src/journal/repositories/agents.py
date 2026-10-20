@@ -16,6 +16,10 @@ class Agents(ScopedRepository[Agent]):
     def everywhere(self) -> list[Agent]:
         return self.across_environments()
 
+    def others_running(self, session: str, environment_id: int, provider: str) -> list[Agent]:
+        """The sessions of the provider in the environment, other than this one, that have not ended."""
+        return [a for a in self.across_environments(environment_id=environment_id) if a.session != session and (a.provider or "claude") == (provider or "claude") and a.state != "ended"]
+
     def live_anywhere(self) -> Agent | None:
         """The agent most lately at work in any environment whose session has not ended."""
         alive = sorted((a for a in self.everywhere() if a.state != "ended"), key=lambda a: a.updated_at)
