@@ -879,10 +879,12 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monk
     (runtime / f"tests.running.{os.getpid()}").touch()
     assert not slow.judging(), "nothing is judged while any test run is on, whatever other runs left their marks or took them away"
 
-def test_a_command_reports_every_row_it_caused(app):
+def test_a_command_reports_every_row_it_caused_that_its_own_words_did_not_name(app):
     console = app.console()
-    assert 'created: plan 1' in console.run(["plan", "create", "release"], USER).out
-    assert 'created: task 1, link ' in console.run(["plan", "add", "1", "write the notes"], USER).out, "the link's number is after the shipped workflows' lines, which are links too"
+    out = console.run(["plan", "create", "release"], USER).out
+    assert out.startswith("plan 1 draft") and "created:" not in out, "the command named the plan itself, so the trailer says nothing twice"
+    out = console.run(["plan", "add", "1", "write the notes"], USER).out
+    assert "task 1 added to plan 1" in out and "created: link " in out and "task 1," not in out.split("created:")[1], "only the link, which the command did not name"
 
 
 def test_the_skill_tool_loads_a_skill_too(skilled):

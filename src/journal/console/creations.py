@@ -28,6 +28,13 @@ class Creations(Listener[Created]):
     def end() -> None:
         RUN.set(None)
 
+    @classmethod
+    def line(cls, made: list[Model], said: str) -> str:
+        """The rows made that the command's own output did not name, so nothing is said twice; empty when it named them all."""
+        unnamed = [name for m in made if (name := cls.named(m)) not in said]
+        return "created: " + ", ".join(unnamed) if unnamed else ""
+
     @staticmethod
-    def line(made: list[Model]) -> str:
-        return "created: " + ", ".join(f"{m.table()[:-1] if not m.table().endswith('ies') else m.table()[:-3] + 'y'} {m.id}" for m in made)
+    def named(made: Model) -> str:
+        table = made.table()
+        return f"{table[:-3] + 'y' if table.endswith('ies') else table[:-1]} {made.id}"

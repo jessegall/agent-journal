@@ -81,6 +81,7 @@ class Console:
                 print(refused, file=err)
                 code = 1
         Creations.end()
-        if made:
-            out.write(Creations.line(made) + "\n")
+        trailer = Creations.line(made, out.getvalue()) if made else ""
+        if trailer:
+            out.write(trailer + "\n")
         return Outcome(code, out.getvalue(), err.getvalue())
