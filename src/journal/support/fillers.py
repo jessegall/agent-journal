@@ -24,7 +24,7 @@ from journal.repositories.counts import Counts
 from journal.features.registry import Registry
 from journal.support.requiring import Requiring
 from journal.support.skill_files import SkillFiles
-from journal.support.chosen_voice import ChosenVoice
+from journal.features.voices.support.chosen_voice import ChosenVoice
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.models.plan_state import PlanState

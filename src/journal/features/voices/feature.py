@@ -3,8 +3,8 @@ from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.shipped import Shipped
 from journal.features.voices.commands.voice_command import VoiceCommand
-from journal.features.voices.listeners.introduce_at_start import IntroduceAtStart
-from journal.features.voices.listeners.say_voice_when_changed import SayVoiceWhenChanged
+from journal.features.voices.support.voices_conduct import VoicesConduct
+from journal.features.voices.support.voices_standing_reader import VoicesStandingReader
 
 
 class Voices(Feature):
@@ -18,11 +18,11 @@ class Voices(Feature):
     TITLE = Option("voices.title", "Your title", "Sir, Madam, Captain: what the voice calls you before your name", "Sir", kind="text")
     NAME = Option("voices.name", "Your first name", "Empty takes the name git knows you by", "", kind="text")
     SPOKEN = (PROFILE, TITLE, NAME)
-    """The settings the voice's words are made of: a change to one of them is a change of voice; the figure's look is not."""
     AVATAR = Option("voices.avatar", "Show a figure in the chat", "A small figure beside the chat shows what the agent is doing, in the voice it speaks", True, kind="switch")
     AVATAR_SHOWN = Option("voices.avatar_shown", "Show the figure", "Always, only while the agent works, or never", "always", kind="choice", choices=("always", "working", "never"))
     options = (PROFILE, TITLE, NAME, AVATAR, AVATAR_SHOWN)
-    listeners = (SayVoiceWhenChanged, IntroduceAtStart)
+    standing = (VoicesStandingReader,)
+    conduct = (VoicesConduct,)
 
     HOW_TO_TALK_TO_THE_USER = Nudge(name, "how_to_talk_to_the_user", "how to talk to the user", "{{voice}}", repeat_after=0)
     INTRODUCE_YOURSELF = Nudge(name, "introduce_yourself", "introduce yourself to the user in the chat", "one or two lines in your voice, then ask what to do, unless the user has already asked for something: then go on with it", repeat_after=0, answered_in_chat=True)

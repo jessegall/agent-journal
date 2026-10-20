@@ -107,3 +107,4 @@ class Runtime:
         self.clock.stop()
         self.watcher.stop()
         self.deferred.stop()
+        BaseState.fold(())

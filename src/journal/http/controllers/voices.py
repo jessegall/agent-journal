@@ -1,5 +1,5 @@
 from journal.features.voices.support.calling import Calling
-from journal.support.chosen_voice import ChosenVoice
+from journal.features.voices.support.chosen_voice import ChosenVoice
 from journal.features.voices.feature import Voices
 from journal.support.shipped import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, Shipped
 from journal.http.support.request import Request

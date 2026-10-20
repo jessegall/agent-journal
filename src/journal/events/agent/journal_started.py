@@ -9,6 +9,6 @@ class JournalStarted(AgentEvent):
     """The journal started the agent here and sent its start block: a new conversation, or one resumed; never a compaction or a clear."""
 
     answers_hook: ClassVar[bool] = False
+    typed_after: ClassVar[float] = 4.0
 
     source: str
-    """How the conversation began, as the provider names it: startup or resume."""

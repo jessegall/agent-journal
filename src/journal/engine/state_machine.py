@@ -45,14 +45,17 @@ class StateMachine(AgentListener[AgentEvent]):
         self.settings, self.features, self.scope, self.supervisor, self.entries, self.readers = settings, features, scope, supervisor, entries, readers
 
     def handle(self, event: AgentEvent) -> Decision:
-        return self.answer(self.agent(event.session, event.environment_id, event.provider), event)
+        decision = self.answer(self.agent(event.session, event.environment_id, event.provider), event)
+        if decision.context and not (event.answers_hook and event.carries_lines):
+            self.supervisor.type(event.environment_id, decision.context, after=event.typed_after)
+        return decision
 
     def row_event(self, event: RowEvent) -> None:
-        with self.scope.of(event.environment_id):
-            for agent in self.agents.live_in(event.environment_id):
+        for agent in self.agents.live_in(event.environment_id) if event.environment_id else self.agents.live_everywhere():
+            with self.scope.of(agent.environment_id):
                 answered = self.answer(agent, event)
-                if answered.context:
-                    self.supervisor.type(event.environment_id, answered.context)
+            if answered.context:
+                self.supervisor.type(agent.environment_id, answered.context)
 
     def answer(self, agent: Agent, event: Event) -> Decision:
         stack, settings = self.states.stack_of(agent), self.taken()

@@ -662,3 +662,44 @@ def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_fro
         assert next_task.nudges[0].rendered() == "plan 5: task 8, the next is next. it has no brief and nothing logged yet"
     finally:
         BaseState.fold(())
+
+
+def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_standing():
+    from journal.features.voices.feature import Voices
+    from journal.features.voices.support.voices_conduct import VoicesConduct
+    from journal.features.voices.support.voices_standing import VoicesStanding
+    from journal.features.etiquette.feature import Etiquette
+    from journal.features.etiquette.support.etiquette_conduct import EtiquetteConduct
+    from journal.features.etiquette.support.etiquette_standing import EtiquetteStanding
+    from journal.features.pins.support.pins_conduct import PinsConduct
+    from journal.features.pins.support.pins_standing import PinsStanding
+    from journal.features.migration.support.migration_conduct import MigrationConduct
+    from journal.features.migration.support.migration_standing import MigrationStanding
+    from journal.events.agent.journal_started import JournalStarted
+    from journal.events.agent.tool_finished import ToolFinished
+    from journal.events.agent.turn_written import TurnWritten
+    from journal.events.rows.setting_changed import SettingChanged
+    settings = SettingsValue({Etiquette.REMIND_EVERY.key: 50})
+    from journal.features.plans.support.plans_standing import PlansStanding
+    from journal.features.tasks.support.tasks_standing import TasksStanding
+    standing = Standing({"plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()), "voices": VoicesStanding(instruction="as a butler"), "etiquette": EtiquetteStanding(lines_since_reminder=50), "pins": PinsStanding(pinned=("https://a.test/pinned",), suggested_lately=("https://a.test/said",)), "migration": MigrationStanding(version_3_waiting=True)})
+    BaseState.fold((VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
+    try:
+        started = Idle().on(SessionStarted().with_standing(standing), settings)
+        assert [nudge.key for nudge in started.nudges] == ["voices.how_to_talk_to_the_user", "migration.version_3_not_brought_across"]
+        assert "as a butler" in started.nudges[0].rendered()
+        assert [n.key for n in Idle().on(JournalStarted(source="resume").with_standing(standing), settings).nudges] == ["voices.say_you_are_back"]
+        changed = Idle().on(SettingChanged(environment_id=1, at=1.0, setting=Voices.SPOKEN[0].key).with_standing(standing), settings)
+        assert [n.key for n in changed.nudges] == ["voices.the_voice_changed"]
+        assert Idle().on(SettingChanged(environment_id=1, at=1.0, setting="shell.short_output").with_standing(standing), settings).nudges == ()
+        turn = Idle().on(TurnWritten(text="the user should run journal task done 3, see https://a.test/new and https://a.test/said").with_standing(standing), settings)
+        assert [n.key for n in turn.nudges] == ["etiquette.no_shop_talk", "etiquette.say_you_not_the_user", "pins.pin_the_link"]
+        assert "https://a.test/new" in turn.nudges[2].rendered()
+        assert Idle().on(TurnWritten(text="see https://a.test/pinned", final=False).with_standing(standing), settings).nudges == ()
+        finished = Idle().on(ToolFinished(tool="Bash", input={}, output="opened https://a.test/pr/1").with_standing(standing), settings)
+        assert [n.key for n in finished.nudges] == ["etiquette.a_line_is_an_instruction", "pins.pin_the_link"]
+        quiet = Standing({**standing.readings, "etiquette": EtiquetteStanding(lines_since_reminder=3)})
+        assert Idle().on(ToolFinished(tool="Bash", input={}, output="nothing", subagent="s1").with_standing(standing), settings).nudges == ()
+        assert Idle().on(ToolFinished(tool="Bash", input={}, output="nothing").with_standing(quiet), settings).nudges == ()
+    finally:
+        BaseState.fold(())

@@ -27,10 +27,7 @@ PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "idle", "following_p
 SETTING = re.compile(r"\{([a-z_]+\.[a-z_]+)\}")
 """A setting a shipped title names, filled with its value when the title is drawn."""
 STATELESS = (
-    (":session_started:voice", "Tell the agent how to talk to the user", "say_voice"),
-    (":tool_finished:etiquette", "Remind the agent what a journal line is every {etiquette.remind_every} lines", "remind_what_a_line_is"),
     (":session_started:stale", "Ask whether facts, rules and reminders {memory.stale_after} days old still hold", "ask_about_old_memory"),
-    (":session_started:version_3", "Tell the agent a version 3 journal waits to be brought across", "tell_of_version_3"),
     (":prompt_submitted:inbox", "Say what is unread", "shared_inbox"),
     (":idle:inbox", "Say what is unread", "shared_inbox"),
     (":idle:reports", "Name the worker reports not acted on", "name_reports_at_stop"),
@@ -442,15 +439,6 @@ class ShippedChart(Seed):
         for source, port in ends:
             self.line(source, target, port)
 
-    def remind_what_a_line_is(self, chart: Chart, ends: list) -> list:
-        """After the agent's own tool use, once the journal has said so many lines since the last reminder: a journal line is an instruction, not a message. Every line said counts one, the reminder itself starting the count at zero."""
-        said = self.also_on(chart, "line_said", 1040, 0)
-        reminder = self.node(chart, NodeKind.CHECK, "line_is", "etiquette.a_line_is_an_instruction", x=1040, y=92)
-        self.chain(said, reminder)
-        self.line(reminder, self.node(chart, NodeKind.ACTION, "count_start", "said", x=880, y=184), YES)
-        self.line(reminder, self.node(chart, NodeKind.ACTION, "count_one", "said", x=1200, y=184), NO)
-        return self.guarded(chart, ends, 720, 92, (Guard("own_tool"), Guard("count_over", "said etiquette.remind_every")), "say", REMIND)
-
     def ask_about_old_memory(self, chart: Chart, ends: list) -> list:
         """A fresh session start, not one going on after a compaction, with facts, rules or reminders standing long: the agent is asked whether they still hold, at most once a day."""
         return self.guarded(chart, ends, 720, 92, (Guard("after_compaction", passes=NO), Guard("memory_older_than", "memory.stale_after")), "say", STALE)
@@ -471,14 +459,6 @@ class ShippedChart(Seed):
     def tell_a_report_came(self, chart: Chart, ends: list) -> list:
         """A worker reports while the agent is not waiting on it: the agent is told at once, by typing; one waiting on it is told by its waiting state."""
         return self.guarded(chart, ends, 720, 92, (Guard("worker_reported"), Guard("agent_awaits_the_worker", passes=NO)), "type", REPORTED)
-
-    def tell_of_version_3(self, chart: Chart, ends: list) -> list:
-        """A version 3 journal kept by the installer and not yet brought across: the agent knows it is there and leaves it to the user."""
-        return self.guarded(chart, ends, 720, 92, (Guard("version_3_waiting"),), "say", VERSION_3)
-
-    def say_voice(self, chart: Chart, ends: list) -> list:
-        """How to talk to the user, from the chosen voice."""
-        return self.guarded(chart, ends, 720, 92, (), "say", VOICE)
 
     def shared_inbox(self, chart: Chart, ends: list) -> list:
         """The inbox named at a start, a prompt and a stop."""

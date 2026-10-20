@@ -1,4 +1,5 @@
 from dataclasses import dataclass, replace
+from typing import ClassVar
 
 from journal.events.agent.agent_event import AgentEvent
 
@@ -7,6 +8,7 @@ from journal.events.agent.agent_event import AgentEvent
 class TurnWritten(AgentEvent):
     """The agent wrote a turn for the user: the text so far, the part that just came, and whether that part was the last. What reaches the chat and what the tags are read from is the whole, on the final one."""
 
+    carries_lines: ClassVar[bool] = False
     text: str
     delta: str = ""
     turn_id: str = ""

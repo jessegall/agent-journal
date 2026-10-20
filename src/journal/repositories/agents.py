@@ -15,6 +15,9 @@ class Agents(ScopedRepository[Agent]):
     def everywhere(self) -> list[Agent]:
         return self.across_environments()
 
+    def live_everywhere(self) -> list[Agent]:
+        return [a for a in self.across_environments() if a.state != "ended"]
+
     def live_in(self, environment_id: int) -> list[Agent]:
         return [a for a in self.across_environments(environment_id=environment_id) if a.state != "ended"]
 

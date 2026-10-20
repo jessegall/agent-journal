@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from journal.events.rows.setting_changed import SettingChanged
 from journal.models.scoped import Scoped
 
 
@@ -9,3 +10,6 @@ class Setting(Scoped):
 
     key: str = ""
     value: object | None = None
+
+    def set_to(self, value: object, at: float) -> "Setting":
+        return self.with_(value=value).with_event(SettingChanged(environment_id=self.environment_id, at=at, setting=self.key))
