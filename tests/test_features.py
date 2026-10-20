@@ -7163,3 +7163,10 @@ def test_commands_that_end_together_are_named_in_one_line(app, monkeypatch):
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=6.0))
     ended = [line for line in typed if "journal output read" in line]
     assert len(ended) == 1 and "outputs 1, 2 finished; output 3 failed with code 2" in ended[0], f"three ends in a busy stretch are one line: {ended}"
+
+
+def test_a_closing_line_of_a_few_words_is_never_taken_for_a_repeated_reply():
+    from journal.features.messages.support.word_overlap import WordOverlap
+    reply = "Only Thoughts and Skills still hide anything; the test run is still going and the rest waits."
+    assert WordOverlap.share("The test run is still going.", reply) == 0.0, "a short status line shares its few words by chance"
+    assert WordOverlap.share("Only Thoughts and Skills still hide anything, and the test run is still going while the rest waits.", reply) >= 0.6
