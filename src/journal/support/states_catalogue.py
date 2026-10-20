@@ -1,4 +1,7 @@
 from journal.engine.agent_state import AgentState
+from journal.engine.base_state import BaseState
+from journal.engine.support.stack import Stack
+from journal.models.agent import Agent
 from journal.engine.states.paused import Paused
 from journal.engine.states.ended import Ended
 from journal.support.features_known import FeaturesKnown
@@ -19,23 +22,19 @@ class StatesCatalogue:
         return sorted(self._states)
 
     def wait_in(self, state: AgentState) -> AgentState | None:
-        """The wait a row event is about: the state itself when it waits on something outside; None when the agent waits on nothing."""
         return state if isinstance(state, Paused) else None
 
     def waits(self) -> list[str]:
-        """The states that wait for something outside and are left only by a release: a workflow for one of them must hold one."""
         return sorted(name for name, state in self._states.items() if issubclass(state, Paused) and not state.leaves_by_itself)
 
     def title_of(self, name: str) -> str:
         return self._states[name].title if name in self._states else name
 
     def parent_of(self, name: str) -> str:
-        """The state this one inherits its conduct from, when it has one: the nearest base class that is a state of its own."""
         state = self._states.get(name)
         return next((base.name for base in state.__mro__[1:] if base in self._states.values()), "") if state else ""
 
     def listed(self) -> list[dict]:
-        """Every state with its words and its parent, the first state first, then the rest as the features bring them."""
         names = ["idle"] + [name for name in self._states if name != "idle"]
         return [{"key": name, "title": self.title_of(name), "parent": self.parent_of(name)} for name in names]
 
@@ -44,12 +43,26 @@ class StatesCatalogue:
         return state.from_data(data or {})
 
     def underneath(self, state: AgentState) -> AgentState:
-        """The state an agent is in, or goes back to once its pause ends."""
         return self.resumed(state) if isinstance(state, Paused) else state
 
     def resumed(self, paused: Paused) -> AgentState:
-        """The state a pause goes back to."""
         return self.named(paused.resume.get("state", "idle"), paused.resume.get("data", {}))
 
     def first(self) -> AgentState:
         return self.named("idle", {})
+
+    def is_floor(self, state: BaseState) -> bool:
+        return type(state) is type(self.first())
+
+    def stack_of(self, agent: Agent) -> Stack:
+        if not agent.stack:
+            return self.stack_under(self.named(agent.state, agent.data))
+        return Stack(tuple(self.named(row["state"], row["data"]) for row in agent.stack))
+
+    def stack_under(self, state: BaseState) -> Stack:
+        layers = [state]
+        while isinstance(layers[-1], Paused) and layers[-1].resume:
+            layers.append(self.resumed(layers[-1]))
+        if not self.is_floor(layers[-1]):
+            layers.append(self.first())
+        return Stack(tuple(reversed(layers)))

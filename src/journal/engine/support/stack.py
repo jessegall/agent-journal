@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from journal.engine.base_state import BaseState
-from journal.support.states_catalogue import StatesCatalogue
 
 
 @dataclass(frozen=True)
@@ -24,7 +23,3 @@ class Stack:
 
     def to_data(self) -> list[dict]:
         return [{"state": state.name, "data": state.to_data()} for state in self.states]
-
-    @classmethod
-    def from_data(cls, data: list[dict], catalogue: StatesCatalogue) -> "Stack":
-        return cls(tuple(catalogue.named(row["state"], row["data"]) for row in data))

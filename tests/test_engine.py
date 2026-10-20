@@ -14,7 +14,10 @@ from journal.engine.machine import Machine
 from journal.features.tasks.states.stuck import Stuck
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
+from journal.models.agent import Agent
 from journal.models.setting import Setting
+from journal.db.migrations.seed_the_stack import SeedTheStack
+from journal.repositories.agents import Agents
 from journal.support.actor import Actor
 from journal.repositories.settings import Settings
 from dataclasses import dataclass
@@ -314,7 +317,10 @@ def test_the_stack_keeps_its_floor_changes_only_its_top_and_comes_back_from_its_
     assert stack.popped().to_data() == [{"state": "idle", "data": {}}]
     assert stack.popped().popped() == stack.popped()
     assert stack.with_top(Working(task_id=4)).top().task_id == 4
-    assert Stack.from_data(stack.to_data(), StatesCatalogue(Known())) == stack
+    catalogue = StatesCatalogue(Known())
+    assert catalogue.stack_of(Agent(stack=tuple(stack.to_data()))) == stack
+    assert catalogue.stack_of(Agent(state="working", data={"task_id": 3})) == stack
+    assert catalogue.stack_of(Agent(stack=({"state": "gone", "data": {}},))).top() == Idle()
 
 
 def test_merged_answers_say_every_nudge_in_order_hold_on_the_first_and_move_once():
@@ -357,3 +363,21 @@ def test_a_renamed_state_answers_as_before_through_its_on_listeners_and_a_plain_
     assert Ended().on(SessionEnded(), settings).to == Ended()
     names = [method.__name__ for _, method in Ended.listeners()]
     assert set(names[:3]) == {"on_session_started", "on_prompt_submitted", "on_tool_starting"} and names[3:] == ["on_compaction", "on_session_ended"]
+
+
+def test_the_stack_is_seeded_from_the_state_and_its_pause_chain_unwound_with_idle_at_the_floor(connection, bus, scope):
+    agents = Agents(connection, bus, scope)
+    stuck = agents.save(Agent(environment_id=1, session="s9", state="stuck", data={"resume": {"state": "working", "data": {"task_id": 3, "resume": {"state": "idle", "data": {}}}}}), Actor.system())
+    gone = agents.save(Agent(environment_id=1, session="s8", state="gone", data={}), Actor.system())
+    SeedTheStack().up(connection)
+    assert agents.find(stuck.id).stack == ({"state": "idle", "data": {}}, {"state": "working", "data": {"task_id": 3}}, {"state": "stuck", "data": {}})
+    assert agents.find(gone.id).stack == ({"state": "idle", "data": {}}, {"state": "gone", "data": {}})
+
+
+def test_the_session_end_pushes_ended_on_the_stack_and_a_new_start_pops_it(app):
+    hook(app, "SessionStart")
+    hook(app, "SessionEnd")
+    agents = app.container.get(Agents)
+    assert [row["state"] for row in agents.for_session("s1").stack] == ["idle", "ended"]
+    hook(app, "SessionStart")
+    assert [row["state"] for row in agents.for_session("s1").stack] == ["idle"]
