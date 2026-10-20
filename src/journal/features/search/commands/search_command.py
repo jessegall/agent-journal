@@ -5,6 +5,7 @@ from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.features.search.support.search import CONVERSATION, Search
 from journal.support.scope import Scope
+from journal.support.chat_mark import ChatMark
 
 
 class SearchCommand(Command):
@@ -27,5 +28,5 @@ class SearchCommand(Command):
         lines = [one.line() for one in found]
         said = "\n".join(lines) if lines else f"nothing here holds all of: {' '.join(words)}"
         print(said)
-        self.cards.show(self.scope.id, where.session, f"Searched for \"{' '.join(words)}\"", "search", detail=said, kind="search")
+        self.cards.show(self.scope.id, where.session, f"Searched for \"{' '.join(words)}\"", "search", detail=said, kind="search", shows=ChatMark.SEARCHES)
         return 0

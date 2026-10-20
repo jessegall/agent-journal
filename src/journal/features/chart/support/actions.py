@@ -25,6 +25,7 @@ from journal.support.decision import Decision
 from journal.support.refused import Refused
 from journal.repositories.sequences import Sequences
 from journal.supervisor_link import SupervisorLink
+from journal.support.chat_mark import ChatMark
 
 
 NAMED = re.compile(r"^\[([a-z_]+\.[a-z_]+)\]\s*(.*)$", re.S)
@@ -157,7 +158,7 @@ class Actions:
         """A card in the chat with the line, so the user sees what the journal did."""
         if ctx.environment_id and text not in ctx.spoken:
             ctx.spoken.add(text)
-            self.cards.show(ctx.environment_id, ctx.session, text, "bolt")
+            self.cards.show(ctx.environment_id, ctx.session, text, "bolt", shows=ChatMark.WORKFLOWS)
         return Decision()
 
     def release(self, text: str, ctx: Context) -> Decision:

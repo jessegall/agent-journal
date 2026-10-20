@@ -11,6 +11,7 @@ from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
 from journal.features.plugins.support.plugin_card import PluginCard
 from journal.repositories.entries import Entries
+from journal.support.chat_mark import ChatMark
 
 COMMAND = "plugin_command"
 """The entry each command a plugin ran leaves: the line, its exit code and what it printed on error."""
@@ -33,7 +34,7 @@ class PluginAnswers:
         kind = plugin.manifest.card_kind(card.kind)
         label = self.words.plain(card.label or kind.label)
         data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "detail": self.words.plain(card.detail), "collapsed": kind.collapsed}
-        self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name))
+        self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name), ChatMark.PLUGINS)
 
     def run(self, plugin: Plugin, line: str, environment: str, environment_id: int) -> None:
         argv = shlex.split(line)

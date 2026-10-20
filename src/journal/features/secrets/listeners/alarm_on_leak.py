@@ -4,6 +4,7 @@ from journal.support.masks import Masks
 from journal.support.cards import Cards
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
+from journal.support.chat_mark import ChatMark
 
 QUIET = 600.0
 """At most one alarm in ten minutes, however many writes carried a value."""
@@ -22,4 +23,4 @@ class AlarmOnLeak(AgentListener[Ticked]):
         variables = sorted({variable for variable, _ in self.masks.leaks})
         self.masks.leaks.clear()
         self._said_at = time.time()
-        self.cards.show(event.environment_id, event.session, f"A secret's value was about to be recorded and was masked: {', '.join(variables)}", "key", "bad")
+        self.cards.show(event.environment_id, event.session, f"A secret's value was about to be recorded and was masked: {', '.join(variables)}", "key", "bad", shows=ChatMark.FAULTS)

@@ -4,6 +4,7 @@ from journal.events.models.created import Created
 from journal.support.actor_kind import ActorKind
 from journal.models.doc import Doc
 from journal.repositories.agents import Agents
+from journal.support.chat_mark import ChatMark
 
 
 class MarkMade(Listener[Created]):
@@ -17,5 +18,5 @@ class MarkMade(Listener[Created]):
         if not isinstance(doc, Doc) or event.by.kind != ActorKind.AGENT:
             return
         agent = self.agents.for_session(event.by.id)
-        data = {"kind": "made", "session": event.by.id, "made_type": "docs", "n": doc.id, "abstract": doc.abstract, "row": f"docs:{doc.id}", "shows": "made"}
-        self.cards.keyed(agent.environment_id, f"made:doc:{doc.id}", doc.title, data, event.by)
+        data = {"kind": "made", "session": event.by.id, "made_type": "docs", "n": doc.id, "abstract": doc.abstract, "row": f"docs:{doc.id}"}
+        self.cards.keyed(agent.environment_id, f"made:doc:{doc.id}", doc.title, data, event.by, ChatMark.MADE)

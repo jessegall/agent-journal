@@ -1,6 +1,7 @@
 from journal.support.cards import Cards
 from journal.events.agent.compacting import Compacting
 from journal.events.agent_listener import AgentListener
+from journal.support.chat_mark import ChatMark
 
 
 class MarkCompacted(AgentListener[Compacting]):
@@ -10,4 +11,4 @@ class MarkCompacted(AgentListener[Compacting]):
         self.cards = cards
 
     def handle(self, event: Compacting) -> None:
-        self.cards.show(event.environment_id, event.session, "Conversation compacted", "activity", "warn", kind="compacted")
+        self.cards.show(event.environment_id, event.session, "Conversation compacted", "activity", "warn", kind="compacted", shows=ChatMark.COMPACTIONS)

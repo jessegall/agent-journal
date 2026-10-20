@@ -5,6 +5,7 @@ from journal.support.running import Running
 from journal.models.trigger import Trigger
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.sequences import Sequences
+from journal.support.chat_mark import ChatMark
 
 
 class Firing:
@@ -17,7 +18,7 @@ class Firing:
         agent = self.machine.agent(session, environment_id)
         lines = []
         for trigger in met:
-            self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.words), f"triggers:{trigger.id}")
+            self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.words), f"triggers:{trigger.id}", shows=ChatMark.TRIGGERS)
             line = self.started(trigger, session, environment_id) if trigger.action == TriggerAction.SEQUENCE else self.nudger.say(agent, self.said(trigger))
             if line:
                 lines.append(line)

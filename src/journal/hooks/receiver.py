@@ -17,6 +17,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.support.scope import Scope
+from journal.support.chat_mark import ChatMark
 
 
 GUARD_FAILED = "guard_failed"
@@ -77,7 +78,7 @@ class Receiver:
         except Exception as fault:
             words = f"{type(listener).__name__} raised {type(fault).__name__}: {fault}"
             self.entries.save(Entry(environment_id=event.environment_id, kind=GUARD_FAILED, actor=Actor.system(), data={"session": event.session, "event": type(event).__name__, "listener": type(listener).__name__, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
-            self.cards.show(event.environment_id, event.session, f"A guard failed and let the event through: {words}", "bolt", tone="bad")
+            self.cards.show(event.environment_id, event.session, f"A guard failed and let the event through: {words}", "bolt", tone="bad", shows=ChatMark.FAULTS)
             return Decision.tell(f"[journal] a guard failed and let this through: {words}. the journal recorded it; tell the user if it happens again")
 
     def _defer(self, event: AgentEvent) -> None:

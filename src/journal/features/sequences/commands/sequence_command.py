@@ -9,6 +9,7 @@ from journal.support.scope import Scope
 from journal.support.sequence_run import SequenceRun
 from journal.support.refused import Refused
 from journal.repositories.sequences import Sequences
+from journal.support.chat_mark import ChatMark
 
 
 class SequenceCommand(Command):
@@ -70,7 +71,7 @@ class SequenceCommand(Command):
         if not args.sure:
             raise Refused(f"abandoning sequence {run.sequence_id}, {run.title}, leaves undone: {skipped}. again with --sure to go through")
         run, line = self.running.abandon(where.session, self.scope.id)
-        self.cards.show(self.scope.id, where.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}")
+        self.cards.show(self.scope.id, where.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}", shows=ChatMark.SEQUENCES)
         print(line)
         return 0
 

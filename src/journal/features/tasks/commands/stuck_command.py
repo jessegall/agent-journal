@@ -6,6 +6,7 @@ from journal.support.cards import Cards
 from journal.engine.machine import Machine
 from journal.features.tasks.states.stuck import Stuck
 from journal.support.scope import Scope
+from journal.support.chat_mark import ChatMark
 
 
 class StuckCommand(Command):
@@ -24,6 +25,6 @@ class StuckCommand(Command):
         environment = self.scope.id
         current = self.machine.agent(where.session, environment)
         self.machine.move(where.session, environment, Stuck.leaving(self.machine.states.named(current.state, current.data), why=args.why))
-        self.cards.show(environment, where.session, "Agent stuck", "warn", "bad", args.why)
+        self.cards.show(environment, where.session, "Agent stuck", "warn", "bad", args.why, shows=ChatMark.STUCK)
         print("stuck; your next tool use or prompt lifts it")
         return 0

@@ -2,6 +2,7 @@ from journal.support.cards import Cards
 from journal.events.listener import Listener
 from journal.events.models.saved import Saved
 from journal.models.question import Question
+from journal.support.chat_mark import ChatMark
 
 
 class MarkQuestion(Listener[Saved]):
@@ -15,4 +16,4 @@ class MarkQuestion(Listener[Saved]):
         if not isinstance(question, Question):
             return
         data = {"kind": "question", "session": question.created_by.id, "row": f"questions:{question.id}", "n": question.id, "options": list(question.options), "answer": question.answer}
-        self.cards.keyed(question.environment_id, f"question:{question.id}", question.text, data, question.created_by)
+        self.cards.keyed(question.environment_id, f"question:{question.id}", question.text, data, question.created_by, ChatMark.QUESTIONS)

@@ -7,6 +7,7 @@ from journal.support.requiring import Requiring
 from journal.support.skill_files import SkillFiles
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
+from journal.support.chat_mark import ChatMark
 
 
 class MarkLoaded(AgentListener[ToolFinished]):
@@ -27,4 +28,4 @@ class MarkLoaded(AgentListener[ToolFinished]):
         digest = self.files.hash_of(skill)
         self.agents.touched(agent, Actor.system(), lambda now: {"skills_loaded": {**(now.skills_loaded or {}), skill.name: digest}})
         self.requiring.paid(agent, skill)
-        self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good", skill.name, kind="skill")
+        self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good", skill.name, kind="skill", shows=ChatMark.SKILLS)

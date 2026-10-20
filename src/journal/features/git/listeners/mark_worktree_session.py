@@ -4,6 +4,7 @@ from journal.events.agent_listener import AgentListener
 from journal.repositories.environments import Environments
 from journal.support.cards import Cards
 from journal.support.worktree import Worktree
+from journal.support.chat_mark import ChatMark
 
 
 class MarkWorktreeSession(AgentListener[SessionStarted]):
@@ -16,4 +17,4 @@ class MarkWorktreeSession(AgentListener[SessionStarted]):
         tree = Worktree(self.config.root, self.environments.find(event.environment_id).name)
         if not tree.path.is_dir():
             return
-        self.cards.show(event.environment_id, event.session, f"Working in the worktree {tree.name}, on the branch {tree.current_branch()}", "branch", key=f"worktree:{event.session}")
+        self.cards.show(event.environment_id, event.session, f"Working in the worktree {tree.name}, on the branch {tree.current_branch()}", "branch", key=f"worktree:{event.session}", shows=ChatMark.WORKTREES)

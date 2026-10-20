@@ -15,6 +15,7 @@ from journal.repositories.messages import Messages
 from journal.repositories.settings import Settings
 from journal.supervisor_link import SupervisorLink
 from journal.support.scope import Scope
+from journal.support.chat_mark import ChatMark
 
 SETTLING_SECONDS = 60.0
 """After the journal starts, which an update is too, nothing is judged: a cold start is always slow."""
@@ -82,7 +83,7 @@ class SlowRequests:
         count = earlier[0].data.get("count", 0) + 1 if earlier else 1
         worst = max(ms, earlier[0].data.get("worst", 0)) if earlier else ms
         data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "detail": f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms", "row": "", "count": count, "worst": worst}
-        self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system())
+        self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system(), ChatMark.FAULTS)
         agent = self.agents.live()
         if earlier or agent is None:
             return

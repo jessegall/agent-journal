@@ -416,6 +416,7 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
 
 def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_cards_by_number(tmp_path: Path):
     from journal.support.cards import Cards
+    from journal.support.chat_mark import ChatMark
     from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.settings import Settings
@@ -428,13 +429,13 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
-        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3")
+        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3", shows=ChatMark.CHECKS)
         rows = [r for r in call(server, "GET", "/journal/messages")[1]["rows"] if r["id"] >= n]
         assert [r["id"] for r in rows] == sorted(r["id"] for r in rows)
         assert [(r["author"], r["text"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
         card = rows[-1]
         assert card["created_by"] == "system"
-        assert card["data"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": ""}
+        assert card["data"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": "", "shows": "checks"}
     finally:
         app.runtime().stop()
 

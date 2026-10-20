@@ -120,3 +120,16 @@ describe("a suggestion", () => {
         expect(turn.suggestion).toEqual({id: 3, title: "Run it as a journal plugin instead?", detail: data.detail, accept: "Install it as a plugin", answer: ""});
     });
 });
+
+describe("the Show in chat switches", () => {
+    test("hide each card by the kind it names, a fact's whisper under Facts and never under Rules", () => {
+        const command = card(1, 10, {kind: "card", icon: "terminal", shows: "commands"}, "Moved to the background: testing");
+        const fact = card(2, 11, {kind: "whisper", row: "facts:4", shows: "facts"}, "Reminded the agent about fact 4");
+        const step = card(3, 12, {kind: "card", icon: "list", shows: "sequence_steps"}, "Sequence 1: moved on to step 2");
+        const shown = (hidden) => threadTurns([command, fact, step], [], false, hidden).turns.map((t) => t.id);
+        expect(shown([])).toEqual([1, 2, 3]);
+        expect(shown(["commands"])).toEqual([2, 3]);
+        expect(shown(["rules"])).toEqual([1, 2, 3]);
+        expect(shown(["facts", "sequence_steps"])).toEqual([1]);
+    });
+});
