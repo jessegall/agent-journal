@@ -1,4 +1,5 @@
 import re
+from journal.features.chart.support.renamed_nudges import RENAMED_NUDGES
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.chart.seeds.support.guard import Guard
 from journal.support.chart_catalogue import FORMER_TITLES, ChartCatalogue
@@ -200,6 +201,7 @@ class ShippedChart(Seed):
         self.retire_the_older_shape(by)
         self.retire_unpaired(by)
         self.rewrite_retired_checks(by)
+        self.rewrite_renamed_nudges(by)
         self.retire_workflows_of_states_gone(by)
         self.stop_what_names_an_unknown_entry(by)
         self.stop_what_reads_a_count_it_does_not_keep(by)
@@ -351,6 +353,14 @@ class ShippedChart(Seed):
             if rewritten:
                 self.charts.save(chart.with_(title=self.noted_title(chart, f" (upgrade rewrote {', '.join(rewritten)} to count checks)")), by)
                 self.charts.revised(chart, by)
+
+    def rewrite_renamed_nudges(self, by: Actor) -> None:
+        for chart in self.charts.all():
+            for node in [n for n in self.charts.nodes_of(chart) if any(f"[{old}]" in n.text for old in RENAMED_NUDGES)]:
+                text = node.text
+                for old, new in RENAMED_NUDGES.items():
+                    text = text.replace(f"[{old}]", f"[{new}]")
+                self.charts.nodes.save(node.with_(text=text), by)
 
     def retire_workflows_of_states_gone(self, by: Actor) -> None:
         """A user's workflow bound to a state that became a fact is kept, turned off, and its title says what became of its state."""

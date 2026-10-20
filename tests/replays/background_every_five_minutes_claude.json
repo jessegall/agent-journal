@@ -49,10 +49,14 @@
     {
       "name": "ten minutes and some",
       "answer": null,
-      "typed": [],
-      "nudges": [],
+      "typed": [
+        "[journal] output 1 still running. look at it; hung or stuck: stop it and say why"
+      ],
+      "nudges": [
+        "shell.check_the_background"
+      ],
       "counts": {
-        "charts:31:said": 6
+        "charts:31:said": 7
       },
       "read": [
         {
@@ -67,7 +71,7 @@
       "typed": [],
       "nudges": [],
       "counts": {
-        "charts:31:said": 6
+        "charts:31:said": 7
       },
       "read": []
     },
@@ -81,7 +85,7 @@
         "shell.outputs_ended"
       ],
       "counts": {
-        "charts:31:said": 7
+        "charts:31:said": 8
       },
       "read": []
     }
