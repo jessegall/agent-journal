@@ -9,6 +9,10 @@ DISPATCHES = "(kind IN ('SubagentEnded', 'Idle', 'SessionStarted', 'SessionEnded
 class Entries(ScopedRepository[Entry]):
     model = Entry
 
+    def trim(self, newest: int, kept: int) -> int:
+        """The record cut to the newest so many entries by number, across every environment; how many went."""
+        return self.connection.execute("DELETE FROM entries WHERE id <= ?", (newest - kept,)).rowcount
+
     def said_to(self, session: str) -> int:
         """How many lines the journal has said to this session, counted whole: the nudge entries carrying it."""
         return self.counted_in("kind = 'nudge' AND json_extract(data, '$.session') = ?", (session,))

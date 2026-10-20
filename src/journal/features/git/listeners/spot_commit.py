@@ -22,6 +22,7 @@ from journal.models.task_state import TaskState
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
 from journal.support.chat_mark import ChatMark
+from journal.features.tasks.support.after_a_close import AfterAClose
 
 COMMIT = "commit"
 JUST_MADE = 60
@@ -35,8 +36,9 @@ class SpotCommit(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, agents: Agents, nudger: Nudger, tasks: TaskRows, bus: Bus) -> None:
+    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, agents: Agents, nudger: Nudger, tasks: TaskRows, bus: Bus, after: AfterAClose) -> None:
         self.config, self.cards, self.messages, self.console, self.environments, self.agents, self.nudger, self.tasks, self.bus = config, cards, messages, console, environments, agents, nudger, tasks, bus
+        self.after = after
 
     def handle(self, event: ToolFinished) -> Decision | None:
         command = event.input.get("command", "") if event.tool == "Bash" else ""
@@ -77,8 +79,11 @@ class SpotCommit(AgentListener[ToolFinished]):
         closed = [n for n in numbers if self.console.run(["task", "done", str(n), "--how", f"commit {sha[:8]}"], where).code == 0]
         if not closed:
             return None
-        line = self.nudger.say(self.agents.for_session(event.session), Tasks.CLOSED_BY_COMMIT.about(sha=sha[:8], tasks=", ".join(f"task {n}" for n in closed)))
-        return Decision.tell(line) if line else None
+        agent = self.agents.for_session(event.session)
+        after = self.after.said(self.tasks.find(closed[-1]))
+        lines = [self.nudger.say(agent, Tasks.CLOSED_BY_COMMIT.about(sha=sha[:8], tasks=", ".join(f"task {n}" for n in closed))), self.nudger.say(agent, after) if after else None]
+        said = "\n".join(line for line in lines if line)
+        return Decision.tell(said) if said else None
 
     def head(self, folder: Path) -> HeadCommit | None:
         try:

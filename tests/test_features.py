@@ -7201,3 +7201,39 @@ def test_an_environment_keeps_one_session_for_each_provider(app):
     codex = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/codex", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "c1"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
     urlopen(codex, timeout=5).read()
     assert machine.current("s2").name != "ended" and machine.current("c1").name != "ended", "another provider's session in the same environment keeps its own"
+
+
+def test_the_record_is_a_rolling_log_of_its_newest_entries_and_the_projects_rows_stay(app):
+    from journal.repositories.entries import Entries
+    from journal.repositories.messages import Messages
+    from journal.repositories.settings import Settings
+    hook(app, "SessionStart")
+    entries = app.container.get(Entries)
+    assert len(entries.selected_everywhere("1")) > 5
+    app.container.get(Settings).set("record.kept", 5, Actor.user(1))
+    for _ in range(4):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    app.console().run(["message", "send", "keep me"], USER)
+    assert len(entries.selected_everywhere("1")) <= 5, "every entry written trims the record to the setting's newest"
+    assert [m.text for m in app.container.get(Messages).all()][-1] == "keep me", "a message is the project's own and stays"
+
+
+def test_a_task_closed_by_a_commit_names_a_parked_task_at_once(app):
+    import subprocess
+    root = app.config.root
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship the footer\n\nJournal: tasks done 2"], cwd=root, check=True)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the parser", "--start"], AGENT)
+    console.run(["task", "park", "1", "the footer comes first"], AGENT)
+    console.run(["task", "create", "footer", "--start"], AGENT)
+    reply = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})[1]
+    told = reply["hookSpecificOutput"]["additionalContext"]
+    assert "closed task 2" in told and "task 1 is still parked" in told and "the footer comes first" in told, f"the close names the parked task with the commit, not a quarter of an hour later: {told}"
+
+
+def test_the_database_gives_deleted_rows_space_back_by_itself(app):
+    from journal.db.connection import Connection
+    assert app.container.get(Connection).one("PRAGMA auto_vacuum")[0] == 1, "auto-vacuum is on, so a trimmed record shrinks the file"

@@ -25,13 +25,14 @@ from journal.repositories.task_logs import TaskLogs
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks, WAITS_ON
+from journal.features.tasks.support.after_a_close import AfterAClose
 
 
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock) -> None:
-        self.clock = clock
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: Machine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, after: AfterAClose) -> None:
+        self.clock, self.after = clock, after
         self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.waits, self.briefing = tasks, logs, machine, messages, links, plans, in_hand, questions, waits, briefing
 
     def arguments(self, verbs) -> None:
@@ -128,16 +129,9 @@ class TaskCommand(Command):
         return 0
 
     def _name_next(self, done: Task) -> None:
-        from journal.features.tasks.feature import Tasks
-        if self.tasks.in_hand() is not None or self.plans.is_moving(done):
-            return
-        parked = self.tasks.in_state(TaskState.PARKED)
-        if parked:
-            print(Tasks.PARKED_STILL.about(n=parked[0].id, why=parked[0].parked_why).rendered())
-            return
-        open_ = self.plans.free()
-        if open_:
-            print(Tasks.NEXT.about(n=open_[0].id, title=open_[0].title).rendered())
+        said = self.after.said(done)
+        if said:
+            print(said.rendered())
 
     @staticmethod
     def _now() -> datetime:

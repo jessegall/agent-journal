@@ -5,6 +5,9 @@ from journal.support.column import Column
 from journal.db.connection import Connection
 from journal.models.model import Model
 
+FULL = 1
+"""SQLite's auto_vacuum mode that frees deleted rows' pages at every commit."""
+
 
 class Schema:
     """Creates a table per model from its fields, and the table that records which migrations ran."""
@@ -13,11 +16,19 @@ class Schema:
         self.connection, self.models = connection, models
 
     def create(self) -> None:
+        self.vacuum_on_its_own()
         with self.connection.transaction() as db:
             db.execute("CREATE TABLE IF NOT EXISTS migrations (number INTEGER PRIMARY KEY, ran_at TEXT NOT NULL)")
             for model in self.models:
                 db.execute(self.statement(model))
                 self.add_new_columns(db, model)
+
+    def vacuum_on_its_own(self) -> None:
+        """The file gives the space of deleted rows back to the disk at every commit: a database made before that is switched over once, by a compaction."""
+        if self.connection.one("PRAGMA auto_vacuum")[0] == FULL:
+            return
+        self.connection.execute(f"PRAGMA auto_vacuum = {FULL}")
+        self.connection.execute("VACUUM")
 
     def add_new_columns(self, db, model: type[Model]) -> None:
         """A column a model gained after its table was made is added to the table; nothing is ever dropped."""
