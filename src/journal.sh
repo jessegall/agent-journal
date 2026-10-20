@@ -11,7 +11,7 @@ case "$1" in
     claude|codex|serve|setup) cd "$root" && exec "$py" "$here/journal.py" "$@" ;;
 esac
 # Who runs the command: JOURNAL_ACTOR is agent, sub-agent or worker-agent, sent to the server as a header, with a Codex thread's id.
-# A subagent of Claude Code inherits the agent's shell whole, so nothing in its environment tells it apart here; the server pairs the command with its hook.
+# A subagent of Claude Code inherits the agent's shell whole, so nothing in its environment tells it apart here; the server pairs the command with the Bash PreToolUse hook a subagent announced it in (the only subagent hook it keeps).
 . "$here/journal/hooks/environment.sh"
 JOURNAL_ENV=$(journal_environment)
 export JOURNAL_ENV

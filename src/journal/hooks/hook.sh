@@ -6,7 +6,8 @@
 # Nothing is decided here, and a deferred handler never changes the status: the server replies before it runs.
 # Who runs the hook: JOURNAL_ACTOR is agent, sub-agent or worker-agent; only the agent's own hooks reach the journal.
 # A hook whose body carries a subagent's id is a sub-agent's, whatever the variable says, since a subagent inherits the agent's shell;
-# only its start, its stop and its PreToolUse reach the server, which pairs that announced command with the shim's own post.
+# only its start, its stop and its PreToolUse reach the server. The server records and judges none of a subagent's PreToolUse and answers it {};
+# it only notes a Bash one's command, to pair with the journal command the shim posts.
 [ "$AGENT_JOURNAL_ACTIVE" = 1 ] || exit 0
 [ "${JOURNAL_ACTOR:-agent}" = agent ] || exit 0
 agent=$1

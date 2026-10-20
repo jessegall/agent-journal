@@ -13,7 +13,11 @@ class HookController:
 
     def receive(self, request: Request) -> Response:
         hook = Hook.parse(request.body, request.environment, request.params["agent"])
-        if hook.subagent and hook.kind == HookKind.PRE_TOOL_USE and hook.tool == "Bash":
-            self.announced.note(hook.environment, hook.input.get("command", ""))
-            return Response.json({})
+        if hook.subagent and hook.kind == HookKind.PRE_TOOL_USE:
+            return self.announce(hook)
         return self.providers.named(hook.provider).answer(hook, self.receiver.receive(hook))
+
+    def announce(self, hook: Hook) -> Response:
+        if hook.tool == "Bash":
+            self.announced.note(hook.environment, hook.input.get("command", ""))
+        return Response.json({})

@@ -158,3 +158,12 @@ def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_
     app.container.get(Agents).save(Agent(session="thread-1", provider="codex"), Actor.system())
     assert "a subagent runs no journal command" in post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-2"})["err"]
     assert post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-1"})["code"] == 0
+
+
+def test_a_subagents_write_hook_makes_no_entry_and_moves_no_state(app):
+    from journal.repositories.agents import Agents
+    post_hook(app, {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
+    entries, states = len(app.container.get(Entries).in_()), [a.state for a in app.container.get(Agents).in_()]
+    status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Write", "tool_input": {"file_path": "a.py"}})
+    assert status == 200 and body == {}
+    assert len(app.container.get(Entries).in_()) == entries and [a.state for a in app.container.get(Agents).in_()] == states
