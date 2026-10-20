@@ -10,7 +10,7 @@ from journal.repositories.agents import Agents
 
 
 class MarkLoaded(AgentListener[ToolFinished]):
-    """A read of our skill files, by the read tool, a shell line or the skill tool, is remembered on the agent with each file's hash."""
+    """A read of our skill files, by the read tool, a shell line or the skill tool, is remembered on the agent with each file's hash, added to what it holds under the write lock, so two reads sent together are both kept."""
 
     blocking = True
 
@@ -24,6 +24,7 @@ class MarkLoaded(AgentListener[ToolFinished]):
 
     def loaded(self, event: ToolFinished, skill: Skill) -> None:
         agent = self.machine.agent(event.session, event.environment_id)
-        self.agents.touch(agent, Actor.system(), skills_loaded={**(agent.skills_loaded or {}), skill.name: self.files.hash_of(skill)})
+        digest = self.files.hash_of(skill)
+        self.agents.touched(agent, Actor.system(), lambda now: {"skills_loaded": {**(now.skills_loaded or {}), skill.name: digest}})
         self.requiring.paid(agent, skill)
         self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good", skill.name, kind="skill")

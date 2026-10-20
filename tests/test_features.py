@@ -866,6 +866,16 @@ def test_a_shell_line_printing_skill_files_loads_each_of_them(skilled):
     assert "workers" not in app.container.get(Agents).for_session("s1").skills_loaded, "a line that writes reads nothing"
 
 
+def test_two_skill_reads_sent_together_are_both_kept(skilled):
+    from concurrent.futures import ThreadPoolExecutor
+    from journal.repositories.agents import Agents
+    app = skilled
+    hook(app, "SessionStart")
+    with ThreadPoolExecutor(2) as pool:
+        list(pool.map(lambda folder: read_skill(app, folder), ["journal-tasks", "journal-checks"]))
+    assert {"tasks", "checks"} <= set(app.container.get(Agents).for_session("s1").skills_loaded), "each read adds to what the agent holds, never writes over the other"
+
+
 def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_datagrams(app):
     import socket
     import threading
@@ -6547,6 +6557,8 @@ def test_a_link_in_a_commands_output_is_suggested_as_a_pin_and_again_only_after_
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     made = lambda: hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "gh pr create"}, tool_response={"stdout": "https://github.com/acme/shop/pull/27"})[1]
+    edited = hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": "a.py"}, tool_response={"originalFile": "see https://example.com/docs/one"})[1]
+    assert "is not pinned" not in str(edited), "an edit's answer carries the file it changed, so its links are never suggested"
     first = made()
     assert "https://github.com/acme/shop/pull/27 is not pinned" in str(first), "a pull request's address in a command's output is suggested as a pin"
     assert "is not pinned" not in str(made()), "not again at once"

@@ -2,6 +2,13 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.2.2
+
+- A link is suggested as a pin only from what a shell command printed; a file edit or read no longer suggests every link in the file.
+- Two skill files read at once both count as read; one of the pair was sometimes lost, so a stop was held for a skill already read.
+- Pausing the agent is no longer a setting: the pause button is always there.
+- Slow requests are reported, and shown on the settings page, only in the journal's own checkout.
+
 ## 4.2.1
 
 - A message opened in the side panel is titled by its first line, cut after a whole word at 80 characters, with the whole text below it.

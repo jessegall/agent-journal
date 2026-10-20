@@ -5,7 +5,7 @@ from journal.support.decision import Decision
 
 
 class UnpinnedLinkInOutput(AgentListener[ToolFinished]):
-    """A link in what a tool printed, such as the address of a pull request just opened, is suggested as a pin beside the tool's answer."""
+    """A link a shell line printed, such as the address of a pull request just opened, is suggested as a pin beside its answer; an edit's or a read's answer carries the file, so its links are not."""
 
     blocking = True
 
@@ -15,5 +15,5 @@ class UnpinnedLinkInOutput(AgentListener[ToolFinished]):
     def handle(self, event: ToolFinished) -> Decision | None:
         if event.subagent:
             return None
-        lines = self.suggestions.lines(event.session, event.environment_id, event.output)
+        lines = self.suggestions.lines(event.session, event.environment_id, event.printed)
         return Decision.tell("\n".join(lines)) if lines else None
