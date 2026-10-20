@@ -1,7 +1,7 @@
 from journal.http.support.route import Route
 
-TABLES = ("tasks", "plans", "docs", "reports", "facts", "rules", "reminders", "environments", "questions", "sequences", "templates", "workers", "messages", "notices", "dumps", "agents", "shares")
-"""The rows a phone lists and opens: what the viewer's own pages show, without secrets, plugins, checks or triggers."""
+TABLES = ("tasks", "plans", "docs", "reports", "facts", "rules", "reminders", "environments", "questions", "sequences", "templates", "workers", "messages", "notices", "dumps", "agents", "shares", "checks", "triggers")
+"""The rows a phone lists and opens: what the viewer's own pages show, without secrets or plugins."""
 READS = frozenset((
     *(f"/journal/{table}" for table in TABLES), *(f"/journal/{table}/{{id}}" for table in TABLES),
     "/journal/viewer", "/journal/manifest", "/journal/identity", "/journal/health", "/journal/journals", "/journal/summary", "/journal/bar",
@@ -9,7 +9,7 @@ READS = frozenset((
     "/journal/project-files", "/journal/project-files/find", "/journal/project-files/file", "/journal/project-files/diff",
     "/journal/attachments", "/journal/{table}/{id}/files/{name}", "/journal/comments", "/journal/reactions", "/journal/nudges", "/journal/docs/search",
     "/journal/tasks/{id}/logs", "/journal/plans/{id}/tasks", "/journal/plans/{id}/timeline", "/journal/workers/{id}/transcript",
-    "/journal/agents/live", "/journal/agents/{id}/edits", "/journal/agents/{id}/edits/file", "/journal/agents/{id}/terminal", "/journal/agents/{id}/transcript",
+    "/journal/agents/live", "/journal/agents/controls/{provider}", "/journal/agents/{id}/edits", "/journal/agents/{id}/edits/file", "/journal/agents/{id}/terminal", "/journal/agents/{id}/transcript",
     "/journal/agents/{id}/subagents/{session}/transcript", "/journal/skills", "/journal/skills/{name}", "/journal/shares/opens",
 ))
 """The reads the phone's pages make, each by name: no secret, and no read that starts a program, such as the MCP check, nor the pages that set how the journal runs: workflows, plugins, the tunnel and profiles. A stream is not among them: the tunnel's listener answers whole replies, so the phone asks again instead."""

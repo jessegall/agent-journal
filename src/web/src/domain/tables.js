@@ -141,7 +141,9 @@ export const TABLES = {
 };
 
 // the phone never reads a secret, so it never lists or counts them
-const ORDER = Object.keys(TABLES).filter((name) => !(onPhone && name === "secrets"));
+// what a phone may not read: a secret's fields and the plugins stay on the computer
+const DESK_ONLY = ["secrets", "plugins"];
+const ORDER = Object.keys(TABLES).filter((name) => !(onPhone && DESK_ONLY.includes(name)));
 
 export const tables = computed(() => ORDER.map((name) => ({name, ...TABLES[name]})));
 export const meta = (table) => TABLES[table];

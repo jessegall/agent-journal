@@ -36,7 +36,9 @@ watch(now, (at, before) => {
     if (!remaining.value) reload();
 });
 
+// the phone shows no band, so it never asks
 onMounted(async () => {
+    if (onPhone) return;
     try {
         upstream.value = await api.releases();
     } catch (e) {}
