@@ -117,7 +117,7 @@ class MessageCommand(Command):
     def show(self, message: Message) -> None:
         """The message, the passage it comments on, its files with where to open them and what they show, and the rows it is linked to."""
         print(f"message {message.id} from {message.sender}{self.answering(message)}: {message.own_words}")
-        for line in message.quote.split("\n") if message.quotes_a_passage else ():
+        for line in message.quote.split("\n") if message.is_on_a_passage else ():
             print(f"  > {line}")
         for name in message.files:
             path = self.config.files / "message" / str(message.id) / name

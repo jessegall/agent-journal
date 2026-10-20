@@ -58,7 +58,7 @@ class Message(Scoped):
         return next((i for i, line in enumerate(lines) if not line.startswith(">")), len(lines))
 
     @property
-    def quotes_a_passage(self) -> bool:
+    def is_on_a_passage(self) -> bool:
         """Whether the quote above the words is a passage of a document or a row, not the words of the message it replies to."""
         return self.quoted_lines > 0 and self.reply_to is None
 
