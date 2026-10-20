@@ -584,12 +584,14 @@ def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and
 
 def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude_reads_it(server, journal_root):
     status, read = call(server, "GET", "/journal/profiles")
-    assert status == 200 and read == {"profiles": []}, "a fresh journal has no agents folder yet"
+    shipped = ["debugger", "medior", "planner", "researcher", "senior"]
+    assert status == 200 and [p["name"] for p in read["profiles"]] == shipped, "a journal writes the profiles it ships when it boots"
     status, saved = call(server, "POST", "/journal/profiles/critic", {"description": "Reads a design through one lens.", "tools": "Read, Grep", "model": "sonnet", "codex_model": "gpt-6", "body": "You are a critic.\n\nSay what is wrong."})
     assert status == 200 and saved["name"] == "critic" and saved["shipped"] is False and saved["path"] == ".claude/agents/critic.md"
     assert (journal_root / ".claude/agents/critic.md").read_text() == "---\nname: critic\ndescription: Reads a design through one lens.\ntools: Read, Grep\nkind: subagent\nmodel: sonnet\ncodex-model: gpt-6\n---\n\nYou are a critic.\n\nSay what is wrong.\n"
     status, read = call(server, "GET", "/journal/profiles")
-    assert [p["name"] for p in read["profiles"]] == ["critic"] and read["profiles"][0]["uses"] == 0 and read["profiles"][0]["body"] == "You are a critic.\n\nSay what is wrong."
+    critic = next(p for p in read["profiles"] if p["name"] == "critic")
+    assert sorted(p["name"] for p in read["profiles"]) == sorted([*shipped, "critic"]) and critic["uses"] == 0 and critic["body"] == "You are a critic.\n\nSay what is wrong."
     status, one = call(server, "GET", "/journal/profiles/critic")
     assert status == 200 and one["model"] == "sonnet" and one["codex_model"] == "gpt-6" and one["tools"] == "Read, Grep"
     assert call(server, "GET", "/journal/profiles/nobody")[0] == 404

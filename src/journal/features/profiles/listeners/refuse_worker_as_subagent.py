@@ -17,4 +17,4 @@ class RefuseWorkerAsSubagent(AgentListener[ToolStarting]):
         name = event.input.get("subagent_type", "")
         if event.tool not in DISPATCH_TOOLS or not name or self.files.kind_of(name) != "worker":
             return None
-        return Decision.refuse(f"{name} is a worker profile: it writes, so dispatch it with journal worker dispatch {name} \"<job>\" --model <model>, not as a subagent")
+        return Decision.refuse(f"{name} is a worker profile: it writes, so dispatch a worker with journal worker dispatch \"<Name>\" \"<job>\" --profile {name}, not as a subagent")
