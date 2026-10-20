@@ -1808,7 +1808,15 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     moved = console.run(["shell", "moved", "c1", "pytest -q", "--file", "/tmp/out/c1"], AGENT).out
     assert "moved to the background as output 1" in moved and "pytest" not in moved, "a background command is named by its number"
     console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
-    assert "output 1 failed with code 1" in typed[-1] and "pytest" not in typed[-1] and "2 failed" not in typed[-1], "its end names the number and how it ended, never the command or its lines"
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    told = len(typed)
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+    assert len(typed) == told, "while the agent is busy, the end waits"
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=6.0))
+    assert "output 1 failed with code 1" in typed[-1] and "pytest" not in typed[-1] and "2 failed" not in typed[-1], "once it is quiet, its end names the number and how it ended, never the command or its lines"
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=12.0))
+    assert len(typed) == told + 1, "an end is named once"
     cards = [m for m in app.container.get(Messages).in_() if m.author == "system"]
     assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["command"] == "pytest -q" and cards[-1].data["detail"] == "2 failed", "the one mark of the moved command is settled in place: it names the command, on a line of its own, and how it ended"
     (app.config.root / "c2").mkdir()
@@ -7137,3 +7145,21 @@ def test_a_read_that_asks_a_server_outside_is_not_judged_against_the_budget(app,
     ask("/journal/far")
     ask("/journal/near")
     assert measured == ["/journal/near"], "the tunnel's answer waits on the network, so only the journal's own reads are held to a budget"
+
+
+
+def test_commands_that_end_together_are_named_in_one_line(app, monkeypatch):
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    hook(app, "SessionStart")
+    console = app.console()
+    for chain, status in (("e1", 0), ("e2", 0), ("e3", 2)):
+        (app.config.root / chain).mkdir()
+        console.run(["shell", "split", "make", "--into", str(app.config.root / chain)], AGENT)
+        console.run(["shell", "moved", chain, "make", "--file", f"/tmp/out/{chain}"], AGENT)
+        console.run(["shell", "ended", chain, "--status", str(status), "--file", f"/tmp/out/{chain}", "--last", ""], AGENT)
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=6.0))
+    ended = [line for line in typed if "journal output read" in line]
+    assert len(ended) == 1 and "outputs 1, 2 finished; output 3 failed with code 2" in ended[0], f"three ends in a busy stretch are one line: {ended}"

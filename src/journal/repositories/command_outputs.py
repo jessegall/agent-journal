@@ -19,6 +19,10 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def in_background(self, session: str) -> list[CommandOutput]:
         return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if self.is_running(Path(o.folder))]
 
+    def ended_untold(self, session: str) -> list[CommandOutput]:
+        """The session's commands that ended in the background and the agent was not told of yet, oldest first."""
+        return self.selected("session = ? AND moved = 1 AND ended = 1 AND told = 0 ORDER BY id", (session,))
+
     @staticmethod
     def is_running(folder: Path) -> bool:
         if not folder.is_dir() or (folder / "done").is_file():

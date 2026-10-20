@@ -14,6 +14,8 @@ class CommandOutput(Scoped):
     moved: bool = False
     ended: bool = False
     status: int = 0
+    told: bool = False
+    """The agent was told it ended."""
 
     def headline(self) -> str:
         """The command's first line, and how many more it has: a heredoc is never printed whole."""
@@ -25,3 +27,6 @@ class CommandOutput(Scoped):
 
     def ended_with(self, status: int) -> "CommandOutput":
         return self.with_(ended=True, status=status)
+
+    def told_of(self) -> "CommandOutput":
+        return self.with_(told=True)

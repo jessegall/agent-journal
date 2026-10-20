@@ -9,7 +9,6 @@ from journal.events.bus import Bus
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
-from journal.engine.nudger import Nudger
 from journal.support.chain import Chain
 from journal.features.shell.support.doing import Doing
 from journal.features.shell.support.output_files import OutputFiles
@@ -24,7 +23,6 @@ from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 from journal.support.scope import Scope
 from journal.repositories.settings import Settings
-from journal.supervisor_link import SupervisorLink
 
 TAIL = 2000
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
@@ -38,10 +36,10 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus) -> None:
+    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus) -> None:
         self.entries, self.messages, self.settings, self.agents, self.bus = entries, messages, settings, agents, bus
         self.edits, self.log, self.outputs = edits, log, outputs
-        self.cards, self.nudger, self.supervisor, self.scope = cards, nudger, supervisor, scope
+        self.cards, self.scope = cards, scope
 
     def arguments(self, verbs) -> None:
         split = self.verb(verbs, "split", "the commands a line chains, each written to its own file in the folder; one line per part: R or S for the agent's own or the shell's wrapping, ; or & for how it follows, & or ; for what follows, w or - for whether it writes")
@@ -131,7 +129,7 @@ class ShellCommand(Command):
         return 0
 
     def ended(self, args: Namespace, where: Where) -> int:
-        from journal.features.shell.feature import Shell
+        """The card settled with how it ended and the output marked ended; the agent is told of it, with every other that ended by then, once it is quiet."""
         self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file, "last": args.last})
         part = self.moved_part(args.chain)
         outcome = OutputFiles.ended(args.status)
@@ -141,9 +139,6 @@ class ShellCommand(Command):
         if live:
             output = self.outputs.save(self.outputs.of_chain(args.chain).ended_with(args.status), where.actor)
             self.bus.dispatch(CommandEnded(output=output.id, status=args.status).placed(live.session, self.scope.id, live.provider, None))
-            line = self.nudger.say(live, Shell.ENDED.about(n=output.id, outcome=outcome, file=args.file))
-            if line:
-                self.supervisor.type(self.scope.id, line)
         return 0
 
     def moved_part(self, chain: str) -> str:

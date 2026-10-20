@@ -64,22 +64,22 @@
     {
       "name": "it ended",
       "answer": null,
-      "typed": [
-        "[journal] output 1 finished. `journal output read 1 --summary` says how; --tail 20 or --grep reads the part you need"
-      ],
-      "nudges": [
-        "shell.ended"
-      ],
+      "typed": [],
+      "nudges": [],
       "counts": {
-        "charts:31:said": 7
+        "charts:31:said": 6
       },
       "read": []
     },
     {
       "name": "fifteen minutes, nothing running",
       "answer": null,
-      "typed": [],
-      "nudges": [],
+      "typed": [
+        "[journal] output 1 finished. `journal output read 1 --summary` says how; --tail 20 or --grep reads the part you need"
+      ],
+      "nudges": [
+        "shell.ended"
+      ],
       "counts": {
         "charts:31:said": 7
       },
