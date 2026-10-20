@@ -47,12 +47,13 @@ class Charts(Repository[Chart]):
         return sorted((c for c in self.all() if c.answers(event)), key=lambda c: (c.place_at(event), c.id))
 
     def reorder(self, event: str, ids: list[int], by: Actor) -> list[Chart]:
-        """The event's workflows in the order given, each that moved saved with its new place and one more revision, as the actor."""
+        """The event's workflows in the order given, each that moved saved with its new place and one more revision, as the actor, all in one write."""
         standing = {c.id: c for c in self.for_event(event)}
         placed = []
-        for place, number in enumerate(ids):
-            chart = standing[number]
-            placed.append(self.save(chart.placed(event, place).saved_again(), by) if chart.place_at(event) != place else chart)
+        with self.connection.transaction():
+            for place, number in enumerate(ids):
+                chart = standing[number]
+                placed.append(self.save(chart.placed(event, place).saved_again(), by) if chart.place_at(event) != place else chart)
         self._graphs.clear()
         return placed
 
