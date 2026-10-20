@@ -79,7 +79,7 @@ defaults as the code reads them: the log is asked after `tasks.first_nudge_after
 | Task, question or check updated | plans.open_again: "plan N is open again: X" | a task of a plan that blocked itself opens, or what a blocked plan waits on is answered, closed or passed | type | the engine's: BlockPlanOnItsTasks or ClearPlanWaits opens the plan and tells the live agent |
 | Setting saved | voices.changed | a voice setting changed | type | stays with the voices feature |
 | Tool finished | pins.unpinned: "URL is not pinned" | a link in a tool's output that no pin carries, suggested again only after pins.suggest_every tool uses | tell | stays with the pins feature: UnpinnedLinkInOutput |
-| Turn written | messages.only_a_face, etiquette shop_talk / third_person / dashes / paragraphs, pins.unpinned | the words of the turn | say | stays in code: reads the turn's words |
+| Turn written | messages.only_a_face, messages.replied_already, messages.repeated_reply, etiquette shop_talk / third_person / dashes / paragraphs, pins.unpinned | the words of the turn | say | stays in code: reads the turn's words |
 | Any event at a mark | memory.decide / held | context at 25, 50, 80 percent | say, hold | in every Always and Guards workflow at an agent event (Context over a mark not taken?, Hold the agent at a context mark, locked) and the write hold in the guards at Pre tool use; the mark owed is a fact on the agent's row, paid by fact, rule or nothing |
 | Any event | memory.whisper | a fact, rule or reminder's keyword in the prompt | say | stays with the memory feature: it reads the keywords of facts, rules and reminders, which no check reads |
 

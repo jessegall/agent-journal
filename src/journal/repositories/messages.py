@@ -79,6 +79,17 @@ class Messages(ScopedRepository[Message]):
     def keyed(self, key: str, by: Actor) -> list[Message]:
         return self.selected("json_extract(data, '$.key') = ? AND created_by = ?", (key, by.stamp))
 
+    def first_reply(self, message: Message) -> Message | None:
+        """The agent's first reply to the message: one that names it, or one whose link answers it."""
+        named = self.selected("reply_to = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
+        linked = [self.find(ref.id) for ref in self.links.sources(message, self.ANSWERS)]
+        replies = sorted([*named, *linked], key=lambda m: m.id)
+        return replies[0] if replies else None
+
+    def replies_since(self, at: datetime) -> list[Message]:
+        """The agent's replies written since the moment, oldest first."""
+        return self.selected("author = ? AND reply_to IS NOT NULL AND created_at >= ? ORDER BY id", (Author.AGENT.value, at.isoformat()))
+
     def reply_saying(self, n: int, text: str) -> list[Message]:
         return self.selected("reply_to = ? AND author = ? AND text = ?", (n, Author.AGENT.value, text.strip()))
 
