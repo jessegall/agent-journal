@@ -599,9 +599,9 @@ def test_an_events_workflows_are_put_in_order_by_the_user_and_a_stale_order_name
     assert status == 201 and mine["place"] > stops[-1]["places"]["idle"], "a new workflow takes the last place of its event"
     rows = [{"id": w["id"], "revision": w["revision"]} for w in stops]
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": mine["revision"]}] + rows})
-    assert status == 200 and [w["id"] for w in body["workflows"]][0] == mine["id"] and body["workflows"][0]["place"] == 0, "dragged first, it runs first"
-    moved = next(w for w in body["workflows"] if w["id"] == mine["id"])
-    assert moved["revision"] == mine["revision"] + 1 and all(w["revision"] == r["revision"] + 1 for w, r in zip(body["workflows"][1:], rows)), "each workflow that moved has one more revision"
+    assert status == 200 and [w["id"] for w in body["order"]][0] == mine["id"] and body["order"][0]["place"] == 0, "dragged first, it runs first"
+    moved = next(w for w in body["order"] if w["id"] == mine["id"])
+    assert moved["revision"] == mine["revision"] + 1 and all(w["revision"] == r["revision"] + 1 for w, r in zip(body["order"][1:], rows)), "each workflow that moved has one more revision"
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": rows + [{"id": mine["id"], "revision": mine["revision"]}]})
     assert status == 409 and "changed since you read it" in body["error"] and "saved it first" in body["error"], "an order over a stale list is refused, naming who saved first"
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": moved["revision"]}]})

@@ -54,14 +54,14 @@ class ChartController:
         return {**asdict(run.record), "trigger": run.trigger}
 
     def order(self, request: Request) -> Response:
-        """The order of an event's workflows, as dragged: every workflow of the event named once with the revision it was read at, else refused, naming who saved first when one moved since."""
+        """The order of an event's workflows, as dragged: every workflow of the event named once with the revision it was read at, else refused, naming who saved first when one moved since; answered with the order alone, each workflow's place and revision, since the page reads the list again."""
         event = request.body.get("trigger", "")
         given = [WorkflowAt.from_payload(row) for row in request.body.get("order", [])]
         faults = self.validation.order_faults(event, given)
         if faults:
             return Response.json({"error": "; ".join(map(str, faults)), "faults": [asdict(f) for f in faults]}, 409)
         placed = self.charts.reorder(event, [row.id for row in given], request.actor)
-        return Response.json({"trigger": event, "workflows": [self.named(c) for c in placed]})
+        return Response.json({"trigger": event, "order": [{"id": c.id, "place": c.place_at(event), "revision": c.revision} for c in placed]})
 
     def off(self, request: Request) -> Response:
         """A workflow turned off: its trigger taken out, the rest kept, so it answers nothing until turned on again; one that is or holds the journal's law stays on."""
