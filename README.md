@@ -5,7 +5,7 @@ keeps it on track, and shows you everything it does.
 
 An agent on its own forgets what it was doing, wanders off the task, stops halfway, and buries what you need to know
 in a wall of text. The journal sits beside it and fixes that. It hears every move the agent makes, tells it what to
-do next at the moments it would get wrong, and keeps the project's state in one file beside your code, so the next
+do next at the moments it would get wrong, and keeps the project's state in a .journal folder beside your code, so the next
 session picks up where the last one left off.
 
 ## What you get
