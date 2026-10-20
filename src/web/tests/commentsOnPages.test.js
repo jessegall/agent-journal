@@ -1,11 +1,12 @@
 import {createApp, h, nextTick} from "vue";
 import {describe, expect, test} from "vitest";
-import DocumentPage from "../src/resource/DocumentPage.vue";
 import agentPage from "../src/resource/AgentPage.vue?raw";
 
 const row = (table) => ({table, id: 1, ref: `${table}:1`, brief: "Words", sections: [], data: {}, refs: []});
 
 async function shown(props) {
+    window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
+    const {default: DocumentPage} = await import("../src/resource/DocumentPage.vue");
     const host = window.document.createElement("div");
     window.document.body.append(host);
     createApp({render: () => h(DocumentPage, props, {default: () => h("p", {class: "inside"}, "inside")})}).mount(host);

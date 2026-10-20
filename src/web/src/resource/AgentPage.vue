@@ -74,7 +74,9 @@ const subagentInfo = computed(() => ({
     name: picked.value.type || "general",
     title: picked.value.task,
     back: "Main agent",
-    state: picked.value.running ? {key: "working", word: "Working", dot: "running"} : {key: "idle", ...ending(picked.value.status, picked.value.at)},
+    state: picked.value.running
+        ? {key: "working", word: "Working", dot: "running"}
+        : {key: "idle", ...ending(picked.value.status, picked.value.at)},
     facts: [picked.value.model || "its parent's model", `subagent of agent ${props.resource.id}`, environment.value],
     actions: [],
 }));

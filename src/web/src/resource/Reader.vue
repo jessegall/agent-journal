@@ -56,7 +56,10 @@ const shape = computed(() => (!props.table ? "" : SHAPES[props.table] || kind.va
 const WIDTHS = {small: "normal", wide: "wide"};
 const discussing = ref(false);
 provide("discussion", {on: discussing, toggle: () => (discussing.value = !discussing.value)});
-watch(() => `${props.table}:${props.id}`, () => (discussing.value = false));
+watch(
+    () => `${props.table}:${props.id}`,
+    () => (discussing.value = false)
+);
 const panelWidth = computed(() => (discussing.value ? "full" : WIDTHS[shape.value] || "page"));
 const panel = computed(() => (["small", "wide", "check"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(props.table));
