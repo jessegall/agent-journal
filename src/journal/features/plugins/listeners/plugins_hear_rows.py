@@ -15,4 +15,4 @@ class PluginsHearRows(Listener[ModelEvent]):
     def handle(self, event: ModelEvent) -> None:
         environment_id = self.scope.id_or(0)
         for plugin in self.hearing.heard_by(event, environment_id):
-            self.connection.after_commit(lambda plugin=plugin: self.deferred.add(lambda: self.hearing.later(plugin, event, environment_id)))
+            self.connection.after_commit(lambda plugin=plugin: self.deferred.add_unless_behind(lambda: self.hearing.later(plugin, event, environment_id), f"{plugin.name} hearing {event.key}"))

@@ -37,7 +37,7 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
             if decision.allowed and self.holds(plugin, event):
                 decision = decision.merged(self.decided(plugin, event, self.hearing.ask(plugin, event, event.environment_id, deadline - monotonic())))
             else:
-                self.deferred.add(lambda plugin=plugin: self.hearing.later(plugin, event, event.environment_id))
+                self.deferred.add_unless_behind(lambda plugin=plugin: self.hearing.later(plugin, event, event.environment_id), f"{plugin.name} hearing {event.key}")
         return self.floor.under(event, decision)
 
     @staticmethod

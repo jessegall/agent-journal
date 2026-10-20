@@ -7100,3 +7100,13 @@ def test_a_thread_that_ends_without_releasing_gives_its_connection_back(app):
         del worker
         gc.collect()
     assert len(connection._open) == opened, "a check's or a worker's thread that never released its connection gives it back once it is gone, and the next thread takes it"
+
+
+def test_work_that_may_be_left_undone_is_skipped_once_the_deferred_work_is_far_behind():
+    from journal.support.deferred import Deferred
+    deferred, ran = Deferred(), []
+    for i in range(Deferred.BEHIND + 50):
+        deferred.add_unless_behind(lambda i=i: ran.append(i), f"hearing {i}")
+    assert deferred.depth() == Deferred.BEHIND and deferred.skipped == 50, "a plugin hearing past the bound is skipped and counted, so a slow plugin never grows the queue without end"
+    deferred.add(lambda: ran.append("own"))
+    assert deferred.depth() == Deferred.BEHIND + 1, "the journal's own work is always added"
