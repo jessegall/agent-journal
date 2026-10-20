@@ -23,20 +23,20 @@
       ],
       "counts": {
         "charts:10:writes": 1,
-        "charts:32:said": 7,
-        "charts:42:times_named": 1,
+        "charts:31:said": 7,
+        "charts:41:times_named": 1,
+        "charts:41:tools_used": 1,
         "charts:42:tools_used": 1,
-        "charts:43:tools_used": 1,
+        "charts:43:uses_unanswered": 0,
         "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 1,
         "charts:9:writes": 1
       },
       "read": [
         {
+          "276": 1,
+          "278": 1,
           "290": 1,
-          "292": 1,
-          "304": 1,
           "67": 0,
           "80": 0,
           "93": 0
@@ -54,20 +54,20 @@
       ],
       "counts": {
         "charts:10:writes": 1,
-        "charts:32:said": 8,
-        "charts:42:times_named": 2,
+        "charts:31:said": 8,
+        "charts:41:times_named": 2,
+        "charts:41:tools_used": 2,
         "charts:42:tools_used": 2,
-        "charts:43:tools_used": 2,
+        "charts:43:uses_unanswered": 0,
         "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 1,
         "charts:9:writes": 1
       },
       "read": [
         {
+          "276": 2,
+          "278": 2,
           "290": 2,
-          "292": 2,
-          "304": 2,
           "67": 1,
           "80": 1,
           "93": 1
@@ -85,20 +85,20 @@
       ],
       "counts": {
         "charts:10:writes": 1,
-        "charts:32:said": 9,
-        "charts:42:times_named": 3,
+        "charts:31:said": 9,
+        "charts:41:times_named": 3,
+        "charts:41:tools_used": 3,
         "charts:42:tools_used": 3,
-        "charts:43:tools_used": 3,
+        "charts:43:uses_unanswered": 0,
         "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 1,
         "charts:9:writes": 1
       },
       "read": [
         {
+          "276": 3,
+          "278": 3,
           "290": 3,
-          "292": 3,
-          "304": 3,
           "67": 1,
           "80": 1,
           "93": 1
@@ -116,20 +116,20 @@
       ],
       "counts": {
         "charts:10:writes": 1,
-        "charts:32:said": 10,
-        "charts:42:times_named": 4,
+        "charts:31:said": 10,
+        "charts:41:times_named": 4,
+        "charts:41:tools_used": 4,
         "charts:42:tools_used": 4,
-        "charts:43:tools_used": 4,
+        "charts:43:uses_unanswered": 0,
         "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 1,
         "charts:9:writes": 1
       },
       "read": [
         {
+          "276": 4,
+          "278": 4,
           "290": 4,
-          "292": 4,
-          "304": 4,
           "67": 1,
           "80": 1,
           "93": 1

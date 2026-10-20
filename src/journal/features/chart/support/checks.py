@@ -16,6 +16,7 @@ from journal.events.models.created import Created
 from journal.events.models.updated import Updated
 from journal.support.version_3_backup import Version3Backup
 from journal.features.chart.support.context import Context
+from journal.features.briefing.support.start_lines import StartLines
 from journal.features.registry import Registry
 from journal.support.requiring import Requiring
 from journal.support.chain import Chain
@@ -54,8 +55,6 @@ from journal.repositories.tasks import Tasks
 UNITS = re.compile(r"^(\d+)\s*(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours)?$")
 SECONDS = {"s": 1, "sec": 1, "secs": 1, "second": 1, "seconds": 1, "m": 60, "min": 60, "mins": 60, "minute": 60, "minutes": 60, "h": 3600, "hr": 3600, "hrs": 3600, "hour": 3600, "hours": 3600}
 """A time in a check's text, by its unit; a bare number is seconds."""
-TAKEN_OVER_WITHIN = timedelta(days=1)
-"""Another session that worked here this recently makes a start a takeover."""
 COUNTERS = ("unanswered_over", "unread_over", "context_over", "memory_older_than", "background_running")
 WORD_CHECKS = ("tool_named", "tool_input_has", "prompt_has", "time_between", "line_is")
 """The checks that read their text as words: the tool names, the words looked for, the hours."""
@@ -78,8 +77,8 @@ class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring,
-                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs, backup: Version3Backup, outputs: CommandOutputs, times: NotedTimes, clock: Clock) -> None:
-        self.outputs, self.times, self.clock = outputs, times, clock
+                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs, backup: Version3Backup, outputs: CommandOutputs, times: NotedTimes, clock: Clock, start: StartLines) -> None:
+        self.outputs, self.times, self.clock, self.start = outputs, times, clock, start
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
         self.registry, self.config, self.workers = registry, config, workers
         self.counts = counts
@@ -296,10 +295,7 @@ class Checks:
 
     def taken_over(self, ctx: Context) -> bool:
         """Another session worked this environment within a day, and this start is not the same session going on after a compaction."""
-        event = ctx.event
-        if not isinstance(event, SessionStarted) or event.source == "compact":
-            return False
-        return bool(self.agents.others_lately(event.session, datetime.now(timezone.utc) - TAKEN_OVER_WITHIN))
+        return isinstance(ctx.event, SessionStarted) and bool(self.start.taken_over_at(ctx.event))
 
     def after_compaction(self, ctx: Context) -> bool:
         """The start is the same session going on after its context was compacted."""
@@ -326,7 +322,7 @@ class Checks:
 
     def something_waiting(self, ctx: Context) -> bool:
         """Open tasks, unread messages or open questions wait for the agent."""
-        return bool(self.tasks.in_state(TaskState.OPEN) or self.messages.unread() or self.questions.open())
+        return bool(self.start.waiting())
 
     def prompt_names_skill(self, ctx: Context) -> bool:
         """The prompt names a keyword of a skill."""

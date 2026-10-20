@@ -6,6 +6,8 @@ import re
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.events.agent.ticked import Ticked
+from journal.events.agent.session_started import SessionStarted
+from journal.features.briefing.support.start_lines import StartLines
 from journal.features.chart.support.checks import Checks
 from journal.features.chart.support.context import Context
 from journal.support.task_briefing import TaskBriefing
@@ -52,8 +54,8 @@ class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue, briefing: TaskBriefing, outputs: CommandOutputs, clock: Clock) -> None:
-        self.outputs, self.clock = outputs, clock
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue, briefing: TaskBriefing, outputs: CommandOutputs, clock: Clock, start: StartLines) -> None:
+        self.outputs, self.clock, self.start = outputs, clock, start
         self.briefing = briefing
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.workers, self.states = workers, states
@@ -90,9 +92,7 @@ class Fillers:
 
     def taken_over_at(self, ctx: Context) -> str:
         """The time of day the other session that worked here last did anything."""
-        from journal.features.chart.support.checks import TAKEN_OVER_WITHIN
-        others = self.agents.others_lately(ctx.session, datetime.now(timezone.utc) - TAKEN_OVER_WITHIN) if ctx.session else []
-        return others[-1].updated_at.astimezone().strftime("%H:%M") if others else ""
+        return self.start.taken_over_at(ctx.event) if isinstance(ctx.event, SessionStarted) else ""
 
     def rule_count(self, ctx: Context) -> str:
         """How many rules are in force."""
@@ -100,15 +100,15 @@ class Fillers:
 
     def rules(self, ctx: Context) -> str:
         """The rules in force, numbered."""
-        return self.numbered(r.text for r in self.rule_rows.all())
+        return self.start.rules_said()
 
     def facts(self, ctx: Context) -> str:
         """The facts about this environment, numbered."""
-        return self.numbered(f.text for f in self.fact_rows.in_())
+        return self.start.facts_said()
 
     def reminders(self, ctx: Context) -> str:
         """The reminders here, numbered."""
-        return self.numbered(r.text for r in self.reminder_rows.in_())
+        return self.start.reminders_said()
 
     def voice(self, ctx: Context) -> str:
         """How the agent talks to the user: the chosen voice's instruction, with the user's title and name."""
@@ -116,12 +116,7 @@ class Fillers:
 
     def waiting(self, ctx: Context) -> str:
         """What waits for the agent, by count: open tasks, unread messages, open questions."""
-        counts = {"tasks": len(self.tasks.in_state(TaskState.OPEN)), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
-        return ", ".join(f"{n} {name}" for name, n in counts.items() if n)
-
-    @staticmethod
-    def numbered(texts) -> str:
-        return "; ".join(f"{n}. {text}" for n, text in enumerate(texts, 1))
+        return self.start.waiting()
 
     def approved_plan(self, ctx: Context) -> str:
         """The number of a plan the user approved that is not started yet."""

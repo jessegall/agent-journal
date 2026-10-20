@@ -14,7 +14,7 @@
       ],
       "counts": {
         "charts:10:writes": 0,
-        "charts:32:said": 5,
+        "charts:31:said": 5,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
@@ -29,12 +29,12 @@
       "nudges": [],
       "counts": {
         "charts:10:writes": 1,
-        "charts:32:said": 5,
-        "charts:42:times_named": 0,
+        "charts:31:said": 5,
+        "charts:41:times_named": 0,
+        "charts:41:tools_used": 0,
         "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
+        "charts:43:uses_unanswered": 0,
         "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 1,
         "charts:9:writes": 1
       },
@@ -53,12 +53,12 @@
       "nudges": [],
       "counts": {
         "charts:10:writes": 1,
-        "charts:32:said": 5,
-        "charts:42:times_named": 0,
+        "charts:31:said": 5,
+        "charts:41:times_named": 0,
+        "charts:41:tools_used": 0,
         "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
+        "charts:43:uses_unanswered": 0,
         "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 1,
         "charts:9:writes": 1
       },
@@ -71,12 +71,12 @@
       "nudges": [],
       "counts": {
         "charts:10:writes": 2,
-        "charts:32:said": 5,
-        "charts:42:times_named": 0,
+        "charts:31:said": 5,
+        "charts:41:times_named": 0,
+        "charts:41:tools_used": 0,
         "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
+        "charts:43:uses_unanswered": 0,
         "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 2,
         "charts:9:writes": 2
       },

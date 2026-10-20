@@ -616,7 +616,26 @@ def test_an_events_workflows_are_put_in_order_by_the_user_and_a_stale_order_name
     assert status == 409 and "no workflow answers flying" in body["error"]
 
 
-def test_a_locked_step_stays_as_shipped_and_its_workflow_stays_on(server):
+def test_a_locked_step_stays_as_shipped_and_its_workflow_stays_on(journal_root: Path):
+    from journal.repositories.charts import Charts
+    from journal.repositories.nodes import Nodes
+    from journal.support.actor import Actor
+    app = App(Config(journal_root, port=0))
+    app.runtime().boot()
+    charts = app.container.get(Charts)
+    voice = next(c for c in charts.shipped() if c.drawing == ":session_started:voice")
+    said = next(n for n in charts.nodes_of(voice) if n.key == "say")
+    app.container.get(Nodes).save(said.with_(locked=True), Actor.system())
+    server = app.server()
+    server.start()
+    try:
+        locked_step_holds(server)
+    finally:
+        server.stop()
+
+
+def locked_step_holds(server) -> None:
+    """No shipped workflow carries a locked step since the laws are the engine's, so the test locks one the way a shipped drawing would."""
     status, read = call(server, "GET", "/journal/chart")
     guarded = next(w for w in read["workflows"] if w["guarded"])
     status, one = call(server, "GET", f"/journal/chart/{guarded['id']}")
