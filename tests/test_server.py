@@ -129,7 +129,7 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
             if marks() and marks()[0]["state"] == "done":
                 break
             time.sleep(0.1)
-        assert [(c["detail"], c["agent_type"], c["state"]) for c in marks()] == [("review the login", "reviewer", "done")], "a subagent is a message in the chat, settled when it answers"
+        assert [(c["detail"], c["agent_type"], c["state"]) for c in marks()] == [("review the login", "journal-plan-reviewer", "done")], "a subagent is a message in the chat, settled when it answers"
     finally:
         app.runtime().stop()
 
@@ -760,7 +760,7 @@ def test_the_transcript_of_an_agent_and_of_its_subagent_are_read_from_the_provid
     (project / "s5" / "subagents" / "agent-a5.jsonl").write_text(json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": "Read the login."}]}}) + "\n")
     send = lambda kind, **extra: call(server, "POST", "/hooks/claude", {"hook_event_name": kind, "session_id": "s5", **extra})
     send("SessionStart", source="startup")
-    send("PreToolUse", tool_name="Agent", tool_input={"description": "read it", "prompt": "read", "model": "haiku"}, tool_use_id="t1")
+    send("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "read it", "prompt": "read", "model": "haiku"}, tool_use_id="t1")
     send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a5"}, tool_use_id="t1")
     agent = next(a for a in call(server, "GET", "/journal/agents")[1]["rows"] if a["session"] == "s5")
     page = call(server, "GET", f"/journal/agents/{agent['id']}/transcript")[1]

@@ -798,7 +798,7 @@ def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
 def test_each_subagent_is_one_message_in_the_chat_settled_in_place(app):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
-    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
     app.runtime().deferred.drain()
     marks = lambda: [m.data for m in app.container.get(Messages).all() if m.data.get("kind") == "subagent"]
     assert [(d["detail"], d["state"]) for d in marks()] == [("cut off", "running")], "a dispatch is a message as it starts"
@@ -822,8 +822,8 @@ def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_tu
     rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s7")]
     send("SessionStart", source="startup")
     send("PreToolUse", tool_name="Agent", tool_input={"description": "no model named", "prompt": "read"}, tool_use_id="t-refused")
-    send("PreToolUse", tool_name="Agent", tool_input={"description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
-    send("PreToolUse", tool_name="Agent", tool_input={"description": "in the background", "prompt": "read", "model": "haiku"}, tool_use_id="t-bg")
+    send("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
+    send("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "in the background", "prompt": "read", "model": "haiku"}, tool_use_id="t-bg")
     send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a7"}, tool_use_id="t-bg")
     assert [r["task"] for r in rows()] == ["cut off", "in the background"], "a dispatch the journal refused never ran"
     send("Stop")
@@ -2289,10 +2289,10 @@ def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app)
     hook(app, "SubagentStop", agent_id="a1", agent_type="researcher")
     row = rows()[0]
     assert row["running"] is False and row["status"] == "done" and row["ended"] >= row["at"]
-    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "a quick one", "model": "haiku", "prompt": "x"})
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "a quick one", "model": "haiku", "prompt": "x"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "a quick one"}, tool_response="the finished work")
     assert rows()[1]["running"] is False, "a subagent that answered in the tool's own result is done at once"
-    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "never ran", "model": "haiku", "prompt": "x"}, tool_use_id="t-lost")
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "never ran", "model": "haiku", "prompt": "x"}, tool_use_id="t-lost")
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Mr. Turing weighs", "model": "opus", "subagent_type": "journal-planner", "prompt": "x"}, tool_use_id="t-2")
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Mr. Turing weighs"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a2"}, tool_use_id="t-2")
     hook(app, "SubagentStop", agent_id="a2", agent_type="auditor")
@@ -3098,7 +3098,7 @@ def test_each_review_round_is_kept_on_the_plan_with_its_reviewers_report_and_cha
     console.run(["plan", "todos", "1", "1", "1"], USER)
     hook(app, "SessionStart")
     console.run(["plan", "review", "1"], AGENT)
-    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lady Lovelace reads plan 1", "prompt": "read plan 1", "model": "sonnet"}, tool_use_id="t-1")
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "Lady Lovelace reads plan 1", "prompt": "read plan 1", "model": "sonnet"}, tool_use_id="t-1")
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lady Lovelace reads plan 1", "prompt": "read plan 1"}, tool_use_id="t-1", tool_response="found two gaps")
     console.run(["report", "create", "Plan 1, first review", "--body", "two gaps", "--about", "plans:1"], AGENT)
     assert "--changed" in console.run(["plan", "ready", "1"], AGENT).err, "a plan back from review says what the round changed"
@@ -7242,3 +7242,29 @@ def test_a_task_closed_by_a_commit_names_a_parked_task_at_once(app):
 def test_the_database_gives_deleted_rows_space_back_by_itself(app):
     from journal.db.connection import Connection
     assert app.container.get(Connection).one("PRAGMA auto_vacuum")[0] == 1, "auto-vacuum is on, so a trimmed record shrinks the file"
+
+
+def test_the_journals_skills_and_profiles_are_written_fresh_and_a_projects_own_are_left_alone(app):
+    from journal.support.profile_files import ProfileFiles
+    from journal.support.skill_files import SkillFiles
+    root = app.config.root
+    stale_skill = root / ".claude" / "skills" / "journal-gone" / "SKILL.md"
+    own_skill = root / ".claude" / "skills" / "deploy" / "SKILL.md"
+    plugin_skill = root / ".claude" / "skills" / "journal-lint" / "SKILL.md"
+    for path, text in ((stale_skill, "---\nname: journal-gone\n---\nold"), (own_skill, "---\nname: deploy\n---\nmine"), (plugin_skill, "---\nplugin: lint\nname: journal-lint\n---\nthe plugin's")):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    app.container.get(SkillFiles).write_all()
+    assert not stale_skill.parent.exists() and own_skill.is_file() and plugin_skill.is_file(), "a journal skill no longer shipped goes; the project's own and a plugin's stay"
+    assert (root / ".claude" / "skills" / "journal-tasks" / "SKILL.md").is_file()
+    agents = root / ".claude" / "agents"
+    agents.mkdir(parents=True, exist_ok=True)
+    files = app.container.get(ProfileFiles)
+    researcher = next(p for p in files.PROFILES if p.name == "journal-researcher")
+    (agents / "researcher.md").write_text(f"---\nname: researcher\n---\n\n{researcher.body}\n")
+    (agents / "planner.md").write_text("---\nname: planner\n---\n\nmy own planner, rewritten\n")
+    (agents / "journal-gone.md").write_text("---\nname: journal-gone\n---\n\nold\n")
+    (agents / "auditor.md").write_text("---\nname: auditor\n---\n\nmine\n")
+    files.write_all()
+    names = sorted(p.stem for p in agents.glob("*.md"))
+    assert names == ["auditor", "journal-debugger", "journal-medior", "journal-plan-reviewer", "journal-planner", "journal-researcher", "journal-senior", "planner"], f"the old unedited researcher and a journal profile no longer shipped go; an edited planner and the project's auditor stay: {names}"
