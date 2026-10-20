@@ -2,6 +2,20 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.0
+
+- An environment keeps one main agent session for each provider: a session that starts there ends the others of its provider. Installing, signing in to or removing an MCP server restarts only the session on screen, never an older one, whose conversation came back in its place and could end the launch.
+- The journal's profiles ship as journal-researcher, journal-planner, journal-debugger, journal-plan-reviewer, journal-senior and journal-medior. At every start and setup every journal skill and journal profile is removed and written fresh; a project's own and a plugin's are never touched. A subagent dispatch names one of the project's profiles, or it is refused: general-purpose and the other generic agents are no profile.
+- The session start briefing is the engine's own, said before any Session start workflow, worded and ordered as before.
+- Every mark in the chat names the Show in chat switch that hides it, and the menu has a switch for every kind: searches, agent stuck, worktrees, checks, questions, workflow notes, menus, suggestions, phones and the journal's own faults among the new. A fact's or reminder's whisper follows its own switch.
+- The plugins' own pages are back in the sidebar, under Project.
+- The journal's record is a rolling log of its newest 10,000 entries (the setting record.kept), trimmed as each is written; messages and every other row of the project stay. The database runs with auto-vacuum, switched on once at the first start, so a trimmed record gives its space back.
+- Commands that end in the background are named together in one line once the agent is quiet, instead of a line each mid-turn.
+- A task closed by a commit names a parked task at once.
+- Reads that ask a server outside the journal, the tunnel's cause and answer, are no longer judged against the request budget.
+- Closing words of fewer than eight words are never taken for a repeated reply.
+- The README says what the journal is and how to install it.
+
 ## 4.3.0
 
 - Workflows are built from parts you can see. Whatever a workflow remembers it keeps in values it names and sets with steps on its canvas: counts (Set a count to zero, Start a count at zero once, Add one to a count, Has a count reached N?, Is a count at a multiple of N?) and times (Note the time, Forget a noted time, Has N passed since a noted time?, Was a time noted?). Each environment keeps its own, and a workflow never reads another's.
