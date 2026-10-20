@@ -68,7 +68,7 @@ class Receiver:
             said = self._guarded(listener, event)
             if said is None:
                 continue
-            decision = decision.merged(Decision.tell(said.reason) if not said.allowed and not decision.allowed else said)
+            decision = decision.merged(Decision.allowed_with(said.reason) if not said.allowed and not decision.allowed else said)
         return decision
 
     def _guarded(self, listener: Listener, event: AgentEvent) -> Decision | None:
@@ -79,7 +79,7 @@ class Receiver:
             words = f"{type(listener).__name__} raised {type(fault).__name__}: {fault}"
             self.entries.save(Entry(environment_id=event.environment_id, kind=GUARD_FAILED, actor=Actor.system(), data={"session": event.session, "event": type(event).__name__, "listener": type(listener).__name__, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
             self.cards.show(event.environment_id, event.session, f"A guard failed and let the event through: {words}", "bolt", tone="bad", shows=ChatMark.FAULTS)
-            return Decision.tell(f"[journal] a guard failed and let this through: {words}. the journal recorded it; tell the user if it happens again")
+            return Decision.allowed_with(f"[journal] a guard failed and let this through: {words}. the journal recorded it; tell the user if it happens again")
 
     def _defer(self, event: AgentEvent) -> None:
         for listener in self._split(event)[1]:

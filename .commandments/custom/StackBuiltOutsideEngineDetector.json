@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "Stack"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/engine/**"
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "stack-built-outside-engine",
+        "description": "A Stack is built outside the engine.",
+        "rule": "Only the engine builds a stack; a feature's rows send events and the state machine moves the stack.",
+        "skill": "stack-machine"
+    }
+}

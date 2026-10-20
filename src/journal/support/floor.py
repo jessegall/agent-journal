@@ -17,7 +17,7 @@ class Floor:
             return decision
         provider = self.providers.named(event.provider or "claude")
         pays = self.journal_command(event, provider) or any(self.files.skill_read(path) for path in provider.read_paths(event.tool, event.input))
-        return Decision.tell("\n".join(line for line in (decision.context, decision.reason) if line)) if pays else decision
+        return Decision.allowed_with("\n".join(line for line in (decision.context, decision.reason) if line)) if pays else decision
 
     @staticmethod
     def journal_command(event: ToolStarting, provider) -> bool:

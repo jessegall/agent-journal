@@ -5,7 +5,7 @@
         "select": "type-declaration",
         "where": [
             {
-                "nameMatches": "^(Said|Worded|Meaning|Whisper|Muse|Telling|Spoken|Utterance|Stay)$"
+                "nameMatches": "^(Said|Worded|Meaning|Whisper|Muse|TypedNudges|Spoken|Utterance|Stay)$"
             }
         ]
     },

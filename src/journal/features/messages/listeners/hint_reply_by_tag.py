@@ -21,4 +21,4 @@ class HintReplyByTag(AgentListener[ToolFinished]):
         if event.tool != self.providers.named(event.provider).shell_tool or SENT not in event.input.get("command", ""):
             return None
         line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Messages.REPLY_BY_TAG.create())
-        return Decision.tell(line) if line else None
+        return Decision.allowed_with(line) if line else None

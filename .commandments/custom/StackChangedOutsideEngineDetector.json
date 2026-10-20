@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "pushed",
+                    "popped",
+                    "with_top"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/engine/**"
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "stack-changed-outside-engine",
+        "description": "A stack is pushed, popped or given a new top outside the engine.",
+        "rule": "Only the state machine changes a stack; a state answers push or pop and the machine applies it.",
+        "skill": "stack-machine"
+    }
+}

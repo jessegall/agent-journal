@@ -1,4 +1,4 @@
-from journal.support.telling import Telling
+from journal.support.typed_nudges import TypedNudges
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
 from journal.support.actor import Actor
@@ -11,8 +11,8 @@ from journal.repositories.tasks import Tasks
 class ClearWaits(Listener[Updated]):
     """A question answered, a task closed or a check waited until passing unblocks the tasks that wait on it by a link, once nothing else holds them, and the live agent is told."""
 
-    def __init__(self, tasks: Tasks, telling: Telling) -> None:
-        self.tasks, self.telling = tasks, telling
+    def __init__(self, tasks: Tasks, typed: TypedNudges) -> None:
+        self.tasks, self.typed = tasks, typed
 
     def handle(self, event: Updated) -> None:
         if not Awaitables.just_settled(event):
@@ -23,4 +23,4 @@ class ClearWaits(Listener[Updated]):
 
     def cleared(self, task: Task, ref: Ref) -> None:
         from journal.features.tasks.feature import Tasks as TasksFeature
-        self.telling.tell(TasksFeature.TASK_OPEN_AGAIN.create(n=task.id, on=f"{ref.type[:-1]} {ref.id}"))
+        self.typed.type(TasksFeature.TASK_OPEN_AGAIN.create(n=task.id, on=f"{ref.type[:-1]} {ref.id}"))

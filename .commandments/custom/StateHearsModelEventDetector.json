@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "parameter",
+        "where": [
+            {
+                "parameterType": "ModelEvent"
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "BaseState"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "state-hears-model-event",
+        "description": "A state's listener hears a bare ModelEvent.",
+        "rule": "A state hears an event named for the moment, never a bare model event.",
+        "skill": "stack-machine"
+    }
+}

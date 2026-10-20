@@ -5,14 +5,14 @@ from journal.features.tasks.states.expecting import Expecting
 from journal.repositories.agents import Agents
 from journal.support.awaitables import Awaitables
 from journal.support.ref import Ref
-from journal.support.telling import Telling
+from journal.support.typed_nudges import TypedNudges
 
 
 class EndSettledWaits(Listener[Updated]):
     """An output ended or a wait's script passed: an agent whose wait names it, with nothing it names still out, goes back to what it was doing and is told what each came to."""
 
-    def __init__(self, agents: Agents, machine: StateMachine, awaitables: Awaitables, telling: Telling) -> None:
-        self.agents, self.machine, self.awaitables, self.telling = agents, machine, awaitables, telling
+    def __init__(self, agents: Agents, machine: StateMachine, awaitables: Awaitables, typed: TypedNudges) -> None:
+        self.agents, self.machine, self.awaitables, self.typed = agents, machine, awaitables, typed
 
     def handle(self, event: Updated) -> None:
         name = self.awaitables.name_of(Ref.to(event.model)) if Awaitables.just_settled(event) else ""
@@ -26,4 +26,4 @@ class EndSettledWaits(Listener[Updated]):
     def ended(self, agent, wait: Expecting) -> None:
         from journal.features.tasks.feature import Tasks
         self.machine.move(agent.session, agent.environment_id, wait.back().to)
-        self.telling.tell_to(agent, Tasks.WAIT_OVER.create(what=wait.what, came=self.awaitables.came_to(wait.waits_on())))
+        self.typed.type_to(agent, Tasks.WAIT_OVER.create(what=wait.what, came=self.awaitables.came_to(wait.waits_on())))

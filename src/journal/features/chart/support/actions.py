@@ -63,7 +63,7 @@ class Actions:
         if not line:
             return Decision()
         if ctx.answers_hook:
-            return Decision.tell(line)
+            return Decision.allowed_with(line)
         self.supervisor.type(ctx.environment_id, line)
         return Decision()
 
@@ -85,7 +85,7 @@ class Actions:
             for line in lines:
                 self.typed(line, ctx)
             return Decision()
-        return Decision.tell("\n".join(lines)) if lines else Decision()
+        return Decision.allowed_with("\n".join(lines)) if lines else Decision()
 
     def hold(self, text: str, ctx: Context) -> Decision:
         """A tool use refused with the line; with no hook waiting there is nothing to hold, so the line is said. A hold named for a feature switched off here holds nothing."""
@@ -218,5 +218,5 @@ class Actions:
                 line = self.running.start(sequence, ctx.session, ctx.environment_id)
                 if not line:
                     return Decision()
-                return Decision.tell(line) if ctx.answers_hook else self.type(line, ctx)
+                return Decision.allowed_with(line) if ctx.answers_hook else self.type(line, ctx)
         return Decision()

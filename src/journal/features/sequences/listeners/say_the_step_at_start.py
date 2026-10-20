@@ -21,4 +21,4 @@ class SayTheStepAtStart(AgentListener[SessionStarted]):
         if self.registry.silenced(said):
             return None
         self.running.said_now(event.session, event.environment_id)
-        return Decision.tell(said.rendered())
+        return Decision.allowed_with(said.rendered())

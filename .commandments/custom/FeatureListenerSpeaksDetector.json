@@ -1,0 +1,43 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "extendsAny": "AgentListener"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "nameIn": [
+                                "refuse",
+                                "tell",
+                                "allowed_with",
+                                "say"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/engine/**"
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "feature-listener-speaks",
+        "description": "A feature's listener speaks to the agent or holds it, outside the states.",
+        "rule": "A listener outside a state only records, links or writes rows; the line or the hold belongs to the state's or the conduct's on_ listener.",
+        "skill": "stack-machine"
+    }
+}

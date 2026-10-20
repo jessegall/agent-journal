@@ -46,4 +46,4 @@ class SpotHandReads(AgentListener[ToolStarting]):
 
     def said(self, event: ToolStarting, nudge) -> Decision | None:
         line = self.nudger.say(self.machine.agent(event.session, event.environment_id), nudge)
-        return Decision.tell(line) if line else None
+        return Decision.allowed_with(line) if line else None

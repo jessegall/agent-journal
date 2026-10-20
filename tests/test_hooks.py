@@ -26,7 +26,7 @@ class RefuseWrites(AgentListener[ToolStarting]):
     blocking = True
 
     def handle(self, event):
-        return Decision.refuse("no work declared") if event.tool == "Write" else Decision.tell("carry on")
+        return Decision.refuse("no work declared") if event.tool == "Write" else Decision.allowed_with("carry on")
 
 
 class Noted(AgentListener[ToolStarting]):

@@ -32,7 +32,7 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         heard = self.hearing.heard_by(event, event.environment_id)
         deadline = monotonic() + float(self.settings.option(PluginsFeature.DEADLINE))
         waiting = self.hearing.waiting_for(event.session) if event.key in CARRIES else []
-        decision = Decision.tell("\n".join(waiting)) if waiting else Decision()
+        decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
         for plugin in heard:
             if decision.allowed and self.holds(plugin, event):
                 decision = decision.merged(self.decided(plugin, event, self.hearing.ask(plugin, event, event.environment_id, deadline - monotonic())))
@@ -56,4 +56,4 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         if not words:
             return Decision()
         self.hearing.said(plugin, event, event.environment_id, "told", words)
-        return Decision.tell(self.words.said(plugin, words))
+        return Decision.allowed_with(self.words.said(plugin, words))

@@ -16,4 +16,4 @@ class UnpinnedLinkInOutput(AgentListener[ToolFinished]):
         if event.subagent:
             return None
         lines = self.suggestions.lines(event.session, event.environment_id, event.printed)
-        return Decision.tell("\n".join(lines)) if lines else None
+        return Decision.allowed_with("\n".join(lines)) if lines else None

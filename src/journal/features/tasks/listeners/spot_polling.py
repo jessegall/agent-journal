@@ -28,4 +28,4 @@ class SpotPolling(AgentListener[ToolStarting]):
         if len(last) < SAME or len(set(last)) != 1:
             return None
         line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Tasks.STOP_POLLING.create(times=SAME, command=command))
-        return Decision.tell(line) if line else None
+        return Decision.allowed_with(line) if line else None

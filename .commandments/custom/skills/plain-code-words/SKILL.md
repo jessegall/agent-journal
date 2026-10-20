@@ -16,10 +16,10 @@ else: no docstring inside a method, no comment inside a method, no docstring und
 ## When it fires
 
 - **`poetic-type-name`** - a class named by a word that does not say what it is: `Said`, `Worded`, `Meaning`,
-  `Whisper`, `Muse`, `Telling`, `Spoken`, `Utterance`. Name it for what it holds: a line with its values is a
+  `Whisper`, `Muse`, `TypedNudges`, `Spoken`, `Utterance`. Name it for what it holds: a line with its values is a
   `Nudge`; a snapshot of the options is `Settings`.
 - **`poetic-method-name`** - a method named by a word that does not say what it does: `about`, `worded`,
-  `meaning`, `whisper`, `muse`, `spoken`, `telling`, `utter`, `tell`, `says`, `said`, `hear`, `heard`. Name it for
+  `meaning`, `whisper`, `muse`, `spoken`, `typed`, `utter`, `tell`, `says`, `said`, `hear`, `heard`. Name it for
   what it does: `create`, `rendered`, `with_values`, `on_tool_starting`.
 - **`docstring-in-method`** - a docstring inside a method or a function. Say it in the name, or in the class's
   one line; a method's body carries no prose.

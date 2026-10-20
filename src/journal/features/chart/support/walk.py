@@ -162,7 +162,7 @@ class Walk:
         if not acted.allowed:
             if ctx.held:
                 ctx.unanswered.append(node.id)
-                acted = Decision.tell(acted.context)
+                acted = Decision.allowed_with(acted.context)
             else:
                 ctx.held.append(node.id)
                 if node.key == "block_stop":
@@ -187,7 +187,7 @@ class Walk:
         """A second move in one event is refused and recorded, naming both nodes; a dry run says it would be."""
         first = ctx.moves[0][0]
         if isinstance(self.actions, DryActions):
-            return Decision.tell(f"would refuse a second move at node {node.id}: node {first} moved the agent first")
+            return Decision.allowed_with(f"would refuse a second move at node {node.id}: node {first} moved the agent first")
         self.failed(node, ctx, RuntimeError(f"a second move in one event, refused: node {first} moved the agent first"))
         return Decision()
 

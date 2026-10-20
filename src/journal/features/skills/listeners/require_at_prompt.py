@@ -20,4 +20,4 @@ class RequireAtPrompt(AgentListener[PromptSubmitted]):
             return None
         agent = self.machine.agent(event.session, event.environment_id)
         lines = self.requiring.require(agent, self.requiring.owed(agent, self.requiring.named_in(event.prompt)))
-        return Decision.tell("\n".join(lines)) if lines else None
+        return Decision.allowed_with("\n".join(lines)) if lines else None

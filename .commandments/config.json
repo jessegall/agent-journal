@@ -25,7 +25,19 @@
         "PoeticParameterNameDetector",
         "DocstringInMethodDetector",
         "FieldDocstringDetector",
-        "StateMachineOutsideEngineDetector"
+        "StateMachineOutsideEngineDetector",
+        "StateListenerNotOnDetector",
+        "OnListenerWithoutEventTypeDetector",
+        "TransitionOutsideBaseStateDetector",
+        "HeldOutsideOnPushDetector",
+        "HookThatMovesDetector",
+        "StackBuiltOutsideEngineDetector",
+        "StackChangedOutsideEngineDetector",
+        "StateReadsWasDetector",
+        "StateHearsUpdatedDetector",
+        "StateHearsModelEventDetector",
+        "FeatureListenerSpeaksDetector",
+        "DispatchOutsideFunnelsDetector"
     ],
     "parallel": 2,
     "configure": {

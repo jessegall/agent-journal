@@ -12,12 +12,12 @@ class DryActions:
     def perform(self, key: str, text: str, ctx: Context) -> Decision:
         from journal.features.chart.support.actions import NAMED
         if key == "stop_here":
-            return Decision.tell("would stop the later workflows of the event")
+            return Decision.allowed_with("would stop the later workflows of the event")
         if key in ("count_start", "count_one"):
             self.count(key, ctx.value(text.strip()))
         named = NAMED.match(text)
         words = named.group(2) if named else text
-        return Decision.tell(f"would {key.replace('_', ' ')}{f' as {named.group(1)}' if named else ''}: {self.fillers.fill(words, ctx)}")
+        return Decision.allowed_with(f"would {key.replace('_', ' ')}{f' as {named.group(1)}' if named else ''}: {self.fillers.fill(words, ctx)}")
 
     def count(self, key: str, name: str) -> None:
         """A dry count: a start sets the name at zero, a count one adds one, so a check after it reads what the live walk would."""

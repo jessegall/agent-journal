@@ -16,5 +16,5 @@ class StartBriefing(AgentListener[SessionStarted]):
 
     def handle(self, event: SessionStarted) -> Decision | None:
         agent = self.machine.agent(event.session, event.environment_id)
-        lines = [line for said in self.start.said(event) if (line := self.nudger.say(agent, said))]
-        return Decision.tell("\n".join(lines)) if lines else None
+        lines = [line for nudge in self.start.said(event) if (line := self.nudger.say(agent, nudge))]
+        return Decision.allowed_with("\n".join(lines)) if lines else None

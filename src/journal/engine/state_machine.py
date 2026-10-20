@@ -56,12 +56,12 @@ class StateMachine(AgentListener[AgentEvent]):
         transition = stack.top().on(event, settings)
         hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings)
         agent = self._settle(agent, hooked, event.key, Actor.system())
-        lines = [line for said in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, said))]
+        lines = [line for nudge in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, nudge))]
         if transition.held:
             return Decision.refuse(transition.held.rendered())
         if hooked.held:
             return Decision.refuse(hooked.held.nudge.rendered())
-        return Decision.tell("\n".join(lines))
+        return Decision.allowed_with("\n".join(lines))
 
     def move(self, session: str, environment_id: int, to: AgentState) -> Agent:
         agent = self.agent(session, environment_id)
@@ -69,7 +69,7 @@ class StateMachine(AgentListener[AgentEvent]):
         settled = self._settle(agent, hooked, MOVED, Actor.system())
         if hooked.held:
             raise Refused(hooked.held.nudge.rendered())
-        for line in [line for said in hooked.nudges if (line := self.nudger.say(settled, said))]:
+        for line in [line for nudge in hooked.nudges if (line := self.nudger.say(settled, nudge))]:
             self.supervisor.type(environment_id, line)
         return settled
 
@@ -90,7 +90,7 @@ class StateMachine(AgentListener[AgentEvent]):
         settled = self._settle(agent, hooked, words, by)
         if hooked.held:
             raise Refused(hooked.held.nudge.rendered())
-        for line in [line for said in hooked.nudges if (line := self.nudger.say(settled, said))]:
+        for line in [line for nudge in hooked.nudges if (line := self.nudger.say(settled, nudge))]:
             self.supervisor.type(agent.environment_id, line)
         return settled
 

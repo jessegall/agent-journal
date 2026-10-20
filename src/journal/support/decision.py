@@ -14,7 +14,7 @@ class Decision:
         return cls(False, reason)
 
     @classmethod
-    def tell(cls, context: str) -> "Decision":
+    def allowed_with(cls, context: str) -> "Decision":
         return cls(True, "", context)
 
     def merged(self, other: "Decision") -> "Decision":

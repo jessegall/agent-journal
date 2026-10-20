@@ -22,4 +22,4 @@ class RequireAtStart(AgentListener[SessionStarted]):
         state = self.machine.states.named(agent.state, agent.data)
         skills = [*self.requiring.named("journal"), *self.requiring.for_state(state)]
         lines = self.requiring.require(agent, self.requiring.owed(agent, skills))
-        return Decision.tell("\n".join(lines)) if lines else None
+        return Decision.allowed_with("\n".join(lines)) if lines else None

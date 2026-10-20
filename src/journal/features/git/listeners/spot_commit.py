@@ -83,7 +83,7 @@ class SpotCommit(AgentListener[ToolFinished]):
         after = self.after.said(self.tasks.find(closed[-1]))
         lines = [self.nudger.say(agent, Tasks.CLOSED_BY_COMMIT.create(sha=sha[:8], tasks=", ".join(f"task {n}" for n in closed))), self.nudger.say(agent, after) if after else None]
         said = "\n".join(line for line in lines if line)
-        return Decision.tell(said) if said else None
+        return Decision.allowed_with(said) if said else None
 
     def head(self, folder: Path) -> HeadCommit | None:
         try:
