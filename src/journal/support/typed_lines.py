@@ -57,6 +57,13 @@ class TypedLines:
                 return True
         return False
 
+    def confirm_naming(self, environment_id: int, message_id: int) -> bool:
+        """A waiting line that names the message, a new-message line, is confirmed by the message being read: the agent acted on it, whatever the prompt hook saw; False when none named it."""
+        named = [t for t in self._waiting if t.environment_id == environment_id and message_id in t.messages_named()]
+        for typed in named:
+            self._waiting.remove(typed)
+        return bool(named)
+
     def overdue(self, environment_id: int, before: float) -> list[TypedLine]:
         return [t for t in self._waiting if t.environment_id == environment_id and t.at <= before]
 

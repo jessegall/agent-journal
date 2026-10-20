@@ -14,7 +14,7 @@ TRIES = 6
 
 
 class RetypeLost(AgentListener[Ticked]):
-    """A line not seen back while the agent has sat between turns for a while was lost, to a menu, a dialog or a program still loading: it is typed again, each time after twice the wait, up to six times, and the chat says so."""
+    """A line not seen back while the agent has sat between turns for a while was lost, to a menu, a dialog or a program still loading: it is typed again, each time after twice the wait, up to six times; the chat gets one card when it is given up on."""
 
     def __init__(self, typed: TypedLines, turn: Turn, machine: Machine, supervisor: SupervisorLink, cards: Cards) -> None:
         self.typed, self.turn, self.machine, self.supervisor, self.cards = typed, turn, machine, supervisor, cards
@@ -31,8 +31,7 @@ class RetypeLost(AgentListener[Ticked]):
             if lost.tries >= TRIES:
                 self.typed.given_up(lost)
                 self.supervisor.release(event.environment_id)
-                self.cards.show(event.environment_id, event.session, f"A line did not reach the agent in {TRIES} tries", "terminal", "bad", lost.line, shows=ChatMark.FAULTS)
+                self.cards.show(event.environment_id, event.session, f"A line did not reach the agent, typed {TRIES} times over five minutes", "terminal", "bad", lost.line, shows=ChatMark.FAULTS)
             else:
                 again = self.typed.tried_again(lost, event.at)
                 self.supervisor.type_again(event.environment_id, again.line)
-                self.cards.show(event.environment_id, event.session, f"Typed again, try {again.tries}: the line had not reached the agent", "terminal", "", lost.line, shows=ChatMark.FAULTS)

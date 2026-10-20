@@ -7498,3 +7498,27 @@ def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_
     app.container.get(Settings).set("delivery.batch_seconds", 0, Actor.user(1))
     app.container.get(Clock).tick()
     assert typed == ["[journal] new message 2", "[journal] new message 3 | the user put 👍 on message 2"], "the window up, the held lines go as one line"
+
+
+def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_hears_only_of_a_line_given_up(app, monkeypatch):
+    import time
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    from journal.repositories.messages import Messages
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append(fields["line"]))
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["message", "send", "are you there?"], USER)
+    assert sent[-1] == "[journal] new message 1"
+    app.console().run(["message", "read", "1"], AGENT)
+    app.runtime().deferred.drain()
+    tick = lambda later: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=time.time() + later, quiet_for=later))
+    tick(30)
+    assert sent.count("[journal] new message 1") == 1, "the message read, the line that named it has arrived, whatever the prompt hook saw: it is not typed again"
+    app.container.get(SupervisorLink).type(1, "look at the build")
+    for later in (60, 90, 120, 200, 300, 500, 900):
+        tick(later)
+    cards = [m.text for m in app.container.get(Messages).in_() if m.author == "system" and "line" in m.text]
+    assert sent.count("[journal] look at the build") == 6 and cards == ["A line did not reach the agent, typed 6 times over five minutes"], "six tries, and the chat hears of it once, when the line is given up"
