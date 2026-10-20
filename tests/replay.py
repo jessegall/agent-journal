@@ -66,12 +66,12 @@ class Replay:
         catch_typed(app, monkeypatch, self.typed)
 
     def step(self, name: str, answer=None) -> None:
-        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the agent's counts as they stand, and what the count checks of the walks since read."""
+        """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the environment's counts as they stand, and what the count checks of the walks since read."""
         with self.app.container.get(Scope).of(self.app.container.get(Environments).named("main").id):
             entries = list(reversed(self.app.container.get(Entries).of_kind_in(1000)))
             nudges = [e.data["key"] for e in entries if e.kind == "nudge"]
             walks = [e for e in entries if e.kind == "walk"]
-            counts = {c.name: c.value for c in sorted(self.app.container.get(Counts).where(session="s1"), key=lambda c: c.name)}
+            counts = {c.name: c.value for c in sorted(self.app.container.get(Counts).all(), key=lambda c: c.name)}
         read = [w.data["read"] for w in walks if w.id > self.last_walk and w.data.get("read")]
         self.steps.append({"name": name, "answer": answer, "typed": list(self.typed), "nudges": nudges[self.seen:], "counts": counts, "read": read})
         self.seen, self.last_walk = len(nudges), max([self.last_walk, *(w.id for w in walks)])

@@ -20,6 +20,6 @@ class DryActions:
         return Decision.tell(f"would {key.replace('_', ' ')}{f' as {named.group(1)}' if named else ''}: {self.fillers.fill(words, ctx)}")
 
     def count(self, key: str, name: str) -> None:
-        """A dry count: a start sets the name at nought, a count one adds one, so a check after it reads what the live walk would."""
+        """A dry count: a start sets the name at zero, a count one adds one, so a check after it reads what the live walk would."""
         kind, value = self.ledger.get(name, ("add", 0))
         self.ledger[name] = ("set", 0) if key == "count_start" else (kind, value + 1)

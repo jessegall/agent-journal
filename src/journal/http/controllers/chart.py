@@ -97,7 +97,7 @@ class ChartController:
         """A workflow of the user's own for a state at an event, or for every state when no state is named, born with its trigger, after the others of its event, with a title that names it unless given."""
         state, event = request.body.get("state", "").strip(), request.body.get("trigger", "").strip()
         title = request.body.get("title", "").strip() or NEW_TITLE
-        chart = Chart(title=title, state=state, event=event, place=self.charts.next_place(event))
+        chart = Chart(title=title, state=state, event=event, places={event: self.charts.next_place(event)})
         faults = self.validation.binding_faults(chart)
         if faults:
             return Response.refused(faults[0])
@@ -148,7 +148,7 @@ class ChartController:
 
     def named(self, chart: Chart) -> ListedWorkflow:
         walk, failure = self.traces.last_walk(chart), self.traces.last_failure(chart)
-        return ListedWorkflow(id=chart.id, title=chart.title, revision=chart.revision, shipped=chart.shipped, event=chart.event, state=chart.state, place=chart.place, off=not self.charts.graph(chart).triggers,
+        return ListedWorkflow(id=chart.id, title=chart.title, revision=chart.revision, shipped=chart.shipped, event=chart.event, state=chart.state, place=chart.places.get(chart.event, 0), places=chart.places, off=not self.charts.graph(chart).triggers,
                 edited=not all(n.shipped for n in self.charts.nodes_of(chart)), failed=failure is not None and (walk is None or failure.at >= walk.record.at),
                 behind=self.shipped.behind(chart), locked=chart.locked, guarded=any(n.locked for n in self.charts.nodes_of(chart)),
                 warnings=self.validation.warnings(chart), revised_by=chart.updated_by.stamp if chart.updated_by else "", last_walk=self.shown(walk) if walk else {}, last_failure=asdict(failure) if failure else {})

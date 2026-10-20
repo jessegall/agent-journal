@@ -1,7 +1,6 @@
 from journal.features.chart.commands.chart_command import ChartCommand
 from journal.features.chart.listeners.clear_unused_counts import ClearUnusedCounts
 from journal.features.chart.listeners.forget_counts_of_a_deleted_workflow import ForgetCountsOfADeletedWorkflow
-from journal.features.chart.listeners.forget_counts_at_end import ForgetCountsAtEnd
 from journal.features.chart.listeners.walk_agent_events import WalkAgentEvents
 from journal.features.chart.listeners.walk_agent_events_after import WalkAgentEventsAfter
 from journal.features.chart.listeners.walk_row_events import WalkRowEvents
@@ -19,7 +18,7 @@ class ChartFeature(Feature):
     help = "The journal's conduct toward the agent as a flowchart the user edits: triggers, checks and actions joined by lines."
     commands = (ChartCommand,)
     seeds = (ShippedChart,)
-    listeners = (WalkAgentEvents, WalkAgentEventsAfter, WalkRowEvents, ForgetCountsAtEnd, ClearUnusedCounts, ForgetCountsOfADeletedWorkflow)
+    listeners = (WalkAgentEvents, WalkAgentEventsAfter, WalkRowEvents, ClearUnusedCounts, ForgetCountsOfADeletedWorkflow)
     checks = (
         Entry(NodeKind.CHECK, 'something_owed', 'Owes a skill, a look or a mark?', 'the agent owes the journal something before it may stop: a skill to read, the look at what is in flight, or a decision at a context mark'),
         Entry(NodeKind.CHECK, 'own_tool', 'Tool used by the agent itself, not a subagent?', "the tool use is the agent's own, not a subagent's"),
@@ -30,19 +29,21 @@ class ChartFeature(Feature):
         Entry(NodeKind.CHECK, 'prompt_has', 'Prompt contains N?', 'the prompt the user sent holds the words in the text, in any case', takes_text=True),
         Entry(NodeKind.CHECK, 'time_between', 'Time of day within N?', 'the local time of day falls within the span in the text, such as 22:00-06:00; a tick reads its own time, any other event now', takes_text=True),
         Entry(NodeKind.CHECK, 'quiet_for_over', 'Has the agent been quiet for N?', "the clock ticks and the agent has done nothing for at least the time in the text, with its unit: 30 seconds, 10 minutes, 2 hours; a bare number is seconds, or a setting's name", takes_text=True),
-        Entry(NodeKind.CHECK, 'count_over', 'Is a count over N?', "the agent's count named first in the text has reached N; the text is the count's name, then N or a setting's name, such as reads messages.hold_after", takes_text=True),
-        Entry(NodeKind.CHECK, 'count_at', 'Is a count at N?', "the agent's count named first in the text stands at exactly N; the text is the count's name, then N or a setting's name", takes_text=True),
-        Entry(NodeKind.CHECK, 'count_wait', 'Wait here until a count reaches N?', "the workflow goes on past here once the agent's count named first in the text reaches N, and waits here until then; the text is the count's name, then N or a setting's name", takes_text=True),
-        Entry(NodeKind.CHECK, 'count_every', 'Is a count at every Nth?', "the agent's count named first in the text is a multiple of N, not zero; the text is the count's name, then N or a setting's name, such as uses messages.remind_every", takes_text=True),
+        Entry(NodeKind.CHECK, 'count_over', 'Has a count reached N?', "this workflow's count named first in the text has reached N in this environment; the text is the count's name, then N or a setting's name, such as reads messages.hold_after", takes_text=True, named='Has {name} reached {n}?'),
+        Entry(NodeKind.CHECK, 'count_at', 'Is a count at N?', "this workflow's count named first in the text stands at exactly N; the text is the count's name, then N or a setting's name", takes_text=True, named='Is {name} at {n}?'),
+        Entry(NodeKind.CHECK, 'count_wait', 'Wait here until a count reaches N?', "the workflow goes on past here once this workflow's count named first in the text reaches N, and waits here until then; the text is the count's name, then N or a setting's name", takes_text=True, named='Wait here until {name} reaches {n}?'),
+        Entry(NodeKind.CHECK, 'count_every', 'Is a count at a multiple of N?', "this workflow's count named first in the text is a multiple of N, not zero; the text is the count's name, then N or a setting's name, such as uses messages.remind_every", takes_text=True, named='Is {name} at a multiple of {n}?'),
+        Entry(NodeKind.CHECK, 'time_over', 'Is it more than N since a noted time?', "more than the time given has passed since this workflow noted the time named first in the text, in this environment; the text is the time's name, then how long with its unit, such as last_log 10 minutes; a time never noted answers no", takes_text=True, named='Is it more than {n} since {name}?'),
     )
     actions = (
         Entry(NodeKind.ACTION, 'say', 'Send the agent a message', "sends the message to the agent once; repeats are skipped for a set time; a message opening with a nudge's key in brackets, [messages.new], speaks as that nudge, with its repeat window and record", takes_text=True),
         Entry(NodeKind.ACTION, 'hold', 'Hold the tool', 'stops the tool and sends the message, until what the message names is done', takes_text=True),
         Entry(NodeKind.ACTION, 'block_stop', 'Keep the agent from stopping', 'the agent carries on, with the message', takes_text=True),
         Entry(NodeKind.ACTION, 'type', 'Type to the agent', "types the text into the agent's terminal as its next prompt; a text opening with a nudge's key in brackets speaks as that nudge first", takes_text=True),
-        Entry(NodeKind.ACTION, 'count_start', 'Start a count', "sets the agent's count named in the text to zero; a check at a later event reads it", takes_text=True),
-        Entry(NodeKind.ACTION, 'count_begin', 'Start a count if not started', "sets the agent's count named in the text to zero only when this workflow has not started it, so it is not reset on every event", takes_text=True),
-        Entry(NodeKind.ACTION, 'count_one', 'Count one', "adds one to the agent's count named in the text", takes_text=True),
+        Entry(NodeKind.ACTION, 'count_start', 'Set a count to zero', "sets this workflow's count named in the text to zero in this environment, whatever it stood at; a check at a later event reads it", takes_text=True, named='Set {name} to zero'),
+        Entry(NodeKind.ACTION, 'count_begin', 'Start a count at zero once', "starts this workflow's count named in the text at zero only when it is not kept here yet, and leaves a count already kept as it stands, so it is not reset on every event", takes_text=True, named='Start {name} at zero once'),
+        Entry(NodeKind.ACTION, 'count_one', 'Add one to a count', "adds one to this workflow's count named in the text, in this environment", takes_text=True, named='Add one to {name}'),
+        Entry(NodeKind.ACTION, 'time_note', 'Note the time', "keeps the time now under the name in the text, for this workflow in this environment; a check at a later event asks how long ago it was", takes_text=True, named='Note the time as {name}'),
         Entry(NodeKind.ACTION, 'run_workflow', 'Run a workflow', 'runs the workflow named in the text by its title, from its trigger on, as part of this event and in place, so one workflow is used in several; a workflow cannot run itself, directly or through another', takes_text=True),
         Entry(NodeKind.ACTION, 'stop_here', 'Stop the later workflows', 'ends the walk of the event: nothing follows it in this workflow, and no later workflow of the trigger runs'),
         Entry(NodeKind.ACTION, 'show_card', 'Show a card in the chat', 'a card in the chat with the message, so the user sees what the journal did', takes_text=True),

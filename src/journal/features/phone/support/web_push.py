@@ -29,7 +29,7 @@ class WebPush:
         return parts.scheme == "https" and (host in SERVICES or host.endswith(WINDOWS))
 
     def send(self, endpoint: str) -> int:
-        """The push service's status for an empty push, or nought when none was sent: an address not allowed, no tunnel address to sign for, or no answer."""
+        """The push service's status for an empty push, or zero when none was sent: an address not allowed, no tunnel address to sign for, or no answer."""
         address = self.tunnel.address()
         if not self.is_allowed(endpoint) or not address:
             return 0

@@ -20,7 +20,7 @@ LOOKED_BACK = 300
 
 
 class Standing:
-    """Where each live agent stands in a workflow: the node its last walk of it stopped at, whether it waits there (a count check that answered no), the counts the workflow keeps for it, and the readings its count checks compare, with what each counts."""
+    """Where each live agent stands in a workflow: the node its last walk of it stopped at, whether it waits there (a count check that answered no), the counts the workflow keeps in its environment, and the readings its count checks compare, with what each counts."""
 
     def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: Machine, registry: Registry) -> None:
         self.charts, self.agents, self.entries, self.checks, self.machine, self.registry = charts, agents, entries, checks, machine, registry
@@ -37,7 +37,7 @@ class Standing:
         at = datetime.fromtimestamp(walk.at, timezone.utc).isoformat() if walk else ""
         ctx = Context(event=Ticked(at=0.0, quiet_for=0.0).placed(agent.session, agent.environment_id, agent.provider, 0.0), session=agent.session, environment_id=agent.environment_id, state=self.machine.current(agent.session))
         return AgentStanding(session=agent.session, n=agent.id, node=stop.node if stop else 0, port=stop.port if stop else "", at=at,
-                             waits=bool(node and node.key in COUNT_CHECKS and stop.port == "no"), counts=self.checks.counts_kept(agent.session, chart.id),
+                             waits=bool(node and node.key in COUNT_CHECKS and stop.port == "no"), counts=self.checks.counts_kept(chart.id),
                              readings={name: self.checks.count_of(ctx, name) for name in self.read_by(nodes)})
 
     def limits(self, nodes: dict) -> dict:

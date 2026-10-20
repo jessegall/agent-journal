@@ -2,7 +2,6 @@ import re
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.chart.seeds.support.guard import Guard
 from journal.support.chart_catalogue import FORMER_TITLES, ChartCatalogue
-from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
 from journal.support.title import LONGEST
 from journal.features.chart.seeds.support.drawing import Drawing
 from journal.features.registry import Registry
@@ -13,7 +12,9 @@ from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.support.title import LONGEST
 from journal.repositories.agents import Agents
-from journal.repositories.counts import Counts
+from journal.features.chart.support.workflow_values import WorkflowValues
+from journal.support.validation import Validation
+from journal.support.drawn_node import DrawnNode
 from journal.support.drawn_line import NO, THEN, YES
 from journal.repositories.charts import Charts
 from journal.repositories.settings import Settings
@@ -143,8 +144,8 @@ CHECK_AWAITED = "[tasks.check_awaited] check {{awaited}} now: you have waited {{
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 
-    def __init__(self, charts: Charts, catalogue: ChartCatalogue, settings: Settings, states: StatesCatalogue, agents: Agents, counts: Counts, registry: Registry) -> None:
-        self.states, self.agents, self.counts, self.registry = states, agents, counts, registry
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, settings: Settings, states: StatesCatalogue, agents: Agents, values: WorkflowValues, registry: Registry) -> None:
+        self.states, self.agents, self.values, self.registry = states, agents, values, registry
         self.charts, self.catalogue, self.settings = charts, catalogue, settings
         self.drawings: dict[str, Drawing] = {}
         self.templates: dict[str, str] = {}
@@ -270,7 +271,7 @@ class ShippedChart(Seed):
         state, event = key.split(":")[:2]
         drawing = self.drawings[key]
         place = self.shipped_place(key)
-        chart = self.charts.save(Chart(title=drawing.title, shipped=True, locked=drawing.locked, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, place=place), by)
+        chart = self.charts.save(Chart(title=drawing.title, shipped=True, locked=drawing.locked, state=state, event=event, drawing=key, drawn_version=DRAWINGS_VERSION, places={event: place}), by)
         drawing.draw(chart)
         return chart
 
@@ -368,27 +369,29 @@ class ShippedChart(Seed):
             self.charts.save(chart.with_(title=f"{chart.title} (stopped, {unknown.kind.value} {unknown.key} is no longer in the catalogue)"), by)
 
     def stop_what_reads_a_count_it_does_not_keep(self, by: Actor) -> None:
-        """A user's workflow reading a count none of its own nodes starts or counts, which another workflow kept before each kept its own, is stopped at boot, its triggers taken out and its title saying why."""
+        """A user's workflow reading a count or a time none of its own nodes sets, as one could read another workflow's before each kept its own, is stopped at boot, its triggers taken out and its title saying why."""
         for chart in [c for c in self.charts.all() if not c.shipped]:
             nodes = self.charts.nodes_of(chart)
-            kept = {n.text.strip().partition(" ")[0] for n in nodes if n.key in COUNT_ACTIONS}
-            foreign = sorted({n.text.strip().partition(" ")[0] for n in nodes if n.key in COUNT_CHECKS} - kept - set(READINGS) - {""})
+            foreign = Validation.value_faults([DrawnNode.of(n) for n in nodes])
             triggers = [n for n in nodes if n.kind == NodeKind.TRIGGER]
             if not foreign or not triggers:
                 continue
             for trigger in triggers:
                 self.charts.remove_node(trigger, by)
-            why = f" (off, reads another's count {foreign[0]})"
+            name = next(n.text.strip().partition(" ")[0] for n in nodes if str(n.id) == foreign[0].node)
+            why = f" (off, reads {name}, a value it does not keep)"
             self.charts.save(chart.with_(title=chart.title[:LONGEST - len(why)].rstrip() + why), by)
 
     def reset(self, chart: Chart, by: Actor) -> Chart:
-        """A shipped workflow as shipped again: every node and line gone, its drawing drawn anew at the place it ships at, one more revision."""
+        """A shipped workflow as shipped again: every node and line gone, its counts and times with them, its drawing drawn anew at the place it ships at, one more revision."""
         drawing = self.drawings[chart.drawing or self.key_of(chart.state, chart.event)]
         for node in self.charts.nodes_of(chart):
             self.charts.remove_node(node, by)
+        self.values.forget(chart, by)
         drawing.draw(chart)
-        place = self.shipped_place(chart.drawing) if chart.drawing in self.drawings else chart.place
-        return self.charts.save(chart.saved_again().with_(title=drawing.title, drawing=chart.drawing or self.key_of(chart.state, chart.event), drawn_version=DRAWINGS_VERSION, place=place), by)
+        place = self.shipped_place(chart.drawing) if chart.drawing in self.drawings else chart.place_at(chart.event)
+        drawn = self.charts.find(chart.id)
+        return self.charts.save(drawn.saved_again().placed(chart.event, place).with_(title=drawing.title, drawing=chart.drawing or self.key_of(chart.state, chart.event), drawn_version=DRAWINGS_VERSION), by)
 
     def node(self, chart: Chart, kind: NodeKind, key: str, text: str = "", x: int = 0, y: int = 0, locked: bool | None = None) -> Node:
         """A shipped node; a hold is a guard of the journal's protocol and is drawn locked, as is any node the drawing says so of."""

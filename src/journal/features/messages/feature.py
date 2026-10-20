@@ -39,6 +39,7 @@ class Messages(Feature):
         Entry(NodeKind.CHECK, 'unanswered_over', 'N or more messages unanswered?', "at least N messages read and not yet replied to or given a face; the text is N or a setting's name", takes_text=True),
         Entry(NodeKind.CHECK, 'message_by_user', 'Message written by you?', 'the row is a message the user wrote, not the agent'),
         Entry(NodeKind.CHECK, 'message_just_read', 'Message just read?', 'the row is a message the agent has just read: this write set when it was read'),
+        Entry(NodeKind.CHECK, 'message_is_reply', "Message is the agent's reply?", 'the row is a reply the agent just wrote to a message'),
         Entry(NodeKind.CHECK, 'tool_reads_their_files', "Tool reads the message's own files?", 'the tool about to run reads a file attached to a message read and left unanswered'),
     )
 

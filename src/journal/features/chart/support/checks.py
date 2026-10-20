@@ -37,6 +37,8 @@ from journal.repositories.messages import Messages
 from journal.support.not_found import NotFound
 from journal.repositories.plans import Plans
 from journal.repositories.counts import Counts
+from journal.repositories.noted_times import NotedTimes
+from journal.engine.clock import Clock
 from journal.repositories.settings import Settings
 from journal.repositories.rules import Rules
 from journal.repositories.facts import Facts
@@ -61,6 +63,13 @@ COUNT_CHECKS = ("count_over", "count_at", "count_every", "count_wait")
 """The checks on a count the workflow keeps: the text names the count, then the number or the setting."""
 COUNT_ACTIONS = ("count_start", "count_begin", "count_one")
 """The actions on a count the workflow keeps: the text names the count."""
+TIME_CHECKS = ("time_over",)
+"""The checks on a time the workflow noted: the text names the time, then how long, with its unit."""
+TIME_ACTIONS = ("time_note",)
+"""The actions that note a time: the text names it."""
+VALUE_CHECKS = (*COUNT_CHECKS, *TIME_CHECKS)
+VALUE_ACTIONS = (*COUNT_ACTIONS, *TIME_ACTIONS)
+"""The steps on the values a workflow keeps in an environment, its counts and its times."""
 READINGS = ("edits", "uses", "owed", "namings", "lines")
 """The counts the journal reads from its record rather than a workflow keeping them: no workflow's count takes one of these names."""
 
@@ -69,8 +78,8 @@ class Checks:
     """The catalogue's checks answered from the rows: one method per key, named after it. A counter check takes the node's text as its number, or the name of the setting that holds it."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, settings: Settings, machine: Machine, providers: Providers, entries: Entries, registry: Registry, config: Config, workers: Workers, counts: Counts, requiring: Requiring,
-                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs, backup: Version3Backup, outputs: CommandOutputs) -> None:
-        self.outputs = outputs
+                 rules: Rules, facts: Facts, reminders: Reminders, agents: Agents, questions: Questions, task_logs: TaskLogs, backup: Version3Backup, outputs: CommandOutputs, times: NotedTimes, clock: Clock) -> None:
+        self.outputs, self.times, self.clock = outputs, times, clock
         self.tasks, self.plans, self.messages, self.settings, self.machine, self.providers, self.entries = tasks, plans, messages, settings, machine, providers, entries
         self.registry, self.config, self.workers = registry, config, workers
         self.counts = counts
@@ -81,7 +90,7 @@ class Checks:
 
     def answer(self, key: str, ctx: Context, text: str = "") -> bool:
         check = getattr(self, key)
-        if key in COUNT_CHECKS:
+        if key in VALUE_CHECKS:
             name, _, limit = text.strip().partition(" ")
             return bool(check(ctx, name, self.number(limit)))
         if key in COUNTERS:
@@ -89,16 +98,25 @@ class Checks:
         return bool(check(ctx, text.strip()) if key in WORD_CHECKS else check(ctx))
 
     def count_of(self, ctx: Context, name: str) -> int:
-        """The agent's count by that name: edits, uses, owed and namings are read from the journal's own record, so no workflow keeps them for another; any other name is a count a workflow started."""
-        if not ctx.session:
-            return 0
+        """The count by that name: edits, uses, owed and namings are the agent's, read from the journal's own record; any other name is a count the workflow being walked keeps in the environment."""
         derived = getattr(self, f"derived_{name}", None)
-        return derived(ctx) if derived else self.counts.named(ctx.session, ctx.counted(name)).value
+        if derived:
+            return derived(ctx) if ctx.session else 0
+        return self.counts.named(ctx.counted(name)).value
 
-    def counts_kept(self, session: str, workflow: int) -> dict[str, int]:
-        """The counts a workflow keeps for the agent, by their names."""
-        prefix = f"charts:{workflow}:"
-        return {c.name[len(prefix):]: c.value for c in self.counts.where(session=session) if c.name.startswith(prefix)} if session else {}
+    def counts_kept(self, workflow: int) -> dict[str, int]:
+        """The counts a workflow keeps in the environment, by their names."""
+        return self.counts.of_workflow(workflow)
+
+    def seconds_since(self, ctx: Context, name: str) -> int | None:
+        """How long ago the workflow being walked noted the time by that name, by the engine's clock; None when it never did."""
+        noted = self.times.at(ctx.counted(name))
+        return None if noted is None else int(self.clock.now() - noted)
+
+    def time_over(self, ctx: Context, name: str, limit: int) -> bool:
+        """More than the time given has passed since the workflow noted the time by that name; a time never noted has no since, and answers no."""
+        since = self.seconds_since(ctx, name)
+        return since is not None and since > limit
 
     def derived_edits(self, ctx: Context) -> int:
         """Writes since the task in hand was last logged, or started, a held one not counted; at a write, the ones before it, so the write in hand is read against the edits so far."""
@@ -137,18 +155,18 @@ class Checks:
         return [e for e in self.entries.tool_starts(session) if not (e.data.get("agent_id") or e.data.get("subagent_id")) and (since is None or (e.created_at and e.created_at > since))]
 
     def count_over(self, ctx: Context, name: str, limit: int) -> bool:
-        """The agent's count by that name has reached the number."""
-        return bool(ctx.session) and self.count_of(ctx, name) >= limit
+        """The count by that name has reached the number."""
+        return self.count_of(ctx, name) >= limit
 
     def count_wait(self, ctx: Context, name: str, limit: int) -> bool:
         """Has the count reached the number: until it has, the workflow waits here, its No needing no line."""
         return self.count_over(ctx, name, limit)
 
     def count_at(self, ctx: Context, name: str, limit: int) -> bool:
-        return bool(ctx.session) and self.count_of(ctx, name) == limit
+        return self.count_of(ctx, name) == limit
 
     def count_every(self, ctx: Context, name: str, limit: int) -> bool:
-        """The count stands at a multiple of the number, and not at nought: every Nth time, so a cadence reads one check."""
+        """The count stands at a multiple of the number, and not at zero: every Nth time, so a cadence reads one check."""
         value = self.count_of(ctx, name)
         return limit > 0 and value > 0 and value % limit == 0
 
@@ -280,9 +298,13 @@ class Checks:
         return self.worker_now(ctx, WorkerState.STOPPED)
 
     def worker_now(self, ctx: Context, state: WorkerState) -> bool:
-        """The row event is a worker that just came to this state, not one saved again in it."""
+        return self.row_became(ctx, Worker, state)
+
+    @staticmethod
+    def row_became(ctx: Context, kind: type, state) -> bool:
+        """The row event is a row of the kind that this write moved into the state, not one saved again in it."""
         event = ctx.event
-        return isinstance(event, Updated) and isinstance(event.model, Worker) and event.model.state == state and event.was is not None and event.was.state != state
+        return isinstance(event, Updated) and isinstance(event.model, kind) and event.model.state == state and event.was is not None and event.was.state != state
 
     def agent_awaits_the_worker(self, ctx: Context) -> bool:
         state = self.state(ctx)
@@ -404,6 +426,27 @@ class Checks:
         """The row event is a task this write started, by the agent whose walk this is."""
         event = ctx.event
         return isinstance(event, Updated) and isinstance(event.model, Task) and event.model.started_at is not None and event.was is not None and event.was.started_at is None and event.by.id == ctx.session
+
+    def task_just_taken(self, ctx: Context) -> bool:
+        """The row event is a task this agent took in hand with this write: started, resumed after a park, or claimed."""
+        return self.task_became(ctx, TaskState.STARTED) and ctx.event.by.id == ctx.session
+
+    def task_just_parked(self, ctx: Context) -> bool:
+        return self.task_became(ctx, TaskState.PARKED)
+
+    def task_just_blocked(self, ctx: Context) -> bool:
+        return self.task_became(ctx, TaskState.BLOCKED)
+
+    def task_became(self, ctx: Context, state: TaskState) -> bool:
+        return self.row_became(ctx, Task, state)
+
+    def open_question(self, ctx: Context) -> bool:
+        """A question to the user here waits for its answer."""
+        return bool(self.questions.open())
+
+    def message_is_reply(self, ctx: Context) -> bool:
+        """The row event is a reply the agent wrote to a message."""
+        return isinstance(ctx.event, Created) and isinstance(ctx.event.model, Message) and ctx.event.model.is_agents_reply
 
     def log_for_task_in_hand(self, ctx: Context) -> bool:
         """The row event is a log line of the task the agent has in hand."""

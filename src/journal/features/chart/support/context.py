@@ -40,6 +40,8 @@ class Context:
     """Where each path of this walk ended: the workflow, the node and the port it ended at, a check's No with no line after it being where the workflow waits."""
     calling: list = field(default_factory=list)
     """The workflows a Run a workflow step is running now, innermost last, so a call into one already running is refused."""
+    valued: set = field(default_factory=set)
+    """The count and time nodes this event already acted: a row event walks about every agent of the environment, and a value, kept for the environment, is set once."""
 
     @property
     def workflow(self) -> int:
@@ -59,14 +61,14 @@ class Context:
         """The name of the environment the walk is in; empty for a walk in none."""
         return environments.find(self.environment_id).name if self.environment_id else ""
 
-    def stops_counted(self, counts_kept: Callable[[str, int], dict[str, int]]) -> tuple[WalkStop, ...]:
-        """Each stop of this walk with its workflow's counts for the agent as the walk left them."""
-        return tuple(stop.with_counts(counts_kept(self.session, stop.workflow)) for stop in self.stops)
+    def stops_counted(self, counts_kept: Callable[[int], dict[str, int]]) -> tuple[WalkStop, ...]:
+        """Each stop of this walk with its workflow's counts in the environment as the walk left them."""
+        return tuple(stop.with_counts(counts_kept(stop.workflow)) for stop in self.stops)
 
-    def keeps_count(self, text: str) -> bool:
-        """A count step's text names a count, and there is an agent to keep it for."""
-        return bool(self.session and text.strip())
+    def keeps_value(self, text: str) -> bool:
+        """A count or time step's text names a value, and there is an environment to keep it in."""
+        return bool(self.environment_id and text.strip())
 
     def counted(self, name: str) -> str:
-        """A count's name as kept for the workflow being walked: each workflow keeps its own counts."""
+        """A value's name as kept for the workflow being walked: each workflow keeps its own counts and times, and reads no other's."""
         return f"charts:{self.workflow}:{name}"

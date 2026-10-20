@@ -1,6 +1,5 @@
 from journal.engine.machine import Machine
 from journal.events.agent.agent_event import AgentEvent
-from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 from journal.features.chart.support.context import Context
 from journal.features.chart.support.walk import AFTER, Walk
@@ -13,8 +12,8 @@ class WalkAgentEventsAfter(AgentListener[AgentEvent]):
         self.walk, self.machine = walk, machine
 
     def handle(self, event: AgentEvent) -> None:
-        if isinstance(event, Ticked):
+        if not event.answers_hook:
             return
         agent = self.machine.agent(event.session, event.environment_id, event.provider)
         state = self.machine.states.named(agent.state, agent.data)
-        self.walk.on(Context(event=event, session=event.session, environment_id=event.environment_id, provider=event.provider or "claude", answers_hook=False, state=state), AFTER)
+        self.walk.on(Context(event=event, session=event.session, environment_id=event.environment_id, provider=event.provider or agent.provider or "claude", answers_hook=False, state=state), AFTER)

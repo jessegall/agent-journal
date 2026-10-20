@@ -23,6 +23,7 @@ from journal.models.edit import Edit
 from journal.models.reaction import Reaction
 from journal.models.reminder import Reminder
 from journal.models.count import Count
+from journal.models.noted_time import NotedTime
 from journal.models.report import Report
 from journal.models.rule import Rule
 from journal.models.scoped import Scoped
@@ -44,5 +45,5 @@ from journal.models.worker import Worker
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, Doc, Dump, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic, Phone, PairingCode)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, NotedTime, Doc, Dump, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic, Phone, PairingCode)
     SCOPED = tuple(model for model in MODELS if issubclass(model, Scoped))

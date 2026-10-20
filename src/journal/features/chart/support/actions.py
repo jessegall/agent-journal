@@ -16,6 +16,8 @@ from journal.support.requiring import Requiring
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.counts import Counts
+from journal.repositories.noted_times import NotedTimes
+from journal.engine.clock import Clock
 from journal.features.registry import Registry
 from journal.support.said import Said
 from journal.support.running import Running
@@ -32,9 +34,9 @@ NAMED = re.compile(r"^\[([a-z_]+\.[a-z_]+)\]\s*(.*)$", re.S)
 class Actions:
     """The catalogue's actions, one method per key: each says, holds, blocks, types or starts through the funnel that owns it, and answers the hook when one waits."""
 
-    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences, fillers: Fillers, cards: Cards, registry: Registry, counts: Counts, requiring: Requiring, agents: Agents, checks: Checks) -> None:
+    def __init__(self, nudger: Nudger, supervisor: SupervisorLink, machine: Machine, running: Running, sequences: Sequences, fillers: Fillers, cards: Cards, registry: Registry, counts: Counts, requiring: Requiring, agents: Agents, checks: Checks, times: NotedTimes, clock: Clock) -> None:
         self.nudger, self.supervisor, self.machine, self.running, self.sequences, self.fillers, self.cards = nudger, supervisor, machine, running, sequences, fillers, cards
-        self.registry, self.counts, self.requiring, self.agents, self.checks = registry, counts, requiring, agents, checks
+        self.registry, self.counts, self.requiring, self.agents, self.checks, self.times, self.clock = registry, counts, requiring, agents, checks, times, clock
 
     def spoken(self, text: str) -> Said:
         """The node's words as a said line: through the nudge the text names in brackets, else through the chart's own line."""
@@ -123,20 +125,26 @@ class Actions:
         return Decision()
 
     def count_start(self, text: str, ctx: Context) -> Decision:
-        """The agent's count by that name back at nought."""
-        if ctx.keeps_count(text):
-            self.counts.set(ctx.session, ctx.counted(text.strip()), 0, Actor.system())
+        """The workflow's count by that name back at zero in the environment."""
+        if ctx.keeps_value(text):
+            self.counts.set(ctx.counted(text.strip()), 0, Actor.system())
         return Decision()
 
     def count_begin(self, text: str, ctx: Context) -> Decision:
-        """The agent's count by that name at nought, unless this workflow has already started it."""
-        if ctx.keeps_count(text):
-            self.counts.begin(ctx.session, ctx.counted(text.strip()), Actor.system())
+        """The workflow's count by that name at zero, unless it is already kept here."""
+        if ctx.keeps_value(text):
+            self.counts.begin(ctx.counted(text.strip()), Actor.system())
         return Decision()
 
     def count_one(self, text: str, ctx: Context) -> Decision:
-        if ctx.keeps_count(text):
-            self.counts.count_one(ctx.session, ctx.counted(text.strip()), Actor.system())
+        if ctx.keeps_value(text):
+            self.counts.count_one(ctx.counted(text.strip()), Actor.system())
+        return Decision()
+
+    def time_note(self, text: str, ctx: Context) -> Decision:
+        """The engine clock's time kept under the name for the workflow in the environment, the one before it replaced."""
+        if ctx.keeps_value(text):
+            self.times.note(ctx.counted(text.strip()), self.clock.now(), Actor.system())
         return Decision()
 
     def show_card(self, text: str, ctx: Context) -> Decision:

@@ -19,6 +19,7 @@ class Questions(Feature):
     checks = (
         Entry(NodeKind.CHECK, 'question_answered', 'Question answered?', 'the row is a question the user just answered'),
         Entry(NodeKind.CHECK, 'agent_waits_on_the_question', 'Agent waits on this question?', 'the agent waits on the question of this row'),
+        Entry(NodeKind.CHECK, 'open_question', 'Has an open question?', 'a question to the user here waits for its answer'),
     )
 
     ANSWERED = Nudge(name, "answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_after=0)

@@ -1,6 +1,6 @@
 import re
 from journal.support.chart_catalogue import ChartCatalogue
-from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS
+from journal.features.chart.support.checks import COUNT_ACTIONS, COUNT_CHECKS, READINGS, TIME_ACTIONS, TIME_CHECKS
 from journal.features.chart.support.fault import Fault
 from journal.support.states_catalogue import StatesCatalogue
 from journal.models.chart import Chart
@@ -26,6 +26,9 @@ RELEASES = ("release", "wait_outside", "mark_stuck", "go_idle")
 def law_words(text: str) -> str:
     """A locked node's text without its numbers: the words are the law, the numbers are the user's to tune."""
     return re.sub(r"\d+", "", text)
+LINE_SAID = "line_said"
+SPEAKING = ("say", "type", "hold", "block_stop", "require_skill", "start_sequence", "run_workflow", "release")
+"""The steps that say the agent a line, or may: none of them is reached from Journal line said."""
 
 
 class Validation:
@@ -65,6 +68,7 @@ class Validation:
         faults += [Fault(f"node {n.id}'s text is longer than {TEXT_LIMIT} characters", n.id) for n in nodes if len(n.text) > TEXT_LIMIT]
         faults += self.trigger_faults(chart, nodes)
         faults += self.action_faults(nodes)
+        faults += self.value_faults(nodes)
         faults += self.call_faults(chart, nodes)
         for line in lines:
             source, target = by_id.get(line.source), by_id.get(line.target)
@@ -73,6 +77,7 @@ class Validation:
                 continue
             faults += self.port_fault(source, target, line.port)
         faults += self.check_faults(nodes, lines)
+        faults += self.line_said_faults(nodes, lines)
         faults += self.port_twice_faults(lines)
         faults += self.hold_faults(nodes, lines)
         faults += self.cycle_faults(nodes, lines)
@@ -97,6 +102,27 @@ class Validation:
         return faults
 
     @staticmethod
+    def wants_amount(node: DrawnNode) -> bool:
+        """A check on a value that names the value and nothing after it: no number, no time."""
+        return node.kind == NodeKind.CHECK and len(node.text.split()) < 2
+
+    @staticmethod
+    def line_said_faults(nodes: list[DrawnNode], lines: list[DrawnLine]) -> list[Fault]:
+        """A path from Journal line said only counts, notes or shows a card: a line said on it would be another line said, which starts the path again without end."""
+        leads = {}
+        for line in lines:
+            leads.setdefault(line.source, []).append(line.target)
+        by_id = {n.id: n for n in nodes}
+        seen, queue = set(), [n.id for n in nodes if n.kind == NodeKind.TRIGGER and n.key == LINE_SAID]
+        while queue:
+            for target in leads.get(queue.pop(), []):
+                if target in seen:
+                    continue
+                seen.add(target)
+                queue.append(target)
+        return [Fault(f"step {i} would say a line on a path from Journal line said, which would start that path again: a path from it may count, note the time or show a card", i) for i in sorted(seen) if i in by_id and by_id[i].key in SPEAKING]
+
+    @staticmethod
     def before(lines: list[DrawnLine], targets: set) -> set:
         """Every node a path runs through on its way to one of the targets."""
         leads_to = {}
@@ -113,7 +139,7 @@ class Validation:
 
     def warnings(self, chart: Chart) -> list[str]:
         """What a saved workflow should still hear about: a hold at a tool use that no check narrows, a Stop the later workflows that skips the workflows after it in the event's order, and a state that waits on something outside with nothing in any of its workflows to release the agent."""
-        return self.hold_warnings(chart) + self.stop_warnings(chart) + self.wait_warnings(chart) + self.count_warnings(chart)
+        return self.hold_warnings(chart) + self.stop_warnings(chart) + self.wait_warnings(chart)
 
     def hold_warnings(self, chart: Chart) -> list[str]:
         """A Hold the tool at Pre tool use with neither Tool changes files? nor Journal command? on its path holds every tool, reads included; the engine still lets a journal command and the read of a skill's file through, the rest waits."""
@@ -124,12 +150,22 @@ class Validation:
         narrowing = {n.id for n in nodes if n.kind == NodeKind.CHECK and n.key in ("tool_writes", "journal_command")}
         return [f"Hold the tool at step {n.id} holds every tool, reads included: put Tool changes files? or Journal command? before it; a journal command and the read of a skill's file go through regardless" for n in nodes if n.kind == NodeKind.ACTION and n.key == "hold" and not narrowing & self.before(lines, {n.id})]
 
-    def count_warnings(self, chart: Chart) -> list[str]:
-        """A count check reading a count that nothing in this workflow starts or counts, which stays at nought."""
-        nodes = self.charts.nodes_of(chart)
-        kept = {n.text.strip().partition(" ")[0] for n in nodes if n.key in COUNT_ACTIONS}
-        read = sorted({n.text.strip().partition(" ")[0] for n in nodes if n.key in COUNT_CHECKS} - kept - set(READINGS) - {""})
-        return [f"nothing in this workflow starts or counts {name}, so it stays at nought" for name in read]
+    @staticmethod
+    def value_faults(nodes: list[DrawnNode]) -> list[Fault]:
+        """A value's name is checked: one name is a count or a time but not both, and a workflow reads only its own values, so a check on one that no step of the same workflow sets is refused, a reading of the journal's record aside."""
+        named = lambda keys: {n.text.strip().partition(" ")[0] for n in nodes if n.key in keys}
+        counted, noted = named(COUNT_ACTIONS), named(TIME_ACTIONS)
+        both = (counted | named(COUNT_CHECKS)) & (noted | named(TIME_CHECKS))
+        faults = []
+        for n in nodes:
+            name = n.text.strip().partition(" ")[0]
+            if n.key in (*TIME_ACTIONS, *TIME_CHECKS) and name in both:
+                faults.append(Fault(f"{name} is both a count and a time in this workflow: give each its own name", n.id))
+            if n.key in COUNT_CHECKS and name and name not in counted and name not in READINGS:
+                faults.append(Fault(f"step {n.id} reads the count {name}, which no step of this workflow sets: give the workflow an Add one to a count or a Set a count to zero for {name}, since a workflow reads only its own counts", n.id))
+            if n.key in TIME_CHECKS and name and name not in noted:
+                faults.append(Fault(f"step {n.id} asks how long since {name}, which no step of this workflow notes: give the workflow a Note the time for {name}, since a workflow reads only its own times", n.id))
+        return faults
 
     def off_fault(self, chart: Chart) -> list[Fault]:
         """A locked workflow, or one holding a locked step, is not turned off: that would switch off the journal's law."""
@@ -143,8 +179,11 @@ class Validation:
     def stop_warnings(self, chart: Chart) -> list[str]:
         if not any(n.key == "stop_here" for n in self.charts.nodes_of(chart)):
             return []
-        skipped = [c.title for c in self.charts.for_event(chart.event) if c.place > chart.place]
-        return [f"This workflow can stop the later workflows at {chart.event}; when it does, these do not run: {', '.join(skipped)}"] if skipped else []
+        warned = []
+        for event in sorted(chart.places):
+            skipped = [c.title for c in self.charts.for_event(event) if c.place_at(event) > chart.place_at(event)]
+            warned += [f"This workflow can stop the later workflows at {event}; when it does, these do not run: {', '.join(skipped)}"] if skipped else []
+        return warned
 
     def wait_warnings(self, chart: Chart) -> list[str]:
         if chart.state not in self.states.waits():
@@ -199,15 +238,21 @@ class Validation:
         return any(self.reaches(titles[t].id, target, calls, titles, seen) for t in calls.get(start, []) if t in titles)
 
     def action_faults(self, nodes: list[DrawnNode]) -> list[Fault]:
-        """A wait names what for and being stuck why; a count node names its count, and a count check the number after it."""
+        """A wait names what for and being stuck why; a count node names its count, and a count check the number after it; a time node names its time, and a time check how long after it."""
         faults = []
+        for n in (n for n in nodes if n.key in (*TIME_ACTIONS, *TIME_CHECKS)):
+            words = n.text.split()
+            if not words:
+                faults.append(Fault(f"node {n.id} names no time: its text is the time's name", n.id))
+            elif self.wants_amount(n):
+                faults.append(Fault(f"node {n.id} says not how long: its text is the time's name, then how long with its unit, such as 15 minutes", n.id))
         for n in (n for n in nodes if n.key in (*COUNT_ACTIONS, *COUNT_CHECKS)):
             words = n.text.split()
             if not words:
                 faults.append(Fault(f"node {n.id} names no count: its text is the count's name", n.id))
             elif n.key in COUNT_ACTIONS and words[0] in READINGS:
                 faults.append(Fault(f"{words[0]} is a reading of the journal's record, not a count a workflow keeps: name the count something else", n.id))
-            elif n.kind == NodeKind.CHECK and len(words) < 2:
+            elif self.wants_amount(n):
                 faults.append(Fault(f"node {n.id} names no number: its text is the count's name, then N or a setting's name", n.id))
         for n in (n for n in nodes if n.kind == NodeKind.ACTION and n.key in ("wait_outside", "mark_stuck") and not n.text.strip()):
             faults.append(Fault(f"node {n.id} says nothing: {'what the agent waits for' if n.key == 'wait_outside' else 'why the agent is stuck'} goes in its text", n.id))

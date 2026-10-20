@@ -37,7 +37,7 @@ class Health:
 
     @property
     def checked_at(self) -> float:
-        """When the program was last asked, as a timestamp; nought before the first time."""
+        """When the program was last asked, as a timestamp; zero before the first time."""
         return self._report.asked_on
 
     def remove(self, name: str) -> bool:
