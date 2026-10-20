@@ -2,6 +2,8 @@ import json
 from ipaddress import ip_address, ip_network
 
 from journal.http.support.pooled_handler import PooledHandler
+from journal.http.phone.phone_pages import PhonePages
+from journal.http.phone.phone_request import PhoneRequest
 from journal.http.support.share_answer import ShareAnswer
 from journal.http.sharing.share_pages import SharePages
 from journal.http.sharing.visitor_comment import VisitorComment
@@ -18,9 +20,10 @@ HEADERS = {
 
 
 class ShareHandler(PooledHandler):
-    """One exchange with a visitor of a link: a read or a comment, answered by the share pages; every other method is refused."""
+    """One exchange through the tunnel: a link's read or comment, answered by the share pages, or the phone's, answered by the phone pages under /p/; every other method is refused."""
 
     pages: SharePages
+    phone: PhonePages
     server_version = "share"
     sys_version = ""
 
@@ -28,14 +31,29 @@ class ShareHandler(PooledHandler):
         return None
 
     def do_GET(self) -> None:
+        if self.is_phone():
+            return self.send(self.phone.get(PhoneRequest.of(self.command, self.path, self.headers)))
         self.send(self.pages.get(self.path, self.headers.get("Authorization"), self.place()))
+
+    def is_phone(self) -> bool:
+        return self.path == "/p" or self.path.startswith(("/p/", "/p?"))
 
     def do_HEAD(self) -> None:
         self.do_GET()
 
     def do_POST(self) -> None:
+        if self.is_phone():
+            return self.send(self.phone_post())
         given = self.comment_sent()
         self.send(ShareAnswer(400) if given is None else self.pages.post(self.path, given, self.headers.get("Authorization"), self.place()))
+
+    def phone_post(self) -> ShareAnswer:
+        """A write from the phone app, a few kilobytes of JSON at most; a bigger one is refused unread."""
+        length = self.headers.get("Content-Length", "")
+        size = int(length) if length.isdigit() else 0
+        if size > MOST_BYTES:
+            return ShareAnswer(413)
+        return self.phone.post(PhoneRequest.of(self.command, self.path, self.headers, self.rfile.read(size) if size else b""))
 
     def comment_sent(self) -> VisitorComment | None:
         """A comment as the share page alone sends it: with its own header, which a form on another site cannot set, and a JSON body of a few kilobytes; none otherwise."""

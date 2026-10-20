@@ -1,3 +1,4 @@
+import {onPhone, PHONE_SENDS_TEXT} from "../platform/phone.js";
 import {href, route} from "../route.js";
 import {UPLOAD_LIMIT, overLimit} from "../chat/attachments.js";
 import {LONG_WAIT_MS, transport} from "./transport.js";
@@ -55,8 +56,9 @@ export class ApiClient {
         return this.url(`${this.here(path)}${path.includes("?") ? "&" : "?"}env=${encoded(this.env())}`);
     }
 
+    // a file the build carries, beside the page: at the root for the viewer, under /p/ for the phone
     publicUrl(path) {
-        return `/${path}`;
+        return onPhone ? `./${path}` : `/${path}`;
     }
 
     // each voice's 3D figure file, by voice; a file is named by a hash of its content
@@ -167,6 +169,7 @@ export class ApiClient {
     }
 
     upload(table, id, file) {
+        if (onPhone) return Promise.reject(Object.assign(new Error(PHONE_SENDS_TEXT), {status: 403}));
         if (file.size > UPLOAD_LIMIT) return Promise.reject(new Error(overLimit(file)));
         const body = new FormData();
         body.append("file", file, file.name);
@@ -369,6 +372,19 @@ export class ApiClient {
         return this.get("/tunnel/answering");
     }
 
+    // the phone paired with the journal, a code to pair one and its disconnection
+    phones() {
+        return this.get("/phones");
+    }
+
+    connectPhone(days) {
+        return this.post("/phones/connect", {days});
+    }
+
+    disconnectPhone(id) {
+        return this.post(`/phones/${id}/disconnect`, {});
+    }
+
     tunlerVersion() {
         return this.get("/tunnel/version");
     }
@@ -530,7 +546,7 @@ export class ApiClient {
     }
 }
 
-export const api = new ApiClient();
+export const api = new ApiClient({base: onPhone ? "/p" : ""});
 export const onBlocked = (fn) => transport.onBlocked(fn);
 export const onWrite = (fn) =>
     transport.onWrite((url) => {

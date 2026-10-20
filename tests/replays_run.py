@@ -10,10 +10,15 @@ from journal.app import App
 from journal.config import Config
 from journal.support.where import Where
 from journal.engine.machine import Machine
+from journal.features.questions.support.answering import Answering
 from journal.features.workers.support.worker_runner import WorkerRunner
+from journal.models.message import Message
 from journal.support.actor import Actor
+from journal.models.author import Author
 from journal.models.setting import Setting
 from journal.repositories.environments import Environments
+from journal.repositories.messages import Messages
+from journal.repositories.questions import Questions
 from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from tests.replay import PROVIDERS, TOOLS, Replay, differences, hook_as, recorded
@@ -339,6 +344,37 @@ def test_message_arrives_as_the_shipped_workflow_equals_the_listener(journals, m
     right = Replay(with_workflow, monkeypatch)
     message_arrives(with_workflow, right, provider)
     assert left.record()[-1]["typed"] == ["[journal] new message 1"], "the listener names the message"
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+
+
+def the_phone_talks(app, replay: Replay, provider: str) -> None:
+    """The steps: a session starts, the paired phone leaves a message, the agent asks a question and the phone answers it, through what the phone's forwarded requests reach."""
+    phone = Actor.phone(1)
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    replay.step("session starts")
+    app.container.get(Messages).save(Message(author=Author.USER, text="from the train"), phone)
+    replay.step("the phone leaves a message")
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    hook_as(app, provider, "Stop")
+    replay.step("waiting on the question")
+    app.container.get(Answering).answer(app.container.get(Questions).find(1), "blue", phone)
+    app.runtime().deferred.drain()
+    replay.step("the phone answers")
+
+
+def test_the_phone_is_heard_as_the_user_is(journals, monkeypatch):
+    with_listener, with_workflow, provider = journals
+    left = recorded(f"the_phone_talks_{provider}", with_listener, monkeypatch, the_phone_talks, provider, nudges=True)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch)
+    the_phone_talks(with_workflow, right, provider)
+    by_name = {s["name"]: s for s in left.record()}
+    assert by_name["the phone leaves a message"]["typed"] == ["[journal] new message 1"], "a message from the phone is named as the user's is"
+    assert "question 1 is answered" in str(by_name["the phone answers"]["typed"]), "and an answer from the phone releases the wait"
+    assert with_workflow.container.get(Machine).current("s1").task_id == 1, "the agent is working its task again"
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
 
 

@@ -1,4 +1,5 @@
 <script setup>
+import {onPhone} from "../platform/phone.js";
 import {agentRunningIn} from "../composables/settings.js";
 import {computed, reactive, ref} from "vue";
 import EnvStart from "./EnvStart.vue";
@@ -65,13 +66,17 @@ function point(e) {
                                 <span class="worktree" :title="e.worktree">{{ e.worktree }}</span>
                             </template>
                         </a>
-                        <EnvStart :env="e" :live="agentRunningIn(e.name)" />
+                        <template v-if="!onPhone">
+                            <EnvStart :env="e" :live="agentRunningIn(e.name)" />
+                        </template>
                     </div>
                 </template>
-                <button type="button" class="item item-new" @click="creating = true">
-                    <Icon name="plus" />
-                    <span class="label">New environment</span>
-                </button>
+                <template v-if="!onPhone">
+                    <button type="button" class="item item-new" @click="creating = true">
+                        <Icon name="plus" />
+                        <span class="label">New environment</span>
+                    </button>
+                </template>
             </FoldGroup>
             <div class="side-bottom">
                 <div class="side-foot side-foot-row">

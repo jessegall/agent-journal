@@ -6,3 +6,4 @@ class ActorKind(StrEnum):
     AGENT = "agent"
     USER = "user"
     PLUGIN = "plugin"
+    PHONE = "phone"

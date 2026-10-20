@@ -3,6 +3,7 @@ from http.server import ThreadingHTTPServer
 
 from journal.db.connection import Connection
 from journal.support.share_place import SharePlace
+from journal.http.phone.phone_pages import PhonePages
 from journal.http.support.share_handler import ShareHandler
 from journal.http.sharing.share_pages import SharePages
 
@@ -10,11 +11,11 @@ READ_SECONDS = 15
 
 
 class ShareServer:
-    """The listener the tunnel forwards to, on this machine alone: it answers links and nothing else of the journal. Its port is kept, so the tunnel finds it again after a restart."""
+    """The listener the tunnel forwards to, on this machine alone: it answers links and the paired phone, and nothing else of the journal. Its port is kept, so the tunnel finds it again after a restart."""
 
-    def __init__(self, pages: SharePages, place: SharePlace, database: Connection) -> None:
+    def __init__(self, pages: SharePages, phone: PhonePages, place: SharePlace, database: Connection) -> None:
         self.place = place
-        self.handler = type("BoundShareHandler", (ShareHandler,), {"pages": pages, "database": database, "timeout": READ_SECONDS})
+        self.handler = type("BoundShareHandler", (ShareHandler,), {"pages": pages, "phone": phone, "database": database, "timeout": READ_SECONDS})
         self._server: ThreadingHTTPServer | None = None
 
     @property

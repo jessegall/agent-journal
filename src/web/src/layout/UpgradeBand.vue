@@ -1,4 +1,5 @@
 <script setup>
+import {onPhone} from "../platform/phone.js";
 import {fieldBusy, reloadWhenFree} from "../platform/busyField.js";
 import {remember, remembered} from "../platform/storage.js";
 import {saveSettings} from "../actions/settings.js";
@@ -14,11 +15,12 @@ const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
-const visible = computed(() => upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
+// the phone neither installs updates nor needs telling of a new build: its service worker brings the newest page on each open
+const visible = computed(() => !onPhone && upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
 const mine = (document.querySelector("script[type=module]") || {}).src || "";
 const stale = computed(() => {
     const serving = store.spec && store.spec.build;
-    return !!serving && !!mine && !mine.endsWith(serving);
+    return !onPhone && !!serving && !!mine && !mine.endsWith(serving);
 });
 
 const RELOAD_AFTER = 60;
@@ -34,7 +36,9 @@ watch(now, (at, before) => {
     if (!remaining.value) reload();
 });
 
+// the phone shows no band, so it never asks
 onMounted(async () => {
+    if (onPhone) return;
     try {
         upstream.value = await api.releases();
     } catch (e) {}

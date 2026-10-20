@@ -64,6 +64,13 @@ function removed(id) {
     return serial(KEY, async () => writeQueue((await readQueue()).filter((kept) => kept.id !== id)));
 }
 
+// a refusal is answered the same however often it is asked, so it is given up; only a send that never arrived is tried again
+const isRefused = (e) => e.status >= 400 && e.status < 500;
+
+function keepTrying(e) {
+    if (!isRefused(e)) throw e;
+}
+
 async function deliver(record) {
     const server = api.at(record.origin, record.env);
     const message = await server.create("messages", {text: record.text, reply_to: record.reply_to, idempotency: record.id});
@@ -72,7 +79,7 @@ async function deliver(record) {
     await stored(record);
     for (let n = 0; n < record.files.length; n += 1) {
         if (record.uploaded[n]) continue;
-        await server.upload("messages", record.message, fileFrom(record.files[n]));
+        await server.upload("messages", record.message, fileFrom(record.files[n])).catch(keepTrying);
         record.uploaded[n] = true;
         await stored(record);
     }
@@ -88,7 +95,9 @@ function flush(env, origin) {
                 await deliver(record);
                 await removed(record.id);
                 delivered.push(record.id);
-            } catch (e) {}
+            } catch (e) {
+                if (isRefused(e)) await removed(record.id);
+            }
         }
         return delivered;
     });
@@ -100,12 +109,15 @@ function report(ids) {
 
 const retry = async () => active && report(await flush(active.env, active.origin));
 
+// the server a message goes to: this page's origin with the client's own base, /p on the phone
+const here = () => `${location.origin}${api.base}`;
+
 export function onOutboxChange(fn) {
     changed = fn;
 }
 
 export function startOutbox(env) {
-    active = {env, origin: location.origin};
+    active = {env, origin: here()};
     if (polling) {
         pollNow(OUTBOX);
         return;
@@ -118,7 +130,7 @@ export function startOutbox(env) {
 export async function sendMessage(env, body, files = [], id = token()) {
     const record = {
         id,
-        origin: location.origin,
+        origin: here(),
         env,
         text: body.text,
         reply_to: body.reply_to,

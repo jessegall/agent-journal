@@ -6589,3 +6589,113 @@ def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(a
     with app.container.get(Scope).of(1):
         moments = app.container.get(PlanTimeline).of(app.container.get(Plans).find(1))
     assert [(m.kind, m.task, m.text) for m in moments] == [("started", 1, ""), ("log", 1, "the code is hashed"), ("done", 1, "pairs by code")], "each start, log line and end, oldest first"
+
+
+def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
+    from datetime import datetime, timedelta, timezone
+    from journal.features.sharing.support.tunnel import Tunnel
+    from journal.features.phone.support.pairing import Pairing
+    from journal.repositories.messages import Messages
+    from journal.repositories.settings import Settings
+    from journal.support.refused import Refused
+    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
+    with pytest.raises(Refused, match="only the user pairs"):
+        pairing.offer(7, Actor.agent("s1"), now)
+    with pytest.raises(Refused, match="1, 7, 30 days"):
+        pairing.offer(3, Actor.user(1), now)
+    first = pairing.offer(7, Actor.user(1), now)
+    assert app.container.get(Tunnel).is_wanted(now), "a live code keeps the tunnel open, so the phone can reach the journal"
+    assert first.link.startswith("https://") and ".tunler.example/p/#" in first.link and len(first.short) == 9, "a link through the tunnel and a short code in two halves"
+    newer = pairing.offer(7, Actor.user(1), now)
+    with pytest.raises(Refused, match="pairs no phone"):
+        pairing.pair(first.link.split("#")[1], "iPhone", now)
+    paired = pairing.pair(newer.short.lower(), "  iPhone   of Jesse ", now)
+    assert paired.phone.name == "iPhone of Jesse" and paired.phone.key != paired.key and paired.phone.expires_at - now == timedelta(days=7), "the short code typed in any case pairs; the key is kept only as its hash"
+    assert any(m.text == "A phone paired: iPhone of Jesse" for m in app.container.get(Messages).in_()), "the desk is told"
+    with pytest.raises(Refused, match="one phone at a time"):
+        pairing.offer(7, Actor.user(1), now)
+    with pytest.raises(Refused, match="pairs no phone"):
+        pairing.pair(newer.short, "Android", now)
+    listed = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/phones", headers={"X-Journal-Env": "main"}), timeout=5))["phones"]
+    assert [p["name"] for p in listed] == ["iPhone of Jesse"] and "key" not in listed[0], "the desk sees the phone, never its key's hash"
+    assert app.container.get(Tunnel).is_wanted(now), "a paired phone keeps the tunnel open, with no link shared"
+    assert viewer(app, f"phones/{paired.phone.id}/disconnect")["disconnected"] == paired.phone.id
+    assert not app.container.get(Tunnel).is_wanted(datetime.now(timezone.utc)), "with the phone disconnected and no code live, nothing keeps it open"
+    assert pairing.offer(7, Actor.user(1), now).short, "once it is disconnected, another phone may pair"
+
+
+def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):
+    from datetime import datetime, timedelta, timezone
+    from journal.features.sharing.support.tunnel import Tunnel
+    from journal.features.phone.support.pairing import Pairing
+    from journal.repositories.settings import Settings
+    from journal.support.refused import Refused
+    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
+    late = pairing.offer(1, Actor.user(1), now)
+    tunnel = app.container.get(Tunnel)
+    assert tunnel.wanted, "a live code keeps the tunnel open"
+    tunnel.settle_when_changed(now + timedelta(minutes=11))
+    assert not tunnel.wanted, "and once it runs out, the clock closes the tunnel again"
+    with pytest.raises(Refused):
+        pairing.pair(late.short, "iPhone", now + timedelta(minutes=11))
+    guessed = pairing.offer(1, Actor.user(1), now)
+    for _ in range(10):
+        with pytest.raises(Refused):
+            pairing.pair("WRONGCODE", "iPhone", now)
+    with pytest.raises(Refused):
+        pairing.pair(guessed.short, "iPhone", now)
+    assert viewer(app, "phones/connect", {"days": 30})["short"], "the viewer asks for a code as the user"
+
+
+def test_a_phone_whose_days_ran_out_is_told_so_and_reaches_nothing(app):
+    from datetime import datetime, timedelta, timezone
+    from journal.features.phone.support.pairing import Pairing
+    from journal.http.phone.phone_pages import COOKIE, PhonePages
+    from journal.http.phone.phone_request import PhoneRequest
+    from journal.repositories.settings import Settings
+    app.container.get(Settings).set("sharing.host", "tunler.example", Actor.user(1))
+    pairing, then = app.container.get(Pairing), datetime.now(timezone.utc) - timedelta(days=2)
+    paired = pairing.pair(pairing.offer(1, Actor.user(1), then).short, "iPhone", then)
+    answer = app.container.get(PhonePages).through(PhoneRequest("GET", "/p/journal/messages", f"{COOKIE}={paired.key}"))
+    assert answer.status == 410 and b"run out" in answer.body, "a phone past its days is told so and reads nothing"
+
+
+def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, monkeypatch, tmp_path):
+    import stat
+    from datetime import datetime, timedelta, timezone
+    from journal.features.phone.listeners.tell_the_phone import TellThePhone
+    from journal.features.phone.support.p256 import P256
+    from journal.features.phone.support.push_keys import PushKeys
+    from journal.features.phone.support.web_push import WebPush
+    from journal.models.phone import Phone
+    from journal.repositories.phones import Phones
+    keys = PushKeys.kept(tmp_path / "push.json")
+    assert PushKeys.kept(tmp_path / "push.json") == keys and stat.S_IMODE((tmp_path / "push.json").stat().st_mode) == 0o600, "made once, kept where only its owner reads"
+    signed = keys.signed(b"a journal")
+    assert P256.is_on_curve(keys.public) and P256.is_signed(keys.public, b"a journal", signed) and not P256.is_signed(keys.public, b"another", signed), "a token's signature checks out, and only for what it signed"
+    assert WebPush.is_allowed("https://web.push.apple.com/abc") and WebPush.is_allowed("https://wns2.notify.windows.com/x")
+    assert not WebPush.is_allowed("http://web.push.apple.com/abc") and not WebPush.is_allowed("https://evil.example/push"), "a push goes only to the phone makers' services, over https"
+    sent, answers = [], [201]
+    monkeypatch.setattr(WebPush, "send", lambda self, endpoint: sent.append(endpoint) or answers[0])
+    phones, now = app.container.get(Phones), datetime.now(timezone.utc)
+    phones.save(Phone(name="iPhone", key="k", expires_at=now + timedelta(days=1), push="https://web.push.apple.com/abc"), Actor.user(1))
+    hook(app, "SessionStart")
+    tell = app.container.get(TellThePhone)
+    tell.handle(None)
+    assert sent == [], "nothing waits, nothing is pushed"
+    app.console().run(["question", "ask", "Which name?"], AGENT)
+    tell.handle(None)
+    tell.handle(None)
+    assert sent == ["https://web.push.apple.com/abc"], "a new question is pushed once, not on every tick"
+    answers[0] = 0
+    app.console().run(["question", "ask", "Which colour?"], AGENT)
+    tell.handle(None)
+    tell.handle(None)
+    failed = phones.where(name="iPhone")[0]
+    assert len(sent) == 2 and failed.push_failed_at and failed.has_news(["questions:2"]), "a push that did not reach the service stays owed and waits a minute before it is tried again"
+    phones.save(failed.push_failed(now - timedelta(minutes=2)), Actor.system())
+    answers[0] = 410
+    tell.handle(None)
+    assert len(sent) == 3 and phones.where(name="iPhone")[0].push == "", "an address the service no longer knows is forgotten until the phone subscribes again"

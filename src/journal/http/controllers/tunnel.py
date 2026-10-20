@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime, timezone
 
 from journal.features.sharing.feature import Sharing
 from journal.features.sharing.support.tunler import Tunler
@@ -7,21 +8,20 @@ from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.support.refused import Refused
 from journal.repositories.settings import Settings
-from journal.repositories.shares import Shares
 
 
 class TunnelController:
     """The tunnel that carries links to the journal: its standing and what keeps it from answering, a restart, tunler's login, version and domains, and the journal's address."""
 
-    def __init__(self, tunnel: Tunnel, tunler: Tunler, settings: Settings, shares: Shares) -> None:
-        self.tunnel, self.tunler, self.settings, self.shares = tunnel, tunler, settings, shares
+    def __init__(self, tunnel: Tunnel, tunler: Tunler, settings: Settings) -> None:
+        self.tunnel, self.tunler, self.settings = tunnel, tunler, settings
 
     def show(self, request: Request) -> Response:
         return Response.json(self.tunnel.standing())
 
     def services(self, request: Request) -> Response:
-        """The tunnel while a link is open; nothing while none is, so the top bar says nothing is shared."""
-        return Response.json([self.tunnel.service()] if self.shares.open_anywhere() else [])
+        """The tunnel while something keeps it open, a link, a paired phone or a code to pair one; nothing while none does, so the top bar says nothing is shared."""
+        return Response.json([self.tunnel.service()] if self.tunnel.is_wanted(datetime.now(timezone.utc)) else [])
 
     def check(self, request: Request) -> Response:
         self.tunler.forget()

@@ -25,19 +25,22 @@ class Router:
     def post(self, path: str, handler: Handler) -> None:
         self.routes.append(Route("POST", path, handler))
 
+    def matched(self, request: Request) -> Route | None:
+        """The route the request takes; none when no route answers it."""
+        return next((route for route in self.routes if route.params(request.method, request.path) is not None), None)
+
     def dispatch(self, request: Request) -> Response:
         self.seen.saw(request.headers)
-        for route in self.routes:
-            params = route.params(request.method, request.path)
-            if params is not None:
-                try:
-                    with self.scope.requested(lambda: request.environment):
-                        began = time.perf_counter()
-                        answer = route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
-                        self.slow.measured(request.method, request.path, (time.perf_counter() - began) * 1000)
-                        return answer
-                except Refused as refused:
-                    return Response.refused(str(refused))
-                except NotFound as missing:
-                    return Response.missing(missing)
-        return Response.not_found(f"{request.method} {request.path}")
+        route = self.matched(request)
+        if route is None:
+            return Response.not_found(f"{request.method} {request.path}")
+        try:
+            with self.scope.requested(lambda: request.environment):
+                began = time.perf_counter()
+                answer = route.handler(request.with_params({name: unquote(value) for name, value in route.params(request.method, request.path).items()}))
+                self.slow.measured(request.method, request.path, (time.perf_counter() - began) * 1000)
+                return answer
+        except Refused as refused:
+            return Response.refused(str(refused))
+        except NotFound as missing:
+            return Response.missing(missing)

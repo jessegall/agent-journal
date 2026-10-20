@@ -9,7 +9,6 @@ from journal.features.plans.support.plan_control import PlanControl
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.support.waits import Waits
 from journal.support.subagents import Subagents
-from journal.support.actor_kind import ActorKind
 from journal.models.link import Link
 from journal.models.phase import Phase
 from journal.models.plan import Plan
@@ -131,7 +130,7 @@ class PlanCommand(Command):
         return 0
 
     def approve(self, args: Namespace, where: Where) -> int:
-        if where.actor.kind != ActorKind.USER:
+        if not where.actor.is_the_user():
             raise Refused("only the user approves a plan: ask, then wait for their word")
         plan = self.plans.approve(self.plans.find(args.n), where.actor)
         print(f"plan {plan.id} {plan.state}")

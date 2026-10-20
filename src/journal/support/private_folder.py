@@ -6,13 +6,25 @@ SECRETS_VARIABLE = "AGENT_JOURNAL_SECRETS"
 
 
 class PrivateFolder:
-    """Where a project's private values live, outside the project in the user's home folder: the MCP servers' keys and the secrets' values, each folder readable by its user alone and kept out of git."""
+    """Where a project's private values live, outside the project in the user's home folder: the MCP servers' keys, the phone's push keys and the secrets' values, each folder readable by its user alone and kept out of git."""
 
     def __init__(self, root: Path) -> None:
         self.root = root
 
     def keys_file(self) -> Path:
-        return Path.home() / ".journal" / "keys" / f"{str(self.root.resolve()).strip('/').replace('/', '-')}.json"
+        return self.keys_folder() / f"{self.named()}.json"
+
+    def phone_push_file(self) -> Path:
+        """The journal's VAPID key pair for pushing the paired phone, beside the MCP keys and out of the agent's reach as they are."""
+        return self.keys_folder() / f"{self.named()}-phone-push.json"
+
+    @staticmethod
+    def keys_folder() -> Path:
+        return Path.home() / ".journal" / "keys"
+
+    def named(self) -> str:
+        """The project's folder as one file name."""
+        return str(self.root.resolve()).strip("/").replace("/", "-")
 
     def secrets(self) -> Path:
         """The folder the variable names, else agent-journal/secrets under the config home."""

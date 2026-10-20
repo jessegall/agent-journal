@@ -254,7 +254,7 @@ F. **The viewer reads version 4's rows**: its catalogue of tables (titles, icons
    listed) is its own (`src/web/src/domain/tables.js`), the manifest holds only the journal's
    facts and the features with their options; `domain/row.js` reads what every row answers alike
    (title, body, closed, times as ISO strings); `domain/acts.js` names what each table offers.
-   Deleted with version 3's API, having no version 4 server: the phone, the board and tickets,
+   Deleted with version 3's API, having no version 4 server (the phone came back in 4.2.0): the board and tickets,
    the organisation, the hub of journals, hosting and members, the browser extension,
    suggestions, collections, document revisions, update reports, layout links, agent pause and
    appoint, agent hooks, work modes, priorities, the plugin services panel, replies on shares.
@@ -336,7 +336,7 @@ Still to do, in rough order:
   the thin supervisor, but its hooks did not reach the journal in a fresh project, so its resume is untried (task 461).
 - The context figure needs Claude's statusline, which runs only interactively; untested.
 - Reports and docs have models and routes but no page; no page for workers, checks, sequences,
-  triggers; no hub of journals; no phone; no sharing; no plugins.
+  triggers; no hub of journals; no sharing; no plugins.
 - Memory keyword whispers and the rule review; put-off-work; closed-by-commit; auto mode and
   work mode settings; permission prompts routed to the viewer.
 - Panes read from the entries: file edits and the terminal.
@@ -617,7 +617,7 @@ Each phase ends with something that runs. Phases 1 to 5 are done and proven by `
   made with comments, is posted to `/s/<token>/comment` and becomes a card of the system's in the chat, linked to the row as
   `comments_on`; it is never a message of the user's, so it never reaches the agent as the user's words. Version 3's hold
   until the agent agrees, the user's button letting the agent act on it, and trusted comments through a password are not
-  ported. Not ported yet either: shared views and layouts, the phone, the watchdog that restarts the tunnel.
+  ported. Not ported yet either: shared views and layouts, the watchdog that restarts the tunnel. The phone is back in 4.2.0.
 - **A read never makes an environment**: `Environments.existing(name)` is the one lookup for every route and answers not
   found; the runtime makes `main` at boot. The browser's stray `#/settings` had made four environments named settings.
 - **The supervisor's Enter**: typed half a second after the line has reached the terminal, each piece in a write of its own;
@@ -1049,3 +1049,15 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The state of an agent that ran `journal await` is named Waiting, beside Waiting on a question and Waiting on a worker.
 - A setting's help says what it does in plain words; the workflows that read it show under it as links (message 7014).
 - Tunler's version and domains, and the MCP servers' check, are kept for an hour and asked again after a change.
+- The phone (plan 17) ports version 3's server side as it was, which worked; its screens are the viewer's own pages
+  and components with phone styling, not version 3's separate app; only what touch needs gets a phone component
+  (messages 7314, 7327; tasks 901 to 903). Plan 17 may be merged by the agent once landed and tested, and released as
+  4.2.0; plan 18 waits for Sir Jesse to merge (message 7301).
+- The phone after its review (task 909): a phone's reads are named one by one, as its writes are, never every read
+  but a few; no read that starts a program (the MCP check) and no page that sets how the journal runs. A project file
+  is never read from a hidden folder (.env, .journal) nor outside the project, on the desk too. The push keys live in
+  the private folder beside the MCP keys. The clock closes the tunnel once a code or a phone runs out, and a paired
+  phone keeps the tunnel, and its button in the top bar, even with sharing off. The phone sends text only: a file is
+  attached on the computer. A failed push is tried again a minute later; an address the service no longer knows is
+  forgotten. A file opened on the phone is sandboxed. Left as it is: anyone who reaches the tunnel can void an open
+  pairing code with ten wrong tries; the user makes another, and a code lives ten minutes.

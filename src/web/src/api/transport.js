@@ -1,3 +1,4 @@
+import {onPhone} from "../platform/phone.js";
 import {holdPressed} from "../platform/pressed.js";
 import {covered} from "../state/updating.js";
 
@@ -8,7 +9,8 @@ const RELOAD_TRIES = 6;
 const RELOAD_PAUSE_MS = 500;
 const UPDATE_STATUS = "/journal/summary";
 // Every call says it is the viewer's, so the journal knows a tab is open and a plugin's program or the shim never counts as one.
-const VIEWER = {"X-Journal-Viewer": "1"};
+// the viewer names itself so the journal knows the desk is open; the phone names itself so its writes are trusted
+const VIEWER = onPhone ? {"X-Phone": "1"} : {"X-Journal-Viewer": "1"};
 
 export const asksUpdateStatus = (url) => url.split("?")[0].endsWith(UPDATE_STATUS);
 

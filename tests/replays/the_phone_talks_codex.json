@@ -1,0 +1,53 @@
+{
+  "nudges": true,
+  "steps": [
+    {
+      "name": "session starts",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "briefing.orient",
+        "briefing.ready",
+        "briefing.quiet",
+        "briefing.laws",
+        "voices.voice"
+      ],
+      "counts": {},
+      "read": []
+    },
+    {
+      "name": "the phone leaves a message",
+      "answer": null,
+      "typed": [
+        "[journal] new message 1"
+      ],
+      "nudges": [
+        "messages.new"
+      ],
+      "counts": {},
+      "read": []
+    },
+    {
+      "name": "waiting on the question",
+      "answer": null,
+      "typed": [],
+      "nudges": [
+        "messages.new"
+      ],
+      "counts": {},
+      "read": []
+    },
+    {
+      "name": "the phone answers",
+      "answer": null,
+      "typed": [
+        "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"
+      ],
+      "nudges": [
+        "chart.line"
+      ],
+      "counts": {},
+      "read": []
+    }
+  ]
+}

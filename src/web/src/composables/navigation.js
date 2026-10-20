@@ -1,3 +1,4 @@
+import {onPhone} from "../platform/phone.js";
 import {recordCount} from "../domain/records.js";
 import {tables} from "../domain/tables.js";
 import {computed} from "vue";
@@ -15,7 +16,11 @@ const typeLink = (t) => ({
     hot: !!t.needs_attention && !!countOf(t),
 });
 
+// the pages that set how the journal runs: the desk's alone, since a phone changes none of it
+const CONFIGURING = ["plugins", "mcp", "chart", "profiles", "secrets", "settings"];
+
 const pageLink = (key) => ({key, page: key, count: 0, hot: false, ...PAGES[key]});
+const deskLinks = (keys) => keys.filter((key) => !(onPhone && CONFIGURING.includes(key))).map(pageLink);
 
 export function useNavigation() {
     const listed = computed(() => tables.value.filter((t) => t.in_sidebar));
@@ -24,7 +29,7 @@ export function useNavigation() {
         RESOURCE_GROUPS.map((g) => ({
             key: g.key,
             title: g.title,
-            links: [...listed.value.filter((t) => t.listed_under === g.key).map(typeLink), ...g.pages.map(pageLink)],
+            links: [...listed.value.filter((t) => t.listed_under === g.key).map(typeLink), ...deskLinks(g.pages)],
         })).filter((g) => g.links.length)
     );
     const daily = (scope) => sidebar.value.filter((link) => link.scope === scope);
@@ -33,17 +38,7 @@ export function useNavigation() {
         {
             key: "project",
             label: "Project",
-            links: [
-                ...daily("project"),
-                pageLink("code"),
-                pageLink("plugins"),
-                pageLink("mcp"),
-                pageLink("chart"),
-                pageLink("profiles"),
-                pageLink("secrets"),
-                pageLink("resources"),
-                pageLink("settings"),
-            ],
+            links: [...daily("project"), ...deskLinks(["code", "plugins", "mcp", "chart", "profiles", "secrets", "resources", "settings"])],
         },
     ]);
     const everywhere = computed(() => [...sections.value.flatMap((s) => s.links), ...groups.value.flatMap((g) => g.links)]);

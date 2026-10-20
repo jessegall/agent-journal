@@ -58,9 +58,11 @@ class ProjectFiles:
         return found[:PAGE]
 
     def inside(self, given: str) -> Path | None:
-        """The path a relative name points at, or None when it is empty or leaves the project."""
+        """The path a relative name points at, or None when it is empty, leaves the project or lies in a hidden folder, as .env and .journal do."""
         path = (self.root / given.strip("/")).resolve()
-        return path if given.strip("/") and str(path).startswith(str(self.root)) else None
+        if not given.strip("/") or not path.is_relative_to(self.root):
+            return None
+        return None if self.hidden(path) else path
 
     def entry(self, path: Path) -> ProjectEntry:
         return ProjectEntry(path=str(path.relative_to(self.root)), name=path.name, folder=path.is_dir())

@@ -1,8 +1,8 @@
 from journal.support.cards import Cards
 from journal.support.actor import Actor
-from journal.support.actor_kind import ActorKind
 from journal.models.question import Question
 from journal.repositories.questions import Questions
+from journal.support.refused import Refused
 
 
 class Answering:
@@ -12,7 +12,9 @@ class Answering:
         self.questions, self.cards = questions, cards
 
     def answer(self, question: Question, text: str, by: Actor) -> Question:
+        if question.is_answered():
+            raise Refused(f"question {question.id} is answered already")
         answered = self.questions.save(question.answered(text), by)
-        label = f"You answered question {answered.id}" if by.kind == ActorKind.USER else f"Question {answered.id} answered by {by.named}"
+        label = f"You answered question {answered.id}" if by.is_the_user() else f"Question {answered.id} answered by {by.named}"
         self.cards.show(answered.environment_id, "", label, "question", "good", "", f"questions:{answered.id}", by=by)
         return answered

@@ -2,6 +2,15 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.2.0
+
+- The phone is back. Click the phone in the top bar, scan the code or type the short code on the phone, and the journal opens on it through the tunnel, installable as an app. The phone is the viewer itself, sized for a finger: the chat, Home, tasks, plans, questions and every row, without the pages that configure the journal.
+- A paired phone is known by a key in a cookie its pages cannot read, lasting the 1, 7 or 30 days chosen; a code pairs once, runs out after ten minutes and is voided by ten wrong tries; one phone at a time, disconnected from the computer or from itself.
+- A phone acts as itself and its words are yours. It reads everything but secrets and changes only what the app does: talking to the agent, answering, approving and following plans, tasks, comments and dumps, pausing the agent. Settings, plugins, MCP servers, secrets, the tunnel and workflows stay on the computer.
+- The phone is told by a push when a question or a plan waits for you; the lock screen says only how many things wait.
+- A phone paired under version 3 is told it was paired with an earlier version and pairs once more.
+- A question is answered once: a second answer, from the computer or the phone, is refused.
+
 ## 4.1.9
 
 - An agent that works again is no longer waiting: a tool use of its own ends a wait on a question or on a worker, as it already ended a wait on something outside, so the status bar never stays on Waiting while the agent works.

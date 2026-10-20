@@ -1,3 +1,4 @@
+import {onPhone} from "../platform/phone.js";
 import {api} from "../api/client.js";
 import {startOutbox} from "../chat/outbox.js";
 import {wakePolls} from "../composables/poll.js";
@@ -49,7 +50,29 @@ function failed() {
     if (source && source.readyState === EventSource.CLOSED) setTimeout(listen, REOPEN_AFTER);
 }
 
+// The phone has no stream through the tunnel's listener: it asks for the entries after the last it took instead.
+const ASK_EVERY = 3000;
+let asking = 0;
+
+async function askAgain() {
+    const since = Math.max(0, ...store.entries.map((e) => e.id));
+    try {
+        takeEntries(await api.entries(since));
+        store.offline = false;
+    } catch (e) {
+        store.offline = true;
+    }
+}
+
+function poll() {
+    clearInterval(asking);
+    startOutbox(route.value.env);
+    store.streamOpen = false;
+    asking = setInterval(askAgain, ASK_EVERY);
+}
+
 export function listen() {
+    if (onPhone) return poll();
     if (source) source.close();
     store.streamOpen = false;
     startOutbox(route.value.env);
