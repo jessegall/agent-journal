@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.2.1
+
+- A message opened in the side panel is titled by its first line, cut after a whole word at 80 characters, with the whole text below it.
+
 ## 4.2.0
 
 - The phone is back. Click the phone in the top bar, scan the code or type the short code on the phone, and the journal opens on it through the tunnel, installable as an app. The phone is the viewer itself, sized for a finger: the chat, Home, tasks, plans, questions and every row, without the pages that configure the journal.
