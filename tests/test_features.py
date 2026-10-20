@@ -7567,3 +7567,17 @@ def test_a_running_codex_workers_transcript_is_found_by_its_rollouts_folder_befo
     assert codex.latest_session(app.config.root, 0.0) == "01a15ae5-449b-7131-9ee4-edd40f4e3dc3", "the newest rollout whose first line names the project's folder is the worker's conversation"
     assert codex.transcript(app.config.root, "01a15ae5-449b-7131-9ee4-edd40f4e3dc3") == ours
     assert codex.latest_session(app.config.root, ours.stat().st_mtime + 60) == "", "nothing newer than the time asked for"
+
+
+def test_a_plugins_linked_skill_folder_is_unlinked_when_withdrawn_and_its_target_kept(app, tmp_path):
+    from journal.features.plugins.support.plugin_skills import PluginSkills
+    from journal.models.plugin import Plugin
+    target = tmp_path / "published" / "echo-guide"
+    target.mkdir(parents=True)
+    (target / "SKILL.md").write_text("---\nplugin: echo\nname: echo-guide\n---\n# Echo\n")
+    home = app.config.root / ".claude" / "skills"
+    home.mkdir(parents=True, exist_ok=True)
+    (home / "echo-guide").symlink_to(target)
+    app.container.get(PluginSkills).withdraw(Plugin(name="echo"))
+    assert not (home / "echo-guide").exists() and not (home / "echo-guide").is_symlink(), "the link is taken away"
+    assert (target / "SKILL.md").is_file(), "what it pointed at is left as it was"

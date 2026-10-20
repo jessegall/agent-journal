@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 
 from journal.config import Config
 from journal.features.plugins.support.manifest_reader import ManifestReader
@@ -31,7 +32,14 @@ class PluginSkills:
         for home in HOMES:
             for skill in (self.config.root / home).glob("*/SKILL.md"):
                 if f"\n{STAMP}{plugin.name}\n" in skill.read_text():
-                    shutil.rmtree(skill.parent)
+                    self.remove(skill.parent)
+
+    @staticmethod
+    def remove(folder: Path) -> None:
+        if folder.is_symlink():
+            folder.unlink()
+        else:
+            shutil.rmtree(folder)
 
     @staticmethod
     def stamped(text: str, name: str) -> str:

@@ -43,6 +43,11 @@ class PlanCommand(Command):
         brief = self.verb(verbs, "brief", "set a plan's goal, what is true when it is done")
         brief.add_argument("n", type=int)
         brief.add_argument("text")
+        rephase = self.verb(verbs, "rephase", "a phase's title or its complete-when line written anew")
+        rephase.add_argument("n", type=int)
+        rephase.add_argument("phase", type=int, help="the phase's number from 1")
+        rephase.add_argument("--title", default="")
+        rephase.add_argument("--when", default="")
         phase = self.verb(verbs, "phase", "add a phase to a plan, after the ones it has")
         phase.add_argument("n", type=int)
         phase.add_argument("title")
@@ -88,6 +93,14 @@ class PlanCommand(Command):
         for link in self.links.between(task, plan):
             self.links.delete(link, where.actor)
         self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
+
+    def rephase(self, args: Namespace, where: Where) -> int:
+        plan = self.plans.find(args.n)
+        phase = self.phases.of_plan(plan)[args.phase - 1]
+        changed = phase.with_(title=args.title or phase.title, complete_when=args.when or phase.complete_when)
+        self.phases.save(changed, where.actor)
+        print(f"phase {args.phase} of plan {plan.id} is now: {changed.title}")
+        return 0
 
     def phase(self, args: Namespace, where: Where) -> int:
         plan = self.plans.find(args.n)

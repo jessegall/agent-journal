@@ -7,7 +7,6 @@ from typing import Callable
 
 from journal.config import Config
 from journal.support.where import Where
-from journal.support.plugin_installing import PluginInstalling
 from journal.features.updates.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
 from journal.features.updates.support.release_source import ReleaseSource
@@ -17,9 +16,6 @@ from journal.features.updates.support.update_target import UpdateTarget
 from journal.supervisor_link import SupervisorLink
 from journal.support.actor import Actor
 from journal.support.refused import Refused
-from journal.repositories.environments import Environments
-from journal.repositories.plugins import Plugins
-from journal.support.scope import Scope
 from journal.repositories.settings import Settings
 from journal.version import VERSION
 
@@ -31,9 +27,8 @@ FIRST_CHECK_AFTER = 60
 class Updating:
     """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, and its install: on its own when the user has switched that on, or when they say so."""
 
-    def __init__(self, settings: Settings, source: ReleaseSource, installer: ReleaseInstaller, installing: PluginInstalling, plugins: Plugins, environments: Environments, scope: Scope,
-                 mark: UpdateMark, supervisor: SupervisorLink, config: Config) -> None:
-        self.settings, self.source, self.installer, self.installing, self.plugins, self.environments, self.scope = settings, source, installer, installing, plugins, environments, scope
+    def __init__(self, settings: Settings, source: ReleaseSource, installer: ReleaseInstaller, mark: UpdateMark, supervisor: SupervisorLink, config: Config) -> None:
+        self.settings, self.source, self.installer = settings, source, installer
         self.mark, self.supervisor, self.config = mark, supervisor, config
         self.releases: list[Release] = []
         self.head = ""
@@ -143,6 +138,10 @@ class Updating:
     def released(self, work: Callable[[], None]) -> None:
         try:
             work()
+        except Exception as fault:
+            self.problem = f"The update failed: {fault}"
+            self.mark.clear()
+            raise
         finally:
             self._working.release()
 
@@ -169,22 +168,16 @@ class Updating:
             self.problem = f"The releases could not be read from {self.repository()}: {error}"
 
     def install_newest(self, by: Actor) -> None:
-        """Under the update's mark: the code-commandments plugin, when installed, pulled first, since the install restarts the journal; then the release itself, and the journal restarted on it when the install did not."""
-        target, problems = self.target(), []
-        self.mark.step(f"Upgrading the {PLUGIN} plugin")
-        with self.scope.of(self.environments.existing(Where().environment).id):
-            try:
-                self.pull_plugin(by)
-            except Refused as refused:
-                problems.append(f"The {PLUGIN} plugin was not upgraded: {refused}")
+        """Under the update's mark: the release itself, and the journal restarted on it when the install did not. A plugin is upgraded only when the user or the agent says so, never by the journal's own update."""
+        target = self.target()
         self.mark.step("Installing the new version")
         try:
             self.installer.run(target.ref, self.repository())
         except Refused as refused:
-            self.problem = " ".join([*problems, str(refused)])
+            self.problem = str(refused)
             self.mark.clear()
             return
-        self.problem = " ".join(problems)
+        self.problem = ""
         self.mark.step("Restarting the journal")
         self.restart()
 
@@ -193,15 +186,3 @@ class Updating:
         host = self.supervisor.hosting()
         if host is not None:
             self.supervisor.restart_journal(host)
-
-    def pull_plugin(self, by: Actor) -> None:
-        """A fetched plugin is only ever moved to a release: its newest tag, when newer than the release tag recorded on its row, or when none is recorded yet."""
-        found = [plugin for plugin in self.plugins.where(name=PLUGIN) if not plugin.linked]
-        if not found:
-            return
-        try:
-            released = Release.named(self.source.tags_of(found[0].source))
-        except (OSError, subprocess.TimeoutExpired) as error:
-            raise Refused(str(error)) from error
-        if released and (not found[0].release or released[-1].is_newer_than(Release(found[0].release))):
-            self.installing.upgrade(PLUGIN, released[-1].tag, Where().environment, by)
