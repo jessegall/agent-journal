@@ -10,7 +10,7 @@ import Folded from "../kit/Folded.vue";
 import PlanPageActions from "./PlanPageActions.vue";
 import PlanPhase from "./PlanPhase.vue";
 import PlanReviewRounds from "./PlanReviewRounds.vue";
-import PlanTimelinePanel from "./PlanTimelinePanel.vue";
+import SideToggle from "./SideToggle.vue";
 import {useWorkersHolding} from "../composables/workers.js";
 import ProgressBar from "../kit/ProgressBar.vue";
 import {PLAN_STATES, reviewersLine, statusOf} from "../domain/plans.js";
@@ -77,6 +77,7 @@ async function run(act) {
                 <template v-if="!scope.env">
                     <ShareButton :resource="resource" />
                 </template>
+                <SideToggle mode="timeline" icon="clock" label="Timeline" />
                 <CommentToggle :resource="resource" />
                 <template v-if="closable">
                     <CloseButton title="Close the plan" @click="emit('close')" />
@@ -118,9 +119,6 @@ async function run(act) {
             </template>
         </ol>
         <PlanReviewRounds :plan="resource" />
-        <template v-if="!readOnly">
-            <PlanTimelinePanel :plan="resource" />
-        </template>
     </article>
 </template>
 

@@ -70,6 +70,8 @@ const currentRef = computed(() => {
     return rowOf(asked) ? asked : data.value?.share.target;
 });
 const currentRow = computed(() => rowOf(currentRef.value));
+// The plan's timeline stands in a column of its own beside the plan, as the journal's own plan page keeps it.
+const sideTimeline = computed(() => currentRow.value?.table === "plans" && Boolean(data.value?.timeline));
 const target = computed(() => rowOf(data.value?.share.target));
 const kind = computed(() => target.value?.table || "");
 const look = computed(() => LOOKS[kind.value] || {noun: kind.value, icon: "docs"});
@@ -125,18 +127,12 @@ watch(currentRef, () => (read.value = 0));
                 :ends="ends"
                 :read="['docs', 'reports'].includes(kind) ? read : -1"
             />
-            <div class="view">
+            <div :class="['view', {aside: sideTimeline}]">
                 <div class="reading" @scroll.capture="follow">
                     <DocumentPage :key="currentRef" :resource="currentRow" read-only>
                         <SwitchCase :value="currentRow.table">
                             <template #plans>
                                 <PlanPage :resource="currentRow" read-only pin-progress />
-                                <template v-if="data.timeline">
-                                    <section class="share-timeline">
-                                        <h3>Timeline</h3>
-                                        <PlanTimeline :items="data.timeline" />
-                                    </section>
-                                </template>
                             </template>
                             <template #default>
                                 <ResourceBody :resource="currentRow" :comments="false" :links="false" read-only />
@@ -164,6 +160,12 @@ watch(currentRef, () => (read.value = 0));
                         />
                     </template>
                 </div>
+                <template v-if="sideTimeline">
+                    <aside class="share-timeline">
+                        <h3>Timeline</h3>
+                        <PlanTimeline :items="data.timeline" />
+                    </aside>
+                </template>
             </div>
         </template>
         <template v-else>
@@ -223,6 +225,19 @@ watch(currentRef, () => (read.value = 0));
 .view.aside {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+@media (max-width: 760px) {
+    .view.aside {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) auto;
+    }
+
+    .view.aside .share-timeline {
+        max-height: 40vh;
+        border-top: 1px solid var(--border);
+        border-left: 0;
+    }
 }
 
 .share-timeline {

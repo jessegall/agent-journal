@@ -5,6 +5,7 @@ import {route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
+import PlanTimelinePanel from "./PlanTimelinePanel.vue";
 import SequenceRuns from "./SequenceRuns.vue";
 import {useBeingWritten} from "../composables/sequenceRuns.js";
 import Links from "./Links.vue";
@@ -135,6 +136,9 @@ watch(
                     <template #running>
                         <SequenceRuns class="running-panel" :resource="resource" panel />
                     </template>
+                    <template #timeline>
+                        <PlanTimelinePanel class="timeline-aside" :plan="resource" />
+                    </template>
                     <template #default>
                         <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
                     </template>
@@ -257,7 +261,8 @@ watch(
     }
 }
 
-.document-aside > .running-panel {
+.document-aside > .running-panel,
+.document-aside > .timeline-aside {
     flex: 1;
     min-height: 0;
     overflow-y: auto;

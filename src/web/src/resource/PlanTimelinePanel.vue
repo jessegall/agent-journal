@@ -34,7 +34,8 @@ usePoll(
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-top: 24px;
+    padding: 16px;
+    overflow-y: auto;
 }
 
 .heading {
