@@ -87,12 +87,11 @@ class ShellCommand(Command):
 
     def split(self, args: Namespace, where: Where) -> int:
         folder = Path(args.into)
-        cuts = [cut for part in Chain.parts(args.line) if (cut := part.cut())]
         parts = [part.uncut() for part in Chain.parts(args.line)]
-        if cuts:
-            (folder / "dropped").write_text(f"[journal] {', '.join(cuts)} dropped: the whole output is kept, so read it by its number instead of cutting it\n")
-        for i, part in enumerate(parts):
-            (folder / f"{i}.part").write_text(part.text)
+        for i, part in enumerate(Chain.parts(args.line)):
+            (folder / f"{i}.part").write_text(part.uncut().text)
+            if part.cut():
+                (folder / f"{i}.cut").write_text(part.cut_command())
             print(part.kind() + ("w" if part.recorded and Writes.part(part.text) else "-"))
         if Chain.is_journal_line(args.line):
             return 0
@@ -157,7 +156,7 @@ class ShellCommand(Command):
         from journal.features.shell.feature import Shell
         output = self.outputs.of_chain(args.chain)
         line = Path(output.folder, "line").read_text() if Path(output.folder, "line").is_file() else output.command
-        if args.size >= int(self.settings.option(Shell.SHORT)) or PIPED.search(line):
+        if args.size >= int(self.settings.option(Shell.SHORT)) or PIPED.search(line) or any(Path(output.folder).glob("*.cut")):
             print("kept")
             return 0
         self.outputs.delete(output, where.actor)
@@ -169,8 +168,8 @@ class ShellCommand(Command):
         self.record(where, ENDED, {"chain": args.chain, "status": args.status, "file": args.file, "last": args.last})
         part = self.moved_part(args.chain)
         outcome = OutputFiles.ended(args.status)
-        said = self.said_last(args.last)
-        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", said, key=f"background:{args.chain}", command=part, shows=ChatMark.COMMANDS)
+        last_words = self.last_line_in_words(args.last)
+        self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if args.status == 0 else "bad", last_words, key=f"background:{args.chain}", command=part, shows=ChatMark.COMMANDS)
         live = self.agents.live()
         if live:
             output = self.outputs.save(self.outputs.of_chain(args.chain).ended_with(args.status), where.actor)
@@ -181,7 +180,7 @@ class ShellCommand(Command):
         return next((e.data["part"] for e in self.entries.of_kind(MOVED, 200) if e.data.get("chain") == chain), "")
 
     @staticmethod
-    def said_last(last: str) -> str:
+    def last_line_in_words(last: str) -> str:
         line = next((l.strip() for l in reversed(last.splitlines()) if l.strip()), "")
         return line if WORDS_IN.search(line) else ""
 

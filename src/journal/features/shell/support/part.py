@@ -2,8 +2,8 @@ import re
 from pathlib import Path
 from dataclasses import dataclass, replace
 
-TRAILING_CUT = re.compile(r"\s*\|\s*tail(?:\s+(?:-[nc]\s*\+?\d+|-\d+))?\s*$")
-"""A pipe into tail that ends a command, cutting what it printed; a head is left, since it may be what stops an endless command."""
+TRAILING_CUT = re.compile(r"\s*\|\s*(?:tail|head)(?:\s+(?:-[nc]\s*\+?\d+|-\d+))?\s*$")
+"""A pipe into tail or head that ends a command, cutting what it printed: the command runs whole, the whole is kept, and the cut is applied to it before the agent sees it."""
 READERS = {"cat", "sed", "grep", "egrep", "fgrep", "rg", "ag", "head", "tail", "less", "more", "bat", "awk", "jq", "wc", "ls", "find", "tree", "diff", "stat", "file", "nl", "sqlite3"}
 """Commands run to read on purpose, whose output the agent asked to see."""
 SEARCHERS = {"grep", "egrep", "fgrep", "rg", "ag", "find"}
@@ -45,14 +45,15 @@ class Part:
         return self.is_read() and not WRITING.search(self.text) and bool(named) and all(not word.startswith(("/", "~", "..")) or word.startswith(inside) for word in named)
 
     def cut(self) -> str:
-        """The trailing | tail of the agent's own command, outside quotes and before any heredoc; empty when there is none, and when the command reads code, which runs as written."""
         found = TRAILING_CUT.search(self.text)
         if not self.recorded or found is None or "<<" in self.text or self.is_reading_code():
             return ""
         before = self.text[:found.start()]
         return found.group(0).strip() if before.count("'") % 2 == 0 and before.count('"') % 2 == 0 else ""
 
+    def cut_command(self) -> str:
+        return self.cut().lstrip("| ").strip()
+
     def uncut(self) -> "Part":
-        """The command run whole: its output is kept as a numbered output, so a cut at its end only loses lines."""
         cut = self.cut()
         return replace(self, text=self.text[:self.text.rindex(cut)].rstrip()) if cut else self

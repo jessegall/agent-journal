@@ -5956,17 +5956,18 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     assert console.run(["reader", "list"], AGENT).out == "count: how many lines\nforties: lines in the early forties\n"
 
 
-def test_a_trailing_tail_is_dropped_before_the_command_runs_and_a_head_is_left(app):
+def test_a_trailing_tail_or_head_is_taken_off_the_line_and_kept_as_the_cut_to_apply(app):
     hook(app, "SessionStart")
     console = app.console()
-    for name, line in (("cut", "python3 -m pytest -q 2>&1 | tail -4"), ("head", "yes | head -3"), ("quoted", 'echo "a | tail -1"')):
+    for name, line in (("cut", "python3 -m pytest -q 2>&1 | tail -4"), ("head", "git log --oneline | head -3"), ("quoted", 'echo "a | tail -1"')):
         folder = app.config.root / name
         folder.mkdir()
         console.run(["shell", "split", line, "--into", str(folder)], AGENT)
-    assert (app.config.root / "cut" / "0.part").read_text() == "python3 -m pytest -q 2>&1", "the tail goes; the output is kept whole"
-    assert "| tail -4 dropped" in (app.config.root / "cut" / "dropped").read_text()
-    assert (app.config.root / "head" / "0.part").read_text() == "yes | head -3", "a head may be what stops an endless command"
-    assert not (app.config.root / "quoted" / "dropped").exists(), "a pipe inside quotes is text"
+    assert (app.config.root / "cut" / "0.part").read_text() == "python3 -m pytest -q 2>&1", "the tail goes; the command runs whole and the output is kept whole"
+    assert (app.config.root / "cut" / "0.cut").read_text() == "tail -4", "the cut is kept beside the part, for the runner to apply to the kept output"
+    assert (app.config.root / "head" / "0.part").read_text() == "git log --oneline" and (app.config.root / "head" / "0.cut").read_text() == "head -3", "a head is a cut like a tail"
+    assert not (app.config.root / "quoted" / "0.cut").exists(), "a pipe inside quotes is text"
+    assert console.run(["shell", "forget", "cut", "--size", "120"], AGENT).out.strip() == "kept", "a cut line's whole output is kept whatever its size"
 
 
 def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_its_last_characters_otherwise(app):

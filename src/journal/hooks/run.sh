@@ -32,11 +32,19 @@ __journal_changed() {
 # names the output by its number.
 __journal_show() {
     __journal_size=$(wc -c < "$1" | tr -d ' ')
+    __journal_n=$(cat "$folder/number" 2>/dev/null)
+    if [ -f "$folder/$shown.cut" ] && [ "${1##*.}" = out ]; then
+        __journal_cut_out=$(eval "cat \"$1\" | $(cat "$folder/$shown.cut")")
+        if [ "${#__journal_cut_out}" -le "$cap" ]; then
+            printf '%s\n' "$__journal_cut_out"
+            printf '[journal] the whole output, before your %s, is kept as output %s: journal output read %s --tail 20\n' "$(cat "$folder/$shown.cut")" "$__journal_n" "$__journal_n"
+            return
+        fi
+    fi
     if [ "$show" = whole ] || [ "$__journal_size" -le "$cap" ]; then
         cat "$1"
         return
     fi
-    __journal_n=$(cat "$folder/number" 2>/dev/null)
     if [ "$show" = ends ]; then
         head -c $((cap / 2)) "$1"
         printf '\n[journal] output %s: %s characters, %s cut from the middle. journal output read %s --lines or --grep reads them\n' "$__journal_n" "$__journal_size" "$((__journal_size - cap))" "$__journal_n"
@@ -113,7 +121,6 @@ folder="$root/runtime/outputs/$id"
 mkdir -p "$folder"
 printf '%s' "$1" > "$folder/line"
 sh "$__journal_cli" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
-[ -f "$folder/dropped" ] && cat "$folder/dropped"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
 limit=$(sh "$__journal_cli" shell limit --line "$1" 2>/dev/null); limit=${limit:-30}
 cap=$(sh "$__journal_cli" shell cap --line "$1" 2>/dev/null); cap=${cap:-hint 200}
