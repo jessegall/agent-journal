@@ -31,7 +31,8 @@ from journal.features.updates.support.updating import Updating
 from journal.features.tasks.states.working import Working
 from journal.support.subagents import Subagents
 
-from tests.replay import catch_typed
+from tests.replay import catch_typed, drive_the_clock, tick_after
+from journal.support.value_name import ValueName
 
 AGENT = Where("main", "s1")
 USER = Where("main")
@@ -63,6 +64,11 @@ def made(out) -> int:
     """The number of the row a command made, or the command's refusal as the failure."""
     assert out.code == 0, out.err
     return int(out.out.split()[1].rstrip(":"))
+
+
+def place(chart) -> int:
+    """A workflow's place at the event it was made for."""
+    return chart.place_at(chart.event)
 
 
 def own_workflow(console, charts, state: str, event: str) -> tuple[int, int]:
@@ -162,7 +168,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
     assert machine.current("s1").name == "expecting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
     out = console.run(["task", "done", "1"], AGENT).out
-    assert machine.current("s1").resume == {"state": "following_plan", "data": FollowingPlan(plan_id=1, task_id=2).to_data()}, "the wait stands, and the agent goes on to task 2 when it ends"
+    assert machine.current("s1").resume == {"state": "following_plan", "data": FollowingPlan(plan_id=1, task_id=2, moved_from=1).to_data()}, "the wait stands, and the agent goes on to task 2 when it ends"
     out = console.run(["task", "done", "2"], AGENT).out
     assert "plan 1 is done" in out
     assert machine.current("s1").resume["state"] == "idle", "done with the plan, the agent goes to rest when its wait ends"
@@ -194,6 +200,25 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app, monkeypatch)
     console.run(["task", "done", "2"], AGENT)
     app.runtime().deferred.drain()
     assert any("task 3, tag it is next. brief: git tag v4" in line for line in typed), "the plan's next task comes with its brief"
+
+
+def test_the_plans_next_task_is_named_once_when_another_of_its_tasks_closes_beside_the_one_in_hand(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "create", "release", "--brief", "ship"], USER)
+    for title in ("write the notes", "tag it", "announce it", "check the docs"):
+        console.run(["plan", "add", "1", title], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["task", "done", "1"], AGENT)
+    console.run(["task", "done", "4"], AGENT)
+    app.runtime().deferred.drain()
+    assert len([line for line in typed if "task 2, tag it is next" in line]) == 1, "closing a task not in hand says nothing about where the plan went"
 
 
 def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked_until_a_command_passes(app, monkeypatch):
@@ -388,7 +413,7 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
-    console.run(["question", "ask", "Which name?", "--options", "alpha, beta"], AGENT)
+    console.run(["question", "ask", "Which name?", "--options", "alpha", "beta"], AGENT)
     machine = app.container.get(Machine)
     assert isinstance(machine.current("s1"), Waiting) and machine.current("s1").question_id == 1
     assert hook(app, "Stop")[1] == {}, "idle while waiting is fine"
@@ -765,7 +790,6 @@ def test_shop_talk_and_the_third_person_are_named(app, monkeypatch):
     assert any("talks about the journal's commands" in t for t in typed) and any("say you, never the user" in t for t in typed)
 
 
-
 def test_each_subagent_is_one_message_in_the_chat_settled_in_place(app):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
@@ -870,6 +894,16 @@ def test_a_shell_line_printing_skill_files_loads_each_of_them(skilled):
     assert {"journal", "tasks"} <= set(loaded), "one cat of two skill files, by paths relative to the project, loads both"
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "cat .claude/skills/journal-workers/SKILL.md > copy.md"}, tool_response="")
     assert "workers" not in app.container.get(Agents).for_session("s1").skills_loaded, "a line that writes reads nothing"
+
+
+def test_two_skill_reads_sent_together_are_both_kept(skilled):
+    from concurrent.futures import ThreadPoolExecutor
+    from journal.repositories.agents import Agents
+    app = skilled
+    hook(app, "SessionStart")
+    with ThreadPoolExecutor(2) as pool:
+        list(pool.map(lambda folder: read_skill(app, folder), ["journal-tasks", "journal-checks"]))
+    assert {"tasks", "checks"} <= set(app.container.get(Agents).for_session("s1").skills_loaded), "each read adds to what the agent holds, never writes over the other"
 
 
 def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_datagrams(app):
@@ -1129,6 +1163,33 @@ def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
     assert len(marks) == 1 and marks[0].text.startswith("Agent committed ") and marks[0].data["detail"] == "Ship the footer", "the commit is a message in the chat, once"
 
 
+def test_a_user_builds_remind_to_commit_after_n_writes_from_parts(app, monkeypatch):
+    import subprocess
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    root, console, charts = app.config.root, app.console(), app.container.get(Charts)
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    made = int(console.run(["chart", "new", "Remind to commit", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
+    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, *(["--text", text] if text else []), "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    finished, committed = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tool_starting"), node("trigger", "commit_made", "")
+    writes, one, zero = node("check", "tool_writes", ""), node("action", "count_one", "writes"), node("action", "count_start", "writes")
+    reached, line = node("check", "count_over", "writes 3"), node("action", "say", "[chart] three writes since the last commit: commit")
+    for a, b, port in ((finished, writes, None), (writes, one, "yes"), (one, reached, None), (reached, line, "yes"), (committed, zero, None)):
+        console.run(["chart", "line", str(a), str(b), *(["--port", port] if port else [])], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    said = lambda body: body.get("hookSpecificOutput", {}).get("additionalContext", "")
+    for path in ("a.py", "b.py"):
+        assert "three writes" not in said(hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": path})[1])
+    assert "three writes since the last commit" in said(hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "c.py"})[1]), "the third write reaches the count"
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship it"], cwd=root, check=True)
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Counts).of_workflow(made)["writes"] == 0, "a commit made puts the count back at zero, through the workflow's other trigger"
+    assert console.run(["chart", "node", "check", "open_question", "--in", str(made)], USER).code == 0, "Has an open question? is a plain check a user's workflow may ask"
+
+
 def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_waits(app):
     app.console().run(["message", "send", "hello"], USER)
     app.console().run(["task", "create", "t"], USER)
@@ -1198,17 +1259,16 @@ def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app)
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
 
 
-def test_a_quiet_tick_leaves_no_walk_entry_and_a_tick_that_acts_does(app):
-    from journal.events.agent.ticked import Ticked
-    from journal.events.bus import Bus
+def test_a_quiet_tick_leaves_no_walk_entry_and_a_tick_that_acts_does(app, monkeypatch):
     from journal.repositories.entries import Entries
+    drive_the_clock(app, monkeypatch)
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["task", "park", "1", "later"], AGENT)
     ticks = lambda: [e for e in app.container.get(Entries).of_kind("walk", 20) if e.data["trigger"] == "ticked"]
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+    tick_after(app, 1.0)
     assert ticks() == [], "a tick that passed its checks and acted on none is no news"
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=120.0))
+    tick_after(app, 120.0)
     assert len(ticks()) == 1, "a tick whose walk acted, the parked ask, is recorded"
 
 
@@ -1279,7 +1339,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1"], AGENT)
     machine, plans = app.container.get(Machine), app.container.get(Plans)
-    assert machine.current("s1") == FollowingPlan(plan_id=1) and plans.at_checkpoint(plans.find(1)).title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
+    assert machine.current("s1") == FollowingPlan(plan_id=1, moved_from=1) and plans.at_checkpoint(plans.find(1)).title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "phase one is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "the checkpoint waits for the user's look, said at the stop"
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1") == FollowingPlan(plan_id=1, task_id=2), "plan start goes on past the checkpoint"
@@ -1289,7 +1349,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     settings.save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
     console.run(["plan", "start", "2"], AGENT)
     console.run(["task", "done", "3"], AGENT)
-    assert app.container.get(Tasks).find(4).state == "started" and machine.current("s1") == FollowingPlan(plan_id=2, task_id=4), "in auto mode a checkpoint never stops the plan"
+    assert app.container.get(Tasks).find(4).state == "started" and machine.current("s1") == FollowingPlan(plan_id=2, task_id=4, moved_from=3), "in auto mode a checkpoint never stops the plan"
     app.runtime().deferred.drain()
     assert any("plan 2: task 4, q second is next" in line for line in typed), "the workflow tells the agent its next task"
     console.run(["plan", "park", "2"], AGENT)
@@ -1336,9 +1396,12 @@ def test_wispr_flow_is_among_the_suggested_mcp_services():
 def test_a_question_whose_options_say_i_or_you_is_refused(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
-    refused = app.console().run(["question", "ask", "Who upgrades it?", "--options", "I'll upgrade it myself, You run the upgrade"], AGENT)
+    refused = app.console().run(["question", "ask", "Who upgrades it?", "--options", "I'll upgrade it myself", "You run the upgrade"], AGENT)
     assert refused.code == 1 and "never I, we or you" in refused.err and "I'll upgrade it myself; You run the upgrade" in refused.err
-    assert app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, The agent upgrades it"], AGENT).code == 0
+    lone = app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, The agent upgrades it"], AGENT)
+    assert lone.code == 1 and "its own quoted argument" in lone.err, "one option holding a comma is the old comma list, refused"
+    asked = app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, today", "The agent upgrades it"], AGENT)
+    assert asked.code == 0 and "1. The user upgrades it, today" in asked.out and "2. The agent upgrades it" in asked.out, "a comma inside a quoted option stays in it, and the options are printed back numbered"
 
 
 def test_a_reply_sent_by_command_comes_back_with_the_hint_that_it_can_be_typed(app):
@@ -1507,6 +1570,21 @@ def test_a_session_silent_for_an_hour_is_ended(app):
     assert app.container.get(Machine).current("s1").name != "ended", "a session that goes on after an hour's silence lives: it is not left ended"
 
 
+def test_the_agent_a_supervisor_runs_stays_live_however_long_it_is_idle_and_is_told_a_message(app, monkeypatch):
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    hook(app, "SessionStart")
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=36000.0))
+    assert app.container.get(Machine).current("s1").name != "ended", "an agent idle for ten hours under a supervisor is waiting, not gone"
+    app.console().run(["message", "send", "are you there?"], USER)
+    app.runtime().deferred.drain()
+    assert any("new message" in line for line in typed), "a message left for an idle agent is typed into its terminal"
+
+
 def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_questioned(app, monkeypatch):
     typed = []
     catch_typed(app, monkeypatch, typed)
@@ -1550,7 +1628,7 @@ def test_a_task_named_in_a_reply_is_linked_to_the_message_it_answers(app):
 def test_the_providers_own_question_tool_is_refused_and_every_fiftieth_line_reminds(app, monkeypatch):
     hook(app, "SessionStart")
     status, body = hook(app, "PreToolUse", tool_name="AskUserQuestion", tool_input={"question": "which?"})
-    assert status == 409 and "`journal question ask \"<one line>\" --options a,b`" in body["error"]
+    assert status == 409 and "`journal question ask \"<one line>\" --options \"a\" \"b\"`" in body["error"]
 
 
 def test_a_dispatched_worker_runs_and_its_output_is_its_report(app):
@@ -1804,13 +1882,12 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     app.runtime().deferred.drain()
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat f.py"})[0] == 200
-    from journal.features.chart.support.checks import Checks
-    from journal.features.chart.support.context import Context
-    from journal.events.agent.idle import Idle as IdleEvent
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
     from journal.support.scope import Scope
+    log_held = next(c for c in app.container.get(Charts).shipped() if c.drawing == "working:tool_starting:log_held")
     with app.container.get(Scope).of(1):
-        at = Context(event=IdleEvent(session="s1", environment_id=1), session="s1", environment_id=1, state=app.container.get(Machine).current("s1"))
-        assert app.container.get(Checks).count_of(at, "edits") == 1, "a shell line that writes counts as an edit toward the log; a read does not"
+        assert app.container.get(Counts).of_workflow(log_held.id) == {"writes": 1}, "a shell line that writes counts as a write toward the log; a read does not"
 
 
 def test_a_journal_command_chained_with_anything_else_is_refused(app):
@@ -2120,7 +2197,7 @@ def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved
     hook(app, "SubagentStop", agent_id="r1")
     app.runtime().deferred.drain()
     assert app.container.get(Plans).find(1).reviewers == 0, "the reviewer back, the plan says so without anything else changing it"
-    assert console.run(["plan", "ready", "1"], AGENT).code == 0, "the reviewer back, its findings in, the plan is ready again"
+    assert console.run(["plan", "ready", "1", "--changed", "task 1 reworded"], AGENT).code == 0, "the reviewer back, its findings in, the plan is ready again"
     assert console.run(["plan", "approve", "1"], USER).code == 0
 
 
@@ -2410,44 +2487,16 @@ def test_an_edited_node_is_the_users_and_a_reset_brings_the_shipped_chart_back(a
         saved = j.loads(r.read())
     assert saved["nodes"][k]["shipped"] is False and saved["nodes"][0]["shipped"] is True, "a changed text is the user's; a moved box is still the shipped rule"
     assert "(edited)" in console.run(["chart", "show"], AGENT).out
+    from journal.repositories.counts import Counts
+    from journal.repositories.noted_times import NotedTimes
+    with app.container.get(Scope).of(1):
+        app.container.get(Counts).set(ValueName(free, "seen"), 3, Actor.system())
+        app.container.get(NotedTimes).note(ValueName(free, "since"), 1.0, Actor.system())
     assert "reset to the shipped one, revision 2" in console.run(["chart", "reset", str(free)], AGENT).out
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Counts).of_workflow(free) == {} and app.container.get(NotedTimes).of_workflow(free) == {}, "a reset starts the workflow's counts and times afresh"
     again = j.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/chart/{free}", headers={"X-Journal-Env": "main"}), timeout=5))
     assert all(n["shipped"] for n in again["nodes"]) and len(again["nodes"]) == len(read["nodes"]) and again["revision"] == 2
-
-
-def test_counter_checks_count_tool_uses_and_edits_and_read_a_setting(app):
-    app.container.get(Settings).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
-    app.container.get(Settings).save(Setting(environment_id=0, key="messages.hold_after", value=4), Actor.system())
-    hook(app, "SessionStart")
-    console = app.console()
-    console.run(["environment", "here"], AGENT)
-    from journal.models.node_kind import NodeKind
-    from journal.repositories.charts import Charts
-    charts = app.container.get(Charts)
-    shipped = charts.for_pair("working", "tool_starting")
-    for node in charts.nodes_of(shipped):
-        if node.kind != NodeKind.TRIGGER:
-            charts.remove_node(node, Actor.system())
-    wf = shipped.id
-    add = lambda kind, key, *text: int(console.run(["chart", "node", "--edit-default", kind, key, *text, "--in", str(wf)], AGENT).out.split()[1].rstrip(":"))
-    line = lambda a, b, port="then": console.run(["chart", "line", "--edit-default", str(a), str(b), "--port", port], AGENT)
-    tool = next(n.id for n in charts.nodes_of(shipped) if n.kind == NodeKind.TRIGGER and n.key == "tool_starting")
-    every = add("check", "count_every", "--text", "uses 3")
-    inbox = add("action", "say", "--text", "the chart: your inbox waits")
-    over = add("check", "count_over", "--text", "owed messages.hold_after")
-    held = add("action", "hold", "--text", "the chart: answer first")
-    line(tool, every)
-    line(every, inbox, "yes")
-    line(every, over, "no")
-    line(over, held, "yes")
-    console.run(["task", "create", "t", "--start"], AGENT)
-    console.run(["message", "send", "hello?"], USER)
-    read = lambda: hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
-    named = [n for n in range(1, 7) if "your inbox waits" in json.dumps(read()[1])]
-    assert named == [3, 6], "every third use since the message came, on the count the guards keep"
-    console.run(["message", "read", "1"], AGENT)
-    answers = [read()[0] for _ in range(5)]
-    assert answers[:3] == [200, 200, 200] and answers[3] == 409, "the hold after as many uses as the setting says"
 
 
 def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(app, monkeypatch):
@@ -2468,7 +2517,7 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     announced = len(sent)
     assert "needs the row" in console.run(["chart", "try", "messages.created"], AGENT).err
     tried = console.run(["chart", "try", "messages.created", "--row", "1"], AGENT).out
-    assert "Message created of row 1, walked as the state idle: nodes none" in tried, "a row event is tried with its row; nothing is shipped at a message's creation, since delivery is the engine's"
+    assert "Message created of row 1, walked as the state idle: nodes" in tried and "would count start: tools_used" in tried and "would say" not in tried, "a row event is tried with its row; at a message's creation the shipped workflows only start their counts again, since delivery is the engine's"
     assert len(sent) == announced, "the trial typed nothing"
     from journal.models.node_kind import NodeKind
     from journal.repositories.charts import Charts
@@ -2480,7 +2529,8 @@ def test_a_dry_run_shows_the_path_and_what_the_chart_would_do_without_doing_it(a
     n = clock.id
     node = lambda *args: int(console.run(["chart", "node", "--edit-default", *args, "--in", str(n)], USER).out.split()[1].rstrip(":"))
     trigger = next(x.id for x in charts.nodes_of(clock) if x.kind == NodeKind.TRIGGER)
-    quiet, say = node("check", "quiet_for_over", "--text", "300"), node("action", "say", "--text", "check {{awaited}} now")
+    node("action", "time_note", "--text", "waiting_since")
+    quiet, say = node("check", "time_over", "--text", "waiting_since 300"), node("action", "say", "--text", "check {{awaited}} now")
     console.run(["chart", "line", "--edit-default", str(trigger), str(quiet)], USER)
     console.run(["chart", "line", "--edit-default", str(quiet), str(say), "--port", "yes"], USER)
     live = console.run(["chart", "try", "ticked", "--state", "expecting"], AGENT).out
@@ -2637,7 +2687,7 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
-    console.run(["question", "ask", "Which name?", "--options", "alpha, beta"], AGENT)
+    console.run(["question", "ask", "Which name?", "--options", "alpha", "beta"], AGENT)
     console.run(["question", "answer", "1", "beta"], USER)
     assert any("question 1 is answered" in line and "`journal question show 1`" in line for line in typed), "told like a message, with the command to read it"
     shown = console.run(["question", "show", "1"], AGENT).out
@@ -2717,10 +2767,12 @@ def test_the_checks_for_the_inbox_and_the_answer_hold_answer_as_the_listeners_do
     app.runtime().deferred.drain()
     for _ in range(26):
         hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    at = Context(event=ToolStarting(tool="Write", input={"file_path": "a.py"}, writes=True, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
     from journal.support.scope import Scope
+    log_held = next(c for c in app.container.get(Charts).shipped() if c.drawing == "working:tool_starting:log_held")
     with app.container.get(Scope).of(env):
-        assert checks.answer("count_at", at, "edits tasks.log_after") and checks.answer("count_every", at, "edits 6") and not checks.answer("count_over", at, "edits 13"), "the edits read from the record: twelve writes counted, the rest held at the log threshold and not counted"
+        assert app.container.get(Counts).of_workflow(log_held.id) == {"writes": 12}, "the log's workflow counts its own writes: twelve counted, the rest held at the log threshold and not counted"
 
 
 def test_the_checks_for_quiet_time_workers_and_questions(app):
@@ -2736,9 +2788,7 @@ def test_the_checks_for_quiet_time_workers_and_questions(app):
     console.run(["environment", "here"], AGENT)
     checks = app.container.get(Checks)
     env = app.container.get(Environments).named("main").id
-    tick = lambda quiet: Context(event=Ticked(at=0.0, quiet_for=quiet, session="s1", environment_id=env), session="s1", environment_id=env, state=app.container.get(Machine).current("s1"))
-    assert checks.answer("quiet_for_over", tick(61), "60") and not checks.answer("quiet_for_over", tick(59), "60")
-    assert checks.answer("quiet_for_over", tick(61), "1 minute") and not checks.answer("quiet_for_over", tick(59), "1 min") and checks.answer("quiet_for_over", tick(7201), "2 hours") and not checks.answer("quiet_for_over", tick(1799), "30 minutes"), "a time with its unit"
+    assert [checks.number(t) for t in ("60", "1 minute", "1 min", "2 hours", "30 minutes")] == [60, 60, 60, 7200, 1800], "a time with its unit, a bare number being seconds"
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "medior", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1"], AGENT)
@@ -2815,9 +2865,12 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     held = [hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] for _ in range(3)]
     from journal.events.agent.idle import Idle
     stop = at(Idle(session="s1", environment_id=env))
-    assert fillers.fill("{{task}} / {{task_edits}} / {{log_command}}", stop) == f"task 1 / {held.count(200)} / `journal task log 1`", "the edits are the writes that went through, a held one not counted"
+    from dataclasses import replace as replaced
+    from journal.repositories.charts import Charts
+    log_held = next(c for c in app.container.get(Charts).shipped() if c.drawing == "working:tool_starting:log_held")
+    assert fillers.fill("{{task}} / {{value.writes}} / {{log_command}}", replaced(stop, walked=[log_held.id])) == f"task 1 / {held.count(200)} / `journal task log 1`", "the writes are the workflow's own count of those that went through, a held one not counted"
     console.run(["await", "the deploy"], AGENT)
-    assert fillers.fill("check {{awaited}} now: you have waited {{quiet_minutes}} min", at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))) == "check the deploy now: you have waited 5 min", "the context carries the state as it is when the walk starts"
+    assert fillers.fill("check {{awaited}} now", at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))) == "check the deploy now", "the context carries the state as it is when the walk starts"
     console.run(["task", "park", "1", "the header first"], AGENT)
     assert fillers.fill("{{parked_n}}: {{parked_title}} ({{parked_why}})", tick) == "1: the footer (the header first)"
     console.run(["task", "create", "t2", "--start"], AGENT)
@@ -2881,9 +2934,9 @@ def test_a_workflow_of_the_older_shape_holds_one_event_and_a_second_on_it_is_ref
     charts = app.container.get(Charts)
     n, trigger = own_workflow(console, charts, "idle", "tool_finished")
     second = int(console.run(["chart", "new", "Yet another", "--for", "idle", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
-    assert charts.find(second).place == charts.find(n).place + 1, "a second workflow on the same pair runs after the first"
+    assert place(charts.find(second)) == place(charts.find(n)) + 1, "a second workflow on the same pair runs after the first"
     shipped = [str(c.id) for c in charts.for_event("tool_finished") if c.shipped]
-    assert console.run(["chart", "order", "tool_finished", str(second), str(n), *shipped], USER).out.startswith("tool_finished: 1. Yet another, 2. ") and charts.find(second).place < charts.find(n).place, "the order command puts them in the order given"
+    assert console.run(["chart", "order", "tool_finished", str(second), str(n), *shipped], USER).out.startswith("tool_finished: 1. Yet another, 2. ") and place(charts.find(second)) < place(charts.find(n)), "the order command puts them in the order given"
     assert "name each once" in console.run(["chart", "order", "tool_finished", str(n)], USER).err
     assert "a workflow holds one trigger of each event" in console.run(["chart", "node", "trigger", "tool_finished", "--in", str(n)], USER).err
     say = int(console.run(["chart", "node", "action", "say", "--text", "your own workflow speaks", "--in", str(n)], USER).out.split()[1].rstrip(":"))
@@ -2900,12 +2953,21 @@ def test_the_shipped_message_workflow_takes_the_arrival_listener_over_at_boot(ap
     app.runtime().deferred.drain()
     assert typed.count("[journal] new message 1") == 1, "named once, by the engine's own delivery"
     from journal.repositories.charts import Charts
-    assert not [c for c in app.container.get(Charts).for_event("messages.created") if c.shipped], "delivery is not a workflow: nothing is shipped at a message's creation"
+    charts = app.container.get(Charts)
+    reached = set()
+    for chart in [c for c in charts.for_event("messages.created") if c.shipped]:
+        graph = charts.graph(chart)
+        at = list(graph.triggers["messages.created"])
+        while at:
+            node = at.pop()
+            reached.add(graph.nodes[node].key)
+            at += [n for (source, _), following in graph.after.items() if source == node for n in following]
+    assert reached <= {"messages.created", "message_by_user", "message_typed_in_terminal", "count_start"}, "delivery is not a workflow: at a message's creation the shipped workflows only start their counts again"
     always = next(c for c in app.container.get(Charts).for_event("idle") if not c.state)
     charts = app.container.get(Charts)
-    charts.save(charts.find(always.id).with_(place=7), Actor.user(1))
+    charts.save(charts.find(always.id).placed(always.event, 7), Actor.user(1))
     assert "reset to the shipped one" in console.run(["chart", "reset", str(always.id)], USER).out
-    assert charts.find(always.id).place == always.place, "a reset puts an Always workflow back at its shipped place too"
+    assert place(charts.find(always.id)) == place(always), "a reset puts an Always workflow back at its shipped place too"
     assert "[always at idle, place" in console.run(["chart", "show"], USER).out
 
 
@@ -2918,10 +2980,13 @@ def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app):
     after_tool = lambda: hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
     for i in range(50):
         nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
-    assert "chat etiquette" in after_tool(), "fifty lines since the last reminder bring it at the next tool use"
+    app.runtime().deferred.drain()
+    assert "chat etiquette" in after_tool(), "fifty lines since the last reminder, counted once the replies have gone, bring it at the next tool use"
+    app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "said, the count starts again"
     for i in range(1000):
         nudger.say(agent, ChartFeature.LINE.about(text=f"more {i}"))
+    app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "a thousand lines later but inside the reminder's own window, none again: no flood"
 
 
@@ -2992,6 +3057,28 @@ def test_approving_a_started_plan_leaves_it_started(app):
     assert app.container.get(Plans).find(1).state == PlanState.STARTED
 
 
+def test_each_review_round_is_kept_on_the_plan_with_its_reviewers_report_and_changes(app):
+    from journal.http.plans.plan_outline import PlanOutline
+    from journal.repositories.plans import Plans
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1"], USER)
+    hook(app, "SessionStart")
+    console.run(["plan", "review", "1"], AGENT)
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lady Lovelace reads plan 1", "prompt": "read plan 1", "model": "sonnet"}, tool_use_id="t-1")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lady Lovelace reads plan 1", "prompt": "read plan 1"}, tool_use_id="t-1", tool_response="found two gaps")
+    console.run(["report", "create", "Plan 1, first review", "--body", "two gaps", "--about", "plans:1"], AGENT)
+    assert "--changed" in console.run(["plan", "ready", "1"], AGENT).err, "a plan back from review says what the round changed"
+    assert "ready" in console.run(["plan", "ready", "1", "--changed", "task 1 reworded"], AGENT).out
+    console.run(["plan", "review", "1"], AGENT)
+    outline = app.container.get(PlanOutline).of(app.container.get(Plans).find(1))
+    open_, first = outline["reviews"]
+    assert (first["reviewers"], first["changed"], first["report_ids"]) == (("Lady Lovelace reads plan 1",), "task 1 reworded", [1]), "the closed round names its reviewer, its change and its report"
+    assert (open_["changed"], open_["report_ids"]) == (None, []), "the round in progress is first, still open"
+
+
 def test_the_page_reads_a_cancelled_plan_and_its_task_as_abandoned(app):
     import json as j
     from urllib.request import urlopen
@@ -3015,7 +3102,7 @@ def test_a_workflow_is_bound_to_a_state_or_the_base_and_a_state_has_one(app):
     assert "no event is called landing" in console.run(["chart", "new", "Landing", "--for", "idle", "--on", "landing"], USER).err
     twice = console.run(["chart", "new", "Working twice", "--for", "working", "--on", "tool_starting"], USER)
     charts = app.container.get(Charts)
-    assert twice.code == 0 and charts.find(int(twice.out.split()[1].rstrip(":"))).place > charts.for_pair("working", "tool_starting").place, "a second workflow for a state at an event takes its place after the shipped one"
+    assert twice.code == 0 and place(charts.find(int(twice.out.split()[1].rstrip(":")))) > place(charts.for_pair("working", "tool_starting")), "a second workflow for a state at an event takes its place after the shipped one"
     working, idle = charts.for_pair("working", "tool_starting").id, charts.for_pair("idle", "idle").id
     node = lambda chart, *args: console.run(["chart", "node", "--edit-default", *args, "--in", str(chart)], USER)
     assert "a workflow holds one trigger of each event; this one has 2 of tool_starting" in node(working, "trigger", "tool_starting").err
@@ -3106,7 +3193,7 @@ def test_a_walk_never_triggers_on_the_rows_it_writes_itself(app):
     app.runtime().deferred.drain()
     walks = entries.of_kind("walk", 1000)
     since = [w.data["trigger"] for w in walks[: len(walks) - before]]
-    assert set(since) == {"workers.updated"}, "the report's worker row was walked, its message is delivered by the engine and walks no workflow; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
+    assert set(since) == {"workers.updated", "messages.created"}, "the report's worker row was walked, its message is delivered by the engine and only asks the inbox workflows whether it is yours, a line said only counts and is no news; the release inside the walk saved the agent's row and recorded the walk, and neither set off another"
 
 
 def test_every_command_line_write_to_a_workflow_raises_its_revision_so_a_page_save_from_an_older_read_is_refused(app):
@@ -3336,17 +3423,17 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     counts, scope = app.container.get(Counts), app.container.get(Scope)
     hook(app, "SubagentStart", agent_id="a1")
     with scope.of(1):
-        assert [c.value for c in counts.where(session="s1", name=f"charts:{starting}:subs")] == [0], "the start put the workflow's count at nought"
+        assert [c.value for c in counts.where(name=f"charts:{starting}:subs")] == [0], "the start put the workflow's count at zero"
     said = lambda body: body.get("hookSpecificOutput", {}).get("additionalContext", "")
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
     with scope.of(1):
-        assert [c.value for c in counts.where(session="s1", name=f"charts:{starting}:subs")] == [1], "one tool use counted, by the same workflow's other trigger"
+        assert [c.value for c in counts.where(name=f"charts:{starting}:subs")] == [1], "one tool use counted, by the same workflow's other trigger"
     assert "two tools" not in said(body) and "every second tool" not in said(body), "one tool use: the count stands at one, no multiple of two"
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "b"})
     assert "two tools since the subagent started" in said(body) and "every second tool" in said(body), "the second tool use reaches two: the checks answer yes and the lines ride the hook's answer"
     hook(app, "SubagentStart", agent_id="a2")
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "c"})
-    assert "two tools" not in said(body) and "every second tool" not in said(body), "a new start puts the count back at nought, and nought is no Nth"
+    assert "two tools" not in said(body) and "every second tool" not in said(body), "a new start puts the count back at zero, and zero is no Nth"
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "d"})
     assert "every second tool" in said(body), "the second use since the new start is an Nth again"
     from journal.features.chart.support.walk import WALKED
@@ -3358,7 +3445,7 @@ def test_a_workflow_keeps_a_named_count_between_events_and_checks_it(app, monkey
     hook(app, "SessionEnd")
     app.runtime().deferred.drain()
     with scope.of(1):
-        assert counts.where(session="s1") == [], "an ended session's counts are deleted with it"
+        assert [c.value for c in counts.where(name=f"charts:{starting}:subs")] == [2], "an ended session leaves the count: it is the workflow's in the environment, not the agent's"
     assert not typed, "nothing was typed: every line rode a hook's answer"
 
 
@@ -3378,10 +3465,10 @@ def test_an_upgrade_keeps_a_users_edited_workflow_when_the_shipped_one_changes_s
     kept = charts.find(working.id)
     assert kept.shipped and any(n.id == mine for n in charts.nodes_of(kept)), "the edited shipped workflow is kept with the user's node, still the state's workflow"
     assert charts.find(idle.id).drawn_version == shipped_chart.DRAWINGS_VERSION and all(n.shipped for n in charts.nodes_of(charts.find(idle.id))), "an unedited shipped workflow is redrawn at the new shipping"
-    charts.save(charts.find(idle.id).with_(place=0, drawn_version=1), Actor.user(1))
+    charts.save(charts.find(idle.id).placed(idle.event, 0).with_(drawn_version=1), Actor.user(1))
     monkeypatch.setattr(shipped_chart, "DRAWINGS_VERSION", shipped_chart.DRAWINGS_VERSION + 1)
     app.container.get(ShippedChart).run()
-    assert charts.find(idle.id).place == ShippedChart.state_place("idle") * 10, "redrawn, a state's workflow takes the place its state ships at, so a journal from before places has the waits first"
+    assert place(charts.find(idle.id)) == ShippedChart.state_place("idle") * 10, "redrawn, a state's workflow takes the place its state ships at, so a journal from before places has the waits first"
     named = {w["id"]: w for w in [app.container.get(ChartController).named(c) for c in charts.all()]}
     assert named[working.id]["behind"] is True and named[working.id]["edited"] is True, "the page says the shipping moved past the user's edit"
     assert named[idle.id]["behind"] is False
@@ -3412,7 +3499,7 @@ def test_a_triggers_workflows_run_in_the_users_order_stateless_ones_always_and_a
     console.run(["chart", "line", str(t2), str(say2)], USER)
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
     assert said(body).index("idle says first") < said(body).index("always says"), "both run, in the order they were made: the state's own first, then the stateless one"
-    charts.save(charts.find(always).with_(place=-1), Actor.user(1))
+    charts.save(charts.find(always).placed(charts.find(always).event, -1), Actor.user(1))
     status, body = hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "b"})
     assert said(body).index("always says") < said(body).index("idle says first"), "the order is the user's: moved first, the stateless one speaks first"
     console.run(["task", "create", "t", "--start"], AGENT)
@@ -3526,8 +3613,6 @@ def test_a_locked_workflow_keeps_the_head_and_a_locked_step_is_refused_by_comman
 
 
 
-
-
 def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_started_a_log_for_the_task_in_hand(app, monkeypatch):
     from journal.repositories.charts import Charts
     typed = []
@@ -3587,8 +3672,6 @@ def test_the_row_checks_read_the_events_row_a_message_just_read_a_task_just_star
     assert said("[chart] task 1 just started by me") == 1, "finishing a task is an update that did not start it"
 
 
-
-
 def test_the_edits_since_the_log_are_read_from_the_record_the_task_named_the_log_asked_for_and_the_write_held(app):
     for key, value in (("tasks.log_after", 3), ("tasks.first_nudge_after", 1), ("tasks.name_every", 2), ("tasks.auto", False)):
         app.container.get(Settings).save(Setting(environment_id=0, key=key, value=value), Actor.system())
@@ -3615,12 +3698,11 @@ def test_the_edits_since_the_log_are_read_from_the_record_the_task_named_the_log
     assert write("d.py")[0] == 200, "logged, the edits since the log are none and the write goes on"
 
 
-
 def test_a_second_boot_on_a_seeded_journal_changes_nothing(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.repositories.charts import Charts
     charts, seed = app.container.get(Charts), app.container.get(ShippedChart)
-    picture = lambda: [(c.id, c.title, c.state, c.event, c.place, c.revision, c.locked, c.drawing, c.drawn_version, [(n.id, n.kind, n.key, n.text, n.locked) for n in charts.nodes_of(c)], [(l.source.id, l.target.id, l.kind) for l in charts.lines_of(c)]) for c in charts.all()]
+    picture = lambda: [(c.id, c.title, c.state, c.event, c.places, c.revision, c.locked, c.drawing, c.drawn_version, [(n.id, n.kind, n.key, n.text, n.locked) for n in charts.nodes_of(c)], [(l.source.id, l.target.id, l.kind) for l in charts.lines_of(c)]) for c in charts.all()]
     seed.run()
     first = picture()
     seed.run()
@@ -4009,7 +4091,7 @@ def test_the_card_for_a_question_the_user_answered_is_the_users(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     console.run(["question", "answer", "1", "red"], USER)
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
     assert card.text == "You answered question 1" and card.created_by.kind == ActorKind.USER, "the user's act is written as the user's"
@@ -4035,8 +4117,8 @@ def test_two_workflows_counting_the_same_name_keep_their_own_counts(app):
     hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
     app.runtime().deferred.drain()
     with app.container.get(Scope).of(1):
-        counted = {c.name: c.value for c in app.container.get(Counts).where(session="s1")}
-    assert counted == {f"charts:{once}:tools": 1, f"charts:{twice}:tools": 2}, "each workflow keeps its own count of tools"
+        counted = {c.name: c.value for c in app.container.get(Counts).all()}
+    assert {k: v for k, v in counted.items() if k.startswith((f"charts:{once}:", f"charts:{twice}:"))} == {f"charts:{once}:tools": 1, f"charts:{twice}:tools": 2}, "each workflow keeps its own count of tools"
 
 def test_a_count_started_only_when_not_started_keeps_counting(app):
     from journal.repositories.charts import Charts
@@ -4054,7 +4136,7 @@ def test_a_count_started_only_when_not_started_keeps_counting(app):
         hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": path})
     app.runtime().deferred.drain()
     with app.container.get(Scope).of(1):
-        assert app.container.get(Counts).named("s1", f"charts:{made}:tools").value == 3, "the count started once and was not reset on each event"
+        assert app.container.get(Counts).named(ValueName(made, "tools")).value == 3, "the count started once and was not reset on each event"
 
 def test_two_walks_of_one_agent_at_once_lose_no_count(app, monkeypatch):
     import contextvars
@@ -4071,7 +4153,7 @@ def test_two_walks_of_one_agent_at_once_lose_no_count(app, monkeypatch):
     one = int(console.run(["chart", "node", "action", "count_one", "--text", "tools", "--in", str(made)], USER).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(trigger), str(one)], USER)
     named = Counts.named
-    monkeypatch.setattr(Counts, "named", lambda self, session, name: (named(self, session, name), time.sleep(0.003))[0])
+    monkeypatch.setattr(Counts, "named", lambda self, value: (named(self, value), time.sleep(0.003))[0])
     walk, event = app.container.get(Walk), ToolFinished(tool="Read", input={}, output="").placed("s1", 1, "claude", 0.0)
 
     def walks():
@@ -4080,7 +4162,8 @@ def test_two_walks_of_one_agent_at_once_lose_no_count(app, monkeypatch):
     threads = [threading.Thread(target=contextvars.copy_context().run, args=(walks,)) for _ in range(2)]
     [t.start() for t in threads]
     [t.join() for t in threads]
-    assert named(app.container.get(Counts), "s1", f"charts:{made}:tools").value == 40, "every walk's Count one is kept"
+    with app.container.get(Scope).of(1):
+        assert named(app.container.get(Counts), ValueName(made, "tools")).value == 40, "every walk's Count one is kept"
 
 def test_a_workflow_that_only_counts_walks_after_the_reply(app):
     from journal.repositories.charts import Charts
@@ -4090,7 +4173,7 @@ def test_a_workflow_that_only_counts_walks_after_the_reply(app):
     console.run(["chart", "line", str(trigger), str(one)], USER)
     assert not charts.graph(charts.find(made)).answers, "counting changes no answer, so the workflow is quiet"
 
-def test_a_row_event_with_no_agent_keeps_no_count(app):
+def test_a_row_events_count_is_kept_once_per_environment_with_no_agent_or_with_two(app):
     from journal.repositories.charts import Charts
     from journal.repositories.counts import Counts
     from journal.support.scope import Scope
@@ -4099,10 +4182,219 @@ def test_a_row_event_with_no_agent_keeps_no_count(app):
     trigger = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tasks.created")
     one = int(console.run(["chart", "node", "action", "count_one", "--text", "made", "--in", str(made)], USER).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(trigger), str(one)], USER)
+    kept = lambda: app.container.get(Counts).named(ValueName(made, "made")).value
     console.run(["task", "create", "a task with no agent here"], USER)
     app.runtime().deferred.drain()
     with app.container.get(Scope).of(1):
-        assert app.container.get(Counts).where(environment_id=1) == [], "a walk about no agent keeps no count"
+        assert kept() == 1, "a value is the environment's, so a row event counts with no agent here"
+    hook(app, "SessionStart")
+    hook(app, "SessionStart", session_id="s2")
+    console.run(["task", "create", "a task with two agents here"], USER)
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        assert kept() == 2, "and once, not once for each agent the event walks about"
+
+def test_a_workflow_notes_a_time_on_one_trigger_and_asks_how_long_ago_on_another(app, monkeypatch):
+    from journal.engine.clock import Clock
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    from journal.repositories.charts import Charts
+    from journal.repositories.noted_times import NotedTimes
+    from journal.supervisor_link import SupervisorLink
+    console, charts, now = app.console(), app.container.get(Charts), [1000.0]
+    monkeypatch.setattr(Clock, "now", lambda self: now[0])
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    sent = []
+    catch_typed(app, monkeypatch, sent)
+    made = int(console.run(["chart", "new", "Quiet since the last tool", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, *(["--text", text] if text else []), "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    used, ticked = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tool_finished"), node("trigger", "ticked", "")
+    note, ask, line = node("action", "time_note", "last_tool"), node("check", "time_over", "last_tool 15 minutes"), node("action", "say", "[chart] quiet since the last tool")
+    for a, b, port in ((used, note, None), (ticked, ask, None), (ask, line, "yes")):
+        console.run(["chart", "line", str(a), str(b), *(["--port", port] if port else [])], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+
+    def tick():
+        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=now[0], quiet_for=0.0))
+        app.runtime().deferred.drain()
+    tick()
+    assert not any("quiet since" in line for line in sent), "a time never noted has no since, so nothing is said"
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        assert app.container.get(NotedTimes).at(ValueName(made, "last_tool")) == 1000.0, "the time is noted by the engine's clock, for the workflow in the environment"
+    now[0] += 600
+    tick()
+    assert not any("quiet since" in line for line in sent), "ten minutes is not more than fifteen"
+    now[0] += 400
+    tick()
+    assert any("quiet since the last tool" in line for line in sent), "past fifteen minutes the other trigger's check answers yes"
+
+def test_await_and_a_command_moved_to_the_background_are_triggers(app):
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    console, charts = app.console(), app.container.get(Charts)
+    made = int(console.run(["chart", "new", "Waits and moves", "--on", "awaited"], USER).out.split()[1].rstrip(":"))
+    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, *(["--text", text] if text else []), "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    awaited, moved = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "awaited"), node("trigger", "command_moved", "")
+    waits, moves = node("action", "count_one", "waits"), node("action", "count_one", "moves")
+    console.run(["chart", "line", str(awaited), str(waits)], USER)
+    console.run(["chart", "line", str(moved), str(moves)], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["await", "the build"], AGENT)
+    folder = app.config.root / "c9"
+    folder.mkdir()
+    console.run(["shell", "split", "pytest -q", "--into", str(folder)], AGENT)
+    console.run(["shell", "moved", "c9", "pytest -q", "--file", "/tmp/out/c9"], AGENT)
+    ended = node("trigger", "command_ended", "")
+    console.run(["chart", "line", str(ended), str(node("action", "count_one", "ends"))], USER)
+    console.run(["shell", "ended", "c9", "--status", "0", "--file", "/tmp/out/c9"], AGENT)
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Counts).of_workflow(made) == {"waits": 1, "moves": 1, "ends": 1}, "journal await, a command moved to the background and its end each walk their own trigger"
+
+
+def test_task_moves_and_lines_said_are_what_values_reset_on(app):
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    console, charts = app.console(), app.container.get(Charts)
+    made = int(console.run(["chart", "new", "Task moves", "--on", "tasks.updated"], USER).out.split()[1].rstrip(":"))
+    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, *(["--text", text] if text else []), "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    updated = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tasks.updated")
+    taken, parked, blocked = node("check", "task_just_taken", ""), node("check", "task_just_parked", ""), node("check", "task_just_blocked", "")
+    for check, name in ((taken, "taken"), (parked, "parked"), (blocked, "blocked")):
+        console.run(["chart", "line", str(check), str(node("action", "count_one", name)), "--port", "yes"], USER)
+    console.run(["chart", "line", str(updated), str(taken)], USER)
+    console.run(["chart", "line", str(taken), str(parked), "--port", "no"], USER)
+    console.run(["chart", "line", str(parked), str(blocked), "--port", "no"], USER)
+    said = node("trigger", "line_said", "")
+    console.run(["chart", "line", str(said), str(node("action", "count_one", "said"))], USER)
+    speaking = node("action", "say", "[chart] a line about lines")
+    assert "would say a line on a path from Journal line said" in console.run(["chart", "line", str(said), str(speaking)], USER).err, "a path from a line said never says one, or it would start itself again"
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "park", "1", "after lunch"], AGENT)
+    console.run(["task", "resume", "1"], AGENT)
+    console.run(["task", "block", "1", "the designer"], AGENT)
+    console.run(["message", "send", "are you there?"], USER)
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        kept = app.container.get(Counts).of_workflow(made)
+    assert (kept["taken"], kept["parked"], kept["blocked"]) == (2, 1, 1), "a task taken in hand, by start or resume, parked and blocked each answer their own check on the row's trigger"
+    assert kept["said"] >= 1, "a line the journal said walks Journal line said"
+
+def test_a_workflow_holds_its_own_place_at_each_event_it_has_a_trigger_for(app):
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    made = int(console.run(["chart", "new", "Twice placed", "--on", "tool_finished"], USER).out.split()[1].rstrip(":"))
+    at_tool = charts.find(made).place_at("tool_finished")
+    second = int(console.run(["chart", "node", "trigger", "idle", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    assert charts.for_event("idle")[-1].id == made and charts.find(made).place_at("tool_finished") == at_tool, "a second trigger puts the workflow last at its event, its first place kept"
+    others = [c.id for c in charts.for_event("idle") if c.id != made and not c.locked]
+    locked = [c.id for c in charts.for_event("idle") if c.locked]
+    console.run(["chart", "order", "idle", *map(str, [*locked, made, *others])], USER)
+    assert [c.id for c in charts.for_event("idle") if not c.locked][0] == made and charts.find(made).place_at("tool_finished") == at_tool, "ordered first at one event, it stays where it was at the other"
+    console.run(["chart", "remove", str(second)], USER)
+    assert not charts.find(made).answers("idle") and charts.find(made).answers("tool_finished"), "its trigger gone, the workflow has no place at that event"
+
+def test_two_workflows_counting_one_name_keep_two_counts(app):
+    from journal.repositories.charts import Charts
+    from journal.repositories.environments import Environments
+    from journal.repositories.counts import Counts
+    console, charts = app.console(), app.container.get(Charts)
+    made = []
+    for title in ("First counter", "Second counter"):
+        chart = int(console.run(["chart", "new", title, "--on", "tasks.created"], USER).out.split()[1].rstrip(":"))
+        trigger = next(n.id for n in charts.nodes_of(charts.find(chart)) if n.key == "tasks.created")
+        one = int(console.run(["chart", "node", "action", "count_one", "--text", "tasks", "--in", str(chart)], USER).out.split()[1].rstrip(":"))
+        console.run(["chart", "line", str(trigger), str(one)], USER)
+        made.append(chart)
+    console.run(["task", "create", "one task"], USER)
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).of(1):
+        assert [app.container.get(Counts).of_workflow(n) for n in made] == [{"tasks": 1}, {"tasks": 1}], "one name in two workflows is two counts: a workflow's name never meets another's"
+    console.run(["environment", "create", "other"], USER)
+    console.run(["task", "create", "the other's task"], Where("other"))
+    console.run(["task", "create", "and another"], Where("other"))
+    app.runtime().deferred.drain()
+    other = app.container.get(Environments).named("other").id
+    with app.container.get(Scope).of(other):
+        assert app.container.get(Counts).of_workflow(made[0]) == {"tasks": 2}, "each environment keeps the workflow's values of its own"
+    with app.container.get(Scope).of(1):
+        assert app.container.get(Counts).of_workflow(made[0]) == {"tasks": 1}, "and another environment's events leave this one's as they were"
+
+def test_a_document_is_written_anew_from_a_file(app, tmp_path):
+    first, second = tmp_path / "first.md", tmp_path / "second.md"
+    first.write_text("## One\n\nthe first words")
+    second.write_text("## One\n\nthe words as ruled")
+    console = app.console()
+    made = re.search(r"doc (\d+):", console.run(["doc", "create", "A proposal", "--file", str(first), "--abstract", "what it proposes"], USER).out).group(1)
+    assert console.run(["doc", "update", made, "--file", str(second)], USER).out == f"doc {made} written anew: A proposal\n"
+    shown = console.run(["doc", "show", made, "--section", "1"], USER).out
+    assert "the words as ruled" in shown and "what it proposes" in shown, "the text is the file's, the title and the abstract kept"
+
+
+def test_the_upgrade_to_parts_stops_a_workflow_on_a_retired_check_and_carries_a_running_clock_across(app):
+    from journal.features.chart.seeds.shipped_chart import DRAWINGS_VERSION_KEY, ShippedChart
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    from journal.repositories.noted_times import NotedTimes
+    console, charts = app.console(), app.container.get(Charts)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    app.runtime().deferred.drain()
+    mine, trigger = own_workflow(console, charts, "idle", "ticked")
+    charts.add_node(charts.find(mine), Node(kind=NodeKind.CHECK, key="quiet_for_over", text="15 minutes"), Actor.user(1))
+    log = next(c for c in charts.shipped() if c.drawing == "working:idle:log")
+    logged_at = app.container.get(Machine).current("s1").logged_at
+    with app.container.get(Scope).of(1):
+        app.container.get(NotedTimes).forget(ValueName(log.id, "last_log"), Actor.system())
+    app.container.get(Settings).set(DRAWINGS_VERSION_KEY, 27, Actor.system())
+    app.container.get(ShippedChart).run()
+    assert charts.find(mine).title.endswith("(stopped, check quiet_for_over is no longer in the catalogue)") and not [n for n in charts.nodes_of(charts.find(mine)) if n.kind == NodeKind.TRIGGER], "a workflow on a retired check is stopped, its title saying which"
+    with app.container.get(Scope).of(1):
+        assert app.container.get(NotedTimes).at(ValueName(log.id, "last_log")) == logged_at, "the log time of the task in hand carries across, so the log ask goes on rather than starting over"
+
+
+def test_the_command_line_shows_the_counts_and_times_and_the_values_kept(app):
+    from journal.repositories.charts import Charts
+    console, charts = app.console(), app.container.get(Charts)
+    catalogue = console.run(["chart", "catalogue"], USER).out
+    head = catalogue.index("counts and times, what a workflow keeps between events:")
+    assert all(catalogue.index(f" {key} ") > head for key in ("count_one", "time_note", "time_over")) and catalogue.index(" say ") < head, "the steps on a workflow's own values are listed under a heading of their own"
+    made = int(console.run(["chart", "new", "Tasks made", "--on", "tasks.created"], USER).out.split()[1].rstrip(":"))
+    trigger = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tasks.created")
+    one = int(console.run(["chart", "node", "action", "count_one", "--text", "made", "--in", str(made)], USER).out.split()[1].rstrip(":"))
+    console.run(["chart", "line", str(trigger), str(one)], USER)
+    console.run(["task", "create", "a task"], USER)
+    app.runtime().deferred.drain()
+    assert "      values in main: made 1" in console.run(["chart", "show"], USER).out, "journal chart show prints each environment's values under the workflow"
+
+
+def test_what_the_review_of_plan_18_found_stays_fixed(app):
+    from journal.features.chart.seeds.shipped_chart import ShippedChart
+    from journal.models.node import Node
+    from journal.models.node_kind import NodeKind
+    from journal.repositories.charts import Charts
+    from journal.repositories.counts import Counts
+    from journal.support.title import LONGEST
+    console, charts = app.console(), app.container.get(Charts)
+    long = int(console.run(["chart", "new", "Ask about the background command after a long while of nothing at all", "--on", "ticked"], USER).out.split()[1].rstrip(":"))
+    charts.add_node(charts.find(long), Node(kind=NodeKind.CHECK, key="background_over", text="5 minutes"), Actor.user(1))
+    app.container.get(ShippedChart).run()
+    stopped = charts.find(long)
+    assert len(stopped.title) <= LONGEST and stopped.title.endswith("is no longer in the catalogue)"), "a long title stopped at boot is cut so the note fits, and the boot goes on"
+    assert stopped.id in [c.id for c in charts.for_event("ticked")], "a workflow with no trigger left keeps its place in the list of the event it was made for, so the order can still be saved"
+    with app.container.get(Scope).of(1):
+        counts = app.container.get(Counts)
+        first = counts.set(ValueName(long, "seen"), 0, Actor.system())
+        assert counts.set(ValueName(long, "seen"), 0, Actor.system()).updated_at == first.updated_at, "setting a count to what it holds writes nothing"
+
 
 def test_a_line_says_a_workflows_count_by_name(app):
     from journal.repositories.charts import Charts
@@ -4153,7 +4445,7 @@ def test_a_workflow_waits_at_a_count_until_it_reaches_its_number(app):
     console.run(["environment", "here"], AGENT)
     said = [json.dumps(hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": p})[1]) for p in ("a", "b", "c")]
     assert ["three reminders" in s for s in said] == [False, False, True], "it waits at the check until the count reaches three, then goes on"
-    assert "would say: [chart] three reminders" not in console.run(["chart", "try", "tool_finished", "--value", "reminders=0"], USER).out, "a trial with the count at nought, one more, would wait"
+    assert "would say: [chart] three reminders" not in console.run(["chart", "try", "tool_finished", "--value", "reminders=0"], USER).out, "a trial with the count at zero, one more, would wait"
     assert "three reminders" in console.run(["chart", "try", "tool_finished", "--value", "reminders=2"], USER).out, "a trial with the count at two, one more, goes on"
     assert "takes name=n" in console.run(["chart", "try", "tool_finished", "--value", "reminders"], USER).err
     from journal.support.scope import Scope
@@ -4184,21 +4476,23 @@ def test_editing_keeps_a_workflows_counts_and_clears_one_no_node_names(app):
     assert kept() == {}, "the count's last node removed, the count is cleared"
     with app.container.get(Scope).of(1):
         cards = [m.text for m in app.container.get(Messages).in_() if m.author == "system"]
-    assert any("The count reminders is no longer used in" in c for c in cards), "and the chat says so"
+    assert any("The value reminders is no longer used in" in c for c in cards), "and the chat says so"
 
-def test_the_canvas_refuses_a_count_named_like_a_reading_and_warns_of_one_nothing_counts(app):
-    from journal.support.validation import Validation
+def test_the_canvas_refuses_a_value_its_workflow_does_not_set(app):
     from journal.repositories.charts import Charts
     console, charts = app.console(), app.container.get(Charts)
     made, trigger = own_workflow(console, charts, "idle", "tool_finished")
-    refused = console.run(["chart", "node", "action", "count_one", "--text", "uses", "--in", str(made)], USER)
-    assert "uses is a reading of the journal's record" in refused.err, "a count may not take a reading's name"
-    check = int(console.run(["chart", "node", "check", "count_over", "--text", "reminders 3", "--in", str(made)], USER).out.split()[1].rstrip(":"))
-    console.run(["chart", "line", str(trigger), str(check)], USER)
-    reading = int(console.run(["chart", "node", "check", "count_over", "--text", "namings 3", "--in", str(made)], USER).out.split()[1].rstrip(":"))
-    console.run(["chart", "line", str(check), str(reading), "--port", "no"], USER)
-    warned = app.container.get(Validation).warnings(charts.find(made))
-    assert "nothing in this workflow starts or counts reminders, so it stays at nought" in warned and not any("namings" in w for w in warned), "a count nothing counts is warned of, a reading is not"
+    unset = console.run(["chart", "node", "check", "count_over", "--text", "reminders 3", "--in", str(made)], USER)
+    assert "reads the count reminders, which no step of this workflow sets" in unset.err, "a count no step of the workflow sets is refused: a workflow reads only its own"
+    unnoted = console.run(["chart", "node", "check", "time_over", "--text", "last_log 10 minutes", "--in", str(made)], USER)
+    assert "asks how long since last_log, which no step of this workflow notes" in unnoted.err, "and so is a time no step notes"
+    console.run(["chart", "node", "action", "count_one", "--text", "reminders", "--in", str(made)], USER)
+    assert console.run(["chart", "node", "check", "count_over", "--text", "reminders 3", "--in", str(made)], USER).code == 0, "once a step sets it, the check is the workflow's own"
+    assert "reads the count namings, which no step of this workflow sets" in console.run(["chart", "node", "check", "count_over", "--text", "namings 3", "--in", str(made)], USER).err, "a name the journal once read from its record is no longer a reading: it is a count like any other, the workflow's own"
+    assert "names no time" in console.run(["chart", "node", "action", "time_note", "--in", str(made)], USER).err, "a time step names its time, as a count step names its count"
+    assert "reminders is both a count and a time in this workflow" in console.run(["chart", "node", "action", "time_note", "--text", "reminders", "--in", str(made)], USER).err, "one name is a count or a time, not both"
+    setter = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "count_one")
+    assert "sets a value a check still reads" in console.run(["chart", "remove", str(setter)], USER).err, "the step that sets a value a check reads is not removed from under it"
 
 def test_a_workflow_reading_a_count_another_keeps_is_turned_off_at_boot(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
@@ -4209,15 +4503,37 @@ def test_a_workflow_reading_a_count_another_keeps_is_turned_off_at_boot(app):
     count = int(console.run(["chart", "node", "action", "count_start", "--text", "subs", "--in", str(keeper)], USER).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(start), str(count)], USER)
     reader, finish = own_workflow(console, charts, "idle", "tool_finished")
-    check = int(console.run(["chart", "node", "check", "count_over", "--text", "subs 2", "--in", str(reader)], USER).out.split()[1].rstrip(":"))
+    from journal.models.node import Node
+    check = charts.add_node(charts.find(reader), Node(kind=NodeKind.CHECK, key="count_over", text="subs 2"), Actor.user(1)).id
     say = int(console.run(["chart", "node", "action", "say", "--text", "[chart] two", "--in", str(reader)], USER).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(finish), str(check)], USER)
     console.run(["chart", "line", str(check), str(say), "--port", "yes"], USER)
     app.container.get(ShippedChart).run()
     read = charts.find(reader)
-    assert read.title.endswith("(off, reads another's count subs)"), "the reader says why it is off"
+    assert read.title.endswith("(off, reads subs, a value it does not keep)"), "the reader says why it is off"
     assert not [n for n in charts.nodes_of(read) if n.kind == NodeKind.TRIGGER] and [n for n in charts.nodes_of(charts.find(keeper)) if n.kind == NodeKind.TRIGGER], "its trigger is taken out, the keeper's stays"
-    assert not any("(off, reads another's count" in c.title for c in charts.shipped()), "no shipped workflow is turned off by it"
+    assert not any(", a value it does not keep)" in c.title for c in charts.shipped()), "no shipped workflow is turned off by it"
+
+def test_a_workflows_one_place_becomes_its_place_at_each_event_at_boot(tmp_path: Path, monkeypatch):
+    import sqlite3
+    monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
+    first = App(Config(tmp_path, port=0))
+    first.runtime().start()
+    first.runtime().stop()
+    db = sqlite3.connect(first.config.database)
+    db.execute("ALTER TABLE charts ADD COLUMN place INTEGER")
+    db.execute("UPDATE charts SET place = 7, places = NULL")
+    db.execute("DELETE FROM migrations WHERE number >= 16")
+    db.commit()
+    db.close()
+    second = App(Config(tmp_path, port=0))
+    try:
+        from journal.repositories.charts import Charts
+        charts = second.container.get(Charts)
+        assert all(c.places == {**{n.key: 7 for n in charts.nodes_of(c) if n.kind == "trigger"}, **({c.event: 7} if c.event else {})} for c in charts.all()), "the place a workflow had is its place at each event it has a trigger for and at the one it was made for"
+    finally:
+        second.runtime().stop()
+
 
 def test_counts_of_the_old_shape_are_cleared_at_boot(tmp_path: Path, monkeypatch):
     import sqlite3
@@ -4226,8 +4542,8 @@ def test_counts_of_the_old_shape_are_cleared_at_boot(tmp_path: Path, monkeypatch
     first.runtime().start()
     first.runtime().stop()
     db = sqlite3.connect(first.config.database)
-    for name in ("subs", "charts:4:subs"):
-        db.execute("INSERT INTO counts (created_at, created_by, updated_at, updated_by, environment_id, session, name, value) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', 1, 's1', ?, 2)", (name,))
+    for name, value in (("subs", 2), ("charts:4:subs", 2), ("charts:4:subs", 5)):
+        db.execute("INSERT INTO counts (created_at, created_by, updated_at, updated_by, environment_id, name, value) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', 1, ?, ?)", (name, value))
     db.execute("DELETE FROM migrations WHERE number >= 6")
     db.commit()
     db.close()
@@ -4235,7 +4551,7 @@ def test_counts_of_the_old_shape_are_cleared_at_boot(tmp_path: Path, monkeypatch
     second.runtime().start()
     try:
         from journal.repositories.counts import Counts
-        assert [c.name for c in second.container.get(Counts).across_environments()] == ["charts:4:subs"], "a count named without its workflow is cleared, a workflow's own kept"
+        assert [(c.name, c.value) for c in second.container.get(Counts).across_environments()] == [("charts:4:subs", 5)], "a count named without its workflow is cleared, a workflow's own kept, and of two agents' counts by one name the highest carries across as the environment's"
     finally:
         second.runtime().stop()
 
@@ -4923,7 +5239,7 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
     assert machine.current("s1").name == "stuck"
     send_back()
     assert machine.current("s1").name == "working", "back from being stuck"
-    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     assert machine.current("s1").name == "waiting"
     send_back()
     assert machine.current("s1").name == "working", "back from a question"
@@ -5028,35 +5344,6 @@ def test_the_content_checks_read_the_tool_the_prompt_the_context_and_the_clock_f
     assert not checks.answer("time_between", tick(noon), "late"), "a span that is no span answers no"
 
 
-def test_the_counts_the_inbox_reminders_read_come_from_the_record_and_no_workflow_keeps_them(app):
-    from journal.events.agent.tool_starting import ToolStarting
-    from journal.features.chart.support.checks import Checks
-    from journal.features.chart.support.context import Context
-    from journal.repositories.charts import Charts
-    from journal.support.scope import Scope
-    console, checks, charts = app.console(), app.container.get(Checks), app.container.get(Charts)
-    assert not any(n.key in ("count_start", "count_one") for c in charts.shipped() for n in charts.nodes_of(c)), "no shipped workflow keeps a count: the ones they read come from the record"
-    hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
-    drain = lambda: app.runtime().deferred.drain()
-    at = lambda: Context(event=ToolStarting(tool="Read", input={}, session="s1", environment_id=1), session="s1", environment_id=1, state=app.container.get(Machine).current("s1"))
-    with app.container.get(Scope).of(1):
-        assert checks.count_of(at(), "uses") == 0 and checks.count_of(at(), "owed") == 0 and checks.count_of(at(), "namings") == 0, "nothing unread, nothing owed: nought"
-    console.run(["message", "send", "one"], USER)
-    drain()
-    for _ in range(3):
-        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a"})
-    with app.container.get(Scope).of(1):
-        assert checks.count_of(at(), "uses") == 3, "tool uses since the newest unread message came"
-        assert checks.count_of(at(), "namings") >= 1, "the inbox was named since it came"
-    console.run(["message", "read", "1"], AGENT)
-    drain()
-    for _ in range(2):
-        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b"})
-    with app.container.get(Scope).of(1):
-        assert checks.count_of(at(), "uses") == 0 and checks.count_of(at(), "owed") == 2, "read: nothing unread, two uses since the first unanswered was read"
-
-
 def test_a_shipped_title_says_its_settings_number_and_a_changed_setting_retitles_it_at_boot(app):
     from journal.features.chart.seeds.shipped_chart import ShippedChart
     from journal.repositories.charts import Charts
@@ -5064,7 +5351,7 @@ def test_a_shipped_title_says_its_settings_number_and_a_changed_setting_retitles
     named = lambda: next(c for c in charts.shipped() if c.drawing == ":tool_starting:inbox")
     assert named().title == "Name the unread messages every 3 tool uses", "the title says the number, never N"
     app.container.get(Settings).save(Setting(environment_id=0, key="messages.remind_every", value=5), Actor.system())
-    ShippedChart.__init__(app.container.get(ShippedChart), *[getattr(app.container.get(ShippedChart), a) for a in ("charts", "catalogue", "settings", "states", "agents", "counts", "registry")])
+    ShippedChart.__init__(app.container.get(ShippedChart), *[getattr(app.container.get(ShippedChart), a) for a in ("charts", "catalogue", "settings", "states", "agents", "values", "registry", "seeding")])
     app.container.get(ShippedChart).run()
     assert named().title == "Name the unread messages every 5 tool uses", "a changed setting retitles the workflow at boot"
     charts.save(named().with_(title="My reminder"), Actor.system())
@@ -5190,7 +5477,7 @@ def test_a_quiet_workflow_walks_after_the_reply_and_a_walk_ended_before_it_ends_
     app.runtime().deferred.drain()
     assert any("typed after the reply" in t for t in typed), "it walks after the reply"
     first = int(console.run(["chart", "new", "Ends the run", "--on", "subagent_started"], USER).out.split()[1].rstrip(":"))
-    charts.save(charts.find(first).with_(place=-1000), USER.actor)
+    charts.save(charts.find(first).placed(charts.find(first).event, -1000), USER.actor)
     console.run(["chart", "line", str(trigger(first)), str(add(first, "action", "stop_here"))], USER)
     typed.clear()
     hook(app, "SubagentStart", agent_id="a2")
@@ -5313,7 +5600,6 @@ def test_secrets_kept_as_files_in_the_project_folder_become_rows_once(app):
     assert len(rows) == 1, "brought in once, however often the journal boots"
     flespi = rows[0]
     assert flespi.title == "flespi" and flespi.kind == "api key" and flespi.filled == ("key",) and flespi.programs == ("curl",) and flespi.brief == "The flespi token, used with curl." and flespi.used_at is not None and not flespi.waiting()
-
 
 
 def test_the_agent_is_told_when_the_user_allows_a_program(app, monkeypatch):
@@ -5445,17 +5731,16 @@ def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app):
 
 
 def test_an_agent_waiting_in_auto_mode_is_pointed_to_the_next_task_after_a_quiet_minute(app, monkeypatch):
-    from journal.events.agent.ticked import Ticked
-    from journal.events.bus import Bus
     typed = []
     catch_typed(app, monkeypatch, typed)
+    drive_the_clock(app, monkeypatch)
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "create", "the header"], AGENT)
     console.run(["await", "the suite"], AGENT)
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=70.0))
+    tick_after(app, 70.0)
     app.runtime().deferred.drain()
     assert any("while you wait for the suite, task 2 is next" in line and "waiting is fine" in line for line in typed), typed
 
@@ -5992,7 +6277,7 @@ def test_a_plan_moves_on_whoever_closes_its_task_and_an_approved_plan_with_every
     console.run(["environment", "here"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1", "--how", "the user closed it"], USER)
-    assert app.container.get(Tasks).find(2).state == "started" and app.container.get(Machine).current("s1") == FollowingPlan(plan_id=1, task_id=2), "the user's close moves the agent's plan on"
+    assert app.container.get(Tasks).find(2).state == "started" and app.container.get(Machine).current("s1") == FollowingPlan(plan_id=1, task_id=2, moved_from=1), "the user's close moves the agent's plan on"
     console.run(["task", "done", "2", "--how", "h"], AGENT)
     console.run(["task", "start", "3"], USER)
     console.run(["task", "done", "3", "--how", "h"], USER)
@@ -6267,25 +6552,22 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, t
 
 
 def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_most_every_five(app, monkeypatch, tmp_path):
-    from datetime import datetime, timedelta, timezone
-    from journal.db.connection import Connection
-    from journal.events.agent.ticked import Ticked
-    from journal.events.bus import Bus
-    from journal.models.command_output import CommandOutput
     from journal.repositories.command_outputs import CommandOutputs
     typed = []
     catch_typed(app, monkeypatch, typed)
+    drive_the_clock(app, monkeypatch)
     hook(app, "SessionStart")
-    folder = tmp_path / "chain"
+    app.console().run(["environment", "here"], AGENT)
+    folder = app.config.root / "c1"
     folder.mkdir()
     outputs = app.container.get(CommandOutputs)
-    running = outputs.save(CommandOutput(environment_id=1, chain="c1", command="python3 -m pytest -q", session="s1", folder=str(folder), moved=True), Actor.system())
-    tick = lambda: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=time.time(), quiet_for=30.0))
-    tick()
+    app.console().run(["shell", "split", "python3 -m pytest -q", "--into", str(folder)], AGENT)
+    app.console().run(["shell", "moved", "c1", "python3 -m pytest -q", "--file", str(folder / "out")], AGENT)
+    running = outputs.of_chain("c1")
+    tick_after(app, 30.0)
     assert not any("still running" in line for line in typed), "a command moved to the background a moment ago is left to run"
-    app.container.get(Connection).execute("UPDATE command_outputs SET created_at = ? WHERE id = ?", ((datetime.now(timezone.utc) - timedelta(minutes=6)).isoformat(), running.id))
-    tick()
-    tick()
+    tick_after(app, 360.0)
+    tick_after(app, 370.0)
     named = [line for line in typed if "still running" in line]
     assert len(named) == 1 and f"output {running.id} still running" in named[0] and "pytest" not in named[0], "past five minutes the agent is told to look at it, once until five more pass"
     (folder / "pid").write_text(str(os.getpid()))
@@ -6553,6 +6835,8 @@ def test_a_link_in_a_commands_output_is_suggested_as_a_pin_and_again_only_after_
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     made = lambda: hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "gh pr create"}, tool_response={"stdout": "https://github.com/acme/shop/pull/27"})[1]
+    edited = hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": "a.py"}, tool_response={"originalFile": "see https://example.com/docs/one"})[1]
+    assert "is not pinned" not in str(edited), "an edit's answer carries the file it changed, so its links are never suggested"
     first = made()
     assert "https://github.com/acme/shop/pull/27 is not pinned" in str(first), "a pull request's address in a command's output is suggested as a pin"
     assert "is not pinned" not in str(made()), "not again at once"
@@ -6575,10 +6859,14 @@ def test_dispatches_past_the_most_at_once_wait(app):
     refused = console.run(["worker", "dispatch", "Ada Byron", "write the lexer", "--profile", "medior", "--model", "sonnet"], AGENT)
     assert refused.code == 1 and "1 workers are out, the most at once" in refused.err, "a worker past the most out at once is refused"
     app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
-    hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "Explore"})
+    assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "Explore", "model": "haiku"})[0] == 200, "the first under a most of one passes: the start being judged is not counted among the running"
     hook(app, "SubagentStart", agent_id="a1", agent_type="Explore")
-    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the routes", "prompt": "map", "subagent_type": "Explore"})
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the routes", "prompt": "map", "subagent_type": "Explore", "model": "haiku"})
     assert status == 409 and "1 subagents are running, the most at once" in body["error"], "a subagent past the most at once is held"
+    app.container.get(Settings).save(Setting(environment_id=0, key="workers.most_subagents", value=2), Actor.user(1))
+    assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the views", "prompt": "map", "subagent_type": "Explore", "model": "haiku"})[0] == 200, "one running and a second passes a most of two"
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the tests", "prompt": "map", "subagent_type": "Explore", "model": "haiku"})
+    assert status == 409 and "2 subagents are running" in body["error"], "two running and a third is held"
 
 
 def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(app):

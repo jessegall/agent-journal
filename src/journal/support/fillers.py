@@ -12,6 +12,7 @@ from journal.support.task_briefing import TaskBriefing
 from journal.support.running import Running
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.stop_words import ago
+from journal.engine.clock import Clock
 from journal.features.tasks.states.working import Working
 from journal.models.question import Question
 from journal.models.task_state import TaskState
@@ -39,14 +40,20 @@ from journal.repositories.command_outputs import CommandOutputs
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 VALUE = re.compile(r"\{\{value\.(\w+)\}\}")
 """A count of the workflow being walked, or a reading, by its name: {{value.uses}}."""
+MINUTES = re.compile(r"\{\{minutes\.(\w+)\}\}")
+"""The whole minutes since the workflow being walked noted the time by its name: {{minutes.waiting_since}}."""
+LOGGED = re.compile(r"\{\{logged\.(\w+)\}\}")
+"""When the workflow being walked last noted a log's time by its name, in the stop lines' words, or that nothing was logged: {{logged.last_log}}."""
+AGO = re.compile(r"\{\{ago\.(\w+)\}\}")
+"""How long ago the workflow being walked noted the time by its name, in the stop lines' words: {{ago.last_log}}."""
 
 
 class Fillers:
     """What a node's text may name from the rows, as {{name}}: one method per placeholder, named after it; an unknown one is left as written."""
 
     def __init__(self, tasks: Tasks, plans: Plans, messages: Messages, counts: Counts, agents: Agents, requiring: Requiring, files: SkillFiles, registry: Registry,
-                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue, briefing: TaskBriefing, outputs: CommandOutputs) -> None:
-        self.outputs = outputs
+                 rules: Rules, facts: Facts, reminders: Reminders, questions: Questions, environments: Environments, chosen: ChosenVoice, checks: Checks, task_logs: TaskLogs, config: Config, running: Running, workers: Workers, states: StatesCatalogue, briefing: TaskBriefing, outputs: CommandOutputs, clock: Clock) -> None:
+        self.outputs, self.clock = outputs, clock
         self.briefing = briefing
         self.tasks, self.plans, self.messages, self.counts = tasks, plans, messages, counts
         self.workers, self.states = workers, states
@@ -68,7 +75,14 @@ class Fillers:
 
     def fill(self, text: str, ctx: Context) -> str:
         counted = VALUE.sub(lambda m: str(self.checks.count_of(ctx, m.group(1))), text)
+        counted = MINUTES.sub(lambda m: str((self.checks.seconds_since(ctx, m.group(1)) or 0) // 60), counted)
+        counted = LOGGED.sub(lambda m: self.logged_since(ctx, m.group(1)), counted)
+        counted = AGO.sub(lambda m: ago(self.clock.now() - (self.checks.seconds_since(ctx, m.group(1)) or 0), self.clock.now()), counted)
         return PLACEHOLDER.sub(lambda m: str(getattr(self, m.group(1))(ctx)) if hasattr(self, m.group(1)) else m.group(0), counted)
+
+    def logged_since(self, ctx: Context, name: str) -> str:
+        since = self.checks.seconds_since(ctx, name)
+        return "nothing logged yet" if since is None else f"last logged {ago(self.clock.now() - since, self.clock.now())}"
 
     def env(self, ctx: Context) -> str:
         """The environment's name."""
@@ -222,11 +236,7 @@ class Fillers:
         state = self.state(ctx)
         if not isinstance(state, Working):
             return ""
-        return f"last logged {ago(state.logged_at)}" if state.logged_at else "nothing logged yet"
-
-    def task_edits(self, ctx: Context) -> str:
-        """The writes since the task in hand was logged, read from the journal's own record."""
-        return str(self.checks.derived_edits(ctx)) if ctx.session else "0"
+        return f"last logged {ago(state.logged_at, self.clock.now())}" if state.logged_at else "nothing logged yet"
 
     def log_command(self, ctx: Context) -> str:
         """The command that logs the task in hand."""
@@ -255,10 +265,6 @@ class Fillers:
 
     def background_outputs(self, ctx: Context) -> str:
         return ", ".join(str(o.id) for o in self.outputs.in_background(ctx.session))
-
-    def quiet_minutes(self, ctx: Context) -> str:
-        """How many minutes the agent has been quiet, at a tick."""
-        return str(int(ctx.event.quiet_for // 60)) if isinstance(ctx.event, Ticked) else "0"
 
     def worker_n(self, ctx: Context) -> str:
         """The number of the worker a worker event is about."""

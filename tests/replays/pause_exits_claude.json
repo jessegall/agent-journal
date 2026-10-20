@@ -12,7 +12,12 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -20,12 +25,18 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
-      "read": [
-        {
-          "179": 0
-        }
-      ]
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
     },
     {
       "name": "a stop back at work",
@@ -37,15 +48,40 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "113": 0,
+          "114": 0
+        }
+      ]
     },
     {
       "name": "stuck",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -53,19 +89,35 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
-      "read": [
-        {
-          "179": 0
-        }
-      ]
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
     },
     {
       "name": "waiting on a question",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -81,15 +133,40 @@
         "chart.line",
         "tasks.carry_on"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 8,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "113": 0,
+          "114": 0
+        }
+      ]
     },
     {
       "name": "awaiting a worker",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 8,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -108,8 +185,23 @@
         "workers.reports_waiting",
         "tasks.carry_on"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 12,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "113": 0,
+          "114": 0
+        }
+      ]
     },
     {
       "name": "running a sequence",
@@ -121,8 +213,23 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 13,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "113": 0,
+          "114": 0
+        }
+      ]
     },
     {
       "name": "the last step ends the sequence",
@@ -134,8 +241,23 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 14,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "113": 0,
+          "114": 0
+        }
+      ]
     }
   ]
 }

@@ -4,7 +4,7 @@ from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 
 
-QUIET = ("type", "show_card", "start_sequence", "count_start", "count_begin", "count_one")
+QUIET = ("type", "show_card", "start_sequence", "count_start", "count_begin", "count_one", "time_note")
 """The actions that neither change the hook's answer nor move the agent: a workflow of these alone walks after the reply, so a workflow that only counts puts no write on the hook's path."""
 
 

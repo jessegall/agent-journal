@@ -43,22 +43,23 @@ class Charts(Repository[Chart]):
         return next((c for c in self.for_event(event) if c.state == state), None)
 
     def for_event(self, event: str) -> list[Chart]:
-        """Every workflow that answers the event, its first event or one it holds another trigger for, in the order they run."""
-        return sorted((c for c in self.all() if c.event == event or event in self.graph(c).triggers), key=lambda c: (c.place, c.id))
+        """Every workflow that holds a trigger for the event, in the order they run at it."""
+        return sorted((c for c in self.all() if c.answers(event)), key=lambda c: (c.place_at(event), c.id))
 
     def reorder(self, event: str, ids: list[int], by: Actor) -> list[Chart]:
-        """The event's workflows in the order given, each that moved saved with its new place and one more revision, as the actor."""
+        """The event's workflows in the order given, each that moved saved with its new place and one more revision, as the actor, all in one write."""
         standing = {c.id: c for c in self.for_event(event)}
         placed = []
-        for place, number in enumerate(ids):
-            chart = standing[number]
-            placed.append(self.save(chart.with_(place=place).saved_again(), by) if chart.place != place else chart)
+        with self.connection.transaction():
+            for place, number in enumerate(ids):
+                chart = standing[number]
+                placed.append(self.save(chart.placed(event, place).saved_again(), by) if chart.place_at(event) != place else chart)
         self._graphs.clear()
         return placed
 
     def next_place(self, event: str) -> int:
-        """The place after the last workflow of the event, never before nought: the locked and the Always ones sit below it, and a new one comes after everything."""
-        return max([c.place for c in self.for_event(event)] + [-1]) + 1 if any(c.place >= 0 for c in self.for_event(event)) else 0
+        """The place after the last workflow of the event, zero for the first: a new one comes after everything."""
+        return max([c.place_at(event) for c in self.for_event(event)] + [-1]) + 1
 
     def remove(self, chart: Chart, by: Actor) -> None:
         for node in self.nodes_of(chart):
@@ -80,12 +81,28 @@ class Charts(Repository[Chart]):
         added = self.nodes.save(node, by)
         self.links.save(Link(source=Ref.to(added), target=Ref.to(chart), kind=NODE_OF), by)
         self._graphs.clear()
+        if added.kind == NodeKind.TRIGGER:
+            self.placed_by_triggers(chart, by)
         return added
 
     def remove_node(self, node: Node, by: Actor) -> None:
+        chart = self.chart_of(node) if node.kind == NodeKind.TRIGGER else None
         self.links.remove_all_of(node)
         self.nodes.delete(node, by)
         self._graphs.clear()
+        if chart is not None:
+            self.placed_by_triggers(chart, by)
+
+    def placed_by_triggers(self, chart: Chart, by: Actor) -> Chart:
+        """The workflow placed at each event it holds a trigger for, and always at the event it was made for, so one turned off keeps its place in that list: a new trigger's event at the end of its list, another event whose trigger is gone no longer placed."""
+        standing = self.find(chart.id)
+        events = {n.key for n in self.nodes_of(standing) if n.kind == NodeKind.TRIGGER} | ({standing.event} if standing.event else set())
+        settled = standing
+        for event in sorted(events - set(standing.places)):
+            settled = settled.placed(event, self.next_place(event))
+        for event in set(standing.places) - events:
+            settled = settled.unplaced(event)
+        return self.save(settled, by) if settled.places != standing.places else standing
 
     def connect(self, source: Node, target: Node, port: str, by: Actor) -> Link:
         """One line per port: a new line from a port that has one takes its place."""

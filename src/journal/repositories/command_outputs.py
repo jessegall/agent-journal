@@ -19,10 +19,6 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def in_background(self, session: str) -> list[CommandOutput]:
         return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if self.is_running(Path(o.folder))]
 
-    def in_background_over(self, session: str, seconds: int) -> list[CommandOutput]:
-        now = datetime.now(timezone.utc)
-        return [o for o in self.in_background(session) if (now - o.created_at).total_seconds() >= seconds]
-
     @staticmethod
     def is_running(folder: Path) -> bool:
         if not folder.is_dir() or (folder / "done").is_file():

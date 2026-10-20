@@ -6,7 +6,11 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0
+      },
       "read": []
     },
     {
@@ -27,7 +31,12 @@
         "briefing.waiting",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 7,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0
+      },
       "read": []
     }
   ]

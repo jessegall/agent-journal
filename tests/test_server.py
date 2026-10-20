@@ -209,6 +209,8 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         assert call(server, "GET", "/journal/project-files/file?path=hello.py")[1]["lines"] == 1
         assert "diff" in call(server, "GET", "/journal/project-files/diff?path=hello.py")[1]
         assert call(server, "GET", "/journal/project-files/find?q=hello")[1][0]["name"] == "hello.py"
+        root = [entry["name"] for entry in call(server, "GET", "/journal/project-files")[1]]
+        assert "hello.py" in root and not any(name.startswith(".") for name in root), "the Code page's tree opens on the project's root, its hidden folders left out"
         listed = call(server, "GET", f"/journal/messages?ids={n}")[1]["rows"]
         assert [r["id"] for r in listed] == [n]
     finally:
@@ -474,6 +476,8 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         tasks = next(f for f in manifest["features"] if f["name"] == "tasks")
         assert [s["name"] for s in tasks["options"]] == ["auto", "first_nudge_after", "name_every", "log_after"], "a feature's options, in its words"
         assert all(f in named for f in ("messages", "shell", "voices")) and "kanban" not in named, "version 3's leftovers are gone"
+        assert "faults" not in named, "slow requests are judged only in the journal's own checkout, so another project's settings never show them"
+        assert next(f for f in manifest["features"] if f["name"] == "pausing")["fixed"], "pausing is no setting: the pause button is always there"
         assert {g["key"] for g in manifest["groups"]} == {*named, "project"}, "one group per feature, and the System tab's own"
         status, tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": 60}})
         assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"
@@ -596,14 +600,14 @@ def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude
 
 def test_an_events_workflows_are_put_in_order_by_the_user_and_a_stale_order_names_who_saved_first(server):
     status, read = call(server, "GET", "/journal/chart")
-    stops = sorted([w for w in read["workflows"] if w["event"] == "idle"], key=lambda w: w["place"])
+    stops = sorted([w for w in read["workflows"] if "idle" in w["places"]], key=lambda w: w["places"]["idle"])
     status, mine = call(server, "POST", "/journal/chart", {"state": "", "trigger": "idle", "title": "Always at a stop"})
-    assert status == 201 and mine["place"] > stops[-1]["place"], "a new workflow takes the last place of its event"
+    assert status == 201 and mine["place"] > stops[-1]["places"]["idle"], "a new workflow takes the last place of its event"
     rows = [{"id": w["id"], "revision": w["revision"]} for w in stops]
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": mine["revision"]}] + rows})
-    assert status == 200 and [w["id"] for w in body["workflows"]][0] == mine["id"] and body["workflows"][0]["place"] == 0, "dragged first, it runs first"
-    moved = next(w for w in body["workflows"] if w["id"] == mine["id"])
-    assert moved["revision"] == mine["revision"] + 1 and all(w["revision"] == r["revision"] + 1 for w, r in zip(body["workflows"][1:], rows)), "each workflow that moved has one more revision"
+    assert status == 200 and [w["id"] for w in body["order"]][0] == mine["id"] and body["order"][0]["place"] == 0, "dragged first, it runs first"
+    moved = next(w for w in body["order"] if w["id"] == mine["id"])
+    assert moved["revision"] == mine["revision"] + 1 and all(w["revision"] == r["revision"] + 1 for w, r in zip(body["order"][1:], rows)), "each workflow that moved has one more revision"
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": rows + [{"id": mine["id"], "revision": mine["revision"]}]})
     assert status == 409 and "changed since you read it" in body["error"] and "saved it first" in body["error"], "an order over a stale list is refused, naming who saved first"
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": moved["revision"]}]})
@@ -753,8 +757,8 @@ def test_where_each_agent_stands_in_a_workflow_is_served(server):
     call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
     status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Counting"})
     trigger = made["nodes"][0]["id"]
-    nodes = [*made["nodes"], {"id": "one", "kind": "action", "key": "count_one", "text": "reminders"}, {"id": "enough", "kind": "check", "key": "count_over", "text": "reminders 3"}, {"id": "uses", "kind": "check", "key": "count_over", "text": "uses 5"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] enough"}]
-    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "enough"}, {"from": "enough", "to": "uses", "port": "no"}, {"from": "enough", "to": "say", "port": "yes"}, {"from": "uses", "to": "say", "port": "yes"}]
+    nodes = [*made["nodes"], {"id": "one", "kind": "action", "key": "count_one", "text": "reminders"}, {"id": "enough", "kind": "check", "key": "count_over", "text": "reminders 3"}, {"id": "uses", "kind": "check", "key": "count_over", "text": "reminders 5"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] enough"}, {"id": "seen", "kind": "action", "key": "time_note", "text": "seen"}]
+    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "seen"}, {"from": "seen", "to": "enough"}, {"from": "enough", "to": "uses", "port": "no"}, {"from": "enough", "to": "say", "port": "yes"}, {"from": "uses", "to": "say", "port": "yes"}]
     status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
     assert status == 200, saved
     for path in ("a", "b"):
@@ -764,8 +768,32 @@ def test_where_each_agent_stands_in_a_workflow_is_served(server):
     standing = call(server, "GET", f"/journal/chart/{made['id']}/standing")[1]
     agent = standing["agents"][0]
     assert agent["counts"] == {"reminders": 2} and agent["waits"] is True and agent["port"] == "no", "the agent waits at the last check's No with its count"
-    assert "uses" in agent["readings"] and "uses" in standing["readings"] and standing["readings"]["uses"], "a reading a check compares is served with what it counts"
+    assert list(agent["times"]) == ["seen"] and agent["times"]["seen"] >= 0, "the workflow's times are served, each as the seconds since it was noted"
     assert {"number": 3, "setting": ""} in standing["limits"].values() and {"number": 5, "setting": ""} in standing["limits"].values(), "each count check's number is served"
+
+
+def test_a_workflow_with_two_triggers_is_listed_at_each_its_values_are_served_and_a_run_names_its_event(server):
+    call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
+    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Seen tools"})
+    trigger = made["nodes"][0]["id"]
+    nodes = [*made["nodes"], {"id": "tick", "kind": "trigger", "key": "ticked", "text": ""}, {"id": "one", "kind": "action", "key": "count_one", "text": "seen"}, {"id": "noted", "kind": "action", "key": "time_note", "text": "last_seen"}, {"id": "many", "kind": "check", "key": "count_over", "text": "seen 100"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] a hundred tools"}]
+    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "noted"}, {"from": "noted", "to": "many"}, {"from": "many", "to": "say", "port": "yes"}]
+    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
+    assert status == 200, saved
+    listed = next(w for w in call(server, "GET", "/journal/chart")[1]["workflows"] if w["id"] == made["id"])
+    assert set(listed["places"]) == {"tool_finished", "ticked"}, "a workflow with two triggers has a place at each of its events"
+    call(server, "POST", "/hooks/claude", {"hook_event_name": "PostToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a"}})
+    import time
+    for _ in range(30):
+        standing = call(server, "GET", f"/journal/chart/{made['id']}/standing")[1]
+        if standing["values"]:
+            break
+        time.sleep(0.1)
+    values = {v["name"]: v for v in standing["values"]}
+    assert values["seen"]["kind"] == "count" and values["seen"]["value"] == 1 and values["seen"]["set_at"] and values["last_seen"]["kind"] == "time", "the environment's counts and times are served, when each was set and by which steps"
+    assert values["seen"]["set_by"] == [n["id"] for n in saved["nodes"] if n["key"] == "count_one"]
+    runs = call(server, "GET", "/journal/chart/runs?last=20")[1]["runs"]
+    assert any(r["event"] == "tool_finished" and r["event_title"] == "Post tool use" and "Seen tools" in r["titles"] for r in runs), "a run names the event that started it"
 
 
 def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_report(tmp_path: Path):

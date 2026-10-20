@@ -15,7 +15,12 @@
         "voices.voice",
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0
+      },
       "read": []
     },
     {
@@ -28,7 +33,12 @@
       "nudges": [
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 7,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0
+      },
       "read": []
     },
     {
@@ -44,7 +54,12 @@
         "messages.new",
         "messages.new"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 10,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0
+      },
       "read": []
     },
     {
@@ -57,7 +72,12 @@
       "nudges": [
         "messages.many"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 11,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0
+      },
       "read": []
     }
   ]

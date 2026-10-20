@@ -15,7 +15,7 @@ class SkillController:
 
     def index(self, request: Request) -> Response:
         agent = next((a for a in self.agents.everywhere() if str(a.id) == request.query.get("agent", "")), None)
-        loaded = set((agent.skills_loaded or {}).keys()) if agent else set()
+        loaded = set(agent.skills_loaded.keys()) if agent else set()
         return Response.json([{"name": skill.name, "description": skill.description, "loaded": skill.name in loaded} for skill in self.registry.skills()])
 
     def show(self, request: Request) -> Response:

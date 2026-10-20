@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from journal.models.model import Model
 
@@ -11,11 +11,11 @@ class Chart(Model):
     shipped: bool = False
     """True for a workflow the journal ships: it carries the conduct of its state at its event and can be reset to its shipped drawing."""
     event: str = ""
-    """The event this workflow answers, the key of its one trigger."""
+    """The event this workflow was made for, the key of its first trigger, which a shipped drawing is known by."""
     state: str = ""
     """The state this workflow is for, by name; empty means always, whatever the agent is doing."""
-    place: int = 0
-    """Its place in its trigger's list, lower first: the order the workflows of one event run in, which the user drags."""
+    places: dict = field(default_factory=dict)
+    """Its place in each event's list it holds a trigger for, lower first: the order the workflows of one event run in, which the user drags, each event its own."""
     drawing: str = ""
     """The name of the shipped drawing this workflow came from, the state and the event it was shipped for; empty on one of the user's own."""
     drawn_version: int = 0
@@ -29,3 +29,15 @@ class Chart(Model):
 
     def saved_again(self) -> "Chart":
         return self.with_(revision=self.revision + 1)
+
+    def place_at(self, event: str) -> int:
+        return self.places[event]
+
+    def answers(self, event: str) -> bool:
+        return event in self.places
+
+    def placed(self, event: str, place: int) -> "Chart":
+        return self.with_(places={**self.places, event: place})
+
+    def unplaced(self, event: str) -> "Chart":
+        return self.with_(places={key: place for key, place in self.places.items() if key != event})

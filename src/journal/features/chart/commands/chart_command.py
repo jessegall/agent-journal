@@ -15,14 +15,21 @@ from journal.models.chart import Chart
 from journal.models.node import Node
 from journal.models.node_kind import NodeKind
 from journal.repositories.charts import Charts
+from journal.repositories.counts import Counts
+from journal.repositories.environments import Environments
+from journal.repositories.noted_times import NotedTimes
+from journal.engine.clock import Clock
+from journal.features.chart.support.checks import VALUE_STEPS
 from journal.support.scope import Scope
+from journal.support.value_name import ValueName
 
 
 class ChartCommand(Command):
     noun = "chart"
 
-    def __init__(self, charts: Charts, catalogue: ChartCatalogue, validation: Validation, shipped: ShippedChart, trial: Trial, scope: Scope) -> None:
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, validation: Validation, shipped: ShippedChart, trial: Trial, scope: Scope, counts: Counts, times: NotedTimes, environments: Environments, clock: Clock) -> None:
         self.charts, self.entries, self.validation, self.shipped, self.trial, self.scope = charts, catalogue, validation, shipped, trial, scope
+        self.counts, self.times, self.environments, self.clock = counts, times, environments, clock
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "show", "every workflow: its nodes and lines")
@@ -57,27 +64,30 @@ class ChartCommand(Command):
         try_ = self.verb(verbs, "try", "a dry run for an agent event here, or a row event with its row: the path and what it would do, nothing done")
         try_.add_argument("trigger")
         try_.add_argument("--row", type=int, default=0, help="the row a row event is about, such as the message's number for messages.created")
-        try_.add_argument("--quiet", type=float, default=None, help="how long the agent has been quiet, in seconds, for ticked")
-        try_.add_argument("--edits", type=int, default=None, help="the edits since the task in hand was logged, instead of the live count")
+        try_.add_argument("--quiet", type=float, default=None, help="seconds since every time a workflow noted, and for ticked how long the agent has been quiet")
         try_.add_argument("--unread", type=int, default=None, help="how many messages are unread, instead of the live inbox")
-        try_.add_argument("--value", action="append", default=[], help="a workflow's count as name=n, instead of the agent's own; may be given more than once")
+        try_.add_argument("--value", action="append", default=[], help="a workflow's count as name=n, instead of the environment's own; may be given more than once")
+        try_.add_argument("--since", action="append", default=[], help="a workflow's time as name=seconds since it was noted, instead of the noted one; may be given more than once")
         try_.add_argument("--state", default=None, help="the state to walk as, instead of the live agent's: working, awaiting, idle and the rest")
         try_.add_argument("--provider", default=None, help="the provider whose agent is tried, claude or codex, whose tool names the tool event takes")
 
     def show(self, args: Namespace, where: Where) -> int:
         for chart in self.in_order():
-            bound = f" [{chart.state or 'always'} at {chart.event}, place {chart.place}]"
+            also = "".join(f", also at {event}, place {place}" for event, place in sorted(chart.places.items()) if event != chart.event)
+            bound = f" [{chart.state or 'always'} at {chart.event}, place {chart.places.get(chart.event, '-')}{also}]"
             print(f"workflow {chart.id}{bound}, revision {chart.revision} by {chart.updated_by.stamp if chart.updated_by else 'nobody'}: {chart.title}")
             for node in self.charts.nodes_of(chart):
                 shown = f"{node.key} ({self.entries.entry(node.kind, node.key).title})" if node.kind == NodeKind.TRIGGER else node.key
                 print(f"{node.id:>4}  {node.kind:<8} {shown}" + (f": {node.text}" if node.text else "") + ("" if node.shipped else "  (edited)"))
             for line in self.charts.lines_of(chart):
                 print(f"      {line.source.id} --{line.kind}--> {line.target.id}")
+            for shown in self.values_shown(chart):
+                print(shown)
         return 0
 
     def in_order(self) -> list[Chart]:
         """By event, in the order the events come, and within one in the order the workflows run."""
-        return sorted(self.charts.all(), key=lambda c: (EVENT_ORDER.index(c.event) if c.event in EVENT_ORDER else len(EVENT_ORDER), c.event, c.place, c.id))
+        return sorted(self.charts.all(), key=lambda c: (EVENT_ORDER.index(c.event) if c.event in EVENT_ORDER else len(EVENT_ORDER), c.event, c.places.get(c.event, 0), c.id))
 
     def named_workflow(self, number: int, state: str, event: str) -> Chart:
         """The workflow a command means: by its number, or by the state and the event it is for."""
@@ -92,7 +102,7 @@ class ChartCommand(Command):
 
     def new(self, args: Namespace, where: Where) -> int:
         """A workflow of your own for a state at an event, born with its trigger."""
-        chart = Chart(title=args.title, state=args.state, event=args.event, place=self.charts.next_place(args.event))
+        chart = Chart(title=args.title, state=args.state, event=args.event, places={args.event: self.charts.next_place(args.event)})
         faults = self.validation.binding_faults(chart)
         if faults:
             raise Refused(str(faults[0]))
@@ -119,9 +129,24 @@ class ChartCommand(Command):
         return chart
 
     def catalogue(self, args: Namespace, where: Where) -> int:
-        for entry in self.entries.all():
+        """Every entry by its kind, the steps on a workflow's own counts and times after the rest, under a heading of their own."""
+        entries = self.entries.all()
+        for entry in [e for e in entries if e.key not in VALUE_STEPS]:
+            print(f"{entry.kind:<8} {entry.key:<28} {entry.title}: {entry.about}")
+        print("counts and times, what a workflow keeps between events:")
+        for entry in [e for e in entries if e.key in VALUE_STEPS]:
             print(f"{entry.kind:<8} {entry.key:<28} {entry.title}: {entry.about}")
         return 0
+
+    def values_shown(self, chart: Chart) -> list[str]:
+        """The counts and times a workflow keeps, a line for each environment that has any."""
+        now, prefix = self.clock.now(), ValueName.prefix(chart.id)
+        rows = [*self.counts.everywhere_of_workflow(chart.id), *self.times.everywhere_of_workflow(chart.id)]
+        names = {e.id: e.name for e in self.environments.all()}
+        kept = {}
+        for row in rows:
+            kept.setdefault(row.environment_id, []).append(f"{row.name[len(prefix):]} {row.said(now)}")
+        return [f"      values in {names.get(env, env)}: {', '.join(values)}" for env, values in sorted(kept.items())]
 
     def node(self, args: Namespace, where: Where) -> int:
         kind = NodeKind(args.kind)
@@ -133,7 +158,8 @@ class ChartCommand(Command):
         if wrong:
             raise Refused(wrong[0])
         present = [DrawnNode.of(n) for n in self.charts.nodes_of(chart)]
-        calls = self.validation.call_faults(chart, present + [DrawnNode("new", kind, args.key, args.text)])
+        drawn = present + [DrawnNode("new", kind, args.key, args.text)]
+        calls = self.validation.call_faults(chart, drawn) + [f for f in self.validation.value_faults(drawn) if f.node == "new"]
         if calls:
             raise Refused(str(calls[0]))
         if kind == NodeKind.TRIGGER:
@@ -153,7 +179,8 @@ class ChartCommand(Command):
         chart = self.editable(self.charts.chart_of(source), args)
         lines = [DrawnLine.of(l) for l in self.charts.lines_of(chart) if not (l.source.id == source.id and l.kind == args.port)]
         nodes = [DrawnNode.of(n) for n in self.charts.nodes_of(chart)]
-        locked = self.validation.lock_faults(chart, nodes, lines + [DrawnLine(str(source.id), str(target.id), args.port)])
+        drawn = lines + [DrawnLine(str(source.id), str(target.id), args.port)]
+        locked = self.validation.lock_faults(chart, nodes, drawn) + self.validation.line_said_faults(nodes, drawn)
         if locked:
             raise Refused(str(locked[0]))
         self.charts.connect(source, target, args.port, where.actor)
@@ -162,16 +189,16 @@ class ChartCommand(Command):
         return 0
 
     @staticmethod
-    def values(given: list[str]) -> dict[str, int]:
-        """Each --value name=n as a count to stand in for the agent's own."""
+    def values(given: list[str], flag: str) -> dict[str, int]:
+        """Each name=n given with the flag, as a value to stand in for the environment's own."""
         pairs = [v.partition("=") for v in given]
         wrong = [v for v, (_, eq, n) in zip(given, pairs) if not eq or not n.lstrip("-").isdigit()]
         if wrong:
-            raise Refused(f"--value takes name=n, a whole number: {', '.join(wrong)}")
+            raise Refused(f"{flag} takes name=n, a whole number: {', '.join(wrong)}")
         return {name.strip(): int(n) for name, _, n in pairs}
 
     def try_(self, args: Namespace, where: Where) -> int:
-        ran = self.trial.run(args.trigger, self.scope.id, args.row, Assumptions(quiet=args.quiet, edits=args.edits, unread=args.unread, state=args.state, provider=args.provider, counts=self.values(args.value)))
+        ran = self.trial.run(args.trigger, self.scope.id, args.row, Assumptions(quiet=args.quiet, unread=args.unread, state=args.state, provider=args.provider, counts=self.values(args.value, "--value"), since=self.values(args.since, "--since")))
         title = self.entries.entry(NodeKind.TRIGGER, args.trigger).title
         print(f"{title}{f' of row {args.row}' if args.row else ''}, walked as the state {ran['state'] or 'of no agent'}: nodes {', '.join(str(n) for n in ran['nodes']) or 'none'}")
         if ran["assumed"]:
@@ -204,7 +231,7 @@ class ChartCommand(Command):
         if faults:
             raise Refused(str(faults[0]))
         placed = self.charts.reorder(args.event, args.ids, where.actor)
-        print(f"{args.event}: " + ", ".join(f"{c.place + 1}. {c.title}" for c in placed))
+        print(f"{args.event}: " + ", ".join(f"{c.place_at(args.event) + 1}. {c.title}" for c in placed))
         return 0
 
     def remove(self, args: Namespace, where: Where) -> int:
@@ -212,6 +239,10 @@ class ChartCommand(Command):
         if node.locked:
             raise Refused(f"step {node.id} is locked, {LOCK_WHY}: {LOCK_RULE}")
         chart = self.editable(self.charts.chart_of(node), args)
+        left = [DrawnNode.of(n) for n in self.charts.nodes_of(chart) if n.id != node.id]
+        reading = self.validation.value_faults(left)
+        if len(reading) > len(self.validation.value_faults([*left, DrawnNode.of(node)])):
+            raise Refused(f"node {node.id} sets a value a check still reads: {reading[0]}")
         self.charts.remove_node(node, where.actor)
         self.charts.revised(chart, where.actor)
         print(f"node {node.id} removed")

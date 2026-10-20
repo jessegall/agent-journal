@@ -12,7 +12,12 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -24,15 +29,29 @@
       "nudges": [
         "tasks.open"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "139": 900
+        }
+      ]
     },
     {
       "name": "quiet for an hour: the session is ended",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -40,7 +59,12 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -48,12 +72,18 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
-      "read": [
-        {
-          "179": 0
-        }
-      ]
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": []
     },
     {
       "name": "the session starts again",
@@ -71,7 +101,17 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 11,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     }
   ]

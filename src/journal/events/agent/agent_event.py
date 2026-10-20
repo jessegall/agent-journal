@@ -1,11 +1,15 @@
 from dataclasses import dataclass, replace
+from typing import ClassVar
 
 from journal.events.event import Event
 
 
 @dataclass(frozen=True, kw_only=True)
 class AgentEvent(Event):
-    """Something the agent did, as its hook reported it. One subclass per hook kind; features listen to these, never to raw hooks."""
+    """Something the agent did, as its hook reported it or the journal saw it. One subclass per kind; features listen to these, never to raw hooks."""
+
+    answers_hook: ClassVar[bool] = True
+    """Whether a hook waits on the walk's answer; an event the journal itself saw, as the clock's tick, is answered by none."""
 
     session: str = ""
     environment_id: int = 0

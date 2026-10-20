@@ -17,10 +17,20 @@ class Subagents:
     def running(self, session: str) -> int:
         return sum(1 for row in self.rows(session) if row.running)
 
+    def running_before_the_newest(self, session: str) -> int:
+        """The subagents running besides the newest dispatch, which is the one a blocking listener is judging: its start is recorded before it is judged."""
+        return sum(1 for row in self.rows(session)[:-1] if row.running)
+
     def running_about(self, session: str, subject: str) -> int:
         """The subagents still out whose brief names the subject, such as plan 9: the reviewers of that plan and no others."""
+        return sum(1 for row in self.about(session, subject) if row.running)
+
+    def dispatched_about(self, session: str, subject: str, since: float) -> list[Dispatch]:
+        return [row for row in self.about(session, subject) if row.at >= since]
+
+    def about(self, session: str, subject: str) -> list[Dispatch]:
         named = re.compile(rf"\b{re.escape(subject)}\b", re.IGNORECASE)
-        return sum(1 for row in self.rows(session) if row.running and named.search(row.brief))
+        return [row for row in self.rows(session) if named.search(row.brief)]
 
     def rows(self, session: str) -> list[Dispatch]:
         return self.paired(self.entries.dispatches(session))

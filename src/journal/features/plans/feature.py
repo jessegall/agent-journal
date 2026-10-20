@@ -28,6 +28,7 @@ class Plans(Feature):
         Entry(NodeKind.CHECK, 'plan_moved_on', 'Plan moved on to its next task?', 'a task just closed and the agent follows its plan at the next one'),
         Entry(NodeKind.CHECK, 'plan_left_waiting', 'Plan has no task to start?', 'a task just closed and no task of the plan can start, the plan at no checkpoint'),
         Entry(NodeKind.CHECK, 'approved_plan', 'Has an approved plan not started?', 'the user approved a plan here that is not started yet'),
+        Entry(NodeKind.CHECK, 'follows_a_plan', 'Follows a plan?', 'the agent follows a plan, which takes its tasks in hand for it'),
         Entry(NodeKind.CHECK, 'plan_at_checkpoint', 'Plan at a checkpoint?', 'a started plan stands at a completed checkpoint phase, its next phase not begun'),
     )
     seeds = (ClosedPlans,)
@@ -60,7 +61,8 @@ by you, approved by them, and then followed: finishing one task starts the next 
   `journal plan approve <n>`; you are told, and `journal plan start <n>` begins its first task, and also goes on past a checkpoint.
 - Asked for a review of a plan: `journal plan review <n>` before the reviewers go out. In review it cannot be approved,
   and `journal plan ready <n>` waits until every subagent is back. Put what they find straight into the plan as tasks
-  under its phases, then ready it again.
+  under its phases, then ready it again with `--changed "<what the round changed, in one line>"`: each round is kept on the
+  plan, with its reviewers, the reports filed about the plan while it ran, and that line.
 - `journal plan show <n>` lists its phases and tasks; `journal plan list` every plan; `journal plan park <n>` puts it aside.
 - A blocked task never blocks its plan: go on with the tasks that can be done. When every task left is blocked, the plan
   blocks itself and opens again when one opens. When one thing stops all of the plan's work, block the plan on it:

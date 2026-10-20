@@ -43,9 +43,9 @@ class ChartController:
         return self.states.listed()
 
     def runs(self, request: Request) -> Response:
-        """The newest walks across every workflow, each naming the workflows it ran, so a line the agent heard leads to the workflow that said it."""
-        titles = {c.id: c.title for c in self.charts.all()}
-        runs = [{**self.shown(run), "event": run.record.trigger, "failed": run.failed, "titles": [titles.get(n, f"workflow {n}") for n in run.record.workflows],
+        """The newest walks across every workflow, each naming the event that started it and the workflows it ran, so a line the agent heard leads to the workflow that said it."""
+        titles, events = {c.id: c.title for c in self.charts.all()}, {e.key: e.title for e in self.catalogue.triggers()}
+        runs = [{**self.shown(run), "event": run.record.trigger, "event_title": events.get(run.record.trigger, run.record.trigger), "failed": run.failed, "titles": [titles.get(n, f"workflow {n}") for n in run.record.workflows],
                  "change": run.change_words(), "answer": run.record.answer_words(), "counts": run.record.count_words()} for run in self.traces.recent(int(request.query.get("last", 10) or 10))]
         return Response.json({"runs": runs})
 
@@ -54,14 +54,14 @@ class ChartController:
         return {**asdict(run.record), "trigger": run.trigger}
 
     def order(self, request: Request) -> Response:
-        """The order of an event's workflows, as dragged: every workflow of the event named once with the revision it was read at, else refused, naming who saved first when one moved since."""
+        """The order of an event's workflows, as dragged: every workflow of the event named once with the revision it was read at, else refused, naming who saved first when one moved since; answered with the order alone, each workflow's place and revision, since the page reads the list again."""
         event = request.body.get("trigger", "")
         given = [WorkflowAt.from_payload(row) for row in request.body.get("order", [])]
         faults = self.validation.order_faults(event, given)
         if faults:
             return Response.json({"error": "; ".join(map(str, faults)), "faults": [asdict(f) for f in faults]}, 409)
         placed = self.charts.reorder(event, [row.id for row in given], request.actor)
-        return Response.json({"trigger": event, "workflows": [self.named(c) for c in placed]})
+        return Response.json({"trigger": event, "order": [{"id": c.id, "place": c.place_at(event), "revision": c.revision} for c in placed]})
 
     def off(self, request: Request) -> Response:
         """A workflow turned off: its trigger taken out, the rest kept, so it answers nothing until turned on again; one that is or holds the journal's law stays on."""
@@ -97,7 +97,7 @@ class ChartController:
         """A workflow of the user's own for a state at an event, or for every state when no state is named, born with its trigger, after the others of its event, with a title that names it unless given."""
         state, event = request.body.get("state", "").strip(), request.body.get("trigger", "").strip()
         title = request.body.get("title", "").strip() or NEW_TITLE
-        chart = Chart(title=title, state=state, event=event, place=self.charts.next_place(event))
+        chart = Chart(title=title, state=state, event=event, places={event: self.charts.next_place(event)})
         faults = self.validation.binding_faults(chart)
         if faults:
             return Response.refused(faults[0])
@@ -148,7 +148,7 @@ class ChartController:
 
     def named(self, chart: Chart) -> ListedWorkflow:
         walk, failure = self.traces.last_walk(chart), self.traces.last_failure(chart)
-        return ListedWorkflow(id=chart.id, title=chart.title, revision=chart.revision, shipped=chart.shipped, event=chart.event, state=chart.state, place=chart.place, off=not self.charts.graph(chart).triggers,
+        return ListedWorkflow(id=chart.id, title=chart.title, revision=chart.revision, shipped=chart.shipped, event=chart.event, state=chart.state, place=chart.places.get(chart.event, 0), places=chart.places, off=not self.charts.graph(chart).triggers,
                 edited=not all(n.shipped for n in self.charts.nodes_of(chart)), failed=failure is not None and (walk is None or failure.at >= walk.record.at),
                 behind=self.shipped.behind(chart), locked=chart.locked, guarded=any(n.locked for n in self.charts.nodes_of(chart)),
                 warnings=self.validation.warnings(chart), revised_by=chart.updated_by.stamp if chart.updated_by else "", last_walk=self.shown(walk) if walk else {}, last_failure=asdict(failure) if failure else {})

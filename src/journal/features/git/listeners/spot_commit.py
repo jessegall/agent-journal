@@ -8,7 +8,9 @@ from journal.console.console import Console
 from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.engine.nudger import Nudger
+from journal.events.agent.commit_made import CommitMade
 from journal.events.agent.tool_finished import ToolFinished
+from journal.events.bus import Bus
 from journal.features.git.support.head_commit import HeadCommit
 from journal.events.agent_listener import AgentListener
 from journal.support.decision import Decision
@@ -28,12 +30,12 @@ TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)
 
 
 class SpotCommit(AgentListener[ToolFinished]):
-    """A shell command that committed is followed by a look at the head: the commit becomes a card in the chat, once, and a Journal: tasks done line in its message finishes those tasks and says so in the reply to that command."""
+    """A shell command that committed is followed by a look at the head: the commit becomes a card in the chat, once, the bus is told a commit was made, and a Journal: tasks done line in its message finishes those tasks and says so in the reply to that command."""
 
     blocking = True
 
-    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, agents: Agents, nudger: Nudger, tasks: TaskRows) -> None:
-        self.config, self.cards, self.messages, self.console, self.environments, self.agents, self.nudger, self.tasks = config, cards, messages, console, environments, agents, nudger, tasks
+    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, agents: Agents, nudger: Nudger, tasks: TaskRows, bus: Bus) -> None:
+        self.config, self.cards, self.messages, self.console, self.environments, self.agents, self.nudger, self.tasks, self.bus = config, cards, messages, console, environments, agents, nudger, tasks, bus
 
     def handle(self, event: ToolFinished) -> Decision | None:
         command = event.input.get("command", "") if event.tool == "Bash" else ""
@@ -48,6 +50,7 @@ class SpotCommit(AgentListener[ToolFinished]):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject, "shows": "commits"}, by)
+        self.bus.dispatch(CommitMade(sha=head.sha).placed(event.session, event.environment_id, event.provider, event.context))
         if folder != self.config.root or time.time() - head.committed > JUST_MADE:
             return None
         return self.close_named(event, head.sha, head.body)

@@ -3,6 +3,9 @@ from argparse import Namespace
 from datetime import datetime, timezone
 from pathlib import Path
 
+from journal.events.agent.command_ended import CommandEnded
+from journal.events.agent.command_moved import CommandMoved
+from journal.events.bus import Bus
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
@@ -35,8 +38,8 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs) -> None:
-        self.entries, self.messages, self.settings, self.agents = entries, messages, settings, agents
+    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, nudger: Nudger, supervisor: SupervisorLink, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus) -> None:
+        self.entries, self.messages, self.settings, self.agents, self.bus = entries, messages, settings, agents, bus
         self.edits, self.log, self.outputs = edits, log, outputs
         self.cards, self.nudger, self.supervisor, self.scope = cards, nudger, supervisor, scope
 
@@ -121,6 +124,8 @@ class ShellCommand(Command):
         from journal.features.shell.feature import Shell
         self.record(where, MOVED, {"chain": args.chain, "part": args.part, "file": args.file})
         output = self.outputs.save(self.outputs.of_chain(args.chain).moved_out(), where.actor)
+        if where.session:
+            self.bus.dispatch(CommandMoved(output=output.id).placed(where.session, self.scope.id, "", None))
         self.cards.show(self.scope.id, where.session, f"Moved to the background: {Doing.of(args.part)}", "terminal", key=f"background:{args.chain}", command=args.part)
         print(Shell.MOVED.about(n=output.id, file=args.file).rendered())
         return 0
@@ -135,6 +140,7 @@ class ShellCommand(Command):
         live = self.agents.live()
         if live:
             output = self.outputs.save(self.outputs.of_chain(args.chain).ended_with(args.status), where.actor)
+            self.bus.dispatch(CommandEnded(output=output.id, status=args.status).placed(live.session, self.scope.id, live.provider, None))
             line = self.nudger.say(live, Shell.ENDED.about(n=output.id, outcome=outcome, file=args.file))
             if line:
                 self.supervisor.type(self.scope.id, line)
