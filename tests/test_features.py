@@ -296,7 +296,7 @@ def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_
     assert tasks.find(1).state == "blocked" and checks.find(1).last_fault == "", "not passing yet is no fault"
     runner.run(checks.find(2), Actor.system())
     assert "task 2 waits until `no-such-program-here`, which cannot run: the command is not there" in app.container.get(Fillers).broken_waits(None), "a check that cannot run is named"
-    assert [t.id for t in tasks.blocked_outside()] == [], "a task waiting on a check is not blocked on something outside"
+    assert [t.id for t in tasks.blocked_outside()] == [], "a task waiting on a check is not a blocked task nothing opens by itself"
     marker.write_text("")
     runner.run(checks.find(1), Actor.system())
     assert tasks.find(1).state == "open" and any("task 1 is open again: check 1" in line for line in typed), "the passing check opens the task and the agent is told"
@@ -1532,10 +1532,10 @@ def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_p
     hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": str(app.config.root / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
     app.runtime().deferred.drain()
     edits = app.container.get(Edits)
-    kept = edits.of_agent("s1", 0)
+    kept = edits.of_agent("s1", 0, 50)
     assert [e.path for e in kept] == ["a.py"] and kept[0].added == 1 and kept[0].removed == 1 and kept[0].first_line == 7 and [r["kind"] for r in kept[0].rows] == ["ctx", "del", "add", "ctx"]
     app.console().run(["shell", "ran", "sed -i s/x/y/ b.py", "--chain", "c1", "--status", "0", "--output", "", "--changed", "3\t1\tb.py"], AGENT)
-    kept = edits.of_agent("s1", 0)
+    kept = edits.of_agent("s1", 0, 50)
     assert [e.path for e in kept] == ["a.py", "b.py"] and kept[1].added == 3 and kept[1].removed == 1 and kept[1].command and kept[1].rows == ()
     for i in range(KEEP):
         edits.record(Edit(session="s1", path=f"f{i}.py", at=float(i + 10)), Actor.agent("s1"))
@@ -7432,3 +7432,11 @@ def test_a_file_changed_by_a_shell_command_keeps_its_changed_lines(app):
     first, second = [e for e in app.container.get(Edits).all() if e.path == "notes.txt"][-2:]
     assert [r["text"] for r in first.rows if r["kind"] == "add"] == ["one", "two"], "a new file's lines are all added"
     assert [(r["kind"], r["text"]) for r in second.rows if r["kind"] != "ctx"] == [("del", "two"), ("add", "TWO"), ("add", "three")], "a later change is told against the version the journal saw last"
+
+
+def test_a_shell_line_says_whether_it_reads_searches_or_runs():
+    from journal.support.chain import Chain
+    wrapped = lambda line: f"source /s 2>/dev/null || true && eval '{line}' < /dev/null && pwd -P >| /tmp/cwd"
+    assert Chain.work_of(wrapped("sed -n 1,20p src/a.py")) == "reading", "a read through the shell is reading, so the figure shows its book"
+    assert Chain.work_of(wrapped("grep -rn foo src && cat b.py")) == "searching", "a line that only reads, with a search in it, is searching"
+    assert Chain.work_of(wrapped("npm run build")) == "running", "anything else runs"

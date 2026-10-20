@@ -60,7 +60,8 @@ export function figureStateOf(agent, waitingSince, now = Date.now() / 1000) {
     if (bar === "idle" && (waitingSince || agent?.awaiting)) return {state: "asking", since: waitingSince || since};
     if (bar === "idle") return {state: now - since >= ASLEEP_AFTER ? "asleep" : "idle", since};
     const tool = agent?.tool;
-    const inFlight = Boolean(tool) && (agent.tool_running || now - since < TOOL_LINGERS) && TOOL_STATES[tool];
+    // a shell line says what it does itself: a read or a search through the shell shows the book or the glass, not the laptop
+    const inFlight = Boolean(tool) && (agent.tool_running || now - since < TOOL_LINGERS) && (agent.tool_work || TOOL_STATES[tool]);
     return {state: inFlight || "thinking", since};
 }
 

@@ -41,6 +41,14 @@ class Chain:
         return [part.text for part in cls.parts(line) if part.recorded]
 
     @classmethod
+    def work_of(cls, line: str) -> str:
+        """What a shell line does, as the figure shows it: searching when all its own commands read and one searches, reading when they all read, else running."""
+        own = [part for part in cls.parts(line) if part.recorded]
+        if not own or not all(part.is_read() for part in own):
+            return "running"
+        return "searching" if any(part.is_search() for part in own) else "reading"
+
+    @classmethod
     def is_journal_line(cls, line: str) -> bool:
         """A line of journal commands alone: its answer reaches the agent whole, at once, and is no output of its own."""
         journal, parts = cls.journal_parts(line)

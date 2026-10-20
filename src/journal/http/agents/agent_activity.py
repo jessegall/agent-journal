@@ -3,6 +3,7 @@ from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.commands.shell_command import RAN, RUNNING
 from journal.features.tasks.states.working import Working
+from journal.support.chain import Chain
 from journal.support.context_file import ContextFile
 from journal.http.agents.current_work import CurrentWork
 from journal.http.agents.sequence_in_hand import SequenceInHand
@@ -34,6 +35,12 @@ class AgentActivity:
         recent = list(reversed(self.entries.of_kind_in(KEPT))) if any(a.state != ENDED for a in agents) else []
         return [self.of(a, [] if a.state == ENDED else [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in agents]
 
+    @staticmethod
+    def work_of(entry) -> str:
+        """What a shell tool's line does, reading, searching or running, so the figure shows it; empty for any other tool, which its name says."""
+        tool = entry.data.get("tool_input", {})
+        return Chain.work_of(str(tool.get("command", ""))) if entry.data.get("tool_name") == "Bash" else ""
+
     def of(self, agent: Agent, entries) -> dict:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted")]
         moves = [e for e in hooks if e.kind in STATUS]
@@ -46,6 +53,7 @@ class AgentActivity:
             "status": "stopped" if agent.state == ENDED else self.status_of(agent.state, STATUS.get(kind, "idle")),
             "heard_at": last.created_at if last else agent.updated_at,
             "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "",
+            "tool_work": self.work_of(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
             "tool_running": kind == "ToolStarting",
             "awaiting": awaiting, "awaiting_on": on, "awaiting_since": agent.updated_at if awaiting else None,
             "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),

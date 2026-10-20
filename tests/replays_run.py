@@ -729,7 +729,7 @@ def still_open_after_quiet(app, replay: Replay, provider: str) -> None:
 
 
 def blocked_after_an_hour(app, replay: Replay, provider: str) -> None:
-    """The steps: a task blocked on something outside, the agent idle, the clock at most of an hour and past it."""
+    """The steps: a blocked task nothing opens by itself, the agent idle, the clock at most of an hour and past it."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)

@@ -50,7 +50,7 @@ OWN = (
     ("idle", "idle", "approved", "Hold the stop while an approved plan is not started", "approved_plan_holds_the_stop"),
     ("idle", "idle", "open", "Hold the stop in auto mode while tasks are open", "open_tasks_hold_the_stop"),
     ("idle", "ticked", "parked", "Ask about a parked task after a minute of quiet", "ask_about_parked"),
-    ("idle", "ticked", "blocked", "Ask about a task blocked on something outside after 45 minutes of quiet", "ask_about_blocked"),
+    ("idle", "ticked", "blocked", "Ask about a blocked task nothing opens by itself after 45 minutes of quiet", "ask_about_blocked"),
     ("idle", "ticked", "check_in", "Check in after half an hour of quiet in auto mode", "check_in"),
     ("working", "tool_starting", "log_held", "Hold the write when the task log is overdue", "hold_write_when_log_overdue"),
     ("working", "tool_starting", "log", "Ask for a task log after {tasks.first_nudge_after} edits", "ask_for_a_log_after_edits"),
@@ -115,7 +115,7 @@ ANSWER = "[messages.answer] answer or react to message {{owed}} before you do an
 ANSWER_HELD = "[messages.answer_held] answer or react to message {{owed}} first. your tool calls wait until you do"
 PARKED = "[tasks.parked] parked tasks, still open: {{parked_tasks}}. `journal task resume <n>` picks one up; leave them parked only on purpose"
 BROKEN_WAIT = "[tasks.broken_wait] {{broken_waits}}. so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`"
-BLOCKED_STILL = "[tasks.blocked_still] blocked on something outside: {{blocked_outside}}. has it come? `journal task unblock <n>` when it has"
+BLOCKED_STILL = "[tasks.blocked_still] blocked, with nothing that opens it by itself: {{blocked_outside}}. has what it waits on come? `journal task unblock <n>` when it has"
 CHECKPOINT = "[plans.checkpoint] plan {{plan_n}}: phase {{checkpoint_phase}} is complete and a checkpoint. the user looks before the next phase; wait for their word, then `journal plan start {{plan_n}}`"
 CHECKPOINT_PASSED = "[plans.checkpoint_passed] plan {{plan_n}}: phase {{checkpoint_phase}} is complete, and in auto mode it does not stop you. `journal plan start {{plan_n}}` begins the next phase; carry on"
 NEXT = "[tasks.next] tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"
@@ -588,7 +588,7 @@ class ShippedChart(Seed):
         return self.asked_after_quiet(chart, ends, "task_just_parked", "parked_tasks", "1 minute", PARKED_STILL)
 
     def ask_about_blocked(self, chart: Chart, ends: list) -> list:
-        """As the clock ticks on an agent at rest with a task blocked on something outside: after 45 minutes of quiet, before an hour of it ends the session, ask whether it has come."""
+        """As the clock ticks on an agent at rest with a blocked task nothing opens by itself: after 45 minutes of quiet, before an hour of it ends the session, ask whether it has come."""
         return self.asked_after_quiet(chart, ends, "task_just_blocked", "blocked_outside", "45 minutes", BLOCKED_STILL)
 
     def asked_after_quiet(self, chart: Chart, ends: list, moved: str, waiting: str, quiet: str, line: str) -> list:

@@ -171,7 +171,7 @@ def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nu
     assert "waiting on: a talk with the user" in console.run(["task", "block", "1", "a talk with the user"], AGENT).out
     assert app.container.get(Tasks).find(1).state == TaskState.BLOCKED and app.container.get(Machine).current("s1").name == "idle"
     assert hook(app, "Stop")[1].get("decision") != "block", "a blocked task is not offered, in auto mode or not"
-    assert "blocked tasks, waiting on something outside: 1 the tree (waiting on: a talk with the user)" in console.run(["environment", "here"], AGENT).out
+    assert "blocked tasks: 1 the tree (waiting on: a talk with the user)" in console.run(["environment", "here"], AGENT).out
     assert "open again" in console.run(["task", "unblock", "1"], AGENT).out and app.container.get(Tasks).find(1).state == TaskState.OPEN
 
 

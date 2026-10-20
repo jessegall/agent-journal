@@ -36,8 +36,8 @@ class Tasks(Feature):
         Entry(NodeKind.CHECK, 'related_tasks', 'Has a task to take up meanwhile?', 'a started plan has a next task, or, with no plan started, a task is open outside a plan'),
         Entry(NodeKind.CHECK, 'task_in_hand', 'Has a task in hand?', 'the agent has a task started'),
         Entry(NodeKind.CHECK, 'parked_tasks', 'Has parked tasks?', 'a task is parked'),
-        Entry(NodeKind.CHECK, 'blocked_tasks', 'Has blocked tasks?', 'a task waits on something outside'),
-        Entry(NodeKind.CHECK, 'blocked_outside', 'Has a task blocked on something outside?', 'a blocked task waits on nothing that opens it by itself: no task, question or check'),
+        Entry(NodeKind.CHECK, 'blocked_tasks', 'Has blocked tasks?', 'a task is blocked'),
+        Entry(NodeKind.CHECK, 'blocked_outside', 'Has a blocked task nothing opens by itself?', 'a blocked task waits on no task, question or check that opens it, only a reason in words'),
         Entry(NodeKind.CHECK, 'broken_waits', 'Has a task waiting on a check that cannot run?', 'a blocked task waits until a check whose command could not run, a missing program or a time-out, so it would wait forever'),
         Entry(NodeKind.CHECK, 'task_just_started', 'Task just started by this agent?', 'the row is a task this agent has just started: this write set when it started, by the agent walking'),
         Entry(NodeKind.CHECK, 'log_for_task_in_hand', 'Log is for the task in hand?', 'the row is a log line of the task this agent has in hand'),
@@ -66,7 +66,7 @@ class Tasks(Feature):
     WAIT_OVER = Nudge(name, "wait_over", "the wait for {{what}} is over: {{came}}", "carry on with what you were doing", repeat_after=0)
     WAIT_CLEARED = Nudge(name, "wait_cleared", "task {{n}} is open again: {{on}} is answered or closed", "`journal task start {{n}}` takes it up", repeat_after=0)
     BROKEN_WAIT = Nudge(name, "broken_wait", "{{waits}}", "so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat_after=0)
-    BLOCKED_STILL = Nudge(name, "blocked_still", "blocked on something outside: {{tasks}}", "has it come? `journal task unblock <n>` when it has", repeat_after=2700, held_whatever_its_values=True)
+    BLOCKED_STILL = Nudge(name, "blocked_still", "blocked, with nothing that opens it by itself: {{tasks}}", "has what it waits on come? `journal task unblock <n>` when it has", repeat_after=2700, held_whatever_its_values=True)
     nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, PARKED_AT_CLOSE, CHECK_AWAITED, CHECK_IN, WAIT_OVER, WAIT_CLEARED, BROKEN_WAIT, BLOCKED_STILL)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """

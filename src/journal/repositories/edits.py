@@ -22,6 +22,6 @@ class Edits(ScopedRepository[Edit]):
             self.delete(old, by)
         return kept
 
-    def of_agent(self, session: str, since: float) -> list[Edit]:
-        """An agent's edits after the moment given, oldest first."""
-        return self.selected("session = ? AND at > ? ORDER BY id", (session, since))
+    def of_agent(self, session: str, since: float, last: int) -> list[Edit]:
+        """An agent's newest edits after the moment given, at most so many, oldest first."""
+        return list(reversed(self.selected("session = ? AND at > ? ORDER BY id DESC LIMIT ?", (session, since, last))))

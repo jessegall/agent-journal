@@ -70,7 +70,7 @@ class EnvironmentCommand(Command):
             self.named("task in hand", [f"{t.id} {t.title}" for t in held]) or "no task in hand",
             self.named("open tasks", [f"{t.id} {t.title}" for t in self.tasks.in_state(TaskState.OPEN)]),
             self.named("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.in_state(TaskState.PARKED)]),
-            self.named("blocked tasks, waiting on something outside", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.in_state(TaskState.BLOCKED)]),
+            self.named("blocked tasks", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.in_state(TaskState.BLOCKED)]),
             self.named("unread messages", [str(m.id) for m in self.messages.unread()]),
             self.named("messages read and unanswered", [str(m.id) for m in self.messages.unanswered()]),
             self.named("questions waiting for the user", [f"{q.id} {q.text}" for q in self.questions.open()]),

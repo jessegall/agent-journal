@@ -82,7 +82,7 @@ class AgentController(Controller[Agent]):
     def edits(self, request: Request) -> Response:
         """The files the agent wrote or edited, newest last, with the lines each change added and removed."""
         agent = self.repository.find(request.number("id"))
-        return Response.json({"cursor": time.time(), "edits": self.file_edits.of_agent(agent.session, request.queried("since"))[-EDITS_SHOWN:]})
+        return Response.json({"cursor": time.time(), "edits": self.file_edits.of_agent(agent.session, request.queried("since"), EDITS_SHOWN)})
 
     def edited_file(self, request: Request) -> Response:
         path = request.query.get("path", "")

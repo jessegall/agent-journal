@@ -6,6 +6,8 @@ TRAILING_CUT = re.compile(r"\s*\|\s*tail(?:\s+(?:-[nc]\s*\+?\d+|-\d+))?\s*$")
 """A pipe into tail that ends a command, cutting what it printed; a head is left, since it may be what stops an endless command."""
 READERS = {"cat", "sed", "grep", "egrep", "fgrep", "rg", "ag", "head", "tail", "less", "more", "bat", "awk", "jq", "wc", "ls", "find", "tree", "diff", "stat", "file", "nl", "sqlite3"}
 """Commands run to read on purpose, whose output the agent asked to see."""
+SEARCHERS = {"grep", "egrep", "fgrep", "rg", "ag", "find"}
+"""The reading commands that search, as a magnifying glass does, rather than read a file through."""
 GIT_READS = {"show", "diff", "log", "status", "blame", "grep", "ls-files"}
 """The git subcommands that only read."""
 CODE = re.compile(r"\.(py|pyi|vue|js|mjs|cjs|jsx|ts|tsx|cs|go|rs|swift|kt|kts|java|scala|php|rb|ex|exs|erl|hs|ml|clj|c|h|cc|cpp|hpp|m|mm|lua|dart|r|jl|sh|bash|zsh|fish|ps1|sql|css|scss|sass|less|html|htm|svelte|astro|json|jsonl|yaml|yml|toml|ini|cfg|xml|gradle|tf|proto|graphql|md|txt)\b")
@@ -31,6 +33,10 @@ class Part:
         words = self.text.split()
         program = words[0].rsplit("/", 1)[-1] if words else ""
         return len(words) > 1 and words[1] in GIT_READS if program == "git" else program in READERS
+
+    def is_search(self) -> bool:
+        words = self.text.split()
+        return bool(words) and words[0].rsplit("/", 1)[-1] in SEARCHERS
 
     def is_reading_code(self) -> bool:
         """A command that only reads, and names code files of the project's own, by a path inside its folder or a glob of a code type, and none outside it."""

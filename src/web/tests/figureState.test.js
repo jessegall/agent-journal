@@ -50,6 +50,8 @@ test("the figure does what the tool in flight says the agent does, and thinks be
     expect(stateAt({running: true, tool: "Edit"})).toBe("writing");
     expect(stateAt({running: true, tool: "Bash", since: NOW - 120})).toBe("running");
     expect(stateAt({tool: "Bash", since: NOW - 30})).toBe("thinking");
+    expect(stateAt({running: true, tool: "Bash", tool_work: "reading"})).toBe("reading");
+    expect(stateAt({running: true, tool: "Bash", tool_work: "searching"})).toBe("searching");
 });
 
 test("a stopped, paused or compacting agent keeps its figure, plainly not working; absence is never a state", () => {
