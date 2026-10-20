@@ -36,6 +36,11 @@ class Chain:
         return len([p for p in own if cls.is_journal(p.text)]), len(own)
 
     @classmethod
+    def own(cls, line: str) -> list[str]:
+        """The agent's own commands of the line, the shell's wrapping left out: the same for the line the runner is handed as for the one the tool was called with."""
+        return [part.text for part in cls.parts(line) if part.recorded]
+
+    @classmethod
     def is_journal_line(cls, line: str) -> bool:
         """A line of journal commands alone: its answer reaches the agent whole, at once, and is no output of its own."""
         journal, parts = cls.journal_parts(line)

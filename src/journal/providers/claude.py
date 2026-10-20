@@ -1,6 +1,7 @@
 import json
 import shlex
 from pathlib import Path
+from typing import Iterator
 
 from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.provider import TAIL, Provider
@@ -39,8 +40,8 @@ class Claude(Provider):
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / parent / "subagents" / f"agent-{agent_id}.jsonl"
         return path if path.is_file() else None
 
-    def turns(self, path: Path) -> list[Turn]:
-        return [turn for number, row in self.json_lines(path) if (turn := self.turn(number, ClaudeRow.from_json(row)))]
+    def turns_in(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
+        return [turn for number, row in rows if (turn := self.turn(number, ClaudeRow.from_json(row)))]
 
     def turn(self, number: int, row: ClaudeRow) -> Turn | None:
         if row.type not in ("user", "assistant"):

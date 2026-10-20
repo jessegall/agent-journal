@@ -54,13 +54,21 @@ class Provider:
         """The file a subagent of the parent session wrote its conversation in; none for a provider that keeps no such file."""
         return None
 
-    def turns(self, path: Path) -> list[Turn]: ...
+    def turns(self, path: Path) -> list[Turn]:
+        return self.turns_in(self.json_lines(path))
+
+    def turns_in(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]: ...
 
     @staticmethod
     def json_lines(path: Path) -> Iterator[tuple[int, dict]]:
         """Each whole line of a transcript with its number; a last line still being written is left for the next read."""
         text = path.read_text(errors="replace")
-        for number, line in enumerate(text[: text.rfind("\n") + 1].splitlines(), 1):
+        return Provider.rows_of(text[: text.rfind("\n") + 1], 0)
+
+    @staticmethod
+    def rows_of(text: str, before: int) -> Iterator[tuple[int, dict]]:
+        """Each line of whole lines of a transcript with its number, counted on from the lines before them."""
+        for number, line in enumerate(text.splitlines(), before + 1):
             if line.startswith("{"):
                 yield number, json.loads(line)
 

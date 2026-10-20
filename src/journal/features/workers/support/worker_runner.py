@@ -26,6 +26,8 @@ TIMED_OUT = -1
 ENDED_UNSEEN = -2
 """How a run ended that the journal did not see end, as a worker found running at boot."""
 ENDINGS = {TIMED_OUT: "stopped after {minutes:g} minutes without ending: {report}", ENDED_UNSEEN: "{report}"}
+NOT_HANDED = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "CLAUDE_CODE_SHELL_PREFIX")
+"""What of the journal's environment a worker is not handed: its hooks stay silent, it is no session of the journal's, and its shell runs without the journal's runner, since a worker is never told a command it moved to the background ended."""
 
 
 class WorkerRunner:
@@ -52,7 +54,7 @@ class WorkerRunner:
             self.run(worker, command, by)
 
     def run(self, worker: Worker, command: list[str], by: Actor) -> None:
-        environ = {**{k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION")}, AGENT_SHELL: "1", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
+        environ = {**{k: v for k, v in os.environ.items() if k not in NOT_HANDED}, AGENT_SHELL: "1", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
         out, err = self.outputs(worker)
         out.parent.mkdir(parents=True, exist_ok=True)
         try:

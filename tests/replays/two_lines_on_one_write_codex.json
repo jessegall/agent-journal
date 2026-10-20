@@ -15,11 +15,11 @@
       "counts": {
         "charts:10:writes": 1,
         "charts:31:said": 5,
-        "charts:41:times_named": 0,
-        "charts:41:tools_used": 0,
+        "charts:42:times_named": 0,
         "charts:42:tools_used": 0,
-        "charts:43:uses_unanswered": 0,
+        "charts:43:tools_used": 0,
         "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 1,
         "charts:9:writes": 1
       },
@@ -39,11 +39,11 @@
       "counts": {
         "charts:10:writes": 2,
         "charts:31:said": 5,
-        "charts:41:times_named": 0,
-        "charts:41:tools_used": 0,
+        "charts:42:times_named": 0,
         "charts:42:tools_used": 0,
-        "charts:43:uses_unanswered": 0,
+        "charts:43:tools_used": 0,
         "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 2,
         "charts:9:writes": 2
       },
@@ -67,11 +67,11 @@
       "counts": {
         "charts:10:writes": 2,
         "charts:31:said": 6,
-        "charts:41:times_named": 0,
-        "charts:41:tools_used": 0,
+        "charts:42:times_named": 0,
         "charts:42:tools_used": 0,
-        "charts:43:uses_unanswered": 0,
+        "charts:43:tools_used": 0,
         "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 2,
         "charts:9:writes": 2
       },
@@ -89,18 +89,18 @@
       "counts": {
         "charts:10:writes": 2,
         "charts:31:said": 7,
-        "charts:41:times_named": 0,
-        "charts:41:tools_used": 0,
+        "charts:42:times_named": 0,
         "charts:42:tools_used": 0,
-        "charts:43:uses_unanswered": 1,
+        "charts:43:tools_used": 0,
         "charts:44:uses_unanswered": 1,
+        "charts:45:uses_unanswered": 1,
         "charts:8:writes": 2,
         "charts:9:writes": 2
       },
       "read": [
         {
-          "304": 1,
-          "311": 1,
+          "310": 1,
+          "317": 1,
           "67": 2,
           "80": 2,
           "93": 2

@@ -5938,7 +5938,11 @@ def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_i
         assert app.container.get(CommandOutputs).every() == [] and not (folder / "number").exists(), "a line of journal commands is no output"
 
 
-def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app):
+def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     from journal.repositories.plans import Plans
     from journal.repositories.tasks import Tasks
     console = app.console()
@@ -5963,8 +5967,9 @@ def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task
     assert tasks.find(1).state == "parked" and tasks.in_hand() is None, "a parked plan parks its task in hand"
     done = console.run(["task", "resume", "1"], AGENT)
     assert done.code == 0
-    out = console.run(["task", "done", "1", "--how", "h"], AGENT).out
-    assert "task 3 is still parked" in out, "with nothing in hand, a parked task is named first"
+    console.run(["task", "done", "1", "--how", "h"], AGENT)
+    app.runtime().deferred.drain()
+    assert any("task 3 is still parked" in line for line in typed), "with nothing in hand, a close names a parked task"
     console.run(["task", "resume", "3"], AGENT)
     console.run(["task", "done", "3", "--how", "h"], AGENT)
     console.run(["task", "start", "2"], AGENT)
@@ -7223,8 +7228,12 @@ def test_the_record_is_a_rolling_log_of_its_newest_entries_and_the_projects_rows
     assert [m.text for m in app.container.get(Messages).all()][-1] == "keep me", "a message is the project's own and stays"
 
 
-def test_a_task_closed_by_a_commit_names_a_parked_task_at_once(app):
+def test_a_task_closed_by_a_commit_names_a_parked_task_at_once(app, monkeypatch):
     import subprocess
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     root = app.config.root
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship the footer\n\nJournal: tasks done 2"], cwd=root, check=True)
@@ -7236,7 +7245,8 @@ def test_a_task_closed_by_a_commit_names_a_parked_task_at_once(app):
     console.run(["task", "create", "footer", "--start"], AGENT)
     reply = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})[1]
     told = reply["hookSpecificOutput"]["additionalContext"]
-    assert "closed task 2" in told and "task 1 is still parked" in told and "the footer comes first" in told, f"the close names the parked task with the commit, not a quarter of an hour later: {told}"
+    app.runtime().deferred.drain()
+    assert "closed task 2" in told and any("task 1 is still parked" in line and "the footer comes first" in line for line in typed), f"the close names the parked task at once, not a quarter of an hour later: {told} {typed}"
 
 
 def test_the_database_gives_deleted_rows_space_back_by_itself(app):
@@ -7292,3 +7302,34 @@ def test_every_line_a_feature_declares_is_registered_with_it(app):
     from journal.features.registry import Registry
     unregistered = [f"{nudge.key}" for feature in app.container.get(Registry).features for nudge in vars(type(feature) if not isinstance(feature, type) else feature).values() if isinstance(nudge, Nudge) and nudge not in feature.nudges]
     assert unregistered == [], f"a line the registry cannot find is taken for one whose answer stays out of the chat: {unregistered}"
+
+
+def test_an_outputs_tail_and_a_polled_transcript_are_read_only_as_far_as_needed(tmp_path):
+    from journal.features.shell.support.output_files import OutputFiles
+    from journal.http.transcripts.transcript_turns import TranscriptTurns
+    from journal.providers.claude import Claude
+    (tmp_path / "parts").write_text("R\nW\nR\n")
+    (tmp_path / "0.out").write_text("".join(f"first {i}\r\n" for i in range(5)))
+    (tmp_path / "0.err").write_text("oops\n")
+    (tmp_path / "2.out").write_text("".join(f"line {i} " + "x" * (i % 300) + "\n" for i in range(40000)))
+    files = OutputFiles(tmp_path)
+    assert all(files.last(n) == files.lines()[-n:] for n in (1, 20, 39999, 40001, 40006, 90000)), "the tail read from the files' ends is the tail of every line, across parts and past a block"
+    transcript = tmp_path / "t.jsonl"
+    row = lambda n: json.dumps({"type": "assistant", "timestamp": "", "message": {"role": "assistant", "content": [{"type": "text", "text": f"said {n}"}]}}) + "\n"
+    transcript.write_text(row(1) + "not json\n" + row(2) + row(3)[:20])
+    turns, claude = TranscriptTurns(), Claude()
+    assert turns.of(claude, transcript) == claude.turns(transcript), "the first poll reads every whole line"
+    transcript.write_text(transcript.read_text() + row(3)[20:] + row(4))
+    assert turns.of(claude, transcript) == claude.turns(transcript) and [t.line for t in turns.of(claude, transcript)] == [1, 3, 4, 5], "a later poll carries on from where the last stopped, the line numbers counted on"
+    transcript.write_text(row(9))
+    assert [t.text for t in turns.of(claude, transcript)] == ["said 9"], "a transcript written anew is read from its start"
+
+
+def test_a_subagents_shell_line_is_never_moved_to_the_background(app):
+    console = app.console()
+    hook(app, "SessionStart")
+    wrapped = "source /s 2>/dev/null || true && eval 'sleep 60 && echo done' < /dev/null && pwd -P >| /tmp/cwd"
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sleep 60 && echo done"}, agent_id="a1")
+    assert console.run(["shell", "limit", "--line", wrapped], AGENT).out.strip() == "0", "a subagent is never told a command ended, so its line stays in its foreground"
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sleep 60 && echo done"})
+    assert console.run(["shell", "limit", "--line", wrapped], AGENT).out.strip() == "30", "the same line run by the agent itself moves as ever"

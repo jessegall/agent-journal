@@ -18,9 +18,9 @@
       "counts": {
         "charts:10:writes": 0,
         "charts:31:said": 6,
-        "charts:41:times_named": 0,
-        "charts:41:tools_used": 0,
+        "charts:42:times_named": 0,
         "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
@@ -34,9 +34,9 @@
       "counts": {
         "charts:10:writes": 0,
         "charts:31:said": 6,
-        "charts:41:times_named": 0,
-        "charts:41:tools_used": 0,
+        "charts:42:times_named": 0,
         "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
@@ -57,19 +57,19 @@
       "counts": {
         "charts:10:writes": 0,
         "charts:31:said": 7,
-        "charts:41:times_named": 1,
-        "charts:41:tools_used": 1,
+        "charts:42:times_named": 1,
         "charts:42:tools_used": 1,
-        "charts:43:uses_unanswered": 0,
+        "charts:43:tools_used": 1,
         "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
         "charts:8:writes": 0,
         "charts:9:writes": 0
       },
       "read": [
         {
-          "276": 1,
-          "278": 1,
-          "290": 1
+          "282": 1,
+          "284": 1,
+          "296": 1
         }
       ]
     }

@@ -77,14 +77,15 @@ class CheckRunner:
                                    env={**os.environ, "JOURNAL_REPORT": str(report)}, start_new_session=True)
         late = threading.Timer(TIMEOUT, os.killpg, (process.pid, signal.SIGKILL))
         late.start()
-        output, saved = "", time.time()
+        printed, saved = [], time.time()
         for line in process.stdout:
-            output += line
+            printed.append(line)
             if time.time() - saved >= EVERY:
-                self.checks.touch(check, by, running=CheckOutput.progress(output, check.running.at))
+                self.checks.touch(check, by, running=CheckOutput.progress("".join(printed), check.running.at))
                 saved = time.time()
         code = process.wait()
         late.cancel()
+        output = "".join(printed)
         if code == -signal.SIGKILL:
             return FinishedRun(False, f"{output}\ntimed out after {TIMEOUT}s", f"it timed out after {TIMEOUT}s")
         return FinishedRun(code == 0, output, FAULTS.get(code, ""))

@@ -40,6 +40,9 @@ class OutputCommand(Command):
         files = OutputFiles(Path(output.folder))
         if not files.is_kept():
             raise Refused(f"output {output.id} has no files left")
+        if args.tail:
+            print("\n".join(files.last(args.tail)))
+            return 0
         lines = files.lines()
         if args.reader:
             print("\n".join(self.readers.named(args.reader).read(lines)))
@@ -51,8 +54,8 @@ class OutputCommand(Command):
             first, _, last = args.lines.partition("-")
             print("\n".join(lines[int(first) - 1:int(last or first)]))
             return 0
-        if args.head or args.tail:
-            print("\n".join(lines[:args.head] if args.head else lines[-args.tail:]))
+        if args.head:
+            print("\n".join(lines[:args.head]))
             return 0
         if args.all:
             print("\n".join(lines))

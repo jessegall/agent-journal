@@ -43,6 +43,7 @@ class Tasks(Feature):
         Entry(NodeKind.CHECK, 'task_just_taken', 'Task just taken in hand by this agent?', 'the row is a task this agent has just started, resumed after a park, or claimed'),
         Entry(NodeKind.CHECK, 'task_just_parked', 'Task just parked?', 'the row is a task that was just parked'),
         Entry(NodeKind.CHECK, 'task_just_blocked', 'Task just blocked?', 'the row is a task that was just blocked'),
+        Entry(NodeKind.CHECK, 'task_just_done', 'Task just done?', 'the row is a task that was just finished, by command or by a commit'),
     )
 
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "`journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
@@ -58,12 +59,13 @@ class Tasks(Feature):
     IN_HAND = Nudge(name, "in_hand", "{{name}} in hand, {{edits}} edits", "if this is not what you are doing, finish it or park it and start the work you are on", repeat_after=0)
     PARKED = Nudge(name, "parked", "parked tasks, still open: {{tasks}}", "`journal task resume <n>` picks one up", repeat_after=0)
     PARKED_STILL = Nudge(name, "parked_still", "task {{n}} is still parked: can you continue it now?", "it was parked because: {{why}}. `journal task resume {{n}}` picks it up again", repeat_after=900)
+    PARKED_AT_CLOSE = Nudge(name, "parked_at_close", "task {{n}} is still parked: can you continue it now?", "it was parked because: {{why}}. `journal task resume {{n}}` picks it up again", repeat_after=0)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step", repeat_after=300, held_whatever_its_values=True)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for half an hour: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
     WAIT_CLEARED = Nudge(name, "wait_cleared", "task {{n}} is open again: {{on}} is answered or closed", "`journal task start {{n}}` takes it up", repeat_after=0)
     BROKEN_WAIT = Nudge(name, "broken_wait", "{{waits}}", "so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat_after=0)
     BLOCKED_STILL = Nudge(name, "blocked_still", "blocked on something outside: {{tasks}}", "has it come? `journal task unblock <n>` when it has", repeat_after=2700, held_whatever_its_values=True)
-    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, CHECK_AWAITED, CHECK_IN, WAIT_CLEARED, BROKEN_WAIT, BLOCKED_STILL)
+    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, PARKED_AT_CLOSE, CHECK_AWAITED, CHECK_IN, WAIT_CLEARED, BROKEN_WAIT, BLOCKED_STILL)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks

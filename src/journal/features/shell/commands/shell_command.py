@@ -10,6 +10,7 @@ from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.support.chain import Chain
+from journal.support.hook import Hook
 from journal.features.shell.support.doing import Doing
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_log import OutputLog
@@ -26,6 +27,8 @@ from journal.repositories.settings import Settings
 from journal.support.chat_mark import ChatMark
 
 TAIL = 2000
+STARTS_LOOKED_AT = 20
+"""How many of the session's newest tool starts are looked through for the one a line the runner is handed came from."""
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
 WORDS_IN = re.compile(r"[A-Za-z]{3,}")
 """A word of three letters or more: a line holding one says something."""
@@ -89,12 +92,19 @@ class ShellCommand(Command):
     def limit(self, args: Namespace, where: Where) -> int:
         """Ten seconds while a message of the user's waits, thirty otherwise, as the settings say; a line of journal commands alone is never moved."""
         from journal.features.shell.feature import Shell
-        if Chain.is_journal_line(args.line):
+        if Chain.is_journal_line(args.line) or self.is_subagents(args.line, where):
             print(0)
             return 0
         waiting = bool(self.messages.unread())
         print(int(self.settings.option(Shell.WHILE_WAITING if waiting else Shell.FOREGROUND)))
         return 0
+
+    def is_subagents(self, line: str, where: Where) -> bool:
+        """Whether a subagent runs the line: the newest start of a tool in the session with the same commands was a subagent's. A subagent is never told a command ended, so its line is never moved to the background."""
+        own = Chain.own(line)
+        starts = (Hook.parse(entry.data, where.environment, "claude") for entry in self.entries.tool_starts(where.session, STARTS_LOOKED_AT))
+        start = next((hook for hook in starts if Chain.own(hook.input.get("command", "")) == own), None)
+        return start is not None and bool(start.subagent)
 
     def cap(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell

@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from typing import Iterator
 
 from journal.support.hook_kind import HookKind
 from journal.providers.support.codex_row import CodexRow
@@ -24,8 +25,8 @@ class Codex(Provider):
     def transcript(self, project: Path, session: str) -> Path | None:
         return next((Path.home() / ".codex" / "sessions").glob(f"**/rollout-*-{session}.jsonl"), None)
 
-    def turns(self, path: Path) -> list[Turn]:
-        return [turn for number, row in self.json_lines(path) if (turn := self.turn(number, CodexRow.from_json(row)))]
+    def turns_in(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
+        return [turn for number, row in rows if (turn := self.turn(number, CodexRow.from_json(row)))]
 
     def turn(self, number: int, row: CodexRow) -> Turn | None:
         if row.type != "response_item":

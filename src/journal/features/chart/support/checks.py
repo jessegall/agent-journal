@@ -401,6 +401,9 @@ class Checks:
     def task_just_blocked(self, ctx: Context) -> bool:
         return self.task_became(ctx, TaskState.BLOCKED)
 
+    def task_just_done(self, ctx: Context) -> bool:
+        return self.task_became(ctx, TaskState.DONE)
+
     def task_became(self, ctx: Context, state: TaskState) -> bool:
         return self.row_became(ctx, Task, state)
 
