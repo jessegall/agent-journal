@@ -388,7 +388,7 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
-    console.run(["question", "ask", "Which name?", "--options", "alpha, beta"], AGENT)
+    console.run(["question", "ask", "Which name?", "--options", "alpha", "beta"], AGENT)
     machine = app.container.get(Machine)
     assert isinstance(machine.current("s1"), Waiting) and machine.current("s1").question_id == 1
     assert hook(app, "Stop")[1] == {}, "idle while waiting is fine"
@@ -1340,9 +1340,12 @@ def test_wispr_flow_is_among_the_suggested_mcp_services():
 def test_a_question_whose_options_say_i_or_you_is_refused(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
-    refused = app.console().run(["question", "ask", "Who upgrades it?", "--options", "I'll upgrade it myself, You run the upgrade"], AGENT)
+    refused = app.console().run(["question", "ask", "Who upgrades it?", "--options", "I'll upgrade it myself", "You run the upgrade"], AGENT)
     assert refused.code == 1 and "never I, we or you" in refused.err and "I'll upgrade it myself; You run the upgrade" in refused.err
-    assert app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, The agent upgrades it"], AGENT).code == 0
+    lone = app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, The agent upgrades it"], AGENT)
+    assert lone.code == 1 and "its own quoted argument" in lone.err, "one option holding a comma is the old comma list, refused"
+    asked = app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, today", "The agent upgrades it"], AGENT)
+    assert asked.code == 0 and "1. The user upgrades it, today" in asked.out and "2. The agent upgrades it" in asked.out, "a comma inside a quoted option stays in it, and the options are printed back numbered"
 
 
 def test_a_reply_sent_by_command_comes_back_with_the_hint_that_it_can_be_typed(app):
@@ -2641,7 +2644,7 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
-    console.run(["question", "ask", "Which name?", "--options", "alpha, beta"], AGENT)
+    console.run(["question", "ask", "Which name?", "--options", "alpha", "beta"], AGENT)
     console.run(["question", "answer", "1", "beta"], USER)
     assert any("question 1 is answered" in line and "`journal question show 1`" in line for line in typed), "told like a message, with the command to read it"
     shown = console.run(["question", "show", "1"], AGENT).out
@@ -4013,7 +4016,7 @@ def test_the_card_for_a_question_the_user_answered_is_the_users(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     console.run(["question", "answer", "1", "red"], USER)
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
     assert card.text == "You answered question 1" and card.created_by.kind == ActorKind.USER, "the user's act is written as the user's"
@@ -4927,7 +4930,7 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
     assert machine.current("s1").name == "stuck"
     send_back()
     assert machine.current("s1").name == "working", "back from being stuck"
-    console.run(["question", "ask", "which colour?", "--options", "red,blue"], AGENT)
+    console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     assert machine.current("s1").name == "waiting"
     send_back()
     assert machine.current("s1").name == "working", "back from a question"

@@ -46,7 +46,7 @@ lists the verbs.
   with `journal task done <n> --how "<outcome>"`.
 - **plan**: ordered tasks. `journal plan start <n>` follows it: finishing a task starts the next.
 - **message** and **question**: what you and the user say to each other. Answer unread messages first;
-  `journal question ask "<text>" --options a,b` waits for the user.
+  `journal question ask "<text>" --options "a" "b"` waits for the user.
 - **fact**, **rule**, **reminder**: what must survive the context window. At a context mark, writes wait
   until you record one or say `journal nothing survives "<why>"`.
 - **sequence**, **worker**, **skill**: steps to follow, agents that write for you, and these files.
