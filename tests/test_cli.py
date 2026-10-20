@@ -106,6 +106,51 @@ def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app)
         assert app.container.get(Reactions).all()[-1].created_by.kind == "user", "a shell outside the journal is the user's"
 
 
+def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app):
+    from journal.models.agent import Agent
+    from journal.repositories.agents import Agents
+    from journal.repositories.environments import Environments
+    environments, agents = app.container.get(Environments), app.container.get(Agents)
+    development = environments.named("development")
+    with app.container.get(Scope).of(development.id):
+        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", oriented=False), Actor.system())
+        agents.save(Agent(session="claude-session", environment_id=development.id, provider="claude", oriented=False), Actor.system())
+    where = Where.from_environ({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "codex-session", "CODEX_CI": "1"})
+    assert app.console().run(["environment", "here"], where).code == 0
+    with app.container.get(Scope).of(development.id):
+        assert agents.for_session("codex-session").oriented
+        assert not agents.for_session("claude-session").oriented
+    assert app.console().run(["task", "create", "Codex task"], where).code == 0
+    with app.container.get(Scope).of(development.id):
+        assert app.container.get(Tasks).all()[-1].created_by == Actor.agent("codex-session")
+    assert Where.from_environ({"JOURNAL_SESSION": "worker-session", "CODEX_THREAD_ID": "parent-session"}).session == "worker-session"
+
+
+@pytest.mark.parametrize("online", [False, True])
+def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app, online):
+    import os
+    import subprocess
+    from journal.models.agent import Agent
+    from journal.repositories.agents import Agents
+    from journal.repositories.environments import Environments
+    agents = app.container.get(Agents)
+    development = app.container.get(Environments).named("development")
+    with app.container.get(Scope).of(development.id):
+        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", oriented=False), Actor.system())
+    environ = {key: value for key, value in os.environ.items() if key not in ("JOURNAL_SESSION", "CLAUDECODE", "CODEX_SANDBOX")}
+    environ.update(JOURNAL_ROOT=str(app.config.root), JOURNAL_ENV="development", JOURNAL_PORT="0", CODEX_THREAD_ID="codex-session", CODEX_CI="1")
+    server = app.server()
+    if online:
+        server.start()
+    try:
+        result = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "environment", "here"], env=environ, capture_output=True, text=True, timeout=10)
+        assert result.returncode == 0, result.stderr
+        with app.container.get(Scope).of(development.id):
+            assert agents.for_session("codex-session").oriented
+    finally:
+        server.stop()
+
+
 def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists(app, monkeypatch, tmp_path):
     from journal.support.where import Where
     from journal.support.actor import Actor

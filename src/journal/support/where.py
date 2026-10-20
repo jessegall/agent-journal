@@ -26,7 +26,8 @@ class Where:
 
     @classmethod
     def from_environ(cls, environ: dict) -> "Where":
-        return cls(environ.get("JOURNAL_ENV", "main"), environ.get("JOURNAL_SESSION", ""), bool(environ.get("CLAUDECODE") or environ.get("CODEX_SANDBOX") or environ.get(AGENT_SHELL)))
+        session = environ.get("JOURNAL_SESSION") or environ.get("CODEX_THREAD_ID", "")
+        return cls(environ.get("JOURNAL_ENV", "main"), session, bool(environ.get("CLAUDECODE") or environ.get("CODEX_SANDBOX") or environ.get("CODEX_CI") or environ.get(AGENT_SHELL)), environ.get("JOURNAL_PLUGIN", ""))
 
     def as_(self, session: str) -> "Where":
         return Where(self.environment, session)

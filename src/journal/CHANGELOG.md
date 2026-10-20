@@ -2,6 +2,14 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.6
+
+- Codex starts in the environment chosen in the launch menu. Each launch uses its own process, so a shared background server cannot carry over another project's environment or connection.
+- Journal commands recognize Codex's session, with or without a running journal server. Reading the environment clears the startup check for that session, and its commands are recorded as the agent's.
+- A blocked task with nothing that opens it by itself is named plainly.
+- Reading or searching through a shell command shows the figure's book or magnifying glass, and the watch is larger.
+- The file edits list reads only the newest fifty edits instead of loading the whole session's history.
+
 ## 4.4.5
 
 - The task titles in the rail's task list show again; 4.4.3 squeezed them out when the list was made to scroll.
