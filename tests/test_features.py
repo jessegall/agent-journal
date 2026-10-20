@@ -6466,10 +6466,16 @@ def test_a_subagent_job_on_files_one_already_worked_on_goes_back_to_it_and_a_rev
     review = {**again, "subagent_type": "journal-planner"}
     assert "SendMessage" not in json.dumps(hook(app, "PreToolUse", tool_name="Agent", tool_input=review, tool_use_id="u3")[1]), "a review is always fresh"
 class Source:
-    def __init__(self, *tags: str) -> None:
+    def __init__(self, *tags: str, head: str = "") -> None:
         self.tags_asked = []
         self.found = list(tags)
         self.plugin_found = []
+        self.head = head
+        self.branches_asked = []
+
+    def head_of(self, address: str, branch: str) -> str:
+        self.branches_asked.append((address, branch))
+        return self.head
 
     def tags_of(self, address: str) -> list[str]:
         return self.plugin_found
@@ -6491,8 +6497,8 @@ class Installer:
     def __init__(self) -> None:
         self.ran = []
 
-    def run(self, release: Release) -> None:
-        self.ran.append(release.tag)
+    def run(self, ref: str, repository: str) -> None:
+        self.ran.append(ref)
 
 
 def updating_with(app, source: Source, installer: Installer, auto: bool) -> Updating:
@@ -7447,3 +7453,18 @@ def test_a_shell_line_says_whether_it_reads_searches_or_runs():
     assert Chain.work_of(wrapped("sed -n 1,20p src/a.py")) == "reading", "a read through the shell is reading, so the figure shows its book"
     assert Chain.work_of(wrapped("grep -rn foo src && cat b.py")) == "searching", "a line that only reads, with a search in it, is searching"
     assert Chain.work_of(wrapped("npm run build")) == "running", "anything else runs"
+
+
+def test_a_journal_set_to_follow_a_branch_installs_that_branchs_newest_commit(app):
+    (app.config.home / "src").mkdir(parents=True, exist_ok=True)
+    (app.config.home / "src" / "commit").write_text("aaaaaaa1111\n")
+    app.container.get(Settings).set("updates.branch", "development", Actor.user(1))
+    source, installer = Source("v4.99.0", head="aaaaaaa1111"), Installer()
+    updating = updating_with(app, source, installer, auto=True)
+    updating.checked()
+    assert source.branches_asked == [("https://github.com/jessegall/agent-journal", "development")] and source.tags_asked == [], "a followed branch is asked for its head, never the releases"
+    assert installer.ran == [] and not updating.standing().newer and "newest commit" in updating.said(), "the installed commit is the branch's head: nothing to install"
+    source.head = "bbbbbbb2222"
+    updating.checked()
+    assert installer.ran == ["development"] and updating.standing().latest == "bbbbbbb" and updating.standing().branch == "development", "the branch moved on, so its head is installed, by its name"
+    assert updating.label() == "development at aaaaaaa", "what is installed is named by the branch and its commit"

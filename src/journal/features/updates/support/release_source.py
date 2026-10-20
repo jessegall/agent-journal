@@ -15,6 +15,13 @@ class ReleaseSource:
         with urlopen(request, timeout=READ_SECONDS) as answer:
             return [found["ref"].removeprefix("refs/tags/") for found in json.load(answer)]
 
+    def head_of(self, address: str, branch: str) -> str:
+        """The commit at the head of a branch of any git address."""
+        listed = subprocess.run(["git", "ls-remote", "--heads", address, branch], capture_output=True, text=True, timeout=LIST_SECONDS)
+        if listed.returncode != 0 or not listed.stdout.strip():
+            raise OSError(f"could not read the branch {branch} of {address}: {listed.stderr.strip()[-200:] or 'no such branch'}")
+        return listed.stdout.split()[0]
+
     def tags_of(self, address: str) -> list[str]:
         """The tags of any git address, such as a plugin's."""
         listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", address], capture_output=True, text=True, timeout=LIST_SECONDS)

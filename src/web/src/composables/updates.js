@@ -38,8 +38,8 @@ export function useUpdates() {
         if (updating.version && !updating.failure && !updating.late) return {busy: true, text: `Updating to ${updating.version}. The page reloads when it's done.`};
         if (a.updating) return {busy: true, text: `Updating to ${a.updating}…`};
         if (a.problem) return {text: a.problem};
-        if (a.newer) return {text: `Version ${a.latest} is out.`, update: true};
-        return a.latest ? {text: "This is the newest version."} : null;
+        if (a.newer) return {text: a.branch ? `${a.branch} has a newer commit, ${a.latest}.` : `Version ${a.latest} is out.`, update: true};
+        return a.latest ? {text: a.branch ? `This is the newest commit of ${a.branch}.` : "This is the newest version."} : null;
     });
 
     async function update() {

@@ -8,6 +8,8 @@ class UpdateStanding:
     installed: str
     latest: str
     newer: bool
+    branch: str
+    """The branch the journal follows; empty when it follows the releases."""
     versions: list[str]
     updating: str
     step: str

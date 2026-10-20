@@ -145,5 +145,7 @@ for name in journal supervisor journal.py journal.sh; do
   swap "$SRC/$name" ".journal/src/$name"
 done
 mkdir -p .journal/src/web && swap "$SRC/web/dist" .journal/src/web/dist
+# The commit installed, so a journal that follows a branch knows whether the branch has moved on.
+git -C "$SRC/.." rev-parse HEAD > .journal/src/commit 2>/dev/null || printf '' > .journal/src/commit
 [ -z "$TMP" ] || rm -rf "$TMP"
 JOURNAL_ROOT="$PWD" "$PY" .journal/src/journal.py setup

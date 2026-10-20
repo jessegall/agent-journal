@@ -43,7 +43,9 @@ __journal_show() {
         tail -c $((cap / 2)) "$1"
         return
     fi
-    # the flags are taught on the first kept output of every 25; the rest say only where it is kept
+    # said once for the chain, however many parts were kept; the flags are taught on the first kept output of every 25, the rest say only where it is kept
+    [ -z "$__journal_said_kept" ] || return
+    __journal_said_kept=1
     if [ $((__journal_n % 25)) -eq 1 ]; then
         printf '[journal] output %s: %s characters, kept. read the part you need: journal output read %s --grep "<words>", --head 20, --tail 20, --lines 40-80, --summary or --all, never its files raw\n' "$__journal_n" "$__journal_size" "$__journal_n"
     else

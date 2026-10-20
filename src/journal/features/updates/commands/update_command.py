@@ -20,9 +20,9 @@ class UpdateCommand(Command):
 
     def now(self, args: Namespace, where: Where) -> int:
         self.updating.read()
-        newest = self.updating.newest().version
+        target = self.updating.target()
         self.updating.update_now(where.actor)
-        print(f"updating from {self.updating.running().version} to {newest}: the journal restarts on {newest} once the install is done, within a few minutes")
+        print(f"updating from {self.updating.label()} to {target.label}: the journal restarts on it once the install is done, within a few minutes")
         return 0
 
     def check(self, args: Namespace, where: Where) -> int:
