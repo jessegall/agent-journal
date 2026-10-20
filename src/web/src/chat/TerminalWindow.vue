@@ -19,7 +19,7 @@ watch(
     () => agent.value && agent.value.updated_at,
     () => (sending.value = sending.value.filter((s) => !s.sent))
 );
-const lines = useTerminal(props.level, () => agent.value, scope.api);
+const lines = useTerminal(() => agent.value, scope.api);
 const command = ref("");
 const input = ref(null);
 

@@ -5,10 +5,10 @@ from pathlib import Path
 INSTALL = Path(__file__).resolve().parent.parent / "install.sh"
 
 
-def installed_over_version_3(tmp_path: Path, setup_code: int, yes: str = "1") -> subprocess.CompletedProcess:
-    """A version 3 journal, and a stand-in python that passes the version check and ends setup with the given code, so no journal starts."""
+def installed_over_version_3(tmp_path: Path, setup_code: int, yes: str = "1", version: str = "3.3.5") -> subprocess.CompletedProcess:
+    """A journal from before version 4, and a stand-in python that passes the version check and ends setup with the given code, so no journal starts."""
     (tmp_path / ".journal" / "src").mkdir(parents=True)
-    (tmp_path / ".journal" / "src" / "VERSION").write_text("3.3.5\n")
+    (tmp_path / ".journal" / "src" / "VERSION").write_text(f"{version}\n")
     (tmp_path / ".journal" / "project").mkdir()
     (tmp_path / ".journal" / "project" / "message-1.json").write_text("{}")
     bin_ = tmp_path / "bin"
@@ -36,3 +36,9 @@ def test_without_a_yes_the_installer_changes_nothing(tmp_path: Path):
     run = installed_over_version_3(tmp_path, 0, yes="")
     assert run.returncode == 0 and "Nothing changed" in run.stdout, run.stdout
     assert (tmp_path / ".journal" / "src" / "VERSION").read_text() == "3.3.5\n" and not (tmp_path / ".journal" / "version-3").exists()
+
+
+def test_a_journal_numbered_2_is_from_before_version_4_too_and_kept_whole(tmp_path: Path):
+    run = installed_over_version_3(tmp_path, 0, version="2.272.14")
+    assert run.returncode == 0, run.stderr
+    assert (tmp_path / ".journal" / "version-3" / "project" / "message-1.json").is_file() and (tmp_path / ".journal" / "version-3" / "src" / "VERSION").read_text() == "2.272.14\n", "a 2.x journal is backed up whole like a 3.x one"

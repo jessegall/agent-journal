@@ -65,12 +65,13 @@ class AgentActivity:
         return "working" if state in WORKING and heard == "busy" else heard
 
     def thinking(self, session: str, hooks) -> str:
-        """What the working bubble shows: the agent's latest thought, until it next writes something visible."""
-        thoughts = self.messages.thoughts_of(session)
-        written = [e.created_at for e in hooks if e.kind == "TurnWritten"]
-        if not thoughts or (written and written[-1] > thoughts[-1].created_at):
+        """What the working bubble shows: the agent's latest thought of the turn in progress, until it next writes something visible; a thought from before the turn's prompt is never shown as now."""
+        thoughts = self.messages.thoughts_of(session, 1)
+        if not thoughts:
             return ""
-        return thoughts[-1].text
+        written = [e.created_at for e in hooks if e.kind == "TurnWritten"]
+        later = [at for at in (written[-1] if written else None, self.entries.last_prompt_of(session)) if at is not None]
+        return "" if any(at > thoughts[-1].created_at for at in later) else thoughts[-1].text
 
     @staticmethod
     def sequence_of(agent: Agent) -> SequenceInHand | None:

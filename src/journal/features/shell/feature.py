@@ -38,7 +38,7 @@ class Shell(Feature):
     NARROW = Nudge(name, "narrow", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_after=0)
     ALONE = Nudge(name, "alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_after=0)
     CHECK_BACKGROUND = Nudge(name, "check_background", "output {{background_outputs}} still running", "look at it; hung or stuck: stop it and say why", repeat_after=300, held_whatever_its_values=True)
-    nudges = (MOVED, ENDED, ALONE, CHECK_BACKGROUND)
+    nudges = (MOVED, ENDED, ALONE, CHECK_BACKGROUND, USE_READER, READER_TIP, NARROW)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands

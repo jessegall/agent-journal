@@ -1,5 +1,5 @@
 ---
-name: planner
+name: journal-planner
 description: Designs how to build a change: the files to touch, what already does part of it, the order of the steps and the risks. Read-only.
 tools: Read, Grep, Glob
 kind: subagent

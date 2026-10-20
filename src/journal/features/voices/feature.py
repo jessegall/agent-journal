@@ -27,4 +27,4 @@ class Voices(Feature):
     VOICE = Nudge(name, "voice", "how to talk to the user", "{{voice}}", repeat_after=0)
     INTRODUCE = Nudge(name, "introduce", "introduce yourself to the user in the chat", "one or two lines in your voice, then ask what to do, unless the user has already asked for something: then go on with it", repeat_after=0, answered_in_chat=True)
     CHANGED = Nudge(name, "changed", "the user changed how you talk to them", "From now on: {{voice}} Answer this with one opening sentence in the new voice in the chat, so the user hears the change, and add nothing else about it.", repeat_after=0, answered_in_chat=True)
-    nudges = (VOICE, CHANGED)
+    nudges = (VOICE, CHANGED, INTRODUCE)

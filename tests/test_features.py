@@ -7268,3 +7268,27 @@ def test_the_journals_skills_and_profiles_are_written_fresh_and_a_projects_own_a
     files.write_all()
     names = sorted(p.stem for p in agents.glob("*.md"))
     assert names == ["auditor", "journal-debugger", "journal-medior", "journal-plan-reviewer", "journal-planner", "journal-researcher", "journal-senior", "planner"], f"the old unedited researcher and a journal profile no longer shipped go; an edited planner and the project's auditor stay: {names}"
+
+
+def test_the_thinking_line_shows_only_a_thought_of_the_turn_in_progress(app):
+    import time
+    from journal.http.agents.agent_activity import AgentActivity
+    from journal.models.author import Author
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    messages, activity = app.container.get(Messages), app.container.get(AgentActivity)
+    hook(app, "UserPromptSubmit", prompt="look at the login")
+    time.sleep(0.01)
+    messages.save(Message(author=Author.AGENT, text="the login reads the old store", data={"kind": Message.THOUGHT}), Actor.agent("s1"))
+    assert activity.thinking("s1", []) == "the login reads the old store", "a thought of this turn is shown while the agent works"
+    time.sleep(0.01)
+    hook(app, "UserPromptSubmit", prompt="and the logout?")
+    assert activity.thinking("s1", []) == "", "a new turn began: the thought from before its prompt is not shown as now"
+
+
+def test_every_line_a_feature_declares_is_registered_with_it(app):
+    from journal.engine.nudge import Nudge
+    from journal.features.registry import Registry
+    unregistered = [f"{nudge.key}" for feature in app.container.get(Registry).features for nudge in vars(type(feature) if not isinstance(feature, type) else feature).values() if isinstance(nudge, Nudge) and nudge not in feature.nudges]
+    assert unregistered == [], f"a line the registry cannot find is taken for one whose answer stays out of the chat: {unregistered}"

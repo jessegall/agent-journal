@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from journal.models.entry import Entry
+from journal.support.actor import Actor
 from journal.repositories.scoped_repository import ScopedRepository
 
 
@@ -12,6 +15,11 @@ class Entries(ScopedRepository[Entry]):
     def trim(self, newest: int, kept: int) -> int:
         """The record cut to the newest so many entries by number, across every environment; how many went."""
         return self.connection.execute("DELETE FROM entries WHERE id <= ?", (newest - kept,)).rowcount
+
+    def last_prompt_of(self, session: str) -> datetime | None:
+        """When the session's newest turn began: its last prompt."""
+        rows = self.selected("kind = 'PromptSubmitted' AND actor = ? ORDER BY id DESC LIMIT 1", (Actor.agent(session).stamp,))
+        return rows[0].created_at if rows else None
 
     def said_to(self, session: str) -> int:
         """How many lines the journal has said to this session, counted whole: the nudge entries carrying it."""

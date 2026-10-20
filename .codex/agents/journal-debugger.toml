@@ -1,4 +1,4 @@
-name = "debugger"
+name = "journal-debugger"
 description = "Traces a fault to where it starts and says the fix that belongs there. Read-only."
 model = "gpt-6-sol"
 sandbox_mode = "read-only"

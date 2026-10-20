@@ -29,7 +29,7 @@ else
   git clone --quiet --depth 1 --branch "$REF" "$REPO" "$TMP/pkg"
   SRC="$TMP/pkg/src"
 fi
-# A version 3 journal is moved whole into .journal/version-3 before anything is written, and is never changed after;
+# A journal from before version 4 is moved whole into .journal/version-3 before anything is written, and is never changed after;
 # should the install fail before the new journal is up, it is put back where it was.
 BACKED=""
 restore() {
@@ -47,8 +47,10 @@ this_projects() {
   ps -o command= -p "$pid" | grep -qF "$PWD/" && return 0
   [ "$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')" = "$PWD" ]
 }
-if [ -f .journal/src/VERSION ] && [ "$(cut -c1 .journal/src/VERSION)" = 3 ]; then
-  echo "This project has a version 3 journal. It will be stopped and kept whole in .journal/version-3, then version 4 is"
+# Every journal from before version 4 writes its version in src/VERSION, 2.x as much as 3.x; version 4 writes none.
+old_major=$(cut -d. -f1 .journal/src/VERSION 2>/dev/null | tr -cd '0-9')
+if [ -n "$old_major" ] && [ "$old_major" -lt 4 ]; then
+  echo "This project has a journal from before version 4 ($(cat .journal/src/VERSION)). It will be stopped and kept whole in .journal/version-3, then version 4 is"
   echo "installed, and the viewer offers to bring everything across. Nothing is lost."
   if [ "${AGENT_JOURNAL_YES:-}" != 1 ]; then
     printf 'Go ahead? [y/N] '

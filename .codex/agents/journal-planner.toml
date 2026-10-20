@@ -1,4 +1,4 @@
-name = "planner"
+name = "journal-planner"
 description = "Designs how to build a change: the files to touch, what already does part of it, the order of the steps and the risks. Read-only."
 model = "gpt-6-sol"
 sandbox_mode = "read-only"

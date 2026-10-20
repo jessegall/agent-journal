@@ -1,5 +1,5 @@
 ---
-name: medior
+name: journal-medior
 description: A worker for a job whose shape is settled: a change the brief spells out, tests to write, a rename. Writes, on Sonnet.
 tools: Read, Grep, Glob, Edit, Write, Bash
 kind: worker

@@ -1,5 +1,5 @@
 ---
-name: debugger
+name: journal-debugger
 description: Traces a fault to where it starts and says the fix that belongs there. Read-only.
 tools: Read, Grep, Glob
 kind: subagent

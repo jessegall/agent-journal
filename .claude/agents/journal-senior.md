@@ -1,5 +1,5 @@
 ---
-name: senior
+name: journal-senior
 description: A worker for a job that needs judgement: a design inside the code, a hard fault, a change across many files. Writes, on Opus.
 tools: Read, Grep, Glob, Edit, Write, Bash
 kind: worker
