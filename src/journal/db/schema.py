@@ -24,14 +24,12 @@ class Schema:
                 self.add_new_columns(db, model)
 
     def vacuum_on_its_own(self) -> None:
-        """The file gives the space of deleted rows back to the disk at every commit: a database made before that is switched over once, by a compaction."""
         if self.connection.one("PRAGMA auto_vacuum")[0] == FULL:
             return
         self.connection.execute(f"PRAGMA auto_vacuum = {FULL}")
         self.connection.execute("VACUUM")
 
     def add_new_columns(self, db, model: type[Model]) -> None:
-        """A column a model gained after its table was made is added to the table; nothing is ever dropped."""
         present = {row["name"] for row in db.execute(f"PRAGMA table_info({model.table()})").fetchall()}
         for column in self.columns(model):
             if column.name not in present:
@@ -44,7 +42,7 @@ class Schema:
     @staticmethod
     def columns(model: type[Model]) -> tuple[Column, ...]:
         hints = get_type_hints(model)
-        return tuple(Column.of(field.name, hints[field.name]) for field in fields(model))
+        return tuple(Column.of(field.name, hints[field.name]) for field in fields(model) if field.metadata.get("column", True))
 
     def version(self) -> int:
         row = self.connection.one("SELECT MAX(number) AS number FROM migrations")

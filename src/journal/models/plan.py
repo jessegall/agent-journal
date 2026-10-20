@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from journal.models.plan_state import PlanState
+from journal.events.rows.plan_started import PlanStarted
 from journal.models.scoped import Scoped
+from journal.models.task import Task
 from journal.support.refused import Refused
 
 
@@ -27,8 +29,11 @@ class Plan(Scoped):
     def approved(self) -> "Plan":
         return self.moved(PlanState.APPROVED)
 
-    def started(self) -> "Plan":
-        return self.moved(PlanState.STARTED)
+    def started(self, first: Task, at: float) -> "Plan":
+        return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, at=at, plan_id=self.id, task_id=first.id))
+
+    def started_with_nothing_to_start(self, at: float) -> "Plan":
+        return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, at=at, plan_id=self.id, task_id=0))
 
     def parked(self) -> "Plan":
         return self.moved(PlanState.PARKED)

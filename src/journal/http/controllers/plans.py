@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from journal.http.controllers.controller import Controller
 from journal.http.plans.plan_outline import PlanOutline
 from journal.http.plans.plan_timeline import PlanTimeline
@@ -43,7 +45,7 @@ class PlanController(Controller[Plan]):
         return Response.json(self.shown(self.repository.approve(self.repository.find(request.number("id")), request.actor)))
 
     def start(self, request: Request) -> Response:
-        return self.moved(request, lambda plan: plan.started())
+        return self.moved(request, lambda plan: plan.started_with_nothing_to_start(datetime.now(timezone.utc).timestamp()))
 
     def park(self, request: Request) -> Response:
         return self.moved(request, lambda plan: plan.parked())

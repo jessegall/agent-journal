@@ -1,8 +1,9 @@
 import re
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import ClassVar
 
+from journal.events.event import Event
 from journal.support.actor import Actor
 
 
@@ -12,17 +13,16 @@ class Model:
 
     text_fields: ClassVar[tuple[str, ...]] = ()
     in_timeline: ClassVar[bool] = True
-    """Whether each change of a row of this model is an entry in the timeline the viewer's live updates read."""
 
     id: int | None = None
     created_at: datetime | None = None
     created_by: Actor | None = None
     updated_at: datetime | None = None
     updated_by: Actor | None = None
+    events: tuple = field(default=(), compare=False, metadata={"column": False})
 
     @classmethod
     def table(cls) -> str:
-        """The class in snake_case, plural: Task is tasks, TaskLog is task_logs, Entry is entries."""
         singular = re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__).lower()
         if singular.endswith("y") and singular[-2] not in "aeiou":
             return singular[:-1] + "ies"
@@ -30,7 +30,6 @@ class Model:
 
     @classmethod
     def noun(cls) -> str:
-        """The class in plain words: Task is task, TaskLog is task log."""
         return re.sub(r"(?<!^)(?=[A-Z])", " ", cls.__name__).lower()
 
     @property
@@ -42,3 +41,9 @@ class Model:
 
     def with_(self, **changes) -> "Model":
         return replace(self, **changes)
+
+    def with_event(self, event: Event) -> "Model":
+        return replace(self, events=(*self.events, event))
+
+    def without_events(self) -> "Model":
+        return replace(self, events=())

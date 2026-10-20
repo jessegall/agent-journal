@@ -21,12 +21,10 @@ class PlanControl:
         self.plans, self.tasks, self.machine, self.settings = plans, tasks, machine, settings
 
     def holds(self, plan: Plan) -> bool:
-        """Whether the plan stands at a checkpoint for the user's look: only out of auto mode, since in auto mode a checkpoint never stops it."""
         from journal.features.tasks.feature import Tasks as TasksFeature
         return not self.settings.option(TasksFeature.AUTO) and self.plans.at_checkpoint(plan) is not None
 
     def start(self, plan: Plan, session: str, by: Actor) -> Nudge:
-        """The plan started: its parked task resumed first, else its next open task; with none to start the agent follows it and is told what waits. Only an approved, parked or started plan starts."""
         from journal.features.plans.feature import Plans as PlansFeature
         if plan.is_blocked():
             raise Refused(f"plan {plan.id} is blocked, waiting on: {self.tasks.reason(plan)}; `journal plan unblock {plan.id}` when it may go on")
@@ -38,7 +36,8 @@ class PlanControl:
         task = self.plans.resumable(plan)
         if task is not None:
             self.tasks.refuse_second(task.started(datetime.now(timezone.utc)))
-        plan = self.plans.save(plan.started(), by)
+        now = datetime.now(timezone.utc).timestamp()
+        plan = self.plans.save(plan.started_with_nothing_to_start(now) if task is None else plan.started(task, now), by)
         if task is None:
             self.follow(session, plan, FollowingPlan(plan_id=plan.id))
             return self.waiting(plan)
@@ -47,13 +46,11 @@ class PlanControl:
         return PlansFeature.NEXT.about(n=plan.id, task=started.id, title=started.title)
 
     def waiting(self, plan: Plan) -> Nudge:
-        """What the agent is told when no task of the plan can start: which are left and why none starts."""
         from journal.features.plans.feature import Plans as PlansFeature
         left = [str(t.id) for t in self.plans.tasks_of(plan) if not t.is_closed()]
         return PlansFeature.WAITING.about(n=plan.id, left=f"task {left[0]} is" if len(left) == 1 else f"tasks {', '.join(left)} are")
 
     def park(self, plan: Plan, session: str, by: Actor) -> Plan:
-        """The plan put aside with its task in hand, and the agent following it let go."""
         parked = self.plans.save(plan.parked(), by)
         for task in [t for t in self.plans.tasks_of(parked) if t.state == TaskState.STARTED]:
             self.tasks.save(task.parked(f"plan {parked.id} was parked"), by)
@@ -61,7 +58,6 @@ class PlanControl:
         return parked
 
     def abandon(self, plan: Plan, session: str, by: Actor) -> list[Task]:
-        """The plan cancelled with the tasks only it holds, and the agent following it let go."""
         gone = self.plans.cancel(plan, by)
         self.let_go(session, plan)
         return gone
@@ -71,7 +67,6 @@ class PlanControl:
             self.machine.move(session, plan.environment_id, state)
 
     def let_go(self, session: str, plan: Plan) -> None:
-        """An agent following the plan goes back to rest."""
         if not session:
             return
         try:

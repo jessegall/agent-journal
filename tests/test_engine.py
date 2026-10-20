@@ -18,6 +18,14 @@ from journal.models.agent import Agent
 from journal.models.setting import Setting
 from journal.db.migrations.seed_the_stack import SeedTheStack
 from journal.repositories.agents import Agents
+from journal.repositories.plans import Plans
+from journal.repositories.tasks import Tasks
+from journal.models.plan import Plan
+from journal.models.plan_state import PlanState
+from journal.models.task import Task
+from journal.events.listener import Listener
+from journal.events.bus import Bus
+from journal.events.rows.plan_started import PlanStarted
 from journal.repositories.entries import Entries
 from journal.http.agents.agent_activity import AgentActivity
 from journal.engine.support.trail import Trail
@@ -473,3 +481,24 @@ def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_n
     with app.container.get(Scope).of(1):
         newest = app.container.get(Entries).of_kind(Trail.KIND)[0]
     assert newest.data["cause"] == "journal panic idle" and newest.actor == AGENT.actor
+
+
+class Hearing(Listener[PlanStarted]):
+    def __init__(self) -> None:
+        self.heard: list[PlanStarted] = []
+
+    def handle(self, event: PlanStarted) -> None:
+        self.heard.append(event)
+
+
+def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_none(app):
+    hearing = Hearing()
+    app.container.get(Bus).listen(PlanStarted, hearing)
+    plans, tasks = app.container.get(Plans), app.container.get(Tasks)
+    with app.container.get(Scope).of(1):
+        task = tasks.save(Task(environment_id=1, title="first"), Actor.system())
+        plan = plans.save(Plan(environment_id=1, title="p", state=PlanState.APPROVED), Actor.system())
+        started = plans.save(plan.started(task, 5.0), Actor.system())
+        assert started.events == () and hearing.heard == [PlanStarted(environment_id=1, at=5.0, plan_id=plan.id, task_id=task.id)]
+        plans.save(started.with_(title="renamed"), Actor.system())
+        assert len(hearing.heard) == 1

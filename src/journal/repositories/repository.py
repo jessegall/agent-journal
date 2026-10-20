@@ -45,23 +45,18 @@ class Repository(Generic[M]):
         return self._load(row)
 
     def all(self) -> list[M]:
-        """The newest page of rows, oldest first: a read never loads a whole table unless it asks for every row by name."""
         return self.newest("1", ())
 
     def every(self) -> list[M]:
-        """Every row, for the rare read that must see them all; it says so by its name."""
         return self.selected("1 ORDER BY id")
 
     def selected(self, clause: str, params: tuple = ()) -> list[M]:
-        """The rows a WHERE clause picks, in the order and number it names."""
         return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE {clause}", params)]
 
     def linked(self, kind: str) -> dict[int, list[Ref]]:
-        """What this table's rows link to by a kind, by row number, from one read of the links: every model can have links."""
         return self._linked("kind = ? AND ", (kind,))
 
     def every_linked(self) -> dict[int, list[Ref]]:
-        """What this table's rows link to by a link of any kind, by row number, from one read of the links."""
         return self._linked("", ())
 
     def _linked(self, clause: str, params: tuple) -> dict[int, list[Ref]]:
@@ -71,20 +66,16 @@ class Repository(Generic[M]):
         return found
 
     def where(self, **fields) -> list[M]:
-        """The newest page of the rows with these fields, oldest first."""
         return self.newest(*self.matching(fields))
 
     def every_where(self, **fields) -> list[M]:
-        """Every row with these fields, for the rare read that must see them all."""
         clause, params = self.matching(fields)
         return self.selected(f"{clause} ORDER BY id", params)
 
     def newest(self, clause: str, params: tuple) -> list[M]:
-        """At most a page of the newest rows the clause picks, oldest first."""
         return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE))))
 
     def numbered(self, ids) -> list[M]:
-        """The rows of these numbers in one read, in the order asked; a number with no row is left out."""
         ids = list(ids)
         if not ids:
             return []
@@ -104,7 +95,6 @@ class Repository(Generic[M]):
         return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).to_sql(value) for name, value in fields.items())
 
     def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
-        """The newest rows first, at most limit of them, older than the id before when given; so a list never loads more than a screen."""
         where = [f"{name} = ?" for name in fields]
         params = [self._column(name).to_sql(value) for name, value in fields.items()]
         if before is not None:
@@ -113,7 +103,6 @@ class Repository(Generic[M]):
         return self.selected(f"{' AND '.join(where) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
 
     def page_in(self, limit: int, before: int | None = None) -> list[M]:
-        """A page of the rows the request's scope sees; a model kept for the whole project is seen in every scope."""
         return self.page(limit, before)
 
     def save(self, row: M, by: Actor) -> M:
@@ -121,10 +110,9 @@ class Repository(Generic[M]):
             self.bus.dispatch(Saving(model=row, by=by))
             saved = self._insert(row, by, self._now()) if row.is_new else self._update(row, by)
             self.bus.dispatch(Saved(model=saved, by=by))
-            return saved
+            return self.carried(saved)
 
     def imported(self, row: M, at: datetime, by: Actor) -> M:
-        """A new row brought from elsewhere, such as a version 3 journal, stamped with when it was made there rather than now."""
         with self.connection.transaction():
             self.bus.dispatch(Saving(model=row, by=by))
             saved = self._insert(row, by, at)
@@ -132,7 +120,6 @@ class Repository(Generic[M]):
             return saved
 
     def touch(self, row: M, by: Actor, **fields) -> M:
-        """The named columns alone written, stamped, from the row as it stands in the database: two threads each touching their own column never write over each other."""
         with self.connection.transaction():
             was = self.find(row.id)
             stamped = was.with_(**fields, updated_at=self._now(), updated_by=by)
@@ -144,7 +131,6 @@ class Repository(Generic[M]):
             return stamped
 
     def touched(self, row: M, by: Actor, fields_of: Callable[[M], dict]) -> M:
-        """The named columns written from the row as it stands under the write lock, worked out from it there, so a change another thread made in between is built on and never written over."""
         with self.connection.transaction():
             now = self.find(row.id)
             return self.touch(now, by, **fields_of(now))
@@ -155,6 +141,7 @@ class Repository(Generic[M]):
             self.connection.execute(f"DELETE FROM {self.table} WHERE id = ?", (row.id,))
             self.written()
             self.bus.dispatch(Deleted(model=row, by=by))
+            self.carried(row)
 
     def _insert(self, row: M, by: Actor, now: datetime) -> M:
         Title.check_on(row)
@@ -180,11 +167,15 @@ class Repository(Generic[M]):
         self.bus.dispatch(Updated(model=stamped, by=by, was=was))
         return stamped
 
+    def carried(self, row: M) -> M:
+        for event in row.events:
+            self.bus.dispatch(event)
+        return row.without_events()
+
     def written(self) -> None:
-        """A write of this table landed, before anyone hears of it: a repository that keeps rows in memory drops them here."""
+        ...
 
     def _load(self, row) -> M:
-        """A NULL is a value the row never had, such as a column added after it was written: the model's own default stands in."""
         return self.model(**{column.name: value for column in self.columns if (value := column.from_sql(row[column.name])) is not None})
 
     def _column(self, name: str) -> Column:
