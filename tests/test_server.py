@@ -209,6 +209,8 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         assert call(server, "GET", "/journal/project-files/file?path=hello.py")[1]["lines"] == 1
         assert "diff" in call(server, "GET", "/journal/project-files/diff?path=hello.py")[1]
         assert call(server, "GET", "/journal/project-files/find?q=hello")[1][0]["name"] == "hello.py"
+        root = [entry["name"] for entry in call(server, "GET", "/journal/project-files")[1]]
+        assert "hello.py" in root and not any(name.startswith(".") for name in root), "the Code page's tree opens on the project's root, its hidden folders left out"
         listed = call(server, "GET", f"/journal/messages?ids={n}")[1]["rows"]
         assert [r["id"] for r in listed] == [n]
     finally:
@@ -474,6 +476,8 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         tasks = next(f for f in manifest["features"] if f["name"] == "tasks")
         assert [s["name"] for s in tasks["options"]] == ["auto", "first_nudge_after", "name_every", "log_after"], "a feature's options, in its words"
         assert all(f in named for f in ("messages", "shell", "voices")) and "kanban" not in named, "version 3's leftovers are gone"
+        assert "faults" not in named, "slow requests are judged only in the journal's own checkout, so another project's settings never show them"
+        assert next(f for f in manifest["features"] if f["name"] == "pausing")["fixed"], "pausing is no setting: the pause button is always there"
         assert {g["key"] for g in manifest["groups"]} == {*named, "project"}, "one group per feature, and the System tab's own"
         status, tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": 60}})
         assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(Settings).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"

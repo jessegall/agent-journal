@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
 from journal.support.option import Option
@@ -12,3 +14,8 @@ class Faults(Feature):
     SLOW = Nudge(name, "slow", "{{method}} {{route}} took {{ms}} ms, over its budget of {{budget}} ms: find what made it slow and fix it at its source", "a request over its budget is a fault of the journal's own")
     options = (REQUEST, WRITE)
     nudges = (SLOW,)
+
+    @classmethod
+    def applies_in(cls, root: Path) -> bool:
+        """Only where the journal develops itself: the project holds the journal's own source."""
+        return (root / "src" / "journal").is_dir()

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import ClassVar
 
 from journal.console.command import Command
@@ -30,3 +31,8 @@ class Feature:
     skill: ClassVar[Skill | None] = None
     services: ClassVar[tuple[Service, ...]] = ()
     default: ClassVar[bool] = True
+
+    @classmethod
+    def applies_in(cls, root: Path) -> bool:
+        """Whether the feature means anything in the project at this root; the settings page shows only those that do."""
+        return True

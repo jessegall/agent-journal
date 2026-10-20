@@ -13,6 +13,31 @@ What each release of agent-journal version 4 brought, newest first.
 - The upgrade, for your own workflows: one that names Has the agent been quiet for N?, Is the log older than N? or Has a command run in the background longer than N?, or a count the journal used to read from its record (edits, uses, owed, namings, lines), is turned off at the upgrade, its title saying which, for you to draw again from counts and times; a shipped workflow you edited is treated the same. A clock running in a session goes on across the upgrade; a cadence starts its count afresh.
 - journal chart try takes --since name=seconds; journal chart show prints each environment's values; journal doc update writes a document anew from a file.
 
+## 4.2.5
+
+- A message always reaches an idle agent. The agent a supervisor runs is no longer taken for gone after an hour without a hook, which had left it ended and every message after that untyped; only a session no supervisor runs, a terminal closed without its end hook, is still ended after an hour.
+
+## 4.2.4
+
+- The most subagents at once counts only those already running: the one being started is no longer counted among them, so four running and a fifth pass a most of five.
+
+## 4.2.3
+
+- A question's options are each their own quoted argument, `--options "first" "second"`, so a comma inside a choice stays in it; one option holding a comma is refused as the old comma list, and the options asked are printed back numbered.
+- A plan's next task is named once: closing another of its tasks beside the one in hand no longer names it again.
+- The Code page's file tree shows the project again; since 4.2.0 its root listed nothing.
+
+## 4.2.2
+
+- A link is suggested as a pin only from what a shell command printed; a file edit or read no longer suggests every link in the file.
+- Two skill files read at once both count as read; one of the pair was sometimes lost, so a stop was held for a skill already read.
+- Pausing the agent is no longer a setting: the pause button is always there.
+- Slow requests are reported, and shown on the settings page, only in the journal's own checkout.
+
+## 4.2.1
+
+- A message opened in the side panel is titled by its first line, cut after a whole word at 80 characters, with the whole text below it.
+
 ## 4.2.0
 
 - The phone is back. Click the phone in the top bar, scan the code or type the short code on the phone, and the journal opens on it through the tunnel, installable as an app. The phone is the viewer itself, sized for a finger: the chat, Home, tasks, plans, questions and every row, without the pages that configure the journal.

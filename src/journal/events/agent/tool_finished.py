@@ -16,3 +16,8 @@ class ToolFinished(AgentEvent):
     """The files this call read, by the read tool or a shell line that prints them."""
     skill_loaded: str = ""
     """The skill folder this call loaded, when it was the skill tool."""
+
+    @property
+    def printed(self) -> str:
+        """What the shell line printed; nothing for any other tool, whose answer may carry a whole file."""
+        return self.output if self.tool == "Bash" else ""

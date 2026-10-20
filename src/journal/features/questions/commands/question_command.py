@@ -24,7 +24,7 @@ class QuestionCommand(Command):
     def arguments(self, verbs) -> None:
         ask = self.verb(verbs, "ask", "ask the user something and wait")
         ask.add_argument("text")
-        ask.add_argument("--options", default="", help="comma-separated choices")
+        ask.add_argument("--options", nargs="+", default=[], help="the choices, each quoted on its own: --options \"first\" \"second\"")
         answer = self.verb(verbs, "answer", "answer a question")
         answer.add_argument("n", type=int)
         answer.add_argument("answer")
@@ -35,7 +35,9 @@ class QuestionCommand(Command):
         if not where.session or self.workers.by_session(where.session):
             raise Refused("nobody can answer a question asked from here: put it in the worker's report instead")
         environment = self.scope.id
-        options = tuple(o.strip() for o in args.options.split(",") if o.strip())
+        options = tuple(o.strip() for o in args.options if o.strip())
+        if len(options) == 1 and "," in options[0]:
+            raise Refused(f"one option holding a comma: give each choice as its own quoted argument, --options \"first\" \"second\", so a comma inside a choice stays in it")
         asked = Question(text=args.text, options=options)
         if asked.unclear_options():
             raise Refused(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(asked.unclear_options())}")
@@ -44,6 +46,8 @@ class QuestionCommand(Command):
             agent = self.machine.agent(where.session, environment)
             self.machine.move(where.session, environment, Waiting.leaving(self.machine.states.named(agent.state, agent.data), question_id=question.id))
         print(f"question {question.id} asked; waiting for the answer")
+        for i, option in enumerate(question.options, 1):
+            print(f"  {i}. {option}")
         return 0
 
     def answer(self, args: Namespace, where: Where) -> int:

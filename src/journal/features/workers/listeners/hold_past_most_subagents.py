@@ -19,7 +19,7 @@ class HoldPastMostSubagents(AgentListener[ToolStarting]):
         if event.tool not in DISPATCHING or event.subagent:
             return None
         most = int(self.settings.option(Workers.MOST_SUBAGENTS))
-        running = self.subagents.running(event.session)
+        running = self.subagents.running_before_the_newest(event.session)
         if not most or running < most:
             return None
         return Decision.refuse(Workers.TOO_MANY_SUBAGENTS.about(running=running).rendered())

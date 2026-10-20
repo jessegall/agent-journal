@@ -18,8 +18,8 @@ class Registry:
         return name in self._by_name
 
     def is_on(self, feature: type[Feature]) -> bool:
-        """On in the scope's environment."""
-        return bool(self.settings.get(f"features.{feature.name}", feature.default))
+        """On in the scope's environment; a fixed feature is always on, whatever an older setting holds."""
+        return feature.fixed or bool(self.settings.get(f"features.{feature.name}", feature.default))
 
     def skill_required_in(self, state: str) -> Skill | None:
         return next((skill for skill in self.skills() if state in skill.required_in), None)
