@@ -1092,7 +1092,16 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   state machine is the engine's alone, `journal panic` the one hand on it from outside; the class is StateMachine;
   the options reach a state as a frozen Settings value; the lifecycle hooks on_push, on_suspend, on_resume and
   on_pop are always called, and on_push may refuse the push; no docstring and no comment inside a method, and none
-  on a field, a class keeps its one line at the top.
+  on a field, a class keeps its one line at the top. Six reviews of plan 19 (four on Opus by phase, two critiques)
+  were filed into it the same night: 40 tasks, 24 briefs rewritten, the phases retitled, phase 2 in three steps
+  each ending with the replays green, the repositories and the judge before the live check and the pull request.
+- Also that evening: JOURNAL_ACTOR (agent, sub-agent, worker-agent) read by the hook and command shims, a hook with
+  a subagent's agent_id returning at once; a subagent's shell is the agent's whole, so its commands are told apart
+  by the server later (task 1032), for Codex by the thread id; the journal's own update installs the journal and
+  nothing else, never a plugin, and takes its marker down when its thread fails; five plain-code-words rules under
+  .commandments/custom (poetic names, docstrings in methods and under fields, the state machine outside the engine),
+  1591 findings left for the rewrite by Sir Jesse's word; the worker and subagent chat draws the same Turn bubbles
+  as the main chat, from transcript turns shaped like messages (kind and text).
 
 ## Workflow parts (plan 18, 2026-10-20)
 

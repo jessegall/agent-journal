@@ -7470,6 +7470,7 @@ def test_a_journal_set_to_follow_a_branch_installs_that_branchs_newest_commit(ap
     source.head = "bbbbbbb2222"
     updating.checked()
     assert installer.ran == ["development"] and updating.standing().latest == "bbbbbbb" and updating.standing().branch == "development", "the branch moved on, so its head is installed, by its name"
+    assert updating.standing().installed == "development at aaaaaaa", "the standing names what is installed by the branch and its commit, not by the release number"
     assert updating.label() == "development at aaaaaaa", "what is installed is named by the branch and its commit"
 
 

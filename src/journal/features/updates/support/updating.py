@@ -97,7 +97,7 @@ class Updating:
 
     def standing(self) -> UpdateStanding:
         held = self.mark.held()
-        return UpdateStanding(installed=VERSION, latest=self.latest(), newer=self.is_out(), branch=self.branch(), versions=[release.version for release in self.newer()],
+        return UpdateStanding(installed=self.label(), latest=self.latest(), newer=self.is_out(), branch=self.branch(), versions=[release.version for release in self.newer()],
                               updating=held.to if held else "", step=held.step if held else "", problem=self.problem)
 
     def tick(self, now: float) -> None:
