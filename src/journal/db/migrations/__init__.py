@@ -12,6 +12,9 @@ from journal.db.migrations.write_questions_into_the_chat import WriteQuestionsIn
 from journal.db.migrations.unwrap_owed_pauses import UnwrapOwedPauses
 from journal.db.migrations.unwrap_running_sequences import UnwrapRunningSequences
 from journal.db.migrations.move_owed_skills_onto_the_agent import MoveOwedSkillsOntoTheAgent
+from journal.db.migrations.keep_counts_per_environment import KeepCountsPerEnvironment
+from journal.db.migrations.place_workflows_per_event import PlaceWorkflowsPerEvent
+from journal.db.migrations.fill_agents_empty_data import FillAgentsEmptyData
 
-MIGRATIONS = (UnwrapOwedPauses(), FinishCancelledTasks(), UnwrapRunningSequences(), GiveBuildingAPlanItsEnd(), LinkWorkerReports(), ClearCountsOfTheOldShape(), MoveOwedSkillsOntoTheAgent(), WriteQuestionsIntoTheChat(), IndexTheHotReads(), IndexTheLinks(), IndexTheDispatches(), MarkOldReportsTakenUp(), IndexTheFrequentReads(), NameCardRowsByTable())
+MIGRATIONS = (UnwrapOwedPauses(), FinishCancelledTasks(), UnwrapRunningSequences(), GiveBuildingAPlanItsEnd(), LinkWorkerReports(), ClearCountsOfTheOldShape(), MoveOwedSkillsOntoTheAgent(), WriteQuestionsIntoTheChat(), IndexTheHotReads(), IndexTheLinks(), IndexTheDispatches(), MarkOldReportsTakenUp(), IndexTheFrequentReads(), NameCardRowsByTable(), KeepCountsPerEnvironment(), PlaceWorkflowsPerEvent(), FillAgentsEmptyData())
 """Every change to the database after its schema was first created, in order; each runs once, recorded in the migrations table."""

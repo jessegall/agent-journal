@@ -10,7 +10,7 @@ INDEXES = (
     ("messages_unread", "messages (environment_id, author, read_at)"),
     ("messages_by_key", "messages (environment_id, idempotency)"),
     ("messages_by_update", "messages (environment_id, updated_at)"),
-    ("counts_by_session", "counts (environment_id, session, name)"),
+    ("counts_by_name", "counts (environment_id, name)"),
     ("tasks_by_state", "tasks (environment_id, state, id)"),
     ("outputs_by_chain", "command_outputs (chain, id)"),
     ("edits_by_session", "edits (environment_id, session, at)"),
@@ -21,7 +21,7 @@ INDEXES = (
 
 
 class IndexTheFrequentReads(Migration):
-    """Indexes for the reads made on every hook or poll: entries of a kind newest first, a message's replies and the unread ones, a session's counts, tasks by state and the rest; the kind index alone gives way to the one that also orders."""
+    """Indexes for the reads made on every hook or poll: entries of a kind newest first, a message's replies and the unread ones, an environment's counts, tasks by state and the rest; the kind index alone gives way to the one that also orders."""
 
     number: ClassVar[int] = 13
 

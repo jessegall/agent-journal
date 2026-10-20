@@ -141,8 +141,7 @@ class PlanCommand(Command):
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:
-        if not args.why and not args.on and not args.until:
-            raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
+        self.waits.refuse_unnamed(args.why, args.on, args.until)
         plan = self.plans.save(self.plans.find(args.n).blocked(args.why), where.actor)
         for ref in self.waits.named(args.on, args.until, args.every, f"plan {plan.id}", where.actor):
             self.links.save(Link(source=Ref.to(plan), target=ref, kind=WAITS_ON), where.actor)

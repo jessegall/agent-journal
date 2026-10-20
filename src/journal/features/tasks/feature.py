@@ -38,9 +38,11 @@ class Tasks(Feature):
         Entry(NodeKind.CHECK, 'blocked_tasks', 'Has blocked tasks?', 'a task waits on something outside'),
         Entry(NodeKind.CHECK, 'blocked_outside', 'Has a task blocked on something outside?', 'a blocked task waits on nothing that opens it by itself: no task, question or check'),
         Entry(NodeKind.CHECK, 'broken_waits', 'Has a task waiting on a check that cannot run?', 'a blocked task waits until a check whose command could not run, a missing program or a time-out, so it would wait forever'),
-        Entry(NodeKind.CHECK, 'log_stale_over', 'Is the log older than N?', 'the task in hand was last logged longer ago than the time in the text, with its unit: 10 minutes, 2 hours; a bare number is seconds; or never', takes_text=True),
         Entry(NodeKind.CHECK, 'task_just_started', 'Task just started by this agent?', 'the row is a task this agent has just started: this write set when it started, by the agent walking'),
         Entry(NodeKind.CHECK, 'log_for_task_in_hand', 'Log is for the task in hand?', 'the row is a log line of the task this agent has in hand'),
+        Entry(NodeKind.CHECK, 'task_just_taken', 'Task just taken in hand by this agent?', 'the row is a task this agent has just started, resumed after a park, or claimed'),
+        Entry(NodeKind.CHECK, 'task_just_parked', 'Task just parked?', 'the row is a task that was just parked'),
+        Entry(NodeKind.CHECK, 'task_just_blocked', 'Task just blocked?', 'the row is a task that was just blocked'),
     )
 
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "`journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)

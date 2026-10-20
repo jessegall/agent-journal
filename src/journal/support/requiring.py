@@ -37,7 +37,7 @@ class Requiring:
             self.agents.touch(agent, Actor.system(), skills_owed=tuple(name for name in owed if name != skill.name))
 
     def owed(self, agent: Agent, skills: list[Skill]) -> list[Skill]:
-        loaded = agent.skills_loaded or {}
+        loaded = agent.skills_loaded
         return [skill for skill in skills if loaded.get(skill.name) != self.files.hash_of(skill)]
 
     def for_state(self, state: AgentState) -> list[Skill]:

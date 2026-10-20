@@ -18,7 +18,7 @@ A document holds what the project keeps knowing; what was checked now goes in a 
 Documents are the project's, the same in every environment.
 
 - `journal doc create "<title>" --file <path> --abstract "<one line>"` writes one from a markdown file, its `##` headings
-  as sections.
+  as sections. `journal doc update <n> --file <path>` writes its whole text anew, its title kept.
 - `journal doc show <n>` prints its outline, numbered headings with their length; read one section with
   `--section <n or heading>` (`--bullets` for its bullets alone), or find lines with `--grep "<words>"`. It is never read whole.
   `journal doc list` names them.

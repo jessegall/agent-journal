@@ -25,8 +25,12 @@ class Clock:
         self._thread = threading.Thread(target=self._run, name="clock", daemon=True)
         self._thread.start()
 
+    def now(self) -> float:
+        """The engine's time in seconds: every tick and every noted time reads it, so a test that drives the clock drives them all."""
+        return time.time()
+
     def tick(self) -> None:
-        now = time.time()
+        now = self.now()
         self.bus.dispatch(ClockTicked(at=now))
         for agent in self.agents.everywhere():
             if isinstance(self.states.named(agent.state, agent.data), Ended):

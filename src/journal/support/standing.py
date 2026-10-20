@@ -1,10 +1,13 @@
 from datetime import datetime, timezone
 
 from journal.engine.machine import Machine
-from journal.events.agent.ticked import Ticked
 from journal.features.chart.support.agent_standing import AgentStanding
-from journal.features.chart.support.checks import COUNT_CHECKS, READINGS, Checks
-from journal.features.chart.support.context import Context
+from journal.features.chart.support.checks import COUNT_CHECKS, VALUE_ACTIONS, Checks
+from journal.features.chart.support.value_shown import ValueShown
+from journal.engine.clock import Clock
+from journal.repositories.counts import Counts
+from journal.repositories.noted_times import NotedTimes
+from journal.support.value_name import ValueName
 from journal.features.chart.support.walk import WALKED
 from journal.features.chart.support.workflow_standing import WorkflowStanding
 from journal.features.registry import Registry
@@ -20,37 +23,34 @@ LOOKED_BACK = 300
 
 
 class Standing:
-    """Where each live agent stands in a workflow: the node its last walk of it stopped at, whether it waits there (a count check that answered no), the counts the workflow keeps for it, and the readings its count checks compare, with what each counts."""
+    """Where each live agent stands in a workflow: the node its last walk of it stopped at, whether it waits there (a count check that answered no), and the counts and times the workflow keeps in its environment."""
 
-    def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: Machine, registry: Registry) -> None:
+    def __init__(self, charts: Charts, agents: Agents, entries: Entries, checks: Checks, machine: Machine, registry: Registry, counts: Counts, times: NotedTimes, clock: Clock) -> None:
         self.charts, self.agents, self.entries, self.checks, self.machine, self.registry = charts, agents, entries, checks, machine, registry
+        self.counts, self.times, self.clock = counts, times, clock
 
     def of(self, chart: Chart) -> WorkflowStanding:
         nodes = {n.id: n for n in self.charts.nodes_of(chart)}
         walks = [WalkRecord.from_entry(e) for e in self.entries.of_kind(WALKED, LOOKED_BACK)]
         agents = [a for a in self.agents.in_() if a.state != "ended"]
-        return WorkflowStanding(agents=[self.agent(chart, nodes, walks, a) for a in agents], readings=self.readings(nodes), limits=self.limits(nodes))
+        return WorkflowStanding(agents=[self.agent(chart, nodes, walks, a) for a in agents], values=self.values(chart, nodes), limits=self.limits(nodes))
+
+    def values(self, chart: Chart, nodes: dict) -> list[ValueShown]:
+        """Each count and time the workflow keeps in the environment, with when it was last set and the steps that set it."""
+        prefix, now = ValueName.prefix(chart.id), self.clock.now()
+        rows = [*self.counts.rows_of_workflow(chart.id), *self.times.rows_of_workflow(chart.id)]
+        setters = lambda name: sorted(n.id for n in nodes.values() if n.key in VALUE_ACTIONS and n.text.strip() == name)
+        return [ValueShown(name=row.name[len(prefix):], kind=row.kind, value=row.shown(now), set_at=row.updated_at.isoformat() if row.updated_at else "", set_by=setters(row.name[len(prefix):])) for row in rows]
 
     def agent(self, chart: Chart, nodes: dict, walks: list[WalkRecord], agent) -> AgentStanding:
         walk, stop = next(((w, s) for w in walks if w.session == agent.session for s in reversed(w.stops) if s.waits_at(chart.id)), (None, None))
         node = nodes.get(stop.node) if stop else None
         at = datetime.fromtimestamp(walk.at, timezone.utc).isoformat() if walk else ""
-        ctx = Context(event=Ticked(at=0.0, quiet_for=0.0).placed(agent.session, agent.environment_id, agent.provider, 0.0), session=agent.session, environment_id=agent.environment_id, state=self.machine.current(agent.session))
         return AgentStanding(session=agent.session, n=agent.id, node=stop.node if stop else 0, port=stop.port if stop else "", at=at,
-                             waits=bool(node and node.key in COUNT_CHECKS and stop.port == "no"), counts=self.checks.counts_kept(agent.session, chart.id),
-                             readings={name: self.checks.count_of(ctx, name) for name in self.read_by(nodes)})
+                             waits=bool(node and node.key in COUNT_CHECKS and stop.port == "no"), counts=self.checks.counts_kept(chart.id), times=self.checks.times_kept(chart.id))
 
     def limits(self, nodes: dict) -> dict:
         """Each count check's number, and when its text names a setting, that setting's title, so the card says the number and where it comes from."""
         titles = {o.key: o.title for o in self.registry.options()}
         named = {str(n.id): n.text.strip().partition(" ")[2] for n in nodes.values() if n.key in COUNT_CHECKS and n.text.strip().partition(" ")[2]}
         return {node: {"number": self.checks.number(text), "setting": titles.get(text, "")} for node, text in named.items()}
-
-    def readings(self, nodes: dict) -> dict:
-        """What each reading a count check of the workflow compares counts, in plain words."""
-        return {name: (getattr(self.checks, f"derived_{name}").__doc__ or "").strip() for name in self.read_by(nodes)}
-
-    @staticmethod
-    def read_by(nodes: dict) -> list[str]:
-        names = [n.text.strip().partition(" ")[0] for n in nodes.values() if n.kind == NodeKind.CHECK and n.key in COUNT_CHECKS]
-        return sorted({name for name in names if name in READINGS})

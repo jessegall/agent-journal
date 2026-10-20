@@ -17,7 +17,9 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 5
+      },
       "read": []
     },
     {
@@ -25,13 +27,22 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 1,
+        "charts:32:said": 5,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 1,
+        "charts:9:writes": 1
+      },
       "read": [
         {
-          "179": 0,
-          "29": 0,
-          "34": 0,
-          "39": 0
+          "67": 0,
+          "80": 0,
+          "93": 0
         }
       ]
     },
@@ -40,10 +51,20 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 1,
+        "charts:32:said": 5,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 1,
+        "charts:9:writes": 1
+      },
       "read": [
         {
-          "130": 5
+          "234": 5
         }
       ]
     },
@@ -59,10 +80,20 @@
       "nudges": [
         "tasks.closed_by_commit"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 1,
+        "charts:32:said": 6,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 1,
+        "charts:9:writes": 1
+      },
       "read": [
         {
-          "130": 6
+          "234": 5
         }
       ]
     }

@@ -21,7 +21,7 @@ from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
 from journal.support.scope import Scope
 from journal.repositories.settings import Settings
-from tests.replay import PROVIDERS, TOOLS, Replay, differences, hook_as, recorded
+from tests.replay import PROVIDERS, TOOLS, Replay, differences, hook_as, pass_time, recorded, tick_after
 from tests.test_features import AGENT, MAIN, USER, context
 
 
@@ -95,6 +95,7 @@ def count_survives_events(app, replay: Replay, provider: str) -> None:
     console = app.console()
     console.run(["environment", "here"], AGENT)
     console.run(["message", "send", "one"], USER)
+    app.runtime().deferred.drain()
     replay.step("message 1 arrives")
     read = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1]
     replay.step("read 1", read())
@@ -125,13 +126,10 @@ def writes_over_the_log(app, replay: Replay, provider: str) -> None:
 
 def the_clock_ticks(app, replay: Replay, provider: str) -> None:
     """The steps: an idle agent in auto mode hears the clock at a minute, at half an hour and at half an hour again; then with a task parked, at a minute, twice; then awaiting something outside, at five minutes, twice, until its own tool use lifts the wait."""
-    from journal.events.agent.ticked import Ticked
-    from journal.events.bus import Bus
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    env = app.container.get(Environments).named("main").id
-    tick = lambda quiet: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, at=0.0, quiet_for=quiet))
+    tick = lambda quiet: tick_after(app, quiet)
     hook_as(app, provider, "Stop")
     replay.step("idle")
     for name, quiet in (("a minute", 60.0), ("half an hour", 1800.0), ("half an hour again", 1800.0)):
@@ -380,12 +378,10 @@ def test_the_phone_is_heard_as_the_user_is(journals, monkeypatch):
 
 def tick(app, quiet: float) -> None:
     """A tick as the clock gives it: dispatched to every listener, and what a state says on it typed into the terminal."""
-    from journal.events.agent.ticked import Ticked
-    from journal.events.bus import Bus
     from journal.support.decision import Decision
     from journal.supervisor_link import SupervisorLink
     env = app.container.get(Environments).named("main").id
-    for answer in app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, at=0.0, quiet_for=quiet)):
+    for answer in tick_after(app, quiet):
         if isinstance(answer, Decision) and answer.context:
             app.container.get(SupervisorLink).type(env, answer.context)
 
@@ -715,6 +711,138 @@ def test_a_state_rule_frozen_before_it_moves_still_holds(journals, monkeypatch, 
     with_workflow.runtime().start()
     right = Replay(with_workflow, monkeypatch)
     STATE_RULES[name](with_workflow, right, provider)
+    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+
+
+def still_open_after_quiet(app, replay: Replay, provider: str) -> None:
+    """The steps: a task in hand, the agent stops, and the clock finds it quiet for a quarter of an hour, then longer."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    hook_as(app, provider, "Stop")
+    replay.step("stopped with a task in hand")
+    for name, quiet in (("fourteen quiet minutes", 840.0), ("sixteen quiet minutes", 960.0), ("twenty quiet minutes", 1200.0)):
+        tick(app, quiet)
+        app.runtime().deferred.drain()
+        replay.step(name)
+
+
+def blocked_after_an_hour(app, replay: Replay, provider: str) -> None:
+    """The steps: a task blocked on something outside, the agent idle, the clock at most of an hour and past it."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "block", "1", "the designer's answer"], AGENT)
+    hook_as(app, provider, "Stop")
+    replay.step("a task blocked, the agent idle")
+    for name, quiet in (("fifty quiet minutes", 3000.0), ("an hour and a minute", 3660.0)):
+        tick(app, quiet)
+        app.runtime().deferred.drain()
+        replay.step(name)
+
+
+def meanwhile_while_waiting(app, replay: Replay, provider: str) -> None:
+    """The steps: in auto mode, an open task beside the one in hand, the agent waits on something outside and the clock ticks past a minute."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "create", "the header"], AGENT)
+    console.run(["await", "the build"], AGENT)
+    replay.step("waiting on the build")
+    for name, quiet in (("half a minute", 30.0), ("a minute and a half", 90.0), ("two minutes", 120.0)):
+        tick(app, quiet)
+        app.runtime().deferred.drain()
+        replay.step(name)
+
+
+def background_every_five_minutes(app, replay: Replay, provider: str) -> None:
+    """The steps: a command moves to the background, the clock passes five and ten minutes of it, it ends, and the clock ticks again."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    folder = app.config.root / "c7"
+    folder.mkdir()
+    console.run(["shell", "split", "pytest -q", "--into", str(folder)], AGENT)
+    console.run(["shell", "moved", "c7", "pytest -q", "--file", str(folder / "out")], AGENT)
+    replay.step("a command in the background")
+    for name, quiet in (("four minutes", 240.0), ("five minutes and some", 310.0), ("ten minutes and some", 610.0)):
+        tick(app, quiet)
+        app.runtime().deferred.drain()
+        replay.step(name)
+    console.run(["shell", "ended", "c7", "--status", "0", "--file", str(folder / "out")], AGENT)
+    replay.step("it ended")
+    tick(app, 910.0)
+    app.runtime().deferred.drain()
+    replay.step("fifteen minutes, nothing running")
+
+
+def log_ask_at_stop_and_start(app, replay: Replay, provider: str) -> None:
+    """The steps: a task taken in hand, a stop at once, a stop and a start eleven minutes later, a log, and a stop just after it."""
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    replay.step("a stop just after the start", hook_as(app, provider, "Stop")[1])
+    pass_time(app, 660.0)
+    replay.step("a stop eleven minutes on", hook_as(app, provider, "Stop")[1])
+    replay.step("a start eleven minutes on", hook_as(app, provider, "SessionStart", source="resume")[1])
+    console.run(["task", "log", "1", "the margin is fixed"], AGENT)
+    replay.step("a stop just after the log", hook_as(app, provider, "Stop")[1])
+
+
+def line_reminder(app, replay: Replay, provider: str) -> None:
+    """The steps, with the reminder every three lines: messages arrive and are named, and the agent's own tool uses come after."""
+    app.container.get(Settings).set("etiquette.remind_every", 3, Actor.system())
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    for n in range(1, 5):
+        console.run(["message", "send", f"note {n}"], USER)
+        replay.step(f"message {n}", hook_as(app, provider, "PostToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py"})[1])
+
+
+def hold_after_namings(app, replay: Replay, provider: str) -> None:
+    """The steps, the unread named every use and a write held after two namings: a message waits unread while the agent writes."""
+    settings = app.container.get(Settings)
+    for key, value in (("messages.remind_every", 1), ("messages.hold_after_reminders", 2)):
+        settings.set(key, value, Actor.system())
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["message", "send", "are you there?"], USER)
+    for i in range(1, 5):
+        replay.step(f"write {i} with the message unread", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
+
+
+def a_subagents_tool_use(app, replay: Replay, provider: str) -> None:
+    """The steps, the unread named every use: a subagent's tool uses and writes are not the agent's, and the agent's own are."""
+    app.container.get(Settings).set("messages.remind_every", 1, Actor.system())
+    hook_as(app, provider, "SessionStart")
+    console = app.console()
+    console.run(["environment", "here"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["message", "send", "are you there?"], USER)
+    for i in range(1, 3):
+        replay.step(f"the subagent's write {i}", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"}, agent_id="sub1")[1])
+    replay.step("the agent's own read", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py"})[1])
+
+
+BEFORE_PARTS = {"still_open_after_quiet": still_open_after_quiet, "blocked_after_an_hour": blocked_after_an_hour, "meanwhile_while_waiting": meanwhile_while_waiting, "background_every_five_minutes": background_every_five_minutes,
+                "log_ask_at_stop_and_start": log_ask_at_stop_and_start, "line_reminder": line_reminder, "hold_after_namings": hold_after_namings, "a_subagents_tool_use": a_subagents_tool_use}
+"""What the shipped workflows with no replay of their own say, frozen before they are drawn from counts and times."""
+
+
+@pytest.mark.parametrize("name", sorted(BEFORE_PARTS))
+def test_a_workflow_frozen_before_it_is_drawn_from_parts_still_holds(journals, monkeypatch, name):
+    with_listener, with_workflow, provider = journals
+    left = recorded(f"{name}_{provider}", with_listener, monkeypatch, BEFORE_PARTS[name], provider, nudges=True)
+    with_workflow.runtime().start()
+    right = Replay(with_workflow, monkeypatch)
+    BEFORE_PARTS[name](with_workflow, right, provider)
     assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
 
 

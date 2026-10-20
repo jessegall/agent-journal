@@ -12,7 +12,12 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 5,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -28,7 +33,12 @@
         "workers.reported",
         "workers.reports_waiting"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 7,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -42,7 +52,12 @@
         "workers.reported",
         "workers.returned"
       ],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 9,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
       "read": []
     },
     {
@@ -56,8 +71,18 @@
         "workers.reports_waiting",
         "tasks.carry_on"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 11,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "113": 0,
+          "114": 0
+        }
+      ]
     }
   ]
 }

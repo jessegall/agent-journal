@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from journal.models.scoped import Scoped
 
@@ -10,15 +10,15 @@ class Agent(Scoped):
     session: str = ""
     provider: str = ""
     state: str = "idle"
-    data: dict | None = None
-    skills_loaded: dict | None = None
+    data: dict = field(default_factory=dict)
+    skills_loaded: dict = field(default_factory=dict)
     """Skill name to the hash of the file the agent read, this window."""
     context_mark: int = 0
     """The highest context mark the agent has been asked at, so no mark asks twice."""
     oriented: bool = True
     """False from a session start until the agent has looked at what is in flight here; an agent no start made owes no look."""
     mark_owed: int = 0
-    """The context mark the agent crossed and has not decided at yet; nought when none is owed."""
+    """The context mark the agent crossed and has not decided at yet; zero when none is owed."""
     skills_owed: tuple[str, ...] = ()
     """The skills the agent owes a read of, by name."""
     sequence_runs: tuple = ()

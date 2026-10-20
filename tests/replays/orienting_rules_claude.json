@@ -17,7 +17,9 @@
         "briefing.laws",
         "voices.voice"
       ],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 5
+      },
       "read": []
     },
     {
@@ -27,19 +29,29 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {},
-      "read": [
-        {
-          "179": 0
-        }
-      ]
+      "counts": {
+        "charts:32:said": 5,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
+      "read": []
     },
     {
       "name": "looked at what is in flight",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:32:said": 5,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
       "read": []
     },
     {
@@ -47,12 +59,15 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
-      "read": [
-        {
-          "179": 0
-        }
-      ]
+      "counts": {
+        "charts:32:said": 5,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0
+      },
+      "read": []
     },
     {
       "name": "the session starts again after a compaction",
@@ -77,8 +92,23 @@
         "tasks.carry_on",
         "briefing.where"
       ],
-      "counts": {},
-      "read": []
+      "counts": {
+        "charts:10:writes": 0,
+        "charts:32:said": 15,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 0,
+        "charts:43:tools_used": 0,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 0,
+        "charts:9:writes": 0
+      },
+      "read": [
+        {
+          "118": 0,
+          "119": 0
+        }
+      ]
     },
     {
       "name": "a write before the second look",
@@ -87,14 +117,25 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 1,
+        "charts:32:said": 15,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 1,
+        "charts:43:tools_used": 1,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 1,
+        "charts:9:writes": 1
+      },
       "read": [
         {
-          "174": 0,
-          "179": 1,
-          "29": 0,
-          "34": 0,
-          "39": 0
+          "290": 1,
+          "292": 0,
+          "304": 1,
+          "67": 0,
+          "80": 0,
+          "93": 0
         }
       ]
     },
@@ -103,7 +144,17 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 1,
+        "charts:32:said": 15,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 1,
+        "charts:43:tools_used": 1,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 1,
+        "charts:9:writes": 1
+      },
       "read": []
     },
     {
@@ -111,14 +162,25 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {},
+      "counts": {
+        "charts:10:writes": 2,
+        "charts:32:said": 15,
+        "charts:42:times_named": 0,
+        "charts:42:tools_used": 2,
+        "charts:43:tools_used": 2,
+        "charts:44:uses_unanswered": 0,
+        "charts:45:uses_unanswered": 0,
+        "charts:8:writes": 2,
+        "charts:9:writes": 2
+      },
       "read": [
         {
-          "174": 0,
-          "179": 2,
-          "29": 0,
-          "34": 0,
-          "39": 0
+          "290": 2,
+          "292": 0,
+          "304": 2,
+          "67": 1,
+          "80": 1,
+          "93": 1
         }
       ]
     }

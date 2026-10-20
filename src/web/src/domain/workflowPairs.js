@@ -1,4 +1,4 @@
-// a workflow answers one event, bound to a state or to none: what a row says about it, and the event's list in the order the workflows run
+// a workflow answers each event it holds a trigger for, bound to a state or to none: what a row says about it, and each event's list in the order the workflows run there
 export function statusOf(workflow) {
     if (workflow.off) return "Turned off";
     if (workflow.failed) return "Failed";
@@ -32,8 +32,13 @@ export function pairs(workflows, states, catalogue) {
         for (let name = key; name; name = parentOf(name)) names.push(name);
         return names;
     };
-    const byPlace = (a, b) => a.place - b.place || a.id - b.id;
-    const answering = (event) => workflows.filter((w) => w.event === event).sort(byPlace);
+    // a workflow with no trigger left, turned off, is still listed under the event it was made for
+    const answers = (workflow, event) => (Object.keys(workflow.places || {}).length ? event in workflow.places : workflow.event === event);
+    const placeAt = (workflow, event) => (workflow.places && event in workflow.places ? workflow.places[event] : workflow.place);
+    const answering = (event) => workflows.filter((w) => answers(w, event)).sort((a, b) => placeAt(a, event) - placeAt(b, event) || a.id - b.id);
+    const triggerTitle = (key) => catalogue.find((e) => e.kind === "trigger" && e.key === key)?.title || key;
+    // the other events a workflow holds a trigger for, by title, so its listing under one says where else it runs
+    const alsoOn = (workflow, event) => Object.keys(workflow.places || {}).filter((key) => key !== event).map(triggerTitle);
     // the event's list as it runs for a state: the stateless ones always, and the ones bound to the nearest state in the lineage that has any; no filter shows the whole list
     const listFor = (event, state) => {
         const all = answering(event);
@@ -47,5 +52,5 @@ export function pairs(workflows, states, catalogue) {
     // the events listed: every agent event, and the row events any workflow answers
     const events = () => [...agentEvents, ...rowEvents.filter((e) => answering(e.key).length)];
     const addable = () => rowEvents.filter((e) => !answering(e.key).length);
-    return {titleOf, parentOf, lineageOf, answering, listFor, whoOf, events, addable};
+    return {titleOf, parentOf, lineageOf, answering, listFor, whoOf, events, addable, alsoOn};
 }

@@ -12,14 +12,14 @@ ACTIONS = {Created: "created", Updated: "updated", Deleted: "deleted"}
 
 
 class RecordChanges(Listener[ModelEvent]):
-    """Every row made, changed or removed is an entry in the timeline, which is what the viewer's live updates read."""
+    """Every row made, changed or removed is an entry in the timeline, which is what the viewer's live updates read, but for a model kept out of it."""
 
     def __init__(self, entries: Entries) -> None:
         self.entries = entries
 
     def handle(self, event: ModelEvent) -> None:
         action = ACTIONS.get(type(event))
-        if action is None or isinstance(event.model, Entry):
+        if action is None or not event.model.in_timeline:
             return
         model = event.model
         environment = model.environment_id if isinstance(model, Scoped) else PROJECT

@@ -27,7 +27,7 @@ class Shell(Feature):
     listeners = (RefuseMixedJournal, ReadNarrowly, SpotHandReads)
     checks = (
         Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
-        Entry(NodeKind.CHECK, 'background_over', 'Has a command run in the background longer than N?', 'the clock ticks and one of the agent\'s commands has run in the background longer than the time in the text, with its unit: 5 minutes'),
+        Entry(NodeKind.CHECK, 'background_running', 'N or more commands running in the background?', "at least N of the agent's commands run in the background now; the text is N", takes_text=True),
     )
 
     MOVED = Nudge(name, "moved", "moved to the background as output {{n}}", "you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
