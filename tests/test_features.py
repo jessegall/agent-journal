@@ -54,6 +54,7 @@ def app(journal_root: Path, monkeypatch):
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
     app = App(Config(journal_root, port=0))
     app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(Settings).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
     app.runtime().start()
     with app.container.get(Scope).of(MAIN):
         yield app
@@ -7478,3 +7479,22 @@ def test_journal_update_follow_sets_the_branch_the_journal_follows_and_unfollow_
     assert followed.code == 0 and followed.out.startswith("following the branch development: development at ccccccc is out") and updating.branch() == "development", "the branch is set and its head read at once"
     assert source.branches_asked == [("https://github.com/jessegall/agent-journal", "development")], "the followed branch's head is asked for"
     assert console.run(["update", "unfollow"], AGENT).out == "following the releases again\n" and updating.branch() == "", "unfollow clears the branch"
+
+
+def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_up(app, monkeypatch):
+    from journal.engine.clock import Clock
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append(fields["line"]))
+    app.container.get(Settings).set("delivery.batch_seconds", 5, Actor.user(1))
+    link = app.container.get(SupervisorLink)
+    link.type(1, "new message 2")
+    hook(app, "UserPromptSubmit", prompt="[journal] new message 2")
+    app.runtime().deferred.drain()
+    link.type(1, "new message 3")
+    link.type(1, "the user put 👍 on message 2")
+    app.container.get(Clock).tick()
+    assert typed == ["[journal] new message 2"], "a line within five seconds of the last waits, even once the last is confirmed"
+    app.container.get(Settings).set("delivery.batch_seconds", 0, Actor.user(1))
+    app.container.get(Clock).tick()
+    assert typed == ["[journal] new message 2", "[journal] new message 3 | the user put 👍 on message 2"], "the window up, the held lines go as one line"

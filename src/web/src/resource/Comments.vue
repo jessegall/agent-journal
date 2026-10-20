@@ -24,6 +24,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["sent"]);
 const talk = inject("talk", null);
+const discussion = inject("discussion", null);
 const scope = useScope();
 const list = ref(null);
 const on = computed(() => refOf(props.resource));
@@ -114,6 +115,11 @@ async function send(text) {
                         <span class="comments-count">{{ thread.length }}</span>
                     </template>
                     <span class="grow" />
+                    <template v-if="discussion">
+                        <button type="button" :class="['discussion', {on: discussion.on.value}]" :title="discussion.on.value ? 'Back to the document alone' : 'Show the chat beside the document'" @click="discussion.toggle()">
+                            {{ discussion.on.value ? "Close discussion" : "Discussion" }}
+                        </button>
+                    </template>
                     <CloseButton title="Close the comments" @click="talk.toggle()" />
                 </header>
             </template>
@@ -200,6 +206,23 @@ async function send(text) {
     padding: 12px 12px 10px 16px;
     border-bottom: 1px solid var(--border);
     background: var(--side);
+}
+
+.discussion {
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.discussion:hover,
+.discussion.on {
+    border-color: var(--accent);
+    color: var(--accent-text);
 }
 
 .comments-title {

@@ -7,7 +7,8 @@ from pathlib import Path
 from journal.config import Config
 from journal.engine.support.typed_line import TypedLine
 from journal.support.held_line import HeldLine
-from journal.support.typed_lines import TypedLines
+from journal.support.typed_lines import BATCH_SECONDS, TypedLines
+from journal.repositories.settings import Settings
 from journal.support.old_supervisor import OldSupervisor
 from journal.support.supervisor_announcement import SupervisorAnnouncement
 from journal.support.supervisor_reply import SupervisorReply
@@ -22,28 +23,32 @@ AGENT, JOURNAL = "agent", "journal"
 class SupervisorLink:
     """The journal's end of each supervisor's inbox: a request a line of JSON, its answer a line back, or, to a supervisor that takes datagrams, a datagram with nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
 
-    def __init__(self, config: Config, environments: Environments, typed: TypedLines) -> None:
-        self.config, self.environments, self.typed = config, environments, typed
+    def __init__(self, config: Config, environments: Environments, typed: TypedLines, settings: Settings) -> None:
+        self.config, self.environments, self.typed, self.settings = config, environments, typed, settings
         self._chosen_at: dict[int, float] = {}
         self._viewer_keyed_at: dict[int, float] = {}
 
     def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
-        """A line of the journal's, marked, on one line however many it was handed, and noted until its prompt hook proves it arrived; held while an earlier line is still on its way. A line with breaks reaches the agent as pasted text, which never matches it, so it would be typed again."""
+        """A line of the journal's, marked, on one line however many it was handed, and noted until its prompt hook proves it arrived; held while an earlier line is still on its way or went within the batch window, and then typed with the others held as one line. A line with breaks reaches the agent as pasted text, which never matches it, so it would be typed again."""
         marked = TypedLine.cut(f"{MARK} {' '.join(line.split())}")
-        if self.typed.is_waiting(environment_id):
+        if self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds()):
             self.typed.hold(HeldLine(environment_id, marked, after))
             return
         self.typed.typed(environment_id, marked)
         self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": after})
 
     def release(self, environment_id: int) -> None:
-        """The next held line typed, once no earlier line is on its way."""
-        if self.typed.is_waiting(environment_id):
+        """The held lines typed as one, once no earlier line is on its way and the batch window is up."""
+        if self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds()):
             return
-        held = self.typed.next_held(environment_id)
+        held = self.typed.held_as_one(environment_id)
         if held is not None:
             self.typed.typed(environment_id, held.line)
             self._send(environment_id, "type", {"name": AGENT, "line": held.line, "after": held.after})
+
+    def batch_seconds(self) -> float:
+        """How long after a typed line the next waits, so lines go at most once a window, as one; the setting delivery.batch_seconds."""
+        return float(self.settings.project("delivery.batch_seconds", BATCH_SECONDS))
 
     def type_again(self, environment_id: int, marked: str) -> None:
         """A marked line typed once more, as it was."""

@@ -101,6 +101,11 @@ const layer = stacking(visible);
     overflow-y: auto;
 }
 
+.panel.full {
+    width: 100vw;
+    overflow: hidden;
+}
+
 @media (max-width: 640px) {
     .panel.page {
         width: 100vw;

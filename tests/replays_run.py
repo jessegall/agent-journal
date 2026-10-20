@@ -34,6 +34,7 @@ def journals(tmp_path: Path, monkeypatch, request):
     for name in ("listener", "workflow"):
         app = App(Config(tmp_path / name, port=0))
         app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+        app.container.get(Settings).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
         apps.append(app)
     with apps[0].container.get(Scope).of(MAIN):
         yield [*apps, request.param]

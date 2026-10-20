@@ -5,6 +5,9 @@ from journal.engine.support.typed_line import TypedLine
 
 RECENT = 60.0
 """How long a line the journal typed is known as its own, so a piece of one the terminal split is never taken for the user's words."""
+BATCH_SECONDS = 5.0
+"""The default of delivery.batch_seconds: lines typed within this many seconds of the last go as one, once the window is up."""
+MARK = "[journal]"
 
 
 class TypedLines:
@@ -14,6 +17,11 @@ class TypedLines:
         self._waiting: list[TypedLine] = []
         self._held: list[HeldLine] = []
         self._recent: list[TypedLine] = []
+        self._sent_at: dict[int, float] = {}
+
+    def is_within_window(self, environment_id: int, seconds: float) -> bool:
+        """Whether a line went to the environment's agent in the last so many seconds: the next waits for the window."""
+        return time.time() - self._sent_at.get(environment_id, 0.0) < seconds
 
     def is_waiting(self, environment_id: int) -> bool:
         """Whether a line typed to the environment's agent is not yet seen back."""
@@ -22,15 +30,18 @@ class TypedLines:
     def hold(self, line: HeldLine) -> None:
         self._held.append(line)
 
-    def next_held(self, environment_id: int) -> HeldLine | None:
-        """The oldest line held for the environment, taken from the hold; none when nothing waits."""
-        held = next((h for h in self._held if h.environment_id == environment_id), None)
-        if held is not None:
-            self._held.remove(held)
-        return held
+    def held_as_one(self, environment_id: int) -> HeldLine | None:
+        """Every line held for the environment, taken from the hold and joined as one marked line, the journal's instructions in the order they came; none when nothing waits."""
+        held = [h for h in self._held if h.environment_id == environment_id]
+        if not held:
+            return None
+        self._held = [h for h in self._held if h.environment_id != environment_id]
+        lines = [h.line.removeprefix(MARK).strip() for h in held]
+        return HeldLine(environment_id, TypedLine.cut(f"{MARK} {' | '.join(lines)}"), max(h.after for h in held))
 
     def typed(self, environment_id: int, line: str) -> None:
         now = time.time()
+        self._sent_at[environment_id] = now
         self._waiting.append(TypedLine(environment_id, line, now))
         self._recent = [t for t in self._recent if now - t.at < RECENT] + [TypedLine(environment_id, line, now)]
 

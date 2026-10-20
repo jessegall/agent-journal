@@ -1064,6 +1064,30 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   forgotten. A file opened on the phone is sandboxed. Left as it is: anyone who reaches the tunnel can void an open
   pairing code with ten wrong tries; the user makes another, and a code lives ten minutes.
 
+## Rulings of 2026-10-20, evening (on the development branch)
+
+- The journal follows a branch when Settings, Updates, Follow this branch names one, or `journal update follow
+  <branch>`: the check reads the branch's head on GitHub and compares it with the commit the installer recorded in
+  `.journal/src/commit`; only a pushed commit counts, never a working tree. This checkout's journal follows
+  development.
+- Lines typed to the agent go at most once a window, `delivery.batch_seconds` (5): a line within the window of the
+  last is held in the typing funnel, SupervisorLink.type, never in a workflow, and the tick types the held lines as
+  one marked line, the instructions joined with " | ". The window and the hold until a line is seen back are the
+  same hold; 0 types each line at once, which the tests about other conduct set.
+- A settings save from the viewer names only the keys it sets, null clearing one; the server never unsets a key
+  by its absence. Before, a pane layout or colour scheme save dropped every other viewer key, the tour's finished
+  mark among them, so the tour replayed after every update.
+- A pin above the chat whose link is a row's ref (`--link docs:55`), or the journal's own address opening one,
+  opens the row in place as its card does; an outside address opens a new tab.
+- A comment on a document's passage is read with the passage: `journal message read` prints the quoted lines under
+  the comment when the message is no reply; a reply's quote of the message it answers is still left out.
+- The chart goes (task 979, plan 19, doc 55): the states carry the journal's conduct on a stack machine. Settled
+  with Sir Jesse in messages 9364 to 9427: a stack of states with push and pop, the trail; one BaseState with the
+  mechanism and the shared listeners (compaction pushes Compacting, the session's end pushes Ended); listeners are
+  methods named on_<moment>, bound to their event by the annotation and found by type, overridden on purpose; a
+  journal panic command always allowed; Tuning as a frozen snapshot of the options; Standing on the stop and the
+  tick. Plan 19 waits for his approval.
+
 ## Workflow parts (plan 18, 2026-10-20)
 
 - Sir Jesse's answers (message 7237): a workflow's values are kept per environment, in its own record, and no
