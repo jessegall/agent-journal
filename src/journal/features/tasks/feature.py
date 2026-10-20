@@ -4,6 +4,7 @@ from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.listeners.clear_waits import ClearWaits
+from journal.features.tasks.listeners.end_settled_waits import EndSettledWaits
 from journal.features.tasks.listeners.let_go_of_closed_task import LetGoOfClosedTask
 from journal.features.tasks.listeners.no_wait_cycles import NoWaitCycles
 from journal.features.tasks.listeners.one_task_in_hand import OneTaskInHand
@@ -29,7 +30,7 @@ class Tasks(Feature):
     NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between reminders of the task in hand, so drift is noticed", 25, unit="edits")
     LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits without a log line before the agent's next write waits for one", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
-    listeners = (SpotPolling, ClearWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
+    listeners = (SpotPolling, ClearWaits, EndSettledWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
     checks = (
         Entry(NodeKind.CHECK, 'open_tasks', 'Has open tasks?', 'the environment has open tasks the agent may take up, outside a plan not yet started'),
         Entry(NodeKind.CHECK, 'related_tasks', 'Has a task to take up meanwhile?', 'a started plan has a next task, or, with no plan started, a task is open outside a plan'),
@@ -62,10 +63,11 @@ class Tasks(Feature):
     PARKED_AT_CLOSE = Nudge(name, "parked_at_close", "task {{n}} is still parked: can you continue it now?", "it was parked because: {{why}}. `journal task resume {{n}}` picks it up again", repeat_after=0)
     CHECK_AWAITED = Nudge(name, "check_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step", repeat_after=300, held_whatever_its_values=True)
     CHECK_IN = Nudge(name, "check_in", "nothing has happened for half an hour: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
+    WAIT_OVER = Nudge(name, "wait_over", "the wait for {{what}} is over: {{came}}", "carry on with what you were doing", repeat_after=0)
     WAIT_CLEARED = Nudge(name, "wait_cleared", "task {{n}} is open again: {{on}} is answered or closed", "`journal task start {{n}}` takes it up", repeat_after=0)
     BROKEN_WAIT = Nudge(name, "broken_wait", "{{waits}}", "so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat_after=0)
     BLOCKED_STILL = Nudge(name, "blocked_still", "blocked on something outside: {{tasks}}", "has it come? `journal task unblock <n>` when it has", repeat_after=2700, held_whatever_its_values=True)
-    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, PARKED_AT_CLOSE, CHECK_AWAITED, CHECK_IN, WAIT_CLEARED, BROKEN_WAIT, BLOCKED_STILL)
+    nudges = (CARRY_ON, LOG_OLD, OPEN, UNLOGGED, NEXT, PARKED, DEFERRED, CLOSED_BY_COMMIT, POLLING, LOG_SOON, LOG_OVERDUE, IN_HAND, PARKED_STILL, PARKED_AT_CLOSE, CHECK_AWAITED, CHECK_IN, WAIT_OVER, WAIT_CLEARED, BROKEN_WAIT, BLOCKED_STILL)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks
@@ -86,8 +88,10 @@ needs no task; file one for work that is an item of its own, that waits, or that
   `journal task unblock <n>` opens it again when what it waited on came. `journal task block <n> --on question:12`
   (or `--on task:7`) opens it by itself once that row is answered or closed; `--until "<command>"` runs the command
   every two minutes, such as a check that a pull request is merged, and opens it once the command passes.
-- Waiting on something outside your hands, a command, a run or a person: `journal await "<what you wait for>"` and end
-  your turn; working again lifts it, and every five quiet minutes you are asked to look.
+- Waiting on something outside your hands: `journal await "<what you wait for>" --output <n>` for a command running in the
+  background, or `--until "<script>"`, run every 30 seconds, for anything else. The wait ends by itself once that is done,
+  and you are told what it came to; working again lifts it too. A wait that names neither, or a wait on the user, is
+  refused: ask with `journal question ask`, or end your turn.
 - Log as you go, counted in edits: after twenty-five with nothing logged you are asked to, every twenty-five the work in hand is named
   back so drift is noticed, and at fifty the next write waits for the log line (settings tasks.first_nudge_after,
   tasks.name_every and tasks.log_after). A log line starts a new version.

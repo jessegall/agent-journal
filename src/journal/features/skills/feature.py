@@ -53,7 +53,8 @@ lists the verbs.
 - **shell**: a long command moves to the background; read any output by its number with `journal output read <n> --tail 20` (or --grep, --summary, --all);
   `journal reader add` keeps a reader that picks the lines worth seeing.
 - `journal environment here` after a compaction or a takeover lists what is in flight.
-- `journal await "<what>"` when you wait on something outside your hands, then end your turn.
+- `journal await "<what>" --output <n>` or `--until "<script>"` when you wait on something outside your hands, then end
+  your turn: the wait ends by itself once that is done.
 - `journal search "<words>"` finds every task, plan, message, document, report and agent conversation here that holds
   all the words: look there before saying you do not know or asking the user again.
 - Also: **report**, **doc**, **check**, **chart**, **plugin**, **secret**, **template**, **notice**; `journal <noun> --help` lists the verbs.

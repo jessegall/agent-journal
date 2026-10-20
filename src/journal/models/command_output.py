@@ -30,3 +30,10 @@ class CommandOutput(Scoped):
 
     def told_of(self) -> "CommandOutput":
         return self.with_(told=True)
+
+    def is_settled(self) -> bool:
+        """Nothing waiting on it waits any longer: the command ended."""
+        return self.ended
+
+    def came_to(self) -> str:
+        return f"output {self.id} {'finished' if self.status == 0 else f'failed with code {self.status}'}"

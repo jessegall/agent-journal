@@ -52,4 +52,19 @@ describe("paging back in a chat", () => {
         expect(host.querySelector("[aria-busy='true']").getAttribute("aria-label")).toBe("Loading older messages");
         expect(host.querySelectorAll(".skeleton-message").length).toBe(3);
     });
+
+    test("waits two seconds after a page before the next, so the top of the chat never pulls in the whole history", async () => {
+        vi.useFakeTimers();
+        const load = vi.fn(async () => true);
+        const {made} = paged(load);
+        await made.older();
+        expect(await made.older()).toBe(false);
+        expect(load).toHaveBeenCalledTimes(1);
+        vi.advanceTimersByTime(2100);
+        await nextTick();
+        expect(load).toHaveBeenCalledTimes(1);
+        expect(await made.older()).not.toBe(false);
+        expect(load).toHaveBeenCalledTimes(2);
+        vi.useRealTimers();
+    });
 });

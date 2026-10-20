@@ -1,7 +1,7 @@
 from journal.support.telling import Telling
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
-from journal.features.tasks.listeners.clear_waits import ClearWaits
+from journal.support.awaitables import Awaitables
 from journal.support.actor import Actor
 from journal.support.ref import Ref
 from journal.repositories.plans import Plans
@@ -16,7 +16,7 @@ class ClearPlanWaits(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         from journal.features.plans.feature import Plans as PlansFeature
-        if not ClearWaits.ended(event):
+        if not Awaitables.just_settled(event):
             return
         ref = Ref.to(event.model)
         for plan in self.plans.waiting_on(event.model):

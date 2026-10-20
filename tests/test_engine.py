@@ -128,7 +128,7 @@ def test_one_task_in_hand_park_resume_and_await(app):
     console.run(["task", "park", "1", "waiting for the designer"], AGENT)
     assert isinstance(app.container.get(Machine).current("s1"), Idle), "parked: nothing in hand"
     assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(Machine).current("s1").task_id == 1
-    assert console.run(["await", "the deploy to finish"], AGENT).code == 0
+    assert console.run(["await", "the deploy to finish", "--until", "false"], AGENT).code == 0
     assert app.container.get(Machine).current("s1").name == "expecting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert app.container.get(Machine).current("s1").task_id == 1, "working again lifts the wait"

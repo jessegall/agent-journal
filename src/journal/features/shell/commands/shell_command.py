@@ -1,5 +1,6 @@
 import re
 from argparse import Namespace
+from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from journal.support.where import Where
 from journal.support.cards import Cards
 from journal.support.chain import Chain
 from journal.support.hook import Hook
+from journal.features.edits.support.file_snapshots import FileSnapshots
+from journal.features.edits.support.patch_rows import PatchRows
 from journal.features.shell.support.doing import Doing
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_log import OutputLog
@@ -27,6 +30,8 @@ from journal.repositories.settings import Settings
 from journal.support.chat_mark import ChatMark
 
 TAIL = 2000
+ROWS_KEPT = 200
+"""How many changed lines of a shell command's change are kept, as for a tool's."""
 STARTS_LOOKED_AT = 20
 """How many of the session's newest tool starts are looked through for the one a line the runner is handed came from."""
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
@@ -40,10 +45,10 @@ class ShellCommand(Command):
 
     noun = "shell"
 
-    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus) -> None:
+    def __init__(self, entries: Entries, messages: Messages, settings: Settings, agents: Agents, cards: Cards, scope: Scope, edits: Edits, log: OutputLog, outputs: CommandOutputs, bus: Bus, snapshots: FileSnapshots) -> None:
         self.entries, self.messages, self.settings, self.agents, self.bus = entries, messages, settings, agents, bus
         self.edits, self.log, self.outputs = edits, log, outputs
-        self.cards, self.scope = cards, scope
+        self.cards, self.scope, self.snapshots = cards, scope, snapshots
 
     def arguments(self, verbs) -> None:
         split = self.verb(verbs, "split", "the commands a line chains, each written to its own file in the folder; one line per part: R or S for the agent's own or the shell's wrapping, ; or & for how it follows, & or ; for what follows, w or - for whether it writes")
@@ -126,8 +131,17 @@ class ShellCommand(Command):
         self.record(where, RAN, {"chain": args.chain, "part": args.part, "doing": Doing.of(args.part), "status": args.status, "seconds": args.seconds, "output": args.output[-TAIL:], "changed": changed})
         now = datetime.now(timezone.utc).timestamp()
         for change in changed:
-            self.edits.record(Edit(session=where.session, path=change["path"], at=now, added=change["added"], removed=change["removed"], command=args.part), where.actor)
+            self.edits.record(self.edit_of(change["path"], change["added"], change["removed"], args.part, where.session, now), where.actor)
         return 0
+
+    def edit_of(self, path: str, added: int, removed: int, part: str, session: str, at: float) -> Edit:
+        """A change a shell command made, its lines told against the last version the journal saw; a file gone or too large is counted alone."""
+        text = self.snapshots.now(path)
+        if text is None:
+            return Edit(session=session, path=path, at=at, added=added, removed=removed, command=part)
+        patch = PatchRows.between(self.snapshots.before(path), text)
+        self.snapshots.keep(path, text)
+        return Edit(session=session, path=path, at=at, added=added, removed=removed, command=part, first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_KEPT]))
 
     def moved(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell

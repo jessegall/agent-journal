@@ -16,7 +16,7 @@ class Check(Model):
     brief: str = ""
     """What it checks and what its failure means, in a few lines."""
     command: str = ""
-    every: int = 0
+    every: float = 0
     """Minutes between runs; 0 runs it only by hand."""
     last_passed: bool | None = None
     last_output: str = ""
@@ -43,6 +43,9 @@ class Check(Model):
 
     def is_settled(self) -> bool:
         return self.last_passed is True
+
+    def came_to(self) -> str:
+        return f"check {self.id} passed"
 
     def cannot_run(self) -> bool:
         return bool(self.last_fault)

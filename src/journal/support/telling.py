@@ -1,5 +1,6 @@
 from journal.engine.nudger import Nudger
 from journal.support.said import Said
+from journal.models.agent import Agent
 from journal.repositories.agents import Agents
 from journal.supervisor_link import SupervisorLink
 
@@ -12,6 +13,10 @@ class Telling:
 
     def tell(self, said: Said) -> None:
         agent = self.agents.live()
-        line = agent and self.nudger.say(agent, said)
+        if agent is not None:
+            self.tell_to(agent, said)
+
+    def tell_to(self, agent: Agent, said: Said) -> None:
+        line = self.nudger.say(agent, said)
         if line:
             self.supervisor.type(agent.environment_id, line)

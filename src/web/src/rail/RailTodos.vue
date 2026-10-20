@@ -117,6 +117,10 @@ onMounted(() => props.finished && scope.recent && scope.recent("tasks", FINISHED
     overscroll-behavior: contain;
 }
 
+.rail-list > * {
+    flex-shrink: 0;
+}
+
 .rail-group {
     position: sticky;
     top: 0;

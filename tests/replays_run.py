@@ -143,7 +143,7 @@ def the_clock_ticks(app, replay: Replay, provider: str) -> None:
         tick(60.0)
         replay.step(name)
     console.run(["task", "resume", "1"], AGENT)
-    console.run(["await", "the deploy"], AGENT)
+    console.run(["await", "the deploy", "--until", "false"], AGENT)
     replay.step("awaiting the deploy")
     for name in ("five quiet minutes awaiting", "five more awaiting"):
         tick(300.0)
@@ -405,7 +405,7 @@ def expecting_rules(app, replay: Replay, provider: str) -> None:
     console = app.console()
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
-    console.run(["await", "the deploy"], AGENT)
+    console.run(["await", "the deploy", "--until", "false"], AGENT)
     replay.step("awaiting the deploy")
     for name in ("five quiet minutes", "five more"):
         tick(app, 330.0)
@@ -618,7 +618,7 @@ def pause_exits(app, replay: Replay, provider: str) -> None:
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     read = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1]
-    console.run(["await", "the deploy"], AGENT)
+    console.run(["await", "the deploy", "--until", "false"], AGENT)
     replay.step("awaiting something outside")
     replay.step("a tool use lifts the await", read())
     replay.step("a stop back at work", hook_as(app, provider, "Stop")[1])
@@ -750,7 +750,7 @@ def meanwhile_while_waiting(app, replay: Replay, provider: str) -> None:
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "create", "the header"], AGENT)
-    console.run(["await", "the build"], AGENT)
+    console.run(["await", "the build", "--until", "false"], AGENT)
     replay.step("waiting on the build")
     for name, quiet in (("half a minute", 30.0), ("a minute and a half", 90.0), ("two minutes", 120.0)):
         tick(app, quiet)

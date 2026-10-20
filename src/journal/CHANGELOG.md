@@ -2,6 +2,15 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.4.5
+
+- The task titles in the rail's task list show again; 4.4.3 squeezed them out when the list was made to scroll.
+- A file changed by a shell command, a script or a sed, shows its changed lines in the file edits, told against the last version the journal saw of it, as a tool's edit does.
+- A wait names what ends it: `journal await "<what>" --output <n>` ends when that command's output is done, and `--until "<script>"` is run every 30 seconds and ends it once it passes. The wait clears by itself and the agent is told what it came to. A wait that names neither, or a wait on the user, is refused.
+- A plan's timeline opens in the side column beside the plan, as in version 3, and the shared plan view keeps it there too.
+- Scrolling to the top of the chat loads one earlier page, then waits two seconds before the next, so it no longer pulls in the whole history.
+- The About page's fresh read of the releases waits on GitHub and is no longer flagged as a slow request.
+
 ## 4.4.4
 
 - An update keeps a marker file while it runs, `.journal/runtime/updating.json`: a second update waits for the first, the viewer's update cover stays up through the restart and cannot be dismissed, and the journal that comes up says whether the update finished. What the install printed is kept in `.journal/runtime/update.log`, and an install that did not restart the journal is followed by a restart.

@@ -164,7 +164,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     machine = app.container.get(Machine)
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
-    console.run(["await", "the build"], AGENT)
+    console.run(["await", "the build", "--until", "false"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
     assert machine.current("s1").name == "expecting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
     out = console.run(["task", "done", "1"], AGENT).out
@@ -475,7 +475,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app):
     assert "following sequence" in console.run(["sequence", "follow"], AGENT).out
     assert "a write waits" not in json.dumps(edit()), "a step taken up lets writes through"
     assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"], "a tool used since the last hold, so the stop is held again"
-    console.run(["await", "the user"], AGENT)
+    console.run(["await", "the release", "--until", "false"], AGENT)
     assert hook(app, "Stop")[1].get("decision") != "block", "a step that waits on the user says so, and the stop passes"
     assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
     assert "a write waits" not in json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "git tag v1 && git push --tags"})[1]), "a command the step names goes through"
@@ -2760,7 +2760,7 @@ def test_a_subagents_tool_use_does_not_lift_the_agents_own_wait(app):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
-    console.run(["await", "the readers"], AGENT)
+    console.run(["await", "the readers", "--until", "false"], AGENT)
     machine = app.container.get(Machine)
     assert machine.current("s1").name == "expecting"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, agent_id="sub-1")
@@ -2859,7 +2859,7 @@ def test_the_card_and_release_actions(app):
     actions.perform("release", "nothing to release", ctx())
     assert machine.current("s1").name == "idle", "an agent not paused is left as it is"
     console.run(["task", "create", "t", "--start"], AGENT)
-    console.run(["await", "the build"], AGENT)
+    console.run(["await", "the build", "--until", "false"], AGENT)
     assert machine.current("s1").name == "expecting"
     actions.perform("release", "the build came back: carry on", ctx())
     assert machine.current("s1").task_id == 1, "released to what it was doing"
@@ -2901,7 +2901,7 @@ def test_the_fillers_name_the_inbox_the_owed_messages_the_work_in_hand_and_the_r
     from journal.repositories.charts import Charts
     log_held = next(c for c in app.container.get(Charts).shipped() if c.drawing == "working:tool_starting:log_held")
     assert fillers.fill("{{task}} / {{value.writes}} / {{log_command}}", replaced(stop, walked=[log_held.id])) == f"task 1 / {held.count(200)} / `journal task log 1`", "the writes are the workflow's own count of those that went through, a held one not counted"
-    console.run(["await", "the deploy"], AGENT)
+    console.run(["await", "the deploy", "--until", "false"], AGENT)
     assert fillers.fill("check {{awaited}} now", at(Ticked(at=0.0, quiet_for=330.0, session="s1", environment_id=env))) == "check the deploy now", "the context carries the state as it is when the walk starts"
     console.run(["task", "park", "1", "the header first"], AGENT)
     assert fillers.fill("{{parked_n}}: {{parked_title}} ({{parked_why}})", tick) == "1: the footer (the header first)"
@@ -3061,7 +3061,7 @@ def test_the_walk_reads_the_state_once_after_the_machine_has_moved(app):
     in_hand, say = node("check", "task_in_hand"), node("action", "say", "--text", "in hand: {{task}}")
     console.run(["chart", "line", "--edit-default", str(trigger), str(in_hand)], USER)
     console.run(["chart", "line", "--edit-default", str(in_hand), str(say), "--port", "yes"], USER)
-    console.run(["await", "the deploy"], AGENT)
+    console.run(["await", "the deploy", "--until", "false"], AGENT)
     assert app.container.get(Machine).current("s1").name == "expecting"
     body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py", "limit": 1})[1]
     assert "in hand: task 1" in json.dumps(body), "the tool use lifted the wait before the walk, and the walk read Working, once"
@@ -3196,7 +3196,7 @@ def test_a_workflow_moves_the_agent_to_idle_only_from_a_state_that_owns_nothing(
     assert machine.current("s1").name == "working", "a task in hand is not left with nobody on it"
     failed = app.container.get(Entries).of_kind("walk_failed", 3)
     assert failed and failed[0].data["node"] == move and "would leave that with nobody on it" in failed[0].data["fault"], "the walk records why the move was refused"
-    console.run(["await", "the deploy"], AGENT)
+    console.run(["await", "the deploy", "--until", "false"], AGENT)
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response="")
     assert machine.current("s1").name == "expecting", "a wait keeps its way back: a workflow does not move it"
     assert "would lose its way back" in app.container.get(Entries).of_kind("walk_failed", 1)[0].data["fault"]
@@ -3878,7 +3878,7 @@ def test_a_run_stands_through_the_agents_moves_and_a_workflow_action_starts_one(
     running, machine = app.container.get(Running), app.container.get(Machine)
     assert running.in_hand("s1", 1).title == "release", "a workflow's start a sequence action starts the run"
     console.run(["task", "create", "t", "--start"], AGENT)
-    console.run(["await", "the deploy"], AGENT)
+    console.run(["await", "the deploy", "--until", "false"], AGENT)
     console.run(["message", "send", "how is it going?"], USER)
     hook(app, "UserPromptSubmit", prompt="carry on")
     console.run(["stuck", "the build is broken"], AGENT)
@@ -3952,7 +3952,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, m
     made = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
     console.run(["sequence", "run", made], AGENT)
     assert "step 1: bump" in json.dumps(hook(app, "SessionStart", source="compact")[1]), "after a compaction the step is told"
-    console.run(["await", "the build"], AGENT)
+    console.run(["await", "the build", "--until", "false"], AGENT)
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     app.runtime().deferred.drain()
     assert any("step 1: bump" in line for line in sent), "a wait that ends types the step"
@@ -4275,7 +4275,7 @@ def test_await_and_a_command_moved_to_the_background_are_triggers(app):
     console.run(["chart", "line", str(moved), str(moves)], USER)
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
-    console.run(["await", "the build"], AGENT)
+    console.run(["await", "the build", "--until", "false"], AGENT)
     folder = app.config.root / "c9"
     folder.mkdir()
     console.run(["shell", "split", "pytest -q", "--into", str(folder)], AGENT)
@@ -5264,7 +5264,7 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
     back = int(console.run(["chart", "node", "action", "release", "--text", "[chart] back to it", "--in", str(mine)], USER).out.split()[1].rstrip(":"))
     console.run(["chart", "line", str(trigger), str(back)], USER)
     send_back = lambda: hook(app, "SubagentStop", agent_id="a1")
-    console.run(["await", "the deploy"], AGENT)
+    console.run(["await", "the deploy", "--until", "false"], AGENT)
     assert machine.current("s1").name == "expecting"
     send_back()
     assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "back from awaiting something outside, to the task"
@@ -5740,7 +5740,7 @@ def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app, tmp
 def test_an_agents_wait_is_on_its_own_row_with_or_without_a_task(app):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
-    app.console().run(["await", "the suite"], AGENT)
+    app.console().run(["await", "the suite", "--until", "false"], AGENT)
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         row = json.loads(reply.read())["rows"][0]
     assert row["awaiting"] == "the suite" and row["awaiting_since"], "the bar reads a wait from the agent's row, which changes when its state does"
@@ -5772,7 +5772,7 @@ def test_an_agent_waiting_in_auto_mode_is_pointed_to_the_next_task_after_a_quiet
     console.run(["environment", "here"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "create", "the header"], AGENT)
-    console.run(["await", "the suite"], AGENT)
+    console.run(["await", "the suite", "--until", "false"], AGENT)
     tick_after(app, 70.0)
     app.runtime().deferred.drain()
     assert any("while you wait for the suite, task 2 is next" in line and "waiting is fine" in line for line in typed), typed
@@ -7396,3 +7396,39 @@ def test_messages_between_sessions_reach_the_chat_both_ways_named_by_their_agent
     app.runtime().deferred.drain()
     sent = [m for m in app.container.get(MessageRows).all() if m.data.get("sent_to")]
     assert [(m.text, m.data["sent_to"]) for m in sent] == [("thank you", "code-commandments-12")], "a message the agent sent is kept as sent to that agent; a bare idle subscription is not"
+
+
+def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app):
+    from journal.engine.machine import Machine
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    bare = console.run(["await", "the build"], AGENT)
+    assert bare.code == 1 and "a wait names what ends it" in bare.err, "a wait that names nothing to end it is refused"
+    user = console.run(["await", "the user's answer", "--until", "false"], AGENT)
+    assert user.code == 1 and "no wait" in user.err, "waiting for the user is no wait"
+    output = app.container.get(OutputLog).began("c1", "npm run build", app.config.home / "runtime" / "outputs" / "c1", "s1", Actor.agent("s1"))
+    assert console.run(["await", "the build", "--output", str(output.id)], AGENT).code == 0
+    assert app.container.get(Machine).current("s1").name == "expecting", "the agent waits"
+    outputs = app.container.get(CommandOutputs)
+    outputs.save(outputs.find(output.id).moved_out().ended_with(0), Actor.system())
+    app.runtime().deferred.drain()
+    assert app.container.get(Machine).current("s1").name != "expecting", "the wait ends by itself once the output it named is done"
+
+
+def test_a_file_changed_by_a_shell_command_keeps_its_changed_lines(app):
+    from journal.features.edits.support.patch_rows import PatchRows
+    from journal.repositories.edits import Edits
+    rows = PatchRows.between("a\nb\nc\nd\n", "a\nB\nc\nd\ne\n").rows
+    assert [(r.kind, r.line, r.text) for r in rows if r.kind != "ctx"] == [("del", 2, "b"), ("add", 2, "B"), ("add", 5, "e")], "the lines a change removed and added, numbered as in the file"
+    hook(app, "SessionStart")
+    console = app.console()
+    (app.config.root / "notes.txt").write_text("one\ntwo\n")
+    console.run(["shell", "ran", "python3 - <<'EOF'", "--chain", "c1", "--status", "0", "--output", "", "--changed", "2\t0\tnotes.txt"], AGENT)
+    (app.config.root / "notes.txt").write_text("one\nTWO\nthree\n")
+    console.run(["shell", "ran", "sed -i s/two/TWO/ notes.txt", "--chain", "c2", "--status", "0", "--output", "", "--changed", "1\t1\tnotes.txt"], AGENT)
+    first, second = [e for e in app.container.get(Edits).all() if e.path == "notes.txt"][-2:]
+    assert [r["text"] for r in first.rows if r["kind"] == "add"] == ["one", "two"], "a new file's lines are all added"
+    assert [(r["kind"], r["text"]) for r in second.rows if r["kind"] != "ctx"] == [("del", "two"), ("add", "TWO"), ("add", "three")], "a later change is told against the version the journal saw last"
