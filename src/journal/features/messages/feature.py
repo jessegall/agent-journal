@@ -53,8 +53,10 @@ class Messages(Feature):
     ANSWER = Nudge(name, "answer", "answer or react to message {{messages}} before you do anything else", "", repeat_after=300, answered_in_chat=True)
     ANSWER_HELD = Nudge(name, "answer_held", "answer or react to message {{messages}} first", "your tool calls wait until you do", repeat_after=0, answered_in_chat=True)
     WHOLE = Nudge(name, "whole", "read the user's words whole: no pipe after `journal message read` or `journal question show`", "run it on its own; every word is for you", repeat_after=0)
+    REPLIED_ALREADY = Nudge(name, "replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_after=0)
+    REPEATED_REPLY = Nudge(name, "repeated_reply", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_after=0)
     REPLY_BY_TAG = Nudge(name, "reply_by_tag", "a reply needs no command", "type it in your turn with [!reply:N] opening its line, and it reaches the chat as your reply", repeat_after=0)
-    nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE, REPLY_BY_TAG)
+    nudges = (NEW, SOME, MANY, REACTED, ONLY_A_FACE, UNREAD_HELD, ANSWER, ANSWER_HELD, WHOLE, REPLIED_ALREADY, REPEATED_REPLY, REPLY_BY_TAG)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
 # Messages

@@ -26,6 +26,7 @@ class MessageCommand(Command):
         send = self.verb(verbs, "send", "leave a message")
         send.add_argument("text")
         send.add_argument("--reply-to", type=int, default=None)
+        send.add_argument("--confirm", action="store_true", help="send a second reply to a message already answered")
         self.verb(verbs, "list", "every message here")
         self.verb(verbs, "read", "show a message and mark it read").add_argument("n", type=int)
         self.verb(verbs, "unread", "show every unread message and mark them read")
@@ -40,12 +41,24 @@ class MessageCommand(Command):
 
     def send(self, args: Namespace, where: Where) -> int:
         author = Author.of(where.actor)
-        if args.reply_to and author == Author.AGENT and self.messages.reply_saying(args.reply_to, args.text):
-            print(f"message {args.reply_to} already has this reply in the chat: not sent again")
-            return 0
-        message = self.messages.save(Message(author=author, text=args.text, reply_to=args.reply_to), where.actor)
         if args.reply_to and author == Author.AGENT:
-            self.messages.mark_read(self.messages.find(args.reply_to), where.actor)
+            return self.reply(args, where)
+        message = self.messages.save(Message(author=author, text=args.text, reply_to=args.reply_to), where.actor)
+        print(f"message {message.id} sent")
+        return 0
+
+    def reply(self, args: Namespace, where: Where) -> int:
+        """The agent's reply, one a message: a second is sent only when confirmed, and marks the message read."""
+        answered = self.messages.find(args.reply_to)
+        if self.messages.reply_saying(answered.id, args.text):
+            print(f"message {answered.id} already has this reply in the chat: not sent again")
+            return 0
+        earlier = self.messages.first_reply(answered)
+        if earlier is not None and not args.confirm:
+            print(f"message {answered.id} already has your reply {earlier.id}: not sent. Send it again only if it says something new, with --confirm")
+            return 1
+        message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_to=answered.id), where.actor)
+        self.messages.mark_read(answered, where.actor)
         print(f"message {message.id} sent")
         return 0
 

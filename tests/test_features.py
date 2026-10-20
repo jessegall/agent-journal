@@ -7048,3 +7048,27 @@ def test_a_package_install_of_code_commandments_is_suggested_once_as_the_journal
     suggesting.suggestions.delete(suggesting.suggestions.find(suggestion.id), Actor.user(1))
     app.container.get(Plugins).save(Plugin(name="code-commandments", source="https://github.com/jessegall/code-commandments", manifest=PluginManifest(name="code-commandments")), Actor.user(1))
     assert suggesting.round() == [], "with the plugin installed there is nothing to suggest"
+
+
+def test_a_message_gets_one_reply_unless_the_agent_confirms_a_second(app, monkeypatch):
+    from journal.repositories.messages import Messages
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    console = app.console()
+    console.run(["message", "send", "is the idle agent left waiting?"], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "here"], AGENT)
+    hook(app, "UserPromptSubmit", prompt="[journal] new message 1")
+    sent = console.run(["message", "send", "Not quite: an agent with work is told the next task at each stop, and one at rest is checked in on after thirty quiet minutes.", "--reply-to", "1"], AGENT)
+    assert sent.code == 0
+    again = console.run(["message", "send", "Something else entirely.", "--reply-to", "1"], AGENT)
+    assert again.code == 1 and "already has your reply 2" in again.out, "a second reply by command is refused, naming the first"
+    hook(app, "MessageDisplay", message="An agent with work is told the next task at each stop, and an agent at rest is checked in on after thirty quiet minutes.")
+    app.runtime().deferred.drain()
+    assert len([m for m in app.container.get(Messages).in_() if m.author == "agent"]) == 1, "closing words saying the reply again stay out of the chat"
+    assert any("said again what your reply 2 to message 1 said" in line for line in typed), "and the agent is told why"
+    hook(app, "MessageDisplay", message="[!reply:1] One more thing about the wait.")
+    app.runtime().deferred.drain()
+    assert len([m for m in app.container.get(Messages).in_() if m.author == "agent"]) == 1, "a typed tag on a message already answered is kept out too"
+    assert any("message 1 already has your reply 2" in line for line in typed)
+    assert console.run(["message", "send", "Something new after all.", "--reply-to", "1", "--confirm"], AGENT).code == 0, "confirmed, a second reply goes out"
