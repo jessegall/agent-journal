@@ -20,5 +20,18 @@ test("a subagent's first user line is the brief from the main agent and later on
 test("a transcript line carries its words as text, which the chat bubble reads", () => {
     const [line] = chatTurns([{line: 13, who: "agent", kind: "agent", at: 1, tools: [], text: "I will inspect the journal first.", has_text: true}]);
     expect(line.type).toBe("line");
+    expect(line.kind).toBe("message");
     expect(line.text).toBe("I will inspect the journal first.");
+});
+
+test("a run of tool calls between spoken turns is one card, which the chat draws as a mark and not as an empty bubble", () => {
+    const turns = chatTurns([
+        {line: 1, who: "agent", kind: "agent", at: 1, tools: [], text: "Looking.", has_text: true},
+        {line: 2, who: "agent", kind: "agent", at: 2, tools: ["exec"], text: "", has_text: false},
+        {line: 3, who: "tool", kind: "tool", at: 3, tools: [], text: "", has_text: true},
+        {line: 4, who: "agent", kind: "agent", at: 4, tools: ["exec"], text: "", has_text: false},
+        {line: 5, who: "agent", kind: "agent", at: 5, tools: [], text: "Found it.", has_text: true},
+    ]);
+    expect(turns.map((t) => t.kind)).toEqual(["message", "card", "message"]);
+    expect(turns[1].data.label).toBe("Used exec ×2");
 });

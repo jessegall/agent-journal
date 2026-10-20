@@ -16,8 +16,10 @@ export function withWhispers(turns, nudges, session) {
 const SPEAKERS = {agent: "agent", human: "user", injected: "user"};
 const hasText = (t) => SPEAKERS[t.kind] && t.text;
 
+// a spoken turn drawn as a message bubble, and a run of tool calls as a card: `kind` is what the chat's Turn switches on
 const line = (t) => ({
     type: "line",
+    kind: "message",
     ref: `line:${t.line}`,
     n: t.line,
     who: SPEAKERS[t.kind],
@@ -47,7 +49,7 @@ export function chatTurns(entries) {
             out.push(line(t));
         } else if (t.tools && t.tools.length) {
             if (!run) {
-                run = {type: "card", ref: `tools:${t.line}`, n: t.line, created: t.at, tools: [], data: {icon: "terminal", label: ""}};
+                run = {type: "card", kind: "card", ref: `tools:${t.line}`, n: t.line, created: t.at, tools: [], data: {icon: "terminal", label: ""}};
                 out.push(run);
             }
             run.tools.push(...t.tools);
