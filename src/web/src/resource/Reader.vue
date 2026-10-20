@@ -83,7 +83,7 @@ watch(
     <template v-if="DIALOG_PAGES[shape]">
         <Dialog large bare :open="!!resource && !leaving" @dismiss="close" @close="emit('gone')">
             <template v-if="resource">
-                <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                <DocumentPage :resource="resource" :focus="focusComment" read-only @close="close">
                     <component :is="DIALOG_PAGES[shape]" :resource="resource" @close="close" />
                 </DocumentPage>
             </template>

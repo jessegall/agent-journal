@@ -11,7 +11,6 @@ import {project} from "../state/identity.js";
 import {store} from "../state/store.js";
 import {span} from "../format/time.js";
 import {route, showSession} from "../route.js";
-import CommentToggle from "./CommentToggle.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -109,10 +108,6 @@ const ACTIONS = {stop: () => stopAgentNamed(api, environment.value)};
             :run="(key) => ACTIONS[key]()"
             @open-subagent="showSession"
             @close="emit('close')"
-        >
-            <template #tools>
-                <CommentToggle :resource="resource" />
-            </template>
-        </AgentInspector>
+        />
     </template>
 </template>
