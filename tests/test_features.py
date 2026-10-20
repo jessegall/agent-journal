@@ -161,7 +161,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     hook(app, "SessionStart")
     console.run(["plan", "approve", "1"], USER)
     out = console.run(["plan", "start", "1"], AGENT).out
-    assert "task 1 is next" in out
+    assert "task 1," in out and "is next" in out
     machine = app.container.get(StateMachine)
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
@@ -324,7 +324,7 @@ def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app, monkeypatch):
     assert any("plan 1 is blocked: all its tasks left are blocked" in line for line in typed) and "plan 1 is done" not in out, "the agent is told why the plan waits"
     assert app.container.get(Plans).find(1).state == PlanState.BLOCKED, "with every task left blocked, the plan blocks itself and is not done"
     console.run(["task", "unblock", "2"], AGENT)
-    assert app.container.get(Plans).find(1).state == PlanState.STARTED and "task 2 is next" in console.run(["plan", "start", "1"], AGENT).out
+    assert app.container.get(Plans).find(1).state == PlanState.STARTED and "task 2," in console.run(["plan", "start", "1"], AGENT).out
 
 
 def test_a_task_waits_on_a_question_by_a_link_and_the_answer_clears_it(app):
@@ -2233,7 +2233,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     assert console.run(["plan", "approve", "1"], USER).code == 0
     app.runtime().deferred.drain()
     assert "the user approved plan 1" in sent[-1]
-    assert "task 1 is next" in console.run(["plan", "start", "1"], AGENT).out
+    assert "task 1," in console.run(["plan", "start", "1"], AGENT).out
     console.run(["task", "done", "1"], AGENT)
     app.runtime().deferred.drain()
     assert app.container.get(StateMachine).current("s1").task_id == 3, "the second task of phase 1 comes before the first of phase 2"
@@ -6384,7 +6384,7 @@ def test_a_plan_parks_and_restarts_on_its_parked_task_only_once_approved_holds_i
     console.run(["environment", "here"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
     console.run(["plan", "park", "1"], AGENT)
-    assert "task 1 is next" in console.run(["plan", "start", "1"], AGENT).out, "a restart resumes the parked task"
+    assert "task 1," in console.run(["plan", "start", "1"], AGENT).out, "a restart resumes the parked task"
     console.run(["task", "done", "1", "--how", "h"], AGENT)
     console.run(["task", "done", "2", "--how", "h"], AGENT)
     console.run(["task", "block", "3", "a vendor"], AGENT)

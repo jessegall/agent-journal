@@ -9,7 +9,9 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound
+from journal.features.plans.support.plans_standing_reader import NOTHING_YET
 from journal.repositories.plans import Plans
+from journal.support.task_briefing import TaskBriefing
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.tasks import Tasks
 
@@ -17,8 +19,9 @@ from journal.repositories.tasks import Tasks
 class PlanControl:
     """Starting, parking and abandoning a plan, the one way for the command and the viewer alike: the task in hand and the agent following the plan move with it. The session is the agent's that follows, empty when none does."""
 
-    def __init__(self, plans: Plans, tasks: Tasks, machine: StateMachine, settings: SettingRows) -> None:
+    def __init__(self, plans: Plans, tasks: Tasks, machine: StateMachine, settings: SettingRows, briefing: TaskBriefing) -> None:
         self.plans, self.tasks, self.machine, self.settings = plans, tasks, machine, settings
+        self.briefing = briefing
 
     def holds(self, plan: Plan) -> bool:
         from journal.features.tasks.feature import Tasks as TasksFeature
@@ -43,7 +46,7 @@ class PlanControl:
             return self.waiting(plan)
         started = self.tasks.save(task.started(datetime.now(timezone.utc)), by)
         self.follow(session, plan, FollowingPlan(plan_id=plan.id, task_id=started.id))
-        return PlansFeature.NEXT_TASK_OF_THE_PLAN.create(n=plan.id, task=started.id, title=started.title)
+        return PlansFeature.NEXT_TASK_OF_THE_PLAN.create(n=plan.id, task=started.id, title=started.title, briefing=self.briefing.said(started) or NOTHING_YET)
 
     def waiting(self, plan: Plan) -> Nudge:
         from journal.features.plans.feature import Plans as PlansFeature
