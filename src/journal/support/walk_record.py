@@ -42,7 +42,7 @@ class WalkRecord(EntryData):
         """The answer the walk gave the agent, in words: held with the line, or the line said."""
         if not self.allowed:
             return f"Held: {self.said}" if self.said else "Held"
-        return f"Said: {self.said}" if self.said else ""
+        return f"Nudge: {self.said}" if self.said else ""
 
     def count_words(self) -> str:
         """The counts the walk left its workflows with, in words: reminders 3, edits 2."""

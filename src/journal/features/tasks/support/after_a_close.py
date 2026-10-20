@@ -2,7 +2,7 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.plans import Plans
 from journal.repositories.tasks import Tasks
-from journal.support.said import Said
+from journal.engine.nudge import Nudge
 
 
 class AfterAClose:
@@ -11,11 +11,11 @@ class AfterAClose:
     def __init__(self, tasks: Tasks, plans: Plans) -> None:
         self.tasks, self.plans = tasks, plans
 
-    def said(self, done: Task) -> Said | None:
+    def said(self, done: Task) -> Nudge | None:
         from journal.features.tasks.feature import Tasks as TasksFeature
         if self.tasks.in_hand() is not None or self.plans.is_moving(done):
             return None
         if self.tasks.in_state(TaskState.PARKED):
             return None
         open_ = self.plans.free()
-        return TasksFeature.NEXT.about(n=open_[0].id, title=open_[0].title) if open_ else None
+        return TasksFeature.NEXT.create(n=open_[0].id, title=open_[0].title) if open_ else None

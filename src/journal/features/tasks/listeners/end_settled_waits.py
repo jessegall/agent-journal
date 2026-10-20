@@ -26,4 +26,4 @@ class EndSettledWaits(Listener[Updated]):
     def ended(self, agent, wait: Expecting) -> None:
         from journal.features.tasks.feature import Tasks
         self.machine.move(agent.session, agent.environment_id, wait.back().to)
-        self.telling.tell_to(agent, Tasks.WAIT_OVER.about(what=wait.what, came=self.awaitables.came_to(wait.waits_on())))
+        self.telling.tell_to(agent, Tasks.WAIT_OVER.create(what=wait.what, came=self.awaitables.came_to(wait.waits_on())))

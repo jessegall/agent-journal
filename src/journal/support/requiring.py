@@ -59,7 +59,7 @@ class Requiring:
         if self.registry.silenced(Skills.REQUIRED):
             return []
         self.owe(agent, skills)
-        return [line for skill in skills if (line := self.nudger.say(agent, Skills.REQUIRED.about(skill=skill.name, path=self.path_of(skill))))]
+        return [line for skill in skills if (line := self.nudger.say(agent, Skills.REQUIRED.create(skill=skill.name, path=self.path_of(skill))))]
 
     def path_of(self, skill: Skill):
         """Where the skill's file is, from the project's root."""

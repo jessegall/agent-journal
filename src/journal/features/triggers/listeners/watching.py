@@ -35,6 +35,6 @@ class Watching(AgentListener[A]):
             return None
         denied = [t for t in met if t.action == TriggerAction.DENY]
         if denied and self.can_deny():
-            return Decision.refuse(TriggersFeature.DENIED.about(title=denied[0].text).rendered())
+            return Decision.refuse(TriggersFeature.DENIED.create(title=denied[0].text).rendered())
         lines = self.firing.lines(met, event.session, event.environment_id)
         return Decision.tell("\n".join(lines)) if lines else None

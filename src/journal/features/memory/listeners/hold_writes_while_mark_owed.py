@@ -21,5 +21,5 @@ class HoldWritesWhileMarkOwed(AgentListener[ToolStarting]):
         agent = self.machine.agent(event.session, event.environment_id)
         if not agent.mark_owed:
             return None
-        said = Memory.HELD.about()
+        said = Memory.HELD.create()
         return None if self.registry.silenced(said) else Decision.refuse(said.rendered())

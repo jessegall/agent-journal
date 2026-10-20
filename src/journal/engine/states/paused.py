@@ -7,7 +7,7 @@ from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.support.said import Said
+from journal.engine.nudge import Nudge
 
 
 
@@ -31,7 +31,7 @@ class Paused(AgentState):
     def resumes(self, state: str) -> bool:
         return self.resume.get("state", "idle") == state
 
-    def back(self, *says: Said) -> Transition:
+    def back(self, *says: Nudge) -> Transition:
         return self.go(Resume(state=self.resume.get("state", "idle"), data=self.resume.get("data", {})), *says)
 
     @classmethod

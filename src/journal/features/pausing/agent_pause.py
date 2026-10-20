@@ -24,7 +24,7 @@ class AgentPause:
         if not isinstance(current, PausedByUser):
             raise Refused(f"agent {agent.id} is not paused")
         resumed = self.machine.move(agent.session, agent.environment_id, current.back().to)
-        line = self.nudger.say(resumed, PausingFeature.RESUMED.about())
+        line = self.nudger.say(resumed, PausingFeature.RESUMED.create())
         if line:
             self.supervisor.type(agent.environment_id, line)
         return resumed

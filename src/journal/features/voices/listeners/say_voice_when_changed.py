@@ -20,4 +20,4 @@ class SayVoiceWhenChanged(Listener[Saved]):
             return
         for agent in self.agents.everywhere():
             if agent.state != Ended.name:
-                self.supervisor.type(agent.environment_id, Voices.CHANGED.about(voice=self.chosen.instruction()).rendered())
+                self.supervisor.type(agent.environment_id, Voices.CHANGED.create(voice=self.chosen.instruction()).rendered())

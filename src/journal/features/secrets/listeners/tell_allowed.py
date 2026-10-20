@@ -22,6 +22,6 @@ class TellAllowed(Listener[Updated]):
         agent = self.agents.live()
         if not allowed or agent is None:
             return
-        line = self.nudger.say(agent, Secrets.ALLOWED.about(n=secret.id, title=secret.title, programs=", ".join(allowed)))
+        line = self.nudger.say(agent, Secrets.ALLOWED.create(n=secret.id, title=secret.title, programs=", ".join(allowed)))
         if line:
             self.supervisor.type(agent.environment_id, line)

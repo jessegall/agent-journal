@@ -22,4 +22,4 @@ class HoldPastMostSubagents(AgentListener[ToolStarting]):
         running = self.subagents.running_before_the_newest(event.session)
         if not most or running < most:
             return None
-        return Decision.refuse(Workers.TOO_MANY_SUBAGENTS.about(running=running).rendered())
+        return Decision.refuse(Workers.TOO_MANY_SUBAGENTS.create(running=running).rendered())

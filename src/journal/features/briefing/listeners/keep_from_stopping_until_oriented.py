@@ -18,5 +18,5 @@ class KeepFromStoppingUntilOriented(AgentListener[Idle]):
         agent = self.machine.agent(event.session, event.environment_id)
         if agent.oriented:
             return None
-        said = Briefing.STOPPED_UNORIENTED.about()
+        said = Briefing.STOPPED_UNORIENTED.create()
         return None if self.registry.silenced(said) else Decision.refuse(said.rendered())

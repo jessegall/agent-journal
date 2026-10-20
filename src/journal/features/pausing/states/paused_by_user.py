@@ -18,4 +18,4 @@ class PausedByUser(Paused):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.pausing.feature import PausingFeature
-        return self.refuse(PausingFeature.PAUSED.about())
+        return self.refuse(PausingFeature.PAUSED.create())

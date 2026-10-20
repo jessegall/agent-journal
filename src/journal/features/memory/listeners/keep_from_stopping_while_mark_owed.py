@@ -18,5 +18,5 @@ class KeepFromStoppingWhileMarkOwed(AgentListener[Idle]):
         agent = self.machine.agent(event.session, event.environment_id)
         if not agent.mark_owed:
             return None
-        said = Memory.STOPPED_AT_MARK.about(percent=agent.mark_owed)
+        said = Memory.STOPPED_AT_MARK.create(percent=agent.mark_owed)
         return None if self.registry.silenced(said) else Decision.refuse(said.rendered())

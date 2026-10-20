@@ -12,4 +12,4 @@ class RefuseQuestionTool(AgentListener[ToolStarting]):
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.questions.feature import Questions
-        return Decision.refuse(Questions.OWN_TOOL.about().rendered()) if event.tool in QUESTION_TOOLS else None
+        return Decision.refuse(Questions.OWN_TOOL.create().rendered()) if event.tool in QUESTION_TOOLS else None

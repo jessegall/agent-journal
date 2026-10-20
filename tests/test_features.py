@@ -3043,13 +3043,13 @@ def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app):
     agent, nudger = app.container.get(Machine).agent("s1", 1), app.container.get(Nudger)
     after_tool = lambda: hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
     for i in range(50):
-        nudger.say(agent, ChartFeature.LINE.about(text=f"line {i}"))
+        nudger.say(agent, ChartFeature.LINE.create(text=f"line {i}"))
     app.runtime().deferred.drain()
     assert "chat etiquette" in after_tool(), "fifty lines since the last reminder, counted once the replies have gone, bring it at the next tool use"
     app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "said, the count starts again"
     for i in range(1000):
-        nudger.say(agent, ChartFeature.LINE.about(text=f"more {i}"))
+        nudger.say(agent, ChartFeature.LINE.create(text=f"more {i}"))
     app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "a thousand lines later but inside the reminder's own window, none again: no flood"
 
@@ -7086,11 +7086,11 @@ def test_a_line_naming_a_list_that_changes_is_said_once_inside_its_window(app):
     from journal.features.tasks.feature import Tasks
     hook(app, "SessionStart")
     agent, nudger = app.container.get(Machine).agent("s1", 1), app.container.get(Nudger)
-    assert nudger.say(agent, Shell.CHECK_BACKGROUND.about(background_outputs="12, 15")), "the first naming of the commands still running is said"
-    assert nudger.say(agent, Shell.CHECK_BACKGROUND.about(background_outputs="12, 15, 18")) is None, "a command joining the list inside the window says nothing again: Redmar's flood"
-    assert nudger.say(agent, Tasks.BLOCKED_STILL.about(tasks="task 4 on the deploy")), "the blocked ask is said once"
-    assert nudger.say(agent, Tasks.BLOCKED_STILL.about(tasks="task 4 on the deploy")) is None, "and not again at the next tick five seconds later"
-    assert nudger.say(agent, Tasks.UNLOGGED.about(n=3)) and nudger.say(agent, Tasks.UNLOGGED.about(n=4)), "a line about one row is still held by its words: another task is named"
+    assert nudger.say(agent, Shell.CHECK_BACKGROUND.create(background_outputs="12, 15")), "the first naming of the commands still running is said"
+    assert nudger.say(agent, Shell.CHECK_BACKGROUND.create(background_outputs="12, 15, 18")) is None, "a command joining the list inside the window says nothing again: Redmar's flood"
+    assert nudger.say(agent, Tasks.BLOCKED_STILL.create(tasks="task 4 on the deploy")), "the blocked ask is said once"
+    assert nudger.say(agent, Tasks.BLOCKED_STILL.create(tasks="task 4 on the deploy")) is None, "and not again at the next tick five seconds later"
+    assert nudger.say(agent, Tasks.UNLOGGED.create(n=3)) and nudger.say(agent, Tasks.UNLOGGED.create(n=4)), "a line about one row is still held by its words: another task is named"
 
 
 def test_a_package_install_of_code_commandments_is_suggested_once_as_the_journal_plugin(app):

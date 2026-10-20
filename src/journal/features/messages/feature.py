@@ -18,7 +18,6 @@ from journal.features.messages.listeners.tell_reaction import TellReaction
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.support.option import Option
-from journal.support.said import Said
 from journal.support.skill import Skill
 
 
@@ -96,10 +95,10 @@ The user leaves messages; you answer them before anything else.
 """, keywords=('message', 'messages', 'inbox', 'reply'))
 
     @classmethod
-    def inbox(cls, unread: list) -> "Said":
+    def inbox(cls, unread: list) -> "Nudge":
         """The shortest line that names what waits: one by its number, a few by theirs, more than three by their count and the command that prints them."""
         if len(unread) == 1:
-            return cls.NEW.about(n=unread[0].id)
+            return cls.NEW.create(n=unread[0].id)
         if len(unread) <= 3:
-            return cls.SOME.about(ns=", ".join(str(m.id) for m in unread))
-        return cls.MANY.about(count=len(unread))
+            return cls.SOME.create(ns=", ".join(str(m.id) for m in unread))
+        return cls.MANY.create(count=len(unread))

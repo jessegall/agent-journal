@@ -22,7 +22,7 @@ class KeepOutOfPrivate(AgentListener[ToolStarting]):
 
     def handle(self, event: ToolStarting) -> Decision | None:
         from journal.features.secrets.feature import Secrets
-        return Decision.refuse(Secrets.KEPT_OUT.about().rendered()) if self.reaches(event.input) else None
+        return Decision.refuse(Secrets.KEPT_OUT.create().rendered()) if self.reaches(event.input) else None
 
     def reaches(self, given: dict) -> bool:
         named = [self.values.path.parent, PrivateFolder(self.config.root).keys_file().parent]

@@ -20,5 +20,5 @@ class MeasureResult(AgentListener[ToolFinished]):
         lines = event.output.count("\n") + 1
         if lines < LARGE:
             return None
-        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Laws.LARGE_RESULT.about(lines=lines))
+        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Laws.LARGE_RESULT.create(lines=lines))
         return Decision.tell(line) if line else None

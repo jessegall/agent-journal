@@ -20,5 +20,5 @@ class HintReplyByTag(AgentListener[ToolFinished]):
         from journal.features.messages.feature import Messages
         if event.tool != self.providers.named(event.provider).shell_tool or SENT not in event.input.get("command", ""):
             return None
-        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Messages.REPLY_BY_TAG.about())
+        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Messages.REPLY_BY_TAG.create())
         return Decision.tell(line) if line else None

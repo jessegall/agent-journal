@@ -17,7 +17,7 @@ class TellFiled(Listener[Updated]):
         if not isinstance(dump, Dump) or not dump.is_completed or event.was.is_completed:
             return
         if not dump.stopped:
-            self.telling.tell(DumpsFeature.FILED.about(n=dump.id, outcome=dump.outcome))
+            self.telling.tell(DumpsFeature.FILED.create(n=dump.id, outcome=dump.outcome))
         next_up = self.dumps.in_hand()
         if next_up and next_up.waiting():
-            self.telling.tell(DumpsFeature.ARRIVED.about(n=next_up.id, count=Dump.items_in(next_up.waiting())))
+            self.telling.tell(DumpsFeature.ARRIVED.create(n=next_up.id, count=Dump.items_in(next_up.waiting())))

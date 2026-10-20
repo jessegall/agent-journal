@@ -4,7 +4,7 @@ from journal.engine.machine import Machine
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.features.registry import Registry
-from journal.support.said import Said
+from journal.engine.nudge import Nudge
 from journal.support.running import Running
 from journal.support.requiring import Requiring
 from journal.support.decision import Decision
@@ -37,11 +37,11 @@ class HoldWritesForTheStep(AgentListener[ToolStarting]):
         from journal.features.sequences.feature import Sequences
         values = {"n": run.sequence_id, "step": run.step + 1, "text": run.text}
         if not run.taken_up_at:
-            return self.refused(Sequences.HELD.about(**values))
+            return self.refused(Sequences.HELD.create(**values))
         writes = self.writes_since(event, run, provider)
-        return self.refused(Sequences.STALE.about(writes=writes, **values)) if writes >= int(self.settings.option(Sequences.STALE_AFTER)) else None
+        return self.refused(Sequences.STALE.create(writes=writes, **values)) if writes >= int(self.settings.option(Sequences.STALE_AFTER)) else None
 
-    def refused(self, said: Said) -> Decision | None:
+    def refused(self, said: Nudge) -> Decision | None:
         return None if self.registry.silenced(said) else Decision.refuse(said.rendered())
 
     def writes_since(self, event: ToolStarting, run: SequenceRun, provider) -> int:

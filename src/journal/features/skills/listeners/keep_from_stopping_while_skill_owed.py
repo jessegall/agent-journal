@@ -20,5 +20,5 @@ class KeepFromStoppingWhileSkillOwed(AgentListener[Idle]):
         names = self.requiring.owed_names(agent)
         if not names:
             return None
-        said = Skills.STOPPED_OWING.about(skills=" and ".join(names))
+        said = Skills.STOPPED_OWING.create(skills=" and ".join(names))
         return None if self.registry.silenced(said) else Decision.refuse(said.rendered())

@@ -430,7 +430,7 @@ class Noting(Paused):
 
     def on_push(self, settings):
         CALLS.append("push noting")
-        return (LINE.about(),)
+        return (LINE.create(),)
 
     def on_pop(self, settings):
         CALLS.append("pop noting")
@@ -442,7 +442,7 @@ class Refusing(Paused):
     name = "refusing"
 
     def on_push(self, settings):
-        return Held(WHY.about())
+        return Held(WHY.create())
 
 
 @dataclass(frozen=True)
@@ -464,9 +464,9 @@ def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catc
     machine, settings = app.container.get(Machine), SettingsValue({})
     standing = Stack((Idle(), Catching()))
     pushed = machine.through_hooks(standing, standing.pushed(Noting()), settings)
-    assert pushed.stack == standing.pushed(Noting()) and pushed.nudges == (LINE.about(),) and pushed.held is None
+    assert pushed.stack == standing.pushed(Noting()) and pushed.nudges == (LINE.create(),) and pushed.held is None
     refused = machine.through_hooks(standing, standing.pushed(Refusing()), settings)
-    assert refused.stack == standing and refused.held == Held(WHY.about())
+    assert refused.stack == standing and refused.held == Held(WHY.create())
     popped = machine.through_hooks(standing.pushed(Noting()), standing, settings)
     assert popped.stack == Stack((Idle(),)) and popped.nudges == ()
     assert CALLS == ["suspend catching", "push noting", "suspend catching", "pop noting", "resume catching"]
@@ -559,8 +559,8 @@ def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_re
     hook(app, "SessionStart")
     agent = app.container.get(Agents).for_session("s1")
     with pytest.raises(Refused):
-        app.container.get(Nudger).say(agent, OTHER.about())
-    assert app.container.get(Nudger).say(agent, own.about()) == "a line of the test"
+        app.container.get(Nudger).say(agent, OTHER.create())
+    assert app.container.get(Nudger).say(agent, own.create()) == "a line of the test"
 
 
 def test_the_engines_own_states_wait_compacting_and_ended_answer_hand_built_events():
@@ -569,6 +569,13 @@ def test_the_engines_own_states_wait_compacting_and_ended_answer_hand_built_even
     assert not Wait().on(PromptSubmitted(prompt="[journal] a line"), settings).popped
     assert Wait().on(own, settings).popped and not Wait().on(subagents, settings).popped
     assert Wait().awaiting() == ("", "")
-    assert CompactingState().on(own, settings).held == Engine.NOTHING_WHILE_COMPACTING.about()
+    assert CompactingState().on(own, settings).held == Engine.NOTHING_WHILE_COMPACTING.create()
     assert CompactingState().on(SessionStarted(), settings).popped
     assert all(Ended().on(event, settings).popped for event in (SessionStarted(), PromptSubmitted(prompt="hi"), own))
+
+
+def test_a_nudge_is_one_class_whose_create_fills_its_blanks_and_rendered_says_the_line():
+    nudge = Nudge("tests", "two_blanks", "{{n}} of {{what}}", "read {{what}}")
+    assert nudge.create(n=3, what="them").rendered() == "3 of them. read them"
+    assert nudge.create(n=3, what="them").key == "tests.two_blanks" and nudge.create().rendered() == "{{n}} of {{what}}. read {{what}}"
+    assert nudge.in_words("its own words").rendered() == "its own words"

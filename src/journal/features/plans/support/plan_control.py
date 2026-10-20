@@ -32,7 +32,7 @@ class PlanControl:
             raise Refused(f"plan {plan.id} is {plan.state}, not approved: the user approves it first")
         if self.plans.finished(plan):
             self.plans.save(plan.done(), by)
-            return PlansFeature.DONE.about(n=plan.id)
+            return PlansFeature.DONE.create(n=plan.id)
         task = self.plans.resumable(plan)
         if task is not None:
             self.tasks.refuse_second(task.started(datetime.now(timezone.utc)))
@@ -43,12 +43,12 @@ class PlanControl:
             return self.waiting(plan)
         started = self.tasks.save(task.started(datetime.now(timezone.utc)), by)
         self.follow(session, plan, FollowingPlan(plan_id=plan.id, task_id=started.id))
-        return PlansFeature.NEXT.about(n=plan.id, task=started.id, title=started.title)
+        return PlansFeature.NEXT.create(n=plan.id, task=started.id, title=started.title)
 
     def waiting(self, plan: Plan) -> Nudge:
         from journal.features.plans.feature import Plans as PlansFeature
         left = [str(t.id) for t in self.plans.tasks_of(plan) if not t.is_closed()]
-        return PlansFeature.WAITING.about(n=plan.id, left=f"task {left[0]} is" if len(left) == 1 else f"tasks {', '.join(left)} are")
+        return PlansFeature.WAITING.create(n=plan.id, left=f"task {left[0]} is" if len(left) == 1 else f"tasks {', '.join(left)} are")
 
     def park(self, plan: Plan, session: str, by: Actor) -> Plan:
         parked = self.plans.save(plan.parked(), by)

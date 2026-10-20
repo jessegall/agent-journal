@@ -25,7 +25,7 @@ class SharedComments:
     def leave(self, share: Share, on: str, name: str, text: str) -> Message:
         if not share.comments:
             raise Refused("this link does not take comments")
-        name, text = self.named(name), self.worded(text)
+        name, text = self.named(name), self.in_words(text)
         with self.scope.of(share.environment_id):
             row = next((ref for ref in self.targets.shown(share) if str(ref) == on), None)
             if row is None:

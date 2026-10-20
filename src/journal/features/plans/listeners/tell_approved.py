@@ -21,6 +21,6 @@ class TellApproved(Listener[Updated]):
         agent = self.agents.live()
         if agent is None:
             return
-        line = self.nudger.say(agent, PlansFeature.APPROVED.about(n=plan.id))
+        line = self.nudger.say(agent, PlansFeature.APPROVED.create(n=plan.id))
         if line:
             self.supervisor.type(plan.environment_id, line)

@@ -34,4 +34,4 @@ class Firing:
     @staticmethod
     def said(trigger: Trigger):
         from journal.features.triggers.feature import Triggers as TriggersFeature
-        return (TriggersFeature.INSTRUCT if trigger.action == TriggerAction.INSTRUCT else TriggersFeature.NUDGE).about(title=trigger.text)
+        return (TriggersFeature.INSTRUCT if trigger.action == TriggerAction.INSTRUCT else TriggersFeature.NUDGE).create(title=trigger.text)

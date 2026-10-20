@@ -706,7 +706,7 @@ def test_the_page_shows_each_nodes_runs_the_answer_given_and_the_count_a_check_r
     ours = [r for r in recent["runs"] if made["id"] in r["workflows"]]
     check = next(n["id"] for n in drawn["nodes"] if n["key"] == "count_over")
     assert [r["read"][str(check)] for r in ours] == [2, 1], "a run records the count the check read, newest first"
-    assert ours[0]["answer"] == "Said: two tools now" and ours[1]["answer"] == "", "the answer the agent was given, in words"
+    assert ours[0]["answer"] == "Nudge: two tools now" and ours[1]["answer"] == "", "the answer the agent was given, in words"
     status, tried = call(server, "POST", "/journal/chart/try", {"trigger": "tool_finished", "environment": "main"})
     assert status == 200 and made["id"] in tried["workflows"] and "Count the tools" in tried["titles"], f"a test run names the workflows it would run, in order: {tried}"
     assert tried["read"][str(check)] == 3 and any("two tools now" in w for w in tried["would"]), "the dry count is read as the live walk would read it, one more than on record"

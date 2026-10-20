@@ -70,7 +70,7 @@ class McpInstalling:
         """The first running agent is asked to sign in to the server through its own authenticate tool: the browser opens from its terminal."""
         from journal.features.mcp.feature import Mcp
         for agent in self.running():
-            line = self.nudger.say(agent, Mcp.SIGN_IN.about(name=server.name, title=server.title))
+            line = self.nudger.say(agent, Mcp.SIGN_IN.create(name=server.name, title=server.title))
             if line:
                 self.supervisor.type(agent.environment_id, line)
                 return True

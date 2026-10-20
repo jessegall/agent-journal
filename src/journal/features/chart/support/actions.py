@@ -19,7 +19,7 @@ from journal.repositories.counts import Counts
 from journal.repositories.noted_times import NotedTimes
 from journal.engine.clock import Clock
 from journal.features.registry import Registry
-from journal.support.said import Said
+from journal.engine.nudge import Nudge
 from journal.support.running import Running
 from journal.support.decision import Decision
 from journal.support.refused import Refused
@@ -40,20 +40,20 @@ class Actions:
         self.nudger, self.supervisor, self.machine, self.running, self.sequences, self.fillers, self.cards = nudger, supervisor, machine, running, sequences, fillers, cards
         self.registry, self.counts, self.requiring, self.agents, self.checks, self.times, self.clock = registry, counts, requiring, agents, checks, times, clock
 
-    def spoken(self, text: str) -> Said:
+    def spoken(self, text: str) -> Nudge:
         """The node's words as a said line: through the nudge the text names in brackets, else through the chart's own line."""
         from journal.features.chart.feature import ChartFeature
         named = NAMED.match(text)
         nudge = self.registry.nudge_keyed(named.group(1)) if named else None
         if nudge:
-            return nudge.worded(named.group(2))
-        return ChartFeature.LINE.about(text=named.group(2) if named else text)
+            return nudge.in_words(named.group(2))
+        return ChartFeature.LINE.create(text=named.group(2) if named else text)
 
     def perform(self, key: str, text: str, ctx: Context) -> Decision:
         return getattr(self, key)(self.fillers.fill(text, ctx), ctx)
 
     def say(self, text: str, ctx: Context) -> Decision:
-        """Said to the agent once inside the nudge's window: on the hook's answer when one waits, else typed into its terminal."""
+        """Nudge to the agent once inside the nudge's window: on the hook's answer when one waits, else typed into its terminal."""
         if not ctx.session:
             return Decision()
         line = self.nudger.say(ctx.agent_in(self.machine), self.spoken(text))

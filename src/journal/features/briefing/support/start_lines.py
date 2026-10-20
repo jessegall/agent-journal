@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from journal.support.said import Said
+from journal.engine.nudge import Nudge
 from journal.events.agent.session_started import SessionStarted
 from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
@@ -23,17 +23,17 @@ class StartLines:
         self.environments, self.agents, self.rules, self.facts, self.reminders = environments, agents, rules, facts, reminders
         self.tasks, self.messages, self.questions = tasks, messages, questions
 
-    def said(self, event: SessionStarted) -> list[Said]:
+    def said(self, event: SessionStarted) -> list[Nudge]:
         from journal.features.briefing.feature import Briefing
         taken_over_at, rules, facts, reminders, waiting = self.taken_over_at(event), self.rules_said(), self.facts_said(), self.reminders_said(), self.waiting()
         optional = (
-            (taken_over_at, lambda: Briefing.TAKEOVER.about(at=taken_over_at)),
-            (rules, lambda: Briefing.RULES.about(count=len(self.rules.all()), rows=rules)),
-            (facts, lambda: Briefing.FACTS.about(rows=facts)),
-            (reminders, lambda: Briefing.REMINDERS.about(rows=reminders)),
-            (waiting, lambda: Briefing.WAITING.about(rows=waiting)),
+            (taken_over_at, lambda: Briefing.TAKEOVER.create(at=taken_over_at)),
+            (rules, lambda: Briefing.RULES.create(count=len(self.rules.all()), rows=rules)),
+            (facts, lambda: Briefing.FACTS.create(rows=facts)),
+            (reminders, lambda: Briefing.REMINDERS.create(rows=reminders)),
+            (waiting, lambda: Briefing.WAITING.create(rows=waiting)),
         )
-        return [Briefing.READY.about(env=self.environments.find(event.environment_id).name), Briefing.QUIET.about(), Briefing.LAWS.about(), *(line() for named, line in optional if named)]
+        return [Briefing.READY.create(env=self.environments.find(event.environment_id).name), Briefing.QUIET.create(), Briefing.LAWS.create(), *(line() for named, line in optional if named)]
 
     def taken_over_at(self, event: SessionStarted) -> str:
         """The time of day another session that worked here within a day last did anything, when this start is not the same session going on after a compaction; empty when none did."""

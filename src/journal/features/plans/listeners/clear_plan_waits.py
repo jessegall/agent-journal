@@ -23,4 +23,4 @@ class ClearPlanWaits(Listener[Updated]):
             if self.tasks.open_waits(plan):
                 continue
             self.plans.save(plan.unblocked(), Actor.system())
-            self.telling.tell(PlansFeature.OPEN_AGAIN.about(n=plan.id, why=f"{ref.type[:-1]} {ref.id} came"))
+            self.telling.tell(PlansFeature.OPEN_AGAIN.create(n=plan.id, why=f"{ref.type[:-1]} {ref.id} came"))

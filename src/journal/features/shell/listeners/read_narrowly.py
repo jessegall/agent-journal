@@ -21,7 +21,7 @@ class ReadNarrowly(AgentListener[ToolStarting]):
             return None
         cap = self.cap()
         lines = self.lines(Path(event.input.get("file_path", "")))
-        return Decision.refuse(Shell.NARROW.about(lines=lines, cap=cap).rendered()) if lines > 2 * cap else None
+        return Decision.refuse(Shell.NARROW.create(lines=lines, cap=cap).rendered()) if lines > 2 * cap else None
 
     def cap(self) -> int:
         from journal.features.shell.feature import Shell

@@ -61,7 +61,7 @@ class WorkerCommand(Command):
         out = [w for w in self.workers.in_() if w.is_out()]
         most = int(self.settings.option(Feature.MOST_OUT))
         if most and len(out) >= most:
-            raise Refused(Feature.TOO_MANY_WORKERS.about(out=len(out)).rendered())
+            raise Refused(Feature.TOO_MANY_WORKERS.create(out=len(out)).rendered())
         knowing = [] if args.fresh else self.knowing(args.brief)
         if knowing:
             raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")

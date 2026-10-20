@@ -4,7 +4,7 @@ from journal.events.agent.line_said import LineSaid
 from journal.events.bus import Bus
 from journal.support.deferred import Deferred
 from journal.support.features_known import FeaturesKnown
-from journal.support.said import Said
+from journal.engine.nudge import Nudge
 from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.models.entry import Entry
@@ -21,11 +21,11 @@ class Nudger:
         self.features, self.entries, self.scope, self.bus, self.deferred, self.clock = features, entries, scope, bus, deferred, clock
         self.registry = registry
 
-    def say(self, agent: Agent, nudge: Said) -> str | None:
+    def say(self, agent: Agent, nudge: Nudge) -> str | None:
         with self.scope.of(agent.environment_id):
             return self._said(agent, nudge)
 
-    def _said(self, agent: Agent, nudge: Said) -> str | None:
+    def _said(self, agent: Agent, nudge: Nudge) -> str | None:
         self.registry.named(nudge.key)
         if self.features.silenced(nudge) or self._repeat(agent, nudge):
             return None
@@ -35,7 +35,7 @@ class Nudger:
         self.deferred.add(lambda: self.bus.dispatch(event))
         return line
 
-    def _repeat(self, agent: Agent, nudge: Said) -> bool:
+    def _repeat(self, agent: Agent, nudge: Nudge) -> bool:
         if not nudge.repeat_after:
             return False
         last = self.entries.last_said_of(agent.session, nudge.key) if nudge.held_whatever_its_values else self.entries.last_said(agent.session, nudge.key, nudge.rendered())

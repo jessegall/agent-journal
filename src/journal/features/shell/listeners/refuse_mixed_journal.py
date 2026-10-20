@@ -14,4 +14,4 @@ class RefuseMixedJournal(AgentListener[ToolStarting]):
         if event.tool != "Bash":
             return None
         journal, parts = Chain.journal_parts(event.input.get("command", ""))
-        return Decision.refuse(Shell.ALONE.about().rendered()) if 0 < journal < parts else None
+        return Decision.refuse(Shell.ALONE.create().rendered()) if 0 < journal < parts else None

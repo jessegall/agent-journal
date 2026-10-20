@@ -25,7 +25,7 @@ class TellEndedOutputs(AgentListener[Ticked]):
             return
         for output in ended:
             self.outputs.save(output.told_of(), Actor.system())
-        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Shell.ENDED.about(outputs=self.named(ended), n=ended[0].id))
+        line = self.nudger.say(self.machine.agent(event.session, event.environment_id), Shell.ENDED.create(outputs=self.named(ended), n=ended[0].id))
         if line:
             self.supervisor.type(event.environment_id, line)
 

@@ -16,4 +16,4 @@ class TellAnswer(Listener[Updated]):
         if not isinstance(dump, Dump) or len(dump.answers) <= len(event.was.answers):
             return
         answered = dump.answers[-1]
-        self.telling.tell(DumpsFeature.ANSWERED.about(n=dump.id, answer=answered["answer"], question=answered["question"]))
+        self.telling.tell(DumpsFeature.ANSWERED.create(n=dump.id, answer=answered["answer"], question=answered["question"]))
