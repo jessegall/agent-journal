@@ -1289,3 +1289,22 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - Still open: the launcher as an unchanging shell loop with the supervisor restartable under it (task 1169); the
   plugins upgraded by a `journal.updated` event (task 1167); the remote journal two people share (task 1164); the
   rest of the name sweep (task 1052) and the custom name detectors' noise on every `on_` listener.
+
+## Plan 19, phase 5, the live checks (2026-10-21, late morning)
+
+- A real Claude session on Sonnet and a real Codex session, headless and resumed at every step, each walked a
+  scratch journal (port 8765) through a task, a log, a question answered from the user's side, a worker whose
+  real report popped Awaiting, an await on a flag, a plan with a checkpoint approved from the user's side, refused
+  to start while a task was in hand, done through its checkpoint in auto mode with the stop held by the parked
+  task, the parked task resumed and done, and `journal panic now compacting` from the user's side popped by the
+  next start. The nudge keys match doc 55's table; the rail has no Workflows entry; the chart route answers 404.
+- Found on the way and fixed: `journal question show` crashed on an answered question's link (a Ref has a type,
+  not a table); the chart drop counted a shipped workflow's revisions as the user's edits and wrote documents for
+  them, now only workflows a user or an agent last wrote are kept.
+- Noted: Codex sends no session-start hook, so a Codex session cannot end an earlier one that still runs in its
+  environment; a scratch set up from a source checkout needs `.journal/journal` for the global command to find
+  it; the Building-a-plan sequence stays open on its first step when the agent builds the plan by commands.
+- Environments: on a second and a fresh third environment, Claude and Codex each put every row where it belongs
+  and nothing on the first; the old fault of Codex going to main is gone.
+- Two records from before the chart's removal, backed up from other journals on this machine, upgraded in-process
+  through App and Config: 22 migrations, the chart tables gone, every live agent's stack seeded.
