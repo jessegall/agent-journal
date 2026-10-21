@@ -1101,3 +1101,18 @@ def test_a_doc_or_a_report_downloads_as_a_word_file_made_from_its_html_page(serv
         assert kind == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" and body[:2] == b"PK", "a Word file from textutil"
     else:
         assert kind.startswith("text/html") and b"<h1>What the check found</h1>" in body, "the page itself where textutil is missing"
+
+
+def test_a_comment_on_a_documents_passage_names_the_section_and_lines_it_sits_on(tmp_path: Path):
+    from journal.support.caller import Caller
+    app = App(Config(tmp_path, port=0))
+    app.runtime().boot()
+    server = app.server()
+    server.start()
+    try:
+        call(server, "POST", "/journal/docs", {"title": "Launch notes", "body": "# Launch notes\n\n## Why\nBecause it is time.\n\n## How\nFirst the tag.\nThen the push.\nThen the notes."})
+        call(server, "POST", "/journal/comments", {"on": "docs:1", "text": "> Then the push.\n> Then the notes.\n\nThe push comes before the tag here."})
+        shown = app.console().run(["message", "read", "1"], Caller("main", "s1")).out
+        assert "comments_on docs:1" in shown and "the passage sits in doc 1 at section 2, How, lines 8-9: `journal doc show 1 --section 2` or `--grep`" in shown, shown
+    finally:
+        server.stop()

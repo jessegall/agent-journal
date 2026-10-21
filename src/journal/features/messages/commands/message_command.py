@@ -10,6 +10,8 @@ from journal.config import Config
 from journal.features.messages.support.faces import Faces
 from journal.support.not_found import NotFound
 from journal.repositories.agents import Agents
+from journal.repositories.docs import Docs
+from journal.repositories.reports import Reports
 from journal.repositories.messages import Messages
 from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions
@@ -20,9 +22,10 @@ RECENT = 20
 class MessageCommand(Command):
     noun = "message"
 
-    def __init__(self, messages: Messages, reactions: Reactions, links: Links, config: Config, agents: Agents) -> None:
+    def __init__(self, messages: Messages, reactions: Reactions, links: Links, config: Config, agents: Agents, docs: Docs, reports: Reports) -> None:
         self.agents = agents
         self.messages, self.reactions, self.links, self.config = messages, reactions, links, config
+        self.docs, self.reports = docs, reports
 
     def arguments(self, verbs) -> None:
         send = self.verb(verbs, "send", "leave a message")
@@ -125,9 +128,28 @@ class MessageCommand(Command):
         for link in self.links.of(message):
             other = link.target if link.source == Ref.to(message) else link.source
             print(f"  {link.kind} {other}")
+            if link.kind == Messages.COMMENTS_ON and message.is_on_a_passage:
+                print(self.passage_place(other, message.quote))
         print(f"  reply with [!reply:{message.id}] in your turn")
         print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")
 
     def _tool_use(self, caller: Caller) -> int:
         agents = self.agents.across_environments(session=caller.session) if caller.session else [agent for agent in (self.agents.live(),) if agent]
         return agents[0].tool_uses if agents else 0
+
+    def passage_place(self, ref: Ref, quote: str) -> str:
+        texts = {"docs": ("doc", self.docs), "reports": ("report", self.reports)}
+        if ref.type not in texts:
+            return ""
+        noun, repository = texts[ref.type]
+        lines = repository.find(ref.id).body.split("\n")
+        first = quote.split("\n")[0].strip()
+        start = next((i for i, line in enumerate(lines) if line.strip() == first), -1)
+        if start < 0:
+            return f"  the passage is not in {noun} {ref.id} as it stands now"
+        end = start + quote.count("\n")
+        section = sum(1 for line in lines[: start + 1] if line.startswith("## "))
+        heading = next((line[3:] for line in reversed(lines[: start + 1]) if line.startswith("## ")), "")
+        span = f"lines {start + 1}-{end + 1}" if end > start else f"line {start + 1}"
+        spot = f"section {section}, {heading}, {span}" if section else span
+        return f"  the passage sits in {noun} {ref.id} at {spot}: `journal {noun} show {ref.id} --section {section or 1}` or `--grep`"
