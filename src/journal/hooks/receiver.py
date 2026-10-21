@@ -19,7 +19,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.support.scope import Scope
-from journal.support.slow_requests import SlowRequests
+from journal.support.slow_requests import HOOK, SlowRequests
 from journal.support.chat_mark import ChatMark
 
 
@@ -54,7 +54,7 @@ class Receiver:
         if not hook.started_ms:
             return recorded
         elapsed = int(time.time() * 1000) - hook.started_ms
-        self.slow.measured("HOOK", f"/hooks/{hook.kind.value}", elapsed)
+        self.slow.measured(HOOK, f"/hooks/{hook.kind.value}", elapsed)
         return {**recorded, "hook_ms": elapsed}
 
     def is_unknown_session_end(self, event: AgentEvent) -> bool:

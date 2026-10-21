@@ -4,6 +4,7 @@ import EmptyState from "../kit/EmptyState.vue";
 import SettingNav from "../kit/SettingNav.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import PluginSettings from "./PluginSettings.vue";
+import DeveloperNumbers from "./DeveloperNumbers.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import SettingsRegion from "./SettingsRegion.vue";
 import {tabLine} from "../domain/settingsCatalog.js";
@@ -46,6 +47,9 @@ const emit = defineEmits(["pick", "saved", "change", "timing", "act", "show-all"
                 </template>
                 <template #default>
                     <div class="settings-column">
+                        <template v-if="tab === 'developer'">
+                            <DeveloperNumbers />
+                        </template>
                         <template v-for="region in regions" :key="region.key">
                             <SettingsRegion
                                 :region="region"

@@ -8,7 +8,7 @@ from journal.http.journal.journal_facts import JournalFacts
 from journal.version import VERSION
 
 DIST = Path(__file__).resolve().parents[3] / "web" / "dist" / "index.html"
-PLACED = {"sharing": ("Sharing", "sharing"), "updates": ("Project", "system"), "record": ("Project", "system")}
+PLACED = {"sharing": ("Sharing", "sharing"), "updates": ("Project", "system"), "record": ("Project", "system"), "faults": ("Developer", "developer")}
 """Features the settings page shows in a tab of their own, by name: the section and the tab."""
 SYSTEM_GROUPS = [{"key": "project", "title": "Project", "line": "Settings for the whole project, in every environment", "section": "Project", "tab": "system", "lead": ""}]
 """The System tab's groups, filled by the viewer's own settings: the project's colour and what the viewer shows."""

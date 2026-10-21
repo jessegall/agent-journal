@@ -188,3 +188,12 @@ describe("the manifest's features", () => {
         expect(rows({features: {workers: false}})[0].value).toBe(false);
     });
 });
+
+describe("the Developer tab", () => {
+    test("it follows Environments and holds the groups the server places in it", () => {
+        const keys = TABS.map((t) => t.key);
+        expect(keys.indexOf("developer")).toBe(keys.indexOf("environments") + 1);
+        const sections = [{title: "Developer", groups: [{key: "faults", tab: "developer"}, {key: "updates", tab: "system"}]}];
+        expect(inTab(sections, "developer")[0].groups.map((g) => g.key)).toEqual(["faults"]);
+    });
+});

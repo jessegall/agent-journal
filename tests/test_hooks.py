@@ -177,3 +177,24 @@ def test_a_hook_that_stamps_its_start_has_its_elapsed_time_on_its_entry(app):
     assert entry.data["hook_ms"] >= 120, "the server measures from the script's stamp to its answer, so the shell side counts too"
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}})
     assert "hook_ms" not in app.container.get(Entries).in_()[-1].data, "a hook without the stamp is not measured"
+
+
+def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app):
+    import time
+    from journal.repositories.statistics import Statistics
+    post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 100)
+    post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 300)
+    settled = threading.Event()
+    app.container.get(Deferred).add(settled.set)
+    assert settled.wait(5), "the deferred work ran"
+    kept = app.container.get(Statistics).under("developer.hooks")
+    assert kept["developer.hooks.count"] == 2 and kept["developer.hooks.total_ms"] >= 400 and kept["developer.hooks.slowest_ms"] >= 300, kept
+    assert kept["developer.hooks.PreToolUse.count"] == 2, "a hook's time also counts under its kind"
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/developer", headers={"X-Journal-Env": "main"})
+    with urlopen(request, timeout=5) as reply:
+        numbers = json.loads(reply.read())
+    assert numbers["hooks"]["count"] == 2 and numbers["hooks"]["average_ms"] >= 200 and numbers["by_kind"]["PreToolUse"]["slowest_ms"] >= 300, numbers
+    reset = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/developer/reset", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+    with urlopen(reset, timeout=5) as reply:
+        numbers = json.loads(reply.read())
+    assert numbers["hooks"]["count"] == 0 and numbers["by_kind"] == {}, "a reset clears every count, so the next reading starts from nothing"

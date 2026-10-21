@@ -96,6 +96,14 @@ export class ApiClient {
         return this.get(this.here("/bar"));
     }
 
+    developer() {
+        return this.get("/developer");
+    }
+
+    developerReset() {
+        return this.post("/developer/reset");
+    }
+
     settings() {
         return this.get(this.here("/settings"));
     }

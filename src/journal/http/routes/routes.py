@@ -76,8 +76,9 @@ class Routes:
         get = self.container.get
         journal, settings, migration, entries = get(JournalController), get(SettingController), get(MigrationController), get(EntryController)
         router.get(f"{API}/viewer", get(ViewerController).show)
-        for path, handler in (("manifest", journal.manifest), ("identity", journal.identity), ("health", journal.health), ("journals", journal.journals), ("summary", journal.summary), ("bar", journal.bar)):
+        for path, handler in (("manifest", journal.manifest), ("identity", journal.identity), ("health", journal.health), ("journals", journal.journals), ("summary", journal.summary), ("bar", journal.bar), ("developer", journal.developer)):
             router.get(f"{API}/{path}", handler)
+        router.post(f"{API}/developer/reset", journal.developer_reset)
         router.get(f"{API}/settings", settings.index)
         router.post(f"{API}/settings", settings.store)
         router.get(f"{API}/updates", get(UpdateController).index)

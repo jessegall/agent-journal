@@ -6,6 +6,7 @@ from journal.features.updates.support.update_mark import UpdateMark
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.bar_row import BarRow
 from journal.http.agents.current_work import CurrentWork
+from journal.http.journal.answer_time import AnswerTime
 from journal.http.journal.environment_snapshot import EnvironmentSnapshot
 from journal.http.journal.held_task import HeldTask
 from journal.http.journal.manifest import Manifest
@@ -17,6 +18,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
+from journal.repositories.statistics import Statistics
 from journal.support.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.version import VERSION
@@ -32,7 +34,8 @@ class JournalController:
     """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the live agent is doing this moment."""
 
     def __init__(self, config: Config, manifest: Manifest, environments: Environments, agents: Agents, activity: AgentActivity, current: CurrentWork,
-                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateMark) -> None:
+                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateMark, statistics: Statistics) -> None:
+        self.statistics = statistics
         self.config, self.boot, self.environments, self.agents, self.activity, self.current = config, manifest, environments, agents, activity, current
         self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, mark
 
@@ -48,6 +51,17 @@ class JournalController:
 
     def journals(self, request: Request) -> Response:
         return Response.json([{"port": self.config.port, "project": self.config.root.name, "version": VERSION, "root": str(self.config.home), "current": True}])
+
+    def developer(self, request: Request) -> Response:
+        numbers = self.statistics.under("developer.")
+        kinds = sorted({key.split(".")[2] for key in numbers if key.startswith("developer.hooks.") and key.count(".") == 3})
+        times = {"hooks": AnswerTime.read(numbers, "developer.hooks"), "requests": AnswerTime.read(numbers, "developer.requests")}
+        by_kind = {kind: AnswerTime.read(numbers, f"developer.hooks.{kind}").as_data() for kind in kinds}
+        return Response.json({**{key: answer.as_data() for key, answer in times.items()}, "by_kind": by_kind})
+
+    def developer_reset(self, request: Request) -> Response:
+        self.statistics.cleared("developer.", request.actor)
+        return self.developer(request)
 
     def summary(self, request: Request) -> Response:
         """How each environment stands: its live agent and the task it holds, what waits for the user, and whether a busy agent went quiet; and an update under way, with its step, which keeps the viewer's cover up through the restart."""

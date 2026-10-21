@@ -12,6 +12,7 @@ from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
+from journal.repositories.statistics import Statistics
 from journal.repositories.setting_rows import SettingRows
 from journal.supervisor_link import SupervisorLink
 from journal.support.scope import Scope
@@ -25,15 +26,20 @@ TESTS_RUNNING = "tests.running"
 """The start of the name of the mark each test run keeps in the journal's runtime folder while it runs, ended by its own process number: runs side by side each keep their own, and their servers crowd the machine."""
 
 
+HOOK = "HOOK"
+
+
 class SlowRequests:
     """Measures each request against its budget where the journal develops itself, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time."""
 
-    def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred) -> None:
+    def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred, statistics: Statistics) -> None:
         self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudger, self.supervisor, self.deferred = config, settings, cards, messages, agents, environments, scope, nudger, supervisor, deferred
+        self.statistics = statistics
         self.started = time.monotonic()
 
     def measured(self, method: str, path: str, ms: float) -> None:
-        """A request's time, by the path it asked for with its numbers folded, so /journal/plans and /journal/messages are each their own and every message's page is one."""
+        """A request's time, by the path it asked for with its numbers folded, so /journal/plans and /journal/messages are each their own and every message's page is one; every measurement feeds the developer's averages once the reply is out."""
+        self.deferred.add(lambda: self.counted(method, path, round(ms)))
         if not self.judging():
             return
         budget = self.budget(method)
@@ -41,6 +47,11 @@ class SlowRequests:
             return
         route = re.sub(r"/\d+(?=/|$)", "/{n}", path)
         self.deferred.add(lambda: self.reported(method, route, round(ms), budget))
+
+    def counted(self, method: str, path: str, ms: int) -> None:
+        self.statistics.measured("developer.hooks" if method == HOOK else "developer.requests", ms, Actor.system())
+        if method == HOOK:
+            self.statistics.measured(f"developer.hooks.{path.rsplit('/', 1)[-1]}", ms, Actor.system())
 
     def budget(self, method: str) -> int:
         """The budget a request of this method has, in milliseconds: a write is given more than a read."""
