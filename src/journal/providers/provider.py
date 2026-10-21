@@ -1,5 +1,6 @@
 import json
 import re
+from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import ClassVar, Iterator
@@ -20,6 +21,7 @@ from journal.support.tool_input import ToolInput
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
 from journal.providers.support.file_writes import FileWrites
+from journal.providers.support.capability import Capability
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
@@ -29,8 +31,8 @@ PATH_KEYS = ("file_path", "path", "notebook_path")
 
 VERSION_3_HOOKS = ("/.journal/src/hook.sh", "/.journal/hook.py", "/.journal/journal hook")
 
-class Provider:
-    """One agent program, Claude or Codex: the few things the journal has to know about it and nothing else."""
+class Provider(ABC):
+    """One agent program, Claude Code or Codex: everything the journal knows about it, and nowhere else."""
 
     name: ClassVar[str]
     home: ClassVar[str]
@@ -43,18 +45,21 @@ class Provider:
     foreign_settings: ClassVar[tuple[str, ...]] = ()
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
     controls: ClassVar[dict] = {"groups": [], "note": ""}
+    capabilities: ClassVar[frozenset[Capability]]
 
+    @abstractmethod
     def transcript(self, project: Path, session: str) -> Path | None: ...
 
-    def latest_session(self, project: Path, start: float) -> str:
-        return ""
+    @abstractmethod
+    def latest_session(self, project: Path, start: float) -> str: ...
 
-    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
-        return None
+    @abstractmethod
+    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None: ...
 
     def turns(self, path: Path) -> list[Turn]:
         return self.turn_rows(self.json_lines(path))
 
+    @abstractmethod
     def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]: ...
 
     @staticmethod
@@ -72,8 +77,8 @@ class Provider:
     def seconds(stamp: str) -> float:
         return datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() if stamp else 0.0
 
-    def turn_thoughts(self, project: Path, session: str) -> list[str]:
-        return []
+    @abstractmethod
+    def turn_thoughts(self, project: Path, session: str) -> list[str]: ...
 
     def earlier_texts(self, project: Path, session: str, read: int, deadline: float) -> FileWrites:
         path = self.transcript(project, session)
@@ -110,11 +115,11 @@ class Provider:
     def edited_files(self, rows: list[dict], time: int) -> FileWrites:
         return FileWrites([text for row in rows for text in self.texts(row)], [arrived for row in rows for arrived in self.peer_messages(row)], time)
 
-    def texts(self, line: dict) -> list[str]:
-        return []
+    @abstractmethod
+    def texts(self, line: dict) -> list[str]: ...
 
-    def peer_messages(self, line: dict) -> list[PeerMessage]:
-        return []
+    @abstractmethod
+    def peer_messages(self, line: dict) -> list[PeerMessage]: ...
 
     @staticmethod
     def last_line_start(path: Path, size: int) -> int:
@@ -125,13 +130,14 @@ class Provider:
         cut = body.rfind(b"\n")
         return max(0, size - TAIL_BYTES) + cut + 1 if cut != -1 else max(0, size - TAIL_BYTES)
 
+    @abstractmethod
     def resume(self, session: str) -> tuple[str, ...]: ...
 
-    def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
-        ...
+    @abstractmethod
+    def worker_command(self, brief: str, model: str, resume: str) -> list[str]: ...
 
-    def worker_outcome(self, output: str, err: str) -> tuple[str, str]:
-        return output.strip() or err.strip(), ""
+    @abstractmethod
+    def worker_outcome(self, output: str, err: str) -> tuple[str, str]: ...
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
         kind = hook.kind
@@ -175,8 +181,8 @@ class Provider:
         text = json.dumps(block)
         return "journal/hooks/hook.sh" in text or any(old in text for old in VERSION_3_HOOKS)
 
-    def hooks_trusted(self, project: Path) -> bool:
-        return True
+    @abstractmethod
+    def hooks_trusted(self, project: Path) -> bool: ...
 
     def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
         if tool == self.read_tool:

@@ -113,3 +113,21 @@ def test_setup_takes_out_version_3s_hooks_wherever_they_were_wired(app: App):
     local = json.loads((root / ".claude/settings.local.json").read_text())
     assert local == {"hooks": {"PreToolUse": [mine]}, "model": "opus"}, "version 3's hook goes from the local settings, the user's own stays"
     assert "/.journal/src/hook.sh" not in (root / ".codex/hooks.json").read_text(), "and from Codex's hooks, where version 4's takes its place"
+
+
+def test_a_provider_missing_an_answer_cannot_be_built_and_each_lists_what_the_viewer_may_offer():
+    from journal.providers.claude import Claude
+    from journal.providers.provider import Provider
+    from journal.providers.providers import Providers
+    from journal.providers.support.capability import Capability
+
+    class Halfway(Provider):
+        name = "halfway"
+
+        def resume(self, session: str) -> tuple[str, ...]:
+            return ("--resume", session)
+
+    with pytest.raises(TypeError, match="abstract"):
+        Halfway()
+    assert {provider.name: provider.capabilities for provider in Providers().all()} == {"claude": frozenset(Capability), "codex": frozenset()}, "a change to what a provider can offer is seen here"
+    assert Claude().hooks_trusted(Path("/nowhere"))

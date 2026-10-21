@@ -7,10 +7,14 @@ from typing import Iterator
 from journal.support.hook_kind import HookKind
 from journal.providers.support.codex_row import CodexRow
 from journal.providers.provider import Provider
+from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
+from journal.providers.support.capability import Capability
 
 
 class Codex(Provider):
+    """OpenAI's Codex: the journal reads no thoughts, no messages between sessions and no subagent transcripts from its rollouts, so it offers none of them."""
+
     name = "codex"
     prompt_flags = ("--dangerously-bypass-approvals-and-sandbox",)
     home = ".codex"
@@ -18,6 +22,7 @@ class Codex(Provider):
     edit_tools = frozenset({"apply_patch", "write_file"})
     read_tool = "read_file"
     hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
+    capabilities = frozenset()
 
     def __init__(self) -> None:
         self._rollouts: dict[str, Path] = {}
@@ -61,6 +66,9 @@ class Codex(Provider):
         except ValueError:
             return ""
 
+    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
+        return None
+
     def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
         return [turn for number, row in rows if (turn := self.turn(number, CodexRow.parsed(row)))]
 
@@ -82,6 +90,12 @@ class Codex(Provider):
         row = CodexRow.parsed(line)
         return [row.text] if row.type == "response_item" and row.item == "message" and row.role == "assistant" and row.text.strip() else []
 
+    def turn_thoughts(self, project: Path, session: str) -> list[str]:
+        return []
+
+    def peer_messages(self, line: dict) -> list[PeerMessage]:
+        return []
+
     def resume(self, session: str) -> tuple[str, ...]:
         return ("resume", session)
 
@@ -92,7 +106,7 @@ class Codex(Provider):
 
     def worker_outcome(self, output: str, err: str) -> tuple[str, str]:
         rows = re.search(r"session id: ([0-9a-f-]{8,})", f"{output}\n{err}", re.IGNORECASE)
-        return super().worker_outcome(output, err)[0], rows.group(1) if rows else ""
+        return output.strip() or err.strip(), rows.group(1) if rows else ""
 
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}] for kind in self.hook_kinds}

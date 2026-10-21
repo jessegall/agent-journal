@@ -8,6 +8,7 @@ from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.provider import TAIL_BYTES, Provider
 from journal.providers.support.turn import Turn
+from journal.providers.support.capability import Capability
 
 CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
 SENDER_NAME_PATTERN, SENDER_ADDRESS_PATTERN = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
@@ -22,6 +23,7 @@ class Claude(Provider):
     edit_tools = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
     read_tool = "Read"
     settings_extras = {"enableAllProjectMcpServers": True}
+    capabilities = frozenset(Capability)
     controls = {
         "groups": [
             {"key": "model", "label": "Model", "choices": [{"value": v, "label": l, "command": f"/model {v}"} for v, l in (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))]},
@@ -92,6 +94,9 @@ class Claude(Provider):
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
+
+    def hooks_trusted(self, project: Path) -> bool:
+        return True
 
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["--resume", resume] if resume else []
