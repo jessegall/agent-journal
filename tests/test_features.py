@@ -932,7 +932,8 @@ def test_a_task_the_reply_names_is_linked_to_the_message_it_answers_however_old(
     assert [ref.id for ref in app.container.get(Links).targets(requested, Messages.SUBJECT_LINK)] == [1], "your message carries the task the reply names, whenever it was filed"
 
 
-def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app: App, monkeypatch):
+def test_a_request_over_its_budget_is_one_mark_per_route_told_the_first_time_and_again_once_the_repeat_minutes_have_passed(app: App, monkeypatch):
+    from journal.engine.clock import Clock
     from journal.support.slow_requests import SlowRequests
     from journal.repositories.messages import Messages
     keystrokes = []
@@ -953,6 +954,23 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app: App,
         thresholds = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
     assert [(m.text, m.data["count"], m.data["worst"]) for m in thresholds] == [("Slow request: GET /journal/plans", 2, 95), ("Slow request: GET /journal/messages/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted"
     assert sum("over its budget of 50 ms" in t for t in keystrokes) == 2, "the agent is told the first time of each"
+    told_at = thresholds[0].data["reported_at"]
+    plans_lines = lambda: sum("GET /journal/plans took" in t for t in keystrokes)
+    for minutes, said in ((10, 1), (16, 2), (20, 2)):
+        monkeypatch.setattr(Clock, "time", lambda self, at=told_at + minutes * 60: at)
+        with app.container.get(Scope).environment(MAIN):
+            slow.measured("GET", "/journal/plans", 60 + minutes)
+            app.runtime().deferred.drain()
+        assert plans_lines() == said, f"{minutes} minutes after it was first told, the slow route is told {said} times: again once fifteen minutes have passed since it was last told, and not before"
+    with app.container.get(Scope).environment(MAIN):
+        mark = app.container.get(Messages).keyed("slow:GET /journal/plans", Actor.system())[0]
+    assert (mark.data["count"], mark.data["worst"], mark.data["reported_at"]) == (5, 95, told_at + 16 * 60), "the mark keeps its count and worst time, and the time it was last told travels in its data"
+    app.container.get(SettingRows).set("faults.repeat_minutes", 0, Actor.user(1))
+    monkeypatch.setattr(Clock, "time", lambda self, at=told_at + 7200: at)
+    with app.container.get(Scope).environment(MAIN):
+        slow.measured("GET", "/journal/plans", 90)
+        app.runtime().deferred.drain()
+    assert plans_lines() == 2, "0 tells it once only"
     slow.measured("GET", "/journal/environments", 90)
     app.runtime().deferred.drain()
     assert any(m.text == "Slow request: GET /journal/environments" for m in app.container.get(Messages).all()), "a request that named no environment is marked in the live agent's, never failing on the missing one"
