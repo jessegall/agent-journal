@@ -16,10 +16,15 @@ class Hook:
     body: dict = field(default_factory=dict)
     started_ms: int = 0
     launch: str = ""
+    worker: int | None = None
+    worker_token: str | None = None
 
     @classmethod
     def parse(cls, body: dict, environment: str, provider: str, launch: str) -> "Hook":
         return cls(HookKind(body["hook_event_name"]), body["session_id"], environment, provider, body, launch=launch)
+
+    def worker_hook(self, number: int, token: str | None) -> "Hook":
+        return replace(self, worker=number, worker_token=token)
 
     def stamped(self, started_ms: int) -> "Hook":
         return replace(self, started_ms=started_ms)

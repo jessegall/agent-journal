@@ -24,5 +24,5 @@ class WorkerToken:
         return self.hashed(self.text)
 
     @classmethod
-    def is_proof(cls, text: str, digest: str) -> bool:
-        return bool(text) and bool(digest) and hmac.compare_digest(cls.hashed(text), digest)
+    def is_proof(cls, text: str | None, digest: str) -> bool:
+        return text is not None and bool(digest) and hmac.compare_digest(cls.hashed(text), digest)

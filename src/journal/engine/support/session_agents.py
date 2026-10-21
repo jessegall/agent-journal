@@ -1,6 +1,7 @@
 from journal.engine.base_state import BaseState
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.agent import Agent
+from journal.models.agent_role import AgentRole
 from journal.repositories.agents import Agents
 from journal.providers.providers import Providers
 from journal.support.actor import Actor
@@ -22,6 +23,13 @@ class SessionAgents:
         except MissingRow:
             first = self.states.first()
             return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider or self.providers.default().name, state=first.name, data=first.serialized()), Actor.system())
+
+    def worker_agent(self, session: str, environment_id: int, provider: str) -> Agent:
+        try:
+            return self.agents.session_agent(session)
+        except MissingRow:
+            first = self.states.first()
+            return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.serialized(), role=AgentRole.WORKER), Actor.system())
 
     def top(self, session: str) -> BaseState:
         agent = self.agents.session_agent(session)

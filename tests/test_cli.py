@@ -152,6 +152,16 @@ def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app: 
     assert Providers().caller({"JOURNAL_SESSION": "worker-session", "CODEX_THREAD_ID": "parent-session"}).session == "worker-session"
 
 
+def test_a_workers_shim_never_runs_the_package_when_no_server_answers(app: App):
+    import os
+    import subprocess
+    environ = {key: value for key, value in os.environ.items() if key != "JOURNAL_SESSION"}
+    environ.update(JOURNAL_ROOT=str(app.config.root), JOURNAL_ENV="main", JOURNAL_ACTOR="worker-agent", JOURNAL_WORKER="1", JOURNAL_WORKER_TOKEN="tok")
+    (app.config.home / "port").unlink(missing_ok=True)
+    outcome = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "task", "list"], env=environ, capture_output=True, text=True, timeout=10)
+    assert outcome.returncode == 1 and "restarting" in outcome.stderr, "a worker's command waits for the server that can check its token"
+
+
 @pytest.mark.parametrize("online", [False, True])
 def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App, online):
     import os
@@ -275,6 +285,24 @@ def test_a_hook_whose_launch_id_names_another_environments_launch_is_reported_an
             assert {entry.data["session_id"] for entry in app.container.get(Entries).kind_entries("unbound_session")} == {"stray", "bare"}, "its hooks are recorded"
             assert any("stray" in message.text and "launch id" in message.text for message in app.container.get(Messages).all()), "and it is reported in the chat"
         assert started("bound", "launch-main") == 200 and agents.session_agent("bound").environment_id == 1
+        from journal.models.agent_role import AgentRole
+        from journal.models.worker import Worker
+        from journal.repositories.workers import Workers
+        from journal.support.actor import Actor
+        from journal.support.worker_token import WorkerToken
+        with app.container.get(Scope).environment(1):
+            worker = app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Babbage", brief="b", token_hash=WorkerToken.hashed("tok")), Actor.system())
+
+        def worker_started(session: str, token: str) -> int:
+            body = json.dumps({"hook_event_name": "SessionStart", "session_id": session, "source": "startup"}).encode()
+            request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=body, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", "X-Journal-Worker": str(worker.id), "X-Journal-Worker-Token": token})
+            with urlopen(request, timeout=5) as reply:
+                return reply.status
+
+        assert worker_started("w-forged", "nope") == 200 and not [a for a in agents.all_agents() if a.session == "w-forged"], "a wrong token is no worker's: its hooks are unbound"
+        assert worker_started("w-real", "tok") == 200 and agents.session_agent("w-real").role == AgentRole.WORKER, "a worker's token stands in for the launch id, and its agent row is a worker's"
+        with app.container.get(Scope).environment(1):
+            assert app.container.get(Workers).find(worker.id).session == "w-real", "and its first hook binds the session its row did not name"
     finally:
         app.runtime().stop()
 

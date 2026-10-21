@@ -5,6 +5,7 @@ from journal.features.aliases.support.alias_lines import AliasLines
 from journal.support.caller import Caller
 from journal.support.caller_kind import CallerKind
 from journal.support.caller_variables import CallerVariables
+from journal.features.workers.support.worker_identity import REFUSAL as WORKER_REFUSAL, WorkerIdentity
 from journal.providers.providers import Providers
 from journal.support.plugin_tokens import PluginTokens
 from journal.http.support.subagent_commands import REFUSAL, SubagentCommands
@@ -24,8 +25,9 @@ EXEC = "__journal_exec"
 class CliController:
     """The shim posts an argv here; the server runs it on the console it already has loaded and answers with the outcome, or with the line an alias stands for, which the shim runs itself. A command from a shell whose launch id is not its environment's is not taken as the live agent's."""
 
-    def __init__(self, console: Console, tokens: PluginTokens, subagents: SubagentCommands, launches: LaunchFiles, providers: Providers, aliases: AliasLines) -> None:
+    def __init__(self, console: Console, tokens: PluginTokens, subagents: SubagentCommands, launches: LaunchFiles, providers: Providers, aliases: AliasLines, identity: WorkerIdentity) -> None:
         self.console, self.tokens, self.subagents, self.launches, self.providers, self.aliases = console, tokens, subagents, launches, providers, aliases
+        self.identity = identity
 
     def run(self, request: Request) -> Response:
         variables = CallerVariables.parsed(request.body, self.providers.default().name)
@@ -44,11 +46,13 @@ class CliController:
         return StreamResponse("text/plain", iter([f"{text}{'' if not text or text.endswith(chr(10)) else chr(10)}{EXIT} {outcome.code}\n".encode()]))
 
     def is_known(self, variables: CallerVariables) -> bool:
-        return variables.plugin is None or self.tokens.matches(variables.plugin, variables.token)
+        plugin_proof = variables.plugin is None or self.tokens.matches(variables.plugin, variables.token)
+        return plugin_proof and self.identity.is_proven(variables)
 
-    @staticmethod
-    def token_refusal(variables: CallerVariables) -> Outcome:
-        return Outcome.refused(f"the journal does not know this token for plugin {variables.plugin}\n")
+    def token_refusal(self, variables: CallerVariables) -> Outcome:
+        if variables.plugin is not None and not self.tokens.matches(variables.plugin, variables.token):
+            return Outcome.refused(f"the journal does not know this token for plugin {variables.plugin}\n")
+        return Outcome.refused(WORKER_REFUSAL)
 
     def outcome(self, variables: CallerVariables, argv: list[str], request: Request) -> Outcome:
         caller = self.caller(variables, argv, request)

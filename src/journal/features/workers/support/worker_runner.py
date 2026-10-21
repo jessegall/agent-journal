@@ -6,7 +6,7 @@ import subprocess
 import threading
 
 from journal.config import Config
-from journal.support.caller import AGENT_SHELL, WORKER, WORKER_TOKEN
+from journal.support.caller import ACTOR, AGENT_SHELL, WORKER, WORKER_ACTOR, WORKER_TOKEN
 from journal.support.worker_token import WorkerToken
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_reports import WorkerReports
@@ -77,7 +77,7 @@ class WorkerRunner:
 
     def environment_variables(self, environment: str) -> dict[str, str]:
         excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers(), *self.providers.session_variables())
-        return {**{k: v for k, v in os.environ.items() if k not in excluded}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": environment}
+        return {**{k: v for k, v in os.environ.items() if k not in excluded}, AGENT_SHELL: "1", ACTOR: WORKER_ACTOR, "JOURNAL_ENV": environment}
     def waited(self, worker: Worker, process: subprocess.Popen, actor: Actor) -> int:
         while True:
             try:

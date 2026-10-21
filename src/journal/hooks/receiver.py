@@ -12,6 +12,7 @@ from journal.support.decision import Decision
 from journal.support.listener_queue import ListenerQueue
 from journal.support.hook import Hook
 from journal.hooks.support.transcript_turns import TranscriptTurns
+from journal.hooks.support.worker_hooks import WorkerHooks
 from journal.hooks.translation import Translation
 from journal.support.actor import Actor
 from journal.models.entry import Entry
@@ -33,17 +34,19 @@ UNBOUND_SESSION = "unbound_session"
 class Receiver:
     """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply. A hook that does not carry its environment's launch id is recorded and reported, and reaches no listener."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests, launches: LaunchFiles) -> None:
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests, launches: LaunchFiles, worker_hooks: WorkerHooks) -> None:
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
         self.agents, self.launches = agents, launches
         self.transcript, self.cards, self.slow = transcript, cards, slow
+        self.worker_hooks = worker_hooks
 
     def receive(self, hook: Hook) -> Decision:
         timer = self.slow.begin()
         environment = self.environments.lookup(hook.environment)
         with self.scope.environment(environment.row_id):
-            if not self.launches.is_launch(environment.name, hook.launch):
+            if not self.launches.is_launch(environment.name, hook.launch) and not self.worker_hooks.is_proven(hook):
                 return self.unbound(hook, environment)
+            self.worker_hooks.bind(hook, environment)
             for saved in self.transcript.events(hook, environment):
                 self._immediate(saved)
             event = self.translation.event(hook, environment)

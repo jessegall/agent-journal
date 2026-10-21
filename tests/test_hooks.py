@@ -147,8 +147,11 @@ def test_a_guard_that_raises_fails_open_and_is_reported_loudly(app: App):
 
 def post_command(app, argv: list[str], headers: dict | None = None, session: str | None = None, body: dict | None = None) -> dict:
     request = HttpRequest(f"http://127.0.0.1:{app.server().port}/cli", data=json.dumps({"argv": argv, "env": "main", "session": session, **(body or {})}).encode(), method="POST", headers={"Content-Type": "application/json", **(headers or {})})
-    with urlopen(request, timeout=5) as reply:
-        return json.loads(reply.read())
+    try:
+        with urlopen(request, timeout=5) as reply:
+            return json.loads(reply.read())
+    except HTTPError as error:
+        return json.loads(error.read())
 
 
 def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app: App):
@@ -158,6 +161,27 @@ def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app: A
     refused = post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, "s1")
     assert refused["code"] == 1 and "a subagent runs no journal command" in refused["error"]
     assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, "s1")["code"] == 0, "the announcement is used up by its command"
+
+
+def test_a_command_or_a_shell_line_that_says_it_is_a_workers_must_carry_its_token(app: App):
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    from journal.support.actor import Actor
+    from journal.support.worker_token import WorkerToken
+    workers = app.container.get(Workers)
+    with app.container.get(Scope).environment(1):
+        current = workers.save(Worker(environment_id=1, name="Mr. Babbage", brief="b", token_hash=WorkerToken.hashed("tok")), Actor.system())
+        older = workers.save(Worker(environment_id=1, name="Mr. Pepys", brief="b"), Actor.system())
+    as_worker = lambda body: post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, body=body)
+    assert as_worker({"worker": current.id, "worker_token": "tok"})["code"] == 0, "a worker with its token runs"
+    assert "token" in as_worker({"worker": current.id, "worker_token": "nope"})["error"] and "token" in as_worker({"worker": current.id})["error"], "a wrong or missing token is refused"
+    assert as_worker({"worker": older.id})["code"] == 0, "a worker from before tokens runs as it did"
+    assert "token" in as_worker({"worker_shell": True})["error"], "a shell marked as a worker's that names no worker is refused"
+    raw = "JOURNAL_ENV=main\0JOURNAL_ACTOR=worker-agent\0\0ls\n"
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/shell/run", data=raw.encode(), method="POST", headers={"Content-Type": "application/octet-stream", "X-Journal-Env": "main"})
+    with urlopen(request, timeout=5) as reply:
+        shown = reply.read().decode()
+    assert "token" in shown and shown.rstrip().endswith("__journal_exit 1"), "the shell route runs no line for a worker that cannot prove which it is"
 
 
 def test_a_command_under_the_sub_agent_actor_is_refused(app: App):
