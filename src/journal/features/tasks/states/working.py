@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 
-from journal.engine.agent_state import AgentState
+from journal.engine.base_state import BaseState
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
@@ -22,7 +22,7 @@ COMPACT = "compact"
 
 
 @dataclass(frozen=True)
-class Working(AgentState):
+class Working(BaseState):
     """On one task. Writes are counted since the last log line: after the first N the log is asked for, every M the task is named back, and past the limit the next write waits for the log line. A stop with the task in hand is told to carry on, with the log line first when it is old, and is held while an approved plan is not started; a session resumed with it is told where it stands; a quiet quarter hour is told it is still open. Pushed by journal task start, popped by done and park."""
 
     name = "working"

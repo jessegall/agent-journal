@@ -1,6 +1,6 @@
 import re
 
-from journal.engine.agent_state import AgentState
+from journal.engine.base_state import BaseState
 from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.features.registry import Registry
@@ -36,7 +36,7 @@ class Requiring:
         loaded = agent.skills_loaded
         return [skill for skill in skills if loaded.get(skill.name) != self.files.hash_of(skill)]
 
-    def for_state(self, state: AgentState) -> list[Skill]:
+    def for_state(self, state: BaseState) -> list[Skill]:
         skill = self.registry.skill_required_in(state.name)
         return [skill] if skill else []
 

@@ -9,13 +9,23 @@ MARK = "[journal]"
 
 
 class TypedLines:
-    """The lines typed to the agents and not yet seen back as a prompt: a line is confirmed by the prompt that carries its words, and until then it may have been lost. A line for an agent with one still unconfirmed is held, since a line typed while the agent holds another in its queue lands in its prompt box and its Enter only breaks the line."""
+    """The lines typed to the agents and not yet seen back as a prompt: a line is confirmed by the prompt that carries its words, and until then it may have been lost. A line for an agent with one still unconfirmed is held, since a line typed while the agent holds another in its queue lands in its prompt box and its Enter only breaks the line. An environment paused holds every line until it is resumed."""
 
     def __init__(self) -> None:
         self._waiting: list[TypedLine] = []
         self._held: list[HeldLine] = []
         self._recent: list[TypedLine] = []
         self._sent_at: dict[int, float] = {}
+        self._paused_ids: set[int] = set()
+
+    def pause(self, environment_id: int) -> None:
+        self._paused_ids.add(environment_id)
+
+    def resume(self, environment_id: int) -> None:
+        self._paused_ids.discard(environment_id)
+
+    def is_paused(self, environment_id: int) -> bool:
+        return environment_id in self._paused_ids
 
     def is_within_window(self, environment_id: int, seconds: float) -> bool:
         return timing.time() - self._sent_at.get(environment_id, 0.0) < seconds

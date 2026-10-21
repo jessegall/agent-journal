@@ -1,4 +1,3 @@
-from journal.engine.agent_state import AgentState
 from journal.engine.base_state import BaseState
 from journal.engine.nudger import Nudger
 from journal.engine.support.settings import Settings
@@ -77,7 +76,7 @@ class StateMachine(AgentListener[AgentEvent]):
             return Decision.refuse(line)
         return Decision.allowed_with("\n".join(lines))
 
-    def move(self, session: str, environment_id: int, to: AgentState) -> Agent:
+    def move(self, session: str, environment_id: int, to: BaseState) -> Agent:
         agent = self.agent(session, environment_id)
         hooked = self.through_hooks(self.states.stack_of(agent), self.placed(self.states.stack_of(agent), to), self.taken(), self.read_for(agent))
         settled = self._settle(agent, hooked, MOVED, Actor.system())
@@ -151,7 +150,7 @@ class StateMachine(AgentListener[AgentEvent]):
             return stack.with_top(to)
         return self.states.stack_under(to)
 
-    def current(self, session: str) -> AgentState:
+    def current(self, session: str) -> BaseState:
         agent = self.agents.for_session(session)
         return self.states.named(agent.state, agent.data)
 
@@ -164,12 +163,20 @@ class StateMachine(AgentListener[AgentEvent]):
             first = self.states.first()
             return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.to_data()), Actor.system())
 
+    def follow_silence(self, agent: Agent, top: BaseState) -> None:
+        former = self.states.named(agent.state, agent.data)
+        if top.is_silent() and not former.is_silent():
+            self.supervisor.pause(agent.environment_id)
+        if former.is_silent() and not top.is_silent():
+            self.supervisor.resume(agent.environment_id)
+
     def _settle(self, agent: Agent, hooked: Hooked, cause: str, actor: Actor) -> Agent:
         stack, to = hooked.stack, hooked.stack.top()
         if hooked.held:
             self.entries.save(Trail.entry(agent, list(agent.stack), cause, actor, refused=hooked.refused, line=hooked.held.nudge.rendered()), actor)
         if to.name == agent.state and to.to_data() == agent.data and stack.to_data() == list(agent.stack):
             return agent
+        self.follow_silence(agent, to)
         settled = self.agents.save(agent.with_(state=to.name, data=to.to_data(), stack=tuple(stack.to_data())), actor)
         self.entries.save(Trail.entry(agent, stack.to_data(), cause, actor), actor)
         return settled

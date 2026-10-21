@@ -29,14 +29,24 @@ class SupervisorLink:
 
     def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
         marked = TypedLine.cut(f"{MARK} {' '.join(line.split())}")
-        if self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds()):
+        if self.is_busy(environment_id):
             self.typed.hold(HeldLine(environment_id, marked, after))
             return
         self.typed.typed(environment_id, marked)
         self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": after})
 
+    def is_busy(self, environment_id: int) -> bool:
+        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds())
+
+    def pause(self, environment_id: int) -> None:
+        self.typed.pause(environment_id)
+
+    def resume(self, environment_id: int) -> None:
+        self.typed.resume(environment_id)
+        self.release(environment_id)
+
     def release(self, environment_id: int) -> None:
-        if self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds()):
+        if self.is_busy(environment_id):
             return
         held = self.typed.held_as_one(environment_id)
         if held is not None:

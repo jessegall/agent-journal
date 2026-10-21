@@ -45,6 +45,9 @@ class Agent(Scoped):
     def tool_used(self) -> "Agent":
         return self.with_(tool_uses=self.tool_uses + 1)
 
+    def compacted(self) -> "Agent":
+        return self.with_(tool_uses=0, inbox_mark=0)
+
     def message_arrived(self) -> "Agent":
         return self.with_(inbox_mark=self.tool_uses)
 

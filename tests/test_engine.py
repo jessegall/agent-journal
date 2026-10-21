@@ -55,7 +55,6 @@ from dataclasses import dataclass
 
 from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
-from journal.engine.agent_state import AgentState
 from journal.engine.states.wait import Wait
 from journal.engine.support.held import Held
 from journal.events.readings import Readings
@@ -459,7 +458,7 @@ class Refusing(Wait):
 
 
 @dataclass(frozen=True)
-class Catching(AgentState):
+class Catching(BaseState):
     name = "catching"
 
     def on_suspend(self, settings):
@@ -1206,3 +1205,48 @@ def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instan
     finally:
         BaseState.fold(folded)
     assert app.container.get(StateMachine) is app.container.get(StateMachine) and app.container.get(Agents) is app.container.get(Agents), "the container builds a class once"
+
+
+def test_the_compacting_state_captures_rows_and_ticks_holds_every_typed_line_until_it_pops_and_starts_the_tool_count_again(app, monkeypatch):
+    from journal.events.agent.ticked import Ticked
+    from journal.events.rows.message_arrived import MessageArrived
+    from journal.supervisor_link import SupervisorLink
+
+    class Talkative(Conduct):
+        def on_ticked_talkative(self, event: Ticked, settings: SettingsValue) -> Transition:
+            return self.unchanged(LINE)
+
+        def on_message_arrived_talkative(self, event: MessageArrived, settings: SettingsValue) -> Transition:
+            return self.unchanged(OTHER)
+
+    @dataclass(frozen=True)
+    class Plain(BaseState):
+        name = "plain"
+
+    settings = SettingsValue({})
+    BaseState.fold((Talkative,))
+    try:
+        tick = Ticked(quiet_for=1.0).with_readings(Readings({}))
+        arrived = MessageArrived(environment_id=1, time=2.0, text="hi").with_readings(Readings({}))
+        assert Plain().on(tick, settings).nudges == (LINE,) and Plain().on(arrived, settings).nudges == (OTHER,), "in any other state the conduct speaks"
+        assert CompactingState().on(tick, settings).nudges == () and CompactingState().on(arrived, settings).nudges == (), "compacting stops the tick and the row, so no conduct speaks through it"
+        assert Plain().on(tick, settings).nudges == (LINE,), "the next walk of the same event starts again"
+        assert CompactingState().on(ToolStarting(call=shell("ls")).with_readings(Readings({})), settings).held == Engine.NOTHING_WHILE_COMPACTING.create(), "the hold on every tool stands"
+        assert CompactingState().on(SessionStarted(source="compact").with_readings(Readings({})), settings).popped, "and the session's start still pops it"
+    finally:
+        BaseState.fold(())
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append(fields["line"]))
+    hook(app, "SessionStart")
+    write(app)
+    write(app)
+    agents, link = app.container.get(Agents), app.container.get(SupervisorLink)
+    assert agents.for_session("s1").tool_uses == 2
+    assert hook(app, "PreCompact")[0] == 200
+    assert agents.for_session("s1").stack[-1]["state"] == "compacting" and agents.for_session("s1").tool_uses == 0, "the compaction pushes its state and sets the count back to zero"
+    link.type(1, "a dump arrived")
+    link.type(1, "the wait ended")
+    link.release(1)
+    assert sent == [], "every line typed while compacting waits"
+    hook(app, "SessionStart", source="compact")
+    assert agents.for_session("s1").stack[-1]["state"] != "compacting" and sent == ["[journal] a dump arrived | the wait ended"], "the pop types them as one line"

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 
-from journal.engine.agent_state import AgentState
+from journal.engine.base_state import BaseState
 from journal.support.permission import Permission
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
@@ -18,7 +18,7 @@ CHECK_IN_AFTER = 30 * 60.0
 
 
 @dataclass(frozen=True)
-class Idle(AgentState):
+class Idle(BaseState):
     """Nothing in hand: the floor of the stack, never popped. A stop here is held by what is still open: a parked task, a blocked task whose check cannot run, an approved plan not started, and in auto mode any open task. The quiet is measured from the agent's last doing."""
 
     name = "idle"

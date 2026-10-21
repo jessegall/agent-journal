@@ -1,4 +1,4 @@
-from journal.engine.agent_state import AgentState
+from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
@@ -30,7 +30,7 @@ class Registry:
     def conducts(self) -> tuple[type[Conduct], ...]:
         return tuple(conduct for feature in self.features for conduct in feature.conduct)
 
-    def states(self) -> list[type[AgentState]]:
+    def states(self) -> list[type[BaseState]]:
         return [state for feature in self.features for state in feature.states]
 
     def services(self) -> list[Service]:

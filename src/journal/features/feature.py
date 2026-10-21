@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from journal.console.command import Command
 from journal.engine.conduct import Conduct
-from journal.engine.agent_state import AgentState
+from journal.engine.base_state import BaseState
 from journal.events.listener import Listener
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
@@ -19,7 +19,7 @@ class Feature:
     title: ClassVar[str] = ""
     help: ClassVar[str] = ""
     fixed: ClassVar[bool] = False
-    states: ClassVar[tuple[type[AgentState], ...]] = ()
+    states: ClassVar[tuple[type[BaseState], ...]] = ()
     nudges: ClassVar[tuple[Nudge, ...]] = ()
     options: ClassVar[tuple[Option, ...]] = ()
     listeners: ClassVar[tuple[type[Listener], ...]] = ()
