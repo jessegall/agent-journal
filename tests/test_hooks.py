@@ -312,6 +312,6 @@ def dispatch_entries(provider: str, kept, bodies: list[dict] | None = None) -> l
     program = Providers().lookup(provider)
     entries = []
     for n, body in enumerate(body for body in (bodies or captured(provider)) if kept(body)):
-        call = {"call": program.call(body["tool_name"], body["tool_input"]).as_data()} if "tool_name" in body else {}
+        call = {"call": program.call(body["tool_name"], body["tool_input"], frozenset()).as_data()} if "tool_name" in body else {}
         entries.append(Entry(id=n + 1, environment_id=1, kind=EVENTS[body["hook_event_name"]], data={**body, **call}, created_at=datetime(2026, 10, 21, 12, 0, n, tzinfo=timezone.utc)))
     return entries

@@ -10,5 +10,8 @@ class Aliases(Repository[Alias]):
     def index(self) -> dict[str, Alias]:
         return {alias.name: alias for alias in self.rows()}
 
+    def names(self) -> frozenset[str]:
+        return frozenset(self.index())
+
     def plugin_rows(self, plugin: str) -> list[Alias]:
         return self.all_matching(plugin=plugin)

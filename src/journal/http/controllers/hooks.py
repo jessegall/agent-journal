@@ -2,6 +2,7 @@ from journal.support.announced_commands import AnnouncedCommands
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
 from journal.hooks.receiver import Receiver
+from journal.hooks.support.tool_calls import ToolCalls
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.providers.providers import Providers
@@ -10,8 +11,8 @@ LAUNCH_HEADER = "x-journal-launch"
 
 
 class HookController:
-    def __init__(self, receiver: Receiver, providers: Providers, announced: AnnouncedCommands) -> None:
-        self.receiver, self.providers, self.announced = receiver, providers, announced
+    def __init__(self, receiver: Receiver, providers: Providers, announced: AnnouncedCommands, calls: ToolCalls) -> None:
+        self.receiver, self.providers, self.announced, self.calls = receiver, providers, announced, calls
 
     def receive(self, request: Request) -> Response:
         parsed = Hook.parse(request.body, request.environment, request.params["agent"], request.headers.get(LAUNCH_HEADER, ""))
@@ -29,4 +30,4 @@ class HookController:
         return Response.json({})
 
     def shell_parts(self, hook: Hook) -> tuple[str, ...]:
-        return tuple(part.text for part in self.providers.hook_call(hook).parts)
+        return tuple(part.text for part in self.calls.build(hook).parts)

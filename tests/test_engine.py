@@ -11,7 +11,7 @@ import pytest
 from journal.providers.claude import Claude
 from journal.support.tool_call import ToolCall
 
-shell = lambda line: Claude().call("Bash", {"command": line})
+shell = lambda line: Claude().call("Bash", {"command": line}, frozenset())
 
 from journal.app import App
 from journal.engine.support.session_agents import SessionAgents

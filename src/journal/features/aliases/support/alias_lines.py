@@ -1,4 +1,4 @@
-from journal.features.aliases.support.alias_call import AliasCall
+from journal.support.alias_call import AliasCall
 from journal.models.alias import Alias
 from journal.repositories.aliases import Aliases
 from journal.support.chain import Chain
