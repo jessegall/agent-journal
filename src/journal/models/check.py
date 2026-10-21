@@ -54,5 +54,5 @@ class Check(Model):
     def title_words(self) -> str:
         return self.title
 
-    def summary(self) -> str:
+    def summary_line(self) -> str:
         return self.first_line(self.brief)

@@ -976,7 +976,8 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_snap
     assert stop(of(open_next, approved=(9,))).held.rendered().startswith("plan 9 is approved and not started")
     assert stop(of(open_next)).held.rendered().startswith("tasks are open, and auto mode is on: task 4 next: the footer")
     assert stop(of(open_next), manual).held is None, "off auto mode an open task is no reason to go on"
-    assert stop(of(parked), auto, held_before=True).held is None, "a stop held once this turn passes"
+    assert stop(of(open_next), auto, held_before=True).held is None, "a stop held once this turn passes"
+    assert stop(of(parked), auto, held_before=True).held is not None, "a parked task is named at every stop: parked is still open"
     assert stop(of(nothing)).held is None
     idle = Idle(quiet_since=0.0)
     active = idle.on(ToolStarting(call=ToolCall(tool="Read", input={}), at=50.0).with_snapshot(of(nothing)), auto)

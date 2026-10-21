@@ -72,7 +72,7 @@ class StateMachine(AgentListener[AgentEvent]):
             self.supervisor.type(agent.environment_id, line, after=event.typed_after)
         reasons = [line for refusal in (transition.held, *transition.other_holds) if refusal and (line := self.nudger.refuse_with(agent, refusal))]
         if reasons:
-            return Decision.refuse("\n".join(reasons))
+            return Decision.refuse("\n".join([*reasons, *lines]))
         if hooked.held and (line := self.nudger.refuse_with(agent, hooked.held.nudge)):
             return Decision.refuse(line)
         return Decision.allowed_with("\n".join(lines))
@@ -132,10 +132,12 @@ class StateMachine(AgentListener[AgentEvent]):
     def popped_through(self, before: Stack, after: Stack, settings: SettingRows, snapshot: Snapshot) -> Hooked:
         popped = before.top().on_pop(settings)
         resumed = after.top().on_resume(snapshot, settings)
-        if isinstance(resumed, Transition) and resumed.popped and len(after.states) > 1:
+        if not isinstance(resumed, Transition):
+            return Hooked(after, (*popped, *resumed))
+        if resumed.popped and len(after.states) > 1:
             beneath = self.popped_through(after, after.popped(), settings, snapshot)
             return Hooked(beneath.stack, (*popped, *resumed.nudges, *beneath.nudges))
-        return Hooked(after, (*popped, *resumed))
+        return Hooked(after.with_top(resumed.to), (*popped, *resumed.nudges))
 
     def moved(self, stack: Stack, transition: Transition) -> Stack:
         if transition.pushed:

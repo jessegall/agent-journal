@@ -60,11 +60,11 @@ class Idle(AgentState):
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
-        if event.held_before:
-            return self.unchanged()
         tasks, plans = event.snapshot.of(Tasks), event.snapshot.of(Plans)
         if tasks.parked:
             return self.hold(Tasks.PARKED_TASKS_STILL_OPEN.create(tasks=tasks.parked_summary))
+        if event.held_before:
+            return self.unchanged()
         if tasks.broken_waits:
             return self.hold(Tasks.FIX_THE_BROKEN_WAIT.create(waits=tasks.broken_waits_summary))
         if plans.approved:

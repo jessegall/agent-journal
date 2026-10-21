@@ -19,5 +19,5 @@ class Rule(Model):
     def made(self, by_agent: bool) -> "Rule":
         return self.with_event(RuleMade(by_agent=by_agent))
 
-    def summary(self) -> str:
+    def summary_line(self) -> str:
         return self.first_line(self.text)

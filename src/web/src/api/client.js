@@ -470,7 +470,7 @@ export class ApiClient {
     }
 
     chartStanding(id) {
-        return this.get(`/chart/${id}/standing`);
+        return this.get(`/chart/${id}/snapshot`);
     }
 
     chartNew(body) {

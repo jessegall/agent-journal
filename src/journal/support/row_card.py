@@ -18,7 +18,7 @@ class RowCard:
 
     @classmethod
     def of(cls, row: Model) -> "RowCard":
-        return cls(str(Ref.to(row)), row.heading(), row.summary(), row.docked(), ExportName.of(row.title_words(), f"{row.noun()} {row.id}") if row.exports else "")
+        return cls(str(Ref.to(row)), row.heading(), row.summary_line(), row.docked(), ExportName.of(row.title_words(), f"{row.noun()} {row.id}") if row.exports else "")
 
     def as_data(self) -> dict:
         return {"row": self.row, "heading": self.heading, "summary": self.summary, "dock": self.dock.as_data(), "file": self.file}

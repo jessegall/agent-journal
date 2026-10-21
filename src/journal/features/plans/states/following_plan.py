@@ -95,4 +95,6 @@ class FollowingPlan(Working):
         started = snapshot.of(Plans).started
         if started is None or started.plan_id != self.plan_id:
             return self.pop()
+        if started.started_task and started.started_task != self.task_id:
+            return self.changed(replace(self, task_id=started.started_task, at_checkpoint=False, phase=0, edits=0))
         return super().on_resume(snapshot, settings)

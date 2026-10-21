@@ -191,11 +191,11 @@ def test_a_row_answers_its_heading_its_summary_and_its_dock_card():
     from journal.models.support.dock_card import DockCard
     from journal.support.row_card import RowCard
     report = Report(id=33, title="What the dock showed", abstract="One line about it", body="## First\n\ntext")
-    assert report.heading() == "Report 33: What the dock showed" and report.summary() == "One line about it"
-    assert Doc(id=3, title="Notes", body="# Notes\n\nThe first line.\nThe second.").summary() == "The first line."
+    assert report.heading() == "Report 33: What the dock showed" and report.summary_line() == "One line about it"
+    assert Doc(id=3, title="Notes", body="# Notes\n\nThe first line.\nThe second.").summary_line() == "The first line."
     task = Task(id=12, title="Write it", brief="First line of the brief\nmore")
-    assert task.heading() == "Task 12: Write it" and task.summary() == "First line of the brief"
-    assert Fact(id=2, text="Ports are fixed").heading() == "Fact 2" and Fact(id=2).summary() == ""
+    assert task.heading() == "Task 12: Write it" and task.summary_line() == "First line of the brief"
+    assert Fact(id=2, text="Ports are fixed").heading() == "Fact 2" and Fact(id=2).summary_line() == ""
     assert task.docked() == DockCard.plain() and [b.label for b in DockCard.plain().buttons] == ["Open", "Close"]
     assert [(b.label, b.act) for b in Plan(id=1).docked().buttons] == [("Open plan", "open"), ("Approve", "approve"), ("Close", "close")]
     from journal.support.export_name import ExportName

@@ -182,7 +182,7 @@
 {"line": "echo 'x' 'y' 'z';echo 'w'", "parts": ["echo 'x' 'y' 'z'", "echo 'w'"]}
 {"line": "echo 'a' && echo 'b;c' && echo 'd&&e' && echo 'f'", "parts": ["echo 'a'", "echo 'b;c'", "echo 'd&&e'", "echo 'f'"]}
 {"line": "perl -e 'print \"a;b\\n\"; print \"c\\n\"' && echo ok", "parts": ["perl -e 'print \"a;b\\n\"; print \"c\\n\"'", "echo ok"]}
-{"line": "echo 'café; naïve' && echo ok", "parts": ["echo 'café; naïve'", "echo ok"]}
+{"line": "echo 'caf\u00e9; na\u00efve' && echo ok", "parts": ["echo 'caf\u00e9; na\u00efve'", "echo ok"]}
 {"line": "echo 'x' ; echo 'y';", "parts": ["echo 'x'", "echo 'y'"]}
 {"line": "mysql -e 'use db; show tables;' && echo ok", "parts": ["mysql -e 'use db; show tables;'", "echo ok"]}
 {"line": "echo 'don'\\''t split; here' && echo b", "parts": ["echo 'don'\\''t split; here'", "echo b"]}
@@ -227,7 +227,7 @@
 {"line": "git add -A && git commit -m \"$(cat <<'EOF'\nfix a; b\nEOF\n)\" && git push", "parts": ["git add -A", "git commit -m \"$(cat <<'EOF'\nfix a; b\nEOF\n)\"", "git push"]}
 {"line": "echo \"x\" > \"a;b.txt\" && ls \"a;b.txt\"", "parts": ["echo \"x\" > \"a;b.txt\"", "ls \"a;b.txt\""]}
 {"line": "cd \"my dir\" && ls \"my dir; other\"", "parts": ["cd \"my dir\"", "ls \"my dir; other\""]}
-{"line": "echo \"héllo; wörld\" && echo \"日本語 && テスト\"", "parts": ["echo \"héllo; wörld\"", "echo \"日本語 && テスト\""]}
+{"line": "echo \"h\u00e9llo; w\u00f6rld\" && echo \"\u65e5\u672c\u8a9e && \u30c6\u30b9\u30c8\"", "parts": ["echo \"h\u00e9llo; w\u00f6rld\"", "echo \"\u65e5\u672c\u8a9e && \u30c6\u30b9\u30c8\""]}
 {"line": "echo \"tab\\there\" ; echo \"nl\\nhere\"", "parts": ["echo \"tab\\there\"", "echo \"nl\\nhere\""]}
 {"line": "echo \"a;b\" | sed \"s/;/ /\" && echo ok", "parts": ["echo \"a;b\" | sed \"s/;/ /\"", "echo ok"]}
 {"line": "sed -i \"s/a/b/g; s/c/d/g\" f && echo ok", "parts": ["sed -i \"s/a/b/g; s/c/d/g\" f", "echo ok"]}
@@ -255,9 +255,9 @@
 {"line": "echo \"$(( 2 * 3 ))\" && echo \"${#HOME}\"", "parts": ["echo \"$(( 2 * 3 ))\"", "echo \"${#HOME}\""]}
 {"line": "echo \"${HOME:-/tmp}\" ; echo \"${X:-a;b}\"", "parts": ["echo \"${HOME:-/tmp}\"", "echo \"${X:-a;b}\""]}
 {"line": "echo \"a\" 'b' \"c\" 'd;e' \"f;g\"", "parts": ["echo \"a\" 'b' \"c\" 'd;e' \"f;g\""]}
-{"line": "echo \"💥 boom; 🚀 launch\" && echo ✅", "parts": ["echo \"💥 boom; 🚀 launch\"", "echo ✅"]}
+{"line": "echo \"\ud83d\udca5 boom; \ud83d\ude80 launch\" && echo \u2705", "parts": ["echo \"\ud83d\udca5 boom; \ud83d\ude80 launch\"", "echo \u2705"]}
 {"line": "curl -H \"Content-Type: application/json\" -d \"{\\\"a\\\": 1}\" \"http://x/?a=1&b=2\" && echo ok", "parts": ["curl -H \"Content-Type: application/json\" -d \"{\\\"a\\\": 1}\" \"http://x/?a=1&b=2\"", "echo ok"]}
-{"line": "echo \"unicode — dash && more\" ; echo ok", "parts": ["echo \"unicode — dash && more\"", "echo ok"]}
+{"line": "echo \"unicode \u2014 dash && more\" ; echo ok", "parts": ["echo \"unicode \u2014 dash && more\"", "echo ok"]}
 {"line": "echo $(date) && echo ok", "parts": ["echo $(date)", "echo ok"]}
 {"line": "echo $(echo a; echo b) && echo c", "parts": ["echo $(echo a; echo b)", "echo c"]}
 {"line": "x=$(cd /tmp && pwd); echo $x", "parts": ["x=$(cd /tmp && pwd)", "echo $x"]}
@@ -443,9 +443,9 @@
 {"line": "cat <<-EOF\n  indented\nEOF", "parts": ["cat <<-EOF\n  indented\nEOF"]}
 {"line": "cd src && cat <<EOF > f.txt\nhi; there\nEOF", "parts": ["cd src", "cat <<EOF > f.txt\nhi; there\nEOF"]}
 {"line": "cat <<EOF && echo x\nbody\nEOF", "parts": ["cat <<EOF && echo x\nbody\nEOF"]}
-{"line": "echo a; cat <<EOF\nb && c\nEOF\necho after && echo more", "parts": ["echo a", "cat <<EOF\nb && c\nEOF\necho after && echo more"], "shell": "after the EOF line a real shell reads echo after && echo more as a new chain of two commands; the splitter keeps it in the heredoc part"}
+{"line": "echo a; cat <<EOF\nb && c\nEOF\necho after && echo more", "parts": ["echo a", "cat <<EOF\nb && c\nEOF", "echo after", "echo more"], "shell": "after the EOF line a real shell reads echo after && echo more as a new chain of two commands; the splitter keeps it in the heredoc part"}
 {"line": "python3 - <<'PY'\nprint(1); print(2)\nPY", "parts": ["python3 - <<'PY'\nprint(1); print(2)\nPY"]}
-{"line": "cat > f.py <<'EOF'\nimport os; os.system(\"a && b\")\nEOF\npython3 f.py", "parts": ["cat > f.py <<'EOF'\nimport os; os.system(\"a && b\")\nEOF\npython3 f.py"], "shell": "python3 f.py after the EOF line is its own command in a real shell; the splitter keeps it in the heredoc part"}
+{"line": "cat > f.py <<'EOF'\nimport os; os.system(\"a && b\")\nEOF\npython3 f.py", "parts": ["cat > f.py <<'EOF'\nimport os; os.system(\"a && b\")\nEOF", "python3 f.py"], "shell": "python3 f.py after the EOF line is its own command in a real shell; the splitter keeps it in the heredoc part"}
 {"line": "git commit -F - <<EOF\nmsg; here\nEOF", "parts": ["git commit -F - <<EOF\nmsg; here\nEOF"]}
 {"line": "ls && git commit -F- <<'MSG' && git push\nfeat: x\nMSG", "parts": ["ls", "git commit -F- <<'MSG' && git push\nfeat: x\nMSG"]}
 {"line": "ssh h <<EOF\ncd app; git pull\nEOF", "parts": ["ssh h <<EOF\ncd app; git pull\nEOF"]}
@@ -461,7 +461,7 @@
 {"line": "cat <<EOF\n$(echo a; echo b)\nEOF", "parts": ["cat <<EOF\n$(echo a; echo b)\nEOF"]}
 {"line": "cat<<EOF\nno space\nEOF", "parts": ["cat<<EOF\nno space\nEOF"]}
 {"line": "cat <<<\"text; more\" && echo ok", "parts": ["cat <<<\"text; more\"", "echo ok"]}
-{"line": "tee f <<EOF >/dev/null\nx\nEOF\ncat f && rm f", "parts": ["tee f <<EOF >/dev/null\nx\nEOF\ncat f && rm f"], "shell": "after the EOF line a real shell runs cat f && rm f as its own chain; the splitter keeps it in the heredoc part"}
+{"line": "tee f <<EOF >/dev/null\nx\nEOF\ncat f && rm f", "parts": ["tee f <<EOF >/dev/null\nx\nEOF", "cat f", "rm f"], "shell": "after the EOF line a real shell runs cat f && rm f as its own chain; the splitter keeps it in the heredoc part"}
 {"line": "(cat <<EOF\nx; y\nEOF\n) && echo z", "parts": ["(cat <<EOF\nx; y\nEOF\n)", "echo z"]}
 {"line": "echo $((1<<2)); cat <<EOF\nz\nEOF", "parts": ["echo $((1<<2))", "cat <<EOF\nz\nEOF"]}
 {"line": "if true; then cat <<EOF\nin if\nEOF\nfi", "parts": ["if true; then cat <<EOF\nin if\nEOF\nfi"]}
@@ -601,10 +601,10 @@
 {"line": "echo $'a;b' && echo c", "parts": ["echo $'a;b'", "echo c"]}
 {"line": "echo $'it\\'s' && echo b", "parts": ["echo $'it\\'s'", "echo b"]}
 {"line": "echo $'it\\'s; fine' && echo b", "parts": ["echo $'it\\'s; fine'", "echo b"]}
-{"line": "echo ünïcödé && echo ✓ ; echo 🙂", "parts": ["echo ünïcödé", "echo ✓", "echo 🙂"]}
-{"line": "echo \"日本語\" && echo '中文;文字' && echo 한국어", "parts": ["echo \"日本語\"", "echo '中文;文字'", "echo 한국어"]}
-{"line": "grep -rn \"TODO\" --include=\"*.py\" . | head && echo \"✔ done\"", "parts": ["grep -rn \"TODO\" --include=\"*.py\" . | head", "echo \"✔ done\""]}
-{"line": "echo \"emoji 👍 && 🚀\" ; echo end", "parts": ["echo \"emoji 👍 && 🚀\"", "echo end"]}
+{"line": "echo \u00fcn\u00efc\u00f6d\u00e9 && echo \u2713 ; echo \ud83d\ude42", "parts": ["echo \u00fcn\u00efc\u00f6d\u00e9", "echo \u2713", "echo \ud83d\ude42"]}
+{"line": "echo \"\u65e5\u672c\u8a9e\" && echo '\u4e2d\u6587;\u6587\u5b57' && echo \ud55c\uad6d\uc5b4", "parts": ["echo \"\u65e5\u672c\u8a9e\"", "echo '\u4e2d\u6587;\u6587\u5b57'", "echo \ud55c\uad6d\uc5b4"]}
+{"line": "grep -rn \"TODO\" --include=\"*.py\" . | head && echo \"\u2714 done\"", "parts": ["grep -rn \"TODO\" --include=\"*.py\" . | head", "echo \"\u2714 done\""]}
+{"line": "echo \"emoji \ud83d\udc4d && \ud83d\ude80\" ; echo end", "parts": ["echo \"emoji \ud83d\udc4d && \ud83d\ude80\"", "echo end"]}
 {"line": "ls -la | grep \"^d\" | awk '{print $9}' && echo ok", "parts": ["ls -la | grep \"^d\" | awk '{print $9}'", "echo ok"]}
 {"line": "awk -F';' '{print $1}' f && echo ok", "parts": ["awk -F';' '{print $1}' f", "echo ok"]}
 {"line": "cut -d';' -f1 f; cut -d'&' -f2 f", "parts": ["cut -d';' -f1 f", "cut -d'&' -f2 f"]}
@@ -1151,8 +1151,8 @@
 {"line": "read -r -d '' VAR <<'EOF'\ntext\nEOF", "parts": ["read -r -d '' VAR <<'EOF'\ntext\nEOF"]}
 {"line": "make test && cat <<EOF\ndone\nEOF", "parts": ["make test", "cat <<EOF\ndone\nEOF"]}
 {"line": "sh -c \"echo a\" && cat <<EOF >> log.txt\nentry; one\nEOF", "parts": ["sh -c \"echo a\"", "cat <<EOF >> log.txt\nentry; one\nEOF"]}
-{"line": "cat > .env <<EOF\nA=1\nB=2\nEOF\nsource .env && echo $A", "parts": ["cat > .env <<EOF\nA=1\nB=2\nEOF\nsource .env && echo $A"], "shell": "the heredoc ends at the EOF line in a shell, so source .env && echo $A are separate commands; the splitter keeps the rest of the line whole"}
-{"line": "cat <<EOF > a.txt\nx\nEOF\nls; pwd", "parts": ["cat <<EOF > a.txt\nx\nEOF\nls; pwd"], "shell": "the heredoc ends at the EOF line in a shell, so ls and pwd are separate commands; the splitter keeps the rest of the line whole"}
+{"line": "cat > .env <<EOF\nA=1\nB=2\nEOF\nsource .env && echo $A", "parts": ["cat > .env <<EOF\nA=1\nB=2\nEOF", "source .env", "echo $A"], "shell": "the heredoc ends at the EOF line in a shell, so source .env && echo $A are separate commands; the splitter keeps the rest of the line whole"}
+{"line": "cat <<EOF > a.txt\nx\nEOF\nls; pwd", "parts": ["cat <<EOF > a.txt\nx\nEOF", "ls", "pwd"], "shell": "the heredoc ends at the EOF line in a shell, so ls and pwd are separate commands; the splitter keeps the rest of the line whole"}
 {"line": "cat <<'EOF'\n$(not run); `no`\nEOF", "parts": ["cat <<'EOF'\n$(not run); `no`\nEOF"]}
 {"line": "awk -f - data.txt <<'AWK'\n{ print $1; }\nAWK", "parts": ["awk -f - data.txt <<'AWK'\n{ print $1; }\nAWK"]}
 {"line": "cd /x; cat <<A\n1\nA", "parts": ["cd /x", "cat <<A\n1\nA"]}
@@ -1548,7 +1548,7 @@
 {"line": "mkdir d && cat > d/a.sh <<'EOF'\necho a; echo b\nEOF", "parts": ["mkdir d", "cat > d/a.sh <<'EOF'\necho a; echo b\nEOF"]}
 {"line": "for f in a b; do cat <<EOF\n$f\nEOF\ndone && echo after", "parts": ["for f in a b; do cat <<EOF\n$f\nEOF\ndone && echo after"], "shell": "the heredoc takes the rest of the line, so && echo after, a separate command to the shell, stays in the loop's part"}
 {"line": "for f in a b; do cat <<EOF\n$f\nEOF\ndone", "parts": ["for f in a b; do cat <<EOF\n$f\nEOF\ndone"]}
-{"line": "while read l; do echo $l; done <<EOF\na\nEOF\necho after; echo z", "parts": ["while read l; do echo $l; done <<EOF\na\nEOF\necho after; echo z"], "shell": "the heredoc takes the rest of the line, so the commands after it, which the shell runs separately, are not cut off"}
+{"line": "while read l; do echo $l; done <<EOF\na\nEOF\necho after; echo z", "parts": ["while read l; do echo $l; done <<EOF\na\nEOF", "echo after", "echo z"], "shell": "the heredoc takes the rest of the line, so the commands after it, which the shell runs separately, are not cut off"}
 {"line": "read a <<< 'x y'; echo $a", "parts": ["read a <<< 'x y'", "echo $a"]}
 {"line": "grep x <<< $y && echo found", "parts": ["grep x <<< $y", "echo found"]}
 {"line": "while read l; do echo $l; done <<< 'a b'; echo end", "parts": ["while read l; do echo $l; done <<< 'a b'", "echo end"]}
@@ -1964,8 +1964,8 @@
 {"line": "python3 - <<EOF\nprint(\"a; b\")\nEOF", "parts": ["python3 - <<EOF\nprint(\"a; b\")\nEOF"]}
 {"line": "cd /tmp && ls && python3 - <<'PY'\nx = 1; y = 2\nprint(x + y)\nPY", "parts": ["cd /tmp", "ls", "python3 - <<'PY'\nx = 1; y = 2\nprint(x + y)\nPY"]}
 {"line": "python3 - <<'EOF' && echo done\nprint(1)\nEOF", "parts": ["python3 - <<'EOF' && echo done\nprint(1)\nEOF"], "shell": "the shell runs echo done as a second command after the heredoc command; the splitter keeps it in the heredoc part"}
-{"line": "python3 - <<'EOF'\nimport sys\nprint(sys.argv)\nEOF\necho after", "parts": ["python3 - <<'EOF'\nimport sys\nprint(sys.argv)\nEOF\necho after"]}
-{"line": "cd app && python3 - <<EOF\nprint(1)\nEOF\nls", "parts": ["cd app", "python3 - <<EOF\nprint(1)\nEOF\nls"]}
+{"line": "python3 - <<'EOF'\nimport sys\nprint(sys.argv)\nEOF\necho after", "parts": ["python3 - <<'EOF'\nimport sys\nprint(sys.argv)\nEOF", "echo after"]}
+{"line": "cd app && python3 - <<EOF\nprint(1)\nEOF\nls", "parts": ["cd app", "python3 - <<EOF\nprint(1)\nEOF", "ls"]}
 {"line": "export A=1; python3 - <<'EOF'\nimport os\nprint(os.environ['A'])\nEOF", "parts": ["export A=1", "python3 - <<'EOF'\nimport os\nprint(os.environ['A'])\nEOF"]}
 {"line": "python3 - <<-EOF\n\tprint(1)\n\tEOF", "parts": ["python3 - <<-EOF\n\tprint(1)\n\tEOF"]}
 {"line": "cd x && python3 - <<-'PY'\n\timport os\n\tprint(os.name)\n\tPY", "parts": ["cd x", "python3 - <<-'PY'\n\timport os\n\tprint(os.name)\n\tPY"]}
@@ -1983,9 +1983,9 @@
 {"line": "cd tests && python3 - <<'EOF'\nimport os\nprint(sorted(os.listdir('.')))\nEOF", "parts": ["cd tests", "python3 - <<'EOF'\nimport os\nprint(sorted(os.listdir('.')))\nEOF"]}
 {"line": "python3 - <<EOF\nimport os\nprint(os.environ['HOME'])\nEOF", "parts": ["python3 - <<EOF\nimport os\nprint(os.environ['HOME'])\nEOF"]}
 {"line": "python3 - << 'EOF'\nprint(2)\nEOF", "parts": ["python3 - << 'EOF'\nprint(2)\nEOF"]}
-{"line": "python3 - <<'EOF'\nprint(1)\nEOF\npython3 - <<'EOF'\nprint(2)\nEOF", "parts": ["python3 - <<'EOF'\nprint(1)\nEOF\npython3 - <<'EOF'\nprint(2)\nEOF"]}
-{"line": "cd a && python3 - <<'EOF'\nprint(1)\nEOF\ncd .. && ls", "parts": ["cd a", "python3 - <<'EOF'\nprint(1)\nEOF\ncd .. && ls"], "shell": "the shell runs ls as its own command after the heredoc ends; the splitter keeps everything after the heredoc marker in one part"}
-{"line": "python3 - <<'EOF'\nprint(1)\nEOF\nls; pwd", "parts": ["python3 - <<'EOF'\nprint(1)\nEOF\nls; pwd"], "shell": "the shell runs ls and pwd as separate commands after the heredoc; the splitter does not split after a heredoc marker"}
+{"line": "python3 - <<'EOF'\nprint(1)\nEOF\npython3 - <<'EOF'\nprint(2)\nEOF", "parts": ["python3 - <<'EOF'\nprint(1)\nEOF", "python3 - <<'EOF'\nprint(2)\nEOF"]}
+{"line": "cd a && python3 - <<'EOF'\nprint(1)\nEOF\ncd .. && ls", "parts": ["cd a", "python3 - <<'EOF'\nprint(1)\nEOF", "cd ..", "ls"], "shell": "the shell runs ls as its own command after the heredoc ends; the splitter keeps everything after the heredoc marker in one part"}
+{"line": "python3 - <<'EOF'\nprint(1)\nEOF\nls; pwd", "parts": ["python3 - <<'EOF'\nprint(1)\nEOF", "ls", "pwd"], "shell": "the shell runs ls and pwd as separate commands after the heredoc; the splitter does not split after a heredoc marker"}
 {"line": "echo start && python3 - <<'EOF' && echo end\nprint(1)\nEOF", "parts": ["echo start", "python3 - <<'EOF' && echo end\nprint(1)\nEOF"], "shell": "the shell runs echo end as a separate command after the heredoc command"}
 {"line": "python3 - <<'EOF'; echo $?\nprint(1)\nEOF", "parts": ["python3 - <<'EOF'; echo $?\nprint(1)\nEOF"], "shell": "the shell runs echo $? as a separate command after the heredoc command"}
 {"line": "python3 - <<'EOF'\nx = \"a && b; c\"\nprint(x)\nEOF", "parts": ["python3 - <<'EOF'\nx = \"a && b; c\"\nprint(x)\nEOF"]}
@@ -2019,7 +2019,7 @@
 {"line": "cat <<-EOF > out.txt\n\thi\n\tEOF", "parts": ["cat <<-EOF > out.txt\n\thi\n\tEOF"]}
 {"line": "cat > x.sh <<'EOF'\n#!/bin/sh\necho a; echo b\nEOF", "parts": ["cat > x.sh <<'EOF'\n#!/bin/sh\necho a; echo b\nEOF"]}
 {"line": "cat > x.sh <<'EOF' && chmod +x x.sh\n#!/bin/sh\necho hi\nEOF", "parts": ["cat > x.sh <<'EOF' && chmod +x x.sh\n#!/bin/sh\necho hi\nEOF"], "shell": "the shell runs chmod +x x.sh as a separate command after the heredoc command"}
-{"line": "cat > x.sh <<'EOF'\n#!/bin/sh\nEOF\nchmod +x x.sh && ./x.sh", "parts": ["cat > x.sh <<'EOF'\n#!/bin/sh\nEOF\nchmod +x x.sh && ./x.sh"], "shell": "the shell runs chmod and ./x.sh as two commands after the heredoc; the splitter does not split after a heredoc marker"}
+{"line": "cat > x.sh <<'EOF'\n#!/bin/sh\nEOF\nchmod +x x.sh && ./x.sh", "parts": ["cat > x.sh <<'EOF'\n#!/bin/sh\nEOF", "chmod +x x.sh", "./x.sh"], "shell": "the shell runs chmod and ./x.sh as two commands after the heredoc; the splitter does not split after a heredoc marker"}
 {"line": "cat > a.txt <<EOF; cat a.txt\nx\nEOF", "parts": ["cat > a.txt <<EOF; cat a.txt\nx\nEOF"], "shell": "the shell runs cat a.txt as a separate command after the heredoc command"}
 {"line": "tee a.txt <<EOF\nhi\nEOF", "parts": ["tee a.txt <<EOF\nhi\nEOF"]}
 {"line": "tee -a log.txt <<'EOF' > /dev/null\nline\nEOF", "parts": ["tee -a log.txt <<'EOF' > /dev/null\nline\nEOF"]}
@@ -2041,11 +2041,11 @@
 {"line": "cat >a.txt<<EOF\nx\nEOF", "parts": ["cat >a.txt<<EOF\nx\nEOF"]}
 {"line": "cat >a.txt <<EOF&&echo ok\nx\nEOF", "parts": ["cat >a.txt <<EOF&&echo ok\nx\nEOF"], "shell": "the shell runs echo ok as a separate command after the heredoc command"}
 {"line": "git add -A && cat > MSG <<'EOF'\nfix\nEOF", "parts": ["git add -A", "cat > MSG <<'EOF'\nfix\nEOF"]}
-{"line": "cat > a.txt <<EOF\nx\nEOF\ncat a.txt", "parts": ["cat > a.txt <<EOF\nx\nEOF\ncat a.txt"]}
-{"line": "cat > a.txt <<EOF\nx\nEOF\ncat a.txt && rm a.txt", "parts": ["cat > a.txt <<EOF\nx\nEOF\ncat a.txt && rm a.txt"], "shell": "the shell runs cat a.txt and rm a.txt as two chained commands after the heredoc"}
-{"line": "cat > a.txt <<EOF\nx\nEOF\n# done; cleanup && more\nrm a.txt", "parts": ["cat > a.txt <<EOF\nx\nEOF\n# done; cleanup && more\nrm a.txt"]}
+{"line": "cat > a.txt <<EOF\nx\nEOF\ncat a.txt", "parts": ["cat > a.txt <<EOF\nx\nEOF", "cat a.txt"]}
+{"line": "cat > a.txt <<EOF\nx\nEOF\ncat a.txt && rm a.txt", "parts": ["cat > a.txt <<EOF\nx\nEOF", "cat a.txt", "rm a.txt"], "shell": "the shell runs cat a.txt and rm a.txt as two chained commands after the heredoc"}
+{"line": "cat > a.txt <<EOF\nx\nEOF\n# done; cleanup && more\nrm a.txt", "parts": ["cat > a.txt <<EOF\nx\nEOF", "# done; cleanup && more\nrm a.txt"]}
 {"line": "cat <<EOF >> ~/.zshrc\nalias a='b; c'\nEOF", "parts": ["cat <<EOF >> ~/.zshrc\nalias a='b; c'\nEOF"]}
-{"line": "cat > t.py <<'EOF'\nimport os; print(os.name)\nEOF\npython3 t.py; rm t.py", "parts": ["cat > t.py <<'EOF'\nimport os; print(os.name)\nEOF\npython3 t.py; rm t.py"], "shell": "the shell runs python3 t.py and rm t.py as separate commands after the heredoc"}
+{"line": "cat > t.py <<'EOF'\nimport os; print(os.name)\nEOF\npython3 t.py; rm t.py", "parts": ["cat > t.py <<'EOF'\nimport os; print(os.name)\nEOF", "python3 t.py", "rm t.py"], "shell": "the shell runs python3 t.py and rm t.py as separate commands after the heredoc"}
 {"line": "printf '%s\\n' a b > f; cat > g <<EOF\nx\nEOF", "parts": ["printf '%s\\n' a b > f", "cat > g <<EOF\nx\nEOF"]}
 {"line": "echo done > f && cat >> f <<EOF\nmore\nEOF", "parts": ["echo done > f", "cat >> f <<EOF\nmore\nEOF"]}
 {"line": "cat > a <<EOF\n$(date; echo x)\nEOF", "parts": ["cat > a <<EOF\n$(date; echo x)\nEOF"]}
@@ -2085,9 +2085,9 @@
 {"line": "git commit -m \"$(cat <<'EOF'\nline1\n\nline2; line3\nEOF\n)\"; echo $?", "parts": ["git commit -m \"$(cat <<'EOF'\nline1\n\nline2; line3\nEOF\n)\"", "echo $?"]}
 {"line": "x=$(cat <<EOF\nhi\nEOF\n) && echo $x", "parts": ["x=$(cat <<EOF\nhi\nEOF\n)", "echo $x"]}
 {"line": "x=$(cat <<EOF\nit's\nEOF\n) && echo $x", "parts": ["x=$(cat <<EOF\nit's\nEOF\n) && echo $x"], "shell": "the apostrophe in the heredoc body inside $( ) opens a quote the splitter never sees closed, so the && is not split; the shell splits it"}
-{"line": "cat > f <<'EOF'\nx\nEOF\ngit add f && git commit -m f", "parts": ["cat > f <<'EOF'\nx\nEOF\ngit add f && git commit -m f"], "shell": "the shell runs git add f and git commit as two chained commands after the heredoc"}
-{"line": "git commit -F - <<'EOF'\nmsg\nEOF\ngit push", "parts": ["git commit -F - <<'EOF'\nmsg\nEOF\ngit push"]}
-{"line": "git commit -F - <<'EOF'\nmsg\nEOF\ngit push && git status", "parts": ["git commit -F - <<'EOF'\nmsg\nEOF\ngit push && git status"], "shell": "the shell runs git push and git status as two chained commands after the heredoc"}
+{"line": "cat > f <<'EOF'\nx\nEOF\ngit add f && git commit -m f", "parts": ["cat > f <<'EOF'\nx\nEOF", "git add f", "git commit -m f"], "shell": "the shell runs git add f and git commit as two chained commands after the heredoc"}
+{"line": "git commit -F - <<'EOF'\nmsg\nEOF\ngit push", "parts": ["git commit -F - <<'EOF'\nmsg\nEOF", "git push"]}
+{"line": "git commit -F - <<'EOF'\nmsg\nEOF\ngit push && git status", "parts": ["git commit -F - <<'EOF'\nmsg\nEOF", "git push", "git status"], "shell": "the shell runs git push and git status as two chained commands after the heredoc"}
 {"line": "git -C repo commit -F - <<EOF\nm\nEOF", "parts": ["git -C repo commit -F - <<EOF\nm\nEOF"]}
 {"line": "cd repo && git commit -F - <<EOF\nm\nEOF", "parts": ["cd repo", "git commit -F - <<EOF\nm\nEOF"]}
 {"line": "cd repo; git commit -F - <<EOF\nm\nEOF", "parts": ["cd repo", "git commit -F - <<EOF\nm\nEOF"]}
@@ -2311,9 +2311,9 @@
 {"line": "ruby <<< 'puts 1; puts 2' ; echo $?", "parts": ["ruby <<< 'puts 1; puts 2'", "echo $?"]}
 {"line": "cat <<A <<B\na\nA\nb\nB", "parts": ["cat <<A <<B\na\nA\nb\nB"]}
 {"line": "cat <<EOF1 && cat <<EOF2\na\nEOF1\nb\nEOF2", "parts": ["cat <<EOF1 && cat <<EOF2\na\nEOF1\nb\nEOF2"], "shell": "the shell runs the second cat as a chained command; the splitter keeps it in the heredoc part"}
-{"line": "cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF", "parts": ["cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF"]}
-{"line": "cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF\nls && pwd", "parts": ["cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF\nls && pwd"], "shell": "the shell runs ls and pwd as two chained commands after the heredocs"}
-{"line": "cd d && cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF", "parts": ["cd d", "cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF"]}
+{"line": "cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF", "parts": ["cat > a <<EOF\nx\nEOF", "cat > b <<EOF\ny\nEOF"]}
+{"line": "cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF\nls && pwd", "parts": ["cat > a <<EOF\nx\nEOF", "cat > b <<EOF\ny\nEOF", "ls", "pwd"], "shell": "the shell runs ls and pwd as two chained commands after the heredocs"}
+{"line": "cd d && cat > a <<EOF\nx\nEOF\ncat > b <<EOF\ny\nEOF", "parts": ["cd d", "cat > a <<EOF\nx\nEOF", "cat > b <<EOF\ny\nEOF"]}
 {"line": "tee a <<EOF >/dev/null\nx\nEOF", "parts": ["tee a <<EOF >/dev/null\nx\nEOF"]}
 {"line": "tee a.txt <<-EOF\n\tx\n\tEOF", "parts": ["tee a.txt <<-EOF\n\tx\n\tEOF"]}
 {"line": "cat <<-'EOF'\n\tone\n\ttwo\n\tEOF", "parts": ["cat <<-'EOF'\n\tone\n\ttwo\n\tEOF"]}
@@ -2345,7 +2345,7 @@
 {"line": "cat > a <<'EOF'\n\nEOF", "parts": ["cat > a <<'EOF'\n\nEOF"]}
 {"line": "cat > a <<EOF\nEOF", "parts": ["cat > a <<EOF\nEOF"]}
 {"line": "cat <<EOF >a.txt\nx\nEOF", "parts": ["cat <<EOF >a.txt\nx\nEOF"]}
-{"line": "echo a; cat <<EOF\nx\nEOF\necho b ; echo c", "parts": ["echo a", "cat <<EOF\nx\nEOF\necho b ; echo c"], "shell": "the shell runs echo b and echo c as separate commands after the heredoc"}
+{"line": "echo a; cat <<EOF\nx\nEOF\necho b ; echo c", "parts": ["echo a", "cat <<EOF\nx\nEOF", "echo b", "echo c"], "shell": "the shell runs echo b and echo c as separate commands after the heredoc"}
 {"line": "cd d; cat <<EOF\nx\nEOF", "parts": ["cd d", "cat <<EOF\nx\nEOF"]}
 {"line": "cat <<EOF\n#not comment\nEOF", "parts": ["cat <<EOF\n#not comment\nEOF"]}
 {"line": "cat <<EOF # note; ignored\nx\nEOF", "parts": ["cat <<EOF # note; ignored\nx\nEOF"]}
@@ -2604,7 +2604,7 @@
 {"line": "python3 <<EOF\nimport os; print(os.getcwd())\nEOF", "parts": ["python3 <<EOF\nimport os; print(os.getcwd())\nEOF"]}
 {"line": "cd src && python3 - <<'EOF'\nimport journal; print(journal)\nEOF", "parts": ["cd src", "python3 - <<'EOF'\nimport journal; print(journal)\nEOF"]}
 {"line": "python3 - <<'PY' && echo after\nprint(1)\nPY", "parts": ["python3 - <<'PY' && echo after\nprint(1)\nPY"], "shell": "&& echo after on the heredoc line is a real chain; the splitter keeps it inside the heredoc part"}
-{"line": "python3 - <<'EOF'\nprint(1)\nEOF\necho after", "parts": ["python3 - <<'EOF'\nprint(1)\nEOF\necho after"], "shell": "echo after is a separate command in a shell; the splitter keeps it in the heredoc part"}
+{"line": "python3 - <<'EOF'\nprint(1)\nEOF\necho after", "parts": ["python3 - <<'EOF'\nprint(1)\nEOF", "echo after"], "shell": "echo after is a separate command in a shell; the splitter keeps it in the heredoc part"}
 {"line": "cd /tmp && ls; python3 - <<EOF\nprint(\"x\")\nEOF", "parts": ["cd /tmp", "ls", "python3 - <<EOF\nprint(\"x\")\nEOF"]}
 {"line": "source venv/bin/activate && python3 - <<'EOF'\nimport sys; print(sys.prefix)\nEOF\n", "parts": ["source venv/bin/activate", "python3 - <<'EOF'\nimport sys; print(sys.prefix)\nEOF"]}
 {"line": "python3 - arg1 arg2 <<'EOF'\nimport sys; print(sys.argv[1:])\nEOF", "parts": ["python3 - arg1 arg2 <<'EOF'\nimport sys; print(sys.argv[1:])\nEOF"]}
@@ -2620,7 +2620,7 @@
 {"line": "python3 - <<'A' && python3 - <<'B'\nprint(1)\nA\nprint(2)\nB", "parts": ["python3 - <<'A' && python3 - <<'B'\nprint(1)\nA\nprint(2)\nB"], "shell": "a shell runs two chained commands, each with its own heredoc; the splitter keeps one part"}
 {"line": "python3 <<'EOF' || echo failed\nraise SystemExit(1)\nEOF", "parts": ["python3 <<'EOF' || echo failed\nraise SystemExit(1)\nEOF"]}
 {"line": "python3 - <<EOF\nname = \"$USER\"\nprint(name); print(\"done\")\nEOF", "parts": ["python3 - <<EOF\nname = \"$USER\"\nprint(name); print(\"done\")\nEOF"]}
-{"line": "cd /tmp && python3 - <<'EOF'\nimport json\njson.dump({\"a\": [1, 2]}, open(\"o.json\", \"w\"))\nEOF\ncat o.json", "parts": ["cd /tmp", "python3 - <<'EOF'\nimport json\njson.dump({\"a\": [1, 2]}, open(\"o.json\", \"w\"))\nEOF\ncat o.json"], "shell": "cat o.json runs after the heredoc in a shell; the splitter keeps it in the heredoc part"}
+{"line": "cd /tmp && python3 - <<'EOF'\nimport json\njson.dump({\"a\": [1, 2]}, open(\"o.json\", \"w\"))\nEOF\ncat o.json", "parts": ["cd /tmp", "python3 - <<'EOF'\nimport json\njson.dump({\"a\": [1, 2]}, open(\"o.json\", \"w\"))\nEOF", "cat o.json"], "shell": "cat o.json runs after the heredoc in a shell; the splitter keeps it in the heredoc part"}
 {"line": "python3 - <<'EOF'\nfor i in range(3):\n    print(i); print(i * 2)\nEOF", "parts": ["python3 - <<'EOF'\nfor i in range(3):\n    print(i); print(i * 2)\nEOF"]}
 {"line": "python3 - <<'EOF'\nif True:\n    print(\"fi\")\nEOF", "parts": ["python3 - <<'EOF'\nif True:\n    print(\"fi\")\nEOF"]}
 {"line": "mkdir -p out && cd out && python3 - <<'EOF'\nopen(\"a.txt\", \"w\").write(\"a && b; c\")\nEOF", "parts": ["mkdir -p out", "cd out", "python3 - <<'EOF'\nopen(\"a.txt\", \"w\").write(\"a && b; c\")\nEOF"]}
@@ -2636,7 +2636,7 @@
 {"line": "python3 - <<'EOF'\n# comment ; with && stuff\nprint(1)\nEOF", "parts": ["python3 - <<'EOF'\n# comment ; with && stuff\nprint(1)\nEOF"]}
 {"line": "python3 - << 'EOF'\nprint(1)\nEOF", "parts": ["python3 - << 'EOF'\nprint(1)\nEOF"]}
 {"line": "python3 - <<\\EOF\nprint(1)\nEOF", "parts": ["python3 - <<\\EOF\nprint(1)\nEOF"]}
-{"line": "echo start; python3 - <<'EOF'\nprint(1)\nEOF\necho end; echo really", "parts": ["echo start", "python3 - <<'EOF'\nprint(1)\nEOF\necho end; echo really"], "shell": "echo end and echo really are separate commands after the heredoc; the splitter keeps them in the heredoc part"}
+{"line": "echo start; python3 - <<'EOF'\nprint(1)\nEOF\necho end; echo really", "parts": ["echo start", "python3 - <<'EOF'\nprint(1)\nEOF", "echo end", "echo really"], "shell": "echo end and echo really are separate commands after the heredoc; the splitter keeps them in the heredoc part"}
 {"line": "python3 - <<'EOF' && echo ok || echo bad\nprint(1)\nEOF", "parts": ["python3 - <<'EOF' && echo ok || echo bad\nprint(1)\nEOF"], "shell": "&& echo ok is a real chain on the heredoc line; the splitter keeps it in the heredoc part"}
 {"line": "cat file.py | python3 - <<'EOF'\nprint(1)\nEOF", "parts": ["cat file.py | python3 - <<'EOF'\nprint(1)\nEOF"]}
 {"line": "cd a && cd b && cd c && python3 - <<'EOF'\nprint(1)\nEOF", "parts": ["cd a", "cd b", "cd c", "python3 - <<'EOF'\nprint(1)\nEOF"]}
@@ -2645,7 +2645,7 @@
 {"line": "result=$(python3 - <<'EOF'\nprint(1)\nEOF\n) && echo \"$result\"", "parts": ["result=$(python3 - <<'EOF'\nprint(1)\nEOF\n)", "echo \"$result\""]}
 {"line": "out=$(cd src && python3 - <<'EOF'\nprint(\"a;b\")\nEOF\n); echo \"$out\"; echo end", "parts": ["out=$(cd src && python3 - <<'EOF'\nprint(\"a;b\")\nEOF\n)", "echo \"$out\"", "echo end"]}
 {"line": "python3 - <<'EOF'\nprint(\"don't\")\nEOF", "parts": ["python3 - <<'EOF'\nprint(\"don't\")\nEOF"]}
-{"line": "cd /tmp; python3 - <<'EOF'\nprint(1)\nEOF\nrm -f x; ls", "parts": ["cd /tmp", "python3 - <<'EOF'\nprint(1)\nEOF\nrm -f x; ls"], "shell": "rm -f x and ls are separate commands after the heredoc; the splitter keeps them in the heredoc part"}
+{"line": "cd /tmp; python3 - <<'EOF'\nprint(1)\nEOF\nrm -f x; ls", "parts": ["cd /tmp", "python3 - <<'EOF'\nprint(1)\nEOF", "rm -f x", "ls"], "shell": "rm -f x and ls are separate commands after the heredoc; the splitter keeps them in the heredoc part"}
 {"line": "for f in a b; do python3 - \"$f\" <<'EOF'\nimport sys; print(sys.argv[1])\nEOF\ndone", "parts": ["for f in a b; do python3 - \"$f\" <<'EOF'\nimport sys; print(sys.argv[1])\nEOF\ndone"]}
 {"line": "python3 - <<'EOF'\nprint(1)\nEOF && echo ok", "parts": ["python3 - <<'EOF'\nprint(1)\nEOF && echo ok"], "shell": "a shell reads EOF && echo ok as heredoc body text, never as a chain; the splitter agrees"}
 {"line": "echo 'a; b' && python3 - <<'EOF'\nprint(2)\nEOF", "parts": ["echo 'a; b'", "python3 - <<'EOF'\nprint(2)\nEOF"]}
@@ -2655,7 +2655,7 @@
 {"line": "python3 - <<'EOF'\nimport os\nos.system(\"ls; pwd && date\")\nEOF", "parts": ["python3 - <<'EOF'\nimport os\nos.system(\"ls; pwd && date\")\nEOF"]}
 {"line": "python3 - <<'EOF'\nx = '''a\nb'''\nprint(x)\nEOF", "parts": ["python3 - <<'EOF'\nx = '''a\nb'''\nprint(x)\nEOF"]}
 {"line": "python3 - <<'EOF'\nprint(\"<<EOF\")\nEOF", "parts": ["python3 - <<'EOF'\nprint(\"<<EOF\")\nEOF"]}
-{"line": "python3 - <<EOF\nimport os\nprint(os.getcwd())\nEOF\nls; pwd", "parts": ["python3 - <<EOF\nimport os\nprint(os.getcwd())\nEOF\nls; pwd"], "shell": "ls and pwd are separate commands after the heredoc; the splitter keeps them in the heredoc part"}
+{"line": "python3 - <<EOF\nimport os\nprint(os.getcwd())\nEOF\nls; pwd", "parts": ["python3 - <<EOF\nimport os\nprint(os.getcwd())\nEOF", "ls", "pwd"], "shell": "ls and pwd are separate commands after the heredoc; the splitter keeps them in the heredoc part"}
 {"line": "perl -pi -e 's/foo/bar/g; s/x;y/z/' file.txt && git diff --stat", "parts": ["perl -pi -e 's/foo/bar/g; s/x;y/z/' file.txt", "git diff --stat"]}
 {"line": "perl -ne 'print if /a/ && /b/' f.txt", "parts": ["perl -ne 'print if /a/ && /b/' f.txt"]}
 {"line": "perl -pi -e 's/\\bfoo\\b/bar/' a.txt b.txt; echo done", "parts": ["perl -pi -e 's/\\bfoo\\b/bar/' a.txt b.txt", "echo done"]}
@@ -2695,7 +2695,7 @@
 {"line": "php -r 'foreach ([1,2] as $i) { echo $i; }'", "parts": ["php -r 'foreach ([1,2] as $i) { echo $i; }'"]}
 {"line": "perl -e '$x = 1; print $x' | cat", "parts": ["perl -e '$x = 1; print $x' | cat"]}
 {"line": "ruby <<EOF\nputs \"#{1 + 1}\"; puts 2\nEOF", "parts": ["ruby <<EOF\nputs \"#{1 + 1}\"; puts 2\nEOF"]}
-{"line": "cd /tmp && ruby - <<'EOF'\nputs 1\nEOF\nputs-not-a-cmd", "parts": ["cd /tmp", "ruby - <<'EOF'\nputs 1\nEOF\nputs-not-a-cmd"], "shell": "the last line is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
+{"line": "cd /tmp && ruby - <<'EOF'\nputs 1\nEOF\nputs-not-a-cmd", "parts": ["cd /tmp", "ruby - <<'EOF'\nputs 1\nEOF", "puts-not-a-cmd"], "shell": "the last line is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
 {"line": "node --input-type=module -e 'import fs from \"fs\"; console.log(typeof fs)'", "parts": ["node --input-type=module -e 'import fs from \"fs\"; console.log(typeof fs)'"]}
 {"line": "perl -E 'say 1; say 2' && echo ok", "parts": ["perl -E 'say 1; say 2'", "echo ok"]}
 {"line": "perl -ple 's/(\\d+)/$1+1/e' <<< \"5; 6\"", "parts": ["perl -ple 's/(\\d+)/$1+1/e' <<< \"5; 6\""]}
@@ -2867,11 +2867,11 @@
 {"line": "git commit --amend --no-edit && git push --force-with-lease", "parts": ["git commit --amend --no-edit", "git push --force-with-lease"]}
 {"line": "git tag -a v1 -F - <<EOF\nrelease; notes\nEOF", "parts": ["git tag -a v1 -F - <<EOF\nrelease; notes\nEOF"]}
 {"line": "cd repo && git commit -F- <<'EOF'\nmsg\nEOF", "parts": ["cd repo", "git commit -F- <<'EOF'\nmsg\nEOF"]}
-{"line": "cat > /tmp/a.py <<'EOF'\nimport os; print(os.getcwd())\nEOF\npython3 /tmp/a.py", "parts": ["cat > /tmp/a.py <<'EOF'\nimport os; print(os.getcwd())\nEOF\npython3 /tmp/a.py"], "shell": "python3 /tmp/a.py is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
-{"line": "cat > /tmp/a.py <<'EOF'\nprint(1)\nEOF\npython3 /tmp/a.py && rm /tmp/a.py", "parts": ["cat > /tmp/a.py <<'EOF'\nprint(1)\nEOF\npython3 /tmp/a.py && rm /tmp/a.py"], "shell": "python3 and rm are a chain after the heredoc; the splitter keeps them in the heredoc part"}
+{"line": "cat > /tmp/a.py <<'EOF'\nimport os; print(os.getcwd())\nEOF\npython3 /tmp/a.py", "parts": ["cat > /tmp/a.py <<'EOF'\nimport os; print(os.getcwd())\nEOF", "python3 /tmp/a.py"], "shell": "python3 /tmp/a.py is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
+{"line": "cat > /tmp/a.py <<'EOF'\nprint(1)\nEOF\npython3 /tmp/a.py && rm /tmp/a.py", "parts": ["cat > /tmp/a.py <<'EOF'\nprint(1)\nEOF", "python3 /tmp/a.py", "rm /tmp/a.py"], "shell": "python3 and rm are a chain after the heredoc; the splitter keeps them in the heredoc part"}
 {"line": "mkdir -p d && cat > d/a.txt <<'EOF'\nx\nEOF", "parts": ["mkdir -p d", "cat > d/a.txt <<'EOF'\nx\nEOF"]}
-{"line": "cd d && cat > a.txt <<'EOF'\nx\nEOF\ncat a.txt", "parts": ["cd d", "cat > a.txt <<'EOF'\nx\nEOF\ncat a.txt"], "shell": "cat a.txt is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
-{"line": "cat > a.sh <<'EOF'\n#!/bin/bash\nset -e; echo a && echo b\nEOF\nchmod +x a.sh && ./a.sh", "parts": ["cat > a.sh <<'EOF'\n#!/bin/bash\nset -e; echo a && echo b\nEOF\nchmod +x a.sh && ./a.sh"], "shell": "chmod and ./a.sh are a chain after the heredoc; the splitter keeps them in the heredoc part"}
+{"line": "cd d && cat > a.txt <<'EOF'\nx\nEOF\ncat a.txt", "parts": ["cd d", "cat > a.txt <<'EOF'\nx\nEOF", "cat a.txt"], "shell": "cat a.txt is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
+{"line": "cat > a.sh <<'EOF'\n#!/bin/bash\nset -e; echo a && echo b\nEOF\nchmod +x a.sh && ./a.sh", "parts": ["cat > a.sh <<'EOF'\n#!/bin/bash\nset -e; echo a && echo b\nEOF", "chmod +x a.sh", "./a.sh"], "shell": "chmod and ./a.sh are a chain after the heredoc; the splitter keeps them in the heredoc part"}
 {"line": "cat <<EOF\nValue: $(date; echo x)\nEOF", "parts": ["cat <<EOF\nValue: $(date; echo x)\nEOF"]}
 {"line": "cat <<'EOF' > /dev/null\nEOF", "parts": ["cat <<'EOF' > /dev/null\nEOF"]}
 {"line": "cat <<EOF\nEOF", "parts": ["cat <<EOF\nEOF"]}
@@ -2892,7 +2892,7 @@
 {"line": "printf 'a\\nb\\n' > f && cat f", "parts": ["printf 'a\\nb\\n' > f", "cat f"]}
 {"line": "printf '%s; ' a b c; echo", "parts": ["printf '%s; ' a b c", "echo"]}
 {"line": "echo -e 'a\\nb' | while read l; do echo \"[$l]\"; done", "parts": ["echo -e 'a\\nb' | while read l; do echo \"[$l]\"; done"]}
-{"line": "cat <<EOF > a.txt\nx\nEOF\ncat a.txt | wc -l\necho done", "parts": ["cat <<EOF > a.txt\nx\nEOF\ncat a.txt | wc -l\necho done"], "shell": "the later lines are separate commands after the heredoc; the splitter keeps them in the heredoc part"}
+{"line": "cat <<EOF > a.txt\nx\nEOF\ncat a.txt | wc -l\necho done", "parts": ["cat <<EOF > a.txt\nx\nEOF", "cat a.txt | wc -l", "echo done"], "shell": "the later lines are separate commands after the heredoc; the splitter keeps them in the heredoc part"}
 {"line": "cat <<'EOF'\nline with 'quotes' and \"quotes\"\nEOF", "parts": ["cat <<'EOF'\nline with 'quotes' and \"quotes\"\nEOF"]}
 {"line": "cat <<EOF\nunbalanced ' quote\nEOF", "parts": ["cat <<EOF\nunbalanced ' quote\nEOF"]}
 {"line": "cat <<EOF\nunbalanced \" quote\nEOF", "parts": ["cat <<EOF\nunbalanced \" quote\nEOF"]}
@@ -2904,7 +2904,7 @@
 {"line": "eval \"$(cat <<'EOF'\necho a; echo b\nEOF\n)\"", "parts": ["eval \"$(cat <<'EOF'\necho a; echo b\nEOF\n)\""]}
 {"line": "source <(cat <<'EOF'\nexport A=1; export B=2\nEOF\n) && echo $A", "parts": ["source <(cat <<'EOF'\nexport A=1; export B=2\nEOF\n)", "echo $A"]}
 {"line": "export MSG=\"$(cat <<'EOF'\nhello; world\nEOF\n)\"; echo \"$MSG\"", "parts": ["export MSG=\"$(cat <<'EOF'\nhello; world\nEOF\n)\"", "echo \"$MSG\""]}
-{"line": "read -r -d '' VAR <<'EOF'\ntext; more\nEOF\necho \"$VAR\"", "parts": ["read -r -d '' VAR <<'EOF'\ntext; more\nEOF\necho \"$VAR\""], "shell": "echo \"$VAR\" is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
+{"line": "read -r -d '' VAR <<'EOF'\ntext; more\nEOF\necho \"$VAR\"", "parts": ["read -r -d '' VAR <<'EOF'\ntext; more\nEOF", "echo \"$VAR\""], "shell": "echo \"$VAR\" is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
 {"line": "cat <<EOF >out && cat out\nx\nEOF", "parts": ["cat <<EOF >out && cat out\nx\nEOF"], "shell": "&& cat out on the heredoc line is a real chain; the splitter keeps it in the heredoc part"}
 {"line": "diff <(echo a; echo b) <(echo a) && echo same || echo differ", "parts": ["diff <(echo a; echo b) <(echo a)", "echo same || echo differ"]}
 {"line": "diff - a.txt <<EOF\nx\nEOF", "parts": ["diff - a.txt <<EOF\nx\nEOF"]}
@@ -2912,18 +2912,18 @@
 {"line": "cat <<EOF\n# not a comment; here\nEOF", "parts": ["cat <<EOF\n# not a comment; here\nEOF"]}
 {"line": "echo start # comment\ncat <<EOF\nbody\nEOF", "parts": ["echo start # comment", "cat <<EOF\nbody\nEOF"]}
 {"line": "cat <<EOF # trailing comment\nbody\nEOF", "parts": ["cat <<EOF # trailing comment\nbody\nEOF"]}
-{"line": "cat <<'EOF'\nline1\nEOF\n\ncat <<'EOF'\nline2\nEOF", "parts": ["cat <<'EOF'\nline1\nEOF\n\ncat <<'EOF'\nline2\nEOF"]}
+{"line": "cat <<'EOF'\nline1\nEOF\n\ncat <<'EOF'\nline2\nEOF", "parts": ["cat <<'EOF'\nline1\nEOF", "cat <<'EOF'\nline2\nEOF"]}
 {"line": "cat > a <<EOF; cat > b <<EOF2\nA\nEOF\nB\nEOF2", "parts": ["cat > a <<EOF; cat > b <<EOF2\nA\nEOF\nB\nEOF2"], "shell": "a shell runs two commands with a heredoc each; the splitter keeps one part"}
 {"line": "{ cat <<EOF\nx\nEOF\n} && echo ok", "parts": ["{ cat <<EOF\nx\nEOF\n}", "echo ok"]}
 {"line": "(cat <<EOF\nx\nEOF\n) && echo ok", "parts": ["(cat <<EOF\nx\nEOF\n)", "echo ok"]}
 {"line": "if true; then cat <<EOF\nx\nEOF\nfi", "parts": ["if true; then cat <<EOF\nx\nEOF\nfi"]}
 {"line": "if grep -q a f; then cat <<EOF\nfound\nEOF\nfi && echo done", "parts": ["if grep -q a f; then cat <<EOF\nfound\nEOF\nfi && echo done"], "shell": "&& echo done after fi is a real chain; the splitter keeps it in the heredoc part"}
-{"line": "cat <<EOF\nx\nEOF\n\n# trailing comment", "parts": ["cat <<EOF\nx\nEOF\n\n# trailing comment"]}
+{"line": "cat <<EOF\nx\nEOF\n\n# trailing comment", "parts": ["cat <<EOF\nx\nEOF", "# trailing comment"]}
 {"line": "cat < a.txt > b.txt && cat b.txt", "parts": ["cat < a.txt > b.txt", "cat b.txt"]}
 {"line": "cat a.txt >> b.txt << EOF\nx\nEOF", "parts": ["cat a.txt >> b.txt << EOF\nx\nEOF"]}
 {"line": "wc -l < a.txt && echo ok", "parts": ["wc -l < a.txt", "echo ok"]}
 {"line": "sort < a.txt | uniq > b.txt; mv b.txt a.txt", "parts": ["sort < a.txt | uniq > b.txt", "mv b.txt a.txt"]}
-{"line": "exec 3<<EOF\nx\nEOF\ncat <&3", "parts": ["exec 3<<EOF\nx\nEOF\ncat <&3"], "shell": "cat <&3 is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
+{"line": "exec 3<<EOF\nx\nEOF\ncat <&3", "parts": ["exec 3<<EOF\nx\nEOF", "cat <&3"], "shell": "cat <&3 is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
 {"line": "cat <<EOF\n${HOME}\n$(echo a && echo b)\nEOF", "parts": ["cat <<EOF\n${HOME}\n$(echo a && echo b)\nEOF"]}
 {"line": "echo a && cat <<EOF && echo b\nx\nEOF", "parts": ["echo a", "cat <<EOF && echo b\nx\nEOF"], "shell": "&& echo b on the heredoc line is a real chain; the splitter keeps it in the heredoc part"}
 {"line": "cd /tmp && python3 -c 'print(1)' && python3 - <<'EOF'\nprint(2)\nEOF", "parts": ["cd /tmp", "python3 -c 'print(1)'", "python3 - <<'EOF'\nprint(2)\nEOF"]}
@@ -3004,7 +3004,7 @@
 {"line": "for i in 1 2; do echo done; done && echo fi", "parts": ["for i in 1 2; do echo done; done", "echo fi"]}
 {"line": "for i in 1 2; do echo $i; done # loop; comment", "parts": ["for i in 1 2; do echo $i; done # loop; comment"]}
 {"line": "for i in a b; do echo $i; done; # comment\necho z", "parts": ["for i in a b; do echo $i; done", "# comment\necho z"]}
-{"line": "echo start && python3 - <<'EOF'\nprint(1)\nEOF\nfor i in 1 2; do echo $i; done", "parts": ["echo start", "python3 - <<'EOF'\nprint(1)\nEOF\nfor i in 1 2; do echo $i; done"], "shell": "the for loop is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
+{"line": "echo start && python3 - <<'EOF'\nprint(1)\nEOF\nfor i in 1 2; do echo $i; done", "parts": ["echo start", "python3 - <<'EOF'\nprint(1)\nEOF", "for i in 1 2; do echo $i; done"], "shell": "the for loop is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
 {"line": "echo \"a\" && echo 'b' ; echo `c`; echo $(d)", "parts": ["echo \"a\"", "echo 'b'", "echo `c`", "echo $(d)"]}
 {"line": "xargs -I{} sh -c 'echo {}; echo {}' <<< \"a b\" && echo ok", "parts": ["xargs -I{} sh -c 'echo {}; echo {}' <<< \"a b\"", "echo ok"], "shell": "code check: the second < of <<< may read as a heredoc start and keep && echo ok in one part, against the stated here-string rule"}
 {"line": "find . -name \"*.py\" -print0 | xargs -0 grep -l 'a;b' || true; echo ok", "parts": ["find . -name \"*.py\" -print0 | xargs -0 grep -l 'a;b' || true", "echo ok"]}
@@ -3127,7 +3127,7 @@
 {"line": "journal task done 3 --summary \"a; b\" && journal plan ready 2", "parts": ["journal task done 3 --summary \"a; b\"", "journal plan ready 2"]}
 {"line": "journal message send \"x && y; z\" --reply-to 4", "parts": ["journal message send \"x && y; z\" --reply-to 4"]}
 {"line": "journal report add \"t\" --body-file - <<'EOF'\n# Report; title\n- a && b\nEOF", "parts": ["journal report add \"t\" --body-file - <<'EOF'\n# Report; title\n- a && b\nEOF"]}
-{"line": "journal doc create --title \"T\" <<'EOF'\nbody\nEOF\njournal doc list", "parts": ["journal doc create --title \"T\" <<'EOF'\nbody\nEOF\njournal doc list"], "shell": "journal doc list is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
+{"line": "journal doc create --title \"T\" <<'EOF'\nbody\nEOF\njournal doc list", "parts": ["journal doc create --title \"T\" <<'EOF'\nbody\nEOF", "journal doc list"], "shell": "journal doc list is a separate command after the heredoc; the splitter keeps it in the heredoc part"}
 {"line": "cd src && journal task list | head -3 && journal task show 1 | sed -n '1,5p'", "parts": ["cd src", "journal task list | head -3", "journal task show 1 | sed -n '1,5p'"]}
 {"line": "python3 src/journal.py --root .journal upgrade && journal status", "parts": ["python3 src/journal.py --root .journal upgrade", "journal status"]}
 {"line": ". ~/.zshrc; python3 -c 'print(1)'", "parts": [". ~/.zshrc", "python3 -c 'print(1)'"]}
@@ -3412,7 +3412,7 @@
 {"line": "python3 - <<'PY' && echo ok\nprint(1)\nPY", "parts": ["python3 - <<'PY' && echo ok\nprint(1)\nPY"], "shell": "the heredoc ends the splitting, so && echo ok stays in the python part; a real shell runs it as a second command"}
 {"line": "git add -A && git commit -F - <<EOF\nfix: a; b\nEOF", "parts": ["git add -A", "git commit -F - <<EOF\nfix: a; b\nEOF"]}
 {"line": "git commit -m \"$(cat <<'EOF'\nfix: a\n\nbody; with && stuff\nEOF\n)\" && git status", "parts": ["git commit -m \"$(cat <<'EOF'\nfix: a\n\nbody; with && stuff\nEOF\n)\"", "git status"]}
-{"line": "cat > f.sh <<'EOF'\n#!/bin/sh\necho a; echo b\nEOF\nchmod +x f.sh && ./f.sh", "parts": ["cat > f.sh <<'EOF'\n#!/bin/sh\necho a; echo b\nEOF\nchmod +x f.sh && ./f.sh"], "shell": "everything after the heredoc stays in one part, including the commands after the EOF line, which a real shell runs separately"}
+{"line": "cat > f.sh <<'EOF'\n#!/bin/sh\necho a; echo b\nEOF\nchmod +x f.sh && ./f.sh", "parts": ["cat > f.sh <<'EOF'\n#!/bin/sh\necho a; echo b\nEOF", "chmod +x f.sh", "./f.sh"], "shell": "everything after the heredoc stays in one part, including the commands after the EOF line, which a real shell runs separately"}
 {"line": "ssh host bash -s <<'EOF'\ncd /srv; ls\nEOF", "parts": ["ssh host bash -s <<'EOF'\ncd /srv; ls\nEOF"]}
 {"line": "ssh host 'bash -s' <<EOF\nls; pwd\nEOF", "parts": ["ssh host 'bash -s' <<EOF\nls; pwd\nEOF"]}
 {"line": "mysql -u root <<SQL\nuse app; show tables;\nSQL", "parts": ["mysql -u root <<SQL\nuse app; show tables;\nSQL"]}
@@ -3426,7 +3426,7 @@
 {"line": "grep -c '<<' f; echo $?", "parts": ["grep -c '<<' f", "echo $?"]}
 {"line": "grep \"<<EOF\" script.sh && echo has", "parts": ["grep \"<<EOF\" script.sh", "echo has"]}
 {"line": "docker exec -i db sh <<'EOF'\npsql -c 'select 1;'\nEOF", "parts": ["docker exec -i db sh <<'EOF'\npsql -c 'select 1;'\nEOF"]}
-{"line": "cat <<EOF\nline one\nEOF\necho after", "parts": ["cat <<EOF\nline one\nEOF\necho after"], "shell": "the heredoc takes everything after it, so echo after on the next line stays in the cat part; a real shell runs it as its own command"}
+{"line": "cat <<EOF\nline one\nEOF\necho after", "parts": ["cat <<EOF\nline one\nEOF", "echo after"], "shell": "the heredoc takes everything after it, so echo after on the next line stays in the cat part; a real shell runs it as its own command"}
 {"line": "pytest -q <<<\"\" && echo ok", "parts": ["pytest -q <<<\"\"", "echo ok"]}
 {"line": "cat <<EOF\n$(date; hostname)\nEOF", "parts": ["cat <<EOF\n$(date; hostname)\nEOF"]}
 {"line": "true && cat <<'A' && cat <<'B'\na\nA\nb\nB", "parts": ["true", "cat <<'A' && cat <<'B'\na\nA\nb\nB"], "shell": "the heredoc takes the rest, so the second cat stays in the first cat's part; a real shell runs two commands"}
@@ -3836,11 +3836,11 @@
 {"line": "echo \"unterminated && still", "parts": ["echo \"unterminated && still"], "shell": "an unterminated quote is an error; a real shell waits for the closing quote"}
 {"line": "echo don't stop && echo go", "parts": ["echo don't stop && echo go"], "shell": "the lone apostrophe opens a quote that never closes; a real shell waits for more input"}
 {"line": "echo \"a\" && echo \"b", "parts": ["echo \"a\"", "echo \"b"], "shell": "the second command has an unterminated quote"}
-{"line": "echo \"日本語 && 中文\" && echo ok", "parts": ["echo \"日本語 && 中文\"", "echo ok"]}
-{"line": "echo '日本語; 中文'; echo ñ && echo ü", "parts": ["echo '日本語; 中文'", "echo ñ", "echo ü"]}
-{"line": "echo \"emoji 🎉 && 🚀\" ; echo 🎉", "parts": ["echo \"emoji 🎉 && 🚀\"", "echo 🎉"]}
-{"line": "git commit -m \"✨ add feature; fix && ship\" && git push origin main", "parts": ["git commit -m \"✨ add feature; fix && ship\"", "git push origin main"]}
-{"line": "echo \"café\" && echo \"naïve; façade\"", "parts": ["echo \"café\"", "echo \"naïve; façade\""]}
+{"line": "echo \"\u65e5\u672c\u8a9e && \u4e2d\u6587\" && echo ok", "parts": ["echo \"\u65e5\u672c\u8a9e && \u4e2d\u6587\"", "echo ok"]}
+{"line": "echo '\u65e5\u672c\u8a9e; \u4e2d\u6587'; echo \u00f1 && echo \u00fc", "parts": ["echo '\u65e5\u672c\u8a9e; \u4e2d\u6587'", "echo \u00f1", "echo \u00fc"]}
+{"line": "echo \"emoji \ud83c\udf89 && \ud83d\ude80\" ; echo \ud83c\udf89", "parts": ["echo \"emoji \ud83c\udf89 && \ud83d\ude80\"", "echo \ud83c\udf89"]}
+{"line": "git commit -m \"\u2728 add feature; fix && ship\" && git push origin main", "parts": ["git commit -m \"\u2728 add feature; fix && ship\"", "git push origin main"]}
+{"line": "echo \"caf\u00e9\" && echo \"na\u00efve; fa\u00e7ade\"", "parts": ["echo \"caf\u00e9\"", "echo \"na\u00efve; fa\u00e7ade\""]}
 {"line": "echo \"a && b\" \"c; d\" 'e && f' 'g; h'", "parts": ["echo \"a && b\" \"c; d\" 'e && f' 'g; h'"]}
 {"line": "echo \"${HOME}/a;b\" ; echo done", "parts": ["echo \"${HOME}/a;b\"", "echo done"]}
 {"line": "echo \"$HOME\" && echo '$HOME' ; echo \"\\$HOME\"", "parts": ["echo \"$HOME\"", "echo '$HOME'", "echo \"\\$HOME\""]}
@@ -4012,7 +4012,7 @@
 {"line": "echo \"a && b\" && cat <<EOF\nz\nEOF", "parts": ["echo \"a && b\"", "cat <<EOF\nz\nEOF"]}
 {"line": "cat <<EOF > out && echo x\nbody\nEOF", "parts": ["cat <<EOF > out && echo x\nbody\nEOF"], "shell": "a real shell runs echo x as a second command"}
 {"line": "mysql -e \"select 1; select 2\" && mysql <<SQL\nselect 3;\nSQL", "parts": ["mysql -e \"select 1; select 2\"", "mysql <<SQL\nselect 3;\nSQL"]}
-{"line": "psql <<EOF\nselect 1;\nEOF\necho after && echo more", "parts": ["psql <<EOF\nselect 1;\nEOF\necho after && echo more"], "shell": "a real shell runs echo after and echo more as separate commands after the heredoc"}
+{"line": "psql <<EOF\nselect 1;\nEOF\necho after && echo more", "parts": ["psql <<EOF\nselect 1;\nEOF", "echo after", "echo more"], "shell": "a real shell runs echo after and echo more as separate commands after the heredoc"}
 {"line": "tee f <<EOF >/dev/null; ls\nx\nEOF", "parts": ["tee f <<EOF >/dev/null; ls\nx\nEOF"], "shell": "a real shell runs ls as a second command"}
 {"line": "(( x = 1<<3 )) && echo $x", "parts": ["(( x = 1<<3 ))", "echo $x"]}
 {"line": "echo '<<EOF' ; echo ok", "parts": ["echo '<<EOF'", "echo ok"]}
@@ -4022,7 +4022,7 @@
 {"line": "bc <<< \"1+2\" && bc <<< \"3+4\"", "parts": ["bc <<< \"1+2\"", "bc <<< \"3+4\""], "shell": "splitter?: the second < of <<< may be read as a heredoc and take the rest of the line"}
 {"line": "cat <<'EOF'\n#!/bin/sh\necho \"x\" && ls\nEOF", "parts": ["cat <<'EOF'\n#!/bin/sh\necho \"x\" && ls\nEOF"]}
 {"line": "echo start; cat <<EOF\nx\nEOF", "parts": ["echo start", "cat <<EOF\nx\nEOF"]}
-{"line": "cat > a.py <<'EOF'\nprint('a;b')\nEOF\npython3 a.py", "parts": ["cat > a.py <<'EOF'\nprint('a;b')\nEOF\npython3 a.py"], "shell": "a real shell runs python3 a.py as a second command after the heredoc"}
+{"line": "cat > a.py <<'EOF'\nprint('a;b')\nEOF\npython3 a.py", "parts": ["cat > a.py <<'EOF'\nprint('a;b')\nEOF", "python3 a.py"], "shell": "a real shell runs python3 a.py as a second command after the heredoc"}
 {"line": "cat <<EOF\nline1 # not && comment\nEOF", "parts": ["cat <<EOF\nline1 # not && comment\nEOF"]}
 {"line": "for f in *.py; do python3 -m py_compile $f && echo ok $f; done", "parts": ["for f in *.py; do python3 -m py_compile $f && echo ok $f; done"]}
 {"line": "echo start; for i in a b; do echo $i; done; echo end", "parts": ["echo start", "for i in a b; do echo $i; done", "echo end"]}
@@ -4190,8 +4190,8 @@
 {"line": "for i in 1 2; do echo $i; done; echo done; echo fi; echo esac", "parts": ["for i in 1 2; do echo $i; done", "echo done", "echo fi", "echo esac"]}
 {"line": "for i in 1 2; do while true; do break; done; done && echo ok", "parts": ["for i in 1 2; do while true; do break; done; done", "echo ok"], "shell": "splitter?: a nested loop opened after do is not counted, so its done may close the outer loop and leave the last done as its own piece"}
 {"line": "if true; then if false; then echo a; else echo b; fi; fi; echo z", "parts": ["if true; then if false; then echo a; else echo b; fi; fi", "echo z"], "shell": "splitter?: an if opened after then is not counted, so its fi may close the outer if and leave the last fi as its own piece"}
-{"line": "cat > /tmp/x.sh <<'EOF'\n#!/bin/bash\nfor i in 1 2; do echo $i; done\nEOF\nchmod +x /tmp/x.sh && /tmp/x.sh", "parts": ["cat > /tmp/x.sh <<'EOF'\n#!/bin/bash\nfor i in 1 2; do echo $i; done\nEOF\nchmod +x /tmp/x.sh && /tmp/x.sh"], "shell": "a real shell runs chmod and /tmp/x.sh after the heredoc as separate commands"}
-{"line": "cd /tmp && cat <<EOF > t\nA\nEOF\nls", "parts": ["cd /tmp", "cat <<EOF > t\nA\nEOF\nls"], "shell": "a real shell runs ls after the heredoc as a separate command"}
+{"line": "cat > /tmp/x.sh <<'EOF'\n#!/bin/bash\nfor i in 1 2; do echo $i; done\nEOF\nchmod +x /tmp/x.sh && /tmp/x.sh", "parts": ["cat > /tmp/x.sh <<'EOF'\n#!/bin/bash\nfor i in 1 2; do echo $i; done\nEOF", "chmod +x /tmp/x.sh", "/tmp/x.sh"], "shell": "a real shell runs chmod and /tmp/x.sh after the heredoc as separate commands"}
+{"line": "cd /tmp && cat <<EOF > t\nA\nEOF\nls", "parts": ["cd /tmp", "cat <<EOF > t\nA\nEOF", "ls"], "shell": "a real shell runs ls after the heredoc as a separate command"}
 {"line": "git commit -m \"$(cat <<'EOF'\nsubject\n\nbody; more && stuff\nEOF\n)\"", "parts": ["git commit -m \"$(cat <<'EOF'\nsubject\n\nbody; more && stuff\nEOF\n)\""]}
 {"line": "git add -A && git commit -m \"$(cat <<'EOF'\nfeat: x\nEOF\n)\" && git push", "parts": ["git add -A", "git commit -m \"$(cat <<'EOF'\nfeat: x\nEOF\n)\"", "git push"]}
 {"line": "echo ok; python3 <<EOF\nprint(1)\nEOF", "parts": ["echo ok", "python3 <<EOF\nprint(1)\nEOF"]}
@@ -4238,10 +4238,10 @@
 {"line": "echo -e \"a\\nb\" | while read x; do echo \"[$x]\"; done", "parts": ["echo -e \"a\\nb\" | while read x; do echo \"[$x]\"; done"]}
 {"line": "echo \"$((1+1))\" && echo \"$(( (2+3)*4 ))\"", "parts": ["echo \"$((1+1))\"", "echo \"$(( (2+3)*4 ))\""]}
 {"line": "echo $(( (1+2) )) ; echo ok", "parts": ["echo $(( (1+2) ))", "echo ok"]}
-{"line": "echo \"①; ②\" && echo '③ && ④'", "parts": ["echo \"①; ②\"", "echo '③ && ④'"]}
-{"line": "echo \"Привет; мир\" && echo ok", "parts": ["echo \"Привет; мир\"", "echo ok"]}
-{"line": "echo \"مرحبا && بالعالم\"; echo ok", "parts": ["echo \"مرحبا && بالعالم\"", "echo ok"]}
-{"line": "grep -r \"функция;\" src && echo found", "parts": ["grep -r \"функция;\" src", "echo found"]}
+{"line": "echo \"\u2460; \u2461\" && echo '\u2462 && \u2463'", "parts": ["echo \"\u2460; \u2461\"", "echo '\u2462 && \u2463'"]}
+{"line": "echo \"\u041f\u0440\u0438\u0432\u0435\u0442; \u043c\u0438\u0440\" && echo ok", "parts": ["echo \"\u041f\u0440\u0438\u0432\u0435\u0442; \u043c\u0438\u0440\"", "echo ok"]}
+{"line": "echo \"\u0645\u0631\u062d\u0628\u0627 && \u0628\u0627\u0644\u0639\u0627\u0644\u0645\"; echo ok", "parts": ["echo \"\u0645\u0631\u062d\u0628\u0627 && \u0628\u0627\u0644\u0639\u0627\u0644\u0645\"", "echo ok"]}
+{"line": "grep -r \"\u0444\u0443\u043d\u043a\u0446\u0438\u044f;\" src && echo found", "parts": ["grep -r \"\u0444\u0443\u043d\u043a\u0446\u0438\u044f;\" src", "echo found"]}
 {"line": "echo \"a\\tb; c\" && echo d", "parts": ["echo \"a\\tb; c\"", "echo d"]}
 {"line": "echo -n \"no newline; here\" && echo", "parts": ["echo -n \"no newline; here\"", "echo"]}
 {"line": "echo \"a\" ';' \"b\"", "parts": ["echo \"a\" ';' \"b\""]}
@@ -4274,3 +4274,4 @@
 {"line": "x=1; y=2; z=$((x+y)); echo $z", "parts": ["x=1", "y=2", "z=$((x+y))", "echo $z"]}
 {"line": "echo ok&& echo ok2&&echo ok3", "parts": ["echo ok", "echo ok2", "echo ok3"]}
 {"line": "tail -f log | grep --line-buffered 'ERR;' | head -1", "parts": ["tail -f log | grep --line-buffered 'ERR;' | head -1"]}
+{"line": "python3 - <<'EOF'\nimport pathlib\npathlib.Path('tests/a.py').write_text('x')\nEOF\npython3 -m pytest -q tests/a.py 2>&1 | tail -1 && python3 -m pytest -q 2>&1 | tail -15", "parts": ["python3 - <<'EOF'\nimport pathlib\npathlib.Path('tests/a.py').write_text('x')\nEOF", "python3 -m pytest -q tests/a.py 2>&1 | tail -1", "python3 -m pytest -q 2>&1 | tail -15"]}

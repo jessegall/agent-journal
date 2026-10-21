@@ -17,5 +17,5 @@ class Report(Scoped):
     def title_words(self) -> str:
         return self.title
 
-    def summary(self) -> str:
+    def summary_line(self) -> str:
         return self.abstract or self.first_line(self.body)

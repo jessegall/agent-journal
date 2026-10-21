@@ -26,7 +26,7 @@ class RefuseWrites(AgentListener[ToolStarting]):
     blocking = True
 
     def handle(self, event):
-        return Decision.refuse("no work declared") if event.tool == "Write" else Decision.allowed_with("carry on")
+        return Decision.refuse("no work declared") if event.call.tool == "Write" else Decision.allowed_with("carry on")
 
 
 class Noted(AgentListener[ToolStarting]):
@@ -80,7 +80,7 @@ def test_a_deferred_listener_runs_after_the_reply_and_never_refuses(app):
     status, _ = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}})
     assert status == 200
     assert noted.ran.wait(2)
-    assert noted.seen[0].tool == "Write" and noted.seen[0].session == "s1" and noted.seen[0].environment_id == 1
+    assert noted.seen[0].call.tool == "Write" and noted.seen[0].session == "s1" and noted.seen[0].environment_id == 1
 
 
 def test_every_hook_kind_translates(app):

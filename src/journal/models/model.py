@@ -46,7 +46,7 @@ class Model:
     def title_words(self) -> str:
         return ""
 
-    def summary(self) -> str:
+    def summary_line(self) -> str:
         return ""
 
     def docked(self) -> DockCard:

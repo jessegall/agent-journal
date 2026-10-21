@@ -17,6 +17,10 @@ LEADS = {"do", "then", "else", "time", "!"}
 """Words that may stand before a command's own first word, so a loop opened right after do or then, or timed, is still seen opening."""
 
 
+COMPOUND = {"if", "elif", "else", "then", "for", "while", "until", "do", "case", "select", "{", "("}
+HEREDOC_WORD = re.compile(r"<<-?\s*(['\"]?)(\w+)\1")
+
+
 class Chain:
     """A shell line taken apart at its && and ; into the commands it chains, quotes, subshells, groups, loops and pipes respected: a pipe is one pipeline, not a chain."""
 
@@ -133,20 +137,37 @@ class Chain:
                     current, i = current + line[i:end], end
                     continue
                 if line.startswith("<<", i) and not line.startswith("<<<", i) and line[i - 1:i] != "<":
-                    parts.append((separator, (current + line[i:]).strip()))
-                    return [(s, p) for s, p in parts if p]
-                found = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i) or Chain.newline_at(line, i, current)
-                if found:
+                    end = Chain.heredoc_end(line, i, current)
+                    parts.append((separator, (current + line[i:end]).strip()))
+                    current, separator, i = "", "", end
+                    continue
+                next_separator = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i) or Chain.newline_at(line, i, current)
+                if next_separator:
                     parts.append((separator, Chain.continued(current)))
-                    current, separator, i = "", found, i + len(found)
+                    current, separator, i = "", next_separator, i + len(next_separator)
                     continue
             current, i = current + c, i + 1
         parts.append((separator, Chain.continued(current)))
         return [(s, p) for s, p in parts if p]
 
     @staticmethod
+    def heredoc_end(line: str, start: int, current: str) -> int:
+        opening = HEREDOC_WORD.match(line, start)
+        body_start = line.find("\n", start)
+        compound = current.split()[:1] and current.split()[0] in COMPOUND
+        if not opening or body_start < 0 or compound or "<<" in line[opening.end():body_start]:
+            return len(line)
+        word, position = opening.group(2), body_start + 1
+        while position <= len(line):
+            line_end = line.find("\n", position)
+            line_end = len(line) if line_end < 0 else line_end
+            if line[position:line_end].strip() == word:
+                return line_end
+            position = line_end + 1
+        return len(line)
+
+    @staticmethod
     def continued(part: str) -> str:
-        """The part without a trailing backslash that only carried it onto the next line, before the separator."""
         part = part.strip()
         trailing = len(part) - len(part.rstrip("\\"))
         return part[:-1].rstrip() if trailing % 2 else part

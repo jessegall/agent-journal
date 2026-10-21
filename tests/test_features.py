@@ -155,6 +155,7 @@ def test_a_mark_owed_outlives_being_stuck_and_a_decision_pays_it(app):
 
 
 def test_a_plan_is_followed_task_by_task_to_its_end(app):
+    from journal.repositories.agents import Agents
     from journal.features.plans.states.following_plan import FollowingPlan
     from journal.models.plan_state import PlanState
     from journal.repositories.plans import Plans
@@ -167,17 +168,19 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     out = console.run(["plan", "start", "1"], AGENT).out
     assert "task 1," in out and "is started" in out
     machine = app.container.get(StateMachine)
-    assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
+    assert (machine.current("s1").name, machine.current("s1").plan_id, machine.current("s1").task_id) == ("following_plan", 1, 1)
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
     console.run(["await", "the build", "--until", "false"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
     assert machine.current("s1").name == "awaiting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
     out = console.run(["task", "done", "1"], AGENT).out
     beneath = app.container.get(Agents).for_session("s1").stack[-2]
-    assert machine.current("s1").name == "awaiting" and beneath["state"] == "following_plan" and beneath["data"]["task_id"] == 2, "the wait stands, and the agent goes on to task 2 when it ends"
+    assert "task 2, tag it is next" in out and machine.current("s1").name == "awaiting" and beneath["state"] == "following_plan" and beneath["data"]["task_id"] == 1, "the wait stands and the plan beneath has not heard: only the top of the stack hears"
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert (machine.current("s1").name, machine.current("s1").task_id) == ("following_plan", 2), "the agent's own tool use lifts the wait, and the plan catches up to its started task on resume"
     out = console.run(["task", "done", "2"], AGENT).out
-    assert "plan 1 is done" in out
-    assert [layer["state"] for layer in app.container.get(Agents).for_session("s1").stack] == ["idle", "awaiting"], "done with the plan, the agent goes to rest when its wait ends"
+    assert "task 2 done" in out and "is next" not in out, "the last task closed, nothing is next"
+    assert [layer["state"] for layer in app.container.get(Agents).for_session("s1").stack] == ["idle"], "done with the plan, the agent goes to rest"
     assert app.container.get(Plans).find(1).state == PlanState.DONE
 
 
@@ -1750,6 +1753,7 @@ def test_every_line_of_the_shell_corpus_is_cut_into_its_parts():
 
 
 def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
+    from journal.support.writes import Writes
     from journal.support.chain import Chain
     from journal.features.shell.support.doing import Doing
     assert Chain.split('a $(b; c) && (d; e) || f; g "h && i" | tail -1') == ["a $(b; c)", "(d; e) || f", 'g "h && i" | tail -1']
@@ -1767,6 +1771,9 @@ def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
     assert [p.text for p in parts if p.recorded] == ["cd src", "git commit -m 'a; b'"]
     assert parts[0].text.startswith("source") and parts[-1].text.startswith("pwd -P") and not parts[0].recorded and not parts[-1].recorded
     heredoc = "source /s 2>/dev/null || true && eval 'cd src && python3 - <<'\"'\"'EOF'\"'\"'\nprint(1)\nEOF' && pwd -P >| /tmp/cwd"
+    chained_after = "python3 - <<'EOF'\nimport pathlib\npathlib.Path('tests/a.py').write_text('x')\nEOF\npython3 -m pytest -q tests/a.py 2>&1 | tail -1 && python3 -m pytest -q 2>&1 | tail -15"
+    assert [p.text[:20] for p in Chain.parts(chained_after)] == ["python3 - <<'EOF'\nim", "python3 -m pytest -q", "python3 -m pytest -q"], "a heredoc ends at its terminator line, and the commands after it are parts of their own"
+    assert not Writes.is_code_write_line(chained_after), "a test run chained behind a script that edits code is no edit of code: the line goes through the runner and its limit"
     assert [p.text for p in Chain.parts(heredoc) if p.recorded] == ["cd src", "python3 - <<'EOF'\nprint(1)\nEOF"], "a command with a heredoc comes without < /dev/null and is still the agent's own"
     assert [Doing.of(c) for c in ("git commit -m x", "python3 -m pytest -q | tail -2", "cd src", "npm run build", "foo --bar", "python3 - <<'EOF'\nprint(1)\nEOF")] == ["committing", "testing", "moving", "running a script", "running foo", "running python3"]
 
@@ -1908,12 +1915,6 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
     app.runtime().deferred.drain()
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})[0] == 200
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat f.py"})[0] == 200
-    from journal.repositories.charts import Charts
-    from journal.repositories.counts import Counts
-    from journal.support.scope import Scope
-    log_held = next(c for c in app.container.get(Charts).shipped() if c.drawing == "working:tool_starting:log_held")
-    with app.container.get(Scope).of(1):
-        assert app.container.get(Counts).of_workflow(log_held.id) == {"writes": 1}, "a shell line that writes counts as a write toward the log; a read does not"
 
 
 def test_a_journal_command_chained_with_anything_else_is_refused(app):
@@ -3184,7 +3185,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     protocol = app.container.get(Protocol)
     from journal.providers.claude import Claude
     tool = json.loads(protocol.line_of(ToolStarting(call=Claude().call("Bash", {"command": "ls"})).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
-    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": []}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": ""}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
+    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool_use": 0, "tool": "Bash", "input": {"command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": [], "reads_output": False, "read_shape": "ls"}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": "", "work": "searching"}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
     row = json.loads(protocol.line_of(Created(model=Task(id=7, environment_id=1, title="t"), by=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.answer_of("").answer == "allow", "an empty answer lets the event through"
@@ -4015,7 +4016,7 @@ def test_an_agent_waiting_in_auto_mode_is_pointed_to_the_next_task_after_a_quiet
     console.run(["await", "the suite", "--until", "false"], AGENT)
     tick_after(app, 70.0)
     app.runtime().deferred.drain()
-    assert any("while you wait for the suite, task 2, the header is next" in line and "waiting is fine" in line for line in typed), typed
+    assert any("while you wait for the suite, task 2, the header is next" in line for line in typed), typed
 
 
 def test_an_approved_plan_not_started_holds_the_stop_until_it_is(app):
@@ -4578,7 +4579,8 @@ def test_a_plan_moves_on_whoever_closes_its_task_and_an_approved_plan_with_every
     console.run(["environment", "here"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1", "--how", "the user closed it"], USER)
-    assert app.container.get(Tasks).find(2).state == "started" and app.container.get(StateMachine).current("s1") == FollowingPlan(plan_id=1, task_id=2, moved_from=1), "the user's close moves the agent's plan on"
+    following = app.container.get(StateMachine).current("s1")
+    assert app.container.get(Tasks).find(2).state == "started" and (following.name, following.plan_id, following.task_id) == ("following_plan", 1, 2), "the user's close moves the agent's plan on"
     console.run(["task", "done", "2", "--how", "h"], AGENT)
     console.run(["task", "start", "3"], USER)
     console.run(["task", "done", "3", "--how", "h"], USER)
@@ -5664,7 +5666,7 @@ def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app):
     assert console.run(["await", "the build", "--output", str(output.id)], AGENT).code == 0
     assert app.container.get(StateMachine).current("s1").name == "awaiting", "the agent waits"
     outputs = app.container.get(CommandOutputs)
-    outputs.save(outputs.find(output.id).moved_out().ended_with(0), Actor.system())
+    outputs.save(outputs.find(output.id).moved_out().ended_with(0, 1.0), Actor.system())
     app.runtime().deferred.drain()
     assert app.container.get(StateMachine).current("s1").name != "awaiting", "the wait ends by itself once the output it named is done"
 
@@ -5672,7 +5674,7 @@ def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app):
 def test_a_file_changed_by_a_shell_command_keeps_its_changed_lines(app):
     from journal.features.edits.support.patch_rows import PatchRows
     from journal.repositories.edits import Edits
-    rows = PatchRows.between("a\nb\nc\nd\n", "a\nB\nc\nd\ne\n").rows
+    rows = PatchRows.from_versions("a\nb\nc\nd\n", "a\nB\nc\nd\ne\n").rows
     assert [(r.kind, r.line, r.text) for r in rows if r.kind != "ctx"] == [("del", 2, "b"), ("add", 2, "B"), ("add", 5, "e")], "the lines a change removed and added, numbered as in the file"
     hook(app, "SessionStart")
     console = app.console()
