@@ -20,7 +20,7 @@ LISTENER = "on_"
 
 @dataclass(frozen=True)
 class BaseState(Conduct):
-    """The parent of every state. Its listeners are its on_ methods, bound to the event each hears by its annotation; its answers are unchanged, changed, push, pop and hold, and a listener that stops the event's propagation is the last to hear it. A state entering or leaving the stack is handed the typist and may switch it off or on. It hears what every state hears: the context about to be compacted pushes Compacting, the session's end pushes Ended."""
+    """The parent of every state. Its listeners are its on_ methods, bound to the event each hears by its annotation; its answers are unchanged, changed, push, pop, pop_through, which pops and hands the event to the state beneath, and hold, and a listener that stops the event's propagation is the last to hear it. A state entering or leaving the stack is handed the typist and may switch it off or on. It hears what every state hears: the context about to be compacted pushes Compacting, the session's end pushes Ended."""
 
     title: ClassVar[str] = ""
     allows: ClassVar[frozenset[Permission]] = frozenset()

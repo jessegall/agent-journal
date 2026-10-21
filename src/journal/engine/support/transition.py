@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class Transition:
-    """What a state answered an event with: the state as it stands now, a state pushed on top of it, whether it popped itself, the nudges said, the nudges typed, the nudge that holds the event, if any and the moves dropped because an earlier answer already moved."""
+    """What a state answered an event with: the state as it stands now, a state pushed on top of it, whether it popped itself, the nudges said, the nudges typed, the nudge that holds the event, if any, the moves dropped because an earlier answer already moved, and whether a pop hands the event on to the state beneath."""
 
     to: "BaseState"
     pushed: "BaseState | None" = None
@@ -19,6 +19,7 @@ class Transition:
     held: Nudge | None = None
     other_holds: tuple[Nudge, ...] = ()
     dropped: tuple[str, ...] = ()
+    handed_down: bool = False
 
     def typing(self, *typed: Nudge) -> "Transition":
         return replace(self, typed=typed)
@@ -42,4 +43,5 @@ class Transition:
             held=next((answer.held for answer in answers if answer.held), None),
             other_holds=tuple(answer.held for answer in answers if answer.held)[1:],
             dropped=tuple(answer.move_named() for answer in moving[1:]),
+            handed_down=move.handed_down,
         )

@@ -11,7 +11,7 @@ from journal.events.agent.tool_starting import ToolStarting
 
 @dataclass(frozen=True)
 class Compacting(BaseState):
-    """The context is being compacted: every tool is held until the session starts again, which pops it. The state clears the typist's queue and disables it as it enters, and enables it as it leaves: a line the journal would type meanwhile is dropped, and the look at the start after the compaction brings the agent up to date."""
+    """The context is being compacted: every tool is held until the session starts again, which pops it and hands the start to the state beneath, so the work in hand hears it as before. The state clears the typist's queue and disables it as it enters, and enables it as it leaves: a line the journal would type meanwhile is dropped, and the look at the start after the compaction brings the agent up to date."""
 
     name = "compacting"
     title = "Compacting"
@@ -27,4 +27,4 @@ class Compacting(BaseState):
         return self.hold(Engine.NOTHING_WHILE_COMPACTING.create())
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
-        return self.pop()
+        return self.pop_through()

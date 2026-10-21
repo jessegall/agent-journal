@@ -35,7 +35,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "answer or react to message 1 before you do anything else"
+          "additionalContext": "you have not answered message 1 yet. answer or react to it before you go on; your tools wait once you have gone on long enough"
         }
       },
       "typed": [],

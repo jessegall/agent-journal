@@ -345,7 +345,7 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
         app.console().run(["plan", "create", "p"], Caller("main"))
         assert call(server, "POST", "/journal/plans/1/finish", {})[1]["state"] == "done"
         app.console().run(["check", "create", "truthy", "--command", "true"], Caller("main"))
-        assert call(server, "POST", "/journal/checks/1/run", {})[1]["running"]["at"], "the page's run answers at once, the check running"
+        assert call(server, "POST", "/journal/checks/1/run", {})[1]["running"]["time"], "the page's run answers at once, the check running"
         ran = lambda: call(server, "GET", "/journal/checks?ids=1")[1]["rows"][0]
         for _ in range(50):
             if not ran()["running"]:
@@ -356,8 +356,8 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).out.split()[1].rstrip(":")
         assert call(server, "POST", f"/journal/sequences/{release}/steps", {"steps": ["tag", "test", "push"]})[1]["steps"] == ["tag", "test", "push"]
         app.console().run(["trigger", "create", "deploy", "say so"], Caller("main"))
-        updated = call(server, "POST", "/journal/triggers/1", {"words": ["deploy", "release"], "action": "deny", "text": "wait"})[1]
-        assert updated["words"] == ["deploy", "release"] and updated["action"] == "deny"
+        updated = call(server, "POST", "/journal/triggers/1", {"phrases": ["deploy", "release"], "action": "deny", "text": "wait"})[1]
+        assert updated["phrases"] == ["deploy", "release"] and updated["action"] == "deny"
         skills = call(server, "GET", "/journal/skills?agent=1")[1]
         assert any(s["name"] == "journal" for s in skills) and "text" in call(server, "GET", "/journal/skills/journal")[1]
         call(server, "POST", "/journal/environments", {"name": "spike"})

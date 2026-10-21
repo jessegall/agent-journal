@@ -252,13 +252,9 @@
     },
     {
       "name": "a read while owed",
-      "answer": {
-        "error": "answer or react to message 1 first. your tool calls wait until you do"
-      },
+      "answer": {},
       "typed": [],
-      "nudges": [
-        "messages.tools_held_until_answered"
-      ],
+      "nudges": [],
       "stack": [
         "idle",
         "working"

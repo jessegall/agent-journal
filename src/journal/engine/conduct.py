@@ -21,5 +21,8 @@ class Conduct:
     def pop(self, *nudges: Nudge) -> Transition:
         return Transition(self, popped=True, nudges=nudges)
 
+    def pop_through(self, *nudges: Nudge) -> Transition:
+        return Transition(self, popped=True, nudges=nudges, handed_down=True)
+
     def hold(self, why: Nudge) -> Transition:
         return Transition(self, held=why)

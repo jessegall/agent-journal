@@ -75,7 +75,8 @@ class StateMachine(AgentListener[AgentEvent]):
             return Decision.refuse("\n".join([*reasons, *lines]))
         if hooked.held and (line := self.nudger.refuse_with(agent, hooked.held.nudge)):
             return Decision.refuse(line)
-        return Decision.allowed_with("\n".join(lines))
+        answered = Decision.allowed_with("\n".join(lines))
+        return answered.merged(self.answer(agent, event)) if transition.handed_down and hooked.stack == stack.popped() else answered
 
     def move(self, session: str, environment_id: int, to: BaseState) -> Agent:
         agent = self.agent(session, environment_id)

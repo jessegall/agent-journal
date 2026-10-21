@@ -168,7 +168,7 @@ class SecretCommand(Command):
             raise Refused(f"no secret is numbered or titled {given!r}: `journal secret list` names them")
         return rows[0]
 
-    def caller(self, args: Namespace, caller: Caller) -> int:
+    def where(self, args: Namespace, caller: Caller) -> int:
         print(self.values.path)
         return 0
 

@@ -272,7 +272,7 @@ def test_changed_settings_keep_their_meaning_in_the_tool_workflow(journal, monke
     app, provider = journal
     replay, rows = played(f"tool_uses_with_changed_settings_{provider}", app, monkeypatch, tool_uses_with_changed_settings, provider, nudges=True)
     by_name = {s["name"]: s for s in replay.record()}
-    assert by_name["read 1 while owed"]["answer"] == {} and "answer or react to message 1 before you do anything else" in str(by_name["read 2 while owed"]["answer"]) and by_name["read 3 while owed"]["answer"] == {}, "the listener asks after two uses, once inside the window"
+    assert by_name["read 1 while owed"]["answer"] == {} and "you have not answered message 1 yet" in str(by_name["read 2 while owed"]["answer"]) and by_name["read 3 while owed"]["answer"] == {}, "the listener asks after two uses, once inside the window"
     assert "error" in by_name["read 4 while owed"]["answer"] and "error" in by_name["read 5 while owed"]["answer"], "and holds after four"
     assert "in hand, 2 edits" in str(by_name["write 3"]["answer"]) and "3 edits since you logged task 1: say where it stands" in str(by_name["write 4"]["answer"]) and "in hand, 4 edits" in str(by_name["write 5"]["answer"]) and by_name["write 6"]["answer"] == {} and "error" in by_name["write 7"]["answer"], "the task is named every two edits, the log asked at three and held at six"
     assert rows == [], "the agent would have seen the same, and the record says the same"
@@ -284,7 +284,7 @@ def test_tool_about_to_run_matches_its_record_on_the_inbox(journal, monkeypatch)
     by_name = {s["name"]: s for s in replay.record()}
     assert "new message 1" in str(by_name["read 3"]["answer"]) and by_name["read 4"]["answer"] == {}, "the listener names the inbox every third use"
     assert "you have 1 unread messages" in str(by_name["a write at 17"]["answer"]), "and holds the write after five namings"
-    assert "answer or react to message 1 first" in str(by_name["a read while owed"]["answer"]) and by_name["a journal command while owed"]["answer"] == {} and by_name["a look at its files"]["answer"] == {} and by_name["a read after the reply"]["answer"] == {}
+    assert by_name["a read while owed"]["answer"] == {} and by_name["a journal command while owed"]["answer"] == {} and by_name["a look at its files"]["answer"] == {} and by_name["a read after the reply"]["answer"] == {}, "a read message has its grace of five uses before a word is asked for"
     assert rows == [], "the agent would have seen the same, and the record says the same"
 
 
@@ -820,8 +820,9 @@ def two_agents(app, replay: Replay, provider: str) -> None:
 
 
 def two_lines_on_one_write(app, replay: Replay, provider: str) -> None:
-    """The steps: with the log held after two edits, a task in hand, two writes, a message read and left unanswered, then a write that is held twice over."""
+    """The steps: with the log held after two edits and a read message at the first use, a task in hand, two writes, a message read and left unanswered, then a write that is held twice over."""
     app.container.get(SettingRows).set("tasks.log_after", 2, Actor.system())
+    app.container.get(SettingRows).set("messages.hold_after", 0, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "here"], AGENT)
@@ -838,7 +839,7 @@ def test_a_second_session_in_one_environment_takes_the_first_ones_place_and_a_li
     app, provider = journal
     replay, rows = played(f"two_agents_{provider}", app, monkeypatch, two_agents, provider, nudges=True)
     by_name = {s["name"]: s for s in replay.record()}
-    assert by_name["a message arrives"]["typed"] == ["[journal] new message 1"], "named once for the environment"
+    assert by_name["a message arrives"]["typed"] == ["[journal] new message 2"], "named once for the environment; message 1 is the worker's card"
     reported = by_name["the worker reports"]["typed"]
     assert reported[0] == "[journal] worker 1, Lady Lovelace, reported in the chat" and reported[1].startswith("[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported") and len(reported) == 2, "the awaiting agent is told and released, once"
     assert app.container.get(StateMachine).current("s2").task_id == 1 and app.container.get(StateMachine).current("s1").name == "ended", "an environment keeps one session: the second took the first one's place"

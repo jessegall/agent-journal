@@ -1257,3 +1257,35 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The chart feature, its models, repositories, support, controller, routes, page, command, skill and docs are deleted; the states and the conducts carry every line (docs/the-rules.md is generated from the source and names each state and each line's sayer).
 - Migration 19 keeps a workflow the user made or edited as a document, 'Workflow: <title>', from its nodes and lines, then drops charts, nodes, counts and noted_times, the node_of, yes, no and then links, the settings listeners.off, chart.drawings_version and features.chart, and the walk entries. The migrations 6, 15 and 16, which touched the chart's tables, are deleted; migration 13 indexes no counts.
 - The keeping of the user's workflows as documents was the orchestrator's choice; the pull request says so.
+
+## Plan 19, phases 8 and 9 and the morning's rulings (2026-10-21)
+
+- The compacting state is on the stack at last: the chart's leftover `AgentState` answered the compaction with
+  stay and the catalogue did not know `Compacting`, so no compaction had ever pushed it. `AgentState` is gone;
+  `Idle` and `Working` extend `BaseState`.
+- A listener may stop an event's propagation, `event.stop_propagation()`, and the listeners after it never hear
+  it; the walk starts again at the next `on`. The compacting state uses none of it.
+- A state entering or leaving the stack is handed the typist, `on_enter(typist)` and `on_exit(typist)`, the
+  lifecycle handlers that come first in a state class (rule 2, detector `lifecycle-handler-not-first`). The
+  typist has pause and resume (queue, then type as one), disable and enable (queue nothing), and clear. The
+  compacting state clears and disables on entering and enables on leaving: a line the journal would type while
+  the context compacts is dropped, since the look at the next start brings the agent up to date. The tool-use
+  count and the inbox mark go back to zero at a compaction.
+- The work mode is the floor state: `Idle` is the builder's, `Orchestrating` and `Soloing` are swapped in by the
+  `workers.mode` setting at a session start, at the setting's change and on resume, through `Workers.MODE_FLOORS`,
+  never an if on the mode. A floor pushes its own family: the orchestrator's pushes `OrchestratingPlan` and
+  `Delegating`, whose lines say hand it to a worker where the builder's say carry on; the orchestrator's floor
+  answers a stop, a long quiet and a worker's report with the open tasks across the plans and the workers to
+  dispatch. The solo floor refuses a worker's dispatch at the floor. Proven by a test driving an orchestrator
+  through a plan of twenty tasks with three workers out at once.
+- The plan's listener finds its follower by the state's class, `isinstance(state, FollowingPlan)`, never by the
+  state's name: by name, the orchestrator's plan state never advanced the plan.
+- A fact, rule or reminder carries its presence in the agent's context window. The start block hands every row
+  over at a session start (a listener sets them all), the look hands them all over, and `journal <noun> read <n>`
+  hands one over; a keyword hit on a row not in the context tells the agent to read it, never its words. The
+  funnel is `MemoryContext`.
+- A secret's field shown while typing is no secret: its value is kept for the programs and named in the shown
+  file beside the values, and only a hidden field's value becomes a mask.
+- Still open: the launcher as an unchanging shell loop with the supervisor restartable under it (task 1169); the
+  plugins upgraded by a `journal.updated` event (task 1167); the remote journal two people share (task 1164); the
+  rest of the name sweep (task 1052) and the custom name detectors' noise on every `on_` listener.

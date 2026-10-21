@@ -758,7 +758,7 @@ def test_the_documents_page_lists_the_projects_documents_their_search_and_the_at
 
 
 def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app):
-    import timing as clock
+    import time as clock
     from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     report = '{"title": "Sins", "summary": "1 sin", "findings": [{"name": "python-dict-bag", "file": "src/x.py", "line": 3, "group": "value objects"}]}'
@@ -2073,7 +2073,7 @@ def test_the_sequence_page_shows_and_sets_what_starts_a_sequence(app):
     update = next(s for s in app.container.get(Sequences).all() if s.title == "Writing an update")
     started_by = triggers.starting("Writing an update")[0]
     assert next(r for r in api("GET", "sequences")[1]["rows"] if r["id"] == update.id)["trigger_ids"] == [started_by.id], "the page is told the update starts on its words"
-    assert "tldr" in started_by.text and "check agents.md" in triggers.starting("Checking the instruction files")[0].text, "version 3's worded sequences start on their words"
+    assert "tldr" in started_by.phrases and "check agents.md" in triggers.starting("Checking the instruction files")[0].phrases, "version 3's worded sequences start on their words"
     api("POST", f"sequences/{update.id}/starts", {"starts_on": ""})
     assert triggers.starting("Writing an update") == [], "by hand, the trigger no longer starts it"
     from journal.models.trigger import Trigger
@@ -2263,6 +2263,8 @@ def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app)
 
 
 def test_a_write_after_a_message_is_read_waits_for_the_answer(app):
+    from journal.repositories.setting_rows import SettingRows
+    app.container.get(SettingRows).set("messages.hold_after", 0, Actor.system())
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
