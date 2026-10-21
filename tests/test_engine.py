@@ -1030,12 +1030,13 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     started = working.on(SessionStarted(source="compact", at=1100.0).with_snapshot(of()), settings)
     assert [n.key for n in started.nudges] == ["tasks.carry_on", "briefing.brief_and_log_after_compaction"] and 'last log "the parser reads"; uncommitted files: a.py, b.py' in started.nudges[1].rendered()
     assert [n.key for n in working.on(SessionStarted(source="startup", at=1100.0).with_snapshot(of()), settings).nudges] == ["tasks.carry_on"]
-    assert [n.key for n in Working(task_id=7, active_at=0.0).on(Ticked(quiet_for=0.0, at=900.0).with_snapshot(of()), settings).nudges] == ["tasks.task_still_open"]
+    assert [n.key for n in Working(task_id=7, active_at=0.0).on(Ticked(quiet_for=900.0, at=900.0).with_snapshot(of()), settings).nudges] == ["tasks.task_still_open"], "a quarter of an hour of quiet, counted from the agent's last activity, names the open task"
+    assert Working(task_id=7, active_at=0.0).on(Ticked(quiet_for=60.0, at=900.0).with_snapshot(of()), settings).nudges == (), "an agent active a minute ago is not nagged, however old its task"
     assert Working(task_id=7, active_at=100.0).on(Ticked(quiet_for=0.0, at=900.0).with_snapshot(of()), settings).nudges == ()
     assert working.on(TaskClosed(environment_id=1, at=2.0, task_id=7, how="done").with_snapshot(of()), settings).popped
     assert not working.on(TaskClosed(environment_id=1, at=2.0, task_id=8, how="done").with_snapshot(of()), settings).popped
     assert working.on_resume(of(in_hand=0), settings).popped, "its task closed while it waited"
-    assert [n.key for n in working.on_resume(of(), settings)] == ["tasks.carry_on"]
+    assert working.on_resume(of(), settings) == (), "its task still in hand, the work goes on in silence: the wait that popped said what came"
 
 
 def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_when_the_plan_is_done():
@@ -1106,7 +1107,7 @@ def test_following_plan_pops_when_the_plan_is_postponed_or_abandoned_and_on_resu
     assert abandoned.popped and [n.rendered() for n in abandoned.nudges] == ["the user abandoned plan 5"]
     assert following.on_resume(of(None), settings).popped, "beneath a wait, a plan postponed meanwhile is over on resume"
     assert following.on_resume(of(replace(plan, plan_id=6)), settings).popped, "another plan started meanwhile: this one is over"
-    assert isinstance(following.on_resume(of(plan), settings), tuple), "still the plan started here: the work goes on, with the carry-on line"
+    assert following.on_resume(of(plan), settings) == (), "still the plan started here: the work goes on in silence"
 
 
 def test_a_question_asked_pushes_waiting_and_its_answer_pops_it_on_top_or_on_resume():

@@ -6,43 +6,36 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "quiet for a minute",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "quiet for half an hour",
       "answer": null,
       "typed": [
-        "[journal] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
+        "[journal] nothing has happened for half an hour: is there anything left for you to do? carry on, take the next task, or say so in one line"
       ],
       "nudges": [
         "tasks.check_in_after_quiet"
       ],
-      "counts": {
-        "charts:31:said": 6
-      },
-      "read": [
-        {
-          "56": 1800
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
@@ -50,48 +43,32 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 6
-      },
-      "read": [
-        {
-          "56": 1800
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
       "name": "a task parked",
       "answer": null,
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "nudges": [
+        "tasks.parked_tasks_still_open"
+      ],
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a minute with a task parked",
       "answer": null,
       "typed": [
-        "[journal] task 1 is still parked: can you continue it now? It was parked because: the header first. `journal task resume 1` picks it up again"
+        "[journal] task 1 is still parked: can you continue it now? it was parked because: the header first. `journal task resume 1` picks it up again"
       ],
       "nudges": [
         "tasks.parked_task_asked_about"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "27": 60,
-          "56": 60
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
@@ -99,17 +76,8 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "27": 60,
-          "56": 60
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
@@ -117,13 +85,11 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "five quiet minutes awaiting",
@@ -132,18 +98,12 @@
         "[journal] check the deploy now: you have waited 5 min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
       ],
       "nudges": [
-        "tasks.check_what_you_awaited"
+        "tasks.check_the_wait"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "179": 300
-        }
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
       ]
     },
     {
@@ -151,16 +111,10 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "179": 300
-        }
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
       ]
     },
     {
@@ -168,18 +122,10 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     }
   ]
 }

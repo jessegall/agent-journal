@@ -1880,7 +1880,7 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "park", "1", "the header first"], AGENT)
     status, body = hook(app, "Stop")
-    assert body.get("decision") == "block" and "parked tasks, still open: 1 the footer (parked because: the header first)" in body["reason"]
+    assert body.get("decision") == "block" and "parked tasks, still open: task 1 (the footer), parked because: the header first" in body["reason"]
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "told at every stop, until the task is resumed or done"
     console.run(["task", "resume", "1"], AGENT)
     console.run(["task", "done", "1", "--how", "shipped"], AGENT)
@@ -2475,7 +2475,7 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
     app.runtime().deferred.drain()
     assert machine.current("s2").task_id == 1, "the agent awaiting the worker, not the live one, is released by the shipped workflow"
-    assert typed[0] == "[journal] worker 1, Lady Lovelace, reported in the chat" and typed[1].startswith("[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported") and typed[2].startswith("[journal] task 1 is in hand") and len(typed) == 3, "told once, on the walk about the agent that waits, and the work beneath is named after the wait"
+    assert typed[0] == "[journal] worker 1, Lady Lovelace, reported in the chat" and typed[1].startswith("[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported") and len(typed) == 2, "told once, on the walk about the agent that waits; the work beneath goes on in silence"
 
 def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app):
     from journal.engine.nudger import Nudger
@@ -4015,7 +4015,7 @@ def test_an_agent_waiting_in_auto_mode_is_pointed_to_the_next_task_after_a_quiet
     console.run(["await", "the suite", "--until", "false"], AGENT)
     tick_after(app, 70.0)
     app.runtime().deferred.drain()
-    assert any("while you wait for the suite, task 2 is next" in line and "waiting is fine" in line for line in typed), typed
+    assert any("while you wait for the suite, task 2, the header is next" in line and "waiting is fine" in line for line in typed), typed
 
 
 def test_an_approved_plan_not_started_holds_the_stop_until_it_is(app):

@@ -22,12 +22,10 @@
       "name": "answered",
       "answer": null,
       "typed": [
-        "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer",
-        "[journal] task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"
       ],
       "nudges": [
-        "questions.question_answered",
-        "tasks.carry_on"
+        "questions.question_answered"
       ],
       "stack": [
         "idle",

@@ -6,25 +6,23 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
-        "voices.how_to_talk_to_the_user",
         "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
         "briefing.you_took_over",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 11,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "a message arrives",
@@ -35,38 +33,27 @@
       "nudges": [
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "the worker reports",
       "answer": null,
       "typed": [
         "[journal] worker 1, Lady Lovelace, reported in the chat",
-        "[journal] what you waited on came back: carry on"
+        "[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported. carry on with what you were doing"
       ],
       "nudges": [
         "workers.worker_reported",
-        "workers.waited_on_came_back"
+        "tasks.wait_over"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 14,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     }
   ]
 }

@@ -2,6 +2,7 @@ from journal.features.tasks.support.tasks_snapshot import TasksSnapshot
 from journal.models.agent import Agent
 from journal.models.open_task import OpenTask
 from journal.models.task import Task
+from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState
 from journal.repositories.entries import Entries
 from journal.repositories.plans import Plans
@@ -21,7 +22,8 @@ class TasksSnapshotReader:
 
     def read(self, agent: Agent) -> TasksSnapshot:
         in_hand = self.tasks.in_hand()
-        parked, blocked_without_wait = self.tasks.in_state(TaskState.PARKED), self.tasks.blocked_without_wait()
+        parked = [task for task in self.tasks.in_state(TaskState.PARKED) if PlanState.PARKED not in self.plans.plan_states(task)]
+        blocked_without_wait = self.tasks.blocked_without_wait()
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
         commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session, LOOKED_BACK) if e.data.get("tool_name") == "Bash"]
         free = self.plans.free()

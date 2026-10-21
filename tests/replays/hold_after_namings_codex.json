@@ -13,34 +13,17 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user",
         "messages.new_message_to_answer",
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 7,
-        "charts:42:times_named": 1,
-        "charts:42:tools_used": 1,
-        "charts:43:tools_used": 1,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": [
-        {
-          "282": 1,
-          "284": 1,
-          "296": 1,
-          "67": 0,
-          "80": 0,
-          "93": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -50,28 +33,11 @@
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.write_held_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 8,
-        "charts:42:times_named": 2,
-        "charts:42:tools_used": 2,
-        "charts:43:tools_used": 2,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": [
-        {
-          "282": 2,
-          "284": 2,
-          "296": 2,
-          "67": 1,
-          "80": 1,
-          "93": 1
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -81,28 +47,11 @@
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.write_held_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 9,
-        "charts:42:times_named": 3,
-        "charts:42:tools_used": 3,
-        "charts:43:tools_used": 3,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": [
-        {
-          "282": 3,
-          "284": 3,
-          "296": 3,
-          "67": 1,
-          "80": 1,
-          "93": 1
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -112,28 +61,11 @@
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.write_held_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 10,
-        "charts:42:times_named": 4,
-        "charts:42:tools_used": 4,
-        "charts:43:tools_used": 4,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": [
-        {
-          "282": 4,
-          "284": 4,
-          "296": 4,
-          "67": 1,
-          "80": 1,
-          "93": 1
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     }
   ]

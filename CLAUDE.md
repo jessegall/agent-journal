@@ -33,7 +33,7 @@ a repository, which stamps the actor and fires the model events. Lines reach the
 through the `Nudger`. The supervisor is reached only through `SupervisorLink`. Caching,
 checks and logging live in the funnel, never at a call site.
 
-**Every write names its actor.** `save(row, by)` and `delete(row, by)` take the actor; a
+**Every write names its actor.** `save(row, actor)` and `delete(row, actor)` take the actor; a
 request and a command know theirs. Nothing is written anonymously, so a shared journal with
 many users needs no change to the base.
 

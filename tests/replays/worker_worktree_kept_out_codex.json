@@ -6,19 +6,17 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "a write in the worker's worktree",
@@ -26,24 +24,13 @@
         "error": "that file is in worker 1's worktree. Lady Lovelace writes there: `journal worker say 1 \"<job>\"`, or wait for its report and merge"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": [
-        {
-          "67": 0,
-          "80": 0,
-          "93": 0
-        }
+      "nudges": [
+        "workers.file_is_the_workers"
+      ],
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
       ]
     },
     {
@@ -51,41 +38,21 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "a write in the project",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 2,
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 2,
-        "charts:9:writes": 2
-      },
-      "read": [
-        {
-          "67": 1,
-          "80": 1,
-          "93": 1
-        }
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
       ]
     }
   ]

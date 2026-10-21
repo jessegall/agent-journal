@@ -45,7 +45,8 @@ class MessageCommand(Command):
         author = Author.of(where.actor)
         if args.reply_to and author == Author.AGENT:
             return self.reply(args, where)
-        message = self.messages.save(Message(author=author, text=args.text, reply_to=args.reply_to), where.actor)
+        draft = Message(author=author, text=args.text, reply_to=args.reply_to)
+        message = self.messages.save(draft.arrived() if author == Author.USER else draft, where.actor)
         print(f"message {message.id} sent")
         return 0
 

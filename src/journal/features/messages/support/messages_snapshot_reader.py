@@ -22,7 +22,7 @@ class MessagesSnapshotReader:
             unanswered=tuple(m.id for m in unanswered),
             unanswered_files=tuple(f"{self.config.files / 'message' / str(m.id)}/" for m in unanswered),
             uses_since_newest=agent.tool_uses - agent.inbox_mark if newest else 0,
-            times_named=self.entries.said_count_after(agent.session, tuple(n.key for n in MessagesFeature.INBOX_LINES), newest.created_at.timestamp()) if newest else 0,
+            times_named=self.entries.nudge_count(agent.session, tuple(n.key for n in MessagesFeature.INBOX_LINES), agent.inbox_mark) if newest else 0,
             uses_unanswered=agent.tool_uses - min(read_marks) if read_marks else 0,
         )
 

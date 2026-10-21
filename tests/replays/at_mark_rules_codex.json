@@ -6,19 +6,16 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a read past the first mark",
@@ -32,18 +29,10 @@
       "nudges": [
         "memory.decide_at_the_mark"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a write at the mark",
@@ -51,24 +40,12 @@
         "error": "writes wait until you decide what to keep from the context. `journal fact create`, `journal rule create`, or `journal nothing \"<why>\"`"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": [
-        {
-          "67": 0,
-          "80": 0,
-          "93": 0
-        }
+      "nudges": [
+        "memory.write_held_until_decided"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -76,41 +53,19 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a write after the fact",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 2,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 2,
-        "charts:9:writes": 2
-      },
-      "read": [
-        {
-          "67": 1,
-          "80": 1,
-          "93": 1
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -118,46 +73,25 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 2,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 2,
-        "charts:9:writes": 2
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a stop past the second mark",
       "answer": {
         "decision": "block",
-        "reason": "you stopped while the journal awaits a decision at the context mark, 50% full. `journal fact create`, `journal rule create`, or `journal nothing \"<why>\"` first, or `journal stuck \"<why>\"` if you are truly stuck\ncontext 50% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal nothing \"<why>\"`; writes wait until you do\ntask 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
       "nudges": [
         "memory.decide_at_the_mark",
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 2,
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 2,
-        "charts:9:writes": 2
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -166,24 +100,12 @@
         "error": "writes wait until you decide what to keep from the context. `journal fact create`, `journal rule create`, or `journal nothing \"<why>\"`"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 3,
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 3,
-        "charts:9:writes": 3
-      },
-      "read": [
-        {
-          "67": 2,
-          "80": 2,
-          "93": 2
-        }
+      "nudges": [
+        "memory.write_held_until_decided"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -191,41 +113,19 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 3,
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 3,
-        "charts:9:writes": 3
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a write after",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 4,
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 4,
-        "charts:9:writes": 4
-      },
-      "read": [
-        {
-          "67": 3,
-          "80": 3,
-          "93": 3
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     }
   ]

@@ -38,16 +38,19 @@ class Plans(ScopedRepository[Plan]):
         return self.save(plan.approved(self._now().timestamp(), by.is_the_user()), by)
 
     def cancel(self, plan: Plan, by: Actor) -> list[Task]:
+        self.save(plan.cancelled(datetime.now(timezone.utc).timestamp(), by.is_the_user()), by)
         cancelled = []
         for task in self.tasks_of(plan):
             if task.is_closed() or self.is_in_another_plan(task, plan):
                 continue
             cancelled.append(self.tasks.save(task.cancelled(datetime.now(timezone.utc)), by))
-        self.save(plan.cancelled(datetime.now(timezone.utc).timestamp(), by.is_the_user()), by)
         return cancelled
 
     def is_in_another_plan(self, task: Task, plan: Plan) -> bool:
         return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, IN_PLAN))
+
+    def plan_states(self, task: Task) -> set[PlanState]:
+        return {plan.state for plan in self.holding(task)}
 
     def holding(self, task: Task) -> list[Plan]:
         return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.PARKED, PlanState.BLOCKED)]

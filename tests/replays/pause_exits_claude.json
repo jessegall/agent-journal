@@ -20,16 +20,9 @@
     },
     {
       "name": "a tool use lifts the await",
-      "answer": {
-        "hookSpecificOutput": {
-          "hookEventName": "PreToolUse",
-          "additionalContext": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
-        }
-      },
+      "answer": {},
       "typed": [],
-      "nudges": [
-        "tasks.carry_on"
-      ],
+      "nudges": [],
       "stack": [
         "idle",
         "working"
@@ -63,16 +56,9 @@
     },
     {
       "name": "a tool use lifts being stuck",
-      "answer": {
-        "hookSpecificOutput": {
-          "hookEventName": "PreToolUse",
-          "additionalContext": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
-        }
-      },
+      "answer": {},
       "typed": [],
-      "nudges": [
-        "tasks.carry_on"
-      ],
+      "nudges": [],
       "stack": [
         "idle",
         "working"
@@ -96,12 +82,10 @@
         "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [
-        "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer",
-        "[journal] task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"
       ],
       "nudges": [
         "questions.question_answered",
-        "tasks.carry_on",
         "tasks.carry_on"
       ],
       "stack": [
@@ -128,13 +112,11 @@
       },
       "typed": [
         "[journal] worker 1, Lady Lovelace, reported in the chat",
-        "[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported. carry on with what you were doing",
-        "[journal] task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported. carry on with what you were doing"
       ],
       "nudges": [
         "workers.worker_reported",
         "tasks.wait_over",
-        "tasks.carry_on",
         "workers.act_on_the_reports",
         "tasks.carry_on"
       ],

@@ -64,11 +64,12 @@ class Working(AgentState):
         if self.edits >= int(settings.of(Tasks.LOG_AFTER)):
             return self.hold(Tasks.WRITE_HELD_UNTIL_LOGGED.create(edits=self.edits, name=self.named(), log=self.log_command()))
         counted = replace(active, edits=self.edits + 1)
+        lines = []
         if self.edits == int(settings.of(Tasks.FIRST_AFTER)):
-            return self.changed(counted, Tasks.LOG_WHERE_IT_STANDS.create(edits=self.edits, name=self.named(), log=self.log_command()))
+            lines.append(Tasks.LOG_WHERE_IT_STANDS.create(edits=self.edits, name=self.named(), log=self.log_command()))
         if self.edits and self.edits % int(settings.of(Tasks.NAME_EVERY)) == 0:
-            return self.changed(counted, Tasks.TASK_IN_HAND_REPEATED.create(name=self.named(), edits=self.edits))
-        return self.changed(counted)
+            lines.append(Tasks.TASK_IN_HAND_REPEATED.create(name=self.named(), edits=self.edits))
+        return self.changed(counted, *lines)
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
@@ -94,7 +95,7 @@ class Working(AgentState):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        if event.at - self.active_at >= STILL_OPEN_AFTER:
+        if event.quiet_for >= STILL_OPEN_AFTER:
             return self.unchanged(Tasks.TASK_STILL_OPEN.create(name=self.named()))
         return self.unchanged()
 
@@ -122,4 +123,4 @@ class Working(AgentState):
         from journal.features.tasks.feature import Tasks
         if self.task_id and snapshot.of(Tasks).in_hand != self.task_id:
             return self.pop()
-        return (self.continue_nudge(self.active_at),)
+        return ()

@@ -44,9 +44,9 @@ class Entries(ScopedRepository[Entry]):
     def lines_said_since_use(self, session: str, key: str, tool_use: int) -> list[str]:
         return [e.data["line"] for e in self.selected("kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.tool_use') > ? ORDER BY id", (session, key, tool_use))]
 
-    def said_count_after(self, session: str, keys: tuple[str, ...], at: float) -> int:
-        marks = ", ".join("?" for _ in keys)
-        return self.counted_in(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({marks}) AND json_extract(data, '$.at') > ?", (session, *keys, at))
+    def nudge_count(self, session: str, keys: tuple[str, ...], tool_use: int) -> int:
+        placeholders = ", ".join("?" for _ in keys)
+        return self.counted_in(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({placeholders}) AND json_extract(data, '$.tool_use') >= ?", (session, *keys, tool_use))
 
     def last_id_of_kind(self, session: str, kind: str) -> int:
         row = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = ? AND actor = ?", (kind, f"agent:{session}"))

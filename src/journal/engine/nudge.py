@@ -25,8 +25,10 @@ class Nudge:
         return replace(self, title=title, brief="", values={})
 
     def rendered(self) -> str:
-        parts = (self._fill(self.title), self._fill(self.brief))
-        return ". ".join(part for part in parts if part)
+        title, brief = self._fill(self.title), self._fill(self.brief)
+        if not brief:
+            return title
+        return f"{title} {brief}" if title.endswith(("?", "!", ".")) else f"{title}. {brief}"
 
     def _fill(self, template: str) -> str:
         return re.sub(r"\{\{(\w+)\}\}", lambda m: str(self.values.get(m.group(1), m.group(0))), template)

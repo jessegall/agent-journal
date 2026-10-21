@@ -8,16 +8,15 @@
         "[journal] sequence 1, step 1: Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` to take it up, `journal sequence next` when it is done"
       ],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a write before the goal is taken up",
@@ -25,61 +24,39 @@
         "error": "a write waits for sequence 1, step 1: Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "nudges": [
+        "sequences.write_held_for_the_step"
+      ],
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "the goal's command takes the step up",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "the phases' command takes the step up",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "the tasks' command takes the step up",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "the last step refused before the plan is ready",
@@ -88,15 +65,9 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "the last step once it is ready",
@@ -105,15 +76,9 @@
       },
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     }
   ]
 }
