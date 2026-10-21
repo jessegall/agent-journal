@@ -22,7 +22,7 @@ class DashboardDocument:
             return DashboardView(missing=f"{plugin.name} has written nothing on its dashboard yet.")
         headed: dict[str, list] = {}
         for line in lines:
-            headed.setdefault(line.heading, []).append({"label": line.label, "badge": line.badge, "tone": line.tone, "note": line.note})
+            headed.setdefault(line.section, []).append({"label": line.label, "badge": line.badge, "tone": line.tone, "note": line.note})
         children = [node for heading, items in headed.items() for node in ([{"type": "heading", "text": heading, "level": 3}] if heading else []) + [{"type": "list", "items": items}]]
         title = board.get("title", plugin.name)
         return DashboardView(title=title, start="start", pages={"start": {"title": title, "view": {"type": "stack", "children": children}}})

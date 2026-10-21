@@ -16,5 +16,6 @@ from journal.db.migrations.seed_the_stack import SeedTheStack
 from journal.db.migrations.chart_drop import ChartDrop
 from journal.db.migrations.time_keys import TimeKeys
 from journal.db.migrations.trigger_phrases import TriggerPhrases
+from journal.db.migrations.dashboard_sections import DashboardSections
 
-MIGRATIONS = (UnwrapOwedPauses(), FinishCancelledTasks(), UnwrapRunningSequences(), GiveBuildingAPlanItsEnd(), LinkWorkerReports(), MoveOwedSkillsOntoTheAgent(), WriteQuestionsIntoTheChat(), IndexTheHotReads(), IndexTheLinks(), IndexTheDispatches(), MarkOldReportsTakenUp(), IndexTheFrequentReads(), NameCardRowsByTable(), FillAgentsEmptyData(), SeedTheStack(), ChartDrop(), TimeKeys(), TriggerPhrases())
+MIGRATIONS = (UnwrapOwedPauses(), FinishCancelledTasks(), UnwrapRunningSequences(), GiveBuildingAPlanItsEnd(), LinkWorkerReports(), MoveOwedSkillsOntoTheAgent(), WriteQuestionsIntoTheChat(), IndexTheHotReads(), IndexTheLinks(), IndexTheDispatches(), MarkOldReportsTakenUp(), IndexTheFrequentReads(), NameCardRowsByTable(), FillAgentsEmptyData(), SeedTheStack(), ChartDrop(), TimeKeys(), TriggerPhrases(), DashboardSections())

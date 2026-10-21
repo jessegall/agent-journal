@@ -5870,3 +5870,30 @@ def test_a_plugin_hears_file_edited_with_the_edit_precomputed_and_holds_it_only_
     app.container.get(Deferred).drain()
     heard_two = [json.loads(line) for line in (app.config.home / "plugin-data" / "echo-two" / "heard.jsonl").read_text().splitlines()]
     assert [h["data"]["path"] for h in heard_two] == ["forbidden.py"], "the holding plugin heard the edit once, on the answer path, never again after the reply"
+
+
+def test_every_hook_of_every_tool_arrives_is_recorded_and_answered_even_with_a_message_crossed_in_the_transcript(app, tmp_path, monkeypatch):
+    """A hook is never lost in silence: for every tool kind, the starting and finished hooks are recorded as their entries and answered, while the transcript holds a message from another session, the path that once raised and answered 500 unseen."""
+    import json as j
+    from journal.providers.claude import Claude
+    from journal.repositories.entries import Entries
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages as MessageRows
+    crossed = {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-10-21T06:00:00Z", "content": '<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="code-commandments-12" from-mode="bypass">\nthe fix is on main\n</cross-session-message>'}
+    transcript = tmp_path / "s1.jsonl"
+    transcript.write_text(j.dumps(crossed) + "\n")
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: transcript if session == "s1" else None)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    calls = {"Read": {"file_path": str(app.config.root / "a.py")}, "Edit": {"file_path": str(app.config.root / "a.py"), "old_string": "x", "new_string": "y"}, "Write": {"file_path": str(app.config.root / "b.py"), "content": "x"}, "Bash": {"command": "ls"}, "SendMessage": {"to": "code-commandments-12", "message": "noted"}, "Agent": {"description": "look", "prompt": "read a.py", "subagent_type": "journal-researcher", "model": "sonnet"}}
+    for tool, tool_input in calls.items():
+        status, body = hook(app, "PreToolUse", tool_name=tool, tool_input=tool_input)
+        assert status == 200, f"{tool} starting: {status} {body}"
+        status, body = hook(app, "PostToolUse", tool_name=tool, tool_input=tool_input, tool_response={})
+        assert status == 200, f"{tool} finished: {status} {body}"
+    recorded = [(e.kind, e.data.get("tool_name")) for e in app.container.get(Entries).in_() if e.kind in ("ToolStarting", "ToolFinished")]
+    for tool in calls:
+        assert ("ToolStarting", tool) in recorded and ("ToolFinished", tool) in recorded, f"{tool} is recorded at its start and its end"
+    assert any(m.data.get("peer") == "code-commandments-12" for m in app.container.get(MessageRows).all()), "the message crossed in the transcript reached the chat"
+    app.runtime().deferred.drain()
+    assert any(m.data.get(Message.SENT_TO) == "code-commandments-12" for m in app.container.get(MessageRows).all()), "the message sent to the other session is a bubble of its own"

@@ -30,9 +30,9 @@ class DashboardCommand(Command):
 
     def set(self, args: Namespace, caller: Caller) -> int:
         plugin = self.plugin_of(caller)
-        line = DashboardRow(plugin=plugin, key=args.key, label=args.label, badge=args.badge, tone=args.tone, note=args.note, heading=args.heading)
+        line = DashboardRow(plugin=plugin, key=args.key, label=args.label, badge=args.badge, tone=args.tone, note=args.note, section=args.heading)
         had = self.rows.keyed(plugin, args.key)
-        self.rows.save(had.with_(**{f: getattr(line, f) for f in ("label", "badge", "tone", "note", "heading")}) if had else line, caller.actor)
+        self.rows.save(had.with_(**{f: getattr(line, f) for f in ("label", "badge", "tone", "note", "section")}) if had else line, caller.actor)
         print(f"{args.key} set on {plugin}'s dashboard")
         return 0
 

@@ -237,3 +237,34 @@ def test_the_trigger_phrases_migration_renames_the_words_column(connection):
     connection.execute("ALTER TABLE triggers RENAME COLUMN phrases TO words")
     TriggerPhrases().up(connection)
     assert "phrases" in {row["name"] for row in connection.all("PRAGMA table_info(triggers)")}, "a record from before, with words alone, has the column renamed"
+
+
+def test_no_dataclass_field_shadows_a_property_or_method_of_its_class_or_a_parent():
+    """A frozen dataclass whose field is named like a property or a method on it, its own or inherited, cannot be built: the generated __init__ sets the field and the property has no setter. Every dataclass under the package is checked, so a rename can never leave such a pair behind."""
+    import dataclasses
+    import importlib
+    import inspect
+    import pkgutil
+    import journal
+    clashes = []
+    for found in pkgutil.walk_packages(journal.__path__, "journal."):
+        module = importlib.import_module(found.name)
+        for name, cls in inspect.getmembers(module, inspect.isclass):
+            if cls.__module__ != found.name or not dataclasses.is_dataclass(cls):
+                continue
+            for field in dataclasses.fields(cls):
+                for owner in cls.__mro__:
+                    attribute = owner.__dict__.get(field.name)
+                    if isinstance(attribute, property) or inspect.isfunction(attribute):
+                        clashes.append(f"{cls.__module__}.{cls.__name__}.{field.name} shadows {owner.__name__}.{field.name}")
+    assert clashes == [], "\n".join(clashes)
+
+
+def test_the_dashboard_sections_migration_renames_the_heading_column(connection):
+    """Migration 22: a dashboard line's heading column becomes section, carried over when the schema already added section."""
+    from journal.db.migrations.dashboard_sections import DashboardSections
+    connection.execute("ALTER TABLE dashboard_rows ADD COLUMN heading TEXT DEFAULT ''")
+    connection.execute("INSERT INTO dashboard_rows (plugin, key, label, heading, section, created_at, created_by) VALUES ('p', 'k', 'l', 'Totals', '', '2026-10-21', 'system')")
+    DashboardSections().up(connection)
+    names = {row["name"] for row in connection.all("PRAGMA table_info(dashboard_rows)")}
+    assert "heading" not in names and connection.one("SELECT section FROM dashboard_rows")["section"] == "Totals"

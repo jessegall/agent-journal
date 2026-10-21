@@ -7,4 +7,4 @@ from journal.events.rows.row_event import RowEvent
 class RuleMade(RowEvent):
     """A rule was written, by the agent or by the user."""
 
-    by_agent: bool
+    agent_origin: bool

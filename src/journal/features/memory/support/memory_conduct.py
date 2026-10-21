@@ -48,7 +48,7 @@ class MemoryConduct(Conduct):
 
     def on_rule_made_memory(self, event: RuleMade, settings: Settings) -> Transition:
         feature = memory_feature()
-        return self.unchanged(feature.DOES_THE_RULE_APPLY_PROJECT_WIDE.create(n=event.row_id)) if event.by_agent else self.unchanged()
+        return self.unchanged(feature.DOES_THE_RULE_APPLY_PROJECT_WIDE.create(n=event.row_id)) if event.agent_origin else self.unchanged()
 
 
 def memory_feature():

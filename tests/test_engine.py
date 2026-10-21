@@ -922,9 +922,9 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         assert [n.rendered() for n in whispered.typed] == ["fact 3: the port is 8420"]
         already = Snapshot({**decided.readings, "memory": MemorySnapshot(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=("fact 3: the port is 8420",), stale=())})
         assert Idle().on(ToolStarting(call=shell("lsof -i :port")).with_snapshot(already), settings).typed == (), "whispered once per context window"
-        rule = Idle().on(RuleMade(environment_id=0, time=1.0, row_id=7, by_agent=True).with_snapshot(decided), settings)
+        rule = Idle().on(RuleMade(environment_id=0, time=1.0, row_id=7, agent_origin=True).with_snapshot(decided), settings)
         assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
-        assert Idle().on(RuleMade(environment_id=0, time=1.0, row_id=7, by_agent=False).with_snapshot(decided), settings).nudges == ()
+        assert Idle().on(RuleMade(environment_id=0, time=1.0, row_id=7, agent_origin=False).with_snapshot(decided), settings).nudges == ()
     finally:
         BaseState.fold(())
 

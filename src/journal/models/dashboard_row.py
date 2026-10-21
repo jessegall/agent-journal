@@ -13,4 +13,4 @@ class DashboardRow(Model):
     badge: str = ""
     tone: str = ""
     note: str = ""
-    heading: str = ""
+    section: str = ""
