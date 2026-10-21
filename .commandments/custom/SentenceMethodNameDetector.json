@@ -5,13 +5,13 @@
         "select": "function",
         "where": [
             {
-                "nameMatches": "(^|_)(the|a|an|it|its|itself|what|this|that|these|those|them|they|again|still|yet|never|always|only|also|too|now|then|here|there|anew|once_more|one_by_one|by_hand|at_once|as_well|for_good|right_away|all_at_once|as_is|in_turn|in_full|of_the|to_the|in_the|at_the|on_the|for_the|with_the|from_the|into_the|by_the)(_|$)"
+                "nameMatches": "(^|_)(the|a|an|it|its|itself|what|this|that|these|those|them|they|again|still|yet|never|always|only|also|too|now|then|here|there|anew|once_more|one_by_one|by_hand|at_once|as_well|for_good|right_away|all_at_once|as_is|in_turn|in_full|of_the|to_the|in_the|at_the|on_the|for_the|with_the|from_the|into_the|by_the|outside|inside|beyond|behind|ahead|above|below|beneath|around|apart|away|far|near|nearby|elsewhere|somewhere|anywhere|everywhere|nowhere|aside|which|who|whom|whose|why|how|when|where|come|comes|coming|go|goes|going|gone|and|or|but|nor|because|while|until|unless|whether|something|anything|nothing|everything|someone|anyone|nobody|everybody|everyone)(_|$)|_(has|have|had|is|are|was|were|be|been|being|do|does|did|can|could|will|would|shall|should|may|might|must)(_|$)"
             }
         ]
     },
     "sin": {
         "name": "sentence-method-name",
-        "description": "A method is named as a sentence: a function word in it, an article, a pronoun, an adverb or a preposition phrase, such as typed_one_by_one, hold_the_stop, tried_again, speaks_to_the_user.",
+        "description": "A method is named as a sentence: a function word in it, an article, a pronoun, an adverb, a preposition phrase or a place word, such as typed_one_by_one, hold_the_stop, tried_again, blocked_outside.",
         "rule": "A method name is a verb and its object, in the imperative, without articles, pronouns, adverbs or preposition phrases: type_lines, hold_stop, retry, speak_to_user.",
         "skill": "plain-code-words"
     }

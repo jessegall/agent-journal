@@ -22,6 +22,7 @@
         "PoeticTypeNameDetector",
         "PoeticMethodNameDetector",
         "SentenceMethodNameDetector",
+        "SentenceVariableNameDetector",
         "PoeticVariableNameDetector",
         "PoeticParameterNameDetector",
         "DocstringInMethodDetector",

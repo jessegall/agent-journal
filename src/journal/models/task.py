@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from journal.events.rows.row_settled import RowSettled
 from journal.events.rows.task_closed import TaskClosed
-from journal.events.rows.task_opened_again import TaskOpenedAgain
+from journal.events.rows.task_reopened import TaskReopened
 from journal.events.rows.task_started import TaskStarted
 from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
@@ -54,7 +54,7 @@ class Task(Scoped):
         return self.with_(state=TaskState.BLOCKED, blocked_why=why)
 
     def unblocked(self, on: str, at: float) -> "Task":
-        return self.with_(state=TaskState.OPEN, blocked_why="").with_event(TaskOpenedAgain(environment_id=self.environment_id, at=at, task_id=self.id, on=on))
+        return self.with_(state=TaskState.OPEN, blocked_why="").with_event(TaskReopened(environment_id=self.environment_id, at=at, task_id=self.id, on=on))
 
     def finished(self, at: datetime, outcome: str) -> "Task":
         return self.closed(self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome), at, "done")

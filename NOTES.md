@@ -1211,3 +1211,12 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The rule question is a typed line, as the whisper is; the test reads it from the typed lines.
 - The resume chain lives on the stack since phase 1; the unwrap test reads the stack.
 - The custom rules ban poetry in names (PoeticVariable/Parameter/Method/TypeNameDetector) and sentences as method names (SentenceMethodNameDetector): articles, pronouns, adverbs and preposition phrases in a name. Tasks 1095, 1101 and 1105 rename what they catch; task 1102 waits on the plugin's shared lists.
+
+## Plan 19, phase 2, task 983: Idle is the plan's (2026-10-21)
+
+- Idle keeps quiet_since and parked_asked; a start, a prompt and a tool use make it active again. on_stop holds in the order parked, broken wait, approved plan, next open task in auto mode, and passes a stop held once this turn; on_ticked asks about a parked task once after a minute of quiet, a blocked task with no wait after 45 minutes, and checks in after half an hour in auto mode. The listener is on_stop though the event is still named Idle: the event's rename to Stop waits for the chart's deletion, since the chart keys its triggers by the event's name.
+- The tasks standing names what the stop and the tick read in words: parked_named, broken_waits_named, blocked_without_wait (a blocked task with no wait link, nothing the journal can see that opens it) and next_open; the plans standing's approved plans. Plans.APPROVED_UNSTARTED is a nudge of the plans feature now.
+- The seven idle drawings are gone; the approved-plan drawing stays for Working until task 984.
+- The riddle nudges are named for what they do: parked_task_asked_about, blocked_task_asked_about, check_in_after_quiet, parked_task_named_at_close; TaskOpenedAgain and PlanOpenedAgain are TaskReopened and PlanReopened.
+- A state prints with the fields set past their defaults and no times: working(task_id=3), idle; the panic command and the trail read it from BaseState.printed.
+- The 71 tests of the chart itself are dropped ahead of phase 3, since the suite carried every chart walk; the shell's short and shown limits are 400 characters (message 10389); the code-commandments plugin runs v5.20.1.

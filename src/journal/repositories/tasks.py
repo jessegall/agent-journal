@@ -43,7 +43,7 @@ class Tasks(ScopedRepository[Task]):
     def awaited(self, ref: Ref) -> Task | Question | Check:
         return self.awaitable[ref.type].find(ref.id)
 
-    def blocked_outside(self) -> list[Task]:
+    def blocked_without_wait(self) -> list[Task]:
         return [task for task in self.in_state(TaskState.BLOCKED) if not self.open_waits(task)]
 
     def broken_waits(self) -> list[tuple[Task, Check]]:

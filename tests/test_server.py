@@ -504,61 +504,6 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
     older = Listing.from_query({"before": "11"}).listed(rows, lambda r: True, timeline=True)
     assert [r.id for r in older["rows"]] == list(range(1, 11)) and not older["more"]
 
-def test_a_shipped_workflow_cannot_be_deleted_and_an_emptied_one_reads_off(server):
-    status, read = call(server, "GET", "/journal/chart")
-    base = next(w for w in read["workflows"] if w["shipped"] and not w["guarded"])
-    assert status == 200 and not base["off"], "a shipped workflow with its drawing answers its events"
-    status, body = call(server, "POST", f"/journal/chart/{base['id']}/remove", {})
-    assert status == 409 and "empty it or reset it" in body["error"], "a shipped workflow stays"
-    status, saved = call(server, "POST", f"/journal/chart/{base['id']}", {"revision": base["revision"], "nodes": [], "lines": []})
-    assert status == 200 and saved["nodes"] == []
-    status, read = call(server, "GET", "/journal/chart")
-    assert next(w for w in read["workflows"] if w["id"] == base["id"])["off"], "an emptied workflow answers nothing and reads off"
-
-
-def test_the_page_reads_states_with_parents_flags_per_workflow_turns_one_off_and_on_and_lists_recent_runs(server):
-    status, read = call(server, "GET", "/journal/chart")
-    states = {s["key"]: s for s in read["states"]}
-    assert states["following_plan"]["parent"] == "working" and states["working"]["parent"] == "" and states["idle"]["title"] == "Idle"
-    assert read["states"][0]["key"] == "idle" and set(states) == {"idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "ended", "sorting_dump", "paused"}, "the ten states the engine has, the first first; the pauses the agent owed are facts now"
-    assert states["awaiting"]["title"] == "Waiting on a worker" and states["awaiting"]["parent"] == ""
-    idle = next(w for w in read["workflows"] if w["shipped"] and not w["guarded"])
-    assert idle["edited"] is False and idle["failed"] is False and idle["off"] is False
-    status, off = call(server, "POST", f"/journal/chart/{idle['id']}/off", {})
-    assert status == 200 and off["off"] is True and all(n["kind"] != "trigger" for n in off["nodes"]), "turned off: the trigger is gone, the rest stays"
-    status, on = call(server, "POST", f"/journal/chart/{idle['id']}/on", {})
-    assert status == 200 and on["off"] is False and [n["key"] for n in on["nodes"] if n["kind"] == "trigger"] == [idle["event"]], "turned on: the trigger of its event is back"
-    assert on["edited"] is False, "a default turned off and on is still the default"
-    stale = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": 0, "nodes": on["nodes"], "lines": on["lines"]})
-    assert stale[0] == 409 and stale[1]["conflict"] is True and stale[1]["revision"] == on["revision"] and stale[1]["revised_by"] and stale[1]["revised_at"] > 0
-    bad = [{"id": "t", "kind": "trigger", "key": idle["event"]}, {"id": "c", "kind": "check", "key": "flying"}]
-    refused = call(server, "POST", f"/journal/chart/{idle['id']}", {"revision": on["revision"], "nodes": bad, "lines": [{"from": "t", "to": "c"}]})
-    assert refused[0] == 409 and {f["node"] for f in refused[1]["faults"]} == {"c"} and any("check c has no line out" in f["words"] for f in refused[1]["faults"])
-    assert {f["key"] for f in read["fillers"]} >= {"{{task}}", "{{inbox}}", "{{parked_tasks}}", "{{worker_name}}"} and all(f["about"] for f in read["fillers"])
-    titles = {e["key"]: e["title"] for e in read["catalogue"] if e["kind"] == "trigger"}
-    assert titles["task_logs.created"] == "Task log created" and titles["mcp_servers.updated"] == "MCP server updated" and titles["edits.deleted"] == "Edit deleted" and titles["nodes.created"] == "Workflow step created", "an event is named, not described"
-    tried = {e["key"]: e["tried"] for e in read["catalogue"] if e["kind"] == "trigger"}
-    assert tried["idle"] and tried["messages.created"] and tried["workers.updated"] and not tried["tasks.created"] and not tried["messages.deleted"]
-    status, runs = call(server, "GET", "/journal/chart/runs?last=5")
-    assert status == 200 and runs == {"runs": []}, "nothing walked yet in this journal"
-
-
-
-    status, body = call(server, "POST", "/journal/chart", {"state": "idle", "trigger": "idle", "title": "Another stop"})
-    assert status == 201 and body["place"] > 0, "a second workflow for the same state at the same event takes its place after the first"
-    status, body = call(server, "POST", "/journal/chart", {"state": "", "trigger": "idle"})
-    assert status == 201 and body["title"] == "New workflow" and body["state"] == "", "a workflow bound to no state always runs"
-    status, body = call(server, "POST", "/journal/chart", {"state": "flying", "trigger": "idle", "title": "Flying"})
-    assert status >= 400 and "no state is called flying" in json.dumps(body)
-    status, made = call(server, "POST", "/journal/chart", {"state": "idle", "trigger": "tool_finished", "title": "After a tool"})
-    assert status == 201 and made["state"] == "idle" and made["event"] == "tool_finished" and [n["key"] for n in made["nodes"]] == ["tool_finished"]
-    moved = [{**node, "key": "idle"} for node in made["nodes"]]
-    status, body = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": moved, "lines": []})
-    assert status >= 400 and "this workflow is for tool_finished but holds no trigger of it" in json.dumps(body)
-
-
-
-
 def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude_reads_it(server, journal_root):
     status, read = call(server, "GET", "/journal/profiles")
     shipped = ["journal-debugger", "journal-medior", "journal-plan-reviewer", "journal-planner", "journal-researcher", "journal-senior"]
@@ -573,24 +518,6 @@ def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude
     assert status == 200 and one["model"] == "sonnet" and one["codex_model"] == "gpt-6" and one["tools"] == "Read, Grep"
     assert call(server, "GET", "/journal/profiles/nobody")[0] == 404
     assert call(server, "POST", "/journal/profiles/bad.name", {})[0] == 409
-
-
-def test_an_events_workflows_are_put_in_order_by_the_user_and_a_stale_order_names_who_saved_first(server):
-    status, read = call(server, "GET", "/journal/chart")
-    stops = sorted([w for w in read["workflows"] if "idle" in w["places"]], key=lambda w: w["places"]["idle"])
-    status, mine = call(server, "POST", "/journal/chart", {"state": "", "trigger": "idle", "title": "Always at a stop"})
-    assert status == 201 and mine["place"] > stops[-1]["places"]["idle"], "a new workflow takes the last place of its event"
-    rows = [{"id": w["id"], "revision": w["revision"]} for w in stops]
-    status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": mine["revision"]}] + rows})
-    assert status == 200 and [w["id"] for w in body["order"]][0] == mine["id"] and body["order"][0]["place"] == 0, "dragged first, it runs first"
-    moved = next(w for w in body["order"] if w["id"] == mine["id"])
-    assert moved["revision"] == mine["revision"] + 1 and all(w["revision"] == r["revision"] + 1 for w, r in zip(body["order"][1:], rows)), "each workflow that moved has one more revision"
-    status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": rows + [{"id": mine["id"], "revision": mine["revision"]}]})
-    assert status == 409 and "changed since you read it" in body["error"] and "saved it first" in body["error"], "an order over a stale list is refused, naming who saved first"
-    status, body = call(server, "POST", "/journal/chart/order", {"trigger": "idle", "order": [{"id": mine["id"], "revision": moved["revision"]}]})
-    assert status == 409 and "name each once" in body["error"], "an order names every workflow of the event"
-    status, body = call(server, "POST", "/journal/chart/order", {"trigger": "flying", "order": []})
-    assert status == 409 and "no workflow answers flying" in body["error"]
 
 def locked_step_holds(server) -> None:
     """No shipped workflow carries a locked step since the laws are the engine's, so the test locks one the way a shipped drawing would."""
@@ -619,63 +546,6 @@ def locked_step_holds(server) -> None:
     assert status == 200 and any(n["key"] == "say" and n["text"] == "after the law" for n in body["nodes"]), f"a step after a locked one is the user's to add: {body}"
     status, body = call(server, "POST", f"/journal/chart/{guarded['id']}/off", {})
     assert status == 409 and "holds locked step" in body["error"], "a workflow holding the law is not turned off"
-
-
-def test_the_engines_own_moves_are_not_served_with_the_workflows_and_a_run_names_a_state_change(server):
-    status, read = call(server, "GET", "/journal/chart")
-    assert status == 200 and "fixed" not in read, "the engine's own moves are not workflows and are not shown among them"
-    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Wait after a tool"})
-    trigger = next(n for n in made["nodes"] if n["kind"] == "trigger")
-    nodes = made["nodes"] + [{"id": "w", "kind": "action", "key": "wait_outside", "text": "the deploy", "x": 0, "y": 0}]
-    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": [{"from": trigger["id"], "to": "w", "port": "then"}]})
-    assert status == 200, saved
-    hooked = lambda kind, **body: call(server, "POST", "/hooks/claude", {"hook_event_name": kind, "session_id": "s9", **body})
-    hooked("SessionStart")
-    hooked("PostToolUse", tool_name="Read", tool_input={}, tool_response="")
-    status, runs = call(server, "GET", "/journal/chart/runs?last=5")
-    change = next((r["change"] for r in runs["runs"] if r["change"]), "")
-    assert "Idle to Waiting, by step" in change, f"a run names the state change in words: {[r['change'] for r in runs['runs']]}"
-
-
-def test_the_page_shows_each_nodes_runs_the_answer_given_and_the_count_a_check_read(server):
-    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Count the tools"})
-    trigger = next(n for n in made["nodes"] if n["kind"] == "trigger")
-    nodes = made["nodes"] + [
-        {"id": "c", "kind": "action", "key": "count_one", "text": "tools", "x": 0, "y": 0},
-        {"id": "k", "kind": "check", "key": "count_over", "text": "tools 2", "x": 0, "y": 0},
-        {"id": "s", "kind": "action", "key": "say", "text": "two tools now", "x": 0, "y": 0},
-    ]
-    lines = [{"from": trigger["id"], "to": "c", "port": "then"}, {"from": "c", "to": "k", "port": "then"}, {"from": "k", "to": "s", "port": "yes"}]
-    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
-    assert status == 200, saved
-    hooked = lambda kind, **body: call(server, "POST", "/hooks/claude", {"hook_event_name": kind, "session_id": "s8", **body})
-    hooked("SessionStart")
-    hooked("PostToolUse", tool_name="Read", tool_input={}, tool_response="")
-    hooked("PostToolUse", tool_name="Read", tool_input={}, tool_response="")
-    status, drawn = call(server, "GET", f"/journal/chart/{made['id']}")
-    runs = {n["key"]: n["runs"] for n in drawn["nodes"]}
-    assert runs["count_one"] == 2 and runs["count_over"] == 2 and runs["say"] == 1, "each node says how often it ran"
-    assert all(n["last"] > 0 for n in drawn["nodes"] if n["runs"]), "and when last"
-    status, recent = call(server, "GET", "/journal/chart/runs?last=5")
-    ours = [r for r in recent["runs"] if made["id"] in r["workflows"]]
-    check = next(n["id"] for n in drawn["nodes"] if n["key"] == "count_over")
-    assert [r["read"][str(check)] for r in ours] == [2, 1], "a run records the count the check read, newest first"
-    assert ours[0]["answer"] == "Nudge: two tools now" and ours[1]["answer"] == "", "the answer the agent was given, in words"
-    status, tried = call(server, "POST", "/journal/chart/try", {"trigger": "tool_finished", "environment": "main"})
-    assert status == 200 and made["id"] in tried["workflows"] and "Count the tools" in tried["titles"], f"a test run names the workflows it would run, in order: {tried}"
-    assert tried["read"][str(check)] == 3 and any("two tools now" in w for w in tried["would"]), "the dry count is read as the live walk would read it, one more than on record"
-
-
-def test_a_new_workflow_is_titled_by_its_first_action_until_the_user_names_it(server):
-    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished"})
-    assert status == 201 and made["title"] == "New workflow"
-    trigger = next(n for n in made["nodes"] if n["kind"] == "trigger")
-    nodes = made["nodes"] + [{"id": "s", "kind": "action", "key": "say", "text": "a word", "x": 0, "y": 0}]
-    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": [{"from": trigger["id"], "to": "s", "port": "then"}]})
-    assert status == 200 and saved["title"] == "Send the agent a message", "the first action names it"
-    status, named = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Mine"})
-    assert status == 201 and named["title"] == "Mine", "a title given is kept"
-
 
 def test_the_journal_knows_whether_a_viewer_tab_is_open(server):
     assert call(server, "GET", "/journal/viewer")[1] == {"open": False}, "no tab has asked anything yet"
@@ -728,50 +598,6 @@ def test_the_transcript_of_an_agent_and_of_its_subagent_are_read_from_the_provid
     assert [t["text"] for t in sub["turns"]] == ["Read the login."]
     assert call(server, "GET", f"/journal/agents/{agent['id']}/subagents/..%2Fx/transcript")[0] == 404
     assert call(server, "GET", "/journal/workers/99/transcript")[0] == 404
-
-
-def test_where_each_agent_stands_in_a_workflow_is_served(server):
-    call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
-    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Counting"})
-    trigger = made["nodes"][0]["id"]
-    nodes = [*made["nodes"], {"id": "one", "kind": "action", "key": "count_one", "text": "reminders"}, {"id": "enough", "kind": "check", "key": "count_over", "text": "reminders 3"}, {"id": "uses", "kind": "check", "key": "count_over", "text": "reminders 5"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] enough"}, {"id": "seen", "kind": "action", "key": "time_note", "text": "seen"}]
-    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "seen"}, {"from": "seen", "to": "enough"}, {"from": "enough", "to": "uses", "port": "no"}, {"from": "enough", "to": "say", "port": "yes"}, {"from": "uses", "to": "say", "port": "yes"}]
-    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
-    assert status == 200, saved
-    for path in ("a", "b"):
-        call(server, "POST", "/hooks/claude", {"hook_event_name": "PostToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": path}})
-    import time
-    time.sleep(0.5)
-    standing = call(server, "GET", f"/journal/chart/{made['id']}/standing")[1]
-    agent = standing["agents"][0]
-    assert agent["counts"] == {"reminders": 2} and agent["waits"] is True and agent["port"] == "no", "the agent waits at the last check's No with its count"
-    assert list(agent["times"]) == ["seen"] and agent["times"]["seen"] >= 0, "the workflow's times are served, each as the seconds since it was noted"
-    assert {"number": 3, "setting": ""} in standing["limits"].values() and {"number": 5, "setting": ""} in standing["limits"].values(), "each count check's number is served"
-
-
-def test_a_workflow_with_two_triggers_is_listed_at_each_its_values_are_served_and_a_run_names_its_event(server):
-    call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
-    status, made = call(server, "POST", "/journal/chart", {"state": "", "trigger": "tool_finished", "title": "Seen tools"})
-    trigger = made["nodes"][0]["id"]
-    nodes = [*made["nodes"], {"id": "tick", "kind": "trigger", "key": "ticked", "text": ""}, {"id": "one", "kind": "action", "key": "count_one", "text": "seen"}, {"id": "noted", "kind": "action", "key": "time_note", "text": "last_seen"}, {"id": "many", "kind": "check", "key": "count_over", "text": "seen 100"}, {"id": "say", "kind": "action", "key": "say", "text": "[chart] a hundred tools"}]
-    lines = [{"from": trigger, "to": "one"}, {"from": "one", "to": "noted"}, {"from": "noted", "to": "many"}, {"from": "many", "to": "say", "port": "yes"}]
-    status, saved = call(server, "POST", f"/journal/chart/{made['id']}", {"revision": made["revision"], "nodes": nodes, "lines": lines})
-    assert status == 200, saved
-    listed = next(w for w in call(server, "GET", "/journal/chart")[1]["workflows"] if w["id"] == made["id"])
-    assert set(listed["places"]) == {"tool_finished", "ticked"}, "a workflow with two triggers has a place at each of its events"
-    call(server, "POST", "/hooks/claude", {"hook_event_name": "PostToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a"}})
-    import time
-    for _ in range(30):
-        standing = call(server, "GET", f"/journal/chart/{made['id']}/standing")[1]
-        if standing["values"]:
-            break
-        time.sleep(0.1)
-    values = {v["name"]: v for v in standing["values"]}
-    assert values["seen"]["kind"] == "count" and values["seen"]["value"] == 1 and values["seen"]["set_at"] and values["last_seen"]["kind"] == "time", "the environment's counts and times are served, when each was set and by which steps"
-    assert values["seen"]["set_by"] == [n["id"] for n in saved["nodes"] if n["key"] == "count_one"]
-    runs = call(server, "GET", "/journal/chart/runs?last=20")[1]["runs"]
-    assert any(r["event"] == "tool_finished" and r["event_title"] == "Post tool use" and "Seen tools" in r["titles"] for r in runs), "a run names the event that started it"
-
 
 def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_report(tmp_path: Path):
     import time

@@ -28,8 +28,8 @@
         "[journal] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
       ],
       "nudges": [
-        "tasks.unblock_what_has_come",
-        "tasks.anything_left_to_do"
+        "tasks.blocked_task_asked_about",
+        "tasks.check_in_after_quiet"
       ],
       "counts": {
         "charts:10:writes": 0,

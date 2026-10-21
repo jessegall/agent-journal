@@ -4,7 +4,7 @@ from typing import ClassVar
 from journal.models.plan_state import PlanState
 from journal.events.rows.plan_approved import PlanApproved
 from journal.events.rows.plan_blocked import PlanBlocked
-from journal.events.rows.plan_opened_again import PlanOpenedAgain
+from journal.events.rows.plan_reopened import PlanReopened
 from journal.events.rows.plan_started import PlanStarted
 from journal.models.scoped import Scoped
 from journal.models.task import Task
@@ -45,7 +45,7 @@ class Plan(Scoped):
         return self.moved(PlanState.BLOCKED).with_(blocked_why=why).with_event(PlanBlocked(environment_id=self.environment_id, at=at, plan_id=self.id, why=why))
 
     def unblocked(self, why: str, at: float) -> "Plan":
-        return self.moved(PlanState.STARTED).with_(blocked_why="").with_event(PlanOpenedAgain(environment_id=self.environment_id, at=at, plan_id=self.id, why=why))
+        return self.moved(PlanState.STARTED).with_(blocked_why="").with_event(PlanReopened(environment_id=self.environment_id, at=at, plan_id=self.id, why=why))
 
     def is_blocked(self) -> bool:
         return self.state == PlanState.BLOCKED

@@ -3,7 +3,7 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.rows.plan_approved import PlanApproved
 from journal.events.rows.plan_blocked import PlanBlocked
-from journal.events.rows.plan_opened_again import PlanOpenedAgain
+from journal.events.rows.plan_reopened import PlanReopened
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_started import TaskStarted
 
@@ -19,9 +19,9 @@ class PlansConduct(Conduct):
         from journal.features.plans.feature import Plans
         return self.unchanged(Plans.PLAN_BLOCKED.create(n=event.plan_id, why=event.why))
 
-    def on_plan_opened_again_plans(self, event: PlanOpenedAgain, settings: Settings) -> Transition:
+    def on_plan_reopened_plans(self, event: PlanReopened, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        return self.unchanged(Plans.PLAN_OPEN_AGAIN.create(n=event.plan_id, why=event.why))
+        return self.unchanged(Plans.PLAN_REOPENED.create(n=event.plan_id, why=event.why))
 
     def on_task_started_plans(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans

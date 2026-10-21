@@ -320,8 +320,8 @@ class Fillers:
         skill = self.registry.skill_named(self.skill_owed(ctx))
         return str(self.files.path(skill).relative_to(self.files.config.root)) if skill else ""
 
-    def blocked_outside(self, ctx: Context) -> str:
-        return "; ".join(f"{t.id} {t.title} (waiting on: {t.blocked_why})" for t in self.tasks.blocked_outside())
+    def blocked_without_wait(self, ctx: Context) -> str:
+        return "; ".join(f"{t.id} {t.title} (waiting on: {t.blocked_why})" for t in self.tasks.blocked_without_wait())
 
     def broken_waits(self, ctx: Context) -> str:
         return "; ".join(f"task {t.id} waits until `{c.command}`, which cannot run: {c.last_fault}" for t, c in self.tasks.broken_waits())

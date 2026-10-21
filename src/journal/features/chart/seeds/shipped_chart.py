@@ -31,13 +31,6 @@ STATELESS = (
 )
 """The Always workflows the journal ships, one subject each, in the order they run at their event: the drawing's name, its title and the builder that draws it."""
 OWN = (
-    ("idle", "idle", "parked", "Hold the stop while a task is parked", "parked_holds_the_stop"),
-    ("idle", "idle", "broken_wait", "Hold the stop while a blocked task waits on a check that cannot run", "broken_wait_holds_the_stop"),
-    ("idle", "idle", "approved", "Hold the stop while an approved plan is not started", "approved_plan_holds_the_stop"),
-    ("idle", "idle", "open", "Hold the stop in auto mode while tasks are open", "open_tasks_hold_the_stop"),
-    ("idle", "ticked", "parked", "Ask about a parked task after a minute of quiet", "ask_about_parked"),
-    ("idle", "ticked", "blocked", "Ask about a blocked task nothing opens by itself after 45 minutes of quiet", "ask_about_blocked"),
-    ("idle", "ticked", "check_in", "Check in after half an hour of quiet in auto mode", "check_in"),
     ("working", "tool_starting", "log_held", "Hold the write when the task log is overdue", "hold_write_when_log_overdue"),
     ("working", "tool_starting", "log", "Ask for a task log after {tasks.first_nudge_after} edits", "ask_for_a_log_after_edits"),
     ("working", "tool_starting", "in_hand", "Name the task in hand every {tasks.name_every} edits", "name_the_task_in_hand"),
@@ -99,13 +92,13 @@ ANSWER = "[messages.answer_before_anything_else] answer or react to message {{ow
 ANSWER_HELD = "[messages.tools_held_until_answered] answer or react to message {{owed}} first. your tool calls wait until you do"
 PARKED = "[tasks.parked_tasks_still_open] parked tasks, still open: {{parked_tasks}}. `journal task resume <n>` picks one up; leave them parked only on purpose"
 BROKEN_WAIT = "[tasks.fix_the_broken_wait] {{broken_waits}}. so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`"
-BLOCKED_STILL = "[tasks.unblock_what_has_come] blocked, with nothing that opens it by itself: {{blocked_outside}}. has what it waits on come? `journal task unblock <n>` when it has"
+BLOCKED_STILL = "[tasks.blocked_task_asked_about] blocked, with nothing that opens it by itself: {{blocked_without_wait}}. has what it waits on come? `journal task unblock <n>` when it has"
 CHECKPOINT = "[plans.phase_complete_at_a_checkpoint] plan {{plan_n}}: phase {{checkpoint_phase}} is complete and a checkpoint. the user looks before the next phase; wait for their word, then `journal plan start {{plan_n}}`"
 CHECKPOINT_PASSED = "[plans.phase_complete_go_on] plan {{plan_n}}: phase {{checkpoint_phase}} is complete, and in auto mode it does not stop you. `journal plan start {{plan_n}}` begins the next phase; carry on"
 NEXT = "[tasks.next_task_holds_the_stop] tasks are open, and auto mode is on: task {{next_task}} next: {{next_task_title}}. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"
-PARKED_AT_CLOSE = "[tasks.continue_the_parked_task_at_close] task {{parked_n}} is still parked: can you continue it now? It was parked because: {{parked_why}}. `journal task resume {{parked_n}}` picks it up again"
-PARKED_STILL = "[tasks.continue_the_parked_task] task {{parked_n}} is still parked: can you continue it now? It was parked because: {{parked_why}}. `journal task resume {{parked_n}}` picks it up again"
-CHECK_IN = "[tasks.anything_left_to_do] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
+PARKED_AT_CLOSE = "[tasks.parked_task_named_at_close] task {{parked_n}} is still parked: can you continue it now? It was parked because: {{parked_why}}. `journal task resume {{parked_n}}` picks it up again"
+PARKED_STILL = "[tasks.parked_task_asked_about] task {{parked_n}} is still parked: can you continue it now? It was parked because: {{parked_why}}. `journal task resume {{parked_n}}` picks it up again"
+CHECK_IN = "[tasks.check_in_after_quiet] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
 LOG_OVERDUE = "[tasks.write_held_until_logged] {{value.writes}} edits since you logged {{task}}. {{log_command}} \"<what was decided or done, and why>\" before any other write"
 LOG_SOON = "[tasks.log_where_it_stands] {{value.writes}} edits since you logged {{task}}: say where it stands. {{log_command}} \"<where it stands>\""
 IN_HAND = "[tasks.task_in_hand_named_back] {{task}} in hand, {{value.writes}} edits. if this is not what you are doing, finish it or park it and start the work you are on"
@@ -428,20 +421,9 @@ class ShippedChart(Seed):
         """A fresh session start, not one going on after a compaction, with facts, rules or reminders standing long: the agent is asked whether they still hold, at most once a day."""
         return self.guarded(chart, ends, 720, 92, (Guard("after_compaction", passes=NO), Guard("memory_older_than", "memory.stale_after")), "say", STALE)
 
-    def parked_holds_the_stop(self, chart: Chart, ends: list) -> list:
-        """A parked task holds the stop, in any mode, naming the parked ones."""
-        return self.guarded(chart, ends, 160, 92, (Guard("parked_tasks"),), "block_stop", PARKED)
-
-    def broken_wait_holds_the_stop(self, chart: Chart, ends: list) -> list:
-        return self.guarded(chart, ends, 160, 92, (Guard("broken_waits"),), "block_stop", BROKEN_WAIT)
-
     def approved_plan_holds_the_stop(self, chart: Chart, ends: list) -> list:
         """A plan the user approved and the agent has not started holds the stop, in any mode, until it is started."""
         return self.guarded(chart, ends, 160, 92, (Guard("approved_plan"),), "block_stop", APPROVED_UNSTARTED)
-
-    def open_tasks_hold_the_stop(self, chart: Chart, ends: list) -> list:
-        """In auto mode an open task holds the stop, naming the next one."""
-        return self.guarded(chart, ends, 160, 92, (Guard("auto_mode"), Guard("open_tasks")), "block_stop", NEXT)
 
     def checkpoint_in_auto_mode(self, chart: Chart, ends: list) -> list:
         """A plan at a checkpoint in auto mode: the stop is held and the agent goes on; holding the stop ends the walk."""
@@ -450,26 +432,6 @@ class ShippedChart(Seed):
     def checkpoint_waits_for_the_user(self, chart: Chart, ends: list) -> list:
         """A plan at a checkpoint with auto mode off: the agent is told the user looks first."""
         return self.guarded(chart, ends, 240, 92, (Guard("plan_at_checkpoint"), Guard("auto_mode", passes=NO)), "say", CHECKPOINT)
-
-    def ask_about_parked(self, chart: Chart, ends: list) -> list:
-        """As the clock ticks on an agent at rest with a parked task: after a minute of quiet, ask whether it can go on."""
-        return self.asked_after_quiet(chart, ends, "task_just_parked", "parked_tasks", "1 minute", PARKED_STILL)
-
-    def ask_about_blocked(self, chart: Chart, ends: list) -> list:
-        """As the clock ticks on an agent at rest with a blocked task nothing opens by itself: after 45 minutes of quiet, before an hour of it ends the session, ask whether it has come."""
-        return self.asked_after_quiet(chart, ends, "task_just_blocked", "blocked_outside", "45 minutes", BLOCKED_STILL)
-
-    def asked_after_quiet(self, chart: Chart, ends: list, moved: str, waiting: str, quiet: str, line: str) -> list:
-        """A task's move into its wait and the agent's own events note when it was last active; on the tick, with a task still so, after so long a quiet the agent is asked by typing."""
-        self.guarded(chart, self.also_on(chart, "tasks.updated", 1040, 0), 1040, 92, (Guard(moved),), "time_note", "last_active")
-        self.noted_on_activity(chart, "last_active", 240)
-        return self.guarded(chart, ends, 240, 92, (Guard(waiting), Guard("time_over", f"last_active {quiet}")), "type", line)
-
-    def check_in(self, chart: Chart, ends: list) -> list:
-        """As the clock ticks on an agent at rest in auto mode: after half an hour of quiet, check in. A task's change and the agent's own events note when it was last active."""
-        self.guarded(chart, self.also_on(chart, "tasks.updated", 1040, 0), 1040, 92, (), "time_note", "last_active")
-        self.noted_on_activity(chart, "last_active", 240)
-        return self.guarded(chart, ends, 240, 92, (Guard("auto_mode"), Guard("time_over", "last_active 30 minutes")), "type", CHECK_IN)
 
     def hold_write_when_log_overdue(self, chart: Chart, ends: list) -> list:
         """A write with the task's log overdue, by the writes since it: held until the log."""

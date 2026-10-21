@@ -360,7 +360,7 @@ def test_the_stack_keeps_its_floor_changes_only_its_top_and_comes_back_from_its_
     stack = Stack((Idle(), Working(task_id=3)))
     assert stack.top() == Working(task_id=3)
     assert stack.pushed(Ended()).to_data()[-1] == {"state": "ended", "data": {}}
-    assert stack.popped().to_data() == [{"state": "idle", "data": {}}]
+    assert stack.popped().to_data() == [{"state": "idle", "data": {"quiet_since": 0.0, "parked_asked": False}}]
     assert stack.popped().popped() == stack.popped()
     assert stack.with_top(Working(task_id=4)).top().task_id == 4
     catalogue = StatesCatalogue(Known())
@@ -501,9 +501,9 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
 def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_names_the_agent(app):
     hook(app, "SessionStart")
     console, agents = app.console(), app.container.get(Agents)
-    assert console.run(["panic", "working", "task_id=3"], AGENT).out.strip() == "the stack, bottom to top: idle, working(task_id=3, what=, logged_at=0.0)"
-    assert console.run(["panic", "stuck", "why=lost"], AGENT).out.startswith("the stack, bottom to top: idle, working(task_id=3, what=, logged_at=0.0), stuck(")
-    assert console.run(["panic", "pop"], AGENT).out.strip().endswith("idle, working(task_id=3, what=, logged_at=0.0)")
+    assert console.run(["panic", "working", "task_id=3"], AGENT).out.strip() == "the stack, bottom to top: idle, working(task_id=3)"
+    assert console.run(["panic", "stuck", "why=lost"], AGENT).out.startswith("the stack, bottom to top: idle, working(task_id=3), stuck(")
+    assert console.run(["panic", "pop"], AGENT).out.strip().endswith("idle, working(task_id=3)")
     assert console.run(["panic", "nowhere"], AGENT).code != 0
     assert console.run(["panic", "idle"], AGENT).out.strip() == "the stack, bottom to top: idle"
     assert [row["state"] for row in agents.for_session("s1").stack] == ["idle"]
@@ -645,7 +645,7 @@ def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_fro
     settings = SettingsValue({})
     from journal.features.plans.support.started_plan import StartedPlan
     plans = PlansStanding(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), tasks_left=2, at_checkpoint=False))
-    tasks = TasksStanding(in_hand=7, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=())
+    tasks = TasksStanding(in_hand=7, parked=(), parked_named="", blocked=(), blocked_without_wait=(), blocked_without_wait_named="", broken_waits=(), broken_waits_named="", first_parked_why="", next_open=None, last_commands=())
     standing = Standing({"plans": plans, "tasks": tasks})
     assert Idle().on(SessionStarted().with_standing(standing), settings).pushed == FollowingPlan(plan_id=5, task_id=7)
     assert Idle().on(SessionStarted().with_standing(Standing({"plans": PlansStanding((), None), "tasks": tasks})), settings).pushed is None
@@ -681,7 +681,7 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_stand
     settings = SettingsValue({Etiquette.REMIND_EVERY.key: 50})
     from journal.features.plans.support.plans_standing import PlansStanding
     from journal.features.tasks.support.tasks_standing import TasksStanding
-    standing = Standing({"plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()), "voices": VoicesStanding(instruction="as a butler"), "etiquette": EtiquetteStanding(lines_since_reminder=50), "pins": PinsStanding(pinned=("https://a.test/pinned",), suggested_lately=("https://a.test/said",)), "migration": MigrationStanding(version_3_waiting=True)})
+    standing = Standing({"plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), parked_named="", blocked=(), blocked_without_wait=(), blocked_without_wait_named="", broken_waits=(), broken_waits_named="", first_parked_why="", next_open=None, last_commands=()), "voices": VoicesStanding(instruction="as a butler"), "etiquette": EtiquetteStanding(lines_since_reminder=50), "pins": PinsStanding(pinned=("https://a.test/pinned",), suggested_lately=("https://a.test/said",)), "migration": MigrationStanding(version_3_waiting=True)})
     BaseState.fold((VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
     try:
         started = Idle().on(SessionStarted().with_standing(standing), settings)
@@ -724,7 +724,7 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
     settings = SettingsValue({})
     triggers = (Trigger(id=1, words=("deploy",), action=TriggerAction.DENY, text="no deploys tonight"), Trigger(id=2, words=("release",), action=TriggerAction.INSTRUCT, text="bump the version"), Trigger(id=3, words=("plan",), action=TriggerAction.SEQUENCE, text="Building a plan"))
     plugin_file = str(Path(".journal", "plugins", "x", "run.sh"))
-    standing = Standing({"plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()), "triggers": TriggersStanding(triggers=triggers), "plugins": PluginsStanding(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
+    standing = Standing({"plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), parked_named="", blocked=(), blocked_without_wait=(), blocked_without_wait_named="", broken_waits=(), broken_waits_named="", first_parked_why="", next_open=None, last_commands=()), "triggers": TriggersStanding(triggers=triggers), "plugins": PluginsStanding(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
     BaseState.fold((GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
     try:
         assert Idle().on(CommitMade(sha="abcdef0123").with_standing(standing), settings).nudges == ()
@@ -777,10 +777,10 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     from journal.events.rows.reaction_given import ReactionGiven
     from journal.events.rows.secret_allowed import SecretAllowed
     from journal.events.rows.worker_back import WorkerBack
-    settings = SettingsValue({MessagesFeature.HOLD_AFTER.key: 10, MessagesFeature.NUDGE_AFTER.key: 3, MessagesFeature.REMIND_EVERY.key: 3, MessagesFeature.HOLD_AFTER_REMINDERS.key: 5, Shell.SHOWN.key: 100, WorkersFeature.MOST_SUBAGENTS.key: 2})
+    settings = SettingsValue({MessagesFeature.HOLD_AFTER.key: 10, MessagesFeature.NUDGE_AFTER.key: 3, MessagesFeature.REMIND_EVERY.key: 3, MessagesFeature.HOLD_AFTER_REMINDERS.key: 5, Shell.SHOWN.key: 100, WorkersFeature.MOST_SUBAGENTS.key: 2, "tasks.auto": False})
     private = tmp_path / "private"
     readings = {
-        "plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()),
+        "plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), parked_named="", blocked=(), blocked_without_wait=(), blocked_without_wait_named="", broken_waits=(), broken_waits_named="", first_parked_why="", next_open=None, last_commands=()),
         "messages": MessagesStanding(unread=(7, 8), unanswered=(5,), unanswered_files=(f"{tmp_path}/files/message/5/",), uses_since_newest=3, times_named=1, uses_unanswered=4),
         "profiles": ProfilesStanding(names=("journal-researcher", "journal-medior"), subagents=("journal-researcher",), workers=("journal-medior",)),
         "shell": ShellStanding(background=(12,), background_since=100.0, ended_untold=(EndedOutput(3, 0), EndedOutput(4, 1)), output_reads=("journal output read <output> --grep x", "journal output read <output> --grep x"), readers=(Reader("tests", "the failures", "FAILED"),), tipped=()),
@@ -876,10 +876,10 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     from journal.events.agent.idle import Idle as IdleEvent
     from journal.events.rows.rule_made import RuleMade
     from journal.support.chat_mark import ChatMark
-    settings = SettingsValue({})
+    settings = SettingsValue({"tasks.auto": False})
     cards = (SkillCard("journal", ".claude/skills/journal/SKILL.md", "h1", (), ()), SkillCard("plans", ".claude/skills/journal-plans/SKILL.md", "h2", ("plan", "roadmap"), ("following_plan",)))
     readings = {
-        "plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()),
+        "plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), parked_named="", blocked=(), blocked_without_wait=(), blocked_without_wait_named="", broken_waits=(), broken_waits_named="", first_parked_why="", next_open=None, last_commands=()),
         "skills": SkillsStanding(owed=("journal",), loaded={"plans": "h2"}, skills=cards),
         "briefing": BriefingStanding(oriented=False, environment="main", others_lately_at="09:12", rules="1. Always test", rules_count=1, facts="", reminders="1. Log often", waiting="2 tasks"),
         "memory": MemoryStanding(mark_owed=50, context_mark=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), ChatMark.FACTS),), lines_in_window=()),
@@ -936,3 +936,40 @@ def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
     assert other.to is waiting and other.nudges == (), "a worker it does not wait on is not its business"
     last = Awaiting(workers=(4,)).on(WorkerStopped(environment_id=1, at=2.0, worker_id=4, name="Herr Turing"), settings)
     assert last.popped and [n.key for n in last.nudges] == ["workers.worker_stopped_unreported", "workers.waited_on_came_back"]
+
+
+def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_standing():
+    from dataclasses import replace
+    from journal.features.tasks.feature import Tasks as TasksFeature
+    from journal.features.tasks.support.tasks_standing import TasksStanding
+    from journal.features.plans.support.plans_standing import PlansStanding
+    from journal.models.open_task import OpenTask
+    from journal.events.agent.idle import Idle as Stop
+    from journal.events.agent.ticked import Ticked
+    auto, manual = SettingsValue({TasksFeature.AUTO.key: True}), SettingsValue({TasksFeature.AUTO.key: False})
+    nothing = TasksStanding(in_hand=0, parked=(), parked_named="", blocked=(), blocked_without_wait=(), blocked_without_wait_named="", broken_waits=(), broken_waits_named="", first_parked_why="", next_open=None, last_commands=())
+    open_next = replace(nothing, next_open=OpenTask(4, "the footer"))
+    parked = replace(open_next, parked=(2,), parked_named="task 2 (the parser)", first_parked_why="a review first")
+    broken = replace(open_next, broken_waits=(3,), broken_waits_named="task 3 waits on check 1, lint, which cannot run")
+    blocked = replace(nothing, blocked_without_wait=(5,), blocked_without_wait_named="task 5 (the key)")
+    of = lambda tasks, approved=(): Standing({"tasks": tasks, "plans": PlansStanding(approved, None)})
+    stop = lambda standing, settings=auto, held_before=False: Idle(quiet_since=100.0).on(Stop(held_before=held_before).with_standing(standing), settings)
+    assert stop(of(parked)).held.rendered().startswith("parked tasks, still open: task 2 (the parser)")
+    assert stop(of(broken)).held.rendered().startswith("task 3 waits on check 1, lint, which cannot run")
+    assert stop(of(open_next, approved=(9,))).held.rendered().startswith("plan 9 is approved and not started")
+    assert stop(of(open_next)).held.rendered().startswith("tasks are open, and auto mode is on: task 4 is next")
+    assert stop(of(open_next), manual).held is None, "off auto mode an open task is no reason to go on"
+    assert stop(of(parked), auto, held_before=True).held is None, "a stop held once this turn passes"
+    assert stop(of(nothing)).held is None
+    idle = Idle(quiet_since=0.0)
+    active = idle.on(ToolStarting(tool="Read", input={}, at=50.0).with_standing(of(nothing)), auto)
+    assert active.to == Idle(quiet_since=50.0, parked_asked=False)
+    assert idle.on(PromptSubmitted(prompt="hi", at=70.0).with_standing(of(nothing)), auto).to.quiet_since == 70.0
+    tick = lambda standing, at, state=idle, settings=auto: state.on(Ticked(quiet_for=0.0, at=at).with_standing(standing), settings)
+    asked = tick(of(parked), 61.0)
+    assert asked.to == Idle(quiet_since=0.0, parked_asked=True) and asked.nudges[0].rendered().startswith("task 2 is still parked: can you continue it now?")
+    assert tick(of(parked), 59.0).nudges == () and tick(of(parked), 61.0, Idle(quiet_since=0.0, parked_asked=True)).nudges == (), "asked once per quiet"
+    assert [n.key for n in tick(of(blocked), 45 * 60.0).nudges] == ["tasks.blocked_task_asked_about"] and tick(of(blocked), 20 * 60.0).nudges == ()
+    assert [n.key for n in tick(of(nothing), 30 * 60.0).nudges] == ["tasks.check_in_after_quiet"] and tick(of(nothing), 30 * 60.0, idle, manual).nudges == ()
+    assert tick(of(nothing), 61.0).nudges == ()
+    assert idle.on(SessionStarted(at=5.0).with_standing(of(nothing)), auto).to == Idle(quiet_since=5.0)

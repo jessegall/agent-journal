@@ -21,8 +21,8 @@ class Shell(Feature):
     WHILE_WAITING = Option("shell.foreground_while_waiting", "In the foreground while a message waits", "The same limit while the user has an unread or unanswered message, so they are not kept waiting", 10, unit="seconds")
     SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")
     READ_SHOWN = Option("shell.read_characters", "Show of a command that reads", "The characters of a reading command's output shown, half from each end, such as cat, grep or git diff; past it the agent reads the rest by the output's number", 8000, unit="characters")
-    COMMAND_SHOWN = Option("shell.command_characters", "Show any other command's output up to", "Any other command's output, such as a test run or a build, is shown whole up to this; past it only a line naming the output, which the agent reads by its number", 200, unit="characters")
-    SHORT = Option("shell.short_output", "Keep no output under", "A command whose whole output is under this many characters, with no pipe in its line, is shown as it is and kept as no numbered output; a longer one, or a line with a pipe into head, tail, grep or any filter, is kept", 200, unit="characters")
+    COMMAND_SHOWN = Option("shell.command_characters", "Show any other command's output up to", "Any other command's output, such as a test run or a build, is shown whole up to this; past it only a line naming the output, which the agent reads by its number", 400, unit="characters")
+    SHORT = Option("shell.short_output", "Keep no output under", "A command whose whole output is under this many characters, with no pipe in its line, is shown as it is and kept as no numbered output; a longer one, or a line with a pipe into head, tail, grep or any filter, is kept", 400, unit="characters")
     KEPT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
     options = (FOREGROUND, WHILE_WAITING, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, KEPT)
     listeners = (MarkOutputsTold,)
@@ -51,7 +51,7 @@ Every shell command you run goes through the journal's runner.
   and a failing part stops the chain where the shell would have.
 - A command that runs past thirty seconds, or ten while a message of the user's waits, is moved to the background with
   the rest of its chain: the tool call returns with its output number, and you are told when output N ends.
-- A command whose whole output is under 200 characters, with no pipe in its line, prints as it is and is kept as no
+- A command whose whole output is under 400 characters, with no pipe in its line, prints as it is and is kept as no
   output. Any other command's output is kept as a numbered output, the newest 250 of them. `journal output read N` needs a flag
   naming the part: `--tail 20`, `--head 20`, `--grep "<words>"`, `--lines 100-160`, `--reader <name>`, `--summary` for
   how it ended with its first and last lines, or `--all` for every line when you truly need it whole. `journal output
@@ -60,7 +60,7 @@ Every shell command you run goes through the journal's runner.
   --about "<what it picks>"`, or `--script <file>` for a shell script handed the output on its input. Use it with
   `journal output read N --reader <name>`; `journal reader list` names the project's readers. The second time you
   read the same shape of output by hand, add a reader for it and say so in the chat.
-- A test run, a build or any other command's output is shown whole up to 200 characters; past that you see only a
+- A test run, a build or any other command's output is shown whole up to 400 characters; past that you see only a
   line naming the output to read by its number. A command that reads (cat, grep, sed, git diff) is shown up to 8,000
   characters, past that by its two ends. A line of journal commands is shown whole and kept as no output.
 - A command that only reads the project's own code runs as written, pipes and all: `grep -n x src/app.py | tail -5`

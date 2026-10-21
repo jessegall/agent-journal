@@ -119,7 +119,7 @@ printf '%s' "$1" > "$folder/line"
 sh "$__journal_cli" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
 limit=$(sh "$__journal_cli" shell limit --line "$1" 2>/dev/null); limit=${limit:-30}
-cap=$(sh "$__journal_cli" shell cap --line "$1" 2>/dev/null); cap=${cap:-hint 200}
+cap=$(sh "$__journal_cli" shell cap --line "$1" 2>/dev/null); cap=${cap:-hint 400}
 show=${cap%% *}
 cap=${cap##* }
 trap 'touch "$folder/moved"; exit 143' TERM INT HUP

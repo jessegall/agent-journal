@@ -34,7 +34,7 @@
         "[journal] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
       ],
       "nudges": [
-        "tasks.anything_left_to_do"
+        "tasks.check_in_after_quiet"
       ],
       "counts": {
         "charts:31:said": 6
@@ -79,7 +79,7 @@
         "[journal] task 1 is still parked: can you continue it now? It was parked because: the header first. `journal task resume 1` picks it up again"
       ],
       "nudges": [
-        "tasks.continue_the_parked_task"
+        "tasks.parked_task_asked_about"
       ],
       "counts": {
         "charts:10:writes": 0,

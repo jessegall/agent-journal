@@ -205,8 +205,8 @@ class Checks:
     def blocked_tasks(self, ctx: Context) -> bool:
         return bool(self.tasks.in_state(TaskState.BLOCKED))
 
-    def blocked_outside(self, ctx: Context) -> bool:
-        return bool(self.tasks.blocked_outside())
+    def blocked_without_wait(self, ctx: Context) -> bool:
+        return bool(self.tasks.blocked_without_wait())
 
     def broken_waits(self, ctx: Context) -> bool:
         return bool(self.tasks.broken_waits())

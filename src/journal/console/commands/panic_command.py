@@ -29,7 +29,7 @@ class PanicCommand(Command):
     def now(self, args: Namespace, where: Where) -> int:
         words = " ".join(["journal panic", args.state, *args.values])
         agent = self.changed(args, where, words)
-        print(f"the stack, bottom to top: {self.printed(agent.stack)}")
+        print(f"the stack, bottom to top: {', '.join(state.printed() for state in self.machine.states.stack_of(agent).states)}")
         return 0
 
     def changed(self, args: Namespace, where: Where, words: str):
@@ -48,7 +48,3 @@ class PanicCommand(Command):
             name, _, value = pair.partition("=")
             values[name] = int(value) if value.isdigit() else value
         return values
-
-    @staticmethod
-    def printed(stack: tuple) -> str:
-        return ", ".join(f"{row['state']}({', '.join(f'{k}={v}' for k, v in row['data'].items())})" if row["data"] else row["state"] for row in stack)

@@ -73,6 +73,10 @@ class BaseState(Conduct):
     def to_data(self) -> dict:
         return {field.name: getattr(self, field.name) for field in fields(self)}
 
+    def printed(self) -> str:
+        set_fields = [f"{field.name}={getattr(self, field.name)}" for field in fields(self) if getattr(self, field.name) != field.default and not isinstance(getattr(self, field.name), float)]
+        return f"{self.name}({', '.join(set_fields)})" if set_fields else self.name
+
     @classmethod
     def from_data(cls, data: dict) -> "BaseState":
         known = {field.name for field in fields(cls)}
