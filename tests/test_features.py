@@ -6303,6 +6303,15 @@ def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_disp
     assert workers.find(2).resume == "" and dispatcher.is_file(), "a worker in the project's own folder never takes the newest transcript there, which is the dispatcher's"
 
 
+def kept_conversation(app: App, monkeypatch) -> Path:
+    """Every worker's session has a conversation file still there, so a send can resume it."""
+    from journal.providers.claude import Claude
+    conversation = app.config.root / "conversation.jsonl"
+    conversation.write_text("{}\n")
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: conversation)
+    return conversation
+
+
 def listening_session(home: Path, pid: int, session: str) -> list[dict]:
     """A Claude Code session's registry file, key and inbox socket, laid out as Claude Code publishes them; the lines it is sent are gathered."""
     import socket
@@ -6400,7 +6409,6 @@ def test_a_running_workers_session_takes_the_notify_after_its_key_and_only_as_th
 
 def test_two_jobs_sent_to_one_worker_at_once_start_one_run(app: App, monkeypatch):
     import threading
-    from journal.providers.claude import Claude
     from journal.repositories.workers import Workers
     started = []
 
@@ -6409,7 +6417,7 @@ def test_two_jobs_sent_to_one_worker_at_once_start_one_run(app: App, monkeypatch
         timing.sleep(0.3)
 
     monkeypatch.setattr(WorkerRunner, "start", slow_start)
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
     console.run(["worker", "dispatch", "Lady Lovelace", "the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
@@ -6432,12 +6440,11 @@ def test_two_jobs_sent_to_one_worker_at_once_start_one_run(app: App, monkeypatch
 
 def test_stop_and_send_find_a_workers_process_after_a_restart(app: App, monkeypatch):
     import subprocess
-    from journal.providers.claude import Claude
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
     started = []
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker.id))
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
     console.run(["worker", "dispatch", "Mr. Brunel", "the bridge", "--profile", "journal-medior", "--model", "fast"], AGENT)
@@ -6464,7 +6471,7 @@ def test_a_revived_worker_goes_on_in_its_own_worktree_and_branch_and_keeps_its_w
     import subprocess
     from journal.providers.claude import Claude
     from journal.repositories.workers import Workers
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    kept_conversation(app, monkeypatch)
     root = app.config.root
     git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
     git("init", "-q", "-b", "main")
@@ -6512,7 +6519,7 @@ def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_wor
     from journal.repositories.workers import Workers
     started = []
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker))
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    kept_conversation(app, monkeypatch)
     root = app.config.root
     git = lambda *argv: subprocess.run(["git", *argv], cwd=root, capture_output=True, text=True, timeout=30)
     for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
@@ -6534,14 +6541,13 @@ def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_wor
 
 def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: App, monkeypatch):
     from journal.features.workers.feature import Workers as WorkersFeature
-    from journal.providers.claude import Claude
     from journal.providers.codex import Codex
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
     from journal.support.profile_files import ProfileFiles
     started = []
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker))
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    kept_conversation(app, monkeypatch)
     app.container.get(ProfileFiles).write_all()
     hook(app, "SessionStart")
     console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
@@ -6560,10 +6566,9 @@ def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: Ap
 
 def test_a_reused_worker_keeps_every_report_and_is_out_again_until_it_reports(app: App, monkeypatch):
     from journal.features.workers.support.worker_reports import REPORTED
-    from journal.providers.claude import Claude
     from journal.repositories.links import Links
     from journal.repositories.workers import Workers
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers, links = app.console(), app.container.get(Workers), app.container.get(Links)
     console.run(["worker", "dispatch", "Mr. Stephenson", "the rocket", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
@@ -6582,9 +6587,8 @@ def test_a_reused_worker_keeps_every_report_and_is_out_again_until_it_reports(ap
 
 
 def test_a_job_sent_to_a_worker_that_reported_puts_the_dispatcher_back_in_its_wait_on_it(app: App, monkeypatch):
-    from journal.providers.claude import Claude
     from journal.repositories.workers import Workers
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers, machine = app.console(), app.container.get(Workers), app.container.get(StateMachine)
     console.run(["task", "create", "t", "--start"], AGENT)
@@ -6601,12 +6605,11 @@ def test_a_job_sent_to_a_worker_that_reported_puts_the_dispatcher_back_in_its_wa
 
 def test_each_worker_moment_after_its_dispatch_is_a_short_mark_of_its_own(app: App, tmp_path, monkeypatch):
     import subprocess
-    from journal.providers.claude import Claude
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
     home = tmp_path / "home"
     monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers, messages = app.console(), app.container.get(Workers), app.container.get(Messages)
     marks = lambda: [(m.text, m.data.get("tone"), m.data.get("detail")) for m in messages.scoped() if m.data.get("shows") == "workers" and not m.data.get("key")]
