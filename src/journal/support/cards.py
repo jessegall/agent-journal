@@ -6,9 +6,11 @@ from journal.models.message import Message
 from journal.repositories.messages import Messages
 from journal.support.row_card import RowCard
 
+DETAIL_CHARACTERS = 80
+
 
 class Cards:
-    """A mark in the chat for a moment worth seeing: a check that ran, a trigger that fired, a question answered, a skill loaded, a halt. One funnel writes them, as messages of the system's; the viewer draws each as a card by its kind."""
+    """A mark in the chat for a moment worth seeing: a check that ran, a trigger that fired, a question answered, a skill loaded, a halt. One funnel writes them, as messages of the system's, each one line with at most a short second line; the viewer draws each as a card by its kind."""
 
     def __init__(self, messages: Messages) -> None:
         self.messages = messages
@@ -25,8 +27,22 @@ class Cards:
         return self.keyed(environment_id, self.creation_key(row), row.title_words(), data, actor, CardKind.CREATED)
 
     def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind) -> Message:
-        data = {"session": "", "row": "", **data, "key": key, "shows": str(shows)}
+        data = {"session": "", "row": "", **data, **self.detail_parts(data), "key": key, "shows": str(shows)}
         older = self.messages.keyed(key, actor) if key else []
         if older:
             return self.messages.save(older[0].with_(text=label, data=data), actor)
         return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), actor)
+
+    def detail_parts(self, data: dict) -> dict:
+        lines = str(data.get("detail", "")).strip().splitlines()
+        if not lines:
+            return {}
+        head = {"detail": self.shortened(lines[0])}
+        return head | {"lines": lines} if len(lines) > 1 else head
+
+    @staticmethod
+    def shortened(detail: str) -> str:
+        line = detail.strip()
+        if len(line) <= DETAIL_CHARACTERS:
+            return line
+        return line[:DETAIL_CHARACTERS].rsplit(" ", 1)[0].rstrip(",.") + "…"

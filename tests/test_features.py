@@ -1475,7 +1475,7 @@ def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app: Ap
     assert "fact" not in output and "message" not in output.split("Searched")[0], "a row missing a word is not found"
     assert console.run(["search", "find", "100%"], AGENT).text == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
     thresholds = [m for m in app.container.get(Messages).scoped() if m.data.get("kind") == "search"]
-    assert thresholds[0].text == 'Searched for "base REPOSITORY"' and "task 1: Scope the reads" in thresholds[0].data["detail"], "the mark opens what was found"
+    assert thresholds[0].text == 'Searched for "base REPOSITORY"' and any("task 1: Scope the reads" in line for line in thresholds[0].data["lines"]), "the mark opens what was found"
     console.run(["check", "create", "Lint the base repository", "--command", "true", "--every", "0"], AGENT)
     assert "check 1: Lint the base repository" in console.run(["search", "base", "repository"], AGENT).text, "every model with words of its own is searched, a check among them"
     only = console.run(["search", "base", "repository", "--model", "plan,check"], AGENT).text
@@ -1675,6 +1675,23 @@ def test_a_dispatched_worker_runs_and_its_output_is_its_report(app: App):
     app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo the footer is fixed"], A.agent("s1"))
     assert app.container.get(Workers).find(1).state == "reported"
     assert any("Lady Lovelace reports: the footer is fixed" in m.text for m in app.container.get(Messages).scoped())
+
+
+def test_a_worker_that_reported_itself_keeps_its_report_and_session_when_its_process_ends(app: App):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.support.actor import Actor as A
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    app.console().run(["worker", "dispatch", "Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    workers = app.container.get(Workers)
+    stale = workers.find(1)
+    app.console().run(["worker", "report", "1", "the parser is done"], Caller("main", "w1"))
+    app.console().run(["worker", "complete", "1"], AGENT)
+    app.container.get(WorkerRunner).finish(stale, 0, A.agent("s1"))
+    worker = workers.find(1)
+    reports = [m.text for m in app.container.get(Messages).scoped() if "Lady Lovelace reports" in m.text]
+    assert reports == ["Lady Lovelace reports: the parser is done"] and worker.adopted and worker.session == "w1", "the process ending after the worker's own report files no second report and keeps what was acted on"
 
 
 def test_a_message_waiting_at_session_start_is_named_in_the_start_block(app: App):
@@ -3353,7 +3370,7 @@ def test_only_the_user_installs_or_switches_on_a_plugin(app: App, tmp_path):
     assert refused.code != 0 and "only the user installs a plugin: journal plugin propose" in refused.error and plugins.all() == []
     assert console.run(["plugin", "propose", str(folder), "--why", "to echo"], AGENT).code == 0
     card = app.container.get(Messages).recent(1)[0]
-    assert card.text == "The agent proposes the plugin echo: to echo" and f"journal plugin install {folder} --yes" in card.data["detail"]
+    assert card.text == "The agent proposes the plugin echo: to echo" and card.data["command"] == f"journal plugin install {folder} --yes"
     console.run(["plugin", "install", str(folder), "--yes"], USER)
     console.run(["plugin", "disable", "echo"], AGENT)
     assert "only the user switches on" in console.run(["plugin", "enable", "echo"], AGENT).error and not plugins.lookup("echo").enabled
@@ -3452,7 +3469,7 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app: A
     for _ in range(2):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     waiting = [m for m in messages.recent(10) if m.text.startswith("Plugin echo's manifest changed")]
-    assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["detail"] and "idle" not in plugins.lookup("echo").manifest.blocks, "shown once, and the plugin runs as installed"
+    assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["lines"] and "idle" not in plugins.lookup("echo").manifest.blocks, "shown once, and the plugin runs as installed"
     console.run(["plugin", "upgrade", "echo", "--yes"], USER)
     assert "idle" in [h.event for h in plugins.lookup("echo").manifest.blocks] and plugins.lookup("echo").waiting == "", "the user's upgrade applies it"
 

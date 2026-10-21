@@ -58,7 +58,7 @@ class PluginCommand(Command):
 
     def propose(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.preview(args.source)
-        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.description(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=caller.actor, shows=CardKind.PLUGINS)
+        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=self.description(preview), command=f"journal plugin install {args.source} --yes", actor=caller.actor, shows=CardKind.PLUGINS)
         print(f"proposed {preview.name}: the user installs it if they want it")
         return 0
 

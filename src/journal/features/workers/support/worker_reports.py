@@ -21,10 +21,10 @@ class WorkerReports:
     def __init__(self, workers: Workers, messages: Messages, links: Links) -> None:
         self.workers, self.messages, self.links = workers, messages, links
 
-    def file(self, worker: Worker, text: str, actor: Actor, session: str = "") -> Message:
+    def file(self, worker: Worker, text: str, actor: Actor) -> Message:
         message = self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=f"{self.lead(worker)}{text}", data={"kind": Message.REPORT, "worker": worker.name, "worker_id": worker.id}), actor)
         self.links.save(Link(source=Ref.build(worker), target=Ref.build(message), kind=REPORTED), actor)
-        self.workers.save(worker.with_(session=session).reported(datetime.now(timezone.utc).timestamp(), message.id), actor)
+        self.workers.save(worker.reported(datetime.now(timezone.utc).timestamp(), message.id), actor)
         return message
 
     def last(self, worker: Worker) -> str:

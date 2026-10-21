@@ -53,6 +53,9 @@ class PlanCommand(Command):
         todos.add_argument("n", type=int)
         todos.add_argument("phase", type=int)
         todos.add_argument("tasks", type=int, nargs="+")
+        removal = self.verb(verbs, "remove", "take tasks out of a plan and its phases; they stay open as tasks of their own")
+        removal.add_argument("n", type=int)
+        removal.add_argument("tasks", type=int, nargs="+")
         ready = self.verb(verbs, "ready", "the plan is built: every phase has its tasks, and the user may approve it")
         ready.add_argument("n", type=int)
         ready.add_argument("--changed", help="after a review: what the round changed in the plan, in one line (tasks added, merged, moved, reworded)")
@@ -118,6 +121,16 @@ class PlanCommand(Command):
                 self.links.delete(link, caller.actor)
             self.links.save(Link(source=Ref.build(task), target=Ref.build(phase), kind=PHASE_LINK), caller.actor)
         print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}")
+        return 0
+
+    def remove(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.find(args.n)
+        counterparts = [plan, *self.plans.plan_phases(plan)]
+        for n in args.tasks:
+            task = self.tasks.find(n)
+            for link in [link for counterpart in counterparts for link in self.links.connecting(task, counterpart)]:
+                self.links.delete(link, caller.actor)
+        print(f"tasks {', '.join(str(n) for n in args.tasks)} taken out of plan {plan.id}")
         return 0
 
     def ready(self, args: Namespace, caller: Caller) -> int:

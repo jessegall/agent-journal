@@ -36,7 +36,7 @@ const SYSTEM_TURNS = {
     }),
     card: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon, tone: card.tone, color: card.shows === "workers" && !card.tone ? SUBAGENT_COLOR : "", label, detail: card.detail, command: card.command, title: card.detail || card.command, row: card.row, visitor: card.visitor},
+        data: {icon: card.icon, tone: card.tone, color: card.shows === "workers" && !card.tone ? SUBAGENT_COLOR : "", label, detail: card.detail, lines: card.lines || [], command: card.command, title: card.detail || card.command, row: card.row, visitor: card.visitor},
     }),
     peer: (card) => ({kind: "message", data: {peer: card.peer, sent_to: card.sent_to, failure: card.failure || ""}}),
     suggestion: (card, label) => ({
@@ -46,7 +46,7 @@ const SYSTEM_TURNS = {
     }),
     plugin: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.detail, collapsed: Boolean(card.collapsed && card.detail), title: card.detail, row: card.row},
+        data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.detail, lines: card.lines || [], collapsed: Boolean(card.collapsed && card.detail), title: card.detail, row: card.row},
     }),
 };
 

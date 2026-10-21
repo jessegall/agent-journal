@@ -85,7 +85,7 @@ class WorkerCommand(Command):
 
     def report(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
-        message = self.reports.file(worker, args.text, caller.actor, caller.session)
+        message = self.reports.file(worker.with_(session=caller.session or worker.session), args.text, caller.actor)
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
 

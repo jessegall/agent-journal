@@ -3,7 +3,7 @@ import {expect, test} from "vitest";
 import {threadTurns} from "../src/domain/thread.js";
 
 const lines = Array.from({length: 13}, (_, i) => `finding ${i + 1}`);
-const message = {table: "messages", id: 1, created_at: new Date(1e4).toISOString(), creator: "plugin:lint", author: "system", text: "Lint found 13 problems", files: [], comments_on: [], idempotency: "", data: {kind: "plugin", plugin: "lint", detail: lines.join("\n"), collapsed: true, row: ""}};
+const message = {table: "messages", id: 1, created_at: new Date(1e4).toISOString(), creator: "plugin:lint", author: "system", text: "Lint found 13 problems", files: [], comments_on: [], idempotency: "", data: {kind: "plugin", plugin: "lint", detail: lines[0], lines, collapsed: true, row: ""}};
 const scope = {env: "", api: {}, rows: () => [], loaded: () => true, holding: () => {}, earlier: () => {}};
 
 test("a card with thirteen lines opens thirteen rows under it on a click and closes on a second", async () => {

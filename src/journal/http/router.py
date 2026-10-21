@@ -15,8 +15,8 @@ from journal.support.scope import Scope
 class Router:
     """Finds the route a request takes and answers it inside the environment the request names."""
 
-    def __init__(self, scope: Scope, viewed: ViewerPresence, slow: SlowRequests) -> None:
-        self.scope, self.seen, self.slow = scope, viewed, slow
+    def __init__(self, scope: Scope, presence: ViewerPresence, slow: SlowRequests) -> None:
+        self.scope, self.presence, self.slow = scope, presence, slow
         self.routes: list[Route] = []
 
     def get(self, path: str, handler: Handler) -> None:
@@ -32,7 +32,7 @@ class Router:
         return next((route for route in self.routes if route.params(request.method, request.path) is not None), None)
 
     def dispatch(self, request: Request) -> Response:
-        self.seen.record(request.headers)
+        self.presence.record(request.headers)
         route = self.matched(request)
         if route is None:
             return Response.absent(f"{request.method} {request.path}")

@@ -28,12 +28,12 @@ const skillMark = computed(() => ({
 const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation compacted", time: props.turn.time}));
 const opened = ref(false);
 const cardMark = computed(() => ({...data.value, detail: data.value.collapsed ? "" : data.value.detail, time: props.turn.time}));
-const lines = computed(() => String(data.value.detail || "").split("\n").filter(Boolean));
+const lines = computed(() => (data.value.lines || []).filter(Boolean));
 
 function markClick(data) {
     if (data.go) return {click: () => go(data.go)};
     if (data.row) return {click: () => openRef(data.row)};
-    return data.collapsed ? {click: () => (opened.value = !opened.value)} : {};
+    return lines.value.length ? {click: () => (opened.value = !opened.value)} : {};
 }
 </script>
 
@@ -55,7 +55,7 @@ function markClick(data) {
         <template #card>
             <div :class="['thread-turn', 'card', {mine: data.side === 'user'}]" :data-ref="turn.key">
                 <ChatMark :mark="cardMark" v-on="markClick(data)" />
-                <template v-if="opened && data.collapsed">
+                <template v-if="opened && lines.length">
                     <ul class="mark-lines">
                         <template v-for="line in lines" :key="line">
                             <li class="mark-line">{{ line }}</li>

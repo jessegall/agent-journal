@@ -11,6 +11,7 @@ from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor
 from journal.models.worker import Worker
+from journal.models.worker_state import WorkerState
 from journal.providers.providers import Providers
 from journal.support.profile_files import ProfileFiles
 from journal.support.scope import Scope
@@ -85,8 +86,12 @@ class WorkerRunner:
         resume = resume or provider.latest_session(self.place(worker), worker.began)
         report = output_text[-TAIL:] or "(nothing printed)"
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
-        branch = self.branch.summary(worker)
-        self.reports.file(worker.with_(resume=resume or worker.resume), f"{outcome}\n\n{branch}" if branch else outcome, actor)
+        current = self.workers.find(worker.id).with_(resume=resume or worker.resume)
+        if current.state == WorkerState.REPORTED:
+            self.workers.save(current, actor)
+            return
+        branch = self.branch.summary(current)
+        self.reports.file(current, f"{outcome}\n\n{branch}" if branch else outcome, actor)
 
     def remaining_minutes(self, worker: Worker) -> float | None:
         limit = self.minutes() * 60
