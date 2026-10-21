@@ -6,7 +6,7 @@ SHORTEST = 8
 
 
 class Masks:
-    """The secret values no write may carry: each one found in text about to be written becomes [secret VARIABLE], and the leak is noted for the alarm. The values are read again when their file changes."""
+    """The secret values no write may carry: each one found in text about to be written becomes [secret VARIABLE], and the leak is noted for the alarm. A field shown while typing is no secret and never masks. The values are read again when their file changes."""
 
     def __init__(self, values: SecretValues) -> None:
         self.values = values
@@ -27,5 +27,6 @@ class Masks:
         changed = path.stat().st_mtime if path.is_file() else 0.0
         if changed != self._read_at:
             self._read_at = changed
-            self._masks = {value: variable.removeprefix(RETIRED).rsplit(AT, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST}
+            plain = self.values.shown()
+            self._masks = {value: variable.removeprefix(RETIRED).rsplit(AT, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST and variable not in plain}
         return self._masks

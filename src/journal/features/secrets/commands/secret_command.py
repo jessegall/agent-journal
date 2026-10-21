@@ -103,7 +103,7 @@ class SecretCommand(Command):
         file.unlink()
         if not value:
             raise Refused(f"{args.file} held no value; it is deleted all the same")
-        self.values.put(secret.field(args.field).variable, value)
+        self.values.put_field(secret.field(args.field), value)
         self.secrets.save(secret.filled_in(args.field), caller.actor)
         print(f"{args.field} of secret {secret.id} stored, and {args.file} deleted")
         return 0

@@ -6053,3 +6053,22 @@ def test_a_fact_rule_or_reminder_is_handed_over_once_per_context_window_by_the_s
     assert not reminders.find(3).presence
     console.run(["environment", "here"], AGENT)
     assert reminders.find(3).presence, "the look hands every row over"
+
+
+def test_a_field_shown_while_typing_is_no_secret_and_never_masks_its_word(app, tmp_path, monkeypatch):
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages
+    from journal.support.scope import Scope
+    from journal.support.secret_field import SecretField
+    from journal.support.secret_values import SecretValues
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    hook(app, "SessionStart")
+    values = app.container.get(SecretValues)
+    values.put_field(SecretField("username", False, "PLATFORM_DB_USERNAME"), "production")
+    values.put_field(SecretField("password", True, "PLATFORM_DB_PASSWORD"), "s3cr3t-pass-w0rd")
+    assert values.shown() == {"PLATFORM_DB_USERNAME"} and values.values()["PLATFORM_DB_USERNAME"] == "production", "the value is kept for the programs that need it, and named as shown"
+    with app.container.get(Scope).of(1):
+        saved = app.container.get(Messages).save(Message(text="this goes to production with s3cr3t-pass-w0rd"), Actor.system())
+        assert app.container.get(Messages).find(saved.id).text == "this goes to production with [secret PLATFORM_DB_PASSWORD]", "the word stands, the hidden value is masked"
+    values.put_field(SecretField("username", True, "PLATFORM_DB_USERNAME"), "production")
+    assert values.shown() == set(), "hidden now, it masks like any secret"

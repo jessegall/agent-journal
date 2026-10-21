@@ -41,7 +41,7 @@ class SecretController(Controller[Secret]):
         if not value:
             raise Refused("an empty value is no value: type it in, or leave the field as it is")
         field = str(request.body.get("field", ""))
-        self.values.put(secret.field(field).variable, value)
+        self.values.put_field(secret.field(field), value)
         return Response.json(self.repository.save(secret.filled_in(field), request.actor))
 
     def delete(self, request: Request) -> Response:
