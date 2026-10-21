@@ -45,8 +45,10 @@ class App:
         self.config.home.mkdir(parents=True, exist_ok=True)
         connection = Connection(self.config.database, self.container.get(Masks))
         schema = Schema(connection, AllModels.MODELS)
-        schema.create()
-        Migrator(connection, schema, MIGRATIONS).run()
+        migrator = Migrator(connection, schema, MIGRATIONS)
+        if schema.create():
+            migrator.mark_done()
+        migrator.run()
         return connection
 
     def server(self) -> Server:

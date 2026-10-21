@@ -33,7 +33,7 @@ class AgentController(Controller[Agent]):
         self.environments, self.providers, self.running, self.config, self.pausing = environments, providers, active, config, pausing
 
     def rows(self) -> list[Agent]:
-        return self.repository.in_()
+        return self.repository.scoped()
 
     def is_open(self, row: Agent) -> bool:
         return row.state != "ended"

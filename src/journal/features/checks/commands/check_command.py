@@ -29,13 +29,13 @@ class CheckCommand(Command):
         self.verb(verbs, "list", "every check and how it last went")
 
     def create(self, args: Namespace, caller: Caller) -> int:
-        check = self.checks.save(Check(title=args.title, brief=args.brief, command=args.command, interval=args.interval), caller.actor)
+        check = self.checks.save(Check(title=args.title, brief=args.brief, command=args.command, interval=args.every), caller.actor)
         print(f"check {check.id}: {check.title}")
         return 0
 
     def edit(self, args: Namespace, caller: Caller) -> int:
         check = self.checks.find(args.n)
-        edited = check.edited(args.title or check.title, args.brief if args.brief is not None else check.brief, args.command or check.command, args.interval if args.interval is not None else check.interval)
+        edited = check.edited(args.title or check.title, args.brief if args.brief is not None else check.brief, args.command or check.command, args.every if args.every is not None else check.interval)
         self.checks.save(edited, caller.actor)
         print(f"check {edited.id}: {edited.title}")
         return 0

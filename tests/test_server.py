@@ -202,7 +202,7 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         app.console().run(["check", "create", "truthy", "--command", "true"], Caller("main"))
         app.console().run(["check", "run", "1"], Caller("main"))
         check = call(server, "GET", "/journal/checks/1")[1]
-        assert check["last_passed"] is True and "running" in check
+        assert check["last_passed"] is True and "progress" in check
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).text.split()[1].rstrip(":")
         assert call(server, "GET", f"/journal/sequences/{release}")[1]["steps"] == ["tag", "push"]
         data = call(server, "GET", "/journal/summary")[1]["environments"][0]
@@ -236,7 +236,7 @@ def test_the_viewers_start_takes_the_plans_first_task_in_hand_and_its_park_postp
         started = call(server, "POST", "/journal/plans/1/start", {})[1]
         assert started["state"] == "started" and call(server, "GET", "/journal/tasks/1")[1]["state"] == "started", "the viewer's start takes the first task in hand, as the command does"
         assert app.container.get(StateMachine).current("s1").name == "following_plan"
-        parked = call(server, "POST", "/journal/plans/1/park", {})[1]
+        parked = call(server, "POST", "/journal/plans/1/suspend", {})[1]
         assert parked["state"] == "parked" and call(server, "GET", "/journal/tasks/1")[1]["state"] == "parked", "the plan's task in hand is postponed with it"
         assert app.container.get(StateMachine).current("s1").name == "idle", "the agent following the plan is popped by the plan's own event"
     finally:
@@ -283,11 +283,11 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.console().run(["task", "create", "the footer", "--start"], Caller("main", "s1"))
         blocked = call(server, "GET", "/journal/summary")[1]["environments"][0]["task"]
-        assert blocked == {"id": 1, "title": "the footer", "awaiting": ""}
+        assert blocked == {"id": 1, "title": "the footer", "wait_text": ""}
         app.console().run(["stuck", "stuck on the login"], Caller("main", "s1"))
         agent = call(server, "GET", "/journal/agents")[1]["rows"][0]
         assert agent["awaiting"] == "stuck on the login" and agent["awaiting_since"]
-        assert call(server, "GET", "/journal/summary")[1]["environments"][0]["task"]["awaiting"] == "stuck on the login"
+        assert call(server, "GET", "/journal/summary")[1]["environments"][0]["task"]["wait_text"] == "stuck on the login"
     finally:
         app.runtime().stop()
 
@@ -345,14 +345,14 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
         app.console().run(["plan", "create", "p"], Caller("main"))
         assert call(server, "POST", "/journal/plans/1/finish", {})[1]["state"] == "done"
         app.console().run(["check", "create", "truthy", "--command", "true"], Caller("main"))
-        assert call(server, "POST", "/journal/checks/1/run", {})[1]["running"]["time"], "the page's run answers at once, the check running"
+        assert call(server, "POST", "/journal/checks/1/run", {})[1]["progress"]["time"], "the page's run answers at once, the check running"
         completed = lambda: call(server, "GET", "/journal/checks?ids=1")[1]["rows"][0]
         for _ in range(50):
-            if not completed()["running"]:
+            if not completed()["progress"]:
                 break
             time.sleep(0.1)
         assert completed()["last_passed"] is True, "and its result lands on the row"
-        assert call(server, "POST", "/journal/checks/1", {"every": 5})[1]["every"] == 5
+        assert call(server, "POST", "/journal/checks/1", {"interval": 5})[1]["interval"] == 5
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).text.split()[1].rstrip(":")
         assert call(server, "POST", f"/journal/sequences/{release}/steps", {"steps": ["tag", "test", "push"]})[1]["steps"] == ["tag", "test", "push"]
         app.console().run(["trigger", "create", "deploy", "say so"], Caller("main"))
@@ -799,9 +799,9 @@ def test_a_link_the_agent_makes_waits_for_the_users_accept_in_the_chat(sharing):
     server, share_server = sharing
     call(server, "POST", "/journal/settings", {"sharing": {"host": "tunler.example"}})
     call(server, "POST", "/journal/docs", {"title": "Launch notes", "body": "## Why\nBecause."})
-    assert share_command(server, "opens", "docs:1")["out"].strip() == "Launch notes (docs:1)"
+    assert share_command(server, "opens", "docs:1")["text"].strip() == "Launch notes (docs:1)"
     produced = share_command(server, "create", "docs:1", "--comments")
-    assert produced["code"] == 0 and "waiting for the user's Accept in the chat" in produced["out"], produced
+    assert produced["code"] == 0 and "waiting for the user's Accept in the chat" in produced["text"], produced
     token = call(server, "GET", "/journal/shares")[1]["rows"][0]["token"]
     assert visit(share_server, f"/s/{token}/data.json")[0] == 404, "the agent's link opens nothing until the user accepts it"
     card = next(m for m in call(server, "GET", "/journal/messages")[1]["rows"] if m["data"].get("buttons"))
@@ -810,9 +810,9 @@ def test_a_link_the_agent_makes_waits_for_the_users_accept_in_the_chat(sharing):
     assert call(server, "POST", f"/journal{accept['path']}", {})[1]["approved"], "Accept opens the link through the viewer's own path"
     assert call(server, "POST", f"/journal/messages/{card['id']}/press", {"pressed": ["Accept"]})[1]["data"]["pressed"] == ["Accept"], "the card shows Accept spent"
     assert visit(share_server, f"/s/{token}/data.json")[0] == 200
-    assert "docs:1  open" in share_command(server, "list")["out"]
+    assert "docs:1  open" in share_command(server, "list")["text"]
     assert share_command(server, "stop", "1")["code"] == 0 and visit(share_server, f"/s/{token}/data.json")[0] == 410
-    assert ", open" in share_command(server, "create", "docs:1", session="")["out"], "a link the user makes at their terminal opens at once"
+    assert ", open" in share_command(server, "create", "docs:1", session="")["text"], "a link the user makes at their terminal opens at once"
 
 
 def comment(share_server, token: str, value: dict, header: str = "1"):

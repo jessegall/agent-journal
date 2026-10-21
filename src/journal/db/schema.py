@@ -14,13 +14,16 @@ class Schema:
     def __init__(self, connection: Connection, models: tuple[type[Model], ...]) -> None:
         self.connection, self.models = connection, models
 
-    def create(self) -> None:
+    def create(self) -> bool:
+        """Makes every table; True when the database held none before, so no migration has anything to carry over."""
         self.vacuum_alone()
+        fresh = not self.connection.all("SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence'")
         with self.connection.transaction() as db:
             db.execute("CREATE TABLE IF NOT EXISTS migrations (number INTEGER PRIMARY KEY, ran_at TEXT NOT NULL)")
             for model in self.models:
                 db.execute(self.statement(model))
                 self.add_new_columns(db, model)
+        return fresh
 
     def vacuum_alone(self) -> None:
         if self.connection.one("PRAGMA auto_vacuum")[0] == FULL:

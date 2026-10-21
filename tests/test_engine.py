@@ -363,7 +363,7 @@ def test_the_stack_keeps_its_bottom_changes_only_its_top_and_comes_back_from_its
     stack = Stack((Ready(), Working(task_id=3)))
     assert stack.top() == Working(task_id=3)
     assert stack.pushed(Ended()).serialized()[-1] == {"state": "ended", "data": {}}
-    assert stack.popped().serialized() == [{"state": "idle", "data": {"quiet_since": 0.0, "parked_asked": False}}]
+    assert stack.popped().serialized() == [{"state": "idle", "data": {"silenced_at": 0.0, "suspension_reported": False}}]
     assert stack.popped().popped() == stack.popped()
     assert stack.with_top(Working(task_id=4)).top().task_id == 4
     catalogue = StatesCatalogue(ServerCatalogue())
@@ -504,9 +504,9 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
 def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_names_the_agent(app: App):
     hook(app, "SessionStart")
     console, agents = app.console(), app.container.get(Agents)
-    assert console.run(["panic", "working", "what=parsing"], AGENT).text.strip() == "the stack, bottom to top: idle, working(what=parsing)"
-    assert console.run(["panic", "stuck", "why=lost"], AGENT).text.startswith("the stack, bottom to top: idle, working(what=parsing), stuck(")
-    assert console.run(["panic", "pop"], AGENT).text.strip().endswith("idle, working(what=parsing)")
+    assert console.run(["panic", "working", "focus=parsing"], AGENT).text.strip() == "the stack, bottom to top: idle, working(focus=parsing)"
+    assert console.run(["panic", "stuck", "reason=lost"], AGENT).text.startswith("the stack, bottom to top: idle, working(focus=parsing), stuck(")
+    assert console.run(["panic", "pop"], AGENT).text.strip().endswith("idle, working(focus=parsing)")
     assert console.run(["panic", "nowhere"], AGENT).code != 0
     assert console.run(["panic", "idle"], AGENT).text.strip() == "the stack, bottom to top: idle"
     assert [row["state"] for row in agents.session_agent("s1").stack] == ["idle"]
@@ -820,7 +820,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d").refusal.key == "laws.bind_the_job"
         assert dispatch(model="sonnet", subagent_type="journal-medior", description="d", prompt="p").refusal.key == "profiles.worker_profile_is_not_a_subagent"
         assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d", prompt="p").refusal.key == "workers.too_many_subagents"
-        fewer = FeatureData({**parts, "workers": WorkersData(**{**parts["workers"].__dict__, "subagents_running": 1})})
+        fewer = FeatureData({**parts, "workers": WorkersData(**{**parts["workers"].__dict__, "active_subagents": 1})})
         existing = Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/a.py again"})).with_data(fewer), settings)
         assert existing.refusal.key == "workers.send_the_job_to_the_subagent" and "sub-1" in existing.refusal.rendered()
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/b.py"})).with_data(fewer), settings).refusal is None
@@ -908,7 +908,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         assert stop.refusal is not None and stop.refusal.key == "skills.stopped_owing"
         paid = FeatureData({**parts, "skills": SkillsData(skills_due=(), loaded={}, skills=cards)})
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(paid), settings).refusal.key == "briefing.look_before_the_first_write"
-        looked = FeatureData({**paid.parts, "briefing": BriefingData(**{**parts["briefing"].__dict__, "oriented": True})})
+        looked = FeatureData({**paid.parts, "briefing": BriefingData(**{**parts["briefing"].__dict__, "has_overview": True})})
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(looked), settings).refusal.key == "memory.write_held_until_decided"
         assert Ready().respond(Stop().with_data(looked), settings).refusal.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
         decided = FeatureData({**looked.parts, "memory": MemoryData(threshold_due=0, context_threshold=50, rows=parts["memory"].rows, stale=())})
@@ -974,14 +974,14 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_data
     assert stop(of(open_next, approved=(9,))).refusal.rendered().startswith("plan 9 is approved and not started")
     assert stop(of(open_next)).refusal.rendered().startswith("tasks are open, and auto mode is on: task 4 next: the footer")
     assert stop(of(open_next), manual).refusal is None, "off auto mode an open task is no reason to go on"
-    assert stop(of(open_next), auto, held_before=True).refusal is None, "a stop held once this turn passes"
-    assert stop(of(parked), auto, held_before=True).refusal is not None, "a parked task is named at every stop: parked is still open"
+    assert stop(of(open_next), auto, prior_refusal=True).refusal is None, "a stop held once this turn passes"
+    assert stop(of(parked), auto, prior_refusal=True).refusal is not None, "a parked task is named at every stop: parked is still open"
     assert stop(of(nothing)).refusal is None
     idle = Ready(silenced_at=0.0)
     active = idle.respond(ToolStarting(call=ToolCall(tool="Read", input={}), time=50.0).with_data(of(nothing)), auto)
     assert active.target == Ready(silenced_at=50.0, suspension_reported=False)
     assert idle.respond(PromptSubmitted(prompt="hi", time=70.0).with_data(of(nothing)), auto).target.silenced_at == 70.0
-    tick = lambda data, time, state=idle, settings=auto: state.target_ref(Ticked(silence_seconds=0.0, time=time).with_data(data), settings)
+    tick = lambda data, time, state=idle, settings=auto: state.respond(Ticked(silence_seconds=0.0, time=time).with_data(data), settings)
     requested = tick(of(parked), 61.0)
     assert requested.target == Ready(silenced_at=0.0, suspension_reported=True) and requested.nudges[0].rendered().startswith("task 2 is still parked: can you continue it now?")
     assert tick(of(parked), 59.0).nudges == () and tick(of(parked), 61.0, Ready(silenced_at=0.0, suspension_reported=True)).nudges == (), "asked once per quiet"
@@ -1005,7 +1005,7 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     tasks = TasksData(current_task=7, last_log_line='"the parser reads"', suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=())
     of = lambda current_task=7, approved=(): FeatureData({"tasks": replace(tasks, current_task=current_task), "plans": PlansData(approved, None), "git": GitData(uncommitted="a.py, b.py")})
     working = Working(task_id=7, logged_at=1000.0)
-    write = lambda state, time=1001.0: state.target_ref(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True), time=time).with_data(of()), settings)
+    write = lambda state, time=1001.0: state.respond(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True), time=time).with_data(of()), settings)
     first = write(working)
     assert first.target == Working(task_id=7, logged_at=1000.0, edits=1, active_at=1001.0) and first.nudges == ()
     second = write(first.target)
@@ -1016,16 +1016,16 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     assert fourth.target.edits == 4 and [n.key for n in fourth.nudges] == ["tasks.task_in_hand_repeated"]
     withheld = write(fourth.target)
     assert withheld.refusal is not None and withheld.refusal.rendered().startswith("4 edits since you logged task 7")
-    read = fourth.target.target_ref(ToolStarting(call=ToolCall(tool="Read", input={}), time=1002.0).with_data(of()), settings)
+    read = fourth.target.respond(ToolStarting(call=ToolCall(tool="Read", input={}), time=1002.0).with_data(of()), settings)
     assert read.target.edits == 4 and read.refusal is None and read.target.active_at == 1002.0
-    logged = fourth.target.target_ref(TaskLogged(environment_id=1, time=1500.0, task_id=7).with_data(of()), settings)
+    logged = fourth.target.respond(TaskLogged(environment_id=1, time=1500.0, task_id=7).with_data(of()), settings)
     assert logged.target == Working(task_id=7, logged_at=1500.0, edits=0, active_at=1001.0)
-    assert fourth.target.target_ref(TaskLogged(environment_id=1, time=1500.0, task_id=8).with_data(of()), settings).target == fourth.target
-    stop = lambda state, time, approved=(), prior_refusal=False: state.target_ref(Stop(prior_refusal=prior_refusal, time=time).with_data(of(approved=approved)), settings)
+    assert fourth.target.respond(TaskLogged(environment_id=1, time=1500.0, task_id=8).with_data(of()), settings).target == fourth.target
+    stop = lambda state, time, approved=(), prior_refusal=False: state.respond(Stop(prior_refusal=prior_refusal, time=time).with_data(of(approved=approved)), settings)
     assert stop(working, 1100.0).refusal.rendered().startswith("task 7 is in hand, last logged 1 min ago: carry on")
     assert stop(working, 1700.0).refusal.rendered().startswith("task 7, last logged 11 min ago: log where it stands first")
     assert stop(working, 1100.0, approved=(9,)).refusal.rendered().startswith("plan 9 is approved and not started")
-    assert stop(working, 1100.0, held_before=True).refusal is not None, "with a task in hand there is no escape by stopping twice"
+    assert stop(working, 1100.0, prior_refusal=True).refusal is not None, "with a task in hand there is no escape by stopping twice"
     started = working.respond(SessionStarted(source="compact", time=1100.0).with_data(of()), settings)
     assert [n.key for n in started.nudges] == ["tasks.carry_on", "briefing.brief_and_log_after_compaction"] and 'last log "the parser reads"; uncommitted files: a.py, b.py' in started.nudges[1].rendered()
     assert [n.key for n in working.respond(SessionStarted(source="startup", time=1100.0).with_data(of()), settings).nudges] == ["tasks.carry_on"]
@@ -1034,7 +1034,7 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     assert Working(task_id=7, active_at=100.0).respond(Ticked(silence_seconds=0.0, time=900.0).with_data(of()), settings).nudges == ()
     assert working.respond(TaskClosed(environment_id=1, time=2.0, task_id=7, outcome="done").with_data(of()), settings).popped
     assert not working.respond(TaskClosed(environment_id=1, time=2.0, task_id=8, outcome="done").with_data(of()), settings).popped
-    assert working.on_resume(of(in_hand=0), settings).popped, "its task closed while it waited"
+    assert working.on_resume(of(current_task=0), settings).popped, "its task closed while it waited"
     assert working.on_resume(of(), settings) == (), "its task still in hand, the work goes on in silence: the wait that popped said what came"
 
 
@@ -1063,7 +1063,7 @@ def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_wh
     assert following.respond(TaskClosed(environment_id=1, time=20.0, task_id=9, outcome="done").with_data(of(plan)), auto).target == following
     started = closed.target.respond(TaskStarted(environment_id=1, time=30.0, task_id=8, title="next", plan_id=5).with_data(of(replace(plan, started_task=8))), auto)
     assert started.target == replace(following, task_id=8, origin_state=7, logged_at=30.0)
-    checkpoint_pause = following.respond(TaskClosed(environment_id=1, time=20.0, task_id=7, outcome="done").with_data(of(replace(plan, checkpoint_pause=True, checkpoint_at=2))), auto)
+    checkpoint_pause = following.respond(TaskClosed(environment_id=1, time=20.0, task_id=7, outcome="done").with_data(of(replace(plan, checkpoint_pause=True, checkpoint_phase=2))), auto)
     assert checkpoint_pause.target == replace(following, task_id=0, origin_state=7, checkpoint_pause=True, phase=2)
     stopped = checkpoint_pause.target.respond(Stop().with_data(of(plan)), auto)
     assert stopped.refusal.rendered().startswith("plan 5: phase 2 is complete, and in auto mode it does not stop you")

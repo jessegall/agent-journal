@@ -28,7 +28,7 @@ PROMPT_FLAGS = {provider.name: list(provider.prompt_flags) for provider in (Clau
 STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
 LOCAL = {"claude": [], "codex": ["--no-daemon"]}
 REACH = {"claude": [], "codex": ["-c", "sandbox_workspace_write.network_access=true"]}
-FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0}
+FLAGS = {"--env": ("environment", 1), "--new": ("new", 0), "--aside": ("stashed", 0), "--skip": ("bypass", 0), "--yes": ("confirmed", 0), "--no-open": ("browser_off", 0), "--no-journal": ("journal_off", 0)}
 WORKTREE = ("--worktree", "-w")
 RESUMING = ("--resume", "-r")
 
@@ -60,12 +60,13 @@ class Launch:
                 break
             if arg in WORKTREE:
                 matched = bool(value) and not value.startswith("-")
-                flags.update(in_worktree=True, worktree=value if matched else "")
+                flags.update(worktree_launch=True, worktree=value if matched else "")
                 i += 2 if matched else 1
                 continue
             if arg in FLAGS:
-                flags[arg.lstrip("-").replace("-", "_")] = value if FLAGS[arg] else True
-                i += 2 if FLAGS[arg] else 1
+                field, arity = FLAGS[arg]
+                flags[field] = value if arity else True
+                i += 2 if arity else 1
                 continue
             remainder.append(arg)
             i += 1

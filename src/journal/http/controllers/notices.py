@@ -15,7 +15,7 @@ class NoticeController(Controller[Notice]):
         self.repository = notices
 
     def rows(self) -> list[Notice]:
-        return self.repository.in_()
+        return self.repository.scoped()
 
     def is_open(self, row: Notice) -> bool:
         return row.closed_at is None

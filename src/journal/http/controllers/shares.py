@@ -16,7 +16,7 @@ class ShareController(Controller[Share]):
         self.repository, self.actions, self.targets, self.tunnel = shares, actions, targets, tunnel
 
     def rows(self) -> list[Share]:
-        return self.repository.in_()
+        return self.repository.scoped()
 
     def is_open(self, row: Share) -> bool:
         return row.stopped_at is None

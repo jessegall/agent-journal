@@ -78,7 +78,7 @@ class SecretCommand(Command):
             raise Rejection(f"{args.title} is reached through the MCP server {', '.join(reaching)} already: use its tools, and if they cannot do what you need, say what is missing in the chat")
         secret = self.secrets.save(self.file(args.title, "", SecretKind.lookup(args.kind), caller).with_(url=args.url, questioned_at=datetime.now(timezone.utc)), caller.actor)
         asking = f"Please log in to {secret.title} with the Log in button on the Secrets page; a browser opens on your computer, and the login is saved when you close it" if secret.kind == SecretKind.BROWSER_LOGIN else f"Please fill in the secret {secret.title} on the Secrets page, never in the chat"
-        self.messages.save(Message(author=Author.AGENT, text=f"{asking}: I need it {args.reason}.\n\nsecret {secret.id}"), caller.actor)
+        self.messages.save(Message(author=Author.AGENT, text=f"{asking}: I need it {args.why}.\n\nsecret {secret.id}"), caller.actor)
         print(f"secret {secret.id} asked for: the user fills it on the Secrets page")
         return 0
 
@@ -127,7 +127,7 @@ class SecretCommand(Command):
         secret = self.lookup(args.secret)
         if not secret.helpers and caller.session and self.workers.session_worker(caller.session):
             raise Rejection(f"secret {secret.id} is the main agent's alone: the user lets helpers have it on the Secrets page")
-        code, output = self.runner.run(secret, [c for c in args.command if c != "--"], args.stdin, args.environment)
+        code, output = self.runner.run(secret, [c for c in args.command if c != "--"], args.stdin, args.env)
         self.secrets.save(secret.with_(used_at=datetime.now(timezone.utc)), caller.actor)
         print(output.decode(errors="replace"), end="")
         return code

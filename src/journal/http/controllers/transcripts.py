@@ -45,11 +45,11 @@ class TranscriptController:
     def found_session(self, worker: Worker, provider: Provider, place: Path) -> str:
         session = provider.latest_session(place, worker.began) if worker.began else ""
         if session:
-            self.workers.touch(worker, Actor.system(), found_session=session)
+            self.workers.touch(worker, Actor.system(), recovered_session=session)
         return session
 
     def answer(self, request: Request, provider: Provider, path: Path | None) -> Response:
         page = TranscriptPage(self.turns.build(provider, path) if path else [])
         if "entry" in request.query:
             return Response.json(page.entry(int(request.query["entry"])))
-        return Response.json(page.page(**{field: int(request.query[key]) for key, field in (("since", "since"), ("before", "before"), ("last", "size")) if request.query.get(key)}))
+        return Response.json(page.page(**{field: int(request.query[key]) for key, field in (("since", "start"), ("before", "previous"), ("last", "size")) if request.query.get(key)}))

@@ -10,4 +10,4 @@ class ReportController(WritingController[Report]):
         self.repository = reports
 
     def rows(self) -> list[Report]:
-        return self.repository.in_()
+        return self.repository.scoped()

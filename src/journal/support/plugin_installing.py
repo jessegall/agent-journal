@@ -4,7 +4,6 @@ import subprocess
 import tempfile
 import time
 from contextlib import contextmanager
-from dataclasses import asdict
 from pathlib import Path
 from typing import Iterator
 
@@ -104,7 +103,7 @@ class PluginInstalling:
         plugin = self.plugins.lookup(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             manifest = self.same(plugin, self.reader.read(folder))
-            changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(manifest))
+            changes = PluginChanges.manifest(PluginChanges.plain(plugin.manifest), PluginChanges.plain(manifest))
             code = [] if plugin.linked else PluginChanges.code(self.folders.folder(plugin), folder)
             return PluginPreview(name, manifest.title or name, manifest.version, manifest.description, plugin.source, commit, self.rows(manifest, folder), previous=plugin.commit_sha,
                                  changes=tuple(changes), code=tuple(code), current=not changes and not code)

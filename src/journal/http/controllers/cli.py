@@ -19,7 +19,7 @@ class CliController:
     def run(self, request: Request) -> Response:
         plugin = request.body.get("plugin", "")
         if plugin and not self.tokens.matches(plugin, request.body.get("token", "")):
-            return Response.json({"out": "", "err": f"the journal does not know this token for plugin {plugin}\n", "code": 1}, 403)
+            return Response.json({"text": "", "error": f"the journal does not know this token for plugin {plugin}\n", "code": 1}, 403)
         caller = Caller(request.body.get("env", "main"), request.body.get("session", ""), bool(request.body.get("agent")), plugin)
         argv = request.body.get("argv", [])
         if self.subagents.runs(caller.environment, argv, request.headers.get(ACTOR_HEADER, ""), request.headers.get(THREAD_HEADER, "")):

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import fields, dataclass, field
 
 from journal.models.support.card_kind import CardKind
 from journal.support.event_window import EventWindow
@@ -7,7 +7,7 @@ from journal.models.support.requirement import Requirement
 from journal.models.support.setup_step import SetupStep
 
 
-PUBLISHED = ("hears", "holds")
+PUBLISHED = {"hears": "events", "holds": "blocks"}
 
 
 @dataclass(frozen=True)
@@ -38,6 +38,11 @@ class PluginManifest:
         return cls(**{**field_values, "events": tuple(data.get("hears", ())), "blocks": tuple(EventWindow.parsed(h) for h in data.get("holds", ())),
                       "services": tuple(PluginService.parsed(s) for s in data.get("services", ())), "cards": tuple(CardKind.parsed(c) for c in data.get("cards", ())),
                       "setup": tuple(SetupStep.parsed(s) for s in data.get("setup", ())), "requires": {program: Requirement.parsed(r) for program, r in data.get("requires", {}).items()}})
+
+    def published(self) -> dict:
+        """The manifest in the shape journal-plugin.json writes it, events and blocks under hears and holds."""
+        names = {field: key for key, field in PUBLISHED.items()}
+        return {names.get(field.name, field.name): getattr(self, field.name) for field in fields(self)}
 
     def has_window(self, key: str) -> bool:
         return any(window.event == key for window in self.blocks)

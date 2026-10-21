@@ -9,7 +9,7 @@ from journal.supervisor_link import SupervisorLink
 RUNS = {
     "todo": ("task", "create", "{name}", "--brief", "{text}"),
     "log": ("task", "log", "{n}", "{text}"),
-    "end": ("task", "done", "{n}", "--how", "{text}"),
+    "end": ("task", "complete", "{n}", "--how", "{text}"),
     "fact": ("fact", "create", "{name}", "--reason", "{text}"),
     "rule": ("rule", "create", "{name}", "--reason", "{text}"),
     "reminder": ("reminder", "create", "{name}", "--reason", "{text}"),

@@ -15,4 +15,4 @@ class LinkWorkerReports(Migration):
         for worker in connection.all("SELECT id, name, environment_id FROM workers"):
             message = connection.one("SELECT id FROM messages WHERE environment_id = ? AND text LIKE ? ORDER BY id DESC LIMIT 1", (worker["environment_id"], f"{worker['name']} reports: %"))
             if message:
-                connection.execute("INSERT INTO links (created_at, creator, updated_at, updater, source, target, kind) VALUES (?, ?, ?, ?, ?, ?, ?)", (time, "system", time, "system", f"workers:{worker['id']}", f"messages:{message['id']}", "reported"))
+                connection.execute("INSERT INTO links (created_at, created_by, updated_at, updated_by, source, target, kind) VALUES (?, ?, ?, ?, ?, ?, ?)", (time, "system", time, "system", f"workers:{worker['id']}", f"messages:{message['id']}", "reported"))

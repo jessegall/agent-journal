@@ -13,7 +13,7 @@ class WorkerController(Controller[Worker]):
         self.repository, self.reports = workers, reports
 
     def rows(self) -> list[Worker]:
-        return self.repository.in_()
+        return self.repository.scoped()
 
     def is_open(self, row: Worker) -> bool:
         return row.state != WorkerState.STOPPED

@@ -110,7 +110,7 @@ class WorkerCommand(Command):
         return 0
 
     def wait(self, args: Namespace, caller: Caller) -> int:
-        print(f"awaiting workers {', '.join(str(n) for n in args.target_ref)}: you are told as each reports, and when the last is back")
+        print(f"awaiting workers {', '.join(str(n) for n in args.on)}: you are told as each reports, and when the last is back")
         return 0
 
     def stop(self, args: Namespace, caller: Caller) -> int:

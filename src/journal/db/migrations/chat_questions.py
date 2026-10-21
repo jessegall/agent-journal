@@ -16,5 +16,5 @@ class ChatQuestions(Migration):
             if connection.one("SELECT id FROM messages WHERE json_extract(data, '$.key') = ?", (key,)):
                 continue
             data = {"kind": "question", "session": (q["created_by"] or "").partition(":")[2], "row": key, "n": q["id"], "options": json.loads(q["options"] or "[]"), "answer": q["answer"], "key": key}
-            connection.execute("INSERT INTO messages (created_at, creator, updated_at, updater, environment_id, author, text, idempotency, acknowledgement, files, captions, data) VALUES (?, ?, ?, ?, ?, ?, ?, '', 0, '[]', '{}', ?)",
+            connection.execute("INSERT INTO messages (created_at, created_by, updated_at, updated_by, environment_id, author, text, idempotency, acknowledgement, files, captions, data) VALUES (?, ?, ?, ?, ?, ?, ?, '', 0, '[]', '{}', ?)",
                                (q["created_at"], q["created_by"], q["updated_at"], q["updated_by"], q["environment_id"], "system", q["text"], json.dumps(data)))

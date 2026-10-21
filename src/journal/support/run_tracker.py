@@ -48,14 +48,14 @@ class RunTracker:
         run = runs[-1]
         self.refuse_open_end(run)
         if not run.last:
-            return self.line(self.changed(session, environment_id, lambda time: time.advanced().summary_text(self.timestamp())))
+            return self.line(self.changed(session, environment_id, lambda time: time.advanced().announced(self.timestamp())))
         return self.ended(agent, runs, Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered())
 
     def ended(self, agent: Agent, runs: list[SequenceRun], ended: str) -> str:
         if len(runs) == 1:
             self.stored(agent, [])
             return ended
-        outer = self.rewritten(agent, lambda time: [*time[:-2], time[-2].summary_text(self.timestamp())])[-1]
+        outer = self.rewritten(agent, lambda time: [*time[:-2], time[-2].announced(self.timestamp())])[-1]
         return f"{ended}\n{self.line(outer)}"
 
     def skip(self, session: str, environment_id: int) -> str:
@@ -66,7 +66,7 @@ class RunTracker:
         skipped = Sequences.STEP_OMISSION.create(n=run.sequence_id, step=run.step + 1).rendered()
         if run.last:
             return self.ended(agent, runs, f"{skipped}\n{Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered()}")
-        moved = self.changed(session, environment_id, lambda time: time.advanced().summary_text(self.timestamp()))
+        moved = self.changed(session, environment_id, lambda time: time.advanced().announced(self.timestamp()))
         return f"{skipped}\n{self.line(moved)}"
 
     def end(self, session: str, environment_id: int) -> str:
@@ -101,13 +101,13 @@ class RunTracker:
         return {item.environment_id for item in self.agents.all_agents() if any(run.sequence_id == sequence_id for run in self.runs(item))}
 
     def follow(self, session: str, environment_id: int) -> SequenceRun:
-        return self.changed(session, environment_id, lambda run: run.adopted(self.timestamp()).summary_text(self.timestamp()).suspended(""))
+        return self.changed(session, environment_id, lambda run: run.adopted(self.timestamp()).announced(self.timestamp()).suspended(""))
 
     def suspend(self, session: str, environment_id: int, reason: str) -> SequenceRun:
         return self.changed(session, environment_id, lambda run: run.suspended(reason))
 
     def announce(self, session: str, environment_id: int) -> SequenceRun:
-        return self.changed(session, environment_id, lambda run: run.summary_text(self.timestamp()))
+        return self.changed(session, environment_id, lambda run: run.announced(self.timestamp()))
 
     def changed(self, session: str, environment_id: int, change) -> SequenceRun:
         return self.rewritten(self.machine.agent(session, environment_id), lambda time: [*time[:-1], change(time[-1])])[-1]

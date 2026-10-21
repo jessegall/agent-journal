@@ -4,7 +4,7 @@ from pathlib import Path
 
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.registry import Registry
-from journal.support.plugin_manifest import PluginManifest
+from journal.support.plugin_manifest import PUBLISHED, PluginManifest
 from journal.support.rejection import Rejection
 from journal.repositories.plugins import Plugins
 
@@ -15,7 +15,7 @@ AGENT_EVENTS = ("tool_starting", "command_starting", "tool_finished", "file_edit
 HOLDABLE = ("tool_starting", "command_starting", "file_edited", "idle", "prompt_submitted", "session_started")
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")
 PRIVATE_TABLES = ("secrets", "mcp_servers", "users")
-KEYS = {f for f in PluginManifest.__dataclass_fields__}
+KEYS = {f for f in PluginManifest.__dataclass_fields__} - set(PUBLISHED.values()) | set(PUBLISHED)
 PATHS = ("program", "settings", "skills")
 
 

@@ -74,7 +74,7 @@ class Tasks(ScopedRepository[Task]):
                                (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def unviewed(self) -> int:
-        return self.count("state NOT IN (?, ?) AND (creator IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
+        return self.count("state NOT IN (?, ?) AND (creator IS NULL OR creator NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def shown(self) -> list[Task]:
         finished = (TaskState.FINISHED.value, TaskState.CANCELLED.value)

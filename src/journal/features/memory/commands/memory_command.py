@@ -36,7 +36,7 @@ class MemoryCommand(Command):
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        rows = self.repository.in_() if self.scoped else self.repository.all()
+        rows = self.repository.scoped() if self.scoped else self.repository.all()
         for row in rows:
             print(f"{row.id:>4}  {row.text}")
         return 0

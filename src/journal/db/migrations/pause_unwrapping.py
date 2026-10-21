@@ -22,6 +22,6 @@ class PauseUnwrapping(Migration):
             while state.name in OBLIGATION_STATES:
                 facts = facts.obligation(state.name, int(state.data.get("mark", 0)), state.data.get("skill", ""))
                 state = state.resumed()
-            connection.execute("UPDATE agents SET state = ?, data = ?, has_overview = ?, threshold_due = ?, updated_at = ?, updater = ? WHERE id = ?", (state.name, json.dumps(state.serialized()), int(facts.has_overview), facts.threshold_due, time, "system", row["id"]))
+            connection.execute("UPDATE agents SET state = ?, data = ?, oriented = ?, mark_owed = ?, updated_at = ?, updated_by = ? WHERE id = ?", (state.name, json.dumps(state.serialized()), int(facts.has_overview), facts.threshold_due, time, "system", row["id"]))
             for skill in facts.skills:
-                connection.execute("INSERT INTO links (created_at, creator, updated_at, updater, source, target, kind) VALUES (?, ?, ?, ?, ?, NULL, ?)", (time, "system", time, "system", f"agents:{row['id']}", f"owes:{skill}"))
+                connection.execute("INSERT INTO links (created_at, created_by, updated_at, updated_by, source, target, kind) VALUES (?, ?, ?, ?, ?, NULL, ?)", (time, "system", time, "system", f"agents:{row['id']}", f"owes:{skill}"))

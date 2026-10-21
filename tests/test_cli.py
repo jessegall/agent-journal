@@ -67,7 +67,7 @@ def test_the_server_runs_the_same_console_for_the_shim(app: App):
             outcome = json.loads(reply.read())
     finally:
         server.stop()
-    assert outcome["code"] == 0 and "task 1 open" in outcome["out"]
+    assert outcome["code"] == 0 and "task 1 open" in outcome["text"]
     assert app.container.get(Tasks).find(1).creator == Actor.agent("s-9")
 
 
@@ -144,7 +144,7 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App,
     if online:
         server.start()
     try:
-        outcome = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "environment", "here"], env=environ, capture_output=True, text=True, timeout=10)
+        outcome = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "environment", "overview"], env=environ, capture_output=True, text=True, timeout=10)
         assert outcome.returncode == 0, outcome.stderr
         with app.container.get(Scope).environment(development.id):
             assert agents.session_agent("codex-session").has_overview

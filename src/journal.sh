@@ -21,11 +21,11 @@ if [ -n "$port" ]; then
 import json, os, sys
 sys.path.insert(0, sys.argv[1])
 from journal.support.caller import Caller
-caller = Caller.from_environ(os.environ)
-print(json.dumps({"argv": sys.argv[2:], "env": caller.environment, "session": caller.session, "agent": caller.from_agent_shell, "plugin": caller.plugin, "token": os.environ.get("JOURNAL_PLUGIN_TOKEN", "")}))
+caller = Caller.environment_caller(os.environ)
+print(json.dumps({"argv": sys.argv[2:], "env": caller.environment, "session": caller.session, "agent": caller.agent_shell, "plugin": caller.plugin, "token": os.environ.get("JOURNAL_PLUGIN_TOKEN", "")}))
 ' "$here" "$@") &&
     reply=$(curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" -H "X-Journal-Actor: ${JOURNAL_ACTOR:-agent}" -H "X-Journal-Thread: ${CODEX_THREAD_ID:-}" --data-binary "$body") &&
-    { printf '%s' "$reply" | "$py" -c 'import json,sys; o=json.load(sys.stdin); sys.stdout.write(o.get("out", "")); sys.stderr.write(o.get("err", "the journal failed: " + str(o.get("error", o)) + "\n")); sys.exit(o.get("code", 1))'; exit $?; }
+    { printf '%s' "$reply" | "$py" -c 'import json,sys; o=json.load(sys.stdin); sys.stdout.write(o.get("text", "")); sys.stderr.write(o.get("error", "the journal failed: " + str(o) + "\n")); sys.exit(o.get("code", 1))'; exit $?; }
 fi
 # No server answered (none up, or a port file left by one that died): the package runs the command itself, unless a sub-agent runs it.
 [ "${JOURNAL_ACTOR:-agent}" = sub-agent ] && exit 0

@@ -17,7 +17,7 @@ const ACTS = {
     plans: (r) => [
         ...(UNAPPROVED.includes(r.state) ? [act("approve", "Approve")] : []),
         ...(["approved", "parked"].includes(r.state) ? [act("start", "Start")] : []),
-        ...(RUNNING.includes(r.state) ? [act("park", "Park"), act("finish", "Finish")] : []),
+        ...(RUNNING.includes(r.state) ? [act("suspend", "Park"), act("finish", "Finish")] : []),
         ...(isClosed(r) ? [] : [act("abandon", "Abandon", {danger: true})]),
     ],
     notices: (r) => (isClosed(r) ? [] : [act("close", "Close")]),

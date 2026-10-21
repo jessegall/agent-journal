@@ -92,14 +92,14 @@ class PlanCommand(Command):
     def rephase(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
         phase = self.plans.plan_phases(plan)[args.phase - 1]
-        changed = phase.with_(title=args.title or phase.title, completion_rule=args.condition or phase.completion_rule)
+        changed = phase.with_(title=args.title or phase.title, completion_rule=args.when or phase.completion_rule)
         self.phases.save(changed, caller.actor)
         print(f"phase {args.phase} of plan {plan.id} is now: {changed.title}")
         return 0
 
     def phase(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        phase = self.phases.save(Phase(environment_id=plan.environment_id, title=args.title, completion_rule=args.condition, checkpoint=args.checkpoint), caller.actor)
+        phase = self.phases.save(Phase(environment_id=plan.environment_id, title=args.title, completion_rule=args.when, checkpoint=args.checkpoint), caller.actor)
         self.links.save(Link(source=Ref.build(phase), target=Ref.build(plan), kind=PHASE_TASK_LINK), caller.actor)
         print(f"phase {len(self.plans.plan_phases(plan))} of plan {plan.id}")
         return 0
@@ -162,9 +162,9 @@ class PlanCommand(Command):
         return 0
 
     def block(self, args: Namespace, caller: Caller) -> int:
-        self.waits.refuse_unnamed(args.reason, args.target_ref, args.expiry_time)
-        plan = self.plans.save(self.plans.find(args.n).blocked(args.reason, datetime.now(timezone.utc).timestamp()), caller.actor)
-        for ref in self.waits.created(args.target_ref, args.expiry_time, args.interval, f"plan {plan.id}", caller.actor):
+        self.waits.refuse_unnamed(args.why, args.on, args.until)
+        plan = self.plans.save(self.plans.find(args.n).blocked(args.why, datetime.now(timezone.utc).timestamp()), caller.actor)
+        for ref in self.waits.created(args.on, args.until, args.every, f"plan {plan.id}", caller.actor):
             self.links.save(Link(source=Ref.build(plan), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"plan {plan.id} blocked, waiting on: {self.tasks.reason(plan)}")
         return 0

@@ -1,6 +1,5 @@
 import hashlib
 import json
-from dataclasses import asdict
 
 from journal.support.cards import Cards
 from journal.features.plugins.support.manifest_reader import MANIFEST, ManifestReader
@@ -28,7 +27,7 @@ class LinkedManifests:
         if viewed == plugin.waiting:
             return
         try:
-            changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(self.reader.read(self.folders.folder(plugin))))
+            changes = PluginChanges.manifest(PluginChanges.plain(plugin.manifest), PluginChanges.plain(self.reader.read(self.folders.folder(plugin))))
         except (Rejection, json.JSONDecodeError) as refused:
             changes = [f"the manifest is refused: {refused}"]
         if not changes:

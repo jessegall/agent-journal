@@ -100,7 +100,7 @@ def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
     deferred.add(lambda: completed.append("after"))
     deferred.drain()
     deferred.stop()
-    assert completed == ["after"] and "ZeroDivisionError" in capsys.readouterr().error
+    assert completed == ["after"] and "ZeroDivisionError" in capsys.readouterr().err
 
 
 def test_a_status_file_caught_half_written_keeps_the_last_whole_reading(tmp_path: Path):
@@ -142,13 +142,13 @@ def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app: A
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Bash", "tool_input": {"command": "journal task list"}})
     assert status == 200 and body == {} and app.container.get(Entries).scoped() == [], "announced, never recorded as the agent's"
     refused = post_command(app, ["task", "list"], {"X-Journal-Env": "main"})
-    assert refused["code"] == 1 and "a subagent runs no journal command" in refused["err"]
+    assert refused["code"] == 1 and "a subagent runs no journal command" in refused["error"]
     assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"})["code"] == 0, "the announcement is used up by its command"
 
 
 def test_a_command_under_the_sub_agent_actor_is_refused(app: App):
     refused = post_command(app, ["task", "list"], {"X-Journal-Actor": "sub-agent"})
-    assert refused["code"] == 1 and "writes nothing" in refused["err"]
+    assert refused["code"] == 1 and "writes nothing" in refused["error"]
     assert post_command(app, ["task", "list"], {"X-Journal-Actor": "worker-agent"})["code"] == 0
 
 
@@ -157,7 +157,7 @@ def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_
     from journal.support.actor import Actor
     from journal.repositories.agents import Agents
     app.container.get(Agents).save(Agent(session="thread-1", provider="codex"), Actor.system())
-    assert "a subagent runs no journal command" in post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-2"})["err"]
+    assert "a subagent runs no journal command" in post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-2"})["error"]
     assert post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-1"})["code"] == 0
 
 

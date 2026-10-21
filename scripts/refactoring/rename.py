@@ -327,7 +327,7 @@ class Renamer:
                     place = Place(path, node.end_line, node.end_column - len(name), name, new)
                     if any(root_of(receiver, name) is group for receiver in receivers):
                         plan.places.append(place)
-                    elif not receivers or all(root_of(receiver, name) is None for receiver in receivers):
+                    elif not receivers or all(root_of(receiver, name) is None and receiver.fullname.startswith(("journal.", "tests.")) for receiver in receivers):
                         plan.loose.append(f"{path}:{node.end_line}")
                         plan.untyped.append(place)
                         if unique:

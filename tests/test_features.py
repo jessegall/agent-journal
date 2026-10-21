@@ -35,6 +35,7 @@ from journal.features.updates.support.updater import Updater
 from journal.features.tasks.states.working import Working
 from journal.support.subagents import Subagents
 
+from tests.old_columns import old_columns
 from tests.replay import catch_typed, drive_the_clock, tick_after
 
 AGENT = Caller("main", "s1")
@@ -909,13 +910,13 @@ def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_tu
     assert [r["task"] for r in rows()] == ["cut off", "in the background"], "a dispatch the journal refused never ran"
     transmit("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "no such model", "prompt": "read", "model": "haiku"}, tool_use_id="t-failed")
     transmit("PostToolUseFailure", tool_name="Agent", tool_input={}, error="Model 'haiku-9' not found", tool_use_id="t-failed")
-    assert [(r["running"], r["status"], r["reason"]) for r in rows()][-1] == (False, "failed", "Model 'haiku-9' not found"), "a dispatch the tool could not run is failed with the tool's error"
+    assert [(r["is_active"], r["status"], r["reason"]) for r in rows()][-1] == (False, "failed", "Model 'haiku-9' not found"), "a dispatch the tool could not run is failed with the tool's error"
     transmit("Stop")
-    assert [(r["running"], r["status"]) for r in rows()] == [(False, "stopped"), (True, "running"), (False, "failed")], "a call with no answer ends with its turn; one in the background goes on"
+    assert [(r["is_active"], r["status"]) for r in rows()] == [(False, "stopped"), (True, "running"), (False, "failed")], "a call with no answer ends with its turn; one in the background goes on"
     transmit("SessionStart", source="compact")
-    assert rows()[1]["running"] is True, "a compaction ends no subagent"
+    assert rows()[1]["is_active"] is True, "a compaction ends no subagent"
     transmit("SessionEnd")
-    assert [r["running"] for r in rows()] == [False, False, False], "a subagent with no stop ends with its session"
+    assert [r["is_active"] for r in rows()] == [False, False, False], "a subagent with no stop ends with its session"
 
 
 def test_a_task_the_reply_names_is_linked_to_the_message_it_answers_however_old(app: App):
@@ -1945,7 +1946,7 @@ def test_the_mcp_page_shows_every_server_as_the_kept_check_found_it_without_a_re
     from journal.support.health import Health
     from journal.features.mcp.support.health_report import HealthReport
     from journal.features.mcp.support.server_catalogue import ServerCatalogue
-    monkeypatch.setattr(Health, "asked", lambda self: HealthReport({"blender": ServerCatalogue("blender", "uvx blender-mcp", "connected", "")}))
+    monkeypatch.setattr(Health, "probe", lambda self: HealthReport({"blender": ServerCatalogue("blender", "uvx blender-mcp", "connected", "")}))
     read = lambda: j.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))
     read()
     deadline = timing.monotonic() + 5
@@ -1967,7 +1968,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the
     monkeypatch.setattr(app.container.get(Keys), "path", tmp_path / "keys.json")
     from journal.features.mcp.support.health_report import HealthReport
     from journal.features.mcp.support.server_catalogue import ServerCatalogue
-    monkeypatch.setattr(Health, "asked", lambda self: HealthReport({"github": ServerCatalogue("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": ServerCatalogue("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": ServerCatalogue("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")}))
+    monkeypatch.setattr(Health, "probe", lambda self: HealthReport({"github": ServerCatalogue("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": ServerCatalogue("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": ServerCatalogue("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")}))
     hook(app, "SessionStart")
     port = app.server().port
     def post(path, body):
@@ -2296,18 +2297,18 @@ def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app:
     rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s1")]
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "sonnet", "subagent_type": "journal-researcher", "prompt": "read"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a1"})
-    assert rows()[0]["running"] is True and rows()[0]["status"] == "running", "the tool's instant answer does not end a background subagent"
+    assert rows()[0]["is_active"] is True and rows()[0]["status"] == "running", "the tool's instant answer does not end a background subagent"
     hook(app, "SubagentStop", agent_id="a1", agent_type="researcher")
     row = rows()[0]
-    assert row["running"] is False and row["status"] == "done" and row["ended"] >= row["time"]
+    assert row["is_active"] is False and row["status"] == "done" and row["ended"] >= row["time"]
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "a quick one", "model": "haiku", "prompt": "x"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "a quick one"}, tool_response="the finished work")
-    assert rows()[1]["running"] is False, "a subagent that answered in the tool's own result is done at once"
+    assert rows()[1]["is_active"] is False, "a subagent that answered in the tool's own result is done at once"
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "never ran", "model": "haiku", "prompt": "x"}, tool_use_id="t-lost")
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Mr. Turing weighs", "model": "opus", "subagent_type": "journal-planner", "prompt": "x"}, tool_use_id="t-2")
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Mr. Turing weighs"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a2"}, tool_use_id="t-2")
     hook(app, "SubagentStop", agent_id="a2", agent_type="auditor")
-    assert [r["running"] for r in rows()[2:]] == [True, False], "a start that never finished keeps its own row; the finish and the stop close the row they belong to, by the tool use's id"
+    assert [r["is_active"] for r in rows()[2:]] == [True, False], "a start that never finished keeps its own row; the finish and the stop close the row they belong to, by the tool use's id"
 
 
 def test_a_write_after_a_message_is_read_waits_for_the_answer(app: App):
@@ -2347,7 +2348,7 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
     transmitted, removed = [], []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}))
-    monkeypatch.setattr(Health, "asked", lambda self: HealthReport({"blender": ServerCatalogue("blender", "uvx blender-mcp", "connected", "")}))
+    monkeypatch.setattr(Health, "probe", lambda self: HealthReport({"blender": ServerCatalogue("blender", "uvx blender-mcp", "connected", "")}))
     monkeypatch.setattr(Health, "remove", lambda self, name: removed.append(name) or name == "blender")
     hook(app, "SessionStart")
     port = app.server().port
@@ -2395,7 +2396,7 @@ def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
         hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"}, tool_response="x")
     rows = [asdict(row) for row in app.container.get(Subagents).rows("s1")]
-    assert [r["task"] for r in rows] == ["Herr Gropius draws"] and rows[0]["running"] is True
+    assert [r["task"] for r in rows] == ["Herr Gropius draws"] and rows[0]["is_active"] is True
 
 
 def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app: App, monkeypatch):
@@ -2701,6 +2702,7 @@ def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set
     working = json.loads(db.execute("SELECT data FROM agents WHERE session = 's1'").fetchone()[0])
     nested = {"resume": {"state": "at_mark", "data": {"resume": {"state": "working", "data": working}, "mark": 50}}, "skill": "plans", "path": ".claude/skills/journal-plans/SKILL.md"}
     db.execute("UPDATE agents SET state = 'loading_skill', data = ?, has_overview = 1, threshold_due = 0 WHERE session = 's1'", (json.dumps(nested),))
+    old_columns(db)
     db.execute("DELETE FROM migrations")
     db.commit()
     db.close()
@@ -2732,6 +2734,7 @@ def test_an_agent_in_the_old_running_sequence_state_is_unwrapped_at_boot_with_th
     working = json.loads(db.execute("SELECT data FROM agents WHERE session = 's1'").fetchone()[0])
     active = {"resume": {"state": "working", "data": working}, "sequence_id": int(produced), "step": 1, "text": "tag"}
     db.execute("UPDATE agents SET state = 'waiting', data = ? WHERE session = 's1'", (json.dumps({"resume": {"state": "running_sequence", "data": active}, "question_id": 1}),))
+    old_columns(db)
     db.execute("DELETE FROM migrations")
     db.commit()
     db.close()
@@ -2979,7 +2982,7 @@ def test_a_block_arriving_twice_at_once_is_recorded_once(app: App, monkeypatch):
     hook(app, "SessionStart")
     record = app.container.get(RecordTurn)
     checked = RecordTurn.is_recorded
-    monkeypatch.setattr(RecordTurn, "already_recorded", lambda self, part: (checked(self, part), timing.sleep(0.2))[0])
+    monkeypatch.setattr(RecordTurn, "is_recorded", lambda self, part: (checked(self, part), timing.sleep(0.2))[0])
     block = TurnDisplayed(text="Checking the worker's inspector now.", delta="", turn_id="t1", final=True).placed("s1", 1, "claude", 0.0, 0.0)
     threads = [threading.Thread(target=contextvars.copy_context().run, args=(record.handle, block)) for _ in range(2)]
     [t.start() for t in threads]
@@ -3021,6 +3024,7 @@ def test_a_skill_owed_as_a_link_moves_onto_the_agent_at_boot(tmp_path: Path, mon
     db.execute("INSERT INTO agents (created_at, creator, updated_at, updater, environment_id, session, state, data) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', 1, 's1', 'idle', '{}')")
     agent = db.execute("SELECT MAX(id) FROM agents").fetchone()[0]
     db.execute("INSERT INTO links (created_at, creator, updated_at, updater, source, target, kind) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', ?, NULL, 'owes:journal')", (f"agents:{agent}",))
+    old_columns(db)
     db.execute("DELETE FROM migrations WHERE number >= 7")
     db.commit()
     db.close()
@@ -3051,7 +3055,7 @@ def test_the_mcp_page_shows_a_servers_state_as_last_checked_and_check_all_reads_
     from journal.features.mcp.support.server_catalogue import ServerCatalogue
     answers = [HealthReport({"claude_design": ServerCatalogue("claude_design", "https://api.anthropic.com/v1/design/mcp", "failed", "rejected your login")}),
                HealthReport({"claude_design": ServerCatalogue("claude_design", "https://api.anthropic.com/v1/design/mcp", "connected", "")})]
-    monkeypatch.setattr(Health, "asked", lambda self: answers.pop(0) if len(answers) > 1 else answers[0])
+    monkeypatch.setattr(Health, "probe", lambda self: answers.pop(0) if len(answers) > 1 else answers[0])
     port = app.server().port
     read = lambda: j.load(open_url(R(f"http://127.0.0.1:{port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))
     previous = read()
@@ -3150,7 +3154,7 @@ def test_a_plugin_runs_as_itself_never_as_the_user(app: App):
     status, output = cli(["message", "send", "a word from echo"])
     message = app.container.get(Messages).recent(1)[0]
     assert status == 200 and message.creator == Actor.plugin("echo") and message.author == "system", "a plugin's command is stamped as the plugin and its message is the journal's, never yours"
-    assert "only the user approves" in cli(["plan", "approve", "1"])[1]["err"], "a plugin never approves a plan"
+    assert "only the user approves" in cli(["plan", "approve", "1"])[1]["error"], "a plugin never approves a plan"
     assert cli(["task", "list"], value="wrong")[0] == 403 and cli(["task", "list"], plugin="lint")[0] == 403, "a wrong token, or a plugin's name without its own, is refused"
     identity = app.container.get(Identity)
     assert identity.build({"x-journal-plugin": "echo", "x-journal-plugin-token": token}) == Actor.plugin("echo") and identity.build({"x-journal-plugin": "echo", "x-journal-plugin-token": "x"}) == Actor.user(1), "the API names the plugin only with its token"
@@ -3919,7 +3923,7 @@ def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app: A
     with app.container.get(Scope).environment(MAIN):
         stale = machine.agent("s1", 1)
         console.run(["sequence", "next"], AGENT)
-        active.rewritten(stale, lambda time: [*time[:-1], time[-1].summary_text(active.timestamp())])
+        active.rewritten(stale, lambda time: [*time[:-1], time[-1].announced(active.timestamp())])
         assert active.current("s1", 1).step == 1, "the pace's own write, read before the step moved on, keeps the step it moved to"
 
 
@@ -4272,7 +4276,7 @@ def test_the_mcp_list_answers_at_once_and_asks_the_program_on_a_thread_of_its_ow
         requested.append(1)
         timing.sleep(0.5)
         return HealthReport({"github": ServerCatalogue("github", "npx", "connected", "")})
-    monkeypatch.setattr(Health, "asked", slow)
+    monkeypatch.setattr(Health, "probe", slow)
     health = app.container.get(Health)
     began = timing.time()
     assert health.report().servers == {} and health.report().servers == {} and timing.time() - began < 0.2, "no request waits on the program"
@@ -4779,7 +4783,7 @@ def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_
     tick_after(app, 360.0)
     tick_after(app, 370.0)
     matched = [line for line in keystrokes if "still running" in line]
-    assert len(matched) == 1 and f"output {active.id} still progress" in matched[0] and "pytest" not in matched[0], "past five minutes the agent is told to look at it, once until five more pass"
+    assert len(matched) == 1 and f"output {active.id} still running" in matched[0] and "pytest" not in matched[0], "past five minutes the agent is told to look at it, once until five more pass"
     (folder / "pid").write_text(str(os.getpid()))
     assert [o.id for o in outputs.background("s1")] == [active.id], "a chain whose runner lives is still in the background"
     (folder / "pid").write_text("99999999")
@@ -5144,7 +5148,7 @@ def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app: App):
     assert not tunnel.wanted, "and once it runs out, the clock closes the tunnel again"
     with pytest.raises(Rejection):
         pairing.pair(late.short, "iPhone", time + timedelta(minutes=11))
-    guessed = pairing.propose(1, Actor.user(1), time)
+    guessed = pairing.proposal(1, Actor.user(1), time)
     for _ in range(10):
         with pytest.raises(Rejection):
             pairing.pair("WRONGCODE", "iPhone", time)
@@ -6024,14 +6028,14 @@ def test_a_message_sent_to_a_subagent_runs_its_row_again_until_it_ends(app: App)
     transmit("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "collect commands", "prompt": "read", "model": "sonnet"}, tool_use_id="t-1")
     transmit("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a9"}, tool_use_id="t-1")
     transmit("SubagentStop", agent_id="a9")
-    assert [(r["running"], r["status"]) for r in rows()] == [(False, "done")]
+    assert [(r["is_active"], r["status"]) for r in rows()] == [(False, "done")]
     transmit("PreToolUse", tool_name="SendMessage", tool_input={"to": "a9", "message": "judge three hundred by hand"}, tool_use_id="t-2")
     transmit("PostToolUse", tool_name="SendMessage", tool_input={"to": "a9", "message": "judge three hundred by hand"}, tool_response={}, tool_use_id="t-2")
-    assert [(r["running"], r["status"]) for r in rows()] == [(True, "running")], "the message to its id sends it out again, so the selector counts it running"
+    assert [(r["is_active"], r["status"]) for r in rows()] == [(True, "running")], "the message to its id sends it out again, so the selector counts it running"
     transmit("SubagentStop", agent_id="a9")
-    assert [(r["running"], r["status"]) for r in rows()] == [(False, "done")], "and it is done again once it ends"
+    assert [(r["is_active"], r["status"]) for r in rows()] == [(False, "done")], "and it is done again once it ends"
     transmit("PreToolUse", tool_name="SendMessage", tool_input={"to": "uds:/tmp/cc-socks/1.sock", "message": "hello"}, tool_use_id="t-3")
-    assert len(rows()) == 1 and rows()[0]["running"] is False, "a message to another session is no subagent's"
+    assert len(rows()) == 1 and rows()[0]["is_active"] is False, "a message to another session is no subagent's"
 
 
 def test_the_kept_output_line_says_the_lines_the_characters_and_the_part_of_the_chain_the_output_holds(app: App):

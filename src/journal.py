@@ -20,9 +20,9 @@ def main(argv: list[str]) -> int:
     if argv[:1] == ["serve"]:
         app.runtime().run()
         return 0
-    outcome = app.console().run(argv, Caller.from_environ(os.environ))
-    sys.stdout.write(outcome.out)
-    sys.stderr.write(outcome.err)
+    outcome = app.console().run(argv, Caller.environment_caller(os.environ))
+    sys.stdout.write(outcome.text)
+    sys.stderr.write(outcome.error)
     return outcome.code
 
 

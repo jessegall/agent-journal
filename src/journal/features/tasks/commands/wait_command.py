@@ -30,11 +30,11 @@ class WaitCommand(Command):
         time.add_argument("--until", default="", metavar="SCRIPT", help="a shell script run every 30 seconds; the wait ends once it passes, such as ! kill -0 <pid> for a process")
 
     def begin(self, args: Namespace, caller: Caller) -> int:
-        if not args.output and not args.expiry_time:
+        if not args.output and not args.until:
             raise Rejection(MISSING_WAIT_TARGET)
-        if USER_WAIT_PATTERN.search(args.focus):
+        if USER_WAIT_PATTERN.search(args.what):
             raise Rejection(USER_WAIT_REFUSAL)
-        names = [self.awaitables.output(n) for n in args.output] + ([self.awaitables.polled_check(args.expiry_time, args.focus, caller.actor)] if args.expiry_time else [])
-        self.events.wait_declared(args.focus, ",".join(names), caller)
-        print(f"waiting for {args.focus}, on {', '.join(self.awaitables.title(name) for name in names)}; it ends by itself once all of it has settled, or when you work again")
+        names = [self.awaitables.output(n) for n in args.output] + ([self.awaitables.polled_check(args.until, args.what, caller.actor)] if args.until else [])
+        self.events.wait_declared(args.what, ",".join(names), caller)
+        print(f"waiting for {args.what}, on {', '.join(self.awaitables.title(name) for name in names)}; it ends by itself once all of it has settled, or when you work again")
         return 0

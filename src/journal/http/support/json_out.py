@@ -23,6 +23,8 @@ class JsonOut(json.JSONEncoder):
             return value.value
         if isinstance(value, Model):
             return ModelFields.build(value)
+        if hasattr(value, "published"):
+            return value.published()
         if is_dataclass(value):
             return {field.name: getattr(value, field.name) for field in fields(value)}
         return super().default(value)

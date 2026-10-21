@@ -23,7 +23,7 @@ class ShellVerbs:
         folder.split(line, parts)
         if not Chain.is_journal_line(line):
             with self.scope.environment(self.environment_id):
-                folder.numbered(self.record.began(folder.folder.name, "\n".join(p.text for p in parts if p.recorded), folder.folder, self.caller))
+                folder.numbered(self.record.start(folder.folder.name, "\n".join(p.text for p in parts if p.recorded), folder.folder, self.caller))
         return (folder.folder / "parts").read_text()
 
     def cap(self, line: str = "") -> str:
@@ -41,7 +41,7 @@ class ShellVerbs:
     def ran(self, part: str, chain: str, status: int, output: str = "", seconds: float = 0.0, changed: str = "") -> None:
         files = [ChangedFile(int(item), int(r), path) for item, r, path in (line.split("\t", 2) for line in changed.splitlines() if line.count("\t") == 2)]
         with self.scope.environment(self.environment_id):
-            self.record.ran(chain, part, status, seconds, output, files, self.caller)
+            self.record.finish_part(chain, part, status, seconds, output, files, self.caller)
 
     def moved(self, chain: str, part: str, file: str) -> str:
         from journal.features.shell.feature import Shell

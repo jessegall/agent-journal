@@ -67,7 +67,7 @@ class CheckRunner:
         for line in process.stdout:
             output_text.append(line)
             if timing.time() - saved >= INTERVAL:
-                self.checks.touch(check, actor, running=CheckOutput.progress("".join(output_text), check.progress.time))
+                self.checks.touch(check, actor, progress=CheckOutput.progress("".join(output_text), check.progress.time))
                 saved = timing.time()
         code = process.wait()
         late.cancel()

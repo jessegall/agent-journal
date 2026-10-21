@@ -19,4 +19,4 @@ class ContextThresholdCheck(AgentListener[AgentEvent]):
         agent = self.agents.session_agent(event.session)
         threshold = Memory.threshold_due(event.context, agent.context_threshold)
         if threshold:
-            self.agents.touch(agent, Actor.system(), context_mark=threshold, mark_owed=threshold)
+            self.agents.touch(agent, Actor.system(), context_threshold=threshold, threshold_due=threshold)

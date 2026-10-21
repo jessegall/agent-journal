@@ -14,7 +14,7 @@ class DumpController(Controller[Dump]):
         self.filing, self.repository, self.attachments = sorting, dumps, attachments
 
     def rows(self) -> list[Dump]:
-        return self.repository.in_()
+        return self.repository.scoped()
 
     def is_open(self, row: Dump) -> bool:
         return not row.is_completed

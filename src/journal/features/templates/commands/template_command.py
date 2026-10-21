@@ -23,7 +23,7 @@ class TemplateCommand(Command):
         self.verb(verbs, "list", "every template")
 
     def create(self, args: Namespace, caller: Caller) -> int:
-        applies = tuple(k.strip() for k in args.targets.split(",") if k.strip())
+        applies = tuple(k.strip() for k in args.applies_to.split(",") if k.strip())
         parts = tuple(p.strip() for p in args.parts.split("|") if p.strip())
         template = self.templates.save(Template(title=args.title, targets=applies, purpose=args.purpose, brief=args.brief, parts=parts), caller.actor)
         print(f"template {template.id}: {template.title}")

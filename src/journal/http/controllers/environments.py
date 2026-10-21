@@ -17,13 +17,13 @@ class EnvironmentController(Controller[Environment]):
         self.repository, self.launcher, self.supervisor, self.config = environments, launcher, supervisor, config
 
     def rows(self) -> list[Environment]:
-        return self.repository.all() or [self.repository.named("main")]
+        return self.repository.all() or [self.repository.lookup("main")]
 
     def shown_page(self, rows: list[Environment]) -> list[dict]:
         return [{**ModelFields.build(row), "worktree": next(iter(Worktree(self.config.root, row.name).badges()), "")} for row in rows]
 
     def store(self, request: Request) -> Response:
-        return Response.json(self.repository.named(request.body.get("name", "main")), 201)
+        return Response.json(self.repository.lookup(request.body.get("name", "main")), 201)
 
     def launch(self, request: Request) -> Response:
         environment = self.repository.find(request.number("id"))

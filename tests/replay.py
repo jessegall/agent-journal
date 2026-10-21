@@ -59,7 +59,7 @@ def drive_the_clock(app, monkeypatch) -> None:
     clock = app.container.get(Clock)
     clock.driven_at = timing.time()
     clock.held_at = clock.driven_at
-    monkeypatch.setattr(Clock, "now", lambda self: getattr(self, "driven_at", timing.time()))
+    monkeypatch.setattr(Clock, "time", lambda self: getattr(self, "driven_at", timing.time()))
 
 
 def pass_time(app, seconds: float) -> None:

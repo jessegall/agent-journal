@@ -11,5 +11,5 @@ class HotReadIndexes(Migration):
         "CREATE INDEX IF NOT EXISTS entries_by_environment ON entries (environment_id, id)",
         "CREATE INDEX IF NOT EXISTS entries_by_kind ON entries (environment_id, kind)",
         "CREATE INDEX IF NOT EXISTS agents_by_state ON agents (environment_id, state)",
-        "CREATE INDEX IF NOT EXISTS messages_by_writer ON messages (environment_id, creator)",
+        "CREATE INDEX IF NOT EXISTS messages_by_writer ON messages (environment_id, created_by)",
     )

@@ -46,15 +46,15 @@ class MessageCommand(Command):
 
     def send(self, args: Namespace, caller: Caller) -> int:
         author = Author.build(caller.actor)
-        if args.reply_target and author == Author.AGENT:
+        if args.reply_to and author == Author.AGENT:
             return self.reply(args, caller)
-        draft = Message(author=author, text=args.text, reply_target=args.reply_target)
+        draft = Message(author=author, text=args.text, reply_target=args.reply_to)
         message = self.messages.save(draft.arrived() if author == Author.USER else draft, caller.actor)
         print(f"message {message.id} sent")
         return 0
 
     def reply(self, args: Namespace, caller: Caller) -> int:
-        answered = self.messages.find(args.reply_target)
+        answered = self.messages.find(args.reply_to)
         if self.messages.reply_text(answered.id, args.text):
             print(f"message {answered.id} already has this reply in the chat: not sent again")
             return 0

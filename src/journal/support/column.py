@@ -42,7 +42,7 @@ class Column:
         if value is None:
             return None
         if self.is_json:
-            return json.dumps(asdict(value) if is_dataclass(value) else value)
+            return json.dumps(value.published() if hasattr(value, "published") else asdict(value) if is_dataclass(value) else value, default=asdict)
         if isinstance(value, Actor):
             return value.stamp
         if isinstance(value, Ref):

@@ -18,10 +18,10 @@ class PlanController(Controller[Plan]):
     """Plans in outline, and the user's moves on one: approve, start, park, finish and abandon."""
 
     def __init__(self, plans: Plans, tasks: Tasks, links: Links, outline: PlanOutline, timeline: PlanTimeline) -> None:
-        self.repository, self.tasks, self.links, self.outline, self.timeline = plans, tasks, links, outline, timeline
+        self.repository, self.tasks, self.links, self.outline, self.moments = plans, tasks, links, outline, timeline
 
     def rows(self) -> list[Plan]:
-        return self.repository.in_()
+        return self.repository.scoped()
 
     def is_open(self, row: Plan) -> bool:
         return not row.state.is_closed()
@@ -30,7 +30,7 @@ class PlanController(Controller[Plan]):
         return [self.outline.build(plan) for plan in rows]
 
     def timeline(self, request: Request) -> Response:
-        return Response.json(self.timeline.of(self.repository.find(request.number("id"))))
+        return Response.json(self.moments.build(self.repository.find(request.number("id"))))
 
     def plan_tasks(self, request: Request) -> Response:
         return Response.json(self.repository.plan_tasks(self.repository.find(request.number("id"))))

@@ -1,3 +1,5 @@
+import json
+from dataclasses import asdict
 import difflib
 from pathlib import Path
 
@@ -9,6 +11,11 @@ LINE_LIMIT = 400
 
 class PluginChanges:
     """What changes between two states of a plugin: in its manifest, and in its code, file by file."""
+
+    @staticmethod
+    def plain(manifest) -> dict:
+        """A manifest as journal-plugin.json writes it, nested values as plain JSON, for comparing two of them."""
+        return json.loads(json.dumps(manifest.published(), default=asdict))
 
     @staticmethod
     def manifest(prior_row: dict, time: dict) -> list[str]:

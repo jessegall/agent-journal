@@ -188,8 +188,8 @@ def test_the_launch_writes_what_the_supervisor_starts_and_a_bad_launch_file_is_r
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"front": {"command": ["claude"]}}))
     assert main([str(bad)]) == 2
-    assert "has no socket, announce, front's folder, front's env" in capsys.readouterr().error
-    assert main([str(tmp_path / "missing.json")]) == 2 and "cannot be read" in capsys.readouterr().error
+    assert "has no socket, announce, front's folder, front's env" in capsys.readouterr().err
+    assert main([str(tmp_path / "missing.json")]) == 2 and "cannot be read" in capsys.readouterr().err
 
 
 def test_the_supervisor_imports_nothing_but_the_standard_library_and_itself():
