@@ -99,6 +99,7 @@ export const TABLES = {
     agents: kind("Agent", "bot", "A session of Claude or Codex, and what it is doing right now"),
     nudges: kind("Agent instruction", "arrow", "A short instruction the journal sends the agent by itself; you never see it in the chat.", {nested: true, typed_as_title: true}),
     workers: kind("Worker", "bot", "An agent sent to write one bounded job, in a working copy of its own"),
+    subagents: kind("Subagent", "bot", "A helper the agent started inside its own session for one job", {nested: true}),
     sequences: kind("Sequence", "list", "Steps the agent follows in order, one at a time, started by hand or by a moment", {
         view: "document",
         scope: "project",

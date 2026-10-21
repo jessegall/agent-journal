@@ -44,6 +44,7 @@ from journal.http.controllers.phones import PhoneController
 from journal.http.controllers.updates import UpdateController
 from journal.http.controllers.viewer import ViewerController
 from journal.http.controllers.voices import VoiceController
+from journal.http.controllers.subagents import SubagentController
 from journal.http.controllers.workers import WorkerController
 from journal.http.router import Router
 
@@ -131,6 +132,7 @@ class Routes:
         self.resource(router, "triggers", triggers)
         self.listed(router, "templates", get(TemplateController))
         self.listed(router, "workers", get(WorkerController))
+        self.listed(router, "subagents", get(SubagentController))
         self.acts(router, "workers", get(WorkerController), "send", "stop", "complete")
         router.get(f"{API}/workers/{{id}}/transcript", get(TranscriptController).worker_transcript)
 

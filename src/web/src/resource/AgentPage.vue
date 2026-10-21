@@ -16,7 +16,7 @@ const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const {env, api} = useScope();
 const environment = computed(() => env || route.value.env);
-const subagents = computed(() => subagentsOf(props.resource.id).filter((r) => r.session));
+const subagents = computed(() => subagentsOf(props.resource).filter((r) => r.session));
 const picked = computed(() => subagents.value.find((r) => r.session === route.value.sub) || null);
 const skills = computed(() => loadedSkills(props.resource));
 const family = computed(() => modelFamily(props.resource.model));

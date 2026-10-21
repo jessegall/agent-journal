@@ -27,7 +27,7 @@ const activityCounts = computed(() => [
     {
         key: "subagents",
         icon: "agents",
-        n: live(agent.value ? subagentsOf(agent.value.id) : []),
+        n: live(subagentsOf(agent.value)),
         title: "Subagents: helpers the agent started",
     },
 ]);

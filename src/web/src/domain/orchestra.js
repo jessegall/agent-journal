@@ -91,7 +91,7 @@ function subagentEntry(sub, agent, env) {
 
 export function orchestraOf(summary, workers, lead, env) {
     const environments = ((summary && summary.environments) || []).filter((s) => s.agent).map(environmentEntry);
-    const subs = lead ? subagentsOf(lead.id).map((sub) => subagentEntry(sub, lead, env)) : [];
+    const subs = subagentsOf(lead).map((sub) => subagentEntry(sub, lead, env));
     return [...environments, ...workers.map((w) => workerEntry(w, env)), ...subs];
 }
 

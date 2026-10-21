@@ -1,17 +1,15 @@
-import {refOf, seconds} from "./row.js";
 import {rows} from "../sync/rows.js";
 
-// The subagents an agent sent, from the cards the chat shows of them.
+// The subagents an agent sent, as their rows stand: running until they stop, and running again once resumed by a message.
 export const subagentsOf = (agent) =>
-    rows("messages")
-        .filter((m) => m.data?.kind === "subagent" && m.data.agent === agent)
-        .map((m) => ({
-            id: refOf(m),
-            at: seconds(m.created_at),
-            task: m.data.detail,
-            type: m.data.agent_type,
-            model: m.data.model,
-            session: m.data.subagent,
-            status: m.data.state,
-            running: m.data.state === "running",
-        }));
+    (agent ? rows("subagents").filter((s) => s.dispatcher === agent.session) : []).map((s) => ({
+        id: `subagents:${s.id}`,
+        time: s.resumed_at || s.started_at,
+        ended: s.ended_at,
+        task: s.task,
+        type: s.agent_type,
+        model: s.model,
+        session: s.session,
+        status: s.state,
+        running: s.state === "running",
+    }));

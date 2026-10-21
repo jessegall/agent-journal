@@ -95,13 +95,7 @@ function openSkills() {
                         <AgentUsage :usage="usage" />
                     </template>
                     <template #default>
-                        <CrewList
-                            heading="Subagents"
-                            :rows="subagentsOf(agent ? agent.id : 0)"
-                            :total="subagentsOf(agent ? agent.id : 0).length"
-                            started="dispatched"
-                            @open="openSession"
-                        />
+                        <CrewList heading="Subagents" :rows="subagentsOf(agent)" started="dispatched" @open="openSession" />
                     </template>
                 </SwitchCase>
             </MenuPanel>

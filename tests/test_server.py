@@ -163,6 +163,36 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
         app.runtime().stop()
 
 
+def test_the_subagents_are_listed_as_their_rows_stand_a_resumed_one_running_again(tmp_path: Path):
+    """A background subagent that ended and was sent a message is running again in the list the viewer's dropdown reads, and counted open."""
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
+        agent = {"subagent_type": "journal-researcher", "description": "map the hooks", "prompt": "read", "model": "sonnet"}
+        message = {"to": "a9", "message": "one more"}
+        for kind, extra in (
+            ("SessionStart", {"source": "startup"}),
+            ("PreToolUse", {"tool_name": "Agent", "tool_input": agent, "tool_use_id": "t-1"}),
+            ("PostToolUse", {"tool_name": "Agent", "tool_input": {}, "tool_response": {"isAsync": True, "agentId": "a9"}, "tool_use_id": "t-1"}),
+            ("SubagentStop", {"agent_id": "a9"}),
+            ("PreToolUse", {"tool_name": "SendMessage", "tool_input": message, "tool_use_id": "t-2"}),
+            ("PostToolUse", {"tool_name": "SendMessage", "tool_input": message, "tool_response": {}, "tool_use_id": "t-2"}),
+        ):
+            urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
+        listed = lambda: call(server, "GET", "/journal/subagents")[1]
+        for _ in range(50):
+            if [r["resumed_at"] > 0 for r in listed()["rows"]] == [True]:
+                break
+            time.sleep(0.1)
+        page = listed()
+        assert [(r["task"], r["dispatcher"], r["session"], r["state"]) for r in page["rows"]] == [("map the hooks", "s9", "a9", "running")], "resumed by a message, it is running again"
+        assert page["counts"]["open"] == 1, "and counted open, as the census counts it"
+    finally:
+        app.runtime().stop()
+
+
 def test_request_threads_leave_no_connection_behind(server):
     database = server.database
     for _ in range(40):

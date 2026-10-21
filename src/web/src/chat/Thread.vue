@@ -107,7 +107,7 @@ const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dumps")
 const rowDocks = computed(() => dockedRows(rows("messages")));
 const dockCount = computed(() => rowDocks.value.length + [dumpDock.value, planCard.value].filter(Boolean).length);
 const thought = computed(() => (owner.value && owner.value.thinking) || "");
-const helping = computed(() => (owner.value ? subagentsOf(owner.value.id) : []).filter((sub) => sub.running).at(-1));
+const helping = computed(() => subagentsOf(owner.value).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
     owner.value && owner.value.status === "compacting" ? "compacting" : helping.value ? `Waiting: ${helping.value.task}` : "working"
 );
