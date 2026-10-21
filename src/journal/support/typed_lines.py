@@ -83,7 +83,9 @@ class TypedLines:
         return [t for t in self._waiting if t.environment_id == environment_id and t.time <= previous]
 
     def retry(self, keystrokes: TypedLine, time: float) -> TypedLine:
-        repeat = TypedLine(keystrokes.environment_id, keystrokes.line, time, keystrokes.tries + 1)
+        queued = self.batched(keystrokes.environment_id)
+        line = keystrokes.line if queued is None else f"{keystrokes.line} | {queued.line.removeprefix(JOURNAL_PREFIX).strip()}"
+        repeat = TypedLine(keystrokes.environment_id, line, time, keystrokes.tries + 1)
         self._waiting[self._waiting.index(keystrokes)] = repeat
         self._recent = [t for t in self._recent if time - t.time < RECENT_SECONDS] + [repeat]
         return repeat

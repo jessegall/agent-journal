@@ -14,7 +14,10 @@ class Entries(ScopedRepository[Entry]):
     model = Entry
 
     def trim(self, newest: int, stored: int) -> int:
-        return self.connection.execute("DELETE FROM entries WHERE id <= ?", (newest - stored,)).rowcount
+        return self.connection.execute("DELETE FROM entries WHERE id <= ? AND kind != 'nudge'", (newest - stored,)).rowcount
+
+    def trim_lines(self, stored: int) -> int:
+        return self.connection.execute("DELETE FROM entries WHERE kind = 'nudge' AND id <= (SELECT id FROM entries WHERE kind = 'nudge' ORDER BY id DESC LIMIT 1 OFFSET ?)", (stored,)).rowcount
 
     def last_prompt(self, session: str) -> datetime | None:
         rows = self.selected("kind = 'PromptSubmitted' AND actor = ? ORDER BY id DESC LIMIT 1", (Actor.agent(session).stamp,))

@@ -1738,6 +1738,52 @@ def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_ques
     assert any("does rule 1 apply to the whole project?" in line for line in keystrokes), "the question is typed to the agent that made the rule"
 
 
+def test_a_whisper_is_said_once_though_the_record_is_trimmed_past_it_and_a_struck_fact_is_never_whispered(app: App, monkeypatch):
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    console = app.console()
+    hook(app, "SessionStart")
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="record.kept", value=30), Actor.system())
+    console.run(["fact", "create", "the login uses the old session store", "--keywords", "login"], USER)
+    console.run(["fact", "create", "billing runs on the first of the month", "--keywords", "billing"], USER)
+    hook(app, "MessageDisplay", message="I will look at the login next.")
+    for n in range(40):
+        console.run(["task", "create", f"filler {n}"], USER)
+    hook(app, "MessageDisplay", message="Still on the login.")
+    app.runtime().deferred.drain()
+    assert len([line for line in keystrokes if "fact 1 is about this" in line]) == 1, "the line said is remembered though forty row changes trimmed the record past it"
+    console.run(["fact", "strike", "2"], USER)
+    hook(app, "MessageDisplay", message="Now the billing.")
+    app.runtime().deferred.drain()
+    assert not any("fact 2 is about this" in line for line in keystrokes), "a struck fact matches no keyword"
+
+
+def test_a_message_left_while_a_whisper_waits_unseen_is_named_when_the_whisper_is_typed_again(app: App, monkeypatch):
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    from journal.support.typed_lines import TypedLines
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, verb, fields: typed.append(fields.get("line", "")))
+    lines = app.container.get(TypedLines)
+    console = app.console()
+    hook(app, "SessionStart")
+    for line in list(typed):
+        lines.confirm(1, line)
+    app.container.get(SupervisorLink).release(1)
+    console.run(["fact", "create", "the login uses the old session store", "--keywords", "login"], USER)
+    hook(app, "MessageDisplay", message="I will look at the login next.")
+    app.runtime().deferred.drain()
+    assert any("fact 1 is about this" in line for line in typed), "the whisper is typed, and no prompt shows it arrived"
+    console.run(["message", "send", "are you there?"], USER)
+    app.runtime().deferred.drain()
+    assert not any("new message" in line for line in typed), "the message's line is held behind the whisper still waiting"
+    hook(app, "Stop")
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + 30, silence_seconds=30.0))
+    app.runtime().deferred.drain()
+    assert any("fact 1 is about this" in line and "new message" in line for line in typed[-1:]), "typed again, the whisper carries the held message with it, so the message is named"
+
+
 def test_auto_mode_answers_a_stop_with_the_next_task(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
