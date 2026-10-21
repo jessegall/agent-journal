@@ -1,22 +1,18 @@
 <script setup>
 import {computed, nextTick, onMounted, ref} from "vue";
 import Dialog from "../kit/Dialog.vue";
-import MenuItem from "../kit/MenuItem.vue";
-import MenuLabel from "../kit/MenuLabel.vue";
-import MenuPanel from "../kit/MenuPanel.vue";
 import Toast from "../kit/Toast.vue";
-import {boardLines, moreActs, shownTasks, STATUS_WORDS, statusChoices} from "../domain/taskBoard.js";
+import {boardLines, shownTasks, STATUS_WORDS} from "../domain/taskBoard.js";
 import {select, useTaskActs} from "../composables/taskActs.js";
 import {useWindowEvent} from "../composables/windowEvent.js";
 import {narrow} from "../platform/view.js";
 import {go, route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import {taskBoard} from "../state/taskBoard.js";
-import TaskAsk from "./TaskAsk.vue";
 import TaskGraph from "./TaskGraph.vue";
 import TaskInspector from "./TaskInspector.vue";
 import TaskList from "./TaskList.vue";
-import TaskStatusIcon from "./TaskStatusIcon.vue";
+import TaskMenus from "./TaskMenus.vue";
 import TasksHead from "./TasksHead.vue";
 
 const TYPING = "input,textarea,select,[contenteditable],.menu-panel";
@@ -27,9 +23,7 @@ const acts = useTaskActs();
 const {toast, asking} = acts;
 const tasks = computed(() => rows("tasks"));
 const plans = computed(() => [...rows("plans")].sort((a, b) => a.id - b.id));
-const shown = computed(() =>
-    shownTasks(tasks.value, {statuses: taskBoard.statuses, showDone: taskBoard.display.showDone, words: taskBoard.words})
-);
+const shown = computed(() => shownTasks(tasks.value, taskBoard));
 const lines = computed(() =>
     boardLines(taskBoard.display.grouping, {shown: shown.value, all: tasks.value, plans: plans.value, folded: taskBoard.folded})
 );
@@ -70,12 +64,6 @@ const answer = (question) => (asking.value = {kind: "answer", question});
 
 function anchorOf(task) {
     return document.querySelector(`.task-row[data-task="${task.id}"] .status`) || document.querySelector(".task-inspector .status");
-}
-
-function pick(name) {
-    const task = menu.value.task;
-    menu.value = null;
-    acts.run(task, name);
 }
 
 const KEYS = {
@@ -170,35 +158,7 @@ useWindowEvent("keydown", escaped);
             <Toast :toast="toast" :lasts="5000" @done="toast = null" />
         </div>
     </Dialog>
-    <template v-if="menu">
-        <MenuPanel :anchor="menu.el" :min-width="220" :max-width="300" @close="menu = null">
-            <template v-if="menu.kind === 'status'">
-                <MenuLabel>Change the status of task {{ menu.task.id }}</MenuLabel>
-                <template v-for="c in statusChoices(menu.task)" :key="c.status">
-                    <MenuItem
-                        :on="c.current"
-                        :disabled="!c.act && !c.current"
-                        :title="c.act || c.current ? '' : c.note"
-                        @click="c.act && pick(c.act)"
-                    >
-                        <TaskStatusIcon :status="c.status" />
-                        {{ c.label }}
-                    </MenuItem>
-                </template>
-            </template>
-            <template v-else>
-                <MenuLabel>Task {{ menu.task.id }}</MenuLabel>
-                <MenuItem @click="showMenu('status', menu.task, menu.el)">Change status</MenuItem>
-                <template v-for="a in moreActs(menu.task)" :key="a.name">
-                    <MenuItem @click="pick(a.name)">{{ a.label }}</MenuItem>
-                </template>
-                <MenuItem danger @click="pick('delete')">Delete task {{ menu.task.id }}</MenuItem>
-            </template>
-        </MenuPanel>
-    </template>
-    <template v-if="asking">
-        <TaskAsk :asking="asking" :tasks="tasks" :acts="acts" @close="asking = null" />
-    </template>
+    <TaskMenus :menu="menu" :tasks="tasks" :acts="acts" @close="menu = null" @show="showMenu" @run="acts.run" />
 </template>
 
 <style scoped>

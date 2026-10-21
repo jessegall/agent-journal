@@ -196,8 +196,13 @@ onUnmounted(() => watcher.disconnect());
     height: min(500px, 100%);
 }
 
+.dialog-panel.wide.tall {
+    width: min(1296px, 100%);
+    max-height: min(768px, 100%);
+}
+
 .dialog-panel.fixed.wide.tall {
-    height: min(780px, 100%);
+    height: min(768px, 100%);
 }
 
 .dialog-panel.fixed .dialog-body {

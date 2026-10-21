@@ -70,8 +70,8 @@ export function matches(task, words) {
 }
 
 // The tasks the list shows: those of the statuses picked, or every one not done unless done ones are asked for.
-export function shownTasks(tasks, {statuses, showDone, words}) {
-    const fits = (t) => (statuses.length ? statuses.includes(statusOf(t)) : showDone || statusOf(t) !== "done");
+export function shownTasks(tasks, {statuses, display, words}) {
+    const fits = (t) => (statuses.length ? statuses.includes(statusOf(t)) : display.showDone || statusOf(t) !== "done");
     return tasks.filter((t) => fits(t) && matches(t, words));
 }
 

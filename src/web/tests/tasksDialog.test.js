@@ -139,6 +139,14 @@ describe("the tasks dialog", () => {
         expect([...document.body.querySelectorAll(".task-inspector .fact .label")].map((l) => l.textContent)).not.toContain("Held by");
     });
 
+    test("the inspector's comment form sits below its scrolling content, never over it", async () => {
+        await opened();
+        inDialog('.task-row[data-task="1"]').click();
+        await flush();
+        expect(inDialog(".task-inspector > .write .comment-write")).not.toBeNull();
+        expect(inDialog(".task-inspector .body .comment-write")).toBeNull();
+    });
+
     test("blocking a task offers no task that already waits on it and posts the one picked", async () => {
         await opened();
         inDialog('.task-row[data-task="1"]').click();
@@ -186,7 +194,7 @@ describe("the tasks dialog's rules", () => {
 
     test("grouped by status, a folded group keeps its head and drops its rows", () => {
         store.rows = {tasks: board(), plans: [plan], questions: []};
-        const shown = shownTasks(board(), {statuses: [], showDone: true, words: ""});
+        const shown = shownTasks(board(), {statuses: [], display: {showDone: true}, words: ""});
         const lines = boardLines("status", {shown, all: board(), plans: [plan], folded: {sopen: true}});
         expect(lines.map((l) => (l.type === "head" ? l.label : l.task.id))).toEqual(["Blocked", 2, "Open", "Done", 3]);
     });

@@ -3,6 +3,7 @@ import {computed, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Comments from "../resource/Comments.vue";
+import CommentWrite from "../resource/CommentWrite.vue";
 import Links from "../resource/Links.vue";
 import TaskLogs from "../resource/TaskLogs.vue";
 import {planOf} from "../domain/records.js";
@@ -118,9 +119,12 @@ watch(
                 </template>
                 <TaskLogs :task="task" />
                 <Links :resource="task" />
-                <Comments :resource="task" />
+                <Comments :resource="task" :compose="false" />
             </div>
         </Transition>
+        <div class="write">
+            <CommentWrite :key="task.id" :resource="task" />
+        </div>
     </aside>
 </template>
 
@@ -132,6 +136,16 @@ watch(
     width: 440px;
     min-height: 0;
     border-left: 1px solid var(--border);
+}
+
+.write {
+    flex: none;
+    padding: 0 16px;
+    border-top: 1px solid var(--border);
+}
+
+.write :deep(.comment-write) {
+    margin-top: 0;
 }
 
 .task-inspector.single {

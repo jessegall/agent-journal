@@ -10,10 +10,9 @@ import TaskStatusIcon from "./TaskStatusIcon.vue";
 
 const props = defineProps({lines: {type: Array, required: true}, tasks: {type: Array, required: true}});
 const emit = defineEmits(["select", "act", "status", "more", "file", "new", "clear"]);
+const filtered = computed(() => Boolean(taskBoard.statuses.length || taskBoard.words));
 const hiddenDone = computed(() =>
-    taskBoard.statuses.length || taskBoard.display.showDone || taskBoard.words
-        ? 0
-        : props.tasks.filter((t) => statusOf(t) === "done").length
+    filtered.value || taskBoard.display.showDone ? 0 : props.tasks.filter((t) => statusOf(t) === "done").length
 );
 const missing = computed(() => {
     const kinds = taskBoard.statuses.map((s) => STATUS_WORDS[s].toLowerCase()).join(" or ");
@@ -35,6 +34,14 @@ const fold = (key) => (taskBoard.folded[key] = !taskBoard.folded[key]);
                 <h4>No tasks yet</h4>
                 <p>The agent files a task when it takes on a piece of work. You can file one here too.</p>
                 <Btn kind="primary" @click="emit('new')">New task</Btn>
+            </div>
+        </template>
+        <template v-else-if="tasks.length && !lines.length && !filtered">
+            <div class="empty">
+                <TaskStatusIcon status="done" :size="24" />
+                <h4>Every task is done</h4>
+                <p>{{ counted(hiddenDone, "done task") }} {{ hiddenDone === 1 ? "is" : "are" }} hidden.</p>
+                <Btn @click="taskBoard.display.showDone = true">Show the done tasks</Btn>
             </div>
         </template>
         <template v-else-if="tasks.length && !lines.length">
@@ -87,7 +94,7 @@ const fold = (key) => (taskBoard.folded[key] = !taskBoard.folded[key]);
     flex: 1;
     min-width: 0;
     overflow: auto;
-    padding: 4px 0 14px;
+    padding: 0 0 14px;
     scrollbar-width: thin;
 }
 

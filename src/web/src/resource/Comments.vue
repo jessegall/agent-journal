@@ -6,13 +6,12 @@ import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {quoted, withQuote} from "../format/quote.js";
+import {quoted} from "../format/quote.js";
 import {age} from "../format/time.js";
 import {markPassage, passageIn} from "../platform/passage.js";
-import {pendingRow} from "../domain/placeholders.js";
 import {createdAt, refOf} from "../domain/row.js";
-import {optimistic} from "../sync/rows.js";
-import Compose from "../chat/Compose.vue";
+import CommentWrite from "./CommentWrite.vue";
+import {useCommenting} from "../composables/commenting.js";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 
 const props = defineProps({
@@ -105,24 +104,8 @@ async function save() {
 }
 
 const remove = (c) => scope.api.act("comments", c.id, "delete");
-const notSaved = ref("");
-
-function comment(text) {
-    notSaved.value = "";
-    const made = pendingRow("comments", {text, on: [on.value]}, {author: "user"});
-    optimistic("comments", made, () => scope.api.comment(on.value, text)).catch((e) => (notSaved.value = e.message));
-    return made;
-}
-
+const {notSaved, comment} = useCommenting(() => props.resource);
 const quick = (text) => comment(text);
-
-async function send(text) {
-    const made = comment(withQuote(props.quote, text));
-    emit("sent");
-    await nextTick();
-    const row = list.value?.querySelector(`[data-comment="${made.key}"]`);
-    if (row) row.scrollIntoView({behavior: "smooth", block: "nearest"});
-}
 </script>
 
 <template>
@@ -207,22 +190,14 @@ async function send(text) {
         </section>
     </template>
     <template v-if="props.compose">
-        <template v-if="notSaved">
-            <p class="unsaved">Couldn't save the comment: {{ notSaved }}</p>
-        </template>
         <template v-if="!props.showThread">
+            <template v-if="notSaved">
+                <p class="unsaved">Couldn't save the comment: {{ notSaved }}</p>
+            </template>
             <QuickCommentBar :send="quick" :count="talk ? thread.length : 0" @show="talk.toggle()" />
         </template>
         <template v-else>
-            <div class="comment-write">
-                <Compose
-                    :placeholder="quote ? 'Say something about this passage…' : 'Write a comment…'"
-                    submit="Comment"
-                    :quote="quote"
-                    :send="send"
-                    @unquote="emit('sent')"
-                />
-            </div>
+            <CommentWrite :resource="resource" :quote="quote" @sent="emit('sent')" />
         </template>
     </template>
 </template>
@@ -503,22 +478,6 @@ textarea:focus {
     font-size: 11.5px;
 }
 
-.comment-write {
-    position: sticky;
-    bottom: 0;
-    margin: 12px -16px 0;
-    padding: 8px 16px 10px;
-    background: var(--bg);
-}
-
-.comment-write :deep(textarea) {
-    min-height: 34px;
-    transition: min-height 0.15s ease-out;
-}
-
-.comment-write :deep(textarea:focus) {
-    min-height: 74px;
-}
 </style>
 
 <style>
