@@ -2410,9 +2410,10 @@ def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app: App
     body.write_text("What two readers found.\n\n## Phase 1\n\n- a gap\n\n## Phase 2\n\n- another\n")
     output = app.console().run(["report", "create", "Critique of plan 1", "--file", str(body), "--about", "plans:1"], AGENT).text
     assert output.startswith("report 1: Critique of plan 1, about plans:1")
+    app.runtime().deferred.drain()
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/reports/1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         report = json.loads(reply.read())
-    assert "## Phase 1" in report["body"] and "## Phase 2" in report["body"] and report["links"] == ["plans:1"], "a report names the rows it is about as the journal does"
+    assert "## Phase 1" in report["body"] and "## Phase 2" in report["body"] and report["links"] == ["plans:1"], "a report names each row it is about once, though its title mentions it too"
 
 
 def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(app: App):
