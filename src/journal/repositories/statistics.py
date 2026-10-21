@@ -10,17 +10,17 @@ class Statistics(Repository[Statistic]):
         return {row.key: row.value for row in self.selected("key >= ? AND key < ? ORDER BY key", (prefix, prefix + "\uffff"))}
 
     def counted(self, key: str, actor: Actor) -> Statistic:
-        with self.connection.transaction():
-            return self.save(self.series(key).with_(value=self.series(key).value + 1), actor)
+        return self.added(key, 1, actor)
 
     def added(self, key: str, amount: int, actor: Actor) -> Statistic:
         with self.connection.transaction():
-            return self.save(self.series(key).with_(value=self.series(key).value + amount), actor)
+            row = self.series(key)
+            return self.save(row.with_(value=row.value + amount), actor)
 
     def measured(self, prefix: str, ms: int, actor: Actor) -> None:
         with self.connection.transaction():
-            self.save(self.series(f"{prefix}.count").with_(value=self.series(f"{prefix}.count").value + 1), actor)
-            self.save(self.series(f"{prefix}.total_ms").with_(value=self.series(f"{prefix}.total_ms").value + ms), actor)
+            self.added(f"{prefix}.count", 1, actor)
+            self.added(f"{prefix}.total_ms", ms, actor)
             slowest = self.series(f"{prefix}.slowest_ms")
             if ms > slowest.value:
                 self.save(slowest.with_(value=ms), actor)
