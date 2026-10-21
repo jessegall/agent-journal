@@ -149,7 +149,7 @@ class Filing:
             raise Refused(f"dump {n} has no option {pick}: pick is the number of an offered step, or -1 for You decide")
         if str(pick) in dump.taken:
             raise Refused(f"{dump.options[pick]['label']} was already taken on dump {n}")
-        return self.dumps.save(dump.chose(pick, dump.options[pick]["label"] if pick >= 0 else "You decide", time.time()), by)
+        return self.dumps.save(dump.step_chosen(pick, dump.options[pick]["label"] if pick >= 0 else "You decide", time.time()), by)
 
     def decline(self, n: int, pick: int, by: Actor) -> Dump:
         self.only_user(by, "chooses what a dump does next")
@@ -165,7 +165,7 @@ class Filing:
         dump = self.dumps.find(n)
         message = self.messages.save(Message(author=Author.USER, text=how.strip()).arrived(), by)
         self.links.save(Link(source=Ref.to(message), target=Ref.to(dump), kind=Messages.COMMENTS_ON), by)
-        return self.dumps.save(dump.directed(how.strip(), time.time()), by)
+        return self.dumps.save(dump.step_directed(how.strip(), time.time()), by)
 
     def stop(self, n: int, by: Actor) -> Dump:
         self.only_user(by, "stops a dump")

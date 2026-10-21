@@ -1526,9 +1526,10 @@ def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_p
     edits = app.container.get(Edits)
     kept = edits.of_agent("s1", 0, 50)
     assert [e.path for e in kept] == ["a.py"] and kept[0].added == 1 and kept[0].removed == 1 and kept[0].first_line == 7 and [r["kind"] for r in kept[0].rows] == ["ctx", "del", "add", "ctx"]
-    ShellVerbs(app).ran("sed -i s/x/y/ b.py", "c1", 0, output="", changed="3\t1\tb.py")
+    (app.config.root / "b.py").write_text("x = 1\ny = 2\n")
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/x/y/ b.py"}, tool_response="")
     kept = edits.of_agent("s1", 0, 50)
-    assert [e.path for e in kept] == ["a.py", "b.py"] and kept[1].added == 3 and kept[1].removed == 1 and kept[1].command and kept[1].rows == ()
+    assert [e.path for e in kept] == ["a.py", "b.py"] and kept[1].added == 2 and kept[1].removed == 0 and kept[1].command.startswith("sed") and [r["kind"] for r in kept[1].rows] == ["add", "add"], "a shell line's edit is read from the call's written paths when the call ends, against the file as the journal saw it last"
     for i in range(KEEP):
         edits.record(Edit(session="s1", path=f"f{i}.py", at=float(i + 10)), Actor.agent("s1"))
     assert len(edits.in_()) == KEEP, "the oldest go as new ones come"
@@ -1872,9 +1873,10 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
 def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
     from urllib.request import urlopen
     hook(app, "SessionStart")
-    ShellVerbs(app).ran("sed -i '' s/a/b/ notes.md", "c2", 0, changed="3\t1\tnotes.md\n0\t0\tsame.md")
+    (app.config.root / "notes.md").write_text("a\nb\nc\n")
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ notes.md && touch same.md"}, tool_response="")
     edits = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents/1/edits?env=main"), timeout=5))["edits"]
-    assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 1), ("same.md", 0, 0)] and edits[0]["command"].startswith("sed")
+    assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 0)] and edits[0]["command"].startswith("sed"), "a file the line wrote shows with its lines; a file it touched without a change does not"
 
 
 def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):
@@ -5651,9 +5653,9 @@ def test_a_file_changed_by_a_shell_command_keeps_its_changed_lines(app):
     hook(app, "SessionStart")
     console = app.console()
     (app.config.root / "notes.txt").write_text("one\ntwo\n")
-    ShellVerbs(app).ran("python3 - <<'EOF'", "c1", 0, output="", changed="2\t0\tnotes.txt")
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "python3 - <<'EOF'\nfrom pathlib import Path\nPath('./notes.txt').write_text('one\\ntwo\\n')\nEOF"}, tool_response="")
     (app.config.root / "notes.txt").write_text("one\nTWO\nthree\n")
-    ShellVerbs(app).ran("sed -i s/two/TWO/ notes.txt", "c2", 0, output="", changed="1\t1\tnotes.txt")
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "sed -i s/two/TWO/ notes.txt"}, tool_response="")
     first, second = [e for e in app.container.get(Edits).all() if e.path == "notes.txt"][-2:]
     assert [r["text"] for r in first.rows if r["kind"] == "add"] == ["one", "two"], "a new file's lines are all added"
     assert [(r["kind"], r["text"]) for r in second.rows if r["kind"] != "ctx"] == [("del", "two"), ("add", "TWO"), ("add", "three")], "a later change is told against the version the journal saw last"

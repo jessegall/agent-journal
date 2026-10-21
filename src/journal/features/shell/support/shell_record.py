@@ -5,17 +5,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from journal.hooks.command_events import CommandEvents
-from journal.features.edits.support.file_snapshots import FileSnapshots
-from journal.features.edits.support.patch_rows import PatchRows
 from journal.features.shell.support.changed_file import ChangedFile
 from journal.features.shell.support.doing import Doing
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_log import OutputLog
-from journal.models.edit import Edit
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
 from journal.repositories.command_outputs import CommandOutputs
-from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
 from journal.repositories.setting_rows import SettingRows
 from journal.support.cards import Cards
@@ -24,8 +20,6 @@ from journal.support.scope import Scope
 from journal.support.where import Where
 
 TAIL = 2000
-ROWS_KEPT = 200
-"""How many changed lines of a shell command's change are kept, as for a tool's."""
 PIPED = re.compile(r"(?<!\|)\|(?!\|)")
 """A pipe anywhere in the line, into head, tail, grep or any filter: its output is cut or shaped, so the whole is kept as a numbered output."""
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
@@ -35,10 +29,10 @@ WORDS_IN = re.compile(r"[A-Za-z]{3,}")
 
 
 class ShellRecord:
-    """What the runner records as a chain runs: each of the agent's own parts as it starts and ends with its status, time, output tail and the files it changed, the move to the background with its card and event, the end of a moved chain, and whether an ended output is kept under its number or forgotten."""
+    """What the runner records as a chain runs: each of the agent's own parts as it starts and ends with its status, time, output tail and the files it changed (the edits feature keeps the changed lines from the tool's end), the move to the background with its card and event, the end of a moved chain, and whether an ended output is kept under its number or forgotten."""
 
-    def __init__(self, entries: Entries, edits: Edits, snapshots: FileSnapshots, log: OutputLog, outputs: CommandOutputs, cards: Cards, events: CommandEvents, agents: Agents, settings: SettingRows, scope: Scope) -> None:
-        self.entries, self.edits, self.snapshots, self.log, self.outputs = entries, edits, snapshots, log, outputs
+    def __init__(self, entries: Entries, log: OutputLog, outputs: CommandOutputs, cards: Cards, events: CommandEvents, agents: Agents, settings: SettingRows, scope: Scope) -> None:
+        self.entries, self.log, self.outputs = entries, log, outputs
         self.cards, self.events, self.agents, self.settings, self.scope = cards, events, agents, settings, scope
 
     def began(self, chain: str, command: str, folder: Path, where: Where) -> int:
@@ -49,17 +43,6 @@ class ShellRecord:
 
     def ran(self, chain: str, part: str, status: int, seconds: float, output: str, changed: list[ChangedFile], where: Where) -> None:
         self.record(where, RAN, {"chain": chain, "part": part, "doing": Doing.of(part), "status": status, "seconds": seconds, "output": output[-TAIL:], "changed": [asdict(c) for c in changed]})
-        now = datetime.now(timezone.utc).timestamp()
-        for change in changed:
-            self.edits.record(self.edit_of(change, part, where.session, now), where.actor)
-
-    def edit_of(self, change: ChangedFile, part: str, session: str, at: float) -> Edit:
-        text = self.snapshots.now(change.path)
-        if text is None:
-            return Edit(session=session, path=change.path, at=at, added=change.added, removed=change.removed, command=part)
-        patch = PatchRows.between(self.snapshots.before(change.path), text)
-        self.snapshots.keep(change.path, text)
-        return Edit(session=session, path=change.path, at=at, added=change.added, removed=change.removed, command=part, first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_KEPT]))
 
     def moved(self, chain: str, part: str, folder: Path, where: Where) -> int:
         self.record(where, MOVED, {"chain": chain, "part": part, "doing": Doing.of(part), "file": str(folder)})

@@ -78,12 +78,12 @@ class Dump(Scoped):
         question = self.question.get("text", "")
         return self.with_(question={}, answers=(*self.answers, {"question": question, "answer": answer, "at": time})).with_event(DumpAnswered(environment_id=self.environment_id, at=time, dump_id=self.id, question=question, answer=answer))
 
-    def chose(self, pick: int, label: str, time: float) -> "Dump":
+    def step_chosen(self, pick: int, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": pick, "at": time}
         taken = {**self.taken, str(pick): choice} if pick >= 0 else self.taken
         return self.with_(chosen=choice, taken=taken).with_event(DumpChosen(environment_id=self.environment_id, at=time, dump_id=self.id, pick=pick, label=label))
 
-    def directed(self, label: str, time: float) -> "Dump":
+    def step_directed(self, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": OWN_WORDS, "at": time}
         return self.with_(chosen=choice, said=(*self.said, choice)).with_event(DumpChosen(environment_id=self.environment_id, at=time, dump_id=self.id, pick=OWN_WORDS, label=label))
 
