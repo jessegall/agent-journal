@@ -52,6 +52,7 @@ class WorkerCommand(Command):
             retire.add_argument("n", type=int)
             retire.add_argument("--why", default="", help="why the worker cannot be reused for the next job")
         self.verb(verbs, "list", "every worker out")
+        self.verb(verbs, "peers", "for a worker: the other workers of the agent that dispatched it, out or idle, and what each is on")
 
     def provider_default(self, caller: Caller) -> str:
         return self.agents.session_agent(caller.session).provider if caller.session else self.providers.default().name
@@ -113,6 +114,16 @@ class WorkerCommand(Command):
     def complete(self, args: Namespace, caller: Caller) -> int:
         worker, dropped = self.actions.complete(args.n, args.why, caller.actor)
         print(f"worker {worker.id}'s report is acted on" + (f": {args.why}" if args.why else "") + (f"; {dropped}" if dropped else ""))
+        return 0
+
+    def peers(self, args: Namespace, caller: Caller) -> int:
+        if not caller.worker:
+            raise Rejection("only a worker has peers: `journal worker list` lists the workers you dispatched")
+        me = self.workers.find(caller.worker)
+        peers = [w for w in self.workers.scoped() if w.dispatcher == me.dispatcher and w.id != me.id and (w.is_running() or w.is_idle())]
+        for worker in peers:
+            print(f"{worker.id:>4}  {'out' if worker.is_running() else 'idle':<5} {worker.name}: {worker.brief}")
+        print(f"`journal worker notify <n> \"<text>\"` tells one that is out, `journal worker send <n> \"<job>\"` gives one that is idle a job" if peers else "no other worker of the agent that dispatched you is out or idle")
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:

@@ -6834,3 +6834,16 @@ def test_a_worker_messages_only_its_own_dispatchers_other_workers_and_starts_no_
     finally:
         process.kill()
         process.wait(5)
+
+
+def test_a_worker_lists_its_peers_out_or_idle_with_what_each_is_on(app: App):
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    workers = app.container.get(Workers)
+    for name, dispatcher, state, adopted in (("Mr. Watt", "s1", WorkerState.DISPATCHED, False), ("Mr. Boulton", "s1", WorkerState.REPORTED, False), ("Mr. Murdoch", "s1", WorkerState.DISPATCHED, False), ("Mr. Other", "s2", WorkerState.DISPATCHED, False), ("Mr. Retired", "s1", WorkerState.REPORTED, True)):
+        workers.save(Worker(name=name, brief=f"the job of {name}", dispatcher=dispatcher, state=state, adopted=adopted), Actor.system())
+    listed = app.console().run(["worker", "peers"], Caller("main", "", True, "", 1)).text
+    assert "Mr. Boulton: the job of Mr. Boulton" in listed and "Mr. Murdoch: the job of Mr. Murdoch" in listed, "the dispatcher's other workers, out or idle, with what each is on"
+    assert "Mr. Watt" not in listed and "Mr. Other" not in listed and "Mr. Retired" not in listed, "never itself, another agent's or a retired one"
+    assert "journal worker notify" in listed
+    assert "only a worker has peers" in app.console().run(["worker", "peers"], AGENT).error
