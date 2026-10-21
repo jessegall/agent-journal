@@ -43,7 +43,7 @@ class MenuAnswers:
 
     def ask(self, menu: Menu, provider: str) -> None:
         program = self.providers.lookup(provider)
-        argv = program.worker_command(self.question(menu), program.question_model, "")
+        argv = program.worker_command(self.question(menu), program.question_model, "", "")
         excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers())
         environ = {k: v for k, v in os.environ.items() if k not in excluded}
         try:

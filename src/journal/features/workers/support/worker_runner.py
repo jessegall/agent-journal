@@ -6,7 +6,8 @@ import subprocess
 import threading
 
 from journal.config import Config
-from journal.support.caller import AGENT_SHELL, WORKER
+from journal.support.caller import AGENT_SHELL, WORKER, WORKER_TOKEN
+from journal.support.worker_token import WorkerToken
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor
@@ -44,7 +45,9 @@ class WorkerRunner:
             return self._locks.setdefault(worker_id, threading.Lock())
 
     def start(self, worker: Worker, actor: Actor) -> None:
-        command = self.providers.lookup(worker.provider).worker_command(self.instructed(worker), worker.model, worker.resume)
+        provider = self.providers.lookup(worker.provider)
+        worker = self.workers.save(worker.with_(session=provider.worker_session(worker.resume)), actor)
+        command = provider.worker_command(self.instructed(worker), worker.model, worker.resume, worker.session)
         threading.Thread(target=self.run_scoped, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
 
     def instructed(self, worker: Worker) -> str:
@@ -57,7 +60,9 @@ class WorkerRunner:
             self.run(worker, command, actor)
 
     def run(self, worker: Worker, command: list[str], actor: Actor) -> None:
-        environ = {**self.environment_variables(self.environments.find(worker.environment_id).name), WORKER: str(worker.id)}
+        token = WorkerToken.random()
+        worker = self.workers.save(worker.with_(token_hash=token.digest()), actor)
+        environ = {**self.environment_variables(self.environments.find(worker.environment_id).name), WORKER: str(worker.id), WORKER_TOKEN: token.text}
         output, err = self.outputs(worker)
         output.parent.mkdir(parents=True, exist_ok=True)
         try:

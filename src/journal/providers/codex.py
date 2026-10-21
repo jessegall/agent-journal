@@ -181,7 +181,10 @@ class Codex(Provider):
         path.write_text(McpTables.merged(path.read_text() if path.is_file() else "", servers))
         return path
 
-    def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
+    def worker_session(self, resume: str) -> str:
+        return resume
+
+    def worker_command(self, brief: str, model: str, resume: str, session: str) -> list[str]:
         resumed = ["resume", resume] if resume else []
         selection = ["-m", model] if model else []
         return ["codex", "exec", *resumed, "--json", *self.prompt_flags, *selection, brief]

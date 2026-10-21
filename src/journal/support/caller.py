@@ -7,6 +7,7 @@ LOCAL_USER = 1
 
 AGENT_SHELL = "JOURNAL_AGENT_SHELL"
 WORKER = "JOURNAL_WORKER"
+WORKER_TOKEN = "JOURNAL_WORKER_TOKEN"
 
 AGENT_REQUIRED = "no agent runs this: only an agent's own session can"
 

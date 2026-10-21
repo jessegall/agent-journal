@@ -2,6 +2,7 @@ import json
 import os
 import re
 import shlex
+import uuid
 from pathlib import Path
 from typing import Iterator
 
@@ -160,9 +161,17 @@ class Claude(Provider):
     def hooks_ready(self, project: Path) -> HooksReady:
         return HooksReady.READY if self.is_wired(project) else HooksReady.UNWIRED
 
-    def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
-        resumed = ["--resume", resume] if resume else []
-        return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "stream-json", "--verbose", *resumed]
+    def worker_command(self, brief: str, model: str, resume: str, session: str) -> list[str]:
+        return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "stream-json", "--verbose", *self.session_flags(resume, session)]
+
+    @staticmethod
+    def session_flags(resume: str, session: str) -> list[str]:
+        if resume:
+            return ["--resume", resume]
+        return ["--session-id", session] if session else []
+
+    def worker_session(self, resume: str) -> str:
+        return resume or str(uuid.uuid4())
 
     def worker_outcome(self, output: str, err: str) -> WorkerOutcome:
         answers = [(row.answer, row) for row in ClaudeStreamRow.lines(output) if row.answer is not None]

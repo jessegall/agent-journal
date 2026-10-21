@@ -82,7 +82,7 @@ def launched(app: App, provider: str) -> dict[str, str]:
 
 def run_agent(app: App, provider: str, prompt: str, resume: str = "", seconds: int = CASE_SECONDS) -> subprocess.CompletedProcess:
     """The program headless on one prompt, as the launched agent of main: its hooks post to the scratch server."""
-    command = Providers().lookup(provider).worker_command(prompt, CHEAP_MODEL[provider], resume)
+    command = Providers().lookup(provider).worker_command(prompt, CHEAP_MODEL[provider], resume, resume)
     return subprocess.run(command, cwd=app.config.root, env=launched(app, provider), stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=seconds)
 
 
@@ -127,7 +127,7 @@ def test_untrusted_hooks_are_reported_not_ready_and_claim_no_hold(tmp_path: Path
             monkeypatch.setenv("CODEX_HOME", str(tmp_path / "untrusted"))
             assert program.hooks_ready(tmp_path) == HooksReady.UNTRUSTED
         withheld = ["--setting-sources", "user"] if provider == "claude" else []
-        command = [*program.worker_command("Write the word one into first.txt.", CHEAP_MODEL[provider], ""), *withheld]
+        command = [*program.worker_command("Write the word one into first.txt.", CHEAP_MODEL[provider], "", ""), *withheld]
         subprocess.run(command, cwd=tmp_path, env=launched(app, provider), stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=CASE_SECONDS)
         assert not refused(app), "no hold is claimed by hooks that did not run"
     finally:
@@ -147,7 +147,7 @@ def test_a_launched_agent_starts_bound_to_its_environment(live: App, provider: s
 
 
 def test_a_session_with_another_launch_id_is_reported_and_not_bound(live: App, provider: str):
-    command = Providers().lookup(provider).worker_command("Reply with ok.", CHEAP_MODEL[provider], "")
+    command = Providers().lookup(provider).worker_command("Reply with ok.", CHEAP_MODEL[provider], "", "")
     subprocess.run(command, cwd=live.config.root, env={**launched(live, provider), "JOURNAL_LAUNCH": "another"}, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=CASE_SECONDS)
     assert wait_for(lambda: entries(live, "unbound_session"), START_SECONDS), "its hooks were recorded and reported"
     assert not live.container.get(Agents).all_agents(), "and it was not taken as the environment's agent"

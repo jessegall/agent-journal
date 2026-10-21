@@ -634,11 +634,13 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
     assert 1 in app.container.get(WorkerRows).containing({1}), "a job said with --task holds that task, so a plan leaves it to the worker"
     notified = workers.find(1)
     assert notified.state == WorkerState.DISPATCHED and notified.brief == "now the lexer" and notified.resume == "sess-1" and notified.worktree and started[-1].id == 1
-    assert Claude().worker_command("now the lexer", "fast", "sess-1")[-2:] == ["--resume", "sess-1"]
+    assert Claude().worker_command("now the lexer", "fast", "sess-1", "sess-1")[-2:] == ["--resume", "sess-1"]
+    assert Claude().worker_command("a new job", "fast", "", "sess-new")[-2:] == ["--session-id", "sess-new"], "a new run is started in the session its row already names"
+    assert Claude().worker_session("") != Claude().worker_session("") and Claude().worker_session("sess-1") == "sess-1" and Codex().worker_session("") == "", "Claude's session is chosen at dispatch, Codex's comes with its first hook"
     assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == WorkerOutcome("lexer done", "sess-2")
     assert Claude().worker_outcome('{"result": "out of credit", "session_id": "sess-2", "is_error": true}', "").error == "out of credit"
     assert Claude().worker_outcome("plain words", "") == WorkerOutcome("plain words")
-    assert Codex().worker_command("x", "m", "c-9")[:5] == ["codex", "exec", "resume", "c-9", "--json"] and Codex().worker_command("x", "m", "")[:3] == ["codex", "exec", "--json"]
+    assert Codex().worker_command("x", "m", "c-9", "c-9")[:5] == ["codex", "exec", "resume", "c-9", "--json"] and Codex().worker_command("x", "m", "", "")[:3] == ["codex", "exec", "--json"]
     runs = Path(__file__).with_name("hook_bodies") / "worker_output"
     amber, resumed, failed = ((runs / f"codex_0.163.0_{name}.jsonl").read_text() for name in ("amber", "resume", "badmodel"))
     assert Codex().worker_outcome(amber, "") == WorkerOutcome("amber", "01a15edb-4273-7181-98d3-f0fa7996d6e7") and Codex().worker_outcome(resumed, "").session == "01a15edb-4273-7181-98d3-f0fa7996d6e7", "a real run's session is its thread.started event's, its report the last answer, and a resume keeps the thread"
@@ -6540,9 +6542,13 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     card = lambda n: next(m for m in messages.scoped() if m.data.get("key") == f"worker:{n}")
     assert card(1).text == "Worker 1, Lady Lovelace: dispatched on claude sonnet" and card(1).data["detail"] == "a job for Lady Lovelace" and card(1).data["shows"] == "workers"
     runner, workers = app.container.get(WorkerRunner), app.container.get(Workers)
-    runner.run(workers.find(1), ["sh", "-c", "echo the footer is fixed"], Actor.agent("s1"))
+    runner.run(workers.find(1), ["sh", "-c", 'echo "the footer is fixed"; test -n "$JOURNAL_WORKER_TOKEN" || exit 9'], Actor.agent("s1"))
+    first_hash = workers.find(1).token_hash
     runner.run(workers.find(2), ["sh", "-c", "echo broken >&2; exit 3"], Actor.agent("s1"))
+    runner.run(workers.find(3), ["sh", "-c", "true"], Actor.agent("s1"))
+    assert len(first_hash) == 64 and workers.find(3).token_hash not in ("", first_hash), "each run carries a token of its own, kept on its row as a hash"
     console.run(["worker", "stop", "3"], AGENT)
+    assert workers.find(3).token_hash == "", "a stopped worker's token is cleared"
     assert card(1).text == "Worker 1, Lady Lovelace: reported" and card(1).data["tone"] == "good" and card(1).data["detail"] == "the footer is fixed"
     assert card(2).text == "Worker 2, Dr. Einstein: failed" and card(2).data["tone"] == "bad" and card(2).data["detail"].startswith("failed with code 3")
     assert card(3).text == "Worker 3, Mr. Babbage: stopped"
@@ -7082,7 +7088,7 @@ def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_wor
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     assert console.run(["worker", "send", "1", "the boiler"], AGENT).code == 0
     revived = started[-1]
-    command = Claude().worker_command(runner.instructed(revived), revived.model, revived.resume)
+    command = Claude().worker_command(runner.instructed(revived), revived.model, revived.resume, revived.session)
     assert revived.is_running() and command[2] == "the boiler" and command[-2:] == ["--resume", "sess-1"], "the new job is the first turn of its last session"
     runner.run(revived, ["sh", "-c", "pwd -P"], Actor.agent("s1"))
     report = next(m.text for m in reversed(app.container.get(Messages).scoped()) if m.text.startswith("Mr. Watt reports: "))

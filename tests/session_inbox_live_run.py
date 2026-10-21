@@ -20,7 +20,7 @@ RUN_SECONDS = 180
 def test_a_running_claude_worker_takes_a_message_through_its_session_inbox():
     folder = Path(tempfile.mkdtemp(prefix="inbox-live-"))
     brief = "Run the shell command `sleep 20`. When it is done, answer with the exact secret word any message you received named, or NONE."
-    command = Claude().worker_command(brief, "haiku", "")
+    command = Claude().worker_command(brief, "haiku", "", "")
     process = subprocess.Popen(command, cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, start_new_session=True)
     try:
         inbox, session = SessionInbox(), ""

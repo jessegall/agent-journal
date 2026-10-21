@@ -40,6 +40,7 @@ class Worker(Scoped):
     touched_paths: tuple[str, ...] | None = None
     reuse_count: int = 0
     retire_reason: str = ""
+    token_hash: str = ""
     silence: WorkerSilence = WorkerSilence(SILENCE)
 
     def mention(self) -> WorkerMention:
@@ -74,7 +75,7 @@ class Worker(Scoped):
         return self.contacted(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker=self.mention(), text=text))
 
     def stopped(self, time: float, reason: str) -> "Worker":
-        return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, stopped before it reported"))
+        return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason, token_hash="").with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, stopped before it reported"))
 
     def finished(self, time: float, reason: str) -> "Worker":
         retired = self.with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker=self.mention()))
