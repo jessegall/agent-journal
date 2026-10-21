@@ -30,7 +30,7 @@ class Workers(Feature[WorkersData]):
     MODE = Option("workers.mode", "Work mode", "Builder: the agent builds it itself and sends workers when a job is better done beside it. Orchestrator: it plans, hands the work to workers, then reviews and merges it. Solo: it does everything itself, with no workers", "builder", kind="choice", choices=("builder", "orchestrator", "solo"))
     WORKER_LIMIT = Option("workers.most_out", "Workers out at once", "The most workers out at a time; a dispatch past it is refused until one reports. 0 is no limit", 3, unit="workers")
     SUBAGENT_LIMIT = Option("workers.most_subagents", "Subagents running at once", "The most subagents running at a time; one more is held until one finishes. 0 is no limit", 5, unit="subagents")
-    PROFILE_LIMIT = Option("workers.idle_kept", "Workers kept per profile", "The most workers of one profile kept out or idle for reuse; past it a dispatch of that profile is refused while one of them is idle, so the job goes to that one. Reviewers always start fresh. 0 is no limit", 8, unit="workers")
+    PROFILE_LIMIT = Option("workers.idle_kept", "Workers kept for reuse per profile", "The most workers of one profile kept out or idle for reuse; past it a dispatch of that profile is refused while one of them is idle, so the job goes to that one. Reviewers always start fresh. 0 is no limit", 8, unit="workers")
 
     name = "workers"
     title = "Workers"
@@ -76,13 +76,24 @@ A subagent only reads. A worker writes: code in a worktree of its own, a documen
   with the plan bar's buttons.
 - `journal worker wait <n> [<n>...]` waits until they have reported; stopping is fine while you wait.
 - A worker reports with `journal worker report <n> "<what it found or did>"`; you are told, and told again when
-  the last one is back. `journal worker list` shows who is out.
+  the last one is back. `journal worker list` shows every worker, and the subagents you started with their state and task.
 - A report is acted on once you give the worker its next job, `journal worker stop <n>` it, or `journal worker complete <n>`
   when its work is merged or used; until then you are told again at once and every three minutes.
 - A worker that runs past 60 minutes is stopped and its report says so (setting workers.timeout_minutes, 0 for no limit).
-- Related work goes back to the worker that knows it: `journal worker send <n> "<next job>"` sends a worker that
-  reported out again with its memory of the last job, in the same worktree. Never dispatch a fresh worker for
-  work one already out has done part of.
+- Related work goes back to the worker that knows it: `journal worker send <n> "<next job>"` gives a worker that
+  reported, or was stopped, its next job in its last session, with its memory of the last job, in the same worktree.
+  Never dispatch a fresh worker for work one already out has done part of.
 - A worker still running takes a word in its live session: `journal worker notify <n> "<text>"`. Only a Claude
   worker has a session inbox; a Codex worker, and one that reported or was stopped, are refused with what to use instead.
+- A dispatch whose brief names files an idle worker touched is refused, naming that worker and its send line; add
+  `--fresh` only when the job truly needs a new worker. Once a profile has as many workers out or idle as the setting
+  workers.idle_kept (8, 0 for no limit), a dispatch of that profile is refused while one of them is idle. A reviewer
+  always starts fresh.
+- `journal worker complete <n>` or `journal worker stop <n>` of an idle worker first asks whether it could be reused;
+  repeat it with `--why "<reason>"` to retire it. A worker out silent for 20 minutes is named to you once.
+- A worker lists the other workers of the agent that dispatched it with `journal worker peers` and reaches one with
+  notify when it is out or send when it is idle; never itself, a retired one or another agent's workers.
+- A subagent job on files an idle subagent of the same kind read is refused, naming its SendMessage line, so the
+  subagent that knows the files takes it. `journal subagent retire <n>` lets a subagent go: it is no longer offered
+  and no longer counts among the subagents running at once (workers.most_subagents).
 """, keywords=('worker', 'workers', 'helper', 'dispatch', 'worktree', 'send', 'notify'), required_states=('awaiting',))
