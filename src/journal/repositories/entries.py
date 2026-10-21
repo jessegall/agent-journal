@@ -5,7 +5,7 @@ from journal.support.actor import Actor
 from journal.repositories.scoped_repository import ScopedRepository
 
 
-DISPATCHES = "(kind IN ('SubagentEnded', 'Idle', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task')))"
+DISPATCHES = "(kind IN ('SubagentEnded', 'Idle', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task', 'SendMessage')))"
 
 
 class Entries(ScopedRepository[Entry]):

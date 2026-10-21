@@ -49,6 +49,9 @@ class Subagents:
                 if i is not None:
                     rows[i] = rows[i].settled("done", time)
                 continue
+            if e.data.get("tool_name") == "SendMessage":
+                Subagents.resumed(rows, background, e.data.get("tool_input", {}).get("to", ""), e.kind)
+                continue
             if e.data.get("tool_name") not in ("Agent", "Task") or e.data.get("refused"):
                 continue
             given, use = e.data.get("tool_input", {}), e.data.get("tool_use_id", "")
@@ -64,6 +67,14 @@ class Subagents:
                 else:
                     rows[i] = rows[i].settled("done", time)
         return rows
+
+    @staticmethod
+    def resumed(rows: list[Dispatch], background: dict[str, int], receiver: str, kind: str) -> None:
+        if kind != "ToolStarting":
+            return
+        for i in [i for i, row in enumerate(rows) if row.session and row.session == receiver]:
+            rows[i] = rows[i].resumed()
+            background[receiver] = i
 
     @staticmethod
     def stopped(rows: list[Dispatch], running: dict[str, int], time: float) -> None:

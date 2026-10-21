@@ -5945,3 +5945,23 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     console.run(["worker", "done", "1"], AGENT)
     assert card(1).text == "Worker 1, Lady Lovelace: retired, its work taken in"
     assert len([m for m in messages.in_() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
+
+
+def test_a_message_sent_to_a_subagent_runs_its_row_again_until_it_ends(app):
+    """A subagent that ended and is given another job by a message to its id is running again in the rows the selector lists, and done once it ends; the hook outage of 2026-10-21 and the resumes showed 0 running while three were out."""
+    from dataclasses import asdict
+    from journal.support.subagents import Subagents
+    send = lambda kind, **extra: hook(app, kind, session_id="s9", **extra)
+    rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s9")]
+    send("SessionStart", source="startup")
+    send("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "collect commands", "prompt": "read", "model": "sonnet"}, tool_use_id="t-1")
+    send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a9"}, tool_use_id="t-1")
+    send("SubagentStop", agent_id="a9")
+    assert [(r["running"], r["status"]) for r in rows()] == [(False, "done")]
+    send("PreToolUse", tool_name="SendMessage", tool_input={"to": "a9", "message": "judge three hundred by hand"}, tool_use_id="t-2")
+    send("PostToolUse", tool_name="SendMessage", tool_input={"to": "a9", "message": "judge three hundred by hand"}, tool_response={}, tool_use_id="t-2")
+    assert [(r["running"], r["status"]) for r in rows()] == [(True, "running")], "the message to its id sends it out again, so the selector counts it running"
+    send("SubagentStop", agent_id="a9")
+    assert [(r["running"], r["status"]) for r in rows()] == [(False, "done")], "and it is done again once it ends"
+    send("PreToolUse", tool_name="SendMessage", tool_input={"to": "uds:/tmp/cc-socks/1.sock", "message": "hello"}, tool_use_id="t-3")
+    assert len(rows()) == 1 and rows()[0]["running"] is False, "a message to another session is no subagent's"

@@ -26,3 +26,6 @@ class Dispatch:
 
     def settled(self, status: str, time: float) -> "Dispatch":
         return replace(self, status=status, running=False, ended=time)
+
+    def resumed(self) -> "Dispatch":
+        return replace(self, status="running", running=True, ended=0.0)

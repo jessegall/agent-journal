@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- The subagent selector counts a subagent sent out again by a message to its id as running until it ends: the entries read for the rows take the SendMessage tool uses and a row whose session is the receiver runs again; the morning's 0 running while three researchers were out came from that and from the hooks lost to the text property fault.
 - Every worker is one card in the chat, as version 3 had it: dispatched with its provider and model and its brief, sent out again, reported with its report's first line, failed in a bad tone when it could not start, crashed or timed out, stopped, and retired once its work is taken in; one card per worker, settled in place, under the Workers switch of the chat's visibility.
 - A message the agent has read and not answered holds its tools only after a grace: at the fifth tool use since the read the journal says the message is still unanswered, at the tenth it refuses the tool until the agent answers or reacts, both numbers settings under Messages (messages.nudge_after 5, messages.hold_after 10, both 0 before), and a reply or a face starts the count over.
 - The shell corpus holds twelve thousand more commands agents actually ran, taken from the transcripts of three of the user's projects, scrubbed of secrets, private names and home paths, chains before single commands, and the parser is proved on every one in under a second.
