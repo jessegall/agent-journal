@@ -58,6 +58,7 @@ export function useDump(every, selected, rowsOf) {
                       note: item.failed || item.outcome || item.insight || "",
                       refs: item.refs || [],
                       added: item.added || [],
+                      url: dump.value.files.includes(name) ? api.fileUrl("dumps", dump.value.id, name) : "",
                   };
               })
             : []

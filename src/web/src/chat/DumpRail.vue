@@ -8,8 +8,9 @@ import DumpEyebrow from "./DumpEyebrow.vue";
 import DumpNarration from "./DumpNarration.vue";
 import {fileKind} from "../domain/dumpPile.js";
 import {counted} from "../format/number.js";
+import {openFiles} from "../platform/view.js";
 
-defineProps({
+const props = defineProps({
     items: {type: Array, required: true},
     adding: {type: Array, required: true},
     working: {type: Boolean, default: false},
@@ -28,6 +29,16 @@ defineProps({
 const litItem = defineModel("litItem", {type: String, default: ""});
 const emit = defineEmits(["more", "paste-more"]);
 const READ = {waiting: -1, read: 0.6, filed: 1, failed: 1};
+
+// a file the user gave is opened over the page, among the dump's other files; pasted text has no file
+function open(item) {
+    const files = props.items.filter((i) => i.url).map((i) => ({name: i.name, url: i.url}));
+    if (item.url)
+        openFiles(
+            files,
+            files.findIndex((f) => f.url === item.url)
+        );
+}
 
 function slipMeta(item) {
     if (item.state === "filed") return `${counted(item.refs.filter((r) => !r.startsWith("collection:")).length, "thing", "things")} filed`;
@@ -48,7 +59,9 @@ function slipMeta(item) {
                     :meta="slipMeta(item)"
                     :lit="litItem === item.name || item.refs.includes(litRef)"
                     :title="item.note"
+                    :class="{openable: item.url}"
                     @mouseenter="litItem = item.name"
+                    @click="open(item)"
                 />
             </template>
             <template v-for="name in adding" :key="`adding-${name}`">
@@ -89,6 +102,10 @@ function slipMeta(item) {
 </template>
 
 <style scoped>
+.openable {
+    cursor: pointer;
+}
+
 .dump-add-more {
     align-self: flex-start;
     margin: -2px 0 0 -6px;

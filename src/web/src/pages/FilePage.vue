@@ -12,6 +12,8 @@ import {sendMessage} from "../chat/outbox.js";
 import {aboutLines} from "../format/quote.js";
 import {href, route} from "../route.js";
 import {counted} from "../format/number.js";
+import {isPicture} from "../format/files.js";
+import FileView from "../kit/FileView.vue";
 
 const file = ref(null);
 const error = ref("");
@@ -118,38 +120,44 @@ watch(() => route.value.line, reveal);
                     <EmptyState class="empty">No changes since the last commit.</EmptyState>
                 </template>
             </template>
-            <template v-else-if="file.kind.startsWith('image/')">
-                <EmptyState class="empty">An image; open it from Attachments if it is an attachment.</EmptyState>
-            </template>
             <template v-else>
-                <template v-if="picked">
-                    <div class="ask">
-                        <p class="lines">
-                            {{
-                                picked.first
-                                    ? picked.first === picked.last
-                                        ? `Line ${picked.first}`
-                                        : `Lines ${picked.first}-${picked.last}`
-                                    : "Selection"
-                            }}
-                            of {{ file.path }}
-                        </p>
-                        <textarea v-model="words" rows="3" placeholder="Your comment, sent to the agent" autofocus />
-                        <div class="actions">
-                            <Btn small @click="picked = null">Cancel</Btn>
-                            <Btn kind="primary" small :disabled="!words.trim()" @click="send">Send to the agent</Btn>
-                        </div>
-                    </div>
-                </template>
-                <template v-if="sent">
-                    <p class="sent">Sent to the agent; the file itself is unchanged.</p>
-                </template>
-                <Highlight @quote="pick">
-                    <pre
-                        class="text"
-                    ><template v-for="(line, i) in lines" :key="i"><span :class="['line', {target: i + 1 === route.line}]" :data-line="i + 1"><span class="n">{{ i + 1 }}</span><span v-html="line" /></span>
+                <FileView
+                    :class="{framed: isPicture(file.path)}"
+                    :name="file.path"
+                    :url="api.projectFileUrl(file.path)"
+                    :text="file.kind === 'text' ? file.text : null"
+                >
+                    <template #text>
+                        <template v-if="picked">
+                            <div class="ask">
+                                <p class="lines">
+                                    {{
+                                        picked.first
+                                            ? picked.first === picked.last
+                                                ? `Line ${picked.first}`
+                                                : `Lines ${picked.first}-${picked.last}`
+                                            : "Selection"
+                                    }}
+                                    of {{ file.path }}
+                                </p>
+                                <textarea v-model="words" rows="3" placeholder="Your comment, sent to the agent" autofocus />
+                                <div class="actions">
+                                    <Btn small @click="picked = null">Cancel</Btn>
+                                    <Btn kind="primary" small :disabled="!words.trim()" @click="send">Send to the agent</Btn>
+                                </div>
+                            </div>
+                        </template>
+                        <template v-if="sent">
+                            <p class="sent">Sent to the agent; the file itself is unchanged.</p>
+                        </template>
+                        <Highlight @quote="pick">
+                            <pre
+                                class="text"
+                            ><template v-for="(line, i) in lines" :key="i"><span :class="['line', {target: i + 1 === route.line}]" :data-line="i + 1"><span class="n">{{ i + 1 }}</span><span v-html="line" /></span>
 </template></pre>
-                </Highlight>
+                        </Highlight>
+                    </template>
+                </FileView>
             </template>
         </template>
         <template v-else-if="!error">
@@ -159,6 +167,10 @@ watch(() => route.value.line, reveal);
 </template>
 
 <style scoped>
+.framed {
+    height: 72vh;
+}
+
 .filepage {
     max-width: 1080px;
     padding: 22px 28px 60px;

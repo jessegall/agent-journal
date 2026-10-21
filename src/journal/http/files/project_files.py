@@ -1,3 +1,4 @@
+import mimetypes
 import subprocess
 import time as timing
 from pathlib import Path
@@ -11,7 +12,7 @@ HIDDEN = ("node_modules", "__pycache__")
 
 
 class ProjectFiles:
-    """The project's files as the Files page reads them: a folder's entries, a file's text, its uncommitted diff, and a find by name. Nothing outside the project is ever read."""
+    """The project's files as the Files page reads them: a folder's entries, a file's text or bytes, its uncommitted diff, and a find by name. Nothing outside the project is ever read."""
 
     def __init__(self, config: Config) -> None:
         self.root = config.root.resolve()
@@ -41,6 +42,12 @@ class ProjectFiles:
         except UnicodeDecodeError:
             return ProjectFile(path=value, kind="binary", size=len(raw), lines=0, text="")
         return ProjectFile(path=value, kind="text", size=len(raw), lines=len(text.splitlines()), text=text)
+
+    def raw(self, value: str) -> tuple[str, bytes] | None:
+        path = self.contains(value)
+        if path is None or not path.is_file():
+            return None
+        return mimetypes.guess_type(path.name)[0] or "application/octet-stream", path.read_bytes()
 
     def diff(self, value: str) -> str:
         path = self.contains(value)

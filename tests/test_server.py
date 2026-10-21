@@ -75,6 +75,15 @@ def test_the_viewer_pauses_blocks_and_unblocks_a_task_and_its_row_names_what_it_
     assert opened["state"] == "open" and opened["block_reason"] == ""
 
 
+def test_a_project_files_bytes_are_served_with_their_media_type_and_nothing_outside_the_project(server):
+    (server.config.root / "dot.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    request = HttpRequest(f"http://127.0.0.1:{server.port}/journal/project-files/raw?path=dot.png", headers={"X-Journal-Env": "main"})
+    with urlopen(request, timeout=5) as reply:
+        assert reply.headers["Content-Type"].startswith("image/png") and reply.read() == b"\x89PNG\r\n\x1a\n"
+    assert call(server, "GET", "/journal/project-files/raw?path=../outside.png")[0] == 404
+    assert call(server, "GET", "/journal/project-files/raw?path=missing.png")[0] == 404
+
+
 def test_a_missing_row_and_a_missing_route_say_so(server):
     assert call(server, "GET", "/journal/tasks/9")[0] == 404
     assert call(server, "GET", "/journal/nothing")[0] == 404

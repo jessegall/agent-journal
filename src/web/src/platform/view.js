@@ -21,8 +21,9 @@ window.addEventListener("resize", () => {
     resizing = setTimeout(() => (laidOut.value += 1), SETTLE);
 });
 
-export function openPictures(pictures, at) {
-    ui.lightbox.pictures = pictures;
+// opens files over the page, each {name, url}, at the one numbered `at`, to step through them
+export function openFiles(files, at) {
+    ui.lightbox.files = files;
     ui.lightbox.at = at;
 }
 
