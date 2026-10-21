@@ -47,7 +47,11 @@ class SkillFiles:
         return not skill.is_file() or PLUGIN_STAMP not in skill.read_text().split("\n---\n")[0]
 
     def path(self, skill: Skill, home: str = HOMES[0]) -> Path:
-        return self.config.root / home / skill.folder / "SKILL.md"
+        return self.config.root / self.relative_path(skill, home)
+
+    @staticmethod
+    def relative_path(skill: Skill, home: str = HOMES[0]) -> str:
+        return f"{home}/{skill.folder}/SKILL.md"
 
     def digest(self, skill: Skill) -> str:
         return hashlib.sha1(skill.text().encode()).hexdigest()[:12]

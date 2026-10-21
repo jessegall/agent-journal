@@ -171,9 +171,14 @@ class StateMachine(AgentListener[AgentEvent]):
             return agent
         self.lifecycle(agent, stack)
         resolved = self.agents.save(agent.with_(state=destination.name, data=destination.serialized(), stack=tuple(stack.serialized())), actor)
-        self.entries.save(StackHistory.entry(agent, stack.serialized(), cause, actor), actor)
+        if self.is_moved(agent, stack):
+            self.entries.save(StackHistory.entry(agent, stack.serialized(), cause, actor), actor)
         return resolved
 
     @staticmethod
     def is_unchanged(agent: Agent, destination: BaseState, stack: Stack) -> bool:
         return destination.name == agent.state and destination.serialized() == agent.data and stack.serialized() == list(agent.stack)
+
+    @staticmethod
+    def is_moved(agent: Agent, stack: Stack) -> bool:
+        return [state.name for state in stack.states] != [row["state"] for row in agent.stack]

@@ -77,6 +77,11 @@ def booted(root: Path, patch: pytest.MonkeyPatch) -> App:
     return app
 
 
+def fifo_line(fifo: Path) -> str:
+    """A shell line that waits for one line written to the FIFO, ten seconds at most, so a run cut short never leaves the shell waiting."""
+    return f"perl -e 'alarm 10; open P, shift; <P>' '{fifo}'"
+
+
 def made(output) -> int:
     """The number of the row a command made, or the command's refusal as the failure."""
     assert output.code == 0, output.error
@@ -830,7 +835,7 @@ def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app: App, tmp_
     report = '{"title": "Sins", "summary": "1 sin", "findings": [{"name": "python-dict-bag", "file": "src/x.py", "line": 3, "group": "value objects"}]}'
     step = tmp_path / "step"
     os.mkfifo(step)
-    app.console().run(["check", "create", "Counts", "--command", f"echo 1/3; read _ < '{step}'; echo 2/3; read _ < '{step}'; printf '%s' '{report}' > \"$JOURNAL_REPORT\"; exit 1"], USER)
+    app.console().run(["check", "create", "Counts", "--command", f"echo 1/3; {fifo_line(step)}; echo 2/3; {fifo_line(step)}; printf '%s' '{report}' > \"$JOURNAL_REPORT\"; exit 1"], USER)
     checks = app.container.get(Checks)
     started = app.container.get(CheckRunner).start(checks.find(1), Actor.user(1))
     assert started.progress is not None, "a run started from the page answers at once, marked running"
@@ -4271,7 +4276,7 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app: App, tmp_
     output.parent.mkdir(parents=True, exist_ok=True)
     done = tmp_path / "done"
     os.mkfifo(done)
-    started = subprocess.run(["sh", "-c", f"(read _ < '{done}'; echo the parser is done) > '{output}' 2>&1 & echo $!"], capture_output=True, text=True, timeout=10)
+    started = subprocess.run(["sh", "-c", f"({fifo_line(done)}; echo the parser is done) > '{output}' 2>&1 & echo $!"], capture_output=True, text=True, timeout=10)
     pid = int(started.stdout.strip())
     workers.save(active.running_as(pid, timing.time()), Actor.system())
     app.container.get(WorkersSeed).run()
@@ -6794,7 +6799,7 @@ def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_disp
     console.run(["worker", "dispatch", "Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     said = tmp_path / "said"
     os.mkfifo(said)
-    printed = f"""echo '{{"type": "system", "session_id": "worker-session"}}'; read _ < '{said}'; echo '{{"type": "result", "result": "hello said", "session_id": "worker-session"}}'"""
+    printed = f"""echo '{{"type": "system", "session_id": "worker-session"}}'; {fifo_line(said)}; echo '{{"type": "result", "result": "hello said", "session_id": "worker-session"}}'"""
     running = threading.Thread(target=runner.run, args=(workers.find(1), ["sh", "-c", printed], Actor.agent("s1")))
     running.start()
     end = timing.monotonic() + 5

@@ -37,6 +37,9 @@ class Entries(ScopedRepository[Entry]):
     def tool_starts(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected("kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
 
+    def output_tool_starts(self, session: str, last: int = 500) -> list[Entry]:
+        return self.selected("kind = 'ToolStarting' AND actor = ? AND (data LIKE '%outputs/%' OR data LIKE '%journal output read %') ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
+
     def tool_ends(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected("kind IN ('ToolFinished', 'ToolFailed') AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
 

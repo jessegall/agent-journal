@@ -550,6 +550,12 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
         trail = [e.data for e in app.container.get(Entries).kind_entries(StackHistory.KIND) if e.data["session"] == "s1"]
     popped = next(e for e in trail if [row["state"] for row in e["before"]] == ["idle", "working", "stuck"])
     assert popped["after"][-1]["state"] == "working" and popped["cause"]
+    before = app.container.get(Agents).session_agent("s1").data
+    for _ in range(3):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    with app.container.get(Scope).environment(1):
+        moves = [e.data for e in app.container.get(Entries).kind_entries(StackHistory.KIND) if e.data["session"] == "s1"]
+    assert app.container.get(Agents).session_agent("s1").data != before and len(moves) == len(trail), "a state whose counts change in place moves nothing, so the trail keeps only pushes and pops"
 
 
 def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_names_the_agent(app: App):
@@ -1335,11 +1341,30 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
 
 
 def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_never_stalls(app: App, monkeypatch):
+    import subprocess
+    import time as timing
     from journal.features.workers.support.worker_runner import WorkerRunner
-    from journal.repositories.setting_rows import SettingRows
-    from journal.repositories.workers import Workers as WorkerRows
     from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
+    working = []
+
+    def started(runner, worker, actor):
+        working.append(subprocess.Popen(["sleep", "60"], start_new_session=True))
+        runner.workers.save(worker.running_as(working[-1].pid, timing.time()), actor)
+
+    monkeypatch.setattr(WorkerRunner, "start", started)
+    try:
+        orchestrated(app)
+    finally:
+        for process in working:
+            process.kill()
+            process.wait()
+
+
+def orchestrated(app: App) -> None:
+    """Twenty tasks through the orchestrator, each dispatched worker standing in as a process that runs until the test lets it go."""
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.workers import Workers as WorkerRows
     app.container.get(SettingRows).set("workers.mode", "orchestrator", Actor.user(1))
     hook(app, "SessionStart")
     console, agents, tasks = app.console(), app.container.get(Agents), app.container.get(Tasks)

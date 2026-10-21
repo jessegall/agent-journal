@@ -16,12 +16,19 @@ from journal.db.schema import Schema
 from journal.events.bus import Bus
 from journal.models.all_models import AllModels
 from journal.repositories.environments import Environments
-from journal.repositories.scope import Scope
+from journal.repositories.scope import PROJECT, Scope
+from journal.repositories.setting_rows import SettingRows
+from journal.models.setting import Setting
+from journal.support.actor import Actor
+from journal.features.voices.feature import Voices
 from tests.shared_journal import SharedJournal
 
 
 os.environ["AGENT_JOURNAL_SECRETS"] = tempfile.mkdtemp(prefix="journal-test-values-")
 """Every test, and every journal a test boots, keeps its secret values in a scratch folder, never the user's own."""
+
+STAND_INS = Path(__file__).resolve().parent / "programs"
+LIVE_SUFFIX = "_live_run"
 
 TESTS_MARK = Path(__file__).resolve().parent.parent / ".journal" / "runtime" / f"{TEST_RUN_KEY}.{os.getpid()}"
 
@@ -34,6 +41,17 @@ def pytest_sessionstart(session) -> None:
 
 def pytest_sessionfinish(session, exitstatus) -> None:
     TESTS_MARK.unlink(missing_ok=True)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def stand_ins(request):
+    """Every program a module's tests start finds the stand-ins for Claude Code and Codex first, never the real ones, which reach the network and are billed; a live file, which says so on its first line, keeps the real ones."""
+    if request.module.__name__.endswith(LIVE_SUFFIX):
+        yield
+        return
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("PATH", f"{STAND_INS}{os.pathsep}{os.environ['PATH']}")
+        yield
 
 
 @pytest.fixture
@@ -51,9 +69,10 @@ def bus() -> Bus:
 
 @pytest.fixture(scope="session")
 def template_journal(tmp_path_factory) -> Path:
-    """One journal booted for the whole run, its schema made and its seeds drawn; a test that boots a journal starts from a copy of it, which boots in a hundredth of the time."""
+    """One journal booted for the whole run, its schema made and its seeds drawn, and the user's first name set, so no test's journal asks git for it; a test that boots a journal starts from a copy of it, which boots in a hundredth of the time."""
     root = tmp_path_factory.mktemp("template")
     app = App(Config(root, port=0))
+    app.container.get(SettingRows).save(Setting(environment_id=PROJECT, key=Voices.NAME.key, value="Jesse"), Actor.system())
     app.runtime().start()
     app.runtime().stop()
     return root
