@@ -5484,7 +5484,7 @@ def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(
     assert mark.held() is None and updating.problem == "", "a journal that came back on the version it went to takes the mark off"
 
 
-def test_a_typed_line_is_cut_short_and_a_piece_of_one_typed_again_is_still_the_journals():
+def test_a_long_typed_line_goes_in_whole_pieces_and_a_piece_typed_again_is_still_the_journals():
     import time as timing
     from journal.engine.support.typed_line import TypedLine
     from journal.features.checks.support.check_output import CheckOutput
