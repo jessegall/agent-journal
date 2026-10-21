@@ -1,0 +1,304 @@
+<script setup>
+import {computed, ref, watch} from "vue";
+import Btn from "../kit/Btn.vue";
+import Icon from "../kit/Icon.vue";
+import Comments from "../resource/Comments.vue";
+import Links from "../resource/Links.vue";
+import TaskLogs from "../resource/TaskLogs.vue";
+import {planOf} from "../domain/records.js";
+import {updatedAt} from "../domain/row.js";
+import {nextAct, otherActs, STATUS_WORDS, statusOf, waitOf} from "../domain/taskBoard.js";
+import {ago} from "../format/time.js";
+import TaskChain from "./TaskChain.vue";
+import TaskStatusIcon from "./TaskStatusIcon.vue";
+
+const props = defineProps({
+    task: {type: Object, required: true},
+    tasks: {type: Array, required: true},
+    single: Boolean,
+    back: {type: String, default: "list"},
+});
+const emit = defineEmits(["close", "step", "act", "status", "more", "select", "answer"]);
+const status = computed(() => statusOf(props.task));
+const next = computed(() => nextAct(props.task));
+const others = computed(() => otherActs(props.task));
+const plan = computed(() => planOf(props.task));
+const phases = computed(() => plan.value?.phases || []);
+const phase = computed(() => phases.value.findIndex((p) => p.task_ids.includes(props.task.id)) + 1);
+const crumb = computed(() => {
+    if (!plan.value) return "Not in a plan";
+    return phases.value.length > 1 && phase.value
+        ? `Plan ${plan.value.id} › Phase ${phase.value}: ${phases.value[phase.value - 1].title}`
+        : `Plan ${plan.value.id}: ${plan.value.title}`;
+});
+const reasonOnly = computed(() => waitOf(props.task)?.kind === "reason");
+const briefWhole = ref(false);
+const LONG_BRIEF = 180;
+watch(
+    () => props.task.id,
+    () => (briefWhole.value = false)
+);
+</script>
+
+<template>
+    <aside :class="['task-inspector', {single}]">
+        <div class="top">
+            <template v-if="single">
+                <Btn small @click="emit('close')">
+                    <Icon name="back" :size="12" />
+                    Back to the {{ back }}
+                </Btn>
+            </template>
+            <template v-else>
+                <span class="crumb">{{ crumb }}</span>
+            </template>
+            <span class="grow" />
+            <Btn small title="Previous task (K)" @click="emit('step', -1)"><Icon name="up" :size="13" /></Btn>
+            <Btn small title="Next task (J)" @click="emit('step', 1)"><Icon name="down" :size="13" /></Btn>
+            <template v-if="!single">
+                <Btn small title="Close the task (Esc)" @click="emit('close')"><Icon name="close" :size="13" /></Btn>
+            </template>
+        </div>
+        <Transition name="swap" mode="out-in">
+            <div :key="task.id" class="body">
+                <div class="stamp">Task {{ task.id }} · updated {{ ago(updatedAt(task)) || "just now" }}</div>
+                <h3 class="title">{{ task.title }}</h3>
+                <div class="facts">
+                    <div class="fact">
+                        <span class="label">Status</span>
+                        <button type="button" class="status" title="Change the status (S)" @click="emit('status', $event.currentTarget)">
+                            <TaskStatusIcon :status="status" />
+                            {{ STATUS_WORDS[status] }}
+                        </button>
+                    </div>
+                    <div class="fact">
+                        <span class="label">Plan</span>
+                        <span class="value">{{ plan ? `Plan ${plan.id}: ${plan.title}` : "Not in a plan" }}</span>
+                    </div>
+                    <template v-if="phases.length > 1 && phase">
+                        <div class="fact">
+                            <span class="label">Phase</span>
+                            <span class="value">{{ phase }} of {{ phases.length }}: {{ phases[phase - 1].title }}</span>
+                        </div>
+                    </template>
+                </div>
+                <div class="acts">
+                    <Btn kind="primary" @click="emit('act', next.name)">{{ next.label }}</Btn>
+                    <template v-for="o in others" :key="o.name">
+                        <Btn @click="emit('act', o.name)">{{ o.label }}</Btn>
+                    </template>
+                    <Btn title="More (.)" @click="emit('more', $event.currentTarget)">More</Btn>
+                </div>
+                <template v-if="status === 'parked'">
+                    <section class="part">
+                        <h4>Why it is paused</h4>
+                        <p class="text">{{ task.suspension_reason }}</p>
+                        <p class="note">The journal stops reminding the agent about it until it is resumed.</p>
+                    </section>
+                </template>
+                <template v-if="reasonOnly">
+                    <section class="part">
+                        <h4>Why it is blocked</h4>
+                        <p class="text">{{ task.block_reason }}</p>
+                        <p class="note">Nothing opens it by itself. Unblock it when that is done.</p>
+                    </section>
+                </template>
+                <TaskChain :task="task" :tasks="tasks" @select="emit('select', $event)" @answer="emit('answer', $event)" />
+                <template v-if="status === 'done' && task.outcome">
+                    <section class="part">
+                        <h4>How it was done</h4>
+                        <p class="text">{{ task.outcome }}</p>
+                    </section>
+                </template>
+                <template v-if="task.brief">
+                    <section class="part">
+                        <h4>Brief</h4>
+                        <p :class="['text', {clamped: !briefWhole}]">{{ task.brief }}</p>
+                        <template v-if="task.brief.length > LONG_BRIEF && !briefWhole">
+                            <button type="button" class="more" @click="briefWhole = true">Show the whole brief</button>
+                        </template>
+                    </section>
+                </template>
+                <TaskLogs :task="task" />
+                <Links :resource="task" />
+                <Comments :resource="task" />
+            </div>
+        </Transition>
+    </aside>
+</template>
+
+<style scoped>
+.task-inspector {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    width: 440px;
+    min-height: 0;
+    border-left: 1px solid var(--border);
+}
+
+.task-inspector.single {
+    width: 100%;
+    border-left: 0;
+}
+
+.top {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    height: 44px;
+    padding: 0 8px 0 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.single .top {
+    padding-left: 8px;
+}
+
+.crumb {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.grow {
+    flex: 1;
+}
+
+.body {
+    flex: 1;
+    overflow: auto;
+    padding: 18px 20px 28px;
+    scrollbar-width: thin;
+}
+
+.stamp {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.title {
+    margin: 6px 0 14px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-wrap: pretty;
+}
+
+.facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    margin-bottom: 16px;
+}
+
+.fact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.label {
+    color: var(--text-4);
+    font-size: 11.5px;
+}
+
+.value {
+    font-size: 12.5px;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    margin: -1px 0 -1px -7px;
+    padding: 0 7px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text);
+    font: 12.5px var(--font);
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+.status:hover {
+    background: var(--hover);
+}
+
+.acts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.part {
+    margin-bottom: 18px;
+}
+
+.part h4 {
+    margin: 0 0 6px;
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.text {
+    margin: 0;
+    color: var(--text-2);
+    white-space: pre-wrap;
+    text-wrap: pretty;
+}
+
+.text.clamped {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.note {
+    margin: 6px 0 0;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.more {
+    margin-top: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font: 12px var(--font);
+    cursor: pointer;
+}
+
+.more:hover {
+    color: var(--text);
+}
+
+.swap-enter-active {
+    transition:
+        opacity 0.16s var(--ease),
+        transform 0.16s var(--ease);
+}
+
+.swap-enter-from {
+    opacity: 0.35;
+    transform: translateY(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .swap-enter-active {
+        transition: none;
+    }
+}
+</style>

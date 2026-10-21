@@ -228,6 +228,10 @@ export class ApiClient {
         return this.get(this.here(`/plans/${id}/tasks`));
     }
 
+    addPlanTask(id, body) {
+        return this.post(this.here(`/plans/${id}/tasks`), body);
+    }
+
     taskLogs(id) {
         return this.get(this.here(`/tasks/${id}/logs`));
     }

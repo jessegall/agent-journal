@@ -10,6 +10,7 @@ import {PAGES, route} from "./route.js";
 import {project} from "./state/identity.js";
 import {store} from "./state/store.js";
 import {meta} from "./domain/tables.js";
+import {OVER_HOME} from "./domain/navigation.js";
 import {boot} from "./sync/boot.js";
 import {usePolled, windowPolls} from "./sync/polled.js";
 import Sidebar from "./layout/Sidebar.vue";
@@ -46,7 +47,7 @@ function startBoot() {
 const retryBoot = () => location.reload();
 
 const page = computed(() =>
-    !route.value.page
+    !route.value.page || OVER_HOME.includes(route.value.page)
         ? "home"
         : PAGES.includes(route.value.page)
           ? route.value.page
@@ -168,7 +169,7 @@ watch(
                     <BlockedNotice />
                     <StatusBar />
                     <Transition name="page" mode="out-in">
-                        <div :key="route.page || 'home'" class="page">
+                        <div :key="page === 'home' ? 'home' : route.page" class="page">
                             <AppPages :page="page" />
                         </div>
                     </Transition>

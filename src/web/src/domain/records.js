@@ -53,14 +53,15 @@ export function planned(task) {
 
 export const parked = (task) => task.state === "parked";
 
-const asked = (task) => rows("questions").some((q) => !isClosed(q) && (q.text || "").includes(`task ${task.id}`));
+// the open question that names the task, which asks the user about it
+export const questionAbout = (task) => rows("questions").find((q) => !isClosed(q) && (q.text || "").includes(`task ${task.id}`)) || null;
 
 export function groupOf(task) {
     if (task.state === "blocked") return "blocked";
     if (parked(task)) return "parked";
     if (planned(task)) return "planned";
     if (task.state === "started") return "started";
-    return asked(task) ? "asked" : "open";
+    return questionAbout(task) ? "asked" : "open";
 }
 
 export const state = (task) =>

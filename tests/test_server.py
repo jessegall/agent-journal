@@ -59,6 +59,22 @@ def test_tasks_live_over_http(server):
     assert call(server, "GET", "/journal/tasks", environment="other")[1]["rows"] == []
 
 
+def test_the_viewer_pauses_blocks_and_unblocks_a_task_and_its_row_names_what_it_waits_on(server):
+    for title in ("first", "second", "third"):
+        call(server, "POST", "/journal/tasks", {"title": title})
+    call(server, "POST", "/journal/tasks/1/start")
+    parked = call(server, "POST", "/journal/tasks/1/suspend", {"why": "the second comes first"})[1]
+    assert parked["state"] == "parked" and parked["suspension_reason"] == "the second comes first"
+    assert call(server, "POST", "/journal/tasks/2/block", {})[0] == 409, "a block names what it waits on"
+    blocked = call(server, "POST", "/journal/tasks/2/block", {"on": ["task:3"]})[1]
+    assert blocked["state"] == "blocked" and blocked["waits"] == ["tasks:3"]
+    assert [t["waits"] for t in call(server, "GET", "/journal/tasks")[1]["rows"]] == [[], ["tasks:3"], []]
+    reason = call(server, "POST", "/journal/tasks/3/block", {"why": "the release is not out"})[1]
+    assert reason["block_reason"] == "the release is not out" and reason["waits"] == []
+    opened = call(server, "POST", "/journal/tasks/3/unblock")[1]
+    assert opened["state"] == "open" and opened["block_reason"] == ""
+
+
 def test_a_missing_row_and_a_missing_route_say_so(server):
     assert call(server, "GET", "/journal/tasks/9")[0] == 404
     assert call(server, "GET", "/journal/nothing")[0] == 404
