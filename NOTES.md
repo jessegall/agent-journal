@@ -954,7 +954,7 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
 - A plugin holds an event only inside the window its manifest declares, `{"event": "tool_starting", "window_ms": 5}`,
   cut to the ceiling `plugins.hold_window_ms` (50 ms); a bare event name takes the ceiling. A hold that fast is answered
   by the plugin's service from what it already knows; judging and sins run on the plugin's own time and ride on the
-  next hook. One past its window is cut and its fault recorded (message 11346, doc 61). This replaced the one shared
+  next hook. One past its window is cut, its answer dropped and the miss recorded as unanswered, never a fault, so it is asked again next time (messages 11346, 11408; doc 61). This replaced the one shared
   deadline of six seconds on 2026-10-21.
 - A plugin is asked to hold only while nothing has held the event yet (`asked_while_free` on the listener). After that
   it hears the event after the reply, and a refusal then is recorded as `plugin_unanswered`.

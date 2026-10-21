@@ -6,6 +6,7 @@ import subprocess
 
 from journal.config import Config
 from journal.features.plugins.support.plugin_fault import PluginFault
+from journal.features.plugins.support.window_missed import WindowMissed
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.plugins.support.plugin_settings import PluginSettings
 from journal.support.plugin_tokens import PluginTokens
@@ -41,6 +42,8 @@ class PluginRunner:
             try:
                 link.sendall((line + "\n").encode())
                 return self.protocol.answer_of(link.makefile("rb").readline().decode())
+            except TimeoutError as late:
+                raise WindowMissed(f"its service gave no answer within {within * 1000:.0f} ms, its hold window") from late
             except OSError as failed:
                 raise PluginFault(f"its service did not answer on its socket: {failed}") from failed
 
@@ -52,7 +55,7 @@ class PluginRunner:
         except subprocess.TimeoutExpired as late:
             os.killpg(process.pid, signal.SIGKILL)
             process.communicate()
-            raise PluginFault(f"it gave no answer within {within * 1000:.0f} ms, its hold window") from late
+            raise WindowMissed(f"it gave no answer within {within * 1000:.0f} ms, its hold window") from late
         if process.returncode != 0:
             raise PluginFault(f"it exited with {process.returncode}: {err.strip()[-300:]}")
         return self.protocol.answer_of(out)

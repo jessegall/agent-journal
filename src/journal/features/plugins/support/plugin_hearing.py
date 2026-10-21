@@ -4,6 +4,7 @@ from journal.features.plugins.support.linked_manifests import LinkedManifests
 from journal.features.plugins.support.plugin_answers import PluginAnswers
 from journal.features.plugins.support.plugin_fault import PluginFault
 from journal.features.plugins.support.plugin_faults import PluginFaults
+from journal.features.plugins.support.window_missed import WindowMissed
 from journal.features.plugins.support.plugin_hashes import PluginHashes
 from journal.features.plugins.support.plugin_runner import PluginRunner
 from journal.features.plugins.support.plugin_steps import PluginSteps
@@ -54,6 +55,9 @@ class PluginHearing:
         environment = self.environments.find(environment_id).name if environment_id else ""
         try:
             answer = self.runner.ask(plugin, environment, self.protocol.line_of(event, environment, self.state_of(event)), within)
+        except WindowMissed as missed:
+            self.unanswered(plugin, event, environment_id, str(missed))
+            return PluginAnswer()
         except (PluginFault, OSError) as fault:
             self.faults.failed(plugin, environment_id, event.key, str(fault))
             return PluginAnswer()

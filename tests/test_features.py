@@ -3532,7 +3532,8 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     began = time.monotonic()
     status, _ = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
     assert status == 200 and time.monotonic() - began < 3, "two slow plugins are each cut at their window and the event goes through"
-    assert "no answer within" in plugins.named("echo").last_fault and "no answer within" in plugins.named("echo-two").last_fault, "each fault recorded"
+    missed = [e.data["plugin"] for e in app.container.get(Entries).where(kind="plugin_unanswered") if "no answer within" in e.data["reason"]]
+    assert missed == ["echo", "echo-two"] and plugins.named("echo").faults_in_a_row == 0, "each miss is recorded as unanswered and counts as no fault, so the plugin is asked again next time"
 
 def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app):
     """The skill, the look and the mark hold a Codex write through its pre-tool hook, as the records frozen on today's conduct show; nothing here is Claude only."""
@@ -5746,6 +5747,7 @@ def test_a_tool_entry_records_the_calls_reading_beside_the_raw_input(app):
 def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is_cut_at_the_deadline(app):
     import time
     from journal.repositories.plugins import Plugins
+    from journal.repositories.entries import Entries
     plugins = app.container.get(Plugins)
     plugins.save(echo(app, hears=["tool_starting", "tool_finished"], holds=[{"event": "tool_starting", "window_ms": 1000}]).with_(settings={"mode": "late"}), Actor.user(1))
     hook(app, "SessionStart")
@@ -5756,7 +5758,8 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     waited = time.monotonic() - started
     assert status == 200 and 1.0 <= waited < 1.9, "the event it holds is asked on the answer path and cut at the window its manifest declares, the hook answered without it"
-    assert "no answer within 1000 ms" in plugins.named("echo").last_fault, "the plugin that overran is marked faulted"
+    missed = app.container.get(Entries).where(kind="plugin_unanswered")
+    assert "no answer within 1000 ms" in missed[-1].data["reason"] and plugins.named("echo").faults_in_a_row == 0 and plugins.named("echo").enabled, "the miss is on the plugin's record, no fault counted, and the plugin stays on to be asked next time"
     from journal.support.plugin_manifest import PluginManifest
     manifest = PluginManifest.from_json({"name": "x", "hears": ["tool_starting", "idle"], "holds": [{"event": "tool_starting", "window_ms": 5000}, "idle"]})
     assert manifest.window_ms("tool_starting", 50) == 50 and manifest.window_ms("idle", 50) == 50 and manifest.window_ms("tool_starting", 9000) == 5000, "a window is cut to the user's ceiling, and a hold named without one takes the ceiling"

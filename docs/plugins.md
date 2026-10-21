@@ -171,7 +171,7 @@ input. It is given these variables and nothing else of the journal's environment
 
 An event it holds is answered inside the hook: the plugins holding one event are asked in the order they were
 installed, each inside the window its manifest declares, cut to the ceiling `plugins.hold_window_ms` (50 ms). A plugin
-past its window is cut: the event goes through, and the miss is a fault naming the milliseconds. A plugin is
+past its window is cut: its answer is dropped, the event goes through, the miss is recorded on its record as unanswered with the milliseconds, it counts as no fault, and the plugin is asked again at the next event. A plugin is
 asked only while the event is not yet held; once the journal or an earlier plugin holds it, the rest hear it after the
 reply, and a refusal then is recorded as `plugin_unanswered`. A journal command and the read of a skill always go
 through, the refusal's words told instead. Every other event, and every row, is heard after the reply, a row only once
