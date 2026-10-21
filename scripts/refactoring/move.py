@@ -7,7 +7,8 @@ A list line is `old.module new.module`, or `old.module new.module # why`; blank 
 are skipped. The file moves with git mv, the packages it lands in get an __init__.py, and every dotted
 name of the old module in src, tests, scripts, docs, NOTES.md and CLAUDE.md is written as the new one. A move
 is refused when the old module is missing or the new one already stands; nothing is written when one is.
-`--dry-run` names every move and how many files each touches without writing. `--root=DIR` works on another
+`--dry-run` names every move and how many files each touches without writing. `--names-only` writes the new
+names and moves no file, for a branch that already holds the moved modules. `--root=DIR` works on another
 checkout.
 """
 import argparse
@@ -70,10 +71,11 @@ def main() -> int:
     parser.add_argument("new", nargs="?")
     parser.add_argument("--list")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--names-only", action="store_true")
     parser.add_argument("--root", default=".")
     args = parser.parse_args()
     root, moves = Path(args.root).resolve(), moves_from(args)
-    refused = refusals(root, moves)
+    refused = [] if args.names_only else refusals(root, moves)
     if refused:
         print("\n".join(refused) + "\nnothing written: a move was refused")
         return 1
@@ -86,7 +88,7 @@ def main() -> int:
         return 0
     for path, text in touched.items():
         path.write_text(text)
-    for old, new in moves:
+    for old, new in ([] if args.names_only else moves):
         move(root, old, new)
     print(f"{len(touched)} files changed")
     return 0
