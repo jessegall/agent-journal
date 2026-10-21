@@ -166,7 +166,7 @@ class Rules:
         self.patterns = collections.defaultdict(list)
         for path in glob.glob(f"{folder}/Poetic*NameDetector.json") + glob.glob(f"{folder}/Sentence*NameDetector.json"):
             rule = json.load(open(path))
-            rejects = [re.compile(item["nameMatches"]) for item in rule.get("reject", []) if "nameMatches" in item]
+            rejects = [re.compile(item["nameMatches"]) for item in rule["find"].get("reject", []) + rule.get("reject", []) if "nameMatches" in item]
             self.patterns[rule["find"]["select"]].append((re.compile(expand(rule["find"]["where"][0]["nameMatches"])), rejects))
 
     def refusal(self, kind: str, name: str) -> str:
