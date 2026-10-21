@@ -9,3 +9,8 @@ class WorkerDispatched(RowPending):
 
     worker_id: int
     name: str
+    brief: str = ""
+
+    @property
+    def dispatcher(self) -> str:
+        return self.awaiter

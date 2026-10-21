@@ -12,6 +12,7 @@ from journal.features.workers.listeners.subagent_cards import SubagentCards
 from journal.features.workers.listeners.worker_cards import WorkerCards
 from journal.engine.support.modes import Modes
 from journal.features.plans.states.plans_ready import PlansReady
+from journal.features.workers.listeners.worker_marks import WorkerMarks
 from journal.features.workers.states.delegating import Delegating
 from journal.features.workers.states.orchestrating import Orchestrating
 from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
@@ -34,7 +35,7 @@ class Workers(Feature[WorkersData]):
     commands = (WorkerCommand,)
     seeds = (WorkersSeed,)
     jobs = (WorkerWatch,)
-    listeners = (SubagentCards, WorkerCards)
+    listeners = (SubagentCards, WorkerCards, WorkerMarks)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
 

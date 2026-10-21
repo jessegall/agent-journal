@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.events.rows.worker_stopped import WorkerStopped
+from journal.events.rows.worker_notified import WorkerNotified
+from journal.events.rows.worker_retired import WorkerRetired
+from journal.events.rows.worker_reused import WorkerReused
+from journal.events.rows.worker_revived import WorkerRevived
 from journal.models.scoped import Scoped
 from journal.models.worker_state import WorkerState
 
@@ -32,7 +36,10 @@ class Worker(Scoped):
         return f"{self.table()}:{self.id}"
 
     def dispatched(self, time: float) -> "Worker":
-        return self.with_(state=WorkerState.DISPATCHED).with_event(WorkerDispatched(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, ref=self.worker_ref(), label=f"worker {self.id}", awaiter=self.dispatcher))
+        return self.with_(state=WorkerState.DISPATCHED).with_event(self.pending(WorkerDispatched, time))
+
+    def pending(self, kind: type[WorkerDispatched], time: float) -> WorkerDispatched:
+        return kind(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, ref=self.worker_ref(), label=f"worker {self.id}", awaiter=self.dispatcher, brief=self.brief)
 
     def reported(self, time: float, report: int) -> "Worker":
         return self.with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, reported"))
@@ -40,14 +47,25 @@ class Worker(Scoped):
     def running_as(self, pid: int, began: float) -> "Worker":
         return self.with_(pid=pid, began=began, recovered_session="")
 
-    def instructed(self, brief: str, time: float) -> "Worker":
-        return self.with_(brief=brief, adopted=False, pid=0, began=0.0).dispatched(time)
+    def reused(self, brief: str, time: float) -> "Worker":
+        instructed = self.instructed(brief)
+        return instructed.with_event(instructed.pending(WorkerReused, time))
+
+    def revived(self, brief: str, time: float) -> "Worker":
+        instructed = self.instructed(brief)
+        return instructed.with_event(instructed.pending(WorkerRevived, time))
+
+    def instructed(self, brief: str) -> "Worker":
+        return self.with_(brief=brief, state=WorkerState.DISPATCHED, adopted=False, pid=0, began=0.0)
+
+    def notified(self, text: str, time: float) -> "Worker":
+        return self.with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, text=text))
 
     def stopped(self, time: float) -> "Worker":
         return self.with_(state=WorkerState.STOPPED, adopted=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
 
-    def finished(self) -> "Worker":
-        return self.with_(adopted=True)
+    def finished(self, time: float) -> "Worker":
+        return self.with_(adopted=True).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
 
     def is_running(self) -> bool:
         return self.state == WorkerState.DISPATCHED

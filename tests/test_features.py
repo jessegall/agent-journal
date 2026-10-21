@@ -6040,8 +6040,8 @@ def test_a_read_message_holds_a_tool_only_after_a_grace_of_tool_uses_with_a_remi
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "11.py")})[0] == 200, "answered, the tools are free again"
 
 
-def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_reports_fails_is_stopped_and_retired(app: App):
-    """Each worker is a keyed card: dispatched with its provider and model, then reported with its report's first line, failed in a bad tone when it could not run, stopped, and retired once its work is taken in; one card per worker, updated where it stands."""
+def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_reports_fails_and_is_stopped(app: App):
+    """Each worker is a keyed card: dispatched with its provider and model, then reported with its report's first line, failed in a bad tone when it could not run, and stopped; one card per worker, updated where it stands, and its retiring a mark of its own."""
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.repositories.messages import Messages as MessageRows
     from journal.repositories.workers import Workers
@@ -6060,7 +6060,7 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     assert card(2).text == "Worker 2, Dr. Einstein: failed" and card(2).data["tone"] == "bad" and card(2).data["detail"].startswith("failed with code 3")
     assert card(3).text == "Worker 3, Mr. Babbage: stopped"
     console.run(["worker", "complete", "1"], AGENT)
-    assert card(1).text == "Worker 1, Lady Lovelace: retired, its work taken in"
+    assert messages.scoped()[-1].text == "Worker 1, Lady Lovelace: retired, its report acted on" and messages.scoped()[-1].data["tone"] == "good", "retiring is a mark of its own"
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
 
@@ -6357,7 +6357,7 @@ def test_a_notify_reaches_only_a_running_claude_worker_and_moves_no_wait(app: Ap
         assert "journal worker notify 1" in console.run(["worker", "send", "1", "now the lexer"], AGENT).error, "a send to a running worker points at notify"
         assert console.run(["worker", "notify", "1", "the lexer too"], AGENT).code == 0
         assert arrived(received, 2)[-1]["message"]["content"] == '<cross-session-message from-name="the agent that dispatched you" from-mode="bypass">\nthe lexer too\n</cross-session-message>'
-        assert machine.current("s1") == waiting and workers.find(1).updated_at == row.updated_at, "a notify writes nothing on the worker's row and leaves the dispatcher's wait as it was"
+        assert machine.current("s1") == waiting and workers.find(1).brief == row.brief, "a notify changes nothing the worker was sent and leaves the dispatcher's wait as it was"
         workers.save(workers.find(1).with_(provider="codex"), Actor.system())
         assert "runs Codex, which takes no message while it runs" in console.run(["worker", "notify", "1", "x"], AGENT).error
         workers.save(workers.find(1).with_(provider="claude"), Actor.system())
@@ -6597,3 +6597,39 @@ def test_a_job_sent_to_a_worker_that_reported_puts_the_dispatcher_back_in_its_wa
     assert waiting.name == "awaiting" and waiting.worker_ids() == (1,), "the dispatcher waits on the worker it sent out again"
     console.run(["worker", "report", "1", "the mill turns"], Caller("main", "w1"))
     assert machine.current("s1").name != "awaiting", "until it reports again"
+
+
+def test_each_worker_moment_after_its_dispatch_is_a_short_mark_of_its_own(app: App, tmp_path, monkeypatch):
+    import subprocess
+    from journal.providers.claude import Claude
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    hook(app, "SessionStart")
+    console, workers, messages = app.console(), app.container.get(Workers), app.container.get(Messages)
+    marks = lambda: [(m.text, m.data.get("tone"), m.data.get("detail")) for m in messages.scoped() if m.data.get("shows") == "workers" and not m.data.get("key")]
+    console.run(["worker", "dispatch", "Mr. Wedgwood", "the vase", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "report", "1", "the vase is fired"], Caller("main", "w1"))
+    workers.save(workers.find(1).with_(resume="w-1"), USER.actor)
+    console.run(["worker", "send", "1", "the jug"], AGENT)
+    process = subprocess.Popen(["sleep", "30"])
+    try:
+        workers.save(workers.find(1).running_as(process.pid, timing.time()), Actor.system())
+        listening_session(home, process.pid, "w-1")
+        console.run(["worker", "notify", "1", "a blue glaze"], AGENT)
+    finally:
+        process.kill()
+        process.wait(5)
+    console.run(["worker", "stop", "1"], AGENT)
+    console.run(["worker", "send", "1", "the teapot"], AGENT)
+    console.run(["worker", "report", "1", "the teapot pours"], Caller("main", "w1"))
+    console.run(["worker", "complete", "1"], AGENT)
+    assert marks() == [
+        ("Worker 1, Mr. Wedgwood: reused for its next job", "", "the jug"),
+        ("Worker 1, Mr. Wedgwood: told a message in its session", "", "a blue glaze"),
+        ("Worker 1, Mr. Wedgwood: revived in its last session", "", "the teapot"),
+        ("Worker 1, Mr. Wedgwood: retired, its report acted on", "good", ""),
+    ]
+    assert all(len(text) <= 80 for text, _, _ in marks())

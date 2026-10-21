@@ -111,6 +111,7 @@ class WorkerCommand(Command):
         return 0
 
     def sent(self, worker: Worker, args: Namespace, caller: Caller) -> Worker:
+        revival = worker.state == WorkerState.STOPPED or self.runner.is_ended(worker)
         if self.runner.is_ended(worker):
             worker = self.runner.settle(worker, caller.actor)
         if worker.state == WorkerState.DISPATCHED:
@@ -123,7 +124,8 @@ class WorkerCommand(Command):
             self.runner.renewed(worker)
         except WorktreeFailure as failed:
             raise Rejection(f"worker {worker.name} was not sent the job: {failed}") from failed
-        worker = self.workers.save(worker.with_(dispatcher=caller.session).instructed(args.brief, datetime.now(timezone.utc).timestamp()), caller.actor)
+        moved, time = worker.with_(dispatcher=caller.session), datetime.now(timezone.utc).timestamp()
+        worker = self.workers.save(moved.revived(args.brief, time) if revival else moved.reused(args.brief, time), caller.actor)
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
@@ -136,6 +138,7 @@ class WorkerCommand(Command):
             if refusal:
                 raise Rejection(refusal.format(n=worker.id, name=worker.name, provider=worker.provider.capitalize()))
             self.inbox.deliver(worker.pid, worker.resume, "the agent that dispatched you", args.text)
+            self.workers.save(worker.notified(args.text, datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"worker {worker.id} {worker.name} has the message in its session")
         return 0
 
@@ -159,7 +162,7 @@ class WorkerCommand(Command):
         return 0
 
     def complete(self, args: Namespace, caller: Caller) -> int:
-        worker = self.workers.save(self.workers.find(args.n).finished(), caller.actor)
+        worker = self.workers.save(self.workers.find(args.n).finished(datetime.now(timezone.utc).timestamp()), caller.actor)
         dropped = self.branch.dropped(worker)
         print(f"worker {worker.id}'s report is acted on" + (f"; {dropped}" if dropped else ""))
         return 0
