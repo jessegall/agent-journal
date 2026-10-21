@@ -6373,7 +6373,7 @@ def test_a_notify_reaches_only_a_running_claude_worker_and_moves_no_wait(app: Ap
         process.kill()
         process.wait(5)
         assert "has ended and its report is being filed" in console.run(["worker", "notify", "1", "x"], AGENT).error, "the row is read again at delivery, its process found gone"
-        workers.save(workers.find(1).stopped(timing.time()), Actor.system())
+        workers.save(workers.find(1).stopped(timing.time(), ""), Actor.system())
         assert "revives it in its last session" in console.run(["worker", "notify", "1", "x"], AGENT).error
         workers.save(workers.find(1).with_(state=WorkerState.REPORTED), Actor.system())
         assert "has reported and runs no more" in console.run(["worker", "notify", "1", "x"], AGENT).error
@@ -6683,3 +6683,22 @@ def test_a_worker_is_idle_by_one_rule_old_rows_and_dead_processes_included(app: 
         workers.save(row, Actor.system())
     assert [w.name for w in workers.scoped() if w.is_running()] == ["out", "ended unreported"], "a dispatched worker is out whatever its process, until its report is filed"
     assert [w.name for w in workers.scoped() if w.is_idle()] == ["idle"], "idle is reported and not yet acted on; a stopped row, old or new, is retired"
+
+
+def test_only_a_send_counts_a_reuse_and_only_a_retire_gives_its_reason(app: App, monkeypatch):
+    from journal.repositories.workers import Workers
+    kept_conversation(app, monkeypatch)
+    hook(app, "SessionStart")
+    console, workers = app.console(), app.container.get(Workers)
+    console.run(["worker", "dispatch", "Mr. Brindley", "the canal", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "report", "1", "dug"], Caller("main", "w1"))
+    workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
+    console.run(["worker", "send", "1", "the aqueduct"], AGENT)
+    console.run(["worker", "stop", "1", "--why", "the aqueduct needs a new design"], AGENT)
+    console.run(["worker", "send", "1", "the lock"], AGENT)
+    assert workers.find(1).updater == AGENT.actor, "the send that counts names its actor"
+    console.run(["worker", "report", "1", "locked"], Caller("main", "w1"))
+    worker = workers.find(1)
+    assert worker.reuse_count == 2 and worker.retire_reason == "the aqueduct needs a new design", "each send counts once, a report counts none; the reason is the stop's"
+    console.run(["worker", "complete", "1", "--why", "the canal is done"], AGENT)
+    assert workers.find(1).retire_reason == "the canal is done" and workers.find(1).reuse_count == 2

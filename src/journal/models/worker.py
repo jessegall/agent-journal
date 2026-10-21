@@ -32,6 +32,8 @@ class Worker(Scoped):
     began: float = 0.0
     recovered_session: str = ""
     touched_paths: tuple[str, ...] | None = None
+    reuse_count: int = 0
+    retire_reason: str = ""
 
     def worker_ref(self) -> str:
         return f"{self.table()}:{self.id}"
@@ -49,11 +51,11 @@ class Worker(Scoped):
         return self.with_(pid=pid, began=began, recovered_session="")
 
     def reused(self, brief: str, time: float) -> "Worker":
-        instructed = self.instructed(brief)
+        instructed = self.instructed(brief).with_(reuse_count=self.reuse_count + 1)
         return instructed.with_event(instructed.pending(WorkerReused, time))
 
     def revived(self, brief: str, time: float) -> "Worker":
-        instructed = self.instructed(brief)
+        instructed = self.instructed(brief).with_(reuse_count=self.reuse_count + 1)
         return instructed.with_event(instructed.pending(WorkerRevived, time))
 
     def instructed(self, brief: str) -> "Worker":
@@ -62,11 +64,11 @@ class Worker(Scoped):
     def notified(self, text: str, time: float) -> "Worker":
         return self.with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, text=text))
 
-    def stopped(self, time: float) -> "Worker":
-        return self.with_(state=WorkerState.STOPPED, adopted=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
+    def stopped(self, time: float, reason: str) -> "Worker":
+        return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
 
-    def finished(self, time: float) -> "Worker":
-        return self.with_(adopted=True).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
+    def finished(self, time: float, reason: str) -> "Worker":
+        return self.with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
 
     def is_running(self) -> bool:
         return self.state == WorkerState.DISPATCHED

@@ -302,3 +302,17 @@ def test_the_timestamp_renames_migration_moves_the_phone_codes_and_the_wait_time
     assert "expires_at" in {row["name"] for row in connection.all("PRAGMA table_info(phone_codes)")}
     row = connection.one("SELECT data, stack FROM agents WHERE session = 's'")
     assert json.loads(row["data"]) == {"focus": "ci", "started_at": 5.0, "reminded_at": 9.0} and json.loads(row["stack"])[-1]["data"]["started_at"] == 5.0
+
+
+def test_the_worker_reuse_counts_migration_reads_each_reuse_from_the_reports_before_it(connection):
+    """Migration 30: an old worker row's reuse count comes from its report links, the last report followed by a send when it is out again; the reason it was retired starts empty."""
+    from journal.db.migrations.worker_reuse_counts import WorkerReuseCounts
+    for n, state in ((1, "reported"), (2, "dispatched"), (3, "dispatched")):
+        connection.execute("INSERT INTO workers (environment_id, name, state, created_at, creator) VALUES (1, ?, ?, '2026-10-21', 'system')", (f"w{n}", state))
+    for worker, reports in ((1, 3), (2, 2)):
+        for message in range(reports):
+            connection.execute("INSERT INTO links (source, target, kind, created_at, creator) VALUES (?, ?, 'reported', '2026-10-21', 'system')", (f"workers:{worker}", f"messages:{worker * 10 + message}"))
+    connection.execute("UPDATE workers SET reuse_count = NULL, retire_reason = NULL")
+    WorkerReuseCounts().apply(connection)
+    counts = [(row["name"], row["reuse_count"]) for row in connection.all("SELECT name, reuse_count FROM workers ORDER BY id")]
+    assert counts == [("w1", 2), ("w2", 2), ("w3", 0)], "three reports and back is two sends; two reports and out again is two; out on its first job is none"

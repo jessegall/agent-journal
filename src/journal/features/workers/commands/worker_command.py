@@ -57,8 +57,10 @@ class WorkerCommand(Command):
         notify.add_argument("n", type=int)
         notify.add_argument("text")
         self.verb(verbs, "wait", "wait until these workers have reported").add_argument("on", type=int, nargs="+")
-        self.verb(verbs, "stop", "end a worker").add_argument("n", type=int)
-        self.verb(verbs, "complete", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
+        for verb, help in (("stop", "end a worker"), ("complete", "a worker's report acted on: merged, used or set aside, so it is no longer named")):
+            retire = self.verb(verbs, verb, help)
+            retire.add_argument("n", type=int)
+            retire.add_argument("--why", default="", help="why the worker cannot be reused for the next job")
         self.verb(verbs, "list", "every worker out")
 
     def provider_default(self, caller: Caller) -> str:
@@ -158,12 +160,12 @@ class WorkerCommand(Command):
 
     def stop(self, args: Namespace, caller: Caller) -> int:
         with self.runner.lock(args.n):
-            self.runner.stop(self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp()), caller.actor))
+            self.runner.stop(self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp(), args.why), caller.actor))
         print(f"worker {args.n} stopped")
         return 0
 
     def complete(self, args: Namespace, caller: Caller) -> int:
-        worker = self.workers.save(self.workers.find(args.n).finished(datetime.now(timezone.utc).timestamp()), caller.actor)
+        worker = self.workers.save(self.workers.find(args.n).finished(datetime.now(timezone.utc).timestamp(), args.why), caller.actor)
         dropped = self.branch.dropped(worker)
         print(f"worker {worker.id}'s report is acted on" + (f"; {dropped}" if dropped else ""))
         return 0
