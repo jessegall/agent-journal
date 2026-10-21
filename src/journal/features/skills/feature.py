@@ -45,7 +45,9 @@ lists the verbs.
 - **sequence**, **worker**, **skill**: steps to follow, agents that write for you, and these files.
 - **shell**: a long command moves to the background; read any output by its number with `journal output read <n> --tail 20` (or --grep, --summary, --all);
   `journal reader add` keeps a reader that picks the lines worth seeing.
-- `journal environment overview` after a compaction or a takeover lists what is in flight.
+- `journal environment overview` after a compaction or a takeover lists what is in flight, then runs the journal commands
+  the setting briefing.look_commands names, each under its heading: by default the started plan with its phase in hand,
+  the task list, the unread messages, the workers, the open questions and the task in hand read whole.
 - `journal await "<what>" --output <n>` or `--until "<script>"` when you wait on something outside your hands, then end
   your turn: the wait ends by itself once that is done.
 - `journal search "<words>"` finds every task, plan, message, document, report and agent conversation here that holds

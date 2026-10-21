@@ -1505,6 +1505,19 @@ def test_a_task_is_read_whole_with_its_plan_phase_brief_and_every_log_line_in_or
     assert console.run(["task", "show", "2"], AGENT).text.splitlines()[2:] == ["plan: none", "brief: none", "log: none"]
 
 
+def test_the_look_runs_the_commands_the_setting_names_each_under_its_heading_in_order(app: App):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["task", "create", "write the notes", "--start"], AGENT)
+    console.run(["task", "log", "1", "opened NOTES.md"], AGENT)
+    app.container.get(SettingRows).set("briefing.look_commands", ["task show {{task_in_hand}}", "plan show {{started_plan}}", "question list", "task list"], Actor.user(1))
+    shown = console.run(["environment", "overview"], AGENT).text
+    headings = [line for line in shown.splitlines() if line.startswith("== journal ")]
+    assert headings == ["== journal task show 1 ==", "== journal plan show {{started_plan}} ==", "== journal question list ==", "== journal task list =="], "each command under its heading, in the order the setting names them"
+    assert "opened NOTES.md" in shown and "no plan is started" in shown, "the task in hand read whole, and the plan in hand said to be missing"
+    assert shown.index("task in hand: 1 write the notes") < shown.index("== journal task show 1 =="), "the summary comes first"
+
+
 def test_wispr_flow_is_among_the_suggested_mcp_services():
     from journal.features.mcp.support.mcp_catalogue import SUGGESTED
     suggested = {s.name: s for s in SUGGESTED}

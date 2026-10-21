@@ -6,15 +6,21 @@ from journal.features.briefing.briefing_conduct import BriefingConduct
 from journal.features.briefing.support.briefing_data_reader import BriefingDataReader
 from journal.features.briefing.support.briefing_data import BriefingData
 from journal.engine.nudge import Nudge
+from journal.support.option import Option
 
 
 class Briefing(Feature[BriefingData]):
+    OVERVIEW_COMMANDS = Option("briefing.look_commands", "Commands the overview runs",
+                               "The journal commands journal environment overview runs after its summary, in this order, each under its heading; {{started_plan}} is the plan in hand "
+                               "and {{task_in_hand}} the task in hand, and a command naming one that is not there says so instead",
+                               ["plan show {{started_plan}}", "task list", "message unread", "worker list", "question list", "task show {{task_in_hand}}"], kind="lines")
     name = "briefing"
     title = "Session briefing"
     help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any state's own line at the start."
     conduct = (BriefingConduct,)
     listeners = (StartOverviewObligation, SessionExclusivity, EndSilentSessions)
     data = (BriefingDataReader,)
+    options = (OVERVIEW_COMMANDS,)
 
     JOURNAL_READY = Nudge(name, "journal_ready", "the journal is ready on {{env}}", repeat_interval=0)
     ACTIVE_RULES = Nudge(name, "rules_in_force", "{{count}} rules in force: {{rows}}", repeat_interval=0)
