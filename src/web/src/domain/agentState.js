@@ -1,6 +1,6 @@
 import {ago, elapsed} from "../format/time.js";
 import {seconds} from "./row.js";
-import {workerName, workerState} from "./workers.js";
+import {WORKER_WORDS, workerName, workerState} from "./workers.js";
 
 export const SILENT = "silent";
 
@@ -15,7 +15,7 @@ export const silentIn = (summary, env) => Boolean((summary?.environments || []).
 
 const WORKER = "workers:";
 const STATUS_WORDS = {worker: "At work", question: "Waiting on you"};
-const statusOf = (item) => (item.reported ? "Report ready" : STATUS_WORDS[item.kind] || "At work");
+const statusOf = (item) => (item.reported ? WORKER_WORDS.reported : STATUS_WORDS[item.kind] || "At work");
 const countOf = (n) => `${n} ${n === 1 ? "worker" : "workers"}`;
 
 function workerItem(workers, ref) {

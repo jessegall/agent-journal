@@ -148,11 +148,11 @@ const refusal = ref("");
 const actionOf = (key) => props.info.actions.find((action) => action.key === key);
 const question = computed(() => (asking.value ? actionOf(asking.value) : null));
 
-async function perform(key) {
+async function perform(key, answer = "") {
     refusal.value = "";
     asking.value = "";
     try {
-        await props.run(key);
+        await props.run(key, answer);
     } catch (e) {
         refusal.value = plainRefusal(e.message, key);
     }
@@ -228,7 +228,7 @@ const openSkills = () => go("skills");
             :sequence-history="sequenceHistory"
             :sequence-busy="sequenceBusy"
             @cancel="asking = ''"
-            @confirmed="perform(question.key)"
+            @confirmed="(answer) => perform(question.key, answer)"
             @resume="choose('resume')"
             @skip-step="onSequence('skip')"
             @end-sequence="onSequence('end')"

@@ -1,5 +1,5 @@
 <script setup>
-import {stateAt, workerLine, workerName, workerReport, workerReuses, workerState, workerTag} from "../domain/workers.js";
+import {stateAt, workerEnding, workerFiles, workerLine, workerName, workerReport, workerReuses, workerState, workerTag} from "../domain/workers.js";
 import {nextTick, onMounted, ref} from "vue";
 import {ago} from "../format/time.js";
 import {seconds} from "../domain/row.js";
@@ -16,7 +16,7 @@ const name = () => workerName(props.row);
 const report = () => workerReport(props.row);
 const state = () => workerState(props.row);
 const tag = () => workerTag(props.row);
-const stateLabel = () => (state() === "finished" ? `Closed ${ago(stateAt(props.row))}` : tag().word);
+const stateLabel = () => (state() === "finished" ? `${workerEnding(props.row)} ${ago(stateAt(props.row))}` : tag().word);
 const sentLine = () => [`Sent ${ago(seconds(props.row.created_at))}`, workerReuses(props.row)].filter(Boolean).join(" · ");
 
 onMounted(() =>
@@ -33,6 +33,9 @@ onMounted(() =>
                 <span class="worker-job" :title="row.brief">{{ row.brief }}</span>
                 <small>{{ workerLine(row) }}</small>
                 <small class="worker-reuse">{{ sentLine() }}</small>
+                <template v-if="state() === 'reported' && workerFiles(row)">
+                    <small class="worker-files">{{ workerFiles(row) }}</small>
+                </template>
             </Btn>
             <div class="worker-side">
                 <span :class="['worker-state', tag().state]">{{ stateLabel() }}</span>

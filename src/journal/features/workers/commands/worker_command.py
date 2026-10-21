@@ -13,26 +13,17 @@ from journal.models.worker import Worker
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.support.rejection import Rejection
-from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
 from journal.repositories.workers import Workers
-from journal.providers.support.session_inbox import SessionInbox
-
-NOTIFY_REFUSALS = {
-    WorkerState.REPORTED: "worker {n}, {name}, has reported and runs no more: give it the job with `journal worker send {n} \"<job>\"`",
-    WorkerState.STOPPED: "worker {n}, {name}, was stopped: `journal worker send {n} \"<job>\"` revives it in its last session with the job",
-}
-STARTING = "worker {n}, {name}, has not started its process yet: notify it in a moment"
-ENDED = "worker {n}, {name}, has ended and its report is being filed: wait for it, then give it the job with `journal worker send {n} \"<job>\"`"
-NO_INBOX = "worker {n}, {name}, runs {provider}, which takes no message while it runs: wait for its report, then give it the job with `journal worker send {n} \"<job>\"`"
+from journal.features.workers.support.worker_actions import WorkerActions
 
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows, inbox: SessionInbox) -> None:
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions) -> None:
         self.workers, self.messages, self.providers, self.agents = workers, messages, providers, agents
-        self.branch, self.settings, self.inbox = branch, settings, inbox
+        self.branch, self.settings, self.actions = branch, settings, actions
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
@@ -99,67 +90,28 @@ class WorkerCommand(Command):
         return 0
 
     def send(self, args: Namespace, caller: Caller) -> int:
-        with self.runner.lock(args.n):
-            worker = self.sent(self.workers.find(args.n), args, caller)
+        worker = self.actions.send(args.n, args.brief, caller.session, caller.actor)
+        if args.task:
+            self.workers.assign(worker, args.task, caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
 
-    def sent(self, worker: Worker, args: Namespace, caller: Caller) -> Worker:
-        revival = worker.state == WorkerState.STOPPED or self.runner.is_ended(worker)
-        if self.runner.is_ended(worker):
-            worker = self.runner.settle(worker, caller.actor)
-        if worker.state == WorkerState.DISPATCHED:
-            raise Rejection(f"worker {worker.id}, {worker.name}, is still out: tell it with `journal worker notify {worker.id} \"<text>\"`, or wait for its report and send it the job then")
-        if not worker.resume:
-            raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch the job again")
-        if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
-            raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch the job again")
-        try:
-            self.runner.renewed(worker)
-        except WorktreeFailure as failed:
-            raise Rejection(f"worker {worker.name} was not sent the job: {failed}") from failed
-        moved, time = worker.with_(dispatcher=caller.session), datetime.now(timezone.utc).timestamp()
-        worker = self.workers.save(moved.revived(args.brief, time) if revival else moved.reused(args.brief, time), caller.actor)
-        if args.task:
-            self.workers.assign(worker, args.task, caller.actor)
-        self.runner.start(worker, caller.actor)
-        return worker
-
     def notify(self, args: Namespace, caller: Caller) -> int:
-        with self.runner.lock(args.n):
-            worker = self.workers.find(args.n)
-            refusal = self.notify_refusal(worker)
-            if refusal:
-                raise Rejection(refusal.format(n=worker.id, name=worker.name, provider=worker.provider.capitalize()))
-            self.inbox.deliver(worker.pid, worker.resume, "the agent that dispatched you", args.text)
-            self.workers.save(worker.notified(args.text, datetime.now(timezone.utc).timestamp()), caller.actor)
+        worker = self.actions.notify(args.n, args.text, caller.actor)
         print(f"worker {worker.id} {worker.name} has the message in its session")
         return 0
-
-    def notify_refusal(self, worker: Worker) -> str:
-        if worker.state in NOTIFY_REFUSALS:
-            return NOTIFY_REFUSALS[worker.state]
-        if not worker.pid:
-            return STARTING
-        if self.runner.is_ended(worker):
-            return ENDED
-        return "" if self.providers.lookup(worker.provider).session_inbox else NO_INBOX
 
     def wait(self, args: Namespace, caller: Caller) -> int:
         print(f"awaiting workers {', '.join(str(n) for n in args.on)}: you are told as each reports, and when the last is back")
         return 0
 
     def stop(self, args: Namespace, caller: Caller) -> int:
-        with self.runner.lock(args.n):
-            self.runner.stop(self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp(), args.why), caller.actor))
+        self.actions.stop(args.n, args.why, caller.actor)
         print(f"worker {args.n} stopped" + (f": {args.why}" if args.why else ""))
         return 0
 
     def complete(self, args: Namespace, caller: Caller) -> int:
-        with self.runner.lock(args.n):
-            worker = self.workers.save(self.workers.find(args.n).finished(datetime.now(timezone.utc).timestamp(), args.why), caller.actor)
-            self.runner.stop(worker)
-        dropped = self.branch.dropped(worker)
+        worker, dropped = self.actions.complete(args.n, args.why, caller.actor)
         print(f"worker {worker.id}'s report is acted on" + (f": {args.why}" if args.why else "") + (f"; {dropped}" if dropped else ""))
         return 0
 

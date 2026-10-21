@@ -1,13 +1,29 @@
 import {providerName} from "./agents.js";
 import {seconds} from "./row.js";
 
-// A worker as the viewer draws it: out at work, back with a report, or closed. The journal keeps its state as dispatched,
-// reported or stopped.
+// A worker as the viewer draws it: out at work, idle with its report back and waiting for a job, or closed. The journal
+// keeps its state as dispatched, reported or stopped, and a reported worker whose report was acted on is retired.
 const STATES = {dispatched: "running", reported: "reported", stopped: "finished"};
 
-export const workerState = (row) => STATES[row.state] || "running";
+export const workerState = (row) => (row.state === "reported" && row.adopted ? "finished" : STATES[row.state] || "running");
 
-export const WORKER_WORDS = {running: "Working", reported: "Report ready", finished: "Closed"};
+export const WORKER_WORDS = {running: "Working", reported: "Idle, waiting for a job", finished: "Closed"};
+
+export const workerEnding = (row) => (row.state === "stopped" ? "Stopped" : "Retired");
+
+export const workerFiles = (row) => (row.files ? `Files: ${row.files}` : "");
+
+const SEND = {key: "send", label: "Send a job", title: "It goes on in its last session, with its memory of the work so far.", confirm: {text: "The job to send it:", input: "What it should do next", button: "Send the job", cancel: "Cancel"}};
+const STOP = {key: "stop", label: "Stop", title: "It stops at once. Its branch and files stay.", danger: true, confirm: {text: "Stop this worker now? A job sent to it later goes on in its last session.", button: "Stop now", cancel: "Keep it"}};
+const COMPLETE = {key: "complete", label: "Complete", title: "Its work is taken in or set aside, and it is retired."};
+
+// What the worker page offers: a job for a worker that is not out, a stop for one out or idle, and completing one not yet retired.
+export function workerActions(row) {
+    const state = workerState(row);
+    if (state === "running") return [STOP, COMPLETE];
+    if (state === "reported") return [SEND, STOP, COMPLETE];
+    return [SEND];
+}
 
 export const workerTag = (row) => ({state: workerState(row), word: WORKER_WORDS[workerState(row)]});
 
@@ -24,18 +40,18 @@ export const workerName = (row) => row.name || `Worker ${row.id}`;
 export const workerReuses = (row) => (row.reuse_count ? `Reused ${row.reuse_count} ${row.reuse_count === 1 ? "time" : "times"}` : "");
 export const workerReport = (row) => row.report || "";
 
-const SECTION_OF = {running: "working", reported: "waiting", finished: "retired"};
+const SECTION_OF = {running: "working", reported: "idle", finished: "retired"};
 
 export function workersBySection(rows) {
     const ordered = [...rows].sort((a, b) => stateRank(workerState(a)) - stateRank(workerState(b)) || stateAt(b) - stateAt(a));
-    const sections = {working: [], waiting: [], closed: [], retired: []};
+    const sections = {working: [], idle: [], retired: []};
     ordered.forEach((row) => sections[SECTION_OF[workerState(row)] || "working"].push(row));
     return sections;
 }
 
 export const workerCounts = (rows) => ({
     working: rows.filter(isWorking).length,
-    reported: rows.filter((row) => workerState(row) === "reported").length,
+    idle: rows.filter((row) => workerState(row) === "reported").length,
 });
 
 export const workerCard = (row) => ({table: "workers", id: row.id, title: workerName(row), session: "", state: isWorking(row) ? "running" : "idle", reason: ""});

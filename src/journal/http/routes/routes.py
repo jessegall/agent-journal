@@ -130,6 +130,7 @@ class Routes:
         self.resource(router, "triggers", triggers)
         self.listed(router, "templates", get(TemplateController))
         self.listed(router, "workers", get(WorkerController))
+        self.acts(router, "workers", get(WorkerController), "send", "stop", "complete")
         router.get(f"{API}/workers/{{id}}/transcript", get(TranscriptController).worker_transcript)
 
     def chat(self, router: Router) -> None:
