@@ -38,7 +38,7 @@ def call(server, method: str, path: str, body: dict | None = None, environment: 
 
 def test_tasks_live_over_http(server):
     status, task = call(server, "POST", "/journal/tasks", {"title": "ship it", "brief": "b"})
-    assert status == 201 and task["id"] == 1 and task["created_by"] == "user:1"
+    assert status == 201 and task["id"] == 1 and task["creator"] == "user:1"
     status, started = call(server, "POST", "/journal/tasks/1/start")
     assert status == 200 and started["state"] == "started"
     assert call(server, "POST", "/journal/tasks/1/log", {"line": "halfway"})[0] == 201
@@ -203,7 +203,7 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         app.console().run(["check", "run", "1"], Caller("main"))
         check = call(server, "GET", "/journal/checks/1")[1]
         assert check["last_passed"] is True and "running" in check
-        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).out.split()[1].rstrip(":")
+        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).text.split()[1].rstrip(":")
         assert call(server, "GET", f"/journal/sequences/{release}")[1]["steps"] == ["tag", "push"]
         data = call(server, "GET", "/journal/summary")[1]["environments"][0]
         assert {"messages", "tasks", "questions"} <= set(data)
@@ -353,7 +353,7 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
             time.sleep(0.1)
         assert completed()["last_passed"] is True, "and its result lands on the row"
         assert call(server, "POST", "/journal/checks/1", {"every": 5})[1]["every"] == 5
-        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).out.split()[1].rstrip(":")
+        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).text.split()[1].rstrip(":")
         assert call(server, "POST", f"/journal/sequences/{release}/steps", {"steps": ["tag", "test", "push"]})[1]["steps"] == ["tag", "test", "push"]
         app.console().run(["trigger", "create", "deploy", "say so"], Caller("main"))
         updated = call(server, "POST", "/journal/triggers/1", {"phrases": ["deploy", "release"], "action": "deny", "text": "wait"})[1]
@@ -414,7 +414,7 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_wha
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": "MessageDisplay", "session_id": "s1", "message": f"[!reply:{n}]\nBoth are."}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
         reply = call(server, "GET", "/journal/messages")[1]["rows"][-1]
-        assert reply["text"] == "Both are." and reply["reply_to"] == n
+        assert reply["text"] == "Both are." and reply["reply_target"] == n
     finally:
         app.runtime().stop()
 
@@ -432,9 +432,9 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
-        rows = [r for r in call(server, "GET", "/journal/messages")[1]["rows"] if n in (r["id"], r["reply_to"])]
-        assert [(r["author"], r["reply_to"], r["text"]) for r in rows] == [("user", None, "hello"), ("agent", n, "Hello back.")]
-        assert rows[0]["created_by"].startswith("user") and rows[1]["created_by"] == "agent:s1" and rows[1]["acknowledgement"] is False
+        rows = [r for r in call(server, "GET", "/journal/messages")[1]["rows"] if n in (r["id"], r["reply_target"])]
+        assert [(r["author"], r["reply_target"], r["text"]) for r in rows] == [("user", None, "hello"), ("agent", n, "Hello back.")]
+        assert rows[0]["creator"].startswith("user") and rows[1]["creator"] == "agent:s1" and rows[1]["acknowledgement"] is False
         assert call(server, "GET", "/journal/comments")[1]["rows"] == [], "a reply is no comment"
     finally:
         app.runtime().stop()
@@ -460,7 +460,7 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
         assert [r["id"] for r in rows] == sorted(r["id"] for r in rows)
         assert [(r["author"], r["text"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
         card = rows[-1]
-        assert card["created_by"] == "system"
+        assert card["creator"] == "system"
         assert card["data"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": "", "shows": "checks"}
     finally:
         app.runtime().stop()
@@ -729,7 +729,7 @@ def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(shari
     status, refused, _ = phone_call(share_server, "GET", "/p/state", cookie="__Host-phone=paired-under-version-3")
     assert status == 401 and refused["paired_before"], "a key this journal does not know, as a phone paired under version 3 holds, is asked to pair again"
     status, transmitted, _ = phone_call(share_server, "POST", "/p/journal/messages", {"text": "from the train"}, origin=origin, cookie=stored)
-    assert status == 201 and transmitted["created_by"] == f"phone:{data['id']}" and transmitted["author"] == "user", "the phone writes as itself, its words the user's"
+    assert status == 201 and transmitted["creator"] == f"phone:{data['id']}" and transmitted["author"] == "user", "the phone writes as itself, its words the user's"
     assert any(m["text"] == "from the train" for m in phone_call(share_server, "GET", "/p/journal/messages", cookie=stored)[1]["rows"]), "the phone reads the journal through version 4's own controllers"
     assert phone_call(share_server, "GET", "/p/journal/secrets", cookie=stored)[0] == 403, "no secret is ever read from a phone"
     assert [phone_call(share_server, "GET", f"/p/journal/{path}", cookie=stored)[0] for path in ("mcp", "chart", "plugins", "profiles", "tunnel", "updates")] == [403] * 6, "a phone reads only what its pages show: nothing that starts a program or sets how the journal runs"
@@ -1024,14 +1024,14 @@ def test_a_reply_in_the_column_hangs_under_its_comment_and_a_reply_in_the_chat_i
     try:
         call(server, "POST", "/journal/tasks", {"title": "the footer"})
         status, comment = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "is the footer fixed?"})
-        status, reply = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "and the header?", "reply_to": comment["id"]})
-        assert status == 201 and reply["reply_to"] == comment["id"] and reply["on"] == ["tasks:1"], "a reply written in the column hangs under its comment, on the same row"
+        status, reply = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "and the header?", "reply_target": comment["id"]})
+        assert status == 201 and reply["reply_target"] == comment["id"] and reply["on"] == ["tasks:1"], "a reply written in the column hangs under its comment, on the same row"
         app.console().run(["message", "send", "Yes, both are fixed.", "--reply-to", str(comment["id"])], Caller("main", "s1"))
         app.runtime().deferred.drain()
         rows = call(server, "GET", "/journal/comments")[1]["rows"]
-        assert [(r["author"], r["reply_to"], r["on"]) for r in rows] == [("user", None, ["tasks:1"]), ("user", comment["id"], ["tasks:1"])], "the agent's reply in the chat is a plain reply, linked to the comment it answers and to no row"
-        answered = call(server, "POST", "/journal/messages", {"text": "Good, then the menu next.", "reply_to": comment["id"]})[1]
-        assert answered["reply_to"] == comment["id"] and answered["comments_on"] == [] and not answered["text"].startswith(">"), "a word typed in the chat is a chat message whatever it replies to: no comment on the row, no passage carried over"
+        assert [(r["author"], r["reply_target"], r["on"]) for r in rows] == [("user", None, ["tasks:1"]), ("user", comment["id"], ["tasks:1"])], "the agent's reply in the chat is a plain reply, linked to the comment it answers and to no row"
+        answered = call(server, "POST", "/journal/messages", {"text": "Good, then the menu next.", "reply_target": comment["id"]})[1]
+        assert answered["reply_target"] == comment["id"] and answered["comments_on"] == [] and not answered["text"].startswith(">"), "a word typed in the chat is a chat message whatever it replies to: no comment on the row, no passage carried over"
         assert len(call(server, "GET", "/journal/comments")[1]["rows"]) == 2, "only the comment box files a comment"
     finally:
         app.runtime().stop()
@@ -1111,7 +1111,7 @@ def test_a_comment_on_a_documents_passage_names_the_section_and_lines_it_sits_on
     try:
         call(server, "POST", "/journal/docs", {"title": "Launch notes", "body": "# Launch notes\n\n## Why\nBecause it is time.\n\n## How\nFirst the tag.\nThen the push.\nThen the notes."})
         call(server, "POST", "/journal/comments", {"on": "docs:1", "text": "> Then the push.\n> Then the notes.\n\nThe push comes before the tag here."})
-        shown = app.console().run(["message", "read", "1"], Caller("main", "s1")).out
+        shown = app.console().run(["message", "read", "1"], Caller("main", "s1")).text
         assert "comments_on docs:1" in shown and "the passage sits in doc 1 at section 2, How, lines 8-9: `journal doc show 1 --section 2` or `--grep`" in shown, shown
     finally:
         server.stop()

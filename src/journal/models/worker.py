@@ -21,36 +21,36 @@ class Worker(Scoped):
     worktree: bool = False
     state: WorkerState = WorkerState.DISPATCHED
     session: str = ""
-    dispatched_by: str = ""
+    dispatcher: str = ""
     resume: str = ""
-    taken_up: bool = False
+    adopted: bool = False
     pid: int = 0
     began: float = 0.0
-    found_session: str = ""
+    recovered_session: str = ""
 
     def dispatched(self, time: float) -> "Worker":
-        return self.with_(state=WorkerState.DISPATCHED).with_event(WorkerDispatched(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatched_by=self.dispatched_by))
+        return self.with_(state=WorkerState.DISPATCHED).with_event(WorkerDispatched(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
 
     def reported(self, time: float, report: int) -> "Worker":
-        return self.with_(state=WorkerState.REPORTED, taken_up=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatched_by=self.dispatched_by))
+        return self.with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher))
 
     def running_as(self, pid: int, began: float) -> "Worker":
-        return self.with_(pid=pid, began=began, found_session="")
+        return self.with_(pid=pid, began=began, recovered_session="")
 
     def instructed(self, brief: str) -> "Worker":
         return self.with_(brief=brief, state=WorkerState.DISPATCHED)
 
     def stopped(self, time: float) -> "Worker":
-        return self.with_(state=WorkerState.STOPPED, taken_up=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name))
+        return self.with_(state=WorkerState.STOPPED, adopted=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name))
 
     def finished(self) -> "Worker":
-        return self.with_(taken_up=True)
+        return self.with_(adopted=True)
 
     def is_running(self) -> bool:
         return self.state == WorkerState.DISPATCHED
 
     def has_report_waiting(self) -> bool:
-        return self.state == WorkerState.REPORTED and not self.taken_up
+        return self.state == WorkerState.REPORTED and not self.adopted
 
     def title_words(self) -> str:
         return self.name

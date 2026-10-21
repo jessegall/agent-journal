@@ -19,8 +19,8 @@ class Questions(Feature[QuestionsData]):
     conduct = (QuestionsConduct,)
     data = (QuestionsDataReader,)
 
-    QUESTION_ANSWERED = Nudge(name, "question_answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
-    JOURNAL_QUESTION_TOOL = Nudge(name, "ask_through_the_journal", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options \"a\" \"b\"`; the user answers in the viewer and the answer reaches you", repeat_after=0)
+    QUESTION_ANSWERED = Nudge(name, "question_answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_interval=0)
+    JOURNAL_QUESTION_TOOL = Nudge(name, "ask_through_the_journal", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options \"a\" \"b\"`; the user answers in the viewer and the answer reaches you", repeat_interval=0)
     nudges = (QUESTION_ANSWERED, JOURNAL_QUESTION_TOOL)
 
     skill = Skill("questions", 'Ask the user a question and wait for the answer; load it before offering the user choices', """
@@ -33,4 +33,4 @@ A choice only the user can make is asked as a question, not written into a reply
 - The answer arrives as a line naming `journal question show <n>`: read it there, whole, with the messages linked to it,
   and act on it. A reply from the user in the chat answers it too.
 - `journal question list` shows what is open. Never offer choices in prose and carry on; ask.
-""", keywords=('question', 'questions', 'choose', 'options', 'decide'), required_in=('waiting',))
+""", keywords=('question', 'questions', 'choose', 'options', 'decide'), required_states=('waiting',))

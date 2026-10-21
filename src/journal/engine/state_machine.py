@@ -43,8 +43,8 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def handle(self, event: AgentEvent) -> Decision:
         decision = self.answer(self.agent(event.session, event.environment_id, event.provider), event)
-        if decision.context and not (event.answers_hook and event.carries_lines):
-            self.type_lines(event.environment_id, decision.context, event.typed_after)
+        if decision.context and not (event.answers_hook and event.has_lines):
+            self.type_lines(event.environment_id, decision.context, event.typing_delay)
         return decision
 
     def type_lines(self, environment_id: int, lines: str, following: float) -> None:
@@ -62,14 +62,14 @@ class StateMachine(AgentListener[AgentEvent]):
         stack, settings = self.states.stack(agent), self.top_state()
         event = event.with_data(self.readers.agent_data(agent))
         transition = stack.top().respond(event, settings)
-        machine_answer = self.hook_machine(stack, self.moved(self.placed(stack, transition.to), transition), settings, event.data)
+        machine_answer = self.hook_machine(stack, self.moved(self.placed(stack, transition.target), transition), settings, event.data)
         if transition.dropped:
             self.entries.save(StackHistory.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
         agent = self._store(agent, machine_answer, event.key, Actor.system())
         lines = [line for nudge in (*transition.nudges, *machine_answer.nudges) if (line := self.nudger.deliver(agent, nudge))]
-        keystrokes = [line for nudge in transition.typed if (line := self.nudger.deliver(agent, nudge))]
+        keystrokes = [line for nudge in transition.terminal_lines if (line := self.nudger.deliver(agent, nudge))]
         for line in keystrokes:
-            self.supervisor.type(agent.environment_id, line, following=event.typed_after)
+            self.supervisor.type(agent.environment_id, line, following=event.typing_delay)
         reasons = [line for refusal in (transition.refusal, *transition.extra_refusals) if refusal and (line := self.nudger.refuse_with(agent, refusal))]
         if reasons:
             return Decision.refuse("\n".join([*reasons, *lines]))
@@ -138,7 +138,7 @@ class StateMachine(AgentListener[AgentEvent]):
         if resumed.popped and len(following.states) > 1:
             lower = self.forwarded(following, following.popped(), settings, data)
             return MachineAnswer(lower.stack, (*popped, *resumed.nudges, *lower.nudges))
-        return MachineAnswer(following.with_top(resumed.to), (*popped, *resumed.nudges))
+        return MachineAnswer(following.with_top(resumed.target), (*popped, *resumed.nudges))
 
     def moved(self, stack: Stack, transition: Transition) -> Stack:
         if transition.pushed:

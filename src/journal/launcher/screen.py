@@ -69,7 +69,7 @@ class Screen:
         for i, option in enumerate(options):
             badges = "".join(f"  {self.paint(BADGE, '[' + badge + ']')}" for badge in option.badges)
             label = f"{option.label:<{width}}"
-            lines += [""] if option.apart and i else []
+            lines += [""] if option.separate and i else []
             lines.append(f"  {self.paint(ACCENT, '❯')} {self.paint(BOLD, label)}{badges}" if i == time else f"    {label}{badges}")
         hint = " · ".join([HINT, *(ACTION_HINTS[key] for key in actions)])
         return [*lines, "", f"  {self.paint(DIM, hint)}"]
@@ -116,7 +116,7 @@ class Screen:
         self.out.write("\n")
         for i, option in enumerate(options, 1):
             badges = "".join(f"  [{badge}]" for badge in option.badges)
-            self.out.write(("\n" if option.apart and i > 1 else "") + f"    {i}  {option.label}{badges}{'   ← Enter' if i - 1 == default else ''}\n")
+            self.out.write(("\n" if option.separate and i > 1 else "") + f"    {i}  {option.label}{badges}{'   ← Enter' if i - 1 == default else ''}\n")
         while True:
             answer = self.ask(">") or str(default + 1)
             action, number = (answer[0], answer[1:].strip()) if answer[:1] in actions else ("", answer)

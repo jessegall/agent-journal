@@ -9,4 +9,4 @@ class ConnectionProposal:
     link: str
     short: str
     address: str
-    until: datetime
+    expiry_time: datetime

@@ -24,11 +24,11 @@ class Secret(Model):
     helpers: bool = False
     url: str = ""
     auto_login: bool = False
-    asked_at: datetime | None = None
+    questioned_at: datetime | None = None
     used_at: datetime | None = None
     session_at: datetime | None = None
     session_expires: datetime | None = None
-    logging_in_at: datetime | None = None
+    login_started_at: datetime | None = None
     deleted_at: datetime | None = None
 
     def field(self, name: str) -> SecretField:
@@ -51,10 +51,10 @@ class Secret(Model):
     def is_login_expired(self, time: datetime) -> bool:
         if self.session_expires is None or self.session_expires >= time:
             return False
-        return self.asked_at is None or self.asked_at < self.session_expires
+        return self.questioned_at is None or self.questioned_at < self.session_expires
 
     def is_filled(self, name: str) -> "Secret":
-        return self.with_(filled=tuple(dict.fromkeys((*self.filled, self.field(name).name))), asked_at=None)
+        return self.with_(filled=tuple(dict.fromkeys((*self.filled, self.field(name).name))), questioned_at=None)
 
     def deleted(self, time: datetime) -> "Secret":
         return self.with_(deleted_at=time)

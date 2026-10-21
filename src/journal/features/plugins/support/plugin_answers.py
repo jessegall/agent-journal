@@ -41,7 +41,7 @@ class PluginAnswers:
             self.record(plugin, line, environment_id, 1, "a plugin runs journal commands only")
             return
         outcome = self.console.run(argv[1:], Caller(environment or "main", "", False, plugin.name))
-        self.record(plugin, line, environment_id, outcome.code, outcome.err.strip()[-300:])
+        self.record(plugin, line, environment_id, outcome.code, outcome.error.strip()[-300:])
 
     def record(self, plugin: Plugin, line: str, environment_id: int, code: int, err: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=COMMAND, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "command": line, "code": code, "err": err}), Actor.plugin(plugin.name))

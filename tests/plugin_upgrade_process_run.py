@@ -42,14 +42,14 @@ def test_an_upgrade_leaves_the_agent_running(app, tmp_path: Path):
     (app.config.root / "shop.py").write_text("PRICE = 3\n")
     try:
         installed = app.console().run(["plugin", "install", SOURCE, "--yes"], USER)
-        assert installed.code == 0, installed.err
+        assert installed.code == 0, installed.error
         print("after install:", [(p["name"], p["running"]) for p in supervisor.described()])
         assert terminal.pid > 0 and terminal.exited() is None, "the agent runs after the install"
         import resource
         began, previous = time.monotonic(), resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         upgraded = app.console().run(["plugin", "upgrade", "code-commandments", "--yes"], USER)
         print("upgrade took", round(time.monotonic() - began, 1), "s; peak memory rose by", (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - previous) // (1024 * 1024), "MB")
-        print("upgrade:", upgraded.code, upgraded.out[-300:], upgraded.err[-300:])
+        print("upgrade:", upgraded.code, upgraded.text[-300:], upgraded.error[-300:])
         time.sleep(1)
         print("after upgrade:", [(p["name"], p["running"]) for p in supervisor.described()])
         assert faults == [], "the supervisor's loop survives the upgrade, or the supervisor would end and the agent with it"

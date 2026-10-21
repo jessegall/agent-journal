@@ -21,4 +21,4 @@ class DocImport(ProjectKind):
         return rows.docs()
 
     def created(self, row: Version3Row, actor: Actor) -> Doc:
-        return self.docs.imported(Doc(title=row.title, abstract=row.abstract, body=row.markdown()), row.creation_time(), actor)
+        return self.docs.imported(Doc(title=row.title, abstract=row.abstract, body=row.markdown()), row.created_at(), actor)

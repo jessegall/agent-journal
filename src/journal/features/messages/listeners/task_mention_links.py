@@ -21,10 +21,10 @@ class TaskMentionLinks(Listener[Created]):
 
     def handle(self, event: Created) -> None:
         reply = event.model
-        if not isinstance(reply, Message) or reply.author != Author.AGENT or not reply.reply_to:
+        if not isinstance(reply, Message) or reply.author != Author.AGENT or not reply.reply_target:
             return
         try:
-            requested = self.messages.find(reply.reply_to)
+            requested = self.messages.find(reply.reply_target)
         except MissingRow:
             return
         for n in {int(n) for n in TASK_PATTERN.findall(reply.text)}:

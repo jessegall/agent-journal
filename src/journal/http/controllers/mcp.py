@@ -26,7 +26,7 @@ class McpController:
             "restart_pending": self.pending.sessions(),
             "checked_at": self.health.check_time,
             "checking": self.health.is_checking(),
-            "suggested": [{"name": s.name, "title": s.title, "about": s.about, "auth": s.auth, "key_var": s.key_var, "installed": self.present(s, present)} for s in self.catalogue.all()],
+            "suggested": [{"name": s.name, "title": s.title, "about": s.subject, "auth": s.auth, "key_var": s.key_var, "installed": self.present(s, present)} for s in self.catalogue.all()],
         })
 
     @staticmethod
@@ -40,9 +40,9 @@ class McpController:
 
     @staticmethod
     def known_row(existing) -> ServerEntry:
-        if existing.how.startswith("http"):
-            return ServerEntry(existing.name, existing.name, "http", existing.state, False, url=existing.how, last_error=existing.error)
-        return ServerEntry(existing.name, existing.name, "stdio", existing.state, False, command=existing.how, last_error=existing.error)
+        if existing.instructions.startswith("http"):
+            return ServerEntry(existing.name, existing.name, "http", existing.state, False, url=existing.instructions, last_error=existing.error)
+        return ServerEntry(existing.name, existing.name, "stdio", existing.state, False, command=existing.instructions, last_error=existing.error)
 
     def install(self, request: Request) -> Response:
         try:

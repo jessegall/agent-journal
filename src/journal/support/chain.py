@@ -24,7 +24,7 @@ class Chain:
         if any(WRAPPED.match(p) for _, p, _ in chained):
             chained = [inner for s, p, _ in chained for inner in cls.build(s, p)]
         following = [s for s, _, _ in chained[1:]] + [""]
-        return [Part(p, recorded=r, always=s != "&&", guarded=f == "&&") for (s, p, r), f in zip(chained, following)]
+        return [Part(p, recorded=r, unconditional=s != "&&", guarded=f == "&&") for (s, p, r), f in zip(chained, following)]
 
     @classmethod
     def journal_parts(cls, line: str) -> tuple[int, int]:

@@ -28,7 +28,7 @@ class Working(BaseState):
     title = "Working"
     allows = frozenset({Permission.FILE_EDITS, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     task_id: int = 0
-    what: str = ""
+    focus: str = ""
     logged_at: float = 0.0
     edits: int = 0
     active_at: float = 0.0
@@ -37,9 +37,9 @@ class Working(BaseState):
         return False
 
     def label(self) -> str:
-        if self.task_id and self.what:
-            return f"task {self.task_id}, {self.what}"
-        return f"task {self.task_id}" if self.task_id else f"the work in hand, {self.what}"
+        if self.task_id and self.focus:
+            return f"task {self.task_id}, {self.focus}"
+        return f"task {self.task_id}" if self.task_id else f"the work in hand, {self.focus}"
 
     def logged(self, time: float) -> "Working":
         return replace(self, logged_at=time, edits=0)
@@ -98,7 +98,7 @@ class Working(BaseState):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        if event.quiet_for >= OPEN_TASK_LIMIT_SECONDS:
+        if event.silence_seconds >= OPEN_TASK_LIMIT_SECONDS:
             return self.none(Tasks.OPEN_TASK.create(name=self.label()))
         return self.none()
 
@@ -124,6 +124,6 @@ class Working(BaseState):
 
     def on_resume(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.tasks.feature import Tasks
-        if self.task_id and data.part(Tasks).in_hand != self.task_id:
+        if self.task_id and data.part(Tasks).current_task != self.task_id:
             return self.pop()
         return ()

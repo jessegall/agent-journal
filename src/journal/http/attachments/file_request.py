@@ -11,7 +11,7 @@ class FileRequest:
     shelf: str = ""
     search: str = ""
     last: int = 60
-    skip: int = 0
+    offset: int = 0
 
     @classmethod
     def query_request(cls, query: dict) -> "FileRequest":

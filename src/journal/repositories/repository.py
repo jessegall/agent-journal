@@ -122,12 +122,12 @@ class Repository(Generic[M]):
     def touch(self, row: M, actor: Actor, **fields) -> M:
         with self.connection.transaction():
             prior_row = self.find(row.id)
-            stamped = prior_row.with_(**fields, updated_at=self._time(), updated_by=actor)
-            names = [*fields, "updated_at", "updated_by"]
+            stamped = prior_row.with_(**fields, updated_at=self._time(), updater=actor)
+            names = [*fields, "updated_at", "updater"]
             values = tuple(self._column(name).sql(getattr(stamped, name)) for name in names)
             self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
             self.stored()
-            self.bus.dispatch(Updated(model=stamped, actor=actor, was=prior_row))
+            self.bus.dispatch(Updated(model=stamped, actor=actor, previous=prior_row))
             return stamped
 
     def rewritten(self, row: M, actor: Actor, change: Callable[[M], M]) -> M:
@@ -152,7 +152,7 @@ class Repository(Generic[M]):
 
     def _insert(self, row: M, actor: Actor, time: datetime) -> M:
         Title.check_target(row)
-        stamped = row.with_(created_at=time, created_by=actor, updated_at=time, updated_by=actor)
+        stamped = row.with_(created_at=time, creator=actor, updated_at=time, updater=actor)
         self.bus.dispatch(Creating(model=stamped, actor=actor))
         names = [column.name for column in self.columns if column.name != "id"]
         values = tuple(column.sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
@@ -163,7 +163,7 @@ class Repository(Generic[M]):
         return created
 
     def _update(self, row: M, actor: Actor) -> M:
-        stamped = row.with_(updated_at=self._time(), updated_by=actor)
+        stamped = row.with_(updated_at=self._time(), updater=actor)
         prior_row = self.find(row.id)
         Title.check_target(row, prior_row)
         self.bus.dispatch(Updating(model=stamped, actor=actor))
@@ -171,7 +171,7 @@ class Repository(Generic[M]):
         values = tuple(column.sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
         self.stored()
-        self.bus.dispatch(Updated(model=stamped, actor=actor, was=prior_row))
+        self.bus.dispatch(Updated(model=stamped, actor=actor, previous=prior_row))
         return stamped
 
     def dispatched(self, row: M, actor: Actor) -> M:

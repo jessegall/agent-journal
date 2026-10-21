@@ -25,11 +25,11 @@ class Part:
 
     text: str
     recorded: bool = True
-    always: bool = True
+    unconditional: bool = True
     guarded: bool = False
 
     def kind(self) -> str:
-        return ("R" if self.recorded else "S") + (";" if self.always else "&") + ("&" if self.guarded else ";")
+        return ("R" if self.recorded else "S") + (";" if self.unconditional else "&") + ("&" if self.guarded else ";")
 
     def tokens(self) -> list[str]:
         try:

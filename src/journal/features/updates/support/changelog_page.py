@@ -7,4 +7,4 @@ class ChangelogPage:
 
     text: str
     shown: int
-    more: bool
+    has_extra: bool

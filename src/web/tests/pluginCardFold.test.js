@@ -2,7 +2,7 @@ import {expect, test} from "vitest";
 import {threadTurns} from "../src/domain/thread.js";
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
-const card = (id, data, text) => ({table: "messages", id, created_at: at(id), author: "system", created_by: "plugin:code-commandments", text, files: [], data, comments_on: [], idempotency: "", reply_to: null});
+const card = (id, data, text) => ({table: "messages", id, created_at: at(id), author: "system", creator: "plugin:code-commandments", text, files: [], data, comments_on: [], idempotency: "", reply_target: null});
 
 test("a plugin's collapsed card keeps its findings in its detail and is marked collapsed, so a click can open it", () => {
     const folded = card(1, {kind: "plugin", plugin: "code-commandments", card: "sin-found", icon: "warn", tone: "warn", detail: "poetic-variable-name at a.py:1\nsentence-variable-name at a.py:2", collapsed: true}, "2 sins in a.py");

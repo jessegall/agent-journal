@@ -21,11 +21,11 @@ class BuiltinSequences(Seed):
             data = present.get(sequence.title)
             if data is None:
                 self.sequences.save(sequence, Actor.system())
-            elif data.updated_by == Actor.system() and (data.steps, data.finishes_in) != (sequence.steps, sequence.finishes_in):
-                self.sequences.save(replace(data, steps=sequence.steps, finishes_in=sequence.finishes_in), Actor.system())
+            elif data.updater == Actor.system() and (data.steps, data.end_condition) != (sequence.steps, sequence.end_condition):
+                self.sequences.save(replace(data, steps=sequence.steps, end_condition=sequence.end_condition), Actor.system())
         for title in RETIRED:
             data = present.get(title)
-            if data is not None and data.updated_by == Actor.system():
+            if data is not None and data.updater == Actor.system():
                 self.sequences.delete(data, Actor.system())
         for title, phrases in SEQUENCE_PHRASES.items():
             if title not in present and not self.triggers.starting(title):

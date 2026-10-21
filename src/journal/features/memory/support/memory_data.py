@@ -8,8 +8,8 @@ from journal.features.memory.support.memory_row import MemoryRow
 class MemoryData:
     """The memory feature's reading: the context mark the agent owes a decision at, the highest mark it has taken, every fact, rule and reminder with its keywords, the ones standing at least the set days named with their age, each with its presence in the agent's context window."""
 
-    mark_owed: int
-    context_mark: int
+    threshold_due: int
+    context_threshold: int
     rows: tuple[MemoryRow, ...]
     stale: tuple[str, ...]
 

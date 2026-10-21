@@ -9,7 +9,7 @@ class PluginAnswer:
 
     answer: str = "allow"
     reason: str = ""
-    tell: str = ""
+    message: str = ""
     cards: tuple[PluginCard, ...] = ()
     commands: tuple[str, ...] = ()
     v: int = 1

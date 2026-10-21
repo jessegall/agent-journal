@@ -8,4 +8,4 @@ class PlanBlocked(RowEvent):
     """A plan was blocked, with why."""
 
     plan_id: int
-    why: str
+    reason: str

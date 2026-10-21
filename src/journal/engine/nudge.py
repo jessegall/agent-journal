@@ -10,9 +10,9 @@ class Nudge:
     name: str
     title: str
     brief: str = ""
-    repeat_after: float = 300.0
-    answered_in_chat: bool = False
-    held_whatever_its_values: bool = False
+    repeat_interval: float = 300.0
+    chat_answerable: bool = False
+    blocks_regardless: bool = False
     values: dict = field(default_factory=dict)
 
     def create(self, **values) -> "Nudge":

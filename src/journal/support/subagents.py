@@ -14,13 +14,13 @@ class Subagents:
         self.entries = entries
 
     def running(self, session: str) -> int:
-        return sum(1 for row in self.rows(session) if row.running)
+        return sum(1 for row in self.rows(session) if row.is_active)
 
     def running_earlier(self, session: str) -> int:
-        return sum(1 for row in self.rows(session)[:-1] if row.running)
+        return sum(1 for row in self.rows(session)[:-1] if row.is_active)
 
     def running_mentioning(self, session: str, subject: str) -> int:
-        return sum(1 for row in self.mentioning(session, subject) if row.running)
+        return sum(1 for row in self.mentioning(session, subject) if row.is_active)
 
     def dispatches_mentioning(self, session: str, subject: str, start: float) -> list[Dispatch]:
         return [row for row in self.mentioning(session, subject) if row.time >= start]

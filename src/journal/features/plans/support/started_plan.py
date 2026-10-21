@@ -10,6 +10,6 @@ class StartedPlan:
     started_task: int
     started_task_briefing: str
     tasks: tuple[int, ...]
-    tasks_left: int
-    at_checkpoint: bool
+    remaining_tasks: int
+    checkpoint_pause: bool
     checkpoint_phase: int

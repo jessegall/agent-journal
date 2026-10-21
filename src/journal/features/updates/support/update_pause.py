@@ -7,8 +7,8 @@ UPDATE_PAUSE_SECONDS = 900.0
 class UpdatePause:
     """An update under way, as its mark says: the version it moves from and to, the step it is on, when it began and the process that runs it."""
 
-    before: str
-    to: str
+    step_name: str
+    target: str
     step: str
     time: float
     pid: int

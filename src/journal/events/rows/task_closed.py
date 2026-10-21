@@ -8,4 +8,4 @@ class TaskClosed(RowEvent):
     """A task was closed: done, parked or cancelled, as how says."""
 
     task_id: int
-    how: str
+    outcome: str

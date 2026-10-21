@@ -22,11 +22,11 @@ class TimeKeys(Migration):
         elif "at" in columns:
             connection.execute("ALTER TABLE edits RENAME COLUMN at TO time")
         connection.execute(ENTRY_KEY)
-        for row in connection.all("SELECT id, running FROM checks WHERE running IS NOT NULL AND running != ''"):
-            connection.execute("UPDATE checks SET running = ? WHERE id = ?", (json.dumps(self.renamed(json.loads(row["running"]))), row["id"]))
-        for row in connection.all("SELECT id, question, answers, chosen, taken FROM dumps"):
+        for row in connection.all("SELECT id, progress FROM checks WHERE progress IS NOT NULL AND progress != ''"):
+            connection.execute("UPDATE checks SET progress = ? WHERE id = ?", (json.dumps(self.renamed(json.loads(row["running"]))), row["id"]))
+        for row in connection.all("SELECT id, question, answers, choice, claimed FROM dumps"):
             values = tuple(json.dumps(self.renamed(json.loads(row[name]))) if row[name] else row[name] for name in ("question", "answers", "chosen", "taken"))
-            connection.execute("UPDATE dumps SET question = ?, answers = ?, chosen = ?, taken = ? WHERE id = ?", (*values, row["id"]))
+            connection.execute("UPDATE dumps SET question = ?, answers = ?, choice = ?, claimed = ? WHERE id = ?", (*values, row["id"]))
 
     def renamed(self, value):
         if isinstance(value, dict):

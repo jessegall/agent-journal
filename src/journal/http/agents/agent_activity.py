@@ -51,7 +51,7 @@ class AgentActivity:
             "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "",
             "tool_work": self.work(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
             "tool_running": kind == "ToolStarting",
-            "awaiting": waiting_state, "awaiting_on": enabled, "awaiting_since": agent.updated_at if waiting_state else None,
+            "awaiting": waiting_state, "wait_refs": enabled, "awaiting_since": agent.updated_at if waiting_state else None,
             "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),
             "branch": self.files.branch(), "context": round((self.context.build(agent.session) or 0) * 100),
             "question_id": agent.data.get("question_id", 0) if agent.state == "waiting" else 0,
@@ -83,7 +83,7 @@ class AgentActivity:
         if not runs:
             return None
         run = runs[-1]
-        return CurrentSequence(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.blocks, about=run.about, under=len(runs) - 1)
+        return CurrentSequence(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.blocks, about=run.subject, under=len(runs) - 1)
 
     def activity(self, state, hooks) -> str:
         last = hooks[-1] if hooks else None
@@ -96,7 +96,7 @@ class AgentActivity:
     def described(self, state) -> str:
         if isinstance(state, Wait):
             return state.wait_description()[0]
-        return state.what if isinstance(state, Working) else ""
+        return state.focus if isinstance(state, Working) else ""
 
     def stack(self, agent: Agent) -> list[dict]:
         shown = []

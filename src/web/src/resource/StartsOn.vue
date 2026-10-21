@@ -16,9 +16,9 @@ const MODES = [
 ];
 const error = ref("");
 const chosen = ref("");
-const stored = computed(() => ((props.resource.trigger_ids || []).length ? "trigger" : props.resource.starts_on ? "event" : "hand"));
+const stored = computed(() => ((props.resource.trigger_ids || []).length ? "trigger" : props.resource.trigger_event ? "event" : "hand"));
 const mode = computed(() => chosen.value || stored.value);
-const created = computed(() => props.resource.starts_on.split(".")[0]);
+const created = computed(() => props.resource.trigger_event.split(".")[0]);
 const kinds = computed(() => tables.value.filter((t) => t.in_sidebar && !["sequences", "triggers"].includes(t.name)));
 
 async function save(value) {

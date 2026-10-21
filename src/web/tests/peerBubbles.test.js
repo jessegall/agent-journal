@@ -15,7 +15,7 @@ globalThis.ResizeObserver = class {
 };
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
-const card = (id, seconds, data, text) => ({table: "messages", id, created_at: at(seconds), author: "system", text, files: [], data, comments_on: [], idempotency: "", reply_to: null});
+const card = (id, seconds, data, text) => ({table: "messages", id, created_at: at(seconds), author: "system", text, files: [], data, comments_on: [], idempotency: "", reply_target: null});
 const messages = [
     card(1, 10, {kind: "peer", peer: "Coco"}, "the report is ready"),
     card(2, 20, {kind: "peer", sent_to: "Coco"}, "thanks, merging now"),

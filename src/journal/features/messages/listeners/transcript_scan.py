@@ -21,5 +21,5 @@ class TranscriptScan(Listener[ClockTicked]):
             with self.scope.environment(agent.environment_id):
                 saved = self.turns.missed(agent.session, agent.provider, deadline)
                 turns = [TurnDisplayed(text=text, delta=text, turn_id=f"swept:{agent.session}:{event.time}:{i}", final=True) for i, text in enumerate(saved.texts)]
-                for scanned in [*saved.crossed, *turns]:
+                for scanned in [*saved.boundary_paths, *turns]:
                     self.bus.dispatch(scanned.placed(agent.session, agent.environment_id, agent.provider, None, event.time))

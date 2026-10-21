@@ -30,4 +30,4 @@ class WorkImport(EnvironmentKind):
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> TaskLog:
         task = self.task(row, target)
         lines = [body for _, body in row.sections if body] or [row.brief]
-        return [self.logs.imported(TaskLog(environment_id=target.id, task_id=task, line=line), row.creation_time(), actor) for line in lines][-1]
+        return [self.logs.imported(TaskLog(environment_id=target.id, task_id=task, line=line), row.created_at(), actor) for line in lines][-1]

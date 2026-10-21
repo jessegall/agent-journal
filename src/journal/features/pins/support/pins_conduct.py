@@ -27,5 +27,5 @@ class PinsConduct(Conduct):
 def suggestions(text: str, pins: PinsData) -> list[Nudge]:
     from journal.features.pins.feature import Pins
     loose = [url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS_PATTERN.match(url)]
-    recent = [url for url in dict.fromkeys(loose) if url.rstrip("/") not in pins.pinned and url.rstrip("/") not in pins.suggested_lately]
+    recent = [url for url in dict.fromkeys(loose) if url.rstrip("/") not in pins.pinned and url.rstrip("/") not in pins.recent_suggestions]
     return [Pins.LINK_PIN_REQUEST.create(url=url) for url in recent]

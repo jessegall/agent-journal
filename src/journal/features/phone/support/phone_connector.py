@@ -40,9 +40,9 @@ class PhoneConnector:
         for older in self.codes.open(time):
             self.codes.save(older.closed(time), actor)
         code, short = secrets.token_urlsafe(24), "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
-        pairing = self.codes.save(PairingCode(code=self.hashed(code), short=self.hashed(short), days=days, until=time + timedelta(minutes=CODE_MINUTES)), actor)
+        pairing = self.codes.save(PairingCode(code=self.hashed(code), short=self.hashed(short), days=days, expiry_time=time + timedelta(minutes=CODE_MINUTES)), actor)
         self.tunnel.reconcile()
-        return ConnectionProposal(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, until=pairing.until)
+        return ConnectionProposal(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, expiry_time=pairing.expiry_time)
 
     def pair(self, value: str, device: str, time: datetime) -> PairedPhone:
         hashes = {self.hashed(value), self.hashed(self.typed(value))}
@@ -54,7 +54,7 @@ class PhoneConnector:
         key = secrets.token_urlsafe(32)
         self.codes.save(rows.closed(time), Actor.system())
         name = " ".join(device.split())[:DEVICE_LONGEST] or "A phone"
-        phone = self.phones.save(Phone(environment_id=rows.environment_id, name=name, key=self.hashed(key), expires_at=time + timedelta(days=rows.days), last_seen_at=time), Actor.system())
+        phone = self.phones.save(Phone(environment_id=rows.environment_id, name=name, key=self.hashed(key), expires_at=time + timedelta(days=rows.days), last_visited_at=time), Actor.system())
         self.cards.show(rows.environment_id, "", f"A phone paired: {name}", "phone", shows=CardKind.PHONES)
         self.tunnel.reconcile()
         return PairedPhone(phone, key)

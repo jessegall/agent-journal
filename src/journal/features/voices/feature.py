@@ -25,8 +25,8 @@ class Voices(Feature[VoicesData]):
     data = (VoicesDataReader,)
     conduct = (VoicesConduct,)
 
-    VOICE_INSTRUCTION = Nudge(name, "how_to_talk_to_the_user", "how to talk to the user", "{{voice}}", repeat_after=0)
-    INTRODUCE_YOURSELF = Nudge(name, "introduce_yourself", "introduce yourself to the user in the chat", "one or two lines in your voice, then ask what to do, unless the user has already asked for something: then go on with it", repeat_after=0, answered_in_chat=True)
-    VOICE_CHANGE = Nudge(name, "the_voice_changed", "the user changed how you talk to them", "From now on: {{voice}} Answer this with one opening sentence in the new voice in the chat, so the user hears the change, and add nothing else about it.", repeat_after=0, answered_in_chat=True)
-    RETURN_GREETING = Nudge(name, "say_you_are_back", "you are back in a conversation that went on before: say so to the user in a line, in your voice", "then carry on with what was in hand, or ask what to do", repeat_after=0)
+    VOICE_INSTRUCTION = Nudge(name, "how_to_talk_to_the_user", "how to talk to the user", "{{voice}}", repeat_interval=0)
+    INTRODUCE_YOURSELF = Nudge(name, "introduce_yourself", "introduce yourself to the user in the chat", "one or two lines in your voice, then ask what to do, unless the user has already asked for something: then go on with it", repeat_interval=0, chat_answerable=True)
+    VOICE_CHANGE = Nudge(name, "the_voice_changed", "the user changed how you talk to them", "From now on: {{voice}} Answer this with one opening sentence in the new voice in the chat, so the user hears the change, and add nothing else about it.", repeat_interval=0, chat_answerable=True)
+    RETURN_GREETING = Nudge(name, "say_you_are_back", "you are back in a conversation that went on before: say so to the user in a line, in your voice", "then carry on with what was in hand, or ask what to do", repeat_interval=0)
     nudges = (VOICE_INSTRUCTION, VOICE_CHANGE, INTRODUCE_YOURSELF, RETURN_GREETING)

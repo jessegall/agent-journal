@@ -10,5 +10,5 @@ class WaitRequest(AgentEvent):
 
     answers_hook: ClassVar[bool] = False
 
-    what: str
-    ends_on: str = ""
+    focus: str
+    end_refs: str = ""

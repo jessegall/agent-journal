@@ -8,14 +8,14 @@ class SequencesData:
     sequence_id: int
     step: int
     step_text: str
-    parked_why: str
-    is_taken_up: bool
-    writes_since_taken_up: int
-    step_said_after_last_tool: bool
-    step_unsaid_seconds: float
-    can_be_typed: bool
+    suspension_reason: str
+    is_adopted: bool
+    adoption_edits: int
+    step_repeated: bool
+    step_silence_seconds: float
+    is_typable: bool
     question_open: bool
-    debts_owed: bool
+    obligations_due: bool
 
     def has_run(self) -> bool:
         return self.sequence_id > 0

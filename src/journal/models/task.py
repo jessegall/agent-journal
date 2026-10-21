@@ -21,8 +21,8 @@ class Task(Scoped):
     started_at: datetime | None = None
     finished_at: datetime | None = None
     outcome: str = ""
-    parked_why: str = ""
-    blocked_why: str = ""
+    suspension_reason: str = ""
+    block_reason: str = ""
 
     def is_closed(self) -> bool:
         return self.state.is_closed()
@@ -37,24 +37,24 @@ class Task(Scoped):
         return self.plan_started(time, 0)
 
     def plan_started(self, time: datetime, plan_id: int) -> "Task":
-        return self.with_(state=TaskState.STARTED, started_at=time, parked_why="", blocked_why="").with_event(TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.id, title=self.title, plan_id=plan_id))
+        return self.with_(state=TaskState.STARTED, started_at=time, suspension_reason="", block_reason="").with_event(TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.id, title=self.title, plan_id=plan_id))
 
     def suspended(self, reason: str, time: datetime) -> "Task":
         if self.state != TaskState.STARTED:
             raise Rejection(f"task {self.id} is {self.state}: only a started task is parked")
-        return self.closed(self.with_(state=TaskState.SUSPENDED, parked_why=reason), time, "parked")
+        return self.closed(self.with_(state=TaskState.SUSPENDED, suspension_reason=reason), time, "parked")
 
     def cancelled(self, time: datetime) -> "Task":
         return self.closed(self.with_(state=TaskState.CANCELLED, finished_at=self.finished_at or time), time, "cancelled")
 
     def closed(self, task: "Task", time: datetime, manner: str) -> "Task":
-        return task.with_event(TaskClosed(environment_id=self.environment_id, time=time.timestamp(), task_id=self.id, how=manner)).with_event(RowResolved(environment_id=self.environment_id, time=time.timestamp(), ref=f"tasks:{self.id}"))
+        return task.with_event(TaskClosed(environment_id=self.environment_id, time=time.timestamp(), task_id=self.id, outcome=manner)).with_event(RowResolved(environment_id=self.environment_id, time=time.timestamp(), ref=f"tasks:{self.id}"))
 
     def blocked(self, reason: str, time: datetime) -> "Task":
-        return self.closed(self.with_(state=TaskState.BLOCKED, blocked_why=reason), time, "blocked")
+        return self.closed(self.with_(state=TaskState.BLOCKED, block_reason=reason), time, "blocked")
 
     def unblocked(self, enabled: str, time: float) -> "Task":
-        return self.with_(state=TaskState.OPEN, blocked_why="").with_event(TaskReopened(environment_id=self.environment_id, time=time, task_id=self.id, on=enabled))
+        return self.with_(state=TaskState.OPEN, block_reason="").with_event(TaskReopened(environment_id=self.environment_id, time=time, task_id=self.id, target_ref=enabled))
 
     def finished(self, time: datetime, outcome: str) -> "Task":
         return self.closed(self.with_(state=TaskState.FINISHED, finished_at=time, outcome=outcome), time, "done")

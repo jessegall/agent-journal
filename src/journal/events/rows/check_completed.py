@@ -11,5 +11,5 @@ class CheckCompleted(RowEvent):
     title: str
     passed: bool
     output: str
-    failed_before: bool
-    waited_on: bool
+    prior_failure: bool
+    wait_target: bool

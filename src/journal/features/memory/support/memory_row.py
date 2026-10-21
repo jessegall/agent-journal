@@ -11,7 +11,7 @@ class MemoryRow:
     id: int
     text: str
     keywords: tuple[str, ...]
-    mark: CardKind
+    threshold: CardKind
     presence: bool = False
 
     def line(self) -> str:

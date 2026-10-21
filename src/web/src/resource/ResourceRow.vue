@@ -12,8 +12,8 @@ import {sentence} from "../domain/triggerWords.js";
 const props = defineProps({resource: Object, selected: Boolean});
 const held = computed(() => {
     if (isClosed(props.resource)) return "";
-    if (props.resource.blocked_why) return `Blocked: ${props.resource.blocked_why}`;
-    return props.resource.parked_why ? `Parked: ${props.resource.parked_why}` : "";
+    if (props.resource.block_reason) return `Blocked: ${props.resource.block_reason}`;
+    return props.resource.suspension_reason ? `Parked: ${props.resource.suspension_reason}` : "";
 });
 const summary = computed(() => (props.resource.table === "triggers" ? sentence(props.resource) : props.resource.abstract || bodyOf(props.resource)));
 </script>

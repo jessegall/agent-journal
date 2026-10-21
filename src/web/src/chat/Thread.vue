@@ -305,7 +305,7 @@ async function post(text, files) {
     toBottom(true);
     let sent;
     try {
-        sent = await sendMessage(scope.env || route.value.env, {text: body, reply_to: replyTo}, files, id);
+        sent = await sendMessage(scope.env || route.value.env, {text: body, reply_target: replyTo}, files, id);
     } catch (e) {
         drop(placeholder);
         if (!quote.value.ref && !quote.value.text) quote.value = replying;
@@ -330,7 +330,7 @@ async function promised(body, files, idempotency) {
         const size = f.type.startsWith("image/") ? await measured(previews[f.name]) : null;
         if (size) pictures[f.name] = size;
     }
-    return promise("messages", {text: body, idempotency}, {author: "user", files: files.map((f) => f.name), previews, pictures, data: {}, reply_to: null, read_at: null});
+    return promise("messages", {text: body, idempotency}, {author: "user", files: files.map((f) => f.name), previews, pictures, data: {}, reply_target: null, read_at: null});
 }
 
 watch(busy, async () => {

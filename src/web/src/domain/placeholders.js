@@ -6,7 +6,7 @@ let made = 0;
 // one will have, by which it is known when it arrives.
 export function pendingRow(table, same, row = {}) {
     made += 1;
-    return {table, id: 0, key: `pending:${made}`, created_at: new Date().toISOString(), created_by: "user", pending: true, same, ...same, ...row};
+    return {table, id: 0, key: `pending:${made}`, created_at: new Date().toISOString(), creator: "user", pending: true, same, ...same, ...row};
 }
 
 const SAME_MOMENT = 60;

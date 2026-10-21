@@ -50,13 +50,13 @@ const SYSTEM_TURNS = {
     }),
 };
 
-const pluginOf = (m) => ((m.created_by || "").startsWith("plugin:") ? m.created_by.slice("plugin:".length) : "");
+const pluginOf = (m) => ((m.creator || "").startsWith("plugin:") ? m.creator.slice("plugin:".length) : "");
 
 const plainTurn = (m, label) => ({kind: "card", data: {icon: pluginOf(m) ? "plug" : "dot", label, name: pluginOf(m)}});
 
 const fromSystem = (m) => m.author === "system";
 
-const byUser = (m) => (m.created_by || "").startsWith("user");
+const byUser = (m) => (m.creator || "").startsWith("user");
 
 const systemTurn = (m) => {
     const card = m.data || {};
@@ -72,7 +72,7 @@ const delivered = (p, m) => m.files.length >= p.files.length;
 export const EARLIER = "An earlier message";
 
 // What a message answers: the message it is a reply to, as messages:12.
-export const answered = (m) => (m.reply_to ? `messages:${m.reply_to}` : "");
+export const answered = (m) => (m.reply_target ? `messages:${m.reply_target}` : "");
 
 export function threadTurns(messages, pending, older = false, hidden = []) {
     const keys = new Map();

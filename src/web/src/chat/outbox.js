@@ -73,7 +73,7 @@ function keepTrying(e) {
 
 async function deliver(record) {
     const server = api.at(record.origin, record.env);
-    const message = await server.create("messages", {text: record.text, reply_to: record.reply_to, idempotency: record.id});
+    const message = await server.create("messages", {text: record.text, reply_target: record.reply_target, idempotency: record.id});
     record.message = message.id;
     record.uploaded = Array.isArray(record.uploaded) ? record.uploaded : [];
     await stored(record);
@@ -133,7 +133,7 @@ export async function sendMessage(env, body, files = [], id = token()) {
         origin: here(),
         env,
         text: body.text,
-        reply_to: body.reply_to,
+        reply_target: body.reply_target,
         files: await Promise.all(files.map(fileRecord)),
         uploaded: [],
     };

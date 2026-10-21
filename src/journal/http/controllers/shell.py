@@ -18,4 +18,4 @@ class ShellController:
     def run(self, request: Request) -> StreamResponse:
         posted = ShellRequest.parse(request.body["raw"], request.headers.get(CWD_HEADER, ""), request.headers.get(SHELL_HEADER, ""))
         caller = Caller.environment_caller(posted.environment)
-        return StreamResponse("text/plain", self.runner.run(posted, Caller(request.environment, caller.session, caller.from_agent_shell), self.scope.id))
+        return StreamResponse("text/plain", self.runner.run(posted, Caller(request.environment, caller.session, caller.agent_shell), self.scope.id))

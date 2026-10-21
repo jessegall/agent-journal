@@ -15,7 +15,7 @@ class CommandOutput(Scoped):
     moved: bool = False
     ended: bool = False
     status: int = 0
-    told: bool = False
+    is_announced: bool = False
 
     def headline(self) -> str:
         first, *remainder = self.command.splitlines() or [""]
@@ -32,7 +32,7 @@ class CommandOutput(Scoped):
         return self.ended_with(status, time).announced()
 
     def announced(self) -> "CommandOutput":
-        return self.with_(told=True)
+        return self.with_(is_announced=True)
 
     def is_resolved(self) -> bool:
         return self.ended

@@ -10,4 +10,4 @@ class ImpasseReport(AgentEvent):
 
     answers_hook: ClassVar[bool] = False
 
-    why: str
+    reason: str

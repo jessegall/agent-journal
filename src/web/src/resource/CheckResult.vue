@@ -17,7 +17,7 @@ const now = useNow();
 const state = computed(() => checkState(props.resource, now.value));
 const last = computed(() => state.value.last);
 const command = ref(props.resource.command || "");
-const every = ref(Number(props.resource.every || 0));
+const every = ref(Number(props.resource.interval || 0));
 const {asked, run} = useCheckRun(() => props.resource);
 const output = ref(null);
 const passes = computed(() => state.value.runs.filter((r) => r.ok).length);
@@ -27,7 +27,7 @@ watch(
     (value) => (command.value = value || "")
 );
 watch(
-    () => props.resource.every,
+    () => props.resource.interval,
     (value) => (every.value = Number(value || 0))
 );
 watch(
@@ -94,7 +94,7 @@ async function save(key, value) {
                 :value="every"
                 @change="
                     every = Number($event.target.value);
-                    save('every', every);
+                    save('interval', every);
                 "
             />
         </label>

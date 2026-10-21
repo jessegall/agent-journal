@@ -18,19 +18,19 @@ class Requirements:
         self.machine, self.registry, self.files, self.nudger, self.agents = machine, registry, files, nudger, agents
 
     def has_obligations(self, agent: Agent) -> bool:
-        return not agent.oriented or bool(agent.mark_owed) or bool(self.obligation_names(agent))
+        return not agent.has_overview or bool(agent.threshold_due) or bool(self.obligation_names(agent))
 
     def obligation_names(self, agent: Agent) -> list[str]:
-        return list(agent.skills_owed)
+        return list(agent.skills_due)
 
     def obligation(self, agent: Agent, skills: list[Skill]) -> None:
         names = tuple(skill.name for skill in skills)
-        if set(names) - set(agent.skills_owed):
-            self.agents.touched(agent, Actor.system(), lambda time: {"skills_owed": tuple(dict.fromkeys((*time.skills_owed, *names)))})
+        if set(names) - set(agent.skills_due):
+            self.agents.touched(agent, Actor.system(), lambda time: {"skills_due": tuple(dict.fromkeys((*time.skills_due, *names)))})
 
     def discharge(self, agent: Agent, skill: Skill) -> None:
-        if skill.name in agent.skills_owed:
-            self.agents.touched(agent, Actor.system(), lambda time: {"skills_owed": tuple(name for name in time.skills_owed if name != skill.name)})
+        if skill.name in agent.skills_due:
+            self.agents.touched(agent, Actor.system(), lambda time: {"skills_due": tuple(name for name in time.skills_due if name != skill.name)})
 
     def obligations(self, agent: Agent, skills: list[Skill]) -> list[Skill]:
         loaded = agent.skills_loaded

@@ -4,8 +4,8 @@ const ESTIMATE_CAP = 95;
 
 // A check's standing: its run under way, or its last run. The journal keeps only the last run, so there is no history.
 export function checkState(check, now) {
-    const running = check.running || {};
-    const last = {time: secondsOf(check.last_ran_at), ok: check.last_passed === true, took: check.last_took, output: check.last_output, report: check.last_report};
+    const running = check.progress || {};
+    const last = {time: secondsOf(check.last_run_at), ok: check.last_passed === true, took: check.last_duration, output: check.last_output, report: check.last_report};
     const runs = [];
     const expected = Number(last.took || 0);
     if (running.time) {

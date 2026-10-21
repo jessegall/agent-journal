@@ -9,4 +9,4 @@ class SkillCard:
     path: str
     digest: str
     keywords: tuple[str, ...]
-    required_in: tuple[str, ...]
+    required_states: tuple[str, ...]

@@ -16,7 +16,7 @@ class PlanReopening(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         task = event.model
-        if not isinstance(task, Task) or task.is_closed() or event.was is None or not event.was.is_closed():
+        if not isinstance(task, Task) or task.is_closed() or event.previous is None or not event.previous.is_closed():
             return
         for plan in [self.plans.find(ref.id) for ref in self.links.targets(task, PLAN_LINK)]:
             if plan.state == PlanState.FINISHED:

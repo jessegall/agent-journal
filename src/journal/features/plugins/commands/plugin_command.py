@@ -49,7 +49,7 @@ class PluginCommand(Command):
 
     def install(self, args: Namespace, caller: Caller) -> int:
         print(self.description(self.installing.preview(args.source)))
-        if not args.yes:
+        if not args.confirmed:
             print(f"nothing installed yet: journal plugin install {args.source} --yes")
             return 0
         plugin = self.installing.install(args.source, caller.environment, caller.actor)
@@ -58,18 +58,18 @@ class PluginCommand(Command):
 
     def propose(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.preview(args.source)
-        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.description(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=caller.actor, shows=CardKind.PLUGINS)
+        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.reason}" if args.reason else ""), "plug", detail=f"{self.description(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=caller.actor, shows=CardKind.PLUGINS)
         print(f"proposed {preview.name}: the user installs it if they want it")
         return 0
 
     def upgrade(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.upgrade_preview(args.name, args.ref)
-        print("\n".join([f"{args.name} from {preview.was[:12] or preview.source} to {preview.commit[:12] or 'the folder as it is now'}", *(preview.changes or ["nothing it runs, hears or holds changes"])]))
+        print("\n".join([f"{args.name} from {preview.previous[:12] or preview.source} to {preview.commit[:12] or 'the folder as it is now'}", *(preview.changes or ["nothing it runs, hears or holds changes"])]))
         if preview.code and caller.session:
             print("\nthe files it changes, the whole diff for the user on the Plugins page:\n" + "\n".join(preview.files_changed()))
         elif preview.code:
             print("\nthe code:\n" + "\n".join(preview.code))
-        if not args.yes:
+        if not args.confirmed:
             print(f"nothing upgraded yet: journal plugin upgrade {args.name}{' --ref ' + args.ref if args.ref is not None else ''} --yes")
             return 0
         self.installing.upgrade(args.name, args.ref, caller.environment, caller.actor)

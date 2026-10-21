@@ -27,9 +27,9 @@ class LoginWindow:
     def open(self, secret: Secret, environment_id: int, actor: Actor) -> Secret:
         if not secret.url:
             raise Rejection(f"secret {secret.id}, {secret.title}, has no site address to log in to")
-        if secret.logging_in_at:
+        if secret.login_started_at:
             return secret
-        opening = self.secrets.save(secret.with_(logging_in_at=datetime.now(timezone.utc)), actor)
+        opening = self.secrets.save(secret.with_(login_started_at=datetime.now(timezone.utc)), actor)
         threading.Thread(target=self.claimed, args=(opening, environment_id), daemon=True).start()
         return opening
 
@@ -37,11 +37,11 @@ class LoginWindow:
         try:
             saved = self.logins.record(secret.title, secret.url)
         except (Rejection, OSError, subprocess.TimeoutExpired) as failed:
-            self.secrets.save(self.secrets.find(secret.id).with_(logging_in_at=None), Actor.system())
+            self.secrets.save(self.secrets.find(secret.id).with_(login_started_at=None), Actor.system())
             with self.scope.environment(environment_id):
                 self.messages.save(Message(author=Author.AGENT, text=f"The login to {secret.title} was not saved: {failed}"), Actor.system())
             return
-        self.secrets.save(self.secrets.find(secret.id).with_(logging_in_at=None, session_at=datetime.now(timezone.utc), session_expires=self.logins.expires(saved, secret.url)), Actor.system())
+        self.secrets.save(self.secrets.find(secret.id).with_(login_started_at=None, session_at=datetime.now(timezone.utc), session_expires=self.logins.expires(saved, secret.url)), Actor.system())
         self.supplied()
 
     def dropped(self, secret: Secret, actor: Actor) -> Secret:

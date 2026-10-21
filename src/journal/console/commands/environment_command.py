@@ -75,7 +75,7 @@ class EnvironmentCommand(Command):
             f"taken over from another agent, last seen {peers[-1].updated_at.astimezone().strftime('%H:%M')}" if peers else "",
             self.matching_rows("task in hand", [f"{t.id} {t.title}" for t in blocked]) or "no task in hand",
             self.matching_rows("open tasks", [f"{t.id} {t.title}" for t in self.tasks.with_state(TaskState.OPEN)]),
-            self.matching_rows("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.with_state(TaskState.SUSPENDED)]),
+            self.matching_rows("parked tasks", [f"{t.id} {t.title} ({t.suspension_reason})" for t in self.tasks.with_state(TaskState.SUSPENDED)]),
             self.matching_rows("blocked tasks", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.with_state(TaskState.BLOCKED)]),
             self.matching_rows("unread messages", [str(m.id) for m in self.messages.unread()]),
             self.matching_rows("messages read and unanswered", [str(m.id) for m in self.messages.unanswered()]),

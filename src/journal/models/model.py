@@ -13,14 +13,14 @@ class Model:
     """A row. Data only; it never touches the database. Every row says who made it and who last changed it."""
 
     text_fields: ClassVar[tuple[str, ...]] = ()
-    in_timeline: ClassVar[bool] = True
+    timeline_visible: ClassVar[bool] = True
     exports: ClassVar[bool] = False
 
     id: int | None = None
     created_at: datetime | None = None
-    created_by: Actor | None = None
+    creator: Actor | None = None
     updated_at: datetime | None = None
-    updated_by: Actor | None = None
+    updater: Actor | None = None
     events: tuple = field(default=(), compare=False, metadata={"column": False})
 
     @classmethod

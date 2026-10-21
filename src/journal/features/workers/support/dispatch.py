@@ -15,21 +15,21 @@ class Dispatch:
     model: str
     session: str = ""
     status: str = "running"
-    running: bool = True
+    is_active: bool = True
     ended: float = 0.0
     reason: str = ""
 
     def is_current(self, time: float) -> bool:
-        return self.running or time - self.ended < CURRENT_SECONDS
+        return self.is_active or time - self.ended < CURRENT_SECONDS
 
     def answered(self, session: str) -> "Dispatch":
         return replace(self, session=session)
 
     def finished(self, status: str, time: float) -> "Dispatch":
-        return replace(self, status=status, running=False, ended=time)
+        return replace(self, status=status, is_active=False, ended=time)
 
     def failed(self, reason: str, time: float) -> "Dispatch":
-        return replace(self, status="failed", running=False, ended=time, reason=reason)
+        return replace(self, status="failed", is_active=False, ended=time, reason=reason)
 
     def resumed(self) -> "Dispatch":
-        return replace(self, status="running", running=True, ended=0.0)
+        return replace(self, status="running", is_active=True, ended=0.0)

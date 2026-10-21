@@ -18,4 +18,4 @@ class SequenceImport(BuiltinKind):
 
     def created(self, row: Version3Row, actor: Actor) -> Sequence:
         steps = tuple(f"{title}: {body}" if body else title for title, body in row.sections)
-        return self.sequences.imported(Sequence(title=row.title, steps=steps, starts_on=row.data.get("starts_on", "")), row.creation_time(), actor)
+        return self.sequences.imported(Sequence(title=row.title, steps=steps, trigger_event=row.data.get("starts_on", "")), row.created_at(), actor)

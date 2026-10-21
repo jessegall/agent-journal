@@ -106,7 +106,7 @@ class PluginInstalling:
             manifest = self.same(plugin, self.reader.read(folder))
             changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(manifest))
             code = [] if plugin.linked else PluginChanges.code(self.folders.folder(plugin), folder)
-            return PluginPreview(name, manifest.title or name, manifest.version, manifest.description, plugin.source, commit, self.rows(manifest, folder), was=plugin.commit_sha,
+            return PluginPreview(name, manifest.title or name, manifest.version, manifest.description, plugin.source, commit, self.rows(manifest, folder), previous=plugin.commit_sha,
                                  changes=tuple(changes), code=tuple(code), current=not changes and not code)
 
     def upgrade(self, name: str, ref: str | None, environment: str, actor: Actor) -> Plugin:
@@ -224,9 +224,9 @@ class PluginInstalling:
                 *(PreviewRow("setup", step.name, step.run) for step in manifest.setup),
                 PreviewRow("installed", "fills its settings", manifest.installed),
                 PreviewRow("program", "for each event it hears, from its folder", manifest.program),
-                *(PreviewRow("service", s.name, " ".join(s.command) + (f"  (where {s.when})" if s.when else "")) for s in manifest.services),
-                PreviewRow("hears", "events", ", ".join(manifest.hears) or "nothing"),
-                PreviewRow("holds", "before the agent continues", ", ".join(window.as_text() for window in manifest.holds) or "nothing"),
+                *(PreviewRow("service", s.name, " ".join(s.command) + (f"  (where {s.condition})" if s.condition else "")) for s in manifest.services),
+                PreviewRow("hears", "events", ", ".join(manifest.events) or "nothing"),
+                PreviewRow("holds", "before the agent continues", ", ".join(window.as_text() for window in manifest.blocks) or "nothing"),
                 *(PreviewRow("skill", name) for name in ManifestReader.skill_names(folder, manifest)))
         return tuple(row for row in rows if row.kind != "installed" or row.command)
 

@@ -28,7 +28,7 @@ test("the status line above the chat shows a chevron beside what it opens, and n
 
 test("an agent waiting with no task in hand names what it waits for", async () => {
     choose("main");
-    store.agents = [{table: "agents", id: 1, session: "s1", status: "idle", state: "expecting", awaiting: "the full run for 4.1.0", awaiting_on: "", awaiting_since: new Date().toISOString(), heard_at: new Date().toISOString()}];
+    store.agents = [{table: "agents", id: 1, session: "s1", status: "idle", state: "expecting", awaiting: "the full run for 4.1.0", wait_refs: "", awaiting_since: new Date().toISOString(), heard_at: new Date().toISOString()}];
     store.summary = standing(null);
     const host = window.document.createElement("div");
     window.document.body.append(host);

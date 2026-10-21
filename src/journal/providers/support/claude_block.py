@@ -9,7 +9,7 @@ class ClaudeBlock:
     text: str = ""
     thinking: str = ""
     name: str = ""
-    result: str = ""
+    outcome: str = ""
 
     @classmethod
     def parsed(cls, data: dict) -> "ClaudeBlock":

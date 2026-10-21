@@ -65,7 +65,7 @@ class SupervisorLink:
             return
         blocked = self.typed.batched(environment_id)
         if blocked is not None:
-            self.type_whole(environment_id, blocked.line, blocked.after)
+            self.type_whole(environment_id, blocked.line, blocked.following_time)
 
     def batch_seconds(self) -> float:
         return float(self.settings.project("delivery.batch_seconds", BATCH_SECONDS))
@@ -84,7 +84,7 @@ class SupervisorLink:
         self._chosen_at[environment_id] = time.time()
         self._send(environment_id, "type", {"name": AGENT, "line": command, "after": 0.0})
 
-    def choice_time(self, environment_id: int) -> float:
+    def selected_at(self, environment_id: int) -> float:
         return self._chosen_at.get(environment_id, 0.0)
 
     def confirmed(self, environment_id: int) -> None:
@@ -94,11 +94,11 @@ class SupervisorLink:
         path = self.mirrored(environment_id, "out")
         return path.read_bytes().decode(errors="replace") if path else ""
 
-    def screen_change_time(self, environment_id: int) -> float:
+    def screen_changed_at(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "out")
         return path.stat().st_mtime if path else 0.0
 
-    def key_time(self, environment_id: int) -> float:
+    def keyed_at(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "keyed")
         keyboard_input = path.stat().st_mtime if path else 0.0
         return max(keyboard_input, self._viewer_keyed_at.get(environment_id, 0.0))
@@ -137,7 +137,7 @@ class SupervisorLink:
         if not announced.is_compatible:
             return Path(announced.socket).is_socket()
         try:
-            return self._send(environment_id, "hello", {}).ok
+            return self._send(environment_id, "hello", {}).success
         except OSError:
             return False
 

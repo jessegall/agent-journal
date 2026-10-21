@@ -36,7 +36,7 @@ class RunTracker:
         runs = self.runs(agent)
         if any(run.sequence_id == sequence.id for run in runs) or not sequence.steps:
             return ""
-        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=topic, started_at=self.timestamp(), said_at=self.timestamp(), finishes_in=tuple(sequence.finishes_in))
+        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), subject=topic, started_at=self.timestamp(), announced_at=self.timestamp(), end_condition=tuple(sequence.end_condition))
         self.rewritten(agent, lambda time: [*time, run])
         liabilities = self.requiring.require(agent, self.requiring.obligations(agent, self.requiring.lookup("sequences")))
         return "\n".join([*liabilities, self.line(run)])
@@ -48,14 +48,14 @@ class RunTracker:
         run = runs[-1]
         self.refuse_open_end(run)
         if not run.last:
-            return self.line(self.changed(session, environment_id, lambda time: time.advanced().said(self.timestamp())))
+            return self.line(self.changed(session, environment_id, lambda time: time.advanced().summary_text(self.timestamp())))
         return self.ended(agent, runs, Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered())
 
     def ended(self, agent: Agent, runs: list[SequenceRun], ended: str) -> str:
         if len(runs) == 1:
             self.stored(agent, [])
             return ended
-        outer = self.rewritten(agent, lambda time: [*time[:-2], time[-2].said(self.timestamp())])[-1]
+        outer = self.rewritten(agent, lambda time: [*time[:-2], time[-2].summary_text(self.timestamp())])[-1]
         return f"{ended}\n{self.line(outer)}"
 
     def skip(self, session: str, environment_id: int) -> str:
@@ -66,7 +66,7 @@ class RunTracker:
         skipped = Sequences.STEP_OMISSION.create(n=run.sequence_id, step=run.step + 1).rendered()
         if run.last:
             return self.ended(agent, runs, f"{skipped}\n{Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered()}")
-        moved = self.changed(session, environment_id, lambda time: time.advanced().said(self.timestamp()))
+        moved = self.changed(session, environment_id, lambda time: time.advanced().summary_text(self.timestamp()))
         return f"{skipped}\n{self.line(moved)}"
 
     def end(self, session: str, environment_id: int) -> str:
@@ -76,9 +76,9 @@ class RunTracker:
         return self.ended(agent, runs, Sequences.SEQUENCE_CANCELLED.create(n=runs[-1].sequence_id).rendered())
 
     def refuse_open_end(self, run: SequenceRun) -> None:
-        state = self.rows.row_state(Ref.parse(run.about)) if run.last and run.about and run.finishes_in else ""
-        if state and state not in run.finishes_in:
-            raise Rejection(f"sequence {run.sequence_id} ends when {run.about} is {' or '.join(run.finishes_in)}; it is {state}. finish it first, or `journal sequence abandon --why \"<why>\"`")
+        state = self.rows.row_state(Ref.parse(run.subject)) if run.last and run.subject and run.end_condition else ""
+        if state and state not in run.end_condition:
+            raise Rejection(f"sequence {run.sequence_id} ends when {run.subject} is {' or '.join(run.end_condition)}; it is {state}. finish it first, or `journal sequence abandon --why \"<why>\"`")
 
     def abandon(self, session: str, environment_id: int) -> tuple[SequenceRun, str]:
         from journal.features.sequences.feature import Sequences
@@ -101,13 +101,13 @@ class RunTracker:
         return {item.environment_id for item in self.agents.all_agents() if any(run.sequence_id == sequence_id for run in self.runs(item))}
 
     def follow(self, session: str, environment_id: int) -> SequenceRun:
-        return self.changed(session, environment_id, lambda run: run.taken_up(self.timestamp()).said(self.timestamp()).parked(""))
+        return self.changed(session, environment_id, lambda run: run.adopted(self.timestamp()).summary_text(self.timestamp()).suspended(""))
 
     def suspend(self, session: str, environment_id: int, reason: str) -> SequenceRun:
-        return self.changed(session, environment_id, lambda run: run.parked(reason))
+        return self.changed(session, environment_id, lambda run: run.suspended(reason))
 
     def announce(self, session: str, environment_id: int) -> SequenceRun:
-        return self.changed(session, environment_id, lambda run: run.said(self.timestamp()))
+        return self.changed(session, environment_id, lambda run: run.summary_text(self.timestamp()))
 
     def changed(self, session: str, environment_id: int, change) -> SequenceRun:
         return self.rewritten(self.machine.agent(session, environment_id), lambda time: [*time[:-1], change(time[-1])])[-1]
@@ -138,7 +138,7 @@ class RunTracker:
     @classmethod
     def reminder(cls, run: SequenceRun) -> Nudge:
         from journal.features.sequences.feature import Sequences
-        return Sequences.SEQUENCE_SUSPENDED.create(n=run.sequence_id, step=run.step + 1, why=run.parked_why) if run.parked_why else cls.step(run)
+        return Sequences.SEQUENCE_SUSPENDED.create(n=run.sequence_id, step=run.step + 1, why=run.suspension_reason) if run.suspension_reason else cls.step(run)
 
     @staticmethod
     def step(run: SequenceRun) -> Nudge:

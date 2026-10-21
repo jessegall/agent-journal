@@ -7,4 +7,4 @@ from journal.events.rows.row_event import RowEvent
 class ContextDecided(RowEvent):
     """The agent decided what to keep at a context mark: the mark owed is paid."""
 
-    mark: int
+    threshold: int

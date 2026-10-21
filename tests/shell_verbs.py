@@ -28,7 +28,7 @@ class ShellVerbs:
 
     def cap(self, line: str = "") -> str:
         cap = self.app.container.get(OutputCap).build(line)
-        return f"{cap.show} {cap.characters}"
+        return f"{cap.display} {cap.characters}"
 
     def limit(self, line: str = "") -> str:
         with self.scope.environment(self.environment_id):

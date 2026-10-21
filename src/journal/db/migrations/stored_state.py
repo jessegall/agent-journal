@@ -26,5 +26,5 @@ class StoredState:
     def without(self, name: str) -> UnwrapOutcome:
         inner = self.resume.without(name) if self.resume else UnwrapOutcome(StoredState("idle", {}), ())
         if self.name == name:
-            return UnwrapOutcome(inner.state, (*inner.taken, self))
-        return UnwrapOutcome(replace(self, resume=inner.state) if self.resume else self, inner.taken)
+            return UnwrapOutcome(inner.state, (*inner.claimed, self))
+        return UnwrapOutcome(replace(self, resume=inner.state) if self.resume else self, inner.claimed)

@@ -14,17 +14,19 @@ from journal.features.plugins.support.plugin_card import PluginCard
 ANSWERS = ("allow", "refuse", "tell")
 COMMAND_LIMIT = 20
 PLACED = ("session", "environment_id", "provider", "context", "subagent", "time", "data", "propagation")
-PUBLISHED = {"stop": "idle"}
+EVENT_NAMES = {"stop": "idle"}
+ANSWER_FIELDS = {"tell": "message"}
+FIELD_NAMES = {"prior_refusal": "held_before", "silence_seconds": "quiet_for", "edited_paths": "written_paths"}
 
 
 class Protocol:
-    """The one line the journal sends a plugin for an event, and the one line it reads back: JSON both ways, versioned. An event goes by its key, or by the published name a plugin already hears it by when the journal renamed it."""
+    """The one line the journal sends a plugin for an event, and the one line it reads back: JSON both ways, versioned. An event and its fields go by their names, or by the published names plugins already read where the journal renamed them."""
 
     VERSION = 1
 
     @staticmethod
     def published_name(event: Event) -> str:
-        return PUBLISHED.get(event.key, event.key)
+        return EVENT_NAMES.get(event.key, event.key)
 
     def event_line(self, event: Event, environment: str, state: str = "") -> str:
         line = {"v": self.VERSION, "event": self.published_name(event), "at": datetime.now(timezone.utc).isoformat(), "environment": environment, "state": state, "data": self.event_data(event)}
@@ -40,7 +42,7 @@ class Protocol:
         data = {}
         for name, value in ((f.name, getattr(event, f.name)) for f in fields(event) if f.name not in PLACED):
             data |= asdict(value) if isinstance(value, ToolCall) else {name: value}
-        return data
+        return {FIELD_NAMES.get(name, name): value for name, value in data.items()}
 
     def parsed_answer(self, text: str) -> PluginAnswer:
         if not text.strip():
@@ -51,6 +53,7 @@ class Protocol:
             raise PluginFault(f"its answer is not JSON: {broken}") from broken
         if not isinstance(raw, dict):
             raise PluginFault("its answer is not a JSON object")
+        raw = {ANSWER_FIELDS.get(key, key): value for key, value in raw.items()}
         unknown = sorted(set(raw) - {f.name for f in fields(PluginAnswer)})
         if unknown:
             raise PluginFault(f"its answer has keys the protocol does not know: {', '.join(unknown)}")

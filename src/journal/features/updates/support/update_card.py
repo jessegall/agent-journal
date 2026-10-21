@@ -20,7 +20,7 @@ class UpdateCard:
     def claim(self, previous: str, destination: str) -> None:
         blocked = self.paused()
         if blocked is not None and not blocked.is_stale(timing.time()):
-            raise Rejection(f"an update to {blocked.to} is under way since {timing.strftime('%H:%M', timing.localtime(blocked.time))}")
+            raise Rejection(f"an update to {blocked.target} is under way since {timing.strftime('%H:%M', timing.localtime(blocked.time))}")
         self.write(UpdatePause(previous, destination, FIRST_STEP, timing.time(), os.getpid()))
 
     def step(self, step: str) -> None:

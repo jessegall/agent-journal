@@ -9,4 +9,4 @@ class WorkerDispatched(RowEvent):
 
     worker_id: int
     name: str
-    dispatched_by: str
+    dispatcher: str

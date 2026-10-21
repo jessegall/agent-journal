@@ -23,7 +23,7 @@ def test_setup_wires_hooks_skills_and_the_law(app: App, monkeypatch):
     monkeypatch.setattr(shutil, "which", lambda name: None)
     root = app.config.root
     (root / "AGENTS.md").write_text("# my project\n\nMy own rules.\n")
-    output = app.console().run(["setup"], Caller("main")).out
+    output = app.console().run(["setup"], Caller("main")).text
     settings = json.loads((root / ".claude/settings.json").read_text())
     assert "SessionStart" in settings["hooks"] and "MessageDisplay" in settings["hooks"]
     command = settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
@@ -36,7 +36,7 @@ def test_setup_wires_hooks_skills_and_the_law(app: App, monkeypatch):
     assert "hooks   .claude/settings.json" in output
     assert not (root / ".codex").exists(), "Codex is wired only where its folder exists or its program is installed"
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/local/bin/{name}")
-    assert "hooks   .codex/hooks.json" in app.console().run(["setup"], Caller("main")).out, "a fresh project is wired for Codex when Codex is installed"
+    assert "hooks   .codex/hooks.json" in app.console().run(["setup"], Caller("main")).text, "a fresh project is wired for Codex when Codex is installed"
     assert (root / ".journal/bin/journal").is_file() and "/.journal" in (root / ".gitignore").read_text().splitlines()
     dispatcher = (root / "home/.local/bin/journal").read_text()
     assert ".journal/src/journal.sh" in dispatcher and ".journal/journal" in dispatcher, "the dispatcher serves version 4 and version 3 projects alike"
@@ -69,7 +69,7 @@ def test_a_command_from_inside_an_agent_is_the_live_agents(app: App):
         urlopen(HttpRequest(f"http://127.0.0.1:{port}/hooks/claude", data=hook, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         body = js.dumps({"argv": ["task", "create", "from inside"], "env": "main", "session": "", "agent": True}).encode()
         urlopen(HttpRequest(f"http://127.0.0.1:{port}/cli", data=body, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-        assert app.container.get(Tasks).find(1).created_by == Actor.agent("live-1")
+        assert app.container.get(Tasks).find(1).creator == Actor.agent("live-1")
     finally:
         app.runtime().stop()
 

@@ -29,7 +29,7 @@ class Waits:
     def created(self, enabled: list[str], deadline: str, all_items: int, topic: str, actor: Actor) -> list[Ref]:
         refs = [self.wait_targets(text) for text in enabled]
         if deadline:
-            refs.append(Ref.build(self.checks.save(Check(title=f"{topic} waits until this passes", command=deadline, every=all_items, waited_on=True), actor)))
+            refs.append(Ref.build(self.checks.save(Check(title=f"{topic} waits until this passes", command=deadline, interval=all_items, wait_target=True), actor)))
         return refs
 
     def wait_targets(self, text: str) -> Ref:

@@ -11,7 +11,7 @@ globalThis.ResizeObserver ??= class {
 };
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
-const message = (id, seconds, author, text, data = {}, more = {}) => ({table: "messages", id, created_at: at(seconds), created_by: author === "user" ? "user:1" : "system", author, text, files: [], comments_on: [], idempotency: "", data, ...more});
+const message = (id, seconds, author, text, data = {}, more = {}) => ({table: "messages", id, created_at: at(seconds), creator: author === "user" ? "user:1" : "system", author, text, files: [], comments_on: [], idempotency: "", data, ...more});
 const card = (kind, fields) => ({kind, session: "s1", icon: "", tone: "", detail: "", row: "", ...fields});
 
 const messages = [
@@ -56,7 +56,7 @@ test("a system message is drawn as a card with its label and detail", async () =
 });
 
 test("a card for the user's own act sits on the user's side", () => {
-    const answered = message(5, 50, "system", "You answered question 9", card("card", {icon: "question", tone: "good"}), {created_by: "user:1"});
+    const answered = message(5, 50, "system", "You answered question 9", card("card", {icon: "question", tone: "good"}), {creator: "user:1"});
     const {turns} = threadTurns([...messages, answered], []);
     const mine = turns.find((t) => t.key === "messages:5");
     expect([mine.who, mine.data.side]).toEqual(["user", "user"]);
@@ -66,7 +66,7 @@ test("a card for the user's own act sits on the user's side", () => {
 test("a plugin's card is drawn by its kind with the plugin's name on it, and its settled replacement stands in its place", async () => {
     window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
     const {default: Turn} = await import("../src/chat/Turn.vue");
-    const sin = (label, detail) => message(5, 50, "system", label, card("plugin", {plugin: "lint", card: "sin", key: "a.py", icon: "warn", tone: "warn", detail}), {created_by: "plugin:lint"});
+    const sin = (label, detail) => message(5, 50, "system", label, card("plugin", {plugin: "lint", card: "sin", key: "a.py", icon: "warn", tone: "warn", detail}), {creator: "plugin:lint"});
     const drawn = async (row) => {
         const {turns} = threadTurns([...messages, row], []);
         const host = document.createElement("div");
@@ -88,7 +88,7 @@ test("a plugin's card is drawn by its kind with the plugin's name on it, and its
 });
 
 test("a plugin's plain message is a card of the plugin's, not a crash", () => {
-    const said = message(6, 60, "system", "heard message 4", {}, {created_by: "plugin:echo"});
+    const said = message(6, 60, "system", "heard message 4", {}, {creator: "plugin:echo"});
     const {turns} = threadTurns([...messages, said], []);
     const turn = turns.find((t) => t.key === "messages:6");
     expect([turn.kind, turn.data.icon, turn.data.name, turn.data.label]).toEqual(["card", "plug", "echo", "heard message 4"]);

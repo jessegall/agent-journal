@@ -13,7 +13,7 @@ class ToolCall:
     parts: tuple[CommandPart, ...] = ()
     is_journal: bool = False
     writes: bool = False
-    written_paths: tuple[str, ...] = ()
+    edited_paths: tuple[str, ...] = ()
     read_paths: tuple[str, ...] = ()
     file_lines: int = 0
     skill_loaded: str = ""
@@ -24,7 +24,7 @@ class ToolCall:
         return " ".join(str(value) for value in self.input.values())
 
     def as_data(self) -> dict:
-        return {"command": self.command, "parts": [asdict(part) for part in self.parts], "writes": self.writes, "written_paths": list(self.written_paths), "read_paths": list(self.read_paths), "work": self.work}
+        return {"command": self.command, "parts": [asdict(part) for part in self.parts], "writes": self.writes, "written_paths": list(self.edited_paths), "read_paths": list(self.read_paths), "work": self.work}
 
     def journal_parts(self) -> tuple[int, int]:
         return sum(1 for part in self.parts if part.is_journal), len(self.parts)

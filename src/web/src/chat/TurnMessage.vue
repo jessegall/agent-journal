@@ -53,7 +53,7 @@ const long = computed(() => props.turn.who === "agent" && words.value.text.lengt
 const answers = computed(() => answered(props.turn));
 const answer = computed(() => {
     if (words.value.quote || !answers.value) return "";
-    const row = rowsOf("messages").find((m) => m.id === props.turn.reply_to);
+    const row = rowsOf("messages").find((m) => m.id === props.turn.reply_target);
     return row ? quoted(row.text).text : EARLIER;
 });
 const quoteText = computed(() => words.value.quote || answer.value);

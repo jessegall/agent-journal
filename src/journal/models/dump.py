@@ -28,10 +28,10 @@ class Dump(Scoped):
     question: dict = field(default_factory=dict)
     answers: tuple = ()
     options: tuple = ()
-    chosen: dict = field(default_factory=dict)
-    taken: dict = field(default_factory=dict)
+    choice: dict = field(default_factory=dict)
+    claimed: dict = field(default_factory=dict)
     declined: tuple = ()
-    said: tuple = ()
+    summary_text: tuple = ()
     summary: str = ""
     outcome: str = ""
     queued_at: float = 0.0
@@ -67,7 +67,7 @@ class Dump(Scoped):
         return [name for name in self.item_names if not self.item(name).resolved]
 
     def arrived(self, time: float, user_origin: bool) -> "Dump":
-        return self.with_event(DumpArrived(environment_id=self.environment_id, time=time, dump_id=self.id, waiting=len(self.waiting()), by_user=user_origin))
+        return self.with_event(DumpArrived(environment_id=self.environment_id, time=time, dump_id=self.id, waiting=len(self.waiting()), user_origin=user_origin))
 
     def posed_question(self, text: str, guesses: list[str], time: float) -> "Dump":
         return self.with_(question={"time": time, "text": text, "guesses": guesses}).with_event(DumpQuestion(environment_id=self.environment_id, time=time, dump_id=self.id))
@@ -78,12 +78,12 @@ class Dump(Scoped):
 
     def step_chosen(self, option: int, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": option, "time": time}
-        claimed = {**self.taken, str(option): choice} if option >= 0 else self.taken
-        return self.with_(chosen=choice, taken=claimed).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=option, label=label))
+        claimed = {**self.claimed, str(option): choice} if option >= 0 else self.claimed
+        return self.with_(choice=choice, claimed=claimed).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, choice=option, label=label))
 
     def step_directed(self, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": USER_TEXT, "time": time}
-        return self.with_(chosen=choice, said=(*self.said, choice)).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=USER_TEXT, label=label))
+        return self.with_(choice=choice, summary_text=(*self.summary_text, choice)).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, choice=USER_TEXT, label=label))
 
     def filed(self, manner: str, time: float) -> "Dump":
         return self.with_(completed_at=time, outcome=manner).with_event(DumpSorted(environment_id=self.environment_id, time=time, dump_id=self.id, outcome=manner, stopped=self.stopped))

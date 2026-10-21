@@ -5,15 +5,15 @@ from dataclasses import dataclass, replace
 class ObligationFacts:
     """What an agent owed the journal, as the facts on its row that the owed pauses became: not oriented, the mark owed, the skills owed."""
 
-    oriented: bool = True
-    mark_owed: int = 0
+    has_overview: bool = True
+    threshold_due: int = 0
     skills: tuple[str, ...] = ()
 
     def obligation(self, state: str, threshold: int, skill: str) -> "ObligationFacts":
         if state == "orienting":
-            return replace(self, oriented=False)
+            return replace(self, has_overview=False)
         if state == "at_mark":
-            return replace(self, mark_owed=max(self.mark_owed, threshold))
+            return replace(self, threshold_due=max(self.threshold_due, threshold))
         if state == "loading_skill" and skill:
             return replace(self, skills=(*self.skills, skill))
         return self

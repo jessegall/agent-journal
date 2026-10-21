@@ -10,7 +10,7 @@ class Template(Model):
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "purpose", "brief")
     title: str = ""
-    applies_to: tuple[str, ...] = ()
+    targets: tuple[str, ...] = ()
     purpose: str = ""
     brief: str = ""
     parts: tuple[str, ...] = ()

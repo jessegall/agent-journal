@@ -15,7 +15,7 @@ class EndSilentSessions(AgentListener[Ticked]):
         self.machine, self.agents, self.supervisor = machine, agents, supervisor
 
     def handle(self, event: Ticked) -> None:
-        if event.quiet_for < SILENCE_SECONDS or self.is_supervised(event):
+        if event.silence_seconds < SILENCE_SECONDS or self.is_supervised(event):
             return
         self.machine.move(event.session, event.environment_id, Ended())
 

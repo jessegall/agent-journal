@@ -28,11 +28,11 @@ class Ready(BaseState):
     name = "idle"
     title = "Idle"
     allows = frozenset({Permission.RUN_COMMANDS})
-    quiet_since: float = 0.0
-    parked_asked: bool = False
+    silenced_at: float = 0.0
+    suspension_reported: bool = False
 
     def active(self, time: float) -> "Ready":
-        return replace(self, quiet_since=time, parked_asked=False)
+        return replace(self, silenced_at=time, suspension_reported=False)
 
     def mode_state(self, settings: Settings) -> "Ready":
         from journal.features.workers.feature import Workers
@@ -85,9 +85,9 @@ class Ready(BaseState):
         from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
         tasks, plans = event.data.part(Tasks), event.data.part(Plans)
-        if tasks.parked:
-            return self.refuse(Tasks.SUSPENDED_TASKS.create(tasks=tasks.parked_summary))
-        if event.held_before:
+        if tasks.suspended:
+            return self.refuse(Tasks.SUSPENDED_TASKS.create(tasks=tasks.suspension_summary))
+        if event.prior_refusal:
             return self.none()
         if tasks.broken_waits:
             return self.refuse(Tasks.BROKEN_WAIT.create(waits=tasks.broken_waits_summary))
@@ -107,10 +107,10 @@ class Ready(BaseState):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        silent = event.time - self.quiet_since
+        silent = event.time - self.silenced_at
         tasks = event.data.part(Tasks)
-        if tasks.parked and silent >= SUSPENDED_REMINDER_DELAY_SECONDS and not self.parked_asked:
-            return self.swap(replace(self, parked_asked=True), Tasks.SUSPENDED_TASK_REMINDER.create(n=tasks.parked[0], why=tasks.first_parked_why))
+        if tasks.suspended and silent >= SUSPENDED_REMINDER_DELAY_SECONDS and not self.suspension_reported:
+            return self.swap(replace(self, suspension_reported=True), Tasks.SUSPENDED_TASK_REMINDER.create(n=tasks.suspended[0], why=tasks.first_suspension_reason))
         if tasks.blocked_without_wait and silent >= BLOCKED_REMINDER_DELAY_SECONDS:
             return self.none(Tasks.BLOCKED_TASK_REMINDER.create(tasks=tasks.blocked_without_wait_summary))
         if settings.value(Tasks.AUTO) and silent >= IDLE_CHECK_DELAY_SECONDS:

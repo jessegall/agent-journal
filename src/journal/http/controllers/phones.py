@@ -15,7 +15,7 @@ class PhoneController:
 
     def connect(self, request: Request) -> Response:
         suggestion = self.pairing.proposal(int(request.body.get("days", 7)), request.actor, datetime.now(timezone.utc))
-        return Response.json({"link": suggestion.link, "short": suggestion.short, "address": suggestion.address, "until": suggestion.until.isoformat()})
+        return Response.json({"link": suggestion.link, "short": suggestion.short, "address": suggestion.address, "until": suggestion.expiry_time.isoformat()})
 
     def index(self, request: Request) -> Response:
         present = self.phones.active(datetime.now(timezone.utc))

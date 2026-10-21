@@ -19,6 +19,6 @@ class Triggers(Feature[TriggersData]):
     conduct = (TriggersConduct,)
 
     NUDGE = Nudge(name, "nudge", "{{title}}")
-    INSTRUCT = Nudge(name, "instruct", "do this now: {{title}}", repeat_after=0)
-    DENIED = Nudge(name, "denied", "a trigger denies this: {{title}}", repeat_after=0)
+    INSTRUCT = Nudge(name, "instruct", "do this now: {{title}}", repeat_interval=0)
+    DENIED = Nudge(name, "denied", "a trigger denies this: {{title}}", repeat_interval=0)
     nudges = (NUDGE, INSTRUCT, DENIED)

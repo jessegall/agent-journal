@@ -16,10 +16,10 @@ class PlanBlockade(Listener[Updated]):
     def handle(self, event: Updated) -> None:
         from journal.features.plans.feature import Plans as PlansFeature
         task = event.model
-        if not isinstance(task, Task) or event.was is None or task.state == event.was.state:
+        if not isinstance(task, Task) or event.previous is None or task.state == event.previous.state:
             return
         for plan in self.plans.containing(task):
             if plan.state == PlanState.STARTED and self.plans.is_stalled(plan):
                 self.plans.save(plan.blocked(PlansFeature.ALL_BLOCKED, datetime.now(timezone.utc).timestamp()), Actor.system())
-            elif plan.is_blocked() and plan.blocked_why == PlansFeature.ALL_BLOCKED and not self.plans.is_stalled(plan):
+            elif plan.is_blocked() and plan.block_reason == PlansFeature.ALL_BLOCKED and not self.plans.is_stalled(plan):
                 self.plans.save(plan.unblocked(f"task {task.id} is open again", datetime.now(timezone.utc).timestamp()), Actor.system())

@@ -23,7 +23,7 @@ class CommentController(Controller[Message]):
 
     def rows(self) -> list[Message]:
         enabled = self.repository.linked(Messages.COMMENT_LINK)
-        return [m for m in self.repository.numbered(tuple(enabled)) if m.author == Author.USER or m.reply_to] if enabled else []
+        return [m for m in self.repository.numbered(tuple(enabled)) if m.author == Author.USER or m.reply_target] if enabled else []
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
         enabled = self.repository.linked(Messages.COMMENT_LINK)
@@ -31,8 +31,8 @@ class CommentController(Controller[Message]):
 
     def store(self, request: Request) -> Response:
         target = self.row(str(request.body.get("on", "")))
-        reply_ref = request.body.get("reply_to")
-        message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_to=int(reply_ref) if reply_ref else None).arrived(), request.actor)
+        reply_ref = request.body.get("reply_target")
+        message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_target=int(reply_ref) if reply_ref else None).arrived(), request.actor)
         self.links.save(Link(source=Ref.build(message), target=target, kind=Messages.COMMENT_LINK), request.actor)
         return Response.json(self.shown(message), 201)
 

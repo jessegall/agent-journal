@@ -7,7 +7,7 @@ const FIELDS = [
     {name: "username", hidden: false, variable: "U"},
     {name: "password", hidden: true, variable: "P"},
 ];
-const row = (more = {}) => ({table: "secrets", id: 1, title: "Stripe test", brief: "", kind: "login", fields: FIELDS, filled: [], programs: [], proposed: [], helpers: false, asked_at: null, used_at: null, session_at: null, logging_in_at: null, deleted_at: null, ...more});
+const row = (more = {}) => ({table: "secrets", id: 1, title: "Stripe test", brief: "", kind: "login", fields: FIELDS, filled: [], programs: [], proposed: [], helpers: false, questioned_at: null, used_at: null, session_at: null, login_started_at: null, deleted_at: null, ...more});
 
 describe("secrets", () => {
     test("a secret waits while any of its fields has no value", () => {
@@ -16,8 +16,8 @@ describe("secrets", () => {
     });
 
     test("only a waiting secret the agent asked for shows in the request band", () => {
-        const asked = row({asked_at: at(5)});
-        const filled = row({asked_at: at(5), filled: ["username", "password"]});
+        const asked = row({questioned_at: at(5)});
+        const filled = row({questioned_at: at(5), filled: ["username", "password"]});
         expect(asking([asked, filled, row()])).toEqual([asked]);
     });
 
@@ -38,7 +38,7 @@ describe("secrets", () => {
 
     test("a browser login says a browser is open while the user logs in", () => {
         expect(whenWords(row({kind: "browser login"}))).toBe("Not logged in yet");
-        expect(whenWords(row({kind: "browser login", logging_in_at: at(1000)}))).toBe("A browser is open for you to log in");
+        expect(whenWords(row({kind: "browser login", login_started_at: at(1000)}))).toBe("A browser is open for you to log in");
         expect(whenWords(row({kind: "browser login", session_at: at(1000)}))).toContain("Logged in");
     });
 

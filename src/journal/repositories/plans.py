@@ -126,7 +126,7 @@ class Plans(ScopedRepository[Plan]):
         return tree.plan.next_open_task(tree.ordered, self.unstartable(tree))
 
     def checkpoint_plans(self, plan: Plan) -> PhaseTasks | None:
-        return plan.checkpoint_phase(self.phased(plan))
+        return plan.checkpoint_at(self.phased(plan))
 
     def start(self, plan: Plan, actor: Actor) -> Plan:
         time = datetime.now(timezone.utc)

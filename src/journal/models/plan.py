@@ -27,7 +27,7 @@ class Plan(Scoped):
     title: str = ""
     brief: str = ""
     state: PlanState = PlanState.DRAFT
-    blocked_why: str = ""
+    block_reason: str = ""
     reviewers: int = 0
 
     def ready(self) -> "Plan":
@@ -37,11 +37,11 @@ class Plan(Scoped):
         return self.moved(PlanState.REVIEWING)
 
     def approved(self, time: float, user_origin: bool) -> "Plan":
-        return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=user_origin))
+        return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.id, user_origin=user_origin))
 
     def startable(self) -> "Plan":
         if self.is_blocked():
-            raise Rejection(f"plan {self.id} is blocked, waiting on: {self.blocked_why or 'what it was blocked on'}; `journal plan unblock {self.id}` when it may go on")
+            raise Rejection(f"plan {self.id} is blocked, waiting on: {self.block_reason or 'what it was blocked on'}; `journal plan unblock {self.id}` when it may go on")
         if not self.state.is_startable():
             raise Rejection(f"plan {self.id} is {self.state}, not approved: the user approves it first")
         return self
@@ -56,13 +56,13 @@ class Plan(Scoped):
         return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.id, task_id=0))
 
     def postponed(self, time: float, user_origin: bool) -> "Plan":
-        return self.moved(PlanState.SUSPENDED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=user_origin))
+        return self.moved(PlanState.SUSPENDED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.id, user_origin=user_origin))
 
     def blocked(self, reason: str, time: float) -> "Plan":
-        return self.moved(PlanState.BLOCKED).with_(blocked_why=reason).with_event(PlanBlocked(environment_id=self.environment_id, time=time, plan_id=self.id, why=reason))
+        return self.moved(PlanState.BLOCKED).with_(block_reason=reason).with_event(PlanBlocked(environment_id=self.environment_id, time=time, plan_id=self.id, reason=reason))
 
     def unblocked(self, reason: str, time: float) -> "Plan":
-        return self.moved(PlanState.STARTED).with_(blocked_why="").with_event(PlanReopened(environment_id=self.environment_id, time=time, plan_id=self.id, why=reason))
+        return self.moved(PlanState.STARTED).with_(block_reason="").with_event(PlanReopened(environment_id=self.environment_id, time=time, plan_id=self.id, reason=reason))
 
     def is_blocked(self) -> bool:
         return self.state == PlanState.BLOCKED
@@ -71,7 +71,7 @@ class Plan(Scoped):
         return self.moved(PlanState.FINISHED).with_event(PlanFinished(environment_id=self.environment_id, time=time, plan_id=self.id))
 
     def cancelled(self, time: float, user_origin: bool) -> "Plan":
-        return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=user_origin))
+        return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.id, user_origin=user_origin))
 
     def moved(self, state: PlanState) -> "Plan":
         if not self.state.can_become(state):
@@ -99,7 +99,7 @@ class Plan(Scoped):
     def current_phase(self, phases: list[PhaseTasks]) -> int:
         return next((phase.number for phase in phases if phase.has_open_work()), len(phases) or 1)
 
-    def checkpoint_phase(self, phases: list[PhaseTasks]) -> PhaseTasks | None:
+    def checkpoint_at(self, phases: list[PhaseTasks]) -> PhaseTasks | None:
         for previous, following in zip(phases, phases[1:]):
             if previous.phase.checkpoint and previous.is_finished() and following.tasks and not following.has_work_started():
                 return previous

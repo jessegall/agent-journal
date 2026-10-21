@@ -10,7 +10,7 @@ class Reader:
     """A named way to read outputs of one shape: the lines a pattern picks, with their numbers."""
 
     name: str
-    about: str
+    subject: str
     pattern: str
 
     @classmethod
@@ -21,7 +21,7 @@ class Reader:
         return cls(path.stem, lines[0].removeprefix("#").strip(), lines[1])
 
     def text(self) -> str:
-        return f"# {self.about}\n{self.pattern}\n"
+        return f"# {self.subject}\n{self.pattern}\n"
 
     def matches(self, command: str) -> bool:
         return self.pattern in command

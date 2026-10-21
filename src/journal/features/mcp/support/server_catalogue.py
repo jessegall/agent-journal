@@ -6,7 +6,7 @@ class ServerCatalogue:
     """A server as the agent program's own check reports it: by name, how it is reached, how it stands and in what words."""
 
     name: str
-    how: str
+    instructions: str
     state: str
     text: str
 

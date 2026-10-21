@@ -8,4 +8,4 @@ class TaskReopened(RowEvent):
     """A blocked task was opened again, with what it waited on."""
 
     task_id: int
-    on: str
+    target_ref: str

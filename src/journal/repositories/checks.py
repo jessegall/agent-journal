@@ -14,4 +14,4 @@ class Checks(Repository[Check]):
         return [check for check in self.rows() if check.needs_run(time)]
 
     def broken_waits(self) -> list[Check]:
-        return [check for check in self.all_matching(waited_on=True) if check.cannot_run() and not check.is_resolved()]
+        return [check for check in self.all_matching(wait_target=True) if check.cannot_run() and not check.is_resolved()]

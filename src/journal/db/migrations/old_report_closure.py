@@ -10,4 +10,4 @@ class OldReportClosure(Migration):
     number: ClassVar[int] = 12
 
     def apply(self, connection: Connection) -> None:
-        connection.execute("UPDATE workers SET taken_up = 1 WHERE state != 'dispatched'")
+        connection.execute("UPDATE workers SET adopted = 1 WHERE state != 'dispatched'")

@@ -22,7 +22,7 @@ class RecordRunChanges(Listener[Updated]):
         agent = event.model
         if not isinstance(agent, Agent) or "sequence_runs" not in event.changed():
             return
-        previous = {run.sequence_id: run for run in self.running.runs(event.was)}
+        previous = {run.sequence_id: run for run in self.running.runs(event.previous)}
         following = {run.sequence_id: run for run in self.running.runs(agent)}
         for n, run in following.items():
             prior_row = previous.get(n)
@@ -30,9 +30,9 @@ class RecordRunChanges(Listener[Updated]):
                 self.stored(agent, run, "started", CardKind.SEQUENCES)
             elif run.step != prior_row.step:
                 self.stored(agent, run, f"moved on to step {run.step + 1}", CardKind.SEQUENCE_STEPS)
-            elif run.parked_why and not prior_row.parked_why:
-                self.stored(agent, run, f"parked at step {run.step + 1}: {run.parked_why}", CardKind.SEQUENCE_STEPS)
-            elif prior_row.parked_why and not run.parked_why:
+            elif run.suspension_reason and not prior_row.suspension_reason:
+                self.stored(agent, run, f"parked at step {run.step + 1}: {run.suspension_reason}", CardKind.SEQUENCE_STEPS)
+            elif prior_row.suspension_reason and not run.suspension_reason:
                 self.stored(agent, run, f"followed again at step {run.step + 1}", CardKind.SEQUENCE_STEPS)
         for n, run in previous.items():
             if n not in following:

@@ -18,7 +18,7 @@ class VoiceController:
 
     def index(self, request: Request) -> Response:
         title, name, selection = self.chosen.title(), self.chosen.first_name(), self.chosen.voice().name
-        voices = [{"name": v.name, "text": v.text, "calling": v.calling.value, "sample": v.sample.replace("{you}", v.calling.called(title, name, v.address) or "you"),
+        voices = [{"name": v.name, "text": v.text, "calling": v.address_form.value, "sample": v.sample.replace("{you}", v.address_form.called(title, name, v.address) or "you"),
                    "humour": v.humour, "naming": v.naming, "address": v.address, "emoji": v.emoji, "chosen": v.name == selection} for v in BuiltinCatalogue.ALL]
         callings = {c.value: c.called(title, name) for c in AddressForm if c is not AddressForm.AGENT_CHOICE}
         return Response.json({"voices": voices, "callings": callings, "namings": [{"label": label, "text": text} for label, text in NAMINGS]})

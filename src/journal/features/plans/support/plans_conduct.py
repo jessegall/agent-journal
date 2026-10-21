@@ -14,22 +14,22 @@ class PlansConduct(Conduct):
 
     def on_plan_approved_plans(self, event: PlanApproved, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        return self.none(Plans.PLAN_APPROVED.create(n=event.plan_id)) if event.by_user else self.none()
+        return self.none(Plans.PLAN_APPROVED.create(n=event.plan_id)) if event.user_origin else self.none()
 
     def on_plan_blocked_plans(self, event: PlanBlocked, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        return self.none(Plans.PLAN_BLOCKED.create(n=event.plan_id, why=event.why))
+        return self.none(Plans.PLAN_BLOCKED.create(n=event.plan_id, why=event.reason))
 
     def on_plan_reopened_plans(self, event: PlanReopened, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        return self.none(Plans.PLAN_REOPENED.create(n=event.plan_id, why=event.why))
+        return self.none(Plans.PLAN_REOPENED.create(n=event.plan_id, why=event.reason))
 
     def on_plan_started_plans(self, event: PlanStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         started = event.data.part(Plans).started
-        if event.task_id or started is None or not started.tasks_left:
+        if event.task_id or started is None or not started.remaining_tasks:
             return self.none()
-        return self.none(Plans.PLAN_STALLED.create(n=event.plan_id, left=started.tasks_left))
+        return self.none(Plans.PLAN_STALLED.create(n=event.plan_id, left=started.remaining_tasks))
 
     def on_task_started_plans(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
@@ -41,6 +41,6 @@ class PlansConduct(Conduct):
     def on_task_closed_plans(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         started = event.data.part(Plans).started
-        if started is None or event.task_id not in started.tasks or started.started_task or started.next_task or started.at_checkpoint or not started.tasks_left:
+        if started is None or event.task_id not in started.tasks or started.started_task or started.next_task or started.checkpoint_pause or not started.remaining_tasks:
             return self.none()
-        return self.none(Plans.PLAN_STALLED.create(n=started.plan_id, left=started.tasks_left))
+        return self.none(Plans.PLAN_STALLED.create(n=started.plan_id, left=started.remaining_tasks))

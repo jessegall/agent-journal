@@ -12,7 +12,7 @@ class Voice:
 
     name: str
     text: str
-    calling: AddressForm
+    address_form: AddressForm
     sample: str
     humour: str
     naming: str
@@ -20,7 +20,7 @@ class Voice:
     emoji: str | None = None
 
     def instruction(self, title: str, first_name: str) -> str:
-        called = self.calling.called(title, first_name, self.address)
-        parts = (self.text, self.calling.instruction(called), self.humour, f"When you name a subagent or a worker: {self.naming}",
+        called = self.address_form.called(title, first_name, self.address)
+        parts = (self.text, self.address_form.instruction(called), self.humour, f"When you name a subagent or a worker: {self.naming}",
                  f"Your own emoji are {self.emoji}: react with them, and now and then use one in what you write." if self.emoji is not None else "", PLAIN_VOCABULARY)
         return " ".join(part for part in parts if part)

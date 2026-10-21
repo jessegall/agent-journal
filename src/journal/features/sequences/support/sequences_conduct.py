@@ -18,22 +18,22 @@ class SequencesConduct(Conduct):
     def on_tool_starting_sequences(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.sequences.feature import Sequences
         runs = event.data.part(Sequences)
-        if event.subagent or not runs.has_run() or runs.parked_why or is_step_command(runs, event.call.parts):
+        if event.subagent or not runs.has_run() or runs.suspension_reason or is_step_command(runs, event.call.parts):
             return self.none()
-        if self.is_waiting() and runs.can_be_typed and not runs.question_open:
+        if self.is_waiting() and runs.is_typable and not runs.question_open:
             return self.none().typing(step_line(runs))
-        if not event.call.writes or runs.debts_owed:
+        if not event.call.writes or runs.obligations_due:
             return self.none()
-        if not runs.is_taken_up:
+        if not runs.is_adopted:
             return self.refuse(Sequences.STEP_EDIT_BLOCK.create(n=runs.sequence_id, step=runs.step, text=runs.step_text))
-        if runs.writes_since_taken_up >= int(settings.value(Sequences.STALENESS_LIMIT)):
-            return self.refuse(Sequences.STALE_STEP.create(writes=runs.writes_since_taken_up, n=runs.sequence_id, step=runs.step, text=runs.step_text))
+        if runs.adoption_edits >= int(settings.value(Sequences.STALENESS_LIMIT)):
+            return self.refuse(Sequences.STALE_STEP.create(writes=runs.adoption_edits, n=runs.sequence_id, step=runs.step, text=runs.step_text))
         return self.none()
 
     def on_stop_sequences(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.sequences.feature import Sequences
         runs = event.data.part(Sequences)
-        if not runs.has_run() or runs.parked_why or runs.question_open or runs.debts_owed or runs.step_said_after_last_tool or self.is_waiting():
+        if not runs.has_run() or runs.suspension_reason or runs.question_open or runs.obligations_due or runs.step_repeated or self.is_waiting():
             return self.none()
         return self.refuse(Sequences.PENDING_STEP.create(n=runs.sequence_id, step=runs.step, text=runs.step_text))
 
@@ -43,9 +43,9 @@ class SequencesConduct(Conduct):
 
     def on_ticked_sequences(self, event: Ticked, settings: Settings) -> Transition:
         runs = event.data.part(sequences_feature())
-        if not runs.has_run() or runs.parked_why or runs.question_open or not runs.can_be_typed or event.quiet_for < SILENCE_SECONDS:
+        if not runs.has_run() or runs.suspension_reason or runs.question_open or not runs.is_typable or event.silence_seconds < SILENCE_SECONDS:
             return self.none()
-        if runs.step_unsaid_seconds < float(settings.value(sequences_feature().STEP_REPEAT_INTERVAL)) * 60:
+        if runs.step_silence_seconds < float(settings.value(sequences_feature().STEP_REPEAT_INTERVAL)) * 60:
             return self.none()
         return self.none().typing(reminder_line(runs))
 
@@ -61,8 +61,8 @@ def step_line(runs: SequencesData) -> Nudge:
 
 
 def reminder_line(runs: SequencesData) -> Nudge:
-    if runs.parked_why:
-        return sequences_feature().SEQUENCE_SUSPENDED.create(n=runs.sequence_id, step=runs.step, why=runs.parked_why)
+    if runs.suspension_reason:
+        return sequences_feature().SEQUENCE_SUSPENDED.create(n=runs.sequence_id, step=runs.step, why=runs.suspension_reason)
     return step_line(runs)
 
 

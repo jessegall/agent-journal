@@ -14,7 +14,7 @@ globalThis.ResizeObserver = class {
 };
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
-const empty = {table: "messages", id: 7, created_at: at(10), author: "user", created_by: "user:1", text: "", files: [], data: {}, comments_on: [], idempotency: "", reply_to: null};
+const empty = {table: "messages", id: 7, created_at: at(10), author: "user", creator: "user:1", text: "", files: [], data: {}, comments_on: [], idempotency: "", reply_target: null};
 const reaction = {table: "reactions", id: 1, message_id: 7, face: "🎩", author: "agent"};
 const scope = {env: "", api: {}, rows: (table) => (table === "reactions" ? [reaction] : [empty]), loaded: () => true, holding: () => {}, earlier: () => {}};
 

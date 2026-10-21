@@ -6,7 +6,7 @@ class Notices(ScopedRepository[Notice]):
     model = Notice
 
     def unviewed(self) -> int:
-        return self.count("closed_at IS NULL AND (created_by IS NULL OR created_by NOT LIKE 'user:%')")
+        return self.count("closed_at IS NULL AND (creator IS NULL OR created_by NOT LIKE 'user:%')")
 
     def open_count(self) -> int:
         return self.count("closed_at IS NULL")

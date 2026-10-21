@@ -29,7 +29,7 @@ class SkillsConduct(Conduct):
         return self.refuse(read_first(obligations)[0])
 
     def on_stop_skills(self, event: Stop, settings: Settings) -> Transition:
-        obligations = event.data.part(skills_feature()).owed
+        obligations = event.data.part(skills_feature()).skills_due
         return self.refuse(skills_feature().UNREAD_SKILL_STOP.create(skills=" and ".join(obligations))) if obligations else self.none()
 
 

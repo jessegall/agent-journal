@@ -23,4 +23,4 @@ class TriggerImport(BuiltinKind):
         return super().skipped(row) or ("" if row.data.get("does") in ACTIONS else f"version 4 has no trigger that does {row.data.get('does')}")
 
     def created(self, row: Version3Row, actor: Actor) -> Trigger:
-        return self.triggers.imported(Trigger(phrases=tuple(row.listed("words")), action=ACTIONS[row.data["does"]], text=row.data.get("text", "")), row.creation_time(), actor)
+        return self.triggers.imported(Trigger(phrases=tuple(row.listed("words")), action=ACTIONS[row.data["does"]], text=row.data.get("text", "")), row.created_at(), actor)

@@ -10,8 +10,8 @@ class AgentEvent(Event):
     """Something the agent did, as its hook reported it or the journal saw it. One subclass per kind; features listen to these, never to raw hooks."""
 
     answers_hook: ClassVar[bool] = True
-    carries_lines: ClassVar[bool] = True
-    typed_after: ClassVar[float] = 0.0
+    has_lines: ClassVar[bool] = True
+    typing_delay: ClassVar[float] = 0.0
 
     session: str = ""
     environment_id: int = 0

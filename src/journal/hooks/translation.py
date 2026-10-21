@@ -31,7 +31,7 @@ class Translation:
         HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(call=provider.call(hook.tool, hook.input), output=hook.output, response=hook.response),
         HookKind.POST_TOOL_USE_FAILURE: lambda hook, provider: ToolFailed(call=provider.call(hook.tool, hook.input), error=hook.error),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
-        HookKind.STOP: lambda hook, provider: Stop(held_before=hook.stop_refused_earlier),
+        HookKind.STOP: lambda hook, provider: Stop(prior_refusal=hook.stop_refused_earlier),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),
         HookKind.SUBAGENT_STOP: lambda hook, provider: SubagentEnded(subagent=hook.subagent),
         HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnDisplayed(text=hook.text, delta=hook.text, turn_id=hook.turn_id, index=hook.index, final=hook.final),

@@ -34,7 +34,7 @@ class SequenceCommand(Command):
 
     def create(self, args: Namespace, caller: Caller) -> int:
         steps = tuple(s.strip() for s in args.steps.split("|") if s.strip())
-        sequence = self.sequences.save(Sequence(title=args.title, steps=steps, starts_on=args.starts_on), caller.actor)
+        sequence = self.sequences.save(Sequence(title=args.title, steps=steps, trigger_event=args.trigger_event), caller.actor)
         print(f"sequence {sequence.id}: {sequence.title}, {len(steps)} steps")
         return 0
 
@@ -52,26 +52,26 @@ class SequenceCommand(Command):
 
     def next(self, args: Namespace, caller: Caller) -> int:
         run = self.current_run(caller)
-        if not run.taken_up_at:
+        if not run.adopted_at:
             raise Rejection(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first")
         print(self.running.next(caller.session, self.scope.id))
         return 0
 
     def suspend(self, args: Namespace, caller: Caller) -> int:
         self.current_run(caller)
-        run = self.running.suspend(caller.session, self.scope.id, args.why)
-        print(f"sequence {run.sequence_id} parked at step {run.step + 1}: {args.why}. `journal sequence follow` resumes it")
+        run = self.running.suspend(caller.session, self.scope.id, args.reason)
+        print(f"sequence {run.sequence_id} parked at step {run.step + 1}: {args.reason}. `journal sequence follow` resumes it")
         return 0
 
     def abandon(self, args: Namespace, caller: Caller) -> int:
         run = self.current_run(caller)
-        if not run.taken_up_at:
+        if not run.adopted_at:
             raise Rejection(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first, then abandon it if it cannot be done")
         skipped = "; ".join(f"{run.step + i + 1}. {text}" for i, text in enumerate(run.skipped))
         if not args.sure:
             raise Rejection(f"abandoning sequence {run.sequence_id}, {run.title}, leaves undone: {skipped}. again with --sure to go through")
         run, line = self.running.abandon(caller.session, self.scope.id)
-        self.cards.show(self.scope.id, caller.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}", shows=CardKind.SEQUENCES)
+        self.cards.show(self.scope.id, caller.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.reason}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}", shows=CardKind.SEQUENCES)
         print(line)
         return 0
 
@@ -83,6 +83,6 @@ class SequenceCommand(Command):
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for sequence in self.sequences.all():
-            starts = f", starts on {sequence.starts_on}" if sequence.starts_on else ""
+            starts = f", starts on {sequence.trigger_event}" if sequence.trigger_event else ""
             print(f"{sequence.id:>4}  {sequence.title} ({len(sequence.steps)} steps{starts})")
         return 0

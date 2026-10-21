@@ -22,7 +22,7 @@ class PluginsFeature(Feature[PluginsData]):
     listeners = (PluginAgentRelay, PluginRowRelay, PluginSettingsNotice)
     data = (PluginsDataReader,)
     conduct = (PluginsConduct,)
-    PLUGIN_FILE_OWNERSHIP = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_after=0)
+    PLUGIN_FILE_OWNERSHIP = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_interval=0)
     nudges = (PLUGIN_FILE_OWNERSHIP,)
     commands = (PluginCommand, DashboardCommand)
     seeds = (PluginServicesSeed,)

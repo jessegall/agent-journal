@@ -86,7 +86,7 @@ class DumpFiler:
             raise Rejection("say what you are doing")
         if len(status.strip()) > LABEL:
             raise Rejection(f"a status is a short title of at most {LABEL} characters, like Adding files; the sentence goes in --detail")
-        if dump.is_completed and not dump.options and not dump.chosen:
+        if dump.is_completed and not dump.options and not dump.choice:
             raise Rejection(f"dump {n} is closed")
         return self.dumps.save(dump.logged(self.entry(status, enabled=enabled, making=making, detail=detail), DUMP_LOG_LENGTH), actor)
 
@@ -139,14 +139,14 @@ class DumpFiler:
         steps = [step for step in steps if step["label"]]
         if not steps and not summary.strip():
             raise Rejection("sum up what you filed with --summary, and offer a next step only where one is worth taking")
-        return self.dumps.save(self.dumps.find(n).with_(options=tuple(steps), chosen={}, taken={}, declined=(), summary=summary.strip()), actor)
+        return self.dumps.save(self.dumps.find(n).with_(options=tuple(steps), choice={}, claimed={}, declined=(), summary=summary.strip()), actor)
 
     def choose(self, n: int, choice: int, actor: Actor) -> Dump:
         self.require_user(actor, "chooses what a dump does next")
         dump = self.dumps.find(n)
         if choice >= len(dump.options):
             raise Rejection(f"dump {n} has no option {choice}: pick is the number of an offered step, or -1 for You decide")
-        if str(choice) in dump.taken:
+        if str(choice) in dump.claimed:
             raise Rejection(f"{dump.options[choice]['label']} was already taken on dump {n}")
         return self.dumps.save(dump.step_chosen(choice, dump.options[choice]["label"] if choice >= 0 else "You decide", time.time()), actor)
 

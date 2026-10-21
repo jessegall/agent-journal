@@ -12,10 +12,10 @@ from journal.providers.support.turn import Turn
 
 class Codex(Provider):
     name = "codex"
-    skip_prompts = ("--dangerously-bypass-approvals-and-sandbox",)
+    prompt_flags = ("--dangerously-bypass-approvals-and-sandbox",)
     home = ".codex"
     settings_file = "hooks.json"
-    write_tools = frozenset({"apply_patch", "write_file"})
+    edit_tools = frozenset({"apply_patch", "write_file"})
     read_tool = "read_file"
     hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
 

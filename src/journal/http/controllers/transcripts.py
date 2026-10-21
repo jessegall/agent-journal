@@ -39,7 +39,7 @@ class TranscriptController:
         worker = self.workers.find(request.number("id"))
         provider = self.providers.lookup(worker.provider)
         place = self.runner.place(worker)
-        session = worker.resume or worker.found_session or self.found_session(worker, provider, place)
+        session = worker.resume or worker.recovered_session or self.found_session(worker, provider, place)
         return self.answer(request, provider, provider.transcript(place, session) if session else None)
 
     def found_session(self, worker: Worker, provider: Provider, place: Path) -> str:

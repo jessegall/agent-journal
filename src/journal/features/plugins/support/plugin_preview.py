@@ -15,7 +15,7 @@ class PluginPreview:
     commit: str
     rows: tuple[PreviewRow, ...]
     linked: bool = False
-    was: str = ""
+    previous: str = ""
     changes: tuple[str, ...] = ()
     code: tuple[str, ...] = ()
     current: bool = False

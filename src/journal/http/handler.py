@@ -76,7 +76,7 @@ class Handler(PooledHandler):
         self.send_header("Connection", "close")
         self.end_headers()
         try:
-            for block in response.chunks:
+            for block in response.blocks:
                 self.wfile.write(block)
                 self.wfile.flush()
         except (BrokenPipeError, ConnectionResetError, OSError):

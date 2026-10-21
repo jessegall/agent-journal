@@ -48,7 +48,7 @@ const update = async () => {
                 </template>
             </div>
         </template>
-        <template v-else-if="!status.logged_in">
+        <template v-else-if="!status.authenticated">
             <div class="tunnel-connect">
                 <template v-if="status.rejected">
                     <p>{{ status.problems[0] }}</p>

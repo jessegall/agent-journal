@@ -21,15 +21,15 @@ class SequenceController(Controller[Sequence]):
         return [{**ModelFields.build(s), "trigger_ids": [t.id for t in self.triggers.starting(s.title)]} for s in rows]
 
     def starts(self, request: Request) -> Response:
-        sequence, value = self.repository.find(request.number("id")), str(request.body.get("starts_on", ""))
+        sequence, value = self.repository.find(request.number("id")), str(request.body.get("trigger_event", ""))
         if value.startswith(TRIGGER):
             self.triggers.save(self.triggers.find(int(value.removeprefix(TRIGGER))).with_(action=TriggerAction.SEQUENCE, text=sequence.title), request.actor)
-            return Response.json(self.shown(self.repository.save(sequence.with_(starts_on=""), request.actor)))
+            return Response.json(self.shown(self.repository.save(sequence.with_(trigger_event=""), request.actor)))
         if value and not value.endswith(".created"):
             raise Rejection(f"a sequence starts by hand, when a row is created, written <table>.created, or by a trigger, written trigger:<id>; {value!r} is none of them")
         for trigger in self.triggers.starting(sequence.title):
             self.triggers.delete(trigger, request.actor)
-        return Response.json(self.shown(self.repository.save(sequence.with_(starts_on=value), request.actor)))
+        return Response.json(self.shown(self.repository.save(sequence.with_(trigger_event=value), request.actor)))
 
     def steps(self, request: Request) -> Response:
         sequence = self.repository.find(request.number("id"))

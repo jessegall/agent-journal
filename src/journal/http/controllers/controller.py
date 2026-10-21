@@ -57,5 +57,5 @@ class Controller(Generic[S]):
         return Response.json({})
 
     def fields(self, body: dict) -> dict:
-        owned = {f.name for f in fields(self.repository.model)} - {"id", "environment_id", "created_at", "created_by", "updated_at", "updated_by", "state"}
+        owned = {f.name for f in fields(self.repository.model)} - {"id", "environment_id", "created_at", "creator", "updated_at", "updater", "state"}
         return {name: value for name, value in body.items() if name in owned}

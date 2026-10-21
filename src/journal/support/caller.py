@@ -13,7 +13,7 @@ class Caller:
 
     environment: str = "main"
     session: str = ""
-    from_agent_shell: bool = False
+    agent_shell: bool = False
     plugin: str = ""
 
     @property

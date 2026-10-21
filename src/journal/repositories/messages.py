@@ -29,9 +29,9 @@ class Messages(ScopedRepository[Message]):
         return next((m for m in self.selected("author = ? ORDER BY id DESC LIMIT 20", (Author.USER.value,)) if not m.is_terminal_line), None)
 
     def unanswered(self) -> list[Message]:
-        speech_time = self.last_message()
-        start = "" if speech_time is None else " AND read_at > ?"
-        params = (Author.USER.value,) + (() if speech_time is None else (speech_time,))
+        voiced_at = self.last_message()
+        start = "" if voiced_at is None else " AND read_at > ?"
+        params = (Author.USER.value,) + (() if voiced_at is None else (voiced_at,))
         read = self.selected(f"author = ? AND read_at IS NOT NULL{start} ORDER BY id", params)
         return [m for m in read if not m.is_terminal_line and not self.answered(m) and not self.agent_reaction(m)]
 
@@ -40,7 +40,7 @@ class Messages(ScopedRepository[Message]):
         return row["time"] if row else None
 
     def answered(self, message: Message) -> bool:
-        replied = self.connection.one("SELECT id FROM messages WHERE reply_to = ? AND author = ? LIMIT 1", (message.id, Author.AGENT.value))
+        replied = self.connection.one("SELECT id FROM messages WHERE reply_target = ? AND author = ? LIMIT 1", (message.id, Author.AGENT.value))
         return replied is not None or bool(self.links.sources(message, self.ANSWERS))
 
     def agent_reaction(self, message: Message) -> bool:
@@ -66,32 +66,32 @@ class Messages(ScopedRepository[Message]):
         return self.selected("json_extract(data, '$.share') = ? ORDER BY id", (share_id,))
 
     def keyed(self, key: str, actor: Actor) -> list[Message]:
-        return self.selected("json_extract(data, '$.key') = ? AND created_by = ?", (key, actor.stamp))
+        return self.selected("json_extract(data, '$.key') = ? AND creator = ?", (key, actor.stamp))
 
     def with_key(self, key: str) -> list[Message]:
         return self.selected("json_extract(data, '$.key') = ?", (key,))
 
     def keyed_all(self, key: str, actor: Actor) -> list[Message]:
-        return self.selected_globally("json_extract(data, '$.key') = ? AND created_by = ?", (key, actor.stamp))
+        return self.selected_globally("json_extract(data, '$.key') = ? AND creator = ?", (key, actor.stamp))
 
     def first_reply(self, message: Message) -> Message | None:
-        matched = self.selected("reply_to = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
+        matched = self.selected("reply_target = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
         linked = [self.find(ref.id) for ref in self.links.sources(message, self.ANSWERS)]
         replies = sorted([*matched, *linked], key=lambda m: m.id)
         return replies[0] if replies else None
 
     def recent_replies(self, time: datetime) -> list[Message]:
-        return self.selected("author = ? AND reply_to IS NOT NULL AND created_at >= ? ORDER BY id", (Author.AGENT.value, time.isoformat()))
+        return self.selected("author = ? AND reply_target IS NOT NULL AND created_at >= ? ORDER BY id", (Author.AGENT.value, time.isoformat()))
 
     def reply_text(self, n: int, text: str) -> list[Message]:
-        return self.selected("reply_to = ? AND author = ? AND text = ?", (n, Author.AGENT.value, text.strip()))
+        return self.selected("reply_target = ? AND author = ? AND text = ?", (n, Author.AGENT.value, text.strip()))
 
     def recent(self, last: int) -> list[Message]:
         return self.window(last)
 
     def thoughts(self, session: str, last: int = 60) -> list[Message]:
-        rows = self.selected("created_by = ? AND json_extract(data, '$.kind') = ? ORDER BY id DESC LIMIT ?", (Actor.agent(session).stamp, Message.THOUGHT, last))
+        rows = self.selected("creator = ? AND json_extract(data, '$.kind') = ? ORDER BY id DESC LIMIT ?", (Actor.agent(session).stamp, Message.THOUGHT, last))
         return list(reversed(rows))
 
     def read(self, message: Message, actor: Actor, tool_use: int) -> Message:
-        return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc), read_mark=tool_use), actor)
+        return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc), read_position=tool_use), actor)

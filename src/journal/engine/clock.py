@@ -39,7 +39,7 @@ class Clock:
 
     def _tick(self, agent: Agent, time: float) -> None:
         idle_seconds = time - agent.updated_at.timestamp()
-        self.bus.dispatch(Ticked(session=agent.session, environment_id=agent.environment_id, time=time, quiet_for=idle_seconds))
+        self.bus.dispatch(Ticked(session=agent.session, environment_id=agent.environment_id, time=time, silence_seconds=idle_seconds))
 
     def stop(self) -> None:
         self._stopping.set()

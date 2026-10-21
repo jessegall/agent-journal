@@ -23,14 +23,14 @@ class WorkersConduct(Conduct):
         from journal.features.workers.feature import Workers
         if event.call.tool not in DISPATCH_TOOLS or event.subagent:
             return self.none()
-        maximum, active = int(settings.value(Workers.SUBAGENT_LIMIT)), event.data.part(Workers).subagents_running
+        maximum, active = int(settings.value(Workers.SUBAGENT_LIMIT)), event.data.part(Workers).active_subagents
         return self.refuse(Workers.SUBAGENT_OVERFLOW.create(running=active)) if maximum and active >= maximum else self.none()
 
     def on_tool_starting_workers_worktrees(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         if event.subagent or not event.call.writes:
             return self.none()
-        owner = worktree_edits(event.data.part(Workers), event.call.written_paths)
+        owner = worktree_edits(event.data.part(Workers), event.call.edited_paths)
         return self.refuse(Workers.WORKER_FILE.create(n=owner.worker_id, name=owner.worker_name)) if owner else self.none()
 
     def on_tool_starting_workers_known(self, event: ToolStarting, settings: Settings) -> Transition:
@@ -40,7 +40,7 @@ class WorkersConduct(Conduct):
         matched = PathMentions.build(f"{value.get('description', '')} {value.get('prompt', '')}")
         if not matched or kind in INDEPENDENT_ROLES:
             return self.none()
-        existing = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.running and d.session and d.type == kind and matched & PathMentions.build(d.brief)), None)
+        existing = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.is_active and d.session and d.type == kind and matched & PathMentions.build(d.brief)), None)
         return self.refuse(Workers.SUBAGENT_REUSE.create(session=existing.session, task=existing.task)) if existing else self.none()
 
     def on_stop_workers(self, event: Stop, settings: Settings) -> Transition:
@@ -51,10 +51,10 @@ class WorkersConduct(Conduct):
 
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
-        return self.push(ExternalWait.on_workers((event.worker_id,), event.time)) if event.dispatched_by == event.session else self.none()
+        return self.push(ExternalWait.on_workers((event.worker_id,), event.time)) if event.dispatcher == event.session else self.none()
 
     def on_worker_reported_workers(self, event: WorkerReported, settings: Settings) -> Transition:
-        if event.dispatched_by and event.dispatched_by != event.session:
+        if event.dispatcher and event.dispatcher != event.session:
             return self.none()
         return self.none(workers_feature().WORKER_REPORTED.create(n=event.worker_id, name=event.name))
 

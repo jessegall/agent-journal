@@ -7,5 +7,5 @@ class Choice:
 
     environment: str
     resume: str = ""
-    hooks_aside: bool = False
-    skip_prompts: bool = False
+    stashed_hooks: bool = False
+    prompt_flags: bool = False

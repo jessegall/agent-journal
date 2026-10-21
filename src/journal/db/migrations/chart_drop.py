@@ -36,7 +36,7 @@ class ChartDrop(Migration):
         moment = datetime.now(timezone.utc).isoformat()
         place = f"at {chart['event']}" + (f" for the state {chart['state']}" if chart["state"] else "")
         abstract = f"A workflow the user {'edited' if chart['shipped'] else 'made'} {place}, written in words when the workflows went"
-        connection.execute("INSERT INTO docs (created_at, created_by, updated_at, updated_by, title, abstract, body) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        connection.execute("INSERT INTO docs (created_at, creator, updated_at, updater, title, abstract, body) VALUES (?, ?, ?, ?, ?, ?, ?)",
                            (moment, "system", moment, "system", title, abstract, self.body(connection, chart["id"])))
 
     @staticmethod

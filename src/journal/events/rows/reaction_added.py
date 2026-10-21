@@ -9,4 +9,4 @@ class ReactionAdded(RowEvent):
 
     face: str
     message_id: int
-    by_user: bool
+    user_origin: bool

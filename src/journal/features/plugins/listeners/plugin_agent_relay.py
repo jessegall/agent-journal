@@ -25,8 +25,8 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
     """The plugins that hear an agent event: those that hold it are asked now, in the order they were installed, each inside the window its manifest declares under the ceiling the user set; the rest hear it after the reply, and so does every one once the event is held. It stays a listener on purpose: it is the one funnel through which a plugin's words and holds reach the agent, and what it says is each plugin's, never the journal's conduct."""
 
     blocking = True
-    asked_while_free = True
-    asked_last = True
+    free_request = True
+    last_request = True
 
     def __init__(self, relay: PluginRelay, deferred: ListenerQueue, settings: SettingRows, exemption: PluginRefusalExemption, text: PluginText, queue: PluginQueue, edits: Edits) -> None:
         self.relay, self.deferred, self.settings, self.exemption, self.text, self.queue, self.edits = relay, deferred, settings, exemption, text, queue, edits
@@ -72,13 +72,13 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
         return plugin.manifest.has_window(Protocol.published_name(event)) and (not event.subagent or Protocol.published_name(event) in ("tool_starting", "command_starting", "file_edited"))
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
-        if answer.answer == "refuse" and isinstance(event, Stop) and event.held_before:
+        if answer.answer == "refuse" and isinstance(event, Stop) and event.prior_refusal:
             self.relay.unanswered(plugin, event, event.environment_id, answer.reason)
             return Decision()
         if answer.answer == "refuse" and Protocol.published_name(event) in REFUSABLE:
             self.relay.line(plugin, event, event.environment_id, "held", answer.reason)
             return Decision.refuse(self.text.line(plugin, answer.reason))
-        text = answer.reason if answer.answer == "refuse" else answer.tell
+        text = answer.reason if answer.answer == "refuse" else answer.message
         if not text:
             return Decision()
         self.relay.line(plugin, event, event.environment_id, "told", text)

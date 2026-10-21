@@ -15,7 +15,7 @@ class Version3Row:
     title: str = ""
     abstract: str = ""
     refs: tuple[str, ...] = ()
-    seen: tuple[str, ...] = ()
+    viewed: tuple[str, ...] = ()
     created: float = 0.0
     updated: float = 0.0
     deleted: float = 0.0
@@ -43,19 +43,19 @@ class Version3Row:
             return []
         return list(self.data[key])
 
-    def creation_time(self) -> datetime:
+    def created_at(self) -> datetime:
         return datetime.fromtimestamp(self.created, timezone.utc)
 
-    def close_time(self) -> datetime | None:
+    def closed_at(self) -> datetime | None:
         return datetime.fromtimestamp(self.completed, timezone.utc) if self.completed else None
 
-    def read_time(self) -> datetime | None:
+    def read_at(self) -> datetime | None:
         if self.completed:
-            return self.close_time()
-        return datetime.fromtimestamp(self.updated, timezone.utc) if len(self.seen) > 1 else None
+            return self.closed_at()
+        return datetime.fromtimestamp(self.updated, timezone.utc) if len(self.viewed) > 1 else None
 
     def author(self) -> str:
-        return self.seen[0]
+        return self.viewed[0]
 
     def is_open(self) -> bool:
         return not self.completed and not self.deleted

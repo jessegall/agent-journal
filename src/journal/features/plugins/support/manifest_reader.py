@@ -68,14 +68,14 @@ class ManifestReader:
 
     @staticmethod
     def event_check(manifest: PluginManifest) -> None:
-        for event in manifest.hears:
+        for event in manifest.events:
             row = ROW_EVENT.match(event)
             if event not in AGENT_EVENTS and not row:
                 raise Rejection(f"{manifest.name} hears {event}, which is no event")
             if row and row["table"] in PRIVATE_TABLES:
                 raise Rejection(f"{manifest.name} hears {event}: the {row['table']} rows are never sent to a plugin")
-        for window in manifest.holds:
-            if window.event not in manifest.hears:
+        for window in manifest.blocks:
+            if window.event not in manifest.events:
                 raise Rejection(f"{manifest.name} holds {window.event} but does not hear it")
             if window.event not in HOLDABLE:
                 raise Rejection(f"{manifest.name} holds {window.event}, which no plugin may hold; it may hold {', '.join(HOLDABLE)}")

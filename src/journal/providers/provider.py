@@ -35,12 +35,12 @@ class Provider:
     name: ClassVar[str]
     home: ClassVar[str]
     settings_file: ClassVar[str]
-    write_tools: ClassVar[frozenset[str]]
+    edit_tools: ClassVar[frozenset[str]]
     read_tool: ClassVar[str]
     shell_tool: ClassVar[str] = "Bash"
-    skip_prompts: ClassVar[tuple[str, ...]] = ()
+    prompt_flags: ClassVar[tuple[str, ...]] = ()
     settings_extras: ClassVar[dict] = {}
-    other_settings: ClassVar[tuple[str, ...]] = ()
+    foreign_settings: ClassVar[tuple[str, ...]] = ()
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
     controls: ClassVar[dict] = {"groups": [], "note": ""}
 
@@ -149,7 +149,7 @@ class Provider:
         return {kind.value: [{"hooks": [{"type": "command", "command": command}]}] for kind in self.hook_kinds}
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
-        for counterpart in self.other_settings:
+        for counterpart in self.foreign_settings:
             self.unwired(project / self.home / counterpart)
         path = project / self.home / self.settings_file
         settings = json.loads(path.read_text()) if path.is_file() else {}
@@ -192,18 +192,18 @@ class Provider:
     def edited_paths(self, tool: str, input: dict) -> list[str]:
         if tool == self.shell_tool:
             return Writes.targets(ToolInput.parsed(input).command)
-        return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)] if tool in self.write_tools else []
+        return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)] if tool in self.edit_tools else []
 
     def skill_loaded(self, tool: str, input: dict) -> str:
         return ToolInput.parsed(input).skill if tool == "Skill" else ""
 
     def writes(self, tool: str, input: dict) -> bool:
-        return tool in self.write_tools or (tool == self.shell_tool and Writes.build(ToolInput.parsed(input).command))
+        return tool in self.edit_tools or (tool == self.shell_tool and Writes.build(ToolInput.parsed(input).command))
 
     def call(self, tool: str, input: dict) -> ToolCall:
         command = ToolInput.parsed(input).command if tool == self.shell_tool else ""
         return ToolCall(tool=tool, input=input, command=command, parts=tuple(self.parts(command)), is_journal=bool(command) and Chain.is_journal_line(command), writes=self.writes(tool, input),
-                        written_paths=tuple(self.edited_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input), work=Chain.work(command) if command else "")
+                        edited_paths=tuple(self.edited_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input), work=Chain.work(command) if command else "")
 
     @staticmethod
     def parts(command: str) -> list[CommandPart]:

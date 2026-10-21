@@ -4,8 +4,8 @@ defineProps({resource: {type: Object, required: true}});
 
 <template>
     <p class="waits">
-        <template v-if="resource.blocked_why">Blocked: {{ resource.blocked_why }}</template>
-        <template v-if="resource.parked_why">Parked: {{ resource.parked_why }}</template>
+        <template v-if="resource.block_reason">Blocked: {{ resource.block_reason }}</template>
+        <template v-if="resource.suspension_reason">Parked: {{ resource.suspension_reason }}</template>
     </p>
 </template>
 

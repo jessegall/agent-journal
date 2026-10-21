@@ -83,7 +83,7 @@ class Tunler:
         if not isinstance(fields, dict):
             return TunlerStatus(installed=True, command=command, unreadable=True)
         saved = bool(fields.get("logged_in"))
-        return TunlerStatus(installed=True, command=command, logged_in=saved and bool(fields.get("auth_ok")), rejected=saved and fields.get("auth_ok") is False,
+        return TunlerStatus(installed=True, command=command, authenticated=saved and bool(fields.get("auth_ok")), rejected=saved and fields.get("auth_ok") is False,
                             outdated=saved and "auth_ok" not in fields, account=fields.get("user") or fields.get("email", ""), host=fields.get("host", ""))
 
     def login(self, host: str, username: str, password: str, master: str) -> TunlerLogin:

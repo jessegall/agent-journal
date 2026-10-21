@@ -67,8 +67,8 @@ def app(journal_root: Path, monkeypatch):
 
 def made(output) -> int:
     """The number of the row a command made, or the command's refusal as the failure."""
-    assert output.code == 0, output.err
-    return int(output.out.split()[1].rstrip(":"))
+    assert output.code == 0, output.error
+    return int(output.text.split()[1].rstrip(":"))
 
 
 
@@ -112,22 +112,22 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app: App):
     assert "context 25% full" in body["hookSpecificOutput"]["additionalContext"]
     from journal.repositories.agents import Agents
     machine, agents = app.container.get(StateMachine), app.container.get(Agents)
-    assert isinstance(machine.current("s1"), Working) and agents.session_agent("s1").mark_owed == 25 and agents.session_agent("s1").context_mark == 25, "the mark is a fact on the row, not a state"
+    assert isinstance(machine.current("s1"), Working) and agents.session_agent("s1").threshold_due == 25 and agents.session_agent("s1").context_threshold == 25, "the mark is a fact on the row, not a state"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
     assert status == 409 and "writes wait" in body["error"]
     assert app.console().run(["fact", "create", "the login is flaky"], AGENT).code == 0
-    assert agents.session_agent("s1").mark_owed == 0 and machine.current("s1").task_id == 1
+    assert agents.session_agent("s1").threshold_due == 0 and machine.current("s1").task_id == 1
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
     assert "hookSpecificOutput" not in hook(app, "PreToolUse", tool_name="Read", tool_input={})[1], "the mark asks once"
     context(app, 55)
-    assert "context 50% full" in json.dumps(hook(app, "Stop")[1]) and agents.session_agent("s1").mark_owed == 50
+    assert "context 50% full" in json.dumps(hook(app, "Stop")[1]) and agents.session_agent("s1").threshold_due == 50
     app.console().run(["memory", "skip", "all logged"], AGENT)
-    assert agents.session_agent("s1").mark_owed == 0 and machine.current("s1").task_id == 1
+    assert agents.session_agent("s1").threshold_due == 0 and machine.current("s1").task_id == 1
 
 
 def test_a_rule_binds_the_project_not_an_environment(app: App):
     app.console().run(["rule", "create", "Always name the model"], Caller("other"))
-    assert "Always name the model" in app.console().run(["rule", "list"], USER).out
+    assert "Always name the model" in app.console().run(["rule", "list"], USER).text
 
 
 def test_a_mark_owed_outlives_being_stuck_and_a_decision_pays_it(app: App):
@@ -139,12 +139,12 @@ def test_a_mark_owed_outlives_being_stuck_and_a_decision_pays_it(app: App):
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     app.console().run(["stuck", "stuck"], AGENT)
     machine, agents = app.container.get(StateMachine), app.container.get(Agents)
-    assert machine.current("s1").name == "stuck" and agents.session_agent("s1").mark_owed == 25, "stuck, the mark is still owed"
+    assert machine.current("s1").name == "stuck" and agents.session_agent("s1").threshold_due == 25, "stuck, the mark is still owed"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert isinstance(machine.current("s1"), Working), "the agent's own tool use lifts being stuck"
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 409, "the mark still holds a write"
     app.console().run(["memory", "skip", "fine"], AGENT)
-    assert agents.session_agent("s1").mark_owed == 0 and machine.current("s1").task_id == 1, "the decision pays the mark; the task stands"
+    assert agents.session_agent("s1").threshold_due == 0 and machine.current("s1").task_id == 1, "the decision pays the mark; the task stands"
 
 
 def test_a_plan_is_followed_task_by_task_to_its_end(app: App):
@@ -158,7 +158,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app: App):
     console.run(["plan", "add", "1", "tag it"], USER)
     hook(app, "SessionStart")
     console.run(["plan", "approve", "1"], USER)
-    output = console.run(["plan", "start", "1"], AGENT).out
+    output = console.run(["plan", "start", "1"], AGENT).text
     assert "task 1," in output and "is started" in output
     machine = app.container.get(StateMachine)
     assert (machine.current("s1").name, machine.current("s1").plan_id, machine.current("s1").task_id) == ("following_plan", 1, 1)
@@ -166,12 +166,12 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app: App):
     console.run(["await", "the build", "--until", "false"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
     assert machine.current("s1").name == "awaiting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
-    output = console.run(["task", "complete", "1"], AGENT).out
+    output = console.run(["task", "complete", "1"], AGENT).text
     lower = app.container.get(Agents).session_agent("s1").stack[-2]
     assert "task 2, tag it is next" in output and machine.current("s1").name == "awaiting" and lower["state"] == "following_plan" and lower["data"]["task_id"] == 1, "the wait stands and the plan beneath has not heard: only the top of the stack hears"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert (machine.current("s1").name, machine.current("s1").task_id) == ("following_plan", 2), "the agent's own tool use lifts the wait, and the plan catches up to its started task on resume"
-    output = console.run(["task", "complete", "2"], AGENT).out
+    output = console.run(["task", "complete", "2"], AGENT).text
     assert "task 2 done" in output and "is next" not in output, "the last task closed, nothing is next"
     assert [layer["state"] for layer in app.container.get(Agents).session_agent("s1").stack] == ["idle"], "done with the plan, the agent goes to rest"
     assert app.container.get(Plans).find(1).state == PlanState.FINISHED
@@ -186,12 +186,12 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app: App, monkeyp
     console = app.console()
     console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the parser", "--brief", "read src/parse.py first"], AGENT)
-    output = console.run(["task", "start", "1"], AGENT).out
+    output = console.run(["task", "start", "1"], AGENT).text
     assert "task 1 started" in output and "brief: read src/parse.py first" in output, "the brief comes with the start"
     for line in ("one", "two", "three", "four"):
         console.run(["task", "log", "1", line], AGENT)
     console.run(["task", "suspend", "1", "later"], AGENT)
-    resumed = console.run(["task", "resume", "1"], AGENT).out
+    resumed = console.run(["task", "resume", "1"], AGENT).text
     assert "logged: two" in resumed and "logged: four" in resumed and "logged: one" not in resumed, "the latest three log lines"
     console.run(["task", "complete", "1"], AGENT)
     console.run(["plan", "create", "release", "--brief", "ship"], USER)
@@ -199,7 +199,7 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app: App, monkeyp
     console.run(["plan", "add", "1", "tag it", "--brief", "git tag v4"], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
-    closed = console.run(["task", "complete", "2"], AGENT).out
+    closed = console.run(["task", "complete", "2"], AGENT).text
     app.runtime().deferred.drain()
     assert "plan 1: task 3, tag it is next. brief: git tag v4" in closed, "the closing command prints the plan's next task with its brief"
     assert not any("tag it is next" in line for line in keystrokes), "nothing is typed afterwards for a start the agent caused"
@@ -218,8 +218,8 @@ def test_the_plans_next_task_is_named_once_when_another_of_its_tasks_closes_besi
         console.run(["plan", "add", "1", title], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
-    first = console.run(["task", "complete", "1"], AGENT).out
-    beside = console.run(["task", "complete", "4"], AGENT).out
+    first = console.run(["task", "complete", "1"], AGENT).text
+    beside = console.run(["task", "complete", "4"], AGENT).text
     app.runtime().deferred.drain()
     assert "plan 1: task 2, tag it is next" in first and "is next" not in beside, "closing a task not in hand says nothing about where the plan went"
     assert not any("task 2, tag it is next" in line for line in keystrokes), "the next task is the command's printed output, never typed afterwards"
@@ -246,7 +246,7 @@ def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked
     assert plans.find(1).state == "started", "one blocked task never blocks its plan"
     console.run(["task", "block", "1", "the build is red"], AGENT)
     assert plans.find(1).state == "blocked" and any("plan 1 is blocked: all its tasks left are blocked" in line for line in keystrokes)
-    assert "is blocked, waiting on" in console.run(["plan", "start", "1"], AGENT).err
+    assert "is blocked, waiting on" in console.run(["plan", "start", "1"], AGENT).error
     console.run(["task", "unblock", "2"], AGENT)
     assert plans.find(1).state == "started" and any("plan 1 is open again: task 2 is open again" in line for line in keystrokes)
     marker = app.config.root / "released"
@@ -272,7 +272,7 @@ def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app: App):
     console.run(["plan", "todos", "1", "2", "3"], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
-    output = console.run(["task", "complete", "2"], AGENT).out
+    output = console.run(["task", "complete", "2"], AGENT).text
     assert "side work" not in output and "parked" not in output, "a plan's task leaves the next to the plan"
 
 
@@ -294,7 +294,7 @@ def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_
     console.run(["task", "block", "1", "the pull request is merged", "--until", f"test -f {marker}"], AGENT)
     console.run(["task", "block", "2", "--until", "no-such-program-here"], AGENT)
     checks, tasks, runner = app.container.get(Checks), app.container.get(Tasks), app.container.get(CheckRunner)
-    assert checks.all() == [] and "waits until" not in console.run(["check", "list"], AGENT).out, "a wait's check is the task's, off the checks list"
+    assert checks.all() == [] and "waits until" not in console.run(["check", "list"], AGENT).text, "a wait's check is the task's, off the checks list"
     runner.run(checks.find(1), Actor.system())
     assert tasks.find(1).state == "blocked" and checks.find(1).last_fault == "", "not passing yet is no fault"
     runner.run(checks.find(2), Actor.system())
@@ -321,12 +321,12 @@ def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app: App, monkeypatch)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "block", "2", "the user picks the moment"], AGENT)
-    output = console.run(["task", "complete", "1"], AGENT).out
+    output = console.run(["task", "complete", "1"], AGENT).text
     app.runtime().deferred.drain()
     assert any("plan 1 is blocked: all its tasks left are blocked" in line for line in keystrokes) and "plan 1 is done" not in output, "the agent is told why the plan waits"
     assert app.container.get(Plans).find(1).state == PlanState.BLOCKED, "with every task left blocked, the plan blocks itself and is not done"
     console.run(["task", "unblock", "2"], AGENT)
-    assert app.container.get(Plans).find(1).state == PlanState.STARTED and "task 2," in console.run(["plan", "start", "1"], AGENT).out
+    assert app.container.get(Plans).find(1).state == PlanState.STARTED and "task 2," in console.run(["plan", "start", "1"], AGENT).text
 
 
 def test_a_task_waits_on_a_question_by_a_link_and_the_answer_clears_it(app: App):
@@ -372,17 +372,17 @@ def test_messages_are_put_before_the_agent_and_a_reply_tag_answers_them(app: App
     console.run(["message", "send", "can you look at the login?"], USER)
     status, body = hook(app, "UserPromptSubmit", prompt="hi")
     assert "new message 1" in body["hookSpecificOutput"]["additionalContext"]
-    shown = console.run(["message", "read", "1"], AGENT).out
+    shown = console.run(["message", "read", "1"], AGENT).text
     assert "can you look at the login?" in shown and "[!reply:1]" in shown
     hook(app, "MessageDisplay", message="[!reply:1] On it, the login is next.")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).scoped()
     assert [m.author for m in messages] == ["user", "user", "agent"] and messages[1].text == "hi", "the line typed in the terminal is the user's message too"
-    assert messages[2].reply_to == 1 and messages[2].text == "On it, the login is next."
+    assert messages[2].reply_target == 1 and messages[2].text == "On it, the login is next."
     assert messages[0].read_at is not None
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
     console.run(["message", "send", "> On it, the login is next.\n> More of the agent's words.\n\nGood, and the logout too.", "--reply-to", "3"], USER)
-    shown = console.run(["message", "read", "4"], AGENT).out
+    shown = console.run(["message", "read", "4"], AGENT).text
     assert "message 4 from the user, a reply to message 3: Good, and the logout too." in shown and "On it" not in shown, "a reply names what it answers by number and never repeats its words"
 
 
@@ -397,11 +397,11 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app: App, monkeypatch):
     hook(app, "MessageDisplay", message="Good evening. At your service.\n\n[!reply:1]")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).scoped()
-    assert messages[-1].author == "agent" and messages[-1].reply_to == 1 and messages[-1].text == "Good evening. At your service."
+    assert messages[-1].author == "agent" and messages[-1].reply_target == 1 and messages[-1].text == "Good evening. At your service."
     hook(app, "MessageDisplay", message="Both done, see below [!reply:2]")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).scoped()
-    assert messages[-1].reply_to is None and "[!reply:2]" in messages[-1].text, "a tag inside a line is text"
+    assert messages[-1].reply_target is None and "[!reply:2]" in messages[-1].text, "a tag inside a line is text"
     assert keystrokes[-1].endswith("the [!reply:2] tag must open a line of your turn; message 2 is still unanswered")
     assert "new message 2" in hook(app, "Stop")[1]["reason"]
     notified = len(keystrokes)
@@ -420,14 +420,14 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app: App):
     machine = app.container.get(StateMachine)
     assert isinstance(machine.current("s1"), Waiting) and machine.current("s1").question_id == 1
     assert hook(app, "Stop")[1] == {}, "idle while waiting is fine"
-    assert "Which name?  [alpha / beta]" in console.run(["question", "list"], USER).out
+    assert "Which name?  [alpha / beta]" in console.run(["question", "list"], USER).text
     from journal.repositories.messages import Messages
     requested = lambda: [(m.text, m.data["options"], m.data["answer"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "question"]
     assert requested() == [("Which name?", ["alpha", "beta"], None)], "a question asked is a message in the chat"
     console.run(["question", "answer", "1", "beta"], USER)
     assert requested() == [("Which name?", ["alpha", "beta"], "beta")], "and the same message is settled when it is answered"
     assert machine.current("s1").task_id == 1
-    assert console.run(["question", "list"], USER).out == ""
+    assert console.run(["question", "list"], USER).text == ""
 
 
 def test_a_prompt_answers_a_question_in_other_words(app: App):
@@ -476,7 +476,7 @@ def test_a_check_edited_runs_its_new_command(app: App):
     console.run(["check", "create", "Marker", "--command", "false", "--brief", "fails"], AGENT)
     console.run(["check", "edit", "1", "--command", "true", "--brief", "passes", "--every", "5"], AGENT)
     check = app.container.get(Checks).find(1)
-    assert (check.title, check.command, check.brief, check.every) == ("Marker", "true", "passes", 5), "what the edit names changes, the rest stays"
+    assert (check.title, check.command, check.brief, check.interval) == ("Marker", "true", "passes", 5), "what the edit names changes, the rest stays"
     assert app.container.get(CheckRunner).run(check, Actor.system()).last_passed is True
 
 
@@ -489,13 +489,13 @@ def test_the_same_check_three_times_is_named(app: App):
 
 def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app: App):
     console = app.console()
-    created = console.run(["sequence", "create", "release", "--steps", "bump the version | tag it with `git tag v1` | push"], USER).out
+    created = console.run(["sequence", "create", "release", "--steps", "bump the version | tag it with `git tag v1` | push"], USER).text
     release = created.split()[1].rstrip(":")
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     edit = lambda: hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py", "old_string": "a", "new_string": "b"})[1]
-    assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).out
+    assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).text
     assert "step 1" not in json.dumps(hook(app, "Stop")[1]), "a stop right after the step was told passes it by"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"], "a tool used since, the stop is held with the step"
@@ -506,24 +506,24 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app: App):
     assert bash("journal message unread && journal task list") == 200, "a line of journal commands alone goes through"
     assert bash("journal task list && sed -i '' s/a/b/ a.py") == 409, "a journal command chained with a write stays held"
     assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py", "old_string": "a", "new_string": "b"}, agent_id="r1")[0] == 200, "a subagent is never held"
-    assert "step 1 of sequence" in console.run(["sequence", "next"], AGENT).err, "a step never taken up cannot be moved on"
-    assert "following sequence" in console.run(["sequence", "follow"], AGENT).out
+    assert "step 1 of sequence" in console.run(["sequence", "next"], AGENT).error, "a step never taken up cannot be moved on"
+    assert "following sequence" in console.run(["sequence", "follow"], AGENT).text
     assert "a write waits" not in json.dumps(edit()), "a step taken up lets writes through"
     assert "step 1: bump the version" in hook(app, "Stop")[1]["reason"], "a tool used since the last hold, so the stop is held again"
     console.run(["await", "the release", "--until", "false"], AGENT)
     assert hook(app, "Stop")[1].get("decision") != "block", "a step that waits on the user says so, and the stop passes"
-    assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).out
+    assert "step 2: tag it" in console.run(["sequence", "next"], AGENT).text
     assert "a write waits" not in json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "git tag v1 && git push --tags"})[1]), "a command the step names goes through"
-    assert app.container.get(RunTracker).current("s1", 1).taken_up_at, "and takes the step up"
-    assert "step 3: push" in console.run(["sequence", "next"], AGENT).out
+    assert app.container.get(RunTracker).current("s1", 1).adopted_at, "and takes the step up"
+    assert "step 3: push" in console.run(["sequence", "next"], AGENT).text
     console.run(["sequence", "follow"], AGENT)
     app.container.get(SettingRows).set("sequences.stale_after", 2, Actor.user(1))
     edit(), edit()
     assert "2 writes since sequence" in json.dumps(edit()), "a step taken up and not moved on holds again after the set writes"
-    assert "parked at step 3" in console.run(["sequence", "suspend", "--why", "the user wants the docs first"], AGENT).out
+    assert "parked at step 3" in console.run(["sequence", "suspend", "--why", "the user wants the docs first"], AGENT).text
     assert "a write waits" not in json.dumps(edit()) and "step 3" not in json.dumps(hook(app, "Stop")[1]), "a parked run holds nothing"
     console.run(["sequence", "follow"], AGENT)
-    assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
+    assert "ran its last step" in console.run(["sequence", "next"], AGENT).text
     assert app.container.get(StateMachine).current("s1").task_id == 1
 
 
@@ -572,7 +572,7 @@ def test_a_worker_runs_the_dispatching_agents_own_program(app: App, monkeypatch)
     console.run(["worker", "dispatch", "Mr. Babbage", "write cli.py", "--profile", "journal-medior", "--model", "sonnet"], USER)
     workers = app.container.get(Workers)
     assert workers.find(1).provider == "codex" and workers.find(2).provider == "claude", "a Codex agent's worker runs Codex, so its model names fit"
-    assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Caller("main", "c1")).out, "a list of workers out points at the wait"
+    assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Caller("main", "c1")).text, "a list of workers out points at the wait"
 
 
 def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: App, monkeypatch):
@@ -626,10 +626,10 @@ def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: Ap
     rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": str(app.container.get(WorkerRunner).place(worker).resolve())}}) + "\n" + json.dumps(line_text) + "\n")
     read = lambda: json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/workers/1/transcript", headers={"X-Journal-Env": "main"}), timeout=5))
     assert [turn["text"] for turn in read()["turns"]] == ["Storage is written."]
-    assert workers.find(1).found_session == session, "the session found in Codex's files is kept on the worker's row"
+    assert workers.find(1).recovered_session == session, "the session found in Codex's files is kept on the worker's row"
     rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": "/elsewhere"}}) + "\n" + json.dumps(line_text) + "\n")
     assert [turn["text"] for turn in read()["turns"]] == ["Storage is written."], "the next read takes the kept session and does not look through the rollouts again"
-    assert workers.save(workers.find(1).running_as(2, timing.time()), Actor.system()).found_session == "", "a new run looks for its own session"
+    assert workers.save(workers.find(1).running_as(2, timing.time()), Actor.system()).recovered_session == "", "a new run looks for its own session"
 
 
 def test_a_dispatch_without_a_model_a_profile_or_a_job_is_refused(app: App):
@@ -661,9 +661,9 @@ def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app: 
     assert files.read("builder")["kind"] == "worker" and files.read("journal-planner")["kind"] == "subagent"
     hook(app, "SessionStart")
     refused = app.console().run(["worker", "dispatch", "Mr. Darwin", "look it up", "--profile", "journal-researcher"], AGENT)
-    assert refused.code != 0 and "no worker profile" in refused.err and "Agent tool" in refused.err
+    assert refused.code != 0 and "no worker profile" in refused.error and "Agent tool" in refused.error
     assert (files.read("journal-senior")["model"], files.read("journal-medior")["model"]) == ("opus", "sonnet"), "the two shipped workers keep their own models, whatever the setting"
-    assert "on claude sonnet" in app.console().run(["worker", "dispatch", "Mr. Brunel", "write it", "--profile", "builder"], AGENT).out, "the profile names the model"
+    assert "on claude sonnet" in app.console().run(["worker", "dispatch", "Mr. Brunel", "write it", "--profile", "builder"], AGENT).text, "the profile names the model"
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.repositories.workers import Workers
     worker = app.container.get(Workers).scoped()[-1]
@@ -759,7 +759,7 @@ def test_a_check_keeps_its_description_for_the_page(app: App):
     app.console().run(["check", "create", "Check for sins", "--command", "true", "--brief", "Judges the project; a failure lists the sins found"], USER)
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/checks", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         row = json.loads(reply.read())["rows"][0]
-    assert (row["title"], row["brief"], row["command"], row["last_ran_at"]) == ("Check for sins", "Judges the project; a failure lists the sins found", "true", None), "the description is the row's brief, and a check never run says so by its last run's time"
+    assert (row["title"], row["brief"], row["command"], row["last_run_at"]) == ("Check for sins", "Judges the project; a failure lists the sins found", "true", None), "the description is the row's brief, and a check never run says so by its last run's time"
 
 
 def test_the_documents_page_lists_the_projects_documents_their_search_and_the_attached_files(app: App, tmp_path):
@@ -773,8 +773,8 @@ def test_the_documents_page_lists_the_projects_documents_their_search_and_the_at
     (old / "003").mkdir()
     (old / "003" / "doc.md").write_text("")
     console = app.console()
-    assert "1 documents brought in, 0 already here" in console.run(["doc", "import", str(old)], USER).out, "a deleted one and an empty one stay out"
-    assert "0 documents brought in, 1 already here" in console.run(["doc", "import", str(old)], USER).out, "a second import brings nothing twice"
+    assert "1 documents brought in, 0 already here" in console.run(["doc", "import", str(old)], USER).text, "a deleted one and an empty one stay out"
+    assert "0 documents brought in, 1 already here" in console.run(["doc", "import", str(old)], USER).text, "a second import brings nothing twice"
     port = app.server().port
     read = lambda path, environment="main": json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}{path}", headers={"X-Journal-Env": environment}), timeout=5))
     console.run(["environment", "create", "other"], USER)
@@ -797,17 +797,17 @@ def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app: App):
     app.console().run(["check", "create", "Counts", "--command", f"echo 1/3; sleep 1.5; echo 2/3; sleep 1.5; printf '%s' '{report}' > \"$JOURNAL_REPORT\"; exit 1"], USER)
     checks = app.container.get(Checks)
     started = app.container.get(CheckRunner).start(checks.find(1), Actor.user(1))
-    assert started.running is not None, "a run started from the page answers at once, marked running"
+    assert started.progress is not None, "a run started from the page answers at once, marked running"
     viewed = []
     for _ in range(60):
         row = checks.find(1)
-        if row.running is None:
+        if row.progress is None:
             break
-        viewed.append((row.running.done, row.running.total))
+        viewed.append((row.progress.finished_count, row.progress.total))
         clock.sleep(0.1)
     row = checks.find(1)
     assert (1, 3) in viewed or (2, 3) in viewed, f"the row says how far the run is while it runs: {viewed[-5:]}"
-    assert row.running is None and row.last_passed is False and row.last_took > 2, "the run's end clears its progress and keeps how long it took"
+    assert row.progress is None and row.last_passed is False and row.last_duration > 2, "the run's end clears its progress and keeps how long it took"
     assert row.last_report.summary == "1 sin" and row.last_report.findings[0].line == 3, "the report the check wrote is kept with its run"
 
 
@@ -831,9 +831,9 @@ def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app: App, monkeypatch)
     console.run(["check", "create", "it is broken", "--command", "echo boom; exit 1", "--every", "1"], USER)
     assert console.run(["check", "run", "1"], USER).code == 0
     output = console.run(["check", "run", "2"], USER)
-    assert output.code == 1 and "boom" in output.out
+    assert output.code == 1 and "boom" in output.text
     assert keystrokes and "check 2, it is broken, failed" in keystrokes[0] and "boom" in keystrokes[0]
-    assert "failed   it is broken" in console.run(["check", "list"], USER).out
+    assert "failed   it is broken" in console.run(["check", "list"], USER).text
 
 
 def test_a_due_check_runs_on_the_clock(app: App):
@@ -964,9 +964,9 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app: App,
 
 def test_a_command_reports_every_row_it_caused_that_its_own_words_did_not_name(app: App):
     console = app.console()
-    output = console.run(["plan", "create", "release"], USER).out
+    output = console.run(["plan", "create", "release"], USER).text
     assert output.startswith("plan 1 draft") and "created:" not in output, "the command named the plan itself, so the trailer says nothing twice"
-    output = console.run(["plan", "add", "1", "write the notes"], USER).out
+    output = console.run(["plan", "add", "1", "write the notes"], USER).text
     assert "task 1 added to plan 1" in output and "created: link " in output and "task 1," not in output.split("created:")[1], "only the link, which the command did not name"
 
 
@@ -1011,7 +1011,7 @@ def test_skills_paid_from_one_look_at_the_agent_each_stay_paid(app: App):
     viewed = agents.session_agent("s1")
     for skill in skills:
         needs.discharge(viewed, skill)
-    assert not set(agents.session_agent("s1").skills_owed) & {"tasks", "checks", "messages", "plugins"}, "four skills read at once, each paid from the same look at the agent, are all paid: none is put back by the others"
+    assert not set(agents.session_agent("s1").skills_due) & {"tasks", "checks", "messages", "plugins"}, "four skills read at once, each paid from the same look at the agent, are all paid: none is put back by the others"
 
 
 def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_datagrams(app: App):
@@ -1084,7 +1084,7 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app: App, monkeypat
     segments = [line for line in keystrokes if line.startswith("[journal]")]
     full = " ".join(line.removeprefix("[journal] ") for line in segments)
     assert "changed how you talk" in full and 'Address me as "my liege"' in full, "the change is typed whole, in as many marked pieces as the terminal needs"
-    assert "* squire" in console.run(["voice", "list"], USER).out
+    assert "* squire" in console.run(["voice", "list"], USER).text
     for segment in segments:
         hook(app, "UserPromptSubmit", prompt=segment)
     app.runtime().deferred.drain()
@@ -1113,7 +1113,7 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app: A
     assert "new messages 1, 2, 3" in notified
     app.console().run(["message", "send", "four"], USER)
     assert "4 messages unread: `journal message unread`" in hook(app, "Stop")[1]["reason"]
-    shown = app.console().run(["message", "unread"], AGENT).out
+    shown = app.console().run(["message", "unread"], AGENT).text
     assert shown.count("reply with [!reply:") == 4 and "are you there?" in shown and "four" in shown
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
 
@@ -1139,7 +1139,7 @@ def test_a_reply_written_before_tool_calls_answers_its_message_at_once(app: App)
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls"})
     app.runtime().deferred.drain()
     reply = messages.scoped()[-1]
-    assert reply.reply_to == 1 and reply.text == "Yes, fourteen tasks went into the plan." and not reply.acknowledgement
+    assert reply.reply_target == 1 and reply.text == "Yes, fourteen tasks went into the plan." and not reply.acknowledgement
     assert messages.find(1).read_at is not None
     hook(app, "MessageDisplay", delta="Waiting for the suite.", turn_id="t1", message_id="m2", index=0, final=True)
     app.runtime().deferred.drain()
@@ -1155,11 +1155,11 @@ def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app: App, monkeyp
     console = app.console()
     console.run(["message", "send", "thanks, carry on"], USER)
     hook(app, "SessionStart")
-    assert console.run(["message", "react", "1", "👍"], AGENT).out.startswith("👍 on message 1")
+    assert console.run(["message", "react", "1", "👍"], AGENT).text.startswith("👍 on message 1")
     messages, reactions = app.container.get(Messages), app.container.get(Reactions)
     assert messages.find(1).read_at is not None, "a face from the agent answers the message"
     assert [r.face for r in reactions.reactions(messages.find(1))] == ["👍"]
-    assert console.run(["message", "react", "1", "👍"], AGENT).out.startswith("👍 off message 1") and reactions.reactions(messages.find(1)) == []
+    assert console.run(["message", "react", "1", "👍"], AGENT).text.startswith("👍 off message 1") and reactions.reactions(messages.find(1)) == []
     assert console.run(["message", "react", "1", "🍕"], AGENT).code == 1
     hook(app, "MessageDisplay", message="Done.")
     app.runtime().deferred.drain()
@@ -1337,7 +1337,7 @@ def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app:
     assert "before your first write, run `journal environment overview`" in body["hookSpecificOutput"]["additionalContext"]
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     assert status == 409 and "`journal environment overview`" in body["error"]
-    shown = console.run(["environment", "overview"], AGENT).out
+    shown = console.run(["environment", "overview"], AGENT).text
     assert "task in hand: 1 t" in shown and "unread messages: 1" in shown
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
 
@@ -1354,13 +1354,13 @@ def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_bene
     hook(app, "SessionStart")
     from journal.repositories.agents import Agents
     agents = app.container.get(Agents)
-    assert machine.current("s1").name == "waiting" and agents.session_agent("s1").oriented is False, "a new session keeps the agent in its wait and owes the look as a fact"
+    assert machine.current("s1").name == "waiting" and agents.session_agent("s1").has_overview is False, "a new session keeps the agent in its wait and owes the look as a fact"
     console.run(["question", "answer", "1", "beta"], USER)
     app.runtime().deferred.drain()
-    assert machine.current("s1").name == "working" and agents.session_agent("s1").oriented is False, "the answer released the wait; the look is still owed"
+    assert machine.current("s1").name == "working" and agents.session_agent("s1").has_overview is False, "the answer released the wait; the look is still owed"
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 409, "a write before the look is held"
     console.run(["environment", "overview"], AGENT)
-    assert agents.session_agent("s1").oriented is True and hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "oriented again, the agent goes on with its work"
+    assert agents.session_agent("s1").has_overview is True and hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "oriented again, the agent goes on with its work"
 
 
 def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app: App, monkeypatch):
@@ -1389,14 +1389,14 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app: 
     console.run(["task", "complete", "1"], AGENT)
     machine, plans = app.container.get(StateMachine), app.container.get(Plans)
     waiting = machine.current("s1")
-    assert (waiting.name, waiting.plan_id, waiting.task_id, waiting.at_checkpoint) == (FollowingPlan.name, 1, 0, True) and plans.checkpoint_plans(plans.find(1)).phase.title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
+    assert (waiting.name, waiting.plan_id, waiting.task_id, waiting.checkpoint_pause) == (FollowingPlan.name, 1, 0, True) and plans.checkpoint_plans(plans.find(1)).phase.title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "phase 1 is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "the checkpoint waits for the user's look, said at the stop"
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and (machine.current("s1").plan_id, machine.current("s1").task_id) == (1, 2), "plan start goes on past the checkpoint"
     console.run(["task", "complete", "2"], AGENT)
     settings.save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
     console.run(["plan", "start", "2"], AGENT)
-    closed = console.run(["task", "complete", "3"], AGENT).out
+    closed = console.run(["task", "complete", "3"], AGENT).text
     assert app.container.get(Tasks).find(4).state == "started" and (machine.current("s1").plan_id, machine.current("s1").task_id) == (2, 4), "in auto mode a checkpoint never stops the plan"
     app.runtime().deferred.drain()
     assert "plan 2: task 4, q second is next" in closed and not any("q second is next" in line for line in keystrokes), "the closing command prints the next task; the state types nothing for a start the agent caused"
@@ -1427,12 +1427,12 @@ def test_a_document_is_read_by_its_outline_and_one_section_at_a_time(app: App, t
     text.write_text("The opening line.\n\n## Install\n\n- curl the script\n- run journal claude\n\n## Commands\n\n```sh\n# not a heading\njournal task list\n```\n")
     console = app.console()
     produced = console.run(["doc", "create", "Guide", "--file", str(text), "--abstract", "how to start"], AGENT)
-    assert produced.code == 0, produced.err
-    shown = console.run(["doc", "show", "1"], AGENT).out
+    assert produced.code == 0, produced.error
+    shown = console.run(["doc", "show", "1"], AGENT).text
     assert "how to start" in shown and "1  Install" in shown and "2  Commands" in shown and "curl the script" not in shown, "the outline, never the text"
     assert "not a heading" not in shown, "a # in a code block is no heading"
-    assert console.run(["doc", "show", "1", "--section", "install", "--bullets"], AGENT).out.endswith("- curl the script\n- run journal claude\n")
-    assert "2 Commands: journal task list" in console.run(["doc", "show", "1", "--grep", "task list"], AGENT).out
+    assert console.run(["doc", "show", "1", "--section", "install", "--bullets"], AGENT).text.endswith("- curl the script\n- run journal claude\n")
+    assert "2 Commands: journal task list" in console.run(["doc", "show", "1", "--grep", "task list"], AGENT).text
     assert console.run(["doc", "show", "1", "--section", "9"], AGENT).code == 1
 
 
@@ -1446,11 +1446,11 @@ def test_a_question_whose_options_say_i_or_you_is_refused(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
     refused = app.console().run(["question", "ask", "Who upgrades it?", "--options", "I'll upgrade it myself", "You run the upgrade"], AGENT)
-    assert refused.code == 1 and "never I, we or you" in refused.err and "I'll upgrade it myself; You run the upgrade" in refused.err
+    assert refused.code == 1 and "never I, we or you" in refused.error and "I'll upgrade it myself; You run the upgrade" in refused.error
     lone = app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, The agent upgrades it"], AGENT)
-    assert lone.code == 1 and "its own quoted argument" in lone.err, "one option holding a comma is the old comma list, refused"
+    assert lone.code == 1 and "its own quoted argument" in lone.error, "one option holding a comma is the old comma list, refused"
     requested = app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, today", "The agent upgrades it"], AGENT)
-    assert requested.code == 0 and "1. The user upgrades it, today" in requested.out and "2. The agent upgrades it" in requested.out, "a comma inside a quoted option stays in it, and the options are printed back numbered"
+    assert requested.code == 0 and "1. The user upgrades it, today" in requested.text and "2. The agent upgrades it" in requested.text, "a comma inside a quoted option stays in it, and the options are printed back numbered"
 
 
 def test_a_reply_sent_by_command_comes_back_with_the_hint_that_it_can_be_typed(app: App):
@@ -1469,15 +1469,15 @@ def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app: Ap
     console.run(["plan", "create", "release", "--brief", "ship the base Repository change"], USER)
     console.run(["message", "send", "make it laravel style: the scope applies by itself"], USER)
     console.run(["fact", "create", "the base model is data only"], AGENT)
-    output = console.run(["search", "base", "REPOSITORY"], AGENT).out
+    output = console.run(["search", "base", "REPOSITORY"], AGENT).text
     assert "task 1: Scope the reads" in output and "plan 1: release" in output, "every word, any case, in any text field"
     assert "fact" not in output and "message" not in output.split("Searched")[0], "a row missing a word is not found"
-    assert console.run(["search", "find", "100%"], AGENT).out == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
+    assert console.run(["search", "find", "100%"], AGENT).text == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
     thresholds = [m for m in app.container.get(Messages).scoped() if m.data.get("kind") == "search"]
     assert thresholds[0].text == 'Searched for "base REPOSITORY"' and "task 1: Scope the reads" in thresholds[0].data["detail"], "the mark opens what was found"
     console.run(["check", "create", "Lint the base repository", "--command", "true", "--every", "0"], AGENT)
-    assert "check 1: Lint the base repository" in console.run(["search", "base", "repository"], AGENT).out, "every model with words of its own is searched, a check among them"
-    only = console.run(["search", "base", "repository", "--model", "plan,check"], AGENT).out
+    assert "check 1: Lint the base repository" in console.run(["search", "base", "repository"], AGENT).text, "every model with words of its own is searched, a check among them"
+    only = console.run(["search", "base", "repository", "--model", "plan,check"], AGENT).text
     assert "plan 1: release" in only and "check 1" in only and "task 1" not in only, "--model narrows to the models named"
 
 
@@ -1547,7 +1547,7 @@ def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_th
         file.write(j.dumps(row) + "\n")
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "the reply in the transcript answered the message before the call was judged"
     replies = [m for m in messages.scoped() if m.author == "agent" and m.text == "Here, Sir Jesse, and writing."]
-    assert len(replies) == 1 and replies[0].reply_to == 2
+    assert len(replies) == 1 and replies[0].reply_target == 2
     hook(app, "MessageDisplay", message="[!reply:2]\nHere, Sir Jesse, and writing.")
     app.runtime().deferred.drain()
     assert len([m for m in messages.scoped() if m.author == "agent" and m.text == "Here, Sir Jesse, and writing."]) == 1, "the display hook's copy of the same block is no second message"
@@ -1596,7 +1596,7 @@ def test_a_session_silent_for_an_hour_is_ended(app: App):
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     hook(app, "SessionStart")
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=3601.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=3601.0))
     assert app.container.get(StateMachine).current("s1").name == "ended"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert app.container.get(StateMachine).current("s1").name != "ended", "a session that goes on after an hour's silence lives: it is not left ended"
@@ -1610,7 +1610,7 @@ def test_the_agent_a_supervisor_runs_stays_live_however_long_it_is_idle_and_is_t
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     hook(app, "SessionStart")
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=36000.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=36000.0))
     assert app.container.get(StateMachine).current("s1").name != "ended", "an agent idle for ten hours under a supervisor is waiting, not gone"
     app.console().run(["message", "send", "are you there?"], USER)
     app.runtime().deferred.drain()
@@ -1736,18 +1736,18 @@ def test_reading_a_message_names_its_files_links_and_captions(app: App):
     u(R(f"http://127.0.0.1:{app.server().port}/journal/messages/1/files", data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}", "X-Journal-Env": "main"}), timeout=5).read()
     with u(f"http://127.0.0.1:{app.server().port}/journal/messages/1/files/shot%20one.png?env=main", timeout=5) as reply:
         assert reply.read() == b"PNG", "a file name with a space is found"
-    shown = console.run(["message", "read", "1"], AGENT).out
+    shown = console.run(["message", "read", "1"], AGENT).text
     assert "file " in shown and "shot one.png" in shown and "`journal message tag 1 \"shot one.png\"" in shown
     assert 'something to do? file it: `journal task create "<title>" --from 1`' in shown
-    assert "(from message 1)" in console.run(["task", "create", "look at the picture", "--from", "1"], AGENT).out
+    assert "(from message 1)" in console.run(["task", "create", "look at the picture", "--from", "1"], AGENT).text
     console.run(["task", "create", "crop it", "--from", "1"], AGENT)
     from journal.repositories.messages import Messages
     filed = [m.text for m in app.container.get(Messages).all() if m.data.get("shows") == "filed"]
     assert filed == ["Filed task 1, task 2 from your message"], "what is filed from a message is one mark in the chat, naming each row"
     assert console.run(["message", "tag", "1", "shot one.png", "the footer overlapping the form"], AGENT).code == 0
-    assert "the footer overlapping the form" in console.run(["message", "read", "1"], AGENT).out
+    assert "the footer overlapping the form" in console.run(["message", "read", "1"], AGENT).text
     console.run(["message", "react", "1", "👍"], USER)
-    assert "reacts" in console.run(["message", "read", "1"], AGENT).out
+    assert "reacts" in console.run(["message", "read", "1"], AGENT).text
 
 
 def test_a_message_read_through_a_pipe_is_refused(app: App):
@@ -1830,11 +1830,11 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app:
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     notified = len(keystrokes)
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=1.0))
     assert len(keystrokes) == notified, "while the agent is busy, the end waits"
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=6.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=6.0))
     assert "output 1 failed with code 1" in keystrokes[-1] and "pytest" not in keystrokes[-1] and "2 failed" not in keystrokes[-1], "once it is quiet, its end names the number and how it ended, never the command or its lines"
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=12.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=12.0))
     assert len(keystrokes) == notified + 1, "an end is named once"
     cards = [m for m in app.container.get(Messages).scoped() if m.author == "system"]
     assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["command"] == "pytest -q" and cards[-1].data["detail"] == "2 failed", "the one mark of the moved command is settled in place: it names the command, on a line of its own, and how it ended"
@@ -1868,16 +1868,16 @@ def test_each_thought_is_a_message_the_latest_stands_in_the_working_bubble_and_a
     agent = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents?env=main"), timeout=5))["rows"][-1]
     assert agent["thinking"] == "Now the next step."
     reply = app.container.get(Messages).all()[-1]
-    assert reply.reply_to == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered() == []
+    assert reply.reply_target == 1 and reply.text == "Yes, hello." and app.container.get(Messages).unanswered() == []
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     app.runtime().deferred.drain()
     thoughts = [m for m in app.container.get(Messages).all() if m.is_thought]
     assert [m.text for m in thoughts] == ["[!reply:1]\nYes, hello.", "Now the next step."], "each thought is a message in the chat, marked a thought, and kept once"
-    assert all(m.created_by.id == "s1" for m in thoughts)
+    assert all(m.creator.id == "s1" for m in thoughts)
     hook(app, "MessageDisplay", message="Done.")
     app.runtime().deferred.drain()
     assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents?env=main"), timeout=5))["rows"][-1]["thinking"] == ""
-    assert "no journal is running" in console.run(["setup", "restart"], USER).out
+    assert "no journal is running" in console.run(["setup", "restart"], USER).text
 
 
 def test_a_turns_parts_landing_out_of_order_are_put_back_before_the_turn_is_read(app: App):
@@ -1891,7 +1891,7 @@ def test_a_turns_parts_landing_out_of_order_are_put_back_before_the_turn_is_read
     hook(app, "MessageDisplay", delta="[!reply:1]\n", turn_id="t9", index=0, final=False)
     app.runtime().deferred.drain()
     reply = app.container.get(Messages).all()[-1]
-    assert reply.reply_to == 1 and reply.text == "It is."
+    assert reply.reply_target == 1 and reply.text == "It is."
 
 
 def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app: App):
@@ -2002,7 +2002,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the
     assert [(s["name"], s["managed"]) for s in page["servers"]] == [("github", True), ("linear", True), ("playwright", False)], "the program's own servers show after the journal's"
     assert {s["name"]: s["installed"] for s in page["suggested"] if s["name"] in ("github", "playwright", "slack")} == {"github": True, "playwright": True, "slack": False}
     assert post("/journal/mcp/github/remove", {}) == {"removed": "github"} and j.loads((tmp_path / "keys.json").read_text()) == {}
-    assert app.console().run(["mcp", "list"], USER).out.startswith("linear")
+    assert app.console().run(["mcp", "list"], USER).text.startswith("linear")
     post("/journal/mcp/install", {"name": "linear"})
     transmitted.clear()
     assert post("/journal/mcp/linear/sign-in", {})["asked"] == "linear"
@@ -2024,7 +2024,7 @@ def test_a_task_finished_while_a_skill_is_owed_leaves_the_debt_data_until_the_re
     needs, agents, machine = app.container.get(Requirements), app.container.get(Agents), app.container.get(StateMachine)
     assert needs.obligation_names(agents.session_agent("s1")) == ["tasks"], "the tasks skill is owed at a start in work"
     finished = app.console().run(["task", "complete", "1", "--how", "quick"], AGENT)
-    assert finished.code == 0, finished.err
+    assert finished.code == 0, finished.error
     assert machine.current("s1").name == "idle" and needs.obligation_names(agents.session_agent("s1")) == ["tasks"], "the task done, the agent is idle and still owes the read"
     read_skill(app, "journal-tasks")
     assert needs.obligation_names(agents.session_agent("s1")) == []
@@ -2053,7 +2053,7 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     hook(app, "SessionStart")
     link, bus = app.container.get(SupervisorLink), app.container.get(Bus)
     link.type(1, "hello there")
-    tick = lambda later: bus.dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + later, quiet_for=later))
+    tick = lambda later: bus.dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + later, silence_seconds=later))
     tick(2)
     assert [s["line"] for s in transmitted] == ["[journal] hello there"], "a fresh line is given time"
     tick(30)
@@ -2094,7 +2094,7 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app: A
     app.console().run(["task", "create", "second"], AGENT)
     hook(app, "SessionStart", session_id="s2")
     refused = app.console().run(["task", "start", "2"], Caller("main", "s2"))
-    assert refused.code == 1 and "task 1 is in hand" in refused.err, "another session cannot start a second"
+    assert refused.code == 1 and "task 1 is in hand" in refused.error, "another session cannot start a second"
     app.console().run(["task", "suspend", "1", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
 
@@ -2112,9 +2112,9 @@ def test_the_sequence_page_shows_and_sets_what_starts_a_sequence(app: App):
             return error.code, json.loads(error.read())
     building = next(s for s in app.container.get(Sequences).all() if s.title == "Building a plan")
     shown = next(r for r in api("GET", "sequences")[1]["rows"] if r["id"] == building.id)
-    assert shown["starts_on"] == "plan.created", "the page is told a new plan starts it, as the engine does"
-    assert api("POST", f"sequences/{building.id}/starts", {"starts_on": ""})[0] == 200 and app.container.get(Sequences).find(building.id).starts_on == ""
-    status, refused = api("POST", f"sequences/{building.id}/starts", {"starts_on": "plan.approved"})
+    assert shown["trigger_event"] == "plan.created", "the page is told a new plan starts it, as the engine does"
+    assert api("POST", f"sequences/{building.id}/starts", {"trigger_event": ""})[0] == 200 and app.container.get(Sequences).find(building.id).trigger_event == ""
+    status, refused = api("POST", f"sequences/{building.id}/starts", {"trigger_event": "plan.approved"})
     assert status != 200 and "none of them" in json.dumps(refused), "only a created row or a trigger starts a sequence"
     from journal.repositories.triggers import Triggers
     triggers = app.container.get(Triggers)
@@ -2122,13 +2122,13 @@ def test_the_sequence_page_shows_and_sets_what_starts_a_sequence(app: App):
     started_by = triggers.starting("Writing an update")[0]
     assert next(r for r in api("GET", "sequences")[1]["rows"] if r["id"] == update.id)["trigger_ids"] == [started_by.id], "the page is told the update starts on its words"
     assert "tldr" in started_by.phrases and "check agents.md" in triggers.starting("Checking the instruction files")[0].phrases, "version 3's worded sequences start on their words"
-    api("POST", f"sequences/{update.id}/starts", {"starts_on": ""})
+    api("POST", f"sequences/{update.id}/starts", {"trigger_event": ""})
     assert triggers.starting("Writing an update") == [], "by hand, the trigger no longer starts it"
     from journal.models.trigger import Trigger
     from journal.models.trigger_action import TriggerAction
     plan_words = triggers.save(Trigger(phrases=("plan it",), action=TriggerAction.NUDGE, text="say something"), Actor.user(1))
-    api("POST", f"sequences/{building.id}/starts", {"starts_on": f"trigger:{plan_words.id}"})
-    assert [t.id for t in triggers.starting("Building a plan")] == [plan_words.id] and app.container.get(Sequences).find(building.id).starts_on == "", "a trigger picked on the page starts the sequence"
+    api("POST", f"sequences/{building.id}/starts", {"trigger_event": f"trigger:{plan_words.id}"})
+    assert [t.id for t in triggers.starting("Building a plan")] == [plan_words.id] and app.container.get(Sequences).find(building.id).trigger_event == "", "a trigger picked on the page starts the sequence"
 
 
 def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app: App, monkeypatch):
@@ -2138,13 +2138,13 @@ def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app: App, m
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
-    listed = app.console().run(["sequence", "list"], AGENT).out
+    listed = app.console().run(["sequence", "list"], AGENT).text
     assert "Building a plan (4 steps, starts on plan.created)" in listed, "the shipped sequence is seeded at boot"
     app.console().run(["plan", "create", "Behaviour tree", "--brief", "a flowchart"], AGENT)
     app.runtime().deferred.drain()
     active = app.container.get(RunTracker)
     run = active.current("s1", 1)
-    assert run.title == "Building a plan" and run.about.startswith("plans:") and "step 1" in transmitted[-1]["line"] and "goal" in transmitted[-1]["line"]
+    assert run.title == "Building a plan" and run.subject.startswith("plans:") and "step 1" in transmitted[-1]["line"] and "goal" in transmitted[-1]["line"]
     app.console().run(["plan", "create", "Another", "--brief", "b"], AGENT)
     app.runtime().deferred.drain()
     assert len(active.runs(app.container.get(StateMachine).agent("s1", 1))) == 1 and active.current("s1", 1).step == 0, "a sequence already running is not started again"
@@ -2153,12 +2153,12 @@ def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app: App, m
         console.run(["sequence", "follow"], AGENT)
         console.run(["sequence", "next"], AGENT)
     console.run(["sequence", "follow"], AGENT)
-    assert "ends when plans:1 is ready" in console.run(["sequence", "next"], AGENT).err, "the last step waits for the plan to be ready"
+    assert "ends when plans:1 is ready" in console.run(["sequence", "next"], AGENT).error, "the last step waits for the plan to be ready"
     console.run(["plan", "phase", "1", "Lay the floor", "--when", "the floor is level"], AGENT)
-    task = re.search(r"task (\d+)", console.run(["plan", "add", "1", "Level the floor", "--brief", "level"], AGENT).out).group(1)
+    task = re.search(r"task (\d+)", console.run(["plan", "add", "1", "Level the floor", "--brief", "level"], AGENT).text).group(1)
     console.run(["plan", "todos", "1", "1", task], AGENT)
     console.run(["plan", "ready", "1"], AGENT)
-    assert "ran its last step" in console.run(["sequence", "next"], AGENT).out and active.current("s1", 1) is None, "a ready plan lets the last step end the run"
+    assert "ran its last step" in console.run(["sequence", "next"], AGENT).text and active.current("s1", 1) is None, "a ready plan lets the last step end the run"
 
 
 def test_a_plans_goal_can_be_reset(app: App):
@@ -2176,7 +2176,7 @@ def test_a_task_added_first_goes_before_the_plans_tasks(app: App):
     console.run(["plan", "add", "1", "second"], USER)
     console.run(["plan", "add", "1", "third"], USER)
     console.run(["plan", "add", "1", "first", "--first"], USER)
-    shown = console.run(["plan", "show", "1"], USER).out.splitlines()
+    shown = console.run(["plan", "show", "1"], USER).text.splitlines()
     assert [line.split(maxsplit=2)[2] for line in shown if line.split()[0].isdigit()] == ["first", "second", "third"]
 
 
@@ -2198,20 +2198,20 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     console.run(["plan", "add", "1", "frame the walls"], AGENT)
     console.run(["plan", "add", "1", "level the slab"], AGENT)
     refused = console.run(["plan", "ready", "1"], AGENT)
-    assert refused.code == 1 and "phase 1, 2 of plan 1 has no task yet" in refused.err
+    assert refused.code == 1 and "phase 1, 2 of plan 1 has no task yet" in refused.error
     console.run(["plan", "todos", "1", "1", "1", "3"], AGENT)
     console.run(["plan", "todos", "1", "2", "2", "3"], AGENT)
     console.run(["plan", "todos", "1", "1", "3"], AGENT)
-    assert console.run(["plan", "show", "1"], AGENT).out.count("level the slab") == 1, "a task moved to another phase leaves the one it was in"
+    assert console.run(["plan", "show", "1"], AGENT).text.count("level the slab") == 1, "a task moved to another phase leaves the one it was in"
     assert console.run(["plan", "ready", "1"], AGENT).code == 0
-    shown = console.run(["plan", "show", "1"], AGENT).out
+    shown = console.run(["plan", "show", "1"], AGENT).text
     assert "phase 2: Raise the walls (complete when the walls stand) [checkpoint]" in shown
-    assert "not approved" in console.run(["plan", "start", "1"], AGENT).err
-    assert "only the user approves" in console.run(["plan", "approve", "1"], AGENT).err
+    assert "not approved" in console.run(["plan", "start", "1"], AGENT).error
+    assert "only the user approves" in console.run(["plan", "approve", "1"], AGENT).error
     assert console.run(["plan", "approve", "1"], USER).code == 0
     app.runtime().deferred.drain()
     assert "the user approved plan 1" in transmitted[-1]
-    assert "task 1," in console.run(["plan", "start", "1"], AGENT).out
+    assert "task 1," in console.run(["plan", "start", "1"], AGENT).text
     console.run(["task", "complete", "1"], AGENT)
     app.runtime().deferred.drain()
     assert app.container.get(StateMachine).current("s1").task_id == 3, "the second task of phase 1 comes before the first of phase 2"
@@ -2228,12 +2228,12 @@ def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved
     console.run(["plan", "todos", "1", "1", "1"], AGENT)
     console.run(["plan", "ready", "1"], AGENT)
     assert console.run(["plan", "review", "1"], AGENT).code == 0
-    assert "is in review" in console.run(["plan", "approve", "1"], USER).err, "no approval while reviewers read it"
+    assert "is in review" in console.run(["plan", "approve", "1"], USER).error, "no approval while reviewers read it"
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "review plan 1", "prompt": "Read plan 1 and say what it misses.", "subagent_type": "journal-researcher", "model": "sonnet"}, tool_use_id="u1")
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the plugins", "prompt": "Map version 3 plugins.", "subagent_type": "journal-researcher", "model": "sonnet"}, tool_use_id="u2")
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "map the plugins", "prompt": "Map version 3 plugins.", "subagent_type": "journal-researcher", "model": "sonnet"}, tool_use_id="u2", tool_response={"isAsync": True, "agentId": "r2"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "review plan 1", "prompt": "Read plan 1 and say what it misses.", "subagent_type": "journal-researcher", "model": "sonnet"}, tool_use_id="u1", tool_response={"isAsync": True, "agentId": "r1"})
-    assert "1 of its reviewers are still out" in console.run(["plan", "ready", "1"], AGENT).err
+    assert "1 of its reviewers are still out" in console.run(["plan", "ready", "1"], AGENT).error
     app.runtime().deferred.drain()
     assert app.container.get(Plans).find(1).reviewers == 1, "the plan the viewer reads counts its reviewer out"
     hook(app, "SubagentStop", agent_id="r1")
@@ -2256,9 +2256,9 @@ def test_a_task_of_a_plan_not_yet_started_is_not_offered_at_a_stop(app: App):
 
 def test_the_shipped_templates_are_seeded_and_the_critique_ones_are_offered_to_the_viewer(app: App):
     hook(app, "SessionStart")
-    listed = app.console().run(["template", "list"], AGENT).out
+    listed = app.console().run(["template", "list"], AGENT).text
     assert "Find what is missing (for plan, critique)" in listed and "Functional design (for doc)" in listed
-    shown = app.console().run(["template", "show", "3"], AGENT).out
+    shown = app.console().run(["template", "show", "3"], AGENT).text
     assert shown.startswith("template 3: Find what is missing") and "the step nobody wrote down" in shown
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/templates", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         rows = json.loads(reply.read())["rows"]
@@ -2271,7 +2271,7 @@ def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app: App
     app.console().run(["plan", "create", "p", "--brief", "g"], USER)
     body = tmp_path / "critique.md"
     body.write_text("What two readers found.\n\n## Phase 1\n\n- a gap\n\n## Phase 2\n\n- another\n")
-    output = app.console().run(["report", "create", "Critique of plan 1", "--file", str(body), "--about", "plans:1"], AGENT).out
+    output = app.console().run(["report", "create", "Critique of plan 1", "--file", str(body), "--about", "plans:1"], AGENT).text
     assert output.startswith("report 1: Critique of plan 1, about plans:1")
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/reports/1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         report = json.loads(reply.read())
@@ -2288,7 +2288,7 @@ def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(a
     hook(app, "MessageDisplay", message="Two answers.\n\n[!reply:1]\nThe first is fine.\n\n[!reply:2]\nThe second waits.")
     app.runtime().deferred.drain()
     replies = [m for m in app.container.get(Messages).scoped() if m.author == "agent"]
-    assert [(m.reply_to, m.text) for m in replies] == [(1, "Two answers.\n\nThe first is fine."), (2, "The second waits.")]
+    assert [(m.reply_target, m.text) for m in replies] == [(1, "Two answers.\n\nThe first is fine."), (2, "The second waits.")]
 
 
 def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app: App):
@@ -2370,7 +2370,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app: App
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    assert "sequence give me an update" in console.run(["trigger", "list"], AGENT).out, "the update words are a shipped trigger"
+    assert "sequence give me an update" in console.run(["trigger", "list"], AGENT).text, "the update words are a shipped trigger"
     console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER)
     console.run(["trigger", "create", "ship it", "release", "--do", "sequence"], USER)
     body = hook(app, "UserPromptSubmit", prompt="ok, ship it now")[1]
@@ -2383,7 +2383,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app: App
     app.runtime().deferred.drain()
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=60.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=60.0))
     app.runtime().deferred.drain()
     assert active.current("s1", 1).title == "Writing an update" and any("Find what changed" in line for line in transmitted), "the user's message starts the update sequence, and the step is typed to the agent once it is quiet"
 
@@ -2412,7 +2412,7 @@ def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app: 
     hook(app, "MessageDisplay", message="Again: https://design.example/p/1")
     app.runtime().deferred.drain()
     assert len([line for line in transmitted if "is not pinned" in line]) == 1, "told once"
-    output = console.run(["notice", "create", "The Workflows design", "--link", "https://design.example/p/1", "--label", "Open the design"], AGENT).out
+    output = console.run(["notice", "create", "The Workflows design", "--link", "https://design.example/p/1", "--label", "Open the design"], AGENT).text
     assert output.startswith("notice 1 pinned")
     notice = lambda: json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/notices/1", headers={"X-Journal-Env": "main"}), timeout=5))
     assert (notice()["title"], notice()["link"], notice()["label"], notice()["closed_at"]) == ("The Workflows design", "https://design.example/p/1", "Open the design", None)
@@ -2430,7 +2430,7 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
     console.run(["question", "answer", "1", "beta"], USER)
     assert any("question 1 is answered" in line and "`journal question show 1`" in line for line in keystrokes), "told like a message, with the command to read it"
     app.runtime().deferred.drain()
-    shown = console.run(["question", "show", "1"], AGENT).out
+    shown = console.run(["question", "show", "1"], AGENT).text
     assert "question 1: Which name?  [alpha / beta]" in shown and "answer: beta" in shown and "act on the answer" in shown
     assert "mentions message 2 from the system: You answered question 1" in shown, "the answer's message is shown with the question, linked by its table and id"
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal question show 1 " + "|" + " head -2"})
@@ -2531,7 +2531,7 @@ def test_a_cancelled_plan_takes_its_own_open_tasks_with_it_and_leaves_shared_one
     console.run(["plan", "add", "2", "shared"], USER)
     console.run(["plan", "phase", "1", "p", "--when", "w"], USER)
     console.run(["plan", "todos", "1", "1", "3"], USER)
-    output = console.run(["plan", "cancel", "1"], USER).out
+    output = console.run(["plan", "cancel", "1"], USER).text
     assert "plan 1 cancelled, with tasks 1" in output
     plans, tasks = app.container.get(Plans), app.container.get(Tasks)
     assert plans.find(1).state == PlanState.CANCELLED and tasks.find(1).state == TaskState.CANCELLED
@@ -2551,10 +2551,10 @@ def test_approving_a_started_plan_leaves_it_started(app: App):
     hook(app, "SessionStart")
     console.run(["environment", "overview"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
-    assert "plan 1 started" in console.run(["plan", "approve", "1"], USER).out
+    assert "plan 1 started" in console.run(["plan", "approve", "1"], USER).text
     assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a second word from the page cannot set a running plan back to approved"
-    assert "cannot become ready" in console.run(["plan", "ready", "1"], AGENT).err, "the agent cannot undo the user's approval"
-    assert "cannot become reviewing" in console.run(["plan", "review", "1"], AGENT).err
+    assert "cannot become ready" in console.run(["plan", "ready", "1"], AGENT).error, "the agent cannot undo the user's approval"
+    assert "cannot become reviewing" in console.run(["plan", "review", "1"], AGENT).error
     assert app.container.get(Plans).find(1).state == PlanState.STARTED
 
 
@@ -2571,8 +2571,8 @@ def test_each_review_round_is_kept_on_the_plan_with_its_reviewers_report_and_cha
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "Lady Lovelace reads plan 1", "prompt": "read plan 1", "model": "sonnet"}, tool_use_id="t-1")
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lady Lovelace reads plan 1", "prompt": "read plan 1"}, tool_use_id="t-1", tool_response="found two gaps")
     console.run(["report", "create", "Plan 1, first review", "--body", "two gaps", "--about", "plans:1"], AGENT)
-    assert "--changed" in console.run(["plan", "ready", "1"], AGENT).err, "a plan back from review says what the round changed"
-    assert "ready" in console.run(["plan", "ready", "1", "--changed", "task 1 reworded"], AGENT).out
+    assert "--changed" in console.run(["plan", "ready", "1"], AGENT).error, "a plan back from review says what the round changed"
+    assert "ready" in console.run(["plan", "ready", "1", "--changed", "task 1 reworded"], AGENT).text
     console.run(["plan", "review", "1"], AGENT)
     outline = app.container.get(PlanOutline).build(app.container.get(Plans).find(1))
     open_, first = outline["reviews"]
@@ -2625,7 +2625,7 @@ def test_a_read_outside_every_scope_is_refused_and_a_command_reads_its_own_envir
     console.run(["task", "create", "other's own"], Caller("other"))
     with pytest.raises(ScopeMissing):
         Context().run(app.container.get(Tasks).scoped)
-    in_main, in_other = console.run(["task", "list"], USER).out, console.run(["task", "list"], Caller("other")).out
+    in_main, in_other = console.run(["task", "list"], USER).text, console.run(["task", "list"], Caller("other")).text
     assert "main's own" in in_main and "other's own" not in in_main
     assert "other's own" in in_other and "main's own" not in in_other
     assert [t.title for t in app.container.get(Tasks).scoped()] == ["main's own"], "the test reads in main, the scope its fixture entered"
@@ -2663,11 +2663,11 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     agents, needs = app.container.get(Agents), app.container.get(Requirements)
     row = lambda: agents.session_agent("s1")
     hook(app, "SessionStart")
-    assert row().oriented is False and needs.obligation_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
+    assert row().has_overview is False and needs.obligation_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
     read_skill(app, "journal")
     assert needs.obligation_names(row()) == [] and row().skills_loaded and "journal" in row().skills_loaded, "the read removes the owed link and keeps the hash"
     app.console().run(["environment", "overview"], AGENT)
-    assert row().oriented is True, "the look sets oriented and nothing is owed"
+    assert row().has_overview is True, "the look sets oriented and nothing is owed"
     hook(app, "UserPromptSubmit", prompt="make me a plan for the release")
     assert needs.obligation_names(row()) == ["plans"], "a prompt naming plans: the plans skill owed"
     read_skill(app, "journal-plans")
@@ -2676,16 +2676,16 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     assert needs.obligation_names(row()) == [], "entering a state owes nothing by itself: a state's skill is owed at a start in it"
     context(app, 30)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert row().mark_owed == 25 and row().context_mark == 25, "the crossing sets the mark owed"
+    assert row().threshold_due == 25 and row().context_threshold == 25, "the crossing sets the mark owed"
     app.console().run(["fact", "create", "the login is flaky"], AGENT)
-    assert row().mark_owed == 0 and row().context_mark == 25, "the fact clears the mark owed and keeps the mark taken"
+    assert row().threshold_due == 0 and row().context_threshold == 25, "the fact clears the mark owed and keeps the mark taken"
     context(app, 55)
     hook(app, "Stop")
-    assert row().mark_owed == 50
+    assert row().threshold_due == 50
     app.console().run(["memory", "skip", "all logged"], AGENT)
-    assert row().mark_owed == 0, "nothing survives clears it too"
+    assert row().threshold_due == 0, "nothing survives clears it too"
     status, body = hook(app, "SessionStart", source="compact")
-    assert row().oriented is False and row().mark_owed == 0, "a start after a compaction owes the look again; the start's own write touches oriented alone"
+    assert row().has_overview is False and row().threshold_due == 0, "a start after a compaction owes the look again; the start's own write touches oriented alone"
 
 def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set(tmp_path: Path, monkeypatch):
     import json
@@ -2700,7 +2700,7 @@ def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set
     db = sqlite3.connect(first.config.database)
     working = json.loads(db.execute("SELECT data FROM agents WHERE session = 's1'").fetchone()[0])
     nested = {"resume": {"state": "at_mark", "data": {"resume": {"state": "working", "data": working}, "mark": 50}}, "skill": "plans", "path": ".claude/skills/journal-plans/SKILL.md"}
-    db.execute("UPDATE agents SET state = 'loading_skill', data = ?, oriented = 1, mark_owed = 0 WHERE session = 's1'", (json.dumps(nested),))
+    db.execute("UPDATE agents SET state = 'loading_skill', data = ?, has_overview = 1, threshold_due = 0 WHERE session = 's1'", (json.dumps(nested),))
     db.execute("DELETE FROM migrations")
     db.commit()
     db.close()
@@ -2712,7 +2712,7 @@ def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set
         from journal.support.scope import Scope
         with second.container.get(Scope).environment(MAIN):
             agent = second.container.get(Agents).session_agent("s1")
-            assert agent.state == "working" and agent.data.get("task_id") == 1 and agent.mark_owed == 50 and agent.oriented is True, "unwrapped to the work it held, the mark owed, never dropped to idle"
+            assert agent.state == "working" and agent.data.get("task_id") == 1 and agent.threshold_due == 50 and agent.has_overview is True, "unwrapped to the work it held, the mark owed, never dropped to idle"
             assert "plans" in second.container.get(Requirements).obligation_names(agent), "the skill it was reading is owed as a link"
     finally:
         second.runtime().stop()
@@ -2726,7 +2726,7 @@ def test_an_agent_in_the_old_running_sequence_state_is_unwrapped_at_boot_with_th
     hook(first, "SessionStart")
     first.console().run(["environment", "overview"], AGENT)
     first.console().run(["task", "create", "t", "--start"], AGENT)
-    produced = first.console().run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
+    produced = first.console().run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).text.split()[1].rstrip(":")
     first.runtime().stop()
     db = sqlite3.connect(first.config.database)
     working = json.loads(db.execute("SELECT data FROM agents WHERE session = 's1'").fetchone()[0])
@@ -2753,7 +2753,7 @@ def test_a_run_goes_with_the_agent_to_its_next_session(app: App):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
+    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).text.split()[1].rstrip(":")
     console.run(["sequence", "run", produced], AGENT)
     hook(app, "SessionEnd")
     hook(app, "SessionStart", session_id="s2")
@@ -2784,7 +2784,7 @@ def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app: A
 def test_the_steps_hold_comes_after_the_look_the_mark_and_the_skill_and_each_is_paid_in_turn(skilled):
     app, console = skilled, skilled.console()
     edit = lambda: hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py", "old_string": "a", "new_string": "b"})
-    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
+    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).text.split()[1].rstrip(":")
     hook(app, "SessionStart")
     console.run(["sequence", "run", produced], AGENT)
     context(app, 30)
@@ -2808,7 +2808,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app: A
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
+    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).text.split()[1].rstrip(":")
     console.run(["sequence", "run", produced], AGENT)
     assert "step 1: bump" in json.dumps(hook(app, "SessionStart", source="compact")[1]), "after a compaction the step is told"
     console.run(["await", "the build", "--until", "false"], AGENT)
@@ -2818,7 +2818,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app: A
     transmitted.clear()
 
     def tick():
-        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=120.0))
+        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=120.0))
         app.runtime().deferred.drain()
     tick()
     assert transmitted == [], "a step just said is not said again"
@@ -2865,13 +2865,13 @@ def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_
     console = app.console()
     console.run(["environment", "overview"], AGENT)
     active = app.container.get(RunTracker)
-    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
+    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).text.split()[1].rstrip(":")
     console.run(["sequence", "run", produced], AGENT)
-    assert "was never taken up" in console.run(["sequence", "abandon", "--why", "not needed", "--sure"], AGENT).err, "a step is taken up before it is given up"
+    assert "was never taken up" in console.run(["sequence", "abandon", "--why", "not needed", "--sure"], AGENT).error, "a step is taken up before it is given up"
     console.run(["sequence", "follow"], AGENT)
     unsure = console.run(["sequence", "abandon", "--why", "not needed"], AGENT)
-    assert unsure.code == 1 and "leaves undone: 1. bump; 2. tag; 3. push" in unsure.err and active.current("s1", 1), "without --sure it names what it would skip and keeps the run"
-    assert f"sequence {produced} abandoned" in console.run(["sequence", "abandon", "--why", "not needed", "--sure"], AGENT).out and active.current("s1", 1) is None
+    assert unsure.code == 1 and "leaves undone: 1. bump; 2. tag; 3. push" in unsure.error and active.current("s1", 1), "without --sure it names what it would skip and keeps the run"
+    assert f"sequence {produced} abandoned" in console.run(["sequence", "abandon", "--why", "not needed", "--sure"], AGENT).text and active.current("s1", 1) is None
     card = app.container.get(Messages).scoped()[-1]
     assert "abandoned at step 1: not needed" in card.text and "left undone: 1. bump" in card.data["detail"], "the user is told, with the reason and what was left undone"
     console.run(["plan", "create", "Side work", "--brief", "b"], AGENT)
@@ -2891,14 +2891,14 @@ def test_runs_nest_never_in_themselves_and_only_the_users_words_start_one(app: A
     console = app.console()
     console.run(["environment", "overview"], AGENT)
     active = app.container.get(RunTracker)
-    outer = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
-    inner = console.run(["sequence", "create", "check", "--steps", "lint"], USER).out.split()[1].rstrip(":")
+    outer = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).text.split()[1].rstrip(":")
+    inner = console.run(["sequence", "create", "check", "--steps", "lint"], USER).text.split()[1].rstrip(":")
     console.run(["sequence", "run", outer], AGENT)
-    assert "is running already" in console.run(["sequence", "run", outer], AGENT).out, "a sequence never starts inside itself"
+    assert "is running already" in console.run(["sequence", "run", outer], AGENT).text, "a sequence never starts inside itself"
     console.run(["sequence", "run", inner], AGENT)
     assert active.current("s1", 1).title == "check", "one started inside another is the one followed"
     console.run(["sequence", "follow"], AGENT)
-    ended = console.run(["sequence", "next"], AGENT).out
+    ended = console.run(["sequence", "next"], AGENT).text
     assert f"sequence {inner} ran its last step" in ended and "step 1: bump" in ended and active.current("s1", 1).title == "release", "when it ends the other is said again"
     console.run(["sequence", "follow"], AGENT)
     console.run(["sequence", "next"], AGENT)
@@ -2927,7 +2927,7 @@ def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(a
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
+    produced = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).text.split()[1].rstrip(":")
     console.run(["sequence", "run", produced], AGENT)
     app.runtime().deferred.drain()
     shown = json.dumps(api("GET", "agents/1")[1])
@@ -2996,7 +2996,7 @@ def test_the_card_for_a_question_the_user_answered_is_the_users(app: App):
     console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     console.run(["question", "answer", "1", "red"], USER)
     card = [m for m in app.container.get(Messages).scoped() if m.author == "system"][-1]
-    assert card.text == "You answered question 1" and card.created_by.kind == ActorKind.USER, "the user's act is written as the user's"
+    assert card.text == "You answered question 1" and card.creator.kind == ActorKind.USER, "the user's act is written as the user's"
     assert card.data["detail"] == "", "the mark says only that it was answered, never the answer"
 
 def test_a_document_is_written_anew_from_a_file(app: App, tmp_path):
@@ -3004,9 +3004,9 @@ def test_a_document_is_written_anew_from_a_file(app: App, tmp_path):
     first.write_text("## One\n\nthe first words")
     second.write_text("## One\n\nthe words as ruled")
     console = app.console()
-    produced = re.search(r"doc (\d+):", console.run(["doc", "create", "A proposal", "--file", str(first), "--abstract", "what it proposes"], USER).out).group(1)
-    assert console.run(["doc", "update", produced, "--file", str(second)], USER).out == f"doc {produced} written anew: A proposal\n"
-    shown = console.run(["doc", "show", produced, "--section", "1"], USER).out
+    produced = re.search(r"doc (\d+):", console.run(["doc", "create", "A proposal", "--file", str(first), "--abstract", "what it proposes"], USER).text).group(1)
+    assert console.run(["doc", "update", produced, "--file", str(second)], USER).text == f"doc {produced} written anew: A proposal\n"
+    shown = console.run(["doc", "show", produced, "--section", "1"], USER).text
     assert "the words as ruled" in shown and "what it proposes" in shown, "the text is the file's, the title and the abstract kept"
 
 def test_a_skill_owed_as_a_link_moves_onto_the_agent_at_boot(tmp_path: Path, monkeypatch):
@@ -3018,16 +3018,16 @@ def test_a_skill_owed_as_a_link_moves_onto_the_agent_at_boot(tmp_path: Path, mon
     first.runtime().start()
     first.runtime().stop()
     db = sqlite3.connect(first.config.database)
-    db.execute("INSERT INTO agents (created_at, created_by, updated_at, updated_by, environment_id, session, state, data) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', 1, 's1', 'idle', '{}')")
+    db.execute("INSERT INTO agents (created_at, creator, updated_at, updater, environment_id, session, state, data) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', 1, 's1', 'idle', '{}')")
     agent = db.execute("SELECT MAX(id) FROM agents").fetchone()[0]
-    db.execute("INSERT INTO links (created_at, created_by, updated_at, updated_by, source, target, kind) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', ?, NULL, 'owes:journal')", (f"agents:{agent}",))
+    db.execute("INSERT INTO links (created_at, creator, updated_at, updater, source, target, kind) VALUES ('2026-10-17', 'system', '2026-10-17', 'system', ?, NULL, 'owes:journal')", (f"agents:{agent}",))
     db.execute("DELETE FROM migrations WHERE number >= 7")
     db.commit()
     db.close()
     second = App(Config(tmp_path, port=0))
     second.runtime().start()
     try:
-        assert second.container.get(Agents).find(agent).skills_owed == ("journal",), "the owed skill is a fact on the agent's row"
+        assert second.container.get(Agents).find(agent).skills_due == ("journal",), "the owed skill is a fact on the agent's row"
         assert not [link for link in second.container.get(Links).all() if link.kind.startswith("owes:")], "and the one-ended link is gone"
     finally:
         second.runtime().stop()
@@ -3037,11 +3037,11 @@ def test_a_report_about_several_rows_links_each_and_refuses_one_it_cannot_read(a
     for title in ("one", "two"):
         console.run(["plan", "create", title, "--brief", "b"], USER)
     produced = console.run(["report", "create", "Both", "--body", "words", "--about", "plans:1,plans:2"], USER)
-    assert produced.code == 0 and "about plans:1, plans:2" in produced.out, "rows apart by commas are each linked"
+    assert produced.code == 0 and "about plans:1, plans:2" in produced.text, "rows apart by commas are each linked"
     spaced = console.run(["report", "create", "Both again", "--body", "words", "--about", "plans:1", "plans:2"], USER)
-    assert spaced.code == 0 and "about plans:1, plans:2" in spaced.out, "and so are rows apart by spaces"
+    assert spaced.code == 0 and "about plans:1, plans:2" in spaced.text, "and so are rows apart by spaces"
     refused = console.run(["report", "create", "Wrong", "--body", "words", "--about", "plans:1,the second plan"], USER)
-    assert refused.code == 1 and "not a row: the second plan" in refused.err, "a row it cannot read is refused by name, and no report is made"
+    assert refused.code == 1 and "not a row: the second plan" in refused.error, "a row it cannot read is refused by name, and no report is made"
 
 def test_the_mcp_page_shows_a_servers_state_as_last_checked_and_check_all_reads_it_anew(app: App, monkeypatch):
     import json as j
@@ -3087,7 +3087,7 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app: App, 
         (folder / "journal-plugin.json").write_text(json.dumps({**good, **changes}))
         return folder
     manifest = reader.read(made({}))
-    assert manifest.name == "echo" and tuple(h.event for h in manifest.holds) == ("tool_starting",) and manifest.services[0].name == "serve"
+    assert manifest.name == "echo" and tuple(h.event for h in manifest.blocks) == ("tool_starting",) and manifest.services[0].name == "serve"
     refusals = {
         "keys the journal does not know: hook": {"hook": "x"},
         "is not": {"name": "Echo!"},
@@ -3133,7 +3133,7 @@ def test_a_plugin_is_a_row_and_writes_as_itself(app: App):
     plugins.save(Plugin(name="lint", source="/tmp/lint", manifest=PluginManifest(name="lint")), Actor.user(1))
     assert plugins.lookup("lint").enabled and [p.name for p in plugins.enabled()] == ["lint"]
     task = app.container.get(Tasks).save(Task(environment_id=1, title="written by a plugin"), Actor.plugin("lint"))
-    assert task.created_by == Actor(ActorKind.PLUGIN, "lint") and task.created_by.stamp == "plugin:lint" and Actor.parse("plugin:lint") == task.created_by
+    assert task.creator == Actor(ActorKind.PLUGIN, "lint") and task.creator.stamp == "plugin:lint" and Actor.parse("plugin:lint") == task.creator
 
 def test_a_plugin_runs_as_itself_never_as_the_user(app: App):
     from journal.support.plugin_tokens import PluginTokens
@@ -3149,7 +3149,7 @@ def test_a_plugin_runs_as_itself_never_as_the_user(app: App):
             return error.code, json.loads(error.read())
     status, output = cli(["message", "send", "a word from echo"])
     message = app.container.get(Messages).recent(1)[0]
-    assert status == 200 and message.created_by == Actor.plugin("echo") and message.author == "system", "a plugin's command is stamped as the plugin and its message is the journal's, never yours"
+    assert status == 200 and message.creator == Actor.plugin("echo") and message.author == "system", "a plugin's command is stamped as the plugin and its message is the journal's, never yours"
     assert "only the user approves" in cli(["plan", "approve", "1"])[1]["err"], "a plugin never approves a plan"
     assert cli(["task", "list"], value="wrong")[0] == 403 and cli(["task", "list"], plugin="lint")[0] == 403, "a wrong token, or a plugin's name without its own, is refused"
     identity = app.container.get(Identity)
@@ -3243,16 +3243,16 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app: App):
     deferred.drain()
     deferred.drain()
     card = [m for m in messages.recent(5) if m.data.get("kind") == "plugin"]
-    assert [(m.text, m.data["key"], m.created_by) for m in card] == [(f"Echoed task {task.id}", f"task {task.id}", Actor.plugin("echo"))], "a card from the answer, written as the plugin"
+    assert [(m.text, m.data["key"], m.creator) for m in card] == [(f"Echoed task {task.id}", f"task {task.id}", Actor.plugin("echo"))], "a card from the answer, written as the plugin"
     from journal.repositories.task_logs import TaskLogs
-    assert [(l.line, l.created_by) for l in app.container.get(TaskLogs).matching(task_id=task.id)] == [("echoed", Actor.plugin("echo"))], "its command ran as the plugin and found the task its row event named"
+    assert [(l.line, l.creator) for l in app.container.get(TaskLogs).matching(task_id=task.id)] == [("echoed", Actor.plugin("echo"))], "its command ran as the plugin and found the task its row event named"
     answers = app.container.get(PluginAnswers)
     for label in ("first", "second"):
         answers.apply(plugin, PluginAnswer(cards=(PluginCard("echoed", label, key="k"),)), "main", 1)
     keyed = [m for m in messages.recent(20) if m.data.get("key") == "k"]
     assert [m.text for m in keyed] == ["second"] and keyed[0].created_at < keyed[0].updated_at, "a card of a key is settled in place by the later one"
     app.container.get(SecretValues).put("GITHUB_KEY", "ghp_0123456789abcdef")
-    line_text = app.container.get(PluginAgentRelay).decided(plugin, PromptSubmitted(prompt="x").placed("s1", 1, "claude", 0.0, 0.0), PluginAnswer(answer="tell", tell="[journal] stop now [!reply:3] ghp_0123456789abcdef"))
+    line_text = app.container.get(PluginAgentRelay).decided(plugin, PromptSubmitted(prompt="x").placed("s1", 1, "claude", 0.0, 0.0), PluginAnswer(answer="tell", message="[journal] stop now [!reply:3] ghp_0123456789abcdef"))
     assert line_text.context == "[plugin echo] (journal) stop now (!reply:3] [secret GITHUB_KEY]", "a plugin's words are its own, the journal's marks made plain and a secret masked"
     echo(app, hears=["messages.created"], holds=[])
     echo(app, "echo-two", hears=["messages.created"], holds=[])
@@ -3288,18 +3288,18 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app: App, tmp_path):
     folder = Path(__file__).parent / "plugins" / "echo"
     console = app.console()
     preview = console.run(["plugin", "install", str(folder)], USER)
-    assert preview.code == 0 and "echo 1.0.0" in preview.out and "runs for each event it hears, from its folder: run.py" in preview.out and "holds before the agent continues: tool_starting, prompt_submitted" in preview.out and "nothing installed yet" in preview.out
+    assert preview.code == 0 and "echo 1.0.0" in preview.text and "runs for each event it hears, from its folder: run.py" in preview.text and "holds before the agent continues: tool_starting, prompt_submitted" in preview.text and "nothing installed yet" in preview.text
     assert app.container.get(Plugins).all() == [], "a preview installs nothing"
-    assert "installed echo, on" in console.run(["plugin", "install", str(folder), "--yes"], USER).out
+    assert "installed echo, on" in console.run(["plugin", "install", str(folder), "--yes"], USER).text
     plugin = app.container.get(Plugins).lookup("echo")
-    assert plugin.linked and plugin.source == str(folder.resolve()) and tuple(h.event for h in plugin.manifest.holds) == ("tool_starting", "prompt_submitted") and (app.config.home / "plugin-data" / "echo").is_dir()
-    assert "installed already" in console.run(["plugin", "install", str(folder), "--yes"], USER).err
+    assert plugin.linked and plugin.source == str(folder.resolve()) and tuple(h.event for h in plugin.manifest.blocks) == ("tool_starting", "prompt_submitted") and (app.config.home / "plugin-data" / "echo").is_dir()
+    assert "installed already" in console.run(["plugin", "install", str(folder), "--yes"], USER).error
     bad = tmp_path / "bad"
     bad.mkdir()
     (bad / "journal-plugin.json").write_text(json.dumps({"name": "bad", "version": "1", "program": "run.py", "hears": ["nothing"]}))
     (bad / "run.py").write_text("")
     refused = console.run(["plugin", "install", str(bad), "--yes"], USER)
-    assert refused.code != 0 and "hears nothing, which is no event" in refused.err and [p.name for p in app.container.get(Plugins).all()] == ["echo"], "a refused manifest installs nothing"
+    assert refused.code != 0 and "hears nothing, which is no event" in refused.error and [p.name for p in app.container.get(Plugins).all()] == ["echo"], "a refused manifest installs nothing"
 
 
 def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(app: App, tmp_path):
@@ -3312,11 +3312,11 @@ def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(ap
     console.run(["plugin", "install", str(folder), "--yes"], USER)
     manifest = json.loads((folder / "journal-plugin.json").read_text())
     (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "version": "1.1.0", "hears": [*manifest["hears"], "tool_finished"], "holds": ["tool_starting"]}))
-    shown = console.run(["plugin", "upgrade", "echo"], USER).out
+    shown = console.run(["plugin", "upgrade", "echo"], USER).text
     assert "version: 1.0.0 -> 1.1.0" in shown and "hears: + tool_finished" in shown and "holds: - prompt_submitted" in shown and "nothing upgraded yet" in shown
-    assert "tool_finished" not in plugins.lookup("echo").manifest.hears, "a preview upgrades nothing"
+    assert "tool_finished" not in plugins.lookup("echo").manifest.events, "a preview upgrades nothing"
     console.run(["plugin", "upgrade", "echo", "--yes"], USER)
-    assert "tool_finished" in plugins.lookup("echo").manifest.hears
+    assert "tool_finished" in plugins.lookup("echo").manifest.events
     hook(app, "SessionStart")
     console.run(["plugin", "disable", "echo"], USER)
     hook(app, "PostToolUse", tool_name="Read", tool_input={}, tool_response={})
@@ -3343,13 +3343,13 @@ def test_only_the_user_installs_or_switches_on_a_plugin(app: App, tmp_path):
     console, plugins = app.console(), app.container.get(Plugins)
     hook(app, "SessionStart")
     refused = console.run(["plugin", "install", str(folder), "--yes"], AGENT)
-    assert refused.code != 0 and "only the user installs a plugin: journal plugin propose" in refused.err and plugins.all() == []
+    assert refused.code != 0 and "only the user installs a plugin: journal plugin propose" in refused.error and plugins.all() == []
     assert console.run(["plugin", "propose", str(folder), "--why", "to echo"], AGENT).code == 0
     card = app.container.get(Messages).recent(1)[0]
     assert card.text == "The agent proposes the plugin echo: to echo" and f"journal plugin install {folder} --yes" in card.data["detail"]
     console.run(["plugin", "install", str(folder), "--yes"], USER)
     console.run(["plugin", "disable", "echo"], AGENT)
-    assert "only the user switches on" in console.run(["plugin", "enable", "echo"], AGENT).err and not plugins.lookup("echo").enabled
+    assert "only the user switches on" in console.run(["plugin", "enable", "echo"], AGENT).error and not plugins.lookup("echo").enabled
     console.run(["plugin", "enable", "echo"], USER)
     console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
@@ -3377,9 +3377,9 @@ def test_a_plugins_settings_follow_its_schema_and_its_secret_comes_from_the_user
     secret = app.container.get(Secrets).find(plugin.settings["token"]["secret"])
     assert (plugin.settings["mode"], plugin.settings["repeat"]) == ("", 1) and secret.title == "echo Token" and secret.proposed == ("plugin:echo",), "defaults set, and a secret asked for, proposed for the plugin"
     assert console.run(["plugin", "configure", "echo", "repeat", "3"], USER).code == 0 and plugins.lookup("echo").settings["repeat"] == 3
-    assert "repeat is a number; 'three' is not" in console.run(["plugin", "configure", "echo", "repeat", "three"], USER).err
-    assert "the user fills it on the Secrets page" in console.run(["plugin", "configure", "echo", "token", "abc"], USER).err
-    assert "only the user configures" in console.run(["plugin", "configure", "echo", "repeat", "2"], AGENT).err
+    assert "repeat is a number; 'three' is not" in console.run(["plugin", "configure", "echo", "repeat", "three"], USER).error
+    assert "the user fills it on the Secrets page" in console.run(["plugin", "configure", "echo", "token", "abc"], USER).error
+    assert "only the user configures" in console.run(["plugin", "configure", "echo", "repeat", "2"], AGENT).error
     variable = secret.fields[0]["variable"]
     app.container.get(SecretValues).put(variable, "tok_0123456789abcdef")
     runner = app.container.get(PluginRunner)
@@ -3428,13 +3428,13 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app: A
     (newer / "run.py").write_text((newer / "run.py").read_text().replace("echo heard your prompt", "echo heard you"))
     shutil.copytree(echo_folder, app.config.home / "plugins" / "echo")
     fetched = plugins.save(Plugin(name="echo", source=str(newer), manifest=PluginManifest.parsed(json.loads((echo_folder / "journal-plugin.json").read_text()))), Actor.user(1))
-    shown = console.run(["plugin", "upgrade", "echo"], USER).out
+    shown = console.run(["plugin", "upgrade", "echo"], USER).text
     assert "the code:" in shown and '-        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"})' in shown and '+        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard you"})' in shown, "the program's changed body is in the diff"
-    notified = console.run(["plugin", "upgrade", "echo"], AGENT).out
+    notified = console.run(["plugin", "upgrade", "echo"], AGENT).text
     assert "run.py +1 -1" in notified and "echo heard your prompt" not in notified, "the agent is told which files change, never the whole diff"
     assert console.run(["plugin", "upgrade", "echo", "--yes"], AGENT).code == 0, "the agent upgrades a plugin the user installed"
     plugins.save(fetched.with_(name="copied"), Actor.user(1))
-    assert "now holds the plugin echo, not copied" in console.run(["plugin", "upgrade", "copied"], USER).err, "an upgrade never turns one plugin into another"
+    assert "now holds the plugin echo, not copied" in console.run(["plugin", "upgrade", "copied"], USER).error, "an upgrade never turns one plugin into another"
     plugins.delete(plugins.lookup("copied"), Actor.user(1))
     linked = tmp_path / "linked"
     shutil.copytree(echo_folder, linked)
@@ -3445,9 +3445,9 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app: A
     for _ in range(2):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     waiting = [m for m in messages.recent(10) if m.text.startswith("Plugin echo's manifest changed")]
-    assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["detail"] and "idle" not in plugins.lookup("echo").manifest.holds, "shown once, and the plugin runs as installed"
+    assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["detail"] and "idle" not in plugins.lookup("echo").manifest.blocks, "shown once, and the plugin runs as installed"
     console.run(["plugin", "upgrade", "echo", "--yes"], USER)
-    assert "idle" in [h.event for h in plugins.lookup("echo").manifest.holds] and plugins.lookup("echo").waiting == "", "the user's upgrade applies it"
+    assert "idle" in [h.event for h in plugins.lookup("echo").manifest.blocks] and plugins.lookup("echo").waiting == "", "the user's upgrade applies it"
 
 
 def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app: App, tmp_path):
@@ -3463,16 +3463,16 @@ def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app: Ap
         (folder / "journal-plugin.json").write_text(json.dumps({**manifest, **changes}))
         return console.run(["plugin", "install", str(folder), "--yes"], USER)
     missing = installed(requires={"no-such-program-here": {"hint": "brew install it"}})
-    assert "echo needs no-such-program-here, which is not here: brew install it" in missing.err and plugins.all() == []
+    assert "echo needs no-such-program-here, which is not here: brew install it" in missing.error and plugins.all() == []
     steps = [{"name": "first", "run": 'echo one >> "$JOURNAL_PLUGIN_DATA/steps"'}, {"name": "second", "run": 'echo two >> "$JOURNAL_PLUGIN_DATA/steps"'}]
     failing = installed(setup=[*steps, {"name": "third", "run": "echo broken >&2; exit 3"}])
-    assert "setup step 'third' failed, so nothing is installed: broken" in failing.err and plugins.all() == [] and not (app.config.home / "plugin-data" / "echo").exists(), "a failed step leaves nothing"
-    preview = console.run(["plugin", "install", str(folder)], USER).out
+    assert "setup step 'third' failed, so nothing is installed: broken" in failing.error and plugins.all() == [] and not (app.config.home / "plugin-data" / "echo").exists(), "a failed step leaves nothing"
+    preview = console.run(["plugin", "install", str(folder)], USER).text
     assert 'runs at install first: echo one >> "$JOURNAL_PLUGIN_DATA/steps"' in preview
     produced = {"name": "made", "run": "printf '#!/bin/sh\\n' > made.sh && chmod +x made.sh"}
     finished = installed(requires={"sh": {"check": "command -v sh"}}, setup=[*steps, produced], installed="echo '{\"repeat\": 5}'", hears=[*manifest["hears"], "plugin.updated"],
                      services=[{"name": "made", "command": ["./made.sh"]}])
-    assert finished.code == 0, finished.err
+    assert finished.code == 0, finished.error
     hook(app, "SessionStart")
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert plugins.lookup("echo").enabled, "a file its setup made is hashed as made, so the plugin stays on"
@@ -3534,7 +3534,7 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app: App):
     console.run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
     plugin = app.container.get(Plugins).lookup("echo")
     as_echo = Caller("main", plugin="echo")
-    assert "written by its plugin's program" in console.run(["dashboard", "set", "a.py", "a.py"], AGENT).err, "only a plugin writes its dashboard"
+    assert "written by its plugin's program" in console.run(["dashboard", "set", "a.py", "a.py"], AGENT).error, "only a plugin writes its dashboard"
     console.run(["dashboard", "set", "a.py", "a.py", "--badge", "2 sins", "--tone", "warn", "--heading", "Files"], as_echo)
     console.run(["dashboard", "set", "b.py", "b.py", "--badge", "clean", "--tone", "good", "--heading", "Files"], as_echo)
     console.run(["dashboard", "set", "a.py", "a.py", "--badge", "1 sin", "--tone", "warn", "--heading", "Files"], as_echo)
@@ -3576,11 +3576,11 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app: App):
     for _ in range(5):
         assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[0] == 200, "a fault is never a refusal"
     row = plugins.lookup("echo")
-    assert row.faults_in_a_row == 5 and row.failing_since and "not JSON" in row.last_fault
+    assert row.fault_streak == 5 and row.failed_at and "not JSON" in row.last_fault
     assert len(app.container.get(Entries).matching(kind="plugin_fault")) == 5 and [m.text for m in messages.recent(20)].count("Plugin echo is failing: it faulted 5 times in a row, and events go through without it") == 1, "the failing card comes once, at the fifth"
     plugins.save(row.with_(settings={}), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
-    assert plugins.lookup("echo").faults_in_a_row == 0 and "Plugin echo answers again" in [m.text for m in messages.recent(5)]
+    assert plugins.lookup("echo").fault_streak == 0 and "Plugin echo answers again" in [m.text for m in messages.recent(5)]
     app.container.get(SettingRows).set(PluginsFeature.PLUGIN_ANSWER_WINDOW.key, 1000, Actor.user(1))
     plugins.save(plugins.lookup("echo").with_(settings={"mode": "slow"}), Actor.user(1))
     plugins.save(echo(app, "echo-two").with_(settings={"mode": "slow"}), Actor.user(1))
@@ -3588,7 +3588,7 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app: App):
     status, _ = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
     assert status == 200 and timing.monotonic() - began < 3, "two slow plugins are each cut at their window and the event goes through"
     missed = [e.data["plugin"] for e in app.container.get(Entries).matching(kind="plugin_unanswered") if "no answer within" in e.data["reason"]]
-    assert missed == ["echo", "echo-two"] and plugins.lookup("echo").faults_in_a_row == 0, "each miss is recorded as unanswered and counts as no fault, so the plugin is asked again next time"
+    assert missed == ["echo", "echo-two"] and plugins.lookup("echo").fault_streak == 0, "each miss is recorded as unanswered and counts as no fault, so the plugin is asked again next time"
 
 def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app: App):
     """The skill, the look and the mark hold a Codex write through its pre-tool hook, as the records frozen on today's conduct show; nothing here is Claude only."""
@@ -3721,7 +3721,7 @@ def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app: 
     stored = b"".join(path.read_bytes() for path in app.config.home.glob("journal.db*"))
     assert b"[secret GITHUB_KEY]" in stored and b"ghp_0123456789abcdef" not in stored, "not in a hook's entry either, in the database or its log"
     assert app.container.get(Masks).leaks
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=1.0))
     app.runtime().deferred.drain()
     with app.container.get(Scope).environment(1):
         assert any("was masked: GITHUB_KEY" in m.text for m in app.container.get(Messages).scoped()), "the leak is shown once"
@@ -3755,26 +3755,26 @@ def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_t
     import shutil
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
     produced = console.run(["secret", "create", "Github", "--kind", "api key", "--brief", "Run `curl -H @- https://api.github.com/user` or `bash -c x`, with GITHUB_KEY"], AGENT)
-    assert produced.code == 0 and "secret 1 made: Github, waiting for the user to fill key on the Secrets page; proposed for the user to allow: curl" in produced.out, "a shell named in the instructions is never proposed"
+    assert produced.code == 0 and "secret 1 made: Github, waiting for the user to fill key on the Secrets page; proposed for the user to allow: curl" in produced.text, "a shell named in the instructions is never proposed"
     assert console.run(["secret", "request", "Stripe", "--why", "to read the invoices"], AGENT).code == 0
     with app.container.get(Scope).environment(1):
         assert any("Please fill in the secret Stripe on the Secrets page" in m.text and "secret 2" in m.text for m in app.container.get(Messages).scoped())
-    assert "filled by the user on the Secrets page, never by a command" in console.run(["secret", "fill", "1"], AGENT).err
-    listed = console.run(["secret", "list"], AGENT).out
+    assert "filled by the user on the Secrets page, never by a command" in console.run(["secret", "fill", "1"], AGENT).error
+    listed = console.run(["secret", "list"], AGENT).text
     assert "Github  waiting for the user" in listed and "Stripe" in listed
-    shown = console.run(["secret", "show", "1"], AGENT).out
+    shown = console.run(["secret", "show", "1"], AGENT).text
     assert "GITHUB_KEY" in shown and "waiting for the user, hidden" in shown and "proposed: curl" in shown
-    assert console.run(["secret", "update", "1", "--title", "GitHub"], AGENT).code == 0 and "GitHub" in console.run(["secret", "list"], AGENT).out
-    assert console.run(["secret", "folder"], AGENT).out.strip().endswith(".env")
+    assert console.run(["secret", "update", "1", "--title", "GitHub"], AGENT).code == 0 and "GitHub" in console.run(["secret", "list"], AGENT).text
+    assert console.run(["secret", "folder"], AGENT).text.strip().endswith(".env")
     produced = tmp_path / "made.txt"
     produced.write_text("  generated-password-value  \n")
     assert console.run(["secret", "store", "1", "key", str(produced)], AGENT).code == 0 and not produced.exists()
     from journal.support.secret_values import SecretValues
     assert app.container.get(SecretValues).values()["GITHUB_KEY"] == "generated-password-value"
     console.run(["secret", "delete", "2"], AGENT)
-    assert "Stripe" not in console.run(["secret", "list"], AGENT).out
+    assert "Stripe" not in console.run(["secret", "list"], AGENT).text
     console.run(["secret", "restore", "2"], AGENT)
-    assert "Stripe" in console.run(["secret", "list"], AGENT).out
+    assert "Stripe" in console.run(["secret", "list"], AGENT).text
 
 
 def test_secrets_kept_as_files_in_the_project_folder_become_rows_once(app: App):
@@ -3832,17 +3832,17 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
     servers, secrets = app.container.get(McpServers), app.container.get(Secrets)
     servers.save(McpServer(name="playwright", title="Playwright", command="npx", args=("-y", "@playwright/mcp@latest", "--headless")), Actor.system())
     secret = secrets.save(Secret(title="Example", kind=SecretKind.BROWSER_LOGIN, url="https://app.example.com/login"), Actor.user("u"))
-    assert "the user logs in to Example with the Log in button" in app.console().run(["secret", "login", str(secret.id)], AGENT).err, "the agent logs in on its own only where the user allows it"
+    assert "the user logs in to Example with the Log in button" in app.console().run(["secret", "login", str(secret.id)], AGENT).error, "the agent logs in on its own only where the user allows it"
     viewer(app, f"secrets/{secret.id}/allow-login")
     began = timing.time()
-    while secrets.find(secret.id).logging_in_at and timing.time() - began < 5:
+    while secrets.find(secret.id).login_started_at and timing.time() - began < 5:
         timing.sleep(0.05)
     finished = secrets.find(secret.id)
     assert finished.auto_login and finished.session_at and finished.session_expires.year == 2100
     merged = app.container.get(BrowserLogins).merged
     args = servers.lookup("playwright").args
     assert args[-3:] == ("--storage-state", str(merged), "--isolated") and merged.is_file() and applied, "the agent's browser starts with the login, and the agents restart to use it"
-    assert "logged in to Example" in app.console().run(["secret", "login", str(secret.id), "--wait"], AGENT).out
+    assert "logged in to Example" in app.console().run(["secret", "login", str(secret.id), "--wait"], AGENT).text
     viewer(app, f"secrets/{secret.id}/revoke-login")
     assert not secrets.find(secret.id).auto_login and merged.exists(), "asking each time keeps the saved login"
     viewer(app, f"secrets/{secret.id}/forget-login")
@@ -3870,7 +3870,7 @@ def test_a_replaced_value_stays_masked_and_a_login_that_ran_out_asks_again_once(
     secrets.save(Secret(title="Example", kind=SecretKind.BROWSER_LOGIN, url="https://example.com", session_at=datetime.now(timezone.utc) - timedelta(days=2), session_expires=datetime.now(timezone.utc) - timedelta(days=1)), Actor.user("u"))
     hook(app, "SessionStart")
     for _ in range(2):
-        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
+        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=1.0))
         app.runtime().deferred.drain()
     requested = [m for m in app.container.get(Messages).scoped() if "Your login to Example has run out" in m.text]
     assert len(requested) == 1, "asked once for each time it runs out"
@@ -3891,7 +3891,7 @@ def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app: App
     recent = secrets.save(Secret(title="Recent", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Recent"), deleted_at=datetime.now(timezone.utc)), Actor.user("u"))
     values.write({"OLD_KEY": "a", "RECENT_KEY": "b", f"{RETIRED}X{EMAIL_SIGN_TOKEN}{int(long_ago.timestamp())}": "c", "LIVE_KEY": "d"})
     hook(app, "SessionStart")
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=1.0))
     app.runtime().deferred.drain()
     assert [s.id for s in secrets.all()] == [recent.id], "the one deleted thirty days ago is gone, the recent one kept for a restore"
     assert values.values() == {"RECENT_KEY": "b", "LIVE_KEY": "d"}, "its values and the old retired one go with it"
@@ -3910,7 +3910,7 @@ def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app: A
     from journal.engine.state_machine import StateMachine
     from journal.support.run_tracker import RunTracker
     console = app.console()
-    release = console.run(["sequence", "create", "release", "--steps", "one | two | three"], USER).out.split()[1].rstrip(":")
+    release = console.run(["sequence", "create", "release", "--steps", "one | two | three"], USER).text.split()[1].rstrip(":")
     hook(app, "SessionStart")
     console.run(["environment", "overview"], AGENT)
     console.run(["sequence", "run", release], AGENT)
@@ -3919,7 +3919,7 @@ def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app: A
     with app.container.get(Scope).environment(MAIN):
         stale = machine.agent("s1", 1)
         console.run(["sequence", "next"], AGENT)
-        active.rewritten(stale, lambda time: [*time[:-1], time[-1].said(active.timestamp())])
+        active.rewritten(stale, lambda time: [*time[:-1], time[-1].summary_text(active.timestamp())])
         assert active.current("s1", 1).step == 1, "the pace's own write, read before the step moved on, keeps the step it moved to"
 
 
@@ -3959,7 +3959,7 @@ def test_a_question_asked_without_a_session_or_from_a_workers_shell_is_refused(a
     from journal.repositories.workers import Workers
     workers = app.container.get(Workers)
     workers.save(workers.find(1).with_(session="w1"), USER.actor)
-    assert "worker's report" in app.console().run(["question", "ask", "Which?"], USER).err
+    assert "worker's report" in app.console().run(["question", "ask", "Which?"], USER).error
     assert app.console().run(["question", "ask", "Which?"], Caller("main", "w1")).code != 0
     assert app.console().run(["question", "ask", "Which?"], AGENT).code == 0
 
@@ -4052,25 +4052,25 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     (folder / "done").write_text("1")
     assert (folder / "number").read_text() == "1", "the runner names a cut output by the number the split leaves"
     bare = console.run(["output", "read", "1"], AGENT)
-    assert bare.code != 0 and "--tail 20" in bare.err and "--all" in bare.err, "an output is read in the part a flag names, never whole by default"
-    assert console.run(["output", "read", "1", "--all"], AGENT).out.count("\n") == 50, "--all reads every line, by choice"
-    full = console.run(["output", "read", "1", "--summary"], AGENT).out
+    assert bare.code != 0 and "--tail 20" in bare.error and "--all" in bare.error, "an output is read in the part a flag names, never whole by default"
+    assert console.run(["output", "read", "1", "--all"], AGENT).text.count("\n") == 50, "--all reads every line, by choice"
+    full = console.run(["output", "read", "1", "--summary"], AGENT).text
     assert "output 1: failed with code 1, 50 lines" in full and "command: make test" in full, full
     assert "line 10\n... 30 lines" in full and full.rstrip().endswith("line 50"), "the first and last ten, the middle named"
-    assert console.run(["output", "read", "1", "--lines", "20-22"], AGENT).out == "line 20\nline 21\nline 22\n"
-    assert console.run(["output", "read", "1", "--grep", "line 4[29]"], AGENT).out == "42: line 42\n49: line 49\n"
-    assert console.run(["output", "read", "1", "--tail", "1"], AGENT).out == "line 50\n"
-    assert "failed with code 1" in console.run(["output", "list"], AGENT).out
+    assert console.run(["output", "read", "1", "--lines", "20-22"], AGENT).text == "line 20\nline 21\nline 22\n"
+    assert console.run(["output", "read", "1", "--grep", "line 4[29]"], AGENT).text == "42: line 42\n49: line 49\n"
+    assert console.run(["output", "read", "1", "--tail", "1"], AGENT).text == "line 50\n"
+    assert "failed with code 1" in console.run(["output", "list"], AGENT).text
     assert console.run(["reader", "add", "forties", "--pattern", "line 4[0-1]$", "--about", "lines in the early forties"], AGENT).code == 0
     assert (app.config.readers / "forties.pattern").read_text() == "# lines in the early forties\nline 4[0-1]$\n", "a reader is a file of the project's"
-    assert console.run(["reader", "list"], AGENT).out == "forties: lines in the early forties\n"
-    assert console.run(["output", "read", "1", "--reader", "forties"], AGENT).out == "40: line 40\n41: line 41\n"
+    assert console.run(["reader", "list"], AGENT).text == "forties: lines in the early forties\n"
+    assert console.run(["output", "read", "1", "--reader", "forties"], AGENT).text == "40: line 40\n41: line 41\n"
     assert console.run(["output", "read", "1", "--reader", "nothing"], AGENT).code == 1, "an unknown reader is refused"
     script = app.config.root / "count.sh"
     script.write_text("wc -l | tr -d ' '\n")
     assert console.run(["reader", "add", "count", "--script", str(script), "--about", "how many lines"], AGENT).code == 0
-    assert console.run(["output", "read", "1", "--reader", "count"], AGENT).out == "50\n", "a script reader is handed the output and prints what matters"
-    assert console.run(["reader", "list"], AGENT).out == "count: how many lines\nforties: lines in the early forties\n"
+    assert console.run(["output", "read", "1", "--reader", "count"], AGENT).text == "50\n", "a script reader is handed the output and prints what matters"
+    assert console.run(["reader", "list"], AGENT).text == "count: how many lines\nforties: lines in the early forties\n"
 
 
 def test_a_trailing_tail_or_head_is_taken_off_the_line_and_kept_as_the_cut_to_apply(app: App):
@@ -4141,7 +4141,7 @@ def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task
     console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "aside", "--start"], AGENT)
     refused = console.run(["plan", "start", "1"], AGENT)
-    assert refused.code == 1 and "task 3 is in hand" in refused.err, "a plan's start obeys the one task in hand"
+    assert refused.code == 1 and "task 3 is in hand" in refused.error, "a plan's start obeys the one task in hand"
     assert app.container.get(Plans).find(1).state == "approved", "a refused start leaves the plan as it was"
     assert console.run(["task", "suspend", "2", "x"], AGENT).code == 1, "a task never started is not parked"
     console.run(["task", "suspend", "3", "the plan first"], AGENT)
@@ -4201,7 +4201,7 @@ def test_a_hand_read_that_does_a_readers_work_is_pointed_at_the_reader(app: App)
 def test_a_sequence_ported_from_version_3_is_written_at_boot(app: App):
     from journal.repositories.sequences import Sequences
     sorting = next(s for s in app.container.get(Sequences).all() if s.title == "Filing a document that is already written")
-    assert sorting.starts_on == "doc.created" and len(sorting.steps) == 2
+    assert sorting.trigger_event == "doc.created" and len(sorting.steps) == 2
 
 
 def version_3_row(folder, kind: str, n: int, brief: str = "", **header) -> None:
@@ -4257,7 +4257,7 @@ def test_every_version_3_message_comes_across_with_its_author_time_reply_and_att
     assert [m.text for m in imported] == ["an old one", "the answer", "a picture"], "the packed one too, in order, the deleted one left behind"
     old, answer, picture = imported
     assert old.created_at.timestamp() == 1700000000.0 and old.read_at is not None, "its own time, and read"
-    assert answer.author == "agent" and answer.reply_to == old.id, "the reply still points at what it answers"
+    assert answer.author == "agent" and answer.reply_target == old.id, "the reply still points at what it answers"
     assert answer.read_at.timestamp() == 1700000250.0 and picture.read_at is None, "read when the other side saw it, so the viewer has nothing to mark read"
     assert picture.files == ("shot.png",) and (app.config.files / "message" / str(picture.id) / "shot.png").read_bytes() == b"png"
 
@@ -4329,7 +4329,7 @@ def test_version_3_todos_become_tasks_in_their_states_with_their_work_logs(app: 
         migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
         tasks = {t.title: t for t in app.container.get(Tasks).rows()}
         assert tasks["done one"].state == "done" and tasks["done one"].outcome == "it shipped" and tasks["done one"].brief == "the brief"
-        assert tasks["in progress"].state == "parked" and tasks["waiting"].state == "blocked" and tasks["waiting"].blocked_why == "the vendor's answer"
+        assert tasks["in progress"].state == "parked" and tasks["waiting"].state == "blocked" and tasks["waiting"].block_reason == "the vendor's answer"
         assert tasks["still open"].state == "open" and "struck" not in tasks, "a struck to-do stays behind"
         assert [log.line for log in app.container.get(TaskLogs).rows() if log.task_id == tasks["done one"].id] == ["built it", "tested it"]
 
@@ -4352,7 +4352,7 @@ def test_version_3_plans_keep_their_state_phases_and_tasks_and_questions_their_a
         plan = next(p for p in plans.rows() if p.title == "the plan")
         phases = plans.plan_phases(plan)
         assert plan.state == "approved" and plan.brief == "the goal", "an approval stays an approval"
-        assert [(p.title, p.complete_when, p.checkpoint) for p in phases] == [("one", "it works", True)]
+        assert [(p.title, p.completion_rule, p.checkpoint) for p in phases] == [("one", "it works", True)]
         assert [t.title for t in plans.plan_tasks(plan)] == ["first step"] and [t.title for t in plans.phase_tasks(phases[0])] == ["first step"]
         questions = {q.text: q for q in app.container.get(Questions).rows()}
         assert questions["which one?"].options == ("a", "b") and questions["which one?"].answer == "b" and questions["still open?"].answer is None
@@ -4411,7 +4411,7 @@ def test_version_3_checks_triggers_sequences_templates_and_settings_come_across_
     with app.container.get(Scope).environment(MAIN):
         migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
     check = next(c for c in app.container.get(Checks).rows() if c.title == "tests")
-    assert check.command == "pytest -q" and check.every == 30
+    assert check.command == "pytest -q" and check.interval == 30
     assert [(t.phrases, t.action, t.text) for t in app.container.get(Triggers).rows() if "deploy" in t.phrases] == [(("deploy",), "instruct", "read the deploy notes")]
     assert not any("hold" in t.text for t in app.container.get(Triggers).rows()), "a trigger version 4 cannot do stays behind"
     titles = {s.title: s for s in app.container.get(Sequences).rows()}
@@ -4524,7 +4524,7 @@ def test_a_plan_parks_and_restarts_on_its_parked_task_only_once_approved_holds_i
     console.run(["environment", "overview"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
     console.run(["plan", "suspend", "1"], AGENT)
-    assert "task 1," in console.run(["plan", "start", "1"], AGENT).out, "a restart resumes the parked task"
+    assert "task 1," in console.run(["plan", "start", "1"], AGENT).text, "a restart resumes the parked task"
     console.run(["task", "complete", "1", "--how", "h"], AGENT)
     console.run(["task", "complete", "2", "--how", "h"], AGENT)
     console.run(["task", "block", "3", "a vendor"], AGENT)
@@ -4549,7 +4549,7 @@ def test_no_wait_closes_a_loop_and_the_migration_drops_only_the_link_that_would(
         console.run(["task", "create", title], AGENT)
     console.run(["task", "block", "1", "--on", "task:2"], AGENT)
     refused = console.run(["task", "block", "2", "--on", "task:1"], AGENT)
-    assert refused.code == 1 and "loop" in refused.err, "B waiting on A while A waits on B is refused"
+    assert refused.code == 1 and "loop" in refused.error, "B waiting on A while A waits on B is refused"
     stored = app.config.home / "version-3"
     version_3_row(stored / "project" / "environment", "environment", 1, title="main", data={"kind": "main"})
     todo = stored / "environments" / "main" / "todo"
@@ -4625,7 +4625,7 @@ def test_a_job_on_files_a_worker_already_worked_on_goes_back_to_that_worker(app:
     with app.container.get(Scope).environment(MAIN):
         workers.save(workers.find(1).with_(resume="abc").reported(0.0, 0), Actor.system())
     refused = console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    assert refused.code == 1 and "journal worker send 1" in refused.err, "related work goes back to the worker that knows it"
+    assert refused.code == 1 and "journal worker send 1" in refused.error, "related work goes back to the worker that knows it"
     assert console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet", "--fresh"], AGENT).code == 0, "unless a fresh one is asked for"
     assert console.run(["worker", "dispatch", "Mr. Bell", "write docs/other.md", "--profile", "journal-medior", "--model", "sonnet"], AGENT).code == 0, "other files, another worker"
 
@@ -4747,18 +4747,18 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app: A
     assert stop.get("decision") == "block" and "dump 1 is not filed yet" in stop.get("reason", ""), "the stop is held while the dump is open"
     made(console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT))
     sorting.attach(1, "a.png", Caller("main").actor)
-    assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).out and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).out
+    assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).text and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).text
     assert keystrokes[-1].startswith("[journal] dump 1 has 2 items to file"), keystrokes
     console.run(["dump", "note", "1", "text", "a list of ideas"], AGENT)
     assert console.run(["dump", "filed", "1", "text", "made a doc", "--refs", "doc:1"], AGENT).code == 0
     assert console.run(["dump", "filed", "1", "a.png", "x", "--refs", "docs:99"], AGENT).code != 0, "a row that is not there is refused"
-    assert console.run(["dump", "failed", "1", "a.png", "unreadable"], AGENT).out.endswith("closed: 1 filed, 1 failed\n")
+    assert console.run(["dump", "failed", "1", "a.png", "unreadable"], AGENT).text.endswith("closed: 1 filed, 1 failed\n")
     assert keystrokes[-1].startswith("[journal] dump 1 is filed (1 filed, 1 failed)")
     assert machine.current("s1").name == "idle", "the dump filed, the agent is back where it was"
     assert console.run(["dump", "stop", "1"], AGENT).code != 0 and console.run(["dump", "remove", "1"], AGENT).code != 0, "only the user stops or removes"
     assert app.container.get(Dumps).find(1).created_refs() == ["docs:1"]
     console.run(["dump", "remove", "1"], USER)
-    assert app.container.get(Dumps).find(1).removed_refs == ("docs:1",) and console.run(["doc", "list"], AGENT).out == ""
+    assert app.container.get(Dumps).find(1).removed_refs == ("docs:1",) and console.run(["doc", "list"], AGENT).text == ""
 
 
 def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_most_every_five(app: App, monkeypatch, tmp_path):
@@ -4779,7 +4779,7 @@ def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_
     tick_after(app, 360.0)
     tick_after(app, 370.0)
     matched = [line for line in keystrokes if "still running" in line]
-    assert len(matched) == 1 and f"output {active.id} still running" in matched[0] and "pytest" not in matched[0], "past five minutes the agent is told to look at it, once until five more pass"
+    assert len(matched) == 1 and f"output {active.id} still progress" in matched[0] and "pytest" not in matched[0], "past five minutes the agent is told to look at it, once until five more pass"
     (folder / "pid").write_text(str(os.getpid()))
     assert [o.id for o in outputs.background("s1")] == [active.id], "a chain whose runner lives is still in the background"
     (folder / "pid").write_text("99999999")
@@ -4795,9 +4795,9 @@ def test_a_second_reply_with_the_same_words_to_the_same_message_is_not_sent_and_
     console.run(["message", "send", "Can you look?"], USER)
     first = console.run(["message", "send", "Looking now.", "--reply-to", "1"], AGENT)
     repeat = console.run(["message", "send", "Looking now.", "--reply-to", "1"], AGENT)
-    assert first.code == 0 and repeat.code == 0 and "already has this reply in the chat: not sent again" in repeat.out
-    assert [m.text for m in app.container.get(Messages).recent(10) if m.reply_to == 1] == ["Looking now."], "the chat shows the reply once"
-    assert "sent" in console.run(["message", "send", "Found it.", "--reply-to", "1"], AGENT).out, "other words to the same message are sent"
+    assert first.code == 0 and repeat.code == 0 and "already has this reply in the chat: not sent again" in repeat.text
+    assert [m.text for m in app.container.get(Messages).recent(10) if m.reply_target == 1] == ["Looking now."], "the chat shows the reply once"
+    assert "sent" in console.run(["message", "send", "Found it.", "--reply-to", "1"], AGENT).text, "other words to the same message are sent"
 
 
 def test_a_subagent_in_a_worktree_of_its_own_never_moves_the_main_conversation(app: App, tmp_path):
@@ -4835,7 +4835,7 @@ def test_a_workers_worktree_is_cut_from_the_working_tip_and_a_failed_cut_refuses
     assert (app.config.home / "worktrees" / "1-Lady-Lovelace" / "feature.txt").is_file(), "cut from the tip of the branch being worked, not from main"
     git("branch", "worker/2-Ada-Byron")
     refused = app.console().run(["worker", "dispatch", "Ada Byron", "write the lexer", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
-    assert refused.code == 1 and "worker Ada Byron was not dispatched" in refused.err and "already exists" in refused.err, "git's refusal is said in plain words"
+    assert refused.code == 1 and "worker Ada Byron was not dispatched" in refused.error and "already exists" in refused.error, "git's refusal is said in plain words"
     with app.container.get(Scope).environment(1):
         assert [w.name for w in app.container.get(Workers).scoped()] == ["Lady Lovelace"], "nothing half made is left behind"
     assert not (app.config.home / "worktrees" / "2-Ada-Byron").exists()
@@ -4884,7 +4884,7 @@ def test_a_worktree_for_a_worker_in_a_project_with_no_commit_is_refused_in_plain
     subprocess.run(["git", "init", "-q", "-b", "main"], cwd=app.config.root, capture_output=True, timeout=30)
     hook(app, "SessionStart")
     refused = app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
-    assert refused.code == 1 and "the project has no commit yet" in refused.err
+    assert refused.code == 1 and "the project has no commit yet" in refused.error
 
 
 def test_another_sessions_prompt_and_claude_codes_notices_are_not_the_users_words(app: App):
@@ -4946,10 +4946,10 @@ def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_n
         assert "stays while it works" in app.container.get(WorkerBranch).dropped(workers.find(1)), "never while the worker runs in it"
         workers.save(workers.find(1).reported(0.0, 0), Actor.system())
     (tree / "notes.txt").write_text("half\n")
-    stored = app.console().run(["worker", "complete", "1"], AGENT).out
+    stored = app.console().run(["worker", "complete", "1"], AGENT).text
     assert "stays, since 1 files in it are not committed: notes.txt" in stored and tree.is_dir(), "uncommitted work keeps it"
     (tree / "notes.txt").unlink()
-    missing = app.console().run(["worker", "complete", "1"], AGENT).out
+    missing = app.console().run(["worker", "complete", "1"], AGENT).text
     assert "its worktree and branch are removed; its last commit is kept as refs/journal/worktrees/1-Lady-Lovelace" in missing and not tree.exists()
     assert git("log", "-1", "--format=%s", "refs/journal/worktrees/1-Lady-Lovelace").stdout.strip() == "the parser", "its last commit can still be taken in"
 
@@ -4967,16 +4967,16 @@ def test_deleting_an_environment_keeps_its_worktree_while_it_holds_work_and_take
     (tree / "page.py").write_text("PAGE = 1\n")
     console = app.console()
     console.run(["environment", "create", "calm-river"], USER)
-    line_text = console.run(["environment", "delete", "calm-river"], USER).out
+    line_text = console.run(["environment", "delete", "calm-river"], USER).text
     assert "stays, since 1 files in it are not committed: page.py" in line_text and tree.is_dir(), "uncommitted work keeps the worktree"
     git("add", "page.py", cwd=tree)
     git("commit", "-qm", "the page", cwd=tree)
     console.run(["environment", "create", "calm-river"], USER)
-    line_text = console.run(["environment", "delete", "calm-river"], USER).out
+    line_text = console.run(["environment", "delete", "calm-river"], USER).text
     assert "stays, since its branch has commits not yet in main" in line_text and tree.is_dir(), "unmerged commits keep it"
     git("merge", "-q", "worktree-calm-river")
     console.run(["environment", "create", "calm-river"], USER)
-    line_text = console.run(["environment", "delete", "calm-river"], USER).out
+    line_text = console.run(["environment", "delete", "calm-river"], USER).text
     assert "its worktree and branch are removed, its work already merged" in line_text and not tree.exists(), "a merged, clean one goes with its environment"
 
 
@@ -5067,7 +5067,7 @@ def test_dispatches_past_the_most_at_once_wait(app: App):
     app.container.get(SettingRows).save(Setting(environment_id=0, key="workers.most_out", value=1), Actor.user(1))
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     refused = console.run(["worker", "dispatch", "Ada Byron", "write the lexer", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    assert refused.code == 1 and "1 workers are out, the most at once" in refused.err, "a worker past the most out at once is refused"
+    assert refused.code == 1 and "1 workers are out, the most at once" in refused.error, "a worker past the most out at once is refused"
     app.container.get(SettingRows).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "journal-researcher", "model": "haiku"})[0] == 200, "the first under a most of one passes: the start being judged is not counted among the running"
     hook(app, "SubagentStart", agent_id="a1", agent_type="Explore")
@@ -5184,7 +5184,7 @@ def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app: 
     transmitted, answers = [], [201]
     monkeypatch.setattr(WebPush, "send", lambda self, endpoint: transmitted.append(endpoint) or answers[0])
     phones, time = app.container.get(Phones), datetime.now(timezone.utc)
-    phones.save(Phone(name="iPhone", key="k", expires_at=time + timedelta(days=1), push="https://web.push.apple.com/abc"), Actor.user(1))
+    phones.save(Phone(name="iPhone", key="k", expires_at=time + timedelta(days=1), subscription="https://web.push.apple.com/abc"), Actor.user(1))
     hook(app, "SessionStart")
     announcement = app.container.get(PhoneNotice)
     announcement.handle(None)
@@ -5198,11 +5198,11 @@ def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app: 
     announcement.handle(None)
     announcement.handle(None)
     failed = phones.matching(name="iPhone")[0]
-    assert len(transmitted) == 2 and failed.push_failed_at and failed.has_updates(["questions:2"]), "a push that did not reach the service stays owed and waits a minute before it is tried again"
+    assert len(transmitted) == 2 and failed.subscription_failed_at and failed.has_updates(["questions:2"]), "a push that did not reach the service stays owed and waits a minute before it is tried again"
     phones.save(failed.push_failed(time - timedelta(minutes=2)), Actor.system())
     answers[0] = 410
     announcement.handle(None)
-    assert len(transmitted) == 3 and phones.matching(name="iPhone")[0].push == "", "an address the service no longer knows is forgotten until the phone subscribes again"
+    assert len(transmitted) == 3 and phones.matching(name="iPhone")[0].subscription == "", "an address the service no longer knows is forgotten until the phone subscribes again"
 
 
 def test_a_line_naming_a_list_that_changes_is_said_once_inside_its_window(app: App):
@@ -5258,7 +5258,7 @@ def test_a_message_gets_one_reply_unless_the_agent_confirms_a_second(app: App, m
     transmitted = console.run(["message", "send", "Not quite: an agent with work is told the next task at each stop, and one at rest is checked in on after thirty quiet minutes.", "--reply-to", "1"], AGENT)
     assert transmitted.code == 0
     repeat = console.run(["message", "send", "Something else entirely.", "--reply-to", "1"], AGENT)
-    assert repeat.code == 1 and "already has your reply 2" in repeat.out, "a second reply by command is refused, naming the first"
+    assert repeat.code == 1 and "already has your reply 2" in repeat.text, "a second reply by command is refused, naming the first"
     hook(app, "MessageDisplay", message="An agent with work is told the next task at each stop, and an agent at rest is checked in on after thirty quiet minutes.")
     app.runtime().deferred.drain()
     assert len([m for m in app.container.get(Messages).scoped() if m.author == "agent"]) == 1, "closing words saying the reply again stay out of the chat"
@@ -5348,7 +5348,7 @@ def test_commands_that_end_together_are_named_in_one_line(app: App, monkeypatch)
         ShellVerbs(app).split("make", str(app.config.root / chain))
         ShellVerbs(app).moved(chain, "make", f"/tmp/out/{chain}")
         ShellVerbs(app).ended(chain, status, f"/tmp/out/{chain}", "")
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=6.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=6.0))
     ended = [line for line in keystrokes if "journal output read" in line]
     assert len(ended) == 1 and "outputs 1, 2 finished; output 3 failed with code 2" in ended[0], f"three ends in a busy stretch are one line: {ended}"
 
@@ -5521,7 +5521,7 @@ def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(
     threshold = app.container.get(UpdateCard)
     updating = updating_with(app, Source("v4.0.0", "v4.99.0"), Installer(), auto=True)
     updating.checked()
-    assert threshold.paused().to == "4.99.0" and updating.data().updating == "4.99.0", "the update keeps its mark through the restart it asks for"
+    assert threshold.paused().target == "4.99.0" and updating.data().updating == "4.99.0", "the update keeps its mark through the restart it asks for"
     try:
         updating.update_immediately(Actor.user(1))
         raise AssertionError("a second update started beside the first")
@@ -5569,7 +5569,7 @@ def test_messages_between_sessions_reach_the_chat_both_ways_named_by_their_agent
     hook(app, "SessionStart")
     app.container.get(Bus).dispatch(PeerMessage(sender="code-commandments-12", text="the fix is on main").placed("s1", 1, "claude", None, 0.0))
     came = app.container.get(MessageRows).all()[-1]
-    assert came.data["peer"] == "code-commandments-12" and came.created_by.stamp == "external:code-commandments-12" and came.read_at is not None, "it is the other agent's, written by it as an external agent, never the user's"
+    assert came.data["peer"] == "code-commandments-12" and came.creator.stamp == "external:code-commandments-12" and came.read_at is not None, "it is the other agent's, written by it as an external agent, never the user's"
     hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "code-commandments-12", "message": "thank you"}, tool_response={})
     hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "code-commandments-12", "notify_when_idle": True}, tool_response={})
     app.runtime().deferred.drain()
@@ -5593,9 +5593,9 @@ def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App
     hook(app, "SessionStart")
     console.run(["environment", "overview"], AGENT)
     bare = console.run(["await", "the build"], AGENT)
-    assert bare.code == 1 and "a wait names what ends it" in bare.err, "a wait that names nothing to end it is refused"
+    assert bare.code == 1 and "a wait names what ends it" in bare.error, "a wait that names nothing to end it is refused"
     user = console.run(["await", "the user's answer", "--until", "false"], AGENT)
-    assert user.code == 1 and "no wait" in user.err, "waiting for the user is no wait"
+    assert user.code == 1 and "no wait" in user.error, "waiting for the user is no wait"
     output = app.container.get(OutputLog).start("c1", "npm run build", app.config.home / "runtime" / "outputs" / "c1", "s1", Actor.agent("s1"))
     assert console.run(["await", "the build", "--output", str(output.id)], AGENT).code == 0
     assert app.container.get(StateMachine).current("s1").name == "awaiting", "the agent waits"
@@ -5650,9 +5650,9 @@ def test_journal_update_follow_sets_the_branch_the_journal_follows_and_unfollow_
     updating = updating_with(app, source, installer, auto=False)
     console = app.console()
     followed = console.run(["update", "follow", "development"], AGENT)
-    assert followed.code == 0 and followed.out.startswith("following the branch development: development at ccccccc is out") and updating.branch() == "development", "the branch is set and its head read at once"
+    assert followed.code == 0 and followed.text.startswith("following the branch development: development at ccccccc is out") and updating.branch() == "development", "the branch is set and its head read at once"
     assert source.branches_asked == [("https://github.com/jessegall/agent-journal", "development")], "the followed branch's head is asked for"
-    assert console.run(["update", "unfollow"], AGENT).out == "following the releases again\n" and updating.branch() == "", "unfollow clears the branch"
+    assert console.run(["update", "unfollow"], AGENT).text == "following the releases again\n" and updating.branch() == "", "unfollow clears the branch"
 
 
 def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_up(app: App, monkeypatch):
@@ -5688,7 +5688,7 @@ def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_
     assert transmitted[-1] == "[journal] new message 1"
     app.console().run(["message", "read", "1"], AGENT)
     app.runtime().deferred.drain()
-    tick = lambda later: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + later, quiet_for=later))
+    tick = lambda later: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + later, silence_seconds=later))
     tick(30)
     assert transmitted.count("[journal] new message 1") == 1, "the message read, the line that named it has arrived, whatever the prompt hook saw: it is not typed again"
     app.container.get(SupervisorLink).type(1, "look at the build")
@@ -5719,7 +5719,7 @@ def test_a_tasks_brief_is_written_anew(app: App):
     from journal.repositories.tasks import Tasks
     console = app.console()
     console.run(["task", "create", "the footer", "--brief", "done when it stays at the bottom"], AGENT)
-    assert console.run(["task", "brief", "1", "done when it stays at the bottom on every page"], AGENT).out == "task 1 brief written anew\n"
+    assert console.run(["task", "brief", "1", "done when it stays at the bottom on every page"], AGENT).text == "task 1 brief written anew\n"
     assert app.container.get(Tasks).find(1).brief == "done when it stays at the bottom on every page"
 
 
@@ -5760,10 +5760,10 @@ def test_a_plans_phase_is_retitled_and_its_complete_when_line_written_anew(app: 
     console = app.console()
     console.run(["plan", "create", "release"], USER)
     console.run(["plan", "phase", "1", "Build it", "--when", "it builds"], USER)
-    assert console.run(["plan", "rephase", "1", "1", "--title", "Build and prove it", "--when", "it builds and the suite is green"], USER).out == "phase 1 of plan 1 is now: Build and prove it\n"
+    assert console.run(["plan", "rephase", "1", "1", "--title", "Build and prove it", "--when", "it builds and the suite is green"], USER).text == "phase 1 of plan 1 is now: Build and prove it\n"
     plans = app.container.get(Plans)
     phase = plans.plan_phases(plans.find(1))[0]
-    assert (phase.title, phase.complete_when) == ("Build and prove it", "it builds and the suite is green")
+    assert (phase.title, phase.completion_rule) == ("Build and prove it", "it builds and the suite is green")
 
 
 def test_a_short_output_with_no_pipe_keeps_no_output_row(app: App):
@@ -5829,7 +5829,7 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     waited = timing.monotonic() - started
     assert status == 200 and 1.0 <= waited < 1.9, "the event it holds is asked on the answer path and cut at the window its manifest declares, the hook answered without it"
     missed = app.container.get(Entries).matching(kind="plugin_unanswered")
-    assert "no answer within 1000 ms" in missed[-1].data["reason"] and plugins.lookup("echo").faults_in_a_row == 0 and plugins.lookup("echo").enabled, "the miss is on the plugin's record, no fault counted, and the plugin stays on to be asked next time"
+    assert "no answer within 1000 ms" in missed[-1].data["reason"] and plugins.lookup("echo").fault_streak == 0 and plugins.lookup("echo").enabled, "the miss is on the plugin's record, no fault counted, and the plugin stays on to be asked next time"
     from journal.support.plugin_manifest import PluginManifest
     manifest = PluginManifest.parsed({"name": "x", "hears": ["tool_starting", "idle"], "holds": [{"event": "tool_starting", "window_ms": 5000}, "idle"]})
     assert manifest.window_ms("tool_starting", 50) == 50 and manifest.window_ms("idle", 50) == 50 and manifest.window_ms("tool_starting", 9000) == 5000, "a window is cut to the user's ceiling, and a hold named without one takes the ceiling"
@@ -6113,7 +6113,7 @@ def test_a_fact_rule_or_reminder_is_handed_over_once_per_context_window_by_the_s
     app.runtime().deferred.drain()
     assert any("reminder 2 is about this and not in your context: journal reminder read 2" in line for line in keystrokes), "a row made in the window is whispered as a read, never as its words"
     read = console.run(["reminder", "read", "2"], AGENT)
-    assert read.code == 0 and "reminder 2: tag the release" in read.out and reminders.find(2).presence, "the read hands it over"
+    assert read.code == 0 and "reminder 2: tag the release" in read.text and reminders.find(2).presence, "the read hands it over"
     keystrokes.clear()
     hook(app, "MessageDisplay", message="tag it again")
     app.runtime().deferred.drain()

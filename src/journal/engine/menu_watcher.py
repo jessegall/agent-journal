@@ -54,10 +54,10 @@ class MenuWatcher:
             self._seen[environment], self._seen_at[environment] = menu.signature(), moment
         if self._answered.get(environment) == menu.signature() or self.is_drawing(environment, moment):
             return ""
-        user_owned = self.supervisor.key_time(environment) > self._seen_at[environment] - USER_KEY_WINDOW_SECONDS
+        user_owned = self.supervisor.keyed_at(environment) > self._seen_at[environment] - USER_KEY_WINDOW_SECONDS
         if user_owned and not menu.confirming():
             return ""
-        triggered = user_owned or self.supervisor.choice_time(environment) > self._seen_at[environment] - CAUSE_WINDOW_SECONDS
+        triggered = user_owned or self.supervisor.selected_at(environment) > self._seen_at[environment] - CAUSE_WINDOW_SECONDS
         decided = self.decided(menu, triggered, agent)
         if decided is None:
             return ""
@@ -73,7 +73,7 @@ class MenuWatcher:
         return menu.asking_permission() and self.launches.skips_prompts(environment)
 
     def is_drawing(self, environment: int, moment: float) -> bool:
-        return self._seen_at[environment] == moment and moment - self.supervisor.screen_change_time(environment) < STILLNESS_SECONDS
+        return self._seen_at[environment] == moment and moment - self.supervisor.screen_changed_at(environment) < STILLNESS_SECONDS
 
     def decided(self, menu: Menu, triggered: bool, agent: Agent) -> tuple[str, str] | None:
         if triggered or menu.trusting() or menu.switching_model():

@@ -2,8 +2,8 @@ from journal.models.sequence import Sequence
 
 PLAN_BUILDING = Sequence(
     title="Building a plan",
-    starts_on="plan.created",
-    finishes_in=("ready", "approved", "started", "done"),
+    trigger_event="plan.created",
+    end_condition=("ready", "approved", "started", "done"),
     steps=(
         "Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`",
         "Add the plan's phases in order with `journal plan phase <plan n> \"<title>\" --when \"<complete when>\"`, and `--checkpoint` where the user should look before it goes on",
@@ -29,7 +29,7 @@ INSTRUCTION_FILES_CHECK = Sequence(
 )
 DOCUMENT_SORTING = Sequence(
     title="Filing a document that is already written",
-    starts_on="doc.created",
+    trigger_event="doc.created",
     steps=(
         "Check the document you filed reads as you meant: `journal doc show <doc n>` lists its sections, one for each ## heading of the file",
         "Tell the user in one or two plain lines what the document concludes, then its reference on a line of its own, like doc 41, never in backticks",

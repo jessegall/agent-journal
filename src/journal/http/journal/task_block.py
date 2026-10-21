@@ -7,4 +7,4 @@ class TaskBlock:
 
     id: int
     title: str
-    awaiting: str
+    wait_text: str

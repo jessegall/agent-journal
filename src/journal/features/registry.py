@@ -22,7 +22,7 @@ class Registry:
         return feature.fixed or bool(self.settings.get(f"features.{feature.name}", feature.default))
 
     def required_skill(self, state: str) -> Skill | None:
-        return next((skill for skill in self.skills() if state in skill.required_in), None)
+        return next((skill for skill in self.skills() if state in skill.required_states), None)
 
     def options(self) -> list:
         return [option for feature in self.features for option in feature.options]

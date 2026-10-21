@@ -16,4 +16,4 @@ class LaunchFiles:
         if not path.is_file():
             return False
         command = json.loads(path.read_text()).get("front", {}).get("command", [])
-        return any(flag in command for provider in self.providers.all() for flag in provider.skip_prompts)
+        return any(flag in command for provider in self.providers.all() for flag in provider.prompt_flags)

@@ -88,7 +88,7 @@ class Updater:
     def data(self) -> UpdateData:
         blocked = self.mark.paused()
         return UpdateData(installed=self.label(), latest=self.latest(), newer=self.is_published(), branch=self.branch(), versions=[release.version for release in self.newer()],
-                              updating=blocked.to if blocked else "", step=blocked.step if blocked else "", problem=self.problem)
+                              updating=blocked.target if blocked else "", step=blocked.step if blocked else "", problem=self.problem)
 
     def tick(self, time: float) -> None:
         self.reconcile(time)
@@ -108,7 +108,7 @@ class Updater:
         if blocked is None or (blocked.pid == os.getpid() and not blocked.is_stale(time)):
             return
         self.mark.clear()
-        self.problem = "" if blocked.to == self.label() else f"The update to {blocked.to} did not finish: .journal/runtime/update.log says how it went"
+        self.problem = "" if blocked.target == self.label() else f"The update to {blocked.target} did not finish: .journal/runtime/update.log says how it went"
 
     def update_immediately(self, actor: Actor) -> None:
         self.mark.claim(self.label(), self.target().label)

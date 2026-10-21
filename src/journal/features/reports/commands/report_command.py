@@ -35,7 +35,7 @@ class ReportCommand(Command):
 
     def create(self, args: Namespace, caller: Caller) -> int:
         body = Path(args.file).read_text() if args.file else args.body
-        rows = self.mentioned_rows(args.about)
+        rows = self.mentioned_rows(args.subject)
         report = self.reports.save(Report(title=args.title, body=body), caller.actor)
         for row in rows:
             self.links.save(Link(source=Ref.build(report), target=row, kind=Messages.SUBJECT_LINK), caller.actor)

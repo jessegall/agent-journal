@@ -3,7 +3,7 @@ import {pluginFrom} from "../src/composables/plugins.js";
 import {settingGroups, visibleSettings} from "../src/domain/pluginSettings.js";
 import {resets, resettable} from "../src/domain/settingsCatalog.js";
 
-const plugin = (schema, settings = {}) => pluginFrom({table: "plugins", id: 4, name: "standup", manifest: {title: "Standup"}, settings, schema, status: "on", enabled: true, source: "", commit_sha: "", last_fault: "", failing_since: null});
+const plugin = (schema, settings = {}) => pluginFrom({table: "plugins", id: 4, name: "standup", manifest: {title: "Standup"}, settings, schema, status: "on", enabled: true, source: "", commit_sha: "", last_fault: "", failed_at: null});
 
 describe("plugin settings", () => {
     test("every setting of the schema shows, with its saved value", () => {

@@ -11,11 +11,11 @@ globalThis.ResizeObserver ??= class {
 };
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
-const message = (id, seconds, author, text, more = {}) => ({table: "messages", id, created_at: at(seconds), author, text, files: [], data: {}, comments_on: [], idempotency: "", reply_to: null, ...more});
+const message = (id, seconds, author, text, more = {}) => ({table: "messages", id, created_at: at(seconds), author, text, files: [], data: {}, comments_on: [], idempotency: "", reply_target: null, ...more});
 
 const older = message(1, 10, "user", "Is the footer fixed?");
 const newer = message(2, 20, "user", "And the header?");
-const reply = message(3, 30, "agent", "The footer is fixed.", {reply_to: 1});
+const reply = message(3, 30, "agent", "The footer is fixed.", {reply_target: 1});
 const messages = [older, newer, reply];
 const scope = {env: "", api: {}, rows: (table) => (table === "messages" ? messages : []), loaded: () => true, holding: () => {}, earlier: () => {}};
 

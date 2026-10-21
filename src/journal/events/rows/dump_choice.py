@@ -8,5 +8,5 @@ class DumpChoice(RowEvent):
     """The user chose a next step on a dump, left it to the agent (pick -1) or said what to do in their own words (pick -2)."""
 
     dump_id: int
-    pick: int
+    choice: int
     label: str

@@ -78,7 +78,7 @@ def tick_after(app, silent: float) -> list:
     environment = app.container.get(Environments).lookup("main").id
     clock.driven_at = clock.held_at + silent
     try:
-        return app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=environment, time=clock.driven_at, quiet_for=silent))
+        return app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=environment, time=clock.driven_at, silence_seconds=silent))
     finally:
         clock.driven_at = clock.held_at
 

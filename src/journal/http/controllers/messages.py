@@ -51,7 +51,7 @@ class MessageController(Controller[Message]):
         prior_items = self.repository.sent_with(key) if key else []
         if prior_items:
             return Response.json(self.shown(prior_items[0]), 201)
-        message = Message(author=Author.USER, text=request.body.get("text", ""), reply_to=request.body.get("reply_to"), idempotency=key).arrived()
+        message = Message(author=Author.USER, text=request.body.get("text", ""), reply_target=request.body.get("reply_target"), idempotency=key).arrived()
         return Response.json(self.shown(self.repository.save(message, request.actor)), 201)
 
     def read(self, request: Request) -> Response:
@@ -66,7 +66,7 @@ class MessageController(Controller[Message]):
 
     def reply(self, request: Request) -> Response:
         answered = self.repository.find(request.number("id"))
-        message = Message(environment_id=answered.environment_id, author=Author.USER, text=request.body.get("text", ""), reply_to=answered.id).arrived()
+        message = Message(environment_id=answered.environment_id, author=Author.USER, text=request.body.get("text", ""), reply_target=answered.id).arrived()
         return Response.json(self.shown(self.repository.save(message, request.actor)), 201)
 
     def react(self, request: Request) -> Response:

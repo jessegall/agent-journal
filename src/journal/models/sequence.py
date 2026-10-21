@@ -11,8 +11,8 @@ class Sequence(Model):
     text_fields: ClassVar[tuple[str, ...]] = ("title",)
     title: str = ""
     steps: tuple[str, ...] = ()
-    starts_on: str = ""
-    finishes_in: tuple[str, ...] = ()
+    trigger_event: str = ""
+    end_condition: tuple[str, ...] = ()
 
     def title_words(self) -> str:
         return self.title

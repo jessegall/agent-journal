@@ -8,4 +8,4 @@ class PlanPostponed(RowEvent):
     """A plan was postponed, by the user or by a command: its task in hand was parked with it."""
 
     plan_id: int
-    by_user: bool
+    user_origin: bool

@@ -55,7 +55,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
             silent = (Tags.hidden(part) and not answered) or self.is_repeat_reply(text, tagged, event)
             acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._journal_answer(event)
             if text and not silent:
-                reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), actor)
+                reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_target=answered[0] if answered else None, acknowledgement=acknowledgement), actor)
                 for n in answered[1:]:
                     self._other_answers(reply, n, actor)
             for n in answered:
@@ -84,7 +84,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
             return False
         repeated = [r for r in self.messages.recent_replies(prompt.created_at) if WordOverlap.share(text, r.text) >= REPEATS]
         if repeated:
-            self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_CLOSING_TEXT.create(reply=repeated[0].id, n=repeated[0].reply_to).rendered())
+            self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_CLOSING_TEXT.create(reply=repeated[0].id, n=repeated[0].reply_target).rendered())
         return bool(repeated)
 
     def turn_prompt(self, event: TurnDisplayed) -> Entry | None:
@@ -128,7 +128,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
     def _chat_answer(self, event: TurnDisplayed, line: str) -> bool:
         line_text = [e for e in self.entries.kind_entries("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
         nudge = self.registry.nudge_keyed(line_text[-1].data["key"]) if line_text else None
-        return bool(nudge and nudge.answered_in_chat)
+        return bool(nudge and nudge.chat_answerable)
 
     def _other_answers(self, reply: Message, n: int, actor: Actor) -> None:
         try:

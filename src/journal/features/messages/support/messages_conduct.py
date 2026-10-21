@@ -52,10 +52,10 @@ class MessagesConduct(Conduct):
         messages = event.data.part(feature)
         if event.subagent or event.call.is_journal or not messages.unread:
             return self.none()
-        if event.call.writes and messages.times_named >= int(settings.value(feature.EDIT_BLOCK_LIMIT)):
+        if event.call.writes and messages.mention_count >= int(settings.value(feature.EDIT_BLOCK_LIMIT)):
             return self.refuse(feature.INBOX_EDIT_BLOCK.create(count=len(messages.unread)))
         all_items = int(settings.value(feature.REMINDER_INTERVAL))
-        if all_items > 0 and messages.uses_since_newest > 0 and messages.uses_since_newest % all_items == 0:
+        if all_items > 0 and messages.newest_gap > 0 and messages.newest_gap % all_items == 0:
             return self.none(feature.inbox(messages.unread))
         return self.none()
 
@@ -64,7 +64,7 @@ class MessagesConduct(Conduct):
         return self.none(messages_feature().TAG_REPLY.create()) if MESSAGE_COMMAND in command else self.none()
 
     def on_reaction_added_messages(self, event: ReactionAdded, settings: Settings) -> Transition:
-        return self.none(messages_feature().USER_REACTION.create(face=event.face, n=event.message_id)) if event.by_user else self.none()
+        return self.none(messages_feature().USER_REACTION.create(face=event.face, n=event.message_id)) if event.user_origin else self.none()
 
 
 def messages_feature():

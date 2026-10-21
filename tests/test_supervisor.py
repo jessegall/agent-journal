@@ -39,16 +39,16 @@ def menu_answering(tmp_path: Path, monkeypatch, answers: list[str]) -> Menu:
 def test_the_menu_defaults_and_answers_and_remembers(tmp_path: Path, monkeypatch):
     settings_with_other_hooks(tmp_path)
     menu = menu_answering(tmp_path, monkeypatch, ["", "2", "1", "2"])
-    assert menu.choose("claude") == Choice("main", "", hooks_aside=False, skip_prompts=True)
-    assert menu.choose("claude", confirmed=True) == Choice("main", "abc", hooks_aside=False, skip_prompts=True), "yes takes the defaults, which are last time's answers"
+    assert menu.choose("claude") == Choice("main", "", stashed_hooks=False, prompt_flags=True)
+    assert menu.choose("claude", confirmed=True) == Choice("main", "abc", stashed_hooks=False, prompt_flags=True), "yes takes the defaults, which are last time's answers"
     assert menu.choose("claude", environment="spike", confirmed=True).resume == ""
-    assert menu.choose("claude", environment="spike", new=True, stashed=True, omit=False, confirmed=True) == Choice("spike", "", hooks_aside=True, skip_prompts=True)
+    assert menu.choose("claude", environment="spike", new=True, stashed=True, omit=False, confirmed=True) == Choice("spike", "", stashed_hooks=True, prompt_flags=True)
 
 
 def test_the_hooks_question_is_asked_even_when_no_other_hooks_are_found_yet(tmp_path: Path, monkeypatch):
     menu = menu_answering(tmp_path, monkeypatch, ["", "2", "2", "1"])
-    assert menu.choose("claude") == Choice("main", "", hooks_aside=True, skip_prompts=False)
-    assert menu.choose("claude", confirmed=True).hooks_aside is True, "remembered"
+    assert menu.choose("claude") == Choice("main", "", stashed_hooks=True, prompt_flags=False)
+    assert menu.choose("claude", confirmed=True).stashed_hooks is True, "remembered"
 
 
 def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
@@ -94,13 +94,13 @@ def test_the_picker_moves_with_the_arrow_keys_and_jumps_by_number(tmp_path: Path
 
 def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
     launch = Launch.parse(["claude", "--env", "spike", "--aside", "--", "--model", "x"], tmp_path)
-    assert launch.env == "spike" and launch.aside and launch.args == ("--model", "x")
+    assert launch.environment == "spike" and launch.stashed and launch.args == ("--model", "x")
     status = StatusLine(tmp_path)
     assert launch.agent_command(Choice("spike", "s-1", True), status) == ["claude", "--settings", status.settings(), "--model", "x"], "the resume goes in the launch file apart"
-    assert launch.agent_command(Choice("spike", "", True, skip_prompts=True), status) == ["claude", "--dangerously-skip-permissions", "--settings", status.settings(), "--model", "x"]
+    assert launch.agent_command(Choice("spike", "", True, prompt_flags=True), status) == ["claude", "--dangerously-skip-permissions", "--settings", status.settings(), "--model", "x"]
     codex = Launch.parse(["codex"], tmp_path)
     assert codex.agent_command(Choice("spike", "", True), status) == ["codex", "--no-daemon", "-c", "sandbox_workspace_write.network_access=true"], "Codex keeps this launch's environment and reaches its journal's server"
-    assert codex.agent_command(Choice("spike", "", True, skip_prompts=True), status) == ["codex", "--no-daemon", "--dangerously-bypass-approvals-and-sandbox"]
+    assert codex.agent_command(Choice("spike", "", True, prompt_flags=True), status) == ["codex", "--no-daemon", "--dangerously-bypass-approvals-and-sandbox"]
     environ = launch.environ(Choice("spike", "", True))
     assert environ["AGENT_JOURNAL_ACTIVE"] == "1" and environ["JOURNAL_ENV"] == "spike", "the journal's own hooks always run"
     assert environ["PATH"].startswith(str(tmp_path / ".journal" / "bin")), "the project's own journal command is on the agent's PATH, and nowhere else"
@@ -113,7 +113,7 @@ def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Pat
 
     class Launched(Launch):
         def choice(self):
-            return Choice("main", "", hooks_aside=True)
+            return Choice("main", "", stashed_hooks=True)
 
         def supervise(self, choice):
             assert len(json.loads(path.read_text())["hooks"]) == 1, "the other hooks are aside while the agent runs"
@@ -188,8 +188,8 @@ def test_the_launch_writes_what_the_supervisor_starts_and_a_bad_launch_file_is_r
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"front": {"command": ["claude"]}}))
     assert main([str(bad)]) == 2
-    assert "has no socket, announce, front's folder, front's env" in capsys.readouterr().err
-    assert main([str(tmp_path / "missing.json")]) == 2 and "cannot be read" in capsys.readouterr().err
+    assert "has no socket, announce, front's folder, front's env" in capsys.readouterr().error
+    assert main([str(tmp_path / "missing.json")]) == 2 and "cannot be read" in capsys.readouterr().error
 
 
 def test_the_supervisor_imports_nothing_but_the_standard_library_and_itself():
@@ -248,7 +248,7 @@ def test_a_bare_worktree_flag_takes_the_chosen_environments_name(tmp_path: Path)
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
     for argv in (["claude", "-w"], ["claude", "--worktree", "--resume", "abc"]):
         launch = Launch.parse(argv, tmp_path)
-        assert launch.in_worktree and launch.worktree == "" and "--worktree" not in launch.args and "-w" not in launch.args
+        assert launch.worktree_launch and launch.worktree == "" and "--worktree" not in launch.args and "-w" not in launch.args
     launch = Launch.parse(["claude", "-w"], tmp_path)
     produced = launch.launch_file(Choice("calm-river", "", False, False), StatusLine(tmp_path))
     assert produced["front"]["folder"] == str(tmp_path / ".claude" / "worktrees" / "calm-river"), "the worktree is named after the environment the menu chose"
@@ -401,7 +401,7 @@ def test_every_start_asks_to_skip_the_permission_prompts_with_skip_selected_even
     selected = menu.screen.pick
     monkeypatch.setattr(menu.screen, "pick", lambda heading, notes, options, default: requested.append((heading, default)) or selected(heading, notes, options, default))
     choice = menu.choose("claude")
-    assert choice.resume == "abc" and choice.skip_prompts, "carrying on main's conversation still starts with the prompts skipped"
+    assert choice.resume == "abc" and choice.prompt_flags, "carrying on main's conversation still starts with the prompts skipped"
     assert ("Run without permission prompts", 0) in requested, "the question is asked, with skip under the cursor"
 
 

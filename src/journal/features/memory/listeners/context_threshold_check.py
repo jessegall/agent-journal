@@ -17,6 +17,6 @@ class ContextThresholdCheck(AgentListener[AgentEvent]):
         if event.context is None or not event.session:
             return
         agent = self.agents.session_agent(event.session)
-        threshold = Memory.threshold_due(event.context, agent.context_mark)
+        threshold = Memory.threshold_due(event.context, agent.context_threshold)
         if threshold:
             self.agents.touch(agent, Actor.system(), context_mark=threshold, mark_owed=threshold)

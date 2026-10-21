@@ -9,4 +9,4 @@ class DumpArrived(RowEvent):
 
     dump_id: int
     waiting: int
-    by_user: bool
+    user_origin: bool

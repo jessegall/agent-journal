@@ -55,7 +55,7 @@ def test_a_saved_task_gets_an_id_and_the_actor_stamp(connection, bus, scope):
     tasks = tasks_of(connection, bus, scope)
     task = tasks.save(Task(environment_id=1, title="write the release notes"), actor=USER)
     assert task.id == 1
-    assert task.created_by == USER and task.updated_by == USER
+    assert task.creator == USER and task.updater == USER
     assert task.created_at is not None
     assert tasks.find(1) == task
 
@@ -161,7 +161,7 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
     old = Connection(tmp_path / "old.db", Masks(SecretValues(Config(tmp_path))))
     with old.transaction() as db:
         db.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, environment_id INTEGER, author TEXT, text TEXT, created_at TEXT, updated_at TEXT, created_by TEXT, updated_by TEXT)")
-        db.execute("INSERT INTO messages (environment_id, author, text, created_at, updated_at, created_by, updated_by) VALUES (1, 'user', 'old', '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00', 'user:1', 'user:1')")
+        db.execute("INSERT INTO messages (environment_id, author, text, created_at, updated_at, creator, updater) VALUES (1, 'user', 'old', '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00', 'user:1', 'user:1')")
     Schema(old, AllModels.MODELS).create()
     bus = Bus()
     scope = Scope(Environments(old, bus))
@@ -208,19 +208,19 @@ def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(co
     import json
     from journal.db.migrations.time_keys import TimeKeys
     connection.execute("ALTER TABLE edits RENAME COLUMN time TO at")
-    connection.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, created_by) VALUES (1, 'nudge', 'system', ?, '2026-10-21', 'system')", (json.dumps({"key": "k", "at": 5.0}),))
-    connection.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, created_by) VALUES (1, 'ran', 'system', ?, '2026-10-21', 'system')", (json.dumps({"command": "ls"}),))
-    connection.execute("INSERT INTO checks (title, running, created_at, created_by) VALUES ('c', ?, '2026-10-21', 'system')", (json.dumps({"at": 7.0, "output": ""}),))
-    connection.execute("INSERT INTO dumps (environment_id, question, answers, chosen, taken, created_at, created_by) VALUES (1, ?, ?, '{}', '{}', '2026-10-21', 'system')", (json.dumps({"at": 1.0, "text": "q"}), json.dumps([{"question": "q", "answer": "a", "at": 2.0}])))
+    connection.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, creator) VALUES (1, 'nudge', 'system', ?, '2026-10-21', 'system')", (json.dumps({"key": "k", "at": 5.0}),))
+    connection.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, creator) VALUES (1, 'ran', 'system', ?, '2026-10-21', 'system')", (json.dumps({"command": "ls"}),))
+    connection.execute("INSERT INTO checks (title, progress, created_at, creator) VALUES ('c', ?, '2026-10-21', 'system')", (json.dumps({"at": 7.0, "output": ""}),))
+    connection.execute("INSERT INTO dumps (environment_id, question, answers, choice, claimed, created_at, creator) VALUES (1, ?, ?, '{}', '{}', '2026-10-21', 'system')", (json.dumps({"at": 1.0, "text": "q"}), json.dumps([{"question": "q", "answer": "a", "at": 2.0}])))
     TimeKeys().apply(connection)
     assert "time" in {row["name"] for row in connection.all("PRAGMA table_info(edits)")} and "at" not in {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
     nudge, completed = [json.loads(row["data"]) for row in connection.all("SELECT data FROM entries ORDER BY id")]
     assert nudge == {"key": "k", "time": 5.0} and completed == {"command": "ls"}, "the key moves where it is, and a row without it is untouched"
-    assert json.loads(connection.one("SELECT running FROM checks")["running"]) == {"time": 7.0, "output": ""}
+    assert json.loads(connection.one("SELECT progress FROM checks")["running"]) == {"time": 7.0, "output": ""}
     dump = connection.one("SELECT question, answers FROM dumps")
     assert json.loads(dump["question"]) == {"time": 1.0, "text": "q"} and json.loads(dump["answers"]) == [{"question": "q", "answer": "a", "time": 2.0}]
     connection.execute("ALTER TABLE edits ADD COLUMN at REAL DEFAULT 0")
-    connection.execute("INSERT INTO edits (environment_id, session, path, at, time, created_at, created_by) VALUES (1, 's', 'a.py', 9.0, 0, '2026-10-21', 'system')")
+    connection.execute("INSERT INTO edits (environment_id, session, path, at, time, created_at, creator) VALUES (1, 's', 'a.py', 9.0, 0, '2026-10-21', 'system')")
     TimeKeys().apply(connection)
     names = {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
     assert "at" not in names and connection.one("SELECT time FROM edits")["time"] == 9.0, "where the schema already added the time column, the old at column's values move into it and the column goes"
@@ -230,7 +230,7 @@ def test_the_trigger_phrases_migration_renames_the_words_column(connection):
     """Migration 21: a trigger's words column becomes phrases, carried over when the schema already added phrases."""
     from journal.db.migrations.trigger_phrases import TriggerPhrases
     connection.execute("ALTER TABLE triggers ADD COLUMN words TEXT DEFAULT '[]'")
-    connection.execute("INSERT INTO triggers (phrases, words, action, text, created_at, created_by) VALUES ('[]', '[\"deploy\"]', 'deny', 'no', '2026-10-21', 'system')")
+    connection.execute("INSERT INTO triggers (phrases, words, action, text, created_at, creator) VALUES ('[]', '[\"deploy\"]', 'deny', 'no', '2026-10-21', 'system')")
     TriggerPhrases().apply(connection)
     names = {row["name"] for row in connection.all("PRAGMA table_info(triggers)")}
     assert "words" not in names and connection.one("SELECT phrases FROM triggers")["phrases"] == '["deploy"]'
@@ -264,7 +264,7 @@ def test_the_dashboard_sections_migration_renames_the_heading_column(connection)
     """Migration 22: a dashboard line's heading column becomes section, carried over when the schema already added section."""
     from journal.db.migrations.dashboard_sections import DashboardSections
     connection.execute("ALTER TABLE dashboard_rows ADD COLUMN heading TEXT DEFAULT ''")
-    connection.execute("INSERT INTO dashboard_rows (plugin, key, label, heading, section, created_at, created_by) VALUES ('p', 'k', 'l', 'Totals', '', '2026-10-21', 'system')")
+    connection.execute("INSERT INTO dashboard_rows (plugin, key, label, heading, section, created_at, creator) VALUES ('p', 'k', 'l', 'Totals', '', '2026-10-21', 'system')")
     DashboardSections().apply(connection)
     names = {row["name"] for row in connection.all("PRAGMA table_info(dashboard_rows)")}
     assert "heading" not in names and connection.one("SELECT section FROM dashboard_rows")["section"] == "Totals"
@@ -279,7 +279,7 @@ def test_the_chart_drop_keeps_only_workflows_a_user_or_an_agent_wrote_as_documen
         db.execute("CREATE TABLE noted_times (id INTEGER PRIMARY KEY)")
         rows = [("Hold the stop while a task is parked", 5, 1, "system"), ("Remind to commit after twenty writes", 2, 1, "user:1"), ("Ask about an open question after ten quiet minutes", 0, 0, "agent:s1")]
         for title, revision, shipped, editor in rows:
-            db.execute("INSERT INTO charts (created_at, created_by, updated_at, updated_by, title, revision, shipped, event, state, places, drawing, drawn_version, locked) VALUES ('t', 'system', 't', ?, ?, ?, ?, 'idle', 'idle', '', '', 30, 0)", (editor, title, revision, shipped))
+            db.execute("INSERT INTO charts (created_at, creator, updated_at, updater, title, revision, shipped, event, state, places, drawing, drawn_version, locked) VALUES ('t', 'system', 't', ?, ?, ?, ?, 'idle', 'idle', '', '', 30, 0)", (editor, title, revision, shipped))
     ChartDrop().apply(connection)
     titles = [row["title"] for row in connection.all("SELECT title FROM docs WHERE title LIKE 'Workflow: %' ORDER BY id")]
     assert titles == ["Workflow: Remind to commit after twenty writes", "Workflow: Ask about an open question after ten quiet minutes"], "a shipped workflow re-drawn by an upgrade is the journal's, however many revisions it counts; one a user or an agent last wrote is kept"

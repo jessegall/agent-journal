@@ -38,8 +38,8 @@ const onRow = computed(() =>
 // the thread: each comment that answers none, followed by the replies under it, in order; a reply whose comment is gone stands on its own
 const thread = computed(() => {
     const ids = new Set(onRow.value.map((c) => c.id));
-    const tops = onRow.value.filter((c) => !c.reply_to || !ids.has(c.reply_to));
-    return tops.flatMap((top) => [top, ...onRow.value.filter((c) => c.reply_to === top.id && c !== top).map((c) => ({...c, under: top.id}))]);
+    const tops = onRow.value.filter((c) => !c.reply_target || !ids.has(c.reply_target));
+    return tops.flatMap((top) => [top, ...onRow.value.filter((c) => c.reply_target === top.id && c !== top).map((c) => ({...c, under: top.id}))]);
 });
 const replying = reactive({id: 0, text: "", error: ""});
 const replyTo = (c) => Object.assign(replying, {id: c.id, text: "", error: ""});
@@ -49,7 +49,7 @@ async function sendReply() {
     if (!text) return;
     replying.error = "";
     try {
-        await scope.api.create("comments", {on: on.value, text, reply_to: replying.id});
+        await scope.api.create("comments", {on: on.value, text, reply_target: replying.id});
         Object.assign(replying, {id: 0, text: ""});
     } catch (e) {
         replying.error = e.message;

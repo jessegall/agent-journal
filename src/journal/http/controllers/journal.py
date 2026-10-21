@@ -69,7 +69,7 @@ class JournalController:
     def summary(self, request: Request) -> Response:
         blocked = self.mark.paused()
         return Response.json({"project": self.config.root.name, "root": str(self.config.home), "version": VERSION, "started": STARTED, "color": COLOR,
-                              "updating": blocked.to if blocked else "", "step": blocked.step if blocked else "",
+                              "updating": blocked.target if blocked else "", "step": blocked.step if blocked else "",
                               "environments": [self.data(e) for e in (self.environments.all() or [self.environments.lookup("main")])]})
 
     def data(self, environment: Environment) -> EnvironmentData:
@@ -77,7 +77,7 @@ class JournalController:
             agent = self.agents.current()
             activity = self.activity.page([agent])[0] if agent else None
             work = self.current.work(agent) if agent else None
-            task = TaskBlock(work.task.id, work.task.title, work.awaiting) if work else None
+            task = TaskBlock(work.task.id, work.task.title, work.wait_text) if work else None
             silent = bool(activity) and activity["status"] in ("busy", "working") and timing.time() - activity["heard_at"].timestamp() > SILENCE_LIMIT_SECONDS
             return EnvironmentData(environment, activity, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
 

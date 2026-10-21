@@ -48,7 +48,7 @@ export const tunnelStatus = computed(() => store.tunnel);
 
 const UNKNOWN_TUNNEL = {
     installed: true,
-    logged_in: true,
+    authenticated: true,
     command: "",
     host: "",
     server: "",

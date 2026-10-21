@@ -7,7 +7,7 @@ class PluginService:
 
     name: str
     command: tuple[str, ...]
-    when: str = ""
+    condition: str = ""
     restart: str = ""
     answers: bool = False
 

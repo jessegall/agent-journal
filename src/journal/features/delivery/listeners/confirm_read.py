@@ -13,7 +13,7 @@ class ConfirmRead(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         message = event.model
-        if not isinstance(message, Message) or message.read_at is None or (event.was is not None and event.was.read_at is not None):
+        if not isinstance(message, Message) or message.read_at is None or (event.previous is not None and event.previous.read_at is not None):
             return
         if self.typed.confirm_naming(message.environment_id, message.id):
             self.supervisor.release(message.environment_id)

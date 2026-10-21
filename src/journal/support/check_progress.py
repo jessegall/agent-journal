@@ -7,7 +7,7 @@ class CheckProgress:
 
     time: float
     output: str = ""
-    done: int = 0
+    finished_count: int = 0
     total: int = 0
     percent: float | None = None
 

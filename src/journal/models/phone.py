@@ -14,20 +14,20 @@ class Phone(Scoped):
     name: str = ""
     key: str = ""
     expires_at: datetime | None = None
-    last_seen_at: datetime | None = None
+    last_visited_at: datetime | None = None
     ended_at: datetime | None = None
-    push: str = ""
+    subscription: str = ""
     pushed: str = ""
-    push_failed_at: datetime | None = None
+    subscription_failed_at: datetime | None = None
 
     def is_active(self, time: datetime) -> bool:
         return self.ended_at is None and self.expires_at is not None and self.expires_at > time
 
     def is_presence_due(self, time: datetime) -> bool:
-        return self.last_seen_at is None or time - self.last_seen_at >= self.PRESENCE_INTERVAL
+        return self.last_visited_at is None or time - self.last_visited_at >= self.PRESENCE_INTERVAL
 
     def seen(self, time: datetime) -> "Phone":
-        return self.with_(last_seen_at=time)
+        return self.with_(last_visited_at=time)
 
     def pushed_refs(self) -> list[str]:
         return self.pushed.split()
@@ -36,20 +36,20 @@ class Phone(Scoped):
         return bool(set(obligations) - set(self.pushed_refs()))
 
     def is_push_due(self, obligations: list[str], time: datetime) -> bool:
-        resting = self.push_failed_at is not None and time - self.push_failed_at < self.NOTIFICATION_RETRY_DELAY
+        resting = self.subscription_failed_at is not None and time - self.subscription_failed_at < self.NOTIFICATION_RETRY_DELAY
         return self.has_updates(obligations) and not resting
 
     def subscribed(self, endpoint: str, obligations: list[str]) -> "Phone":
-        return self.with_(push=endpoint, pushed=" ".join(obligations))
+        return self.with_(subscription=endpoint, pushed=" ".join(obligations))
 
     def notified(self, obligations: list[str]) -> "Phone":
-        return self.with_(pushed=" ".join(obligations), push_failed_at=None)
+        return self.with_(pushed=" ".join(obligations), subscription_failed_at=None)
 
     def push_failed(self, time: datetime) -> "Phone":
-        return self.with_(push_failed_at=time)
+        return self.with_(subscription_failed_at=time)
 
     def unsubscribed(self) -> "Phone":
-        return self.with_(push="", push_failed_at=None)
+        return self.with_(subscription="", subscription_failed_at=None)
 
     def ended(self, time: datetime) -> "Phone":
         return self.with_(ended_at=time)

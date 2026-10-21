@@ -19,7 +19,7 @@ class PhoneNotice(Listener[ClockTicked]):
 
     def handle(self, event: ClockTicked) -> None:
         time = datetime.now(timezone.utc)
-        for phone in [p for p in self.phones.active(time) if p.push]:
+        for phone in [p for p in self.phones.active(time) if p.subscription]:
             obligations = self.waits.refs(phone)
             if phone.is_push_due(obligations, time):
                 self.pushed(phone, obligations, time)
@@ -27,7 +27,7 @@ class PhoneNotice(Listener[ClockTicked]):
                 self.phones.save(phone.notified(obligations), Actor.system())
 
     def pushed(self, phone: Phone, obligations: list[str], time: datetime) -> None:
-        status = self.push.send(phone.push)
+        status = self.push.send(phone.subscription)
         if status in MISSING_STATUSES:
             self.phones.save(phone.unsubscribed(), Actor.system())
         elif 200 <= status < 300:

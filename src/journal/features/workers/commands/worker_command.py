@@ -65,7 +65,7 @@ class WorkerCommand(Command):
         if knowing:
             raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker send {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         provider = args.provider or self.provider_default(caller)
-        worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatched_by=caller.session)
+        worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
         worker = self.workers.save(worker, caller.actor)
         try:
             self.runner.workplace(worker)
@@ -101,7 +101,7 @@ class WorkerCommand(Command):
             raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
         if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
             raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
-        worker = self.workers.save(worker.instructed(args.brief).with_(dispatched_by=caller.session), caller.actor)
+        worker = self.workers.save(worker.instructed(args.brief).with_(dispatcher=caller.session), caller.actor)
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
@@ -110,7 +110,7 @@ class WorkerCommand(Command):
         return 0
 
     def wait(self, args: Namespace, caller: Caller) -> int:
-        print(f"awaiting workers {', '.join(str(n) for n in args.on)}: you are told as each reports, and when the last is back")
+        print(f"awaiting workers {', '.join(str(n) for n in args.target_ref)}: you are told as each reports, and when the last is back")
         return 0
 
     def stop(self, args: Namespace, caller: Caller) -> int:

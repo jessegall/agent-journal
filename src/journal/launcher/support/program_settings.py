@@ -7,7 +7,7 @@ from pathlib import Path
 class ProgramSettings:
     """An agent program's settings file: its hooks by event, and everything else in it, kept as it was."""
 
-    rest: dict
+    remainder: dict
     hooks: dict | None = None
 
     @classmethod
@@ -18,8 +18,8 @@ class ProgramSettings:
 
     def serialized(self) -> dict:
         if self.hooks is None:
-            return self.rest
-        return {**self.rest, "hooks": self.hooks}
+            return self.remainder
+        return {**self.remainder, "hooks": self.hooks}
 
     def stored(self) -> "ProgramSettings":
         if self.hooks is None:

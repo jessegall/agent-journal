@@ -32,10 +32,10 @@ class PluginQueue:
             self.relay.applied(plugin, answer, self.environments.find(environment_id).name, environment_id)
             if answer.answer == "refuse":
                 self.relay.unanswered(plugin, event, environment_id, answer.reason)
-            elif answer.tell and environment_id == event.environment_id:
-                context.append(self.relay.text.line(plugin, answer.tell))
-            elif answer.tell:
-                self.relay.queued_line(plugin, environment_id, event.key, answer.tell)
+            elif answer.message and environment_id == event.environment_id:
+                context.append(self.relay.text.line(plugin, answer.message))
+            elif answer.message:
+                self.relay.queued_line(plugin, environment_id, event.key, answer.message)
         return context
 
     def files(self, plugin: Plugin) -> list[Path]:

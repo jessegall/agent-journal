@@ -100,7 +100,7 @@ def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
     deferred.add(lambda: completed.append("after"))
     deferred.drain()
     deferred.stop()
-    assert completed == ["after"] and "ZeroDivisionError" in capsys.readouterr().err
+    assert completed == ["after"] and "ZeroDivisionError" in capsys.readouterr().error
 
 
 def test_a_status_file_caught_half_written_keeps_the_last_whole_reading(tmp_path: Path):

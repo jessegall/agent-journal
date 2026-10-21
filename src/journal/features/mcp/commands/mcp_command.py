@@ -31,7 +31,7 @@ class McpCommand(Command):
 
     def suggested(self, args: Namespace, caller: Caller) -> int:
         for s in self.catalogue.all():
-            print(f"{s.name:<12} {s.title}: {s.about}" + s.admit)
+            print(f"{s.name:<12} {s.title}: {s.subject}" + s.admit)
         return 0
 
     def install(self, args: Namespace, caller: Caller) -> int:

@@ -65,5 +65,5 @@ class MemoryCommand(Command):
         if not caller.session:
             return
         agent = self.machine.agent(caller.session, self.scope.id)
-        if agent.mark_owed:
+        if agent.threshold_due:
             self.agents.save(agent.context_decided(datetime.now(timezone.utc).timestamp()), caller.actor)

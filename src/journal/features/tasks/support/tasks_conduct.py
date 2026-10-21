@@ -15,11 +15,11 @@ class TasksConduct(Conduct):
 
     def on_wait_request_tasks(self, event: WaitRequest, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
-        return self.push(ExternalWait(what=event.what, ends_on=event.ends_on, start_time=event.time))
+        return self.push(ExternalWait(focus=event.focus, end_refs=event.end_refs, start_time=event.time))
 
     def on_impasse_report_tasks(self, event: ImpasseReport, settings: Settings) -> Transition:
         from journal.features.tasks.states.impasse import Impasse
-        return self.push(Impasse(why=event.why))
+        return self.push(Impasse(reason=event.reason))
 
     def on_tool_starting_tasks(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
@@ -31,12 +31,12 @@ class TasksConduct(Conduct):
 
     def on_task_reopened_tasks(self, event: TaskReopened, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        return self.none(Tasks.TASK_REOPENED.create(n=event.task_id, on=event.on))
+        return self.none(Tasks.TASK_REOPENED.create(n=event.task_id, on=event.target_ref))
 
     def on_task_closed_tasks(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
         tasks, plans = event.data.part(Tasks), event.data.part(Plans)
-        if event.how != "done" or tasks.in_hand or not tasks.parked or (plans.started is not None and plans.started.next_task):
+        if event.outcome != "done" or tasks.current_task or not tasks.suspended or (plans.started is not None and plans.started.next_task):
             return self.none()
-        return self.none(Tasks.SUSPENDED_TASK_CLOSURE_REMINDER.create(n=tasks.parked[0], why=tasks.first_parked_why))
+        return self.none(Tasks.SUSPENDED_TASK_CLOSURE_REMINDER.create(n=tasks.suspended[0], why=tasks.first_suspension_reason))

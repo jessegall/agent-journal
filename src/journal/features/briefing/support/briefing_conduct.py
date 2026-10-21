@@ -19,13 +19,13 @@ class BriefingConduct(Conduct):
 
     def on_tool_starting_briefing(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = briefing_feature()
-        if event.subagent or not event.call.writes or event.data.part(feature).oriented:
+        if event.subagent or not event.call.writes or event.data.part(feature).has_overview:
             return self.none()
         return self.refuse(feature.OVERVIEW_REQUEST.create())
 
     def on_stop_briefing(self, event: Stop, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.none() if event.data.part(feature).oriented else self.refuse(feature.OVERVIEW_STOP.create())
+        return self.none() if event.data.part(feature).has_overview else self.refuse(feature.OVERVIEW_STOP.create())
 
 
 def briefing_feature():
@@ -35,9 +35,9 @@ def briefing_feature():
 
 def start_block(briefing: BriefingData, source: str) -> list[Nudge]:
     feature = briefing_feature()
-    takeover_time = "" if source == COMPACT else briefing.last_other_session_at
+    takeover_at = "" if source == COMPACT else briefing.peer_session_active_at
     optional = (
-        (takeover_time, lambda: feature.TAKEOVER.create(time=takeover_time)),
+        (takeover_at, lambda: feature.TAKEOVER.create(time=takeover_at)),
         (briefing.rules, lambda: feature.ACTIVE_RULES.create(count=briefing.rules_count, rows=briefing.rules)),
         (briefing.facts, lambda: feature.ENVIRONMENT_FACTS.create(rows=briefing.facts)),
         (briefing.reminders, lambda: feature.ENVIRONMENT_REMINDERS.create(rows=briefing.reminders)),

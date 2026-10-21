@@ -18,7 +18,7 @@ class LineRetyping(AgentListener[Ticked]):
         self.typed, self.turn, self.machine, self.supervisor, self.cards = keystrokes, turn, machine, supervisor, cards
 
     def handle(self, event: Ticked) -> None:
-        if event.quiet_for < WAIT_LIMIT_SECONDS:
+        if event.silence_seconds < WAIT_LIMIT_SECONDS:
             return
         agent = self.machine.agent(event.session, event.environment_id)
         if not self.turn.is_finished(agent):

@@ -17,33 +17,33 @@ class Check(Model):
     title: str = ""
     brief: str = ""
     command: str = ""
-    every: float = 0
+    interval: float = 0
     last_passed: bool | None = None
     last_output: str = ""
-    last_ran_at: datetime | None = None
-    last_took: float = 0.0
+    last_run_at: datetime | None = None
+    last_duration: float = 0.0
     last_report: CheckReport | None = None
-    running: CheckProgress | None = None
+    progress: CheckProgress | None = None
     last_fault: str = ""
-    waited_on: bool = False
+    wait_target: bool = False
 
     def edited(self, title: str, brief: str, command: str, interval_minutes: float) -> "Check":
-        return self.with_(title=title, brief=brief, command=command, every=interval_minutes)
+        return self.with_(title=title, brief=brief, command=command, interval=interval_minutes)
 
     def started(self, time: float) -> "Check":
-        return self.with_(running=CheckProgress(time))
+        return self.with_(progress=CheckProgress(time))
 
     def completed(self, passed: bool, output: str, time: datetime, elapsed: float, report: CheckReport | None, fault: str) -> "Check":
-        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, failed_before=self.last_passed is False, waited_on=self.waited_on)
-        recorded = self.with_(last_passed=passed, last_output=output, last_ran_at=time, last_took=elapsed, last_report=report, running=None, last_fault=fault).with_event(executed)
-        if self.waited_on and passed and not self.is_resolved():
+        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, prior_failure=self.last_passed is False, wait_target=self.wait_target)
+        recorded = self.with_(last_passed=passed, last_output=output, last_run_at=time, last_duration=elapsed, last_report=report, progress=None, last_fault=fault).with_event(executed)
+        if self.wait_target and passed and not self.is_resolved():
             return recorded.with_event(RowResolved(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.outcome()))
         return recorded
 
     def needs_run(self, time: datetime) -> bool:
-        if self.every <= 0 or (self.waited_on and self.is_resolved()):
+        if self.interval <= 0 or (self.wait_target and self.is_resolved()):
             return False
-        return self.last_ran_at is None or (time - self.last_ran_at).total_seconds() >= self.every * 60
+        return self.last_run_at is None or (time - self.last_run_at).total_seconds() >= self.interval * 60
 
     def is_resolved(self) -> bool:
         return self.last_passed is True

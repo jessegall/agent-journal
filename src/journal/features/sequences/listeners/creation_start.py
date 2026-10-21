@@ -19,7 +19,7 @@ class CreationStart(Listener[Created]):
             return
         moment = f"{type(row).__name__.lower()}.created"
         for sequence in self.sequences.all():
-            if sequence.starts_on == moment:
+            if sequence.trigger_event == moment:
                 line = self.running.start(sequence, event.actor.id, row.environment_id, topic=f"{row.table()}:{row.id}")
                 if line and self.running.typed_agent(event.actor.id, row.environment_id):
                     self.supervisor.type(row.environment_id, line)

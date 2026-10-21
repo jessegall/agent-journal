@@ -72,7 +72,7 @@ class Tunnel:
             return [OUTDATED]
         if status.rejected:
             return [REJECTED.format(account=status.account, host=status.host)]
-        if not status.logged_in and not status.unreadable:
+        if not status.authenticated and not status.unreadable:
             return [TUNLER_LOGIN_MISSING]
         if status.host and self.saved_host() and self.saved_host() != status.host:
             return [HOST_MISMATCH.format(saved=self.saved_host(), host=status.host)]
@@ -81,9 +81,9 @@ class Tunnel:
         return []
 
     def reconcile(self) -> None:
-        self.reconcile_time(datetime.now(timezone.utc))
+        self.reconciled_at(datetime.now(timezone.utc))
 
-    def reconcile_time(self, time: datetime) -> None:
+    def reconciled_at(self, time: datetime) -> None:
         self.wanted = self.is_wanted(time)
         if self.wanted:
             self.start()
@@ -92,7 +92,7 @@ class Tunnel:
 
     def reconcile_changes(self, time: datetime) -> None:
         if self.is_wanted(time) != self.wanted:
-            self.reconcile_time(time)
+            self.reconciled_at(time)
 
     def is_wanted(self, time: datetime) -> bool:
         return self.shares.all_open() or bool(self.phones.active(time)) or bool(self.codes.open(time))
@@ -174,7 +174,7 @@ class Tunnel:
             return TunnelCause("old", f"tunler {version.current} is older than {version.latest} on the server. Updating it may fix the connection.")
         if self.is_responsive():
             return TunnelCause("open", f"The tunnel is open: {address} answers.")
-        return TunnelCause("waiting", f"The tunnel is running, but {address} does not answer yet. The last lines it wrote:", self.last_lines())
+        return TunnelCause("waiting", f"The tunnel is progress, but {address} does not answer yet. The last lines it wrote:", self.last_lines())
 
     def last_lines(self) -> list[str]:
         if not self.log.is_file():

@@ -26,22 +26,22 @@ class WorkerCards(Listener[ModelEvent]):
         worker = event.model
         text, tone, detail = self.standing(worker, event)
         key = f"worker:{worker.id}"
-        actor = Actor.agent(worker.dispatched_by) if worker.dispatched_by else Actor.system()
+        actor = Actor.agent(worker.dispatcher) if worker.dispatcher else Actor.system()
         card = self.messages.keyed(key, actor)
         if card and card[0].data.get("tone") == tone and card[0].data.get("detail") == detail and card[0].text.endswith(text):
             return
-        self.cards.show(worker.environment_id, worker.dispatched_by, f"Worker {worker.id}, {worker.name}: {text}", "agents", tone=tone, detail=detail, row=str(Ref.build(worker)), actor=actor, key=key, shows=CardKind.WORKERS)
+        self.cards.show(worker.environment_id, worker.dispatcher, f"Worker {worker.id}, {worker.name}: {text}", "agents", tone=tone, detail=detail, row=str(Ref.build(worker)), actor=actor, key=key, shows=CardKind.WORKERS)
 
     def standing(self, worker: Worker, event: ModelEvent) -> tuple[str, str, str]:
         if worker.state == WorkerState.STOPPED:
             return "stopped", "", ""
-        if worker.state == WorkerState.REPORTED and worker.taken_up:
+        if worker.state == WorkerState.REPORTED and worker.adopted:
             return "retired, its work taken in", "good", ""
         if worker.state == WorkerState.REPORTED and self.reports.last(worker).startswith(FAILURES):
             return "failed", "bad", self.reports.last(worker)
         if worker.state == WorkerState.REPORTED:
             report = self.reports.last(worker)
             return "reported", "good", report.splitlines()[0] if report else ""
-        if isinstance(event, Updated) and event.was is not None and event.was.state == WorkerState.REPORTED:
+        if isinstance(event, Updated) and event.previous is not None and event.previous.state == WorkerState.REPORTED:
             return "sent out again", "", worker.brief
         return f"dispatched on {worker.provider} {worker.model}".rstrip(), "", worker.brief

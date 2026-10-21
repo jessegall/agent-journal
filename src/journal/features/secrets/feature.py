@@ -15,8 +15,8 @@ class Secrets(Feature[SecretsData]):
     name = "secrets"
     title = "Secrets"
     help = "A key or a login the agent may use without seeing it: its values live in a file in your home folder, never in the journal, and you fill them in on the Secrets page."
-    PRIVATE_SECRETS = Nudge(name, "secrets_out_of_reach", "the secrets and the MCP keys in the private folder are out of your reach", "a secret reaches a program through `journal secret run <n> -- <program>`; its value is never yours to read", repeat_after=0)
-    SECRET_PROGRAM_GRANT = Nudge(name, "secret_allowed_for_programs", "the user let secret {{n}}, {{title}}, go to {{programs}}", "run it with `journal secret run {{n}} -- <program> ...`", repeat_after=0)
+    PRIVATE_SECRETS = Nudge(name, "secrets_out_of_reach", "the secrets and the MCP keys in the private folder are out of your reach", "a secret reaches a program through `journal secret run <n> -- <program>`; its value is never yours to read", repeat_interval=0)
+    SECRET_PROGRAM_GRANT = Nudge(name, "secret_allowed_for_programs", "the user let secret {{n}}, {{title}}, go to {{programs}}", "run it with `journal secret run {{n}} -- <program> ...`", repeat_interval=0)
     nudges = (PRIVATE_SECRETS, SECRET_PROGRAM_GRANT)
     commands = (SecretCommand,)
     seeds = (SecretFiles,)

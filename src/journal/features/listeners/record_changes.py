@@ -19,7 +19,7 @@ class RecordChanges(Listener[ModelEvent]):
 
     def handle(self, event: ModelEvent) -> None:
         action = ACTIONS.get(type(event))
-        if action is None or not event.model.in_timeline:
+        if action is None or not event.model.timeline_visible:
             return
         model = event.model
         environment = model.environment_id if isinstance(model, Scoped) else PROJECT

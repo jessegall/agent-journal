@@ -7,7 +7,7 @@ class TunlerStatus:
 
     installed: bool
     command: str = ""
-    logged_in: bool = False
+    authenticated: bool = False
     rejected: bool = False
     outdated: bool = False
     account: str = ""

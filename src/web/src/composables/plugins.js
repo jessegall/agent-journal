@@ -21,7 +21,7 @@ export const pluginFrom = (p) => ({
     state: p.status,
     holds: (p.manifest.holds || []).map((h) => (typeof h === "string" ? h : h.window_ms ? `${h.event} within ${h.window_ms} ms` : h.event)),
     lastFault: p.last_fault || "",
-    failingSince: seconds(p.failing_since),
+    failingSince: seconds(p.failed_at),
     dashboards: p.manifest.dashboard ? [p.manifest.dashboard] : [],
     settings: (p.schema || []).map((s) => ({
         key: s.key,

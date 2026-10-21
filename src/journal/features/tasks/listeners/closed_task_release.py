@@ -14,7 +14,7 @@ class ClosedTaskRelease(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         task = event.model
-        if not isinstance(task, Task) or not task.is_newly_closed(event.was):
+        if not isinstance(task, Task) or not task.is_newly_closed(event.previous):
             return
         for agent in self.agents.scoped():
             state = self.machine.current(agent.session)

@@ -28,19 +28,19 @@ def test_a_task_lives_through_the_cli(app: App):
     assert console.run(["task", "create", "write the notes", "--brief", "what and where"], MAIN).code == 0
     assert console.run(["task", "start", "1"], MAIN).code == 0
     assert console.run(["task", "log", "1", "half done"], MAIN).code == 0
-    assert "started  write the notes" in console.run(["task", "list"], MAIN).out
+    assert "started  write the notes" in console.run(["task", "list"], MAIN).text
     assert console.run(["task", "complete", "1", "--how", "published"], MAIN).code == 0
     tasks = app.container.get(Tasks)
     task = tasks.find(1)
     assert task.state == TaskState.FINISHED and task.outcome == "published" and task.started_at is not None
-    assert task.created_by == Actor.user(1)
+    assert task.creator == Actor.user(1)
     assert [log.line for log in app.container.get(TaskLogs).logs(task)] == ["half done"]
     assert (app.config.database).is_file()
 
 
 def test_the_agent_is_the_actor_when_its_session_is_set(app: App):
     app.console().run(["task", "create", "t", "--start"], Caller("main", "s-1"))
-    assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-1")
+    assert app.container.get(Tasks).find(1).creator == Actor.agent("s-1")
 
 
 def test_the_environment_is_made_on_first_use(app: App):
@@ -51,9 +51,9 @@ def test_the_environment_is_made_on_first_use(app: App):
 
 def test_bad_arguments_answer_with_usage_not_an_exit(app: App):
     outcome = app.console().run(["task", "nope"], MAIN)
-    assert outcome.code == 2 and "usage: journal task" in outcome.err and "usage: journal [-h]" not in outcome.err, "the noun's own usage, once"
+    assert outcome.code == 2 and "usage: journal task" in outcome.error and "usage: journal [-h]" not in outcome.error, "the noun's own usage, once"
     helped = app.console().run(["plan", "--help"], MAIN)
-    assert helped.code == 0 and "approve" in helped.out and "usage: journal [-h]" not in helped.out + helped.err, "a noun's help is its verbs, and no failure"
+    assert helped.code == 0 and "approve" in helped.text and "usage: journal [-h]" not in helped.text + helped.error, "a noun's help is its verbs, and no failure"
 
 
 def test_the_server_runs_the_same_console_for_the_shim(app: App):
@@ -68,7 +68,7 @@ def test_the_server_runs_the_same_console_for_the_shim(app: App):
     finally:
         server.stop()
     assert outcome["code"] == 0 and "task 1 open" in outcome["out"]
-    assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-9")
+    assert app.container.get(Tasks).find(1).creator == Actor.agent("s-9")
 
 
 def test_deleting_an_environment_takes_everything_recorded_in_it(app: App):
@@ -77,7 +77,7 @@ def test_deleting_an_environment_takes_everything_recorded_in_it(app: App):
     app.console().run(["task", "create", "t"], Caller("spike"))
     app.console().run(["task", "create", "kept"], MAIN)
     outcome = app.console().run(["environment", "delete", "spike"], MAIN)
-    assert "deleted environment" in outcome.out and outcome.code == 0
+    assert "deleted environment" in outcome.text and outcome.code == 0
     assert [e.name for e in app.container.get(Environments).all()] == ["main"]
     with app.container.get(Scope).environment(1):
         assert [t.title for t in app.container.get(Tasks).all()] == ["kept"]
@@ -93,9 +93,9 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
     app.container.get(Agents).save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
     app.console().run(["message", "send", "hi"], Caller("main"))
     app.console().run(["message", "react", "1", "👍"], Caller.environment_caller({"CLAUDECODE": "1"}))
-    assert Caller.environment_caller({"JOURNAL_AGENT_SHELL": "1"}).from_agent_shell, "a worker's shell is an agent's whatever its program marks"
+    assert Caller.environment_caller({"JOURNAL_AGENT_SHELL": "1"}).agent_shell, "a worker's shell is an agent's whatever its program marks"
     with app.container.get(Scope).environment(1):
-        assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"
+        assert app.container.get(Reactions).all()[-1].creator.kind == "agent"
 
 
 def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app: App):
@@ -104,7 +104,7 @@ def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app:
     app.console().run(["message", "send", "hi"], Caller("main"))
     assert app.console().run(["message", "react", "1", "👍"], Caller.environment_caller({"CLAUDECODE": "1"})).code == 0
     with app.container.get(Scope).environment(1):
-        assert app.container.get(Reactions).all()[-1].created_by.kind == "user", "a shell outside the journal is the user's"
+        assert app.container.get(Reactions).all()[-1].creator.kind == "user", "a shell outside the journal is the user's"
 
 
 def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app: App):
@@ -114,16 +114,16 @@ def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app: 
     environments, agents = app.container.get(Environments), app.container.get(Agents)
     development = environments.lookup("development")
     with app.container.get(Scope).environment(development.id):
-        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", oriented=False), Actor.system())
-        agents.save(Agent(session="claude-session", environment_id=development.id, provider="claude", oriented=False), Actor.system())
+        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", has_overview=False), Actor.system())
+        agents.save(Agent(session="claude-session", environment_id=development.id, provider="claude", has_overview=False), Actor.system())
     caller = Caller.environment_caller({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "codex-session", "CODEX_CI": "1"})
     assert app.console().run(["environment", "overview"], caller).code == 0
     with app.container.get(Scope).environment(development.id):
-        assert agents.session_agent("codex-session").oriented
-        assert not agents.session_agent("claude-session").oriented
+        assert agents.session_agent("codex-session").has_overview
+        assert not agents.session_agent("claude-session").has_overview
     assert app.console().run(["task", "create", "Codex task"], caller).code == 0
     with app.container.get(Scope).environment(development.id):
-        assert app.container.get(Tasks).all()[-1].created_by == Actor.agent("codex-session")
+        assert app.container.get(Tasks).all()[-1].creator == Actor.agent("codex-session")
     assert Caller.environment_caller({"JOURNAL_SESSION": "worker-session", "CODEX_THREAD_ID": "parent-session"}).session == "worker-session"
 
 
@@ -137,7 +137,7 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App,
     agents = app.container.get(Agents)
     development = app.container.get(Environments).lookup("development")
     with app.container.get(Scope).environment(development.id):
-        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", oriented=False), Actor.system())
+        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", has_overview=False), Actor.system())
     environ = {key: value for key, value in os.environ.items() if key not in ("JOURNAL_SESSION", "CLAUDECODE", "CODEX_SANDBOX")}
     environ.update(JOURNAL_ROOT=str(app.config.root), JOURNAL_ENV="development", JOURNAL_PORT="0", CODEX_THREAD_ID="codex-session", CODEX_CI="1")
     server = app.server()
@@ -147,7 +147,7 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App,
         outcome = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "environment", "here"], env=environ, capture_output=True, text=True, timeout=10)
         assert outcome.returncode == 0, outcome.stderr
         with app.container.get(Scope).environment(development.id):
-            assert agents.session_agent("codex-session").oriented
+            assert agents.session_agent("codex-session").has_overview
     finally:
         server.stop()
 
@@ -165,7 +165,7 @@ def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists
     agents.save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
     agents.save(Agent(session="lost", environment_id=1, provider="claude", state="ended"), Actor.system())
     import json as j
-    rows = j.loads(app.console().run(["environment", "json"], Caller("main")).out)
+    rows = j.loads(app.console().run(["environment", "json"], Caller("main")).text)
     assert rows[0]["last_sessions"] == {"claude": "s1"}, "a codex launch finds no Claude session to carry on"
 
 
@@ -180,11 +180,11 @@ def test_an_environment_is_renamed_with_everything_in_it_and_never_while_an_agen
     with app.container.get(Scope).environment(spike.id):
         app.container.get(Tasks).save(Task(title="in spike"), Actor.user(1))
     claimed = console.run(["environment", "rename", "spike", "main"], MAIN)
-    assert claimed.code == 1 and "exists already" in claimed.err
+    assert claimed.code == 1 and "exists already" in claimed.error
     with app.container.get(Scope).environment(spike.id):
         app.container.get(Agents).save(Agent(session="s-spike", environment_id=spike.id, provider="claude", state="idle"), Actor.system())
     busy = console.run(["environment", "rename", "spike", "probe"], MAIN)
-    assert busy.code == 1 and "an agent works in spike" in busy.err
+    assert busy.code == 1 and "an agent works in spike" in busy.error
     with app.container.get(Scope).environment(spike.id):
         app.container.get(Agents).save(app.container.get(Agents).session_agent("s-spike").with_(state="ended"), Actor.system())
     assert console.run(["environment", "rename", "spike", "probe"], MAIN).code == 0
@@ -198,8 +198,8 @@ def test_any_row_docks_above_the_chat_by_noun_and_number_in_either_order(app: Ap
     console = app.console()
     console.run(["task", "create", "write the notes", "--brief", "what and where\nand how"], MAIN)
     docked = console.run(["task", "12", "dock"], MAIN)
-    assert docked.code == 1 and "12" in docked.err, "the number in the verb's place turns the line around, and the row it names is looked for"
-    assert console.run(["task", "1", "dock"], MAIN).out.startswith("Task 1: write the notes docked above the chat")
+    assert docked.code == 1 and "12" in docked.error, "the number in the verb's place turns the line around, and the row it names is looked for"
+    assert console.run(["task", "1", "dock"], MAIN).text.startswith("Task 1: write the notes docked above the chat")
     with app.container.get(Scope).environment(1):
         messages = app.container.get(Messages)
         [card] = [m for m in messages.all() if m.data.get("docked")]
@@ -208,7 +208,7 @@ def test_any_row_docks_above_the_chat_by_noun_and_number_in_either_order(app: Ap
         assert card.data["heading"] == "Task 1: write the notes" and card.data["summary"] == "what and where"
         assert card.data["dock"] == {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}
         assert console.run(["task", "dock", "1"], MAIN).code == 0 and len([m for m in messages.all() if m.data.get("docked")]) == 1, "docking it again keeps the one card"
-        assert console.run(["task", "undock", "1"], MAIN).out.startswith("Task 1: write the notes undocked")
+        assert console.run(["task", "undock", "1"], MAIN).text.startswith("Task 1: write the notes undocked")
         assert messages.find(card.id).data["docked"] is False
-        assert "is not docked" in console.run(["task", "1", "undock"], MAIN).err
-    assert "dock" in console.run(["report", "--help"], MAIN).out and "dock" not in console.run(["search", "--help"], MAIN).out, "every row noun has the verbs, a noun that is no row has not"
+        assert "is not docked" in console.run(["task", "1", "undock"], MAIN).error
+    assert "dock" in console.run(["report", "--help"], MAIN).text and "dock" not in console.run(["search", "--help"], MAIN).text, "every row noun has the verbs, a noun that is no row has not"

@@ -46,15 +46,15 @@ class MessageCommand(Command):
 
     def send(self, args: Namespace, caller: Caller) -> int:
         author = Author.build(caller.actor)
-        if args.reply_to and author == Author.AGENT:
+        if args.reply_target and author == Author.AGENT:
             return self.reply(args, caller)
-        draft = Message(author=author, text=args.text, reply_to=args.reply_to)
+        draft = Message(author=author, text=args.text, reply_target=args.reply_target)
         message = self.messages.save(draft.arrived() if author == Author.USER else draft, caller.actor)
         print(f"message {message.id} sent")
         return 0
 
     def reply(self, args: Namespace, caller: Caller) -> int:
-        answered = self.messages.find(args.reply_to)
+        answered = self.messages.find(args.reply_target)
         if self.messages.reply_text(answered.id, args.text):
             print(f"message {answered.id} already has this reply in the chat: not sent again")
             return 0
@@ -62,7 +62,7 @@ class MessageCommand(Command):
         if older is not None and not args.confirm:
             print(f"message {answered.id} already has your reply {older.id}: not sent. Send it again only if it says something new, with --confirm")
             return 1
-        message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_to=answered.id), caller.actor)
+        message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_target=answered.id), caller.actor)
         self.messages.read(answered, caller.actor, self._tool_use(caller))
         print(f"message {message.id} sent")
         return 0
@@ -113,8 +113,8 @@ class MessageCommand(Command):
 
     @staticmethod
     def reply_target(message: Message) -> str:
-        if message.reply_to:
-            return f", a reply to message {message.reply_to}"
+        if message.reply_target:
+            return f", a reply to message {message.reply_target}"
         return ", on the passage quoted below it" if message.quoted_lines else ""
 
     def show(self, message: Message) -> None:

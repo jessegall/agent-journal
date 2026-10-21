@@ -29,10 +29,10 @@ describe("the sentence a trigger reads as", () => {
 
 describe("when a sequence starts", () => {
     it("by a trigger, by a row being created, or only by hand", () => {
-        store.rows = {triggers: [trigger()], sequences: [{table: "sequences", id: 1, title: "Release", starts_on: "", trigger_ids: [3]}]};
+        store.rows = {triggers: [trigger()], sequences: [{table: "sequences", id: 1, title: "Release", trigger_event: "", trigger_ids: [3]}]};
         expect(startedBy(3).map((s) => s.id)).toEqual([1]);
         expect(startWords(store.rows.sequences[0])).toBe("When the trigger on “force push” matches");
-        expect(startWords({starts_on: "tasks.created", trigger_ids: []})).toBe("When a task is created");
-        expect(startWords({starts_on: "", trigger_ids: []})).toBe("Only when you or the agent start it");
+        expect(startWords({trigger_event: "tasks.created", trigger_ids: []})).toBe("When a task is created");
+        expect(startWords({trigger_event: "", trigger_ids: []})).toBe("Only when you or the agent start it");
     });
 });

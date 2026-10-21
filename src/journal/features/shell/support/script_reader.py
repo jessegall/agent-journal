@@ -12,7 +12,7 @@ class ScriptReader:
     """A named way to read outputs of one shape: a script of the project's, handed the output on its input, prints what matters."""
 
     name: str
-    about: str
+    subject: str
     path: Path
 
     @classmethod

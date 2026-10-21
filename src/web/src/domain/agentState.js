@@ -44,7 +44,7 @@ export function waitingFor({text, on, since}, {workers = [], now = Date.now() / 
 
 export function waitingOn(agent, workers = [], now = Date.now() / 1000) {
     if (!agent?.awaiting) return null;
-    return waitingFor({text: agent.awaiting, on: agent.awaiting_on, since: seconds(agent.awaiting_since)}, {workers, now});
+    return waitingFor({text: agent.awaiting, on: agent.wait_refs, since: seconds(agent.awaiting_since)}, {workers, now});
 }
 
 export function stateOf(agent) {

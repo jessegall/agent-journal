@@ -18,7 +18,7 @@ class MemoryConduct(Conduct):
         feature = memory_feature()
         if event.context is None or not event.session:
             return self.none()
-        threshold = feature.threshold_due(event.context, event.data.part(feature).context_mark)
+        threshold = feature.threshold_due(event.context, event.data.part(feature).context_threshold)
         return self.none(feature.CONTEXT_DECISION.create(percent=threshold)) if threshold else self.none()
 
     def on_session_started_memory(self, event: SessionStarted, settings: Settings) -> Transition:
@@ -30,13 +30,13 @@ class MemoryConduct(Conduct):
 
     def on_tool_starting_memory(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = memory_feature()
-        if event.subagent or not event.call.writes or not event.data.part(feature).mark_owed:
+        if event.subagent or not event.call.writes or not event.data.part(feature).threshold_due:
             return self.none()
         return self.refuse(feature.DECISION_EDIT_BLOCK.create())
 
     def on_stop_memory(self, event: Stop, settings: Settings) -> Transition:
         feature = memory_feature()
-        obligations = event.data.part(feature).mark_owed
+        obligations = event.data.part(feature).threshold_due
         return self.refuse(feature.UNDECIDED_STOP.create(percent=obligations)) if obligations else self.none()
 
     def on_anything_memory_hint(self, event: AgentEvent, settings: Settings) -> Transition:

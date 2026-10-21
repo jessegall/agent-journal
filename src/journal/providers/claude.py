@@ -15,11 +15,11 @@ SENDER_NAME_PATTERN, SENDER_ADDRESS_PATTERN = re.compile(r'\bfrom-name="([^"]*)"
 
 class Claude(Provider):
     name = "claude"
-    skip_prompts = ("--dangerously-skip-permissions",)
+    prompt_flags = ("--dangerously-skip-permissions",)
     home = ".claude"
     settings_file = "settings.json"
-    other_settings = ("settings.local.json",)
-    write_tools = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
+    foreign_settings = ("settings.local.json",)
+    edit_tools = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
     read_tool = "Read"
     settings_extras = {"enableAllProjectMcpServers": True}
     controls = {
@@ -53,7 +53,7 @@ class Claude(Provider):
         text = "\n".join(b.text for b in row.type_match("text"))
         results = row.type_match("tool_result")
         if results and not text.strip():
-            text = "\n".join(b.result for b in results)
+            text = "\n".join(b.outcome for b in results)
         tools = [b.name for b in row.type_match("tool_use")]
         if not text.strip() and not tools:
             return None

@@ -32,14 +32,14 @@ class ReaderCommand(Command):
         if not NAME.fullmatch(args.name):
             raise Rejection(f"a reader's name is lowercase words joined by -, such as failed-tests, not {args.name}")
         if args.script:
-            self.readers.add_script(args.name, args.about, args.script)
+            self.readers.add_script(args.name, args.subject, args.script)
         else:
             re.compile(args.pattern)
-            self.readers.add(Reader(args.name, args.about, args.pattern))
+            self.readers.add(Reader(args.name, args.subject, args.pattern))
         print(f"reader {args.name} added: journal output read N --reader {args.name}")
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for reader in self.readers.all():
-            print(f"{reader.name}: {reader.about}")
+            print(f"{reader.name}: {reader.subject}")
         return 0

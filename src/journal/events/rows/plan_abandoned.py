@@ -8,4 +8,4 @@ class PlanAbandoned(RowEvent):
     """A plan was given up, by the user or by a command, with the tasks that were its alone."""
 
     plan_id: int
-    by_user: bool
+    user_origin: bool

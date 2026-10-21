@@ -28,7 +28,7 @@ class PluginController(Controller[Plugin]):
     def status(plugin: Plugin) -> str:
         if not plugin.enabled:
             return "off"
-        return "failing" if plugin.failing_since else "on"
+        return "failing" if plugin.failed_at else "on"
 
     def preview(self, request: Request) -> Response:
         return Response.json(self.installing.preview(str(request.body.get("source", "")).strip()))

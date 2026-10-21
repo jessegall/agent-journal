@@ -93,7 +93,7 @@ async function follow() {
         <template v-if="!editing && !readOnly">
             <ResourceControls :resource="resource" @edit="edit" @close="emit('close')" />
         </template>
-        <template v-if="!isClosed(resource) && (resource.blocked_why || resource.parked_why)">
+        <template v-if="!isClosed(resource) && (resource.block_reason || resource.suspension_reason)">
             <ResourceWaits :resource="resource" />
         </template>
         <template v-if="table === 'checks'">
@@ -104,7 +104,7 @@ async function follow() {
             <OptionsPicker :question="resource" />
         </template>
         <template v-if="table === 'templates'">
-            <ResourceMadeFor :types="resource.applies_to" />
+            <ResourceMadeFor :types="resource.targets" />
         </template>
         <template v-if="table === 'triggers'">
             <TriggerEditor :resource="resource" />

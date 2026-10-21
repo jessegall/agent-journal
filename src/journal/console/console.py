@@ -29,7 +29,7 @@ class Console:
         self._parser = None
 
     def attributed(self, caller: Caller) -> Caller:
-        if not caller.from_agent_shell or caller.session:
+        if not caller.agent_shell or caller.session:
             return caller
         present = self.agents.current()
         return caller.as_(present.session) if present else caller

@@ -13,12 +13,12 @@ class PairingCode(Scoped):
     code: str = ""
     short: str = ""
     days: int = 7
-    until: datetime | None = None
+    expiry_time: datetime | None = None
     tries: int = 0
     closed_at: datetime | None = None
 
     def is_open(self, time: datetime) -> bool:
-        return self.closed_at is None and self.until is not None and self.until > time
+        return self.closed_at is None and self.expiry_time is not None and self.expiry_time > time
 
     def tried(self, time: datetime) -> "PairingCode":
         tries = self.tries + 1

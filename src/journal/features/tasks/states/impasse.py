@@ -9,7 +9,7 @@ class Impasse(Wait):
 
     name = "stuck"
     title = "Stuck"
-    why: str = ""
+    reason: str = ""
 
     def wait_description(self) -> tuple[str, str]:
-        return self.why, ""
+        return self.reason, ""

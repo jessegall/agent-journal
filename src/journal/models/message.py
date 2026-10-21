@@ -19,9 +19,9 @@ class Message(Scoped):
 
     author: Author = Author.USER
     text: str = ""
-    reply_to: int | None = None
+    reply_target: int | None = None
     read_at: datetime | None = None
-    read_mark: int = 0
+    read_position: int = 0
     idempotency: str = ""
     acknowledgement: bool = False
     files: tuple[str, ...] = ()
@@ -49,7 +49,7 @@ class Message(Scoped):
 
     @property
     def is_agents_reply(self) -> bool:
-        return self.reply_to is not None and self.author == Author.AGENT
+        return self.reply_target is not None and self.author == Author.AGENT
 
     @property
     def quoted_lines(self) -> int:
@@ -58,7 +58,7 @@ class Message(Scoped):
 
     @property
     def is_passage_comment(self) -> bool:
-        return self.quoted_lines > 0 and self.reply_to is None
+        return self.quoted_lines > 0 and self.reply_target is None
 
     @property
     def quote(self) -> str:

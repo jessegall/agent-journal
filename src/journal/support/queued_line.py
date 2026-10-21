@@ -7,4 +7,4 @@ class QueuedLine:
 
     environment_id: int
     line: str
-    after: float = 0.0
+    following_time: float = 0.0

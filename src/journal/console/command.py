@@ -9,7 +9,7 @@ class Command:
 
     noun: ClassVar[str]
     default_verb: ClassVar[str] = ""
-    always_allowed: ClassVar[bool] = False
+    unrestricted: ClassVar[bool] = False
 
     def arguments(self, verbs) -> None:
         ...

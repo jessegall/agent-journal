@@ -8,6 +8,6 @@ class MessagesData:
     unread: tuple[int, ...]
     unanswered: tuple[int, ...]
     unanswered_files: tuple[str, ...]
-    uses_since_newest: int
-    times_named: int
+    newest_gap: int
+    mention_count: int
     uses_unanswered: int

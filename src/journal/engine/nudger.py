@@ -43,7 +43,7 @@ class Nudger:
         return line
 
     def _repeat(self, agent: Agent, nudge: Nudge) -> bool:
-        if not nudge.repeat_after:
+        if not nudge.repeat_interval:
             return False
-        last = self.entries.last_lines(agent.session, nudge.key) if nudge.held_whatever_its_values else self.entries.last_line(agent.session, nudge.key, nudge.rendered())
-        return last > self.clock.time() - nudge.repeat_after
+        last = self.entries.last_lines(agent.session, nudge.key) if nudge.blocks_regardless else self.entries.last_line(agent.session, nudge.key, nudge.rendered())
+        return last > self.clock.time() - nudge.repeat_interval

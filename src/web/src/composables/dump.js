@@ -157,7 +157,7 @@ export function useDump(every, selected, rowsOf) {
     const summary = computed(() => dump.value?.summary || "");
     const options = computed(() => dump.value?.options || []);
     const suggestions = computed(() => {
-        const taken = dump.value?.taken || {};
+        const taken = dump.value?.claimed || {};
         const left = dump.value?.declined || [];
         return options.value.map((o, pick) => ({
             pick,
@@ -174,9 +174,9 @@ export function useDump(every, selected, rowsOf) {
     const timeline = computed(() => {
         const d = dump.value;
         if (!d) return [];
-        const directions = d.said.map((s, i) => ({key: `said:${i}`, time: s.time, mine: true, text: s.label}));
+        const directions = d.summary_text.map((s, i) => ({key: `said:${i}`, time: s.time, mine: true, text: s.label}));
         const answers = d.answers.map((a, i) => ({key: `answer:${i}`, time: a.time, mine: true, text: a.answer}));
-        const taken = Object.entries(d.taken).map(([k, c]) => ({key: `taken:${k}`, time: c.time, mine: true, text: c.label}));
+        const taken = Object.entries(d.claimed).map(([k, c]) => ({key: `taken:${k}`, time: c.time, mine: true, text: c.label}));
         const agent = log.value.map((e, i) => ({key: `log:${i}`, time: e.time, mine: false, text: e.text, detail: e.detail}));
         return [...agent, ...directions, ...answers, ...taken].sort((a, b) => a.time - b.time);
     });

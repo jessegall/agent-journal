@@ -14,8 +14,8 @@ class AgentWork:
     """The task an agent has in hand and, while it is paused on top of it, what it waits for."""
 
     task: Task
-    awaiting: str = ""
-    awaiting_on: str = ""
+    wait_text: str = ""
+    wait_refs: str = ""
 
 
 class CurrentWork:

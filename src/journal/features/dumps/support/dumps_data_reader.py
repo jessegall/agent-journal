@@ -12,5 +12,5 @@ class DumpsDataReader:
     def read(self, agent: Agent) -> DumpsData:
         dump = self.dumps.current()
         if dump is None:
-            return DumpsData(in_hand=0, waiting=0, question_open=False)
-        return DumpsData(in_hand=dump.id, waiting=len(dump.waiting()), question_open=bool(dump.question))
+            return DumpsData(current_dump=0, waiting=0, question_open=False)
+        return DumpsData(current_dump=dump.id, waiting=len(dump.waiting()), question_open=bool(dump.question))

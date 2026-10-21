@@ -56,7 +56,7 @@ class Tasks(ScopedRepository[Task]):
 
     def reason(self, row: Task | Plan) -> str:
         matched = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAIT_LINK)]
-        return ", ".join(part for part in (*matched, row.blocked_why) if part)
+        return ", ".join(part for part in (*matched, row.block_reason) if part)
 
     def with_state(self, state: TaskState) -> list[Task]:
         return self.matching(state=state)
@@ -74,7 +74,7 @@ class Tasks(ScopedRepository[Task]):
                                (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def unviewed(self) -> int:
-        return self.count("state NOT IN (?, ?) AND (created_by IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
+        return self.count("state NOT IN (?, ?) AND (creator IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def shown(self) -> list[Task]:
         finished = (TaskState.FINISHED.value, TaskState.CANCELLED.value)

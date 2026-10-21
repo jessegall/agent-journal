@@ -36,7 +36,7 @@ class CheckRunner:
         return self.finished(self.checks.save(check.started(timing.time()), actor), actor)
 
     def start(self, check: Check, actor: Actor) -> Check:
-        if check.running is not None:
+        if check.progress is not None:
             return check
         commenced = self.checks.save(check.started(timing.time()), actor)
         threading.Thread(target=self.finished, args=(commenced, actor), name=f"check-{commenced.id}", daemon=True).start()
@@ -48,9 +48,9 @@ class CheckRunner:
         report.unlink(missing_ok=True)
         ended = self.executed(check, report, actor)
         prior_failure = check.last_passed is False
-        elapsed = timing.time() - check.running.time
+        elapsed = timing.time() - check.progress.time
         ran = self.checks.save(self.checks.find(check.id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), elapsed, self.report(report), ended.fault), actor)
-        if ran.waited_on:
+        if ran.wait_target:
             return ran
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
         for agent in self.agents.all_agents():
@@ -67,7 +67,7 @@ class CheckRunner:
         for line in process.stdout:
             output_text.append(line)
             if timing.time() - saved >= INTERVAL:
-                self.checks.touch(check, actor, running=CheckOutput.progress("".join(output_text), check.running.time))
+                self.checks.touch(check, actor, running=CheckOutput.progress("".join(output_text), check.progress.time))
                 saved = timing.time()
         code = process.wait()
         late.cancel()

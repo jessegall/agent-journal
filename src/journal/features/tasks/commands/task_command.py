@@ -96,7 +96,7 @@ class TaskCommand(Command):
         return 0
 
     def suspend(self, args: Namespace, caller: Caller) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).suspended(args.why, self._time()), caller.actor)
+        task = self.tasks.save(self.tasks.find(args.n).suspended(args.reason, self._time()), caller.actor)
         print(f"task {task.id} parked")
         return 0
 
@@ -109,9 +109,9 @@ class TaskCommand(Command):
         return 0
 
     def block(self, args: Namespace, caller: Caller) -> int:
-        self.waits.refuse_unnamed(args.why, args.on, args.until)
-        task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._time()), caller.actor)
-        for ref in self.waits.created(args.on, args.until, args.every, f"task {task.id}", caller.actor):
+        self.waits.refuse_unnamed(args.reason, args.target_ref, args.expiry_time)
+        task = self.tasks.save(self.tasks.find(args.n).blocked(args.reason, self._time()), caller.actor)
+        for ref in self.waits.created(args.target_ref, args.expiry_time, args.interval, f"task {task.id}", caller.actor):
             self.links.save(Link(source=Ref.build(task), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0

@@ -16,7 +16,7 @@ class PanicCommand(Command):
 
     noun = "panic"
     default_verb = "apply"
-    always_allowed = True
+    unrestricted = True
 
     def __init__(self, machine: StateMachine, states: StatesCatalogue, scope: Scope) -> None:
         self.machine, self.states, self.scope = machine, states, scope

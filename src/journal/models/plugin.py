@@ -20,5 +20,5 @@ class Plugin(Model):
     hashes: dict = field(default_factory=dict)
     waiting: str = ""
     last_fault: str = ""
-    faults_in_a_row: int = 0
-    failing_since: datetime | None = None
+    fault_streak: int = 0
+    failed_at: datetime | None = None

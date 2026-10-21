@@ -12,7 +12,7 @@ class OutputNotice(AgentListener[Ticked]):
         self.outputs = outputs
 
     def handle(self, event: Ticked) -> None:
-        if event.quiet_for < SILENCE_SECONDS:
+        if event.silence_seconds < SILENCE_SECONDS:
             return
         for output in self.outputs.unannounced(event.session):
             self.outputs.save(output.announced(), Actor.system())

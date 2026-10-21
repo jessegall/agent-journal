@@ -21,7 +21,7 @@ class AdvancePlan(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         task = event.model
-        if not isinstance(task, Task) or not task.is_newly_closed(event.was):
+        if not isinstance(task, Task) or not task.is_newly_closed(event.previous):
             return
         time = datetime.now(timezone.utc)
         for plan in [p for p in self.plans.containing(task) if self.plans.finished(p)]:

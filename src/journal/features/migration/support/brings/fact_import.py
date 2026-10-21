@@ -24,4 +24,4 @@ class FactImport(EnvironmentKind):
         return super().skipped(row, target) or ("struck" if row.completed else "")
 
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Fact:
-        return self.facts.imported(Fact(environment_id=target.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_time(), actor)
+        return self.facts.imported(Fact(environment_id=target.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.created_at(), actor)

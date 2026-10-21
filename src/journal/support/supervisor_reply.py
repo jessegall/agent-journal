@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class SupervisorReply:
     """What a supervisor answered a request: whether it did it, and why not."""
 
-    ok: bool
+    success: bool
     error: str = ""
 
     @classmethod

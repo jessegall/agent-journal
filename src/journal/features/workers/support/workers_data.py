@@ -9,10 +9,10 @@ from journal.features.workers.support.worker_worktree import WorkerWorktree
 class WorkersData:
     """The workers feature's reading: the workers out, those whose report is not acted on and how they are named, the subagents running besides the newest dispatch, every subagent this session dispatched, and the workers' worktrees."""
 
-    out: tuple[int, ...]
+    active_workers: tuple[int, ...]
     reports_waiting: tuple[int, ...]
     reports_summary: str
-    subagents_running: int
+    active_subagents: int
     dispatches: tuple[Dispatch, ...]
     worktrees_root: Path
     worktrees: tuple[WorkerWorktree, ...]

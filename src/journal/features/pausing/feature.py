@@ -6,8 +6,8 @@ from journal.features.pausing.support.pausing_conduct import PausingConduct
 
 class PausingFeature(Feature):
     NAME = "pausing"
-    PAUSED = Nudge(NAME, "paused", "the user paused you: stop here and wait", "every tool call is held until the user resumes you; say nothing more until then", repeat_after=0)
-    RESUMED = Nudge(NAME, "resumed", "the user resumed you: carry on where you stopped", repeat_after=0)
+    PAUSED = Nudge(NAME, "paused", "the user paused you: stop here and wait", "every tool call is held until the user resumes you; say nothing more until then", repeat_interval=0)
+    RESUMED = Nudge(NAME, "resumed", "the user resumed you: carry on where you stopped", repeat_interval=0)
 
     name = NAME
     title = "Pausing the agent"

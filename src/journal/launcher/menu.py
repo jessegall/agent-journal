@@ -46,7 +46,7 @@ class Menu:
         resume = "" if new or not last else self._continuation(agent, selection, last, asking)
         prompt_flags = omit or confirmed or self._prompts(agent)
         asking = asking and not resume
-        stashed_hooks = stashed or (self._hooks(ForeignHooks(self.root, agent).foreign(), previous.hooks_aside) if asking else previous.hooks_aside)
+        stashed_hooks = stashed or (self._hooks(ForeignHooks(self.root, agent).foreign(), previous.stashed_hooks) if asking else previous.stashed_hooks)
         self.remembered.write(Answers(prompt_flags, stashed_hooks))
         choice = Choice(selection, resume, stashed_hooks, prompt_flags)
         if not confirmed:
@@ -55,7 +55,7 @@ class Menu:
         return choice
 
     def _environment(self, agent: str, rows: list[EnvironmentRow]) -> str:
-        options = [Option(row.name, (*row.badges(), *Worktree(self.root, row.name).badges())) for row in rows] + [Option("A new environment", apart=True)]
+        options = [Option(row.name, (*row.badges(), *Worktree(self.root, row.name).badges())) for row in rows] + [Option("A new environment", separate=True)]
         selected, key = self.screen.choice("Which environment", ["An environment is one line of work with a record of its own."], options, 0, ("x",))
         if key == "x" and selected < len(rows):
             self._delete(rows[selected])
@@ -98,5 +98,5 @@ class Menu:
 
     def _summary(self, choice: Choice) -> None:
         self.screen.summary([("environment", choice.environment), ("conversation", f"continued from {choice.resume[:8]}" if choice.resume else "new"),
-                             ("prompts", "skipped" if choice.skip_prompts else "asked"), ("other hooks", "set aside" if choice.hooks_aside else "kept"),
+                             ("prompts", "skipped" if choice.prompt_flags else "asked"), ("other hooks", "set aside" if choice.stashed_hooks else "kept"),
                              ("viewer", "opens in your browser once the journal is up")])

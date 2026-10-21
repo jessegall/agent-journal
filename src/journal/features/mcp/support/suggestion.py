@@ -9,7 +9,7 @@ class Suggestion:
 
     name: str
     title: str
-    about: str
+    subject: str
     transport: str = "stdio"
     command: str = ""
     args: tuple[str, ...] = ()

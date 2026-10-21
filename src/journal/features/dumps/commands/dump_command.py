@@ -77,7 +77,7 @@ class DumpCommand(Command):
         return 0
 
     def failed(self, args: Namespace, caller: Caller) -> int:
-        dump = self.filing.failed(args.n, args.item, args.why, caller.actor)
+        dump = self.filing.failed(args.n, args.item, args.reason, caller.actor)
         print(f"dump {dump.id}: {args.item} failed" + (f", dump {dump.id} closed: {dump.outcome}" if dump.is_completed else ""))
         return 0
 
@@ -87,7 +87,7 @@ class DumpCommand(Command):
         return 0
 
     def log(self, args: Namespace, caller: Caller) -> int:
-        self.filing.log(args.n, args.status, args.on, args.making, args.detail, caller.actor)
+        self.filing.log(args.n, args.status, args.target_ref, args.making, args.detail, caller.actor)
         return 0
 
     def reply(self, args: Namespace, caller: Caller) -> int:

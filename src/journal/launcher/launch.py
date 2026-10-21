@@ -24,7 +24,7 @@ from journal.providers.codex import Codex
 from journal.support.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
-PROMPT_FLAGS = {provider.name: list(provider.skip_prompts) for provider in (Claude, Codex)}
+PROMPT_FLAGS = {provider.name: list(provider.prompt_flags) for provider in (Claude, Codex)}
 STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
 LOCAL = {"claude": [], "codex": ["--no-daemon"]}
 REACH = {"claude": [], "codex": ["-c", "sandbox_workspace_write.network_access=true"]}
@@ -40,15 +40,15 @@ class Launch:
     agent: str
     root: Path
     args: tuple[str, ...]
-    env: str = ""
+    environment: str = ""
     new: bool = False
-    aside: bool = False
-    skip: bool = False
-    yes: bool = False
-    no_open: bool = False
-    no_journal: bool = False
+    stashed: bool = False
+    bypass: bool = False
+    confirmed: bool = False
+    browser_off: bool = False
+    journal_off: bool = False
     worktree: str = ""
-    in_worktree: bool = False
+    worktree_launch: bool = False
 
     @classmethod
     def parse(cls, argv: list[str], root: Path) -> "Launch":
@@ -77,17 +77,17 @@ class Launch:
 
     def choice(self) -> Choice:
         menu = Menu(self.root, self.package / "journal.py")
-        matched = self.env or self.worktree or self.resume_folder(menu)
+        matched = self.environment or self.worktree or self.resume_folder(menu)
         if not sys.stdin.isatty():
-            return Choice(matched or "main", "", self.aside, self.is_skipping())
+            return Choice(matched or "main", "", self.stashed, self.is_skipping())
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
-        if not self.yes and UpdatePrompt(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
+        if not self.confirmed and UpdatePrompt(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
             self.log("updated before the launch: starting again on the new version")
             os.execv(sys.executable, [sys.executable, *sys.argv])
-        return menu.choose(self.agent, matched, self.new, self.aside, self.is_skipping(), self.yes)
+        return menu.choose(self.agent, matched, self.new, self.stashed, self.is_skipping(), self.confirmed)
 
     def is_skipping(self) -> bool:
-        return self.skip or any(flag in self.args for flag in PROMPT_FLAGS[self.agent])
+        return self.bypass or any(flag in self.args for flag in PROMPT_FLAGS[self.agent])
 
     def resume_folder(self, menu: Menu) -> str:
         resumed = next((self.args[i + 1] for i, arg in enumerate(self.args[:-1]) if arg in RESUMING), "")
@@ -96,8 +96,8 @@ class Launch:
         return next((row.name for row in menu.environments() if resumed in row.last_sessions.values()), "")
 
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
-        omit = [flag for flag in PROMPT_FLAGS[self.agent] if choice.skip_prompts and flag not in self.args]
-        reach = [] if choice.skip_prompts else REACH[self.agent]
+        omit = [flag for flag in PROMPT_FLAGS[self.agent] if choice.prompt_flags and flag not in self.args]
+        reach = [] if choice.prompt_flags else REACH[self.agent]
         return [self.agent, *LOCAL[self.agent], *omit, *reach, *STATUS[self.agent](status), *self.args]
 
     def journal_command(self) -> list[str]:
@@ -119,8 +119,8 @@ class Launch:
             peers = ForeignHooks(self.root, self.agent)
             peers.restore()
             choice = self.choice()
-            self.log(f"chosen: environment {choice.environment}, session {choice.resume or 'new'}, hooks aside {choice.hooks_aside}")
-            if choice.hooks_aside:
+            self.log(f"chosen: environment {choice.environment}, session {choice.resume or 'new'}, hooks aside {choice.stashed_hooks}")
+            if choice.stashed_hooks:
                 peers.stash()
             try:
                 code = self.supervise(choice)
@@ -146,7 +146,7 @@ class Launch:
         path.touch(mode=0o600)
         path.chmod(0o600)
         path.write_text(json.dumps(launch))
-        PageWait(self.runtime.parent / "port", launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.no_open else f"?env={choice.environment}", self.log).start()
+        PageWait(self.runtime.parent / "port", launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.browser_off else f"?env={choice.environment}", self.log).start()
         try:
             return subprocess.run([sys.executable, "-m", "supervisor", str(path)], cwd=self.root, env={**os.environ, "PYTHONPATH": str(self.package)}).returncode
         finally:
@@ -155,11 +155,11 @@ class Launch:
     def launch_file(self, choice: Choice, status: StatusLine) -> dict:
         environ = self.environ(choice)
         worktree = Worktree(self.root, self.worktree or choice.environment)
-        folder = worktree.created() if self.in_worktree or worktree.path.is_dir() else self.root
+        folder = worktree.created() if self.worktree_launch or worktree.path.is_dir() else self.root
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
         return {
             "front": {"command": self.agent_command(choice, status), "resume": RESUME[self.agent](choice.resume) if choice.resume else [], "folder": str(folder), "env": environ},
-            "services": [] if self.no_journal else [journal],
+            "services": [] if self.journal_off else [journal],
             "socket": str(self.socket(choice.environment)),
             "announce": str(self.runtime / "inboxes" / choice.environment),
             "screen": str(self.runtime / "screens" / f"{choice.environment}.out"),

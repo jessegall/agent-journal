@@ -10,12 +10,12 @@ JOURNAL = "journal"
 class SkillsData:
     """The skills feature's reading: the skills the agent owes a read of, the hash of each it has read in this window, and every skill the journal ships."""
 
-    owed: tuple[str, ...]
+    skills_due: tuple[str, ...]
     loaded: dict
     skills: tuple[SkillCard, ...]
 
     def start_debts(self, state: str) -> list[SkillCard]:
-        return self.unread([card for card in self.skills if card.name == JOURNAL] + [card for card in self.skills if state in card.required_in])
+        return self.unread([card for card in self.skills if card.name == JOURNAL] + [card for card in self.skills if state in card.required_states])
 
     def mentioned(self, prompt: str) -> list[SkillCard]:
         text = {w.lower() for w in re.findall(r"[a-z]+", prompt, re.I)}
@@ -25,4 +25,4 @@ class SkillsData:
         return [card for card in cards if self.loaded.get(card.name) != card.digest]
 
     def debt_cards(self) -> list[SkillCard]:
-        return [card for card in self.skills if card.name in self.owed]
+        return [card for card in self.skills if card.name in self.skills_due]

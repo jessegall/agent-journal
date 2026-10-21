@@ -20,7 +20,7 @@ class WaitTargets:
         return self.ref(self.outputs.find(n))
 
     def polled_check(self, command: str, purpose: str, actor) -> str:
-        check = self.checks.save(Check(title=f"the wait for {purpose} ends when this passes", command=command, every=POLL_INTERVAL_MINUTES, waited_on=True), actor)
+        check = self.checks.save(Check(title=f"the wait for {purpose} ends when this passes", command=command, interval=POLL_INTERVAL_MINUTES, wait_target=True), actor)
         return self.ref(check)
 
     @staticmethod
@@ -34,5 +34,5 @@ class WaitTargets:
 
     @staticmethod
     def is_newly_resolved(event: Updated) -> bool:
-        model, prior_row = event.model, event.was
+        model, prior_row = event.model, event.previous
         return isinstance(model, WAIT_TARGETS) and model.is_resolved() and (prior_row is None or not prior_row.is_resolved())

@@ -30,7 +30,7 @@ class ShellConduct(Conduct):
         if not reads:
             return self.none()
         shell = event.data.part(Shell)
-        tips = [Shell.READER_HINT.create(reader=r.name, about=r.about) for r in shell.readers if r.matches(reads[0].text)]
+        tips = [Shell.READER_HINT.create(reader=r.name, about=r.subject) for r in shell.readers if r.matches(reads[0].text)]
         if shell.output_reads.count(reads[0].read_shape) >= 2:
             tips.append(Shell.READER_SUGGESTION.create(command=reads[0].read_shape))
         new_tips = [tip for tip in tips if tip.rendered() not in shell.tipped]
@@ -38,15 +38,15 @@ class ShellConduct(Conduct):
 
     def on_ticked_shell_ended(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
-        ended = event.data.part(Shell).ended_untold
-        if event.quiet_for < SILENCE_SECONDS or not ended:
+        ended = event.data.part(Shell).unannounced
+        if event.silence_seconds < SILENCE_SECONDS or not ended:
             return self.none()
         return self.none(Shell.OUTPUTS_ENDED.create(outputs=outcome_text(ended), n=ended[0].id))
 
     def on_ticked_shell_background(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
         shell = event.data.part(Shell)
-        if not shell.background or event.time - shell.background_since < BACKGROUND_CHECK_DELAY_SECONDS:
+        if not shell.background or event.time - shell.backgrounded_at < BACKGROUND_CHECK_DELAY_SECONDS:
             return self.none()
         return self.none(Shell.BACKGROUND_CHECK.create(background_outputs=", ".join(str(n) for n in shell.background)))
 

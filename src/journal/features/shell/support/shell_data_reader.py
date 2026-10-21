@@ -23,8 +23,8 @@ class ShellDataReader:
         tipped = [*self.entries.recent_lines(agent.session, Shell.READER_HINT.key, 0), *self.entries.recent_lines(agent.session, Shell.READER_SUGGESTION.key, 0)]
         return ShellData(
             background=tuple(o.id for o in background),
-            background_since=min((o.created_at.timestamp() for o in background), default=0.0),
-            ended_untold=tuple(EndedOutput(o.id, o.status) for o in self.outputs.unannounced(agent.session)),
+            backgrounded_at=min((o.created_at.timestamp() for o in background), default=0.0),
+            unannounced=tuple(EndedOutput(o.id, o.status) for o in self.outputs.unannounced(agent.session)),
             output_reads=tuple(reads),
             readers=tuple(self.readers.all()),
             tipped=tuple(tipped),

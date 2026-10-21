@@ -9,7 +9,7 @@ class Skill:
     description: str
     body: str
     keywords: tuple[str, ...] = ()
-    required_in: tuple[str, ...] = ()
+    required_states: tuple[str, ...] = ()
 
     @property
     def folder(self) -> str:

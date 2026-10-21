@@ -19,7 +19,7 @@ class PluginSettingsNotice(Listener[Updated]):
         plugin = event.model
         if not isinstance(plugin, Plugin) or "settings" not in event.changed() or event.actor == Actor.plugin(plugin.name):
             return
-        if not plugin.enabled or "plugin.updated" not in plugin.manifest.hears:
+        if not plugin.enabled or "plugin.updated" not in plugin.manifest.events:
             return
         environment_id = self.scope.id_default(0)
         notified = PluginUpdated(settings=plugin.settings)

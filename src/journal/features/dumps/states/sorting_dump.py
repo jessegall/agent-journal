@@ -53,9 +53,9 @@ class SortingDump(BaseState):
 
     def on_dump_choice(self, event: DumpChoice, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
-        if event.dump_id != self.dump_id or event.pick == USER_TEXT:
+        if event.dump_id != self.dump_id or event.choice == USER_TEXT:
             return self.none()
-        if event.pick == AGENT_HANDOVER:
+        if event.choice == AGENT_HANDOVER:
             return self.none().typing(DumpsFeature.DUMP_HANDOVER.create(n=event.dump_id))
         return self.none().typing(DumpsFeature.DUMP_STEP_CHOICE.create(n=event.dump_id, label=event.label))
 
@@ -65,8 +65,8 @@ class SortingDump(BaseState):
             return self.none()
         summed = () if event.stopped else (DumpsFeature.DUMP_SUMMARY_REQUEST.create(n=event.dump_id, outcome=event.outcome),)
         following = event.data.part(DumpsFeature)
-        if following.in_hand and following.in_hand != self.dump_id:
-            return self.swap(replace(self, dump_id=following.in_hand, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVAL.create(n=following.in_hand, count=item_count(following.waiting)))
+        if following.current_dump and following.current_dump != self.dump_id:
+            return self.swap(replace(self, dump_id=following.current_dump, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVAL.create(n=following.current_dump, count=item_count(following.waiting)))
         return self.pop().typing(*summed)
 
 

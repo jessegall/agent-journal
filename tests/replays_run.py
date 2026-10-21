@@ -378,7 +378,7 @@ def sequence_rules(app, replay: Replay, provider: str) -> None:
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    produced = console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).out.split()[1].rstrip(":")
+    produced = console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).text.split()[1].rstrip(":")
     console.run(["sequence", "run", produced], AGENT)
     replay.step("the sequence runs")
     replay.step("a write before the step is taken up", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
@@ -412,9 +412,9 @@ def plan_building(app, replay: Replay, provider: str) -> None:
     console.run(["plan", "todos", "1", "1", "1"], AGENT)
     console.run(["sequence", "next"], AGENT)
     console.run(["sequence", "follow"], AGENT)
-    replay.step("the last step refused before the plan is ready", {"err": console.run(["sequence", "next"], AGENT).err})
+    replay.step("the last step refused before the plan is ready", {"err": console.run(["sequence", "next"], AGENT).error})
     console.run(["plan", "ready", "1"], AGENT)
-    replay.step("the last step once it is ready", {"out": console.run(["sequence", "next"], AGENT).out})
+    replay.step("the last step once it is ready", {"out": console.run(["sequence", "next"], AGENT).text})
 
 
 def owed_pause_rules(app, replay: Replay, provider: str) -> None:
@@ -597,7 +597,7 @@ def pause_exits(app, replay: Replay, provider: str) -> None:
     app.runtime().deferred.drain()
     replay.step("the report releases the wait", hook_as(app, provider, "Stop")[1])
     import re
-    produced = re.search(r"sequence (\d+)", console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).out).group(1)
+    produced = re.search(r"sequence (\d+)", console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).text).group(1)
     console.run(["sequence", "run", produced], AGENT)
     replay.step("running a sequence", hook_as(app, provider, "Stop")[1])
     console.run(["sequence", "next"], AGENT)

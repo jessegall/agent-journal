@@ -28,13 +28,13 @@ class RecordEdit(AgentListener[ToolFinished]):
         if event.call.tool in EDITING:
             self.patched(event)
             return
-        for path in dict.fromkeys(self.project_path(p) for p in event.call.written_paths if Part.is_project_file(p)):
+        for path in dict.fromkeys(self.project_path(p) for p in event.call.edited_paths if Part.is_project_file(p)):
             self.changed(event, path)
 
     def patched(self, event: ToolFinished) -> None:
-        if not event.call.written_paths:
+        if not event.call.edited_paths:
             return
-        path = self.project_path(event.call.written_paths[0])
+        path = self.project_path(event.call.edited_paths[0])
         patch = PatchRows.build(event.response)
         if not patch.rows:
             self.changed(event, path)
