@@ -1468,6 +1468,43 @@ def test_a_document_is_read_by_its_outline_and_one_section_at_a_time(app: App, t
     assert console.run(["doc", "show", "1", "--section", "9"], AGENT).code == 1
 
 
+def test_a_document_is_read_whole_with_all_and_by_its_outline_without(app: App, tmp_path):
+    text = tmp_path / "doc.md"
+    hook(app, "SessionStart")
+    text.write_text("The opening line.\n\n## Install\n\n- curl the script\n\n## Commands\n\njournal task list\n")
+    console = app.console()
+    console.run(["doc", "create", "Guide", "--file", str(text), "--abstract", "how to start"], AGENT)
+    whole = console.run(["doc", "show", "1", "--all"], AGENT).text
+    assert whole.startswith("doc 1: Guide\nhow to start\n") and text.read_text() in whole, "every line of the body, as it was written"
+    assert "curl the script" not in console.run(["doc", "show", "1"], AGENT).text, "show stays an outline without --all"
+
+
+def test_a_report_is_read_whole_with_all(app: App):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["report", "create", "What the check found", "--body", "## Found\nThree faults.\n\n## Fixed\nTwo of them.\n"], AGENT)
+    assert console.run(["report", "show", "1", "--all"], AGENT).text == "report 1: What the check found\n## Found\nThree faults.\n\n## Fixed\nTwo of them.\n"
+    assert "Two of them." not in console.run(["report", "show", "1"], AGENT).text
+
+
+def test_a_task_is_read_whole_with_its_plan_phase_brief_and_every_log_line_in_order(app: App):
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["plan", "create", "release", "--brief", "ship 4.0"], USER)
+    console.run(["plan", "phase", "1", "notes", "--when", "written"], USER)
+    console.run(["plan", "phase", "1", "tag", "--when", "tagged"], USER)
+    console.run(["plan", "add", "1", "write the notes", "--brief", "in NOTES.md"], USER)
+    console.run(["plan", "todos", "1", "2", "1"], USER)
+    steps = ["opened NOTES.md", "wrote the first part", "wrote the second part", "checked the links"]
+    for step in steps:
+        console.run(["task", "log", "1", step], AGENT)
+    lines = console.run(["task", "show", "1"], AGENT).text.splitlines()
+    assert lines[:5] == ["task 1: write the notes", "state: open", "plan 1: release, phase 2 of 2: tag", "brief: in NOTES.md", "log (4 lines):"]
+    assert [line.rsplit("  ", 1)[1] for line in lines[5:]] == steps, "every log line, the oldest first, not only the latest three"
+    console.run(["task", "create", "loose"], AGENT)
+    assert console.run(["task", "show", "2"], AGENT).text.splitlines()[2:] == ["plan: none", "brief: none", "log: none"]
+
+
 def test_wispr_flow_is_among_the_suggested_mcp_services():
     from journal.features.mcp.support.mcp_catalogue import SUGGESTED
     suggested = {s.name: s for s in SUGGESTED}

@@ -65,7 +65,8 @@ needs no task; file one for work that is an item of its own, that waits, or that
 - `journal task create "<title>" --brief "<what and where to start>"` files one; add `--start` to take it at once, and
   `--from <message n>` when it comes from one of the user's messages.
 - `journal task rename <n> "<title>"` says the title again when the first one was wrong.
-- `journal task start <n>` takes a task in hand. `journal task list` shows every task here.
+- `journal task start <n>` takes a task in hand. `journal task list` shows every task here. `journal task show <n>` reads
+  one whole: its title, state, plan and phase, brief and every log line in order, so you pick it up where it stood.
 - `journal task log <n> "<where it stands>"` after each step that matters; before a compaction, always.
 - `journal task complete <n> --how "<outcome>"` finishes it. The output names the next open task.
 - One task in hand at a time: a second start is refused until the first is done or parked. `journal task suspend <n> "<why>"`
