@@ -69,6 +69,9 @@ class Plan:
     loose: list[str] = field(default_factory=list)
     refusals: list[str] = field(default_factory=list)
     mentions: list[tuple[str, str]] = field(default_factory=list)
+    untyped: list[Place] = field(default_factory=list)
+    member: str = ""
+    roots: set[str] = field(default_factory=set)
 
 
 class Project:
@@ -135,6 +138,14 @@ def info_of(t) -> TypeInfo | None:
         found = {info for info in found if info.fullname != "builtins.None"}
         return found.pop() if len(found) == 1 else None
     return None
+
+
+def infos_of(t) -> list[TypeInfo]:
+    t = get_proper_type(t)
+    if isinstance(t, UnionType):
+        return [info for item in t.items if (info := info_of(item)) is not None and info.fullname != "builtins.None"]
+    info = info_of(t)
+    return [info] if info is not None else []
 
 
 def root_of(info: TypeInfo, name: str) -> TypeInfo | None:
@@ -278,6 +289,7 @@ class Renamer:
             plan.refusals.append(f"{owner} defines no {name}" if not roots else f"{owner} names {len(roots)} classes with a {name}; give the full class name")
             return plan
         group = next(iter(roots.values()))
+        plan.member, plan.roots = name, {group.fullname}
         kind = "method" if isinstance(group.names[name].node, (FuncDef, Decorator, OverloadedFuncDef)) else "member"
         plan.refusals += [r for r in [self.rules.refusal(kind, new)] if r]
         members = [c for c in self.project.class_defs() if name in c.info.names and root_of(c.info, name) is group]
@@ -300,13 +312,14 @@ class Renamer:
         for path, expressions in self.project.expressions.items():
             for node in expressions:
                 if isinstance(node, (MemberExpr, SuperExpr)) and node.name == name and node.end_column is not None:
-                    receiver = node.info if isinstance(node, SuperExpr) else info_of(self.project.types.get(node.expr)) if node.expr in self.project.types else None
-                    receiver = receiver or (self.guessed(node.expr) if isinstance(node, MemberExpr) else None)
+                    receivers = [node.info] if isinstance(node, SuperExpr) else infos_of(self.project.types.get(node.expr)) if node.expr in self.project.types else []
+                    receivers = receivers or ([guess] if isinstance(node, MemberExpr) and (guess := self.guessed(node.expr)) else [])
                     place = Place(path, node.end_line, node.end_column - len(name), name, new)
-                    if receiver is not None and root_of(receiver, name) is group:
+                    if any(root_of(receiver, name) is group for receiver in receivers):
                         plan.places.append(place)
-                    elif receiver is None:
+                    elif not receivers:
                         plan.loose.append(f"{path}:{node.end_line}")
+                        plan.untyped.append(place)
                         if unique:
                             plan.places.append(place)
                 elif isinstance(node, CallExpr) and kind == "member" and name in node.arg_names:
@@ -392,6 +405,20 @@ def walk_definitions(statements):
             yield from walk_definitions(statement.defs.body)
 
 
+def covered(plans: list[Plan], project: Project) -> None:
+    """An untyped use of a member is renamed when every class that defines a member of that name is renamed to one new name in this run."""
+    by_name = collections.defaultdict(list)
+    for plan in plans:
+        if plan.member:
+            by_name[plan.member].append(plan)
+    for name, group in by_name.items():
+        news = {place.new for plan in group for place in plan.places if place.old == name}
+        defining = {root_of(c.info, name).fullname for c in project.class_defs() if name in c.info.names}
+        if len(news) == 1 and defining <= set().union(*(plan.roots for plan in group)):
+            for plan in group:
+                plan.places += [place for place in plan.untyped if place not in plan.places]
+
+
 def snake(name: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
@@ -467,6 +494,7 @@ def main(arguments: list[str]) -> int:
         print(f"{old} -> {new}: {status}")
         for spot in plan.loose:
             print(f"  untyped use: {spot}")
+    covered(plans, renamer.project)
     spots = collections.defaultdict(set)
     for plan in plans:
         for place in plan.places:

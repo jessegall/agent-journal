@@ -7,6 +7,10 @@ from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.skills.support.skill_card import SkillCard
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from journal.features.skills.feature import Skills
 
 
 class SkillsConduct(Conduct):
@@ -29,7 +33,7 @@ class SkillsConduct(Conduct):
         return self.hold(skills_feature().UNREAD_SKILL_STOP.create(skills=" and ".join(owed))) if owed else self.unchanged()
 
 
-def skills_feature():
+def skills_feature() -> "type[Skills]":
     from journal.features.skills.feature import Skills
     return Skills
 
