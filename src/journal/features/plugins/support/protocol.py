@@ -14,15 +14,20 @@ from journal.features.plugins.support.plugin_card import PluginCard
 ANSWERS = ("allow", "refuse", "tell")
 COMMAND_LIMIT = 20
 PLACED = ("session", "environment_id", "provider", "context", "subagent", "time", "data", "propagation")
+PUBLISHED = {"stop": "idle"}
 
 
 class Protocol:
-    """The one line the journal sends a plugin for an event, and the one line it reads back: JSON both ways, versioned."""
+    """The one line the journal sends a plugin for an event, and the one line it reads back: JSON both ways, versioned. An event goes by its key, or by the published name a plugin already hears it by when the journal renamed it."""
 
     VERSION = 1
 
+    @staticmethod
+    def published_name(event: Event) -> str:
+        return PUBLISHED.get(event.key, event.key)
+
     def line_of(self, event: Event, environment: str, state: str = "") -> str:
-        line = {"v": self.VERSION, "event": event.key, "at": datetime.now(timezone.utc).isoformat(), "environment": environment, "state": state, "data": self.data_of(event)}
+        line = {"v": self.VERSION, "event": self.published_name(event), "at": datetime.now(timezone.utc).isoformat(), "environment": environment, "state": state, "data": self.data_of(event)}
         if isinstance(event, AgentEvent):
             line |= {"session": event.session, "provider": event.provider, "subagent": event.subagent}
         return json.dumps(line, default=str)

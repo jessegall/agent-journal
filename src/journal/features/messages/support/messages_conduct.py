@@ -4,12 +4,12 @@ from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.user_resumed import UserResumed
-from journal.events.rows.reaction_given import ReactionGiven
+from journal.events.rows.reaction_added import ReactionAdded
 from journal.support.chain import Chain
 
 TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread|recent)|question\s+(?:show|list))\b[^|;&\"']*\|")
@@ -22,7 +22,7 @@ class MessagesConduct(Conduct):
     def on_prompt_submitted_messages(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.unchanged(*inbox_named(event.data.of(messages_feature()).unread))
 
-    def on_idle_messages(self, event: Idle, settings: Settings) -> Transition:
+    def on_stop_messages(self, event: Stop, settings: Settings) -> Transition:
         if self.refuses_every_tool():
             return self.unchanged()
         return self.unchanged(*inbox_named(event.data.of(messages_feature()).unread))
@@ -63,7 +63,7 @@ class MessagesConduct(Conduct):
         command = event.call.command
         return self.unchanged(messages_feature().TAG_REPLY.create()) if MESSAGE_COMMAND in command else self.unchanged()
 
-    def on_reaction_given_messages(self, event: ReactionGiven, settings: Settings) -> Transition:
+    def on_reaction_added_messages(self, event: ReactionAdded, settings: Settings) -> Transition:
         return self.unchanged(messages_feature().USER_REACTION.create(face=event.face, n=event.message_id)) if event.by_user else self.unchanged()
 
 

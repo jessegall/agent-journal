@@ -4,7 +4,7 @@ from journal.events.rows.row_event import RowEvent
 
 
 @dataclass(frozen=True, kw_only=True)
-class QuestionAsked(RowEvent):
-    """A question was asked, for the user to answer."""
+class PlanFinished(RowEvent):
+    """A plan is done: its last task closed."""
 
-    question_id: int
+    plan_id: int

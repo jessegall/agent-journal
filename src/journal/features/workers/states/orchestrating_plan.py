@@ -3,7 +3,7 @@ from dataclasses import dataclass, replace
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle as Stop
+from journal.events.agent.stop import Stop
 from journal.features.workers.states.orchestrating import orchestrate
 from journal.features.plans.states.following_plan import FollowingPlan
 

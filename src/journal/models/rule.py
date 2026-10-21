@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from journal.events.rows.rule_made import RuleMade
+from journal.events.rows.rule_created import RuleCreated
 from journal.models.model import Model
 
 
@@ -17,7 +17,7 @@ class Rule(Model):
     presence: bool = False
 
     def made(self, by_agent: bool) -> "Rule":
-        return self.with_event(RuleMade(agent_origin=by_agent))
+        return self.with_event(RuleCreated(agent_origin=by_agent))
 
     def summary_line(self) -> str:
         return self.first_line(self.text)

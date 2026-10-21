@@ -32,12 +32,12 @@ from journal.events.listener import Listener
 from journal.events.bus import Bus
 from journal.events.rows.plan_started import PlanStarted
 from journal.events.rows.row_event import RowEvent
-from journal.events.rows.row_settled import RowSettled
+from journal.events.rows.row_resolved import RowResolved
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_logged import TaskLogged
 from journal.events.rows.task_started import TaskStarted
 from journal.events.rows.question_answered import QuestionAnswered
-from journal.events.rows.worker_back import WorkerBack
+from journal.events.rows.worker_reported import WorkerReported
 from journal.events.models.updated import Updated
 from journal.engine.row_event_delivery import RowEventDelivery
 from journal.models.question import Question
@@ -539,13 +539,13 @@ def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_non
 def test_the_models_carry_the_events_their_changes_mean():
     time = datetime(2026, 10, 20, 23, 0, tzinfo=timezone.utc)
     task = Task(id=7, environment_id=1, title="t", state=TaskState.STARTED)
-    assert [type(e) for e in task.finished(time, "x").events] == [TaskClosed, RowSettled] and task.finished(time, "x").events[1].ref == "tasks:7"
+    assert [type(e) for e in task.finished(time, "x").events] == [TaskClosed, RowResolved] and task.finished(time, "x").events[1].ref == "tasks:7"
     assert task.parked("later", time).events[0] == TaskClosed(environment_id=1, time=time.timestamp(), task_id=7, how="parked")
     assert Task(id=8, environment_id=1, title="u").started(time).events == (TaskStarted(environment_id=1, time=time.timestamp(), task_id=8, title="u", plan_id=0),)
     assert TaskLog.of(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, time=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
-    assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowSettled] and question.asked(1.0).events[0].question_id == 4
-    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerBack(environment_id=1, time=5.0, worker_id=9, name="w", report=4, dispatched_by=""),)
+    assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowResolved] and question.asked(1.0).events[0].question_id == 4
+    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerReported(environment_id=1, time=5.0, worker_id=9, name="w", report=4, dispatched_by=""),)
 
 
 def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_reaches_no_state(app):
@@ -679,7 +679,7 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data(
     from journal.features.migration.support.migration_conduct import MigrationConduct
     from journal.features.migration.support.migration_data import MigrationData
     from journal.events.agent.tool_finished import ToolFinished
-    from journal.events.agent.turn_written import TurnWritten
+    from journal.events.agent.turn_displayed import TurnDisplayed
     from journal.events.rows.setting_changed import SettingChanged
     settings = SettingsValue({WorkersFeature.MODE.key: "builder", Etiquette.REMINDER_INTERVAL.key: 50})
     from journal.features.plans.support.plans_data import PlansData
@@ -694,10 +694,10 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data(
         changed = Ready().on(SettingChanged(environment_id=1, time=1.0, setting=Voices.VOICE_OPTIONS[0].key).with_data(data), settings)
         assert [n.key for n in changed.nudges] == ["voices.the_voice_changed"]
         assert Ready().on(SettingChanged(environment_id=1, time=1.0, setting="shell.short_output").with_data(data), settings).nudges == ()
-        turn = Ready().on(TurnWritten(text="the user should run journal task done 3, see https://a.test/new and https://a.test/said").with_data(data), settings)
+        turn = Ready().on(TurnDisplayed(text="the user should run journal task done 3, see https://a.test/new and https://a.test/said").with_data(data), settings)
         assert [n.key for n in turn.nudges] == ["etiquette.no_shop_talk", "etiquette.say_you_not_the_user", "pins.pin_the_link"]
         assert "https://a.test/new" in turn.nudges[2].rendered()
-        assert Ready().on(TurnWritten(text="see https://a.test/pinned", final=False).with_data(data), settings).nudges == ()
+        assert Ready().on(TurnDisplayed(text="see https://a.test/pinned", final=False).with_data(data), settings).nudges == ()
         finished = Ready().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="opened https://a.test/pr/1").with_data(data), settings)
         assert [n.key for n in finished.nudges] == ["etiquette.a_line_is_an_instruction", "pins.pin_the_link"]
         quiet = FeatureData({**data.data, "etiquette": EtiquetteData(lines_since_reminder=3)})
@@ -718,9 +718,9 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
     from journal.models.open_task import OpenTask
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.tasks.support.tasks_data import TasksData
-    from journal.events.agent.commit_made import CommitMade
+    from journal.events.agent.commit_detected import CommitDetected
     from journal.events.agent.prompt_submitted import PromptSubmitted
-    from journal.events.rows.check_ran import CheckRan
+    from journal.events.rows.check_completed import CheckCompleted
     from journal.events.rows.message_arrived import MessageArrived
     from journal.models.trigger import Trigger
     from journal.models.trigger_action import TriggerAction
@@ -730,14 +730,14 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
     data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=()), "triggers": TriggersData(triggers=triggers), "plugins": PluginsData(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
     BaseState.fold((GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
     try:
-        assert Ready().on(CommitMade(sha="abcdef0123").with_data(data), settings).nudges == ()
-        closed = Ready().on(CommitMade(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next", "", 0)).with_data(data), settings)
+        assert Ready().on(CommitDetected(sha="abcdef0123").with_data(data), settings).nudges == ()
+        closed = Ready().on(CommitDetected(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next", "", 0)).with_data(data), settings)
         assert [n.rendered() for n in closed.nudges] == ["commit abcdef01 closed task 4, task 5", "tasks are open, and auto mode is on: task 6 next: the next. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"]
-        failed = Ready().on(CheckRan(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="a\nb c", failed_before=False, waited_on=False).with_data(data), settings)
+        failed = Ready().on(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="a\nb c", failed_before=False, waited_on=False).with_data(data), settings)
         assert [n.key for n in failed.nudges] == ["checks.check_failed"] and "b c" in failed.nudges[0].rendered()
-        again = Ready().on(CheckRan(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=False).with_data(data), settings)
+        again = Ready().on(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=False).with_data(data), settings)
         assert [n.key for n in again.nudges] == ["checks.check_still_failing"]
-        assert Ready().on(CheckRan(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=True).with_data(data), settings).nudges == ()
+        assert Ready().on(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=True).with_data(data), settings).nudges == ()
         prompt = Ready().on(PromptSubmitted(prompt="release it and plan the rest").with_data(data), settings)
         assert [n.rendered() for n in prompt.nudges] == ["do this now: bump the version"]
         arrived = Ready().on(MessageArrived(environment_id=1, time=1.0, text="deploy now").with_data(data), settings)
@@ -774,12 +774,12 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     from journal.features.workers.support.dispatch import Dispatch
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.tasks.support.tasks_data import TasksData
-    from journal.events.agent.idle import Idle as IdleEvent
+    from journal.events.agent.stop import Stop
     from journal.events.agent.ticked import Ticked
     from journal.events.agent.tool_finished import ToolFinished
-    from journal.events.rows.reaction_given import ReactionGiven
+    from journal.events.rows.reaction_added import ReactionAdded
     from journal.events.rows.secret_allowed import SecretAllowed
-    from journal.events.rows.worker_back import WorkerBack
+    from journal.events.rows.worker_reported import WorkerReported
     settings = SettingsValue({MessagesFeature.TOOL_BLOCK_LIMIT.key: 10, MessagesFeature.ANSWER_REQUEST_LIMIT.key: 3, MessagesFeature.REMINDER_INTERVAL.key: 3, MessagesFeature.EDIT_BLOCK_LIMIT.key: 5, Shell.SHOWN.key: 100, WorkersFeature.SUBAGENT_LIMIT.key: 2, "tasks.auto": False})
     private = tmp_path / "private"
     parts = {
@@ -795,7 +795,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     try:
         prompt = Ready().on(PromptSubmitted(prompt="go on").with_data(data), settings)
         assert [n.rendered() for n in prompt.nudges] == ["new messages 7, 8"]
-        stop = Ready().on(IdleEvent().with_data(data), settings)
+        stop = Ready().on(Stop().with_data(data), settings)
         assert [n.key for n in stop.nudges] == ["messages.new_messages_to_answer", "workers.act_on_the_reports"]
         piped = Ready().on(ToolStarting(call=shell("journal message read 7 | head -3")).with_data(data), settings)
         assert piped.held is not None and piped.held.key == "messages.read_the_words_whole"
@@ -811,9 +811,9 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         assert Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(held_unread), settings).held is None
         sent = Ready().on(ToolFinished(call=shell("journal message send hi --reply-to 7"), output="sent").with_data(data), settings)
         assert [n.key for n in sent.nudges] == ["messages.reply_by_tag"]
-        face = Ready().on(ReactionGiven(environment_id=1, time=1.0, face="👍", message_id=7, by_user=True).with_data(data), settings)
+        face = Ready().on(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, by_user=True).with_data(data), settings)
         assert [n.rendered() for n in face.nudges][0].startswith("the user put 👍 on message 7")
-        assert Ready().on(ReactionGiven(environment_id=1, time=1.0, face="👍", message_id=7, by_user=False).with_data(data), settings).nudges == ()
+        assert Ready().on(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, by_user=False).with_data(data), settings).nudges == ()
         dispatch = lambda **given: Ready().on(ToolStarting(call=ToolCall(tool="Agent", input=given)).with_data(data), settings)
         assert dispatch(subagent_type="journal-researcher", description="d", prompt="p").held.key == "laws.name_the_model"
         assert dispatch(model="sonnet", subagent_type="general-purpose", description="d", prompt="p").held.key == "laws.name_a_profile"
@@ -846,7 +846,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         assert Ready().on(ToolStarting(call=ToolCall(tool="AskUserQuestion", input={})).with_data(data), settings).held.key == "questions.ask_through_the_journal"
         worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
         assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": worktree_file}, writes=True, written_paths=(worktree_file,))).with_data(data), settings).held.key == "workers.file_is_the_workers"
-        back = Ready().on(WorkerBack(environment_id=1, time=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatched_by="").with_data(data), settings)
+        back = Ready().on(WorkerReported(environment_id=1, time=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatched_by="").with_data(data), settings)
         assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in the chat"]
     finally:
         BaseState.fold(())
@@ -876,8 +876,8 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     from journal.features.memory.support.memory_row import MemoryRow
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.tasks.support.tasks_data import TasksData
-    from journal.events.agent.idle import Idle as IdleEvent
-    from journal.events.rows.rule_made import RuleMade
+    from journal.events.agent.stop import Stop
+    from journal.events.rows.rule_created import RuleCreated
     from journal.support.card_kind import CardKind
     settings = SettingsValue({WorkersFeature.MODE.key: "builder", "tasks.auto": False})
     cards = (SkillCard("journal", ".claude/skills/journal/SKILL.md", "h1", (), ()), SkillCard("plans", ".claude/skills/journal-plans/SKILL.md", "h2", ("plan", "roadmap"), ("following_plan",)))
@@ -904,13 +904,13 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         held = Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(data), settings)
         assert held.held is not None and held.held.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
         assert Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(data), settings).held is None
-        stop = Ready().on(IdleEvent().with_data(data), settings)
+        stop = Ready().on(Stop().with_data(data), settings)
         assert stop.held is not None and stop.held.key == "skills.stopped_owing"
         paid = FeatureData({**parts, "skills": SkillsData(owed=(), loaded={}, skills=cards)})
         assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(paid), settings).held.key == "briefing.look_before_the_first_write"
         looked = FeatureData({**paid.data, "briefing": BriefingData(**{**parts["briefing"].__dict__, "oriented": True})})
         assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(looked), settings).held.key == "memory.write_held_until_decided"
-        assert Ready().on(IdleEvent().with_data(looked), settings).held.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
+        assert Ready().on(Stop().with_data(looked), settings).held.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
         decided = FeatureData({**looked.data, "memory": MemoryData(mark_owed=0, context_mark=50, rows=parts["memory"].rows, stale=())})
         assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(decided), settings).held is None
         crossed = Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_data(decided), settings)
@@ -920,22 +920,22 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         assert [n.rendered() for n in whispered.typed] == ["fact 3 is about this and not in your context: journal fact read 3"], "a whisper tells the agent to read the row, never its words"
         already = FeatureData({**decided.data, "memory": MemoryData(mark_owed=0, context_mark=50, rows=tuple(replace(row, presence=True) for row in parts["memory"].rows), stale=())})
         assert Ready().on(ToolStarting(call=shell("lsof -i :port")).with_data(already), settings).typed == (), "a row in the context window is not whispered"
-        rule = Ready().on(RuleMade(environment_id=0, time=1.0, row_id=7, agent_origin=True).with_data(decided), settings)
+        rule = Ready().on(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=True).with_data(decided), settings)
         assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
-        assert Ready().on(RuleMade(environment_id=0, time=1.0, row_id=7, agent_origin=False).with_data(decided), settings).nudges == ()
+        assert Ready().on(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=False).with_data(decided), settings).nudges == ()
     finally:
         BaseState.fold(())
 
 
 def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
     from journal.features.tasks.states.external_wait import ExternalWait
-    from journal.events.rows.worker_back import WorkerBack
+    from journal.events.rows.worker_reported import WorkerReported
     from journal.events.rows.worker_stopped import WorkerStopped
     settings = SettingsValue({})
     waiting = ExternalWait.on_workers((3, 4), 0.0)
-    first = waiting.on(WorkerBack(environment_id=1, time=1.0, worker_id=3, name="Lady Lovelace", report=9, dispatched_by="s1"), settings)
+    first = waiting.on(WorkerReported(environment_id=1, time=1.0, worker_id=3, name="Lady Lovelace", report=9, dispatched_by="s1"), settings)
     assert first.to.waits_on() == ["workers:4"] and not first.popped and [n.key for n in first.nudges] == ["workers.worker_reported"]
-    other = waiting.on(WorkerBack(environment_id=1, time=1.0, worker_id=8, name="x", report=9, dispatched_by="s1"), settings)
+    other = waiting.on(WorkerReported(environment_id=1, time=1.0, worker_id=8, name="x", report=9, dispatched_by="s1"), settings)
     assert other.to is waiting and other.nudges == (), "a worker it does not wait on is not its business"
     last = first.to.on(WorkerStopped(environment_id=1, time=2.0, worker_id=4, name="Herr Turing"), settings)
     assert last.popped and [n.key for n in last.nudges] == ["workers.worker_stopped_unreported", "tasks.wait_over"] and last.nudges[-1].rendered().startswith("the wait for workers 3, 4 is over: worker 3, Lady Lovelace, reported; worker 4, Herr Turing, stopped before it reported")
@@ -959,7 +959,7 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_data
     from journal.features.tasks.support.tasks_data import TasksData
     from journal.features.plans.support.plans_data import PlansData
     from journal.models.open_task import OpenTask
-    from journal.events.agent.idle import Idle as Stop
+    from journal.events.agent.stop import Stop
     from journal.events.agent.ticked import Ticked
     auto, manual = SettingsValue({TasksFeature.AUTO.key: True, WorkersFeature.MODE.key: "builder"}), SettingsValue({TasksFeature.AUTO.key: False, WorkersFeature.MODE.key: "builder"})
     nothing = TasksData(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
@@ -997,7 +997,7 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     from journal.features.tasks.support.tasks_data import TasksData
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.git.support.git_data import GitData
-    from journal.events.agent.idle import Idle as Stop
+    from journal.events.agent.stop import Stop
     from journal.events.agent.ticked import Ticked
     from journal.events.rows.task_closed import TaskClosed
     from journal.events.rows.task_logged import TaskLogged
@@ -1047,8 +1047,8 @@ def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_wh
     from journal.features.tasks.feature import Tasks as TasksFeature
     from journal.features.tasks.support.tasks_data import TasksData
     from journal.engine.support.block import Block
-    from journal.events.agent.idle import Idle as Stop
-    from journal.events.rows.plan_done import PlanDone
+    from journal.events.agent.stop import Stop
+    from journal.events.rows.plan_finished import PlanFinished
     from journal.events.rows.plan_started import PlanStarted
     from journal.events.rows.task_closed import TaskClosed
     from journal.events.rows.task_started import TaskStarted
@@ -1071,9 +1071,9 @@ def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_wh
     assert waits.held is None and waits.nudges[0].rendered().startswith("plan 5: phase 2 is complete and a checkpoint")
     assert at_checkpoint.to.on(SessionStarted(time=40.0).with_data(of(plan)), auto).nudges[0].key == "plans.phase_complete_at_a_checkpoint"
     assert at_checkpoint.to.on(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True), time=41.0).with_data(of(plan)), auto).to == at_checkpoint.to, "counts nothing at a checkpoint"
-    done = following.on(PlanDone(environment_id=1, time=50.0, plan_id=5).with_data(of(None)), auto)
+    done = following.on(PlanFinished(environment_id=1, time=50.0, plan_id=5).with_data(of(None)), auto)
     assert done.popped and [n.key for n in done.nudges] == ["plans.plan_done"]
-    assert not following.on(PlanDone(environment_id=1, time=50.0, plan_id=6).with_data(of(plan)), auto).popped
+    assert not following.on(PlanFinished(environment_id=1, time=50.0, plan_id=6).with_data(of(plan)), auto).popped
     pushed = Ready().on(PlanStarted(environment_id=1, time=1.0, plan_id=5, task_id=7).with_data(of(plan)), auto)
     assert pushed.pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=1.0)
     own = Ready().on(TaskStarted(environment_id=1, time=2.0, task_id=3, title="t", plan_id=0).with_data(of(None)), auto)
@@ -1115,13 +1115,13 @@ def test_a_question_asked_pushes_waiting_and_its_answer_pops_it_on_top_or_on_res
     from journal.features.questions.support.questions_conduct import QuestionsConduct
     from journal.features.questions.support.questions_data import QuestionsData
     from journal.events.rows.question_answered import QuestionAnswered
-    from journal.events.rows.question_asked import QuestionAsked
-    from journal.events.agent.idle import Idle as Stop
+    from journal.events.rows.question_posed import QuestionPosed
+    from journal.events.agent.stop import Stop
     settings = SettingsValue({})
     of = lambda *open: FeatureData({"questions": QuestionsData(open=open)})
     BaseState.fold((QuestionsConduct,))
     try:
-        asked = Working(task_id=7, logged_at=1.0).on(QuestionAsked(environment_id=1, time=2.0, question_id=4).with_data(of(4)), settings)
+        asked = Working(task_id=7, logged_at=1.0).on(QuestionPosed(environment_id=1, time=2.0, question_id=4).with_data(of(4)), settings)
         assert asked.pushed == Waiting(question_id=4), "a question asked pushes the wait on the work in hand"
         waiting = Waiting(question_id=4)
         answered = waiting.on(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings)
@@ -1143,19 +1143,19 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     from journal.models.open_task import OpenTask
     from journal.features.tasks.support.tasks_conduct import TasksConduct
     from journal.features.tasks.support.tasks_data import TasksData
-    from journal.events.agent.awaited import Awaited
-    from journal.events.agent.idle import Idle as Stop
-    from journal.events.agent.stuck_declared import StuckDeclared
+    from journal.events.agent.wait_request import WaitRequest
+    from journal.events.agent.stop import Stop
+    from journal.events.agent.impasse_report import ImpasseReport
     from journal.events.agent.ticked import Ticked
-    from journal.events.rows.row_settled import RowSettled
+    from journal.events.rows.row_resolved import RowResolved
     auto, manual = SettingsValue({TasksFeature.AUTO.key: True}), SettingsValue({TasksFeature.AUTO.key: False})
     tasks = TasksData(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=OpenTask(9, "the next one", "", 0), last_commands=())
     of = lambda: FeatureData({"tasks": tasks})
     BaseState.fold((TasksConduct,))
     try:
-        pushed = Working(task_id=7).on(Awaited(what="the build", ends_on="command_outputs:4,checks:2", time=100.0), auto)
+        pushed = Working(task_id=7).on(WaitRequest(what="the build", ends_on="command_outputs:4,checks:2", time=100.0), auto)
         assert pushed.pushed == ExternalWait(what="the build", ends_on="command_outputs:4,checks:2", start_time=100.0), "journal await pushes the wait on the work"
-        assert Working(task_id=7).on(StuckDeclared(why="the login", time=1.0), auto).pushed == Impasse(why="the login"), "journal stuck pushes Stuck"
+        assert Working(task_id=7).on(ImpasseReport(why="the login", time=1.0), auto).pushed == Impasse(why="the login"), "journal stuck pushes Stuck"
     finally:
         BaseState.fold(())
     waiting = pushed.pushed
@@ -1166,10 +1166,10 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     looked = meanwhile.to.on(Ticked(quiet_for=310.0, time=410.0).with_data(of()), auto)
     assert looked.to == replace(meanwhile.to, reminder_time=410.0) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
     assert looked.to.on(Ticked(quiet_for=400.0, time=500.0).with_data(of()), auto).nudges == (), "and not again before five more"
-    first = waiting.on(RowSettled(environment_id=1, time=200.0, ref="command_outputs:4", outcome="output 4 finished"), auto)
+    first = waiting.on(RowResolved(environment_id=1, time=200.0, ref="command_outputs:4", outcome="output 4 finished"), auto)
     assert first.to == replace(waiting, ends_on="checks:2", outcomes="output 4 finished") and not first.popped, "one row settled, one still to come"
-    assert waiting.on(RowSettled(environment_id=1, time=200.0, ref="tasks:3"), auto).to == waiting, "a row it does not wait on is not its business"
-    last = first.to.on(RowSettled(environment_id=1, time=300.0, ref="checks:2", outcome="check 2 passed"), auto)
+    assert waiting.on(RowResolved(environment_id=1, time=200.0, ref="tasks:3"), auto).to == waiting, "a row it does not wait on is not its business"
+    last = first.to.on(RowResolved(environment_id=1, time=300.0, ref="checks:2", outcome="check 2 passed"), auto)
     assert last.popped and last.nudges[0].rendered().startswith("the wait for the build is over: output 4 finished; check 2 passed"), "the last row settled pops the wait with what each came to"
     assert Impasse(why="the login").on(Stop(time=1.0).with_data(of()), auto).held is None and Impasse(why="the login").on(Ticked(quiet_for=900.0, time=901.0).with_data(of()), auto).nudges == (), "stuck is quiet"
     assert Impasse(why="the login").on(ToolStarting(call=ToolCall(tool="Read", input={})), auto).popped, "its own tool use pops it"
@@ -1191,7 +1191,7 @@ def test_a_part_knows_whether_it_reads_an_output_and_the_shape_of_that_read():
 
 
 def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instance_per_class(app):
-    from journal.events.agent.idle import Idle as Stop
+    from journal.events.agent.stop import Stop
     from journal.features.messages.support.messages_conduct import MessagesConduct
     from journal.repositories.agents import Agents
     assert Working.listeners() is Working.listeners(), "a state's listener table is built once per class"
@@ -1278,7 +1278,7 @@ def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_a
 
 
 def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_builder_carries_on_and_the_solo_mode_keeps_workers_out():
-    from journal.events.agent.idle import Idle as Stop
+    from journal.events.agent.stop import Stop
     from journal.events.rows.setting_changed import SettingChanged
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.plans.support.started_plan import StartedPlan
@@ -1355,7 +1355,7 @@ def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_neve
 
 
 def test_a_stop_with_the_tasks_log_older_than_the_set_minutes_asks_for_the_log_line_first():
-    from journal.events.agent.idle import Idle as Stop
+    from journal.events.agent.stop import Stop
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.tasks.support.tasks_data import TasksData
     data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())})

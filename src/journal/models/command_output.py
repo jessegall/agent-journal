@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.events.rows.row_settled import RowSettled
+from journal.events.rows.row_resolved import RowResolved
 from journal.models.scoped import Scoped
 
 
@@ -30,7 +30,7 @@ class CommandOutput(Scoped):
 
     def ended_with(self, status: int, time: float) -> "CommandOutput":
         ended = self.with_(ended=True, status=status)
-        return ended.with_event(RowSettled(environment_id=self.environment_id, time=time, ref=f"{self.table()}:{self.id}", outcome=ended.came_to()))
+        return ended.with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"{self.table()}:{self.id}", outcome=ended.came_to()))
 
     def told_of(self) -> "CommandOutput":
         return self.with_(told=True)

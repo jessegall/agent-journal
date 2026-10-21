@@ -2,7 +2,7 @@ from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
@@ -24,7 +24,7 @@ class SkillsConduct(Conduct):
             return self.unchanged()
         return self.hold(read_first(owed)[0])
 
-    def on_idle_skills(self, event: Idle, settings: Settings) -> Transition:
+    def on_stop_skills(self, event: Stop, settings: Settings) -> Transition:
         owed = event.data.of(skills_feature()).owed
         return self.hold(skills_feature().UNREAD_SKILL_STOP.create(skills=" and ".join(owed))) if owed else self.unchanged()
 

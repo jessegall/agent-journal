@@ -3,9 +3,9 @@ from dataclasses import dataclass, field
 
 from journal.events.rows.dump_answered import DumpAnswered
 from journal.events.rows.dump_arrived import DumpArrived
-from journal.events.rows.dump_asked import DumpAsked
-from journal.events.rows.dump_chosen import DumpChosen
-from journal.events.rows.dump_filed import DumpFiled
+from journal.events.rows.dump_question import DumpQuestion
+from journal.events.rows.dump_choice import DumpChoice
+from journal.events.rows.dump_sorted import DumpSorted
 from journal.models.support.dump_item import DumpItem
 from journal.models.scoped import Scoped
 
@@ -70,7 +70,7 @@ class Dump(Scoped):
         return self.with_event(DumpArrived(environment_id=self.environment_id, time=time, dump_id=self.id, waiting=len(self.waiting()), by_user=by_user))
 
     def asked(self, text: str, guesses: list[str], time: float) -> "Dump":
-        return self.with_(question={"time": time, "text": text, "guesses": guesses}).with_event(DumpAsked(environment_id=self.environment_id, time=time, dump_id=self.id))
+        return self.with_(question={"time": time, "text": text, "guesses": guesses}).with_event(DumpQuestion(environment_id=self.environment_id, time=time, dump_id=self.id))
 
     def answered(self, answer: str, time: float) -> "Dump":
         question = self.question.get("text", "")
@@ -79,14 +79,14 @@ class Dump(Scoped):
     def step_chosen(self, pick: int, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": pick, "time": time}
         taken = {**self.taken, str(pick): choice} if pick >= 0 else self.taken
-        return self.with_(chosen=choice, taken=taken).with_event(DumpChosen(environment_id=self.environment_id, time=time, dump_id=self.id, pick=pick, label=label))
+        return self.with_(chosen=choice, taken=taken).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=pick, label=label))
 
     def step_directed(self, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": USER_TEXT, "time": time}
-        return self.with_(chosen=choice, said=(*self.said, choice)).with_event(DumpChosen(environment_id=self.environment_id, time=time, dump_id=self.id, pick=USER_TEXT, label=label))
+        return self.with_(chosen=choice, said=(*self.said, choice)).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=USER_TEXT, label=label))
 
     def filed(self, how: str, time: float) -> "Dump":
-        return self.with_(completed_at=time, outcome=how).with_event(DumpFiled(environment_id=self.environment_id, time=time, dump_id=self.id, outcome=how, stopped=self.stopped))
+        return self.with_(completed_at=time, outcome=how).with_event(DumpSorted(environment_id=self.environment_id, time=time, dump_id=self.id, outcome=how, stopped=self.stopped))
 
     @staticmethod
     def items_in(names: list[str]) -> str:

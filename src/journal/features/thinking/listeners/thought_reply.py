@@ -1,6 +1,6 @@
 from journal.config import Config
 from journal.events.agent.tool_starting import ToolStarting
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
 from journal.features.messages.listeners.record_turn import REPLY_TAG
@@ -23,6 +23,6 @@ class ThoughtReply(AgentListener[ToolStarting]):
         for thought in self.providers.named(event.provider).thoughts_this_turn(self.config.root, event.session):
             named = {int(n) for tag in REPLY_TAG.finditer(thought) for n in tag.group(1).split(",")}
             if named & unanswered:
-                turn = TurnWritten(text=thought, delta=thought, turn_id=f"{THOUGHT_PREFIX}{hash(thought)}", final=True)
+                turn = TurnDisplayed(text=thought, delta=thought, turn_id=f"{THOUGHT_PREFIX}{hash(thought)}", final=True)
                 self.bus.dispatch(turn.placed(event.session, event.environment_id, event.provider, event.context, event.time))
                 unanswered -= named

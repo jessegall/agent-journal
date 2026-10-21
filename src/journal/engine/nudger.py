@@ -1,6 +1,6 @@
 from journal.engine.clock import Clock
 from journal.engine.nudge_registry import NudgeRegistry
-from journal.events.agent.line_said import LineSaid
+from journal.events.agent.line_delivered import LineDelivered
 from journal.events.bus import Bus
 from journal.support.listener_queue import ListenerQueue
 from journal.support.feature_registry import FeatureRegistry
@@ -38,7 +38,7 @@ class Nudger:
             return None
         line = nudge.rendered()
         self.entries.save(Entry(environment_id=agent.environment_id, kind=NUDGE, actor=Actor.system(), data={"key": nudge.key, "session": agent.session, "line": line, "time": self.clock.now(), "tool_use": agent.tool_uses}), Actor.system())
-        event = LineSaid(nudge=nudge.key, values=dict(nudge.values)).placed(agent.session, agent.environment_id, agent.provider, None, self.clock.now())
+        event = LineDelivered(nudge=nudge.key, values=dict(nudge.values)).placed(agent.session, agent.environment_id, agent.provider, None, self.clock.now())
         self.deferred.add(lambda: self.bus.dispatch(event))
         return line
 

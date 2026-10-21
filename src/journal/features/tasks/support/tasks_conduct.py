@@ -1,8 +1,8 @@
 from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.awaited import Awaited
-from journal.events.agent.stuck_declared import StuckDeclared
+from journal.events.agent.wait_request import WaitRequest
+from journal.events.agent.impasse_report import ImpasseReport
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_reopened import TaskReopened
@@ -13,11 +13,11 @@ POLL_REPEAT_LIMIT = 3
 class TasksConduct(Conduct):
     """The tasks feature's conduct in every state: a polled command named, a task open again told, a parked task named when a task closes, a wait the agent declares pushed as Expecting and a stuck agent pushed as Stuck."""
 
-    def on_awaited_tasks(self, event: Awaited, settings: Settings) -> Transition:
+    def on_wait_request_tasks(self, event: WaitRequest, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
         return self.push(ExternalWait(what=event.what, ends_on=event.ends_on, start_time=event.time))
 
-    def on_stuck_declared_tasks(self, event: StuckDeclared, settings: Settings) -> Transition:
+    def on_impasse_report_tasks(self, event: ImpasseReport, settings: Settings) -> Transition:
         from journal.features.tasks.states.impasse import Impasse
         return self.push(Impasse(why=event.why))
 

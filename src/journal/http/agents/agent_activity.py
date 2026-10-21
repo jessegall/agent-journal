@@ -15,7 +15,7 @@ from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 
-STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "ToolFailed": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
+STATUS = {"Stop": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "ToolFailed": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan", "delegating", "orchestrating_plan"})
 ENTRY_COUNT = 400
 HISTORY = 5
@@ -57,7 +57,7 @@ class AgentActivity:
             "question_id": agent.data.get("question_id", 0) if agent.state == "waiting" else 0,
             "doing": self.doing(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", PART_START, PART_END)]),
             "thinking": self.thinking(agent.session, hooks) if agent.state != ENDED else "",
-            "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
+            "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnDisplayed"), ""),
             "stuck": agent.data.get("why", "") if agent.state == "stuck" else "",
             "sequence": self.sequence_of(agent),
             "stack": self.stack_of(agent),
@@ -73,7 +73,7 @@ class AgentActivity:
         thoughts = self.messages.thoughts_of(session, 1)
         if not thoughts:
             return ""
-        written = [e.created_at for e in hooks if e.kind == "TurnWritten"]
+        written = [e.created_at for e in hooks if e.kind == "TurnDisplayed"]
         later = [time for time in (written[-1] if written else None, self.entries.last_prompt_of(session)) if time is not None]
         return "" if any(time > thoughts[-1].created_at for time in later) else thoughts[-1].text
 

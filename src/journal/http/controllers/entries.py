@@ -10,7 +10,7 @@ from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 from journal.support.scope import Scope
 
-AGENT_EVENT_KINDS = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "ToolFailed", "Compacting", "Idle", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnWritten",
+AGENT_EVENT_KINDS = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "ToolFailed", "Compacting", "Stop", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnDisplayed",
                   "nudge", "created", "updated", "deleted"})
 RECENT = 100
 HEARTBEAT_SECONDS = 15.0

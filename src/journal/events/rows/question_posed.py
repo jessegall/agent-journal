@@ -4,7 +4,7 @@ from journal.events.rows.row_event import RowEvent
 
 
 @dataclass(frozen=True, kw_only=True)
-class DumpAsked(RowEvent):
-    """The agent asked the user something on a dump, in the dump's window."""
+class QuestionPosed(RowEvent):
+    """A question was asked, for the user to answer."""
 
-    dump_id: int
+    question_id: int

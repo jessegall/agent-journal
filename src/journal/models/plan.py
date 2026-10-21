@@ -7,7 +7,7 @@ from journal.events.rows.plan_approved import PlanApproved
 from journal.events.rows.plan_blocked import PlanBlocked
 from journal.events.rows.plan_postponed import PlanPostponed
 from journal.events.rows.plan_reopened import PlanReopened
-from journal.events.rows.plan_done import PlanDone
+from journal.events.rows.plan_finished import PlanFinished
 from journal.events.rows.plan_started import PlanStarted
 from journal.models.scoped import Scoped
 from journal.models.task import Task
@@ -68,7 +68,7 @@ class Plan(Scoped):
         return self.state == PlanState.BLOCKED
 
     def done(self, time: float) -> "Plan":
-        return self.moved(PlanState.FINISHED).with_event(PlanDone(environment_id=self.environment_id, time=time, plan_id=self.id))
+        return self.moved(PlanState.FINISHED).with_event(PlanFinished(environment_id=self.environment_id, time=time, plan_id=self.id))
 
     def cancelled(self, time: float, by_user: bool) -> "Plan":
         return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=by_user))

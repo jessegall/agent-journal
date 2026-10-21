@@ -4,10 +4,10 @@ from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
-from journal.events.rows.worker_back import WorkerBack
+from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.features.workers.support.path_mentions import PathMentions
 from journal.features.workers.support.workers_data import WorkersData
@@ -43,7 +43,7 @@ class WorkersConduct(Conduct):
         known = next((d for d in reversed(event.data.of(Workers).dispatches) if not d.running and d.session and d.type == kind and named & PathMentions.of(d.brief)), None)
         return self.hold(Workers.SUBAGENT_REUSE.create(session=known.session, task=known.task)) if known else self.unchanged()
 
-    def on_idle_workers(self, event: Idle, settings: Settings) -> Transition:
+    def on_stop_workers(self, event: Stop, settings: Settings) -> Transition:
         return self.unchanged(*reports_named(event.data.of(workers_feature())))
 
     def on_ticked_workers(self, event: Ticked, settings: Settings) -> Transition:
@@ -53,7 +53,7 @@ class WorkersConduct(Conduct):
         from journal.features.tasks.states.external_wait import ExternalWait
         return self.push(ExternalWait.on_workers((event.worker_id,), event.time)) if event.dispatched_by == event.session else self.unchanged()
 
-    def on_worker_back_workers(self, event: WorkerBack, settings: Settings) -> Transition:
+    def on_worker_reported_workers(self, event: WorkerReported, settings: Settings) -> Transition:
         if event.dispatched_by and event.dispatched_by != event.session:
             return self.unchanged()
         return self.unchanged(workers_feature().WORKER_REPORTED.create(n=event.worker_id, name=event.name))

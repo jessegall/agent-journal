@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 
 from journal.events.rows.user_paused import UserPaused
 from journal.events.rows.user_resumed import UserResumed
-from journal.events.rows.look_taken import LookTaken
-from journal.events.rows.mark_decided import MarkDecided
+from journal.events.rows.overview_read import OverviewRead
+from journal.events.rows.context_decided import ContextDecided
 from journal.events.rows.skill_read import SkillRead
 from journal.models.scoped import Scoped
 
@@ -32,10 +32,10 @@ class Agent(Scoped):
         return self.with_event(UserResumed(environment_id=self.environment_id, time=time, agent_session=self.session))
 
     def look_taken(self, time: float) -> "Agent":
-        return self.with_(oriented=True).with_event(LookTaken(environment_id=self.environment_id, time=time))
+        return self.with_(oriented=True).with_event(OverviewRead(environment_id=self.environment_id, time=time))
 
     def mark_decided(self, time: float) -> "Agent":
-        return self.with_(mark_owed=0).with_event(MarkDecided(environment_id=self.environment_id, time=time, mark=self.mark_owed))
+        return self.with_(mark_owed=0).with_event(ContextDecided(environment_id=self.environment_id, time=time, mark=self.mark_owed))
 
     def skill_read(self, name: str, digest: str, time: float) -> "Agent":
         loaded = {**self.skills_loaded, name: digest}

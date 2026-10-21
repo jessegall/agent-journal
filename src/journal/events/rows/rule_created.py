@@ -4,7 +4,7 @@ from journal.events.rows.row_event import RowEvent
 
 
 @dataclass(frozen=True, kw_only=True)
-class MarkDecided(RowEvent):
-    """The agent decided what to keep at a context mark: the mark owed is paid."""
+class RuleCreated(RowEvent):
+    """A rule was written, by the agent or by the user."""
 
-    mark: int
+    agent_origin: bool

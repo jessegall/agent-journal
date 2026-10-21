@@ -4,7 +4,7 @@ from journal.engine.base_state import BaseState
 from journal.support.permission import Permission
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle as Stop
+from journal.events.agent.stop import Stop
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.ticked import Ticked

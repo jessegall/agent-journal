@@ -3,8 +3,9 @@ from journal.events.agent.command_starting import CommandStarting
 from journal.events.agent.file_edited import FileEdited
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent_listener import AgentListener
+from journal.features.plugins.support.protocol import Protocol
 from journal.features.plugins.support.plugin_relay import PluginRelay
 from journal.features.plugins.support.plugin_queue import PluginQueue
 from journal.features.plugins.support.plugin_text import PluginText
@@ -34,8 +35,8 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
         from journal.features.plugins.feature import PluginsFeature
         hearers = self.relay.heard_by(event, event.environment_id)
         ceiling_ms = int(self.settings.option(PluginsFeature.PLUGIN_ANSWER_WINDOW))
-        waiting = self.relay.waiting_for(event.session) if event.key in LINE_EVENT_KEYS else []
-        if event.key in LINE_EVENT_KEYS:
+        waiting = self.relay.waiting_for(event.session) if Protocol.published_name(event) in LINE_EVENT_KEYS else []
+        if Protocol.published_name(event) in LINE_EVENT_KEYS:
             waiting += [line for plugin in self.relay.plugins.enabled() for line in self.queue.lines(plugin, event)]
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
         decision = self.asked(hearers, event, ceiling_ms, decision)
@@ -53,10 +54,10 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
     def asked(self, hearers: list[Plugin], event: AgentEvent, ceiling_ms: int, decision: Decision) -> Decision:
         for plugin in hearers:
             if decision.allowed and self.holds(plugin, event):
-                window = plugin.manifest.window_ms(event.key, ceiling_ms) / 1000
+                window = plugin.manifest.window_ms(Protocol.published_name(event), ceiling_ms) / 1000
                 decision = decision.merged(self.decided(plugin, event, self.relay.ask(plugin, event, event.environment_id, window)))
             else:
-                self.deferred.add_unless_behind(lambda plugin=plugin: self.relay.later(plugin, event, event.environment_id), f"{plugin.name} relay {event.key}")
+                self.deferred.add_unless_behind(lambda plugin=plugin: self.relay.later(plugin, event, event.environment_id), f"{plugin.name} relay {Protocol.published_name(event)}")
         return decision
 
     @staticmethod
@@ -68,13 +69,13 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
 
     @staticmethod
     def holds(plugin: Plugin, event: AgentEvent) -> bool:
-        return plugin.manifest.has_window(event.key) and (not event.subagent or event.key in ("tool_starting", "command_starting", "file_edited"))
+        return plugin.manifest.has_window(Protocol.published_name(event)) and (not event.subagent or Protocol.published_name(event) in ("tool_starting", "command_starting", "file_edited"))
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
-        if answer.answer == "refuse" and isinstance(event, Idle) and event.held_before:
+        if answer.answer == "refuse" and isinstance(event, Stop) and event.held_before:
             self.relay.unanswered(plugin, event, event.environment_id, answer.reason)
             return Decision()
-        if answer.answer == "refuse" and event.key in REFUSABLE:
+        if answer.answer == "refuse" and Protocol.published_name(event) in REFUSABLE:
             self.relay.said(plugin, event, event.environment_id, "held", answer.reason)
             return Decision.refuse(self.text.said(plugin, answer.reason))
         text = answer.reason if answer.answer == "refuse" else answer.tell

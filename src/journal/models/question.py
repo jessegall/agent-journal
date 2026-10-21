@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from journal.events.rows.question_answered import QuestionAnswered
-from journal.events.rows.question_asked import QuestionAsked
-from journal.events.rows.row_settled import RowSettled
+from journal.events.rows.question_posed import QuestionPosed
+from journal.events.rows.row_resolved import RowResolved
 from journal.models.scoped import Scoped
 
 
@@ -27,10 +27,10 @@ class Question(Scoped):
         return [option for option in self.options if self.PERSONAL.search(option)]
 
     def asked(self, time: float) -> "Question":
-        return self.with_event(QuestionAsked(environment_id=self.environment_id, time=time, question_id=self.id))
+        return self.with_event(QuestionPosed(environment_id=self.environment_id, time=time, question_id=self.id))
 
     def answered(self, answer: str, time: float) -> "Question":
-        return self.with_(answer=answer).with_event(QuestionAnswered(environment_id=self.environment_id, time=time, question_id=self.id)).with_event(RowSettled(environment_id=self.environment_id, time=time, ref=f"questions:{self.id}"))
+        return self.with_(answer=answer).with_event(QuestionAnswered(environment_id=self.environment_id, time=time, question_id=self.id)).with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"questions:{self.id}"))
 
     def summary_line(self) -> str:
         return self.first_line(self.text)

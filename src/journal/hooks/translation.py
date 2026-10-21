@@ -1,7 +1,7 @@
 from journal.engine.clock import Clock
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.compacting import Compacting
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_ended import SessionEnded
 from journal.events.agent.session_started import SessionStarted
@@ -10,7 +10,7 @@ from journal.events.agent.subagent_started import SubagentStarted
 from journal.events.agent.tool_failed import ToolFailed
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 from journal.support.context_file import ContextFile
 from journal.support.hook import Hook
 from journal.hooks.support.turn_gatherer import TurnGatherer
@@ -31,10 +31,10 @@ class Translation:
         HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(call=provider.call(hook.tool, hook.input), output=hook.output, response=hook.response),
         HookKind.POST_TOOL_USE_FAILURE: lambda hook, provider: ToolFailed(call=provider.call(hook.tool, hook.input), error=hook.error),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
-        HookKind.STOP: lambda hook, provider: Idle(held_before=hook.stop_held_before),
+        HookKind.STOP: lambda hook, provider: Stop(held_before=hook.stop_held_before),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),
         HookKind.SUBAGENT_STOP: lambda hook, provider: SubagentEnded(subagent=hook.subagent),
-        HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnWritten(text=hook.text, delta=hook.text, turn_id=hook.turn_id, index=hook.index, final=hook.final),
+        HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnDisplayed(text=hook.text, delta=hook.text, turn_id=hook.turn_id, index=hook.index, final=hook.final),
         HookKind.SESSION_END: lambda hook, provider: SessionEnded(),
     }
 

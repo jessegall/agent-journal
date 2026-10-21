@@ -4,7 +4,7 @@ from journal.events.rows.row_event import RowEvent
 
 
 @dataclass(frozen=True, kw_only=True)
-class PlanDone(RowEvent):
-    """A plan is done: its last task closed."""
+class DumpQuestion(RowEvent):
+    """The agent asked the user something on a dump, in the dump's window."""
 
-    plan_id: int
+    dump_id: int

@@ -17,7 +17,7 @@ from journal.support.response import Response
 from journal.models.entry import Entry
 from journal.support.file_lines import FileLines
 from journal.support.tool_input import ToolInput
-from journal.events.agent.message_crossed import MessageCrossed
+from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
 from journal.providers.support.file_writes import FileWrites
 
@@ -113,7 +113,7 @@ class Provider:
     def texts_in(self, line: dict) -> list[str]:
         return []
 
-    def crossed_in(self, line: dict) -> list[MessageCrossed]:
+    def crossed_in(self, line: dict) -> list[PeerMessage]:
         return []
 
     @staticmethod

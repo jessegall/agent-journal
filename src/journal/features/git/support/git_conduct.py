@@ -1,13 +1,13 @@
 from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.commit_made import CommitMade
+from journal.events.agent.commit_detected import CommitDetected
 
 
 class GitConduct(Conduct):
     """The git feature's conduct in every state: a commit whose message closed tasks is named with them, and the task open next after that close."""
 
-    def on_commit_made_git(self, event: CommitMade, settings: Settings) -> Transition:
+    def on_commit_detected_git(self, event: CommitDetected, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         if not event.closed:
             return self.unchanged()

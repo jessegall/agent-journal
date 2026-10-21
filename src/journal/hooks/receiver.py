@@ -3,7 +3,7 @@ import time
 from journal.support.cards import Cards
 from journal.engine.state_machine import StateMachine
 from journal.events.agent.agent_event import AgentEvent
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent.session_ended import SessionEnded
 from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus

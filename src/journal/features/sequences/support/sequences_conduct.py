@@ -2,7 +2,7 @@ from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
@@ -30,7 +30,7 @@ class SequencesConduct(Conduct):
             return self.hold(Sequences.STALE_STEP.create(writes=runs.writes_since_taken_up, n=runs.sequence_id, step=runs.step, text=runs.step_text))
         return self.unchanged()
 
-    def on_idle_sequences(self, event: Idle, settings: Settings) -> Transition:
+    def on_stop_sequences(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.sequences.feature import Sequences
         runs = event.data.of(Sequences)
         if not runs.has_run() or runs.parked_why or runs.question_open or runs.debts_owed or runs.step_said_after_last_tool or self.is_waiting():

@@ -4,7 +4,7 @@ from journal.engine.base_state import BaseState
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle as Stop
+from journal.events.agent.stop import Stop
 from journal.features.workers.states.orchestrating import orchestrate
 from journal.features.tasks.states.working import Working
 

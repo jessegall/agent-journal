@@ -4,7 +4,7 @@ from journal.engine.base_state import BaseState
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.rows.worker_back import WorkerBack
+from journal.events.rows.worker_reported import WorkerReported
 from journal.features.tasks.states.ready import Ready
 from journal.features.tasks.support.tasks_data import TasksData
 
@@ -30,7 +30,7 @@ class Orchestrating(Ready):
     def quiet_nudges(self, tasks: TasksData) -> tuple[Nudge, ...]:
         return (orchestrate(tasks),) if tasks.open_ids else ()
 
-    def on_worker_back(self, event: WorkerBack, settings: Settings) -> Transition:
+    def on_worker_reported(self, event: WorkerReported, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         return self.unchanged(*self.quiet_nudges(event.data.of(Tasks)))
 

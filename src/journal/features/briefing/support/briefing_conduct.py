@@ -2,7 +2,7 @@ from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.briefing.support.briefing_data import BriefingData
@@ -23,7 +23,7 @@ class BriefingConduct(Conduct):
             return self.unchanged()
         return self.hold(feature.OVERVIEW_REQUEST.create())
 
-    def on_idle_briefing(self, event: Idle, settings: Settings) -> Transition:
+    def on_stop_briefing(self, event: Stop, settings: Settings) -> Transition:
         feature = briefing_feature()
         return self.unchanged() if event.data.of(feature).oriented else self.hold(feature.OVERVIEW_STOP.create())
 

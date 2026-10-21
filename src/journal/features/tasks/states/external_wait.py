@@ -6,8 +6,8 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
-from journal.events.rows.row_settled import RowSettled
-from journal.events.rows.worker_back import WorkerBack
+from journal.events.rows.row_resolved import RowResolved
+from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.events.rows.worker_stopped import WorkerStopped
 from journal.support.permission import Permission
@@ -58,7 +58,7 @@ class ExternalWait(Wait):
             return self.changed(replace(self, reminder_time=event.time), Tasks.WAIT_CHECK.create(what=self.what, minutes=int((event.time - self.start_time) // 60)))
         return self.unchanged()
 
-    def on_row_settled(self, event: RowSettled, settings: Settings) -> Transition:
+    def on_row_resolved(self, event: RowResolved, settings: Settings) -> Transition:
         return self.ended_by(event.ref, event.outcome)
 
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
@@ -67,7 +67,7 @@ class ExternalWait(Wait):
         widened = ExternalWait.on_workers((*self.worker_ids(), event.worker_id), self.start_time)
         return self.changed(replace(self, what=widened.what, ends_on=",".join([*self.waits_on(), f"{WORKERS}:{event.worker_id}"])))
 
-    def on_worker_back_workers(self, event: WorkerBack, settings: Settings) -> Transition:
+    def on_worker_reported_workers(self, event: WorkerReported, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         return self.ended_by(f"{WORKERS}:{event.worker_id}", f"worker {event.worker_id}, {event.name}, reported", Workers.WORKER_REPORTED.create(n=event.worker_id, name=event.name))
 

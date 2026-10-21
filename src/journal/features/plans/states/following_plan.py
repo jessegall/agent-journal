@@ -4,11 +4,11 @@ from journal.engine.nudge import Nudge
 from journal.engine.support.block import Block
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle as Stop
+from journal.events.agent.stop import Stop
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.plan_abandoned import PlanAbandoned
-from journal.events.rows.plan_done import PlanDone
+from journal.events.rows.plan_finished import PlanFinished
 from journal.events.rows.plan_postponed import PlanPostponed
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_started import TaskStarted
@@ -70,7 +70,7 @@ class FollowingPlan(Working):
             return self.changed(replace(self, task_id=0, moved_from=event.task_id, at_checkpoint=True, phase=started.checkpoint_phase))
         return self.changed(replace(self, task_id=0, moved_from=event.task_id))
 
-    def on_plan_done(self, event: PlanDone, settings: Settings) -> Transition:
+    def on_plan_finished(self, event: PlanFinished, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         return self.pop(Plans.PLAN_FINISHED.create(n=event.plan_id)) if event.plan_id == self.plan_id else self.unchanged()
 

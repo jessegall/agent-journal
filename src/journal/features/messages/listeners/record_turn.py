@@ -1,7 +1,7 @@
 import re
 import threading
 
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 from journal.events.agent_listener import AgentListener
 from journal.features.messages.support.faces import Faces
 from journal.features.messages.support.tags import Tags
@@ -28,14 +28,14 @@ SHORT = 240
 REPEATS = 0.6
 
 
-class RecordTurn(AgentListener[TurnWritten]):
+class RecordTurn(AgentListener[TurnDisplayed]):
     """Every whole turn the agent writes for the user becomes a message in the chat, its tags taken out. A [!reply:N] tag opening a line makes it the answer to message N (N,M answers both) and marks them read; a tag elsewhere is text, and the agent is told so. A [!log:N] turn belongs to the task's log alone. A turn that is only a face is not posted: the agent is told to react. A turn that only answered a journal line and changed nothing is kept as an acknowledgement, out of the chat."""
 
     def __init__(self, messages: Messages, entries: Entries, providers: Providers, registry: Registry, supervisor: SupervisorLink, links: Links, agents: Agents) -> None:
         self.messages, self.entries, self.providers, self.registry, self.supervisor, self.links, self.agents = messages, entries, providers, registry, supervisor, links, agents
         self.recording = threading.Lock()  # the same block arrives at once from the transcript and from the display hook
 
-    def handle(self, event: TurnWritten) -> None:
+    def handle(self, event: TurnDisplayed) -> None:
         from journal.features.messages.feature import Messages as MessagesFeature
         if not event.final or not event.text.strip():
             return
@@ -45,7 +45,7 @@ class RecordTurn(AgentListener[TurnWritten]):
         with self.recording:
             self._record(event)
 
-    def _record(self, event: TurnWritten) -> None:
+    def _record(self, event: TurnDisplayed) -> None:
         actor, whole = Actor.agent(event.session), event.text
         for tagged, part in self.sections(whole):
             if self.already_recorded(part):
@@ -63,7 +63,7 @@ class RecordTurn(AgentListener[TurnWritten]):
         for n in self.stray_owed(whole)[:1]:
             self.supervisor.type(event.environment_id, f"the [!reply:{n}] tag must open a line of your turn; message {n} is still unanswered")
 
-    def unanswered_of(self, tagged: list[int], event: TurnWritten) -> list[int]:
+    def unanswered_of(self, tagged: list[int], event: TurnDisplayed) -> list[int]:
         from journal.features.messages.feature import Messages as MessagesFeature
         fresh = [n for n in tagged if self.earlier_reply(n) is None]
         if tagged and not fresh:
@@ -77,7 +77,7 @@ class RecordTurn(AgentListener[TurnWritten]):
         except MissingRow:
             return None
 
-    def repeats_a_reply(self, text: str, tagged: list[int], event: TurnWritten) -> bool:
+    def repeats_a_reply(self, text: str, tagged: list[int], event: TurnDisplayed) -> bool:
         from journal.features.messages.feature import Messages as MessagesFeature
         prompt = self.turn_prompt(event)
         if tagged or not text or prompt is None:
@@ -87,7 +87,7 @@ class RecordTurn(AgentListener[TurnWritten]):
             self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_CLOSING_TEXT.create(reply=repeated[0].id, n=repeated[0].reply_to).rendered())
         return bool(repeated)
 
-    def turn_prompt(self, event: TurnWritten) -> Entry | None:
+    def turn_prompt(self, event: TurnDisplayed) -> Entry | None:
         prompts = [e for e in self.entries.of_kind("PromptSubmitted") if e.actor and e.actor.id == event.session]
         return prompts[0] if prompts else None
 
@@ -116,7 +116,7 @@ class RecordTurn(AgentListener[TurnWritten]):
             parts.append((numbers(tag), f"{lead}\n\n{rest}" if lead else rest))
         return parts
 
-    def _answers_a_journal_line(self, event: TurnWritten) -> bool:
+    def _answers_a_journal_line(self, event: TurnDisplayed) -> bool:
         entry = self.turn_prompt(event)
         prompt = entry.data.get("prompt", "") if entry else ""
         if not prompt.startswith(JOURNAL_LINE) or self._answered_in_chat(event, prompt[len(JOURNAL_LINE):]):
@@ -125,7 +125,7 @@ class RecordTurn(AgentListener[TurnWritten]):
         since = self.entries.since(entry.id)
         return not any(e.kind == "ToolStarting" and e.is_write() for e in since)
 
-    def _answered_in_chat(self, event: TurnWritten, line: str) -> bool:
+    def _answered_in_chat(self, event: TurnDisplayed, line: str) -> bool:
         said = [e for e in self.entries.of_kind("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
         nudge = self.registry.nudge_keyed(said[-1].data["key"]) if said else None
         return bool(nudge and nudge.answered_in_chat)

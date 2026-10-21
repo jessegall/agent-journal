@@ -1,5 +1,5 @@
 from journal.events.agent.agent_event import AgentEvent
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 
 
 class TurnGatherer:
@@ -10,7 +10,7 @@ class TurnGatherer:
         self._last: dict[str, int] = {}
 
     def fold(self, event: AgentEvent) -> AgentEvent:
-        if not isinstance(event, TurnWritten):
+        if not isinstance(event, TurnDisplayed):
             return event
         key = f"{event.session}:{event.turn_id}"
         parts = self._parts.setdefault(key, {})

@@ -1,8 +1,8 @@
 from journal.engine.clock import Clock
-from journal.events.agent.awaited import Awaited
+from journal.events.agent.wait_request import WaitRequest
 from journal.events.agent.command_ended import CommandEnded
 from journal.events.agent.command_moved import CommandMoved
-from journal.events.agent.stuck_declared import StuckDeclared
+from journal.events.agent.impasse_report import ImpasseReport
 from journal.events.bus import Bus
 from journal.models.agent import Agent
 from journal.models.command_output import CommandOutput
@@ -24,10 +24,10 @@ class CommandEvents:
         self.bus.dispatch(CommandEnded(output=output.id, status=output.status).placed(agent.session, self.scope.id, agent.provider, None, self.clock.now()))
 
     def wait_declared(self, what: str, ends_on: str, caller: Caller) -> None:
-        self.bus.dispatch(Awaited(what=what, ends_on=ends_on).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.now()))
+        self.bus.dispatch(WaitRequest(what=what, ends_on=ends_on).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.now()))
 
     def help_needed(self, why: str, caller: Caller) -> None:
-        self.bus.dispatch(StuckDeclared(why=why).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.now()))
+        self.bus.dispatch(ImpasseReport(why=why).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.now()))
 
     def provider_of(self, caller: Caller) -> str:
         return self.agents.for_session(caller.session).provider

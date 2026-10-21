@@ -6,7 +6,7 @@ from journal.models.message import Message
 
 
 @dataclass(frozen=True)
-class MessageCrossed(AgentEvent):
+class PeerMessage(AgentEvent):
     """Another session's agent sent the agent a message, read from the agent's transcript: who sent it, by the name it goes by, and its words."""
 
     sender: str

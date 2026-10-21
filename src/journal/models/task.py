@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar
 
-from journal.events.rows.row_settled import RowSettled
+from journal.events.rows.row_resolved import RowResolved
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_reopened import TaskReopened
 from journal.events.rows.task_started import TaskStarted
@@ -48,7 +48,7 @@ class Task(Scoped):
         return self.closed(self.with_(state=TaskState.CANCELLED, finished_at=self.finished_at or time), time, "cancelled")
 
     def closed(self, task: "Task", time: datetime, how: str) -> "Task":
-        return task.with_event(TaskClosed(environment_id=self.environment_id, time=time.timestamp(), task_id=self.id, how=how)).with_event(RowSettled(environment_id=self.environment_id, time=time.timestamp(), ref=f"tasks:{self.id}"))
+        return task.with_event(TaskClosed(environment_id=self.environment_id, time=time.timestamp(), task_id=self.id, how=how)).with_event(RowResolved(environment_id=self.environment_id, time=time.timestamp(), ref=f"tasks:{self.id}"))
 
     def blocked(self, why: str, time: datetime) -> "Task":
         return self.closed(self.with_(state=TaskState.BLOCKED, blocked_why=why), time, "blocked")

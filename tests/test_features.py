@@ -2965,14 +2965,14 @@ def test_a_block_arriving_twice_at_once_is_recorded_once(app, monkeypatch):
     import contextvars
     import threading
     import time as timing
-    from journal.events.agent.turn_written import TurnWritten
+    from journal.events.agent.turn_displayed import TurnDisplayed
     from journal.features.messages.listeners.record_turn import RecordTurn
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     record = app.container.get(RecordTurn)
     checked = RecordTurn.already_recorded
     monkeypatch.setattr(RecordTurn, "already_recorded", lambda self, part: (checked(self, part), timing.sleep(0.2))[0])
-    block = TurnWritten(text="Checking the worker's inspector now.", delta="", turn_id="t1", final=True).placed("s1", 1, "claude", 0.0, 0.0)
+    block = TurnDisplayed(text="Checking the worker's inspector now.", delta="", turn_id="t1", final=True).placed("s1", 1, "claude", 0.0, 0.0)
     threads = [threading.Thread(target=contextvars.copy_context().run, args=(record.handle, block)) for _ in range(2)]
     [t.start() for t in threads]
     [t.join() for t in threads]
@@ -5551,15 +5551,15 @@ def test_a_long_typed_line_goes_in_whole_pieces_and_a_piece_typed_again_is_still
 
 
 def test_messages_between_sessions_reach_the_chat_both_ways_named_by_their_agents(app):
-    from journal.events.agent.message_crossed import MessageCrossed
+    from journal.events.agent.peer_message import PeerMessage
     from journal.events.bus import Bus
     from journal.providers.claude import Claude
     from journal.repositories.messages import Messages as MessageRows
     enqueued = {"type": "queue-operation", "operation": "enqueue", "content": '<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="code-commandments-12" from-mode="bypass">\nthe fix is on main\n</cross-session-message>'}
     removed = {**enqueued, "operation": "remove"}
-    assert Claude().crossed_in(enqueued) == [MessageCrossed(sender="code-commandments-12", text="the fix is on main")] and Claude().crossed_in(removed) == [], "a message across is read once, at its enqueue"
+    assert Claude().crossed_in(enqueued) == [PeerMessage(sender="code-commandments-12", text="the fix is on main")] and Claude().crossed_in(removed) == [], "a message across is read once, at its enqueue"
     hook(app, "SessionStart")
-    app.container.get(Bus).dispatch(MessageCrossed(sender="code-commandments-12", text="the fix is on main").placed("s1", 1, "claude", None, 0.0))
+    app.container.get(Bus).dispatch(PeerMessage(sender="code-commandments-12", text="the fix is on main").placed("s1", 1, "claude", None, 0.0))
     came = app.container.get(MessageRows).all()[-1]
     assert came.data["peer"] == "code-commandments-12" and came.created_by.stamp == "external:code-commandments-12" and came.read_at is not None, "it is the other agent's, written by it as an external agent, never the user's"
     hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "code-commandments-12", "message": "thank you"}, tool_response={})

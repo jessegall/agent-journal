@@ -4,7 +4,7 @@ from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_finished import ToolFinished
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 
 SHOP_TALK = re.compile(r"\bjournal (task|plan|message|question|fact|rule|reminder|sequence|worker|check|skill|stuck|nothing) [a-z]+\b|\[journal\]", re.I)
 THIRD_PERSON = re.compile(r"\bthe user\b", re.I)
@@ -15,7 +15,7 @@ LONG_PARAGRAPH_CHARACTERS, SENTENCES = 400, 3
 class EtiquetteConduct(Conduct):
     """The etiquette feature's conduct in every state: a turn for the user read once for shop talk, the third person, em dashes and run-on paragraphs, and the reminder what a journal line is every so many lines said."""
 
-    def on_turn_written_etiquette(self, event: TurnWritten, settings: Settings) -> Transition:
+    def on_turn_displayed_etiquette(self, event: TurnDisplayed, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette
         if not event.final:
             return self.unchanged()

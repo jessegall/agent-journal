@@ -4,7 +4,7 @@ import shlex
 from pathlib import Path
 from typing import Iterator
 
-from journal.events.agent.message_crossed import MessageCrossed
+from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.provider import TAIL, Provider
 from journal.providers.support.turn import Turn
@@ -80,7 +80,7 @@ class Claude(Provider):
         row = ClaudeRow.from_json(line)
         return [block.text for block in row.of_type("text") if block.text.strip()] if row.type == "assistant" else []
 
-    def crossed_in(self, line: dict) -> list[MessageCrossed]:
+    def crossed_in(self, line: dict) -> list[PeerMessage]:
         row = ClaudeRow.from_json(line)
         if not row.is_enqueued:
             return []
@@ -88,7 +88,7 @@ class Claude(Provider):
         if crossed is None:
             return []
         named = SENDER_NAME_PATTERN.search(crossed[1]) or SENDER_ADDRESS_PATTERN.search(crossed[1])
-        return [MessageCrossed(sender=named[1] if named else "another session", text=crossed[2].strip())]
+        return [PeerMessage(sender=named[1] if named else "another session", text=crossed[2].strip())]
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)

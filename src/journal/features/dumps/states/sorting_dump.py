@@ -3,13 +3,13 @@ from dataclasses import dataclass, replace
 from journal.engine.base_state import BaseState
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
-from journal.events.agent.idle import Idle
+from journal.events.agent.stop import Stop
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.rows.dump_answered import DumpAnswered
 from journal.events.rows.dump_arrived import DumpArrived
-from journal.events.rows.dump_asked import DumpAsked
-from journal.events.rows.dump_chosen import DumpChosen
-from journal.events.rows.dump_filed import DumpFiled
+from journal.events.rows.dump_question import DumpQuestion
+from journal.events.rows.dump_choice import DumpChoice
+from journal.events.rows.dump_sorted import DumpSorted
 from journal.support.permission import Permission
 
 USER_TEXT = -2
@@ -29,7 +29,7 @@ class SortingDump(BaseState):
     def awaiting(self) -> tuple[str, str]:
         return (f"your answer on dump {self.dump_id}", f"dump:{self.dump_id}") if self.asking else ("", "")
 
-    def on_idle(self, event: Idle, settings: Settings) -> Transition:
+    def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         return self.unchanged() if self.asking else self.hold(DumpsFeature.DUMP_OPEN_REMINDER.create(n=self.dump_id))
 
@@ -42,7 +42,7 @@ class SortingDump(BaseState):
             return self.unchanged()
         return self.unchanged().typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=items_in(event.waiting)))
 
-    def on_dump_asked(self, event: DumpAsked, settings: Settings) -> Transition:
+    def on_dump_question(self, event: DumpQuestion, settings: Settings) -> Transition:
         return self.changed(replace(self, asking=True)) if event.dump_id == self.dump_id else self.unchanged()
 
     def on_dump_answered(self, event: DumpAnswered, settings: Settings) -> Transition:
@@ -51,7 +51,7 @@ class SortingDump(BaseState):
             return self.unchanged()
         return self.changed(replace(self, asking=False)).typing(DumpsFeature.DUMP_ANSWER.create(n=event.dump_id, answer=event.answer, question=event.question))
 
-    def on_dump_chosen(self, event: DumpChosen, settings: Settings) -> Transition:
+    def on_dump_choice(self, event: DumpChoice, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id or event.pick == USER_TEXT:
             return self.unchanged()
@@ -59,7 +59,7 @@ class SortingDump(BaseState):
             return self.unchanged().typing(DumpsFeature.DUMP_HANDOVER.create(n=event.dump_id))
         return self.unchanged().typing(DumpsFeature.DUMP_STEP_CHOICE.create(n=event.dump_id, label=event.label))
 
-    def on_dump_filed(self, event: DumpFiled, settings: Settings) -> Transition:
+    def on_dump_sorted(self, event: DumpSorted, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id:
             return self.unchanged()

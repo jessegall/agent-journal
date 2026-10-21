@@ -4,7 +4,6 @@ from journal.events.rows.row_event import RowEvent
 
 
 @dataclass(frozen=True, kw_only=True)
-class RuleMade(RowEvent):
-    """A rule was written, by the agent or by the user."""
+class OverviewRead(RowEvent):
+    """The agent looked at what is in flight here: the look owed at a start is paid."""
 
-    agent_origin: bool

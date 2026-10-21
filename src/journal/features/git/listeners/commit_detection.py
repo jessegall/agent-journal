@@ -7,7 +7,7 @@ from journal.config import Config
 from journal.console.console import Console
 from journal.support.caller import Caller
 from journal.support.cards import Cards
-from journal.events.agent.commit_made import CommitMade
+from journal.events.agent.commit_detected import CommitDetected
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.bus import Bus
 from journal.features.git.support.head_commit import HeadCommit
@@ -80,7 +80,7 @@ class CommitDetection(AgentListener[ToolFinished]):
 
     def commit(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
         next_open = self.next_task.after(self.tasks.find(closed[-1])) if closed else None
-        commit = CommitMade(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.time)
+        commit = CommitDetected(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.time)
         return next((answer for answer in self.bus.dispatch(commit) if isinstance(answer, Decision)), None)
 
     def folder(self, event: ToolFinished) -> Path:

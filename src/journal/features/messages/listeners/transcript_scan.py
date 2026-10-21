@@ -1,4 +1,4 @@
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 from journal.events.bus import Bus
 from journal.events.clock_ticked import ClockTicked
 from journal.events.listener import Listener
@@ -20,6 +20,6 @@ class TranscriptScan(Listener[ClockTicked]):
         for agent in [agent for agent in self.agents.everywhere() if agent.has_program() and agent.state != "ended"]:
             with self.scope.of(agent.environment_id):
                 written = self.turns.missed(agent.session, agent.provider, until)
-                turns = [TurnWritten(text=text, delta=text, turn_id=f"swept:{agent.session}:{event.time}:{i}", final=True) for i, text in enumerate(written.texts)]
+                turns = [TurnDisplayed(text=text, delta=text, turn_id=f"swept:{agent.session}:{event.time}:{i}", final=True) for i, text in enumerate(written.texts)]
                 for swept in [*written.crossed, *turns]:
                     self.bus.dispatch(swept.placed(agent.session, agent.environment_id, agent.provider, None, event.time))

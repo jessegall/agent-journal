@@ -1,6 +1,6 @@
 from journal.console.console import Console
 from journal.support.caller import Caller
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 from journal.events.agent_listener import AgentListener
 from journal.features.messages.support.tags import Tags
 from journal.repositories.environments import Environments
@@ -16,13 +16,13 @@ RUNS = {
 }
 
 
-class RunTags(AgentListener[TurnWritten]):
+class RunTags(AgentListener[TurnDisplayed]):
     """A tag opening a line of the turn runs the command it stands for, with the turn's words as its text: [!todo="the title"] files a task with the turn as its brief, [!log:N] makes the turn the log line, [!end:N] what landed, [!fact="the claim"] the fact's reason. A refusal is typed back; the reply tag belongs to the recorder."""
 
     def __init__(self, console: Console, environments: Environments, supervisor: SupervisorLink) -> None:
         self.console, self.environments, self.supervisor = console, environments, supervisor
 
-    def handle(self, event: TurnWritten) -> None:
+    def handle(self, event: TurnDisplayed) -> None:
         if not event.final:
             return
         text = Tags.visible(event.text)

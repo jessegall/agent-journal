@@ -4,8 +4,8 @@ from datetime import datetime
 
 from journal.support.check_progress import CheckProgress
 from journal.support.check_report import CheckReport
-from journal.events.rows.check_ran import CheckRan
-from journal.events.rows.row_settled import RowSettled
+from journal.events.rows.check_completed import CheckCompleted
+from journal.events.rows.row_resolved import RowResolved
 from journal.models.model import Model
 
 
@@ -34,10 +34,10 @@ class Check(Model):
         return self.with_(running=CheckProgress(time))
 
     def ran(self, passed: bool, output: str, time: datetime, took: float, report: CheckReport | None, fault: str) -> "Check":
-        ran = CheckRan(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, failed_before=self.last_passed is False, waited_on=self.waited_on)
+        ran = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, failed_before=self.last_passed is False, waited_on=self.waited_on)
         recorded = self.with_(last_passed=passed, last_output=output, last_ran_at=time, last_took=took, last_report=report, running=None, last_fault=fault).with_event(ran)
         if self.waited_on and passed and not self.is_settled():
-            return recorded.with_event(RowSettled(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.came_to()))
+            return recorded.with_event(RowResolved(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.came_to()))
         return recorded
 
     def due_at(self, time: datetime) -> bool:
