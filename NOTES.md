@@ -1216,7 +1216,7 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - A fact, rule or reminder is whispered once per context window: the lines whispered since the last compaction travel on the memory readings, and the card follows the line said (MarkWhispered on LineSaid, which now carries the line's values).
 - The rule question is a typed line, as the whisper is; the test reads it from the typed lines.
 - The resume chain lives on the stack since phase 1; the unwrap test reads the stack.
-- The custom rules ban poetry in names (PoeticVariable/Parameter/Method/TypeNameDetector) and sentences as method names (SentenceMethodNameDetector): articles, pronouns, adverbs and preposition phrases in a name. Tasks 1095, 1101 and 1105 rename what they catch; task 1102 waits on the plugin's shared lists.
+- The custom rules ban poetry in names (PoeticVariable/Parameter/Method/TypeNameDetector) and sentences as method names (SentenceMethodNameDetector): articles, pronouns, adverbs and preposition phrases in a name. Tasks 1095, 1101 and 1105 rename what they catch. Since task 1102 the banned words sit in .commandments/custom/lists.json, which the plugin reads since v5.27.0: `poetic` holds the 261 words every name rule bans, written capitalised so the type rule matches them in a class name, `poetic_values` the 177 words banned in parameters and variables but allowed as methods, and a rule names a list as `${poetic}` in its matcher; the method rule's 64 own words and the type rule's 98 own class names stay inline. A banned word is added to the list once.
 
 ## Plan 19, phase 2, task 983: Idle is the plan's (2026-10-21)
 
