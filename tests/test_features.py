@@ -270,6 +270,22 @@ def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked
     assert plans.find(1).state == "started" and any("plan 1 is open again: check" in line for line in keystrokes), "the passing check opens the plan and the agent is told"
 
 
+def test_a_closed_plan_is_outlined_from_its_links_as_it_would_be_from_its_tasks(app: App):
+    from journal.http.plans.plan_outline import PlanOutline
+    from journal.repositories.plans import Plans
+    console = app.console()
+    console.run(["plan", "create", "release", "--brief", "ship it"], USER)
+    console.run(["plan", "phase", "1", "build", "--when", "built"], USER)
+    for title in ("write the notes", "tag it", "loose end"):
+        console.run(["plan", "add", "1", title], USER)
+    console.run(["plan", "todos", "1", "1", "1", "2"], USER)
+    console.run(["plan", "cancel", "1"], USER)
+    plan, outline = app.container.get(Plans).find(1), app.container.get(PlanOutline)
+    built, read = outline.open_outline(plan), outline.build(plan)
+    assert plan.state.is_closed() and read["phases"][0]["task_ids"] == [1, 2] and read["unphased_task_ids"] == [3]
+    assert {k: read[k] for k in ("task_ids", "phases", "unphased_task_ids", "current_phase")} == {k: built[k] for k in ("task_ids", "phases", "unphased_task_ids", "current_phase")}, "a closed plan's outline, read from its links alone, is the one its tasks give"
+
+
 def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app: App):
     app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console = app.console()

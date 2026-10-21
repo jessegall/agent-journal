@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.support.actor import Actor
+from journal.models.link import Link
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
@@ -66,6 +67,12 @@ class Plans(ScopedRepository[Plan]):
     def plan_tasks(self, plan: Plan) -> list[Task]:
         return self.tasks.numbered(ref.id for ref in self.links.sources(plan, PLAN_LINK))
 
+    def plan_task_ids(self, plan: Plan) -> list[int]:
+        return [ref.id for ref in self.links.sources(plan, PLAN_LINK)]
+
+    def phase_links(self, phases: list[Phase]) -> list[Link]:
+        return self.links.model_links("target", phases, PHASE_LINK)
+
     def plan_phases(self, plan: Plan) -> list[Phase]:
         return self.phases.numbered(ref.id for ref in self.links.sources(plan, PHASE_TASK_LINK))
 
@@ -74,7 +81,7 @@ class Plans(ScopedRepository[Plan]):
 
     def phased(self, plan: Plan) -> list[PhaseTasks]:
         phases = self.plan_phases(plan)
-        links = self.links.model_links("target", phases, PHASE_LINK)
+        links = self.phase_links(phases)
         tasks = {task.id: task for task in self.tasks.numbered(link.source.id for link in links)}
         return [PhaseTasks(number, phase, tuple(tasks[link.source.id] for link in links if link.target.id == phase.id and link.source.id in tasks)) for number, phase in enumerate(phases, 1)]
 
