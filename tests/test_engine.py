@@ -473,7 +473,7 @@ class Catching(BaseState):
 def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catch_up_beneath_a_pop(app):
     CALLS.clear()
     hook(app, "SessionStart")
-    machine, settings = app.container.get(StateMachine), SettingsValue({})
+    machine, settings = app.container.get(StateMachine), SettingsValue({WorkersFeature.MODE.key: "builder"})
     readings = Stack((Idle(), Catching()))
     pushed = machine.through_hooks(readings, readings.pushed(Noting()), settings, Readings({}))
     assert pushed.stack == readings.pushed(Noting()) and pushed.nudges == (LINE.create(),) and pushed.held is None
@@ -682,7 +682,7 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_readi
     from journal.events.agent.tool_finished import ToolFinished
     from journal.events.agent.turn_written import TurnWritten
     from journal.events.rows.setting_changed import SettingChanged
-    settings = SettingsValue({Etiquette.REMIND_EVERY.key: 50})
+    settings = SettingsValue({WorkersFeature.MODE.key: "builder", Etiquette.REMIND_EVERY.key: 50})
     from journal.features.plans.support.plans_readings import PlansReadings
     from journal.features.tasks.support.tasks_readings import TasksReadings
     readings = Readings({"plans": PlansReadings((), None), "tasks": TasksReadings(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=()), "voices": VoicesReadings(instruction="as a butler"), "etiquette": EtiquetteReadings(lines_since_reminder=50), "pins": PinsReadings(pinned=("https://a.test/pinned",), suggested_lately=("https://a.test/said",)), "migration": MigrationReadings(version_3_waiting=True)})
@@ -880,7 +880,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     from journal.events.agent.idle import Idle as IdleEvent
     from journal.events.rows.rule_made import RuleMade
     from journal.support.chat_mark import ChatMark
-    settings = SettingsValue({"tasks.auto": False})
+    settings = SettingsValue({WorkersFeature.MODE.key: "builder", "tasks.auto": False})
     cards = (SkillCard("journal", ".claude/skills/journal/SKILL.md", "h1", (), ()), SkillCard("plans", ".claude/skills/journal-plans/SKILL.md", "h2", ("plan", "roadmap"), ("following_plan",)))
     parts = {
         "plans": PlansReadings((), None), "tasks": TasksReadings(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=()),
@@ -1207,7 +1207,7 @@ def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instan
     assert app.container.get(StateMachine) is app.container.get(StateMachine) and app.container.get(Agents) is app.container.get(Agents), "the container builds a class once"
 
 
-def test_the_compacting_state_captures_rows_and_ticks_holds_every_typed_line_until_it_pops_and_starts_the_tool_count_again(app, monkeypatch):
+def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_holds_every_typed_line_until_it_pops_and_starts_the_tool_count_again(app, monkeypatch):
     from journal.events.agent.ticked import Ticked
     from journal.events.rows.message_arrived import MessageArrived
     from journal.supervisor_link import SupervisorLink
@@ -1223,14 +1223,23 @@ def test_the_compacting_state_captures_rows_and_ticks_holds_every_typed_line_unt
     class Plain(BaseState):
         name = "plain"
 
+    @dataclass(frozen=True)
+    class Stopping(BaseState):
+        name = "stopping"
+
+        def on_ticked(self, event: Ticked, settings: SettingsValue) -> Transition:
+            event.stop_propagation()
+            return self.unchanged()
+
     settings = SettingsValue({})
     BaseState.fold((Talkative,))
     try:
         tick = Ticked(quiet_for=1.0).with_readings(Readings({}))
         arrived = MessageArrived(environment_id=1, time=2.0, text="hi").with_readings(Readings({}))
         assert Plain().on(tick, settings).nudges == (LINE,) and Plain().on(arrived, settings).nudges == (OTHER,), "in any other state the conduct speaks"
-        assert CompactingState().on(tick, settings).nudges == () and CompactingState().on(arrived, settings).nudges == (), "compacting stops the tick and the row, so no conduct speaks through it"
+        assert Stopping().on(tick, settings).nudges == (), "a listener that stops the event's propagation is the last to hear it, so the conduct is silent"
         assert Plain().on(tick, settings).nudges == (LINE,), "the next walk of the same event starts again"
+        assert CompactingState().on(arrived, settings).nudges == (OTHER,), "compacting stops nothing itself: what the conduct says queues at the typist"
         assert CompactingState().on(ToolStarting(call=shell("ls")).with_readings(Readings({})), settings).held == Engine.NOTHING_WHILE_COMPACTING.create(), "the hold on every tool stands"
         assert CompactingState().on(SessionStarted(source="compact").with_readings(Readings({})), settings).popped, "and the session's start still pops it"
     finally:

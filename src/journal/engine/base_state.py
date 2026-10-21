@@ -6,6 +6,7 @@ from typing import Callable, ClassVar, get_type_hints
 from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.engine.support.held import Held
+from journal.engine.support.typist import Typist
 from journal.events.readings import Readings
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.session_ended import SessionEnded
@@ -19,7 +20,7 @@ LISTENER = "on_"
 
 @dataclass(frozen=True)
 class BaseState(Conduct):
-    """The parent of every state. Its listeners are its on_ methods, bound to the event each hears by its annotation; its answers are unchanged, changed, push, pop and hold, and a listener that stops the event's propagation is the last to hear it. It hears what every state hears: the context about to be compacted pushes Compacting, the session's end pushes Ended."""
+    """The parent of every state. Its listeners are its on_ methods, bound to the event each hears by its annotation; its answers are unchanged, changed, push, pop and hold, and a listener that stops the event's propagation is the last to hear it. A state entering or leaving the stack is handed the typist and may switch it off or on. It hears what every state hears: the context about to be compacted pushes Compacting, the session's end pushes Ended."""
 
     title: ClassVar[str] = ""
     allows: ClassVar[frozenset[Permission]] = frozenset()
@@ -83,8 +84,11 @@ class BaseState(Conduct):
     def refuses_every_tool(self) -> bool:
         return False
 
-    def is_silent(self) -> bool:
-        return False
+    def on_enter(self, typist: Typist) -> None:
+        return None
+
+    def on_exit(self, typist: Typist) -> None:
+        return None
 
     def to_data(self) -> dict:
         return {field.name: getattr(self, field.name) for field in fields(self)}

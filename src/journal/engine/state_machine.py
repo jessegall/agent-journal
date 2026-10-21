@@ -1,4 +1,5 @@
 from journal.engine.base_state import BaseState
+from journal.engine.support.typist import Typist
 from journal.engine.nudger import Nudger
 from journal.engine.support.settings import Settings
 from journal.repositories.setting_rows import SettingRows
@@ -163,12 +164,16 @@ class StateMachine(AgentListener[AgentEvent]):
             first = self.states.first()
             return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.to_data()), Actor.system())
 
-    def follow_silence(self, agent: Agent, top: BaseState) -> None:
-        former = self.states.named(agent.state, agent.data)
-        if top.is_silent() and not former.is_silent():
-            self.supervisor.pause(agent.environment_id)
-        if former.is_silent() and not top.is_silent():
-            self.supervisor.resume(agent.environment_id)
+    def entered_and_left(self, agent: Agent, after: Stack) -> None:
+        before = self.states.stack_of(agent)
+        typist = Typist(self.supervisor, agent.environment_id)
+        kinds_after, kinds_before = {type(s) for s in after.states}, {type(s) for s in before.states}
+        for state in before.states:
+            if type(state) not in kinds_after:
+                state.on_exit(typist)
+        for state in after.states:
+            if type(state) not in kinds_before:
+                state.on_enter(typist)
 
     def _settle(self, agent: Agent, hooked: Hooked, cause: str, actor: Actor) -> Agent:
         stack, to = hooked.stack, hooked.stack.top()
@@ -176,7 +181,7 @@ class StateMachine(AgentListener[AgentEvent]):
             self.entries.save(Trail.entry(agent, list(agent.stack), cause, actor, refused=hooked.refused, line=hooked.held.nudge.rendered()), actor)
         if to.name == agent.state and to.to_data() == agent.data and stack.to_data() == list(agent.stack):
             return agent
-        self.follow_silence(agent, to)
+        self.entered_and_left(agent, stack)
         settled = self.agents.save(agent.with_(state=to.name, data=to.to_data(), stack=tuple(stack.to_data())), actor)
         self.entries.save(Trail.entry(agent, stack.to_data(), cause, actor), actor)
         return settled
