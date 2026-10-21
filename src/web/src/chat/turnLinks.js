@@ -1,5 +1,6 @@
 import {computed} from "vue";
 import {useScope} from "../composables/scope.js";
+import {openFiles} from "../platform/view.js";
 import {chipTarget, peek, peekChip, peekRef, peekThere, route, showFile} from "../route.js";
 
 export function useTurnLinks() {
@@ -9,6 +10,11 @@ export function useTurnLinks() {
     const openRef = (ref) => (ref.includes("@") ? peekRef(ref) : open(ref.split(":")[0], Number(ref.split(":")[1])));
 
     function openChip(event) {
+        const attached = event.target.closest("[data-attached]");
+        if (attached) {
+            event.preventDefault();
+            return openFiles([{name: attached.dataset.attached, url: attached.getAttribute("href")}], 0);
+        }
         const file = event.target.closest("[data-file]");
         if (file) {
             event.preventDefault();

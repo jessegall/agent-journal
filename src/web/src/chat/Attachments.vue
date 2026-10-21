@@ -4,7 +4,7 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
-import {openPictures} from "../platform/view.js";
+import {openFiles} from "../platform/view.js";
 
 const props = defineProps({message: Object});
 const emit = defineEmits(["grew"]);
@@ -31,7 +31,7 @@ const grid = computed(() => pictures.value.length > 1);
                         :class="['thread-shot', {more: i === 3 && pictures.length > 4}]"
                         :href="p.url"
                         :title="p.name"
-                        @click.prevent="openPictures(pictures, i)"
+                        @click.prevent="openFiles(pictures, i)"
                     >
                         <img :src="p.url" :alt="p.name" v-bind="sized(p.name)" @load="emit('grew')" />
                         <template v-if="i === 3 && pictures.length > 4">
@@ -43,7 +43,7 @@ const grid = computed(() => pictures.value.length > 1);
         </template>
         <template v-else>
             <template v-for="(p, i) in pictures" :key="p.name">
-                <a class="thread-file" :href="p.url" :title="p.name" @click.prevent="openPictures(pictures, i)">
+                <a class="thread-file" :href="p.url" :title="p.name" @click.prevent="openFiles(pictures, i)">
                     <img class="thread-image" :src="p.url" :alt="p.name" v-bind="sized(p.name)" @load="emit('grew')" />
                 </a>
             </template>
@@ -55,7 +55,7 @@ const grid = computed(() => pictures.value.length > 1);
             </video>
         </template>
         <template v-for="name in others" :key="name">
-            <a class="thread-file" :href="url(name)" target="_blank" :title="name">
+            <a class="thread-file" :href="url(name)" :title="name" @click.prevent="openFiles([{name, url: url(name)}], 0)">
                 <span class="thread-file-name">
                     <Icon name="paperclip" />
                     {{ name }}

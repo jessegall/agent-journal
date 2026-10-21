@@ -16,7 +16,7 @@ export const ui = reactive({
     },
     dragged: null,
     landing: null,
-    lightbox: {pictures: [], at: -1},
+    lightbox: {files: [], at: -1},
     away: {open: false, since: 0, back: 0, left: 0, hidden: false},
     flash: {at: Date.now()},
     prefill: "",

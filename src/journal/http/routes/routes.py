@@ -99,6 +99,7 @@ class Routes:
         router.get(f"{API}/project-files", files.index)
         router.get(f"{API}/project-files/find", files.find)
         router.get(f"{API}/project-files/file", files.show)
+        router.get(f"{API}/project-files/raw", files.raw)
         router.get(f"{API}/project-files/diff", files.diff)
         router.get(f"{API}/search", get(SearchController).index)
         router.get(f"{API}/attachments", get(AttachmentController).index)

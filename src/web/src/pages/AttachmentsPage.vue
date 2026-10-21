@@ -12,7 +12,7 @@ import FileRow from "../resource/FileRow.vue";
 import {api} from "../api/client.js";
 import {href, route} from "../route.js";
 import {ageGroups} from "../format/time.js";
-import {openPictures} from "../platform/view.js";
+import {openFiles} from "../platform/view.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 
 const PAGE = 60;
@@ -72,11 +72,10 @@ const groups = computed(() =>
         others: g.list.filter((f) => !f.image),
     }))
 );
-const pictures = computed(() => listedFiles.value.filter((f) => f.image).map((f) => ({url: f.url, name: f.description || f.name})));
 const show = (f) =>
-    openPictures(
-        pictures.value,
-        pictures.value.findIndex((p) => p.url === f.url)
+    openFiles(
+        listedFiles.value.map((listed) => ({name: listed.name, url: listed.url})),
+        listedFiles.value.indexOf(f)
     );
 const pickKind = (picked) => {
     kind.value = picked;
@@ -141,7 +140,7 @@ const pickKind = (picked) => {
                         <template v-if="g.others.length">
                             <div class="rows">
                                 <template v-for="f in g.others" :key="f.url">
-                                    <FileRow :file="f" />
+                                    <FileRow :file="f" @view="show(f)" />
                                 </template>
                             </div>
                         </template>

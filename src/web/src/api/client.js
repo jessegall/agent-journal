@@ -192,6 +192,11 @@ export class ApiClient {
         return this.address(`/${table}/${id}/files/${encoded(name)}`);
     }
 
+    // the bytes at a file's address, so the viewer can tell text from a file it must not print
+    fileBytes(url) {
+        return transport.bytes(url);
+    }
+
     // messages
 
     readMessages(ids) {
@@ -354,6 +359,10 @@ export class ApiClient {
 
     projectFile(path) {
         return this.get(this.here(`/project-files/file${query({path})}`));
+    }
+
+    projectFileUrl(path) {
+        return this.address(`/project-files/raw${query({path})}`);
     }
 
     fileDiff(path) {

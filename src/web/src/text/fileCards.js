@@ -17,7 +17,7 @@ function attachment(text, context) {
     const url = api.in(context.env).fileUrl(table, row.id, name);
     const label = `${meta(table).title} ${row.id} · ${escape(name)}`;
     const picture = isPicture(name) ? `<img class="file-card-image" src="${url}" alt="${escape(name)}">` : "";
-    return {at: found.index, length: found[0].length, html: `<a class="file-card" href="${url}" target="_blank" rel="noopener">${picture}<span class="file-card-name">${label}</span></a>`};
+    return {at: found.index, length: found[0].length, html: `<a class="file-card" href="${url}" data-attached="${escape(name)}">${picture}<span class="file-card-name">${label}</span></a>`};
 }
 
 function path(text) {
