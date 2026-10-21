@@ -844,6 +844,24 @@ def test_a_check_runs_and_a_failure_is_typed_to_the_agent(app: App, monkeypatch)
     assert "failed   it is broken" in console.run(["check", "list"], USER).text
 
 
+def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_stuck(app: App, monkeypatch):
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["check", "create", "it is broken", "--command", "exit 1"], USER)
+    for _ in range(4):
+        console.run(["check", "run", "1"], USER)
+        app.runtime().deferred.drain()
+        hook(app, "Stop")
+    assert sum("check 1, it is broken" in line for line in keystrokes) == 1
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["stuck", "the build is broken"], AGENT)
+    console.run(["check", "create", "also broken", "--command", "exit 1"], USER)
+    console.run(["check", "run", "2"], USER)
+    assert not any("check 2" in line for line in keystrokes)
+
+
 def test_a_due_check_runs_on_the_clock(app: App):
     from journal.engine.clock import Clock
     from journal.repositories.checks import Checks
@@ -974,10 +992,10 @@ def test_a_request_over_its_budget_is_one_mark_per_route_told_the_first_time_and
         with app.container.get(Scope).environment(MAIN):
             slow.measured("GET", "/journal/plans", 60 + minutes)
             app.runtime().deferred.drain()
-        assert plans_lines() == said, f"{minutes} minutes after it was first told, the slow route is told {said} times: again once fifteen minutes have passed since it was last told, and not before"
+        assert plans_lines() == said, f"{minutes} minutes after it was first told, the slow route is told {said} times: again once fifteen minutes have passed since it was last reported, and not before"
     with app.container.get(Scope).environment(MAIN):
         mark = app.container.get(Messages).keyed("slow:GET /journal/plans", Actor.system())[0]
-    assert (mark.data["count"], mark.data["worst"], mark.data["reported_at"]) == (5, 95, told_at + 16 * 60), "the mark keeps its count and worst time, and the time it was last told travels in its data"
+    assert (mark.data["count"], mark.data["worst"], mark.data["reported_at"]) == (5, 95, told_at + 16 * 60), "the mark keeps its count and worst time, and the time it was last reported travels in its data"
     app.container.get(SettingRows).set("faults.repeat_minutes", 0, Actor.user(1))
     monkeypatch.setattr(Clock, "time", lambda self, at=told_at + 7200: at)
     with app.container.get(Scope).environment(MAIN):

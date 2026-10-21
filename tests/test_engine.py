@@ -764,18 +764,19 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
     from journal.events.rows.message_arrived import MessageArrived
     from journal.models.trigger import Trigger
     from journal.models.trigger_action import TriggerAction
-    settings = SettingsValue({})
+    settings = SettingsValue({"checks.repeat_minutes": 60})
     triggers = (Trigger(id=1, phrases=("deploy",), action=TriggerAction.DENY, text="no deploys tonight"), Trigger(id=2, phrases=("release",), action=TriggerAction.INSTRUCT, text="bump the version"), Trigger(id=3, phrases=("plan",), action=TriggerAction.SEQUENCE, text="Building a plan"))
     plugin_file = str(Path(".journal", "plugins", "x", "run.sh"))
     data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()), "triggers": TriggersData(triggers=triggers), "plugins": PluginsData(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
     assert Ready().respond(CommitDetected(sha="abcdef0123").with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct)).nudges == ()
     closed = Ready().respond(CommitDetected(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next", "", 0)).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
     assert [n.rendered() for n in closed.nudges] == ["commit abcdef01 closed task 4, task 5", "tasks are open, and auto mode is on: task 6 next: the next. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"]
-    failed = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="a\nb c", prior_failure=False, wait_target=False).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    failed = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="a\nb c", prior_failure=False, wait_target=False, failure_reported_at=0.0).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
     assert [n.key for n in failed.nudges] == ["checks.check_failed"] and "b c" in failed.nudges[0].rendered()
-    repeat = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=False).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    assert Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=False, failure_reported_at=0.0).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct)).nudges == ()
+    repeat = Ready().respond(CheckCompleted(environment_id=0, time=3601.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=False, failure_reported_at=1.0).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
     assert [n.key for n in repeat.nudges] == ["checks.check_still_failing"]
-    assert Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=True).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct)).nudges == ()
+    assert Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=True, failure_reported_at=0.0).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct)).nudges == ()
     prompt = Ready().respond(PromptSubmitted(prompt="release it and plan the rest").with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
     assert [n.rendered() for n in prompt.nudges] == ["do this now: bump the version"]
     arrived = Ready().respond(MessageArrived(environment_id=1, time=1.0, text="deploy now").with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))

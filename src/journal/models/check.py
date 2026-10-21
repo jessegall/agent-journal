@@ -11,7 +11,7 @@ from journal.models.model import Model
 
 @dataclass(frozen=True)
 class Check(Model):
-    """A script that passes or fails about the project, run by hand or every so many minutes."""
+    """A script that passes or fails about the project, run by hand or every so many minutes, and when its failure was last reported to the agent."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "brief", "command")
     title: str = ""
@@ -27,6 +27,7 @@ class Check(Model):
     last_fault: str = ""
     wait_target: bool = False
     is_retired: bool = False
+    failure_reported_at: float = 0.0
 
     def edited(self, title: str, brief: str, command: str, interval_minutes: float) -> "Check":
         return self.with_(title=title, brief=brief, command=command, interval=interval_minutes)
@@ -35,11 +36,14 @@ class Check(Model):
         return self.with_(progress=CheckProgress(time))
 
     def completed(self, passed: bool, output: str, time: datetime, elapsed: float, report: CheckReport | None, fault: str) -> "Check":
-        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, prior_failure=self.last_passed is False, wait_target=self.wait_target)
+        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, prior_failure=self.last_passed is False, wait_target=self.wait_target, failure_reported_at=self.failure_reported_at)
         recorded = self.with_(last_passed=passed, last_output=output, last_run_at=time, last_duration=elapsed, last_report=report, progress=None, last_fault=fault).with_event(executed)
         if self.wait_target and passed and not self.is_resolved():
             return recorded.with_event(RowResolved(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.outcome()))
         return recorded
+
+    def failure_reported(self, time: float) -> "Check":
+        return self.with_(failure_reported_at=time)
 
     def retired(self, time: float) -> "Check":
         retired = self.with_(is_retired=True, progress=None)
