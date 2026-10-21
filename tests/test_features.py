@@ -7253,3 +7253,11 @@ def test_a_worker_lists_its_peers_out_or_idle_with_what_each_is_on(app: App):
     assert "Mr. Watt" not in listed and "Mr. Other" not in listed and "Mr. Retired" not in listed, "never itself, another agent's or a retired one"
     assert "journal worker notify" in listed
     assert "only a worker has peers" in app.console().run(["worker", "peers"], AGENT).error
+
+
+def test_a_long_worker_report_keeps_its_start_and_its_end():
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    report = "Summary: the suite takes 9 s.\n" + "x" * 20000 + "\nlast line"
+    shortened = WorkerRunner.shortened_report(report)
+    assert shortened.startswith("Summary: the suite takes 9 s.") and shortened.endswith("last line") and "characters left out" in shortened, "a report's opening is its summary and is never cut"
+    assert WorkerRunner.shortened_report("short") == "short"

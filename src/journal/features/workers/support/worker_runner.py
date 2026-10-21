@@ -20,7 +20,8 @@ from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
 from journal.support.worktree_failure import WorktreeFailure
 
-TAIL_CHARACTERS = 4000
+REPORT_CHARACTERS = 12000
+REPORT_END_CHARACTERS = 3000
 SESSION_POLL_SECONDS = 0.5
 TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
@@ -115,7 +116,7 @@ class WorkerRunner:
         provider = self.providers.lookup(worker.provider)
         ended = provider.worker_outcome(self.read(output), self.read(err))
         resume = ended.session or self.latest_session(worker)
-        report = (ended.error or ended.report)[-TAIL_CHARACTERS:] or "(nothing printed)"
+        report = self.shortened_report(ended.error or ended.report) or "(nothing printed)"
         code = code or (ERROR_STATUS if ended.error else 0)
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
         current = self.workers.find(worker.row_id)
@@ -126,6 +127,13 @@ class WorkerRunner:
         current = current.with_(touched_paths=self.branch.touched(current))
         branch = self.branch.summary(current)
         self.reports.file(current, f"{outcome}\n\n{branch}" if branch else outcome, actor)
+
+    @staticmethod
+    def shortened_report(text: str) -> str:
+        if len(text) <= REPORT_CHARACTERS:
+            return text
+        start, end = text[:REPORT_CHARACTERS - REPORT_END_CHARACTERS], text[-REPORT_END_CHARACTERS:]
+        return f"{start}\n\n... {len(text) - len(start) - len(end):,} characters left out ...\n\n{end}"
 
     def latest_session(self, worker: Worker) -> str:
         return self.providers.lookup(worker.provider).latest_session(self.place(worker), worker.began) if worker.worktree and worker.began else ""
