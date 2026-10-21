@@ -27,6 +27,9 @@ class Check(Model):
     last_fault: str = ""
     waited_on: bool = False
 
+    def edited(self, title: str, brief: str, command: str, interval_minutes: float) -> "Check":
+        return self.with_(title=title, brief=brief, command=command, every=interval_minutes)
+
     def started(self, time: float) -> "Check":
         return self.with_(running=CheckProgress(time))
 

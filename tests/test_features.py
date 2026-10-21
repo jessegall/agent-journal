@@ -448,6 +448,17 @@ def test_an_agent_that_works_again_is_no_longer_waiting_on_a_question(app):
     assert app.container.get(StateMachine).current("s1").name != "waiting", "an agent using a tool of its own is not waiting, whatever it asked"
 
 
+def test_a_check_edited_runs_its_new_command(app):
+    from journal.features.checks.support.check_runner import CheckRunner
+    from journal.repositories.checks import Checks
+    console = app.console()
+    console.run(["check", "create", "Marker", "--command", "false", "--brief", "fails"], AGENT)
+    console.run(["check", "edit", "1", "--command", "true", "--brief", "passes", "--every", "5"], AGENT)
+    check = app.container.get(Checks).find(1)
+    assert (check.title, check.command, check.brief, check.every) == ("Marker", "true", "passes", 5), "what the edit names changes, the rest stays"
+    assert app.container.get(CheckRunner).run(check, Actor.system()).last_passed is True
+
+
 def test_the_same_check_three_times_is_named(app):
     hook(app, "SessionStart")
     for _ in range(2):

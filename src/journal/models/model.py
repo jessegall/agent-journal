@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass, field, replace
 from datetime import datetime
-from typing import ClassVar
+from typing import ClassVar, Self
 
 from journal.events.event import Event
 from journal.support.actor import Actor
@@ -59,14 +59,14 @@ class Model:
     def mentioning_text(self) -> str:
         return "\n".join(str(getattr(self, name)) for name in self.text_fields)
 
-    def with_(self, **changes) -> "Model":
+    def with_(self, **changes) -> Self:
         return replace(self, **changes)
 
-    def with_event(self, event: Event) -> "Model":
+    def with_event(self, event: Event) -> Self:
         return replace(self, events=(*self.events, event))
 
-    def with_events(self, events: tuple) -> "Model":
+    def with_events(self, events: tuple) -> Self:
         return replace(self, events=events)
 
-    def without_events(self) -> "Model":
+    def without_events(self) -> Self:
         return replace(self, events=())
