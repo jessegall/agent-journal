@@ -198,4 +198,6 @@ def test_a_row_answers_its_heading_its_summary_and_its_dock_card():
     assert Fact(id=2, text="Ports are fixed").heading() == "Fact 2" and Fact(id=2).summary() == ""
     assert task.docked() == DockCard.plain() and [b.label for b in DockCard.plain().buttons] == ["Open", "Close"]
     assert [(b.label, b.act) for b in Plan(id=1).docked().buttons] == [("Open plan", "open"), ("Approve", "approve"), ("Close", "close")]
-    assert RowCard.of(report).as_data() == {"row": "reports:33", "heading": "Report 33: What the dock showed", "summary": "One line about it", "dock": {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}}
+    from journal.support.export_name import ExportName
+    assert RowCard.of(report).as_data() == {"row": "reports:33", "heading": "Report 33: What the dock showed", "summary": "One line about it", "dock": {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}, "file": f"What the dock showed.{ExportName.extension()}"}
+    assert RowCard.of(task).file == "", "a task is not downloaded as a document"

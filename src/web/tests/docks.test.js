@@ -26,6 +26,13 @@ describe("rows docked above the chat", () => {
         expect(dockedRef(docked(1, 10, "reports:33"))).toEqual({table: "reports", id: 33});
     });
 
+    test("a made doc or report carries the file its Download button saves", () => {
+        const made = {...docked(1, 10, "reports:2", true, "Report 2: Found"), data: {kind: "made", made_type: "reports", row: "reports:2", docked: true, heading: "Report 2: Found", summary: "", file: "Found.docx"}};
+        const [turn] = threadTurns([made], []).turns;
+        expect(turn.kind).toBe("made");
+        expect(turn.made).toMatchObject({table: "reports", id: 2, file: "Found.docx"});
+    });
+
     test("stand in the thread as a card that says the row is docked, with the row's icon", () => {
         const [turn] = threadTurns([docked(1, 10, "tasks:12", true, "Task 12: Write it")], []).turns;
         expect(turn.kind).toBe("card");

@@ -24,7 +24,7 @@ const SYSTEM_TURNS = {
         question: {id: Number(card.row.split(":")[1]), options: card.options, answer: card.answer ?? null, closedAt: card.answer == null ? 0 : seconds(m.updated_at)},
         data: {},
     }),
-    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.summary}, data: {}}),
+    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.summary, file: card.file}, data: {}}),
     docked: (card) => ({
         kind: "card",
         data: {icon: meta(String(card.row).split(":")[0])?.icon || "pin", label: card.docked ? "Docked above the chat" : "Was docked above the chat", detail: card.heading, title: card.heading, row: card.row},

@@ -9,6 +9,7 @@ class Doc(Model):
     """A document of the project, the same in every environment: a title, a line that says what it is, and its text."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "abstract", "body")
+    exports: ClassVar[bool] = True
 
     title: str = ""
     abstract: str = ""
