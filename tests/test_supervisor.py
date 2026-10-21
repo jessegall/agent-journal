@@ -9,10 +9,11 @@ from supervisor.inbox import Inbox
 from journal.support.environment_row import EnvironmentRow
 from journal.launcher.support.program_settings import ProgramSettings
 from journal.launcher.launch import Launch
-from journal.launcher.support.choice import Choice
+from journal.support.choice import Choice
 from journal.launcher.menu import Menu
 from journal.launcher.screen import Screen
-from journal.launcher.support.status_line import StatusLine
+from journal.providers.support.status_line import StatusLine
+from journal.providers.claude import Claude
 
 
 ROWS = [EnvironmentRow("main", True, "2 hours ago", {"claude": "abc"}), EnvironmentRow("spike")]
@@ -73,7 +74,7 @@ def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_ag
 def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_path: Path):
     from journal.launcher.support.foreign_hooks import ForeignHooks
     path = settings_with_other_hooks(tmp_path)
-    hooks = ForeignHooks(tmp_path, "claude")
+    hooks = ForeignHooks(tmp_path, Claude())
     assert hooks.foreign() == [path]
     hooks.stash()
     remaining = json.loads(path.read_text())
@@ -101,8 +102,10 @@ def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
     codex = Launch.parse(["codex"], tmp_path)
     assert codex.agent_command(Choice("spike", "", True), status) == ["codex", "--no-daemon", "-c", "sandbox_workspace_write.network_access=true"], "Codex keeps this launch's environment and reaches its journal's server"
     assert codex.agent_command(Choice("spike", "", True, prompt_flags=True), status) == ["codex", "--no-daemon", "--dangerously-bypass-approvals-and-sandbox"]
-    environ = launch.environ(Choice("spike", "", True))
+    environ = launch.environ(Choice("spike", "", True), "launch-1")
     assert environ["AGENT_JOURNAL_ACTIVE"] == "1" and environ["JOURNAL_ENV"] == "spike", "the journal's own hooks always run"
+    assert environ["JOURNAL_LAUNCH"] == "launch-1" and environ["CLAUDE_CODE_SHELL_PREFIX"].endswith("hooks/run.sh"), "the launch is named in the agent's environment, and Claude's shell runs through the journal"
+    assert "CLAUDE_CODE_SHELL_PREFIX" not in {k: v for k, v in codex.environ(Choice("spike", "", True), "launch-1").items() if k not in os.environ}, "Codex is handed no Claude variable"
     assert environ["PATH"].startswith(str(tmp_path / ".journal" / "bin")), "the project's own journal command is on the agent's PATH, and nowhere else"
     assert launch.journal_command()[-1] == "serve"
 
@@ -123,7 +126,7 @@ def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Pat
         Launched.parse(["claude", "--env", "main", "--aside", "--yes"], tmp_path).run()
     except RuntimeError:
         pass
-    assert set(json.loads(path.read_text())["hooks"]) == {"Stop", "PreToolUse"} and ForeignHooks(tmp_path, "claude").restore() == []
+    assert set(json.loads(path.read_text())["hooks"]) == {"Stop", "PreToolUse"} and ForeignHooks(tmp_path, Claude()).restore() == []
 
 
 def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, monkeypatch):
@@ -182,6 +185,8 @@ def test_the_launch_writes_what_the_supervisor_starts_and_a_bad_launch_file_is_r
     launch = Launch.parse(["claude", "--env", "spike", "--no-journal"], tmp_path)
     saved = launch.launch_file(Choice("spike", "s1"), StatusLine(tmp_path))
     assert saved["front"]["command"][0] == "claude" and saved["front"]["resume"] == ["--resume", "s1"] and saved["services"] == [], "a launch with a journal running already starts none of its own; the resume apart, for a restart to replace"
+    assert saved["launch"] and saved["front"]["env"]["JOURNAL_LAUNCH"] == saved["launch"], "the launch's id is in its file and in the agent's environment alike"
+    assert Launch.parse(["codex"], tmp_path).launch_file(Choice("spike", "s1"), StatusLine(tmp_path))["front"]["resume"] == ["resume", "s1"]
     assert saved["announce"].endswith("runtime/inboxes/spike") and saved["screen"].endswith("runtime/screens/spike.out") and f"journal-{os.getuid()}" in saved["socket"]
     with_journal = Launch.parse(["claude", "--env", "spike"], tmp_path).launch_file(Choice("spike", ""), StatusLine(tmp_path))
     assert [s["name"] for s in with_journal["services"]] == ["journal"]

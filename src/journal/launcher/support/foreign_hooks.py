@@ -3,20 +3,19 @@ import shutil
 from pathlib import Path
 
 from journal.launcher.support.program_settings import ProgramSettings
-
-FILES = {"claude": (".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json"), "codex": (".codex/hooks.json", "~/.codex/hooks.json")}
+from journal.providers.provider import Provider
 
 
 class ForeignHooks:
     """The hooks in the agent's settings that are not the journal's: set aside for a run so they cannot fight the journal's, and put back when the run ends. A copy of each file is kept in .journal/runtime/set-aside, and only the hooks key is put back, so edits made to the rest of the file meanwhile stay."""
 
-    def __init__(self, root: Path, agent: str) -> None:
-        self.root, self.agent = root, agent
+    def __init__(self, root: Path, provider: Provider) -> None:
+        self.root, self.provider = root, provider
         self.folder = root / ".journal" / "runtime" / "set-aside"
         self.listing = self.folder / "moved.json"
 
     def files(self) -> list[Path]:
-        return [self.root / name if not name.startswith("~") else Path(name).expanduser() for name in FILES[self.agent]]
+        return [self.root / name if not name.startswith("~") else Path(name).expanduser() for name in self.provider.settings_files]
 
     def foreign(self) -> list[Path]:
         return [path for path in self.files() if path.is_file() and ProgramSettings.read(path).stored() != ProgramSettings.read(path)]

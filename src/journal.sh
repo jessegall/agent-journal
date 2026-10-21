@@ -1,6 +1,6 @@
 #!/bin/sh
 # The journal command. With a server up it posts the argv there; without one it runs the package directly.
-# Commands carry the agent's own session, or name its shell so the server can find the live agent.
+# Commands carry the agent's own session, or name its shell so the server can find the live agent, and the id of the launch they run under.
 # A plugin names itself with JOURNAL_PLUGIN and JOURNAL_PLUGIN_TOKEN, and the server stamps the plugin.
 here=$(cd "$(dirname "$0")" && pwd)
 root=${JOURNAL_ROOT:-$PWD}
@@ -20,9 +20,9 @@ if [ -n "$port" ]; then
     body=$("$py" -c '
 import json, os, sys
 sys.path.insert(0, sys.argv[1])
-from journal.support.caller import Caller
-caller = Caller.environment_caller(os.environ)
-print(json.dumps({"argv": sys.argv[2:], "env": caller.environment, "session": caller.session, "agent": caller.agent_shell, "plugin": caller.plugin, "token": os.environ.get("JOURNAL_PLUGIN_TOKEN", "")}))
+from journal.providers.providers import Providers
+caller = Providers().caller(os.environ)
+print(json.dumps({"argv": sys.argv[2:], "env": caller.environment, "session": caller.session, "agent": caller.agent_shell, "plugin": caller.plugin, "token": os.environ.get("JOURNAL_PLUGIN_TOKEN", ""), "launch": os.environ.get("JOURNAL_LAUNCH", "")}))
 ' "$here" "$@") &&
     reply=$(curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" -H "X-Journal-Actor: ${JOURNAL_ACTOR:-agent}" -H "X-Journal-Thread: ${CODEX_THREAD_ID:-}" --data-binary "$body") &&
     { printf '%s' "$reply" | "$py" -c 'import json,sys; o=json.load(sys.stdin); sys.stdout.write(o.get("text", "")); sys.stderr.write(o.get("error", "the journal failed: " + str(o) + "\n")); sys.exit(o.get("code", 1))'; exit $?; }

@@ -13,6 +13,7 @@ import pytest
 
 from shell_verbs import ShellVerbs
 
+from journal.providers.support.worker_outcome import WorkerOutcome
 from journal.support.tool_call import ToolCall
 
 from journal.app import App
@@ -604,11 +605,14 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
     notified = workers.find(1)
     assert notified.state == WorkerState.DISPATCHED and notified.brief == "now the lexer" and notified.resume == "sess-1" and notified.worktree and started[-1].id == 1
     assert Claude().worker_command("now the lexer", "fast", "sess-1")[-2:] == ["--resume", "sess-1"]
-    assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == ("lexer done", "sess-2")
-    assert Claude().worker_outcome("plain words", "") == ("plain words", "")
-    assert Codex().worker_command("x", "m", "c-9")[:3] == ["codex", "exec", "resume"] and Codex().worker_command("x", "m", "")[:2] == ["codex", "exec"]
-    assert Codex().worker_outcome("done", "session id: 0192f3a4-aaaa-bbbb\nwork") == ("done", "0192f3a4-aaaa-bbbb"), "the answer is the report; the run's log only gives the session"
-    assert Codex().worker_outcome("", "session id: 0192f3a4-aaaa-bbbb\nit broke") == ("session id: 0192f3a4-aaaa-bbbb\nit broke", "0192f3a4-aaaa-bbbb"), "with no answer the log is the report"
+    assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == WorkerOutcome("lexer done", "sess-2")
+    assert Claude().worker_outcome('{"result": "out of credit", "session_id": "sess-2", "is_error": true}', "").error == "out of credit"
+    assert Claude().worker_outcome("plain words", "") == WorkerOutcome("plain words")
+    assert Codex().worker_command("x", "m", "c-9")[:5] == ["codex", "exec", "resume", "c-9", "--json"] and Codex().worker_command("x", "m", "")[:3] == ["codex", "exec", "--json"]
+    events = [{"type": "thread.started", "thread_id": "0192f3a4-aaaa-bbbb"}, {"type": "turn.started"}, {"type": "item.completed", "item": {"id": "item_0", "type": "agent_message", "text": "looking"}}, {"type": "item.completed", "item": {"id": "item_1", "type": "agent_message", "text": "done"}}, {"type": "turn.completed"}]
+    assert Codex().worker_outcome("\n".join(json.dumps(event) for event in events), "a log of the run") == WorkerOutcome("done", "0192f3a4-aaaa-bbbb"), "the session is the first event's, the report the last answer's"
+    failed = [events[0], {"type": "turn.failed", "error": {"message": "model not found"}}]
+    assert Codex().worker_outcome("\n".join(json.dumps(event) for event in failed), "it broke") == WorkerOutcome("it broke", "0192f3a4-aaaa-bbbb", "model not found"), "an error event fails the run whatever its exit code"
 
 
 def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: App, monkeypatch, tmp_path):
@@ -1540,7 +1544,8 @@ def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_
     with transcript.open("a") as file:
         file.write(j.dumps(line_text("user", "a prompt")) + "\n" + j.dumps({"type": "response_item", "payload": {"type": "function_call", "name": "exec"}}) + "\n" + j.dumps(line_text("assistant", "The plan is ready.")) + "\n")
     assert Codex().authored_texts(tmp_path, "s1", read).texts == ["The plan is ready."], "only the agent's own words, from where the last look left off"
-    assert Codex().worker_outcome("the tests pass", "session id: 01a1549d-a1ac-75c3\n" + "a long log of the run\n" * 500) == ("the tests pass", "01a1549d-a1ac-75c3"), "a Codex worker's report is its answer, not its log"
+    answered = j.dumps({"type": "thread.started", "thread_id": "01a1549d-a1ac-75c3"}) + "\n" + j.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": "the tests pass"}})
+    assert Codex().worker_outcome(answered, "a long log of the run\n" * 500) == WorkerOutcome("the tests pass", "01a1549d-a1ac-75c3"), "a Codex worker's report is its answer, not its log"
 
 
 def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_the_display_hook_adds_no_second(app: App, monkeypatch, tmp_path):

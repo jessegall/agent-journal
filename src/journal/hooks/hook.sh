@@ -22,6 +22,7 @@ if grep -q '"agent_id"' "$sent" && ! grep -q '"hook_event_name": *"\(Subagent\|P
 status=$(curl -sS --max-time 10 -o "$body" -w '%{http_code}' -X POST "http://127.0.0.1:$port/hooks/$agent" \
     -H "Content-Type: application/json" \
     -H "X-Journal-Env: $(journal_environment)" \
+    -H "X-Journal-Launch: ${JOURNAL_LAUNCH:-}" \
     -H "X-Journal-Hook-Started: $started" \
     --data-binary @"$sent") || status=0
 rm -f "$sent"

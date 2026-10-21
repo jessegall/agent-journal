@@ -20,22 +20,28 @@ from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
 from journal.features.faults.support.slow_requests import HOOK, SlowRequests
 from journal.support.card_kind import CardKind
+from journal.support.hook_kind import HookKind
+from journal.engine.support.launch_files import LaunchFiles
+from journal.models.environment import Environment
 
 
 GUARD_FAILED = "guard_failed"
+UNBOUND_SESSION = "unbound_session"
 
 
 class Receiver:
-    """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply."""
+    """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply. A hook that does not carry its environment's launch id is recorded and reported, and reaches no listener."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests) -> None:
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests, launches: LaunchFiles) -> None:
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
-        self.agents = agents
+        self.agents, self.launches = agents, launches
         self.transcript, self.cards, self.slow = transcript, cards, slow
 
     def receive(self, hook: Hook) -> Decision:
         environment = self.environments.lookup(hook.environment)
         with self.scope.environment(environment.id):
+            if not self.launches.is_launch(environment.name, hook.launch):
+                return self.unbound(hook, environment)
             for saved in self.transcript.events(hook, environment):
                 self._immediate(saved)
             event = self.translation.event(hook, environment)
@@ -46,6 +52,12 @@ class Receiver:
             self.entries.save(entry.with_(data={**entry.data, **self.recorded_outcome(hook, decision)}), Actor.agent(hook.session))
             self._defer(event)
         return decision
+
+    def unbound(self, hook: Hook, environment: Environment) -> Decision:
+        self.entries.save(Entry(environment_id=environment.id, kind=UNBOUND_SESSION, actor=Actor.agent(hook.session), data={**hook.stored(), "launch": hook.launch}), Actor.agent(hook.session))
+        if hook.kind == HookKind.SESSION_START:
+            self.cards.show(environment.id, hook.session, f"Session {hook.session} started without the launch id of {environment.name}: the journal records its hooks and does not take it as this environment's agent", "bolt", tone="bad", shows=CardKind.FAULTS)
+        return Decision()
 
     def recorded_outcome(self, hook: Hook, decision: Decision) -> dict:
         recorded = {} if decision.allowed else {"refused": decision.reason}

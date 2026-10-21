@@ -5,7 +5,7 @@ from pathlib import Path
 
 from journal.support.worktree import Worktree
 from journal.launcher.support.answers import Answers
-from journal.launcher.support.choice import Choice
+from journal.support.choice import Choice
 from journal.support.environment_row import EnvironmentRow
 from journal.launcher.support.option import Option
 from journal.launcher.support.foreign_hooks import ForeignHooks
@@ -46,7 +46,7 @@ class Menu:
         resume = "" if new or not last else self._continuation(agent, selection, last, asking)
         prompt_flags = omit or confirmed or self._prompts(agent)
         asking = asking and not resume
-        stashed_hooks = stashed or (self._hooks(ForeignHooks(self.root, agent).foreign(), previous.stashed_hooks) if asking else previous.stashed_hooks)
+        stashed_hooks = stashed or (self._hooks(ForeignHooks(self.root, Providers().lookup(agent)).foreign(), previous.stashed_hooks) if asking else previous.stashed_hooks)
         self.remembered.write(Answers(prompt_flags, stashed_hooks))
         choice = Choice(selection, resume, stashed_hooks, prompt_flags)
         if not confirmed:

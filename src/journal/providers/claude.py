@@ -9,6 +9,9 @@ from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.provider import TAIL_BYTES, Provider
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
+from journal.providers.support.worker_outcome import WorkerOutcome
+from journal.support.choice import Choice
+from journal.providers.support.status_line import StatusLine
 
 CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
 SENDER_NAME_PATTERN, SENDER_ADDRESS_PATTERN = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
@@ -24,6 +27,10 @@ class Claude(Provider):
     read_tool = "Read"
     settings_extras = {"enableAllProjectMcpServers": True}
     capabilities = frozenset(Capability)
+    session_variable = ""
+    inherited_markers = ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX")
+    question_model = "haiku"
+    settings_files = (".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json")
     controls = {
         "groups": [
             {"key": "model", "label": "Model", "choices": [{"value": v, "label": l, "command": f"/model {v}"} for v, l in (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))]},
@@ -92,6 +99,13 @@ class Claude(Provider):
         matched = SENDER_NAME_PATTERN.search(arrived[1]) or SENDER_ADDRESS_PATTERN.search(arrived[1])
         return [PeerMessage(sender=matched[1] if matched else "another session", text=arrived[2].strip())]
 
+    def interactive_command(self, choice: Choice, status: StatusLine, args: tuple[str, ...]) -> list[str]:
+        skipped = [flag for flag in self.prompt_flags if choice.prompt_flags and flag not in args]
+        return ["claude", *skipped, "--settings", status.settings(), *args]
+
+    def launch_environment(self, runner: Path) -> dict[str, str]:
+        return {"CLAUDE_CODE_SHELL_PREFIX": str(runner)}
+
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
 
@@ -102,12 +116,13 @@ class Claude(Provider):
         resumed = ["--resume", resume] if resume else []
         return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "json", *resumed]
 
-    def worker_outcome(self, output: str, err: str) -> tuple[str, str]:
+    def worker_outcome(self, output: str, err: str) -> WorkerOutcome:
         try:
             answer = json.loads(output)
         except ValueError:
-            return output.strip() or err.strip(), ""
-        return str(answer.get("result", "")).strip() or err.strip(), str(answer.get("session_id", ""))
+            return WorkerOutcome(output.strip() or err.strip())
+        report = str(answer.get("result", "")).strip() or err.strip()
+        return WorkerOutcome(report, str(answer.get("session_id", "")), report if answer.get("is_error") else "")
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
         path = super().wire_hooks(project, script, command)

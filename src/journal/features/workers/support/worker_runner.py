@@ -23,8 +23,9 @@ from journal.support.worktree_failure import WorktreeFailure
 TAIL_CHARACTERS = 4000
 TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
-ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}"}
-EXCLUDED_VARIABLES = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "CLAUDE_CODE_SHELL_PREFIX")
+ERROR_STATUS = -3
+ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}", ERROR_STATUS: "failed: {report}"}
+EXCLUDED_VARIABLES = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "JOURNAL_LAUNCH")
 
 
 class WorkerRunner:
@@ -49,7 +50,7 @@ class WorkerRunner:
             self.run(worker, command, actor)
 
     def run(self, worker: Worker, command: list[str], actor: Actor) -> None:
-        environ = {**{k: v for k, v in os.environ.items() if k not in EXCLUDED_VARIABLES}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
+        environ = self.environment_variables(self.environments.find(worker.environment_id).name)
         output, err = self.outputs(worker)
         output.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -69,6 +70,10 @@ class WorkerRunner:
         self._running.pop(worker.id, None)
         self.finish(worker, code, actor)
 
+    def environment_variables(self, environment: str) -> dict[str, str]:
+        excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers())
+        return {**{k: v for k, v in os.environ.items() if k not in excluded}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": environment}
+
     def is_finished(self, worker: Worker, actor: Actor) -> bool:
         if not self.is_running(worker.pid):
             self.finish(worker, END_UNWATCHED, actor)
@@ -82,9 +87,10 @@ class WorkerRunner:
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         output, err = self.outputs(worker)
         provider = self.providers.lookup(worker.provider)
-        output_text, resume = provider.worker_outcome(self.read(output), self.read(err))
-        resume = resume or provider.latest_session(self.place(worker), worker.began)
-        report = output_text[-TAIL_CHARACTERS:] or "(nothing printed)"
+        ended = provider.worker_outcome(self.read(output), self.read(err))
+        resume = ended.session or provider.latest_session(self.place(worker), worker.began)
+        report = (ended.error or ended.report)[-TAIL_CHARACTERS:] or "(nothing printed)"
+        code = code or (ERROR_STATUS if ended.error else 0)
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
         current = self.workers.find(worker.id).with_(resume=resume or worker.resume)
         if current.state == WorkerState.REPORTED:

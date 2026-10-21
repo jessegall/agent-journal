@@ -12,8 +12,8 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.launcher.launch import Launch
-from journal.launcher.support.choice import Choice
-from journal.launcher.support.status_line import StatusLine
+from journal.support.choice import Choice
+from journal.providers.support.status_line import StatusLine
 from journal.models.setting import Setting
 from journal.models.task import Task
 from journal.models.task_state import TaskState
@@ -34,7 +34,6 @@ MAIN = 1
 START_SECONDS, TOOL_SECONDS, WORKER_SECONDS, CASE_SECONDS = 60, 90, 180, 300
 CHEAP_MODEL = {"claude": "haiku", "codex": ""}
 CONFIG_FOLDER = {"claude": ("CLAUDE_CONFIG_DIR", "LIVE_CLAUDE_CONFIG_DIR"), "codex": ("CODEX_HOME", "LIVE_CODEX_HOME")}
-INHERITED = ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX", "CODEX_THREAD_ID", "CODEX_SANDBOX", "CODEX_CI")
 JOURNAL_VARIABLES = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ROOT", "JOURNAL_ENV", "JOURNAL_SESSION", "JOURNAL_ACTOR", "JOURNAL_AGENT_SHELL", "JOURNAL_LAUNCH")
 
 
@@ -46,7 +45,7 @@ def provider(request) -> str:
 @pytest.fixture
 def live(tmp_path: Path, monkeypatch, provider: str):
     """A fresh git project with the source under test installed, its own server on a free port, the hooks wired for the provider, and none of the caller's provider or journal variables."""
-    for name in (*INHERITED, *JOURNAL_VARIABLES):
+    for name in (*Providers().inherited_markers(), *JOURNAL_VARIABLES):
         monkeypatch.delenv(name, raising=False)
     variable, chosen = CONFIG_FOLDER[provider]
     if os.environ.get(chosen):
@@ -75,8 +74,9 @@ def launched(app: App, provider: str) -> dict[str, str]:
     choice = Choice("main")
     path = app.config.root / ".journal" / "runtime" / "launches" / "main.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(launch.launch_file(choice, StatusLine(app.config.root))))
-    return launch.environ(choice)
+    written = launch.launch_file(choice, StatusLine(app.config.root))
+    path.write_text(json.dumps(written))
+    return written["front"]["env"]
 
 
 def run_agent(app: App, provider: str, prompt: str, resume: str = "", seconds: int = CASE_SECONDS) -> subprocess.CompletedProcess:
@@ -117,7 +117,15 @@ def test_a_launched_agent_starts_bound_to_its_environment(live: App, provider: s
     if not made:
         pytest.skip(f"the agent did not run the command: inconclusive\n{entries(live, 'ToolStarting')}")
     assert made[0].creator == Actor.agent(session), "the agent's own journal command is its session's"
+    assert not entries(live, "unbound_session"), "the session carried its launch id back"
     assert {agent.environment_id for agent in live.container.get(Agents).all_agents()} == {MAIN}, "nothing lands in another environment"
+
+
+def test_a_session_with_another_launch_id_is_reported_and_not_bound(live: App, provider: str):
+    command = Providers().lookup(provider).worker_command("Reply with ok.", CHEAP_MODEL[provider], "")
+    subprocess.run(command, cwd=live.config.root, env={**launched(live, provider), "JOURNAL_LAUNCH": "another"}, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=CASE_SECONDS)
+    assert wait_for(lambda: entries(live, "unbound_session"), START_SECONDS), "its hooks were recorded and reported"
+    assert not live.container.get(Agents).all_agents(), "and it was not taken as the environment's agent"
 
 
 def test_the_first_write_is_held_until_the_skill_is_read(live: App, provider: str):
@@ -183,6 +191,6 @@ def test_a_restarted_agent_resumes_its_conversation(live: App, provider: str):
     session = session_of(live)
     program = Providers().lookup(provider)
     answer = run_agent(live, provider, "What word did I ask you to remember? Answer with the word only.", resume=session)
-    report, resumed = program.worker_outcome(answer.stdout, answer.stderr)
-    assert "amber" in report.lower(), f"the resumed session recalls the word: {report}"
-    assert resumed in ("", session), "the resume came back on the same session"
+    ended = program.worker_outcome(answer.stdout, answer.stderr)
+    assert "amber" in ended.report.lower() and not ended.error, f"the resumed session recalls the word: {ended}"
+    assert ended.session in ("", session), "the resume came back on the same session"

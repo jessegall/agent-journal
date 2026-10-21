@@ -8,6 +8,7 @@ from journal.app import App
 from journal.repositories.scope import Scope
 from journal.config import Config
 from journal.support.caller import Caller
+from journal.providers.providers import Providers
 from journal.support.actor import Actor
 from journal.models.task import Task
 from journal.models.task_state import TaskState
@@ -92,8 +93,8 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
     from journal.repositories.agents import Agents
     app.container.get(Agents).save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
     app.console().run(["message", "send", "hi"], Caller("main"))
-    app.console().run(["message", "react", "1", "👍"], Caller.environment_caller({"CLAUDECODE": "1"}))
-    assert Caller.environment_caller({"JOURNAL_AGENT_SHELL": "1"}).agent_shell, "a worker's shell is an agent's whatever its program marks"
+    app.console().run(["message", "react", "1", "👍"], Providers().caller({"CLAUDECODE": "1"}))
+    assert Providers().caller({"JOURNAL_AGENT_SHELL": "1"}).agent_shell, "a worker's shell is an agent's whatever its program marks"
     with app.container.get(Scope).environment(1):
         assert app.container.get(Reactions).all()[-1].creator.kind == "agent"
 
@@ -102,7 +103,7 @@ def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app:
     from journal.support.caller import Caller
     from journal.repositories.reactions import Reactions
     app.console().run(["message", "send", "hi"], Caller("main"))
-    assert app.console().run(["message", "react", "1", "👍"], Caller.environment_caller({"CLAUDECODE": "1"})).code == 0
+    assert app.console().run(["message", "react", "1", "👍"], Providers().caller({"CLAUDECODE": "1"})).code == 0
     with app.container.get(Scope).environment(1):
         assert app.container.get(Reactions).all()[-1].creator.kind == "user", "a shell outside the journal is the user's"
 
@@ -116,7 +117,7 @@ def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app: 
     with app.container.get(Scope).environment(development.id):
         agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", has_overview=False), Actor.system())
         agents.save(Agent(session="claude-session", environment_id=development.id, provider="claude", has_overview=False), Actor.system())
-    caller = Caller.environment_caller({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "codex-session", "CODEX_CI": "1"})
+    caller = Providers().caller({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "codex-session", "CODEX_CI": "1"})
     assert app.console().run(["environment", "overview"], caller).code == 0
     with app.container.get(Scope).environment(development.id):
         assert agents.session_agent("codex-session").has_overview
@@ -124,7 +125,7 @@ def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app: 
     assert app.console().run(["task", "create", "Codex task"], caller).code == 0
     with app.container.get(Scope).environment(development.id):
         assert app.container.get(Tasks).all()[-1].creator == Actor.agent("codex-session")
-    assert Caller.environment_caller({"JOURNAL_SESSION": "worker-session", "CODEX_THREAD_ID": "parent-session"}).session == "worker-session"
+    assert Providers().caller({"JOURNAL_SESSION": "worker-session", "CODEX_THREAD_ID": "parent-session"}).session == "worker-session"
 
 
 @pytest.mark.parametrize("online", [False, True])
@@ -212,3 +213,41 @@ def test_any_row_docks_above_the_chat_by_noun_and_number_in_either_order(app: Ap
         assert messages.find(card.id).data["docked"] is False
         assert "is not docked" in console.run(["task", "1", "undock"], MAIN).error
     assert "dock" in console.run(["report", "--help"], MAIN).text and "dock" not in console.run(["search", "--help"], MAIN).text, "every row noun has the verbs, a noun that is no row has not"
+
+
+def test_a_workers_environment_carries_no_providers_markers_and_no_launch(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    for name in (*Providers().inherited_markers(), "JOURNAL_LAUNCH", "JOURNAL_SESSION"):
+        monkeypatch.setenv(name, "parent")
+    handed = app.container.get(WorkerRunner).environment_variables("main")
+    assert not {*Providers().inherited_markers(), "JOURNAL_LAUNCH", "JOURNAL_SESSION"} & set(handed), "a Claude worker under a Codex agent carries none of the parent's thread"
+    assert handed["JOURNAL_ACTOR"] == "worker-agent" and handed["JOURNAL_ENV"] == "main"
+
+
+def test_a_hook_whose_launch_id_names_another_environments_launch_is_reported_and_registers_no_agent(app: App):
+    import json
+    from urllib.request import Request as HttpRequest, urlopen
+    from journal.repositories.agents import Agents
+    from journal.repositories.entries import Entries
+    from journal.repositories.messages import Messages
+    launches = app.config.home / "runtime" / "launches"
+    launches.mkdir(parents=True, exist_ok=True)
+    (launches / "main.json").write_text(json.dumps({"launch": "launch-main"}))
+    (launches / "spike.json").write_text(json.dumps({"launch": "launch-spike"}))
+    app.runtime().start()
+    try:
+        def started(session: str, launch: str) -> int:
+            body = json.dumps({"hook_event_name": "SessionStart", "session_id": session, "source": "startup"}).encode()
+            request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=body, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", "X-Journal-Launch": launch})
+            with urlopen(request, timeout=5) as reply:
+                return reply.status
+
+        assert started("stray", "launch-spike") == 200 and started("bare", "") == 200, "a session without the launch id is let through, never refused"
+        agents = app.container.get(Agents)
+        assert not [agent for agent in agents.all_agents() if agent.session in ("stray", "bare")], "and never taken as the environment's agent"
+        with app.container.get(Scope).environment(1):
+            assert {entry.data["session_id"] for entry in app.container.get(Entries).kind_entries("unbound_session")} == {"stray", "bare"}, "its hooks are recorded"
+            assert any("stray" in message.text and "launch id" in message.text for message in app.container.get(Messages).all()), "and it is reported in the chat"
+        assert started("bound", "launch-main") == 200 and agents.session_agent("bound").environment_id == 1
+    finally:
+        app.runtime().stop()

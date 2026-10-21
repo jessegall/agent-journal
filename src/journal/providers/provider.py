@@ -22,6 +22,9 @@ from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
 from journal.providers.support.file_writes import FileWrites
 from journal.providers.support.capability import Capability
+from journal.providers.support.worker_outcome import WorkerOutcome
+from journal.support.choice import Choice
+from journal.providers.support.status_line import StatusLine
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
@@ -40,7 +43,11 @@ class Provider(ABC):
     edit_tools: ClassVar[frozenset[str]]
     read_tool: ClassVar[str]
     shell_tool: ClassVar[str] = "Bash"
-    prompt_flags: ClassVar[tuple[str, ...]] = ()
+    prompt_flags: ClassVar[tuple[str, ...]]
+    session_variable: ClassVar[str]
+    inherited_markers: ClassVar[tuple[str, ...]]
+    question_model: ClassVar[str]
+    settings_files: ClassVar[tuple[str, ...]]
     settings_extras: ClassVar[dict] = {}
     foreign_settings: ClassVar[tuple[str, ...]] = ()
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
@@ -131,13 +138,19 @@ class Provider(ABC):
         return max(0, size - TAIL_BYTES) + cut + 1 if cut != -1 else max(0, size - TAIL_BYTES)
 
     @abstractmethod
+    def interactive_command(self, choice: Choice, status: StatusLine, args: tuple[str, ...]) -> list[str]: ...
+
+    @abstractmethod
+    def launch_environment(self, runner: Path) -> dict[str, str]: ...
+
+    @abstractmethod
     def resume(self, session: str) -> tuple[str, ...]: ...
 
     @abstractmethod
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]: ...
 
     @abstractmethod
-    def worker_outcome(self, output: str, err: str) -> tuple[str, str]: ...
+    def worker_outcome(self, output: str, err: str) -> WorkerOutcome: ...
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
         kind = hook.kind

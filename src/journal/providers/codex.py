@@ -1,5 +1,4 @@
 import json
-import re
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Iterator
@@ -10,6 +9,9 @@ from journal.providers.provider import Provider
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
+from journal.providers.support.worker_outcome import WorkerOutcome
+from journal.support.choice import Choice
+from journal.providers.support.status_line import StatusLine
 
 
 class Codex(Provider):
@@ -23,6 +25,11 @@ class Codex(Provider):
     read_tool = "read_file"
     hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
     capabilities = frozenset()
+    session_variable = "CODEX_THREAD_ID"
+    inherited_markers = ("CODEX_THREAD_ID", "CODEX_SANDBOX", "CODEX_CI")
+    question_model = ""
+    settings_files = (".codex/hooks.json", "~/.codex/hooks.json")
+    network_access = ("-c", "sandbox_workspace_write.network_access=true")
 
     def __init__(self) -> None:
         self._rollouts: dict[str, Path] = {}
@@ -96,17 +103,27 @@ class Codex(Provider):
     def peer_messages(self, line: dict) -> list[PeerMessage]:
         return []
 
+    def interactive_command(self, choice: Choice, status: StatusLine, args: tuple[str, ...]) -> list[str]:
+        skipped = [flag for flag in self.prompt_flags if choice.prompt_flags and flag not in args]
+        return ["codex", "--no-daemon", *skipped, *([] if choice.prompt_flags else self.network_access), *args]
+
+    def launch_environment(self, runner: Path) -> dict[str, str]:
+        return {}
+
     def resume(self, session: str) -> tuple[str, ...]:
         return ("resume", session)
 
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["resume", resume] if resume else []
         selection = ["-m", model] if model else []
-        return ["codex", "exec", *resumed, "--dangerously-bypass-approvals-and-sandbox", *selection, brief]
+        return ["codex", "exec", *resumed, "--json", *self.prompt_flags, *selection, brief]
 
-    def worker_outcome(self, output: str, err: str) -> tuple[str, str]:
-        rows = re.search(r"session id: ([0-9a-f-]{8,})", f"{output}\n{err}", re.IGNORECASE)
-        return output.strip() or err.strip(), rows.group(1) if rows else ""
+    def worker_outcome(self, output: str, err: str) -> WorkerOutcome:
+        events = [json.loads(line) for line in output.splitlines() if line.startswith("{")]
+        session = next((str(event.get("thread_id", "")) for event in events if event.get("type") == "thread.started"), "")
+        replies = [event["item"].get("text", "") for event in events if event.get("type") == "item.completed" and event.get("item", {}).get("type") == "agent_message"]
+        errors = [str(event.get("message") or event.get("error", {}).get("message", "")) for event in events if event.get("type") in ("error", "turn.failed")]
+        return WorkerOutcome(replies[-1].strip() if replies else err.strip(), session, errors[-1] if errors else "")
 
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}] for kind in self.hook_kinds}
