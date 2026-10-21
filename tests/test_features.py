@@ -2728,8 +2728,10 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
     console.run(["question", "ask", "Which name?", "--options", "alpha", "beta"], AGENT)
     console.run(["question", "answer", "1", "beta"], USER)
     assert any("question 1 is answered" in line and "`journal question show 1`" in line for line in typed), "told like a message, with the command to read it"
+    app.runtime().deferred.drain()
     shown = console.run(["question", "show", "1"], AGENT).out
     assert "question 1: Which name?  [alpha / beta]" in shown and "answer: beta" in shown and "act on the answer" in shown
+    assert "mentions message 2 from the system: You answered question 1" in shown, "the answer's message is shown with the question, linked by its table and id"
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal question show 1 " + "|" + " head -2"})
     assert status == 409 and "`journal question show`" in body["error"], "read whole, never through a pipe"
 
