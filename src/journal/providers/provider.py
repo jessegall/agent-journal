@@ -9,6 +9,7 @@ from journal.support.tool_call import ToolCall
 from journal.support.operation import Operation
 from journal.models.mcp_server import McpServer
 from journal.providers.support.agent_status import AgentStatus
+from journal.providers.support.context_file import ContextFile
 from journal.providers.support.hooks_ready import HooksReady
 from journal.providers.support.profile import Profile
 from journal.support.undecoded_tool import UndecodedTool
@@ -57,6 +58,9 @@ class Provider(ABC):
     profile_suffix: ClassVar[str]
     profile_model: ClassVar[str]
     default: ClassVar[bool]
+
+    def __init__(self) -> None:
+        self._status_files: dict[Path, ContextFile] = {}
 
     @abstractmethod
     def transcript(self, project: Path, session: str) -> Path | None: ...
@@ -150,8 +154,8 @@ class Provider(ABC):
     @abstractmethod
     def resume(self, session: str) -> tuple[str, ...]: ...
 
-    @abstractmethod
-    def status(self, session: str, home: Path) -> AgentStatus: ...
+    def status(self, session: str, home: Path) -> AgentStatus:
+        return self._status_files.setdefault(home, ContextFile(home)).reading(session)
 
     @abstractmethod
     def write_mcp(self, project: Path, servers: list[McpServer]) -> Path: ...

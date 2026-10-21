@@ -39,12 +39,17 @@ class Subagents:
         rows: list[Dispatch] = []
         open_: dict[str, int] = {}
         background: dict[str, int] = {}
+        unstarted: dict[str, int] = {}
         for e in dispatches:
             time = e.created_at.timestamp()
             if e.kind in ENDS:
                 Subagents.stopped(rows, open_, time)
                 if e.kind == "SessionEnded" or (e.kind == "SessionStarted" and e.data.get("source") != "compact"):
                     Subagents.stopped(rows, background, time)
+                    Subagents.stopped(rows, unstarted, time)
+                continue
+            if e.kind == "SubagentStarted":
+                Subagents.started(rows, background, unstarted, e.data.get("agent_id", ""))
                 continue
             if e.kind == "SubagentEnded":
                 i = background.pop(e.data.get("agent_id", ""), None)
@@ -59,7 +64,8 @@ class Subagents:
                 continue
             use = e.data.get("tool_use_id", "")
             if e.kind == "ToolStarting":
-                rows.append(Dispatch(f"sub:{e.id}", time, operation["title"] or operation["brief"][:80], f"{operation['title']} {operation['brief']}", operation["role"] or "subagent", operation["model"]))
+                brief = operation["brief"] or ""
+                rows.append(Dispatch(f"sub:{e.id}", time, operation["title"] or brief[:80], f"{operation['title']} {brief}", operation["role"] or "subagent", operation["model"]))
                 open_[use or f"entry:{e.id}"] = len(rows) - 1
             elif e.kind == "ToolFailed" and open_:
                 i = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
@@ -68,11 +74,22 @@ class Subagents:
                 i = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
                 answer = Subagents.answered(e.data.get("tool_response"))
                 rows[i] = rows[i].answered(answer.get("agentId", ""))
-                if answer.get("isAsync") and rows[i].session:
+                background_run = answer.get("isAsync") or operation["background"]
+                if background_run and rows[i].session:
                     background[rows[i].session] = i
+                elif operation["background"]:
+                    unstarted[f"row:{i}"] = i
                 else:
                     rows[i] = rows[i].finished("done", time)
         return rows
+
+    @staticmethod
+    def started(rows: list[Dispatch], background: dict[str, int], unstarted: dict[str, int], agent_id: str) -> None:
+        if not unstarted or not agent_id:
+            return
+        i = unstarted.pop(next(iter(unstarted)))
+        rows[i] = rows[i].answered(agent_id)
+        background[agent_id] = i
 
     @staticmethod
     def resumed(rows: list[Dispatch], background: dict[str, int], receiver: str, kind: str) -> None:

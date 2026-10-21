@@ -5,7 +5,7 @@
         "select": "literal",
         "where": [
             {
-                "textMatches": "^[\"']?(claude|codex|Bash|Agent|Task|Read|Write|Edit|MultiEdit|NotebookEdit|Skill|SendMessage|AskUserQuestion|apply_patch|exec_command|spawn_agent|send_input|read_file|write_file|request_user_input)[\"']?$"
+                "textMatches": "^[\"']?(claude|codex|Bash|Agent|Task|Read|Write|Edit|MultiEdit|NotebookEdit|Skill|SendMessage|AskUserQuestion|apply_patch|collaborationspawn_agent|request_user_input)[\"']?$"
             },
             {
                 "inside": {

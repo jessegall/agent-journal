@@ -27,7 +27,7 @@ from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor
 from journal.support.caller import Caller
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 SRC = Path(__file__).resolve().parent.parent / "src"
 PROVIDERS = ("claude", "codex")

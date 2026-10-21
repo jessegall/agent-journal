@@ -40,7 +40,7 @@ class WorkersConduct(Conduct):
         dispatch = event.call.operation
         if not isinstance(dispatch, SubagentDispatch):
             return self.none()
-        matched = PathMentions.build(f"{dispatch.title} {dispatch.brief}")
+        matched = PathMentions.build(f"{dispatch.title} {dispatch.brief or ''}")
         if not matched or dispatch.role in INDEPENDENT_ROLES:
             return self.none()
         existing = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.is_active and d.session and d.type == dispatch.role and matched & PathMentions.build(d.brief)), None)

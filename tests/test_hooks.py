@@ -240,6 +240,15 @@ def test_every_hook_a_real_run_sent_decodes_into_its_agent_event(app: App, provi
     assert [entry.kind for entry in app.container.get(Entries).scoped()] == [EVENTS[body["hook_event_name"]] for body in bodies]
 
 
+def first_calls(provider: str) -> dict:
+    """The input of the first call of each tool a real run of the provider's program made, by the tool's name."""
+    calls = {}
+    for body in captured(provider):
+        if body["hook_event_name"] == "PreToolUse":
+            calls.setdefault(body["tool_name"], []).append(body["tool_input"])
+    return calls
+
+
 def test_each_providers_tool_calls_decode_into_the_operations_the_features_read():
     from journal.providers.claude import Claude
     from journal.providers.codex import Codex
@@ -250,22 +259,19 @@ def test_each_providers_tool_calls_decode_into_the_operations_the_features_read(
     from journal.support.shell_line import ShellLine
     from journal.support.skill_load import SkillLoad
     from journal.support.subagent_dispatch import SubagentDispatch
-    calls = {}
-    for body in captured("claude"):
-        if body["hook_event_name"] == "PreToolUse":
-            calls.setdefault(body["tool_name"], body["tool_input"])
     claude, codex = Claude(), Codex()
+    calls, codex_calls = first_calls("claude"), first_calls("codex")
     ready = ShellLine("printf ready > ready.txt")
-    assert claude.operation("Bash", calls["Bash"]) == ready and codex.operation("Bash", {"command": "printf ready > ready.txt"}) == ready, "both bodies of 5.4 are the same operation"
-    assert codex.operation("exec_command", {"cmd": ["bash", "-lc", "printf ready > ready.txt"]}) == ready and codex.operation("exec_command", {"cmd": ["git", "status", "--short"]}) == ShellLine("git status --short"), "a Codex command given as a list is one line"
-    assert codex.call("exec_command", {"cmd": ["bash", "-lc", "printf ready > ready.txt"]}).writes, "and is read for its writes as Claude's is"
+    assert claude.operation("Bash", calls["Bash"][0]) == ready and codex.operation("Bash", codex_calls["Bash"][0]) == ready, "both programs' shell hooks are the same operation"
+    assert codex.operation("Bash", {"command": ["bash", "-lc", "printf ready > ready.txt"]}) == ready and codex.operation("Bash", {"command": ["git", "status", "--short"]}) == ShellLine("git status --short"), "a Codex command given as a list is one line"
+    assert [codex.operation("apply_patch", value) for value in codex_calls["apply_patch"]] == [FileEdit(("/project/note2.txt",))] * 3, "a patch adding, changing or deleting a file is an edit of its path"
     patch = "*** Begin Patch\n*** Add File: new.txt\n+hi\n*** Update File: notes.txt\n@@\n-first\n+second\n*** Delete File: old.txt\n*** End Patch\n"
-    assert codex.operation("apply_patch", {"command": patch}) == FileEdit(("new.txt", "notes.txt", "old.txt")), "a patch adding, changing and deleting files is an edit of each path"
-    assert claude.operation("Edit", calls["Edit"]) == FileEdit(("/project/notes.txt",)) and claude.operation("Write", calls["Write"]) == FileWrite("/project/new.txt")
-    assert claude.operation("Read", calls["Read"]) == FileRead("/project/notes.txt", False) and claude.operation("Skill", calls["Skill"]) == SkillLoad("greeting")
-    assert claude.operation("Agent", calls["Agent"]) == SubagentDispatch("general-purpose", "", "Reply with one word", "reply with the word amber")
-    assert isinstance(codex.operation("spawn_agent", {"agent_type": "explorer", "message": "reply with the word amber"}), SubagentDispatch), "a Claude Agent call and a Codex subagent call are both dispatches"
-    assert claude.operation("Grep", {"pattern": "x"}) == UndecodedTool("Grep") and codex.operation("view_image", {}) == UndecodedTool("view_image"), "a tool a provider does not know is another tool"
+    assert codex.operation("apply_patch", {"command": patch}) == FileEdit(("new.txt", "notes.txt", "old.txt")), "and one patch of several files an edit of each"
+    assert claude.operation("Edit", calls["Edit"][0]) == FileEdit(("/project/notes.txt",)) and claude.operation("Write", calls["Write"][0]) == FileWrite("/project/new.txt")
+    assert claude.operation("Read", calls["Read"][0]) == FileRead("/project/notes.txt", False) and claude.operation("Skill", calls["Skill"][0]) == SkillLoad("greeting")
+    assert claude.operation("Agent", calls["Agent"][0]) == SubagentDispatch("general-purpose", "", "Reply with one word", "reply with the word amber", False)
+    assert codex.operation("collaborationspawn_agent", codex_calls["collaborationspawn_agent"][0]) == SubagentDispatch(None, None, "say_teal", None, True), "Codex's spawn names its task, carries no profile, model or readable brief, and runs in the background"
+    assert claude.operation("Grep", {"pattern": "x"}) == UndecodedTool("Grep") and codex.operation("view_image", {}) == UndecodedTool("view_image"), "a tool a provider does not know is undecoded"
 
 
 @pytest.mark.parametrize("provider", ["claude", "codex"])
@@ -277,15 +283,30 @@ def test_a_hold_answers_409_and_a_refused_stop_the_block_json_for_both_providers
     assert status == 200 and body["decision"] == "block" and body["reason"].startswith("finish the task in hand first") and "continue" not in body, "a refused stop goes on working; continue:false would end a Codex turn"
 
 
-@pytest.mark.parametrize("provider, tool, value", [
-    ("claude", "Agent", {"subagent_type": "journal-researcher", "model": "haiku", "description": "count the words", "prompt": "count the words in notes.txt"}),
-    ("codex", "spawn_agent", {"agent_type": "journal-researcher", "model": "haiku", "message": "count the words in notes.txt"}),
-])
-def test_a_subagent_dispatch_is_paired_and_counted_for_either_provider(app: App, provider: str, tool: str, value: dict):
-    from journal.support.subagents import Subagents
-    post_as(app, provider, {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
-    post_as(app, provider, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": tool, "tool_input": value, "tool_use_id": "call-7"})
-    subagents = app.container.get(Subagents)
-    assert subagents.running("s1") == 1 and subagents.rows("s1")[0].type == "journal-researcher", "the dispatch counts against the limit"
-    post_as(app, provider, {"hook_event_name": "PostToolUse", "session_id": "s1", "tool_name": tool, "tool_input": value, "tool_use_id": "call-7", "tool_response": {}})
-    assert subagents.running("s1") == 0 and subagents.rows("s1")[0].status == "done", "and is settled by its own call's end"
+def test_a_claude_subagent_dispatch_is_paired_and_counted():
+    from journal.features.workers.support.subagents import Subagents
+    rows = Subagents.paired(dispatch_entries("claude", lambda body: body["hook_event_name"] in ("SessionStart", "Stop") or body.get("tool_name") == "Agent" or body["hook_event_name"].startswith("Subagent")))
+    assert [(row.type, row.status) for row in rows] == [("general-purpose", "done")], "dispatched, run in the background, settled when its subagent stopped"
+
+
+def test_a_codex_subagent_dispatch_is_paired_and_counted_like_a_claude_one():
+    from journal.features.workers.support.subagents import Subagents
+    spawn = lambda body: body["hook_event_name"] in ("SessionStart", "SubagentStart", "Stop", "SubagentStop") or body.get("tool_name") == "collaborationspawn_agent"
+    bodies = [body for body in captured("codex") if spawn(body)][:6]
+    assert [body["hook_event_name"] for body in bodies] == ["SessionStart", "PreToolUse", "PostToolUse", "SubagentStart", "Stop", "SubagentStop"], "the order a real Codex run sends them in"
+    running = [Subagents.paired(dispatch_entries("codex", lambda body: True, bodies[:n])) for n in range(2, 7)]
+    assert [sum(1 for row in rows if row.is_active) for rows in running] == [1, 1, 1, 1, 0], "the spawn counts against the limit from its start, through the agent's own stop, until its subagent stops"
+    assert running[-1][0].session == bodies[3]["agent_id"] and running[-1][0].status == "done" and running[-1][0].task == "say_teal"
+
+
+def dispatch_entries(provider: str, kept, bodies: list[dict] | None = None) -> list:
+    """The entries a provider's captured hooks would leave, as Subagents pairs them: each body with its event's kind and its call's reading."""
+    from datetime import datetime, timezone
+    from journal.models.entry import Entry
+    from journal.providers.providers import Providers
+    program = Providers().lookup(provider)
+    entries = []
+    for n, body in enumerate(body for body in (bodies or captured(provider)) if kept(body)):
+        call = {"call": program.call(body["tool_name"], body["tool_input"]).as_data()} if "tool_name" in body else {}
+        entries.append(Entry(id=n + 1, environment_id=1, kind=EVENTS[body["hook_event_name"]], data={**body, **call}, created_at=datetime(2026, 10, 21, 12, 0, n, tzinfo=timezone.utc)))
+    return entries

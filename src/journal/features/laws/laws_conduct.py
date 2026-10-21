@@ -17,12 +17,12 @@ class LawsConduct(Conduct):
         dispatch = event.call.operation
         if not isinstance(dispatch, SubagentDispatch):
             return self.none()
-        if not dispatch.model:
+        if dispatch.model == "":
             return self.refuse(Laws.MISSING_MODEL.create())
         profiles = event.data.part(Profiles)
-        if dispatch.role not in profiles.names:
+        if dispatch.role is not None and dispatch.role not in profiles.names:
             return self.refuse(Laws.MISSING_PROFILE.create(asked=dispatch.role or "none", profiles=", ".join(profiles.subagents)))
-        if not dispatch.title or not dispatch.brief:
+        if not dispatch.title or dispatch.brief == "":
             return self.refuse(Laws.UNBOUND_DISPATCH.create())
         return self.none()
 

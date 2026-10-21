@@ -11,7 +11,3 @@ class AgentStatus:
     effort: str
     context: float | None
     windows: tuple[RateWindow, ...]
-
-    @classmethod
-    def unreported(cls) -> "AgentStatus":
-        return cls(model="", effort="", context=None, windows=())

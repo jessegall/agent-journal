@@ -15,11 +15,9 @@ from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
 from journal.providers.support.mcp_tables import McpTables
 from journal.models.mcp_server import McpServer
-from journal.providers.support.agent_status import AgentStatus
 from journal.providers.support.hooks_ready import HooksReady
 from journal.providers.support.profile import Profile
 from journal.providers.support.patch_paths import PatchPaths
-from journal.support.agent_message import AgentMessage
 from journal.support.file_edit import FileEdit
 from journal.support.file_read import FileRead
 from journal.support.file_write import FileWrite
@@ -31,7 +29,6 @@ from journal.support.choice import Choice
 from journal.providers.support.status_line import StatusLine
 
 SCRIPT_FLAGS = ("-c", "-lc")
-TITLE_CHARACTERS = 80
 
 
 class Codex(Provider):
@@ -43,13 +40,10 @@ class Codex(Provider):
     settings_file = "hooks.json"
     decoders = {
         "Bash": lambda input: ShellLine(Codex.shell_line(input.get("command", ""))),
-        "exec_command": lambda input: ShellLine(Codex.shell_line(input.get("cmd", ""))),
-        "shell": lambda input: ShellLine(Codex.shell_line(input.get("command", ""))),
         "apply_patch": lambda input: FileEdit(PatchPaths.build(input)),
         "write_file": lambda input: FileWrite(str(input.get("path", "") or input.get("file_path", ""))),
         "read_file": lambda input: FileRead(str(input.get("path", "") or input.get("file_path", "")), bool(input.get("offset") or input.get("limit"))),
-        "spawn_agent": lambda input: Codex.subagent(input),
-        "send_input": lambda input: AgentMessage(str(input.get("id", "")), str(input.get("message", ""))),
+        "collaborationspawn_agent": lambda input: SubagentDispatch(None, None, str(input.get("task_name", "")), None, True),
         "request_user_input": lambda input: UserQuestion(),
     }
     hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
@@ -58,12 +52,13 @@ class Codex(Provider):
     profile_model = "codex_model"
     default = False
     session_variable = "CODEX_THREAD_ID"
-    inherited_markers = ("CODEX_THREAD_ID", "CODEX_SANDBOX", "CODEX_CI")
+    inherited_markers = ("CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_TOOL_CALL_ID", "CODEX_CI", "CODEX_SANDBOX", "CODEX_VERSION", "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS")
     question_model = ""
     settings_files = (".codex/hooks.json", "~/.codex/hooks.json")
     network_access = ("-c", "sandbox_workspace_write.network_access=true")
 
     def __init__(self) -> None:
+        super().__init__()
         self._rollouts: dict[str, Path] = {}
 
     @property
@@ -91,11 +86,6 @@ class Codex(Provider):
     @staticmethod
     def state_name(kind: HookKind) -> str:
         return re.sub(r"(?<!^)(?=[A-Z])", "_", kind.value).lower()
-
-    @staticmethod
-    def subagent(input: dict) -> SubagentDispatch:
-        brief = str(input.get("message", "") or input.get("prompt", ""))
-        return SubagentDispatch(str(input.get("agent_type", "") or input.get("role", "")), str(input.get("model", "")), brief.strip().split("\n")[0][:TITLE_CHARACTERS], brief)
 
     @staticmethod
     def shell_line(command) -> str:
@@ -175,9 +165,6 @@ class Codex(Provider):
     def resume(self, session: str) -> tuple[str, ...]:
         return ("resume", session)
 
-    def status(self, session: str, home: Path) -> AgentStatus:
-        return AgentStatus.unreported()
-
     def profile_text(self, profile: Profile, model: str, codex_model: str) -> str:
         sandbox = "read-only" if profile.kind == "subagent" else "workspace-write"
         return (f"name = {json.dumps(profile.name)}\ndescription = {json.dumps(profile.description, ensure_ascii=False)}\nmodel = {json.dumps(codex_model)}\n"
@@ -198,8 +185,15 @@ class Codex(Provider):
         events = [json.loads(line) for line in output.splitlines() if line.startswith("{")]
         session = next((str(event.get("thread_id", "")) for event in events if event.get("type") == "thread.started"), "")
         replies = [event["item"].get("text", "") for event in events if event.get("type") == "item.completed" and event.get("item", {}).get("type") == "agent_message"]
-        errors = [str(event.get("message") or event.get("error", {}).get("message", "")) for event in events if event.get("type") in ("error", "turn.failed")]
+        errors = [self.error_text(event.get("error", {}).get("message", "")) for event in events if event.get("type") == "turn.failed"]
         return WorkerOutcome(replies[-1].strip() if replies else err.strip(), session, errors[-1] if errors else "")
+
+    @staticmethod
+    def error_text(message: str) -> str:
+        try:
+            return str(json.loads(message).get("error", {}).get("message", "")) or message
+        except (ValueError, AttributeError):
+            return message
 
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}] for kind in self.hook_kinds}

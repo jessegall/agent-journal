@@ -610,10 +610,11 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
     assert Claude().worker_outcome('{"result": "out of credit", "session_id": "sess-2", "is_error": true}', "").error == "out of credit"
     assert Claude().worker_outcome("plain words", "") == WorkerOutcome("plain words")
     assert Codex().worker_command("x", "m", "c-9")[:5] == ["codex", "exec", "resume", "c-9", "--json"] and Codex().worker_command("x", "m", "")[:3] == ["codex", "exec", "--json"]
-    events = [{"type": "thread.started", "thread_id": "0192f3a4-aaaa-bbbb"}, {"type": "turn.started"}, {"type": "item.completed", "item": {"id": "item_0", "type": "agent_message", "text": "looking"}}, {"type": "item.completed", "item": {"id": "item_1", "type": "agent_message", "text": "done"}}, {"type": "turn.completed"}]
-    assert Codex().worker_outcome("\n".join(json.dumps(event) for event in events), "a log of the run") == WorkerOutcome("done", "0192f3a4-aaaa-bbbb"), "the session is the first event's, the report the last answer's"
-    failed = [events[0], {"type": "turn.failed", "error": {"message": "model not found"}}]
-    assert Codex().worker_outcome("\n".join(json.dumps(event) for event in failed), "it broke") == WorkerOutcome("it broke", "0192f3a4-aaaa-bbbb", "model not found"), "an error event fails the run whatever its exit code"
+    runs = Path(__file__).with_name("hook_bodies") / "worker_output"
+    amber, resumed, failed = ((runs / f"codex_0.163.0_{name}.jsonl").read_text() for name in ("amber", "resume", "badmodel"))
+    assert Codex().worker_outcome(amber, "") == WorkerOutcome("amber", "01a15edb-4273-7181-98d3-f0fa7996d6e7") and Codex().worker_outcome(resumed, "").session == "01a15edb-4273-7181-98d3-f0fa7996d6e7", "a real run's session is its thread.started event's, its report the last answer, and a resume keeps the thread"
+    ended = Codex().worker_outcome(failed, "it broke")
+    assert ended.report == "it broke" and ended.error == "The 'no-such-model-9' model is not supported when using Codex with a ChatGPT account.", "a run that exits 0 with a failed turn is failed by it, its message read out of the error"
 
 
 def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: App, monkeypatch, tmp_path):

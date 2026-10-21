@@ -12,7 +12,7 @@ class Dispatch:
     task: str
     brief: str
     type: str
-    model: str
+    model: str | None
     session: str = ""
     status: str = "running"
     is_active: bool = True

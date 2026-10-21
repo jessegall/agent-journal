@@ -12,7 +12,6 @@ from journal.launcher.support.foreign_hooks import ForeignHooks
 from journal.launcher.support.launcher_memory import LauncherMemory
 from journal.launcher.screen import Screen
 from journal.providers.providers import Providers
-from journal.providers.support.hooks_ready import HooksReady
 
 
 class Menu:
@@ -92,7 +91,7 @@ class Menu:
         return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if stashed_prior else 1) == 0
 
     def _trust_question(self, agent: str) -> None:
-        if Providers().lookup(agent).hooks_ready(self.root) == HooksReady.READY:
+        if not Providers().lookup(agent).hooks_ready(self.root).needs_trust():
             return
         notes = [f"{agent.capitalize()} asks once to trust the hooks the journal wrote into this project. Choose Trust all and continue", f"when {agent.capitalize()} asks, or the journal cannot follow what {agent.capitalize()} does."]
         self.screen.pick(f"Trust the journal's hooks in {agent.capitalize()}", notes, [Option("Understood")], 0)

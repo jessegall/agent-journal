@@ -11,9 +11,7 @@ from journal.providers.provider import TAIL_BYTES, Provider
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
 from journal.models.mcp_server import McpServer
-from journal.providers.support.agent_status import AgentStatus
 from journal.providers.support.hooks_ready import HooksReady
-from journal.providers.support.context_file import ContextFile
 from journal.providers.support.profile import Profile
 from journal.support.agent_message import AgentMessage
 from journal.support.file_edit import FileEdit
@@ -70,7 +68,7 @@ class Claude(Provider):
 
     @staticmethod
     def subagent(input: dict) -> SubagentDispatch:
-        return SubagentDispatch(str(input.get("subagent_type", "")), str(input.get("model", "")), str(input.get("description", "")), str(input.get("prompt", "")))
+        return SubagentDispatch(str(input.get("subagent_type", "")), str(input.get("model", "")), str(input.get("description", "")), str(input.get("prompt", "")), bool(input.get("run_in_background")))
 
     @staticmethod
     def config_folder() -> Path:
@@ -144,12 +142,6 @@ class Claude(Provider):
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
-
-    def __init__(self) -> None:
-        self._status_files: dict[Path, ContextFile] = {}
-
-    def status(self, session: str, home: Path) -> AgentStatus:
-        return self._status_files.setdefault(home, ContextFile(home)).reading(session)
 
     def profile_text(self, profile: Profile, model: str, codex_model: str) -> str:
         return f"---\nname: {profile.name}\ndescription: {profile.description}\ntools: {profile.tools}\nkind: {profile.kind}\nmodel: {model}\ncodex-model: {codex_model}\n---\n\n{profile.body}\n"

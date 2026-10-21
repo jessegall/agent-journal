@@ -90,9 +90,9 @@ def test_each_hooks_ready_state_is_read_from_the_projects_settings_and_codexs_tr
     (root / "home" / ".codex").mkdir(parents=True)
     (root / "home" / ".codex" / "config.toml").write_text(tables(["session_start", "stop"]))
     assert Codex().hooks_ready(root) == HooksReady.TRUST_OUTDATED, "trusted before the journal wired the hooks it has now"
-    every = ["session_start", "user_prompt_submit", "pre_tool_use", "post_tool_use", "pre_compact", "stop", "subagent_start", "subagent_stop", "session_end"]
-    (root / "home" / ".codex" / "config.toml").write_text(tables(every))
-    assert Codex().hooks_ready(root) == HooksReady.READY
+    captured = Path(__file__).with_name("hook_bodies") / "codex_0.163.0_trust.toml"
+    (root / "home" / ".codex" / "config.toml").write_text(captured.read_text().replace("/project/.codex/hooks.json", str(hooks)))
+    assert Codex().hooks_ready(root) == HooksReady.READY, "the tables a real Codex 0.163.0 wrote when it trusted every hook"
 
 
 def test_the_private_folder_keeps_keys_and_secrets_to_their_user_and_out_of_git(tmp_path, monkeypatch):
@@ -170,7 +170,7 @@ def test_an_agents_row_offers_only_what_its_program_reports(app: App, monkeypatc
     from journal.models.agent import Agent
     from journal.repositories.agents import Agents
     from journal.support.actor import Actor
-    from journal.support.scope import Scope
+    from journal.repositories.scope import Scope
     monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
     (app.config.root / "status").mkdir()
     (app.config.root / "status" / "claude-1.json").write_text(json.dumps({"context_window": {"used_percentage": 42}, "model": {"display_name": "Opus 5.5"}, "rate_limits": {"five_hour": {"used_percentage": 10, "resets_at": 99}}}))

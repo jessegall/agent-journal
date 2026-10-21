@@ -7,7 +7,7 @@ from journal.support.agent_message import AgentMessage
 from journal.support.subagent_dispatch import SubagentDispatch
 
 
-DISPATCHES = f"(kind IN ('SubagentEnded', 'Stop', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished', 'ToolFailed') AND json_extract(data, '$.call.operation.kind') IN ('{SubagentDispatch.kind}', '{AgentMessage.kind}')))"
+DISPATCHES = f"(kind IN ('SubagentStarted', 'SubagentEnded', 'Stop', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished', 'ToolFailed') AND json_extract(data, '$.call.operation.kind') IN ('{SubagentDispatch.kind}', '{AgentMessage.kind}')))"
 
 
 class Entries(ScopedRepository[Entry]):

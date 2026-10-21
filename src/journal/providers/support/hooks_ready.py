@@ -8,3 +8,6 @@ class HooksReady(StrEnum):
     UNWIRED = "unwired"
     UNTRUSTED = "untrusted"
     TRUST_OUTDATED = "trust outdated"
+
+    def needs_trust(self) -> bool:
+        return self in (HooksReady.UNTRUSTED, HooksReady.TRUST_OUTDATED)
