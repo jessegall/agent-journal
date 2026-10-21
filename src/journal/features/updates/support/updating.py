@@ -11,7 +11,7 @@ from journal.features.updates.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
 from journal.features.updates.support.release_source import ReleaseSource
 from journal.features.updates.support.update_mark import UpdateMark
-from journal.features.updates.support.update_readings import UpdateReadings
+from journal.features.updates.support.update_data import UpdateData
 from journal.features.updates.support.update_target import UpdateTarget
 from journal.supervisor_link import SupervisorLink
 from journal.support.actor import Actor
@@ -85,9 +85,9 @@ class Updating:
         newer = self.newer()
         return newer[-1].version if newer else VERSION
 
-    def readings(self) -> UpdateReadings:
+    def data(self) -> UpdateData:
         held = self.mark.held()
-        return UpdateReadings(installed=self.label(), latest=self.latest(), newer=self.is_out(), branch=self.branch(), versions=[release.version for release in self.newer()],
+        return UpdateData(installed=self.label(), latest=self.latest(), newer=self.is_out(), branch=self.branch(), versions=[release.version for release in self.newer()],
                               updating=held.to if held else "", step=held.step if held else "", problem=self.problem)
 
     def tick(self, time: float) -> None:

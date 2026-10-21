@@ -17,7 +17,7 @@ ROWS_LIMIT = 200
 
 
 class RecordEdit(AgentListener[ToolFinished]):
-    """When a call that writes files ends, each file it wrote is kept as an edit row before the hook answers, so the pane that polls next sees it: the editor's tools from the patch they answer with, or from the file against its last readings when they answer with none, a shell line from the call's written paths against the file as the journal saw it last; the file as it now is is kept, so the next change is told against it."""
+    """When a call that writes files ends, each file it wrote is kept as an edit row before the hook answers, so the pane that polls next sees it: the editor's tools from the patch they answer with, or from the file against its last copy when they answer with none, a shell line from the call's written paths against the file as the journal saw it last; the file as it now is is kept, so the next change is told against it."""
 
     blocking = True
 

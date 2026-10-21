@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.workers.support.workers_conduct import WorkersConduct
-from journal.features.workers.support.workers_readings_reader import WorkersReadingsReader
+from journal.features.workers.support.workers_data_reader import WorkersDataReader
 from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
@@ -31,7 +31,7 @@ class Workers(Feature):
     commands = (WorkerCommand,)
     seeds = (WorkersAtBoot,)
     listeners = (MarkSubagents, WorkerCards)
-    readings = (WorkersReadingsReader,)
+    data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
 
     WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_after=0)

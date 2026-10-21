@@ -24,7 +24,7 @@ class TasksConduct(Conduct):
     def on_tool_starting_tasks(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         command = event.call.command
-        last = event.readings.of(Tasks).last_commands
+        last = event.data.of(Tasks).last_commands
         if not command or len(last) < SAME or any(earlier != command for earlier in last):
             return self.unchanged()
         return self.unchanged(Tasks.STOP_POLLING.create(times=SAME, command=command))
@@ -36,7 +36,7 @@ class TasksConduct(Conduct):
     def on_task_closed_tasks(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
-        tasks, plans = event.readings.of(Tasks), event.readings.of(Plans)
+        tasks, plans = event.data.of(Tasks), event.data.of(Plans)
         if event.how != "done" or tasks.in_hand or not tasks.parked or (plans.started is not None and plans.started.next_task):
             return self.unchanged()
         return self.unchanged(Tasks.PARKED_TASK_NAMED_AT_CLOSE.create(n=tasks.parked[0], why=tasks.first_parked_why))

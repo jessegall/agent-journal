@@ -64,7 +64,7 @@ class SortingDump(BaseState):
         if event.dump_id != self.dump_id:
             return self.unchanged()
         summed = () if event.stopped else (DumpsFeature.DUMP_FILED_SUM_IT_UP.create(n=event.dump_id, outcome=event.outcome),)
-        following = event.readings.of(DumpsFeature)
+        following = event.data.of(DumpsFeature)
         if following.in_hand and following.in_hand != self.dump_id:
             return self.changed(replace(self, dump_id=following.in_hand, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVED_FILE_IT.create(n=following.in_hand, count=items_in(following.waiting)))
         return self.pop().typing(*summed)

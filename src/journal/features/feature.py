@@ -23,7 +23,7 @@ class Feature:
     nudges: ClassVar[tuple[Nudge, ...]] = ()
     options: ClassVar[tuple[Option, ...]] = ()
     listeners: ClassVar[tuple[type[Listener], ...]] = ()
-    readings: ClassVar[tuple[type, ...]] = ()
+    data: ClassVar[tuple[type, ...]] = ()
     conduct: ClassVar[tuple[type[Conduct], ...]] = ()
     commands: ClassVar[tuple[type[Command], ...]] = ()
     seeds: ClassVar[tuple[type[Seed], ...]] = ()

@@ -14,7 +14,7 @@ class UpdateController:
 
     def index(self, request: Request) -> Response:
         page = self.changelog.page(0)
-        return Response.json({**asdict(self.updating.readings()), "changelog": page.text, "shown": page.shown, "more": page.more})
+        return Response.json({**asdict(self.updating.data()), "changelog": page.text, "shown": page.shown, "more": page.more})
 
     def fresh(self, request: Request) -> Response:
         self.updating.read()
@@ -26,4 +26,4 @@ class UpdateController:
 
     def update(self, request: Request) -> Response:
         self.updating.update_now(request.actor)
-        return Response.json(self.updating.readings(), 202)
+        return Response.json(self.updating.data(), 202)

@@ -1073,16 +1073,19 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app, monkeypatch):
     text = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
     assert "Talk like a good butler" in text and 'Address me as "Sir Example"' in text
     console.run(["voice", "choose", "squire"], AGENT)
-    assert typed and "changed how you talk" in typed[-1] and 'Address me as "my liege"' in typed[-1]
+    pieces = [line for line in typed if line.startswith("[journal]")]
+    whole = " ".join(line.removeprefix("[journal] ") for line in pieces)
+    assert "changed how you talk" in whole and 'Address me as "my liege"' in whole, "the change is typed whole, in as many marked pieces as the terminal needs"
     assert "* squire" in console.run(["voice", "list"], USER).out
-    hook(app, "UserPromptSubmit", prompt=typed[-1])
+    for piece in pieces:
+        hook(app, "UserPromptSubmit", prompt=piece)
     app.runtime().deferred.drain()
     said = len(typed)
     app.container.get(SettingRows).set("voices.avatar_shown", "never", Actor.user(1))
     app.container.get(SettingRows).set("voices.avatar", False, Actor.user(1))
     assert len(typed) == said, "a change to the figure's look is no change of voice: nothing is typed"
     app.container.get(SettingRows).set("voices.title", "Captain", Actor.user(1))
-    assert len(typed) == said + 1 and "changed how you talk" in typed[-1], "a change to the words is typed once"
+    assert "changed how you talk" in typed[said] and sum("changed how you talk" in line for line in typed[said:]) == 1, "a change to the words is typed once, in its pieces"
 
 
 def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app, monkeypatch):
@@ -1998,7 +2001,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the
     assert sent[-1]["verb"] == "type" and "mcp__linear__authenticate" in sent[-1]["line"], "the agent is asked to sign in through the server's own tool"
 
 
-def test_a_task_finished_while_a_skill_is_owed_leaves_the_debt_readings_until_the_read(skilled):
+def test_a_task_finished_while_a_skill_is_owed_leaves_the_debt_data_until_the_read(skilled):
     from journal.support.requiring import Requiring
     from journal.repositories.agents import Agents
     app = skilled
@@ -2676,7 +2679,7 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     status, body = hook(app, "SessionStart", source="compact")
     assert row().oriented is False and row().mark_owed == 0, "a start after a compaction owes the look again; the start's own write touches oriented alone"
 
-def test_an_agent_readings_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set(tmp_path: Path, monkeypatch):
+def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set(tmp_path: Path, monkeypatch):
     import json
     import sqlite3
     monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
@@ -4685,14 +4688,14 @@ def test_an_update_never_crosses_a_major_version(app):
     updating.releases = Release.named(["v3.9.0", "v4.0.0", "v4.99.0", "v5.0.0"])
     assert [release.tag for release in updating.newer()] == ["v4.99.0"]
     updating.releases = Release.named(["v5.0.0"])
-    assert updating.newer() == [] and not updating.readings().newer
+    assert updating.newer() == [] and not updating.data().newer
 
 
 def test_a_newer_release_is_installed_on_its_own_only_when_the_setting_is_on(app):
     source, installer = Source("v4.0.0", "v4.1.0", "v4.99.0", "v5.0.0"), Installer()
     off = updating_with(app, source, installer, auto=False)
     off.checked()
-    assert installer.ran == [] and off.readings().latest == "4.99.0" and source.tags_asked == ["v4."]
+    assert installer.ran == [] and off.data().latest == "4.99.0" and source.tags_asked == ["v4."]
     on = updating_with(app, source, installer, auto=True)
     on.checked()
     assert installer.ran == ["v4.99.0"] and on.problem == ""
@@ -5507,7 +5510,7 @@ def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(
     mark = app.container.get(UpdateMark)
     updating = updating_with(app, Source("v4.0.0", "v4.99.0"), Installer(), auto=True)
     updating.checked()
-    assert mark.held().to == "4.99.0" and updating.readings().updating == "4.99.0", "the update keeps its mark through the restart it asks for"
+    assert mark.held().to == "4.99.0" and updating.data().updating == "4.99.0", "the update keeps its mark through the restart it asks for"
     try:
         updating.update_now(Actor.user(1))
         raise AssertionError("a second update started beside the first")
@@ -5623,11 +5626,11 @@ def test_a_journal_set_to_follow_a_branch_installs_that_branchs_newest_commit(ap
     updating = updating_with(app, source, installer, auto=True)
     updating.checked()
     assert source.branches_asked == [("https://github.com/jessegall/agent-journal", "development")] and source.tags_asked == [], "a followed branch is asked for its head, never the releases"
-    assert installer.ran == [] and not updating.readings().newer and "newest commit" in updating.said(), "the installed commit is the branch's head: nothing to install"
+    assert installer.ran == [] and not updating.data().newer and "newest commit" in updating.said(), "the installed commit is the branch's head: nothing to install"
     source.head = "bbbbbbb2222"
     updating.checked()
-    assert installer.ran == ["development"] and updating.readings().latest == "bbbbbbb" and updating.readings().branch == "development", "the branch moved on, so its head is installed, by its name"
-    assert updating.readings().installed == "development at aaaaaaa", "the readings names what is installed by the branch and its commit, not by the release number"
+    assert installer.ran == ["development"] and updating.data().latest == "bbbbbbb" and updating.data().branch == "development", "the branch moved on, so its head is installed, by its name"
+    assert updating.data().installed == "development at aaaaaaa", "the feature data names what is installed by the branch and its commit, not by the release number"
     assert updating.label() == "development at aaaaaaa", "what is installed is named by the branch and its commit"
 
 
@@ -5822,7 +5825,7 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
 
 
 def test_a_hook_on_a_started_plan_reads_the_plans_tree_once(app, monkeypatch):
-    """The plans readings reads the started plan's tasks and phases once per event, whatever their number: a plan of thirty tasks in three phases costs a hook a bounded number of statements."""
+    """The plans data reader reads the started plan's tasks and phases once per event, whatever their number: a plan of thirty tasks in three phases costs a hook a bounded number of statements."""
     from journal.db.connection import Connection
     console = app.console()
     console.run(["plan", "create", "big", "--brief", "many tasks"], USER)

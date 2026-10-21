@@ -6,7 +6,7 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.rows.worker_back import WorkerBack
 from journal.features.tasks.states.idle import Idle
-from journal.features.tasks.support.tasks_readings import TasksReadings
+from journal.features.tasks.support.tasks_data import TasksData
 
 
 @dataclass(frozen=True)
@@ -24,17 +24,17 @@ class Orchestrating(Idle):
         from journal.features.workers.states.delegating import Delegating
         return Delegating(**fields)
 
-    def stop_answer(self, tasks: TasksReadings, settings: Settings) -> Transition:
+    def stop_answer(self, tasks: TasksData, settings: Settings) -> Transition:
         return self.hold(orchestrate(tasks)) if tasks.open_ids else self.unchanged()
 
-    def quiet_nudges(self, tasks: TasksReadings) -> tuple[Nudge, ...]:
+    def quiet_nudges(self, tasks: TasksData) -> tuple[Nudge, ...]:
         return (orchestrate(tasks),) if tasks.open_ids else ()
 
     def on_worker_back(self, event: WorkerBack, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        return self.unchanged(*self.quiet_nudges(event.readings.of(Tasks)))
+        return self.unchanged(*self.quiet_nudges(event.data.of(Tasks)))
 
 
-def orchestrate(tasks: TasksReadings) -> Nudge:
+def orchestrate(tasks: TasksData) -> Nudge:
     from journal.features.workers.feature import Workers
     return Workers.ORCHESTRATE.create(count=len(tasks.open_ids), tasks=tasks.open_summary)

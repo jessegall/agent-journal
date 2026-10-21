@@ -12,7 +12,7 @@ from journal.events.rows.plan_done import PlanDone
 from journal.events.rows.plan_postponed import PlanPostponed
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_started import TaskStarted
-from journal.events.readings import Readings
+from journal.events.feature_data import FeatureData
 from journal.features.tasks.states.working import Working
 
 
@@ -65,7 +65,7 @@ class FollowingPlan(Working):
         from journal.features.plans.feature import Plans
         if event.task_id != self.task_id:
             return self.unchanged()
-        started = event.readings.of(Plans).started
+        started = event.data.of(Plans).started
         if started is not None and started.at_checkpoint:
             return self.changed(replace(self, task_id=0, moved_from=event.task_id, at_checkpoint=True, phase=started.checkpoint_phase))
         return self.changed(replace(self, task_id=0, moved_from=event.task_id))
@@ -86,11 +86,11 @@ class FollowingPlan(Working):
             return self.unchanged()
         return self.pop(Plans.THE_USER_ABANDONED_THE_PLAN.create(n=event.plan_id)) if event.by_user else self.pop()
 
-    def on_resume(self, readings: Readings, settings: Settings) -> tuple[Nudge, ...] | Transition:
+    def on_resume(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.plans.feature import Plans
-        started = readings.of(Plans).started
+        started = data.of(Plans).started
         if started is None or started.plan_id != self.plan_id:
             return self.pop()
         if started.started_task and started.started_task != self.task_id:
             return self.changed(replace(self, task_id=started.started_task, at_checkpoint=False, phase=0, edits=0))
-        return super().on_resume(readings, settings)
+        return super().on_resume(data, settings)

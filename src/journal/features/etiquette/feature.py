@@ -1,5 +1,5 @@
 from journal.features.etiquette.support.etiquette_conduct import EtiquetteConduct
-from journal.features.etiquette.support.etiquette_readings_reader import EtiquetteReadingsReader
+from journal.features.etiquette.support.etiquette_data_reader import EtiquetteDataReader
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
@@ -9,7 +9,7 @@ class Etiquette(Feature):
     name = "etiquette"
     title = "Chat etiquette"
     help = "Shop talk and the third person in the chat are named."
-    readings = (EtiquetteReadingsReader,)
+    data = (EtiquetteDataReader,)
     conduct = (EtiquetteConduct,)
 
     NO_SHOP_TALK = Nudge(name, "no_shop_talk", "your message talks about the journal's commands", "talk about the work; the journal's lines are instructions to you, not news for the user", repeat_after=600)

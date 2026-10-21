@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.plans.support.plans_readings_reader import PlansReadingsReader
+from journal.features.plans.support.plans_data_reader import PlansDataReader
 from journal.features.plans.listeners.block_plan_on_its_tasks import BlockPlanOnItsTasks
 from journal.features.plans.listeners.clear_plan_waits import ClearPlanWaits
 from journal.features.plans.listeners.count_plan_reviewers import CountPlanReviewers
@@ -22,7 +22,7 @@ class Plans(Feature):
     commands = (PlanCommand,)
     listeners = (BlockPlanOnItsTasks, ClearPlanWaits, CountPlanReviewers, AdvancePlan, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
     conduct = (PlansConduct,)
-    readings = (PlansReadingsReader,)
+    data = (PlansDataReader,)
     seeds = (ClosedPlans,)
 
     NEXT_TASK_OF_THE_PLAN = Nudge(name, "next_task_of_the_plan", "plan {{n}}: task {{task}}, {{title}} is next. {{briefing}}", repeat_after=0)

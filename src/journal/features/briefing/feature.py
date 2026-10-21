@@ -3,7 +3,7 @@ from journal.features.briefing.listeners.end_silent_sessions import EndSilentSes
 from journal.features.briefing.listeners.owe_the_look_at_start import OweTheLookAtStart
 from journal.features.feature import Feature
 from journal.features.briefing.support.briefing_conduct import BriefingConduct
-from journal.features.briefing.support.briefing_readings_reader import BriefingReadingsReader
+from journal.features.briefing.support.briefing_data_reader import BriefingDataReader
 from journal.engine.nudge import Nudge
 
 
@@ -13,7 +13,7 @@ class Briefing(Feature):
     help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any state's own line at the start."
     conduct = (BriefingConduct,)
     listeners = (OweTheLookAtStart, EndOtherSessions, EndSilentSessions)
-    readings = (BriefingReadingsReader,)
+    data = (BriefingDataReader,)
 
     JOURNAL_READY = Nudge(name, "journal_ready", "the journal is ready on {{env}}", repeat_after=0)
     RULES_IN_FORCE = Nudge(name, "rules_in_force", "{{count}} rules in force: {{rows}}", repeat_after=0)

@@ -27,7 +27,7 @@ class EtiquetteConduct(Conduct):
     def on_tool_finished_etiquette(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette
         every = int(settings.of(Etiquette.REMIND_EVERY))
-        if event.subagent or every <= 0 or event.readings.of(Etiquette).lines_since_reminder < every:
+        if event.subagent or every <= 0 or event.data.of(Etiquette).lines_since_reminder < every:
             return self.unchanged()
         return self.unchanged(Etiquette.A_LINE_IS_AN_INSTRUCTION.create())
 

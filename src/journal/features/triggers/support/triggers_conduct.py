@@ -14,15 +14,15 @@ class TriggersConduct(Conduct):
 
     def on_prompt_submitted_triggers(self, event: PromptSubmitted, settings: Settings) -> Transition:
         from journal.features.triggers.feature import Triggers
-        return self.unchanged(*lines_for(triggers_met(event.readings.of(Triggers).triggers, event.prompt)))
+        return self.unchanged(*lines_for(triggers_met(event.data.of(Triggers).triggers, event.prompt)))
 
     def on_message_arrived_triggers(self, event: MessageArrived, settings: Settings) -> Transition:
         from journal.features.triggers.feature import Triggers
-        return self.unchanged(*lines_for(triggers_met(event.readings.of(Triggers).triggers, event.text)))
+        return self.unchanged(*lines_for(triggers_met(event.data.of(Triggers).triggers, event.text)))
 
     def on_tool_starting_triggers(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.triggers.feature import Triggers
-        rows = triggers_met(event.readings.of(Triggers).triggers, event.call.input_text)
+        rows = triggers_met(event.data.of(Triggers).triggers, event.call.input_text)
         denied = [t for t in rows if t.action == TriggerAction.DENY]
         if denied:
             return self.hold(Triggers.DENIED.create(title=denied[0].text))

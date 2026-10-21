@@ -2,7 +2,7 @@ from journal.features.feature import Feature
 from journal.features.profiles.listeners.count_profile_use import CountProfileUse
 from journal.engine.nudge import Nudge
 from journal.features.profiles.support.profiles_conduct import ProfilesConduct
-from journal.features.profiles.support.profiles_readings_reader import ProfilesReadingsReader
+from journal.features.profiles.support.profiles_data_reader import ProfilesDataReader
 from journal.support.option import Option
 
 
@@ -15,7 +15,7 @@ class Profiles(Feature):
     CODEX_MODEL = Option("profiles.model.codex", "Model on Codex", "The model the journal's subagent profiles run on under Codex", "gpt-6.1-sol", kind="model", provider="codex")
     options = (CLAUDE_MODEL, CODEX_MODEL)
     listeners = (CountProfileUse,)
-    readings = (ProfilesReadingsReader,)
+    data = (ProfilesDataReader,)
     conduct = (ProfilesConduct,)
     WORKER_PROFILE_IS_NOT_A_SUBAGENT = Nudge(name, "worker_profile_is_not_a_subagent", "{{name}} is a worker profile: it writes", "dispatch a worker with `journal worker dispatch \"<Name>\" \"<job>\" --profile {{name}}`, not a subagent", repeat_after=0)
     nudges = (WORKER_PROFILE_IS_NOT_A_SUBAGENT,)

@@ -9,11 +9,11 @@ from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
-from journal.events.readings import Readings
+from journal.events.feature_data import FeatureData
 from journal.events.rows.plan_started import PlanStarted
 from journal.events.rows.setting_changed import SettingChanged
 from journal.events.rows.task_started import TaskStarted
-from journal.features.tasks.support.tasks_readings import TasksReadings
+from journal.features.tasks.support.tasks_data import TasksData
 from journal.engine.nudge import Nudge
 
 ASK_ABOUT_PARKED_AFTER = 60.0
@@ -49,7 +49,7 @@ class Idle(BaseState):
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        started = event.readings.of(Plans).started
+        started = event.data.of(Plans).started
         mode_state = self.mode_state(settings).active(event.time)
         if started:
             return mode_state.push(mode_state.plan_state(plan_id=started.plan_id, task_id=started.started_task, approved=True, logged_at=event.time))
@@ -61,13 +61,13 @@ class Idle(BaseState):
             return self.unchanged()
         return self.changed(self.mode_state(settings))
 
-    def on_resume(self, readings: Readings, settings: Settings) -> tuple[Nudge, ...] | Transition:
+    def on_resume(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...] | Transition:
         mode_state = self.mode_state(settings)
         return () if mode_state is self else self.changed(mode_state)
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        started = event.readings.of(Plans).started
+        started = event.data.of(Plans).started
         if started and event.task_id in started.tasks:
             return self.push(self.plan_state(plan_id=started.plan_id, task_id=event.task_id, approved=True, logged_at=event.time))
         return self.push(self.working_state(task_id=event.task_id, logged_at=event.time))
@@ -84,7 +84,7 @@ class Idle(BaseState):
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
-        tasks, plans = event.readings.of(Tasks), event.readings.of(Plans)
+        tasks, plans = event.data.of(Tasks), event.data.of(Plans)
         if tasks.parked:
             return self.hold(Tasks.PARKED_TASKS_STILL_OPEN.create(tasks=tasks.parked_summary))
         if event.held_before:
@@ -95,20 +95,20 @@ class Idle(BaseState):
             return self.hold(Plans.APPROVED_UNSTARTED.create(n=plans.approved[0]))
         return self.stop_answer(tasks, settings) if settings.of(Tasks.AUTO) else self.unchanged()
 
-    def stop_answer(self, tasks: TasksReadings, settings: Settings) -> Transition:
+    def stop_answer(self, tasks: TasksData, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         if tasks.next_open:
             return self.hold(Tasks.NEXT_TASK_HOLDS_THE_STOP.create(n=tasks.next_open.id, title=tasks.next_open.title))
         return self.unchanged()
 
-    def quiet_nudges(self, tasks: TasksReadings) -> tuple[Nudge, ...]:
+    def quiet_nudges(self, tasks: TasksData) -> tuple[Nudge, ...]:
         from journal.features.tasks.feature import Tasks
         return (Tasks.CHECK_IN_AFTER_QUIET.create(),)
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         quiet = event.time - self.quiet_since
-        tasks = event.readings.of(Tasks)
+        tasks = event.data.of(Tasks)
         if tasks.parked and quiet >= ASK_ABOUT_PARKED_AFTER and not self.parked_asked:
             return self.changed(replace(self, parked_asked=True), Tasks.PARKED_TASK_ASKED_ABOUT.create(n=tasks.parked[0], why=tasks.first_parked_why))
         if tasks.blocked_without_wait and quiet >= ASK_ABOUT_BLOCKED_AFTER:

@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.skills.listeners.owe_skills import OweSkills
 from journal.features.skills.support.skills_conduct import SkillsConduct
-from journal.features.skills.support.skills_readings_reader import SkillsReadingsReader
+from journal.features.skills.support.skills_data_reader import SkillsDataReader
 from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.skills.commands.skill_command import SkillCommand
@@ -17,7 +17,7 @@ class Skills(Feature):
     help = "The journal's skills are written for the agent and required by the states at the moments they matter: the journal's at a start, a state's at a start in it, the ones a prompt names; a write waits until the file is read."
     commands = (SkillCommand,)
     listeners = (OweSkills, MarkLoaded, ForgetAtCompaction)
-    readings = (SkillsReadingsReader,)
+    data = (SkillsDataReader,)
     conduct = (SkillsConduct,)
 
     READ_THE_SKILL_FIRST = Nudge(name, "read_the_skill_first", "read the {{skill}} skill before anything else: {{path}}", "writes wait until you have", repeat_after=0)

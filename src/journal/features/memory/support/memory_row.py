@@ -5,7 +5,7 @@ from journal.support.chat_mark import ChatMark
 
 @dataclass(frozen=True)
 class MemoryRow:
-    """A fact, rule or reminder as the readings carries it: its noun, number, words, keywords, the chat's switch for it and its presence in the agent's context window."""
+    """A fact, rule or reminder as the feature data carries it: its noun, number, words, keywords, the chat's switch for it and its presence in the agent's context window."""
 
     noun: str
     id: int

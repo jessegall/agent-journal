@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.sequences.support.sequences_readings_reader import SequencesReadingsReader
+from journal.features.sequences.support.sequences_data_reader import SequencesDataReader
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
@@ -21,7 +21,7 @@ class Sequences(Feature):
     help = "Steps the agent follows one at a time."
     commands = (SequenceCommand,)
     listeners = (StartOnCreated, CarryRunsToTheNextSession, FollowStepByCommand, EndRunsOfADeletedSequence, EndRunsOfADeletedRow, EndRunsOfACancelledRow, RecordRunChanges)
-    readings = (SequencesReadingsReader,)
+    data = (SequencesDataReader,)
     conduct = (SequencesConduct,)
     seeds = (ShippedSequences,)
 

@@ -8,7 +8,7 @@ from journal.features.plugins.listeners.plugins_hear_rows import PluginsHearRows
 from journal.features.plugins.listeners.tell_a_plugin_its_settings import TellAPluginItsSettings
 from journal.features.plugins.seeds.plugin_services_at_boot import PluginServicesAtBoot
 from journal.features.plugins.support.plugins_conduct import PluginsConduct
-from journal.features.plugins.support.plugins_readings_reader import PluginsReadingsReader
+from journal.features.plugins.support.plugins_data_reader import PluginsDataReader
 from journal.engine.nudge import Nudge
 
 
@@ -19,7 +19,7 @@ class PluginsFeature(Feature):
     HOLD_WINDOW = Option("plugins.hold_window_ms", "A plugin's hold window at most", "Milliseconds a plugin holding an event may take to answer; a plugin's own window in its manifest is cut to this, and one past its window is skipped and its fault recorded", 50, unit="ms")
     options = (HOLD_WINDOW,)
     listeners = (PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
-    readings = (PluginsReadingsReader,)
+    data = (PluginsDataReader,)
     conduct = (PluginsConduct,)
     PLUGIN_FILES_ARE_THE_USERS = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_after=0)
     nudges = (PLUGIN_FILES_ARE_THE_USERS,)

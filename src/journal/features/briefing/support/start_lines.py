@@ -14,7 +14,7 @@ TAKEN_OVER_WITHIN = timedelta(days=1)
 
 
 class StartLines:
-    """What the start block names, worked out here once: when another session worked here lately, the rules, facts and reminders numbered, and what waits; the briefing conduct says the block from the readings that carries them."""
+    """What the start block names, worked out here once: when another session worked here lately, the rules, facts and reminders numbered, and what waits; the briefing conduct says the block from the feature data that carries them."""
 
     def __init__(self, agents: Agents, rules: Rules, facts: Facts, reminders: Reminders, tasks: Tasks, messages: Messages, questions: Questions) -> None:
         self.agents, self.rules, self.facts, self.reminders = agents, rules, facts, reminders

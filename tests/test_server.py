@@ -205,8 +205,8 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         assert check["last_passed"] is True and "running" in check
         release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).out.split()[1].rstrip(":")
         assert call(server, "GET", f"/journal/sequences/{release}")[1]["steps"] == ["tag", "push"]
-        readings = call(server, "GET", "/journal/summary")[1]["environments"][0]
-        assert {"messages", "tasks", "questions"} <= set(readings)
+        data = call(server, "GET", "/journal/summary")[1]["environments"][0]
+        assert {"messages", "tasks", "questions"} <= set(data)
         (tmp_path / "hello.py").write_text("print('hi')\n")
         assert call(server, "GET", "/journal/project-files/file?path=hello.py")[1]["lines"] == 1
         assert "diff" in call(server, "GET", "/journal/project-files/diff?path=hello.py")[1]
@@ -491,7 +491,7 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         manifest = call(server, "GET", "/journal/manifest")[1]
         named = [f["name"] for f in manifest["features"]]
         tasks = next(f for f in manifest["features"] if f["name"] == "tasks")
-        assert [s["name"] for s in tasks["options"]] == ["auto", "first_nudge_after", "name_every", "log_after"], "a feature's options, in its words"
+        assert [s["name"] for s in tasks["options"]] == ["auto", "first_nudge_after", "name_every", "log_after", "log_old_after_minutes"], "a feature's options, in its words"
         assert all(f in named for f in ("messages", "shell", "voices")) and "kanban" not in named, "version 3's leftovers are gone"
         assert "faults" in named, "slow requests are a setting in every project, off by default and switched on where the journal develops itself"
         assert next(f for f in manifest["features"] if f["name"] == "pausing")["fixed"], "pausing is no setting: the pause button is always there"
@@ -720,16 +720,16 @@ def test_a_phone_pairs_through_the_tunnel_and_is_known_by_its_cookie_alone(shari
     offer = call(server, "POST", "/journal/phones/connect", {"days": 7})[1]
     code = offer["link"].split("#")[1]
     assert phone_call(share_server, "POST", "/p/pair", {"code": code}, origin="https://elsewhere.example")[0] == 403, "a write from another site is refused"
-    status, readings, headers = phone_call(share_server, "POST", "/p/pair", {"code": code, "device": "iPhone"}, origin=origin)
+    status, data, headers = phone_call(share_server, "POST", "/p/pair", {"code": code, "device": "iPhone"}, origin=origin)
     cookie = headers["Set-Cookie"]
-    assert status == 200 and readings["phone"] == "iPhone" and cookie.startswith("__Host-phone=") and all(part in cookie for part in ("Secure", "HttpOnly", "SameSite=Strict", "Path=/", "Max-Age=")), "the key lives in a __Host- cookie the page's scripts cannot read"
+    assert status == 200 and data["phone"] == "iPhone" and cookie.startswith("__Host-phone=") and all(part in cookie for part in ("Secure", "HttpOnly", "SameSite=Strict", "Path=/", "Max-Age=")), "the key lives in a __Host- cookie the page's scripts cannot read"
     kept = cookie.split(";", 1)[0]
     assert phone_call(share_server, "GET", "/p/state", cookie=kept)[1]["phone"] == "iPhone", "the phone is known by its cookie"
     assert phone_call(share_server, "GET", "/p/state")[:2] == (401, {"error": "this phone is not connected"}), "without its key, no phone"
     status, refused, _ = phone_call(share_server, "GET", "/p/state", cookie="__Host-phone=paired-under-version-3")
     assert status == 401 and refused["paired_before"], "a key this journal does not know, as a phone paired under version 3 holds, is asked to pair again"
     status, sent, _ = phone_call(share_server, "POST", "/p/journal/messages", {"text": "from the train"}, origin=origin, cookie=kept)
-    assert status == 201 and sent["created_by"] == f"phone:{readings['id']}" and sent["author"] == "user", "the phone writes as itself, its words the user's"
+    assert status == 201 and sent["created_by"] == f"phone:{data['id']}" and sent["author"] == "user", "the phone writes as itself, its words the user's"
     assert any(m["text"] == "from the train" for m in phone_call(share_server, "GET", "/p/journal/messages", cookie=kept)[1]["rows"]), "the phone reads the journal through version 4's own controllers"
     assert phone_call(share_server, "GET", "/p/journal/secrets", cookie=kept)[0] == 403, "no secret is ever read from a phone"
     assert [phone_call(share_server, "GET", f"/p/journal/{path}", cookie=kept)[0] for path in ("mcp", "chart", "plugins", "profiles", "tunnel", "updates")] == [403] * 6, "a phone reads only what its pages show: nothing that starts a program or sets how the journal runs"
@@ -848,9 +848,9 @@ def test_a_visitor_comments_on_a_shared_document_and_it_comes_to_the_chat(sharin
 def test_the_tunnel_says_what_keeps_links_from_reaching_the_journal(server, tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("PATH", str(tmp_path))
-    readings = call(server, "GET", "/journal/tunnel")[1]
-    assert readings["installed"] is False and readings["problems"] == ["tunler is not installed on this machine, so share links cannot reach this journal."]
-    assert readings["server"] == "tunler.jessegall.nl", "with no server set, the one the journal installs from is offered"
+    data = call(server, "GET", "/journal/tunnel")[1]
+    assert data["installed"] is False and data["problems"] == ["tunler is not installed on this machine, so share links cannot reach this journal."]
+    assert data["server"] == "tunler.jessegall.nl", "with no server set, the one the journal installs from is offered"
     assert call(server, "GET", "/journal/tunnel/domains")[1] == []
 
 

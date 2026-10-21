@@ -50,7 +50,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | etiquette | etiquette.say_you_not_the_user | in the chat you are speaking to the user | EtiquetteConduct.on_turn_written_etiquette |
 | etiquette | etiquette.no_em_dashes | your chat used em dashes | EtiquetteConduct.on_turn_written_etiquette |
 | etiquette | etiquette.blank_lines_between_paragraphs | your last message had no blank lines between paragraphs | EtiquetteConduct.on_turn_written_etiquette |
-| etiquette | etiquette.a_line_is_an_instruction | chat etiquette: a line from the journal is an instruction, not a message | EtiquetteReadingsReader.read, EtiquetteConduct.on_tool_finished_etiquette |
+| etiquette | etiquette.a_line_is_an_instruction | chat etiquette: a line from the journal is an instruction, not a message | EtiquetteDataReader.read, EtiquetteConduct.on_tool_finished_etiquette |
 | faults | faults.slow_request_to_fix | {{method}} {{route}} took {{ms}} ms, over its budget of {{budget}} ms: find what made it slow and fix it at its source | SlowRequests.marked |
 | laws | laws.name_the_model | the dispatch names no model | LawsConduct.on_tool_starting_laws |
 | laws | laws.name_a_profile | the dispatch names no profile of this project: {{asked}} | LawsConduct.on_tool_starting_laws |
@@ -62,7 +62,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | memory | memory.stopped_at_mark | you stopped while the journal awaits a decision at the context mark, {{percent}}% full | MemoryConduct.on_idle_memory |
 | memory | memory.check_stale_memory | these are {{stale_after}} days old or more, check they still hold: {{stale}} | MemoryConduct.on_session_started_memory |
 | memory | memory.does_the_rule_apply_project_wide | does rule {{n}} apply to the whole project? | MemoryConduct.on_rule_made_memory |
-| memory | memory.memory_whispered_back | {{noun}} {{n}}: {{text}} | MemoryConduct.on_anything_memory_whisper, MemoryReadingsReader.read, MemoryRow.line, MarkWhispered.handle |
+| memory | memory.memory_whispered_back | {{noun}} {{n}}: {{text}} | MemoryConduct.on_anything_memory_whisper, MemoryDataReader.read, MemoryRow.line, MarkWhispered.handle |
 | messages | messages.new_message_to_answer | new message {{n}} | DeliverMessage.handle |
 | messages | messages.new_messages_to_answer | new messages {{ns}} | nothing yet |
 | messages | messages.unread_messages_to_read | {{count}} messages unread: `journal message unread` | nothing yet |
@@ -75,7 +75,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | messages | messages.reply_kept_out_as_replied_already | message {{n}} already has your reply {{reply}}, so this one was kept out of the chat | RecordTurn.unanswered_of |
 | messages | messages.closing_words_kept_out_as_repeated | your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat | RecordTurn.repeats_a_reply |
 | messages | messages.reply_by_tag | a reply needs no command | MessagesConduct.on_tool_finished_messages |
-| pins | pins.pin_the_link | {{url}} is not pinned; if the user will come back to it, pin it | PinsReadingsReader.read, PinsConduct.on_tool_finished_pins |
+| pins | pins.pin_the_link | {{url}} is not pinned; if the user will come back to it, pin it | PinsDataReader.read, PinsConduct.on_tool_finished_pins |
 | plans | plans.next_task_of_the_plan | plan {{n}}: task {{task}}, {{title}} is next. {{briefing}} | PlansConduct.on_task_started_plans |
 | plans | plans.plan_done | plan {{n}} is done: its last task closed | FollowingPlan.on_plan_done |
 | plans | plans.plan_waits_on_its_tasks | plan {{n}}: no task can start now; {{left}} parked, blocked or waiting | PlansConduct.on_plan_started_plans, PlansConduct.on_task_closed_plans |
@@ -106,8 +106,8 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | sequences | sequences.the_user_ended_the_sequence | the user ended sequence {{n}} | Running.end |
 | shell | shell.moved_to_the_background | moved to the background as output {{n}} | ShellRunner.foreground |
 | shell | shell.outputs_ended | {{outputs}} | ShellConduct.on_ticked_shell_ended |
-| shell | shell.use_the_reader | reader {{reader}} already reads this: {{about}} | ShellReadingsReader.read, ShellConduct.on_tool_starting_shell_readers |
-| shell | shell.add_a_reader | you read outputs this way again: {{command}} | ShellReadingsReader.read, ShellConduct.on_tool_starting_shell_readers |
+| shell | shell.use_the_reader | reader {{reader}} already reads this: {{about}} | ShellDataReader.read, ShellConduct.on_tool_starting_shell_readers |
+| shell | shell.add_a_reader | you read outputs this way again: {{command}} | ShellDataReader.read, ShellConduct.on_tool_starting_shell_readers |
 | shell | shell.read_the_file_in_parts | the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output | ShellConduct.on_tool_starting_shell_read_in_parts |
 | shell | shell.journal_command_runs_alone | a journal command runs on its own, or chained only with other journal commands | ShellConduct.on_tool_starting_shell_journal_alone |
 | shell | shell.check_the_background | output {{background_outputs}} still running | ShellConduct.on_ticked_shell_background |

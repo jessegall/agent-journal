@@ -11,7 +11,7 @@ OWED = ("orienting", "at_mark", "loading_skill")
 
 
 class UnwrapOwedPauses(Migration):
-    """An agent readings in a pause it owed the journal goes back to the state the pause interrupted, with the matching fact set: not oriented, the mark owed, the skill owed as a link; never dropped to idle."""
+    """An agent in a pause it owed the journal goes back to the state the pause interrupted, with the matching fact set: not oriented, the mark owed, the skill owed as a link; never dropped to idle."""
 
     number: ClassVar[int] = 1
 

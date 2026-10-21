@@ -12,7 +12,7 @@ from journal.events.bus import Bus
 from journal.runtime import Runtime
 from journal.features.registry import Registry
 from journal.features.standard import Standard
-from journal.engine.support.readings_readers import ReadingsReaders
+from journal.engine.support.data_readers import DataReaders
 from journal.support.context_file import ContextFile
 from journal.repositories.setting_rows import SettingRows
 from journal.http.router import Router
@@ -39,7 +39,7 @@ class App:
         self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))
         self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(SettingRows)))
         self.container.bind(FeaturesKnown, lambda: self.container.get(Registry))
-        self.container.bind(ReadingsReaders, lambda: ReadingsReaders({feature.name: self.container.get(reader) for feature in Standard.FEATURES for reader in feature.readings}))
+        self.container.bind(DataReaders, lambda: DataReaders({feature.name: self.container.get(reader) for feature in Standard.FEATURES for reader in feature.data}))
 
     def connection(self) -> Connection:
         self.config.home.mkdir(parents=True, exist_ok=True)

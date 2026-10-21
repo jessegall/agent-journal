@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
 
 from journal.events.event import Event
-from journal.events.readings import Readings
+from journal.events.feature_data import FeatureData
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -13,14 +13,14 @@ class RowEvent(Event):
     row_id: int = 0
     session: str = ""
     actor: str = ""
-    readings: Readings = field(default_factory=lambda: Readings({}), compare=False)
+    data: FeatureData = field(default_factory=lambda: FeatureData({}), compare=False)
 
     @property
     def typed_after(self) -> float:
         return 0.0
 
-    def with_readings(self, readings: Readings) -> "RowEvent":
-        return replace(self, readings=readings)
+    def with_data(self, data: FeatureData) -> "RowEvent":
+        return replace(self, data=data)
 
     def reaching(self, session: str) -> "RowEvent":
         return replace(self, session=session)

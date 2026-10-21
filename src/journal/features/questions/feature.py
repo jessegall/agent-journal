@@ -4,7 +4,7 @@ from journal.support.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand
 from journal.features.questions.listeners.mark_question import MarkQuestion
 from journal.features.questions.support.questions_conduct import QuestionsConduct
-from journal.features.questions.support.questions_readings_reader import QuestionsReadingsReader
+from journal.features.questions.support.questions_data_reader import QuestionsDataReader
 from journal.features.questions.states.waiting import Waiting
 
 
@@ -16,7 +16,7 @@ class Questions(Feature):
     commands = (QuestionCommand,)
     listeners = (MarkQuestion,)
     conduct = (QuestionsConduct,)
-    readings = (QuestionsReadingsReader,)
+    data = (QuestionsDataReader,)
 
     QUESTION_ANSWERED = Nudge(name, "question_answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
     ASK_THROUGH_THE_JOURNAL = Nudge(name, "ask_through_the_journal", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options \"a\" \"b\"`; the user answers in the viewer and the answer reaches you", repeat_after=0)

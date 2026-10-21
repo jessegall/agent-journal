@@ -13,7 +13,7 @@ from journal.features.plugins.support.plugin_card import PluginCard
 
 ANSWERS = ("allow", "refuse", "tell")
 MOST_COMMANDS = 20
-PLACED = ("session", "environment_id", "provider", "context", "subagent", "time", "readings", "propagation")
+PLACED = ("session", "environment_id", "provider", "context", "subagent", "time", "data", "propagation")
 
 
 class Protocol:

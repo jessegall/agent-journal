@@ -43,7 +43,7 @@ class Filing:
 
     def items(self, n: int) -> list[str]:
         dump = self.dumps.find(n)
-        return [f"{name}: {dump.item(name).readings}" for name in dump.item_names]
+        return [f"{name}: {dump.item(name).data}" for name in dump.item_names]
 
     def note(self, n: int, item: str, insight: str, actor: Actor) -> Dump:
         return self.written(n, item, actor, insight=insight.strip())

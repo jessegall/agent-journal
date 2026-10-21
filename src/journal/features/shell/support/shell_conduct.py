@@ -29,7 +29,7 @@ class ShellConduct(Conduct):
         reads = [part for part in event.call.parts if part.reads_output]
         if not reads:
             return self.unchanged()
-        shell = event.readings.of(Shell)
+        shell = event.data.of(Shell)
         tips = [Shell.USE_THE_READER.create(reader=r.name, about=r.about) for r in shell.readers if r.matches(reads[0].text)]
         if shell.output_reads.count(reads[0].read_shape) >= 2:
             tips.append(Shell.ADD_A_READER.create(command=reads[0].read_shape))
@@ -38,14 +38,14 @@ class ShellConduct(Conduct):
 
     def on_ticked_shell_ended(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
-        ended = event.readings.of(Shell).ended_untold
+        ended = event.data.of(Shell).ended_untold
         if event.quiet_for < QUIET_FOR or not ended:
             return self.unchanged()
         return self.unchanged(Shell.OUTPUTS_ENDED.create(outputs=named(ended), n=ended[0].id))
 
     def on_ticked_shell_background(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
-        shell = event.readings.of(Shell)
+        shell = event.data.of(Shell)
         if not shell.background or event.time - shell.background_since < LOOK_AFTER:
             return self.unchanged()
         return self.unchanged(Shell.CHECK_THE_BACKGROUND.create(background_outputs=", ".join(str(n) for n in shell.background)))

@@ -26,7 +26,7 @@ class PlansConduct(Conduct):
 
     def on_plan_started_plans(self, event: PlanStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        started = event.readings.of(Plans).started
+        started = event.data.of(Plans).started
         if event.task_id or started is None or not started.tasks_left:
             return self.unchanged()
         return self.unchanged(Plans.PLAN_WAITS_ON_ITS_TASKS.create(n=event.plan_id, left=started.tasks_left))
@@ -35,12 +35,12 @@ class PlansConduct(Conduct):
         from journal.features.plans.feature import Plans
         if not event.plan_id or event.by_agent(event.session):
             return self.unchanged()
-        started = event.readings.of(Plans).started
+        started = event.data.of(Plans).started
         return self.unchanged(Plans.NEXT_TASK_OF_THE_PLAN.create(n=event.plan_id, task=event.task_id, title=event.title, briefing=started.started_task_briefing if started else ""))
 
     def on_task_closed_plans(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        started = event.readings.of(Plans).started
+        started = event.data.of(Plans).started
         if started is None or event.task_id not in started.tasks or started.started_task or started.next_task or started.at_checkpoint or not started.tasks_left:
             return self.unchanged()
         return self.unchanged(Plans.PLAN_WAITS_ON_ITS_TASKS.create(n=started.plan_id, left=started.tasks_left))

@@ -43,11 +43,11 @@ class ShareCommand(Command):
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for share in self.shares.in_():
-            print(f"{share.id:>4}  {self.targets.of(share) or 'gone'}  {self.readings(share)}  {self.tunnel.link_of(share.token)}")
+            print(f"{share.id:>4}  {self.targets.of(share) or 'gone'}  {self.data(share)}  {self.tunnel.link_of(share.token)}")
         return 0
 
     @staticmethod
-    def readings(share: Share) -> str:
+    def data(share: Share) -> str:
         if not share.is_live(datetime.now(timezone.utc)):
             return "ended"
         return "open" if share.approved else "waiting for the user's Accept"

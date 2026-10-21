@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.tasks.support.tasks_readings_reader import TasksReadingsReader
+from journal.features.tasks.support.tasks_data_reader import TasksDataReader
 from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
@@ -31,7 +31,7 @@ class Tasks(Feature):
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER, LOG_OLD_AFTER)
     listeners = (ClearWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
     conduct = (TasksConduct,)
-    readings = (TasksReadingsReader,)
+    data = (TasksDataReader,)
 
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "`journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
     LOG_FIRST_AT_STOP = Nudge(name, "log_first_at_stop", "{{name}}, {{logged}}: log where it stands first", "{{log_command}} \"<where it stands>\"", repeat_after=0)

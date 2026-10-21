@@ -5,7 +5,7 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.idle import Idle
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
-from journal.features.briefing.support.briefing_readings import BriefingReadings
+from journal.features.briefing.support.briefing_data import BriefingData
 
 COMPACT = "compact"
 
@@ -15,17 +15,17 @@ class BriefingConduct(Conduct):
 
     def on_session_started_briefing(self, event: SessionStarted, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.unchanged(*start_block(event.readings.of(feature), event.source), feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
+        return self.unchanged(*start_block(event.data.of(feature), event.source), feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
 
     def on_tool_starting_briefing(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = briefing_feature()
-        if event.subagent or not event.call.writes or event.readings.of(feature).oriented:
+        if event.subagent or not event.call.writes or event.data.of(feature).oriented:
             return self.unchanged()
         return self.hold(feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
 
     def on_idle_briefing(self, event: Idle, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.unchanged() if event.readings.of(feature).oriented else self.hold(feature.STOPPED_UNORIENTED.create())
+        return self.unchanged() if event.data.of(feature).oriented else self.hold(feature.STOPPED_UNORIENTED.create())
 
 
 def briefing_feature():
@@ -33,7 +33,7 @@ def briefing_feature():
     return Briefing
 
 
-def start_block(briefing: BriefingReadings, source: str) -> list[Nudge]:
+def start_block(briefing: BriefingData, source: str) -> list[Nudge]:
     feature = briefing_feature()
     taken_over_at = "" if source == COMPACT else briefing.last_other_session_at
     optional = (

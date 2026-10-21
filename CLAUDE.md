@@ -49,7 +49,7 @@ nudges in order, the first hold wins, one push or pop per event and a second ref
 answers `unchanged`, `changed`, `push`, `pop` or `hold`, and nothing else moves the agent. No
 `if state ==`, no `if event.kind ==`: dispatch is by class and by type. One `BaseState` is the
 parent of every state and every feature's state extends it directly. Only the top of the stack
-hears an event; a state beneath catches up in `on_resume(readings, settings)`, which may pop it.
+hears an event; a state beneath catches up in `on_resume(data, settings)`, which may pop it.
 The lifecycle hooks `on_push`, `on_suspend`, `on_resume` and `on_pop` answer nudges, and `on_push`
 may refuse the push with a hold. Every push and pop is an entry in the trail, shown under the
 figure on the Home page. Counts and times a state keeps are its fields and go with it when it is
@@ -69,7 +69,7 @@ means, `task.started(at)` carries `TaskStarted` through `Model.with_event`, and 
 it cannot make before anything is written. The repository dispatches the event on save to every
 live agent of the row's environment, and the top of each stack answers it. No state hears
 `Updated` or reads a row as it was before. The facts a state needs about the environment's rows
-travel on the event as a `Readings`, one frozen part per feature read by `readings.of(Tasks)`,
+travel on the event as its `data`, a `FeatureData` of one frozen part per feature read by `data.of(Tasks)`,
 built by the state machine for the agent it asks; the options travel as `Settings`, a frozen
 value of what the user set. A state never asks a repository or a clock: every event carries `at`.
 
