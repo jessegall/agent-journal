@@ -1,7 +1,7 @@
 from journal.http.attachments.attached_files import AttachedFiles
 from journal.http.attachments.attachments import Attachments
 from journal.http.attachments.file_request import FileRequest
-from journal.http.support.file_response import FileResponse
+from journal.http.support.sandboxed_file_response import SandboxedFileResponse
 from journal.http.support.request import Request
 from journal.repositories.dumps import Dumps
 from journal.repositories.messages import Messages
@@ -23,4 +23,4 @@ class AttachmentController:
         if table not in self.rows or not self.rows[table].matching(id=id):
             return Response.absent("no such file")
         rows = self.attachments.read(table, id, request.params["name"])
-        return FileResponse(*rows) if rows else Response.absent("no such file")
+        return SandboxedFileResponse(*rows) if rows else Response.absent("no such file")
