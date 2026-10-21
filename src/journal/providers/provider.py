@@ -58,6 +58,7 @@ class Provider(ABC):
     profile_suffix: ClassVar[str]
     profile_model: ClassVar[str]
     default: ClassVar[bool]
+    session_inbox: ClassVar[bool]
 
     def __init__(self) -> None:
         self._status_files: dict[Path, ContextFile] = {}

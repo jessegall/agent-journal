@@ -6301,3 +6301,74 @@ def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_disp
     console.run(["worker", "dispatch", "Mr. Babbage", "say nothing", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     runner.run(workers.find(2), ["sh", "-c", f"echo '{{}}' >> '{dispatcher}'; echo plain words"], Actor.agent("s1"))
     assert workers.find(2).resume == "" and dispatcher.is_file(), "a worker in the project's own folder never takes the newest transcript there, which is the dispatcher's"
+
+
+def listening_session(home: Path, pid: int, session: str) -> list[dict]:
+    """A Claude Code session's registry file, key and inbox socket, laid out as Claude Code publishes them; the lines it is sent are gathered."""
+    import socket
+    import tempfile
+    import threading
+    folder = home / ".claude" / "sessions"
+    folder.mkdir(parents=True, exist_ok=True)
+    address = str(Path(tempfile.mkdtemp(prefix="inbox-", dir="/tmp")) / "s.sock")
+    (folder / f"{pid}.json").write_text(json.dumps({"pid": pid, "sessionId": session, "messagingSocketPath": address}))
+    (folder / f"{pid}.0a1b.key").write_text(json.dumps({"peerToken": "token-1"}))
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server.bind(address)
+    server.listen(4)
+    server.settimeout(10)
+    received: list[dict] = []
+
+    def serve() -> None:
+        while True:
+            try:
+                connection, _ = server.accept()
+            except OSError:
+                return
+            with connection:
+                received.extend(json.loads(line) for line in connection.makefile().read().splitlines() if line)
+
+    threading.Thread(target=serve, daemon=True).start()
+    return received
+
+
+def arrived(received: list, count: int) -> list:
+    end = timing.time() + 5
+    while timing.time() < end and len(received) < count:
+        timing.sleep(0.02)
+    return received
+
+
+def test_a_notify_reaches_only_a_running_claude_worker_and_moves_no_wait(app: App, tmp_path, monkeypatch):
+    import subprocess
+    from journal.repositories.workers import Workers
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+    hook(app, "SessionStart")
+    console, workers, machine = app.console(), app.container.get(Workers), app.container.get(StateMachine)
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    process = subprocess.Popen(["sleep", "30"])
+    try:
+        workers.save(workers.find(1).running_as(process.pid, timing.time()).with_(resume="w-1"), Actor.system())
+        received = listening_session(home, process.pid, "w-1")
+        waiting, row = machine.current("s1"), workers.find(1)
+        assert waiting.name == "awaiting"
+        assert "journal worker notify 1" in console.run(["worker", "send", "1", "now the lexer"], AGENT).error, "a send to a running worker points at notify"
+        assert console.run(["worker", "notify", "1", "the lexer too"], AGENT).code == 0
+        assert arrived(received, 2)[-1]["message"]["content"] == '<cross-session-message from-name="the agent that dispatched you" from-mode="bypass">\nthe lexer too\n</cross-session-message>'
+        assert machine.current("s1") == waiting and workers.find(1).updated_at == row.updated_at, "a notify writes nothing on the worker's row and leaves the dispatcher's wait as it was"
+        workers.save(workers.find(1).with_(provider="codex"), Actor.system())
+        assert "runs Codex, which takes no message while it runs" in console.run(["worker", "notify", "1", "x"], AGENT).error
+        workers.save(workers.find(1).with_(provider="claude"), Actor.system())
+        process.kill()
+        process.wait(5)
+        assert "has ended and its report is being filed" in console.run(["worker", "notify", "1", "x"], AGENT).error, "the row is read again at delivery, its process found gone"
+        workers.save(workers.find(1).stopped(timing.time()), Actor.system())
+        assert "revives it in its last session" in console.run(["worker", "notify", "1", "x"], AGENT).error
+        workers.save(workers.find(1).with_(state=WorkerState.REPORTED), Actor.system())
+        assert "has reported and runs no more" in console.run(["worker", "notify", "1", "x"], AGENT).error
+        assert len(received) == 2
+    finally:
+        process.kill()
+        process.wait(5)

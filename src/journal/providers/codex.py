@@ -51,6 +51,7 @@ class Codex(Provider):
     profile_suffix = ".toml"
     profile_model = "codex_model"
     default = False
+    session_inbox = False
     session_variable = "CODEX_THREAD_ID"
     inherited_markers = ("CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_TOOL_CALL_ID", "CODEX_CI", "CODEX_SANDBOX", "CODEX_VERSION", "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS")
     question_model = ""

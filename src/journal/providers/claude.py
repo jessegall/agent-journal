@@ -44,6 +44,7 @@ class Claude(Provider):
     profile_suffix = ".md"
     profile_model = "model"
     default = True
+    session_inbox = True
     controls = {
         "groups": [
             {"key": "model", "label": "Model", "choices": [{"value": v, "label": l, "command": f"/model {v}"} for v, l in (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))]},

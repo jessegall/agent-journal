@@ -18,14 +18,21 @@ from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
 from journal.repositories.workers import Workers
+from journal.providers.support.session_inbox import SessionInbox
 
+NOTIFY_REFUSALS = {
+    WorkerState.REPORTED: "worker {n}, {name}, has reported and runs no more: give it the job with `journal worker send {n} \"<job>\"`",
+    WorkerState.STOPPED: "worker {n}, {name}, was stopped: `journal worker send {n} \"<job>\"` revives it in its last session with the job",
+}
+ENDED = "worker {n}, {name}, has ended and its report is being filed: wait for it, then give it the job with `journal worker send {n} \"<job>\"`"
+NO_INBOX = "worker {n}, {name}, runs {provider}, which takes no message while it runs: wait for its report, then give it the job with `journal worker send {n} \"<job>\"`"
 
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows) -> None:
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows, inbox: SessionInbox) -> None:
         self.workers, self.messages, self.providers, self.agents = workers, messages, providers, agents
-        self.branch, self.settings = branch, settings
+        self.branch, self.settings, self.inbox = branch, settings, inbox
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
@@ -45,6 +52,9 @@ class WorkerCommand(Command):
         line.add_argument("n", type=int)
         line.add_argument("brief")
         line.add_argument("--task", type=int, help="the task this job works on, which its plan then leaves to it")
+        notify = self.verb(verbs, "notify", "give a running worker a message in its live session")
+        notify.add_argument("n", type=int)
+        notify.add_argument("text")
         self.verb(verbs, "wait", "wait until these workers have reported").add_argument("on", type=int, nargs="+")
         self.verb(verbs, "stop", "end a worker").add_argument("n", type=int)
         self.verb(verbs, "complete", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
@@ -96,7 +106,7 @@ class WorkerCommand(Command):
     def send(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
         if worker.state == WorkerState.DISPATCHED:
-            raise Rejection(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
+            raise Rejection(f"worker {worker.id}, {worker.name}, is still out: tell it with `journal worker notify {worker.id} \"<text>\"`, or wait for its report and send it the job then")
         if not worker.resume:
             raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
         if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
@@ -108,6 +118,22 @@ class WorkerCommand(Command):
         self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
+
+    def notify(self, args: Namespace, caller: Caller) -> int:
+        worker = self.workers.find(args.n)
+        refusal = self.notify_refusal(worker)
+        if refusal:
+            raise Rejection(refusal.format(n=worker.id, name=worker.name, provider=worker.provider.capitalize()))
+        self.inbox.deliver(worker.pid, worker.resume, "the agent that dispatched you", args.text)
+        print(f"worker {worker.id} {worker.name} has the message in its session")
+        return 0
+
+    def notify_refusal(self, worker: Worker) -> str:
+        if worker.state in NOTIFY_REFUSALS:
+            return NOTIFY_REFUSALS[worker.state]
+        if not self.runner.is_running(worker.pid):
+            return ENDED
+        return "" if self.providers.lookup(worker.provider).session_inbox else NO_INBOX
 
     def wait(self, args: Namespace, caller: Caller) -> int:
         print(f"awaiting workers {', '.join(str(n) for n in args.on)}: you are told as each reports, and when the last is back")
