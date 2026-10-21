@@ -63,7 +63,7 @@ class Chain:
     @classmethod
     def is_reading_code_line(cls, line: str) -> bool:
         own = [p for p in cls.parts(line) if p.recorded]
-        return any(p.is_reading_code() for p in own) and all(p.is_reading_code() or p.is_bare_echo() for p in own)
+        return any(p.is_reading_code() for p in own) and all(p.is_reading_code() or p.is_harmless() or p.is_cd_into_project() for p in own)
 
     @staticmethod
     def is_journal(part: str) -> bool:
@@ -177,9 +177,7 @@ class Chain:
 
     @staticmethod
     def uncommented(part: str) -> str:
-        """The part from its first line that is not a comment."""
-        lines = part.split("\n")
-        return "\n".join(lines[next((i for i, line in enumerate(lines) if not line.lstrip().startswith("#")), len(lines)):])
+        return Part(part).command_text()
 
     @staticmethod
     def is_opening(words: list[str]) -> bool:

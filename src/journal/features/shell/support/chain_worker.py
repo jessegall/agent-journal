@@ -11,6 +11,7 @@ from journal.features.shell.support.shell_request import ShellRequest
 from journal.support.where import Where
 
 PRELUDE = """
+ulimit -n 65536 2>/dev/null || ulimit -n 10240 2>/dev/null || ulimit -n "$(ulimit -Hn)" 2>/dev/null
 __journal_tree() {
     git diff --numstat HEAD 2>/dev/null | grep -v "	\\.journal/"
     git ls-files --others --exclude-standard 2>/dev/null | grep -v "^\\.journal/" | sed 's/^/?\\t0\\t/'
@@ -20,7 +21,7 @@ __journal_status() {
 }
 __journal_code=0
 """
-"""What the shell is told first: the working tree as git sees it, one line a changed file; the status the part before left, replayed except under set -e; and the code so far."""
+"""What the shell is told first: the open-files limit raised, since a child of the server inherits its small one; the working tree as git sees it, one line a changed file; the status the part before left, replayed except under set -e; and the code so far."""
 POLL = 0.02
 
 

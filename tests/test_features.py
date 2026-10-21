@@ -4153,6 +4153,21 @@ def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_i
     script = "python3 - <<'EOF'\nfrom pathlib import Path\nPath(\"src/journal/app.py\").write_text(\"x\")\nEOF"
     assert cap("sed -i '' 's/a/b/' src/journal/app.py") == "direct 0" and cap(script) == "direct 0" and cap(f"{script} && cat src/journal/app.py") == "direct 0", "a line that edits the project's own code runs in the shell as a read of it does"
     assert cap("echo hi > /tmp/notes.txt") == "hint 400" and cap("cp a.bin b.bin") == "hint 400" and cap("sed -i '' 's/a/b/' src/journal/app.py && python3 -m pytest -q") == "hint 400", "a write outside the project, of no code file, or chained with a run is not"
+    import os
+    root = os.getcwd()
+    direct = ['grep -rn "-> None" src/journal', 'grep -rn "=>" src/web/src', "awk 'NR>=10' src/journal/app.py", "grep -i foo src/journal", "rg -i cap src", "sed -i.bak 's/a/b/' src/journal/app.py",
+              f"cd {root} && grep -rn cap src/journal", "rg -n foo", "git grep -n foo", "ls", "tree -L 2", "git --no-pager diff -- src/journal/app.py", "GIT_PAGER=cat git log -3 -- src",
+              "sed -i '' 's/a/b/' src/journal/app.py && echo done", "touch src/journal/x.py && echo ok", "mkdir -p src/journal/features/new && touch src/journal/features/new/__init__.py", "rm -rf src/journal/features/old", 'echo "x" >> .gitignore',
+              "grep -rln foo src | xargs sed -i '' 's/foo/bar/g'", "find src -name '*.py' -exec sed -i '' 's/a/b/' {} +", "cat ~/projects/agent-journal/src/journal/app.py", f"cat {root}/.journal/worktrees/3-lady-lovelace/src/journal/app.py",
+              "printf '\\n--- app ---\\n'; cat src/journal/app.py", "[ -f src/journal/app.py ] && cat src/journal/app.py", "pwd && ls src", "set -o pipefail; grep -rn foo src | head", "# where the cap is decided\ngrep -rn cap src/journal",
+              "ls src/journal/features/*/states", 'grep -rn foo "src/my dir"', "git checkout -- src/journal/app.py", "git restore src/journal/app.py", "git mv src/journal/a.py src/journal/b.py",
+              "find src -name '*.pyc' -delete", "find src -name '*.py' | xargs rm", "perl -pi -e 's/a/b/' src/journal/app.py", "python3 - src/journal/app.py <<'EOF'\nfrom pathlib import Path\nPath(sys.argv[1]).write_text('x')\nEOF"]
+    assert [line for line in direct if cap(line) != "direct 0"] == [], "report 30: every read or write of the project's code goes direct"
+    ends = ["ls .journal", "cat ./.journal/runtime/server.log", "find .journal -name '*.log'", f"cat {root}-v3/src/journal/app.py", "grep -rn foo src/web/node_modules", "cat src/web/package-lock.json",
+            'grep -rn "config.json" ~/.claude', "cat $HOME/other/app.py", "sqlite3 .journal/journal.db \"select path from edits where path like '%.py'\"", "tail -f src/web/dev.log"]
+    assert [line for line in ends if cap(line) != "ends 8000"] == [], "report 30: a read of the journal's folder, of something outside the project or of what is not its code is shown by its ends"
+    hints = ["sed -i '' 's/a/b/' .journal/config.json", "echo x >> .journal/notes.md"]
+    assert [line for line in hints if cap(line) != "hint 400"] == [], "report 30: a write into the journal's folder is a run"
     folder = app.config.root / "journal-line"
     folder.mkdir()
     ShellVerbs(app).split("journal task list", str(folder))

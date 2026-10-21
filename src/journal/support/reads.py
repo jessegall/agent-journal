@@ -1,3 +1,4 @@
+from journal.features.shell.support.part import Part
 from journal.support.chain import Chain
 from journal.support.writes import Writes
 
@@ -16,8 +17,8 @@ class Reads:
 
     @staticmethod
     def part(text: str) -> list[str]:
-        """The words after a reading command that are not flags: a sed script or a line count among them names no file and matches none."""
-        words = Writes.unquoted(text.split("|")[0]).split()
-        if not words or words[0].rsplit("/", 1)[-1] not in READERS:
+        """The tokens after a reading command that are not flags: a sed script or a line count among them names no file and matches none."""
+        tokens = Part(text.split("|")[0]).unquoted().split()
+        if not tokens or tokens[0].rsplit("/", 1)[-1] not in READERS:
             return []
-        return [w for w in words[1:] if not w.startswith("-")]
+        return [w for w in tokens[1:] if not w.startswith("-")]

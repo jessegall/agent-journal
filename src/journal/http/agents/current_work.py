@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from journal.engine.base_state import BaseState
 from journal.engine.states.paused import Paused
 from journal.engine.states.wait import Wait
 from journal.support.states_catalogue import StatesCatalogue
@@ -27,14 +26,14 @@ class CurrentWork:
         self.states, self.tasks = states, tasks
 
     def of(self, agent: Agent) -> AgentWork | None:
-        layers = self.states.stack_of(agent).states
-        working = next((layer for layer in reversed(layers) if isinstance(layer, Working)), None)
+        working = next((layer for layer in reversed(self.states.stack_of(agent).states) if isinstance(layer, Working)), None)
         if working is None:
             return None
         try:
-            return AgentWork(self.tasks.find(working.task_id), *self.awaited(layers))
+            return AgentWork(self.tasks.find(working.task_id), *self.awaited(agent))
         except NotFound:
             return None
 
-    def awaited(self, layers: tuple[BaseState, ...]) -> tuple[str, str]:
+    def awaited(self, agent: Agent) -> tuple[str, str]:
+        layers = self.states.stack_of(agent).states
         return next((layer.awaiting() for layer in reversed(layers) if isinstance(layer, (Wait, Paused)) and layer.awaiting()[0]), ("", ""))
