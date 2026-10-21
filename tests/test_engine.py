@@ -1365,3 +1365,13 @@ def test_a_stop_with_the_tasks_log_older_than_the_set_minutes_asks_for_the_log_l
     assert working.on(Stop(time=5 * 60.0).with_readings(readings), settings(10)).held.key == "tasks.carry_on", "within the minutes a stop is told to carry on"
     assert working.on(Stop(time=11 * 60.0).with_readings(readings), settings(10)).held.key == "tasks.log_first_at_stop", "past them the log line comes first"
     assert working.on(Stop(time=2 * 60.0).with_readings(readings), settings(1)).held.key == "tasks.log_first_at_stop", "the minutes are the user's to set"
+
+
+def test_a_long_journal_line_reaches_the_agent_whole_in_several_marked_pieces(app, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append(fields["line"]))
+    words = " ".join(f"word{n}" for n in range(1, 260))
+    app.container.get(SupervisorLink).type(1, words)
+    assert len(sent) >= 3 and all(len(piece) <= 600 and piece.startswith("[journal] ") for piece in sent), "typed in whole pieces a terminal takes, each the journal's"
+    assert " ".join(piece.removeprefix("[journal] ") for piece in sent) == words and "..." not in " ".join(sent), "nothing cut short"

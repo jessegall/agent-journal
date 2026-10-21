@@ -55,7 +55,7 @@ class TypedLines:
             return None
         self._held = [h for h in self._held if h.environment_id != environment_id]
         lines = [h.line.removeprefix(MARK).strip() for h in held]
-        return HeldLine(environment_id, TypedLine.cut(f"{MARK} {' | '.join(lines)}"), max(h.after for h in held))
+        return HeldLine(environment_id, f"{MARK} {' | '.join(lines)}", max(h.after for h in held))
 
     def typed(self, environment_id: int, line: str) -> None:
         moment = timing.time()

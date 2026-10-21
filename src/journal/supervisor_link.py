@@ -30,12 +30,16 @@ class SupervisorLink:
     def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
         if self.typed.is_disabled(environment_id):
             return
-        marked = TypedLine.cut(f"{MARK} {' '.join(line.split())}")
+        marked = f"{MARK} {' '.join(line.split())}"
         if self.is_busy(environment_id):
             self.typed.hold(HeldLine(environment_id, marked, after))
             return
-        self.typed.typed(environment_id, marked)
-        self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": after})
+        self.type_whole(environment_id, marked, after)
+
+    def type_whole(self, environment_id: int, marked: str, after: float) -> None:
+        for piece in TypedLine.pieces(marked, MARK):
+            self.typed.typed(environment_id, piece)
+            self._send(environment_id, "type", {"name": AGENT, "line": piece, "after": after})
 
     def is_busy(self, environment_id: int) -> bool:
         return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds())
@@ -61,8 +65,7 @@ class SupervisorLink:
             return
         held = self.typed.held_as_one(environment_id)
         if held is not None:
-            self.typed.typed(environment_id, held.line)
-            self._send(environment_id, "type", {"name": AGENT, "line": held.line, "after": held.after})
+            self.type_whole(environment_id, held.line, held.after)
 
     def batch_seconds(self) -> float:
         return float(self.settings.project("delivery.batch_seconds", BATCH_SECONDS))

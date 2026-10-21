@@ -7,7 +7,7 @@ NAMED = re.compile(r"\bmessages? (\d+(?:, \d+)*)")
 
 @dataclass(frozen=True)
 class TypedLine:
-    """A line typed into an agent's terminal, waiting for the prompt hook that proves it arrived."""
+    """A line typed into an agent's terminal, waiting for the prompt hook that proves it arrived. A line longer than a terminal takes is typed in several whole pieces, each marked, never cut short."""
 
     LONGEST: ClassVar[int] = 600
     PIECE: ClassVar[int] = 40
@@ -18,8 +18,14 @@ class TypedLine:
     tries: int = 1
 
     @classmethod
-    def cut(cls, line: str) -> str:
-        return line if len(line) <= cls.LONGEST else f"{line[:cls.LONGEST - 4]} ..."
+    def pieces(cls, line: str, mark: str) -> list[str]:
+        pieces, rest = [], line
+        while len(rest) > cls.LONGEST:
+            at = rest.rfind(" ", len(mark) + 1, cls.LONGEST)
+            at = at if at > len(mark) else cls.LONGEST
+            pieces.append(rest[:at].rstrip())
+            rest = f"{mark} {rest[at:].strip()}"
+        return [*pieces, rest]
 
     def messages_named(self) -> set[int]:
         return {int(n) for rows in NAMED.findall(self.line) for n in rows.split(", ")}
