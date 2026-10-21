@@ -6556,3 +6556,26 @@ def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: Ap
     app.container.get(SettingRows).set(WorkersFeature.TIMEOUT.key, 0.05, USER.actor)
     runner.run(resumed, ["sh", "-c", "echo the escapement ticks"], Actor.agent("s1"))
     assert any(m.text == "Mr. Harrison reports: the escapement ticks" for m in app.container.get(Messages).scoped()), "the time limit counts from the new run, not the first"
+
+
+def test_a_reused_worker_keeps_every_report_and_is_out_again_until_it_reports(app: App, monkeypatch):
+    from journal.features.workers.support.worker_reports import REPORTED
+    from journal.providers.claude import Claude
+    from journal.repositories.links import Links
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    hook(app, "SessionStart")
+    console, workers, links = app.console(), app.container.get(Workers), app.container.get(Links)
+    console.run(["worker", "dispatch", "Mr. Stephenson", "the rocket", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "report", "1", "the rocket runs"], Caller("main", "w1"))
+    workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
+    console.run(["worker", "complete", "1"], AGENT)
+    console.run(["worker", "send", "1", "the tender"], AGENT)
+    assert not workers.find(1).adopted and workers.find(1).is_running(), "a report acted on is a thing of the last job; the new one is out"
+    console.run(["worker", "report", "1", "the tender is coupled"], Caller("main", "w1"))
+    assert workers.find(1).has_report_waiting()
+    console.run(["worker", "stop", "1"], AGENT)
+    console.run(["worker", "send", "1", "the rails"], AGENT)
+    listed = console.run(["worker", "list"], AGENT).text.splitlines()[0]
+    assert listed.split()[1] == "dispatched" and listed.endswith("Mr. Stephenson: the rails"), "a revived stopped worker is listed as out"
+    assert len(links.targets(workers.find(1), REPORTED)) == 2, "each report keeps its own link, the first kept as history"

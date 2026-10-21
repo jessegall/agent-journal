@@ -41,7 +41,7 @@ class Worker(Scoped):
         return self.with_(pid=pid, began=began, recovered_session="")
 
     def instructed(self, brief: str) -> "Worker":
-        return self.with_(brief=brief, state=WorkerState.DISPATCHED, pid=0, began=0.0)
+        return self.with_(brief=brief, state=WorkerState.DISPATCHED, adopted=False, pid=0, began=0.0)
 
     def stopped(self, time: float) -> "Worker":
         return self.with_(state=WorkerState.STOPPED, adopted=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
