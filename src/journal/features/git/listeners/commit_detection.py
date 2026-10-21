@@ -10,7 +10,7 @@ from journal.chat.cards import Cards
 from journal.events.agent.commit_detected import CommitDetected
 from journal.events.agent.tool_finished import ToolFinished
 from journal.hooks.agent_event_post import AgentEventPost
-from journal.features.git.support.head_commit import HeadCommit
+from journal.features.git.support.head_commit import FORMAT, HeadCommit
 from journal.events.agent_listener import AgentListener
 from journal.support.actor import Actor
 from journal.repositories.messages import Messages
@@ -102,13 +102,9 @@ class CommitDetection(AgentListener[ToolFinished]):
 
     def head(self, folder: Path) -> HeadCommit | None:
         try:
-            output = subprocess.run(["git", "log", "-1", "--format=%H%n%ct%n%s%n%B"], cwd=folder, capture_output=True, text=True, timeout=5)
-            branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=folder, capture_output=True, text=True, timeout=5).stdout.strip()
+            output = subprocess.run(["git", "log", "-1", f"--format={FORMAT}"], cwd=folder, capture_output=True, text=True, timeout=5)
         except (OSError, subprocess.TimeoutExpired):
             return None
         if output.returncode != 0 or not output.stdout.strip():
             return None
-        sha, _, remainder = output.stdout.strip().partition("\n")
-        committed, _, remainder = remainder.partition("\n")
-        subject, _, body = remainder.partition("\n")
-        return HeadCommit(sha, subject, branch, body, int(committed))
+        return HeadCommit.parsed(output.stdout)
