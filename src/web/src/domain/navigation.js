@@ -19,3 +19,6 @@ export const RESOURCE_GROUPS = [
 ];
 
 export const pluralTitle = (title) => `${title}s`;
+
+// The pages drawn as a dialog over the Home page, so Home stays behind them as it was.
+export const OVER_HOME = ["tasks"];

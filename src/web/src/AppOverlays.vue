@@ -10,11 +10,13 @@ import PluginPagePanel from "./layout/PluginPagePanel.vue";
 import ProjectFlash from "./layout/ProjectFlash.vue";
 import SkillPanel from "./layout/SkillPanel.vue";
 import NewFeatureDialog from "./kit/NewFeatureDialog.vue";
+import TasksDialog from "./tasks/TasksDialog.vue";
 import {loadMigration, migrationOffered, putMigrationOff, startMigration} from "./composables/migration.js";
 import {figureVoice, loadVoicesUntilLoaded, voicesLoaded} from "./composables/voices.js";
 import {floorsShown} from "./composables/voiceFigure.js";
 import {store} from "./state/store.js";
 import {ui} from "./state/ui.js";
+import {route} from "./route.js";
 
 // the voice's figure lives on the Home page alone: it is unmounted when the user leaves Home, and enters again at home on return
 defineProps({home: {type: Boolean, required: true}});
@@ -41,6 +43,9 @@ if (!voicesLoaded.value) loadVoicesUntilLoaded();
     </template>
     <template v-if="store.pluginPage">
         <PluginPagePanel />
+    </template>
+    <template v-if="route.page === 'tasks'">
+        <TasksDialog />
     </template>
     <ProjectFlash />
     <template v-if="migrationOffered">
