@@ -18,7 +18,7 @@ from journal.features.tasks.states.working import Working
 
 @dataclass(frozen=True)
 class FollowingPlan(Working):
-    """Working with a plan in hand, for the plan's whole life. A finished task starts the next: the plans feature writes it and the state keeps the top as that task. At a checkpoint the state has no task in hand: the stop waits for the user, or in auto mode is refused and the agent told to go on. Popped when the plan is done, postponed or abandoned, and on resume when the plan is no longer the one started here."""
+    """Working with a plan in hand, for the plan's whole life. A finished task starts the next: the plans feature writes it and the state keeps the top as that task; a task started outside the plan is the task in hand all the same, since one task is in hand at a time. At a checkpoint the state has no task in hand: the stop waits for the user, or in auto mode is refused and the agent told to go on. Popped when the plan is done, postponed or abandoned, and on resume when the plan is no longer the one started here."""
 
     name = "following_plan"
     title = "Following a plan"
@@ -59,10 +59,6 @@ class FollowingPlan(Working):
         return self.unchanged() if self.at_checkpoint else super().on_tool_starting(event, settings)
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
-        from journal.features.plans.feature import Plans
-        started = event.readings.of(Plans).started
-        if event.task_id != self.task_id and event.plan_id != self.plan_id and not (started and event.task_id in started.tasks):
-            return self.unchanged()
         return self.changed(replace(self, task_id=event.task_id, at_checkpoint=False, phase=0, logged_at=event.time, edits=0))
 
     def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:

@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- A task started outside the plan is the task in hand of the plan state all the same, so the edits nudge names it instead of 'plan 19, with no task in hand'.
 - A commit whose own hook never came, lost to an install or a restart in the same line, is spotted at the next tool use by the head's log having moved: it gets its card, and its Journal: tasks done line closes the tasks when the commit is fresh or one of the session's last tool starts held the commit. Three commits tonight closed no task because the install in their line stopped the journal before the hook came.
 - The kept-output line says how many lines and characters the output has and, in a chain, which part of the line it came from; a later part past the cap is named too, and a read shown by its ends names the lines shown and the lines cut, so the agent can read a range without a blind read.
 - The compacting state is on the stack at last: the chart's leftover base class answered the compaction with stay and the catalogue did not know the state, so no compaction ever pushed it. Now a listener may stop an event's propagation, event.stop_propagation(), and the listeners after it never hear it; the compacting state stops every row event and tick, so no conduct speaks through it, every line typed meanwhile waits at the typist and goes as one line when the state pops, and the tool-use count and the inbox mark start at zero, since the agent after a compaction is as good as new.

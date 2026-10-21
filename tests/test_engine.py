@@ -1250,3 +1250,12 @@ def test_the_compacting_state_captures_rows_and_ticks_holds_every_typed_line_unt
     assert sent == [], "every line typed while compacting waits"
     hook(app, "SessionStart", source="compact")
     assert agents.for_session("s1").stack[-1]["state"] != "compacting" and sent == ["[journal] a dump arrived | the wait ended"], "the pop types them as one line"
+
+
+def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_and_its_nudges_name_it():
+    from journal.features.plans.states.following_plan import FollowingPlan
+    settings = SettingsValue({})
+    following = FollowingPlan(plan_id=19, approved=True)
+    assert following.named() == "plan 19, with no task in hand"
+    started = following.on(TaskStarted(environment_id=1, time=5.0, task_id=1141, title="the developer tab", plan_id=0).with_readings(Readings({})), settings)
+    assert started.to.task_id == 1141 and started.to.named() == "task 1141" and started.to.logged_at == 5.0, "one task is in hand at a time, so the task started is the plan state's task whether the plan holds it or not"
