@@ -550,6 +550,12 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
         trail = [e.data for e in app.container.get(Entries).kind_entries(StackHistory.KIND) if e.data["session"] == "s1"]
     popped = next(e for e in trail if [row["state"] for row in e["before"]] == ["idle", "working", "stuck"])
     assert popped["after"][-1]["state"] == "working" and popped["cause"]
+    before = app.container.get(Agents).session_agent("s1").data
+    for _ in range(3):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    with app.container.get(Scope).environment(1):
+        moves = [e.data for e in app.container.get(Entries).kind_entries(StackHistory.KIND) if e.data["session"] == "s1"]
+    assert app.container.get(Agents).session_agent("s1").data != before and len(moves) == len(trail), "a state whose counts change in place moves nothing, so the trail keeps only pushes and pops"
 
 
 def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_names_the_agent(app: App):
