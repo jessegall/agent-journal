@@ -54,5 +54,5 @@ class Requirements:
         self.obligation(agent, skills)
         return [line for skill in skills if (line := self.nudger.deliver(agent, Skills.SKILL_READ_REQUEST.create(skill=skill.name, path=self.path(skill))))]
 
-    def path(self, skill: Skill):
-        return self.files.path(skill).relative_to(self.files.config.root)
+    def path(self, skill: Skill) -> str:
+        return self.files.relative_path(skill)
