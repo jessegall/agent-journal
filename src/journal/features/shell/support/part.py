@@ -34,6 +34,10 @@ class Part:
         program = words[0].rsplit("/", 1)[-1] if words else ""
         return len(words) > 1 and words[1] in GIT_READS if program == "git" else program in READERS
 
+    def is_bare_echo(self) -> bool:
+        words = self.text.split()
+        return bool(words) and words[0] == "echo" and not WRITING.search(self.text) and "$(" not in self.text and "`" not in self.text
+
     def is_search(self) -> bool:
         words = self.text.split()
         return bool(words) and words[0].rsplit("/", 1)[-1] in SEARCHERS
