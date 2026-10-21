@@ -11,3 +11,5 @@ class Awaited(AgentEvent):
     answers_hook: ClassVar[bool] = False
 
     what: str
+    ends_on: str = ""
+    """The rows that end the wait, table:id each, comma-separated."""

@@ -76,7 +76,7 @@ class ShellRecord:
         self.cards.show(self.scope.id, where.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", command=part, shows=ChatMark.COMMANDS)
         running = self.agents.live()
         if running:
-            self.events.ended(self.outputs.save(self.outputs.of_chain(chain).ended_with(status), where.actor), running)
+            self.events.ended(self.outputs.save(self.outputs.of_chain(chain).ended_with(status, datetime.now(timezone.utc).timestamp()), where.actor), running)
 
     def is_kept(self, chain: str, line: str, size: int, cut: bool) -> bool:
         from journal.features.shell.feature import Shell

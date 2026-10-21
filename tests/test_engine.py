@@ -1133,3 +1133,43 @@ def test_a_question_asked_pushes_waiting_and_its_answer_pops_it_on_top_or_on_res
         assert not Compacting().on(QuestionAnswered(environment_id=1, at=3.0, question_id=4).with_snapshot(of()), settings).popped, "the answer under a compaction waits for the resume"
     finally:
         BaseState.fold(())
+
+
+def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_the_last_row_settles_and_stuck_is_quiet():
+    from dataclasses import replace
+    from journal.features.tasks.feature import Tasks as TasksFeature
+    from journal.features.tasks.states.expecting import Expecting
+    from journal.features.tasks.states.stuck import Stuck
+    from journal.models.open_task import OpenTask
+    from journal.features.tasks.support.tasks_conduct import TasksConduct
+    from journal.features.tasks.support.tasks_snapshot import TasksSnapshot
+    from journal.events.agent.awaited import Awaited
+    from journal.events.agent.idle import Idle as Stop
+    from journal.events.agent.stuck_declared import StuckDeclared
+    from journal.events.agent.ticked import Ticked
+    from journal.events.rows.row_settled import RowSettled
+    auto, manual = SettingsValue({TasksFeature.AUTO.key: True}), SettingsValue({TasksFeature.AUTO.key: False})
+    tasks = TasksSnapshot(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=OpenTask(9, "the next one"), last_commands=())
+    of = lambda: Snapshot({"tasks": tasks})
+    BaseState.fold((TasksConduct,))
+    try:
+        pushed = Working(task_id=7).on(Awaited(what="the build", ends_on="command_outputs:4,checks:2", at=100.0), auto)
+        assert pushed.pushed == Expecting(what="the build", ends_on="command_outputs:4,checks:2", since=100.0), "journal await pushes the wait on the work"
+        assert Working(task_id=7).on(StuckDeclared(why="the login", at=1.0), auto).pushed == Stuck(why="the login"), "journal stuck pushes Stuck"
+    finally:
+        BaseState.fold(())
+    waiting = pushed.pushed
+    assert waiting.on(Stop(at=130.0).with_snapshot(of()), auto).held is None and waiting.on(Ticked(quiet_for=10.0, at=130.0).with_snapshot(of()), auto).nudges == (), "quiet at a stop and on an early tick"
+    meanwhile = waiting.on(Ticked(quiet_for=70.0, at=170.0).with_snapshot(of()), auto)
+    assert meanwhile.to == replace(waiting, meanwhile_said=True) and meanwhile.nudges[0].rendered().startswith("while you wait for the build, task 9, the next one is next"), "in auto mode the next task is named once after a minute"
+    assert waiting.on(Ticked(quiet_for=70.0, at=170.0).with_snapshot(of()), manual).nudges == (), "out of auto mode it is not"
+    looked = meanwhile.to.on(Ticked(quiet_for=310.0, at=410.0).with_snapshot(of()), auto)
+    assert looked.to == replace(meanwhile.to, reminded_at=410.0) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
+    assert looked.to.on(Ticked(quiet_for=400.0, at=500.0).with_snapshot(of()), auto).nudges == (), "and not again before five more"
+    first = waiting.on(RowSettled(environment_id=1, at=200.0, ref="command_outputs:4", outcome="output 4 finished"), auto)
+    assert first.to == replace(waiting, ends_on="checks:2", outcomes="output 4 finished") and not first.popped, "one row settled, one still to come"
+    assert waiting.on(RowSettled(environment_id=1, at=200.0, ref="tasks:3"), auto).to == waiting, "a row it does not wait on is not its business"
+    last = first.to.on(RowSettled(environment_id=1, at=300.0, ref="checks:2", outcome="check 2 passed"), auto)
+    assert last.popped and last.nudges[0].rendered().startswith("the wait for the build is over: output 4 finished; check 2 passed"), "the last row settled pops the wait with what each came to"
+    assert Stuck(why="the login").on(Stop(at=1.0).with_snapshot(of()), auto).held is None and Stuck(why="the login").on(Ticked(quiet_for=900.0, at=901.0).with_snapshot(of()), auto).nudges == (), "stuck is quiet"
+    assert Stuck(why="the login").on(ToolStarting(call=ToolCall(tool="Read", input={})), auto).popped, "its own tool use pops it"

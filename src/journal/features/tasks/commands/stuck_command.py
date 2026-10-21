@@ -3,8 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.support.where import Where
 from journal.support.cards import Cards
-from journal.engine.state_machine import StateMachine
-from journal.features.tasks.states.stuck import Stuck
+from journal.hooks.command_events import CommandEvents
 from journal.support.scope import Scope
 from journal.support.chat_mark import ChatMark
 
@@ -15,16 +14,14 @@ class StuckCommand(Command):
     noun = "stuck"
     default_verb = "now"
 
-    def __init__(self, machine: StateMachine, cards: Cards, scope: Scope) -> None:
-        self.machine, self.cards, self.scope = machine, cards, scope
+    def __init__(self, events: CommandEvents, cards: Cards, scope: Scope) -> None:
+        self.events, self.cards, self.scope = events, cards, scope
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "now", "say why you are stuck").add_argument("why")
 
     def now(self, args: Namespace, where: Where) -> int:
-        environment = self.scope.id
-        current = self.machine.agent(where.session, environment)
-        self.machine.move(where.session, environment, Stuck.leaving(self.machine.states.named(current.state, current.data), why=args.why))
-        self.cards.show(environment, where.session, "Agent stuck", "warn", "bad", args.why, shows=ChatMark.STUCK)
+        self.events.help_needed(args.why, where)
+        self.cards.show(self.scope.id, where.session, "Agent stuck", "warn", "bad", args.why, shows=ChatMark.STUCK)
         print("stuck; your next tool use or prompt lifts it")
         return 0

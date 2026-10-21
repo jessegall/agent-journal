@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from journal.engine.states.paused import Paused
+from journal.engine.states.wait import Wait
 
 
 @dataclass(frozen=True)
-class Stuck(Paused):
-    """The agent said it is truly stuck. Nothing is said until it works again or the user speaks: its own next tool use, through the workflow Stuck, or a word from the user take it back."""
+class Stuck(Wait):
+    """The agent said it is truly stuck. Nothing is said until it works again or the user speaks: its own next tool use or a word from the user pops it."""
 
     name = "stuck"
     title = "Stuck"
@@ -13,4 +13,3 @@ class Stuck(Paused):
 
     def awaiting(self) -> tuple[str, str]:
         return self.why, ""
-

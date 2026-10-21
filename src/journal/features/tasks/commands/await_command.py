@@ -5,12 +5,7 @@ from journal.console.command import Command
 from journal.support.awaitables import Awaitables
 from journal.support.refused import Refused
 from journal.support.where import Where
-from journal.engine.state_machine import StateMachine
-from journal.engine.clock import Clock
-from journal.events.agent.awaited import Awaited
-from journal.events.bus import Bus
-from journal.features.tasks.states.expecting import Expecting
-from journal.support.scope import Scope
+from journal.hooks.command_events import CommandEvents
 
 WAITING_ON_THE_USER = re.compile(r"\b(?:the user|you|sir|user's|your)\b[^.]{0,40}\b(?:answer|answers|reply|replies|response|word|instruction|instructions|message|decision|go-ahead|say|says|to say|to answer|to reply|to decide)"
                                  r"|\b(?:waiting|wait|waits)\s+(?:for|on)\s+(?:the\s+)?(?:user|you|sir|him|them)\b"
@@ -26,8 +21,8 @@ class AwaitCommand(Command):
     noun = "await"
     default_verb = "now"
 
-    def __init__(self, machine: StateMachine, scope: Scope, bus: Bus, awaitables: Awaitables, clock: Clock) -> None:
-        self.machine, self.scope, self.bus, self.awaitables, self.clock = machine, scope, bus, awaitables, clock
+    def __init__(self, events: CommandEvents, awaitables: Awaitables) -> None:
+        self.events, self.awaitables = events, awaitables
 
     def arguments(self, verbs) -> None:
         now = self.verb(verbs, "now", "say what you wait for, and name what ends the wait")
@@ -41,9 +36,6 @@ class AwaitCommand(Command):
         if WAITING_ON_THE_USER.search(args.what):
             raise Refused(FOR_THE_USER)
         names = [self.awaitables.output(n) for n in args.output] + ([self.awaitables.until(args.until, args.what, where.actor)] if args.until else [])
-        environment = self.scope.id
-        current = self.machine.agent(where.session, environment)
-        self.machine.move(where.session, environment, Expecting.leaving(self.machine.states.named(current.state, current.data), what=args.what, ends_on=",".join(names)))
-        self.bus.dispatch(Awaited(what=args.what).placed(where.session, environment, current.provider, None, self.clock.now()))
-        print(f"waiting for {args.what}, on {', '.join(names)}; it ends by itself once all of it has settled, or when you work again")
+        self.events.wait_declared(args.what, ",".join(names), where)
+        print(f"waiting for {args.what}, on {', '.join(self.awaitables.title_of(name) for name in names)}; it ends by itself once all of it has settled, or when you work again")
         return 0

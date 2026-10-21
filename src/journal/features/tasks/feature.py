@@ -5,7 +5,6 @@ from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.listeners.clear_waits import ClearWaits
-from journal.features.tasks.listeners.end_settled_waits import EndSettledWaits
 from journal.features.tasks.listeners.let_go_of_closed_task import LetGoOfClosedTask
 from journal.features.tasks.listeners.no_wait_cycles import NoWaitCycles
 from journal.features.tasks.listeners.one_task_in_hand import OneTaskInHand
@@ -31,7 +30,7 @@ class Tasks(Feature):
     NAME_EVERY = Option("tasks.name_every", "Name the task back every", "Edits between reminders of the task in hand, so drift is noticed", 25, unit="edits")
     LOG_AFTER = Option("tasks.log_after", "Hold the next write after", "Edits without a log line before the agent's next write waits for one", 50, unit="edits")
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
-    listeners = (ClearWaits, EndSettledWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
+    listeners = (ClearWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
     conduct = (TasksConduct,)
     snapshot = (TasksSnapshotReader,)
     checks = (
@@ -67,10 +66,11 @@ class Tasks(Feature):
     CHECK_WHAT_YOU_AWAITED = Nudge(name, "check_what_you_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step", repeat_after=300, held_whatever_its_values=True)
     CHECK_IN_AFTER_QUIET = Nudge(name, "check_in_after_quiet", "nothing has happened for half an hour: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
     WAIT_OVER = Nudge(name, "wait_over", "the wait for {{what}} is over: {{came}}", "carry on with what you were doing", repeat_after=0)
+    NEXT_TASK_MEANWHILE = Nudge(name, "next_task_meanwhile", "while you wait for {{what}}, task {{n}}, {{title}} is next", "if you can work on it meanwhile, carry on with it; if you need what you wait for, end your turn", repeat_after=0)
     TASK_REOPENED = Nudge(name, "task_reopened", "task {{n}} is open again: {{on}} is answered or closed", "`journal task start {{n}}` takes it up", repeat_after=0)
     FIX_THE_BROKEN_WAIT = Nudge(name, "fix_the_broken_wait", "{{waits}}", "so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat_after=0)
     BLOCKED_TASK_ASKED_ABOUT = Nudge(name, "blocked_task_asked_about", "blocked, with nothing that opens it by itself: {{tasks}}", "has what it waits on come? `journal task unblock <n>` when it has", repeat_after=2700, held_whatever_its_values=True)
-    nudges = (CARRY_ON, LOG_FIRST_AT_STOP, TASK_STILL_OPEN, TASK_OPEN_WITH_NOTHING_LOGGED, NEXT_TASK_HOLDS_THE_STOP, PARKED_TASKS_STILL_OPEN, DEFERRED_WORK_IS_A_TASK, CLOSED_BY_COMMIT, STOP_POLLING, LOG_WHERE_IT_STANDS, WRITE_HELD_UNTIL_LOGGED, TASK_IN_HAND_REPEATED, PARKED_TASK_ASKED_ABOUT, PARKED_TASK_NAMED_AT_CLOSE, CHECK_WHAT_YOU_AWAITED, CHECK_IN_AFTER_QUIET, WAIT_OVER, TASK_REOPENED, FIX_THE_BROKEN_WAIT, BLOCKED_TASK_ASKED_ABOUT)
+    nudges = (CARRY_ON, LOG_FIRST_AT_STOP, TASK_STILL_OPEN, TASK_OPEN_WITH_NOTHING_LOGGED, NEXT_TASK_HOLDS_THE_STOP, PARKED_TASKS_STILL_OPEN, DEFERRED_WORK_IS_A_TASK, CLOSED_BY_COMMIT, STOP_POLLING, LOG_WHERE_IT_STANDS, WRITE_HELD_UNTIL_LOGGED, TASK_IN_HAND_REPEATED, PARKED_TASK_ASKED_ABOUT, PARKED_TASK_NAMED_AT_CLOSE, CHECK_WHAT_YOU_AWAITED, CHECK_IN_AFTER_QUIET, WAIT_OVER, NEXT_TASK_MEANWHILE, TASK_REOPENED, FIX_THE_BROKEN_WAIT, BLOCKED_TASK_ASKED_ABOUT)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks

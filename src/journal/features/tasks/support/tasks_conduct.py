@@ -1,6 +1,8 @@
 from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
+from journal.events.agent.awaited import Awaited
+from journal.events.agent.stuck_declared import StuckDeclared
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_reopened import TaskReopened
@@ -9,7 +11,15 @@ SAME = 3
 
 
 class TasksConduct(Conduct):
-    """The tasks feature's conduct in every state: a polled command named, a task open again told, a parked task named when a task closes."""
+    """The tasks feature's conduct in every state: a polled command named, a task open again told, a parked task named when a task closes, a wait the agent declares pushed as Expecting and a stuck agent pushed as Stuck."""
+
+    def on_awaited_tasks(self, event: Awaited, settings: Settings) -> Transition:
+        from journal.features.tasks.states.expecting import Expecting
+        return self.push(Expecting(what=event.what, ends_on=event.ends_on, since=event.at))
+
+    def on_stuck_declared_tasks(self, event: StuckDeclared, settings: Settings) -> Transition:
+        from journal.features.tasks.states.stuck import Stuck
+        return self.push(Stuck(why=event.why))
 
     def on_tool_starting_tasks(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
