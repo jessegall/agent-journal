@@ -1,4 +1,3 @@
-from journal.features.faults.support.slow_requests import LOADS_PREFIX
 from journal.http.journal.answer_time import AnswerTime
 from journal.models.support.model_load import ModelLoad
 from journal.models.timing import Timing
@@ -8,11 +7,12 @@ from journal.support.actor import Actor
 
 PREFIX = "developer."
 HOOKS_PREFIX = "developer.hooks."
+LOADS_PREFIX = "developer.loads."
 LOG_ENTRIES = 100
 
 
 class DeveloperNumbers:
-    """What the Developer tab and journal developer read of how the journal answers: the average and slowest per kind, the newest and slowest requests from the rolling log, the newest requests with the rows they loaded, and the rows loaded per model since the last reset."""
+    """What the Developer tab and the journal developer command read of how the journal answers: the average and slowest per kind, the newest and slowest requests from the rolling log, the newest requests with the rows they loaded, and the rows loaded per model since the last reset."""
 
     def __init__(self, statistics: Statistics, timings: Timings) -> None:
         self.statistics, self.timings = statistics, timings
@@ -31,8 +31,14 @@ class DeveloperNumbers:
     def recent(self) -> list[Timing]:
         return self.timings.recent(LOG_ENTRIES)
 
-    def slowest(self) -> list[Timing]:
-        return self.timings.slowest(LOG_ENTRIES)
+    def slowest(self, limit: int = LOG_ENTRIES) -> list[Timing]:
+        return self.timings.slowest(limit)
+
+    def slowest_hooks(self, limit: int) -> list[Timing]:
+        return self.timings.slowest_hooks(limit)
+
+    def slowest_requests(self, limit: int) -> list[Timing]:
+        return self.timings.slowest_requests(limit)
 
     def loaded(self) -> list[Timing]:
         return [timing for timing in self.recent() if timing.loads.counts]

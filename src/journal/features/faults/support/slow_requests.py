@@ -15,6 +15,7 @@ from journal.repositories.messages import Messages
 from journal.repositories.statistics import Statistics
 from journal.repositories.timings import Timings
 from journal.models.timing import Timing
+from journal.features.faults.support.developer_numbers import LOADS_PREFIX
 from journal.models.support.request_loads import RequestLoads
 from journal.repositories.load_tally import LoadTally
 from journal.repositories.setting_rows import SettingRows
@@ -29,7 +30,6 @@ TEST_RUN_KEY = "tests.running"
 
 
 HOOK = "HOOK"
-LOADS_PREFIX = "developer.loads."
 OUTWARD_ROUTES = ("/journal/plugins/preview", "/journal/plugins/{n}/remove", "/journal/plugins/{n}/upgrade", "/journal/plugins/{n}/enable", "/journal/plugins", "/journal/updates/install")
 OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin propose", "/cli/setup update", "/cli/update ", "/cli/worker dispatch", "/cli/check run", "/cli/mcp ")
 

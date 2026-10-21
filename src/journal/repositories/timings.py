@@ -22,6 +22,12 @@ class Timings(Repository[Timing]):
     def slowest(self, limit: int) -> list[Timing]:
         return self.selected("1 ORDER BY ms DESC, id DESC LIMIT ?", (limit,))
 
+    def slowest_hooks(self, limit: int) -> list[Timing]:
+        return self.selected("method = 'HOOK' ORDER BY ms DESC, id DESC LIMIT ?", (limit,))
+
+    def slowest_requests(self, limit: int) -> list[Timing]:
+        return self.selected("method != 'HOOK' ORDER BY ms DESC, id DESC LIMIT ?", (limit,))
+
     def cleared(self, actor: Actor) -> None:
         with self.connection.transaction():
             self.connection.execute(f"DELETE FROM {self.model.table()}")

@@ -1518,6 +1518,25 @@ def test_the_look_runs_the_commands_the_setting_names_each_under_its_heading_in_
     assert shown.index("task in hand: 1 write the notes") < shown.index("== journal task show 1 =="), "the summary comes first"
 
 
+def test_journal_developer_prints_the_slowest_the_loads_the_models_and_the_averages_from_the_tabs_numbers_and_resets_them(app: App):
+    from collections import Counter
+    from journal.features.faults.support.slow_requests import SlowRequests
+    from journal.models.support.request_loads import RequestLoads
+    slow = app.container.get(SlowRequests)
+    slow.counted("HOOK", "/hooks/PreToolUse", 41, RequestLoads.tallied(Counter({"tasks": 60, "links": 12, "plans": 3})))
+    slow.counted("GET", "/journal/tasks", 7, RequestLoads())
+    slow.counted("HOOK", "/hooks/Stop", 90, RequestLoads())
+    run = lambda *argv: app.console().run(["developer", *argv], USER).text
+    assert run("slowest", "--hooks", "--top", "1").splitlines() == ["    90 ms  HOOK  /hooks/Stop"], "the slowest hook, with its milliseconds, kind and path"
+    assert run("slowest", "--requests").splitlines() == ["     7 ms  GET   /journal/tasks"], "requests only"
+    assert [line.split()[0] for line in run("slowest").splitlines()] == ["90", "41", "7"], "both kinds, the slowest first"
+    assert run("loads").splitlines()[0].endswith("PreToolUse: 60 tasks, 12 links, 3 plans, 41 ms"), "a request with the records it read, by kind"
+    assert run("models").splitlines() == ["      60  tasks", "      12  links", "       3  plans"], "the totals per kind, the most first"
+    averages = run("averages")
+    assert "hooks" in averages and "2 measured" in averages and "hook Stop" in averages and "90 ms slowest" in averages
+    assert "cleared" in run("reset") and run("models") == "nothing counted yet\n" and run("slowest") == "nothing logged yet\n", "reset clears the counts and the rolling log"
+
+
 def test_wispr_flow_is_among_the_suggested_mcp_services():
     from journal.features.mcp.support.mcp_catalogue import SUGGESTED
     suggested = {s.name: s for s in SUGGESTED}

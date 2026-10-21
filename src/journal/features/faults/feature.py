@@ -1,6 +1,7 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
 from journal.support.option import Option
+from journal.features.faults.commands.developer_command import DeveloperCommand
 from journal.features.faults.listeners.slow_job_notice import SlowJobNotice
 
 
@@ -19,3 +20,4 @@ class Faults(Feature):
     options = (REPORT, REQUEST, EDIT_BUDGET, REPEAT, LOADS, JOBS)
     nudges = (SLOW_REQUEST, SLOW_JOB)
     listeners = (SlowJobNotice,)
+    commands = (DeveloperCommand,)
