@@ -5728,6 +5728,25 @@ def test_another_agents_question_is_owed_an_answer_until_the_agent_sends_it_one_
     assert "asked you a question" not in json.dumps(hook(app, "Stop")[1]), "a message sent back to that agent answers it"
 
 
+def test_a_removed_check_runs_no_more_leaves_the_list_and_opens_a_task_that_waited_on_it_alone(app: App):
+    from datetime import datetime, timezone
+    from journal.models.task_state import TaskState
+    from journal.repositories.checks import Checks
+    from journal.repositories.tasks import Tasks
+    console, checks = app.console(), app.container.get(Checks)
+    console.run(["check", "create", "the build", "--command", "false", "--every", "5"], USER)
+    console.run(["task", "create", "ship it"], USER)
+    console.run(["task", "block", "1", "the build", "--until", "false"], USER)
+    with app.container.get(Scope).environment(MAIN):
+        waited = [check for check in checks.rows() if check.wait_target]
+        assert app.container.get(Tasks).find(1).state == TaskState.BLOCKED and len(waited) == 1
+        assert console.run(["check", "remove", str(waited[0].id)], USER).code == 0
+        assert app.container.get(Tasks).find(1).state == TaskState.OPEN, "a task that waited on the check alone is open again"
+        assert console.run(["check", "remove", "1"], USER).code == 0 and "the build" not in console.run(["check", "list"], USER).text
+        assert checks.due(datetime.now(timezone.utc)) == [], "a removed check runs no more"
+    assert "removed already" in console.run(["check", "remove", "1"], USER).error
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog

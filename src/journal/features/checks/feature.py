@@ -28,6 +28,8 @@ the next pass clears it.
   `--every 0` runs by hand only.
 - `journal check run <n>` runs it now and prints the tail on failure. `journal check list` shows how each last went.
 - `journal check edit <n> [--title] [--command] [--brief] [--every]` changes what it names on a check and keeps the rest.
+- `journal check remove <n>` retires a check: it runs no more and leaves the list, and a task or plan that waited on it
+  alone opens again.
 - When a check fails, fix what it found before anything else, then run it again.
 - A check shows how far it is from what it prints: a count such as `120/983`, test dots, or a percent. It may write
   a report to the file named by `$JOURNAL_REPORT`: `{"title", "summary", "findings": [{"name", "file", "line", "where",

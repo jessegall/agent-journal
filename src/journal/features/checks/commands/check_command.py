@@ -1,3 +1,4 @@
+import time
 from argparse import Namespace
 
 from journal.console.command import Command
@@ -5,6 +6,7 @@ from journal.support.caller import Caller
 from journal.features.checks.support.check_runner import CheckRunner
 from journal.models.check import Check
 from journal.repositories.checks import Checks
+from journal.support.rejection import Rejection
 
 
 class CheckCommand(Command):
@@ -27,6 +29,7 @@ class CheckCommand(Command):
         edit.add_argument("--every", type=int, help="minutes; 0 runs it by hand only")
         self.verb(verbs, "run", "run a check now").add_argument("n", type=int)
         self.verb(verbs, "list", "every check and how it last went")
+        self.verb(verbs, "remove", "retire a check: it runs no more and leaves the list, and a task or plan that waited on it alone opens again").add_argument("n", type=int)
 
     def create(self, args: Namespace, caller: Caller) -> int:
         check = self.checks.save(Check(title=args.title, brief=args.brief, command=args.command, interval=args.every), caller.actor)
@@ -51,4 +54,12 @@ class CheckCommand(Command):
         for check in self.checks.all():
             state = {True: "passed", False: "failed", None: "not run"}[check.last_passed]
             print(f"{check.id:>4}  {state:<8} {check.title}")
+        return 0
+
+    def remove(self, args: Namespace, caller: Caller) -> int:
+        check = self.checks.find(args.n)
+        if check.is_retired:
+            raise Rejection(f"check {check.id} is removed already")
+        self.checks.save(check.retired(time.time()), caller.actor)
+        print(f"check {check.id} removed: it runs no more, and a task or plan that waited on it alone is open again")
         return 0

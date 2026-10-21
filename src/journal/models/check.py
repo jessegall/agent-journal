@@ -26,6 +26,7 @@ class Check(Model):
     progress: CheckProgress | None = None
     last_fault: str = ""
     wait_target: bool = False
+    is_retired: bool = False
 
     def edited(self, title: str, brief: str, command: str, interval_minutes: float) -> "Check":
         return self.with_(title=title, brief=brief, command=command, interval=interval_minutes)
@@ -40,13 +41,17 @@ class Check(Model):
             return recorded.with_event(RowResolved(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.outcome()))
         return recorded
 
+    def retired(self, time: float) -> "Check":
+        retired = self.with_(is_retired=True, progress=None)
+        return retired if self.is_resolved() else retired.with_event(RowResolved(environment_id=0, time=time, ref=f"{self.table()}:{self.id}", outcome=f"check {self.id} removed"))
+
     def needs_run(self, time: datetime) -> bool:
-        if self.interval <= 0 or (self.wait_target and self.is_resolved()):
+        if self.is_retired or self.interval <= 0 or (self.wait_target and self.is_resolved()):
             return False
         return self.last_run_at is None or (time - self.last_run_at).total_seconds() >= self.interval * 60
 
     def is_resolved(self) -> bool:
-        return self.last_passed is True
+        return self.last_passed is True or self.is_retired
 
     def outcome(self) -> str:
         return f"check {self.id} passed"
