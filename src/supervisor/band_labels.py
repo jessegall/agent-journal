@@ -16,5 +16,5 @@ class BandLabels:
         return cls(str(payload["left"]), str(payload["middle"]), str(payload["right"]))
 
     @staticmethod
-    def is_carried(payload: dict) -> bool:
+    def has_wire_keys(payload: dict) -> bool:
         return WIRE_KEYS <= payload.keys()

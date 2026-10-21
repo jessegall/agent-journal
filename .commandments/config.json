@@ -33,6 +33,7 @@
         "FieldDocstringDetector",
         "ConstantDocstringDetector",
         "StateMachineOutsideEngineDetector",
+        "SupervisorImportsJournalDetector",
         "ProviderNameComparedDetector",
         "ProviderKeyedTableDetector",
         "StateListenerNotOnDetector",

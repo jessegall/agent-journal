@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "descendant": {
+                    "resolvesLike": "journal*"
+                }
+            },
+            {
+                "file": "src/supervisor/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "supervisor-imports-journal",
+        "description": "A module of the supervisor imports the journal: the supervisor only starts the processes it is handed and lets them talk, and holds no journal logic.",
+        "rule": "Keep the supervisor stdlib-only. What it needs to know comes in its launch file or a request on its socket; what it decides about the journal belongs in the journal, which tells it what to run.",
+        "skill": "plain-code-words"
+    }
+}
