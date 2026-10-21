@@ -5520,8 +5520,13 @@ def test_messages_between_sessions_reach_the_chat_both_ways_named_by_their_agent
     hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "code-commandments-12", "message": "thank you"}, tool_response={})
     hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "code-commandments-12", "notify_when_idle": True}, tool_response={})
     app.runtime().deferred.drain()
+    import os
+    hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": f"uds:/tmp/cc-socks/{os.getpid()}.sock", "message": "the fix is in"}, tool_response={})
+    hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "uds:/tmp/cc-socks/999999.sock", "message": "anyone there?"}, tool_response={})
+    app.runtime().deferred.drain()
     sent = [m for m in app.container.get(MessageRows).all() if m.data.get("sent_to")]
-    assert [(m.text, m.data["sent_to"]) for m in sent] == [("thank you", "code-commandments-12")], "a message the agent sent is kept as sent to that agent; a bare idle subscription is not"
+    assert [(m.text, m.data["sent_to"]) for m in sent] == [("thank you", "code-commandments-12"), ("the fix is in", "agent-journal"), ("anyone there?", "uds:/tmp/cc-socks/999999.sock")], "a message the agent sent is kept as sent to that agent, a socket named by the project folder of the process behind it and left as the path when no process answers; a bare idle subscription is not"
+    assert sent[1].data["address"] == f"uds:/tmp/cc-socks/{os.getpid()}.sock", "the socket stays on the row beside the name"
 
 
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app):

@@ -33,8 +33,8 @@ class Message(Scoped):
         return cls(author=Author.SYSTEM, text=text, read_at=time, data={"kind": cls.PEER, cls.PEER: sender, "session": session})
 
     @classmethod
-    def sent_to(cls, receiver: str, text: str, session: str) -> "Message":
-        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.SENT_TO: receiver, "session": session})
+    def sent_to(cls, receiver: str, text: str, session: str, address: str = "") -> "Message":
+        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.SENT_TO: receiver, "session": session, "address": address or receiver})
 
     def arrived(self) -> "Message":
         return self.with_event(MessageArrived(text=self.text))

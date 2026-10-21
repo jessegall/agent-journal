@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- A message the agent sends to another session is headed by that session's name or, when its address is a socket, by the project folder of the process behind it, read from the process list; the socket's path shows only when no process answers to it, and stays on the row beside the name.
 - A kept output is named by one line in one wording, 'output N kept, L lines, C characters', a cut part and a long part of one chain alike; and a trailing head or tail the journal applied shows its cut output above that line, cut to the cap when it is longer, instead of the line alone.
 - The tunnel starts clean: before the tunler for this journal's address is started, the supervisor's tunnel service is stopped and every tunler still running for that address on the machine is ended, an orphan of an earlier supervisor among them, so the address never stays with a process pointing at a dead port; the share server keeps its port across restarts, as it did.
 - A word typed in the chat is a chat message whatever it replies to and whatever is open beside it: a reply to a comment is linked to the comment and to no row, with no passage carried over, and only the comment box on a row's page files a comment, a reply in that column included.
