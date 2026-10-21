@@ -1,5 +1,6 @@
 import json
 import re
+import shlex
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +37,7 @@ CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL
 
 
 TAIL_BYTES = 400_000
+HOOK_SCRIPT = Path(__file__).resolve().parents[1] / "hooks" / "hook.sh"
 PATH_KEYS = ("file_path", "path", "notebook_path")
 
 VERSION_3_HOOKS = ("/.journal/src/hook.sh", "/.journal/hook.py", "/.journal/journal hook")
@@ -191,6 +193,12 @@ class Provider(ABC):
         if kind in CONTEXT_HOOKS:
             return Response(200, {"hookSpecificOutput": {"hookEventName": kind.value, "additionalContext": decision.context}})
         return Response(200, {})
+
+    def hook_command(self, root: Path) -> str:
+        return f"test -f {shlex.quote(str(HOOK_SCRIPT))} && exec {shlex.join(['sh', str(HOOK_SCRIPT), self.name, str(root)])}; exit 0"
+
+    @abstractmethod
+    def worker_settings_flags(self, path: Path) -> list[str]: ...
 
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"hooks": [{"type": "command", "command": command}]}] for kind in self.hook_kinds}

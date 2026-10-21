@@ -1,6 +1,6 @@
 import os
-import shlex
 import shutil
+from journal.providers.provider import HOOK_SCRIPT
 from argparse import Namespace
 from pathlib import Path
 
@@ -65,12 +65,11 @@ class SetupCommand(Command):
         return names
 
     def hooks(self, args: Namespace, caller: Caller) -> int:
-        script = self.package / "hooks" / "hook.sh"
         for provider in self.providers.all():
             if not provider.default and not (self.config.root / provider.home).is_dir() and not shutil.which(provider.name):
                 continue
-            command = f"test -f {shlex.quote(str(script))} && exec {shlex.join(['sh', str(script), provider.name, str(self.config.root)])}; exit 0"
-            print(f"hooks   {provider.wire_hooks(self.config.root, script, command).relative_to(self.config.root)}")
+            command = provider.hook_command(self.config.root)
+            print(f"hooks   {provider.wire_hooks(self.config.root, HOOK_SCRIPT, command).relative_to(self.config.root)}")
         return 0
 
     def law(self) -> Path:

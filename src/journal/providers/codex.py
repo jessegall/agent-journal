@@ -181,6 +181,9 @@ class Codex(Provider):
         path.write_text(McpTables.merged(path.read_text() if path.is_file() else "", servers))
         return path
 
+    def worker_settings_flags(self, path: Path) -> list[str]:
+        return []
+
     def worker_session(self, resume: str) -> str:
         return resume
 

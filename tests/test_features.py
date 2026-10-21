@@ -6557,6 +6557,21 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
 
+def test_a_claude_worker_is_started_with_hook_settings_of_its_own(app: App):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.worker import Worker
+    from journal.providers.claude import Claude
+    from journal.providers.codex import Codex
+    from journal.repositories.workers import Workers
+    with app.container.get(Scope).environment(MAIN):
+        worker = app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Babbage", brief="b", worktree=True), Actor.system())
+    path = app.container.get(WorkerRunner).hook_settings(worker)
+    hooks = json.loads(path.read_text())["hooks"]
+    commands = {block["hooks"][0]["command"] for blocks in hooks.values() for block in blocks}
+    assert commands == {Claude().hook_command(app.config.root)} and "PreToolUse" in hooks, "every hook kind runs the journal's hook script for the project, whatever the worktree commits"
+    assert Claude().worker_settings_flags(path) == ["--settings", str(path)] and Codex().worker_settings_flags(path) == [], "Claude takes the file; Codex waits for its hooks to be checked"
+
+
 def test_a_workers_agent_row_is_never_the_main_agent_and_ends_with_its_process(app: App):
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.models.agent import Agent

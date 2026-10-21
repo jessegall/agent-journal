@@ -170,6 +170,9 @@ class Claude(Provider):
             return ["--resume", resume]
         return ["--session-id", session] if session else []
 
+    def worker_settings_flags(self, path: Path) -> list[str]:
+        return ["--settings", str(path)]
+
     def worker_session(self, resume: str) -> str:
         return resume or str(uuid.uuid4())
 

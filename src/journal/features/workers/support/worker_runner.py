@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 import signal
@@ -48,8 +49,15 @@ class WorkerRunner:
     def start(self, worker: Worker, actor: Actor) -> None:
         provider = self.providers.lookup(worker.provider)
         worker = self.workers.save(worker.with_(session=provider.worker_session(worker.resume)), actor)
-        command = provider.worker_command(self.instructed(worker), worker.model, worker.resume, worker.session)
+        command = [*provider.worker_command(self.instructed(worker), worker.model, worker.resume, worker.session), *provider.worker_settings_flags(self.hook_settings(worker))]
         threading.Thread(target=self.run_scoped, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
+
+    def hook_settings(self, worker: Worker) -> Path:
+        provider = self.providers.lookup(worker.provider)
+        path = self.outputs(worker)[0].with_suffix(".settings.json")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"hooks": provider.hook_block(provider.hook_command(self.config.root))}, indent=2) + "\n")
+        return path
 
     def instructed(self, worker: Worker) -> str:
         if worker.resume or worker.profile is None:
