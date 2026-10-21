@@ -298,6 +298,10 @@ def test_a_shell_calls_parts_are_its_terminal_lines_with_the_output_the_shell_ke
         assert [(l["tool"], l["command"], l["output"], l["seconds"]) for l in lines] == [("Bash", "cd src", "", 0.0), ("Bash", "git status", "nothing to commit", 1.5)]
         assert lines[0]["time"] < lines[1]["time"], "each part has its own time, so the pane keeps both"
         assert call(server, "GET", f"/journal/agents/1/terminal?after={lines[1]['time']}")[1] == [], "the pane asks for what came after its last line"
+        hook("PreToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_use_id="t-2")
+        hook("PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response={"stdout": "a"}, tool_use_id="t-2")
+        newer = call(server, "GET", f"/journal/agents/1/terminal?after={lines[1]['time']}")[1]
+        assert [l["command"] for l in newer] == ["ls"], "a poll with its cursor reads the calls that came after it, and only those"
     finally:
         app.runtime().stop()
 

@@ -49,6 +49,15 @@ class Entries(ScopedRepository[Entry]):
     def repeated_commands(self, session: str, minimum: int, last: int = 200) -> list[str]:
         return self.repeated(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last), "data->call->command", minimum)
 
+    def newer_tool_starts(self, session: str, earliest: datetime, last: int = 500) -> list[Entry]:
+        return self.selected(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).filter_greater("created_at", earliest).order_descending("id").limit(last))
+
+    def newer_tool_ends(self, session: str, earliest: datetime, last: int = 500) -> list[Entry]:
+        return self.selected(self.query().filter_listed("kind", ("ToolFinished", "ToolFailed")).filter(actor=Actor.agent(session)).filter_greater("created_at", earliest).order_descending("id").limit(last))
+
+    def newer_kind_entries(self, kind: str, earliest: datetime, last: int = 50) -> list[Entry]:
+        return self.selected(self.query().filter(kind=kind).filter_greater("created_at", earliest).order_descending("id").limit(last))
+
     def tool_ends(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected(self.query().filter_listed("kind", ("ToolFinished", "ToolFailed")).filter(actor=Actor.agent(session)).order_descending("id").limit(last))
 

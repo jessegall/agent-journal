@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from journal.features.shell.support.shell_record import PART_END
 from journal.http.agents.terminal_line import TerminalLine
 from journal.models.agent import Agent
@@ -8,6 +10,7 @@ from journal.support.command_part import CommandPart
 LINES_SHOWN = 200
 ENTRIES_READ = 400
 PART_STEP = 0.001
+CURSOR_MARGIN_SECONDS = 1.0
 
 
 class TerminalLines:
@@ -17,9 +20,10 @@ class TerminalLines:
         self.entries = entries
 
     def lines(self, agent: Agent, cursor: float) -> list[TerminalLine]:
-        ended_ids = {e.data.get("tool_use_id") for e in self.entries.tool_ends(agent.session, ENTRIES_READ)}
-        shell_calls = [e for e in reversed(self.entries.tool_starts(agent.session, ENTRIES_READ)) if e.recorded_call().command and e.data.get("tool_use_id") in ended_ids]
-        part_ends = sorted((e for e in self.entries.kind_entries(PART_END, ENTRIES_READ) if e.actor and e.actor.id == agent.session), key=lambda e: e.data["time"])
+        earliest = datetime.fromtimestamp(max(cursor - CURSOR_MARGIN_SECONDS, 0.0), timezone.utc)
+        ended_ids = {e.data.get("tool_use_id") for e in self.entries.newer_tool_ends(agent.session, earliest, ENTRIES_READ)}
+        shell_calls = [e for e in reversed(self.entries.newer_tool_starts(agent.session, earliest, ENTRIES_READ)) if e.recorded_call().command and e.data.get("tool_use_id") in ended_ids]
+        part_ends = sorted((e for e in self.entries.newer_kind_entries(PART_END, earliest, ENTRIES_READ) if e.actor and e.actor.id == agent.session), key=lambda e: e.data["time"])
         all_lines = [line for call in shell_calls for line in self.call_lines(agent.row_id, call, part_ends)]
         return [line for line in all_lines if line["time"] > cursor][-LINES_SHOWN:]
 
