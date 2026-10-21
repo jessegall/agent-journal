@@ -7,6 +7,7 @@ from journal.features.registry import Registry
 from journal.support.skill import Skill
 
 HOMES = (".claude/skills", ".agents/skills")
+SKILL_FILE = "SKILL.md"
 JOURNAL_SKILL_PREFIX = "journal"
 PLUGIN_STAMP = "\nplugin: "
 
@@ -43,7 +44,7 @@ class SkillFiles:
     def is_journals(folder: Path) -> bool:
         if folder.name != JOURNAL_SKILL_PREFIX and not folder.name.startswith(f"{JOURNAL_SKILL_PREFIX}-"):
             return False
-        skill = folder / "SKILL.md"
+        skill = folder / SKILL_FILE
         return not skill.is_file() or PLUGIN_STAMP not in skill.read_text().split("\n---\n")[0]
 
     def path(self, skill: Skill, home: str = HOMES[0]) -> Path:
@@ -51,7 +52,7 @@ class SkillFiles:
 
     @staticmethod
     def relative_path(skill: Skill, home: str = HOMES[0]) -> str:
-        return f"{home}/{skill.folder}/SKILL.md"
+        return f"{home}/{skill.folder}/{SKILL_FILE}"
 
     def digest(self, skill: Skill) -> str:
         return hashlib.sha1(skill.text().encode()).hexdigest()[:12]
@@ -60,7 +61,8 @@ class SkillFiles:
         return next((skill for skill in self.registry.skills() if skill.folder == folder), None)
 
     def skill_read(self, path: str) -> Skill | None:
-        for skill in self.registry.skills():
-            if any((self.config.root / path).resolve() == self.path(skill, home).resolve() for home in HOMES):
-                return skill
-        return None
+        read = self.config.root / path
+        if read.name != SKILL_FILE:
+            return None
+        resolved = read.resolve()
+        return next((skill for skill in self.registry.skills() if any(resolved == self.path(skill, home).resolve() for home in HOMES)), None)
