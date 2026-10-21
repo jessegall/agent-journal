@@ -9,13 +9,14 @@ from journal.repositories.scoped_repository import ScopedRepository
 
 
 class SettingRows(ScopedRepository[Setting]):
-    """Reads a key with the project's value over the environment's; writes to whichever scope is asked."""
+    """Reads a key with the project's value over the environment's, each scope's values kept until a setting is written; writes to whichever scope is asked."""
 
     model = Setting
 
     def __init__(self, connection: Connection, bus: Bus, scope: Scope) -> None:
         super().__init__(connection, bus, scope)
         self._kept: dict[int, list[Setting]] = {}
+        self._values: dict[int, dict[str, object]] = {}
 
     def get(self, key: str, default: object = None) -> object:
         return self.merged().get(key, default)
@@ -64,10 +65,16 @@ class SettingRows(ScopedRepository[Setting]):
         return tree
 
     def merged(self) -> dict:
-        return {**{s.key: s.value for s in self.environment_rows(self.scope.id)}, **self.project_values()}
+        return self.values(self.scope.id)
 
     def project_values(self) -> dict:
-        return {s.key: s.value for s in self.project_rows()}
+        return self.values(PROJECT)
+
+    def values(self, environment_id: int) -> dict:
+        if environment_id not in self._values:
+            environment_values = {setting.key: setting.value for setting in self.environment_rows(environment_id)}
+            self._values[environment_id] = environment_values if environment_id == PROJECT else environment_values | self.project_values()
+        return self._values[environment_id]
 
     def project_rows(self) -> list[Setting]:
         return self.environment_rows(PROJECT)
@@ -78,8 +85,12 @@ class SettingRows(ScopedRepository[Setting]):
         return self._kept[environment_id]
 
     def stored(self) -> None:
+        self.clear_cache()
+        self.connection.commit_callback(self.clear_cache)
+
+    def clear_cache(self) -> None:
         self._kept.clear()
-        self.connection.commit_callback(self._kept.clear)
+        self._values.clear()
 
     def _placed(self, row: Setting) -> Setting:
         return row
