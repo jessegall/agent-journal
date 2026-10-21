@@ -3,33 +3,29 @@ import time as timing
 from journal.config import Config
 from journal.features.pausing.agent_pause import AgentPause
 from journal.features.sequences.support.run_tracker import RunTracker
-from journal.features.shell.support.shell_record import PART_END
 from journal.http.agents.agent_activity import AgentActivity
-from journal.http.agents.terminal_line import TerminalLine
+from journal.http.agents.terminal_lines import TerminalLines
 from journal.http.controllers.controller import Controller
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.models.agent import Agent
-from journal.models.entry import Entry
 from journal.providers.providers import Providers
 from journal.support.rejection import Rejection
 from journal.repositories.agents import Agents
 from journal.repositories.edits import Edits
-from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
 from journal.supervisor_link import SupervisorLink
 
 EDITS_SHOWN = 50
-LINES_SHOWN = 200
 
 
 class AgentController(Controller[Agent]):
     """The environment's agents with what each is doing; what the user types or picks for the live one goes to its terminal, and the files it changed and the commands it ran are read from here."""
 
-    def __init__(self, agents: Agents, activity: AgentActivity, supervisor: SupervisorLink, entries: Entries, edits: Edits, scope: Scope, environments: Environments,
+    def __init__(self, agents: Agents, activity: AgentActivity, supervisor: SupervisorLink, terminal_lines: TerminalLines, edits: Edits, scope: Scope, environments: Environments,
                  providers: Providers, active: RunTracker, config: Config, pausing: AgentPause) -> None:
-        self.repository, self.activity, self.supervisor, self.entries, self.file_edits, self.scope = agents, activity, supervisor, entries, edits, scope
+        self.repository, self.activity, self.supervisor, self.terminal_lines, self.file_edits, self.scope = agents, activity, supervisor, terminal_lines, edits, scope
         self.environments, self.providers, self.running, self.config, self.pausing = environments, providers, active, config, pausing
 
     def rows(self) -> list[Agent]:
@@ -87,16 +83,7 @@ class AgentController(Controller[Agent]):
         return Response.json({"path": path, "text": file.read_text(errors="replace")[:200000]})
 
     def terminal(self, request: Request) -> Response:
-        agent = self.repository.find(request.number("id"))
-        following = request.queried("after")
-        completed = [e for e in reversed(self.entries.kind_entries(PART_END, 400)) if e.actor and e.actor.id == agent.session and e.data["time"] > following]
-        return Response.json([self.line(agent.id, e) for e in completed][-LINES_SHOWN:])
-
-    @staticmethod
-    def line(agent_id: int, entry: Entry) -> TerminalLine:
-        part = entry.data["part"]
-        return TerminalLine(agent_id=agent_id, time=entry.data["time"], tool="Journal" if part.split(" ")[0].endswith("journal") else "Bash", command=part,
-                            output=entry.data["output"], seconds=entry.data["seconds"], status=entry.data["status"], stepped=False, level="everything")
+        return Response.json(self.terminal_lines.lines(self.repository.find(request.number("id")), request.queried("after")))
 
     def pause(self, request: Request) -> Response:
         return Response.json(self.shown(self.pausing.pause(self.repository.find(request.number("id")), request.actor)))

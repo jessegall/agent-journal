@@ -1867,10 +1867,12 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app:
     folder.mkdir()
     assert ShellVerbs(app).split("cd src && pytest -q | tail -1; git commit -m 'a\nb'", str(folder)) == "R;&-\nR&;-\nR;;-\n"
     assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q", "git commit -m 'a\nb'"]
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "git commit -m done"}, tool_use_id="t-1")
     ShellVerbs(app).started("git commit -m done", "c1")
     bar = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))
     assert bar[-1]["parts"][0]["value"] == "committing" and bar[-1]["done"] is False
     ShellVerbs(app).ran("git commit -m done", "c1", 0, output="[main 1a2b3c4] done", seconds=2)
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m done"}, tool_response={"stdout": "[main 1a2b3c4] done"}, tool_use_id="t-1")
     assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))[-1]["done"] is True
     line = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/agents/1/terminal?env=main"), timeout=5))[-1]
     assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2

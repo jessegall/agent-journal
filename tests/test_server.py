@@ -193,6 +193,29 @@ def test_the_subagents_are_listed_as_their_rows_stand_a_resumed_one_running_agai
         app.runtime().stop()
 
 
+def test_a_shell_calls_parts_are_its_terminal_lines_with_the_output_the_shell_kept(tmp_path: Path):
+    """The Terminal pane reads a Bash call as it was recorded: each part a line, with the output the journal's shell kept of the parts it ran, once the call has finished."""
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
+    def hook(kind, **extra):
+        urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
+    shell = {"command": "cd src && git status"}
+    try:
+        hook("SessionStart")
+        hook("PreToolUse", tool_name="Bash", tool_input=shell, tool_use_id="t-1")
+        ShellVerbs(app).ran("git status", "c1", 0, output="nothing to commit", seconds=1.5)
+        assert call(server, "GET", "/journal/agents/1/terminal")[1] == [], "a call still running shows nothing yet"
+        hook("PostToolUse", tool_name="Bash", tool_input=shell, tool_response={"stdout": "nothing to commit"}, tool_use_id="t-1")
+        lines = call(server, "GET", "/journal/agents/1/terminal")[1]
+        assert [(l["tool"], l["command"], l["output"], l["seconds"]) for l in lines] == [("Bash", "cd src", "", 0.0), ("Bash", "git status", "nothing to commit", 1.5)]
+        assert lines[0]["time"] < lines[1]["time"], "each part has its own time, so the pane keeps both"
+        assert call(server, "GET", f"/journal/agents/1/terminal?after={lines[1]['time']}")[1] == [], "the pane asks for what came after its last line"
+    finally:
+        app.runtime().stop()
+
+
 def test_request_threads_leave_no_connection_behind(server):
     database = server.database
     for _ in range(40):
@@ -376,7 +399,9 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         hook("PostToolUse", tool_name="Edit", tool_input={"file_path": str(tmp_path / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
         edit = call(server, "GET", "/journal/agents/1/edits")[1]["edits"][0]
         assert [r["kind"] for r in edit["rows"]] == ["ctx", "del", "add", "ctx"] and edit["first_line"] == 7 and edit["last_line"] == 9
+        hook("PreToolUse", tool_name="Bash", tool_input={"command": "journal task list"}, tool_use_id="t-9")
         ShellVerbs(app).ran("journal task list", "c1", 0, output="1 t")
+        hook("PostToolUse", tool_name="Bash", tool_input={"command": "journal task list"}, tool_response={"stdout": "1 t"}, tool_use_id="t-9")
         assert call(server, "GET", "/journal/agents/1/terminal")[1][-1]["tool"] == "Journal"
         assert call(server, "POST", "/journal/agents/1/shell", {"command": "ls"})[1]["queued"] is True and keystrokes[-1] == "ls"
         doc = call(server, "POST", "/journal/docs", {"title": "Design", "body": "Intro\n\n## Goals\n\nShip it"})[1]
