@@ -43,8 +43,8 @@ class Migrator:
         return self.migrations.save(self.migrations.current().is_started(), actor)
 
     def run(self, migration: Version3Migration, actor: Actor) -> Version3Migration:
-        brought = [self.imported(kind, actor) for kind in self.kinds]
-        self.reports.save(self.report(brought), actor)
+        ported = [self.imported(kind, actor) for kind in self.kinds]
+        self.reports.save(self.report(ported), actor)
         return self.migrations.save(migration.is_finished(), actor)
 
     def imported(self, kind, actor: Actor) -> ImportTally:

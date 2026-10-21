@@ -102,8 +102,8 @@ class Tunnel:
         if host is None or not command or not port:
             return
         subdomain = self.place.subdomain()
-        kept = self.place.stored()
-        inspector = kept.inspector or self.free_port()
+        retained = self.place.stored()
+        inspector = retained.inspector or self.free_port()
         self.link.stop_service(host, SERVICE)
         self.tunler.stop_subdomain(subdomain)
         self.place.store(tunnel=(port, subdomain), inspector=inspector)

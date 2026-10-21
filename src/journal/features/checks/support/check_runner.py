@@ -38,9 +38,9 @@ class CheckRunner:
     def start(self, check: Check, actor: Actor) -> Check:
         if check.running is not None:
             return check
-        begun = self.checks.save(check.started(timing.time()), actor)
-        threading.Thread(target=self.finished, args=(begun, actor), name=f"check-{begun.id}", daemon=True).start()
-        return begun
+        commenced = self.checks.save(check.started(timing.time()), actor)
+        threading.Thread(target=self.finished, args=(commenced, actor), name=f"check-{commenced.id}", daemon=True).start()
+        return commenced
 
     def finished(self, check: Check, actor: Actor) -> Check:
         report = self.config.home / "runtime" / "check-reports" / f"{check.id}.json"

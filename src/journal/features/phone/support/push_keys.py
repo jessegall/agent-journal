@@ -25,8 +25,8 @@ class PushKeys:
             return cls(int(json.loads(path.read_text())["secret"], 16))
         keys = cls(secrets.randbelow(N - 1) + 1)
         PrivateFolder.created(path.parent)
-        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as kept:
-            kept.write(json.dumps({"secret": format(keys.secret, "x")}))
+        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as retained:
+            retained.write(json.dumps({"secret": format(keys.secret, "x")}))
         return keys
 
     @property

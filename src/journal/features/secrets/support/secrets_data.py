@@ -14,11 +14,11 @@ class SecretsData:
     folders: tuple[Path, ...]
     spellings: tuple[str, ...]
 
-    def reaches(self, given: dict) -> bool:
-        text = json.dumps(given)
+    def reaches(self, supplied: dict) -> bool:
+        text = json.dumps(supplied)
         if any(word in text for word in (*MARKERS, *self.spellings)):
             return True
-        paths = [value for key, value in given.items() if key in PATH_KEYS and isinstance(value, str)]
+        paths = [value for key, value in supplied.items() if key in PATH_KEYS and isinstance(value, str)]
         return any(self.is_private_path(Path(p).expanduser()) for p in paths)
 
     def is_private_path(self, path: Path) -> bool:

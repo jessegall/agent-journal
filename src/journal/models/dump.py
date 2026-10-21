@@ -57,8 +57,8 @@ class Dump(Scoped):
 
     @property
     def is_complete(self) -> bool:
-        settled = [self.item(name).resolved for name in self.item_names]
-        return bool(settled) and all(settled)
+        concluded = [self.item(name).resolved for name in self.item_names]
+        return bool(concluded) and all(concluded)
 
     def waiting(self) -> list[str]:
         return [name for name in self.item_names if not self.item(name).insight]
@@ -76,10 +76,10 @@ class Dump(Scoped):
         question = self.question.get("text", "")
         return self.with_(question={}, answers=(*self.answers, {"question": question, "answer": answer, "time": time})).with_event(DumpAnswered(environment_id=self.environment_id, time=time, dump_id=self.id, question=question, answer=answer))
 
-    def step_chosen(self, pick: int, label: str, time: float) -> "Dump":
-        choice = {"label": label, "pick": pick, "time": time}
-        claimed = {**self.taken, str(pick): choice} if pick >= 0 else self.taken
-        return self.with_(chosen=choice, taken=claimed).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=pick, label=label))
+    def step_chosen(self, option: int, label: str, time: float) -> "Dump":
+        choice = {"label": label, "pick": option, "time": time}
+        claimed = {**self.taken, str(option): choice} if option >= 0 else self.taken
+        return self.with_(chosen=choice, taken=claimed).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=option, label=label))
 
     def step_directed(self, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": USER_TEXT, "time": time}

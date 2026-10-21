@@ -717,14 +717,14 @@ def test_a_session_starting_in_a_state_requires_that_states_skill(skilled):
     hook(app, "SessionStart")
     read_skill(app, "journal")
     app.console().run(["environment", "overview"], AGENT)
-    requiring, agents = app.container.get(Requirements), app.container.get(Agents)
+    needs, agents = app.container.get(Requirements), app.container.get(Agents)
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    assert requiring.obligation_names(agents.session_agent("s1")) == [], "entering a state owes nothing by itself"
+    assert needs.obligation_names(agents.session_agent("s1")) == [], "entering a state owes nothing by itself"
     hook(app, "PreCompact")
     status, body = hook(app, "SessionStart")
     line_text = body["hookSpecificOutput"]["additionalContext"]
     assert "journal skill" in line_text and "read the tasks skill before anything else" in line_text, "a start after a compaction owes the journal skill and the state's own"
-    assert sorted(requiring.obligation_names(agents.session_agent("s1"))) == ["journal", "tasks"]
+    assert sorted(needs.obligation_names(agents.session_agent("s1"))) == ["journal", "tasks"]
     app.runtime().deferred.drain()
     from journal.repositories.messages import Messages
     kinds = [m.data.get("kind") for m in app.container.get(Messages).all() if m.author.value == "system"]
@@ -734,7 +734,7 @@ def test_a_session_starting_in_a_state_requires_that_states_skill(skilled):
     read_skill(app, "journal")
     read_skill(app, "journal-tasks")
     app.console().run(["environment", "overview"], AGENT)
-    assert requiring.obligation_names(agents.session_agent("s1")) == [] and hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
+    assert needs.obligation_names(agents.session_agent("s1")) == [] and hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
 
 
 def test_a_prompt_naming_a_keyword_requires_that_skill(skilled):
@@ -1005,12 +1005,12 @@ def test_skills_paid_from_one_look_at_the_agent_each_stay_paid(app: App):
     from journal.support.requirements import Requirements
     from journal.support.skill import Skill
     hook(app, "SessionStart")
-    agents, requiring = app.container.get(Agents), app.container.get(Requirements)
+    agents, needs = app.container.get(Agents), app.container.get(Requirements)
     skills = [Skill(name, "", "") for name in ("tasks", "checks", "messages", "plugins")]
-    requiring.obligation(agents.session_agent("s1"), skills)
+    needs.obligation(agents.session_agent("s1"), skills)
     viewed = agents.session_agent("s1")
     for skill in skills:
-        requiring.discharge(viewed, skill)
+        needs.discharge(viewed, skill)
     assert not set(agents.session_agent("s1").skills_owed) & {"tasks", "checks", "messages", "plugins"}, "four skills read at once, each paid from the same look at the agent, are all paid: none is put back by the others"
 
 
@@ -2021,13 +2021,13 @@ def test_a_task_finished_while_a_skill_is_owed_leaves_the_debt_data_until_the_re
     hook(app, "SessionStart")
     read_skill(app, "journal")
     app.console().run(["environment", "overview"], AGENT)
-    requiring, agents, machine = app.container.get(Requirements), app.container.get(Agents), app.container.get(StateMachine)
-    assert requiring.obligation_names(agents.session_agent("s1")) == ["tasks"], "the tasks skill is owed at a start in work"
+    needs, agents, machine = app.container.get(Requirements), app.container.get(Agents), app.container.get(StateMachine)
+    assert needs.obligation_names(agents.session_agent("s1")) == ["tasks"], "the tasks skill is owed at a start in work"
     finished = app.console().run(["task", "complete", "1", "--how", "quick"], AGENT)
     assert finished.code == 0, finished.err
-    assert machine.current("s1").name == "idle" and requiring.obligation_names(agents.session_agent("s1")) == ["tasks"], "the task done, the agent is idle and still owes the read"
+    assert machine.current("s1").name == "idle" and needs.obligation_names(agents.session_agent("s1")) == ["tasks"], "the task done, the agent is idle and still owes the read"
     read_skill(app, "journal-tasks")
-    assert requiring.obligation_names(agents.session_agent("s1")) == []
+    assert needs.obligation_names(agents.session_agent("s1")) == []
 
 
 def test_a_long_file_is_not_read_whole(app: App, tmp_path):
@@ -2660,20 +2660,20 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     from journal.support.requirements import Requirements
     from journal.repositories.agents import Agents
     app = skilled
-    agents, requiring = app.container.get(Agents), app.container.get(Requirements)
+    agents, needs = app.container.get(Agents), app.container.get(Requirements)
     row = lambda: agents.session_agent("s1")
     hook(app, "SessionStart")
-    assert row().oriented is False and requiring.obligation_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
+    assert row().oriented is False and needs.obligation_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
     read_skill(app, "journal")
-    assert requiring.obligation_names(row()) == [] and row().skills_loaded and "journal" in row().skills_loaded, "the read removes the owed link and keeps the hash"
+    assert needs.obligation_names(row()) == [] and row().skills_loaded and "journal" in row().skills_loaded, "the read removes the owed link and keeps the hash"
     app.console().run(["environment", "overview"], AGENT)
     assert row().oriented is True, "the look sets oriented and nothing is owed"
     hook(app, "UserPromptSubmit", prompt="make me a plan for the release")
-    assert requiring.obligation_names(row()) == ["plans"], "a prompt naming plans: the plans skill owed"
+    assert needs.obligation_names(row()) == ["plans"], "a prompt naming plans: the plans skill owed"
     read_skill(app, "journal-plans")
-    assert requiring.obligation_names(row()) == []
+    assert needs.obligation_names(row()) == []
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    assert requiring.obligation_names(row()) == [], "entering a state owes nothing by itself: a state's skill is owed at a start in it"
+    assert needs.obligation_names(row()) == [], "entering a state owes nothing by itself: a state's skill is owed at a start in it"
     context(app, 30)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert row().mark_owed == 25 and row().context_mark == 25, "the crossing sets the mark owed"

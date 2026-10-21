@@ -83,9 +83,9 @@ class WorkerBranch:
             return ""
         if worker.is_running():
             return f"its worktree {folder} stays while it works"
-        left = self.remaining(worker)
-        if left:
-            return f"its worktree {folder} stays, since {len(left)} files in it are not committed: {', '.join(left[:10])}"
+        leftover = self.remaining(worker)
+        if leftover:
+            return f"its worktree {folder} stays, since {len(leftover)} files in it are not committed: {', '.join(leftover[:10])}"
         self.git("update-ref", f"{TIPS_REF}/{folder.name}", self.git("rev-parse", self.name(worker)).stdout.strip())
         self.git("worktree", "remove", str(folder))
         self.git("branch", "-D", self.name(worker))

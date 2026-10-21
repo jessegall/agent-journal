@@ -744,8 +744,8 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
         assert [n.rendered() for n in arrived.nudges] == ["no deploys tonight"]
         denied = Ready().respond(ToolStarting(call=shell("deploy prod")).with_data(data), settings)
         assert denied.refusal is not None and denied.refusal.rendered() == "a trigger denies this: no deploys tonight"
-        held = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": plugin_file}, writes=True, written_paths=(plugin_file,))).with_data(data), settings)
-        assert held.refusal is not None and held.refusal.key == "plugins.plugin_files_are_the_users"
+        withheld = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": plugin_file}, writes=True, written_paths=(plugin_file,))).with_data(data), settings)
+        assert withheld.refusal is not None and withheld.refusal.key == "plugins.plugin_files_are_the_users"
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "src/a.py"}, writes=True, written_paths=("src/a.py",))).with_data(data), settings).refusal is None
     finally:
         BaseState.fold(())
@@ -901,8 +901,8 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         assert [n.key for n in prompt.nudges] == [], "the plans skill is read already, by its hash"
         unread = FeatureData({**parts, "skills": SkillsData(owed=(), loaded={}, skills=cards)})
         assert [n.rendered() for n in Ready().respond(PromptSubmitted(prompt="draw me a roadmap").with_data(unread), settings).nudges][0].startswith("read the plans skill before anything else")
-        held = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(data), settings)
-        assert held.refusal is not None and held.refusal.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
+        withheld = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(data), settings)
+        assert withheld.refusal is not None and withheld.refusal.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(data), settings).refusal is None
         stop = Ready().respond(Stop().with_data(data), settings)
         assert stop.refusal is not None and stop.refusal.key == "skills.stopped_owing"
@@ -1014,8 +1014,8 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     assert third.to.edits == 3 and [n.key for n in third.nudges] == ["tasks.log_where_it_stands"] and "2 edits since you logged task 7" in third.nudges[0].rendered()
     fourth = write(third.to)
     assert fourth.to.edits == 4 and [n.key for n in fourth.nudges] == ["tasks.task_in_hand_repeated"]
-    held = write(fourth.to)
-    assert held.refusal is not None and held.refusal.rendered().startswith("4 edits since you logged task 7")
+    withheld = write(fourth.to)
+    assert withheld.refusal is not None and withheld.refusal.rendered().startswith("4 edits since you logged task 7")
     read = fourth.to.on(ToolStarting(call=ToolCall(tool="Read", input={}), time=1002.0).with_data(of()), settings)
     assert read.to.edits == 4 and read.refusal is None and read.to.active_at == 1002.0
     logged = fourth.to.on(TaskLogged(environment_id=1, time=1500.0, task_id=7).with_data(of()), settings)
@@ -1293,8 +1293,8 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
     tasks = TasksData(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=OpenTask(3, "the footer", "", 0), last_commands=(), open_ids=(3, 4), open_summary="task 3 (the footer), task 4 (the margin)")
     started = StartedPlan(plan_id=2, next_task=3, started_task=0, started_task_briefing="", tasks=(3, 4), tasks_left=2, at_checkpoint=False, checkpoint_phase=0)
     of = lambda plan: FeatureData({"plans": PlansData((), plan), "tasks": tasks})
-    begun = Ready().respond(SessionStarted(time=1.0).with_data(of(None)), settings("orchestrator"))
-    assert isinstance(begun.to, Orchestrating) and begun.pushed is None, "at a session start the bottom state becomes the mode's"
+    commenced = Ready().respond(SessionStarted(time=1.0).with_data(of(None)), settings("orchestrator"))
+    assert isinstance(commenced.to, Orchestrating) and commenced.pushed is None, "at a session start the bottom state becomes the mode's"
     planned = Ready().respond(SessionStarted(time=1.0).with_data(of(started)), settings("orchestrator"))
     assert isinstance(planned.to, Orchestrating) and isinstance(planned.pushed, OrchestratingPlan) and planned.pushed.plan_id == 2, "a started plan is pushed over the new mode staor as the orchestrator's plan state"
     assert type(Ready().respond(SessionStarted(time=1.0).with_data(of(None)), settings("builder")).to) is Ready, "the builder's mode state is Idle"

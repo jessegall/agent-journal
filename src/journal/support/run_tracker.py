@@ -38,8 +38,8 @@ class RunTracker:
             return ""
         run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=topic, started_at=self.timestamp(), said_at=self.timestamp(), finishes_in=tuple(sequence.finishes_in))
         self.rewritten(agent, lambda time: [*time, run])
-        owed = self.requiring.require(agent, self.requiring.obligations(agent, self.requiring.lookup("sequences")))
-        return "\n".join([*owed, self.line(run)])
+        liabilities = self.requiring.require(agent, self.requiring.obligations(agent, self.requiring.lookup("sequences")))
+        return "\n".join([*liabilities, self.line(run)])
 
     def next(self, session: str, environment_id: int) -> str:
         from journal.features.sequences.feature import Sequences
@@ -91,9 +91,9 @@ class RunTracker:
         notified = []
         for agent in [item for item in self.agents.global_matching(environment_id=environment_id) if item.sequence_runs]:
             runs = self.runs(agent)
-            kept = [run for run in runs if not missing(run)]
-            if len(kept) < len(runs):
-                self.stored(agent, kept)
+            retained = [run for run in runs if not missing(run)]
+            if len(retained) < len(runs):
+                self.stored(agent, retained)
                 notified.append((agent, "\n".join(Sequences.SEQUENCE_CANNOT_FINISH.create(n=run.sequence_id, why=reason).rendered() for run in runs if missing(run))))
         return notified
 

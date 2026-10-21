@@ -39,9 +39,9 @@ class WaitImport(EnvironmentKind):
             return "waits on nothing"
         return "" if self.ledger.referred(target.name, f"todo:{row.n}") else "its to-do did not come across"
 
-    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
-        task = self.tasks.find(self.ledger.referred(into.name, f"todo:{row.n}").id)
-        for previous in [rows for n in row.listed("after") if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
+    def created(self, row: Version3Row, receiver: Environment, attached: Path, actor: Actor) -> Task:
+        task = self.tasks.find(self.ledger.referred(receiver.name, f"todo:{row.n}").id)
+        for previous in [rows for n in row.listed("after") if (rows := self.ledger.referred(receiver.name, f"todo:{n}"))]:
             try:
                 self.links.save(Link(source=Ref.build(task), target=previous, kind=WAIT_LINK), actor)
             except Rejection as loop:
