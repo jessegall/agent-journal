@@ -1681,7 +1681,7 @@ def test_a_command_that_reads_the_projects_code_runs_as_written_and_answers_at_o
         folder.mkdir()
         console.run(["shell", "split", line, "--into", str(folder)], AGENT)
         assert (folder / "0.part").read_text() == line and not (folder / "dropped").exists(), f"run whole, nothing dropped: {line}"
-        assert console.run(["shell", "cap", "--line", line], AGENT).out.strip() == "whole 0", f"its output comes straight back, shown whole and kept as no output: {line}"
+        assert console.run(["shell", "cap", "--line", line], AGENT).out.strip() == "direct 0", f"it runs in the shell as written, nothing captured: {line}"
 
 
 def test_reading_a_message_names_its_files_links_and_captions(app):
@@ -4141,10 +4141,10 @@ def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_i
     console = app.console()
     cap = lambda line: console.run(["shell", "cap", "--line", line], AGENT).out.strip()
     assert cap("journal task list") == "whole 0" and cap("cat a.py && git diff") == "ends 8000" and cap("python3 -m pytest -q") == "hint 400"
-    assert cap("cat src/journal/app.py") == "whole 0" and cap("grep -rn x src/journal | head -5") == "whole 0" and cap("ls src/journal/engine") == "whole 0", "a read of the project's own code is shown whole and kept as no output"
+    assert cap("cat src/journal/app.py") == "direct 0" and cap("grep -rn x src/journal | head -5") == "direct 0" and cap("ls src/journal/engine") == "direct 0", "a read of the project's own code runs in the shell as written, nothing captured"
     assert cap("cat .journal/runtime/server.log") == "ends 8000" and cap("cat /etc/hosts") == "ends 8000" and cap("git diff") == "ends 8000", "a read of the journal's own folder, of a file outside the project or of no named path is shown by its ends and kept"
     script = "python3 - <<'EOF'\nfrom pathlib import Path\nPath(\"src/journal/app.py\").write_text(\"x\")\nEOF"
-    assert cap("sed -i '' 's/a/b/' src/journal/app.py") == "ends 8000" and cap(script) == "ends 8000" and cap(f"{script} && cat src/journal/app.py") == "ends 8000", "a line that edits the project's own code is shown as a read of it is"
+    assert cap("sed -i '' 's/a/b/' src/journal/app.py") == "direct 0" and cap(script) == "direct 0" and cap(f"{script} && cat src/journal/app.py") == "direct 0", "a line that edits the project's own code runs in the shell as a read of it does"
     assert cap("echo hi > /tmp/notes.txt") == "hint 400" and cap("cp a.bin b.bin") == "hint 400" and cap("sed -i '' 's/a/b/' src/journal/app.py && python3 -m pytest -q") == "hint 400", "a write outside the project, of no code file, or chained with a run is not"
     folder = app.config.root / "journal-line"
     folder.mkdir()

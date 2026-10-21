@@ -1090,3 +1090,29 @@ def test_following_plan_pops_when_the_plan_is_postponed_or_abandoned_and_on_resu
     assert following.on_resume(of(None), settings).popped, "beneath a wait, a plan postponed meanwhile is over on resume"
     assert following.on_resume(of(replace(plan, plan_id=6)), settings).popped, "another plan started meanwhile: this one is over"
     assert isinstance(following.on_resume(of(plan), settings), tuple), "still the plan started here: the work goes on, with the carry-on line"
+
+
+def test_a_question_asked_pushes_waiting_and_its_answer_pops_it_on_top_or_on_resume():
+    from journal.engine.states.compacting import Compacting
+    from journal.features.questions.states.waiting import Waiting
+    from journal.features.questions.support.questions_conduct import QuestionsConduct
+    from journal.features.questions.support.questions_snapshot import QuestionsSnapshot
+    from journal.events.rows.question_answered import QuestionAnswered
+    from journal.events.rows.question_asked import QuestionAsked
+    from journal.events.agent.idle import Idle as Stop
+    settings = SettingsValue({})
+    of = lambda *open: Snapshot({"questions": QuestionsSnapshot(open=open)})
+    BaseState.fold((QuestionsConduct,))
+    try:
+        asked = Working(task_id=7, logged_at=1.0).on(QuestionAsked(environment_id=1, at=2.0, question_id=4).with_snapshot(of(4)), settings)
+        assert asked.pushed == Waiting(question_id=4), "a question asked pushes the wait on the work in hand"
+        waiting = Waiting(question_id=4)
+        answered = waiting.on(QuestionAnswered(environment_id=1, at=3.0, question_id=4).with_snapshot(of()), settings)
+        assert answered.popped and [n.rendered() for n in answered.nudges][0].startswith("question 4 is answered")
+        assert not waiting.on(QuestionAnswered(environment_id=1, at=3.0, question_id=5).with_snapshot(of(4)), settings).popped, "another question's answer is not this one's"
+        assert waiting.on(SessionStarted(at=4.0).with_snapshot(of(4)), settings).popped is False and waiting.on(Stop().with_snapshot(of(4)), settings).held is None, "a stop while waiting is fine"
+        assert waiting.on_resume(of(4), settings) == (), "beneath a compaction the wait stands while the question is open"
+        assert waiting.on_resume(of(), settings).popped, "answered meanwhile, it pops on resume with the line"
+        assert not Compacting().on(QuestionAnswered(environment_id=1, at=3.0, question_id=4).with_snapshot(of()), settings).popped, "the answer under a compaction waits for the resume"
+    finally:
+        BaseState.fold(())

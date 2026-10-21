@@ -27,7 +27,7 @@ __journal_changed() {
     done
 }
 
-# The foreground shows a part's output as the journal's cap says: whole for a line of journal commands, half of the
+# The foreground shows a part's output as the journal's cap says: direct for a read or a write of the project's code, which never gets here, whole for a line of journal commands, half of the
 # characters from each end for a command that reads, and for any other whole up to the cap and past it not at all; a line
 # names the output by its number.
 __journal_show() {
@@ -112,6 +112,11 @@ fi
 [ $# -eq 1 ] || exec "$@"
 case "$1" in *"&& eval '"*"' < /dev/null && pwd -P"* | *"&& eval '"*"' && pwd -P"*) ;; *) exec "${SHELL:-bash}" -c "$1" ;; esac
 [ -f "$root/port" ] || exec "${SHELL:-bash}" -c "$1"
+# A read or a write of the project's own code is the work itself: it runs as written in the shell, nothing captured, nothing recorded.
+cap=$(sh "$__journal_cli" shell cap --line "$1" 2>/dev/null); cap=${cap:-hint 400}
+show=${cap%% *}
+cap=${cap##* }
+[ "$show" = direct ] && exec "${SHELL:-bash}" -c "$1"
 id=$(date +%s)-$$
 folder="$root/runtime/outputs/$id"
 mkdir -p "$folder"
@@ -119,9 +124,6 @@ printf '%s' "$1" > "$folder/line"
 sh "$__journal_cli" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
 limit=$(sh "$__journal_cli" shell limit --line "$1" 2>/dev/null); limit=${limit:-30}
-cap=$(sh "$__journal_cli" shell cap --line "$1" 2>/dev/null); cap=${cap:-hint 400}
-show=${cap%% *}
-cap=${cap##* }
 trap 'touch "$folder/moved"; exit 143' TERM INT HUP
 shown=0
 tick=0

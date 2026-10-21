@@ -113,10 +113,13 @@ class ShellCommand(Command):
 
     def cap(self, args: Namespace, where: Where) -> int:
         from journal.features.shell.feature import Shell
-        if Chain.is_journal_line(args.line) or Chain.is_reading_code_line(args.line):
+        if Chain.is_reading_code_line(args.line) or Writes.is_code_write_line(args.line):
+            print("direct 0")
+            return 0
+        if Chain.is_journal_line(args.line):
             print("whole 0")
             return 0
-        if Chain.is_read_line(args.line) or Writes.is_code_write_line(args.line):
+        if Chain.is_read_line(args.line):
             print(f"ends {int(self.settings.option(Shell.READ_SHOWN))}")
             return 0
         print(f"hint {int(self.settings.option(Shell.COMMAND_SHOWN))}")

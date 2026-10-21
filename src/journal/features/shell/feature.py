@@ -63,8 +63,8 @@ Every shell command you run goes through the journal's runner.
 - A test run, a build or any other command's output is shown whole up to 400 characters; past that you see only a
   line naming the output to read by its number. A command that reads (cat, grep, sed, git diff) is shown up to 8,000
   characters, past that by its two ends. A line of journal commands is shown whole and kept as no output.
-- A command that only reads the project's own code, a file, a folder or a glob under the project and outside .journal, runs as written, pipes and all,
-  and its output is shown whole and kept as no output: `grep -n x src/app.py | tail -5` answers at once. Any other command's trailing `| tail` or `| head` is taken off the line: the command runs whole, the
+- A command that only reads or edits the project's own code, a file, a folder or a glob under the project and outside .journal, runs as written, pipes and all,
+  in the shell itself: nothing of it is captured, recorded or kept, and `grep -n x src/app.py | tail -5` answers at once. Any other command's trailing `| tail` or `| head` is taken off the line: the command runs whole, the
   whole output is kept under its number, and your cut is applied to it before you see it, with a line naming the
   number, so the lines you asked for come back and the rest stays readable.
 - A test suite is a long runner: run it on its own and chain the commit behind its result in a second call.

@@ -11,7 +11,7 @@ SEARCHERS = {"grep", "egrep", "fgrep", "rg", "ag", "find"}
 GIT_READS = {"show", "diff", "log", "status", "blame", "grep", "ls-files"}
 """The git subcommands that only read."""
 CODE = re.compile(r"\.(py|pyi|vue|js|mjs|cjs|jsx|ts|tsx|cs|go|rs|swift|kt|kts|java|scala|php|rb|ex|exs|erl|hs|ml|clj|c|h|cc|cpp|hpp|m|mm|lua|dart|r|jl|sh|bash|zsh|fish|ps1|sql|css|scss|sass|less|html|htm|svelte|astro|json|jsonl|yaml|yml|toml|ini|cfg|xml|gradle|tf|proto|graphql|md|txt)\b")
-"""A file the agent reads as code or as the project's own text: reading it is the work itself, so it is run as written, pipes and all, shown whole and kept as no output."""
+"""A file the agent reads as code or as the project's own text: reading it is the work itself, so it is run as written in the shell, pipes and all, nothing captured or kept."""
 WRITING = re.compile(r"(^|\s)-i(\s|$)|>|\btee\b")
 """A reading command that writes after all: an in-place edit, a redirect into a file, or a tee."""
 
