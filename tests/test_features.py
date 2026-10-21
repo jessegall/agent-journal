@@ -6428,3 +6428,32 @@ def test_two_jobs_sent_to_one_worker_at_once_start_one_run(app: App, monkeypatch
     for thread in sends:
         thread.join(10)
     assert started == [1] and sorted(codes) == [0, 1], "the second send finds the worker out and is refused"
+
+
+def test_stop_and_send_find_a_workers_process_after_a_restart(app: App, monkeypatch):
+    import subprocess
+    from journal.providers.claude import Claude
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    started = []
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker.id))
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    hook(app, "SessionStart")
+    console, workers = app.console(), app.container.get(Workers)
+    console.run(["worker", "dispatch", "Mr. Brunel", "the bridge", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Telford", "the canal", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    out_before = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    try:
+        workers.save(workers.find(1).running_as(out_before.pid, timing.time()), Actor.system())
+        assert console.run(["worker", "stop", "1"], AGENT).code == 0
+        assert out_before.wait(5) is not None and workers.find(1).state == WorkerState.STOPPED, "the saved pid's group is ended though this runner never started it"
+    finally:
+        if out_before.poll() is None:
+            out_before.kill()
+            out_before.wait(5)
+    ended = subprocess.Popen(["true"])
+    ended.wait(5)
+    workers.save(workers.find(2).running_as(ended.pid, timing.time()).with_(resume="sess-2"), Actor.system())
+    assert console.run(["worker", "send", "2", "now the locks"], AGENT).code == 0, "a worker whose process died unreported is revived, not refused as still out"
+    reports = [m.text for m in app.container.get(Messages).scoped() if m.text.startswith("Mr. Telford reports: ")]
+    assert len(reports) == 1 and started[-1] == 2 and workers.find(2).brief == "now the locks", "its missing outcome is filed first, then the job goes out"

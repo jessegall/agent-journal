@@ -35,7 +35,6 @@ class WorkerRunner:
     def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
         self.environments, self.profiles = environments, profiles
-        self._running: dict[int, subprocess.Popen] = {}
         self._locks: dict[int, threading.Lock] = {}
         self._locks_lock = threading.Lock()
 
@@ -67,10 +66,7 @@ class WorkerRunner:
             self.reports.file(worker, f"could not start: {error}", actor)
             return
         worker = self.workers.save(worker.running_as(process.pid, time.time()), actor)
-        self._running[worker.id] = process
-        code = self.waited(worker, process, actor)
-        self._running.pop(worker.id, None)
-        self.finish(worker, code, actor)
+        self.finish(worker, self.waited(worker, process, actor), actor)
 
     def environment_variables(self, environment: str) -> dict[str, str]:
         excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers())
@@ -99,13 +95,20 @@ class WorkerRunner:
 
     def is_finished(self, worker: Worker, actor: Actor) -> bool:
         if not self.is_running(worker.pid):
-            self.finish(worker, END_UNWATCHED, actor)
+            self.settle(worker, actor)
             return True
         if self.remaining_seconds(worker) == 0:
             os.killpg(worker.pid, signal.SIGKILL)
             self.finish(worker, TIMEOUT_STATUS, actor)
             return True
         return False
+
+    def is_ended(self, worker: Worker) -> bool:
+        return worker.is_running() and worker.pid > 0 and not self.is_running(worker.pid)
+
+    def settle(self, worker: Worker, actor: Actor) -> Worker:
+        self.finish(worker, END_UNWATCHED, actor)
+        return self.workers.find(worker.id)
 
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         output, err = self.outputs(worker)
@@ -117,7 +120,7 @@ class WorkerRunner:
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
         current = self.workers.find(worker.id)
         current = current.with_(resume=resume or current.resume)
-        if current.state == WorkerState.REPORTED:
+        if current.state != WorkerState.DISPATCHED:
             self.workers.save(current, actor)
             return
         branch = self.branch.summary(current)
@@ -154,10 +157,9 @@ class WorkerRunner:
             return True
         return True
 
-    def stop(self, worker_id: int) -> None:
-        process = self._running.get(worker_id)
-        if process:
-            process.terminate()
+    def stop(self, worker: Worker) -> None:
+        if self.is_running(worker.pid) and os.getpgid(worker.pid) == worker.pid:
+            os.killpg(worker.pid, signal.SIGTERM)
 
     def place(self, worker: Worker) -> Path:
         return self.branch.folder(worker) if worker.worktree else self.config.root

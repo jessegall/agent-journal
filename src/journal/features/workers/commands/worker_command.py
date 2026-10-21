@@ -24,6 +24,7 @@ NOTIFY_REFUSALS = {
     WorkerState.REPORTED: "worker {n}, {name}, has reported and runs no more: give it the job with `journal worker send {n} \"<job>\"`",
     WorkerState.STOPPED: "worker {n}, {name}, was stopped: `journal worker send {n} \"<job>\"` revives it in its last session with the job",
 }
+STARTING = "worker {n}, {name}, has not started its process yet: notify it in a moment"
 ENDED = "worker {n}, {name}, has ended and its report is being filed: wait for it, then give it the job with `journal worker send {n} \"<job>\"`"
 NO_INBOX = "worker {n}, {name}, runs {provider}, which takes no message while it runs: wait for its report, then give it the job with `journal worker send {n} \"<job>\"`"
 
@@ -110,6 +111,8 @@ class WorkerCommand(Command):
         return 0
 
     def sent(self, worker: Worker, args: Namespace, caller: Caller) -> Worker:
+        if self.runner.is_ended(worker):
+            worker = self.runner.settle(worker, caller.actor)
         if worker.state == WorkerState.DISPATCHED:
             raise Rejection(f"worker {worker.id}, {worker.name}, is still out: tell it with `journal worker notify {worker.id} \"<text>\"`, or wait for its report and send it the job then")
         if not worker.resume:
@@ -135,7 +138,9 @@ class WorkerCommand(Command):
     def notify_refusal(self, worker: Worker) -> str:
         if worker.state in NOTIFY_REFUSALS:
             return NOTIFY_REFUSALS[worker.state]
-        if not self.runner.is_running(worker.pid):
+        if not worker.pid:
+            return STARTING
+        if self.runner.is_ended(worker):
             return ENDED
         return "" if self.providers.lookup(worker.provider).session_inbox else NO_INBOX
 
@@ -144,8 +149,8 @@ class WorkerCommand(Command):
         return 0
 
     def stop(self, args: Namespace, caller: Caller) -> int:
-        self.runner.stop(args.n)
-        self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp()), caller.actor)
+        with self.runner.lock(args.n):
+            self.runner.stop(self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp()), caller.actor))
         print(f"worker {args.n} stopped")
         return 0
 
