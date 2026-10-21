@@ -80,7 +80,7 @@ class WorkersConduct(Conduct):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         workers = event.data.part(workers_feature())
-        silent = [workers_feature().SILENT_WORKER.create(n=w.id, name=w.name, minutes=int(w.silence.amount // 60)) for w in workers.dispatched_workers if w.dispatcher == event.session and w.is_silent(event.time)]
+        silent = [workers_feature().SILENT_WORKER.create(n=w.id, name=w.name, minutes=w.silence.minutes()) for w in workers.dispatched_workers if w.dispatcher == event.session and w.is_silent(event.time)]
         return self.none(*report_mentions(event.data), *silent)
 
     def on_worker_dispatched(self, event: WorkerDispatched, settings: Settings) -> Transition:

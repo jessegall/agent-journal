@@ -6859,7 +6859,7 @@ def test_a_worker_quiet_for_twenty_minutes_is_named_to_its_dispatcher_once(app: 
     assert len(quiet()) == 1 and "worker 1, Mr. Harrison" in quiet()[0] and "journal worker notify 1" in quiet()[0]
     tick_after(app, 25 * 60)
     app.runtime().deferred.drain()
-    assert len(quiet()) == 1 and workers.find(1).silence_reported, "it is named once for each quiet span"
+    assert len(quiet()) == 1 and workers.find(1).silence.is_reported, "it is named once for each quiet span"
 
 
 def test_a_worker_messages_only_its_own_dispatchers_other_workers_and_starts_no_loop(app: App, tmp_path, monkeypatch):

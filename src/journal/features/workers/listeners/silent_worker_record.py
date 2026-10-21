@@ -14,4 +14,5 @@ class SilentWorkerRecord(AgentListener[LineDelivered]):
         from journal.features.workers.feature import Workers as Feature
         if event.nudge != Feature.SILENT_WORKER.key:
             return
-        self.workers.touch(self.workers.find(int(event.values["n"])), Actor.system(), silence_reported=True)
+        worker = self.workers.find(int(event.values["n"]))
+        self.workers.touch(worker, Actor.system(), silence=worker.silence.reported())

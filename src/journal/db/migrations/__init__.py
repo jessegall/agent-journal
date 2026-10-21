@@ -26,5 +26,6 @@ from journal.db.migrations.agent_provider_fill import AgentProviderFill
 from journal.db.migrations.message_window_index import MessageWindowIndex
 from journal.db.migrations.worker_reuse_counts import WorkerReuseCounts
 from journal.db.migrations.dispatcher_session_clear import DispatcherSessionClear
+from journal.db.migrations.worker_silence_fold import WorkerSilenceFold
 
-MIGRATIONS = (PauseUnwrapping(), FinishCancelledTasks(), SequenceUnwrapping(), PlanBuildingEnd(), LinkWorkerReports(), AgentSkillObligations(), ChatQuestions(), HotReadIndexes(), LinkIndexes(), DispatchIndex(), OldReportClosure(), FrequentReadIndexes(), CardRowTableNames(), FillAgentsEmptyData(), StackSeed(), ChartDrop(), TimeKeys(), TriggerPhrases(), DashboardSections(), EventRenames(), ColumnRenames(), StateFieldRenames(), TimestampRenames(), OperationDispatchIndex(), AgentProviderFill(), MessageWindowIndex(), WorkerReuseCounts(), DispatcherSessionClear())
+MIGRATIONS = (PauseUnwrapping(), FinishCancelledTasks(), SequenceUnwrapping(), PlanBuildingEnd(), LinkWorkerReports(), AgentSkillObligations(), ChatQuestions(), HotReadIndexes(), LinkIndexes(), DispatchIndex(), OldReportClosure(), FrequentReadIndexes(), CardRowTableNames(), FillAgentsEmptyData(), StackSeed(), ChartDrop(), TimeKeys(), TriggerPhrases(), DashboardSections(), EventRenames(), ColumnRenames(), StateFieldRenames(), TimestampRenames(), OperationDispatchIndex(), AgentProviderFill(), MessageWindowIndex(), WorkerReuseCounts(), DispatcherSessionClear(), WorkerSilenceFold())

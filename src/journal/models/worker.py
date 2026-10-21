@@ -1,5 +1,6 @@
 from typing import ClassVar
 from dataclasses import dataclass
+from journal.models.support.worker_silence import WorkerSilence
 
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_dispatched import WorkerDispatched
@@ -38,8 +39,7 @@ class Worker(Scoped):
     touched_paths: tuple[str, ...] | None = None
     reuse_count: int = 0
     retire_reason: str = ""
-    silence: Timeout = SILENCE
-    silence_reported: bool = False
+    silence: WorkerSilence = WorkerSilence(SILENCE)
 
     def worker_ref(self) -> str:
         return f"{self.table()}:{self.id}"
@@ -64,10 +64,10 @@ class Worker(Scoped):
         return self.contacted(time).with_(brief=brief, state=WorkerState.DISPATCHED, adopted=False, pid=0, began=0.0)
 
     def contacted(self, time: float) -> "Worker":
-        return self.with_(silence=SILENCE.started(time), silence_reported=False)
+        return self.with_(silence=self.silence.started(time))
 
     def is_silent(self, time: float) -> bool:
-        return self.is_running() and not self.silence_reported and self.silence.is_elapsed(time)
+        return self.is_running() and self.silence.is_elapsed(time)
 
     def notified(self, text: str, time: float) -> "Worker":
         return self.contacted(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, text=text))
