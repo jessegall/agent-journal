@@ -6,7 +6,7 @@ from journal.support.decision import Decision
 
 
 class SessionExclusivity(AgentListener[SessionStarted]):
-    """One main agent session per provider in an environment: the session that starts takes the place, and every other session of its provider there is retired once the briefing has named the takeover."""
+    """Keeps one main agent session per provider in an environment: the session that starts takes the place, and every other session of its provider there ends once the briefing has named the takeover."""
 
     blocking = True
 

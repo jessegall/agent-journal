@@ -16,7 +16,7 @@ class TasksConduct(Conduct):
 
     def on_wait_request(self, event: WaitRequest, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
-        return self.push(ExternalWait.requested(event))
+        return self.push(ExternalWait.opened(*event.wait_terms()))
 
     def on_impasse_report(self, event: ImpasseReport, settings: Settings) -> Transition:
         from journal.features.tasks.states.impasse import Impasse

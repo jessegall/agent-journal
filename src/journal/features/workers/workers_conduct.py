@@ -56,7 +56,7 @@ class WorkersConduct(Conduct):
 
     def on_worker_dispatched(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
-        return self.push(ExternalWait.pending(event)) if event.awaiter == event.session else self.none()
+        return self.push(ExternalWait.opened(*event.wait_terms())) if event.awaiter == event.session else self.none()
 
     def on_worker_reported(self, event: WorkerReported, settings: Settings) -> Transition:
         if event.dispatcher and event.dispatcher != event.session:

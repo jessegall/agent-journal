@@ -8,7 +8,7 @@ SILENCE_SECONDS = 3600.0
 
 
 class EndSilentSessions(AgentListener[Ticked]):
-    """A session silent for an hour is retired, so a closed terminal is not the current agent; the current agent a supervisor runs is left as it is."""
+    """Ends a session silent for an hour, so a closed terminal is not the current agent; the current agent a supervisor runs stays current."""
 
     def __init__(self, agents: Agents, supervisor: SupervisorLink) -> None:
         self.agents, self.supervisor = agents, supervisor

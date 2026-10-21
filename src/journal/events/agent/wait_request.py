@@ -12,3 +12,6 @@ class WaitRequest(AgentEvent):
 
     focus: str
     end_refs: str = ""
+
+    def wait_terms(self) -> tuple[str, str, float]:
+        return self.focus, self.end_refs, self.time

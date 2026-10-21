@@ -7,7 +7,6 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.row_pending import RowPending
-from journal.events.agent.wait_request import WaitRequest
 from journal.events.rows.row_resolved import RowResolved
 from journal.support.permission import Permission
 from journal.support.timeout import Timeout
@@ -30,14 +29,6 @@ class ExternalWait(Wait):
     check_reminder: Timeout = CHECK_REMINDER
     next_task_reported: bool = False
     outcomes: str = ""
-
-    @classmethod
-    def requested(cls, event: WaitRequest) -> "ExternalWait":
-        return cls.opened(event.focus, event.end_refs, event.time)
-
-    @classmethod
-    def pending(cls, event: RowPending) -> "ExternalWait":
-        return cls.opened(event.label, event.ref, event.time)
 
     @classmethod
     def opened(cls, focus: str, end_refs: str, started_at: float) -> "ExternalWait":
