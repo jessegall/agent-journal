@@ -72,6 +72,7 @@ class Plan:
     untyped: list[Place] = field(default_factory=list)
     member: str = ""
     roots: set[str] = field(default_factory=set)
+    owners: set[str] = field(default_factory=set)
 
 
 class Project:
@@ -294,6 +295,7 @@ class Renamer:
         plan.refusals += [r for r in [self.rules.refusal(kind, new)] if r]
         members = [c for c in self.project.class_defs() if name in c.info.names and root_of(c.info, name) is group]
         plan.mentions += [(rf"\b{c.name}\.{name}\b", f"{c.name}.{new}") for c in members]
+        plan.owners = {c.info.fullname for c in members}
         for c in members:
             if new in c.info.names:
                 plan.refusals.append(f"{c.info.fullname} already has {new}")
@@ -419,6 +421,19 @@ def covered(plans: list[Plan], project: Project) -> None:
                 plan.places += [place for place in plan.untyped if place not in plan.places]
 
 
+def doubled(plans: list[Plan], project: Project) -> list[str]:
+    """Two members of one class, its own or inherited, renamed to one new name in this run."""
+    found = []
+    for c in project.class_defs():
+        lineage = {base.fullname for base in c.info.mro}
+        given = collections.defaultdict(set)
+        for plan in plans:
+            if plan.owners & lineage:
+                given[next(place.new for place in plan.places if place.old == plan.member) if plan.places else ""].add(plan.member)
+        found += [f"nothing written: {c.info.fullname} would have {', '.join(sorted(olds))} all named {new}" for new, olds in given.items() if new and len(olds) > 1]
+    return found
+
+
 def snake(name: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
@@ -508,6 +523,9 @@ def main(arguments: list[str]) -> int:
         for spot in plan.loose:
             print(f"  untyped use: {spot}")
     covered(plans, renamer.project)
+    for clash in doubled(plans, renamer.project):
+        print(clash)
+        return 1
     spots = collections.defaultdict(set)
     for plan in plans:
         for place in plan.places:

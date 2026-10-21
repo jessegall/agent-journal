@@ -28,7 +28,7 @@ class MessageController(Controller[Message]):
     def listed(self, listing: Listing) -> RowList:
         page = listing.listed(self.asked(listing), lambda m: True, timeline=True)
         unread = self.repository.unseen_by_user()
-        counts = Counts(all=self.repository.count_in(), open=len(self.open_ids()) + unread, unread=unread)
+        counts = Counts(all=self.repository.counted_in(), open=len(self.open_ids()) + unread, unread=unread)
         return RowList(rows=self.shown_page(page["rows"]), more=page["more"], counts=counts)
 
     def asked(self, listing: Listing) -> list[Message]:

@@ -59,9 +59,6 @@ class Messages(ScopedRepository[Message]):
     def changed_since(self, time: datetime) -> list[Message]:
         return self.selected("updated_at > ? ORDER BY id LIMIT 500", (time.isoformat(),))
 
-    def count_in(self) -> int:
-        return self.counted_in()
-
     def unseen_by_user(self) -> int:
         return self.counted_in("author = ? AND read_at IS NULL", (Author.AGENT.value,))
 
