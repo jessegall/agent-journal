@@ -6,7 +6,7 @@ from journal.models.scoped import Scoped
 
 @dataclass(frozen=True)
 class CommandOutput(Scoped):
-    """A shell line the runner ran, numbered by its row: the agent's own command, the folder holding each part's output, and, once it was moved to the background, how it ended and whether the agent waits on it, so its end is told by the wait alone. Lines about it name only its number."""
+    """A shell line the runner ran, numbered by its row: the agent's own command, the folder holding each part's output, and, once it was moved to the background, how it ended; an end a standing wait names is told by the wait's own end. Lines about it name only its number."""
 
     chain: str = ""
     command: str = ""
@@ -16,7 +16,6 @@ class CommandOutput(Scoped):
     ended: bool = False
     status: int = 0
     told: bool = False
-    wait: bool = False
 
     def headline(self) -> str:
         first, *rest = self.command.splitlines() or [""]
@@ -25,12 +24,12 @@ class CommandOutput(Scoped):
     def moved_out(self) -> "CommandOutput":
         return self.with_(moved=True)
 
-    def waited(self) -> "CommandOutput":
-        return self.with_(wait=True)
-
     def ended_with(self, status: int, time: float) -> "CommandOutput":
         ended = self.with_(ended=True, status=status)
         return ended.with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"{self.table()}:{self.id}", outcome=ended.came_to()))
+
+    def wait_end(self, status: int, time: float) -> "CommandOutput":
+        return self.ended_with(status, time).told_of()
 
     def told_of(self) -> "CommandOutput":
         return self.with_(told=True)

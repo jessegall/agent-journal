@@ -4,10 +4,11 @@ from journal.features.briefing.listeners.start_overview_obligation import StartO
 from journal.features.feature import Feature
 from journal.features.briefing.support.briefing_conduct import BriefingConduct
 from journal.features.briefing.support.briefing_data_reader import BriefingDataReader
+from journal.features.briefing.support.briefing_data import BriefingData
 from journal.engine.nudge import Nudge
 
 
-class Briefing(Feature):
+class Briefing(Feature[BriefingData]):
     name = "briefing"
     title = "Session briefing"
     help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any state's own line at the start."

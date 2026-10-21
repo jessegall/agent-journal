@@ -3,10 +3,11 @@ from journal.features.profiles.listeners.count_profile_use import CountProfileUs
 from journal.engine.nudge import Nudge
 from journal.features.profiles.support.profiles_conduct import ProfilesConduct
 from journal.features.profiles.support.profiles_data_reader import ProfilesDataReader
+from journal.features.profiles.support.profiles_data import ProfilesData
 from journal.support.option import Option
 
 
-class Profiles(Feature):
+class Profiles(Feature[ProfilesData]):
     """A researcher, a planner and a debugger are written as agent profiles for every provider, so a subagent exists for each job that only reads."""
 
     name = "profiles"

@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.messages.support.messages_data_reader import MessagesDataReader
+from journal.features.messages.support.messages_data import MessagesData
 from journal.features.messages.support.messages_conduct import MessagesConduct
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
 from journal.features.messages.listeners.record_peer_message import RecordPeerMessage
@@ -18,7 +19,7 @@ from journal.support.option import Option
 from journal.support.skill import Skill
 
 
-class Messages(Feature):
+class Messages(Feature[MessagesData]):
     name = "messages"
     title = "Messages"
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."

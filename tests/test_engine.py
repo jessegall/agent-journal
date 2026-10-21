@@ -114,7 +114,7 @@ def write(app):
     return hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
 
 
-def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app):
+def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "ship it", "--start"], AGENT)
@@ -126,7 +126,7 @@ def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app)
     assert hook(app, "PreCompact")[1] == {}, "a compaction hook carries nothing to the agent; the marks said it"
 
 
-def test_done_makes_the_agent_idle_again(app):
+def test_done_makes_the_agent_idle_again(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
@@ -135,7 +135,7 @@ def test_done_makes_the_agent_idle_again(app):
     assert hook(app, "Stop")[1] == {}
 
 
-def test_stuck_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app):
+def test_stuck_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
@@ -147,13 +147,13 @@ def test_stuck_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app):
     assert machine.current("s1").task_id == 1
 
 
-def test_a_feature_switched_off_takes_its_gate_with_it(app):
+def test_a_feature_switched_off_takes_its_gate_with_it(app: App):
     app.container.get(SettingRows).save(Setting(environment_id=0, key="features.tasks", value=False), Actor.user(1))
     app.console().run(["task", "create", "t", "--start"], AGENT)
     assert hook(app, "Stop")[1] == {}
 
 
-def test_the_session_end_ends_the_agent_and_a_new_start_of_the_same_session_revives_it(app):
+def test_the_session_end_ends_the_agent_and_a_new_start_of_the_same_session_revives_it(app: App):
     hook(app, "SessionStart")
     hook(app, "SessionEnd")
     assert app.container.get(StateMachine).current("s1").name == "ended"
@@ -179,7 +179,7 @@ def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
         second.runtime().stop()
 
 
-def test_a_tick_reaches_the_machine_without_a_hook(app):
+def test_a_tick_reaches_the_machine_without_a_hook(app: App):
     from journal.engine.clock import Clock
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
@@ -187,7 +187,7 @@ def test_a_tick_reaches_the_machine_without_a_hook(app):
     assert isinstance(app.container.get(StateMachine).current("s1"), Ready)
 
 
-def test_one_task_in_hand_park_resume_and_await(app):
+def test_one_task_in_hand_park_resume_and_await(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     console = app.console()
@@ -204,7 +204,7 @@ def test_one_task_in_hand_park_resume_and_await(app):
     assert app.container.get(StateMachine).current("s1").task_id == 1, "working again lifts the wait"
 
 
-def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(app):
+def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(app: App):
     from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
@@ -223,7 +223,7 @@ def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(
     assert write(app)[0] == 200
 
 
-def test_every_stop_with_a_task_in_hand_says_carry_on_and_stuck_is_the_way_out(app):
+def test_every_stop_with_a_task_in_hand_says_carry_on_and_stuck_is_the_way_out(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
@@ -231,7 +231,7 @@ def test_every_stop_with_a_task_in_hand_says_carry_on_and_stuck_is_the_way_out(a
     assert all(a[1].get("decision") == "block" and "task 1 is in hand, last logged just now: carry on" in a[1]["reason"] for a in answers), "there is no repeated-stop escape"
     app.console().run(["stuck", "I cannot reach the service"], AGENT)
     assert hook(app, "Stop")[1] == {}, "stuck lets the agent stop"
-def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nudged(app):
+def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nudged(app: App):
     from journal.models.task_state import TaskState
     from journal.repositories.tasks import Tasks
     hook(app, "SessionStart")
@@ -245,12 +245,12 @@ def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nu
     assert "open again" in console.run(["task", "unblock", "1"], AGENT).out and app.container.get(Tasks).find(1).state == TaskState.OPEN
 
 
-def test_a_write_needs_no_task(app):
+def test_a_write_needs_no_task(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     assert write(app)[0] == 200, "a quick edit is the agent's own; a task is for work worth tracking"
 
-def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot_place_and_leaves_the_users_own(app, monkeypatch):
+def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot_place_and_leaves_the_users_own(app: App, monkeypatch):
     import os
     import time as timing
     from journal.engine.menu_watcher import MenuWatcher
@@ -315,7 +315,7 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     assert watcher.look(agent) == "\r", "the switch of model is confirmed at the next look while the agent works, its spinner counting above the rule: the menu stood the same, whatever the screen did, and only a model change asks it"
 
 
-def test_a_typed_line_goes_out_on_one_line(app, monkeypatch):
+def test_a_typed_line_goes_out_on_one_line(app: App, monkeypatch):
     """One with breaks would arrive as pasted text that never matches it, and be typed again."""
     from journal.supervisor_link import SupervisorLink
     sent = []
@@ -423,7 +423,7 @@ def test_the_stack_is_seeded_from_the_state_and_its_pause_chain_unwound_with_idl
     assert agents.find(gone.id).stack == ({"state": "idle", "data": {}}, {"state": "gone", "data": {}})
 
 
-def test_the_session_end_pushes_ended_on_the_stack_and_a_new_start_pops_it(app):
+def test_the_session_end_pushes_ended_on_the_stack_and_a_new_start_pops_it(app: App):
     hook(app, "SessionStart")
     hook(app, "SessionEnd")
     agents = app.container.get(Agents)
@@ -469,7 +469,7 @@ class Catching(BaseState):
         return self.pop()
 
 
-def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catch_up_beneath_a_pop(app):
+def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catch_up_beneath_a_pop(app: App):
     CALLS.clear()
     hook(app, "SessionStart")
     machine, settings = app.container.get(StateMachine), SettingsValue({WorkersFeature.MODE.key: "builder"})
@@ -486,7 +486,7 @@ def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catc
     assert [row["state"] for row in app.container.get(Agents).for_session("s1").stack] == ["idle"]
 
 
-def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_top_first(app):
+def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_top_first(app: App):
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "lost"], AGENT)
@@ -501,7 +501,7 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
     assert popped["after"][-1]["state"] == "working" and popped["cause"]
 
 
-def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_names_the_agent(app):
+def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_names_the_agent(app: App):
     hook(app, "SessionStart")
     console, agents = app.console(), app.container.get(Agents)
     assert console.run(["panic", "working", "what=parsing"], AGENT).out.strip() == "the stack, bottom to top: idle, working(what=parsing)"
@@ -523,7 +523,7 @@ class Hearing(Listener[PlanStarted]):
         self.heard.append(event)
 
 
-def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_none(app):
+def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_none(app: App):
     hearing = Hearing()
     app.container.get(Bus).listen(PlanStarted, hearing)
     plans, tasks = app.container.get(Plans), app.container.get(Tasks)
@@ -548,7 +548,7 @@ def test_the_models_carry_the_events_their_changes_mean():
     assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerReported(environment_id=1, time=5.0, worker_id=9, name="w", report=4, dispatched_by=""),)
 
 
-def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_reaches_no_state(app):
+def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_reaches_no_state(app: App):
     hook(app, "SessionStart")
     hook(app, "SessionEnd")
     hook(app, "SessionStart", session_id="s2")
@@ -560,7 +560,7 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
     assert [row["state"] for row in agents.for_session("s2").stack] == ["idle", "following_plan"], "the live agent of the environment follows the plan"
 
 
-def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_refuses_one_it_does_not_hold(app):
+def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_refuses_one_it_does_not_hold(app: App):
     registry, own = app.container.get(NudgeRegistry), Nudge("engine", "test_line", "a line of the test")
     assert registry.register(LINE) == "tests.line" and registry.named("tests.line") is LINE and registry.register(own) == "engine.test_line"
     assert registry.named("engine.nothing_while_compacting") is Engine.COMPACTION_PAUSE
@@ -592,7 +592,7 @@ def test_a_nudge_is_one_class_whose_create_fills_its_blanks_and_rendered_says_th
     assert nudge.in_words("its own words").rendered() == "its own words"
 
 
-def test_the_data_is_read_per_feature_and_travels_on_the_event_the_machine_asks(app):
+def test_the_data_is_read_per_feature_and_travels_on_the_event_the_machine_asks(app: App):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["task", "create", "the feature data", "--start"], AGENT)
@@ -604,7 +604,7 @@ def test_the_data_is_read_per_feature_and_travels_on_the_event_the_machine_asks(
     assert len(data.of(MessagesFeature).unread) == 1 and data.of(BriefingFeature).oriented is False
     assert data.of(ShellFeature).background == () and data.of(WorkersFeature).reports_waiting == ()
     event = ToolStarting(call=ToolCall(tool="Write", input={})).with_data(data)
-    assert event.data.of(TasksFeature).in_hand == 1 and ToolStarting(call=ToolCall(tool="Write", input={})).data.data == {}
+    assert event.data.of(TasksFeature).in_hand == 1 and ToolStarting(call=ToolCall(tool="Write", input={})).data.parts == {}
 
 
 class InboxConduct(Conduct):
@@ -700,7 +700,7 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data(
         assert Ready().on(TurnDisplayed(text="see https://a.test/pinned", final=False).with_data(data), settings).nudges == ()
         finished = Ready().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="opened https://a.test/pr/1").with_data(data), settings)
         assert [n.key for n in finished.nudges] == ["etiquette.a_line_is_an_instruction", "pins.pin_the_link"]
-        quiet = FeatureData({**data.data, "etiquette": EtiquetteData(lines_since_reminder=3)})
+        quiet = FeatureData({**data.parts, "etiquette": EtiquetteData(lines_since_reminder=3)})
         assert Ready().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing", subagent="s1").with_data(data), settings).nudges == ()
         assert Ready().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing").with_data(quiet), settings).nudges == ()
     finally:
@@ -908,17 +908,17 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         assert stop.held is not None and stop.held.key == "skills.stopped_owing"
         paid = FeatureData({**parts, "skills": SkillsData(owed=(), loaded={}, skills=cards)})
         assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(paid), settings).held.key == "briefing.look_before_the_first_write"
-        looked = FeatureData({**paid.data, "briefing": BriefingData(**{**parts["briefing"].__dict__, "oriented": True})})
+        looked = FeatureData({**paid.parts, "briefing": BriefingData(**{**parts["briefing"].__dict__, "oriented": True})})
         assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(looked), settings).held.key == "memory.write_held_until_decided"
         assert Ready().on(Stop().with_data(looked), settings).held.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
-        decided = FeatureData({**looked.data, "memory": MemoryData(mark_owed=0, context_mark=50, rows=parts["memory"].rows, stale=())})
+        decided = FeatureData({**looked.parts, "memory": MemoryData(mark_owed=0, context_mark=50, rows=parts["memory"].rows, stale=())})
         assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(decided), settings).held is None
         crossed = Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_data(decided), settings)
         assert [n.rendered() for n in crossed.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal nothing survives \"<why>\"`"] or crossed.nudges[0].key == "memory.decide_at_the_mark"
         assert Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.6, session="s1").with_data(decided), settings).nudges == ()
         whispered = Ready().on(ToolStarting(call=shell("lsof -i :port")).with_data(decided), settings)
         assert [n.rendered() for n in whispered.typed] == ["fact 3 is about this and not in your context: journal fact read 3"], "a whisper tells the agent to read the row, never its words"
-        already = FeatureData({**decided.data, "memory": MemoryData(mark_owed=0, context_mark=50, rows=tuple(replace(row, presence=True) for row in parts["memory"].rows), stale=())})
+        already = FeatureData({**decided.parts, "memory": MemoryData(mark_owed=0, context_mark=50, rows=tuple(replace(row, presence=True) for row in parts["memory"].rows), stale=())})
         assert Ready().on(ToolStarting(call=shell("lsof -i :port")).with_data(already), settings).typed == (), "a row in the context window is not whispered"
         rule = Ready().on(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=True).with_data(decided), settings)
         assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
@@ -1190,7 +1190,7 @@ def test_a_part_knows_whether_it_reads_an_output_and_the_shape_of_that_read():
     assert not shell("journal output read 3").parts[0].reads_output, "a plain read of a summary is no read by hand"
 
 
-def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instance_per_class(app):
+def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instance_per_class(app: App):
     from journal.events.agent.stop import Stop
     from journal.features.messages.support.messages_conduct import MessagesConduct
     from journal.repositories.agents import Agents
@@ -1206,7 +1206,7 @@ def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instan
     assert app.container.get(StateMachine) is app.container.get(StateMachine) and app.container.get(Agents) is app.container.get(Agents), "the container builds a class once"
 
 
-def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_switches_the_typist_off_until_it_pops_and_starts_the_tool_count_again(app, monkeypatch):
+def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_switches_the_typist_off_until_it_pops_and_starts_the_tool_count_again(app: App, monkeypatch):
     from journal.events.agent.ticked import Ticked
     from journal.events.rows.message_arrived import MessageArrived
     from journal.supervisor_link import SupervisorLink
@@ -1311,7 +1311,7 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
     assert Soloing().on(ToolStarting(call=shell("ls")).with_data(of(None)), settings("solo")).held is None
 
 
-def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_never_stalls(app, monkeypatch):
+def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_never_stalls(app: App, monkeypatch):
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.repositories.setting_rows import SettingRows
     from journal.repositories.workers import Workers as WorkerRows
@@ -1366,7 +1366,7 @@ def test_a_stop_with_the_tasks_log_older_than_the_set_minutes_asks_for_the_log_l
     assert working.on(Stop(time=2 * 60.0).with_data(data), settings(1)).held.key == "tasks.log_first_at_stop", "the minutes are the user's to set"
 
 
-def test_a_long_journal_line_reaches_the_agent_whole_in_several_marked_pieces(app, monkeypatch):
+def test_a_long_journal_line_reaches_the_agent_whole_in_several_marked_pieces(app: App, monkeypatch):
     from journal.supervisor_link import SupervisorLink
     sent = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append(fields["line"]))

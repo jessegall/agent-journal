@@ -4,13 +4,14 @@ from journal.support.skill import Skill
 from journal.features.secrets.commands.secret_command import SecretCommand
 from journal.features.secrets.support.secrets_conduct import SecretsConduct
 from journal.features.secrets.support.secrets_data_reader import SecretsDataReader
+from journal.features.secrets.support.secrets_data import SecretsData
 from journal.features.secrets.listeners.leak_alarm import LeakAlarm
 from journal.features.secrets.listeners.expiry_question import ExpiryQuestion
 from journal.features.secrets.listeners.secret_purge import SecretPurge
 from journal.features.secrets.seeds.secret_files import SecretFiles
 
 
-class Secrets(Feature):
+class Secrets(Feature[SecretsData]):
     name = "secrets"
     title = "Secrets"
     help = "A key or a login the agent may use without seeing it: its values live in a file in your home folder, never in the journal, and you fill them in on the Secrets page."

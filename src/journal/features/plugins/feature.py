@@ -9,10 +9,11 @@ from journal.features.plugins.listeners.plugin_settings_notice import PluginSett
 from journal.features.plugins.seeds.plugin_services_seed import PluginServicesSeed
 from journal.features.plugins.support.plugins_conduct import PluginsConduct
 from journal.features.plugins.support.plugins_data_reader import PluginsDataReader
+from journal.features.plugins.support.plugins_data import PluginsData
 from journal.engine.nudge import Nudge
 
 
-class PluginsFeature(Feature):
+class PluginsFeature(Feature[PluginsData]):
     name = "plugins"
     title = "Plugins"
     help = "Programs you install that hear the journal's events and answer them: refuse a tool, say a line to the agent, show a card or run journal commands, each as itself."

@@ -11,6 +11,7 @@ from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_log import OutputLog
 from journal.models.entry import Entry
 from journal.repositories.agents import Agents
+from journal.models.agent import Agent
 from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.entries import Entries
 from journal.repositories.setting_rows import SettingRows
@@ -18,6 +19,9 @@ from journal.support.cards import Cards
 from journal.support.card_kind import CardKind
 from journal.support.scope import Scope
 from journal.support.caller import Caller
+from journal.support.states_catalogue import StatesCatalogue
+from journal.engine.states.wait import Wait
+from journal.models.command_output import CommandOutput
 
 TAIL = 2000
 PIPED = re.compile(r"(?<!\|)\|(?!\|)")
@@ -28,9 +32,9 @@ LETTER_RUN_PATTERN = re.compile(r"[A-Za-z]{3,}")
 class ShellRecord:
     """What the runner records as a chain runs: each of the agent's own parts as it starts and ends with its status, time, output tail and the files it changed (the edits feature keeps the changed lines from the tool's end), the move to the background with its card and event, the end of a moved chain, and whether an ended output is kept under its number or forgotten."""
 
-    def __init__(self, entries: Entries, log: OutputLog, outputs: CommandOutputs, cards: Cards, events: CommandEvents, agents: Agents, settings: SettingRows, scope: Scope) -> None:
+    def __init__(self, entries: Entries, log: OutputLog, outputs: CommandOutputs, cards: Cards, events: CommandEvents, agents: Agents, settings: SettingRows, scope: Scope, states: StatesCatalogue) -> None:
         self.entries, self.log, self.outputs = entries, log, outputs
-        self.cards, self.events, self.agents, self.settings, self.scope = cards, events, agents, settings, scope
+        self.cards, self.events, self.agents, self.settings, self.scope, self.states = cards, events, agents, settings, scope, states
 
     def began(self, chain: str, command: str, folder: Path, caller: Caller) -> int:
         return self.log.began(chain, command, folder, caller.session, caller.actor).id
@@ -54,9 +58,15 @@ class ShellRecord:
         part = next((e.data["part"] for e in self.entries.of_kind(MOVED, 200) if e.data.get("chain") == chain), "")
         outcome = OutputFiles.ended(status)
         self.cards.show(self.scope.id, caller.session, f"{outcome.capitalize()} in the background: {ActivityLabel.of(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
-        running = self.agents.live()
-        if running:
-            self.events.ended(self.outputs.save(self.outputs.of_chain(chain).ended_with(status, datetime.now(timezone.utc).timestamp()), caller.actor), running)
+        agent = self.agents.live()
+        if agent:
+            output, moment = self.outputs.of_chain(chain), datetime.now(timezone.utc).timestamp()
+            finish = output.wait_end(status, moment) if self.wait_covers(output, agent) else output.ended_with(status, moment)
+            self.events.ended(self.outputs.save(finish, caller.actor), agent)
+
+    def wait_covers(self, output: CommandOutput, agent: Agent) -> bool:
+        top = self.states.stack_of(agent).top() if agent.session == output.session else None
+        return isinstance(top, Wait) and f"{output.table()}:{output.id}" in top.awaiting()[1].split(",")
 
     def is_kept(self, chain: str, line: str, size: int, cut: bool) -> bool:
         from journal.features.shell.feature import Shell

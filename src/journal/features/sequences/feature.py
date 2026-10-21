@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.sequences.support.sequences_data_reader import SequencesDataReader
+from journal.features.sequences.support.sequences_data import SequencesData
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
@@ -15,7 +16,7 @@ from journal.features.sequences.support.sequences_conduct import SequencesConduc
 from journal.features.sequences.seeds.builtin_sequences import BuiltinSequences
 
 
-class Sequences(Feature):
+class Sequences(Feature[SequencesData]):
     name = "sequences"
     title = "Sequences"
     help = "Steps the agent follows one at a time."

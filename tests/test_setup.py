@@ -18,7 +18,7 @@ def app(tmp_path: Path, monkeypatch):
     return App(Config(tmp_path, port=0))
 
 
-def test_setup_wires_hooks_skills_and_the_law(app, monkeypatch):
+def test_setup_wires_hooks_skills_and_the_law(app: App, monkeypatch):
     import shutil
     monkeypatch.setattr(shutil, "which", lambda name: None)
     root = app.config.root
@@ -42,7 +42,7 @@ def test_setup_wires_hooks_skills_and_the_law(app, monkeypatch):
     assert ".journal/src/journal.sh" in dispatcher and ".journal/journal" in dispatcher, "the dispatcher serves version 4 and version 3 projects alike"
 
 
-def test_setup_is_idempotent_and_keeps_other_hooks(app):
+def test_setup_is_idempotent_and_keeps_other_hooks(app: App):
     root = app.config.root
     (root / ".claude").mkdir()
     (root / ".claude/settings.json").write_text(json.dumps({"hooks": {"PreToolUse": [{"hooks": [{"type": "command", "command": "echo mine"}]}]}, "theme": "dark"}))
@@ -57,7 +57,7 @@ def test_setup_is_idempotent_and_keeps_other_hooks(app):
     assert (root / "AGENTS.md").read_text().count("BEGIN: agent-journal") == 1
 
 
-def test_a_command_from_inside_an_agent_is_the_live_agents(app):
+def test_a_command_from_inside_an_agent_is_the_live_agents(app: App):
     import json as js
     from urllib.request import Request as HttpRequest, urlopen
     from journal.support.actor import Actor
@@ -101,7 +101,7 @@ def test_the_private_folder_keeps_keys_and_secrets_to_their_user_and_out_of_git(
     assert folder.secrets() == tmp_path / "moved"
 
 
-def test_setup_takes_out_version_3s_hooks_wherever_they_were_wired(app):
+def test_setup_takes_out_version_3s_hooks_wherever_they_were_wired(app: App):
     root = app.config.root
     (root / ".claude").mkdir()
     (root / ".codex").mkdir()

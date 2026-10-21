@@ -1,11 +1,12 @@
 from journal.features.etiquette.support.etiquette_conduct import EtiquetteConduct
 from journal.features.etiquette.support.etiquette_data_reader import EtiquetteDataReader
+from journal.features.etiquette.support.etiquette_data import EtiquetteData
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 
 
-class Etiquette(Feature):
+class Etiquette(Feature[EtiquetteData]):
     name = "etiquette"
     title = "Chat etiquette"
     help = "Shop talk and the third person in the chat are named."

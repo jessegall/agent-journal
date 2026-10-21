@@ -12,8 +12,8 @@ from journal.features.support.service import Service
 from journal.support.skill import Skill
 
 
-class Feature:
-    """One switchable subject. It brings its states, its nudges, its state-free listeners and its commands; nothing else knows a feature exists."""
+class Feature[D]:
+    """One switchable subject. It brings its states, its nudges, its state-free listeners and its commands; nothing else knows a feature exists. D is the class of the part it reads into the feature data an event carries."""
 
     name: ClassVar[str]
     title: ClassVar[str] = ""

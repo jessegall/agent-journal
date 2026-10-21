@@ -59,14 +59,14 @@ def post_hook(app, body: dict, started_ms: int = 0):
         return error.code, json.loads(error.read())
 
 
-def test_a_hook_lands_as_an_entry_and_answers_200(app):
+def test_a_hook_lands_as_an_entry_and_answers_200(app: App):
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}})
     assert status == 200 and body == {}
     entries = app.container.get(Entries).in_()
     assert [e.kind for e in entries] == ["ToolStarting"] and entries[0].actor.stamp == "agent:s1"
 
 
-def test_a_blocking_listener_refuses_with_409_and_tells_with_context(app):
+def test_a_blocking_listener_refuses_with_409_and_tells_with_context(app: App):
     app.container.get(Bus).listen(ToolStarting, RefuseWrites())
     hook = {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}}
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}})
@@ -75,7 +75,7 @@ def test_a_blocking_listener_refuses_with_409_and_tells_with_context(app):
     assert status == 200 and body["hookSpecificOutput"]["additionalContext"] == "carry on"
 
 
-def test_a_deferred_listener_runs_after_the_reply_and_never_refuses(app):
+def test_a_deferred_listener_runs_after_the_reply_and_never_refuses(app: App):
     noted = Noted()
     app.container.get(Bus).listen(ToolStarting, noted)
     status, _ = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}})
@@ -84,7 +84,7 @@ def test_a_deferred_listener_runs_after_the_reply_and_never_refuses(app):
     assert noted.seen[0].call.tool == "Write" and noted.seen[0].session == "s1" and noted.seen[0].environment_id == 1
 
 
-def test_every_hook_kind_translates(app):
+def test_every_hook_kind_translates(app: App):
     for kind in ["SessionStart", "UserPromptSubmit", "PostToolUse", "PostToolUseFailure", "PreCompact", "Stop", "SubagentStart", "SubagentStop", "MessageDisplay", "SessionEnd"]:
         assert post_hook(app, {"hook_event_name": kind, "session_id": "s1"})[0] == 200
     assert len(app.container.get(Entries).in_()) == 10
@@ -121,7 +121,7 @@ class Raising(AgentListener[ToolStarting]):
         raise RuntimeError("the guard broke")
 
 
-def test_a_guard_that_raises_fails_open_and_is_reported_loudly(app):
+def test_a_guard_that_raises_fails_open_and_is_reported_loudly(app: App):
     from journal.hooks.receiver import GUARD_FAILED
     from journal.repositories.messages import Messages
     app.container.get(Bus).listen(ToolStarting, Raising())
@@ -138,7 +138,7 @@ def post_command(app, argv: list[str], headers: dict | None = None) -> dict:
         return json.loads(reply.read())
 
 
-def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app):
+def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app: App):
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Bash", "tool_input": {"command": "journal task list"}})
     assert status == 200 and body == {} and app.container.get(Entries).in_() == [], "announced, never recorded as the agent's"
     refused = post_command(app, ["task", "list"], {"X-Journal-Env": "main"})
@@ -146,13 +146,13 @@ def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app):
     assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"})["code"] == 0, "the announcement is used up by its command"
 
 
-def test_a_command_under_the_sub_agent_actor_is_refused(app):
+def test_a_command_under_the_sub_agent_actor_is_refused(app: App):
     refused = post_command(app, ["task", "list"], {"X-Journal-Actor": "sub-agent"})
     assert refused["code"] == 1 and "writes nothing" in refused["err"]
     assert post_command(app, ["task", "list"], {"X-Journal-Actor": "worker-agent"})["code"] == 0
 
 
-def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_subagents(app):
+def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_subagents(app: App):
     from journal.models.agent import Agent
     from journal.support.actor import Actor
     from journal.repositories.agents import Agents
@@ -161,7 +161,7 @@ def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_
     assert post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-1"})["code"] == 0
 
 
-def test_a_subagents_write_hook_makes_no_entry_and_moves_no_state(app):
+def test_a_subagents_write_hook_makes_no_entry_and_moves_no_state(app: App):
     from journal.repositories.agents import Agents
     post_hook(app, {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
     entries, states = len(app.container.get(Entries).in_()), [a.state for a in app.container.get(Agents).in_()]
@@ -170,7 +170,7 @@ def test_a_subagents_write_hook_makes_no_entry_and_moves_no_state(app):
     assert len(app.container.get(Entries).in_()) == entries and [a.state for a in app.container.get(Agents).in_()] == states
 
 
-def test_a_hook_that_stamps_its_start_has_its_elapsed_time_on_its_entry(app):
+def test_a_hook_that_stamps_its_start_has_its_elapsed_time_on_its_entry(app: App):
     import time
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 120)
     entry = app.container.get(Entries).in_()[-1]
@@ -179,7 +179,7 @@ def test_a_hook_that_stamps_its_start_has_its_elapsed_time_on_its_entry(app):
     assert "hook_ms" not in app.container.get(Entries).in_()[-1].data, "a hook without the stamp is not measured"
 
 
-def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app):
+def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app: App):
     import time
     from journal.repositories.statistics import Statistics
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 100)

@@ -4,10 +4,11 @@ from journal.features.dumps.states.sorting_dump import SortingDump
 from journal.features.feature import Feature
 from journal.features.dumps.support.dumps_conduct import DumpsConduct
 from journal.features.dumps.support.dumps_data_reader import DumpsDataReader
+from journal.features.dumps.support.dumps_data import DumpsData
 from journal.support.skill import Skill
 
 
-class DumpsFeature(Feature):
+class DumpsFeature(Feature[DumpsData]):
     name = "dumps"
     title = "Dumps"
     help = "The agent sorts files you drop together by subject and files each as a row of its own."

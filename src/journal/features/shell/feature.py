@@ -2,6 +2,7 @@ from journal.features.feature import Feature
 from journal.features.shell.listeners.output_notice import OutputNotice
 from journal.features.shell.support.shell_conduct import ShellConduct
 from journal.features.shell.support.shell_data_reader import ShellDataReader
+from journal.features.shell.support.shell_data import ShellData
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.features.shell.commands.output_command import OutputCommand
@@ -9,7 +10,7 @@ from journal.features.shell.commands.reader_command import ReaderCommand
 from journal.support.skill import Skill
 
 
-class Shell(Feature):
+class Shell(Feature[ShellData]):
     name = "shell"
     title = "Shell commands"
     help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."

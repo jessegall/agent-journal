@@ -1,6 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.workers.support.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_data_reader import WorkersDataReader
+from journal.features.workers.support.workers_data import WorkersData
 from journal.features.workers.seeds.workers_seed import WorkersSeed
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
@@ -15,7 +16,7 @@ from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
 from journal.features.workers.states.soloing import Soloing
 
 
-class Workers(Feature):
+class Workers(Feature[WorkersData]):
     """A worker is an agent sent to write: code in a worktree of its own, a document, a change. A subagent only reads; a worker is the one that writes."""
 
     MODE_STATES = {"builder": Ready, "orchestrator": Orchestrating, "solo": Soloing}

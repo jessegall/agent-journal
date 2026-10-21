@@ -5,10 +5,11 @@ from journal.features.questions.commands.question_command import QuestionCommand
 from journal.features.questions.listeners.question_card import QuestionCard
 from journal.features.questions.support.questions_conduct import QuestionsConduct
 from journal.features.questions.support.questions_data_reader import QuestionsDataReader
+from journal.features.questions.support.questions_data import QuestionsData
 from journal.features.questions.states.waiting import Waiting
 
 
-class Questions(Feature):
+class Questions(Feature[QuestionsData]):
     name = "questions"
     title = "Questions"
     help = "The agent asks you a question and waits; your answer sends it back to work."

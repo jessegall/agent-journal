@@ -5,9 +5,10 @@ from journal.support.builtin_catalogue import BuiltinCatalogue
 from journal.features.voices.commands.voice_command import VoiceCommand
 from journal.features.voices.support.voices_conduct import VoicesConduct
 from journal.features.voices.support.voices_data_reader import VoicesDataReader
+from journal.features.voices.support.voices_data import VoicesData
 
 
-class Voices(Feature):
+class Voices(Feature[VoicesData]):
     """The agent talks to you in the voice you choose, by your title and first name, as the voice says."""
 
     name = "voices"

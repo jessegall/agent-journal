@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.plans.support.plans_data_reader import PlansDataReader
+from journal.features.plans.support.plans_data import PlansData
 from journal.features.plans.listeners.plan_blockade import PlanBlockade
 from journal.features.plans.listeners.clear_plan_waits import ClearPlanWaits
 from journal.features.plans.listeners.count_plan_reviewers import CountPlanReviewers
@@ -14,7 +15,7 @@ from journal.features.plans.seeds.closed_plans import ClosedPlans
 from journal.features.plans.states.following_plan import FollowingPlan
 
 
-class Plans(Feature):
+class Plans(Feature[PlansData]):
     name = "plans"
     title = "Plans"
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."

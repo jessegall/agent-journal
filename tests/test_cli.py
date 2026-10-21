@@ -23,7 +23,7 @@ def app(journal_root: Path) -> App:
     return App(Config(journal_root, port=0))
 
 
-def test_a_task_lives_through_the_cli(app):
+def test_a_task_lives_through_the_cli(app: App):
     console = app.console()
     assert console.run(["task", "create", "write the notes", "--brief", "what and where"], MAIN).code == 0
     assert console.run(["task", "start", "1"], MAIN).code == 0
@@ -38,25 +38,25 @@ def test_a_task_lives_through_the_cli(app):
     assert (app.config.database).is_file()
 
 
-def test_the_agent_is_the_actor_when_its_session_is_set(app):
+def test_the_agent_is_the_actor_when_its_session_is_set(app: App):
     app.console().run(["task", "create", "t", "--start"], Caller("main", "s-1"))
     assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-1")
 
 
-def test_the_environment_is_made_on_first_use(app):
+def test_the_environment_is_made_on_first_use(app: App):
     from journal.repositories.environments import Environments
     app.console().run(["task", "create", "t"], Caller("other"))
     assert app.container.get(Tasks).find(1).environment_id == app.container.get(Environments).named("other").id
 
 
-def test_bad_arguments_answer_with_usage_not_an_exit(app):
+def test_bad_arguments_answer_with_usage_not_an_exit(app: App):
     outcome = app.console().run(["task", "nope"], MAIN)
     assert outcome.code == 2 and "usage: journal task" in outcome.err and "usage: journal [-h]" not in outcome.err, "the noun's own usage, once"
     helped = app.console().run(["plan", "--help"], MAIN)
     assert helped.code == 0 and "approve" in helped.out and "usage: journal [-h]" not in helped.out + helped.err, "a noun's help is its verbs, and no failure"
 
 
-def test_the_server_runs_the_same_console_for_the_shim(app):
+def test_the_server_runs_the_same_console_for_the_shim(app: App):
     import json
     from urllib.request import Request as HttpRequest, urlopen
     server = app.server()
@@ -71,7 +71,7 @@ def test_the_server_runs_the_same_console_for_the_shim(app):
     assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-9")
 
 
-def test_deleting_an_environment_takes_everything_recorded_in_it(app):
+def test_deleting_an_environment_takes_everything_recorded_in_it(app: App):
     from journal.repositories.environments import Environments
     from journal.repositories.tasks import Tasks
     app.console().run(["task", "create", "t"], Caller("spike"))
@@ -84,7 +84,7 @@ def test_deleting_an_environment_takes_everything_recorded_in_it(app):
     assert app.console().run(["environment", "delete", "spike"], MAIN).code == 1
 
 
-def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_from(app):
+def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_from(app: App):
     from journal.support.caller import Caller
     from journal.repositories.reactions import Reactions
     from journal.support.actor import Actor
@@ -98,7 +98,7 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
         assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"
 
 
-def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app):
+def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app: App):
     from journal.support.caller import Caller
     from journal.repositories.reactions import Reactions
     app.console().run(["message", "send", "hi"], Caller("main"))
@@ -107,7 +107,7 @@ def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app)
         assert app.container.get(Reactions).all()[-1].created_by.kind == "user", "a shell outside the journal is the user's"
 
 
-def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app):
+def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app: App):
     from journal.models.agent import Agent
     from journal.repositories.agents import Agents
     from journal.repositories.environments import Environments
@@ -128,7 +128,7 @@ def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app):
 
 
 @pytest.mark.parametrize("online", [False, True])
-def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app, online):
+def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App, online):
     import os
     import subprocess
     from journal.models.agent import Agent
@@ -152,7 +152,7 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app, onli
         server.stop()
 
 
-def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists(app, monkeypatch, tmp_path):
+def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists(app: App, monkeypatch, tmp_path):
     from journal.support.caller import Caller
     from journal.support.actor import Actor
     from journal.models.agent import Agent
@@ -169,7 +169,7 @@ def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists
     assert rows[0]["last_sessions"] == {"claude": "s1"}, "a codex launch finds no Claude session to carry on"
 
 
-def test_an_environment_is_renamed_with_everything_in_it_and_never_while_an_agent_works_there(app):
+def test_an_environment_is_renamed_with_everything_in_it_and_never_while_an_agent_works_there(app: App):
     from journal.models.agent import Agent
     from journal.repositories.agents import Agents
     from journal.repositories.environments import Environments
@@ -193,7 +193,7 @@ def test_an_environment_is_renamed_with_everything_in_it_and_never_while_an_agen
     assert not environments.matching(name="spike")
 
 
-def test_any_row_docks_above_the_chat_by_noun_and_number_in_either_order(app):
+def test_any_row_docks_above_the_chat_by_noun_and_number_in_either_order(app: App):
     from journal.repositories.messages import Messages
     console = app.console()
     console.run(["task", "create", "write the notes", "--brief", "what and where\nand how"], MAIN)

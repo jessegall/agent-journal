@@ -2,6 +2,7 @@ from journal.features.feature import Feature
 from journal.features.skills.listeners.skill_obligation import SkillObligation
 from journal.features.skills.support.skills_conduct import SkillsConduct
 from journal.features.skills.support.skills_data_reader import SkillsDataReader
+from journal.features.skills.support.skills_data import SkillsData
 from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.skills.commands.skill_command import SkillCommand
@@ -9,7 +10,7 @@ from journal.features.skills.listeners.compaction_reset import CompactionReset
 from journal.features.skills.listeners.skill_card import SkillCard
 
 
-class Skills(Feature):
+class Skills(Feature[SkillsData]):
     """Writes every feature's skill for the agent and makes it read the right one at the right moment."""
 
     name = "skills"

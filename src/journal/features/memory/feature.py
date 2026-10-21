@@ -4,6 +4,7 @@ from journal.features.memory.listeners.memory_hint_card import MemoryHintCard
 from journal.features.memory.listeners.context_threshold_check import ContextThresholdCheck
 from journal.features.memory.support.memory_conduct import MemoryConduct
 from journal.features.memory.support.memory_data_reader import MemoryDataReader
+from journal.features.memory.support.memory_data import MemoryData
 from journal.features.memory.commands.fact_command import FactCommand
 from journal.features.memory.commands.memory_skip_command import MemorySkipCommand
 from journal.features.memory.commands.reminder_command import ReminderCommand
@@ -19,7 +20,7 @@ from journal.support.skill import Skill
 YEAR_SECONDS = 365 * 86400.0
 
 
-class Memory(Feature):
+class Memory(Feature[MemoryData]):
     name = "memory"
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."

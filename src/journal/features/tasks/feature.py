@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.tasks.support.tasks_data_reader import TasksDataReader
+from journal.features.tasks.support.tasks_data import TasksData
 from journal.features.tasks.commands.wait_command import WaitCommand
 from journal.features.tasks.commands.impasse_command import ImpasseCommand
 from journal.features.tasks.commands.task_command import TaskCommand
@@ -17,7 +18,7 @@ from journal.features.tasks.states.ready import Ready
 from journal.features.tasks.states.working import Working
 
 
-class Tasks(Feature):
+class Tasks(Feature[TasksData]):
     name = "tasks"
     title = "Tasks"
     help = "A task is one unit of work with a life; a stop with one in hand is told to carry on, and its log is asked for as the edits mount."

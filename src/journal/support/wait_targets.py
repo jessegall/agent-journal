@@ -16,8 +16,8 @@ class WaitTargets:
     def __init__(self, outputs: CommandOutputs, checks: Checks) -> None:
         self.outputs, self.checks = outputs, checks
 
-    def output(self, n: int, actor) -> str:
-        return self.ref_of(self.outputs.save(self.outputs.find(n).waited(), actor))
+    def output(self, n: int) -> str:
+        return self.ref_of(self.outputs.find(n))
 
     def until(self, command: str, purpose: str, actor) -> str:
         check = self.checks.save(Check(title=f"the wait for {purpose} ends when this passes", command=command, every=POLL_INTERVAL_MINUTES, waited_on=True), actor)

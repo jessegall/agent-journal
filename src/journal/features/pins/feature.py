@@ -3,11 +3,12 @@ from journal.engine.nudge import Nudge
 from journal.features.pins.commands.notice_command import NoticeCommand
 from journal.features.pins.support.pins_conduct import PinsConduct
 from journal.features.pins.support.pins_data_reader import PinsDataReader
+from journal.features.pins.support.pins_data import PinsData
 from journal.support.option import Option
 from journal.support.skill import Skill
 
 
-class Pins(Feature):
+class Pins(Feature[PinsData]):
     name = "pins"
     title = "Pinned links"
     help = "A link the agent gives the user is pinned above the chat, so it is not lost as the chat scrolls; the user closes it when done."
