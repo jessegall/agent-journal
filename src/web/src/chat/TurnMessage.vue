@@ -41,7 +41,13 @@ const received = computed(() => Boolean(props.turn.data?.peer || props.turn.data
 const fromMain = computed(() => sent.value || received.value);
 const opening = computed(() => Boolean(props.turn.data?.opening));
 const mine = computed(() => props.turn.who === "user" || received.value);
-const bubbled = computed(() => Boolean(words.value.text || quoteText.value || files.value.length || filed.value.length || resourceComment.value || props.turn.kind !== "message"));
+const faces = computed(() => {
+    const seen = {};
+    for (const r of rowsOf("reactions").filter((r) => r.message_id === props.turn.id)) (seen[r.face] ||= []).push(r.author);
+    return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
+});
+
+const bubbled = computed(() => Boolean(words.value.text || quoteText.value || files.value.length || filed.value.length || resourceComment.value || faces.value.length || props.turn.kind !== "message"));
 const LONG_TEXT = 600;
 const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
 const answers = computed(() => answered(props.turn));
@@ -72,11 +78,6 @@ function toQuoted() {
 
 // The tasks filed from this message, each a pill that opens it.
 const filed = computed(() => (props.turn.filed || []).map((id) => ({id, word: `task ${id}`})));
-const faces = computed(() => {
-    const seen = {};
-    for (const r of rowsOf("reactions").filter((r) => r.message_id === props.turn.id)) (seen[r.face] ||= []).push(r.author);
-    return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
-});
 const files = computed(() => props.turn.files || []);
 useTurnShape(bubble, {sources: [html, laidOut], holdsCard: () => files.value.length > 0 || props.turn.kind === "question"});
 
@@ -135,6 +136,9 @@ async function drop() {
             <template v-if="files.length">
                 <Attachments :message="turn" @grew="emit('grew')" />
             </template>
+            <template v-if="faces.length">
+                <TurnReactions :faces="faces" @react="react" />
+            </template>
         </div>
         <TurnActions
             :turn="turn"
@@ -145,9 +149,6 @@ async function drop() {
             @delete="drop"
             @react="react"
         />
-        <template v-if="faces.length">
-            <TurnReactions :faces="faces" @react="react" />
-        </template>
         <TurnHeader :turn="turn" />
     </div>
 </template>
