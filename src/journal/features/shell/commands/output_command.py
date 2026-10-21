@@ -14,7 +14,7 @@ ENDS = 10
 
 
 class OutputCommand(Command):
-    """The outputs the runner kept, by number: read one whole or in part, or list the newest."""
+    """The outputs the runner kept, by number: read one whole or in part, say how one stands, or list the newest."""
 
     noun = "output"
 
@@ -31,6 +31,8 @@ class OutputCommand(Command):
         read.add_argument("--lines", help="a range of lines, such as 100-160")
         read.add_argument("--grep", help="the lines matching a pattern, with their numbers")
         read.add_argument("--reader", help="the lines a reader of the project's picks, by its name")
+        status = self.verb(verbs, "status", "one line: running, finished, or failed with code C; with no number, the status of each background output of yours")
+        status.add_argument("n", type=int, nargs="?")
         listed = self.verb(verbs, "list", "the newest outputs, one a line: number, how it ended, command")
         listed.add_argument("--last", type=int, default=20)
 
@@ -63,6 +65,21 @@ class OutputCommand(Command):
             print(self.summary(output, files, lines))
             return 0
         raise Rejection(f"name the part of output {output.id} to read: --tail 20, --head 20, --grep \"<words>\", --lines 40-80, --reader <name>, --summary for how it ended, or --all for every line")
+
+    def status(self, args: Namespace, caller: Caller) -> int:
+        if args.n is not None:
+            print(self.state(self.outputs.find(args.n)))
+            return 0
+        for output in self.outputs.backgrounded(caller.session):
+            print(f"{output.id:>5}  {self.state(output):<22}  {output.headline()[:100]}")
+        return 0
+
+    @staticmethod
+    def state(output: CommandOutput) -> str:
+        if output.ended:
+            return output.ending()
+        outcome = OutputFiles(Path(output.folder)).outcome()
+        return "running" if outcome == "still running" else outcome
 
     def summary(self, output: CommandOutput, files: OutputFiles, lines: list[str]) -> str:
         head = [f"output {output.id}: {files.outcome()}, {len(lines):,} lines", f"command: {output.headline()}"]

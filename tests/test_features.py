@@ -6151,3 +6151,22 @@ def test_a_field_shown_while_typing_is_no_secret_and_never_masks_its_word(app: A
         assert app.container.get(Messages).find(saved.id).text == "this goes to production with [secret PLATFORM_DB_PASSWORD]", "the word stands, the hidden value is masked"
     values.put_field(SecretField("username", True, "PLATFORM_DB_USERNAME"), "production")
     assert values.shown() == set(), "hidden now, it masks like any secret"
+
+
+def test_output_status_says_running_finished_or_failed_and_lists_the_background_outputs(app: App):
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    hook(app, "SessionStart")
+    console = app.console()
+    log = app.container.get(OutputLog)
+    for chain, status in (("r", None), ("f", "0"), ("x", "3")):
+        folder = app.config.root / chain
+        folder.mkdir()
+        (folder / "parts").write_text("R-\n")
+        if status is not None:
+            (folder / "0.status").write_text(status)
+        log.start(chain, f"make {chain}", folder, "s1", Actor.agent("s1"))
+    assert [console.run(["output", "status", str(n)], AGENT).text.strip() for n in (1, 2, 3)] == ["running", "finished", "failed with code 3"]
+    app.container.get(CommandOutputs).save(app.container.get(CommandOutputs).find(1).backgrounded(), Actor.system())
+    listed = console.run(["output", "status"], AGENT).text
+    assert "make r" in listed and "running" in listed and "make f" not in listed, "with no number the agent's background outputs are listed with their status"

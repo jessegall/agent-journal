@@ -49,7 +49,8 @@ Every shell command you run goes through the journal's runner.
   output. Any other command's output is kept as a numbered output, the newest 250 of them. `journal output read N` needs a flag
   naming the part: `--tail 20`, `--head 20`, `--grep "<words>"`, `--lines 100-160`, `--reader <name>`, `--summary` for
   how it ended with its first and last lines, or `--all` for every line when you truly need it whole. `journal output
-  list` names the newest. Read an output this way, never by running the command again nor by reading its files raw.
+  list` names the newest. `journal output status N` says in one line whether it is running, finished or failed with code C;
+  without a number it names each of your background outputs with its status. Read an output this way, never by running the command again nor by reading its files raw.
 - A reader reads outputs of one shape, such as a test run's failures: `journal reader add <name> --pattern <regex>
   --about "<what it picks>"`, or `--script <file>` for a shell script handed the output on its input. Use it with
   `journal output read N --reader <name>`; `journal reader list` names the project's readers. The second time you

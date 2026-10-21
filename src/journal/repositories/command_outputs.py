@@ -19,6 +19,9 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def background(self, session: str) -> list[CommandOutput]:
         return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if self.is_running(Path(o.folder))]
 
+    def backgrounded(self, session: str) -> list[CommandOutput]:
+        return self.selected("session = ? AND moved = 1 ORDER BY id", (session,))
+
     def unannounced(self, session: str) -> list[CommandOutput]:
         return self.selected("session = ? AND moved = 1 AND ended = 1 AND is_announced = 0 ORDER BY id", (session,))
 
