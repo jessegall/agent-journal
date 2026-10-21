@@ -96,7 +96,7 @@ class WorkerCommand(Command):
 
     def report(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
-        message = self.reports.file(worker.with_(session=caller.session or worker.session), args.text, caller.actor)
+        message = self.reports.file(worker.with_(session=caller.session or worker.session, touched_paths=self.branch.touched(worker)), args.text, caller.actor)
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
 
@@ -171,6 +171,8 @@ class WorkerCommand(Command):
         workers = self.workers.scoped()
         for worker in workers:
             print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {worker.brief}")
+            if not worker.is_running():
+                print(f"{'':>16}files: {worker.files_line()}")
         output = [str(worker.id) for worker in workers if worker.is_running()]
         if output:
             print(f"`journal worker wait {' '.join(output)}` waits for a report; listing again does not bring it sooner")

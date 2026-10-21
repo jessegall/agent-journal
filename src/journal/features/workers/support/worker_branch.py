@@ -26,6 +26,15 @@ class WorkerBranch:
     def git(self, *argv: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
         return subprocess.run(["git", *argv], cwd=cwd or self.config.root, capture_output=True, text=True, timeout=GIT_TIMEOUT_SECONDS)
 
+    def touched(self, worker: Worker) -> tuple[str, ...] | None:
+        name = self.name(worker)
+        if not worker.worktree or self.git("rev-parse", "--verify", "-q", f"refs/heads/{name}").returncode != 0:
+            return None
+        changed = self.git("diff", "--name-status", "-M", f"HEAD...{name}")
+        if changed.returncode != 0:
+            return None
+        return tuple(dict.fromkeys(path for line in changed.stdout.splitlines() for path in line.split("\t")[1:]))
+
     def commit_count(self, worker: Worker) -> list[str]:
         finished = self.git("log", "--reverse", "--format=%h %s", f"HEAD..{self.name(worker)}")
         return [line for line in finished.stdout.splitlines() if line.strip()] if finished.returncode == 0 else []

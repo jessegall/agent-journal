@@ -6636,3 +6636,32 @@ def test_each_worker_moment_after_its_dispatch_is_a_short_mark_of_its_own(app: A
         ("Worker 1, Mr. Wedgwood: retired, its report acted on", "good", ""),
     ]
     assert all(len(text) <= 80 for text, _, _ in marks())
+
+
+def test_the_files_a_worker_touched_are_read_from_its_branch_when_it_reports_a_rename_under_both_names(app: App):
+    import subprocess
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    (root / ".gitignore").write_text(".journal/\n")
+    (root / "src").mkdir()
+    (root / "src" / "old_parser.py").write_text("parse\n")
+    git("add", ".")
+    git("commit", "-qm", "start")
+    hook(app, "SessionStart")
+    console, workers = app.console(), app.container.get(Workers)
+    console.run(["worker", "dispatch", "Lady Lovelace", "rename the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    folder = app.config.home / "worktrees" / "1-Lady-Lovelace"
+    git("mv", "src/old_parser.py", "src/parser.py", cwd=folder)
+    (folder / "src" / "lexer.py").write_text("lex\n")
+    git("add", ".", cwd=folder)
+    git("commit", "-qm", "the parser renamed, the lexer added", cwd=folder)
+    console.run(["worker", "report", "1", "renamed"], Caller("main", "w1"))
+    assert set(workers.find(1).touched_paths) == {"src/old_parser.py", "src/parser.py", "src/lexer.py"}, "a rename counts under both names, each repo-relative"
+    workers.save(Worker(name="Mr. Babbage", brief="an old job", state=WorkerState.REPORTED), Actor.system())
+    listed = console.run(["worker", "list"], AGENT).text
+    assert "files: no files known" in listed and "src/lexer.py" in listed, "a worker reported before files were read has none known"

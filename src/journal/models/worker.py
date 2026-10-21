@@ -31,6 +31,7 @@ class Worker(Scoped):
     pid: int = 0
     began: float = 0.0
     recovered_session: str = ""
+    touched_paths: tuple[str, ...] | None = None
 
     def worker_ref(self) -> str:
         return f"{self.table()}:{self.id}"
@@ -72,6 +73,11 @@ class Worker(Scoped):
 
     def has_report_waiting(self) -> bool:
         return self.state == WorkerState.REPORTED and not self.adopted
+
+    def files_line(self) -> str:
+        if self.touched_paths is None:
+            return "no files known"
+        return ", ".join(self.touched_paths) or "no files changed"
 
     def title_words(self) -> str:
         return self.name

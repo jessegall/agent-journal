@@ -123,6 +123,7 @@ class WorkerRunner:
         if current.state != WorkerState.DISPATCHED:
             self.workers.save(current, actor)
             return
+        current = current.with_(touched_paths=self.branch.touched(current))
         branch = self.branch.summary(current)
         self.reports.file(current, f"{outcome}\n\n{branch}" if branch else outcome, actor)
 
