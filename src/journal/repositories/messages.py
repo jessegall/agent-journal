@@ -71,6 +71,9 @@ class Messages(ScopedRepository[Message]):
     def keyed(self, key: str, by: Actor) -> list[Message]:
         return self.selected("json_extract(data, '$.key') = ? AND created_by = ?", (key, by.stamp))
 
+    def with_key(self, key: str) -> list[Message]:
+        return self.selected("json_extract(data, '$.key') = ?", (key,))
+
     def keyed_anywhere(self, key: str, by: Actor) -> list[Message]:
         return self.selected_everywhere("json_extract(data, '$.key') = ? AND created_by = ?", (key, by.stamp))
 

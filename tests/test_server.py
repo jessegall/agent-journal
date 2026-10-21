@@ -1064,3 +1064,22 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
         assert not list((tmp_path / ".journal" / "runtime" / "outputs").glob("*/direct")), "a direct chain's folder is removed when it ends"
     finally:
         app.runtime().stop()
+
+
+def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: Path):
+    from journal.support.docking import Docking
+    from journal.support.scope import Scope
+    from journal.support.actor import Actor
+    app = App(Config(journal_root, port=0))
+    app.runtime().boot()
+    server = app.server()
+    server.start()
+    try:
+        call(server, "POST", "/journal/tasks", {"title": "ship it", "brief": "b"})
+        with app.container.get(Scope).of(1):
+            message = app.container.get(Docking).dock("task", 1, Actor.user(1))
+        assert message.data["docked"] is True
+        status, undocked = call(server, "POST", f"/journal/messages/{message.id}/undock")
+        assert status == 200 and undocked["data"]["docked"] is False and undocked["data"]["row"] == "tasks:1"
+    finally:
+        server.stop()

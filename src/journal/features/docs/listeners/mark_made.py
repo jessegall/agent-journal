@@ -20,4 +20,4 @@ class MarkMade(Listener[Created]):
             return
         agent = self.agents.for_session(event.by.id)
         data = {"kind": "made", "session": event.by.id, "made_type": "docs", "n": doc.id, **RowCard.of(doc).as_data()}
-        self.cards.keyed(agent.environment_id, f"made:doc:{doc.id}", doc.title, data, event.by, ChatMark.MADE)
+        self.cards.keyed(agent.environment_id, self.cards.made_key(doc), doc.title, data, event.by, ChatMark.MADE)

@@ -18,7 +18,7 @@ WRITES = frozenset((
     "/journal/tasks", "/journal/tasks/{id}", "/journal/tasks/{id}/start", "/journal/tasks/{id}/finish", "/journal/tasks/{id}/reopen", "/journal/tasks/{id}/log",
     "/journal/plans/{id}/approve", "/journal/plans/{id}/start", "/journal/plans/{id}/park",
     "/journal/questions/{id}/answer",
-    "/journal/messages", "/journal/messages/read", "/journal/messages/{id}/read", "/journal/messages/{id}/reply", "/journal/messages/{id}/react", "/journal/messages/{id}/press",
+    "/journal/messages", "/journal/messages/read", "/journal/messages/{id}/read", "/journal/messages/{id}/reply", "/journal/messages/{id}/react", "/journal/messages/{id}/press", "/journal/messages/{id}/undock",
     "/journal/comments", "/journal/comments/{id}",
     "/journal/notices/{id}/close",
     "/journal/dumps", "/journal/dumps/{id}/choose", "/journal/dumps/{id}/decline", "/journal/dumps/{id}/direct", "/journal/dumps/{id}/answer", "/journal/dumps/{id}/dismiss",

@@ -29,7 +29,8 @@ import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import OutputDialog from "./OutputDialog.vue";
 import DumpDock from "./DumpDock.vue";
-import {dockedDump} from "../domain/docks.js";
+import {dockedDump, dockedRows} from "../domain/docks.js";
+import RowDock from "./RowDock.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
@@ -103,7 +104,8 @@ const busy = computed(() => !!owner.value && ["working", "compacting"].includes(
 const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner);
 const planCard = computed(() => cardPlan(rows("plans")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dumps"))));
-const dockCount = computed(() => [dumpDock.value, planCard.value].filter(Boolean).length);
+const rowDocks = computed(() => dockedRows(rows("messages")));
+const dockCount = computed(() => rowDocks.value.length + [dumpDock.value, planCard.value].filter(Boolean).length);
 const thought = computed(() => (owner.value && owner.value.thinking) || "");
 const helping = computed(() => (owner.value ? subagentsOf(owner.value.id) : []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
@@ -441,6 +443,11 @@ watch(
                             />
                         </TransitionGroup>
                         <div :class="['chat-docks', {docked: dockCount}]" :data-figure-docked-bars="dockCount ? '' : null">
+                            <TransitionGroup name="dock">
+                                <template v-for="docked in rowDocks" :key="docked.id">
+                                    <RowDock :message="docked" :folded="short || !planOpen" />
+                                </template>
+                            </TransitionGroup>
                             <Transition name="dock">
                                 <DumpDock v-if="dumpDock" :key="dumpDock.id" :dump="dumpDock" :folded="short || !planOpen" />
                             </Transition>

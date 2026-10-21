@@ -1,6 +1,7 @@
 import {withoutChips} from "../text/words.js";
 import {visibleIn} from "./chatVisibility.js";
 import {refOf, seconds} from "./row.js";
+import {meta} from "./tables.js";
 
 const PROMISED_WITHIN = 5;
 
@@ -24,6 +25,10 @@ const SYSTEM_TURNS = {
         data: {},
     }),
     made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.summary}, data: {}}),
+    docked: (card) => ({
+        kind: "card",
+        data: {icon: meta(String(card.row).split(":")[0])?.icon || "pin", label: card.docked ? "Docked above the chat" : "Was docked above the chat", detail: card.heading, title: card.heading, row: card.row},
+    }),
     subagent: (card) => ({
         kind: "subagent",
         title: card.detail,

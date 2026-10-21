@@ -13,14 +13,15 @@ from journal.models.author import Author
 from journal.models.message import Message
 from journal.repositories.messages import Messages
 from journal.repositories.reactions import Reactions
+from journal.support.docking import Docking
 
 class MessageController(Controller[Message]):
     """The chat: the user's, the agent's and the journal's messages by id, read a page at a time from the database; the user's are sent from here, as the user."""
 
     timeline = True
 
-    def __init__(self, messages: Messages, reactions: Reactions, attachments: Attachments) -> None:
-        self.repository, self.reactions, self.attachments = messages, reactions, attachments
+    def __init__(self, messages: Messages, reactions: Reactions, attachments: Attachments, docking: Docking) -> None:
+        self.repository, self.reactions, self.attachments, self.docking = messages, reactions, attachments, docking
 
     def listed(self, listing: Listing) -> Listed:
         page = listing.listed(self.asked(listing), lambda m: True, timeline=True)
@@ -74,6 +75,9 @@ class MessageController(Controller[Message]):
         message = self.repository.find(request.number("id"))
         pressed = [str(label) for label in request.body.get("pressed", [])]
         return Response.json(self.shown(self.repository.save(message.with_(data={**message.data, "pressed": pressed}), request.actor)))
+
+    def undock(self, request: Request) -> Response:
+        return Response.json(self.shown(self.docking.release(self.repository.find(request.number("id")), request.actor)))
 
     def attach(self, request: Request) -> Response:
         message = self.repository.find(request.number("id"))

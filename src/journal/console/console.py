@@ -5,6 +5,7 @@ from journal.console.support.captured_stream import CapturedStream
 from journal.console.command import Command
 from journal.console.creations import Creations
 from journal.console.support.outcome import Outcome
+from journal.console.support.row_verbs import RowVerbs
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound
 from journal.support.where import Where
@@ -18,8 +19,8 @@ from journal.container import Container
 class Console:
     """journal <noun> <verb> ...: finds the command and runs it, wherever the argv came from."""
 
-    def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope) -> None:
-        self.container, self.environments, self.agents, self.scope = container, environments, agents, scope
+    def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope, row_verbs: RowVerbs) -> None:
+        self.container, self.environments, self.agents, self.scope, self.row_verbs = container, environments, agents, scope, row_verbs
         self.commands: dict[str, Command] = {}
         self._parser: argparse.ArgumentParser | None = None
 
@@ -42,6 +43,7 @@ class Console:
             for noun, command in self.commands.items():
                 verbs = nouns.add_parser(noun).add_subparsers(dest="verb", required=True)
                 command.arguments(verbs)
+                self.row_verbs.add(noun, verbs)
             self._parser = parser
         return self._parser
 
@@ -58,19 +60,26 @@ class Console:
         return [argv[0], verb, *argv[1:]] if verb and not (argv[1:] and argv[1] in self.verbs_of(command)) else argv
 
     @staticmethod
-    def verbs_of(command) -> set[str]:
-        """The verbs a noun declares, read from the parser it builds."""
+    def turned(argv: list[str]) -> list[str]:
+        return [argv[0], argv[2], argv[1], *argv[3:]] if len(argv) > 2 and argv[1].isdigit() else argv
+
+    def verbs_of(self, command) -> set[str]:
         verbs = argparse.ArgumentParser().add_subparsers()
         command.arguments(verbs)
-        return set(verbs.choices)
+        return set(verbs.choices) | self.row_verbs.of(command.noun)
+
+    def perform(self, args: argparse.Namespace, where: Where) -> int:
+        if self.row_verbs.has(args.noun, args.verb):
+            return self.row_verbs.perform(args, where)
+        return self.commands[args.noun].perform(args, where)
 
     def captured(self, argv: list[str], where: Where, out: io.StringIO, err: io.StringIO) -> Outcome:
-        argv = self.with_verb(argv)
+        argv = self.with_verb(self.turned(argv))
         made = Creations.begin()
         with CapturedStream.into(out, err):
             try:
                 args = self.parser().parse_args(argv)
-                code = self.commands[args.noun].perform(args, self.attributed(where))
+                code = self.perform(args, self.attributed(where))
             except argparse.ArgumentError as refused:
                 self.parser().print_usage(err)
                 print(refused, file=err)

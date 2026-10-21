@@ -843,7 +843,7 @@ def test_a_document_the_agent_writes_is_a_message_in_its_chat(app, tmp_path):
     app.console().run(["doc", "create", "Deploys", "--file", str(tmp_path / "notes.md"), "--abstract", "How a deploy goes"], AGENT)
     app.console().run(["doc", "create", "Yours", "--file", str(tmp_path / "notes.md"), "--abstract", "the user's own"], USER)
     app.runtime().deferred.drain()
-    made = [(m.text, m.data["abstract"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "made"]
+    made = [(m.text, m.data["summary"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "made"]
     assert made == [("Deploys", "How a deploy goes")], "the agent's document is marked in the chat; the user's own is not"
 
 def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_turn_or_session(app):

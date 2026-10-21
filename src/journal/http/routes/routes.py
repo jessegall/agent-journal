@@ -141,7 +141,7 @@ class Routes:
         self.listed(router, "messages", messages)
         router.post(f"{API}/messages", messages.store)
         router.post(f"{API}/messages/{{id}}", messages.update)
-        self.acts(router, "messages", messages, "read", "reply", "delete", "react", "press")
+        self.acts(router, "messages", messages, "read", "reply", "delete", "react", "press", "undock")
         router.post(f"{API}/messages/{{id}}/files", messages.attach)
         router.get(f"{API}/comments", comments.index)
         router.post(f"{API}/comments", comments.store)

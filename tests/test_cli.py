@@ -191,3 +191,24 @@ def test_an_environment_is_renamed_with_everything_in_it_and_never_while_an_agen
     with app.container.get(Scope).of(environments.named("probe").id):
         assert [t.title for t in app.container.get(Tasks).all()] == ["in spike"], "its rows go with it"
     assert not environments.where(name="spike")
+
+
+def test_any_row_docks_above_the_chat_by_noun_and_number_in_either_order(app):
+    from journal.repositories.messages import Messages
+    console = app.console()
+    console.run(["task", "create", "write the notes", "--brief", "what and where\nand how"], MAIN)
+    docked = console.run(["task", "12", "dock"], MAIN)
+    assert docked.code == 1 and "12" in docked.err, "the number in the verb's place turns the line around, and the row it names is looked for"
+    assert console.run(["task", "1", "dock"], MAIN).out.startswith("Task 1: write the notes docked above the chat")
+    with app.container.get(Scope).of(1):
+        messages = app.container.get(Messages)
+        [card] = [m for m in messages.all() if m.data.get("docked")]
+        assert card.author.value == "system" and card.text == "Task 1: write the notes"
+        assert card.data["kind"] == "docked" and card.data["row"] == "tasks:1" and card.data["key"] == "made:task:1"
+        assert card.data["heading"] == "Task 1: write the notes" and card.data["summary"] == "what and where"
+        assert card.data["dock"] == {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}
+        assert console.run(["task", "dock", "1"], MAIN).code == 0 and len([m for m in messages.all() if m.data.get("docked")]) == 1, "docking it again keeps the one card"
+        assert console.run(["task", "undock", "1"], MAIN).out.startswith("Task 1: write the notes undocked")
+        assert messages.find(card.id).data["docked"] is False
+        assert "is not docked" in console.run(["task", "1", "undock"], MAIN).err
+    assert "dock" in console.run(["report", "--help"], MAIN).out and "dock" not in console.run(["search", "--help"], MAIN).out, "every row noun has the verbs, a noun that is no row has not"
