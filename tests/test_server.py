@@ -1194,9 +1194,7 @@ def test_a_plans_timeline_has_each_start_log_and_done_of_its_tasks_oldest_first(
 def test_a_second_journal_of_the_same_project_stands_by_while_the_first_answers(tmp_path: Path):
     import socket
     from journal.support.instance_guard import InstanceGuard
-    with socket.socket() as probe:
-        probe.bind(("127.0.0.1", 0))
-        first = probe.getsockname()[1]
+    first = free_pair()
     single = App(Config(tmp_path / "one", port=first, span=3))
     reserve = InstanceGuard(Config(tmp_path / "one", port=first, span=3))
     assert reserve.other_address() == "", "no port file, no other journal"
