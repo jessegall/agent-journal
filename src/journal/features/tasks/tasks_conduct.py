@@ -32,7 +32,7 @@ class TasksConduct(Conduct):
 
     def on_task_reopened(self, event: TaskReopened, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        return self.none(Tasks.TASK_REOPENED.create(n=event.task_id, on=event.target_ref))
+        return self.none(Tasks.TASK_REOPENED.create(n=event.task_id, reason=event.reason))
 
     def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks

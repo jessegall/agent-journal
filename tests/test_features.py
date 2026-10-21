@@ -335,7 +335,7 @@ def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_
     assert [t.id for t in tasks.blocked_without_wait()] == [], "a task waiting on a check is not a blocked task nothing opens by itself"
     marker.write_text("")
     runner.run(checks.find(1), Actor.system())
-    assert tasks.find(1).state == "open" and any("task 1 is open again: check 1" in line for line in keystrokes), "the passing check opens the task and the agent is told"
+    assert tasks.find(1).state == "open" and any("task 1 is open again: the check 1 it waited on is done" in line for line in keystrokes), "the passing check opens the task and the agent is told"
     assert not checks.find(1).needs_run(datetime.now(timezone.utc) + timedelta(hours=1)), "a passed wait runs no more"
 
 

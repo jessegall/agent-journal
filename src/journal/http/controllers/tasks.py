@@ -66,7 +66,7 @@ class TaskController(Controller[Task]):
 
     def unblock(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
-        return Response.json(self.shown(self.repository.save(task.unblocked("the user opened it", self.time().timestamp()), request.actor)))
+        return Response.json(self.shown(self.repository.save(task.unblocked("the user unblocked it", self.time().timestamp()), request.actor)))
 
     def logs(self, request: Request) -> Response:
         return Response.json(self.task_logs.logs(self.repository.find(request.number("id"))))
