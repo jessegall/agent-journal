@@ -6,6 +6,7 @@ from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
 from journal.repositories.agents import Agents
 from journal.features.memory.commands.memory_command import MemoryCommand
+from journal.features.memory.support.memory_context import MemoryContext
 from journal.models.rule import Rule
 from journal.repositories.rules import Rules
 from journal.support.scope import Scope
@@ -17,8 +18,8 @@ class RuleCommand(MemoryCommand):
     noun = "rule"
     scoped = False
 
-    def __init__(self, rules: Rules, machine: StateMachine, scope: Scope, agents: Agents) -> None:
-        super().__init__(machine, scope, agents)
+    def __init__(self, rules: Rules, machine: StateMachine, scope: Scope, agents: Agents, context: MemoryContext) -> None:
+        super().__init__(machine, scope, agents, context)
         self.repository = rules
 
     def carrying(self, row: Rule, caller: Caller) -> Rule:

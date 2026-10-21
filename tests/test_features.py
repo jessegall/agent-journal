@@ -1577,7 +1577,7 @@ def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_ques
     hook(app, "MessageDisplay", message="I will look at the login next.")
     hook(app, "MessageDisplay", message="Still on the login.")
     app.runtime().deferred.drain()
-    whispers = [line for line in typed if "fact 1: the login uses the old session store" in line]
+    whispers = [line for line in typed if "fact 1 is about this and not in your context: journal fact read 1" in line]
     assert len(whispers) == 1, "whispered once per row per agent"
     from journal.repositories.messages import Messages
     marks = [m for m in app.container.get(Messages).recent(30) if m.data.get("kind") == "whisper"]
@@ -6022,3 +6022,34 @@ def test_a_commit_whose_own_hook_was_lost_is_spotted_at_the_next_tool_use_and_cl
     assert len(cards()) == 1 and app.container.get(Tasks).find(1).state == "done", "the head moved since the last look and the session's own tool start held the commit, so it is carded and its task closed"
     hook(app, "PostToolUse", **looked)
     assert len(cards()) == 1, "once"
+
+
+def test_a_fact_rule_or_reminder_is_handed_over_once_per_context_window_by_the_start_block_the_look_or_a_read(app, monkeypatch):
+    from journal.repositories.reminders import Reminders
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    console, reminders = app.console(), app.container.get(Reminders)
+    console.run(["reminder", "create", "run the suite before a push", "--keywords", "push"], USER)
+    hook(app, "SessionStart")
+    app.runtime().deferred.drain()
+    assert reminders.find(1).presence, "the start block hands every row over at a session start"
+    hook(app, "MessageDisplay", message="about to push")
+    app.runtime().deferred.drain()
+    assert not any("reminder 1" in line for line in typed), "a row in the context window is not whispered"
+    console.run(["reminder", "create", "tag the release", "--keywords", "tag"], USER)
+    hook(app, "MessageDisplay", message="I will tag it now")
+    app.runtime().deferred.drain()
+    assert any("reminder 2 is about this and not in your context: journal reminder read 2" in line for line in typed), "a row made in the window is whispered as a read, never as its words"
+    read = console.run(["reminder", "read", "2"], AGENT)
+    assert read.code == 0 and "reminder 2: tag the release" in read.out and reminders.find(2).presence, "the read hands it over"
+    typed.clear()
+    hook(app, "MessageDisplay", message="tag it again")
+    app.runtime().deferred.drain()
+    assert typed == [], "read, it is not whispered again"
+    hook(app, "PreCompact")
+    hook(app, "SessionStart", source="compact")
+    app.runtime().deferred.drain()
+    console.run(["reminder", "create", "the third", "--keywords", "third"], USER)
+    assert not reminders.find(3).presence
+    console.run(["environment", "here"], AGENT)
+    assert reminders.find(3).presence, "the look hands every row over"

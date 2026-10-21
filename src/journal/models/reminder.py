@@ -10,6 +10,7 @@ class Reminder(Scoped):
 
     text: str = ""
     keywords: tuple[str, ...] = ()
+    presence: bool = False
 
     def summary_line(self) -> str:
         return self.first_line(self.text)

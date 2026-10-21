@@ -17,6 +17,7 @@ from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
+from journal.features.memory.support.memory_context import MemoryContext
 from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.support.not_found import NotFound
@@ -34,9 +35,10 @@ TAKEN_OVER_WITHIN = timedelta(hours=12)
 class EnvironmentCommand(Command):
     noun = "environment"
 
-    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, machine: StateMachine, providers: Providers, config: Config, scope: Scope) -> None:
+    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, machine: StateMachine, providers: Providers, config: Config, scope: Scope, memory: MemoryContext) -> None:
         self.environments, self.agents, self.tasks, self.messages, self.questions, self.workers, self.entries = environments, agents, tasks, messages, questions, workers, entries
         self.rules, self.facts, self.reminders, self.machine, self.providers, self.config, self.scope = rules, facts, reminders, machine, providers, config, scope
+        self.memory = memory
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "here", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders; owed at every session start")
@@ -62,6 +64,7 @@ class EnvironmentCommand(Command):
         for line in self.in_flight(caller.session):
             print(line)
         self.oriented(caller)
+        self.memory.admit_all(caller.actor)
         return 0
 
     def in_flight(self, session: str) -> list[str]:

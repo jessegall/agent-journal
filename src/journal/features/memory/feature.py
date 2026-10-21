@@ -1,4 +1,5 @@
 from journal.features.feature import Feature
+from journal.features.memory.listeners.memory_at_start import MemoryAtStart
 from journal.features.memory.listeners.mark_whispered import MarkWhispered
 from journal.features.memory.listeners.take_the_mark import TakeTheMark
 from journal.features.memory.support.memory_conduct import MemoryConduct
@@ -23,7 +24,7 @@ class Memory(Feature):
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
     conduct = (MemoryConduct,)
-    listeners = (TakeTheMark, MarkWhispered, MarkCompacted, MarkMemoryRowMade, MarkMemoryRowStruck)
+    listeners = (TakeTheMark, MarkWhispered, MarkCompacted, MarkMemoryRowMade, MarkMemoryRowStruck, MemoryAtStart)
     readings = (MemoryReadingsReader,)
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
 
@@ -35,7 +36,7 @@ class Memory(Feature):
     CHECK_STALE_MEMORY = Nudge(name, "check_stale_memory", "these are {{stale_after}} days old or more, check they still hold: {{stale}}", "strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest", repeat_after=86400)
     STALE_AFTER = Option("memory.stale_after", "Ask about old facts after", "Days a fact, rule or reminder stands before the agent is asked at a session start whether it still holds", 7, unit="days")
     DOES_THE_RULE_APPLY_PROJECT_WIDE = Nudge(name, "does_the_rule_apply_project_wide", "does rule {{n}} apply to the whole project?", "keep it only as Always or Never for every environment; otherwise delete it and record a fact or a reminder here")
-    MEMORY_WHISPERED_BACK = Nudge(name, "memory_whispered_back", "{{noun}} {{n}}: {{text}}", repeat_after=ONCE)
+    MEMORY_WHISPERED_BACK = Nudge(name, "memory_whispered_back", "{{noun}} {{n}} is about this and not in your context: journal {{noun}} read {{n}}", repeat_after=ONCE)
     nudges = (DECIDE_AT_THE_MARK, WRITE_HELD_UNTIL_DECIDED, STOPPED_AT_MARK, CHECK_STALE_MEMORY, DOES_THE_RULE_APPLY_PROJECT_WIDE, MEMORY_WHISPERED_BACK)
     options = (STALE_AFTER,)
 
@@ -50,7 +51,9 @@ At a mark of the context window, writes wait until you decide what must survive 
 - A **reminder** is what to keep doing here: `journal reminder create "<do this>"`.
 - One that no longer holds: `journal <fact|rule|reminder> strike <n>`.
 - Nothing worth keeping: `journal nothing survives "<why>"`.
-- `--keywords a,b` on any of them: when you write or run one of those words, the row is whispered back to you.
+- `--keywords a,b` on any of them: when you write or run one of those words and the row is not in your context
+  window, you are told to read it, `journal reminder read <n>`, `journal fact read <n>` or `journal rule read <n>`; the
+  read puts it in your context, and so do the session's start block and the look, until the next compaction.
 - Facts, rules and reminders are handed to you at every session start.
 """, keywords=('fact', 'facts', 'rule', 'rules', 'reminder', 'remember', 'memory'), required_in=('at_mark',))
 

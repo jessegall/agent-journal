@@ -44,7 +44,7 @@ class MemoryConduct(Conduct):
         if not event.content:
             return self.unchanged()
         rows = event.readings.of(feature).whispered_by(event.content)
-        return self.unchanged().typing(*(feature.MEMORY_WHISPERED_BACK.create(noun=row.noun, n=row.id, text=row.text) for row in rows))
+        return self.unchanged().typing(*(feature.MEMORY_WHISPERED_BACK.create(noun=row.noun, n=row.id) for row in rows))
 
     def on_rule_made_memory(self, event: RuleMade, settings: Settings) -> Transition:
         feature = memory_feature()

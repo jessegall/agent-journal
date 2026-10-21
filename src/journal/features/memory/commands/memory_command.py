@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import ClassVar
 
 from journal.console.command import Command
+from journal.features.memory.support.memory_context import MemoryContext
 from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
 from journal.repositories.agents import Agents
@@ -11,13 +12,13 @@ from journal.support.scope import Scope
 
 
 class MemoryCommand(Command):
-    """What fact, rule and reminder share: create, list, strike, and lifting a hold at a mark when the agent records one."""
+    """What fact, rule and reminder share: create, list, read, strike, and lifting a hold at a mark when the agent records one."""
 
     scoped: ClassVar[bool] = True
     repository: Repository
 
-    def __init__(self, machine: StateMachine, scope: Scope, agents: Agents) -> None:
-        self.machine, self.scope, self.agents = machine, scope, agents
+    def __init__(self, machine: StateMachine, scope: Scope, agents: Agents, context: MemoryContext) -> None:
+        self.machine, self.scope, self.agents, self.context = machine, scope, agents, context
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", f"record a {self.noun}")
@@ -25,6 +26,7 @@ class MemoryCommand(Command):
         create.add_argument("--reason", default="")
         create.add_argument("--keywords", default="", help="words that bring it back when you write one, comma-separated")
         self.verb(verbs, "list", f"every {self.noun} here")
+        self.verb(verbs, "read", f"a {self.noun} whole, which puts it in your context window").add_argument("n", type=int)
         self.verb(verbs, "strike", f"a {self.noun} that no longer holds").add_argument("n", type=int)
 
     def create(self, args: Namespace, caller: Caller) -> int:
@@ -37,6 +39,11 @@ class MemoryCommand(Command):
         rows = self.repository.in_() if self.scoped else self.repository.all()
         for row in rows:
             print(f"{row.id:>4}  {row.text}")
+        return 0
+
+    def read(self, args: Namespace, caller: Caller) -> int:
+        row = self.context.admit(self.repository.find(args.n), caller.actor)
+        print(f"{self.noun} {row.id}: {row.text}")
         return 0
 
     def strike(self, args: Namespace, caller: Caller) -> int:
