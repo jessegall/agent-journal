@@ -6,7 +6,10 @@ from journal.providers.providers import Providers
 from journal.support.plugin_tokens import PluginTokens
 from journal.http.support.subagent_commands import REFUSAL, SubagentCommands
 from journal.console.support.outcome import Outcome
+from journal.http.support.cli_post import CliPost
 from journal.http.support.request import Request
+from journal.http.support.stream_response import StreamResponse
+from journal.features.shell.support.shell_runner import EXIT
 from journal.support.response import Response
 from journal.engine.support.launch_files import LaunchFiles
 
@@ -22,10 +25,26 @@ class CliController:
 
     def run(self, request: Request) -> Response:
         variables = CallerVariables.parsed(request.body, self.providers.default().name)
-        if variables.plugin is not None and not self.tokens.matches(variables.plugin, variables.token):
-            return Response.json({"text": "", "error": f"the journal does not know this token for plugin {variables.plugin}\n", "code": 1}, 403)
+        if not self.is_known(variables):
+            return Response.json(self.token_refusal(variables), 403)
+        return Response.json(self.outcome(variables, request.body["argv"], request))
+
+    def run_posted(self, request: Request) -> StreamResponse:
+        posted = CliPost.parsed(request.body["raw"])
+        variables = replace(self.providers.caller_variables(posted.environment), environment=request.environment)
+        outcome = self.outcome(variables, posted.argv, request) if self.is_known(variables) else self.token_refusal(variables)
+        text = outcome.text + outcome.error
+        return StreamResponse("text/plain", iter([f"{text}{'' if not text or text.endswith(chr(10)) else chr(10)}{EXIT} {outcome.code}\n".encode()]))
+
+    def is_known(self, variables: CallerVariables) -> bool:
+        return variables.plugin is None or self.tokens.matches(variables.plugin, variables.token)
+
+    @staticmethod
+    def token_refusal(variables: CallerVariables) -> Outcome:
+        return Outcome.refused(f"the journal does not know this token for plugin {variables.plugin}\n")
+
+    def outcome(self, variables: CallerVariables, argv: list[str], request: Request) -> Outcome:
         caller = (variables if self.launches.is_launch(variables.environment, variables.launch) else replace(variables, agent_shell=False)).caller()
-        argv = request.body["argv"]
         if self.subagents.runs(caller.environment, argv, request.headers.get(ACTOR_HEADER, ""), request.headers.get(THREAD_HEADER, "")):
-            return Response.json(Outcome.refused(REFUSAL))
-        return Response.json(self.console.run(argv, caller))
+            return Outcome.refused(REFUSAL)
+        return self.console.run(argv, caller)

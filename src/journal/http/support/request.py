@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, replace
 
 from journal.support.actor import Actor
+from journal.http.support.cli_post import CliPost
 from journal.support.rejection import Rejection
 from journal.support.missing_row import MissingRow
 
@@ -21,6 +22,8 @@ class Request:
     def measured_path(self) -> str:
         if self.path == "/cli":
             return "/cli/" + " ".join(str(word) for word in self.body.get("argv", [])[:2])
+        if self.path == "/cli/run":
+            return "/cli/" + " ".join(CliPost.parsed(self.body["raw"]).argv[:2])
         return self.path
 
     def with_params(self, params: dict) -> "Request":

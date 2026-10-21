@@ -1,6 +1,7 @@
 #!/bin/sh
 # The journal command. With a server up it posts the argv there; without one it runs the package directly.
-# Commands carry the agent's own session, or name its shell so the server can find the live agent, and the id of the launch they run under.
+# A command is posted as the shell's environment, a double NUL and each word ended by a NUL; the server finds who runs it
+# from the environment, as it does for a shell line, and answers what it printed with the exit code on its last line.
 # A plugin names itself with JOURNAL_PLUGIN and JOURNAL_PLUGIN_TOKEN, and the server stamps the plugin.
 here=$(cd "$(dirname "$0")" && pwd)
 root=${JOURNAL_ROOT:-$PWD}
@@ -17,14 +18,11 @@ JOURNAL_ENV=$(journal_environment)
 export JOURNAL_ENV
 port=$(cat "$root/.journal/port" 2>/dev/null)
 if [ -n "$port" ]; then
-    body=$("$py" -c '
-import json, os, sys
-sys.path.insert(0, sys.argv[1])
-from journal.providers.providers import Providers
-print(json.dumps({"argv": sys.argv[2:], **Providers().caller_variables(os.environ).body()}))
-' "$here" "$@") &&
-    reply=$(curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" -H "X-Journal-Actor: ${JOURNAL_ACTOR:-agent}" -H "X-Journal-Thread: ${CODEX_THREAD_ID:-}" --data-binary "$body") &&
-    { printf '%s' "$reply" | "$py" -c 'import json,sys; o=json.load(sys.stdin); sys.stdout.write(o.get("text", "")); sys.stderr.write(o.get("error", "the journal failed: " + str(o) + "\n")); sys.exit(o.get("code", 1))'; exit $?; }
+    { env -0; printf '\0\0'; for word in "$@"; do printf '%s\0' "$word"; done; } \
+        | curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli/run" -H "Content-Type: application/octet-stream" -H "X-Journal-Env: $JOURNAL_ENV" -H "X-Journal-Actor: ${JOURNAL_ACTOR:-agent}" -H "X-Journal-Thread: ${CODEX_THREAD_ID:-}" --data-binary @- \
+        | awk '{ if (NR > 1) print prev; prev = $0 } END { if (NR == 0) exit 255; split(prev, exit_line, " "); exit exit_line[2] + 0 }'
+    status=$?
+    [ "$status" -ne 255 ] && exit "$status"
 fi
 # No server answered (none up, or a port file left by one that died): the package runs the command itself, unless a sub-agent runs it.
 [ "${JOURNAL_ACTOR:-agent}" = sub-agent ] && exit 0

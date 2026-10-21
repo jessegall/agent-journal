@@ -1334,3 +1334,14 @@ def test_a_tunler_still_running_for_the_journals_address_is_ended_before_the_tun
         assert stale.wait(5) is not None and counterpart.poll() is None, "it is gone, and the tunnel of another address runs on"
     finally:
         counterpart.kill()
+
+
+def test_the_shim_posts_its_environment_and_the_words_and_reads_the_exit_code_off_the_last_line(server):
+    environment = b"\0".join([b"CLAUDECODE=1", b"CLAUDE_CODE_SESSION_ID=abc", b"JOURNAL_ENV=main"])
+    words = b"".join(word + b"\0" for word in (b"task", b"create", b"a task from the shim"))
+    request = HttpRequest(f"http://127.0.0.1:{server.port}/cli/run", data=environment + b"\0\0" + words, method="POST", headers={"Content-Type": "application/octet-stream", "X-Journal-Env": "main"})
+    with urlopen(request, timeout=5) as reply:
+        lines = reply.read().decode().splitlines()
+    assert lines[0].startswith("task 1 open") and lines[-1] == "__journal_exit 0", "what the command printed, then its exit code"
+    tasks = call(server, "GET", "/journal/tasks")[1]["rows"]
+    assert tasks[0]["creator"] == "agent:abc", "the shell's own session, read from its environment, names the agent"

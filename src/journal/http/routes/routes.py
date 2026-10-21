@@ -62,6 +62,7 @@ class Routes:
         router.post("/hooks/{agent}", get(HookController).receive)
         router.post("/shell/run", get(ShellController).run)
         router.post("/cli", get(CliController).run)
+        router.post("/cli/run", get(CliController).run_posted)
         self.journal(router)
         self.work(router)
         self.chat(router)
