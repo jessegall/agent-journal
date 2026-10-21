@@ -38,11 +38,5 @@ class Workers(ScopedRepository[Worker]):
                     blocked[ref.id] = worker
         return blocked
 
-    def reports_waiting(self) -> list[Worker]:
-        return [worker for worker in self.reported() if worker.has_report_waiting()]
-
-    def reported(self) -> list[Worker]:
-        return self.matching(state=WorkerState.REPORTED)
-
     def session_worker(self, session: str) -> list[Worker]:
         return [w for w in self.scoped() if session and session in (w.session, w.resume)]

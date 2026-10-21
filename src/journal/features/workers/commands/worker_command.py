@@ -68,11 +68,12 @@ class WorkerCommand(Command):
         if self.profiles.kind(args.profile) != "worker":
             raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
-        output = [w for w in self.workers.scoped() if w.is_running()]
+        rows = self.workers.scoped()
+        output = [w for w in rows if w.is_running()]
         maximum = int(self.settings.option(Feature.WORKER_LIMIT))
         if maximum and len(output) >= maximum:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
-        knowing = [] if args.fresh else self.related_workers(args.brief)
+        knowing = [] if args.fresh else self.related_workers(rows, args.brief)
         if knowing:
             raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker send {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         provider = args.provider or self.provider_default(caller)
@@ -100,9 +101,9 @@ class WorkerCommand(Command):
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
 
-    def related_workers(self, brief: str) -> list[Worker]:
+    def related_workers(self, rows: list[Worker], brief: str) -> list[Worker]:
         matched = PathMentions.build(brief)
-        return [w for w in reversed(self.workers.scoped()) if matched and w.state != WorkerState.DISPATCHED and w.resume and matched & PathMentions.build(w.brief)]
+        return [w for w in reversed(rows) if matched and w.state != WorkerState.DISPATCHED and w.resume and matched & PathMentions.build(w.brief)]
 
     def send(self, args: Namespace, caller: Caller) -> int:
         with self.runner.lock(args.n):

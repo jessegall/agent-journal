@@ -6578,7 +6578,7 @@ def test_a_reused_worker_keeps_every_report_and_is_out_again_until_it_reports(ap
     console.run(["worker", "send", "1", "the tender"], AGENT)
     assert not workers.find(1).adopted and workers.find(1).is_running(), "a report acted on is a thing of the last job; the new one is out"
     console.run(["worker", "report", "1", "the tender is coupled"], Caller("main", "w1"))
-    assert workers.find(1).has_report_waiting()
+    assert workers.find(1).is_idle()
     console.run(["worker", "stop", "1"], AGENT)
     console.run(["worker", "send", "1", "the rails"], AGENT)
     listed = console.run(["worker", "list"], AGENT).text.splitlines()[0]
@@ -6665,3 +6665,21 @@ def test_the_files_a_worker_touched_are_read_from_its_branch_when_it_reports_a_r
     workers.save(Worker(name="Mr. Babbage", brief="an old job", state=WorkerState.REPORTED), Actor.system())
     listed = console.run(["worker", "list"], AGENT).text
     assert "files: no files known" in listed and "src/lexer.py" in listed, "a worker reported before files were read has none known"
+
+
+def test_a_worker_is_idle_by_one_rule_old_rows_and_dead_processes_included(app: App):
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    workers = app.container.get(Workers)
+    rows = {
+        "out": Worker(name="out", state=WorkerState.DISPATCHED, pid=1),
+        "ended unreported": Worker(name="ended unreported", state=WorkerState.DISPATCHED, pid=999999),
+        "idle": Worker(name="idle", state=WorkerState.REPORTED),
+        "acted on": Worker(name="acted on", state=WorkerState.REPORTED, adopted=True),
+        "old stop": Worker(name="old stop", state=WorkerState.STOPPED, adopted=True),
+        "stopped": Worker(name="stopped", state=WorkerState.STOPPED),
+    }
+    for row in rows.values():
+        workers.save(row, Actor.system())
+    assert [w.name for w in workers.scoped() if w.is_running()] == ["out", "ended unreported"], "a dispatched worker is out whatever its process, until its report is filed"
+    assert [w.name for w in workers.scoped() if w.is_idle()] == ["idle"], "idle is reported and not yet acted on; a stopped row, old or new, is retired"

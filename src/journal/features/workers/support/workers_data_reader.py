@@ -14,13 +14,14 @@ class WorkersDataReader:
         self.workers, self.subagents, self.config, self.branch = workers, subagents, config, branch
 
     def read(self, agent: Agent) -> WorkersData:
-        waiting = self.workers.reports_waiting()
+        rows = self.workers.scoped()
+        waiting = [w for w in rows if w.is_idle()]
         return WorkersData(
-            active_workers=tuple(w.id for w in self.workers.active()),
+            active_workers=tuple(w.id for w in rows if w.is_running()),
             reports_waiting=tuple(w.id for w in waiting),
             reports_summary=", ".join(f"worker {w.id} ({w.name})" for w in waiting),
             active_subagents=self.subagents.running_earlier(agent.session),
             dispatches=tuple(self.subagents.rows(agent.session)),
             worktrees_root=(self.config.home / "worktrees").resolve(),
-            worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.id, w.name) for w in self.workers.scoped()),
+            worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.id, w.name) for w in rows),
         )

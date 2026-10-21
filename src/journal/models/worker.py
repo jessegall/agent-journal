@@ -14,7 +14,7 @@ from journal.models.worker_state import WorkerState
 
 @dataclass(frozen=True)
 class Worker(Scoped):
-    """An agent sent to write one bounded job, in a worktree of its own when it changes code. A subagent only reads; a worker writes."""
+    """An agent sent to write one bounded job, in a worktree of its own when it changes code: out while dispatched whatever its process, so one ended unreported or mid-report still counts as out until its report is filed; idle once it reported, until its report is acted on; retired once stopped or acted on."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("name", "brief")
     name: str = ""
@@ -71,7 +71,7 @@ class Worker(Scoped):
     def is_running(self) -> bool:
         return self.state == WorkerState.DISPATCHED
 
-    def has_report_waiting(self) -> bool:
+    def is_idle(self) -> bool:
         return self.state == WorkerState.REPORTED and not self.adopted
 
     def files_line(self) -> str:
