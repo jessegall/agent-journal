@@ -13,7 +13,7 @@ class Profile:
     kind: str = "subagent"
     model: str | None = None
 
-    def model_or(self, chosen: str) -> str:
+    def model_default(self, chosen: str) -> str:
         return chosen if self.model is None else self.model
 
     def claude_text(self, model: str, codex_model: str) -> str:

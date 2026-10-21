@@ -26,15 +26,15 @@ class SubagentCards(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> None:
         if not self.moves(event):
             return
-        actor, agent, moment = Actor.agent(event.session), self.agents.for_session(event.session).id, time.time()
+        actor, agent, moment = Actor.agent(event.session), self.agents.session_agent(event.session).id, time.time()
         for row in [row for row in self.subagents.rows(event.session) if row.is_current(moment)]:
-            self.marked(event, row, agent, actor)
+            self.carded(event, row, agent, actor)
 
     @staticmethod
     def moves(event: AgentEvent) -> bool:
         return type(event).__name__ in SUBAGENT_END_KINDS or (isinstance(event, (ToolStarting, ToolFinished, ToolFailed)) and event.call.tool in DISPATCHING)
 
-    def marked(self, event: AgentEvent, row: Dispatch, agent: int, actor: Actor) -> None:
+    def carded(self, event: AgentEvent, row: Dispatch, agent: int, actor: Actor) -> None:
         key = f"subagent:{row.id}"
         data = {"kind": "subagent", "session": event.session, "agent": agent, "detail": row.task, "agent_type": row.type, "model": row.model, "subagent": row.session, "state": row.status, "reason": row.reason}
         earlier = self.messages.keyed(key, actor)

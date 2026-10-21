@@ -19,11 +19,11 @@ class PhoneNotice(Listener[ClockTicked]):
 
     def handle(self, event: ClockTicked) -> None:
         time = datetime.now(timezone.utc)
-        for phone in [p for p in self.phones.live(time) if p.push]:
+        for phone in [p for p in self.phones.active(time) if p.push]:
             owed = self.waits.refs(phone)
-            if phone.is_owed_a_push(owed, time):
+            if phone.is_push_due(owed, time):
                 self.pushed(phone, owed, time)
-            elif not phone.has_news(owed) and owed != phone.pushed_refs():
+            elif not phone.has_updates(owed) and owed != phone.pushed_refs():
                 self.phones.save(phone.told(owed), Actor.system())
 
     def pushed(self, phone: Phone, owed: list[str], time: datetime) -> None:

@@ -20,13 +20,13 @@ class Question(Scoped):
     def is_answered(self) -> bool:
         return self.answer is not None
 
-    def is_settled(self) -> bool:
+    def is_resolved(self) -> bool:
         return self.is_answered()
 
     def unclear_options(self) -> list[str]:
         return [option for option in self.options if self.PERSONAL.search(option)]
 
-    def asked(self, time: float) -> "Question":
+    def posed(self, time: float) -> "Question":
         return self.with_event(QuestionPosed(environment_id=self.environment_id, time=time, question_id=self.id))
 
     def answered(self, answer: str, time: float) -> "Question":

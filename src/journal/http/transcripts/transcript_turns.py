@@ -18,7 +18,7 @@ class TranscriptTurns:
     def of(self, provider: Provider, path: Path) -> list[Turn]:
         with self._lock:
             had = self.reads.pop(path, TranscriptRead())
-        read = (TranscriptRead() if path.stat().st_size < had.offset else had).further(provider, path)
+        read = (TranscriptRead() if path.stat().st_size < had.offset else had).more(provider, path)
         with self._lock:
             self.reads[path] = read
             for stale in list(self.reads)[:-TURN_COUNT]:

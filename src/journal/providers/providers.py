@@ -9,7 +9,7 @@ class Providers:
     def __init__(self) -> None:
         self._by_name: dict[str, Provider] = {provider.name: provider for provider in (Claude(), Codex())}
 
-    def named(self, name: str) -> Provider:
+    def lookup(self, name: str) -> Provider:
         return self._by_name[name]
 
     def all(self) -> list[Provider]:

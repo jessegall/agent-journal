@@ -18,7 +18,7 @@ class Suggestion:
     auth: str = "none"
 
     @property
-    def let_in(self) -> str:
+    def admit(self) -> str:
         if self.auth == "key":
             return f" (key: {self.key_var})"
         return " (signs in on its own)" if self.auth == "oauth" else ""

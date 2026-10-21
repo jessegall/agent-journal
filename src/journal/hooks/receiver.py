@@ -35,10 +35,10 @@ class Receiver:
         self.transcript, self.cards, self.slow = transcript, cards, slow
 
     def receive(self, hook: Hook) -> Decision:
-        environment = self.environments.named(hook.environment)
+        environment = self.environments.lookup(hook.environment)
         with self.scope.of(environment.id):
             for written in self.transcript.events(hook, environment):
-                self._handle_at_once(written)
+                self._immediate(written)
             event = self.translation.event(hook, environment)
             entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data={**hook.stored(), **event.recorded()}), Actor.agent(hook.session))
             if self.is_unknown_session_end(event):
@@ -59,7 +59,7 @@ class Receiver:
     def is_unknown_session_end(self, event: AgentEvent) -> bool:
         return isinstance(event, SessionEnded) and not self.agents.matching(session=event.session)
 
-    def _handle_at_once(self, event: AgentEvent) -> None:
+    def _immediate(self, event: AgentEvent) -> None:
         blocking, deferred = self._split(event)
         for listener in [*blocking, *deferred]:
             listener.handle(event)

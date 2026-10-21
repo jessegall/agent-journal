@@ -20,5 +20,5 @@ class Suggester(ABC):
         ...
 
     @abstractmethod
-    def goes_to(self) -> str:
+    def target(self) -> str:
         pass

@@ -15,12 +15,12 @@ class Response:
         return cls(status, body)
 
     @classmethod
-    def not_found(cls, what: str = "") -> "Response":
+    def absent(cls, what: str = "") -> "Response":
         return cls(404, {"error": what or "not found"})
 
     @classmethod
     def missing(cls, error: MissingRow) -> "Response":
-        return cls.not_found(str(error))
+        return cls.absent(str(error))
 
     @classmethod
     def refused(cls, why: str) -> "Response":

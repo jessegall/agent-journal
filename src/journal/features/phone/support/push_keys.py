@@ -20,11 +20,11 @@ class PushKeys:
     secret: int
 
     @classmethod
-    def kept(cls, path: Path) -> "PushKeys":
+    def stored(cls, path: Path) -> "PushKeys":
         if path.is_file():
             return cls(int(json.loads(path.read_text())["secret"], 16))
         keys = cls(secrets.randbelow(N - 1) + 1)
-        PrivateFolder.made(path.parent)
+        PrivateFolder.created(path.parent)
         with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as kept:
             kept.write(json.dumps({"secret": format(keys.secret, "x")}))
         return keys

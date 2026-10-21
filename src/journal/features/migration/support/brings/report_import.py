@@ -20,5 +20,5 @@ class ReportImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.reports = reports
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Report:
-        return self.reports.imported(Report(environment_id=into.id, title=row.title, abstract=row.abstract, body=row.markdown()), row.made_at(), actor)
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Report:
+        return self.reports.imported(Report(environment_id=into.id, title=row.title, abstract=row.abstract, body=row.markdown()), row.creation_time(), actor)

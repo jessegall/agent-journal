@@ -21,28 +21,28 @@ class AdvancePlan(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         task = event.model
-        if not isinstance(task, Task) or not task.has_just_closed(event.was):
+        if not isinstance(task, Task) or not task.is_newly_closed(event.was):
             return
         time = datetime.now(timezone.utc)
-        for plan in [p for p in self.plans.holding(task) if self.plans.finished(p)]:
-            self.plans.save(plan.done(time.timestamp()), event.actor)
-        plan_id = self.followed_with(task)
+        for plan in [p for p in self.plans.containing(task) if self.plans.finished(p)]:
+            self.plans.save(plan.finished(time.timestamp()), event.actor)
+        plan_id = self.following_state(task)
         if not plan_id:
             return
         plan = self.plans.find(plan_id)
         following = self.plans.next_task(plan)
-        if plan.state != PlanState.STARTED or self.is_stopped_at_checkpoint(plan) or following is None or self.tasks.in_hand() is not None:
+        if plan.state != PlanState.STARTED or self.is_checkpoint_stop(plan) or following is None or self.tasks.current() is not None:
             return
         self.tasks.save(following.started_by_plan(time, plan.id), event.actor)
 
-    def is_stopped_at_checkpoint(self, plan: Plan) -> bool:
+    def is_checkpoint_stop(self, plan: Plan) -> bool:
         from journal.features.tasks.feature import Tasks as TasksFeature
-        return self.plans.at_checkpoint(plan) is not None and not self.settings.option(TasksFeature.AUTO)
+        return self.plans.checkpoint_plans(plan) is not None and not self.settings.option(TasksFeature.AUTO)
 
-    def followed_with(self, task: Task) -> int:
-        for agent in self.agents.in_():
+    def following_state(self, task: Task) -> int:
+        for agent in self.agents.scoped():
             for layer in agent.stack:
-                state = self.states.named(layer["state"], layer["data"])
+                state = self.states.restored(layer["state"], layer["data"])
                 if isinstance(state, FollowingPlan) and state.task_id == task.id:
                     return state.plan_id
         return 0

@@ -34,17 +34,17 @@ class Requirements:
 
     def owed(self, agent: Agent, skills: list[Skill]) -> list[Skill]:
         loaded = agent.skills_loaded
-        return [skill for skill in skills if loaded.get(skill.name) != self.files.hash_of(skill)]
+        return [skill for skill in skills if loaded.get(skill.name) != self.files.digest(skill)]
 
-    def for_state(self, state: BaseState) -> list[Skill]:
+    def state_requirements(self, state: BaseState) -> list[Skill]:
         skill = self.registry.skill_required_in(state.name)
         return [skill] if skill else []
 
-    def named(self, name: str) -> list[Skill]:
+    def lookup(self, name: str) -> list[Skill]:
         skill = self.registry.skill_named(name)
         return [skill] if skill else []
 
-    def named_in(self, prompt: str) -> list[Skill]:
+    def mentioned(self, prompt: str) -> list[Skill]:
         text = {w.lower() for w in re.findall(r"[a-z]+", prompt, re.I)}
         return [skill for skill in self.registry.skills() if text & {k.lower() for k in skill.keywords}]
 

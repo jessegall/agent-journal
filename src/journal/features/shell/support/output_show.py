@@ -21,7 +21,7 @@ class OutputShow:
         if not path.is_file():
             return ""
         text = path.read_text(errors="replace")
-        cut = self.folder.cut_of(i)
+        cut = self.folder.cut_command(i)
         if cut and name == "out":
             shortened = subprocess.run(["sh", "-c", cut], input=text, capture_output=True, text=True).stdout
             shown = shortened if len(shortened) <= self.cap.characters else shortened[-self.cap.characters:]

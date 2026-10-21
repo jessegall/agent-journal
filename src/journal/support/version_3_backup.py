@@ -16,11 +16,11 @@ class Version3Backup:
     def folder(self) -> Path:
         return self.config.home / "version-3"
 
-    def is_kept(self) -> bool:
+    def is_stored(self) -> bool:
         return self.folder.is_dir()
 
     def is_waiting(self) -> bool:
-        return self.is_kept() and self.migrations.current().state.is_open()
+        return self.is_stored() and self.migrations.current().state.is_open()
 
     def put_off(self, actor: Actor) -> Version3Migration:
         return self.migrations.save(self.migrations.current().put_off(), actor)

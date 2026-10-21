@@ -16,13 +16,13 @@ class Switches(Listener[Event]):
         self.asked_while_free = getattr(inner, "asked_while_free", False)
 
     def handle(self, event: Event) -> object:
-        with self.scope.of(self.environment_of(event)):
-            if not self.registry.is_on(self.feature):
+        with self.scope.of(self.event_environment(event)):
+            if not self.registry.is_enabled(self.feature):
                 return None
             return self.inner.handle(event)
 
-    def environment_of(self, event: Event) -> int:
+    def event_environment(self, event: Event) -> int:
         model = getattr(event, "model", None)
         if isinstance(model, Scoped):
             return model.environment_id
-        return getattr(event, "environment_id", self.scope.id_or(PROJECT))
+        return getattr(event, "environment_id", self.scope.id_default(PROJECT))

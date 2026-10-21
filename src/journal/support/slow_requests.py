@@ -86,11 +86,11 @@ class SlowRequests:
         return True
 
     def reported(self, method: str, route: str, ms: int, budget: int) -> None:
-        agent = self.agents.live_anywhere()
+        agent = self.agents.all_current()
         with self.scope.of(agent.environment_id if agent else self.environments.all()[0].id):
-            self.marked(method, route, ms, budget)
+            self.flagged(method, route, ms, budget)
 
-    def marked(self, method: str, route: str, ms: int, budget: int) -> None:
+    def flagged(self, method: str, route: str, ms: int, budget: int) -> None:
         key = f"slow:{method} {route}"
         earlier = self.messages.keyed(key, Actor.system())
         count = earlier[0].data.get("count", 0) + 1 if earlier else 1

@@ -67,7 +67,7 @@ class SecretCommand(Command):
         self.verb(verbs, "restore", "a deleted secret back, with its values").add_argument("n", type=int)
 
     def create(self, args: Namespace, caller: Caller) -> int:
-        secret = self.file(args.title, args.brief, SecretKind.named(args.kind), caller)
+        secret = self.file(args.title, args.brief, SecretKind.lookup(args.kind), caller)
         proposed = f"; proposed for the user to allow: {', '.join(secret.proposed)}" if secret.proposed else ""
         print(f"secret {secret.id} made: {secret.title}, waiting for the user to fill {', '.join(f['name'] for f in secret.fields) or 'its fields'} on the Secrets page{proposed}")
         return 0
@@ -76,14 +76,14 @@ class SecretCommand(Command):
         reaching = [s.name for s in self.servers.all() if args.title.lower() in (s.name.lower(), s.title.lower())]
         if reaching:
             raise Rejection(f"{args.title} is reached through the MCP server {', '.join(reaching)} already: use its tools, and if they cannot do what you need, say what is missing in the chat")
-        secret = self.secrets.save(self.file(args.title, "", SecretKind.named(args.kind), caller).with_(url=args.url, asked_at=datetime.now(timezone.utc)), caller.actor)
+        secret = self.secrets.save(self.file(args.title, "", SecretKind.lookup(args.kind), caller).with_(url=args.url, asked_at=datetime.now(timezone.utc)), caller.actor)
         asking = f"Please log in to {secret.title} with the Log in button on the Secrets page; a browser opens on your computer, and the login is saved when you close it" if secret.kind == SecretKind.BROWSER_LOGIN else f"Please fill in the secret {secret.title} on the Secrets page, never in the chat"
         self.messages.save(Message(author=Author.AGENT, text=f"{asking}: I need it {args.why}.\n\nsecret {secret.id}"), caller.actor)
         print(f"secret {secret.id} asked for: the user fills it on the Secrets page")
         return 0
 
     def file(self, title: str, brief: str, kind: SecretKind, caller: Caller) -> Secret:
-        return self.secrets.save(Secret(title=title, brief=brief, kind=kind, fields=kind.first_fields(title), proposed=Programs.named_in(brief)), caller.actor)
+        return self.secrets.save(Secret(title=title, brief=brief, kind=kind, fields=kind.first_fields(title), proposed=Programs.mentioned(brief)), caller.actor)
 
     def update(self, args: Namespace, caller: Caller) -> int:
         secret = self.secrets.find(args.n)
@@ -104,12 +104,12 @@ class SecretCommand(Command):
         if not value:
             raise Rejection(f"{args.file} held no value; it is deleted all the same")
         self.values.put_field(secret.field(args.field), value)
-        self.secrets.save(secret.filled_in(args.field), caller.actor)
+        self.secrets.save(secret.is_filled(args.field), caller.actor)
         print(f"{args.field} of secret {secret.id} stored, and {args.file} deleted")
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for s in self.secrets.live():
+        for s in self.secrets.active():
             print(f"{s.id:>4}  {s.kind:<13} {s.title}" + ("  waiting for the user" if s.waiting() else "") + (f"  given to {', '.join(s.programs)}" if s.programs else ""))
         return 0
 
@@ -125,7 +125,7 @@ class SecretCommand(Command):
 
     def run(self, args: Namespace, caller: Caller) -> int:
         secret = self.named(args.secret)
-        if not secret.helpers and caller.session and self.workers.by_session(caller.session):
+        if not secret.helpers and caller.session and self.workers.session_worker(caller.session):
             raise Rejection(f"secret {secret.id} is the main agent's alone: the user lets helpers have it on the Secrets page")
         code, output = self.runner.run(secret, [c for c in args.command if c != "--"], args.stdin, args.env)
         self.secrets.save(secret.with_(used_at=datetime.now(timezone.utc)), caller.actor)
@@ -135,7 +135,7 @@ class SecretCommand(Command):
     def propose(self, args: Namespace, caller: Caller) -> int:
         secret = self.secrets.find(args.n)
         name = args.program
-        if "/" in name or Programs.never_given(name):
+        if "/" in name or Programs.is_withheld(name):
             raise Rejection(f"a secret is never given to {name}: propose the program that uses it directly, named bare, such as curl or gh")
         if name in secret.programs or name in secret.proposed:
             print(f"{name} is {'allowed' if name in secret.programs else 'proposed'} for secret {secret.id} already")
@@ -163,7 +163,7 @@ class SecretCommand(Command):
         return 0 if done.session_at else 1
 
     def named(self, given: str) -> Secret:
-        rows = [s for s in self.secrets.live() if str(s.id) == given or s.title.lower() == given.lower()]
+        rows = [s for s in self.secrets.active() if str(s.id) == given or s.title.lower() == given.lower()]
         if not rows:
             raise Rejection(f"no secret is numbered or titled {given!r}: `journal secret list` names them")
         return rows[0]

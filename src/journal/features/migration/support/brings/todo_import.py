@@ -23,16 +23,16 @@ class TodoImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.tasks = tasks
 
-    def left_behind(self, row: Version3Row, into: Environment) -> str:
-        return super().left_behind(row, into) or ("struck" if row.data.get("struck") else "")
+    def skipped(self, row: Version3Row, into: Environment) -> str:
+        return super().skipped(row, into) or ("struck" if row.data.get("struck") else "")
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
-        return self.tasks.imported(self.task(row, Task(environment_id=into.id, title=row.title, brief=row.brief)), row.made_at(), actor)
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
+        return self.tasks.imported(self.task(row, Task(environment_id=into.id, title=row.title, brief=row.brief)), row.creation_time(), actor)
 
     @staticmethod
     def task(row: Version3Row, task: Task) -> Task:
         if row.completed:
-            return task.with_(state=TaskState.FINISHED, finished_at=row.closed_at(), outcome=row.outcome)
+            return task.with_(state=TaskState.FINISHED, finished_at=row.close_time(), outcome=row.outcome)
         if row.data.get("blocked"):
             return task.with_(state=TaskState.BLOCKED, blocked_why=row.data["blocked"])
         if row.data.get("status") == "started":

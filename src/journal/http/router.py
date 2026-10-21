@@ -35,7 +35,7 @@ class Router:
         self.seen.saw(request.headers)
         route = self.matched(request)
         if route is None:
-            return Response.not_found(f"{request.method} {request.path}")
+            return Response.absent(f"{request.method} {request.path}")
         try:
             with self.scope.requested(lambda: request.environment):
                 began = time.perf_counter()

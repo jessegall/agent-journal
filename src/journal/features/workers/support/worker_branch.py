@@ -23,11 +23,11 @@ class WorkerBranch:
     def git(self, *argv: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
         return subprocess.run(["git", *argv], cwd=cwd or self.config.root, capture_output=True, text=True, timeout=GIT_TIMEOUT)
 
-    def ahead(self, worker: Worker) -> list[str]:
+    def commit_count(self, worker: Worker) -> list[str]:
         done = self.git("log", "--reverse", "--format=%h %s", f"HEAD..{self.name(worker)}")
         return [line for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
 
-    def left(self, worker: Worker) -> list[str]:
+    def remaining(self, worker: Worker) -> list[str]:
         folder = self.folder(worker)
         if not folder.is_dir():
             return []
@@ -35,7 +35,7 @@ class WorkerBranch:
         return [line[3:] for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
 
     def take_in(self, worker: Worker) -> str:
-        commits = self.ahead(worker)
+        commits = self.commit_count(worker)
         if not commits:
             return ""
         changed = self.git("diff", "--name-only", f"HEAD...{self.name(worker)}").stdout.split()
@@ -81,9 +81,9 @@ class WorkerBranch:
         folder = self.folder(worker)
         if not worker.worktree or not folder.is_dir():
             return ""
-        if worker.is_out():
+        if worker.is_running():
             return f"its worktree {folder} stays while it works"
-        left = self.left(worker)
+        left = self.remaining(worker)
         if left:
             return f"its worktree {folder} stays, since {len(left)} files in it are not committed: {', '.join(left[:10])}"
         self.git("update-ref", f"{TIPS_REF}/{folder.name}", self.git("rev-parse", self.name(worker)).stdout.strip())
@@ -98,5 +98,5 @@ class WorkerBranch:
         return ". ".join(parts)
 
     def leftover(self, worker: Worker) -> str:
-        files = self.left(worker)
+        files = self.remaining(worker)
         return f"it left {len(files)} files uncommitted in its worktree {self.folder(worker)}: {', '.join(files[:10])}" if files else ""

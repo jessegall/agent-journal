@@ -53,8 +53,8 @@ def test_the_hooks_question_is_asked_even_when_no_other_hooks_are_found_yet(tmp_
 
 def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
     from journal.launcher.support.foreign_hooks import ForeignHooks
-    assert not ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /p/.journal/src/hook.sh claude /p/.journal"}]})
-    assert ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
+    assert not ProgramSettings.is_journals({"hooks": [{"type": "command", "command": "sh /p/.journal/src/hook.sh claude /p/.journal"}]})
+    assert ProgramSettings.is_journals({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
 
 
 def test_the_status_line_keeps_claudes_status_json_through_the_journals_script(tmp_path):
@@ -135,7 +135,7 @@ def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, mo
         from journal.launcher.support.page_wait import PageWait
         said, opened = [], []
         waiting = PageWait(tmp_path / ".journal" / "port", "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "", said.append)
-        assert waiting.answering() == f"http://127.0.0.1:{app.server().port}/", "the launch sees the page answer, with no supervisor to tell"
+        assert waiting.is_responsive() == f"http://127.0.0.1:{app.server().port}/", "the launch sees the page answer, with no supervisor to tell"
         waiting.wait()
         import webbrowser
         monkeypatch.setattr(webbrowser, "open", lambda url, new=0: opened.append(url) or True)
@@ -234,11 +234,11 @@ def test_a_worktree_launch_makes_its_worktree_and_never_hands_the_flag_to_the_ag
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
-    made = Worktree(tmp_path, "1012-inventory-page").made()
+    made = Worktree(tmp_path, "1012-inventory-page").created()
     assert made == tmp_path / ".claude" / "worktrees" / "1012-inventory-page" and (made / ".git").exists(), "made at Claude Code's own place, so an older one is found"
     assert "worktree-1012-inventory-page" in git("branch").stdout
     subprocess.run(["rm", "-rf", str(made)], timeout=30)
-    assert Worktree(tmp_path, "1012-inventory-page").made().is_dir(), "a worktree whose folder went is made again on its branch, and nothing is lost from the branch"
+    assert Worktree(tmp_path, "1012-inventory-page").created().is_dir(), "a worktree whose folder went is made again on its branch, and nothing is lost from the branch"
 
 
 def test_a_bare_worktree_flag_takes_the_chosen_environments_name(tmp_path: Path):
@@ -270,7 +270,7 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
     (tmp_path / ".claude" / "skills" / "journal").mkdir(parents=True)
     (tmp_path / ".claude" / "skills" / "journal" / "SKILL.md").write_text("# The journal\n")
     (tmp_path / ".claude" / "settings.json").write_text("{}")
-    threads = [threading.Thread(target=Worktree(tmp_path, "calm-river").made) for _ in range(4)]
+    threads = [threading.Thread(target=Worktree(tmp_path, "calm-river").created) for _ in range(4)]
     [t.start() for t in threads]
     [t.join() for t in threads]
     tree = tmp_path / ".claude" / "worktrees" / "calm-river"
@@ -290,7 +290,7 @@ def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_
     git("add", ".journal/old.txt")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m", "start")
     (tmp_path / ".journal" / "port").write_text("8421")
-    tree = Worktree(tmp_path, "x").made()
+    tree = Worktree(tmp_path, "x").created()
     assert (tree / ".journal").is_symlink() and (tree / ".journal" / "port").read_text() == "8421", "the checked-out old journal files make way for the link"
 
 
@@ -300,7 +300,7 @@ def test_a_command_or_hook_inside_a_worktree_works_the_worktrees_environment(tmp
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
-    tree = Worktree(tmp_path, "calm-river").made()
+    tree = Worktree(tmp_path, "calm-river").created()
     (tree / "deep").mkdir()
     rule = Path(__file__).parents[1] / "src" / "journal" / "hooks" / "environment.sh"
     named = lambda time, env="": subprocess.run(["sh", "-c", f'. "{rule}"; journal_environment'], cwd=time, capture_output=True, text=True, timeout=30, env={"PATH": os.environ["PATH"], **({"JOURNAL_ENV": env} if env else {})}).stdout
@@ -315,7 +315,7 @@ def test_a_conversation_resumed_runs_in_its_environment_and_that_environments_wo
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
-    tree = Worktree(tmp_path, "calm-river").made()
+    tree = Worktree(tmp_path, "calm-river").created()
     menu = menu_answering(tmp_path, monkeypatch, [])
     menu.environments = lambda: [EnvironmentRow("main", last_sessions={"claude": "abc"}), EnvironmentRow("calm-river", last_sessions={"claude": "def"})]
     assert Launch.parse(["claude", "--resume", "def"], tmp_path).resumed_in(menu) == "calm-river", "a conversation is resumed in the environment it last ran in"
@@ -332,7 +332,7 @@ def test_the_menu_marks_an_environment_with_a_worktree_and_its_branch(tmp_path: 
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
-    Worktree(tmp_path, "calm-river").made()
+    Worktree(tmp_path, "calm-river").created()
     assert Worktree(tmp_path, "calm-river").badges() == ("worktree on worktree-calm-river",) and Worktree(tmp_path, "main").badges() == ()
 
 
@@ -342,14 +342,14 @@ def test_a_worktree_whose_folder_and_branch_went_is_made_again_from_its_kept_tip
     git = lambda *args, time=tmp_path: subprocess.run(["git", "-C", str(time), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
-    tree = Worktree(tmp_path, "1012-inventory-page").made()
+    tree = Worktree(tmp_path, "1012-inventory-page").created()
     (tree / "page.py").write_text("PAGE = 1\n")
     git("add", "page.py", time=tree)
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m", "the page", time=tree)
-    Worktree(tmp_path, "1012-inventory-page").made()
+    Worktree(tmp_path, "1012-inventory-page").created()
     git("worktree", "remove", "--force", str(tree))
     git("branch", "-D", "worktree-1012-inventory-page")
-    again = Worktree(tmp_path, "1012-inventory-page").made()
+    again = Worktree(tmp_path, "1012-inventory-page").created()
     assert (again / "page.py").read_text() == "PAGE = 1\n", "the committed work comes back from the kept tip though the folder and the branch were removed"
 
 
@@ -363,13 +363,13 @@ def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_mak
     stray = tmp_path / ".claude" / "worktrees" / "calm-river"
     stray.mkdir(parents=True)
     (stray / "mine.txt").write_text("not a worktree's\n")
-    made = Worktree(tmp_path, "calm-river").made()
+    made = Worktree(tmp_path, "calm-river").created()
     aside = [p for p in made.parent.iterdir() if p.name.startswith("calm-river.moved-aside-")]
     assert (made / ".git").exists() and len(aside) == 1 and (aside[0] / "mine.txt").read_text() == "not a worktree's\n", "the stray folder is kept aside and the worktree made"
     git("branch", "worktree-taken")
     git("worktree", "add", str(tmp_path / "elsewhere"), "worktree-taken")
     try:
-        Worktree(tmp_path, "taken").made()
+        Worktree(tmp_path, "taken").created()
         raise AssertionError("a branch checked out elsewhere cannot be made a second time")
     except WorktreeFailure:
         pass

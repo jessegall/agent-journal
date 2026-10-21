@@ -25,9 +25,9 @@ class Connection:
             return
         self._threads.connection = None
         self._threads.returned.detach()
-        self._given_back(local)
+        self._returned(local)
 
-    def _given_back(self, local: sqlite3.Connection) -> None:
+    def _returned(self, local: sqlite3.Connection) -> None:
         with self._pooling:
             self._free.append(local)
 
@@ -59,7 +59,7 @@ class Connection:
         for work in self._threads.__dict__.pop("committed", []):
             work()
 
-    def after_commit(self, work: Callable[[], None]) -> None:
+    def commit_callback(self, work: Callable[[], None]) -> None:
         if self._local().in_transaction:
             self._threads.committed.append(work)
             return
@@ -75,7 +75,7 @@ class Connection:
         if local is None:
             local = self._leased()
             self._threads.connection = local
-            self._threads.returned = weakref.finalize(threading.current_thread(), self._given_back, local)
+            self._threads.returned = weakref.finalize(threading.current_thread(), self._returned, local)
         return local
 
     def _leased(self) -> sqlite3.Connection:

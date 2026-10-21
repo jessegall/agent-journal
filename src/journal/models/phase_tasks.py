@@ -13,7 +13,7 @@ class PhaseTasks:
     phase: Phase
     tasks: tuple[Task, ...]
 
-    def is_done(self) -> bool:
+    def is_finished(self) -> bool:
         return bool(self.tasks) and all(task.is_closed() for task in self.tasks)
 
     def has_open_work(self) -> bool:

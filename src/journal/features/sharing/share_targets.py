@@ -17,7 +17,7 @@ class ShareTargets:
         self.plans, self.links = plans, links
         self.repositories = {"docs": docs, "reports": reports, "plans": plans}
 
-    def named(self, named: str) -> Ref:
+    def lookup(self, named: str) -> Ref:
         kind, _, number = named.strip().partition(":")
         if kind not in self.repositories or not number.isdigit():
             raise Rejection(f"only a document, a report or a plan can be shared: name it as docs:12, reports:4 or plans:2, not {named!r}")
@@ -40,7 +40,7 @@ class ShareTargets:
         return [target, *(Ref.to(task) for task in tasks)]
 
     def opens(self, named: str) -> list[str]:
-        ref = self.named(named)
+        ref = self.lookup(named)
         row = self.repositories[ref.type].find(ref.id)
         lines = [f"{row.title} ({ref})"]
         if ref.type == "plans":

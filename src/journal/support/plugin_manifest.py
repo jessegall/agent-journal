@@ -43,7 +43,7 @@ class PluginManifest:
 
     @property
     def programs(self) -> list[str]:
-        return [self.program, *(s.program for s in self.services if s.is_in_its_folder)]
+        return [self.program, *(s.program for s in self.services if s.is_local)]
 
     def card_kind(self, kind: str) -> CardKind:
         return next((k for k in self.cards if k.kind == kind), CardKind(kind, self.name))

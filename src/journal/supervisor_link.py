@@ -32,7 +32,7 @@ class SupervisorLink:
             return
         marked = f"{JOURNAL_PREFIX} {' '.join(line.split())}"
         if self.is_busy(environment_id):
-            self.typed.hold(QueuedLine(environment_id, marked, after))
+            self.typed.queue(QueuedLine(environment_id, marked, after))
             return
         self.type_whole(environment_id, marked, after)
 
@@ -42,7 +42,7 @@ class SupervisorLink:
             self._send(environment_id, "type", {"name": AGENT, "line": piece, "after": after})
 
     def is_busy(self, environment_id: int) -> bool:
-        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds())
+        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_recent(environment_id, self.batch_seconds())
 
     def disable(self, environment_id: int) -> None:
         self.typed.disable(environment_id)
@@ -63,7 +63,7 @@ class SupervisorLink:
     def release(self, environment_id: int) -> None:
         if self.is_busy(environment_id):
             return
-        held = self.typed.held_as_one(environment_id)
+        held = self.typed.batched(environment_id)
         if held is not None:
             self.type_whole(environment_id, held.line, held.after)
 
@@ -84,7 +84,7 @@ class SupervisorLink:
         self._chosen_at[environment_id] = time.time()
         self._send(environment_id, "type", {"name": AGENT, "line": command, "after": 0.0})
 
-    def chosen_at(self, environment_id: int) -> float:
+    def choice_time(self, environment_id: int) -> float:
         return self._chosen_at.get(environment_id, 0.0)
 
     def confirmed(self, environment_id: int) -> None:
@@ -98,7 +98,7 @@ class SupervisorLink:
         path = self.mirrored(environment_id, "out")
         return path.stat().st_mtime if path else 0.0
 
-    def keyed_at(self, environment_id: int) -> float:
+    def key_time(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "keyed")
         at_keyboard = path.stat().st_mtime if path else 0.0
         return max(at_keyboard, self._viewer_keyed_at.get(environment_id, 0.0))

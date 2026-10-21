@@ -13,16 +13,16 @@ class EnvironmentImport:
     def __init__(self, environments: Environments, ledger: MigratedRows) -> None:
         self.environments, self.ledger = environments, ledger
 
-    def bring(self, folder: Path, actor: Actor) -> ImportTally:
+    def import_rows(self, folder: Path, actor: Actor) -> ImportTally:
         rows = Version3Rows(folder)
         count, skipped = 0, []
         for row in rows.environments():
             source = f"project/environment/{row.n}"
-            if not rows.is_in_use(row):
+            if not rows.is_used(row):
                 skipped.append(f"environment {row.title}: not in use")
                 continue
-            if self.ledger.is_brought(source):
+            if self.ledger.is_imported(source):
                 continue
-            self.ledger.record(source, self.environments.named(row.title), actor)
+            self.ledger.record(source, self.environments.lookup(row.title), actor)
             count += 1
         return ImportTally("environments", count, tuple(skipped))

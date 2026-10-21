@@ -14,9 +14,9 @@ class ClosedTaskRelease(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         task = event.model
-        if not isinstance(task, Task) or not task.has_just_closed(event.was):
+        if not isinstance(task, Task) or not task.is_newly_closed(event.was):
             return
-        for agent in self.agents.in_():
+        for agent in self.agents.scoped():
             state = self.machine.current(agent.session)
-            if isinstance(state, Working) and not state.follows_a_plan() and state.task_id == task.id:
+            if isinstance(state, Working) and not state.is_plan_work() and state.task_id == task.id:
                 self.machine.move(agent.session, task.environment_id, self.machine.states.first())

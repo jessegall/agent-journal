@@ -9,5 +9,5 @@ class DataReaders:
     def __init__(self, readers: dict[str, DataReader]) -> None:
         self.readers = readers
 
-    def for_agent(self, agent: Agent) -> FeatureData:
+    def agent_data(self, agent: Agent) -> FeatureData:
         return FeatureData({name: reader.read(agent) for name, reader in self.readers.items()})

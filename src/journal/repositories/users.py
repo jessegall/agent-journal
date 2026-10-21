@@ -6,7 +6,7 @@ from journal.repositories.repository import Repository
 class Users(Repository[User]):
     model = User
 
-    def by_email(self, email: str) -> User:
+    def email_match(self, email: str) -> User:
         rows = self.matching(email=email)
         if not rows:
             raise MissingRow(self.table, email)

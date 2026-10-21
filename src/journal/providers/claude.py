@@ -80,7 +80,7 @@ class Claude(Provider):
         row = ClaudeRow.from_json(line)
         return [block.text for block in row.of_type("text") if block.text.strip()] if row.type == "assistant" else []
 
-    def crossed_in(self, line: dict) -> list[PeerMessage]:
+    def peer_messages(self, line: dict) -> list[PeerMessage]:
         row = ClaudeRow.from_json(line)
         if not row.is_enqueued:
             return []

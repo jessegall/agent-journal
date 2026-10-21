@@ -14,18 +14,18 @@ class Entries(ScopedRepository[Entry]):
     def trim(self, newest: int, kept: int) -> int:
         return self.connection.execute("DELETE FROM entries WHERE id <= ?", (newest - kept,)).rowcount
 
-    def last_prompt_of(self, session: str) -> datetime | None:
+    def last_prompt(self, session: str) -> datetime | None:
         rows = self.selected("kind = 'PromptSubmitted' AND actor = ? ORDER BY id DESC LIMIT 1", (Actor.agent(session).stamp,))
         return rows[0].created_at if rows else None
 
     def said_to(self, session: str) -> int:
-        return self.counted_in("kind = 'nudge' AND json_extract(data, '$.session') = ?", (session,))
+        return self.count("kind = 'nudge' AND json_extract(data, '$.session') = ?", (session,))
 
-    def last_said(self, session: str, key: str, line: str) -> float:
+    def last_line(self, session: str, key: str, line: str) -> float:
         row = self.aggregate("COALESCE(MAX(json_extract(data, '$.time')), 0) AS time", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (session, key, line))
         return float(row["time"])
 
-    def last_said_of(self, session: str, key: str) -> float:
+    def last_lines(self, session: str, key: str) -> float:
         row = self.aggregate("COALESCE(MAX(json_extract(data, '$.time')), 0) AS time", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
         return float(row["time"])
 
@@ -37,23 +37,23 @@ class Entries(ScopedRepository[Entry]):
         rows = self.selected(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({marks}) ORDER BY id DESC LIMIT 1", (session, *keys))
         return rows[0] if rows else None
 
-    def lines_said_after(self, session: str, key: str, entry_id: int) -> list[str]:
+    def recent_lines(self, session: str, key: str, entry_id: int) -> list[str]:
         return [e.data["line"] for e in self.selected("kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND id > ? ORDER BY id", (session, key, entry_id))]
 
-    def lines_said_since_use(self, session: str, key: str, tool_use: int) -> list[str]:
+    def use_lines(self, session: str, key: str, tool_use: int) -> list[str]:
         return [e.data["line"] for e in self.selected("kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.tool_use') > ? ORDER BY id", (session, key, tool_use))]
 
     def nudge_count(self, session: str, keys: tuple[str, ...], tool_use: int) -> int:
         placeholders = ", ".join("?" for _ in keys)
-        return self.counted_in(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({placeholders}) AND json_extract(data, '$.tool_use') >= ?", (session, *keys, tool_use))
+        return self.count(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({placeholders}) AND json_extract(data, '$.tool_use') >= ?", (session, *keys, tool_use))
 
-    def last_id_of_kind(self, session: str, kind: str) -> int:
+    def last_kind_id(self, session: str, kind: str) -> int:
         row = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = ? AND actor = ?", (kind, f"agent:{session}"))
         return int(row["id"])
 
     def said_since(self, session: str, key: str) -> int:
         newest = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
-        return self.counted_in("kind = 'nudge' AND json_extract(data, '$.session') = ? AND id > ?", (session, int(newest["id"])))
+        return self.count("kind = 'nudge' AND json_extract(data, '$.session') = ? AND id > ?", (session, int(newest["id"])))
 
     def of_kind(self, kind: str, last: int = 50) -> list[Entry]:
         return self.selected("kind = ? ORDER BY id DESC LIMIT ?", (kind, last))
@@ -64,7 +64,7 @@ class Entries(ScopedRepository[Entry]):
     def of_actor(self, stamp: str, last: int = 200) -> list[Entry]:
         return self.selected_everywhere("actor = ? ORDER BY id DESC LIMIT ?", (stamp, last))
 
-    def last_of_session(self, session: str) -> Entry | None:
+    def last_session_entry(self, session: str) -> Entry | None:
         rows = self.selected("actor = ? AND kind != 'nudge' ORDER BY id DESC LIMIT 1", (f"agent:{session}",))
         return rows[0] if rows else None
 

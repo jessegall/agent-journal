@@ -17,6 +17,6 @@ class ExpiryQuestion(AgentListener[Ticked]):
 
     def handle(self, event: Ticked) -> None:
         time = datetime.now(timezone.utc)
-        for secret in [s for s in self.secrets.live() if s.login_ran_out_unasked(time)]:
+        for secret in [s for s in self.secrets.active() if s.is_login_expired(time)]:
             self.messages.save(Message(author=Author.AGENT, text=f"Your login to {secret.title} has run out: log in again with the Log in button on the Secrets page.\n\nsecret {secret.id}"), Actor.system())
             self.secrets.save(secret.with_(asked_at=time), Actor.system())

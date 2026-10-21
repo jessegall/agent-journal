@@ -12,4 +12,4 @@ class SessionRunTransfer(AgentListener[SessionStarted]):
         self.running = running
 
     def handle(self, event: SessionStarted) -> None:
-        self.running.carry(event.session, event.environment_id)
+        self.running.transfer(event.session, event.environment_id)

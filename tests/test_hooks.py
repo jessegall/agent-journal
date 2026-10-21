@@ -62,7 +62,7 @@ def post_hook(app, body: dict, started_ms: int = 0):
 def test_a_hook_lands_as_an_entry_and_answers_200(app: App):
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}})
     assert status == 200 and body == {}
-    entries = app.container.get(Entries).in_()
+    entries = app.container.get(Entries).scoped()
     assert [e.kind for e in entries] == ["ToolStarting"] and entries[0].actor.stamp == "agent:s1"
 
 
@@ -87,7 +87,7 @@ def test_a_deferred_listener_runs_after_the_reply_and_never_refuses(app: App):
 def test_every_hook_kind_translates(app: App):
     for kind in ["SessionStart", "UserPromptSubmit", "PostToolUse", "PostToolUseFailure", "PreCompact", "Stop", "SubagentStart", "SubagentStop", "MessageDisplay", "SessionEnd"]:
         assert post_hook(app, {"hook_event_name": kind, "session_id": "s1"})[0] == 200
-    assert len(app.container.get(Entries).in_()) == 10
+    assert len(app.container.get(Entries).scoped()) == 10
 
 
 
@@ -127,9 +127,9 @@ def test_a_guard_that_raises_fails_open_and_is_reported_loudly(app: App):
     app.container.get(Bus).listen(ToolStarting, Raising())
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}})
     assert status == 200 and "a guard failed and let this through: Raising raised RuntimeError: the guard broke" in body["hookSpecificOutput"]["additionalContext"], "the tool runs and the agent is told"
-    failed = [e for e in app.container.get(Entries).in_() if e.kind == GUARD_FAILED]
+    failed = [e for e in app.container.get(Entries).scoped() if e.kind == GUARD_FAILED]
     assert len(failed) == 1 and failed[0].data["listener"] == "Raising" and failed[0].data["event"] == "ToolStarting"
-    assert any("A guard failed and let the event through" in m.text for m in app.container.get(Messages).in_()), "and the user sees a card in the chat"
+    assert any("A guard failed and let the event through" in m.text for m in app.container.get(Messages).scoped()), "and the user sees a card in the chat"
 
 
 def post_command(app, argv: list[str], headers: dict | None = None) -> dict:
@@ -140,7 +140,7 @@ def post_command(app, argv: list[str], headers: dict | None = None) -> dict:
 
 def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app: App):
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Bash", "tool_input": {"command": "journal task list"}})
-    assert status == 200 and body == {} and app.container.get(Entries).in_() == [], "announced, never recorded as the agent's"
+    assert status == 200 and body == {} and app.container.get(Entries).scoped() == [], "announced, never recorded as the agent's"
     refused = post_command(app, ["task", "list"], {"X-Journal-Env": "main"})
     assert refused["code"] == 1 and "a subagent runs no journal command" in refused["err"]
     assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"})["code"] == 0, "the announcement is used up by its command"
@@ -164,19 +164,19 @@ def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_
 def test_a_subagents_write_hook_makes_no_entry_and_moves_no_state(app: App):
     from journal.repositories.agents import Agents
     post_hook(app, {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
-    entries, states = len(app.container.get(Entries).in_()), [a.state for a in app.container.get(Agents).in_()]
+    entries, states = len(app.container.get(Entries).scoped()), [a.state for a in app.container.get(Agents).scoped()]
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Write", "tool_input": {"file_path": "a.py"}})
     assert status == 200 and body == {}
-    assert len(app.container.get(Entries).in_()) == entries and [a.state for a in app.container.get(Agents).in_()] == states
+    assert len(app.container.get(Entries).scoped()) == entries and [a.state for a in app.container.get(Agents).scoped()] == states
 
 
 def test_a_hook_that_stamps_its_start_has_its_elapsed_time_on_its_entry(app: App):
     import time
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 120)
-    entry = app.container.get(Entries).in_()[-1]
+    entry = app.container.get(Entries).scoped()[-1]
     assert entry.data["hook_ms"] >= 120, "the server measures from the script's stamp to its answer, so the shell side counts too"
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}})
-    assert "hook_ms" not in app.container.get(Entries).in_()[-1].data, "a hook without the stamp is not measured"
+    assert "hook_ms" not in app.container.get(Entries).scoped()[-1].data, "a hook without the stamp is not measured"
 
 
 def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app: App):

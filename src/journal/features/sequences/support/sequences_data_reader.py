@@ -32,7 +32,7 @@ class SequencesDataReader:
             writes_since_taken_up=self.writes_since(agent, run),
             step_said_after_last_tool=line_time > (uses[0].created_at.timestamp() if uses else 0.0),
             step_unsaid_seconds=datetime.now(timezone.utc).timestamp() - line_time if line_time else DISTANT_SECONDS,
-            can_be_typed=not any(agent.session in (w.session, w.resume) for w in self.workers.across_environments(environment_id=agent.environment_id)),
+            can_be_typed=not any(agent.session in (w.session, w.resume) for w in self.workers.global_matching(environment_id=agent.environment_id)),
             question_open=bool(self.questions.open()),
             debts_owed=not agent.oriented or bool(agent.mark_owed) or bool(agent.skills_owed))
 
@@ -40,6 +40,6 @@ class SequencesDataReader:
         if not run.taken_up_at:
             return 0
         since = datetime.fromisoformat(run.taken_up_at)
-        provider = self.providers.named(agent.provider or "claude")
+        provider = self.providers.lookup(agent.provider or "claude")
         later = [e for e in self.entries.tool_starts(agent.session)[1:] if e.created_at and e.created_at > since and not (e.data.get("agent_id") or e.data.get("subagent_id"))]
         return sum(1 for e in later if e.is_write())

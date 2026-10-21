@@ -33,7 +33,7 @@ class PlansConduct(Conduct):
 
     def on_task_started_plans(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        if not event.plan_id or event.by_agent(event.session):
+        if not event.plan_id or event.is_agents(event.session):
             return self.unchanged()
         started = event.data.of(Plans).started
         return self.unchanged(Plans.NEXT_PLAN_TASK.create(n=event.plan_id, task=event.task_id, title=event.title, briefing=started.started_task_briefing if started else ""))

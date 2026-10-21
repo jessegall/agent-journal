@@ -14,7 +14,7 @@ class Reader:
     pattern: str
 
     @classmethod
-    def from_file(cls, path: Path) -> "Reader":
+    def loaded(cls, path: Path) -> "Reader":
         lines = path.read_text().splitlines()
         if len(lines) < 2:
             raise Rejection(f"reader {path.stem} needs two lines: '# what it picks', then its pattern")

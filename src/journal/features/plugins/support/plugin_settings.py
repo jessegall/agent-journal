@@ -39,7 +39,7 @@ class PluginSettings:
     def configure(self, name: str, key: str, value: str, actor: Actor) -> Plugin:
         if actor.kind != ActorKind.USER:
             raise Rejection("only the user configures a plugin")
-        plugin = self.plugins.named(name)
+        plugin = self.plugins.lookup(name)
         setting = next((s for s in self.schema(plugin) if s.key == key), None)
         if setting is None:
             raise Rejection(f"{name} has no setting {key}: it has {', '.join(s.key for s in self.schema(plugin)) or 'none'}")
@@ -65,7 +65,7 @@ class PluginSettings:
             return [item.strip() for item in value.split(",") if item.strip()]
         return value
 
-    def given(self, plugin: Plugin) -> dict[str, str]:
+    def supplied(self, plugin: Plugin) -> dict[str, str]:
         values = self.values.values()
         given = {}
         for setting in plugin.settings.values():

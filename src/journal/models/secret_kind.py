@@ -10,7 +10,7 @@ class SecretKind(StrEnum):
     CUSTOM = "custom"
 
     @classmethod
-    def named(cls, given: str) -> "SecretKind":
+    def lookup(cls, given: str) -> "SecretKind":
         try:
             return cls(given.strip().lower())
         except ValueError as unknown:

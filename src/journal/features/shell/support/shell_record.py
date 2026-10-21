@@ -36,8 +36,8 @@ class ShellRecord:
         self.entries, self.log, self.outputs = entries, log, outputs
         self.cards, self.events, self.agents, self.settings, self.scope, self.states = cards, events, agents, settings, scope, states
 
-    def began(self, chain: str, command: str, folder: Path, caller: Caller) -> int:
-        return self.log.began(chain, command, folder, caller.session, caller.actor).id
+    def start(self, chain: str, command: str, folder: Path, caller: Caller) -> int:
+        return self.log.start(chain, command, folder, caller.session, caller.actor).id
 
     def started(self, chain: str, part: str, caller: Caller) -> None:
         self.record(caller, PART_START, {"chain": chain, "part": part, "doing": ActivityLabel.of(part)})
@@ -47,7 +47,7 @@ class ShellRecord:
 
     def moved(self, chain: str, part: str, folder: Path, caller: Caller) -> int:
         self.record(caller, MOVED, {"chain": chain, "part": part, "doing": ActivityLabel.of(part), "file": str(folder)})
-        output = self.outputs.save(self.outputs.of_chain(chain).moved_out(), caller.actor)
+        output = self.outputs.save(self.outputs.of_chain(chain).backgrounded(), caller.actor)
         if caller.session:
             self.events.moved(output, caller.session)
         self.cards.show(self.scope.id, caller.session, f"Moved to the background: {ActivityLabel.of(part)}", "terminal", key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
@@ -66,9 +66,9 @@ class ShellRecord:
 
     def wait_covers(self, output: CommandOutput, agent: Agent) -> bool:
         top = self.states.stack_of(agent).top() if agent.session == output.session else None
-        return isinstance(top, Wait) and f"{output.table()}:{output.id}" in top.awaiting()[1].split(",")
+        return isinstance(top, Wait) and f"{output.table()}:{output.id}" in top.wait_description()[1].split(",")
 
-    def is_kept(self, chain: str, line: str, size: int, cut: bool) -> bool:
+    def is_stored(self, chain: str, line: str, size: int, cut: bool) -> bool:
         from journal.features.shell.feature import Shell
         return size >= int(self.settings.option(Shell.SHORT)) or bool(PIPED.search(line)) or cut
 

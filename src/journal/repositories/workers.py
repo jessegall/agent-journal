@@ -30,19 +30,19 @@ class Workers(ScopedRepository[Worker]):
             raise MissingRow("tasks", task)
         self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKER_LINK), actor)
 
-    def holding(self, task_ids: set[int]) -> dict[int, Worker]:
+    def containing(self, task_ids: set[int]) -> dict[int, Worker]:
         held = {}
-        for worker in self.across_environments(state=WorkerState.DISPATCHED):
+        for worker in self.global_matching(state=WorkerState.DISPATCHED):
             for ref in self.links.targets(worker, WORKER_LINK):
                 if ref.id in task_ids:
                     held[ref.id] = worker
         return held
 
     def reports_waiting(self) -> list[Worker]:
-        return [worker for worker in self.in_state_reported() if worker.has_report_waiting()]
+        return [worker for worker in self.reported() if worker.has_report_waiting()]
 
-    def in_state_reported(self) -> list[Worker]:
+    def reported(self) -> list[Worker]:
         return self.matching(state=WorkerState.REPORTED)
 
-    def by_session(self, session: str) -> list[Worker]:
-        return [w for w in self.in_() if session and session in (w.session, w.resume)]
+    def session_worker(self, session: str) -> list[Worker]:
+        return [w for w in self.scoped() if session and session in (w.session, w.resume)]

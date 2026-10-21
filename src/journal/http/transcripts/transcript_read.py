@@ -13,7 +13,7 @@ class TranscriptRead:
     lines: int = 0
     turns: tuple[Turn, ...] = ()
 
-    def further(self, provider: Provider, path: Path) -> "TranscriptRead":
+    def more(self, provider: Provider, path: Path) -> "TranscriptRead":
         with path.open("rb") as file:
             file.seek(self.offset)
             written = file.read()

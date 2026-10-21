@@ -14,10 +14,10 @@ class SearchHit:
 
     @classmethod
     def of(cls, row: Model, terms: list[str]) -> "Found":
-        return cls(f"{row.noun()} {row.id}", cls.around(row.mentioning_text(), terms))
+        return cls(f"{row.noun()} {row.id}", cls.excerpt(row.mentioning_text(), terms))
 
     @staticmethod
-    def around(text: str, terms: list[str]) -> str:
+    def excerpt(text: str, terms: list[str]) -> str:
         flat = " ".join(text.split())
         time = max(0, flat.lower().find(terms[0].lower()) - SNIPPET_RADIUS // 4)
         cut = flat[time:time + SNIPPET_RADIUS]

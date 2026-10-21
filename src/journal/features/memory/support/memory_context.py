@@ -11,7 +11,7 @@ class MemoryContext:
         self.facts, self.rules, self.reminders = facts, rules, reminders
 
     def admit_all(self, actor: Actor) -> None:
-        for repository, rows in ((self.facts, self.facts.in_()), (self.rules, self.rules.all()), (self.reminders, self.reminders.in_())):
+        for repository, rows in ((self.facts, self.facts.scoped()), (self.rules, self.rules.all()), (self.reminders, self.reminders.scoped())):
             for row in rows:
                 if not row.presence:
                     repository.save(row.with_(presence=True), actor)

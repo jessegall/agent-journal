@@ -36,7 +36,7 @@ class PackageCommandments(Suggester):
             f"and it is upgraded with the journal. After installing the plugin, update the package (composer update {PACKAGE}) so its own hooks step aside, or remove it."
         )
 
-    def goes_to(self) -> str:
+    def target(self) -> str:
         return f"plugins?install={quote(SOURCE, safe='')}"
 
     def version(self) -> str | None:

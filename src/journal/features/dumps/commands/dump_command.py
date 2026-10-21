@@ -58,7 +58,7 @@ class DumpCommand(Command):
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for dump in self.dumps.in_():
+        for dump in self.dumps.scoped():
             print(f"{dump.id:>4}  {dump.title}  {dump.outcome or 'open'}")
         return 0
 

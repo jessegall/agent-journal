@@ -16,9 +16,9 @@ class PluginRowRelay(Listener[ModelEvent]):
         self.relay, self.deferred, self.connection, self.scope = relay, deferred, connection, scope
 
     def handle(self, event: ModelEvent) -> None:
-        environment_id = self.scope.id_or(0)
+        environment_id = self.scope.id_default(0)
         told = FileEdited.recorded(event.model, environment_id) if isinstance(event, Created) and isinstance(event.model, Edit) else event
-        for plugin in self.relay.heard_by(told, environment_id):
+        for plugin in self.relay.listeners(told, environment_id):
             if plugin.manifest.has_window(told.key):
                 continue
-            self.connection.after_commit(lambda plugin=plugin: self.deferred.add_unless_behind(lambda: self.relay.later(plugin, told, environment_id), f"{plugin.name} relay {told.key}"))
+            self.connection.commit_callback(lambda plugin=plugin: self.deferred.add_bounded(lambda: self.relay.postponed(plugin, told, environment_id), f"{plugin.name} relay {told.key}"))

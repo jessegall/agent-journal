@@ -46,7 +46,7 @@ class BrowserLogins:
         saved.chmod(0o600)
         return saved
 
-    def forget(self, title: str) -> None:
+    def drop(self, title: str) -> None:
         self.saved_for(title).unlink(missing_ok=True)
 
     def merge(self) -> Path | None:

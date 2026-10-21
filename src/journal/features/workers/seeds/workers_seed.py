@@ -15,7 +15,7 @@ class WorkersSeed(Seed):
         self.workers, self.runner, self.scope = workers, runner, scope
 
     def run(self) -> None:
-        for worker in self.workers.across_environments(state=WorkerState.DISPATCHED):
+        for worker in self.workers.global_matching(state=WorkerState.DISPATCHED):
             threading.Thread(target=self.watched, args=(worker,), name=f"worker-{worker.id}", daemon=True).start()
 
     def watched(self, worker) -> None:

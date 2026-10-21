@@ -11,14 +11,14 @@ from journal.events.agent.tool_starting import ToolStarting
 class Wait(BaseState):
     """The parent of every state that waits on something and is popped when it comes: a word from the user pops it, the agent's own tool use pops it, a journal command being none, and awaiting says what it waits for."""
 
-    def awaiting(self) -> tuple[str, str]:
+    def wait_description(self) -> tuple[str, str]:
         return "", ""
 
     def is_waiting(self) -> bool:
         return True
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
-        return self.pop() if event.by_user else self.unchanged()
+        return self.pop() if event.is_users else self.unchanged()
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return self.unchanged() if event.subagent or event.call.is_journal else self.pop()

@@ -33,4 +33,4 @@ class SettingController:
                 self.settings.set(f"{top}.{name}", value, actor)
 
     def tree(self) -> dict:
-        return {**self.settings.tree(), FEATURES: {f.name: self.registry.is_on(f) for f in self.registry.features}}
+        return {**self.settings.tree(), FEATURES: {f.name: self.registry.is_enabled(f) for f in self.registry.features}}

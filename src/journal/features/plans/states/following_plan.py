@@ -28,11 +28,11 @@ class FollowingPlan(Working):
     at_checkpoint: bool = False
     phase: int = 0
 
-    def follows_a_plan(self) -> bool:
+    def is_plan_work(self) -> bool:
         return True
 
-    def named(self) -> str:
-        return super().named() if self.task_id else f"plan {self.plan_id}, with no task in hand"
+    def label(self) -> str:
+        return super().label() if self.task_id else f"plan {self.plan_id}, with no task in hand"
 
     def on_push(self, settings: Settings) -> tuple[Nudge, ...] | Block:
         from journal.features.plans.feature import Plans

@@ -37,7 +37,7 @@ class McpInstalling:
     def remove(self, server: McpServer, actor: Actor) -> None:
         self.servers.delete(server, actor)
         if server.key_var:
-            self.keys.forget(server.key_var)
+            self.keys.drop(server.key_var)
         self.applied()
         self.health.recheck()
 
@@ -51,7 +51,7 @@ class McpInstalling:
         return "needs_key" if server.needs_key and not self.keys.has(server.key_var) else "installed"
 
     def checked(self, actor: Actor) -> list[McpServer]:
-        report = self.health.fresh()
+        report = self.health.is_recent()
         return [self.servers.save(self.checked_one(server, report), actor) for server in self.servers.all()]
 
     def checked_one(self, server: McpServer, report: HealthReport) -> McpServer:
@@ -72,13 +72,13 @@ class McpInstalling:
         return False
 
     def running(self) -> list[Agent]:
-        newest = {agent.environment_id: agent for agent in sorted(self.agents.everywhere(), key=lambda a: a.updated_at) if agent.state != "ended"}
+        newest = {agent.environment_id: agent for agent in sorted(self.agents.all_agents(), key=lambda a: a.updated_at) if agent.state != "ended"}
         return [agent for environment_id, agent in newest.items() if self.supervisor.runs(environment_id)]
 
     def applied(self) -> None:
         self.config_files.write()
         for agent in self.running():
-            resume = self.providers.named(agent.provider or "claude").resume(agent.session)
+            resume = self.providers.lookup(agent.provider or "claude").resume(agent.session)
             if self.turn.over(agent):
                 self.supervisor.restart_agent(agent.environment_id, resume)
             else:

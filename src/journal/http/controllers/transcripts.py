@@ -25,19 +25,19 @@ class TranscriptController:
 
     def of_agent(self, request: Request) -> Response:
         agent = self.agents.find(request.number("id"))
-        provider = self.providers.named(agent.provider or "claude")
+        provider = self.providers.lookup(agent.provider or "claude")
         return self.answer(request, provider, provider.transcript(self.config.root, agent.session))
 
     def of_subagent(self, request: Request) -> Response:
         agent, id = self.agents.find(request.number("id")), request.params["session"]
         if not any(row.session == id for row in self.subagents.rows(agent.session)):
             raise MissingRow("subagent sessions", id)
-        provider = self.providers.named(agent.provider or "claude")
+        provider = self.providers.lookup(agent.provider or "claude")
         return self.answer(request, provider, provider.subagent_transcript(self.config.root, agent.session, id))
 
     def of_worker(self, request: Request) -> Response:
         worker = self.workers.find(request.number("id"))
-        provider = self.providers.named(worker.provider)
+        provider = self.providers.lookup(worker.provider)
         place = self.runner.place(worker)
         session = worker.resume or worker.found_session or self.found_session(worker, provider, place)
         return self.answer(request, provider, provider.transcript(place, session) if session else None)

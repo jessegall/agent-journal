@@ -48,12 +48,12 @@ class Secret(Model):
         asked = self.proposed if proposed is None else proposed
         return self.with_(programs=allowed, proposed=tuple(p for p in asked if p not in allowed))
 
-    def login_ran_out_unasked(self, time: datetime) -> bool:
+    def is_login_expired(self, time: datetime) -> bool:
         if self.session_expires is None or self.session_expires >= time:
             return False
         return self.asked_at is None or self.asked_at < self.session_expires
 
-    def filled_in(self, name: str) -> "Secret":
+    def is_filled(self, name: str) -> "Secret":
         return self.with_(filled=tuple(dict.fromkeys((*self.filled, self.field(name).name))), asked_at=None)
 
     def deleted(self, time: datetime) -> "Secret":

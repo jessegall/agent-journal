@@ -52,10 +52,10 @@ class CommitDetection(AgentListener[ToolFinished]):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject}, actor, CardKind.COMMITS)
-        closed = self.close_named(event, head.sha, head.body) if folder == self.config.root and self.is_own(event, head) else []
+        closed = self.close_mentioned(event, head.sha, head.body) if folder == self.config.root and self.is_agents(event, head) else []
         return self.commit(event, head.sha, closed)
 
-    def is_own(self, event: ToolFinished, head: HeadCommit) -> bool:
+    def is_agents(self, event: ToolFinished, head: HeadCommit) -> bool:
         if timing.time() - head.committed <= COMMIT_WINDOW_SECONDS:
             return True
         starts = self.entries.tool_starts(event.session, last=LAST_STARTS)
@@ -79,7 +79,7 @@ class CommitDetection(AgentListener[ToolFinished]):
         return git / "logs" / "HEAD"
 
     def commit(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
-        next_open = self.next_task.after(self.tasks.find(closed[-1])) if closed else None
+        next_open = self.next_task.following(self.tasks.find(closed[-1])) if closed else None
         commit = CommitDetected(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.time)
         return next((answer for answer in self.bus.dispatch(commit) if isinstance(answer, Decision)), None)
 
@@ -91,10 +91,10 @@ class CommitDetection(AgentListener[ToolFinished]):
         landed = subprocess.run(["git", "log", "--format=%H%x00%B%x01", "ORIG_HEAD..HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=5)
         if landed.returncode != 0:
             return None
-        decisions = [self.commit(event, sha, closed) for sha, _, body in (entry.strip().partition("\0") for entry in landed.stdout.split("\x01") if entry.strip()) if (closed := self.close_named(event, sha, body))]
+        decisions = [self.commit(event, sha, closed) for sha, _, body in (entry.strip().partition("\0") for entry in landed.stdout.split("\x01") if entry.strip()) if (closed := self.close_mentioned(event, sha, body))]
         return next((decision for decision in decisions if decision), None)
 
-    def close_named(self, event: ToolFinished, sha: str, body: str) -> list[int]:
+    def close_mentioned(self, event: ToolFinished, sha: str, body: str) -> list[int]:
         numbers = [int(n) for rows in TRAILER.finditer(body) for n in re.findall(r"\d+", rows.group(1))]
         numbers = [n for n in numbers if self.tasks.matching(id=n, state=TaskState.OPEN) or self.tasks.matching(id=n, state=TaskState.STARTED)]
         caller = Caller(self.environments.find(event.environment_id).name, event.session)

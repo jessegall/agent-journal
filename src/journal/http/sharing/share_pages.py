@@ -44,14 +44,14 @@ class SharePages:
         shut = self.shut(parts, authorization, place)
         if shut:
             return shut
-        share, rest = self.shares.by_token(parts[1]), parts[2:]
+        share, rest = self.shares.token_match(parts[1]), parts[2:]
         if not rest:
             return self.page(share, address)
         if rest == ["data.json"]:
             return ShareAnswer(200, json.dumps(self.data.of(share), cls=JsonOut).encode(), "application/json", APP_HEADERS)
         if rest[0] == "assets" and len(rest) == 2:
             return self.asset(rest[1])
-        return self.gone(404)
+        return self.missing(404)
 
     def post(self, path: str, comment: VisitorComment, authorization: str | None, place: str) -> ShareAnswer:
         parts = self.parts(path)
@@ -59,9 +59,9 @@ class SharePages:
         if shut:
             return shut
         if parts[2:] != ["comment"]:
-            return self.gone(404)
+            return self.missing(404)
         try:
-            comment = self.comments.leave(self.shares.by_token(parts[1]), comment.on, comment.name, comment.text)
+            comment = self.comments.leave(self.shares.token_match(parts[1]), comment.on, comment.name, comment.text)
         except Rejection as refused:
             return ShareAnswer(409, json.dumps({"error": str(refused)}).encode(), "application/json")
         return ShareAnswer(201, json.dumps(comment, cls=JsonOut).encode(), "application/json")
@@ -72,23 +72,23 @@ class SharePages:
 
     def shut(self, parts: list[str], authorization: str | None, place: str) -> ShareAnswer | None:
         if len(parts) < 2 or parts[0] != "s":
-            return self.gone(404)
-        share = self.shares.by_token(parts[1])
+            return self.missing(404)
+        share = self.shares.token_match(parts[1])
         if share is None or not share.approved or not self.sharing_on(share):
-            return self.gone(404)
-        if not share.is_live(datetime.now(timezone.utc)):
-            return self.gone(410)
+            return self.missing(404)
+        if not share.is_active(datetime.now(timezone.utc)):
+            return self.missing(410)
         return self.locked(share, self.password(authorization), place)
 
     def sharing_on(self, share: Share) -> bool:
         with self.scope.of(share.environment_id):
-            return self.registry.is_on(Sharing)
+            return self.registry.is_enabled(Sharing)
 
     def locked(self, share: Share, given: str | None, place: str) -> ShareAnswer | None:
         if not share.password:
             return None
         if self.wrong.locked(place):
-            return self.gone(429)
+            return self.missing(429)
         if given is not None and self.unlocks(share, given):
             return None
         if given is not None:
@@ -117,7 +117,7 @@ class SharePages:
             return ShareAnswer(301, headers={"Location": f"/s/{share.token}/"})
         app = APP / APP_PAGE
         if not app.is_file():
-            return self.gone(404)
+            return self.missing(404)
         self.shares.save(share.viewed(), Actor.system())
         return ShareAnswer(200, app.read_bytes(), headers=APP_HEADERS)
 
@@ -125,10 +125,10 @@ class SharePages:
     def asset(name: str) -> ShareAnswer:
         rows = (APP / "assets" / name).resolve()
         if rows.parent != (APP / "assets").resolve() or not rows.is_file():
-            return SharePages.gone(404)
+            return SharePages.missing(404)
         kind = mimetypes.guess_type(rows.name)[0] or "application/octet-stream"
         return ShareAnswer(200, rows.read_bytes(), kind, {"Cache-Control": "public, max-age=31536000, immutable", **APP_HEADERS})
 
     @staticmethod
-    def gone(status: int) -> ShareAnswer:
+    def missing(status: int) -> ShareAnswer:
         return ShareAnswer(status, MISSING_PAGE.encode())

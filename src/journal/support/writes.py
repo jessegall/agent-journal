@@ -31,7 +31,7 @@ class Writes:
             return True
         name = tokens[0].rsplit("/", 1)[-1]
         if name in INPLACE_EDITORS:
-            return part.edits_in_place() or bool(MARKERS.search(text))
+            return part.edits_files() or bool(MARKERS.search(text))
         if name in COMMANDS:
             return True
         if name == "git":
@@ -52,7 +52,7 @@ class Writes:
     def is_code_write_line(cls, line: str) -> bool:
         own = [p for p in Chain.parts(line) if p.recorded]
         writing = [p for p in own if cls.part(p.text)]
-        return bool(writing) and all(cls.writes_code_inside(p.text) if cls.part(p.text) else p.is_read() or p.is_harmless() or p.is_cd_into_project() for p in own)
+        return bool(writing) and all(cls.writes_code_inside(p.text) if cls.part(p.text) else p.is_read() or p.is_harmless() or p.is_project_cd() for p in own)
 
     @classmethod
     def writes_code_inside(cls, text: str) -> bool:
@@ -62,7 +62,7 @@ class Writes:
     @staticmethod
     def is_code_target(target: str) -> bool:
         name = os.path.basename(target.rstrip("/"))
-        return Part.is_under_project(target) and (bool(CODE.search(target)) or "." not in name.lstrip("."))
+        return Part.is_project_file(target) and (bool(CODE.search(target)) or "." not in name.lstrip("."))
 
     @classmethod
     def targets(cls, line: str) -> list[str]:
@@ -76,7 +76,7 @@ class Writes:
         if not tokens or tokens[0].endswith("journal"):
             return []
         name = tokens[0].rsplit("/", 1)[-1]
-        named = cls.named_targets(name, tokens, text)
+        named = cls.target_names(name, tokens, text)
         script = cls.script_of(text)
         if name in INTERPRETERS and MARKERS.search(script):
             named += QUOTED_PATH.findall(script) + [w for w in script.split() if "/" in w] + [w for w in Part(plain.split("\n")[0]).tokens()[1:] if "/" in w or CODE.search(w)]
@@ -86,7 +86,7 @@ class Writes:
         return REDIRECTED.findall(plain) + named + piped
 
     @classmethod
-    def named_targets(cls, name: str, tokens: list[str], text: str) -> list[str]:
+    def target_names(cls, name: str, tokens: list[str], text: str) -> list[str]:
         if (name in COMMANDS or name in INPLACE_EDITORS) and cls.part(text):
             return [w for w in tokens[1:] if not w.startswith("-")]
         if name == "git" and len(tokens) > 1 and tokens[1] in GIT:

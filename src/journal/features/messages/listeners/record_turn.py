@@ -48,18 +48,18 @@ class RecordTurn(AgentListener[TurnDisplayed]):
     def _record(self, event: TurnDisplayed) -> None:
         actor, whole = Actor.agent(event.session), event.text
         for tagged, part in self.sections(whole):
-            if self.already_recorded(part):
+            if self.is_recorded(part):
                 continue
             text = Tags.visible(part)
             answered = self.unanswered_of(tagged, event)
-            quiet = (Tags.kept_out(part) and not answered) or self.repeats_a_reply(text, tagged, event)
-            acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._answers_a_journal_line(event)
+            quiet = (Tags.hidden(part) and not answered) or self.repeats_a_reply(text, tagged, event)
+            acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._journal_answer(event)
             if text and not quiet:
                 reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), actor)
                 for n in answered[1:]:
-                    self._also_answers(reply, n, actor)
+                    self._other_answers(reply, n, actor)
             for n in answered:
-                self._mark_read(n, actor)
+                self._read_receipt(n, actor)
         for n in self.stray_owed(whole)[:1]:
             self.supervisor.type(event.environment_id, f"the [!reply:{n}] tag must open a line of your turn; message {n} is still unanswered")
 
@@ -98,7 +98,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
         owed = {m.id for m in self.messages.unread() + self.messages.unanswered()}
         return [n for n in strays if n in owed]
 
-    def already_recorded(self, part: str) -> bool:
+    def is_recorded(self, part: str) -> bool:
         text = Tags.visible(part)
         return any(m.author == Author.AGENT and m.text == text for m in self.messages.recent(30))
 
@@ -116,28 +116,28 @@ class RecordTurn(AgentListener[TurnDisplayed]):
             parts.append((numbers(tag), f"{lead}\n\n{rest}" if lead else rest))
         return parts
 
-    def _answers_a_journal_line(self, event: TurnDisplayed) -> bool:
+    def _journal_answer(self, event: TurnDisplayed) -> bool:
         entry = self.turn_prompt(event)
         prompt = entry.data.get("prompt", "") if entry else ""
-        if not prompt.startswith(JOURNAL_LINE) or self._answered_in_chat(event, prompt[len(JOURNAL_LINE):]):
+        if not prompt.startswith(JOURNAL_LINE) or self._chat_answer(event, prompt[len(JOURNAL_LINE):]):
             return False
-        provider = self.providers.named(event.provider)
+        provider = self.providers.lookup(event.provider)
         since = self.entries.since(entry.id)
         return not any(e.kind == "ToolStarting" and e.is_write() for e in since)
 
-    def _answered_in_chat(self, event: TurnDisplayed, line: str) -> bool:
+    def _chat_answer(self, event: TurnDisplayed, line: str) -> bool:
         said = [e for e in self.entries.of_kind("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
         nudge = self.registry.nudge_keyed(said[-1].data["key"]) if said else None
         return bool(nudge and nudge.answered_in_chat)
 
-    def _also_answers(self, reply: Message, n: int, actor: Actor) -> None:
+    def _other_answers(self, reply: Message, n: int, actor: Actor) -> None:
         try:
             self.links.save(Link(source=Ref.to(reply), target=Ref.to(self.messages.find(n)), kind=Messages.ANSWERS), actor)
         except MissingRow:
             return
 
-    def _mark_read(self, n: int, actor: Actor) -> None:
+    def _read_receipt(self, n: int, actor: Actor) -> None:
         try:
-            self.messages.mark_read(self.messages.find(n), actor, self.agents.for_session(actor.id).tool_uses)
+            self.messages.read(self.messages.find(n), actor, self.agents.session_agent(actor.id).tool_uses)
         except MissingRow:
             return

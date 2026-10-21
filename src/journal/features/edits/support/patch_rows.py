@@ -19,7 +19,7 @@ class PatchRows:
         return cls(tuple(row for section in response.get("structuredPatch", []) for row in cls.section(section.get("oldStart", 1), section.get("newStart", 1), section.get("lines", []))))
 
     @classmethod
-    def from_versions(cls, old_text: str, new_text: str) -> "PatchRows":
+    def version_rows(cls, old_text: str, new_text: str) -> "PatchRows":
         rows, section, old, new = [], [], 1, 1
         for line in list(difflib.unified_diff(old_text.splitlines(), new_text.splitlines(), lineterm="", n=CONTEXT_LINES))[2:]:
             head = DIFF_HEAD.match(line)

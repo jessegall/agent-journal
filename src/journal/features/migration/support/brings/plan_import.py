@@ -29,10 +29,10 @@ class PlanImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.plans, self.phases, self.links = plans, phases, links
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Plan:
-        plan = self.plans.imported(Plan(environment_id=into.id, title=row.title, brief=row.brief, state=STATES.get(row.data.get("status", ""), PlanState.DRAFT)), row.made_at(), actor)
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Plan:
+        plan = self.plans.imported(Plan(environment_id=into.id, title=row.title, brief=row.brief, state=STATES.get(row.data.get("status", ""), PlanState.DRAFT)), row.creation_time(), actor)
         for given in row.listed("phases"):
-            phase = self.phases.imported(Phase(environment_id=into.id, title=given.get("title", ""), complete_when=given.get("when", ""), checkpoint=bool(given.get("checkpoint"))), row.made_at(), actor)
+            phase = self.phases.imported(Phase(environment_id=into.id, title=given.get("title", ""), complete_when=given.get("when", ""), checkpoint=bool(given.get("checkpoint"))), row.creation_time(), actor)
             self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_TASK_LINK), actor)
             for task in [rows for n in given.get("todos", []) if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
                 self.links.save(Link(source=task, target=Ref.to(plan), kind=PLAN_LINK), actor)

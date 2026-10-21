@@ -11,6 +11,6 @@ class RunTermination(Listener[Deleted]):
         self.running, self.supervisor = running, supervisor
 
     def told(self, environment_id: int, gone, why: str) -> None:
-        for agent, line in self.running.end_where(environment_id, gone, why):
+        for agent, line in self.running.finish_matching(environment_id, gone, why):
             if self.running.typed_to(agent.session, environment_id):
                 self.supervisor.type(environment_id, line)

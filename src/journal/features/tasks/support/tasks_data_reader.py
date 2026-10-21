@@ -20,19 +20,19 @@ class TasksDataReader:
         self.tasks, self.plans, self.entries, self.logs = tasks, plans, entries, logs
 
     def read(self, agent: Agent) -> TasksData:
-        in_hand = self.tasks.in_hand()
-        parked = [task for task in self.tasks.in_state(TaskState.SUSPENDED) if PlanState.SUSPENDED not in self.plans.plan_states(task)]
+        in_hand = self.tasks.current()
+        parked = [task for task in self.tasks.with_state(TaskState.SUSPENDED) if PlanState.SUSPENDED not in self.plans.plan_states(task)]
         blocked_without_wait = self.tasks.blocked_without_wait()
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
         commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session, COMMAND_HISTORY_LENGTH) if e.data.get("tool_name") == "Bash"]
         free = self.plans.free()
-        open_tasks = self.tasks.in_state(TaskState.OPEN)
+        open_tasks = self.tasks.with_state(TaskState.OPEN)
         return TasksData(
             in_hand=in_hand.id if in_hand else 0,
             last_log_line=self.last_log(in_hand) if in_hand else "",
             parked=tuple(t.id for t in parked),
             parked_summary=", ".join(f"task {task.id} ({task.title}), parked because: {task.parked_why}" for task in parked),
-            blocked=tuple(t.id for t in self.tasks.in_state(TaskState.BLOCKED)),
+            blocked=tuple(t.id for t in self.tasks.with_state(TaskState.BLOCKED)),
             blocked_without_wait=tuple(t.id for t in blocked_without_wait),
             blocked_without_wait_summary=self.summary(blocked_without_wait),
             broken_waits=tuple(t.id for t, check in broken),

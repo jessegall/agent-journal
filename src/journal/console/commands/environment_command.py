@@ -52,39 +52,39 @@ class EnvironmentCommand(Command):
 
     def rows(self) -> list[EnvironmentRow]:
         rows = []
-        for environment in self.environments.all() or [self.environments.named("main")]:
+        for environment in self.environments.all() or [self.environments.lookup("main")]:
             with self.scope.of(environment.id):
-                agents = self.agents.in_()
+                agents = self.agents.scoped()
             last = max(agents, key=lambda a: a.updated_at) if agents else None
-            resumable = [a for a in agents if a.session and self.providers.named(a.provider or "claude").transcript(self.config.root, a.session)]
+            resumable = [a for a in agents if a.session and self.providers.lookup(a.provider or "claude").transcript(self.config.root, a.session)]
             rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.ago(last.updated_at) if last else "", {a.provider or "claude": a.session for a in resumable}))
         return rows
 
     def here(self, args: Namespace, caller: Caller) -> int:
-        for line in self.in_flight(caller.session):
+        for line in self.current_work(caller.session):
             print(line)
         self.oriented(caller)
         self.memory.admit_all(caller.actor)
         return 0
 
-    def in_flight(self, session: str) -> list[str]:
+    def current_work(self, session: str) -> list[str]:
         since = datetime.now(timezone.utc) - TAKEOVER_WINDOW
         others = self.agents.others_lately(session, since)
-        held = self.tasks.in_state(TaskState.STARTED)
+        held = self.tasks.with_state(TaskState.STARTED)
         lines = [
             f"taken over from another agent, last seen {others[-1].updated_at.astimezone().strftime('%H:%M')}" if others else "",
             self.named("task in hand", [f"{t.id} {t.title}" for t in held]) or "no task in hand",
-            self.named("open tasks", [f"{t.id} {t.title}" for t in self.tasks.in_state(TaskState.OPEN)]),
-            self.named("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.in_state(TaskState.SUSPENDED)]),
-            self.named("blocked tasks", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.in_state(TaskState.BLOCKED)]),
+            self.named("open tasks", [f"{t.id} {t.title}" for t in self.tasks.with_state(TaskState.OPEN)]),
+            self.named("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.with_state(TaskState.SUSPENDED)]),
+            self.named("blocked tasks", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.with_state(TaskState.BLOCKED)]),
             self.named("unread messages", [str(m.id) for m in self.messages.unread()]),
             self.named("messages read and unanswered", [str(m.id) for m in self.messages.unanswered()]),
             self.named("questions waiting for the user", [f"{q.id} {q.text}" for q in self.questions.open()]),
             self.named("workers out", [f"{w.id} {w.name}" for w in self.workers.out()]),
             self.named("running in the background", self.background()),
             self.named("rules in force", [f"{r.id} {r.text}" for r in self.rules.all()]),
-            self.named("facts about this environment", [f"{f.id} {f.text}" for f in self.facts.in_()]),
-            self.named("reminders here", [f"{r.id} {r.text}" for r in self.reminders.in_()]),
+            self.named("facts about this environment", [f"{f.id} {f.text}" for f in self.facts.scoped()]),
+            self.named("reminders here", [f"{r.id} {r.text}" for r in self.reminders.scoped()]),
         ]
         return [line for line in lines if line]
 
@@ -101,7 +101,7 @@ class EnvironmentCommand(Command):
         if not caller.session:
             return
         try:
-            self.agents.save(self.agents.for_session(caller.session).look_taken(datetime.now(timezone.utc).timestamp()), caller.actor)
+            self.agents.save(self.agents.session_agent(caller.session).overview_read(datetime.now(timezone.utc).timestamp()), caller.actor)
         except MissingRow:
             return
 
@@ -115,7 +115,7 @@ class EnvironmentCommand(Command):
         return 0
 
     def create(self, args: Namespace, caller: Caller) -> int:
-        environment = self.environments.named(args.name)
+        environment = self.environments.lookup(args.name)
         print(f"environment {environment.id}: {environment.name}")
         return 0
 

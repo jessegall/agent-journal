@@ -75,7 +75,7 @@ def tick_after(app, quiet: float) -> list:
     from journal.events.bus import Bus
     app.runtime().deferred.drain()
     clock = app.container.get(Clock)
-    env = app.container.get(Environments).named("main").id
+    env = app.container.get(Environments).lookup("main").id
     clock.driven_at = clock.held_at + quiet
     try:
         return app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, time=clock.driven_at, quiet_for=quiet))
@@ -95,7 +95,7 @@ class Replay:
     def step(self, name: str, answer=None) -> None:
         """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the environment's counts as they stand once the worker has settled, so a count raised after the reply is in, and what the count checks of the walks since read."""
         typed = list(self.typed)
-        with self.app.container.get(Scope).of(self.app.container.get(Environments).named("main").id):
+        with self.app.container.get(Scope).of(self.app.container.get(Environments).lookup("main").id):
             entries = list(reversed(self.app.container.get(Entries).of_kind_in(1000)))
             nudges = [e.data["key"] for e in entries if e.kind == "nudge"]
             self.app.runtime().deferred.drain()

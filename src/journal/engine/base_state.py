@@ -29,7 +29,7 @@ class BaseState(Conduct):
     def on(self, event: Event, settings: Settings) -> Transition:
         answers: list[Transition] = []
         event.propagation.reset()
-        for listener in self.listeners_for(type(event)):
+        for listener in self.event_listeners(type(event)):
             answers.append(listener(self, event, settings))
             if not event.propagation.ongoing:
                 break
@@ -39,7 +39,7 @@ class BaseState(Conduct):
     def fold(cls, conducts: tuple[type[Conduct], ...]) -> None:
         BaseState.conducts = conducts
         BaseState.listeners.__func__.cache_clear()
-        BaseState.listeners_for.__func__.cache_clear()
+        BaseState.event_listeners.__func__.cache_clear()
 
     @classmethod
     @cache
@@ -55,7 +55,7 @@ class BaseState(Conduct):
 
     @classmethod
     @cache
-    def listeners_for(cls, event: type) -> tuple[Callable, ...]:
+    def event_listeners(cls, event: type) -> tuple[Callable, ...]:
         return tuple(method for event_kind, method in cls.listeners() if issubclass(event, event_kind))
 
     def on_compaction(self, event: Compacting, settings: Settings) -> Transition:
@@ -98,6 +98,6 @@ class BaseState(Conduct):
         return f"{self.name}({', '.join(set_fields)})" if set_fields else self.name
 
     @classmethod
-    def from_data(cls, data: dict) -> "BaseState":
+    def restored(cls, data: dict) -> "BaseState":
         known = {field.name for field in fields(cls)}
         return cls(**{name: value for name, value in data.items() if name in known})

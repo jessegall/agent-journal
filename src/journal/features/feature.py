@@ -32,5 +32,5 @@ class Feature[D]:
     default: ClassVar[bool] = True
 
     @classmethod
-    def applies_in(cls, root: Path) -> bool:
+    def applies(cls, root: Path) -> bool:
         return True

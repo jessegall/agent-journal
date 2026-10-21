@@ -20,7 +20,7 @@ class WebPush:
         self.config, self.tunnel = config, tunnel
 
     def keys(self) -> PushKeys:
-        return PushKeys.kept(PrivateFolder(self.config.root).phone_push_file())
+        return PushKeys.stored(PrivateFolder(self.config.root).phone_push_file())
 
     @staticmethod
     def is_allowed(endpoint: str) -> bool:

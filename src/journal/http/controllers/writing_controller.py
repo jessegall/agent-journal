@@ -21,11 +21,11 @@ class WritingController(Controller[W]):
             return super().listed(listing)
         rows = self.rows()
         page = listing.listed(rows, self.is_open)
-        linked = self.repository.every_linked()
+        linked = self.repository.linked_rows()
         return RowList(rows=[self.summarised(row, linked) for row in page["rows"]], more=page["more"], counts=self.counts(rows))
 
     def shown_page(self, rows: list[W]) -> list[dict]:
-        linked = self.repository.every_linked()
+        linked = self.repository.linked_rows()
         return [{**ModelFields.of(row), "links": self.links(row, linked)} for row in rows]
 
     def summarised(self, row: W, linked: dict) -> dict:

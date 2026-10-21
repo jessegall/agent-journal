@@ -33,17 +33,17 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
 
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
-        hearers = self.relay.heard_by(event, event.environment_id)
+        hearers = self.relay.listeners(event, event.environment_id)
         ceiling_ms = int(self.settings.option(PluginsFeature.PLUGIN_ANSWER_WINDOW))
         waiting = self.relay.waiting_for(event.session) if Protocol.published_name(event) in LINE_EVENT_KEYS else []
         if Protocol.published_name(event) in LINE_EVENT_KEYS:
             waiting += [line for plugin in self.relay.plugins.enabled() for line in self.queue.lines(plugin, event)]
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
-        decision = self.asked(hearers, event, ceiling_ms, decision)
+        decision = self.request(hearers, event, ceiling_ms, decision)
         for command in self.commands(event):
-            decision = self.asked(self.relay.heard_by(command, event.environment_id), command, ceiling_ms, decision)
+            decision = self.request(self.relay.listeners(command, event.environment_id), command, ceiling_ms, decision)
         for edited in self.edited(event):
-            decision = self.asked([p for p in self.relay.heard_by(edited, event.environment_id) if p.manifest.has_window(edited.key)], edited, ceiling_ms, decision)
+            decision = self.request([p for p in self.relay.listeners(edited, event.environment_id) if p.manifest.has_window(edited.key)], edited, ceiling_ms, decision)
         return self.exemption.applied(event, decision)
 
     def edited(self, event: AgentEvent) -> list[FileEdited]:
@@ -51,13 +51,13 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
             return []
         return [FileEdited.recorded(edit, event.environment_id) for edit in self.edits.of_tool_use(event.session, event.tool_use)]
 
-    def asked(self, hearers: list[Plugin], event: AgentEvent, ceiling_ms: int, decision: Decision) -> Decision:
+    def request(self, hearers: list[Plugin], event: AgentEvent, ceiling_ms: int, decision: Decision) -> Decision:
         for plugin in hearers:
-            if decision.allowed and self.holds(plugin, event):
+            if decision.allowed and self.blocks(plugin, event):
                 window = plugin.manifest.window_ms(Protocol.published_name(event), ceiling_ms) / 1000
                 decision = decision.merged(self.decided(plugin, event, self.relay.ask(plugin, event, event.environment_id, window)))
             else:
-                self.deferred.add_unless_behind(lambda plugin=plugin: self.relay.later(plugin, event, event.environment_id), f"{plugin.name} relay {Protocol.published_name(event)}")
+                self.deferred.add_bounded(lambda plugin=plugin: self.relay.postponed(plugin, event, event.environment_id), f"{plugin.name} relay {Protocol.published_name(event)}")
         return decision
 
     @staticmethod
@@ -68,7 +68,7 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
         return [CommandStarting(text=part.text, writes=part.writes, files=part.files, position=position, parts=len(parts), tool_use=event.tool_use).placed(event.session, event.environment_id, event.provider, event.context, event.time, event.subagent) for position, part in enumerate(parts, 1)]
 
     @staticmethod
-    def holds(plugin: Plugin, event: AgentEvent) -> bool:
+    def blocks(plugin: Plugin, event: AgentEvent) -> bool:
         return plugin.manifest.has_window(Protocol.published_name(event)) and (not event.subagent or Protocol.published_name(event) in ("tool_starting", "command_starting", "file_edited"))
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:

@@ -35,20 +35,20 @@ class StatesCatalogue:
         names = ["idle"] + [name for name in self._states if name != "idle"]
         return [{"key": name, "title": self.title_of(name), "parent": self.parent_of(name)} for name in names]
 
-    def named(self, name: str, data: dict) -> BaseState:
+    def restored(self, name: str, data: dict) -> BaseState:
         state = self._states.get(name) or self._states["idle"]
-        return state.from_data(data or {})
+        return state.restored(data or {})
 
     def first(self) -> BaseState:
-        return self.named("idle", {})
+        return self.restored("idle", {})
 
     def is_bottom(self, state: BaseState) -> bool:
         return isinstance(state, type(self.first()))
 
     def stack_of(self, agent: Agent) -> Stack:
         if not agent.stack:
-            return self.stack_under(self.named(agent.state, agent.data))
-        return Stack(tuple(self.named(row["state"], row["data"]) for row in agent.stack))
+            return self.stack_under(self.restored(agent.state, agent.data))
+        return Stack(tuple(self.restored(row["state"], row["data"]) for row in agent.stack))
 
     def stack_under(self, state: BaseState) -> Stack:
         layers = [state]

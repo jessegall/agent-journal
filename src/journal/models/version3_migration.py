@@ -13,8 +13,8 @@ class Version3Migration(Model):
     def put_off(self) -> "Version3Migration":
         return self.with_(state=MigrationState.LATER)
 
-    def begun(self) -> "Version3Migration":
+    def is_started(self) -> "Version3Migration":
         return self.with_(state=MigrationState.BUSY)
 
-    def done(self) -> "Version3Migration":
+    def is_finished(self) -> "Version3Migration":
         return self.with_(state=MigrationState.FINISHED)

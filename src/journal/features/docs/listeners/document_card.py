@@ -16,4 +16,4 @@ class DocumentCard(Listener[Created]):
         doc = event.model
         if not isinstance(doc, Doc) or event.actor.kind != ActorKind.AGENT:
             return
-        self.cards.made_mark(self.agents.for_session(event.actor.id).environment_id, doc, event.actor)
+        self.cards.creation_card(self.agents.session_agent(event.actor.id).environment_id, doc, event.actor)

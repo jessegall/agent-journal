@@ -40,10 +40,10 @@ class Actor:
         return cls(ActorKind(kind), id)
 
     @property
-    def named(self) -> str:
+    def lookup(self) -> str:
         return {ActorKind.SYSTEM: "the journal", ActorKind.AGENT: "the agent", ActorKind.USER: "you", ActorKind.PHONE: "you, from your phone", ActorKind.EXTERNAL: self.id}.get(self.kind, f"plugin {self.id}")
 
-    def is_the_user(self) -> bool:
+    def is_user(self) -> bool:
         return self.kind in (ActorKind.USER, ActorKind.PHONE)
 
     @property

@@ -12,10 +12,10 @@ class Programs:
     """Which programs a secret may go to."""
 
     @staticmethod
-    def never_given(program: str) -> bool:
+    def is_withheld(program: str) -> bool:
         return bool(WRAPPER_PROGRAMS.match(program))
 
     @classmethod
-    def named_in(cls, instructions: str) -> tuple[str, ...]:
+    def mentioned(cls, instructions: str) -> tuple[str, ...]:
         named = dict.fromkeys(rows[1] for rows in STATED_COMMAND.finditer(instructions))
-        return tuple(name for name in named if not cls.never_given(name) and shutil.which(name))
+        return tuple(name for name in named if not cls.is_withheld(name) and shutil.which(name))

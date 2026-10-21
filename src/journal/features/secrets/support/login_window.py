@@ -42,15 +42,15 @@ class LoginWindow:
                 self.messages.save(Message(author=Author.AGENT, text=f"The login to {secret.title} was not saved: {failed}"), Actor.system())
             return
         self.secrets.save(self.secrets.find(secret.id).with_(logging_in_at=None, session_at=datetime.now(timezone.utc), session_expires=self.logins.expires(saved, secret.url)), Actor.system())
-        self.given()
+        self.supplied()
 
-    def forgotten(self, secret: Secret, actor: Actor) -> Secret:
-        self.logins.forget(secret.title)
+    def dropped(self, secret: Secret, actor: Actor) -> Secret:
+        self.logins.drop(secret.title)
         cleared = self.secrets.save(secret.with_(session_at=None, session_expires=None), actor)
-        self.given()
+        self.supplied()
         return cleared
 
-    def given(self) -> None:
+    def supplied(self) -> None:
         merged = self.logins.merge()
         browser = next((s for s in self.servers.all() if s.name == BROWSER), None)
         if browser is None:

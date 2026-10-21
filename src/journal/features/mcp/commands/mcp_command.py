@@ -31,21 +31,21 @@ class McpCommand(Command):
 
     def suggested(self, args: Namespace, caller: Caller) -> int:
         for s in self.catalogue.all():
-            print(f"{s.name:<12} {s.title}: {s.about}" + s.let_in)
+            print(f"{s.name:<12} {s.title}: {s.about}" + s.admit)
         return 0
 
     def install(self, args: Namespace, caller: Caller) -> int:
-        server = self.installing.add(self.catalogue.named(args.name).server(), caller.actor)
+        server = self.installing.add(self.catalogue.lookup(args.name).server(), caller.actor)
         print(f"installed {server.name}" + (f": needs its key, journal mcp key {server.name} <value>" if server.state == "needs_key" else ""))
         return 0
 
     def key(self, args: Namespace, caller: Caller) -> int:
-        server = self.installing.keyed(self.servers.named(args.name), args.value, caller.actor)
+        server = self.installing.keyed(self.servers.lookup(args.name), args.value, caller.actor)
         print(f"key kept for {server.name}, outside the project")
         return 0
 
     def remove(self, args: Namespace, caller: Caller) -> int:
-        self.installing.remove(self.servers.named(args.name), caller.actor)
+        self.installing.remove(self.servers.lookup(args.name), caller.actor)
         print(f"removed {args.name}")
         return 0
 

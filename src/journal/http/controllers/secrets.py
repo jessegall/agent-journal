@@ -24,7 +24,7 @@ class SecretController(Controller[Secret]):
 
     def store(self, request: Request) -> Response:
         body = request.body
-        kind, title = SecretKind.named(body.get("kind") or SecretKind.CUSTOM.value), str(body.get("title", "")).strip()
+        kind, title = SecretKind.lookup(body.get("kind") or SecretKind.CUSTOM.value), str(body.get("title", "")).strip()
         secret = Secret(title=title, brief=body.get("brief", ""), kind=kind, fields=tuple(body.get("fields") or kind.first_fields(title)),
                         programs=self.allowed(body.get("programs", ())), helpers=bool(body.get("helpers")))
         return Response.json(self.repository.save(secret, request.actor), 201)
@@ -42,7 +42,7 @@ class SecretController(Controller[Secret]):
             raise Rejection("an empty value is no value: type it in, or leave the field as it is")
         field = str(request.body.get("field", ""))
         self.values.put_field(secret.field(field), value)
-        return Response.json(self.repository.save(secret.filled_in(field), request.actor))
+        return Response.json(self.repository.save(secret.is_filled(field), request.actor))
 
     def delete(self, request: Request) -> Response:
         return Response.json(self.repository.save(self.repository.find(request.number("id")).deleted(datetime.now(timezone.utc)), request.actor))
@@ -60,15 +60,15 @@ class SecretController(Controller[Secret]):
     def revoke_login(self, request: Request) -> Response:
         return Response.json(self.repository.save(self.repository.find(request.number("id")).with_(auto_login=False), request.actor))
 
-    def forget_login(self, request: Request) -> Response:
-        return Response.json(self.window.forgotten(self.repository.find(request.number("id")), request.actor))
+    def drop_login(self, request: Request) -> Response:
+        return Response.json(self.window.dropped(self.repository.find(request.number("id")), request.actor))
 
     def location(self, request: Request) -> Response:
         return Response.json({"path": str(self.values.path)})
 
     @staticmethod
     def allowed(programs) -> tuple[str, ...]:
-        refused = [p for p in programs if Programs.never_given(p)]
+        refused = [p for p in programs if Programs.is_withheld(p)]
         if refused:
             raise Rejection(f"a secret is never given to {', '.join(refused)}: allow the program that uses it directly, such as curl or gh")
         return tuple(dict.fromkeys(programs))

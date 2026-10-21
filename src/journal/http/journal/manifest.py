@@ -29,7 +29,7 @@ class Manifest:
 
 
     def applying(self) -> list[type[Feature]]:
-        return [f for f in self.registry.features if f.applies_in(self.config.root)]
+        return [f for f in self.registry.features if f.applies(self.config.root)]
 
     def groups(self) -> list[dict]:
         return [{"key": f.name, "title": f.title, "line": f.help, "section": self.placed(f)[0], "tab": self.placed(f)[1], "lead": f.name} for f in self.applying()] + SYSTEM_GROUPS

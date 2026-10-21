@@ -32,7 +32,7 @@ class SkillFiles:
     def clear(self) -> None:
         for home in HOMES:
             for folder in (self.config.root / home).glob(f"{JOURNAL_SKILL_PREFIX}*"):
-                if not self.is_ours(folder):
+                if not self.is_journals(folder):
                     continue
                 if folder.is_symlink():
                     folder.unlink()
@@ -40,7 +40,7 @@ class SkillFiles:
                 shutil.rmtree(folder)
 
     @staticmethod
-    def is_ours(folder: Path) -> bool:
+    def is_journals(folder: Path) -> bool:
         if folder.name != JOURNAL_SKILL_PREFIX and not folder.name.startswith(f"{JOURNAL_SKILL_PREFIX}-"):
             return False
         skill = folder / "SKILL.md"
@@ -49,7 +49,7 @@ class SkillFiles:
     def path(self, skill: Skill, home: str = HOMES[0]) -> Path:
         return self.config.root / home / skill.folder / "SKILL.md"
 
-    def hash_of(self, skill: Skill) -> str:
+    def digest(self, skill: Skill) -> str:
         return hashlib.sha1(skill.text().encode()).hexdigest()[:12]
 
     def skill_in_folder(self, folder: str) -> Skill | None:

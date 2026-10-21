@@ -23,31 +23,31 @@ class TunnelController:
         return Response.json([self.tunnel.service()] if self.tunnel.is_wanted(datetime.now(timezone.utc)) else [])
 
     def check(self, request: Request) -> Response:
-        self.tunler.forget()
+        self.tunler.drop()
         return Response.json(self.tunnel.data())
 
     def restart(self, request: Request) -> Response:
-        self.tunler.forget()
+        self.tunler.drop()
         self.tunnel.restart()
         return Response.json(self.tunnel.data())
 
     def cause(self, request: Request) -> Response:
         return Response.json(asdict(self.tunnel.cause()))
 
-    def answering(self, request: Request) -> Response:
-        return Response.json({"reachable": self.tunnel.answering()})
+    def status(self, request: Request) -> Response:
+        return Response.json({"reachable": self.tunnel.is_responsive()})
 
     def login(self, request: Request) -> Response:
         body = request.body
         host = str(body.get("endpoint", "")).strip() or self.tunnel.host()
-        made = self.tunler.log_in(host, str(body.get("username", "")).strip(), str(body.get("password", "")), str(body.get("master_password", "")))
+        made = self.tunler.login(host, str(body.get("username", "")).strip(), str(body.get("password", "")), str(body.get("master_password", "")))
         if made.connected:
             self.settings.set(Sharing.HOST.key, host, request.actor)
             self.tunnel.settle()
         return Response.json({**asdict(made), **self.tunnel.data()})
 
     def logout(self, request: Request) -> Response:
-        self.tunler.log_out()
+        self.tunler.logout()
         self.tunnel.stop()
         return Response.json(self.tunnel.data())
 

@@ -18,7 +18,7 @@ class Nudge:
     def create(self, **values) -> "Nudge":
         return replace(self, values=values)
 
-    def in_words(self, title: str) -> "Nudge":
+    def text(self, title: str) -> "Nudge":
         return replace(self, title=title, brief="", values={})
 
     def rendered(self) -> str:

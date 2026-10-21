@@ -39,7 +39,7 @@ class ProfileFiles:
         self.config, self.providers, self.settings = config, providers, settings
 
     def folder(self) -> Path:
-        return self.config.root / self.providers.named("claude").home / "agents"
+        return self.config.root / self.providers.lookup("claude").home / "agents"
 
     def read_all(self) -> list[ProfileView]:
         return sorted((self.read(path.stem) for path in self.folder().glob("*.md")), key=lambda p: p["name"])
@@ -58,7 +58,7 @@ class ProfileFiles:
         return ProfileView(name=name, description=fields.get("description", ""), tools=fields.get("tools", ""), kind=fields.get("kind", "subagent"), model=fields.get("model", ""),
                             codex_model=fields.get("codex-model", ""), body=body.strip("\n"), shipped=name in {profile.name for profile in self.PROFILES}, path=str(path.relative_to(self.config.root)))
 
-    def kind_of(self, name: str) -> str:
+    def kind(self, name: str) -> str:
         return self.read(name)["kind"] if (self.folder() / f"{name}.md").is_file() else ""
 
     def save(self, profile: Profile, model: str, codex_model: str) -> ProfileView:
@@ -69,7 +69,7 @@ class ProfileFiles:
         from journal.features.profiles.feature import Profiles
         self.clear()
         model, codex_model = str(self.settings.option(Profiles.CLAUDE_MODEL)), str(self.settings.option(Profiles.CODEX_MODEL))
-        return [path for profile in self.PROFILES for path in self.write(profile, profile.model_or(model), codex_model)]
+        return [path for profile in self.PROFILES for path in self.write(profile, profile.model_default(model), codex_model)]
 
     def clear(self) -> None:
         bodies = [profile.body for profile in self.PROFILES]

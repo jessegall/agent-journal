@@ -26,13 +26,13 @@ class Waits:
         if not why and not on and not until:
             raise Rejection("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
 
-    def named(self, on: list[str], until: str, every: int, about: str, actor: Actor) -> list[Ref]:
-        refs = [self.awaited(text) for text in on]
+    def created(self, on: list[str], until: str, every: int, about: str, actor: Actor) -> list[Ref]:
+        refs = [self.wait_targets(text) for text in on]
         if until:
             refs.append(Ref.to(self.checks.save(Check(title=f"{about} waits until this passes", command=until, every=every, waited_on=True), actor)))
         return refs
 
-    def awaited(self, text: str) -> Ref:
+    def wait_targets(self, text: str) -> Ref:
         kind, _, number = text.partition(":")
         if kind not in ("question", "task") or not number.isdigit():
             raise Rejection(f"--on takes question:N or task:N, not {text}")

@@ -29,7 +29,7 @@ class MenuAnswers:
         label = dict(self.settings.project(CHOICES, {})).get(self.key(menu))
         return next((o for o in menu.options if o.label == label), None)
 
-    def asked(self, menu: Menu, agent: Agent) -> Option | None:
+    def query(self, menu: Menu, agent: Agent) -> Option | None:
         key = self.key(menu)
         if key in self._asked:
             return self._asked[key]
@@ -42,7 +42,7 @@ class MenuAnswers:
         return self.key(menu) in self._running and self.key(menu) not in self._asked
 
     def ask(self, menu: Menu, provider: str) -> None:
-        program = self.providers.named(provider)
+        program = self.providers.lookup(provider)
         argv = program.worker_command(self.question(menu), ASKING_MODEL.get(provider, ""), "")
         environ = {k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION")}
         try:

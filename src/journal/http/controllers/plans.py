@@ -51,7 +51,7 @@ class PlanController(Controller[Plan]):
         return Response.json(self.shown(self.repository.postpone(self.repository.find(request.number("id")), request.actor)))
 
     def finish(self, request: Request) -> Response:
-        return self.moved(request, lambda plan: plan.done(datetime.now(timezone.utc).timestamp()))
+        return self.moved(request, lambda plan: plan.finished(datetime.now(timezone.utc).timestamp()))
 
     def abandon(self, request: Request) -> Response:
         plan = self.repository.find(request.number("id"))

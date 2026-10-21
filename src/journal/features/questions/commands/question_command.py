@@ -30,7 +30,7 @@ class QuestionCommand(Command):
         self.verb(verbs, "show", "a question whole: its words, its choices, the answer and the messages linked to it").add_argument("n", type=int)
 
     def ask(self, args: Namespace, caller: Caller) -> int:
-        if not caller.session or self.workers.by_session(caller.session):
+        if not caller.session or self.workers.session_worker(caller.session):
             raise Rejection("nobody can answer a question asked from here: put it in the worker's report instead")
         options = tuple(o.strip() for o in args.options if o.strip())
         if len(options) == 1 and "," in options[0]:
@@ -38,7 +38,7 @@ class QuestionCommand(Command):
         asked = Question(text=args.text, options=options)
         if asked.unclear_options():
             raise Rejection(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(asked.unclear_options())}")
-        question = self.questions.save(self.questions.save(asked, caller.actor).asked(datetime.now(timezone.utc).timestamp()), caller.actor)
+        question = self.questions.save(self.questions.save(asked, caller.actor).posed(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"question {question.id} asked; waiting for the answer")
         for i, option in enumerate(question.options, 1):
             print(f"  {i}. {option}")

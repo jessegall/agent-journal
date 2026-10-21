@@ -24,10 +24,10 @@ class ReactionImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.reactions, self.links = reactions, links
 
-    def left_behind(self, row: Version3Row, into: Environment) -> str:
-        return super().left_behind(row, into) or ("" if self.message_of(row, into) else "the message it sits on did not come across")
+    def skipped(self, row: Version3Row, into: Environment) -> str:
+        return super().skipped(row, into) or ("" if self.message(row, into) else "the message it sits on did not come across")
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Reaction:
-        reaction = self.reactions.imported(Reaction(environment_id=into.id, face=row.data.get("face", ""), author=Author(row.author())), row.made_at(), actor)
-        self.links.save(Link(source=Ref.to(reaction), target=self.message_of(row, into), kind=REACTS), actor)
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Reaction:
+        reaction = self.reactions.imported(Reaction(environment_id=into.id, face=row.data.get("face", ""), author=Author(row.author())), row.creation_time(), actor)
+        self.links.save(Link(source=Ref.to(reaction), target=self.message(row, into), kind=REACTS), actor)
         return reaction

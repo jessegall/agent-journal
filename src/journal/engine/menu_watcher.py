@@ -38,12 +38,12 @@ class MenuWatcher:
 
     def _run(self) -> None:
         while not self._stopping.wait(INTERVAL):
-            for agent in self.agents.everywhere():
-                if not isinstance(self.states.named(agent.state, agent.data), Ended):
+            for agent in self.agents.all_agents():
+                if not isinstance(self.states.restored(agent.state, agent.data), Ended):
                     with self.scope.of(agent.environment_id):
-                        self.look(agent)
+                        self.check(agent)
 
-    def look(self, agent: Agent) -> str:
+    def check(self, agent: Agent) -> str:
         env, moment = agent.environment_id, time.time()
         menu = Menu.on(self.supervisor.screen(env)[-8192:])
         if menu is None or not (menu.foreign() or self.answers_permission(menu, env)):
@@ -54,10 +54,10 @@ class MenuWatcher:
             self._seen[env], self._seen_at[env] = menu.signature(), moment
         if self._answered.get(env) == menu.signature() or self.still_drawing(env, moment):
             return ""
-        yours = self.supervisor.keyed_at(env) > self._seen_at[env] - USER_KEY_WINDOW_SECONDS
+        yours = self.supervisor.key_time(env) > self._seen_at[env] - USER_KEY_WINDOW_SECONDS
         if yours and not menu.confirming():
             return ""
-        caused = yours or self.supervisor.chosen_at(env) > self._seen_at[env] - CAUSE_WINDOW_SECONDS
+        caused = yours or self.supervisor.choice_time(env) > self._seen_at[env] - CAUSE_WINDOW_SECONDS
         decided = self.decided(menu, caused, agent)
         if decided is None:
             return ""
@@ -78,14 +78,14 @@ class MenuWatcher:
     def decided(self, menu: Menu, caused: bool, agent: Agent) -> tuple[str, str] | None:
         if caused or menu.trusting() or menu.switching_model():
             taken = menu.accepting()
-            return menu.keys_for(taken), f'chose "{taken.label}", since it confirms what was asked for' if caused else f'chose "{taken.label}"'
+            return menu.keys(taken), f'chose "{taken.label}", since it confirms what was asked for' if caused else f'chose "{taken.label}"'
         if self.answers_permission(menu, agent.environment_id):
             taken = menu.accepting()
-            return menu.keys_for(taken), f'chose "{taken.label}", since the launch skips the permission prompts'
-        taken = self.answers.remembered(menu) or menu.declining() or self.answers.asked(menu, agent)
+            return menu.keys(taken), f'chose "{taken.label}", since the launch skips the permission prompts'
+        taken = self.answers.remembered(menu) or menu.declining() or self.answers.query(menu, agent)
         if taken is None and self.answers.is_asking(menu):
             return None
-        taken = taken or self.answers.asked(menu, agent)
+        taken = taken or self.answers.query(menu, agent)
         if taken:
-            return menu.keys_for(taken), f'chose "{taken.label}"'
+            return menu.keys(taken), f'chose "{taken.label}"'
         return ESCAPE, "closed it with Escape, since even an asked agent could not say what it was for"

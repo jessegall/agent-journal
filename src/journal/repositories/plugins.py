@@ -24,7 +24,7 @@ class Plugins(Repository[Plugin]):
         super().delete(row, actor)
         self.live = None
 
-    def named(self, name: str) -> Plugin:
+    def lookup(self, name: str) -> Plugin:
         rows = self.matching(name=name)
         if not rows:
             raise MissingRow(self.table, name)

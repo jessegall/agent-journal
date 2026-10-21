@@ -42,7 +42,7 @@ class Plan(Scoped):
     def startable(self) -> "Plan":
         if self.is_blocked():
             raise Rejection(f"plan {self.id} is blocked, waiting on: {self.blocked_why or 'what it was blocked on'}; `journal plan unblock {self.id}` when it may go on")
-        if not self.state.can_be_started():
+        if not self.state.is_startable():
             raise Rejection(f"plan {self.id} is {self.state}, not approved: the user approves it first")
         return self
 
@@ -67,7 +67,7 @@ class Plan(Scoped):
     def is_blocked(self) -> bool:
         return self.state == PlanState.BLOCKED
 
-    def done(self, time: float) -> "Plan":
+    def finished(self, time: float) -> "Plan":
         return self.moved(PlanState.FINISHED).with_event(PlanFinished(environment_id=self.environment_id, time=time, plan_id=self.id))
 
     def cancelled(self, time: float, by_user: bool) -> "Plan":
@@ -81,11 +81,11 @@ class Plan(Scoped):
     def is_finished(self, tasks: list[Task]) -> bool:
         return bool(tasks) and all(task.is_closed() for task in tasks)
 
-    def is_all_left_blocked(self, tasks: list[Task]) -> bool:
+    def is_stalled(self, tasks: list[Task]) -> bool:
         left = [task for task in tasks if not task.is_closed()]
         return bool(left) and all(task.state == TaskState.BLOCKED for task in left)
 
-    def in_order(self, phases: list[PhaseTasks], tasks: list[Task]) -> list[Task]:
+    def ordered(self, phases: list[PhaseTasks], tasks: list[Task]) -> list[Task]:
         phased = [task for phase in phases for task in phase.tasks]
         ids = {task.id for task in phased}
         return phased + [task for task in tasks if task.id not in ids]
@@ -99,9 +99,9 @@ class Plan(Scoped):
     def current_phase(self, phases: list[PhaseTasks]) -> int:
         return next((phase.number for phase in phases if phase.has_open_work()), len(phases) or 1)
 
-    def checkpoint_at(self, phases: list[PhaseTasks]) -> PhaseTasks | None:
+    def checkpoint_phase(self, phases: list[PhaseTasks]) -> PhaseTasks | None:
         for before, after in zip(phases, phases[1:]):
-            if before.phase.checkpoint and before.is_done() and after.tasks and not after.has_work_started():
+            if before.phase.checkpoint and before.is_finished() and after.tasks and not after.has_work_started():
                 return before
         return None
 

@@ -20,7 +20,7 @@ class Listing:
     ids: tuple[int, ...] = ()
 
     @classmethod
-    def from_query(cls, query: dict) -> "Listing":
+    def query_listing(cls, query: dict) -> "Listing":
         ids = tuple(int(n) for n in str(query.get("ids", "")).split(",") if n.strip().isdigit())
         numbers = {name: kind(query[name]) for name, kind in (("limit", int), ("before", int), ("after", int), ("since", float)) if query.get(name)}
         return cls(**numbers, closed=str(query.get("closed", "")).lower() in ("1", "true", "yes"), ids=ids)

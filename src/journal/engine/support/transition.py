@@ -27,7 +27,7 @@ class Transition:
     def has_move(self) -> bool:
         return self.pushed is not None or self.popped
 
-    def move_named(self) -> str:
+    def move_name(self) -> str:
         return f"push {self.pushed.name}" if self.pushed else "pop"
 
     @classmethod
@@ -42,6 +42,6 @@ class Transition:
             typed=tuple(nudge for answer in answers for nudge in answer.typed),
             held=next((answer.held for answer in answers if answer.held), None),
             other_holds=tuple(answer.held for answer in answers if answer.held)[1:],
-            dropped=tuple(answer.move_named() for answer in moving[1:]),
+            dropped=tuple(answer.move_name() for answer in moving[1:]),
             handed_down=move.handed_down,
         )

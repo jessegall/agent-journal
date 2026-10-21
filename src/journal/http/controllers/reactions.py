@@ -13,8 +13,8 @@ class ReactionController(Controller[Reaction]):
         self.repository = reactions
 
     def counts(self, rows: list[Reaction]) -> Counts:
-        every = self.repository.counted_in()
-        return Counts(all=every, open=every, unread=self.repository.by_author(Author.AGENT))
+        every = self.repository.count()
+        return Counts(all=every, open=every, unread=self.repository.authored(Author.AGENT))
 
     def shown_page(self, rows: list[Reaction]) -> list[dict]:
         on = self.repository.linked(REACTS)

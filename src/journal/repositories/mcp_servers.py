@@ -6,7 +6,7 @@ from journal.repositories.repository import Repository
 class McpServers(Repository[McpServer]):
     model = McpServer
 
-    def named(self, name: str) -> McpServer:
+    def lookup(self, name: str) -> McpServer:
         for server in self.all():
             if server.name == name:
                 return server

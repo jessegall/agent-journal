@@ -31,10 +31,10 @@ class Agent(Scoped):
     def resumed_by_user(self, time: float) -> "Agent":
         return self.with_event(UserResumed(environment_id=self.environment_id, time=time, agent_session=self.session))
 
-    def look_taken(self, time: float) -> "Agent":
+    def overview_read(self, time: float) -> "Agent":
         return self.with_(oriented=True).with_event(OverviewRead(environment_id=self.environment_id, time=time))
 
-    def mark_decided(self, time: float) -> "Agent":
+    def context_decided(self, time: float) -> "Agent":
         return self.with_(mark_owed=0).with_event(ContextDecided(environment_id=self.environment_id, time=time, mark=self.mark_owed))
 
     def skill_read(self, name: str, digest: str, time: float) -> "Agent":

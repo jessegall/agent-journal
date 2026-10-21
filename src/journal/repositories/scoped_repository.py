@@ -24,7 +24,7 @@ class ScopedRepository(Repository[S]):
     def with_project(self, clause: str, params: tuple = ()) -> list[S]:
         return super().selected(f"environment_id IN (?, ?) AND {clause}", (self.scope.id, PROJECT, *params))
 
-    def across_environments(self, **fields) -> list[S]:
+    def global_matching(self, **fields) -> list[S]:
         clause, params = self.clause(fields)
         return self.selected_everywhere(f"{clause} ORDER BY id", params)
 
@@ -34,14 +34,14 @@ class ScopedRepository(Repository[S]):
     def aggregate(self, select: str, clause: str = "1", params: tuple = ()):
         return self.connection.one(f"SELECT {select} FROM {self.table} WHERE environment_id = ? AND {clause}", (self.scope.id, *params))
 
-    def in_(self) -> list[S]:
+    def scoped(self) -> list[S]:
         return self.all()
 
-    def counted_in(self, clause: str = "1", params: tuple = ()) -> int:
+    def count(self, clause: str = "1", params: tuple = ()) -> int:
         return self.aggregate("count(*) AS n", clause, params)["n"]
 
-    def every_in(self) -> list[S]:
-        return self.every()
+    def scoped_rows(self) -> list[S]:
+        return self.rows()
 
     def page_in(self, limit: int, before: int | None = None) -> list[S]:
         return self.page(limit, before)

@@ -6,10 +6,10 @@ class Notices(ScopedRepository[Notice]):
     model = Notice
 
     def unseen_by_user(self) -> int:
-        return self.counted_in("closed_at IS NULL AND (created_by IS NULL OR created_by NOT LIKE 'user:%')")
+        return self.count("closed_at IS NULL AND (created_by IS NULL OR created_by NOT LIKE 'user:%')")
 
     def open_count(self) -> int:
-        return self.counted_in("closed_at IS NULL")
+        return self.count("closed_at IS NULL")
 
     def open_in(self) -> list[Notice]:
-        return [n for n in self.in_() if n.closed_at is None]
+        return [n for n in self.scoped() if n.closed_at is None]

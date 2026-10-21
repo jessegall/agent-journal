@@ -18,17 +18,17 @@ class UpdateCard:
         self.path = config.home / "runtime" / "updating.json"
 
     def claim(self, before: str, to: str) -> None:
-        held = self.held()
+        held = self.paused()
         if held is not None and not held.is_stale(timing.time()):
             raise Rejection(f"an update to {held.to} is under way since {timing.strftime('%H:%M', timing.localtime(held.time))}")
         self.write(UpdatePause(before, to, FIRST_STEP, timing.time(), os.getpid()))
 
     def step(self, step: str) -> None:
-        held = self.held()
+        held = self.paused()
         if held is not None:
-            self.write(held.at_step(step))
+            self.write(held.step_pause(step))
 
-    def held(self) -> UpdatePause | None:
+    def paused(self) -> UpdatePause | None:
         if not self.path.is_file():
             return None
         data = json.loads(self.path.read_text())

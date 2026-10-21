@@ -35,11 +35,11 @@ class DumpFiler:
 
     def create(self, brief: str, actor: Actor) -> Dump:
         dump = self.dumps.save(Dump(title="Dump", brief=brief.strip(), queued_at=time.time()), actor)
-        return self.dumps.save(dump.with_(title=f"Dump {dump.id}").arrived(time.time(), actor.is_the_user()), actor)
+        return self.dumps.save(dump.with_(title=f"Dump {dump.id}").arrived(time.time(), actor.is_user()), actor)
 
     def attach(self, n: int, name: str, actor: Actor) -> Dump:
         dump = self.open(n, f"dump {n} is already filed: start a new dump for more")
-        return self.dumps.save(dump.with_(files=tuple(dict.fromkeys((*dump.files, name)))).arrived(time.time(), actor.is_the_user()), actor)
+        return self.dumps.save(dump.with_(files=tuple(dict.fromkeys((*dump.files, name)))).arrived(time.time(), actor.is_user()), actor)
 
     def items(self, n: int) -> list[str]:
         dump = self.dumps.find(n)
@@ -51,7 +51,7 @@ class DumpFiler:
     def filed(self, n: int, item: str, how: str, refs: str, added: str, actor: Actor) -> Dump:
         if not how.strip():
             raise Rejection("say what was done with it")
-        rows, own = self.named_refs(refs), self.named_refs(added)
+        rows, own = self.refs(refs), self.refs(added)
         if set(own) - set(rows):
             raise Rejection("--added names rows you also list in refs")
         dump = self.dumps.find(n)
@@ -72,7 +72,7 @@ class DumpFiler:
         if item not in dump.item_names:
             raise Rejection(f"dump {n} has no item {item!r}; its items are {', '.join(dump.item_names) or 'none yet'}")
         written = self.dumps.save(dump.with_item(item, **values), actor)
-        if written.is_completed or not written.all_settled:
+        if written.is_completed or not written.is_complete:
             return written
         failed = sum(bool(written.item(name).failed) for name in written.item_names)
         return self.close(written, f"{len(written.item_names) - failed} filed" + (f", {failed} failed" if failed else ""), actor)
@@ -102,7 +102,7 @@ class DumpFiler:
             raise Rejection("say what you need to know")
         dump = self.open(n, f"dump {n} is closed")
         rows = [g.strip()[:LABEL] for g in guesses.split("|") if g.strip()][:OFFERED]
-        return self.dumps.save(dump.asked(question.strip(), rows, time.time()), actor)
+        return self.dumps.save(dump.posed_question(question.strip(), rows, time.time()), actor)
 
     def answer(self, n: int, text: str, actor: Actor) -> Dump:
         self.only_user(actor, "answers a question on a dump")
@@ -184,7 +184,7 @@ class DumpFiler:
             raise Rejection(f"dump {n} was already removed")
         if not dump.is_completed:
             dump = self.stop(n, actor)
-        gone = [ref for ref in dump.made_refs() if self.deleted(Ref.parse(ref), dump, actor)]
+        gone = [ref for ref in dump.created_refs() if self.deleted(Ref.parse(ref), dump, actor)]
         return self.dumps.save(dump.with_(removed_at=time.time(), removed_refs=tuple(gone)), actor)
 
     def deleted(self, ref: Ref, dump: Dump, actor: Actor) -> bool:
@@ -213,7 +213,7 @@ class DumpFiler:
         return {"time": time.time(), "text": text.strip(), "on": on.strip(), "making": making.strip(), "detail": detail.strip(), **extra}
 
     @staticmethod
-    def named_refs(text: str) -> list[str]:
+    def refs(text: str) -> list[str]:
         refs = []
         for part in (p.strip() for p in text.split(",") if p.strip()):
             kind, _, number = part.partition(":")

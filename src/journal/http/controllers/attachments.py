@@ -16,11 +16,11 @@ class AttachmentController:
         self.rows = {"messages": messages, "dumps": dumps}
 
     def index(self, request: Request) -> Response:
-        return Response.json(self.files.page(FileRequest.from_query(request.query)))
+        return Response.json(self.files.page(FileRequest.query_request(request.query)))
 
     def file(self, request: Request):
         table, id = request.params["table"], request.number("id")
         if table not in self.rows or not self.rows[table].matching(id=id):
-            return Response.not_found("no such file")
+            return Response.absent("no such file")
         rows = self.attachments.read(table, id, request.params["name"])
-        return FileResponse(*rows) if rows else Response.not_found("no such file")
+        return FileResponse(*rows) if rows else Response.absent("no such file")

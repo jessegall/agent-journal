@@ -18,8 +18,8 @@ class PlanBlockade(Listener[Updated]):
         task = event.model
         if not isinstance(task, Task) or event.was is None or task.state == event.was.state:
             return
-        for plan in self.plans.holding(task):
-            if plan.state == PlanState.STARTED and self.plans.all_left_blocked(plan):
+        for plan in self.plans.containing(task):
+            if plan.state == PlanState.STARTED and self.plans.is_stalled(plan):
                 self.plans.save(plan.blocked(PlansFeature.ALL_BLOCKED, datetime.now(timezone.utc).timestamp()), Actor.system())
-            elif plan.is_blocked() and plan.blocked_why == PlansFeature.ALL_BLOCKED and not self.plans.all_left_blocked(plan):
+            elif plan.is_blocked() and plan.blocked_why == PlansFeature.ALL_BLOCKED and not self.plans.is_stalled(plan):
                 self.plans.save(plan.unblocked(f"task {task.id} is open again", datetime.now(timezone.utc).timestamp()), Actor.system())

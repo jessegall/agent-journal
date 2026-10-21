@@ -13,19 +13,19 @@ class CachedAnswer(Generic[T]):
         self.value, self.asked_at, self.asked_on = first, 0.0, 0.0
         self._asking = threading.Lock()
 
-    def now(self) -> T:
+    def time(self) -> T:
         if time.monotonic() - self.asked_at >= self.kept_for and self._asking.acquire(blocking=False):
-            threading.Thread(target=self.asked_again, name="kept-answer", daemon=True).start()
+            threading.Thread(target=self.repeat, name="kept-answer", daemon=True).start()
         return self.value
 
-    def given(self) -> T:
-        return self.now() if self.asked_on else self.fresh()
+    def supplied(self) -> T:
+        return self.time() if self.asked_on else self.is_recent()
 
-    def fresh(self) -> T:
+    def is_recent(self) -> T:
         self.value, self.asked_at, self.asked_on = self.ask(), time.monotonic(), time.time()
         return self.value
 
-    def forget(self) -> None:
+    def discard(self) -> None:
         self.asked_at = 0.0
 
     def is_asking(self) -> bool:
@@ -34,8 +34,8 @@ class CachedAnswer(Generic[T]):
     def drop(self) -> None:
         self.asked_at = self.asked_on = 0.0
 
-    def asked_again(self) -> None:
+    def repeat(self) -> None:
         try:
-            self.fresh()
+            self.is_recent()
         finally:
             self._asking.release()

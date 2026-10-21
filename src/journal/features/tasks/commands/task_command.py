@@ -91,7 +91,7 @@ class TaskCommand(Command):
         self.logs.save(TaskLog.of(task, args.line, self._now().timestamp()), caller.actor)
         current = self.taking.current(caller)
         if current and current.task_id == task.id:
-            self.machine.move(caller.session, task.environment_id, current.logged(self.clock.now()))
+            self.machine.move(caller.session, task.environment_id, current.logged(self.clock.time()))
         print(f"task {task.id} logged")
         return 0
 
@@ -111,7 +111,7 @@ class TaskCommand(Command):
     def block(self, args: Namespace, caller: Caller) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._now()), caller.actor)
-        for ref in self.waits.named(args.on, args.until, args.every, f"task {task.id}", caller.actor):
+        for ref in self.waits.created(args.on, args.until, args.every, f"task {task.id}", caller.actor):
             self.links.save(Link(source=Ref.to(task), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0
@@ -128,12 +128,12 @@ class TaskCommand(Command):
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for task in self.tasks.in_():
+        for task in self.tasks.scoped():
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
         return 0
 
     def _name_next(self, closed: Task) -> None:
-        next_open = self.next_task.after(closed)
+        next_open = self.next_task.following(closed)
         if next_open:
             print(next_open.line())
 

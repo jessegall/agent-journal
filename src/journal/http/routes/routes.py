@@ -82,13 +82,13 @@ class Routes:
         router.post(f"{API}/settings", settings.store)
         router.get(f"{API}/updates", get(UpdateController).index)
         router.get(f"{API}/updates/changelog", get(UpdateController).changes)
-        router.get_outward(f"{API}/updates/fresh", get(UpdateController).fresh)
+        router.get_outward(f"{API}/updates/fresh", get(UpdateController).is_recent)
         router.post(f"{API}/updates", get(UpdateController).update)
         mode = get(ModeController)
         router.get(f"{API}/mode", mode.show)
         router.post(f"{API}/mode", mode.choose)
         router.get(f"{API}/migration", migration.show)
-        router.post(f"{API}/migration/later", migration.later)
+        router.post(f"{API}/migration/later", migration.postpone)
         router.post(f"{API}/migration/start", migration.start)
         router.get(f"{API}/entries", entries.index)
         router.get(f"{API}/entries/stream", entries.stream)
@@ -176,7 +176,7 @@ class Routes:
     def agents(self, router: Router) -> None:
         get = self.container.get
         agents, transcripts, skills = get(AgentController), get(TranscriptController), get(SkillController)
-        router.get(f"{API}/agents/live", agents.live)
+        router.get(f"{API}/agents/live", agents.current)
         router.get(f"{API}/agents/controls/{{provider}}", agents.controls)
         self.listed(router, "agents", agents)
         router.get(f"{API}/agents/{{id}}/edits", agents.edits)
@@ -208,7 +208,7 @@ class Routes:
         self.acts(router, "shares", shares, "approve", "stop")
         for path, handler in (("", tunnel.show), ("/services", tunnel.services)):
             router.get(f"{API}/tunnel{path}", handler)
-        for path, handler in (("/cause", tunnel.cause), ("/answering", tunnel.answering), ("/version", tunnel.version), ("/domains", tunnel.domains)):
+        for path, handler in (("/cause", tunnel.cause), ("/answering", tunnel.status), ("/version", tunnel.version), ("/domains", tunnel.domains)):
             router.get_outward(f"{API}/tunnel{path}", handler)
         for path, handler in (("/check", tunnel.check), ("/restart", tunnel.restart), ("/login", tunnel.login), ("/logout", tunnel.logout), ("/install", tunnel.install),
                               ("/update", tunnel.update), ("/release", tunnel.release), ("/readdress", tunnel.readdress)):
@@ -216,7 +216,7 @@ class Routes:
         router.get(f"{API}/secrets/where", secrets.location)
         self.resource(router, "secrets", secrets)
         self.acts(router, "secrets", secrets, "fill", "delete", "restore", "login")
-        for act, handler in (("allow-login", secrets.allow_login), ("revoke-login", secrets.revoke_login), ("forget-login", secrets.forget_login)):
+        for act, handler in (("allow-login", secrets.allow_login), ("revoke-login", secrets.revoke_login), ("forget-login", secrets.drop_login)):
             router.post(f"{API}/secrets/{{id}}/{act}", handler)
 
     def extending(self, router: Router) -> None:

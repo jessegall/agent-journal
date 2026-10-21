@@ -34,7 +34,7 @@ class ShellRunner:
             folder = OutputFiles(self.config.home / "runtime" / "outputs" / f"{int(time.time())}-{threading.get_ident()}")
             folder.split_into(request.line, Chain.parts(request.line))
             if not cap.is_whole() and not cap.is_direct():
-                folder.numbered(self.record.began(folder.folder.name, "\n".join(p.text for p in Chain.parts(request.line) if p.recorded), folder.folder, caller))
+                folder.numbered(self.record.start(folder.folder.name, "\n".join(p.text for p in Chain.parts(request.line) if p.recorded), folder.folder, caller))
         printed: queue.Queue = queue.Queue()
         ended: list[int] = []
         thread = threading.Thread(target=lambda: self.worked(folder, request, caller, cap.is_direct(), printed, ended, environment), name="shell-chain", daemon=True)
@@ -44,7 +44,7 @@ class ShellRunner:
             for block in (self.direct(printed, thread) if cap.is_direct() else self.foreground(folder, request, caller, cap)):
                 last = block[-1:] or last
                 yield block
-        if cap.is_direct() or folder.is_done():
+        if cap.is_direct() or folder.is_finished():
             self.closed(folder, request, caller, cap)
             yield f"{'' if last == b'\n' else chr(10)}{EXIT} {ended[0] if ended else 0}\n".encode()
 
@@ -70,7 +70,7 @@ class ShellRunner:
             while folder.has_ended(shown):
                 yield show.of(shown).encode()
                 shown += 1
-            if folder.is_done():
+            if folder.is_finished():
                 return
             if limit > 0 and time.monotonic() - began >= limit:
                 folder.moved()
@@ -87,5 +87,5 @@ class ShellRunner:
         if cap.is_direct() or cap.is_whole():
             folder.remove()
             return
-        if not self.record.is_kept(folder.folder.name, request.line, folder.size(), folder.has_cut()):
+        if not self.record.is_stored(folder.folder.name, request.line, folder.size(), folder.has_cut()):
             self.record.delete_output(folder.folder.name, caller)

@@ -18,7 +18,7 @@ class MemoryConduct(Conduct):
         feature = memory_feature()
         if event.context is None or not event.session:
             return self.unchanged()
-        mark = feature.mark_due(event.context, event.data.of(feature).context_mark)
+        mark = feature.threshold_due(event.context, event.data.of(feature).context_mark)
         return self.unchanged(feature.CONTEXT_DECISION.create(percent=mark)) if mark else self.unchanged()
 
     def on_session_started_memory(self, event: SessionStarted, settings: Settings) -> Transition:

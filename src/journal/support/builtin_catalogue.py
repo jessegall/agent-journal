@@ -29,5 +29,5 @@ class BuiltinCatalogue:
     ALL = (BUTLER, FRIEND, COLLEAGUE, COACH, SQUIRE)
 
     @classmethod
-    def named(cls, name: str) -> Voice:
+    def lookup(cls, name: str) -> Voice:
         return next((voice for voice in cls.ALL if voice.name == name), cls.BUTLER)

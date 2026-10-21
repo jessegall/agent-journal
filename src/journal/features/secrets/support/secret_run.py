@@ -54,7 +54,7 @@ class SecretRun:
         name = command[0]
         if "/" in name:
             raise Rejection(f"name the program bare, as {Path(name).name}: a path could be a file of anyone's making")
-        if Programs.never_given(name):
+        if Programs.is_withheld(name):
             raise Rejection(f"a secret is never given to {name}: name the program that uses it directly, such as curl or gh")
         if name not in secret.programs:
             raise Rejection(f"{name} is not among the programs secret {secret.id} may go to ({', '.join(secret.programs) or 'none yet'}): propose it with `journal secret propose {secret.id} {name}`, and the user allows it on the Secrets page")

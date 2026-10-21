@@ -22,5 +22,5 @@ class WorkersDataReader:
             subagents_running=self.subagents.running_before_the_newest(agent.session),
             dispatches=tuple(self.subagents.rows(agent.session)),
             worktrees_root=(self.config.home / "worktrees").resolve(),
-            worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.id, w.name) for w in self.workers.in_()),
+            worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.id, w.name) for w in self.workers.scoped()),
         )

@@ -27,24 +27,24 @@ class PluginRunner:
         listening = self.folders.socket(plugin, environment)
         if any(s.answers for s in plugin.manifest.services) and listening.is_socket():
             try:
-                return self.asked_service(listening, line, within)
+                return self.service_run(listening, line, within)
             except (ConnectionRefusedError, FileNotFoundError):
-                return self.asked_program(plugin, environment, line, within)
-        return self.asked_program(plugin, environment, line, within)
+                return self.program_run(plugin, environment, line, within)
+        return self.program_run(plugin, environment, line, within)
 
-    def asked_service(self, listening, line: str, within: float) -> PluginAnswer:
+    def service_run(self, listening, line: str, within: float) -> PluginAnswer:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as link:
             link.settimeout(within)
             link.connect(str(listening))
             try:
                 link.sendall((line + "\n").encode())
-                return self.protocol.answer_of(link.makefile("rb").readline().decode())
+                return self.protocol.parsed_answer(link.makefile("rb").readline().decode())
             except TimeoutError as late:
                 raise WindowMissed(f"its service gave no answer within {within * 1000:.0f} ms, its hold window") from late
             except OSError as failed:
                 raise PluginFault(f"its service did not answer on its socket: {failed}") from failed
 
-    def asked_program(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
+    def program_run(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
         folder = self.folders.of(plugin)
         process = subprocess.Popen([str(folder / plugin.manifest.program)], cwd=folder, env=self.environment(plugin, environment), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         try:
@@ -55,7 +55,7 @@ class PluginRunner:
             raise WindowMissed(f"it gave no answer within {within * 1000:.0f} ms, its hold window") from late
         if process.returncode != 0:
             raise PluginFault(f"it exited with {process.returncode}: {err.strip()[-300:]}")
-        return self.protocol.answer_of(out)
+        return self.protocol.parsed_answer(out)
 
     def shell(self, plugin: Plugin, environment: str, line: str, seconds: float) -> subprocess.CompletedProcess:
         return subprocess.run(["sh", "-c", line], cwd=self.folders.of(plugin), env=self.environment(plugin, environment), capture_output=True, text=True, timeout=seconds)
@@ -74,4 +74,4 @@ class PluginRunner:
             "JOURNAL_PLUGIN_DIR": str(self.folders.of(plugin)),
             "JOURNAL_PLUGIN_DATA": str(self.folders.data(plugin)),
             "JOURNAL_SETTINGS": str(settings),
-        } | self.settings.given(plugin)
+        } | self.settings.supplied(plugin)

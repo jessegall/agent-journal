@@ -67,10 +67,10 @@ class JournalController:
         return self.developer(request)
 
     def summary(self, request: Request) -> Response:
-        held = self.mark.held()
+        held = self.mark.paused()
         return Response.json({"project": self.config.root.name, "root": str(self.config.home), "version": VERSION, "started": STARTED, "color": COLOR,
                               "updating": held.to if held else "", "step": held.step if held else "",
-                              "environments": [self.data(e) for e in (self.environments.all() or [self.environments.named("main")])]})
+                              "environments": [self.data(e) for e in (self.environments.all() or [self.environments.lookup("main")])]})
 
     def data(self, environment: Environment) -> EnvironmentData:
         with self.scope.of(environment.id):
@@ -96,4 +96,4 @@ class JournalController:
         return Response.json(queue[-ACTIVITY_ROW_LENGTH:])
 
     def first(self) -> Environment:
-        return (self.environments.all() or [self.environments.named("main")])[0]
+        return (self.environments.all() or [self.environments.lookup("main")])[0]

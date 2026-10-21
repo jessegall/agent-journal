@@ -42,8 +42,8 @@ class AgentActivity:
         moves = [e for e in hooks if e.kind in STATUS]
         last = moves[-1] if moves else None
         kind = last.kind if last else ""
-        state = self.states.named(agent.state, agent.data)
-        awaiting, on = self.current.awaited(agent)
+        state = self.states.restored(agent.state, agent.data)
+        awaiting, on = self.current.wait_text(agent)
         return {
             **ModelFields.of(agent),
             "status": "stopped" if agent.state == ENDED else self.status_of(agent.state, STATUS.get(kind, "idle")),
@@ -55,7 +55,7 @@ class AgentActivity:
             "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),
             "branch": self.files.branch(), "context": round((self.context.of(agent.session) or 0) * 100),
             "question_id": agent.data.get("question_id", 0) if agent.state == "waiting" else 0,
-            "doing": self.doing(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", PART_START, PART_END)]),
+            "doing": self.activity(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", PART_START, PART_END)]),
             "thinking": self.thinking(agent.session, hooks) if agent.state != ENDED else "",
             "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnDisplayed"), ""),
             "stuck": agent.data.get("why", "") if agent.state == "stuck" else "",
@@ -74,7 +74,7 @@ class AgentActivity:
         if not thoughts:
             return ""
         written = [e.created_at for e in hooks if e.kind == "TurnDisplayed"]
-        later = [time for time in (written[-1] if written else None, self.entries.last_prompt_of(session)) if time is not None]
+        later = [time for time in (written[-1] if written else None, self.entries.last_prompt(session)) if time is not None]
         return "" if any(time > thoughts[-1].created_at for time in later) else thoughts[-1].text
 
     @staticmethod
@@ -83,9 +83,9 @@ class AgentActivity:
         if not runs:
             return None
         run = runs[-1]
-        return CurrentSequence(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.holds, about=run.about, under=len(runs) - 1)
+        return CurrentSequence(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.blocks, about=run.about, under=len(runs) - 1)
 
-    def doing(self, state, hooks) -> str:
+    def activity(self, state, hooks) -> str:
         last = hooks[-1] if hooks else None
         if last and last.kind == PART_START:
             return last.data["doing"]
@@ -95,13 +95,13 @@ class AgentActivity:
 
     def described(self, state) -> str:
         if isinstance(state, Wait):
-            return state.awaiting()[0]
+            return state.wait_description()[0]
         return state.what if isinstance(state, Working) else ""
 
     def stack_of(self, agent: Agent) -> list[dict]:
         shown = []
         for state in reversed(self.states.stack_of(agent).states):
-            awaits = state.awaiting()[0] if isinstance(state, Wait) else ""
+            awaits = state.wait_description()[0] if isinstance(state, Wait) else ""
             shown.append({"name": state.name, "title": self.states.title_of(state.name), "values": state.to_data(), "awaits": awaits})
         return shown
 

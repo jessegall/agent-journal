@@ -47,7 +47,7 @@ class Console:
 
     def run(self, argv: list[str], caller: Caller) -> Outcome:
         out, err = io.StringIO(), io.StringIO()
-        with self.scope.of(self.environments.named(caller.environment).id):
+        with self.scope.of(self.environments.lookup(caller.environment).id):
             return self.captured(argv, caller, out, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:
@@ -72,7 +72,7 @@ class Console:
     def captured(self, argv: list[str], caller: Caller, out: io.StringIO, err: io.StringIO) -> Outcome:
         argv = self.with_verb(self.turned(argv))
         made = Creations.begin()
-        with CapturedStream.into(out, err):
+        with CapturedStream.capture(out, err):
             try:
                 args = self.parser().parse_args(argv)
                 code = self.perform(args, self.attributed(caller))

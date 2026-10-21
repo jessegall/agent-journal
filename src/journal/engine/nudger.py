@@ -26,24 +26,24 @@ class Nudger:
 
     def say(self, agent: Agent, nudge: Nudge) -> str | None:
         with self.scope.of(agent.environment_id):
-            return self._said(agent, nudge, repeated=True)
+            return self._line_record(agent, nudge, repeated=True)
 
     def refuse_with(self, agent: Agent, nudge: Nudge) -> str | None:
         with self.scope.of(agent.environment_id):
-            return self._said(agent, nudge, repeated=False)
+            return self._line_record(agent, nudge, repeated=False)
 
-    def _said(self, agent: Agent, nudge: Nudge, repeated: bool) -> str | None:
-        self.registry.named(nudge.key)
+    def _line_record(self, agent: Agent, nudge: Nudge, repeated: bool) -> str | None:
+        self.registry.lookup(nudge.key)
         if self.features.silenced(nudge) or repeated and self._repeat(agent, nudge):
             return None
         line = nudge.rendered()
-        self.entries.save(Entry(environment_id=agent.environment_id, kind=NUDGE, actor=Actor.system(), data={"key": nudge.key, "session": agent.session, "line": line, "time": self.clock.now(), "tool_use": agent.tool_uses}), Actor.system())
-        event = LineDelivered(nudge=nudge.key, values=dict(nudge.values)).placed(agent.session, agent.environment_id, agent.provider, None, self.clock.now())
+        self.entries.save(Entry(environment_id=agent.environment_id, kind=NUDGE, actor=Actor.system(), data={"key": nudge.key, "session": agent.session, "line": line, "time": self.clock.time(), "tool_use": agent.tool_uses}), Actor.system())
+        event = LineDelivered(nudge=nudge.key, values=dict(nudge.values)).placed(agent.session, agent.environment_id, agent.provider, None, self.clock.time())
         self.deferred.add(lambda: self.bus.dispatch(event))
         return line
 
     def _repeat(self, agent: Agent, nudge: Nudge) -> bool:
         if not nudge.repeat_after:
             return False
-        last = self.entries.last_said_of(agent.session, nudge.key) if nudge.held_whatever_its_values else self.entries.last_said(agent.session, nudge.key, nudge.rendered())
-        return last > self.clock.now() - nudge.repeat_after
+        last = self.entries.last_lines(agent.session, nudge.key) if nudge.held_whatever_its_values else self.entries.last_line(agent.session, nudge.key, nudge.rendered())
+        return last > self.clock.time() - nudge.repeat_after

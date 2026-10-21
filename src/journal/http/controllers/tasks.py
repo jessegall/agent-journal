@@ -31,22 +31,22 @@ class TaskController(Controller[Task]):
         return not row.is_closed()
 
     def counts(self, rows: list[Task]) -> Counts:
-        return Counts(all=self.repository.counted_in(), open=self.repository.unfinished_count(), unread=self.repository.unseen_by_user())
+        return Counts(all=self.repository.count(), open=self.repository.unfinished_count(), unread=self.repository.unseen_by_user())
 
     def shown_page(self, rows: list[Task]) -> list[dict]:
-        plans, holders = self.repository.linked(PLAN_LINK), self.workers.holding({t.id for t in rows})
+        plans, holders = self.repository.linked(PLAN_LINK), self.workers.containing({t.id for t in rows})
         return [{**ModelFields.of(t), "plan_id": plans[t.id][0].id if t.id in plans else None, "worker_id": holders[t.id].id if t.id in holders else None} for t in rows]
 
     def start(self, request: Request) -> Response:
-        task = self.repository.save(self.repository.find(request.number("id")).started(self.now()), request.actor)
+        task = self.repository.save(self.repository.find(request.number("id")).started(self.time()), request.actor)
         agent = self.agents.current()
         if agent:
-            self.machine.move(agent.session, task.environment_id, Working(task_id=task.id, logged_at=self.clock.now()))
+            self.machine.move(agent.session, task.environment_id, Working(task_id=task.id, logged_at=self.clock.time()))
         return Response.json(self.shown(task))
 
     def finish(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
-        return Response.json(self.shown(self.repository.save(task.finished(self.now(), request.body.get("how", "")), request.actor)))
+        return Response.json(self.shown(self.repository.save(task.finished(self.time(), request.body.get("how", "")), request.actor)))
 
     def reopen(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
@@ -57,8 +57,8 @@ class TaskController(Controller[Task]):
 
     def log(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
-        return Response.json(self.task_logs.save(TaskLog.of(task, request.body.get("line", ""), self.now().timestamp()), request.actor), 201)
+        return Response.json(self.task_logs.save(TaskLog.of(task, request.body.get("line", ""), self.time().timestamp()), request.actor), 201)
 
     @staticmethod
-    def now() -> datetime:
+    def time() -> datetime:
         return datetime.now(timezone.utc)

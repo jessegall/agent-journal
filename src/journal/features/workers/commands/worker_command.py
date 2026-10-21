@@ -51,13 +51,13 @@ class WorkerCommand(Command):
         self.verb(verbs, "list", "every worker out")
 
     def own_provider(self, caller: Caller) -> str:
-        return self.agents.for_session(caller.session).provider if caller.session else "claude"
+        return self.agents.session_agent(caller.session).provider if caller.session else "claude"
 
     def dispatch(self, args: Namespace, caller: Caller) -> int:
-        if self.profiles.kind_of(args.profile) != "worker":
+        if self.profiles.kind(args.profile) != "worker":
             raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
-        out = [w for w in self.workers.in_() if w.is_out()]
+        out = [w for w in self.workers.scoped() if w.is_running()]
         most = int(self.settings.option(Feature.WORKER_LIMIT))
         if most and len(out) >= most:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(out)).rendered())
@@ -91,7 +91,7 @@ class WorkerCommand(Command):
 
     def knowing(self, brief: str) -> list[Worker]:
         named = PathMentions.of(brief)
-        return [w for w in reversed(self.workers.in_()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & PathMentions.of(w.brief)]
+        return [w for w in reversed(self.workers.scoped()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & PathMentions.of(w.brief)]
 
     def say(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
@@ -99,7 +99,7 @@ class WorkerCommand(Command):
             raise Rejection(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
         if not worker.resume:
             raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
-        if self.providers.named(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
+        if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
             raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
         worker = self.workers.save(worker.told(args.brief).with_(dispatched_by=caller.session), caller.actor)
         if args.task:
@@ -120,16 +120,16 @@ class WorkerCommand(Command):
         return 0
 
     def done(self, args: Namespace, caller: Caller) -> int:
-        worker = self.workers.save(self.workers.find(args.n).done(), caller.actor)
+        worker = self.workers.save(self.workers.find(args.n).finished(), caller.actor)
         dropped = self.branch.dropped(worker)
         print(f"worker {worker.id}'s report is acted on" + (f"; {dropped}" if dropped else ""))
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        workers = self.workers.in_()
+        workers = self.workers.scoped()
         for worker in workers:
             print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {worker.brief}")
-        out = [str(worker.id) for worker in workers if worker.is_out()]
+        out = [str(worker.id) for worker in workers if worker.is_running()]
         if out:
             print(f"`journal worker wait {' '.join(out)}` waits for a report; listing again does not bring it sooner")
         return 0

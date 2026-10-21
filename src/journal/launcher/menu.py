@@ -43,14 +43,14 @@ class Menu:
             self.journal("environment", "create", chosen)
             rows = self.environments()
         last = next((row.last_session(agent) for row in rows if row.name == chosen), "")
-        resume = "" if new or not last else self._carry_on(agent, chosen, last, asking)
+        resume = "" if new or not last else self._continuation(agent, chosen, last, asking)
         skip_prompts = skip or yes or self._prompts(agent)
         asking = asking and not resume
         hooks_aside = aside or (self._hooks(ForeignHooks(self.root, agent).others(), before.hooks_aside) if asking else before.hooks_aside)
         self.remembered.write(Answers(skip_prompts, hooks_aside))
         choice = Choice(chosen, resume, hooks_aside, skip_prompts)
         if not yes:
-            self._hooks_to_trust(agent)
+            self._trust_question(agent)
         self._summary(choice)
         return choice
 
@@ -72,7 +72,7 @@ class Menu:
         if self.screen.pick(f"Delete {row.name}?", notes, [Option("No, keep it"), Option("Yes, delete it")], 0) == 1:
             self.journal("environment", "delete", row.name)
 
-    def _carry_on(self, agent: str, environment: str, last: str, asking: bool) -> str:
+    def _continuation(self, agent: str, environment: str, last: str, asking: bool) -> str:
         return self._resume(agent, environment, last) if asking else last
 
     def _resume(self, agent: str, environment: str, last: str) -> str:
@@ -90,8 +90,8 @@ class Menu:
         notes = ["They might conflict with the journal's. Set aside, a copy is kept and they are put back when the journal ends.", *rows]
         return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if aside_before else 1) == 0
 
-    def _hooks_to_trust(self, agent: str) -> None:
-        if Providers().named(agent).hooks_trusted(self.root):
+    def _trust_question(self, agent: str) -> None:
+        if Providers().lookup(agent).hooks_trusted(self.root):
             return
         notes = [f"{agent.capitalize()} asks once to trust the hooks the journal wrote into this project. Choose Trust all and continue", f"when {agent.capitalize()} asks, or the journal cannot follow what {agent.capitalize()} does."]
         self.screen.pick(f"Trust the journal's hooks in {agent.capitalize()}", notes, [Option("Understood")], 0)

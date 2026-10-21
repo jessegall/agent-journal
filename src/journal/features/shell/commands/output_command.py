@@ -37,14 +37,14 @@ class OutputCommand(Command):
     def read(self, args: Namespace, caller: Caller) -> int:
         output = self.outputs.find(args.n)
         files = OutputFiles(Path(output.folder))
-        if not files.is_kept():
+        if not files.is_stored():
             raise Rejection(f"output {output.id} has no files left")
         if args.tail:
             print("\n".join(files.last(args.tail)))
             return 0
         lines = files.lines()
         if args.reader:
-            print("\n".join(self.readers.named(args.reader).read(lines)))
+            print("\n".join(self.readers.lookup(args.reader).read(lines)))
             return 0
         if args.grep:
             print("\n".join(Reader("grep", "the lines matching a pattern", args.grep).read(lines)))
@@ -74,6 +74,6 @@ class OutputCommand(Command):
     def list(self, args: Namespace, caller: Caller) -> int:
         for output in self.outputs.page(args.last):
             files = OutputFiles(Path(output.folder))
-            outcome = files.outcome() if files.is_kept() else "files gone"
+            outcome = files.outcome() if files.is_stored() else "files gone"
             print(f"{output.id:>5}  {outcome:<22}  {output.headline()[:100]}")
         return 0

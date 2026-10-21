@@ -19,7 +19,7 @@ class Controller(Generic[S]):
     timeline = False
 
     def index(self, request: Request) -> Response:
-        return Response.json(self.listed(Listing.from_query(request.query)))
+        return Response.json(self.listed(Listing.query_listing(request.query)))
 
     def listed(self, listing: Listing) -> RowList:
         rows = self.rows()
@@ -45,17 +45,17 @@ class Controller(Generic[S]):
         return Response.json(self.shown(self.repository.find(request.number("id"))))
 
     def store(self, request: Request) -> Response:
-        row = self.repository.model(**self.fields_of(request.body))
+        row = self.repository.model(**self.fields(request.body))
         return Response.json(self.shown(self.repository.save(row, request.actor)), 201)
 
     def update(self, request: Request) -> Response:
         row = self.repository.find(request.number("id"))
-        return Response.json(self.shown(self.repository.save(row.with_(**self.fields_of(request.body)), request.actor)))
+        return Response.json(self.shown(self.repository.save(row.with_(**self.fields(request.body)), request.actor)))
 
     def delete(self, request: Request) -> Response:
         self.repository.delete(self.repository.find(request.number("id")), request.actor)
         return Response.json({})
 
-    def fields_of(self, body: dict) -> dict:
+    def fields(self, body: dict) -> dict:
         own = {f.name for f in fields(self.repository.model)} - {"id", "environment_id", "created_at", "created_by", "updated_at", "updated_by", "state"}
         return {name: value for name, value in body.items() if name in own}

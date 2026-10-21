@@ -25,8 +25,8 @@ class ShareActions:
         self.shares, self.targets, self.tunnel, self.messages = shares, targets, tunnel, messages
 
     def create(self, named: str, expires: str, password: str, comments: bool, actor: Actor) -> Share:
-        target = self.targets.named(named)
-        share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.until(expires), approved=actor.is_the_user(),
+        target = self.targets.lookup(named)
+        share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.until(expires), approved=actor.is_user(),
                                        password=SharePassword.hashed(password) if password else "", comments=comments), actor)
         self.targets.link(share, target, actor)
         if share.approved:
@@ -38,7 +38,7 @@ class ShareActions:
     def ask(self, share: Share, target: Ref, actor: Actor) -> None:
         opens = "\n".join(f"- {line}" for line in self.targets.opens(str(target)))
         comments = "\n\nVisitors can leave comments, which come to the chat." if share.comments else ""
-        text = f"The agent wants to share {target}\n\nNothing opens until you accept it. Whoever has the link will be able to view:\n{opens}{comments}\n\n{self.tunnel.link_of(share.token)}"
+        text = f"The agent wants to share {target}\n\nNothing opens until you accept it. Whoever has the link will be able to view:\n{opens}{comments}\n\n{self.tunnel.share_link(share.token)}"
         buttons = [{"label": "Accept", "path": f"/shares/{share.id}/approve"}, {"label": "Deny", "path": f"/shares/{share.id}/stop"}]
         self.messages.save(Message(author=Author.AGENT, text=text, data={"buttons": buttons}), actor)
 

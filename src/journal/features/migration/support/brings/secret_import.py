@@ -17,8 +17,8 @@ class SecretImport(ProjectKind):
         super().__init__(ledger)
         self.secrets = secrets
 
-    def made(self, row: Version3Row, actor: Actor) -> Secret:
+    def created(self, row: Version3Row, actor: Actor) -> Secret:
         kind = row.data.get("kind", "")
         fields = tuple({"name": f.get("name", ""), "hidden": bool(f.get("hidden")), "variable": f.get("variable", "")} for f in row.listed("secret_fields"))
         secret = Secret(title=row.title, brief=row.brief, kind=SecretKind(kind) if kind in {k.value for k in SecretKind} else SecretKind.CUSTOM, fields=fields, programs=tuple(row.listed("programs")))
-        return self.secrets.imported(secret, row.made_at(), actor)
+        return self.secrets.imported(secret, row.creation_time(), actor)

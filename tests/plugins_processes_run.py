@@ -39,7 +39,7 @@ def test_a_plugins_service_answers_a_held_event_on_its_socket(app, tmp_path: Pat
         manifest = json.loads((folder / "journal-plugin.json").read_text())
         (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "services": [*manifest["services"], {"name": "never", "command": ["./serve.py"], "when": "false"}]}))
         app.console().run(["plugin", "install", str(folder), "--yes"], USER)
-        listening = app.container.get(PluginFolders).socket(app.container.get(Plugins).named("echo"), "main")
+        listening = app.container.get(PluginFolders).socket(app.container.get(Plugins).lookup("echo"), "main")
         until = time.time() + 10
         while not listening.is_socket() and time.time() < until:
             time.sleep(0.1)

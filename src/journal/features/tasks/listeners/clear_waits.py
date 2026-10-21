@@ -14,7 +14,7 @@ class ClearWaits(Listener[Updated]):
         self.tasks = tasks
 
     def handle(self, event: Updated) -> None:
-        if not WaitTargets.just_settled(event):
+        if not WaitTargets.is_newly_resolved(event):
             return
         for task in self.tasks.waiting_on(event.model):
             if not self.tasks.open_waits(task):

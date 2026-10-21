@@ -21,15 +21,15 @@ class ProgramSettings:
             return self.rest
         return {**self.rest, "hooks": self.hooks}
 
-    def kept(self) -> "ProgramSettings":
+    def stored(self) -> "ProgramSettings":
         if self.hooks is None:
             return self
-        ours = {event: [block for block in blocks if self.is_ours(block)] for event, blocks in self.hooks.items()}
+        ours = {event: [block for block in blocks if self.is_journals(block)] for event, blocks in self.hooks.items()}
         return replace(self, hooks={event: blocks for event, blocks in ours.items() if blocks})
 
     def with_hooks_of(self, other: "ProgramSettings") -> "ProgramSettings":
         return replace(self, hooks=other.hooks or {})
 
     @staticmethod
-    def is_ours(block: dict) -> bool:
+    def is_journals(block: dict) -> bool:
         return "journal/hooks/hook.sh" in json.dumps(block)

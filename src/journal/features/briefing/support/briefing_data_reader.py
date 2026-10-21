@@ -12,4 +12,4 @@ class BriefingDataReader:
         self.start, self.environments, self.rules = start, environments, rules
 
     def read(self, agent: Agent) -> BriefingData:
-        return BriefingData(oriented=agent.oriented, environment=self.environments.find(agent.environment_id).name, last_other_session_at=self.start.last_other_session_at(agent.session), rules=self.start.rules_numbered(), rules_count=len(self.rules.all()), facts=self.start.facts_numbered(), reminders=self.start.reminders_numbered(), waiting=self.start.waiting())
+        return BriefingData(oriented=agent.oriented, environment=self.environments.find(agent.environment_id).name, last_other_session_at=self.start.other_session_time(agent.session), rules=self.start.rules_numbered(), rules_count=len(self.rules.all()), facts=self.start.facts_numbered(), reminders=self.start.reminders_numbered(), waiting=self.start.waiting())

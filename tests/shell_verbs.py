@@ -54,7 +54,7 @@ class ShellVerbs:
             output = self.app.container.get(CommandOutputs).of_chain(chain)
             folder = OutputFiles(Path(output.folder))
             line = (folder.folder / "line").read_text() if (folder.folder / "line").is_file() else output.command
-            if self.record.is_kept(chain, line, size, folder.has_cut()):
+            if self.record.is_stored(chain, line, size, folder.has_cut()):
                 return "kept"
             self.record.delete_output(chain, self.caller)
             return "forgotten"

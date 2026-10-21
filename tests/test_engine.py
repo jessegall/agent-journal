@@ -272,47 +272,47 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     switch = "\x1b[1mSwitch model?\x1b[0m\r\nYour next response will be slower\r\n\r\n❯ 1. Yes, switch to Opus 5.5\r\n  2. No, go back\r\n"
     link.choose(1, "/model opus")
     shown(switch)
-    assert watcher.look(agent) == "\r" and sent[-1] == {"verb": "keys", "name": "agent", "keys": "\r"}, "a confirmation the journal's pick caused is taken with Enter"
-    assert watcher.look(agent) == "", "and answered once"
+    assert watcher.check(agent) == "\r" and sent[-1] == {"verb": "keys", "name": "agent", "keys": "\r"}, "a confirmation the journal's pick caused is taken with Enter"
+    assert watcher.check(agent) == "", "and answered once"
     from journal.engine.support.menu_answers import MenuAnswers
     picks = {"Turn it on": 2, "Pick one": 0}
     monkeypatch.setattr(MenuAnswers, "ask", lambda self, menu, provider: self._asked.__setitem__(self.key(menu), next((o for o in menu.options if o.number == picks.get(menu.options[0].label)), None)))
     asked = app.container.get(MenuAnswers)
     settled = lambda: [timing.sleep(0.05) for _ in range(40) if asked._running - set(asked._asked)]
     shown("Something new?\r\n❯ 1. Turn it on\r\n  2. Leave it alone for now\r\n")
-    said = watcher.look(agent)
+    said = watcher.check(agent)
     settled()
-    assert (said or watcher.look(agent)) == "\x1b[B\r", "a menu the word rules cannot settle is answered by an independent agent asked off the watcher's thread"
+    assert (said or watcher.check(agent)) == "\x1b[B\r", "a menu the word rules cannot settle is answered by an independent agent asked off the watcher's thread"
     shown("Something else?\r\n❯ 1. Turn it on\r\n  2. Leave it alone for now\r\n")
-    assert watcher.look(agent) == "\x1b[B\r", "and its pick is remembered for the same options"
+    assert watcher.check(agent) == "\x1b[B\r", "and its pick is remembered for the same options"
     shown("Odd one?\r\n❯ 1. Pick one\r\n  2. Pick two\r\n")
-    said = watcher.look(agent)
+    said = watcher.check(agent)
     settled()
-    assert (said or watcher.look(agent)) == "\x1b", "a menu even the asked agent cannot place is closed with Escape"
+    assert (said or watcher.check(agent)) == "\x1b", "a menu even the asked agent cannot place is closed with Escape"
     from journal.support.scope import Scope
     with app.container.get(Scope).of(1):
-        assert any("closed it with Escape" in m.text for m in app.container.get(Messages).in_()), "and a card says so"
+        assert any("closed it with Escape" in m.text for m in app.container.get(Messages).scoped()), "and a card says so"
     permission = "Bash command\r\nrm -f build/*.log\r\n\r\nDo you want to proceed?\r\n❯ 1. Yes\r\n  2. Yes, and don't ask again for rm commands in build\r\n  3. No, and tell Claude what to do differently (esc)\r\n"
     launches = app.config.home / "runtime" / "launches"
     launches.mkdir(parents=True, exist_ok=True)
     (launches / "main.json").write_text(json.dumps({"front": {"command": ["claude", "--settings", "{}"]}}))
     shown(permission)
-    assert watcher.look(agent) != "\r", "a permission question under a launch that keeps the prompts is the user's to answer"
+    assert watcher.check(agent) != "\r", "a permission question under a launch that keeps the prompts is the user's to answer"
     (launches / "main.json").write_text(json.dumps({"front": {"command": ["claude", "--dangerously-skip-permissions", "--settings", "{}"]}}))
     shown(permission.replace("build", "dist"))
-    assert watcher.look(agent) == "\r", "a permission question the provider asks anyway under a launch that skips the prompts is answered with yes"
+    assert watcher.check(agent) == "\r", "a permission question the provider asks anyway under a launch that skips the prompts is answered with yes"
     (screens / "main.keyed").touch()
     shown("Pick a theme\r\n❯ 1. Dark\r\n  2. Light\r\n")
-    assert watcher.look(agent) == "", "a picker that came up right after keys at the keyboard is the user's own"
+    assert watcher.check(agent) == "", "a picker that came up right after keys at the keyboard is the user's own"
     shown(switch.replace("Opus 5.5", "Sonnet 5.5") + "\r\n──────\r\n❯ \r\n──────\r\n  agent-journal · main\r\n")
-    assert watcher.look(agent) == "\r", "a yes-or-no confirmation of what the user just asked at the keyboard is confirmed, seen by its cursor though the prompt box is drawn below it"
+    assert watcher.check(agent) == "\r", "a yes-or-no confirmation of what the user just asked at the keyboard is confirmed, seen by its cursor though the prompt box is drawn below it"
     shown("Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\n", still_for=0.0)
-    assert watcher.look(agent) == "", "a menu just drawn is not answered yet"
+    assert watcher.check(agent) == "", "a menu just drawn is not answered yet"
     busy = lambda seconds: f"· Shimmying… ({seconds}s · ↓ 3.9k tokens)\r\n\r\n────────────────\r\n" + switch.replace("Opus 5.5", "Fable 5.1")
     shown(busy(49), still_for=0.0)
-    assert watcher.look(agent) == "", "a menu first seen under a moving spinner waits one look"
+    assert watcher.check(agent) == "", "a menu first seen under a moving spinner waits one look"
     shown(busy(51), still_for=0.0)
-    assert watcher.look(agent) == "\r", "the switch of model is confirmed at the next look while the agent works, its spinner counting above the rule: the menu stood the same, whatever the screen did, and only a model change asks it"
+    assert watcher.check(agent) == "\r", "the switch of model is confirmed at the next look while the agent works, its spinner counting above the rule: the menu stood the same, whatever the screen did, and only a model change asks it"
 
 
 def test_a_typed_line_goes_out_on_one_line(app: App, monkeypatch):
@@ -355,7 +355,7 @@ class Listening(BaseState):
     def on_push(self, settings):
         return ()
 
-    def named(self) -> str:
+    def label(self) -> str:
         return "not a listener"
 
 
@@ -427,9 +427,9 @@ def test_the_session_end_pushes_ended_on_the_stack_and_a_new_start_pops_it(app: 
     hook(app, "SessionStart")
     hook(app, "SessionEnd")
     agents = app.container.get(Agents)
-    assert [row["state"] for row in agents.for_session("s1").stack] == ["idle", "ended"]
+    assert [row["state"] for row in agents.session_agent("s1").stack] == ["idle", "ended"]
     hook(app, "SessionStart")
-    assert [row["state"] for row in agents.for_session("s1").stack] == ["idle"]
+    assert [row["state"] for row in agents.session_agent("s1").stack] == ["idle"]
 
 
 CALLS: list[str] = []
@@ -483,7 +483,7 @@ def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catc
     assert CALLS == ["suspend catching", "push noting", "suspend catching", "pop noting", "resume catching"]
     with pytest.raises(Rejection):
         machine.push("s1", 1, Refusing(), Actor.system(), "a refused push")
-    assert [row["state"] for row in app.container.get(Agents).for_session("s1").stack] == ["idle"]
+    assert [row["state"] for row in app.container.get(Agents).session_agent("s1").stack] == ["idle"]
 
 
 def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_top_first(app: App):
@@ -491,7 +491,7 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "lost"], AGENT)
     with app.container.get(Scope).of(1):
-        row = next(a for a in app.container.get(AgentActivity).page(app.container.get(Agents).in_()) if a["session"] == "s1")
+        row = next(a for a in app.container.get(AgentActivity).page(app.container.get(Agents).scoped()) if a["session"] == "s1")
     assert [s["name"] for s in row["stack"]] == ["stuck", "working", "idle"] and row["stack"][0]["awaits"]
     assert [(t["before"], t["after"]) for t in row["trail"]] == [([], ["idle"]), (["idle"], ["idle", "working"]), (["idle", "working"], ["idle", "working", "stuck"])]
     write(app)
@@ -509,7 +509,7 @@ def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_n
     assert console.run(["panic", "pop"], AGENT).out.strip().endswith("idle, working(what=parsing)")
     assert console.run(["panic", "nowhere"], AGENT).code != 0
     assert console.run(["panic", "idle"], AGENT).out.strip() == "the stack, bottom to top: idle"
-    assert [row["state"] for row in agents.for_session("s1").stack] == ["idle"]
+    assert [row["state"] for row in agents.session_agent("s1").stack] == ["idle"]
     with app.container.get(Scope).of(1):
         newest = app.container.get(Entries).of_kind(StackHistory.KIND)[0]
     assert newest.data["cause"] == "journal panic idle" and newest.actor == AGENT.actor
@@ -544,7 +544,7 @@ def test_the_models_carry_the_events_their_changes_mean():
     assert Task(id=8, environment_id=1, title="u").started(time).events == (TaskStarted(environment_id=1, time=time.timestamp(), task_id=8, title="u", plan_id=0),)
     assert TaskLog.of(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, time=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
-    assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowResolved] and question.asked(1.0).events[0].question_id == 4
+    assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowResolved] and question.posed(1.0).events[0].question_id == 4
     assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerReported(environment_id=1, time=5.0, worker_id=9, name="w", report=4, dispatched_by=""),)
 
 
@@ -553,22 +553,22 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
     hook(app, "SessionEnd")
     hook(app, "SessionStart", session_id="s2")
     agents, bus = app.container.get(Agents), app.container.get(Bus)
-    assert [a.session for a in agents.live_in(1)] == ["s2"]
+    assert [a.session for a in agents.current_scoped(1)] == ["s2"]
     assert any(isinstance(listener, RowEventDelivery) for listener in bus.listeners(RowEvent))
     assert not any(isinstance(listener, (RowEventDelivery, StateMachine)) for listener in bus.listeners(Updated))
     bus.dispatch(PlanStarted(environment_id=1, time=1.0, plan_id=1, task_id=0))
-    assert [row["state"] for row in agents.for_session("s2").stack] == ["idle", "following_plan"], "the live agent of the environment follows the plan"
+    assert [row["state"] for row in agents.session_agent("s2").stack] == ["idle", "following_plan"], "the live agent of the environment follows the plan"
 
 
 def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_refuses_one_it_does_not_hold(app: App):
     registry, own = app.container.get(NudgeRegistry), Nudge("engine", "test_line", "a line of the test")
-    assert registry.register(LINE) == "tests.line" and registry.named("tests.line") is LINE and registry.register(own) == "engine.test_line"
-    assert registry.named("engine.nothing_while_compacting") is Engine.COMPACTION_PAUSE
+    assert registry.register(LINE) == "tests.line" and registry.lookup("tests.line") is LINE and registry.register(own) == "engine.test_line"
+    assert registry.lookup("engine.nothing_while_compacting") is Engine.COMPACTION_PAUSE
     assert all(nudge.key in registry.nudges for feature in app.container.get(Registry).features for nudge in feature.nudges)
     listed = app.console().run(["nudge", "list"], AGENT).out
     assert "tests.line  [tests]  a line" in listed and "tasks.carry_on  [tasks]" in listed and listed.strip().endswith("nudges")
     hook(app, "SessionStart")
-    agent = app.container.get(Agents).for_session("s1")
+    agent = app.container.get(Agents).session_agent("s1")
     with pytest.raises(Rejection):
         app.container.get(Nudger).say(agent, OTHER.create())
     assert app.container.get(Nudger).say(agent, own.create()) == "a line of the test"
@@ -579,7 +579,7 @@ def test_the_engines_own_states_wait_compacting_and_ended_answer_hand_built_even
     assert Wait().on(PromptSubmitted(prompt="go on"), settings).popped
     assert not Wait().on(PromptSubmitted(prompt="[journal] a line"), settings).popped
     assert Wait().on(own, settings).popped and not Wait().on(subagents, settings).popped
-    assert Wait().awaiting() == ("", "")
+    assert Wait().wait_description() == ("", "")
     assert CompactingState().on(own, settings).held == Engine.COMPACTION_PAUSE.create()
     assert CompactingState().on(SessionStarted(), settings).popped
     assert all(Ended().on(event, settings).popped for event in (SessionStarted(), PromptSubmitted(prompt="hi"), own))
@@ -589,7 +589,7 @@ def test_a_nudge_is_one_class_whose_create_fills_its_blanks_and_rendered_says_th
     nudge = Nudge("tests", "two_blanks", "{{n}} of {{what}}", "read {{what}}")
     assert nudge.create(n=3, what="them").rendered() == "3 of them. read them"
     assert nudge.create(n=3, what="them").key == "tests.two_blanks" and nudge.create().rendered() == "{{n}} of {{what}}. read {{what}}"
-    assert nudge.in_words("its own words").rendered() == "its own words"
+    assert nudge.text("its own words").rendered() == "its own words"
 
 
 def test_the_data_is_read_per_feature_and_travels_on_the_event_the_machine_asks(app: App):
@@ -597,9 +597,9 @@ def test_the_data_is_read_per_feature_and_travels_on_the_event_the_machine_asks(
     console = app.console()
     console.run(["task", "create", "the feature data", "--start"], AGENT)
     console.run(["message", "send", "a word from the user"], USER)
-    agent = app.container.get(Agents).for_session("s1")
+    agent = app.container.get(Agents).session_agent("s1")
     with app.container.get(Scope).of(1):
-        data = app.container.get(DataReaders).for_agent(agent)
+        data = app.container.get(DataReaders).agent_data(agent)
     assert data.of(TasksFeature).in_hand == 1 and data.of(TasksFeature).parked == ()
     assert len(data.of(MessagesFeature).unread) == 1 and data.of(BriefingFeature).oriented is False
     assert data.of(ShellFeature).background == () and data.of(WorkersFeature).reports_waiting == ()
@@ -619,7 +619,7 @@ class LawsConduct(Conduct):
     def on_anything_laws(self, event: AgentEvent, settings: SettingsValue) -> Transition:
         return self.pop()
 
-    def named(self) -> str:
+    def label(self) -> str:
         return "not a listener"
 
 
@@ -1195,12 +1195,12 @@ def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instan
     from journal.features.messages.support.messages_conduct import MessagesConduct
     from journal.repositories.agents import Agents
     assert Working.listeners() is Working.listeners(), "a state's listener table is built once per class"
-    assert Working.listeners_for(ToolStarting) is Working.listeners_for(ToolStarting) and Working.listeners_for(Stop) is Working.listeners_for(Stop), "the pick per event type is cached"
-    before = Working.listeners_for(ToolStarting)
+    assert Working.event_listeners(ToolStarting) is Working.event_listeners(ToolStarting) and Working.event_listeners(Stop) is Working.event_listeners(Stop), "the pick per event type is cached"
+    before = Working.event_listeners(ToolStarting)
     folded = BaseState.conducts
     BaseState.fold((MessagesConduct,))
     try:
-        assert Working.listeners_for(ToolStarting) is not before, "folding the conducts in clears the cache, so the fold is seen"
+        assert Working.event_listeners(ToolStarting) is not before, "folding the conducts in clears the cache, so the fold is seen"
     finally:
         BaseState.fold(folded)
     assert app.container.get(StateMachine) is app.container.get(StateMachine) and app.container.get(Agents) is app.container.get(Agents), "the container builds a class once"
@@ -1249,18 +1249,18 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
     write(app)
     write(app)
     agents, link = app.container.get(Agents), app.container.get(SupervisorLink)
-    assert agents.for_session("s1").tool_uses == 2
+    assert agents.session_agent("s1").tool_uses == 2
     link.type(1, "first")
     link.type(1, "held behind the first")
     assert sent == ["[journal] first"] and len(link.typed._held) == 1, "a line within the batch window queues"
     assert hook(app, "PreCompact")[0] == 200
-    assert agents.for_session("s1").stack[-1]["state"] == "compacting" and agents.for_session("s1").tool_uses == 0, "the compaction pushes its state and sets the count back to zero"
+    assert agents.session_agent("s1").stack[-1]["state"] == "compacting" and agents.session_agent("s1").tool_uses == 0, "the compaction pushes its state and sets the count back to zero"
     link.type(1, "a dump arrived")
     link.type(1, "the wait ended")
     link.release(1)
-    assert sent == ["[journal] first"] and link.typed.held_as_one(1) is None, "the typist is disabled while compacting: its queue is emptied and a line is dropped, not queued, since the look after the compaction tells the agent what it missed"
+    assert sent == ["[journal] first"] and link.typed.batched(1) is None, "the typist is disabled while compacting: its queue is emptied and a line is dropped, not queued, since the look after the compaction tells the agent what it missed"
     hook(app, "SessionStart", source="compact")
-    assert agents.for_session("s1").stack[-1]["state"] != "compacting" and sent == ["[journal] first"]
+    assert agents.session_agent("s1").stack[-1]["state"] != "compacting" and sent == ["[journal] first"]
     link.typed.typed(1, "")
     link.typed._sent_at[1] = 0.0
     link.typed._waiting.clear()
@@ -1272,9 +1272,9 @@ def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_a
     from journal.features.plans.states.following_plan import FollowingPlan
     settings = SettingsValue({})
     following = FollowingPlan(plan_id=19, approved=True)
-    assert following.named() == "plan 19, with no task in hand"
+    assert following.label() == "plan 19, with no task in hand"
     started = following.on(TaskStarted(environment_id=1, time=5.0, task_id=1141, title="the developer tab", plan_id=0).with_data(FeatureData({})), settings)
-    assert started.to.task_id == 1141 and started.to.named() == "task 1141" and started.to.logged_at == 5.0, "one task is in hand at a time, so the task started is the plan state's task whether the plan holds it or not"
+    assert started.to.task_id == 1141 and started.to.label() == "task 1141" and started.to.logged_at == 5.0, "one task is in hand at a time, so the task started is the plan state's task whether the plan holds it or not"
 
 
 def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_builder_carries_on_and_the_solo_mode_keeps_workers_out():
@@ -1327,7 +1327,7 @@ def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_neve
         console.run(["plan", "add", "1", f"piece {n}"], USER)
     console.run(["plan", "todos", "1", "1", *[str(n) for n in range(1, 21)]], USER)
     assert console.run(["plan", "ready", "1"], AGENT).code == 0 and console.run(["plan", "approve", "1"], USER).code == 0 and console.run(["plan", "start", "1"], AGENT).code == 0
-    stack = lambda: [s["state"] for s in agents.for_session("s1").stack]
+    stack = lambda: [s["state"] for s in agents.session_agent("s1").stack]
     assert stack() == ["orchestrating", "orchestrating_plan"], "the orchestrator's mode state and its plan state, with task 1 in hand"
     stop = lambda: hook(app, "Stop")[1]
     first = stop()

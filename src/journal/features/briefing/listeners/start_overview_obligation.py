@@ -13,4 +13,4 @@ class StartOverviewObligation(AgentListener[SessionStarted]):
         self.agents = agents
 
     def handle(self, event: SessionStarted) -> None:
-        self.agents.touch(self.agents.for_session(event.session), Actor.system(), oriented=False)
+        self.agents.touch(self.agents.session_agent(event.session), Actor.system(), oriented=False)

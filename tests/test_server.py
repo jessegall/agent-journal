@@ -523,11 +523,11 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
     from journal.http.listing import Listing
     from journal.models.message import Message
     rows = [Message(id=n, text=f"m{n}") for n in range(1, 61)]
-    listing = Listing.from_query({})
+    listing = Listing.query_listing({})
     assert [r.id for r in listing.listed(rows, lambda r: True)["rows"]] == list(range(1, 61)), "a work list shows every open row, however many"
     page = listing.listed(rows, lambda r: True, timeline=True)
     assert [r.id for r in page["rows"]] == list(range(11, 61)) and page["more"], "a chat pages strictly: the last fifty, the rest on scrolling up"
-    older = Listing.from_query({"before": "11"}).listed(rows, lambda r: True, timeline=True)
+    older = Listing.query_listing({"before": "11"}).listed(rows, lambda r: True, timeline=True)
     assert [r.id for r in older["rows"]] == list(range(1, 11)) and not older["more"]
 
 def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude_reads_it(server, journal_root):
@@ -858,9 +858,9 @@ def test_a_slow_answer_is_asked_once_given_from_memory_and_asked_again_once_drop
     from journal.support.cached_answer import CachedAnswer
     asked = []
     kept = CachedAnswer(lambda: asked.append(1) or len(asked), 60, 0)
-    assert (kept.given(), kept.given(), len(asked)) == (1, 1, 1), "the first reader waits for it, the next is given it at once"
+    assert (kept.supplied(), kept.supplied(), len(asked)) == (1, 1, 1), "the first reader waits for it, the next is given it at once"
     kept.drop()
-    assert (kept.given(), len(asked)) == (2, 2), "an answer no longer true is waited for again"
+    assert (kept.supplied(), len(asked)) == (2, 2), "an answer no longer true is waited for again"
 
 
 def test_an_output_is_read_by_its_id(tmp_path: Path):
@@ -994,17 +994,17 @@ def test_a_second_journal_of_the_same_project_stands_by_while_the_first_answers(
         first = probe.getsockname()[1]
     one = App(Config(tmp_path / "one", port=first, span=3))
     standby = InstanceGuard(Config(tmp_path / "one", port=first, span=3))
-    assert standby.another() == "", "no port file, no other journal"
+    assert standby.other_address() == "", "no port file, no other journal"
     one.server().start()
     try:
-        assert standby.another() == f"http://127.0.0.1:{first}", "the first journal answers on the port its file names, so a second stands by"
-        assert InstanceGuard(Config(tmp_path / "two", port=first, span=3)).another() == "", "another project's journal on that port is no reason to stand by"
+        assert standby.other_address() == f"http://127.0.0.1:{first}", "the first journal answers on the port its file names, so a second stands by"
+        assert InstanceGuard(Config(tmp_path / "two", port=first, span=3)).other_address() == "", "another project's journal on that port is no reason to stand by"
         App(Config(tmp_path / "one", port=first, span=3)).server()
         with socket.socket() as probe:
             assert probe.connect_ex(("127.0.0.1", first + 1)) != 0, "a journal built to stand by holds no port until it starts"
     finally:
         one.server().stop()
-    assert standby.another() == "", "the first gone, the port is free to take"
+    assert standby.other_address() == "", "the first gone, the port is free to take"
 
 
 def test_a_comment_is_deleted_from_its_column(server):
@@ -1129,7 +1129,7 @@ def test_a_tunler_still_running_for_the_journals_address_is_ended_before_the_tun
     try:
         time.sleep(0.2)
         assert stale.pid in Tunler.running_for("abcdef") and other.pid not in Tunler.running_for("abcdef"), "a tunler is known by the subdomain in its arguments"
-        ended = Tunler().ended_for("abcdef")
+        ended = Tunler().stop_subdomain("abcdef")
         assert stale.pid in ended and other.pid not in ended, "the one for this address is ended, the other left"
         assert stale.wait(5) is not None and other.poll() is None, "it is gone, and the tunnel of another address runs on"
     finally:

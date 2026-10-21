@@ -58,7 +58,7 @@ class Tunnel:
         host = self.host()
         return f"{self.place.subdomain()}.{host}" if host else ""
 
-    def link_of(self, token: str) -> str:
+    def share_link(self, token: str) -> str:
         return f"https://{self.address()}/s/{token}"
 
     def data(self) -> dict:
@@ -95,18 +95,18 @@ class Tunnel:
             self.settle_at(time)
 
     def is_wanted(self, time: datetime) -> bool:
-        return self.shares.open_anywhere() or bool(self.phones.live(time)) or bool(self.codes.open(time))
+        return self.shares.open_anywhere() or bool(self.phones.active(time)) or bool(self.codes.open(time))
 
     def start(self) -> None:
-        host, command, port = self.link.hosting(), self.tunler.command(), self.place.kept().port
+        host, command, port = self.link.hosting(), self.tunler.command(), self.place.stored().port
         if host is None or not command or not port:
             return
         subdomain = self.place.subdomain()
-        kept = self.place.kept()
+        kept = self.place.stored()
         inspector = kept.inspector or self.free_port()
         self.link.stop_service(host, SERVICE)
-        self.tunler.ended_for(subdomain)
-        self.place.keep(tunnel=(port, subdomain), inspector=inspector)
+        self.tunler.stop_subdomain(subdomain)
+        self.place.store(tunnel=(port, subdomain), inspector=inspector)
         self.link.start(host, SERVICE, [command, str(port), f"--domain={subdomain}", f"--inspect={inspector}"], self.config.root, dict(os.environ), self.log)
 
     def stop(self) -> None:
@@ -117,16 +117,16 @@ class Tunnel:
     def restart(self) -> None:
         if self.link.hosting() is None:
             raise Rejection(SUPERVISOR_MISSING)
-        self.place.keep(tunnel=())
+        self.place.store(tunnel=())
         self.start()
 
     def readdress(self) -> str:
-        host, old = self.host(), self.place.kept().subdomain
+        host, old = self.host(), self.place.stored().subdomain
         name = self.place.new_subdomain()
         self.log.parent.mkdir(parents=True, exist_ok=True)
         with self.log.open("a") as written:
             written.write(f"{MOVED} {name}\n")
-        self.place.keep(tunnel=())
+        self.place.store(tunnel=())
         self.start()
         if old and f"{old}.{host}" in self.tunler.domains():
             self.tunler.release(old, host)
@@ -140,11 +140,11 @@ class Tunnel:
             raise Rejection(failed)
         return self.tunler.domains()
 
-    def answering(self) -> bool:
-        return self._answer.fresh()
+    def is_responsive(self) -> bool:
+        return self._answer.is_recent()
 
     def answered(self) -> bool:
-        return self._answer.now()
+        return self._answer.time()
 
     def reaches_address(self) -> bool:
         address = self.address()
@@ -161,7 +161,7 @@ class Tunnel:
             state, why = "stopped", SUPERVISOR_MISSING
         else:
             state, why = ("ready", "") if self.answered() else ("starting", "")
-        return TunnelService(SERVICE, state, why, f"http://127.0.0.1:{self.place.kept().inspector}")
+        return TunnelService(SERVICE, state, why, f"http://127.0.0.1:{self.place.stored().inspector}")
 
     def cause(self) -> TunnelCause:
         host, address = self.host(), self.address()
@@ -172,7 +172,7 @@ class Tunnel:
         version = self.tunler.versions(host)
         if version.update_available:
             return TunnelCause("old", f"tunler {version.current} is older than {version.latest} on the server. Updating it may fix the connection.")
-        if self.answering():
+        if self.is_responsive():
             return TunnelCause("open", f"The tunnel is open: {address} answers.")
         return TunnelCause("waiting", f"The tunnel is running, but {address} does not answer yet. The last lines it wrote:", self.last_lines())
 

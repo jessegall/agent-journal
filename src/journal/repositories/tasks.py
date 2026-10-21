@@ -25,7 +25,7 @@ class Tasks(ScopedRepository[Task]):
         self.awaitable = {Task.table(): self, Question.table(): questions, Check.table(): checks}
 
     def open_waits(self, row: Task | Plan) -> list[Ref]:
-        return [ref for ref in self.links.targets(row, WAIT_LINK) if not self.awaited(ref).is_settled()]
+        return [ref for ref in self.links.targets(row, WAIT_LINK) if not self.waiting(ref).is_resolved()]
 
     def waits_reach(self, start: Ref, goal: Ref) -> bool:
         seen, todo = set(), [start]
@@ -39,14 +39,14 @@ class Tasks(ScopedRepository[Task]):
             todo += self.links.targets(self.find(ref.id), WAIT_LINK)
         return False
 
-    def awaited(self, ref: Ref) -> Task | Question | Check:
+    def waiting(self, ref: Ref) -> Task | Question | Check:
         return self.awaitable[ref.type].find(ref.id)
 
     def waiting_ids(self, tasks: list[Task]) -> set[int]:
-        return {link.source.id for link in self.links.linked("source", tasks, WAIT_LINK) if not self.awaited(link.target).is_settled()}
+        return {link.source.id for link in self.links.linked("source", tasks, WAIT_LINK) if not self.waiting(link.target).is_resolved()}
 
     def blocked_without_wait(self) -> list[Task]:
-        return [task for task in self.in_state(TaskState.BLOCKED) if not self.open_waits(task)]
+        return [task for task in self.with_state(TaskState.BLOCKED) if not self.open_waits(task)]
 
     def broken_waits(self) -> list[tuple[Task, Check]]:
         return [(task, check) for check in self.checks.broken_waits() for task in self.waiting_on(check)]
@@ -58,23 +58,23 @@ class Tasks(ScopedRepository[Task]):
         named = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAIT_LINK)]
         return ", ".join(part for part in (*named, row.blocked_why) if part)
 
-    def in_state(self, state: TaskState) -> list[Task]:
+    def with_state(self, state: TaskState) -> list[Task]:
         return self.matching(state=state)
 
-    def in_hand(self) -> Task | None:
-        return next(iter(self.in_state(TaskState.STARTED)), None)
+    def current(self) -> Task | None:
+        return next(iter(self.with_state(TaskState.STARTED)), None)
 
     def refuse_second(self, task: Task) -> None:
-        other = self.in_hand()
+        other = self.current()
         if task.state == TaskState.STARTED and other is not None and other.id != task.id:
             raise Rejection(f"task {other.id} is in hand: finish it, or park it with `journal task park {other.id} \"<why>\"`, before task {task.id} is started")
 
     def unfinished_count(self) -> int:
-        return self.counted_in("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
+        return self.count("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
                                (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def unseen_by_user(self) -> int:
-        return self.counted_in("state NOT IN (?, ?) AND (created_by IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
+        return self.count("state NOT IN (?, ?) AND (created_by IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def shown(self) -> list[Task]:
         finished = (TaskState.FINISHED.value, TaskState.CANCELLED.value)

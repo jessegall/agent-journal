@@ -19,5 +19,5 @@ class McpCatalogue:
     def all(self) -> tuple[Suggestion, ...]:
         return SUGGESTED
 
-    def named(self, name: str) -> Suggestion:
+    def lookup(self, name: str) -> Suggestion:
         return next(s for s in SUGGESTED if s.name == name)

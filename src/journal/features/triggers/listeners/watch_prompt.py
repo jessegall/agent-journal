@@ -6,5 +6,5 @@ class WatchPrompt(TriggerWatch[PromptSubmitted]):
     def text_of(self, event: PromptSubmitted) -> str:
         return event.prompt
 
-    def by_user(self, event: PromptSubmitted) -> bool:
-        return event.by_user
+    def is_users(self, event: PromptSubmitted) -> bool:
+        return event.is_users

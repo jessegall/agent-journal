@@ -62,13 +62,13 @@ class Updater:
     def newer(self) -> list[Release]:
         return [release for release in self.releases if release.upgrades(self.running())]
 
-    def is_out(self) -> bool:
+    def is_published(self) -> bool:
         if self.branch():
             return bool(self.head) and self.head != self.installed_commit()
         return bool(self.newer())
 
     def target(self) -> UpdateTarget:
-        if not self.is_out():
+        if not self.is_published():
             raise Rejection(f"there is nothing newer than {self.label()} to install")
         if self.branch():
             return UpdateTarget(self.branch(), f"{self.branch()} at {self.head[:7]}")
@@ -77,7 +77,7 @@ class Updater:
 
     def automatic(self) -> bool:
         from journal.features.updates.feature import Updates
-        return bool(self.settings.option(Updates.AUTO)) and self.is_out()
+        return bool(self.settings.option(Updates.AUTO)) and self.is_published()
 
     def latest(self) -> str:
         if self.branch():
@@ -86,25 +86,25 @@ class Updater:
         return newer[-1].version if newer else VERSION
 
     def data(self) -> UpdateData:
-        held = self.mark.held()
-        return UpdateData(installed=self.label(), latest=self.latest(), newer=self.is_out(), branch=self.branch(), versions=[release.version for release in self.newer()],
+        held = self.mark.paused()
+        return UpdateData(installed=self.label(), latest=self.latest(), newer=self.is_published(), branch=self.branch(), versions=[release.version for release in self.newer()],
                               updating=held.to if held else "", step=held.step if held else "", problem=self.problem)
 
     def tick(self, time: float) -> None:
         self.settle(time)
         if time - self._checked_at >= CHECK_INTERVAL_SECONDS:
             self._checked_at = time
-            self.apart(self.checked)
+            self.separate(self.checked)
 
     def said(self) -> str:
         if self.problem:
             return self.problem
-        if self.is_out():
+        if self.is_published():
             return f"{self.target().label} is out; {self.label()} is installed. journal update installs it"
         return f"{self.label()} is the newest commit of the branch" if self.branch() else f"{VERSION} is the newest release of version {self.running().major}"
 
     def settle(self, time: float) -> None:
-        held = self.mark.held()
+        held = self.mark.paused()
         if held is None or (held.pid == os.getpid() and not held.is_stale(time)):
             return
         self.mark.clear()
@@ -112,10 +112,10 @@ class Updater:
 
     def update_now(self, actor: Actor) -> None:
         self.mark.claim(self.label(), self.target().label)
-        if not self.apart(lambda: self.install_newest(actor)):
+        if not self.separate(lambda: self.install_newest(actor)):
             raise Rejection("an update is under way already")
 
-    def apart(self, work: Callable[[], None]) -> bool:
+    def separate(self, work: Callable[[], None]) -> bool:
         if not self._working.acquire(blocking=False):
             return False
         threading.Thread(target=contextvars.copy_context().run, args=(self.released, work), name="updates", daemon=True).start()
@@ -145,9 +145,9 @@ class Updater:
     def read(self) -> None:
         try:
             if self.branch():
-                self.head = self.source.head_of(self.repository(), self.branch())
+                self.head = self.source.head_commit(self.repository(), self.branch())
             else:
-                self.releases = Release.named(self.source.tags(f"v{self.running().major}."))
+                self.releases = Release.lookup(self.source.tags(f"v{self.running().major}."))
             self.problem = ""
         except (OSError, ValueError, subprocess.TimeoutExpired) as error:
             self.problem = f"The releases could not be read from {self.repository()}: {error}"

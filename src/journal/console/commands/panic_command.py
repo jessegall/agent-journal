@@ -39,7 +39,7 @@ class PanicCommand(Command):
             return self.machine.reset(caller.session, self.scope.id, caller.actor, text)
         if not self.states.known(args.state):
             raise Rejection(f"no state is named {args.state}; the states are {', '.join(self.states.names())}")
-        return self.machine.push(caller.session, self.scope.id, self.states.named(args.state, self.values_of(args.values)), caller.actor, text)
+        return self.machine.push(caller.session, self.scope.id, self.states.restored(args.state, self.values_of(args.values)), caller.actor, text)
 
     @staticmethod
     def values_of(pairs: list[str]) -> dict:

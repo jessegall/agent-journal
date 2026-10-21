@@ -11,7 +11,7 @@ class Release:
     tag: str
 
     @classmethod
-    def named(cls, tags: list[str]) -> list["Release"]:
+    def lookup(cls, tags: list[str]) -> list["Release"]:
         return sorted((cls(tag) for tag in tags if TAG.match(tag)), key=lambda release: release.numbers)
 
     @property
@@ -27,7 +27,7 @@ class Release:
         return self.numbers[0]
 
     def upgrades(self, installed: "Release") -> bool:
-        return self.major == installed.major and self.is_newer_than(installed)
+        return self.major == installed.major and self.is_newer(installed)
 
-    def is_newer_than(self, other: "Release") -> bool:
+    def is_newer(self, other: "Release") -> bool:
         return self.numbers > other.numbers

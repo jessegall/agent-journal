@@ -18,9 +18,9 @@ class PhoneController:
         return Response.json({"link": offer.link, "short": offer.short, "address": offer.address, "until": offer.until.isoformat()})
 
     def index(self, request: Request) -> Response:
-        live = self.phones.live(datetime.now(timezone.utc))
+        live = self.phones.active(datetime.now(timezone.utc))
         return Response.json({"phones": [{key: value for key, value in ModelFields.of(phone).items() if key != "key"} for phone in live]})
 
     def disconnect(self, request: Request) -> Response:
-        phone = self.pairing.disconnect(self.phones.anywhere(int(request.params["id"])), request.actor, datetime.now(timezone.utc))
+        phone = self.pairing.disconnect(self.phones.all_phones(int(request.params["id"])), request.actor, datetime.now(timezone.utc))
         return Response.json({"disconnected": phone.id})

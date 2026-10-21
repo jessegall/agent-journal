@@ -10,14 +10,14 @@ class Phones(ScopedRepository[Phone]):
 
     model = Phone
 
-    def live(self, time: datetime) -> list[Phone]:
-        return [phone for phone in self.across_environments() if phone.is_live(time)]
+    def active(self, time: datetime) -> list[Phone]:
+        return [phone for phone in self.global_matching() if phone.is_active(time)]
 
-    def anywhere(self, id: int) -> Phone:
-        rows = self.across_environments(id=id)
+    def all_phones(self, id: int) -> Phone:
+        rows = self.global_matching(id=id)
         if not rows:
             raise MissingRow(f"no phone {id}")
         return rows[0]
 
-    def by_key(self, key: str) -> Phone | None:
-        return next(iter(self.across_environments(key=key)), None)
+    def key_match(self, key: str) -> Phone | None:
+        return next(iter(self.global_matching(key=key)), None)

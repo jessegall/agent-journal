@@ -69,7 +69,7 @@ class PhonePages:
             return self.manifest()
         if len(rest) == 1 and rest[0] in ICONS:
             return ShareAnswer(200, PhoneIcon(COLOR).png(ICONS[rest[0]]), "image/png", {"Cache-Control": "public, max-age=86400"})
-        return SharePages.gone(404)
+        return SharePages.missing(404)
 
     @staticmethod
     def page(address: str) -> ShareAnswer:
@@ -77,7 +77,7 @@ class PhonePages:
             return ShareAnswer(301, headers={"Location": "/p/"})
         page = APP / PAGE
         if not page.is_file():
-            return SharePages.gone(404)
+            return SharePages.missing(404)
         return ShareAnswer(200, page.read_bytes(), headers=PAGE_HEADERS)
 
     @staticmethod
@@ -85,7 +85,7 @@ class PhonePages:
         root = (APP / rest[0]).resolve()
         rows = (APP / "/".join(rest)).resolve()
         if root not in rows.parents or not rows.is_file():
-            return SharePages.gone(404)
+            return SharePages.missing(404)
         kind = mimetypes.guess_type(rows.name)[0] or "application/octet-stream"
         return ShareAnswer(200, rows.read_bytes(), kind, {"Cache-Control": "public, max-age=3600", **APP_HEADERS})
 
@@ -93,7 +93,7 @@ class PhonePages:
     def worker() -> ShareAnswer:
         rows = APP / WORKER
         if not rows.is_file():
-            return SharePages.gone(404)
+            return SharePages.missing(404)
         return ShareAnswer(200, rows.read_bytes(), "text/javascript", {"Service-Worker-Allowed": "/p/", "Cache-Control": "no-cache", **APP_HEADERS})
 
     def manifest(self) -> ShareAnswer:
@@ -104,7 +104,7 @@ class PhonePages:
         return ShareAnswer(200, json.dumps(body).encode(), "application/manifest+json", {"Cache-Control": "no-store"})
 
     def post(self, request: PhoneRequest) -> ShareAnswer:
-        given = self.given(request)
+        given = self.supplied(request)
         if given is None:
             return self.json(403, {"error": "refused"})
         if request.rest == ["pair"]:
@@ -121,7 +121,7 @@ class PhonePages:
             return self.json(200, {"disconnected": phone.id}, {"Set-Cookie": f"{COOKIE}=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Strict"})
         return self.json(404, {"error": "no such action"})
 
-    def given(self, request: PhoneRequest) -> dict | None:
+    def supplied(self, request: PhoneRequest) -> dict | None:
         if not self.is_trusted(request.origin) or request.app_header != "1" or not request.content_type.startswith("application/json"):
             return None
         try:
@@ -131,7 +131,7 @@ class PhonePages:
         return loaded if isinstance(loaded, dict) else None
 
     def is_trusted(self, origin: str) -> bool:
-        port = self.place.kept().port
+        port = self.place.stored().port
         return origin in (f"https://{self.tunnel.address()}", f"http://127.0.0.1:{port}", f"http://localhost:{port}")
 
     def pair(self, asked: PairRequest) -> ShareAnswer:
@@ -148,13 +148,13 @@ class PhonePages:
         kept = SimpleCookie(request.cookies).get(COOKIE)
         if not (kept and kept.value):
             return self.json(401, {"error": "this phone is not connected"})
-        phone = self.phones.by_key(PhoneConnector.hashed(kept.value))
+        phone = self.phones.key_match(PhoneConnector.hashed(kept.value))
         if phone is None:
             return self.json(401, {"error": "this phone was paired with an earlier version of the journal, or was forgotten: pair it again", "paired_before": True})
         time = datetime.now(timezone.utc)
-        if not phone.is_live(time):
+        if not phone.is_active(time):
             return self.json(410, {"error": "this phone was disconnected" if phone.ended_at else "this phone's connection has run out"})
-        return self.phones.save(phone.seen(time), Actor.phone(phone.id)) if phone.is_due_a_sighting(time) else phone
+        return self.phones.save(phone.seen(time), Actor.phone(phone.id)) if phone.is_presence_due(time) else phone
 
     def through(self, request: PhoneRequest) -> ShareAnswer:
         phone = self.phone(request)

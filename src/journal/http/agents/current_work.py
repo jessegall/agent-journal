@@ -29,10 +29,10 @@ class CurrentWork:
         if working is None:
             return None
         try:
-            return AgentWork(self.tasks.find(working.task_id), *self.awaited(agent))
+            return AgentWork(self.tasks.find(working.task_id), *self.wait_text(agent))
         except MissingRow:
             return None
 
-    def awaited(self, agent: Agent) -> tuple[str, str]:
+    def wait_text(self, agent: Agent) -> tuple[str, str]:
         layers = self.states.stack_of(agent).states
-        return next((layer.awaiting() for layer in reversed(layers) if isinstance(layer, Wait) and layer.awaiting()[0]), ("", ""))
+        return next((layer.wait_description() for layer in reversed(layers) if isinstance(layer, Wait) and layer.wait_description()[0]), ("", ""))

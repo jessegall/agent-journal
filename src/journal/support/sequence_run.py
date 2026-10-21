@@ -32,7 +32,7 @@ class SequenceRun:
     def last(self) -> bool:
         return self.step >= len(self.steps) - 1
 
-    def moved_on(self) -> "SequenceRun":
+    def advanced(self) -> "SequenceRun":
         return replace(self, step=self.step + 1, taken_up_at="", said_at="", parked_why="")
 
     def taken_up(self, time: str) -> "SequenceRun":
@@ -49,7 +49,7 @@ class SequenceRun:
         return self.steps[self.step:]
 
     @property
-    def holds(self) -> str:
+    def blocks(self) -> str:
         if self.parked_why:
             return f"Parked: {self.parked_why}"
         return "Taken up" if self.taken_up_at else "Not taken up yet: the agent's writes wait until it takes this step up"

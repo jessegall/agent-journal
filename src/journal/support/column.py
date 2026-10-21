@@ -20,7 +20,7 @@ class Column:
 
     @classmethod
     def of(cls, name: str, annotation) -> "Column":
-        return cls(name, cls._bare(annotation))
+        return cls(name, cls._plain_type(annotation))
 
     @property
     def sql_type(self) -> str:
@@ -57,7 +57,7 @@ class Column:
             return value
         return json.dumps(value)
 
-    def from_sql(self, value):
+    def parsed(self, value):
         if value is None:
             return None
         if self.kind is Actor:
@@ -78,10 +78,10 @@ class Column:
         return tuple(loaded) if self.kind is tuple else loaded
 
     @staticmethod
-    def _bare(annotation) -> type:
+    def _plain_type(annotation) -> type:
         origin = get_origin(annotation)
         if origin in (Union, UnionType):
-            return Column._bare(next(arg for arg in get_args(annotation) if arg is not type(None)))
+            return Column._plain_type(next(arg for arg in get_args(annotation) if arg is not type(None)))
         if origin is not None:
             return origin
         return annotation if isinstance(annotation, type) else object

@@ -36,7 +36,7 @@ class WorkerRunner:
         self._running: dict[int, subprocess.Popen] = {}
 
     def start(self, worker: Worker, actor: Actor) -> None:
-        command = self.providers.named(worker.provider).worker_command(self.instructed(worker), worker.model, worker.resume)
+        command = self.providers.lookup(worker.provider).worker_command(self.instructed(worker), worker.model, worker.resume)
         threading.Thread(target=self.run_in_scope, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
 
     def instructed(self, worker: Worker) -> str:
@@ -61,7 +61,7 @@ class WorkerRunner:
         worker = self.workers.save(worker.running_as(process.pid, time.time()), actor)
         self._running[worker.id] = process
         try:
-            code = process.wait(timeout=self.limit_left(worker))
+            code = process.wait(timeout=self.remaining_minutes(worker))
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGKILL)
             process.wait()
@@ -70,8 +70,8 @@ class WorkerRunner:
         self.finish(worker, code, actor)
 
     def watch(self, worker: Worker, actor: Actor) -> None:
-        while self.alive(worker.pid):
-            if self.limit_left(worker) == 0:
+        while self.is_running(worker.pid):
+            if self.remaining_minutes(worker) == 0:
                 os.killpg(worker.pid, signal.SIGKILL)
                 self.finish(worker, TIMEOUT_STATUS, actor)
                 return
@@ -80,7 +80,7 @@ class WorkerRunner:
 
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         out, err = self.outputs(worker)
-        provider = self.providers.named(worker.provider)
+        provider = self.providers.lookup(worker.provider)
         printed, resume = provider.worker_outcome(self.read(out), self.read(err))
         resume = resume or provider.latest_session(self.place(worker), worker.began)
         report = printed[-TAIL:] or "(nothing printed)"
@@ -88,7 +88,7 @@ class WorkerRunner:
         branch = self.branch.summary(worker)
         self.reports.file(worker.with_(resume=resume or worker.resume), f"{outcome}\n\n{branch}" if branch else outcome, actor)
 
-    def limit_left(self, worker: Worker) -> float | None:
+    def remaining_minutes(self, worker: Worker) -> float | None:
         limit = self.minutes() * 60
         return max(0.0, limit - (time.time() - worker.began)) if limit else None
 
@@ -105,7 +105,7 @@ class WorkerRunner:
         return path.read_text(errors="replace") if path.is_file() else ""
 
     @staticmethod
-    def alive(pid: int) -> bool:
+    def is_running(pid: int) -> bool:
         if pid <= 0:
             return False
         try:

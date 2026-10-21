@@ -60,7 +60,7 @@ class Runtime:
                 self.container.get(seed).run()
         from journal.repositories.environments import Environments
         if not self.container.get(Environments).all():
-            self.container.get(Environments).named("main")
+            self.container.get(Environments).lookup("main")
 
     def start(self) -> None:
         from journal.support.slow_requests import STARTING
@@ -87,12 +87,12 @@ class Runtime:
 
     def run(self) -> None:
         parent = os.getppid()
-        other = self.standby.another()
+        other = self.standby.other_address()
         if other:
             print(f"a journal of this project answers at {other}: waiting until it is gone", flush=True)
         while other and os.getppid() == parent:
             time.sleep(INSTANCE_CHECK_SECONDS)
-            other = self.standby.another()
+            other = self.standby.other_address()
         if os.getppid() != parent:
             return
         self.start()

@@ -10,7 +10,7 @@ class Mentions:
     """The rows a text names: plan 1 is plans:1, task 12 is tasks:12. In the order named, each once."""
 
     @staticmethod
-    def in_(text: str) -> list[Ref]:
+    def found(text: str) -> list[Ref]:
         rows = []
         for kind, n in MENTION_PATTERN.findall(text):
             ref = Ref(TABLES.get(kind.lower(), f"{kind.lower()}s"), int(n))

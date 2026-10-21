@@ -36,7 +36,7 @@ class Part:
             split = shlex.split(self.command_text(), posix=True)
         except ValueError:
             split = self.command_text().split()
-        return self.led(split)
+        return self.leads(split)
 
     def command_text(self) -> str:
         lines = self.text.split("\n")
@@ -46,7 +46,7 @@ class Part:
         return re.sub(r"'[^']*'|\"(?:\\.|[^\"\\])*\"", " ", self.command_text())
 
     @staticmethod
-    def led(tokens: list[str]) -> list[str]:
+    def leads(tokens: list[str]) -> list[str]:
         while tokens and ("=" in tokens[0] and not tokens[0].startswith("-") or tokens[0] in PREFIXES):
             tokens = tokens[1:]
         if tokens and tokens[0].rsplit("/", 1)[-1] == "git":
@@ -62,29 +62,29 @@ class Part:
 
     def is_read(self) -> bool:
         tokens = self.tokens()
-        return (len(tokens) > 1 and tokens[1] in GIT_READS if self.program() == "git" else self.program() in READERS) and not self.edits_in_place()
+        return (len(tokens) > 1 and tokens[1] in GIT_READS if self.program() == "git" else self.program() in READERS) and not self.edits_files()
 
     def is_harmless(self) -> bool:
         return self.program() in HARMLESS and not WRITING.search(self.unquoted()) and "$(" not in self.text and "`" not in self.text
 
-    def is_cd_into_project(self) -> bool:
+    def is_project_cd(self) -> bool:
         tokens = self.tokens()
-        return len(tokens) == 2 and tokens[0] == "cd" and self.is_under_project(tokens[1])
+        return len(tokens) == 2 and tokens[0] == "cd" and self.is_project_file(tokens[1])
 
     def is_search(self) -> bool:
         return self.program() in SEARCHERS or self.program() == "git" and self.tokens()[1:2] == ["grep"]
 
-    def edits_in_place(self) -> bool:
+    def edits_files(self) -> bool:
         return self.program() in INPLACE_EDITORS and any(w.startswith(("-i", "-pi")) for w in self.tokens()[1:])
 
     def is_reading_code(self) -> bool:
         tokens = self.tokens()
-        if not self.is_read() or self.program() == "sqlite3" or WRITING.search(self.unquoted()) or self.edits_in_place() or self.tails_forever():
+        if not self.is_read() or self.program() == "sqlite3" or WRITING.search(self.unquoted()) or self.edits_files() or self.tails_forever():
             return False
         paths = [word for word in tokens[1:] if CODE.search(word) or self.is_project_path(word)]
-        return all(self.is_under_project(word) for word in paths) and (bool(paths) or self.is_search() and not self.has_outside_folder())
+        return all(self.is_project_file(word) for word in paths) and (bool(paths) or self.is_search() and not self.touches_foreign_folder())
 
-    def has_outside_folder(self) -> bool:
+    def touches_foreign_folder(self) -> bool:
         return any(word.startswith(("/", "~", "..", "$")) for word in self.tokens()[1:] if not word.startswith("-"))
 
     def tails_forever(self) -> bool:
@@ -98,7 +98,7 @@ class Part:
         return Path(expanded).exists() or any(ch in word for ch in "*?{") and bool(glob.glob(expanded))
 
     @classmethod
-    def is_under_project(cls, word: str) -> bool:
+    def is_project_file(cls, word: str) -> bool:
         if word.startswith("$"):
             return False
         root = Path.cwd().resolve()

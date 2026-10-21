@@ -23,23 +23,23 @@ class Scope:
             raise ScopeMissing()
         return environment()
 
-    def id_or(self, outside: int) -> int:
+    def id_default(self, outside: int) -> int:
         environment = _current.get(None)
         return outside if environment is None else environment()
 
     @contextmanager
     def of(self, environment_id: int) -> Iterator[None]:
-        with self._holding(lambda: environment_id):
+        with self._binding(lambda: environment_id):
             yield
 
     @contextmanager
     def requested(self, name: Callable[[], str]) -> Iterator[None]:
-        with self._holding(cache(lambda: self.environments.existing(name()).id)):
+        with self._binding(cache(lambda: self.environments.existing(name()).id)):
             yield
 
     @staticmethod
     @contextmanager
-    def _holding(environment: Callable[[], int]) -> Iterator[None]:
+    def _binding(environment: Callable[[], int]) -> Iterator[None]:
         token = _current.set(environment)
         try:
             yield

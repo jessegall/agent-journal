@@ -16,8 +16,8 @@ class RuleImport(ProjectKind):
         super().__init__(ledger)
         self.rules = rules
 
-    def left_behind(self, row: Version3Row) -> str:
-        return super().left_behind(row) or ("struck" if row.completed else "")
+    def skipped(self, row: Version3Row) -> str:
+        return super().skipped(row) or ("struck" if row.completed else "")
 
-    def made(self, row: Version3Row, actor: Actor) -> Rule:
-        return self.rules.imported(Rule(text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.made_at(), actor)
+    def created(self, row: Version3Row, actor: Actor) -> Rule:
+        return self.rules.imported(Rule(text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_time(), actor)

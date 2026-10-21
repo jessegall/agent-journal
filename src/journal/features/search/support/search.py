@@ -38,28 +38,28 @@ class Search:
         self.agents, self.providers, self.config = agents, providers, config
 
     def models(self) -> list[str]:
-        return [self.named(kind) for kind in self.kinds]
+        return [self.lookup(kind) for kind in self.kinds]
 
     def hits(self, terms: list[str]) -> list[SearchHit]:
         return self.rows(terms, self.kinds)
 
     def kind_hits(self, terms: list[str], names: list[str]) -> list[SearchHit]:
-        wanted = [kind for kind in self.kinds if self.named(kind) in names]
+        wanted = [kind for kind in self.kinds if self.lookup(kind) in names]
         return self.rows(terms, wanted) + (self.conversation_hits(terms) if CONVERSATION in names else [])
 
     def rows(self, terms: list[str], kinds) -> list[SearchHit]:
         return [SearchHit.of(row, terms) for kind in kinds for row in kind.search(terms)]
 
     @staticmethod
-    def named(kind: Repository) -> str:
+    def lookup(kind: Repository) -> str:
         return kind.model.table().removesuffix("s")
 
     def conversation_hits(self, terms: list[str]) -> list[SearchHit]:
         rows = []
-        for agent in reversed([agent for agent in self.agents.in_() if agent.has_program()][-CONVERSATIONS:]):
-            path = self.providers.named(agent.provider).transcript(self.config.root, agent.session)
+        for agent in reversed([agent for agent in self.agents.scoped() if agent.has_program()][-CONVERSATIONS:]):
+            path = self.providers.lookup(agent.provider).transcript(self.config.root, agent.session)
             if path is None:
                 continue
-            turns = [turn for turn in self.providers.named(agent.provider).turns(path) if all(word.lower() in turn.text.lower() for word in terms)]
-            rows += [SearchHit(f"conversation {agent.session[:8]}, line {turn.line}", SearchHit.around(turn.text, terms)) for turn in reversed(turns)]
+            turns = [turn for turn in self.providers.lookup(agent.provider).turns(path) if all(word.lower() in turn.text.lower() for word in terms)]
+            rows += [SearchHit(f"conversation {agent.session[:8]}, line {turn.line}", SearchHit.excerpt(turn.text, terms)) for turn in reversed(turns)]
         return rows

@@ -29,7 +29,7 @@ class Message(Scoped):
     data: dict = field(default_factory=dict)
 
     @classmethod
-    def from_agent(cls, sender: str, text: str, session: str, time: datetime) -> "Message":
+    def agent_message(cls, sender: str, text: str, session: str, time: datetime) -> "Message":
         return cls(author=Author.SYSTEM, text=text, read_at=time, data={"kind": cls.PEER, cls.PEER: sender, "session": session})
 
     @classmethod
@@ -57,7 +57,7 @@ class Message(Scoped):
         return next((i for i, line in enumerate(lines) if not line.startswith(">")), len(lines))
 
     @property
-    def is_on_a_passage(self) -> bool:
+    def is_passage_comment(self) -> bool:
         return self.quoted_lines > 0 and self.reply_to is None
 
     @property
@@ -73,7 +73,7 @@ class Message(Scoped):
         return self.data.get("kind") == self.THOUGHT
 
     @property
-    def is_typed_in_terminal(self) -> bool:
+    def is_terminal_line(self) -> bool:
         return self.data.get("kind") == TERMINAL_LINE
 
     @property

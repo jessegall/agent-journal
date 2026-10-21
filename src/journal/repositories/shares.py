@@ -7,8 +7,8 @@ from journal.repositories.scoped_repository import ScopedRepository
 class Shares(ScopedRepository[Share]):
     model = Share
 
-    def by_token(self, token: str) -> Share | None:
-        rows = self.across_environments(token=token) if token else []
+    def token_match(self, token: str) -> Share | None:
+        rows = self.global_matching(token=token) if token else []
         return rows[0] if rows else None
 
     def open_anywhere(self) -> list[Share]:

@@ -63,7 +63,7 @@ class SecretValues:
         return set(self.shown_path.read_text().split()) if self.shown_path.is_file() else set()
 
     def write_shown(self, names: set[str]) -> None:
-        PrivateFolder.made(self.shown_path.parent)
+        PrivateFolder.created(self.shown_path.parent)
         self.shown_path.write_text("".join(f"{name}\n" for name in sorted(names)))
 
     def retired_before(self, time: float) -> list[str]:
@@ -75,7 +75,7 @@ class SecretValues:
 
     def write(self, values: dict[str, str]) -> None:
         path = self.path
-        PrivateFolder.made(path.parent)
+        PrivateFolder.created(path.parent)
         writing = path.with_suffix(".writing")
         handle = os.open(writing, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         with os.fdopen(handle, "w") as out:

@@ -26,7 +26,7 @@ class Version3Row:
     sections: tuple[tuple[str, str], ...] = ()
 
     @classmethod
-    def from_text(cls, text: str) -> "Version3Row":
+    def parsed(cls, text: str) -> "Version3Row":
         _, header, rest = text.split("---\n", 2)
         head = json.loads(header)
         brief, *parts = SECTION.split(rest)
@@ -43,15 +43,15 @@ class Version3Row:
             return []
         return list(self.data[key])
 
-    def made_at(self) -> datetime:
+    def creation_time(self) -> datetime:
         return datetime.fromtimestamp(self.created, timezone.utc)
 
-    def closed_at(self) -> datetime | None:
+    def close_time(self) -> datetime | None:
         return datetime.fromtimestamp(self.completed, timezone.utc) if self.completed else None
 
     def read_at(self) -> datetime | None:
         if self.completed:
-            return self.closed_at()
+            return self.close_time()
         return datetime.fromtimestamp(self.updated, timezone.utc) if len(self.seen) > 1 else None
 
     def author(self) -> str:

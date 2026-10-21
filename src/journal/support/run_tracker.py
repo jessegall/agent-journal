@@ -27,7 +27,7 @@ class RunTracker:
     def runs(self, agent: Agent) -> list[SequenceRun]:
         return [SequenceRun.of(raw) for raw in agent.sequence_runs or ()]
 
-    def in_hand(self, session: str, environment_id: int) -> SequenceRun | None:
+    def current(self, session: str, environment_id: int) -> SequenceRun | None:
         runs = self.runs(self.machine.agent(session, environment_id))
         return runs[-1] if runs else None
 
@@ -36,9 +36,9 @@ class RunTracker:
         runs = self.runs(agent)
         if any(run.sequence_id == sequence.id for run in runs) or not sequence.steps:
             return ""
-        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=about, started_at=self.now(), said_at=self.now(), finishes_in=tuple(sequence.finishes_in))
+        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=about, started_at=self.timestamp(), said_at=self.timestamp(), finishes_in=tuple(sequence.finishes_in))
         self.rewritten(agent, lambda time: [*time, run])
-        owed = self.requiring.require(agent, self.requiring.owed(agent, self.requiring.named("sequences")))
+        owed = self.requiring.require(agent, self.requiring.owed(agent, self.requiring.lookup("sequences")))
         return "\n".join([*owed, self.said(run)])
 
     def next(self, session: str, environment_id: int) -> str:
@@ -48,14 +48,14 @@ class RunTracker:
         run = runs[-1]
         self.refuse_an_unfinished_end(run)
         if not run.last:
-            return self.said(self.changed(session, environment_id, lambda time: time.moved_on().said(self.now())))
+            return self.said(self.changed(session, environment_id, lambda time: time.advanced().said(self.timestamp())))
         return self.ended(agent, runs, Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered())
 
     def ended(self, agent: Agent, runs: list[SequenceRun], ended: str) -> str:
         if len(runs) == 1:
-            self.kept(agent, [])
+            self.stored(agent, [])
             return ended
-        outer = self.rewritten(agent, lambda time: [*time[:-2], time[-2].said(self.now())])[-1]
+        outer = self.rewritten(agent, lambda time: [*time[:-2], time[-2].said(self.timestamp())])[-1]
         return f"{ended}\n{self.said(outer)}"
 
     def skip(self, session: str, environment_id: int) -> str:
@@ -66,7 +66,7 @@ class RunTracker:
         skipped = Sequences.STEP_OMISSION.create(n=run.sequence_id, step=run.step + 1).rendered()
         if run.last:
             return self.ended(agent, runs, f"{skipped}\n{Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered()}")
-        moved = self.changed(session, environment_id, lambda time: time.moved_on().said(self.now()))
+        moved = self.changed(session, environment_id, lambda time: time.advanced().said(self.timestamp()))
         return f"{skipped}\n{self.said(moved)}"
 
     def end(self, session: str, environment_id: int) -> str:
@@ -86,28 +86,28 @@ class RunTracker:
         runs = self.runs(agent)
         return runs[-1], self.ended(agent, runs, Sequences.SEQUENCE_ABANDONED.create(n=runs[-1].sequence_id).rendered())
 
-    def end_where(self, environment_id: int, gone, why: str) -> list[tuple[Agent, str]]:
+    def finish_matching(self, environment_id: int, gone, why: str) -> list[tuple[Agent, str]]:
         from journal.features.sequences.feature import Sequences
         told = []
-        for agent in [a for a in self.agents.across_environments(environment_id=environment_id) if a.sequence_runs]:
+        for agent in [a for a in self.agents.global_matching(environment_id=environment_id) if a.sequence_runs]:
             runs = self.runs(agent)
             kept = [run for run in runs if not gone(run)]
             if len(kept) < len(runs):
-                self.kept(agent, kept)
+                self.stored(agent, kept)
                 told.append((agent, "\n".join(Sequences.SEQUENCE_CANNOT_FINISH.create(n=run.sequence_id, why=why).rendered() for run in runs if gone(run))))
         return told
 
     def environments_running(self, sequence_id: int) -> set[int]:
-        return {a.environment_id for a in self.agents.everywhere() if any(run.sequence_id == sequence_id for run in self.runs(a))}
+        return {a.environment_id for a in self.agents.all_agents() if any(run.sequence_id == sequence_id for run in self.runs(a))}
 
     def follow(self, session: str, environment_id: int) -> SequenceRun:
-        return self.changed(session, environment_id, lambda run: run.taken_up(self.now()).said(self.now()).parked(""))
+        return self.changed(session, environment_id, lambda run: run.taken_up(self.timestamp()).said(self.timestamp()).parked(""))
 
     def park(self, session: str, environment_id: int, why: str) -> SequenceRun:
         return self.changed(session, environment_id, lambda run: run.parked(why))
 
     def said_now(self, session: str, environment_id: int) -> SequenceRun:
-        return self.changed(session, environment_id, lambda run: run.said(self.now()))
+        return self.changed(session, environment_id, lambda run: run.said(self.timestamp()))
 
     def changed(self, session: str, environment_id: int, change) -> SequenceRun:
         return self.rewritten(self.machine.agent(session, environment_id), lambda time: [*time[:-1], change(time[-1])])[-1]
@@ -116,15 +116,15 @@ class RunTracker:
         fresh = self.agents.touched(agent, Actor.system(), lambda time: {"sequence_runs": tuple(run.as_dict() for run in change(self.runs(time)))})
         return self.runs(fresh)
 
-    def carry(self, session: str, environment_id: int) -> None:
+    def transfer(self, session: str, environment_id: int) -> None:
         agent = self.machine.agent(session, environment_id)
-        ended = [a for a in self.agents.in_() if a.session != session and a.state == "ended" and a.sequence_runs]
+        ended = [a for a in self.agents.scoped() if a.session != session and a.state == "ended" and a.sequence_runs]
         if agent.sequence_runs or not ended:
             return
-        self.kept(agent, self.runs(ended[-1]))
-        self.kept(ended[-1], [])
+        self.stored(agent, self.runs(ended[-1]))
+        self.stored(ended[-1], [])
 
-    def kept(self, agent: Agent, runs: list[SequenceRun]) -> None:
+    def stored(self, agent: Agent, runs: list[SequenceRun]) -> None:
         self.agents.touch(agent, Actor.system(), sequence_runs=tuple(run.as_dict() for run in runs))
 
     @staticmethod
@@ -133,7 +133,7 @@ class RunTracker:
         return any(part.text.strip().startswith(command) for part in parts for command in step_commands)
 
     def typed_to(self, session: str, environment_id: int) -> bool:
-        return not any(session in (w.session, w.resume) for w in self.workers.across_environments(environment_id=environment_id))
+        return not any(session in (w.session, w.resume) for w in self.workers.global_matching(environment_id=environment_id))
 
     @classmethod
     def reminder(cls, run: SequenceRun) -> Nudge:
@@ -149,5 +149,5 @@ class RunTracker:
         return self.step(run).rendered()
 
     @staticmethod
-    def now() -> str:
+    def timestamp() -> str:
         return datetime.now(timezone.utc).isoformat()

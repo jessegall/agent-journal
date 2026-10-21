@@ -5,7 +5,7 @@ from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.script_reader import ScriptReader
 from journal.support.rejection import Rejection
 
-KINDS = {".pattern": Reader.from_file, ".sh": ScriptReader.from_file}
+KINDS = {".pattern": Reader.loaded, ".sh": ScriptReader.loaded}
 
 
 class Readers:
@@ -19,7 +19,7 @@ class Readers:
             return []
         return [KINDS[path.suffix](path) for path in sorted(self.config.readers.iterdir()) if path.suffix in KINDS]
 
-    def named(self, name: str) -> Reader | ScriptReader:
+    def lookup(self, name: str) -> Reader | ScriptReader:
         rows = [path for suffix in KINDS if (path := self.config.readers / f"{name}{suffix}").is_file()]
         if not rows:
             raise Rejection(f"no reader named {name}: `journal reader list` names them")

@@ -17,7 +17,7 @@ class UserPause(Wait):
     name = "paused"
     title = "Paused by you"
 
-    def awaiting(self) -> tuple[str, str]:
+    def wait_description(self) -> tuple[str, str]:
         return "you to resume it", ""
 
     def refuses_every_tool(self) -> bool:

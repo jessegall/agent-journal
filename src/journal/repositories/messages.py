@@ -25,17 +25,17 @@ class Messages(ScopedRepository[Message]):
     def unread(self) -> list[Message]:
         return self.selected("author = ? AND read_at IS NULL ORDER BY id", (Author.USER.value,))
 
-    def last_sent_by_user(self) -> Message | None:
-        return next((m for m in self.selected("author = ? ORDER BY id DESC LIMIT 20", (Author.USER.value,)) if not m.is_typed_in_terminal), None)
+    def last_user_message(self) -> Message | None:
+        return next((m for m in self.selected("author = ? ORDER BY id DESC LIMIT 20", (Author.USER.value,)) if not m.is_terminal_line), None)
 
     def unanswered(self) -> list[Message]:
-        spoken_at = self.last_spoken()
+        spoken_at = self.last_message()
         since = "" if spoken_at is None else " AND read_at > ?"
         params = (Author.USER.value,) + (() if spoken_at is None else (spoken_at,))
         read = self.selected(f"author = ? AND read_at IS NOT NULL{since} ORDER BY id", params)
-        return [m for m in read if not m.is_typed_in_terminal and not self.answered(m) and not self.reacted_by_agent(m)]
+        return [m for m in read if not m.is_terminal_line and not self.answered(m) and not self.reacted_by_agent(m)]
 
-    def last_spoken(self) -> str | None:
+    def last_message(self) -> str | None:
         row = self.aggregate("max(created_at) AS time", "author = ? AND acknowledgement = 0 AND coalesce(json_extract(data, '$.kind'), '') != ?", (Author.AGENT.value, Message.THOUGHT))
         return row["time"] if row else None
 
@@ -56,13 +56,13 @@ class Messages(ScopedRepository[Message]):
             params.append(before)
         return list(reversed(self.selected(f"{' AND '.join(clause)} ORDER BY id DESC LIMIT ?", (*params, last))))
 
-    def changed_since(self, time: datetime) -> list[Message]:
+    def changes(self, time: datetime) -> list[Message]:
         return self.selected("updated_at > ? ORDER BY id LIMIT 500", (time.isoformat(),))
 
     def unseen_by_user(self) -> int:
-        return self.counted_in("author = ? AND read_at IS NULL", (Author.AGENT.value,))
+        return self.count("author = ? AND read_at IS NULL", (Author.AGENT.value,))
 
-    def from_visitors(self, share_id: int) -> list[Message]:
+    def visitor_messages(self, share_id: int) -> list[Message]:
         return self.selected("json_extract(data, '$.share') = ? ORDER BY id", (share_id,))
 
     def keyed(self, key: str, actor: Actor) -> list[Message]:
@@ -71,7 +71,7 @@ class Messages(ScopedRepository[Message]):
     def with_key(self, key: str) -> list[Message]:
         return self.selected("json_extract(data, '$.key') = ?", (key,))
 
-    def keyed_anywhere(self, key: str, actor: Actor) -> list[Message]:
+    def keyed_all(self, key: str, actor: Actor) -> list[Message]:
         return self.selected_everywhere("json_extract(data, '$.key') = ? AND created_by = ?", (key, actor.stamp))
 
     def first_reply(self, message: Message) -> Message | None:
@@ -93,5 +93,5 @@ class Messages(ScopedRepository[Message]):
         rows = self.selected("created_by = ? AND json_extract(data, '$.kind') = ? ORDER BY id DESC LIMIT ?", (Actor.agent(session).stamp, Message.THOUGHT, last))
         return list(reversed(rows))
 
-    def mark_read(self, message: Message, actor: Actor, tool_use: int) -> Message:
+    def read(self, message: Message, actor: Actor, tool_use: int) -> Message:
         return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc), read_mark=tool_use), actor)

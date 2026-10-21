@@ -40,16 +40,16 @@ class Migrator:
         self.kinds = (environments, messages, todos, waits, work, plans, questions, facts, rules, reminders, docs, old_reports, checks, triggers, sequences, templates, settings, agents, helpers, secrets, comments, reactions)
 
     def begin(self, actor: Actor) -> Version3Migration:
-        return self.migrations.save(self.migrations.current().begun(), actor)
+        return self.migrations.save(self.migrations.current().is_started(), actor)
 
     def run(self, migration: Version3Migration, actor: Actor) -> Version3Migration:
-        brought = [self.brought(kind, actor) for kind in self.kinds]
+        brought = [self.imported(kind, actor) for kind in self.kinds]
         self.reports.save(self.report(brought), actor)
-        return self.migrations.save(migration.done(), actor)
+        return self.migrations.save(migration.is_finished(), actor)
 
-    def brought(self, kind, actor: Actor) -> ImportTally:
+    def imported(self, kind, actor: Actor) -> ImportTally:
         try:
-            return kind.bring(self.backup.folder, actor)
+            return kind.import_rows(self.backup.folder, actor)
         except Exception as fault:
             return ImportTally(kind.title, 0, (f"the whole kind could not be read: {fault}",))
 

@@ -16,23 +16,23 @@ class Health:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self._report = CachedAnswer(lambda: self.asked(), HEALTH_VALIDITY_SECONDS, HealthReport())
+        self._report = CachedAnswer(lambda: self.probe(), HEALTH_VALIDITY_SECONDS, HealthReport())
 
     def of_all(self) -> HealthReport:
-        return self._report.now()
+        return self._report.time()
 
-    def fresh(self) -> HealthReport:
-        return self._report.fresh()
+    def is_recent(self) -> HealthReport:
+        return self._report.is_recent()
 
     def is_checking(self) -> bool:
         return self._report.is_asking()
 
     def recheck(self) -> None:
-        self._report.forget()
-        self._report.now()
+        self._report.discard()
+        self._report.time()
 
     @property
-    def checked_at(self) -> float:
+    def check_time(self) -> float:
         return self._report.asked_on
 
     def remove(self, name: str) -> bool:
@@ -43,7 +43,7 @@ class Health:
                 return True
         return False
 
-    def asked(self) -> HealthReport:
+    def probe(self) -> HealthReport:
         try:
             out = subprocess.run(["claude", "mcp", "list"], cwd=self.config.root, capture_output=True, text=True, timeout=60).stdout
         except (OSError, subprocess.TimeoutExpired) as failed:

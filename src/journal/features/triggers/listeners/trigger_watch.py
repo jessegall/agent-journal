@@ -20,10 +20,10 @@ class TriggerWatch(AgentListener[A]):
     def text_of(self, event: A) -> str:
         raise NotImplementedError
 
-    def by_user(self, event: A) -> bool:
+    def is_users(self, event: A) -> bool:
         return False
 
     def handle(self, event: A) -> None:
-        matched = self.triggers.met_by(self.text_of(event))
+        matched = self.triggers.matches(self.text_of(event))
         if matched:
-            self.firing.fired(matched, event.session, event.environment_id, self.by_user(event))
+            self.firing.fired(matched, event.session, event.environment_id, self.is_users(event))

@@ -23,7 +23,7 @@ class Caller:
         return Actor.agent(self.session) if self.session else Actor.user(LOCAL_USER)
 
     @classmethod
-    def from_environ(cls, environ: dict) -> "Where":
+    def environment_caller(cls, environ: dict) -> "Where":
         session = environ.get("JOURNAL_SESSION") or environ.get("CODEX_THREAD_ID", "")
         return cls(environ.get("JOURNAL_ENV", "main"), session, bool(environ.get("CLAUDECODE") or environ.get("CODEX_SANDBOX") or environ.get("CODEX_CI") or environ.get(AGENT_SHELL)), environ.get("JOURNAL_PLUGIN", ""))
 

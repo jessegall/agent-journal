@@ -18,16 +18,16 @@ class CommandEvents:
         self.bus, self.clock, self.scope, self.agents = bus, clock, scope, agents
 
     def moved(self, output: CommandOutput, session: str) -> None:
-        self.bus.dispatch(CommandMoved(output=output.id).placed(session, self.scope.id, "", None, self.clock.now()))
+        self.bus.dispatch(CommandMoved(output=output.id).placed(session, self.scope.id, "", None, self.clock.time()))
 
     def ended(self, output: CommandOutput, agent: Agent) -> None:
-        self.bus.dispatch(CommandEnded(output=output.id, status=output.status).placed(agent.session, self.scope.id, agent.provider, None, self.clock.now()))
+        self.bus.dispatch(CommandEnded(output=output.id, status=output.status).placed(agent.session, self.scope.id, agent.provider, None, self.clock.time()))
 
     def wait_declared(self, what: str, ends_on: str, caller: Caller) -> None:
-        self.bus.dispatch(WaitRequest(what=what, ends_on=ends_on).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.now()))
+        self.bus.dispatch(WaitRequest(what=what, ends_on=ends_on).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.time()))
 
     def help_needed(self, why: str, caller: Caller) -> None:
-        self.bus.dispatch(ImpasseReport(why=why).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.now()))
+        self.bus.dispatch(ImpasseReport(why=why).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.time()))
 
     def provider_of(self, caller: Caller) -> str:
-        return self.agents.for_session(caller.session).provider
+        return self.agents.session_agent(caller.session).provider

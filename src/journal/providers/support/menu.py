@@ -47,11 +47,11 @@ class Menu:
             return None
         if not footers and above[rows[-1].end():].strip() and not any(m["cursor"] for m in block):
             return None
-        asked = " ".join(cls.asked_lines(above[:block[0].start()]))
+        asked = " ".join(cls.question_lines(above[:block[0].start()]))
         return cls(asked, tuple(Option(int(m["number"]), m["label"], bool(m["cursor"])) for m in block))
 
     @staticmethod
-    def asked_lines(above: str) -> list[str]:
+    def question_lines(above: str) -> list[str]:
         lines = [line.strip() for line in above.splitlines() if line.strip()]
         ruled = [i for i, line in enumerate(lines) if RULE.match(line)]
         return lines[ruled[-1] + 1:][-QUESTION_LINES:] if ruled else lines[-QUESTION_LINES:]
@@ -80,7 +80,7 @@ class Menu:
     def switching_model(self) -> bool:
         return bool(SWITCHING_MODEL.search(self.question))
 
-    def keys_for(self, taken: Option) -> str:
+    def keys(self, taken: Option) -> str:
         time = next((i for i, o in enumerate(self.options) if o.cursor), 0)
         to = list(self.options).index(taken)
         return (DOWN if to >= time else UPWARD) * abs(to - time) + ENTER

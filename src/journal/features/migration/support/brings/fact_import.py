@@ -20,8 +20,8 @@ class FactImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.facts = facts
 
-    def left_behind(self, row: Version3Row, into: Environment) -> str:
-        return super().left_behind(row, into) or ("struck" if row.completed else "")
+    def skipped(self, row: Version3Row, into: Environment) -> str:
+        return super().skipped(row, into) or ("struck" if row.completed else "")
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Fact:
-        return self.facts.imported(Fact(environment_id=into.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.made_at(), actor)
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Fact:
+        return self.facts.imported(Fact(environment_id=into.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_time(), actor)

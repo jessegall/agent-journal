@@ -21,6 +21,6 @@ class PluginSettingsNotice(Listener[Updated]):
             return
         if not plugin.enabled or "plugin.updated" not in plugin.manifest.hears:
             return
-        environment_id = self.scope.id_or(0)
+        environment_id = self.scope.id_default(0)
         told = PluginUpdated(settings=plugin.settings)
-        self.connection.after_commit(lambda: self.deferred.add(lambda: self.relay.later(plugin, told, environment_id)))
+        self.connection.commit_callback(lambda: self.deferred.add(lambda: self.relay.postponed(plugin, told, environment_id)))

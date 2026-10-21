@@ -13,4 +13,4 @@ class PeerMessage(AgentEvent):
     text: str
 
     def message(self, time: datetime) -> Message:
-        return Message.from_agent(self.sender, self.text, self.session, time)
+        return Message.agent_message(self.sender, self.text, self.session, time)

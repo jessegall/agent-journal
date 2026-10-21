@@ -36,7 +36,7 @@ class P256:
         return rows
 
     @staticmethod
-    def is_on_curve(public: bytes) -> bool:
+    def is_curve_point(public: bytes) -> bool:
         if len(public) != 65 or public[0] != 4:
             return False
         x, y = int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big")
@@ -45,7 +45,7 @@ class P256:
     @staticmethod
     def is_signed(public: bytes, message: bytes, signature: bytes) -> bool:
         r, s = int.from_bytes(signature[:32], "big"), int.from_bytes(signature[32:], "big")
-        if not P256.is_on_curve(public) or len(signature) != 64 or not (0 < r < N and 0 < s < N):
+        if not P256.is_curve_point(public) or len(signature) != 64 or not (0 < r < N and 0 < s < N):
             return False
         point = (int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big"))
         digest = int.from_bytes(hashlib.sha256(message).digest(), "big")

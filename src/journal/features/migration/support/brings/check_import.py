@@ -16,5 +16,5 @@ class CheckImport(ProjectKind):
         super().__init__(ledger)
         self.checks = checks
 
-    def made(self, row: Version3Row, actor: Actor) -> Check:
-        return self.checks.imported(Check(title=row.title, brief=row.brief, command=row.data.get("command", ""), every=int(row.data.get("every", 0))), row.made_at(), actor)
+    def created(self, row: Version3Row, actor: Actor) -> Check:
+        return self.checks.imported(Check(title=row.title, brief=row.brief, command=row.data.get("command", ""), every=int(row.data.get("every", 0))), row.creation_time(), actor)

@@ -25,14 +25,14 @@ class ProjectFiles:
         return self._branch[0]
 
     def folder(self, given: str) -> list[ProjectEntry]:
-        path = self.inside(given) if given.strip("/") else self.root
+        path = self.contains(given) if given.strip("/") else self.root
         if path is None or not path.is_dir():
             return []
         entries = sorted(path.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
         return [self.entry(p) for p in entries if not self.hidden(p)]
 
     def file(self, given: str) -> ProjectFile | None:
-        path = self.inside(given)
+        path = self.contains(given)
         if path is None or not path.is_file():
             return None
         raw = path.read_bytes()
@@ -43,7 +43,7 @@ class ProjectFiles:
         return ProjectFile(path=given, kind="text", size=len(raw), lines=len(text.splitlines()), text=text)
 
     def diff(self, given: str) -> str:
-        path = self.inside(given)
+        path = self.contains(given)
         if path is None:
             return ""
         return subprocess.run(["git", "diff", "--", str(path)], cwd=self.root, capture_output=True, text=True, timeout=30).stdout
@@ -55,7 +55,7 @@ class ProjectFiles:
         rows = [self.entry(p) for p in sorted(self.root.rglob("*")) if p.is_file() and not self.hidden(p) and all(w in p.name.lower() for w in text)]
         return rows[:PAGE]
 
-    def inside(self, given: str) -> Path | None:
+    def contains(self, given: str) -> Path | None:
         path = (self.root / given.strip("/")).resolve()
         if not given.strip("/") or not path.is_relative_to(self.root):
             return None

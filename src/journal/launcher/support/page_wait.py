@@ -24,14 +24,14 @@ class PageWait:
     def wait(self) -> None:
         began = time.time()
         while time.time() - began < WAIT_LIMIT_SECONDS:
-            url = self.answering()
+            url = self.is_responsive()
             if url:
                 self.shown(url)
                 return
             time.sleep(0.5)
         self.log(f"viewer: the journal's page did not answer within {int(WAIT_LIMIT_SECONDS)} seconds, so no tab was opened")
 
-    def answering(self) -> str:
+    def is_responsive(self) -> str:
         url = f"http://127.0.0.1:{self.port_file.read_text().strip()}/" if self.port_file.is_file() else ""
         if not url:
             return ""

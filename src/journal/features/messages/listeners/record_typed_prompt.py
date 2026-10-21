@@ -17,6 +17,6 @@ class RecordTypedPrompt(AgentListener[PromptSubmitted]):
         self.messages, self.lines = messages, lines
 
     def handle(self, event: PromptSubmitted) -> None:
-        if not event.by_user or not event.prompt.strip() or self.lines.carries(event.environment_id, event.prompt):
+        if not event.is_users or not event.prompt.strip() or self.lines.contains(event.environment_id, event.prompt):
             return
         self.messages.save(Message(author=Author.USER, text=event.prompt.strip(), read_at=datetime.now(timezone.utc), data={"kind": TERMINAL_LINE}), Actor.user(LOCAL_USER))

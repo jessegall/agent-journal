@@ -101,7 +101,7 @@ class PluginCommand(Command):
         return 0
 
     def settings(self, args: Namespace, caller: Caller) -> int:
-        plugin = self.plugins.named(args.name)
+        plugin = self.plugins.lookup(args.name)
         for setting in self.schemas.schema(plugin):
             value = plugin.settings.get(setting.key)
             shown = f"secret {value['secret']}, filled on the Secrets page" if isinstance(value, dict) else value

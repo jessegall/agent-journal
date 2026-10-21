@@ -15,7 +15,7 @@ class MessagesDataReader:
     def read(self, agent: Agent) -> MessagesData:
         from journal.features.messages.feature import Messages as MessagesFeature
         unread, unanswered = self.messages.unread(), self.messages.unanswered()
-        newest = self.messages.last_sent_by_user() if unread else None
+        newest = self.messages.last_user_message() if unread else None
         read_marks = [m.read_mark for m in unanswered if m.read_at]
         return MessagesData(
             unread=tuple(m.id for m in unread),

@@ -19,8 +19,8 @@ class AttachedFiles:
         self.messages, self.attachments = messages, attachments
 
     def page(self, asked: FileRequest) -> FileView:
-        every = sorted((f for m in self.messages.in_() for f in self.of(m)), key=lambda f: -f.time)
-        rows = [f for f in every if asked.holds(f)]
+        every = sorted((f for m in self.messages.scoped() for f in self.of(m)), key=lambda f: -f.time)
+        rows = [f for f in every if asked.contains(f)]
         shelves = {Message.table(): len(every)} if every else {}
         images = sum(f.image for f in every)
         return FileView(files=rows[asked.skip:asked.skip + asked.last], more=len(rows) > asked.skip + asked.last, total=len(rows),

@@ -20,5 +20,5 @@ class PluginService:
         return self.command[0]
 
     @property
-    def is_in_its_folder(self) -> bool:
+    def is_local(self) -> bool:
         return "/" in self.program

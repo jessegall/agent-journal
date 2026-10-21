@@ -11,5 +11,5 @@ class InboxArrivalCard(Listener[MessageArrived]):
         self.agents = agents
 
     def handle(self, event: MessageArrived) -> None:
-        for agent in self.agents.live_in(event.environment_id):
+        for agent in self.agents.current_scoped(event.environment_id):
             self.agents.save(agent.message_arrived(), Actor.system())

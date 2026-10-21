@@ -36,7 +36,7 @@ class PluginRelay:
         self.environments, self.agents, self.entries, self.deferred, self.hashes, self.linked = environments, agents, entries, deferred, hashes, linked
         self.text, self.scope = text, scope
 
-    def heard_by(self, event: Event, environment_id: int) -> list[Plugin]:
+    def listeners(self, event: Event, environment_id: int) -> list[Plugin]:
         hearers = [p for p in self.plugins.enabled() if Protocol.published_name(event) in p.manifest.hears and getattr(event, "actor", None) != Actor.plugin(p.name)]
         if hearers and self.steps.too_deep():
             self.entries.save(Entry(environment_id=environment_id, kind=CUT, actor=Actor.system(), data={"event": Protocol.published_name(event), "by": getattr(event, "actor", Actor.system()).stamp, "plugins": [p.name for p in hearers]}), Actor.system())
@@ -49,7 +49,7 @@ class PluginRelay:
         self.linked.notice(plugin, environment_id)
         environment = self.environments.find(environment_id).name if environment_id else ""
         try:
-            answer = self.runner.ask(plugin, environment, self.protocol.line_of(event, environment, self.state_of(event)), within)
+            answer = self.runner.ask(plugin, environment, self.protocol.event_line(event, environment, self.state_of(event)), within)
         except WindowMissed as missed:
             self.unanswered(plugin, event, environment_id, str(missed))
             return PluginAnswer()
@@ -64,7 +64,7 @@ class PluginRelay:
         if answer.cards or answer.commands:
             self.deferred.add(lambda: self.answers.apply(plugin, answer, environment, environment_id))
 
-    def later(self, plugin: Plugin, event: Event, environment_id: int) -> None:
+    def postponed(self, plugin: Plugin, event: Event, environment_id: int) -> None:
         answer = self.ask(plugin, event, environment_id, LATER)
         if answer.answer == "refuse":
             self.unanswered(plugin, event, environment_id, answer.reason)
@@ -72,14 +72,14 @@ class PluginRelay:
             self.waiting(plugin, event, environment_id, answer.tell)
 
     def waiting(self, plugin: Plugin, event: Event, environment_id: int, text: str) -> None:
-        session = event.session if isinstance(event, AgentEvent) else self.live_session(environment_id)
+        session = event.session if isinstance(event, AgentEvent) else self.current_session(environment_id)
         self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": Protocol.published_name(event), "line": self.text.said(plugin, text), "delivered": not session}), Actor.plugin(plugin.name))
 
     def queued_line(self, plugin: Plugin, environment_id: int, key: str, text: str) -> None:
-        session = self.live_session(environment_id)
+        session = self.current_session(environment_id)
         self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": key, "line": self.text.said(plugin, text), "delivered": not session}), Actor.plugin(plugin.name))
 
-    def live_session(self, environment_id: int) -> str:
+    def current_session(self, environment_id: int) -> str:
         with self.scope.of(environment_id):
             agent = self.agents.current()
         return agent.session if agent else ""

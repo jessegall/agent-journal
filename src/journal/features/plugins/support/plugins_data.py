@@ -9,5 +9,5 @@ class PluginsData:
     root: Path
     plugins_folder: Path
 
-    def holds(self, path: str) -> bool:
+    def blocks(self, path: str) -> bool:
         return (self.root / Path(path).expanduser()).resolve().is_relative_to(self.plugins_folder)

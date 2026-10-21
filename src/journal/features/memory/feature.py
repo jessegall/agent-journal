@@ -59,5 +59,5 @@ At a mark of the context window, writes wait until you decide what must survive 
 """, keywords=('fact', 'facts', 'rule', 'rules', 'reminder', 'remember', 'memory'), required_in=('at_mark',))
 
     @classmethod
-    def mark_due(cls, context: float, highest: int) -> int:
+    def threshold_due(cls, context: float, highest: int) -> int:
         return max([mark for mark in cls.CONTEXT_THRESHOLDS if context * 100 >= mark > highest], default=0)

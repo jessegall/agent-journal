@@ -34,7 +34,7 @@ class PluginController(Controller[Plugin]):
         return Response.json(self.installing.preview(str(request.body.get("source", "")).strip()))
 
     def install(self, request: Request) -> Response:
-        plugin = self.installing.install(str(request.body.get("source", "")).strip(), self.here(), request.actor)
+        plugin = self.installing.install(str(request.body.get("source", "")).strip(), self.local(), request.actor)
         return Response.json(self.shown(plugin), 201)
 
     def configure(self, request: Request) -> Response:
@@ -52,7 +52,7 @@ class PluginController(Controller[Plugin]):
 
     def upgrade(self, request: Request) -> Response:
         plugin = self.repository.find(request.number("id"))
-        return Response.json(self.shown(self.installing.upgrade(plugin.name, request.body.get("ref"), self.here(), request.actor)))
+        return Response.json(self.shown(self.installing.upgrade(plugin.name, request.body.get("ref"), self.local(), request.actor)))
 
     def remove(self, request: Request) -> Response:
         self.installing.remove(self.repository.find(request.number("id")).name, request.actor)
@@ -73,5 +73,5 @@ class PluginController(Controller[Plugin]):
     def dashboard(self, request: Request) -> Response:
         return Response.json(self.dashboards.of(self.repository.find(request.number("id"))).to_json())
 
-    def here(self) -> str:
+    def local(self) -> str:
         return self.environments.find(self.scope.id).name

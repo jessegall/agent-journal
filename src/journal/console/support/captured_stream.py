@@ -22,7 +22,7 @@ class CapturedStream(io.TextIOBase):
 
     @staticmethod
     @contextmanager
-    def into(out: io.StringIO, err: io.StringIO) -> Iterator[None]:
+    def capture(out: io.StringIO, err: io.StringIO) -> Iterator[None]:
         if not isinstance(sys.stdout, CapturedStream):
             sys.stdout = CapturedStream(sys.stdout, CAPTURED_OUTPUT)
         if not isinstance(sys.stderr, CapturedStream):

@@ -18,4 +18,4 @@ class ReportCard(Listener[Created]):
         if not isinstance(report, Report) or event.actor.kind != ActorKind.AGENT:
             return
         with self.scope.of(report.environment_id):
-            self.docking.pin(self.cards.made_mark(report.environment_id, report, event.actor), report, event.actor)
+            self.docking.pin(self.cards.creation_card(report.environment_id, report, event.actor), report, event.actor)

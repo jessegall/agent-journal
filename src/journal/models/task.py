@@ -27,10 +27,10 @@ class Task(Scoped):
     def is_closed(self) -> bool:
         return self.state.is_closed()
 
-    def has_just_closed(self, was: "Task | None") -> bool:
+    def is_newly_closed(self, was: "Task | None") -> bool:
         return self.is_closed() and (was is None or not was.is_closed())
 
-    def is_settled(self) -> bool:
+    def is_resolved(self) -> bool:
         return self.is_closed()
 
     def started(self, time: datetime) -> "Task":

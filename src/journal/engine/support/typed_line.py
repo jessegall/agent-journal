@@ -27,9 +27,9 @@ class TypedLine:
             remainder = f"{prefix} {remainder[split_index:].strip()}"
         return [*pieces, remainder]
 
-    def messages_named(self) -> set[int]:
+    def message_numbers(self) -> set[int]:
         return {int(n) for rows in MESSAGES_PATTERN.findall(self.line) for n in rows.split(", ")}
 
-    def holds(self, prompt: str) -> bool:
+    def contains(self, prompt: str) -> bool:
         text = " ".join(prompt.split())
         return text == self.line or (len(text) >= self.SPLIT_MARGIN and text in self.line)

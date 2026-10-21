@@ -18,18 +18,18 @@ class ProjectKind:
     def __init__(self, ledger: MigratedRows) -> None:
         self.ledger = ledger
 
-    def bring(self, folder: Path, actor: Actor) -> ImportTally:
+    def import_rows(self, folder: Path, actor: Actor) -> ImportTally:
         count, skipped = 0, []
         for row in self.rows(Version3Rows(folder)):
             source = f"project/{self.kind}/{row.n}"
-            why = self.left_behind(row)
+            why = self.skipped(row)
             if why:
                 skipped.append(f"{self.kind} {row.n}: {why}")
                 continue
-            if self.ledger.is_brought(source):
+            if self.ledger.is_imported(source):
                 continue
             try:
-                self.ledger.bring(source, lambda: self.made(row, actor), actor)
+                self.ledger.import_rows(source, lambda: self.created(row, actor), actor)
             except Exception as fault:
                 skipped.append(f"{self.kind} {row.n}: could not be brought: {fault}")
                 continue
@@ -39,8 +39,8 @@ class ProjectKind:
     def rows(self, rows: Version3Rows) -> list[Version3Row]:
         return rows.project(self.kind)
 
-    def left_behind(self, row: Version3Row) -> str:
+    def skipped(self, row: Version3Row) -> str:
         return "deleted" if row.is_deleted() else ""
 
-    def made(self, row: Version3Row, actor: Actor) -> Model:
+    def created(self, row: Version3Row, actor: Actor) -> Model:
         raise NotImplementedError

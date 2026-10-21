@@ -108,12 +108,12 @@ class Provider:
         return self.written_in(lines, read + whole)
 
     def written_in(self, rows: list[dict], time: int) -> FileWrites:
-        return FileWrites([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.crossed_in(row)], time)
+        return FileWrites([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.peer_messages(row)], time)
 
     def texts_in(self, line: dict) -> list[str]:
         return []
 
-    def crossed_in(self, line: dict) -> list[PeerMessage]:
+    def peer_messages(self, line: dict) -> list[PeerMessage]:
         return []
 
     @staticmethod

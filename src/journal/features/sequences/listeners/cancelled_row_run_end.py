@@ -18,6 +18,6 @@ class CancelledRowRunEnd(Listener[Updated]):
         if not isinstance(row, Scoped) or "state" not in event.changed() or getattr(row, "state", "") != CANCELLED:
             return
         ref = f"{row.table()}:{row.id}"
-        for agent, line in self.running.end_where(row.environment_id, lambda run: run.about == ref, f"{ref} was cancelled"):
+        for agent, line in self.running.finish_matching(row.environment_id, lambda run: run.about == ref, f"{ref} was cancelled"):
             if self.running.typed_to(agent.session, row.environment_id):
                 self.supervisor.type(row.environment_id, line)

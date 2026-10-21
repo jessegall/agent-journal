@@ -15,13 +15,13 @@ class MigrationController:
         self.backup, self.migrations, self.migrator = backup, migrations, migrator
 
     def show(self, request: Request) -> Response:
-        return Response.json({"kept": self.backup.is_kept(), "state": self.migrations.current().state.value})
+        return Response.json({"kept": self.backup.is_stored(), "state": self.migrations.current().state.value})
 
-    def later(self, request: Request) -> Response:
-        return Response.json({"kept": self.backup.is_kept(), "state": self.backup.put_off(request.actor).state.value})
+    def postpone(self, request: Request) -> Response:
+        return Response.json({"kept": self.backup.is_stored(), "state": self.backup.put_off(request.actor).state.value})
 
     def start(self, request: Request) -> Response:
         migration = self.migrator.begin(request.actor)
         context = contextvars.copy_context()
         threading.Thread(target=context.run, args=(self.migrator.run, migration, request.actor), name="migration", daemon=True).start()
-        return Response.json({"kept": self.backup.is_kept(), "state": migration.state.value})
+        return Response.json({"kept": self.backup.is_stored(), "state": migration.state.value})

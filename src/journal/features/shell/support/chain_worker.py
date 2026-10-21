@@ -43,7 +43,7 @@ class ChainWorker:
         self.write_to(shell, "exit $__journal_code\n")
         code = self.ended(shell, code)
         pump.join(timeout=2)
-        folder.done(code)
+        folder.finish(code)
         if folder.is_moved():
             self.record.ended(folder.folder.name, code, folder.folder, "\n".join(folder.last(5)), caller)
         return code

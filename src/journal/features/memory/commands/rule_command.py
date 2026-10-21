@@ -23,7 +23,7 @@ class RuleCommand(MemoryCommand):
         self.repository = rules
 
     def carrying(self, row: Rule, caller: Caller) -> Rule:
-        return row.made(caller.actor.kind == ActorKind.AGENT)
+        return row.created(caller.actor.kind == ActorKind.AGENT)
 
     def new(self, args: Namespace) -> Rule:
         return Rule(text=args.text, reason=args.reason, keywords=self.keywords(args))

@@ -13,7 +13,7 @@ class UpdatePause:
     time: float
     pid: int
 
-    def at_step(self, step: str) -> "UpdatePause":
+    def step_pause(self, step: str) -> "UpdatePause":
         return replace(self, step=step)
 
     def is_stale(self, time: float) -> bool:

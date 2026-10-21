@@ -12,5 +12,5 @@ class SkillsDataReader:
         self.registry, self.files = registry, files
 
     def read(self, agent: Agent) -> SkillsData:
-        cards = tuple(SkillCard(skill.name, str(self.files.path(skill).relative_to(self.files.config.root)), self.files.hash_of(skill), skill.keywords, skill.required_in) for skill in self.registry.skills())
+        cards = tuple(SkillCard(skill.name, str(self.files.path(skill).relative_to(self.files.config.root)), self.files.digest(skill), skill.keywords, skill.required_in) for skill in self.registry.skills())
         return SkillsData(owed=tuple(agent.skills_owed), loaded=dict(agent.skills_loaded), skills=cards)

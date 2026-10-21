@@ -12,5 +12,5 @@ class Reaction(Scoped):
     face: str = ""
     author: Author = Author.USER
 
-    def given_on(self, message_id: int) -> "Reaction":
+    def reacted_message(self, message_id: int) -> "Reaction":
         return self.with_event(ReactionAdded(environment_id=self.environment_id, face=self.face, message_id=message_id, by_user=self.author == Author.USER))

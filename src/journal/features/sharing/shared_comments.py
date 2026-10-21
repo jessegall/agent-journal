@@ -25,7 +25,7 @@ class SharedComments:
     def leave(self, share: Share, on: str, name: str, text: str) -> Message:
         if not share.comments:
             raise Rejection("this link does not take comments")
-        name, text = self.named(name), self.in_words(text)
+        name, text = self.lookup(name), self.text(text)
         with self.scope.of(share.environment_id):
             row = next((ref for ref in self.targets.shown(share) if str(ref) == on), None)
             if row is None:
@@ -43,17 +43,17 @@ class SharedComments:
 
     def of(self, share: Share) -> list[Message]:
         with self.scope.of(share.environment_id):
-            return self.messages.from_visitors(share.id)
+            return self.messages.visitor_messages(share.id)
 
     @staticmethod
-    def named(given: str) -> str:
+    def lookup(given: str) -> str:
         name = " ".join("".join(ch for ch in str(given) if ch.isprintable() and ch != ":").split())
         if not name or len(name) > NAME_LIMIT:
             raise Rejection(f"a name is 1 to {NAME_LIMIT} characters")
         return name
 
     @staticmethod
-    def in_words(given: str) -> str:
+    def text(given: str) -> str:
         text = str(given).strip()
         if not text or len(text) > TEXT_LIMIT:
             raise Rejection(f"a comment is 1 to {TEXT_LIMIT} characters")

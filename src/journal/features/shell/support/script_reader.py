@@ -16,7 +16,7 @@ class ScriptReader:
     path: Path
 
     @classmethod
-    def from_file(cls, path: Path) -> "ScriptReader":
+    def loaded(cls, path: Path) -> "ScriptReader":
         about = next((line.removeprefix("#").strip() for line in path.read_text().splitlines() if line.startswith("#") and not line.startswith("#!")), "")
         return cls(path.stem, about, path)
 

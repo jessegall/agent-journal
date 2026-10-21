@@ -25,14 +25,14 @@ class Clock:
         self._thread = threading.Thread(target=self._run, name="clock", daemon=True)
         self._thread.start()
 
-    def now(self) -> float:
+    def time(self) -> float:
         return timing.time()
 
     def tick(self) -> None:
-        time = self.now()
+        time = self.time()
         self.bus.dispatch(ClockTicked(time=time))
-        for agent in self.agents.everywhere():
-            if isinstance(self.states.named(agent.state, agent.data), Ended):
+        for agent in self.agents.all_agents():
+            if isinstance(self.states.restored(agent.state, agent.data), Ended):
                 continue
             with self.scope.of(agent.environment_id):
                 self._tick(agent, time)

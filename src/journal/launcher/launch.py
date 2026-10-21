@@ -155,7 +155,7 @@ class Launch:
     def launch_file(self, choice: Choice, status: StatusLine) -> dict:
         environ = self.environ(choice)
         worktree = Worktree(self.root, self.worktree or choice.environment)
-        folder = worktree.made() if self.in_worktree or worktree.path.is_dir() else self.root
+        folder = worktree.created() if self.in_worktree or worktree.path.is_dir() else self.root
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
         return {
             "front": {"command": self.agent_command(choice, status), "resume": RESUME[self.agent](choice.resume) if choice.resume else [], "folder": str(folder), "env": environ},

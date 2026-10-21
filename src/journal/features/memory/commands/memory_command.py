@@ -66,4 +66,4 @@ class MemoryCommand(Command):
             return
         agent = self.machine.agent(caller.session, self.scope.id)
         if agent.mark_owed:
-            self.agents.save(agent.mark_decided(datetime.now(timezone.utc).timestamp()), caller.actor)
+            self.agents.save(agent.context_decided(datetime.now(timezone.utc).timestamp()), caller.actor)

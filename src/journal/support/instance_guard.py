@@ -13,7 +13,7 @@ class InstanceGuard:
     def __init__(self, config: Config) -> None:
         self.config = config
 
-    def another(self) -> str:
+    def other_address(self) -> str:
         for port in self.config.remembered_port():
             address = f"http://127.0.0.1:{port}"
             try:

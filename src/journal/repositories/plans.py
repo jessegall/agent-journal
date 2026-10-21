@@ -36,31 +36,31 @@ class Plans(ScopedRepository[Plan]):
             raise Rejection(f"plan {plan.id} is in review: it can be approved once its reviewers are back and their findings are in it")
         if plan.state in (PlanState.STARTED, PlanState.FINISHED, PlanState.CANCELLED):
             return plan
-        return self.save(plan.approved(self._now().timestamp(), actor.is_the_user()), actor)
+        return self.save(plan.approved(self._time().timestamp(), actor.is_user()), actor)
 
     def cancel(self, plan: Plan, actor: Actor) -> list[Task]:
-        self.save(plan.cancelled(datetime.now(timezone.utc).timestamp(), actor.is_the_user()), actor)
+        self.save(plan.cancelled(datetime.now(timezone.utc).timestamp(), actor.is_user()), actor)
         cancelled = []
         for task in self.tasks_of(plan):
-            if task.is_closed() or self.is_in_another_plan(task, plan):
+            if task.is_closed() or self.is_shared(task, plan):
                 continue
             cancelled.append(self.tasks.save(task.cancelled(datetime.now(timezone.utc)), actor))
         return cancelled
 
-    def is_in_another_plan(self, task: Task, plan: Plan) -> bool:
+    def is_shared(self, task: Task, plan: Plan) -> bool:
         return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, PLAN_LINK))
 
     def plan_states(self, task: Task) -> set[PlanState]:
-        return {plan.state for plan in self.holding(task)}
+        return {plan.state for plan in self.containing(task)}
 
-    def holding(self, task: Task) -> list[Plan]:
+    def containing(self, task: Task) -> list[Plan]:
         return [plan for ref in self.links.targets(task, PLAN_LINK) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.SUSPENDED, PlanState.BLOCKED)]
 
     def waiting_on(self, model) -> list[Plan]:
         return [plan for ref in self.links.sources(model, WAIT_LINK) if ref.type == Plan.table() and (plan := self.find(ref.id)).is_blocked()]
 
-    def all_left_blocked(self, plan: Plan) -> bool:
-        return plan.is_all_left_blocked(self.tasks_of(plan))
+    def is_stalled(self, plan: Plan) -> bool:
+        return plan.is_stalled(self.tasks_of(plan))
 
     def tasks_of(self, plan: Plan) -> list[Task]:
         return self.tasks.numbered(ref.id for ref in self.links.sources(plan, PLAN_LINK))
@@ -80,24 +80,24 @@ class Plans(ScopedRepository[Plan]):
     def tree(self, plan: Plan) -> PlanTree:
         return PlanTree(plan, tuple(self.tasks_of(plan)), tuple(self.phased(plan)))
 
-    def in_order(self, plan: Plan) -> list[Task]:
-        return self.tree(plan).in_order
+    def ordered(self, plan: Plan) -> list[Task]:
+        return self.tree(plan).ordered
 
-    def in_review(self) -> list[Plan]:
+    def reviewing(self) -> list[Plan]:
         return self.matching(state=PlanState.REVIEWING)
 
     def approved(self) -> list[Plan]:
         return self.matching(state=PlanState.APPROVED)
 
     def related(self) -> list[Task]:
-        started = [plan for plan in self.in_() if plan.state == PlanState.STARTED]
+        started = [plan for plan in self.scoped() if plan.state == PlanState.STARTED]
         if not started:
             return self.free()
         task = self.next_task(started[0])
         return [task] if task else []
 
     def free(self) -> list[Task]:
-        open_tasks = self.tasks.in_state(TaskState.OPEN)
+        open_tasks = self.tasks.with_state(TaskState.OPEN)
         planned = {link.source.id for link in self.links.linked("source", open_tasks, PLAN_LINK)}
         return [t for t in open_tasks if t.id not in planned]
 
@@ -108,13 +108,13 @@ class Plans(ScopedRepository[Plan]):
         return self.unstartable(self.tree(plan))
 
     def unstartable(self, tree: PlanTree) -> set[int]:
-        return self.tasks.waiting_ids(list(tree.tasks)) | set(self.workers.holding({t.id for t in tree.tasks}))
+        return self.tasks.waiting_ids(list(tree.tasks)) | set(self.workers.containing({t.id for t in tree.tasks}))
 
     def resumable(self, plan: Plan) -> Task | None:
         return self.resumable_task(self.tree(plan))
 
     def resumable_task(self, tree: PlanTree) -> Task | None:
-        return tree.plan.task_to_resume(tree.in_order, self.unstartable(tree))
+        return tree.plan.task_to_resume(tree.ordered, self.unstartable(tree))
 
     def started_task(self, plan: Plan) -> Task | None:
         return next((task for task in self.tasks_of(plan) if task.state == TaskState.STARTED), None)
@@ -123,16 +123,16 @@ class Plans(ScopedRepository[Plan]):
         return self.open_task(self.tree(plan))
 
     def open_task(self, tree: PlanTree) -> Task | None:
-        return tree.plan.next_open_task(tree.in_order, self.unstartable(tree))
+        return tree.plan.next_open_task(tree.ordered, self.unstartable(tree))
 
-    def at_checkpoint(self, plan: Plan) -> PhaseTasks | None:
-        return plan.checkpoint_at(self.phased(plan))
+    def checkpoint_plans(self, plan: Plan) -> PhaseTasks | None:
+        return plan.checkpoint_phase(self.phased(plan))
 
     def start(self, plan: Plan, actor: Actor) -> Plan:
         time = datetime.now(timezone.utc)
         tree = self.tree(plan)
         if plan.startable().is_finished(list(tree.tasks)):
-            return self.save(plan.done(time.timestamp()), actor)
+            return self.save(plan.finished(time.timestamp()), actor)
         task = self.resumable_task(tree)
         if task is None:
             return self.save(plan.started_without_task(time.timestamp()), actor)
@@ -145,4 +145,4 @@ class Plans(ScopedRepository[Plan]):
         time = datetime.now(timezone.utc)
         for task in [t for t in self.tasks_of(plan) if t.state == TaskState.STARTED]:
             self.tasks.save(task.parked(f"plan {plan.id} was parked", time), actor)
-        return self.save(plan.postponed(time.timestamp(), actor.is_the_user()), actor)
+        return self.save(plan.postponed(time.timestamp(), actor.is_user()), actor)

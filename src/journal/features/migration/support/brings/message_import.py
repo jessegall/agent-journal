@@ -23,11 +23,11 @@ class MessageImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.messages, self.config = messages, config
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
-        replied = self.message_of(row, into)
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
+        replied = self.message(row, into)
         files = tuple(sorted(path.name for path in attached.iterdir())) if attached.is_dir() else ()
         message = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, reply_to=replied.id if replied else None, read_at=row.read_at(),
-                                                 idempotency=row.data.get("idempotency", ""), files=files), row.made_at(), actor)
+                                                 idempotency=row.data.get("idempotency", ""), files=files), row.creation_time(), actor)
         kept = self.config.files / "message" / str(message.id)
         for name in files:
             kept.mkdir(parents=True, exist_ok=True)

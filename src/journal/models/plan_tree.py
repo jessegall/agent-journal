@@ -14,5 +14,5 @@ class PlanTree:
     phased: tuple[PhaseTasks, ...]
 
     @property
-    def in_order(self) -> list[Task]:
-        return self.plan.in_order(list(self.phased), list(self.tasks))
+    def ordered(self) -> list[Task]:
+        return self.plan.ordered(list(self.phased), list(self.tasks))

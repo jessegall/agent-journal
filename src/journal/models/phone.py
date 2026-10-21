@@ -20,10 +20,10 @@ class Phone(Scoped):
     pushed: str = ""
     push_failed_at: datetime | None = None
 
-    def is_live(self, time: datetime) -> bool:
+    def is_active(self, time: datetime) -> bool:
         return self.ended_at is None and self.expires_at is not None and self.expires_at > time
 
-    def is_due_a_sighting(self, time: datetime) -> bool:
+    def is_presence_due(self, time: datetime) -> bool:
         return self.last_seen_at is None or time - self.last_seen_at >= self.PRESENCE_INTERVAL
 
     def seen(self, time: datetime) -> "Phone":
@@ -32,12 +32,12 @@ class Phone(Scoped):
     def pushed_refs(self) -> list[str]:
         return self.pushed.split()
 
-    def has_news(self, owed: list[str]) -> bool:
+    def has_updates(self, owed: list[str]) -> bool:
         return bool(set(owed) - set(self.pushed_refs()))
 
-    def is_owed_a_push(self, owed: list[str], time: datetime) -> bool:
+    def is_push_due(self, owed: list[str], time: datetime) -> bool:
         resting = self.push_failed_at is not None and time - self.push_failed_at < self.NOTIFICATION_RETRY_DELAY
-        return self.has_news(owed) and not resting
+        return self.has_updates(owed) and not resting
 
     def subscribed(self, endpoint: str, owed: list[str]) -> "Phone":
         return self.with_(push=endpoint, pushed=" ".join(owed))

@@ -16,5 +16,5 @@ class OutputController:
     def show(self, request: Request) -> Response:
         output = self.outputs.find(request.number("id"))
         files = OutputFiles(Path(output.folder))
-        kept = files.is_kept()
+        kept = files.is_stored()
         return Response.json({**ModelFields.of(output), "outcome": files.outcome() if kept else "files gone", "lines": files.lines() if kept else []})

@@ -52,7 +52,7 @@ class StateMachine(AgentListener[AgentEvent]):
             self.supervisor.type(environment_id, line, after=after)
 
     def row_event(self, event: RowEvent) -> None:
-        for agent in self.agents.live_in(event.environment_id) if event.environment_id else self.agents.live_everywhere():
+        for agent in self.agents.current_scoped(event.environment_id) if event.environment_id else self.agents.environment_agents():
             with self.scope.of(agent.environment_id):
                 answered = self.answer(agent, event.reaching(agent.session))
             if answered.context:
@@ -60,12 +60,12 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def answer(self, agent: Agent, event: Event) -> Decision:
         stack, settings = self.states.stack_of(agent), self.taken()
-        event = event.with_data(self.readers.for_agent(agent))
+        event = event.with_data(self.readers.agent_data(agent))
         transition = stack.top().on(event, settings)
         hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings, event.data)
         if transition.dropped:
             self.entries.save(StackHistory.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
-        agent = self._settle(agent, hooked, event.key, Actor.system())
+        agent = self._store(agent, hooked, event.key, Actor.system())
         lines = [line for nudge in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, nudge))]
         typed = [line for nudge in transition.typed if (line := self.nudger.say(agent, nudge))]
         for line in typed:
@@ -81,7 +81,7 @@ class StateMachine(AgentListener[AgentEvent]):
     def move(self, session: str, environment_id: int, to: BaseState) -> Agent:
         agent = self.agent(session, environment_id)
         hooked = self.through_hooks(self.states.stack_of(agent), self.placed(self.states.stack_of(agent), to), self.taken(), self.read_for(agent))
-        settled = self._settle(agent, hooked, MOVED, Actor.system())
+        settled = self._store(agent, hooked, MOVED, Actor.system())
         if hooked.held:
             raise Rejection(hooked.held.nudge.rendered())
         for line in [line for nudge in hooked.nudges if (line := self.nudger.say(settled, nudge))]:
@@ -90,19 +90,19 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def push(self, session: str, environment_id: int, to: BaseState, actor: Actor, text: str) -> Agent:
         agent = self.agent(session, environment_id)
-        return self.by_hand(agent, self.states.stack_of(agent).pushed(to), actor, text)
+        return self.manual(agent, self.states.stack_of(agent).pushed(to), actor, text)
 
     def pop(self, session: str, environment_id: int, actor: Actor, text: str) -> Agent:
         agent = self.agent(session, environment_id)
-        return self.by_hand(agent, self.states.stack_of(agent).popped(), actor, text)
+        return self.manual(agent, self.states.stack_of(agent).popped(), actor, text)
 
     def reset(self, session: str, environment_id: int, actor: Actor, text: str) -> Agent:
         agent = self.agent(session, environment_id)
-        return self.by_hand(agent, Stack((self.states.first(),)), actor, text)
+        return self.manual(agent, Stack((self.states.first(),)), actor, text)
 
-    def by_hand(self, agent: Agent, after: Stack, actor: Actor, text: str) -> Agent:
+    def manual(self, agent: Agent, after: Stack, actor: Actor, text: str) -> Agent:
         hooked = self.through_hooks(self.states.stack_of(agent), after, self.taken(), self.read_for(agent))
-        settled = self._settle(agent, hooked, text, actor)
+        settled = self._store(agent, hooked, text, actor)
         if hooked.held:
             raise Rejection(hooked.held.nudge.rendered())
         for line in [line for nudge in hooked.nudges if (line := self.nudger.say(settled, nudge))]:
@@ -114,7 +114,7 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def read_for(self, agent: Agent) -> FeatureData:
         with self.scope.of(agent.environment_id):
-            return self.readers.for_agent(agent)
+            return self.readers.agent_data(agent)
 
     def through_hooks(self, before: Stack, after: Stack, settings: SettingRows, data: FeatureData) -> MachineAnswer:
         if after.states[:-1] == before.states and len(after.states) == len(before.states) + 1:
@@ -153,19 +153,19 @@ class StateMachine(AgentListener[AgentEvent]):
         return self.states.stack_under(to)
 
     def current(self, session: str) -> BaseState:
-        agent = self.agents.for_session(session)
-        return self.states.named(agent.state, agent.data)
+        agent = self.agents.session_agent(session)
+        return self.states.restored(agent.state, agent.data)
 
     def agent(self, session: str, environment_id: int, provider: str = "") -> Agent:
         if not session:
             raise Rejection("no agent runs this, so there is no agent to move: only an agent's own session can")
         try:
-            return self.agents.for_session(session)
+            return self.agents.session_agent(session)
         except MissingRow:
             first = self.states.first()
             return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.to_data()), Actor.system())
 
-    def entered_and_left(self, agent: Agent, after: Stack) -> None:
+    def lifecycle(self, agent: Agent, after: Stack) -> None:
         before = self.states.stack_of(agent)
         typist = Typist(self.supervisor, agent.environment_id)
         kinds_after, kinds_before = {type(s) for s in after.states}, {type(s) for s in before.states}
@@ -176,13 +176,13 @@ class StateMachine(AgentListener[AgentEvent]):
             if type(state) not in kinds_before:
                 state.on_enter(typist)
 
-    def _settle(self, agent: Agent, hooked: MachineAnswer, cause: str, actor: Actor) -> Agent:
+    def _store(self, agent: Agent, hooked: MachineAnswer, cause: str, actor: Actor) -> Agent:
         stack, to = hooked.stack, hooked.stack.top()
         if hooked.held:
             self.entries.save(StackHistory.entry(agent, list(agent.stack), cause, actor, refused=hooked.refused, line=hooked.held.nudge.rendered()), actor)
         if to.name == agent.state and to.to_data() == agent.data and stack.to_data() == list(agent.stack):
             return agent
-        self.entered_and_left(agent, stack)
+        self.lifecycle(agent, stack)
         settled = self.agents.save(agent.with_(state=to.name, data=to.to_data(), stack=tuple(stack.to_data())), actor)
         self.entries.save(StackHistory.entry(agent, stack.to_data(), cause, actor), actor)
         return settled

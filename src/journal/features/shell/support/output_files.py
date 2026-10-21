@@ -13,7 +13,7 @@ class OutputFiles:
     def __init__(self, folder: Path) -> None:
         self.folder = folder
 
-    def is_kept(self) -> bool:
+    def is_stored(self) -> bool:
         return (self.folder / "parts").is_file()
 
     def recorded(self) -> list[int]:
@@ -74,7 +74,7 @@ class OutputFiles:
     def part_text(self, i: int) -> str:
         return (self.folder / f"{i}.part").read_text()
 
-    def cut_of(self, i: int) -> str:
+    def cut_command(self, i: int) -> str:
         path = self.folder / f"{i}.cut"
         return path.read_text() if path.is_file() else ""
 
@@ -97,10 +97,10 @@ class OutputFiles:
     def printed(self, i: int) -> str:
         return "".join(path.read_text(errors="replace") for name in (f"{i}.out", f"{i}.err") if (path := self.folder / name).is_file())
 
-    def is_done(self) -> bool:
+    def is_finished(self) -> bool:
         return (self.folder / "done").is_file()
 
-    def done(self, status: int) -> None:
+    def finish(self, status: int) -> None:
         (self.folder / "done").write_text(str(status))
 
     def is_moved(self) -> bool:

@@ -15,7 +15,7 @@ class Trigger(Model):
     action: TriggerAction = TriggerAction.NUDGE
     text: str = ""
 
-    def met_by(self, text: str) -> bool:
+    def matches(self, text: str) -> bool:
         lowered = f" {' '.join(re.findall(r'[\w;/-]+', text.lower()))} "
         return any(f" {' '.join(re.findall(r'[\w;/-]+', word.lower()))} " in lowered for word in self.phrases)
 

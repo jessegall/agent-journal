@@ -20,12 +20,12 @@ class Subagents:
         return sum(1 for row in self.rows(session)[:-1] if row.running)
 
     def running_about(self, session: str, subject: str) -> int:
-        return sum(1 for row in self.named_in_brief(session, subject) if row.running)
+        return sum(1 for row in self.mentioning(session, subject) if row.running)
 
-    def dispatched_about(self, session: str, subject: str, since: float) -> list[Dispatch]:
-        return [row for row in self.named_in_brief(session, subject) if row.time >= since]
+    def dispatches_mentioning(self, session: str, subject: str, since: float) -> list[Dispatch]:
+        return [row for row in self.mentioning(session, subject) if row.time >= since]
 
-    def named_in_brief(self, session: str, subject: str) -> list[Dispatch]:
+    def mentioning(self, session: str, subject: str) -> list[Dispatch]:
         named = re.compile(rf"\b{re.escape(subject)}\b", re.IGNORECASE)
         return [row for row in self.rows(session) if named.search(row.brief)]
 

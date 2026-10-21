@@ -34,22 +34,22 @@ class Worktree:
         return (f"worktree on {self.current_branch()}",)
 
     def current_branch(self) -> str:
-        return self.git_in("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+        return self.run_git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
 
-    def made(self) -> Path:
+    def created(self) -> Path:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with (self.path.parent / f".{self.name}.lock").open("w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             if self.path.exists() and not self.is_registered():
-                self.moved_aside()
+                self.archived()
             if not self.path.is_dir():
                 self.added()
             self.shared()
-            self.git("update-ref", f"{TIPS_REF}/{self.name}", self.branch_here())
+            self.git("update-ref", f"{TIPS_REF}/{self.name}", self.local_branch())
         return self.path
 
-    def branch_here(self) -> str:
-        return self.git_in("rev-parse", "HEAD").stdout.strip()
+    def local_branch(self) -> str:
+        return self.run_git("rev-parse", "HEAD").stdout.strip()
 
     def added(self) -> None:
         self.git("worktree", "prune")
@@ -62,20 +62,20 @@ class Worktree:
         if added.returncode != 0:
             self.git("worktree", "prune")
             if self.path.exists():
-                self.moved_aside()
+                self.archived()
             raise WorktreeFailure(self.name, added.stderr.strip())
 
     def dropped(self) -> str:
         if not self.path.is_dir():
             return ""
-        left = [line[3:] for line in self.git_in("status", "--porcelain").stdout.splitlines() if line.strip()]
+        left = [line[3:] for line in self.run_git("status", "--porcelain").stdout.splitlines() if line.strip()]
         if left:
             return f"its worktree {self.path} stays, since {len(left)} files in it are not committed: {', '.join(left[:10])}"
-        tip = self.git_in("rev-parse", "HEAD").stdout.strip()
+        tip = self.run_git("rev-parse", "HEAD").stdout.strip()
         if self.git("merge-base", "--is-ancestor", tip, "HEAD").returncode != 0:
             return f"its worktree {self.path} stays, since its branch has commits not yet in {self.git('rev-parse', '--abbrev-ref', 'HEAD').stdout.strip()}"
         self.git("update-ref", f"{TIPS_REF}/{self.name}", tip)
-        branch = self.git_in("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+        branch = self.run_git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
         self.git("worktree", "remove", "--force", str(self.path))
         self.git("branch", "-D", branch)
         return f"its worktree and branch are removed, its work already merged; its last commit is kept as {TIPS_REF}/{self.name}"
@@ -84,7 +84,7 @@ class Worktree:
         listed = self.git("worktree", "list", "--porcelain").stdout.splitlines()
         return f"worktree {self.path.resolve()}" in listed or f"worktree {self.path}" in listed
 
-    def moved_aside(self) -> Path:
+    def archived(self) -> Path:
         aside = self.path.with_name(f"{self.name}.moved-aside-{int(time.time())}")
         self.path.rename(aside)
         self.git("worktree", "prune")
@@ -119,9 +119,9 @@ class Worktree:
     def cleared(self, place: Path) -> None:
         if place.is_symlink() or not place.is_dir():
             return
-        tracked = [name for name in self.git_in("ls-files", "-z", "--", JOURNAL).stdout.split("\0") if name]
+        tracked = [name for name in self.run_git("ls-files", "-z", "--", JOURNAL).stdout.split("\0") if name]
         if tracked:
-            self.git_in("update-index", "--skip-worktree", "--", *tracked)
+            self.run_git("update-index", "--skip-worktree", "--", *tracked)
         shutil.rmtree(place)
 
     @staticmethod
@@ -136,7 +136,7 @@ class Worktree:
         fresh.symlink_to(target, target_is_directory=target.is_dir())
         os.replace(fresh, place)
 
-    def git_in(self, *args: str) -> subprocess.CompletedProcess:
+    def run_git(self, *args: str) -> subprocess.CompletedProcess:
         return subprocess.run(["git", "-C", str(self.path), *args], capture_output=True, text=True, timeout=GIT_SECONDS)
 
     def has(self, ref: str) -> bool:

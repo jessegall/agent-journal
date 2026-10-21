@@ -55,7 +55,7 @@ class Chain:
     @classmethod
     def is_reading_code_line(cls, line: str) -> bool:
         own = [p for p in cls.parts(line) if p.recorded]
-        return any(p.is_reading_code() for p in own) and all(p.is_reading_code() or p.is_harmless() or p.is_cd_into_project() for p in own)
+        return any(p.is_reading_code() for p in own) and all(p.is_reading_code() or p.is_harmless() or p.is_project_cd() for p in own)
 
     @staticmethod
     def is_journal(part: str) -> bool:
@@ -132,12 +132,12 @@ class Chain:
                     parts.append((separator, (current + line[i:end]).strip(), start, end))
                     current, separator, i, start = "", "", end, end
                     continue
-                if Chain.ampersand_at(line, i):
+                if Chain.ampersand_index(line, i):
                     parts.append((separator, f"{current.strip()} &", start, i + 1))
                     current, separator, i = "", "&", i + 1
                     start = i
                     continue
-                next_separator = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i) or Chain.newline_at(line, i, current)
+                next_separator = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i) or Chain.newline_index(line, i, current)
                 if next_separator:
                     parts.append((separator, Chain.continued(current), start, i))
                     current, separator, i = "", next_separator, i + len(next_separator)
@@ -170,7 +170,7 @@ class Chain:
         return part[:-1].rstrip() if trailing % 2 else part
 
     @staticmethod
-    def ampersand_at(line: str, i: int) -> bool:
+    def ampersand_index(line: str, i: int) -> bool:
         return line[i:i + 1] == "&" and line[i + 1:i + 2] not in ("&", ">") and line[i - 1:i] not in ("&", "|", ">", "<", ";", "")
 
     @staticmethod
@@ -179,7 +179,7 @@ class Chain:
         return ";" if alone else ""
 
     @staticmethod
-    def newline_at(line: str, i: int, current: str) -> str:
+    def newline_index(line: str, i: int, current: str) -> str:
         held = current.strip()
         ends = line[i:i + 1] == "\n" and held and not held.endswith(("|", "||", "|&")) and not held.startswith("#")
         return "\n" if ends else ""
@@ -192,7 +192,7 @@ class Chain:
                 rows.append([])
                 continue
             rows[-1].append(word)
-        return [Chain.led(text) for text in rows]
+        return [Chain.leads(text) for text in rows]
 
     @staticmethod
     def uncommented(part: str) -> str:
@@ -219,7 +219,7 @@ class Chain:
         return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or after_arm
 
     @staticmethod
-    def led(text: list[str]) -> list[str]:
+    def leads(text: list[str]) -> list[str]:
         start = next((i for i, w in enumerate(text) if w not in CONTROL_KEYWORDS), len(text))
         return text[start:]
 

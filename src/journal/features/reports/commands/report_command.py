@@ -56,6 +56,6 @@ class ReportCommand(Command):
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for report in self.reports.in_():
+        for report in self.reports.scoped():
             print(f"{report.id:>4}  {report.title}")
         return 0

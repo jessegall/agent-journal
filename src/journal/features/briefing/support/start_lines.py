@@ -21,9 +21,9 @@ class StartLines:
         self.tasks, self.messages, self.questions = tasks, messages, questions
 
     def taken_over_at(self, event: SessionStarted) -> str:
-        return "" if event.source == "compact" else self.last_other_session_at(event.session)
+        return "" if event.source == "compact" else self.other_session_time(event.session)
 
-    def last_other_session_at(self, session: str) -> str:
+    def other_session_time(self, session: str) -> str:
         others = self.agents.others_lately(session, datetime.now(timezone.utc) - TAKEOVER_WINDOW)
         return others[-1].updated_at.astimezone().strftime("%H:%M") if others else ""
 
@@ -31,13 +31,13 @@ class StartLines:
         return self.numbered(r.text for r in self.rules.all())
 
     def facts_numbered(self) -> str:
-        return self.numbered(f.text for f in self.facts.in_())
+        return self.numbered(f.text for f in self.facts.scoped())
 
     def reminders_numbered(self) -> str:
-        return self.numbered(r.text for r in self.reminders.in_())
+        return self.numbered(r.text for r in self.reminders.scoped())
 
     def waiting(self) -> str:
-        counts = {"tasks": len(self.tasks.in_state(TaskState.OPEN)), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
+        counts = {"tasks": len(self.tasks.with_state(TaskState.OPEN)), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
         return ", ".join(f"{n} {name}" for name, n in counts.items() if n)
 
     @staticmethod

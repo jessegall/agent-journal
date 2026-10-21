@@ -26,16 +26,16 @@ class MessageController(Controller[Message]):
         self.repository, self.reactions, self.attachments, self.docking = messages, reactions, attachments, docking
 
     def listed(self, listing: Listing) -> RowList:
-        page = listing.listed(self.asked(listing), lambda m: True, timeline=True)
+        page = listing.listed(self.question_list(listing), lambda m: True, timeline=True)
         unread = self.repository.unseen_by_user()
-        counts = Counts(all=self.repository.counted_in(), open=len(self.open_ids()) + unread, unread=unread)
+        counts = Counts(all=self.repository.count(), open=len(self.open_ids()) + unread, unread=unread)
         return RowList(rows=self.shown_page(page["rows"]), more=page["more"], counts=counts)
 
-    def asked(self, listing: Listing) -> list[Message]:
+    def question_list(self, listing: Listing) -> list[Message]:
         if listing.ids:
             return self.repository.numbered(listing.ids)
         if listing.since:
-            return self.repository.changed_since(datetime.fromtimestamp(listing.since, timezone.utc))
+            return self.repository.changes(datetime.fromtimestamp(listing.since, timezone.utc))
         return self.repository.window(listing.limit + 1, listing.before, listing.after)
 
     def open_ids(self) -> set[int]:
@@ -44,7 +44,7 @@ class MessageController(Controller[Message]):
     def shown_page(self, rows: list[Message]) -> list[dict]:
         filed, commented, unanswered = self.repository.linked(Messages.SUBJECT_LINK), self.repository.linked(Messages.COMMENT_LINK), {m.id for m in self.repository.unanswered()}
         return [{**ModelFields.of(m), "answered": m.id not in unanswered, "filed": [ref.id for ref in filed.get(m.id, [])],
-                 "comments_on": [str(ref) for ref in commented.get(m.id, [])], "mentions": [str(ref) for ref in Mentions.in_(m.text)]} for m in rows]
+                 "comments_on": [str(ref) for ref in commented.get(m.id, [])], "mentions": [str(ref) for ref in Mentions.found(m.text)]} for m in rows]
 
     def store(self, request: Request) -> Response:
         key = request.body.get("idempotency", "")
@@ -55,13 +55,13 @@ class MessageController(Controller[Message]):
         return Response.json(self.shown(self.repository.save(message, request.actor)), 201)
 
     def read(self, request: Request) -> Response:
-        return Response.json(self.shown(self.repository.mark_read(self.repository.find(request.number("id")), request.actor, self._tool_use())))
+        return Response.json(self.shown(self.repository.read(self.repository.find(request.number("id")), request.actor, self._tool_use())))
 
     def read_all(self, request: Request) -> Response:
         if "ids" not in request.body:
             return Response.json({})
         for id in request.body["ids"]:
-            self.repository.mark_read(self.repository.find(int(id)), request.actor, self._tool_use())
+            self.repository.read(self.repository.find(int(id)), request.actor, self._tool_use())
         return Response.json({})
 
     def reply(self, request: Request) -> Response:

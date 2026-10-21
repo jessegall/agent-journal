@@ -28,7 +28,7 @@ class RecordEdit(AgentListener[ToolFinished]):
         if event.call.tool in EDITING:
             self.patched(event)
             return
-        for path in dict.fromkeys(self.project_path(p) for p in event.call.written_paths if Part.is_under_project(p)):
+        for path in dict.fromkeys(self.project_path(p) for p in event.call.written_paths if Part.is_project_file(p)):
             self.changed(event, path)
 
     def patched(self, event: ToolFinished) -> None:
@@ -48,7 +48,7 @@ class RecordEdit(AgentListener[ToolFinished]):
         if text is None:
             self.deleted(event, path, last_text)
             return
-        patch = PatchRows.from_versions(last_text, text)
+        patch = PatchRows.version_rows(last_text, text)
         if not patch.rows:
             return
         self.recorded(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="create" if not last_text else "edit", time=timing.time(), command=event.call.command,
@@ -57,7 +57,7 @@ class RecordEdit(AgentListener[ToolFinished]):
     def deleted(self, event: ToolFinished, path: str, last_text: str) -> None:
         if not last_text:
             return
-        patch = PatchRows.from_versions(last_text, "")
+        patch = PatchRows.version_rows(last_text, "")
         self.edits.record(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="delete", time=timing.time(), command=event.call.command, added=0, removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), Actor.agent(event.session))
         self.copies.store(path, "")
 

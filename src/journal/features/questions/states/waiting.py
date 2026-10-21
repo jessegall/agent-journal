@@ -16,7 +16,7 @@ class Waiting(Wait):
     title = "Waiting on a question"
     question_id: int = 0
 
-    def awaiting(self) -> tuple[str, str]:
+    def wait_description(self) -> tuple[str, str]:
         return f"your answer to question {self.question_id}", f"questions:{self.question_id}"
 
     def on_question_answered(self, event: QuestionAnswered, settings: Settings) -> Transition:

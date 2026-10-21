@@ -27,7 +27,7 @@ class SettingRows(ScopedRepository[Setting]):
 
     def set(self, key: str, value: object, actor) -> Setting:
         rows = [s for s in self.project_rows() if s.key == key]
-        return self.save((rows[0] if rows else Setting(environment_id=PROJECT, key=key)).set_to(value, self._now().timestamp()), actor)
+        return self.save((rows[0] if rows else Setting(environment_id=PROJECT, key=key)).set_to(value, self._time().timestamp()), actor)
 
     def unset(self, key: str, actor) -> None:
         for row in [s for s in self.project_rows() if s.key == key]:
@@ -58,12 +58,12 @@ class SettingRows(ScopedRepository[Setting]):
 
     def rows_of(self, environment_id: int) -> list[Setting]:
         if environment_id not in self._kept:
-            self._kept[environment_id] = self.across_environments(environment_id=environment_id)
+            self._kept[environment_id] = self.global_matching(environment_id=environment_id)
         return self._kept[environment_id]
 
     def written(self) -> None:
         self._kept.clear()
-        self.connection.after_commit(self._kept.clear)
+        self.connection.commit_callback(self._kept.clear)
 
     def _placed(self, row: Setting) -> Setting:
         return row

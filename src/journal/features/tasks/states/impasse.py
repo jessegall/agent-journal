@@ -11,5 +11,5 @@ class Impasse(Wait):
     title = "Stuck"
     why: str = ""
 
-    def awaiting(self) -> tuple[str, str]:
+    def wait_description(self) -> tuple[str, str]:
         return self.why, ""

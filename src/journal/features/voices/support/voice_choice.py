@@ -20,7 +20,7 @@ class VoiceChoice:
 
     def voice(self) -> Voice:
         from journal.features.voices.feature import Voices
-        return BuiltinCatalogue.named(str(self.settings.option(Voices.PROFILE)))
+        return BuiltinCatalogue.lookup(str(self.settings.option(Voices.PROFILE)))
 
     def title(self) -> str:
         from journal.features.voices.feature import Voices

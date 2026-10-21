@@ -15,7 +15,7 @@ class ReleaseSource:
         with urlopen(request, timeout=READ_SECONDS) as answer:
             return [rows["ref"].removeprefix("refs/tags/") for rows in json.load(answer)]
 
-    def head_of(self, address: str, branch: str) -> str:
+    def head_commit(self, address: str, branch: str) -> str:
         listed = subprocess.run(["git", "ls-remote", "--heads", address, branch], capture_output=True, text=True, timeout=LIST_SECONDS)
         if listed.returncode != 0 or not listed.stdout.strip():
             raise OSError(f"could not read the branch {branch} of {address}: {listed.stderr.strip()[-200:] or 'no such branch'}")

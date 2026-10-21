@@ -24,7 +24,7 @@ class McpController:
         return Response.json({
             "servers": present,
             "restart_pending": self.pending.sessions(),
-            "checked_at": self.health.checked_at,
+            "checked_at": self.health.check_time,
             "checking": self.health.is_checking(),
             "suggested": [{"name": s.name, "title": s.title, "about": s.about, "auth": s.auth, "key_var": s.key_var, "installed": self.present(s, present)} for s in self.catalogue.all()],
         })
@@ -46,14 +46,14 @@ class McpController:
 
     def install(self, request: Request) -> Response:
         try:
-            suggestion = self.catalogue.named(request.body.get("name", ""))
+            suggestion = self.catalogue.lookup(request.body.get("name", ""))
         except StopIteration:
             return Response.refused(f"{request.body.get('name', '')} is not a suggested server")
         return Response.json(self.row(self.installing.add(suggestion.server(), request.actor)))
 
     def key(self, request: Request) -> Response:
         try:
-            server = self.servers.named(request.params["name"])
+            server = self.servers.lookup(request.params["name"])
         except MissingRow as missing:
             return Response.missing(missing)
         if not server.key_var:
@@ -63,17 +63,17 @@ class McpController:
     def remove(self, request: Request) -> Response:
         name = request.params["name"]
         try:
-            server = self.servers.named(name)
+            server = self.servers.lookup(name)
         except MissingRow:
             if not self.installing.remove_known(name):
-                return Response.not_found(f"no server named {name}")
+                return Response.absent(f"no server named {name}")
             return Response.json({"removed": name})
         self.installing.remove(server, request.actor)
         return Response.json({"removed": server.name})
 
     def sign_in(self, request: Request) -> Response:
         try:
-            server = self.servers.named(request.params["name"])
+            server = self.servers.lookup(request.params["name"])
         except MissingRow as missing:
             return Response.missing(missing)
         if not self.installing.sign_in(server):

@@ -38,10 +38,10 @@ class Screen:
         return self.pick_or(heading, notes, options, default, ())[0]
 
     def pick_or(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
-        self._fresh()
+        self._clear_screen()
         if self.interactive:
             return self._pick_with_keys(heading, notes, options, default, actions)
-        return self._pick_by_number(heading, notes, options, default, actions)
+        return self._number_choice(heading, notes, options, default, actions)
 
     def ask(self, prompt: str) -> str:
         self.out.write(f"\n  {self.paint(ACCENT, '›')} {prompt} ")
@@ -52,14 +52,14 @@ class Screen:
             return ""
 
     def summary(self, rows: list[tuple[str, str]]) -> None:
-        self._fresh()
+        self._clear_screen()
         self.out.write(f"  {self.paint(ACCENT, '?')} {self.paint(BOLD, 'Starting')}\n\n")
         for name, value in rows:
             self.out.write(f"    {self.paint(GOOD, '✓')} {name:<13} {value}\n")
         self.out.write("\n")
         self.out.flush()
 
-    def _fresh(self) -> None:
+    def _clear_screen(self) -> None:
         self.out.write(RESTORE_CURSOR if self.interactive else "\n")
 
     def _lines(self, heading: str, notes: list[str], options: list[Option], time: int, actions: tuple[str, ...]) -> list[str]:
@@ -109,7 +109,7 @@ class Screen:
             return int(key) - 1
         return time
 
-    def _pick_by_number(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
+    def _number_choice(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
         self.out.write(f"\n  {heading}\n  {'─' * len(heading)}\n")
         for note in notes:
             self.out.write(f"    {note}\n")

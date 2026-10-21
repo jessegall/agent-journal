@@ -18,7 +18,7 @@ class ProfileController:
     def one(self, request: Request) -> Response:
         name = request.params["name"]
         if not (self.files.folder() / f"{name}.md").is_file():
-            return Response.not_found("no such profile")
+            return Response.absent("no such profile")
         return Response.json(self.files.read(name))
 
     def save(self, request: Request) -> Response:

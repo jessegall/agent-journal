@@ -32,8 +32,8 @@ class Tunler:
     """The tunler program on this machine, which gives the journal its web address: its status, its version and the domains its account holds, each asked at most once a minute, and its login."""
 
     def __init__(self) -> None:
-        self._status = CachedAnswer(lambda: self.asked(), STATUS_CACHE_SECONDS, TunlerStatus(installed=False))
-        self._domains: CachedAnswer[list[str]] = CachedAnswer(lambda: self.asked_domains(), LIST_CACHE_SECONDS, [])
+        self._status = CachedAnswer(lambda: self.query(), STATUS_CACHE_SECONDS, TunlerStatus(installed=False))
+        self._domains: CachedAnswer[list[str]] = CachedAnswer(lambda: self.domain_list(), LIST_CACHE_SECONDS, [])
         self._versions: dict[str, CachedAnswer[TunlerVersion]] = {}
 
     def command(self) -> str:
@@ -54,7 +54,7 @@ class Tunler:
                 pids.append(int(pid))
         return pids
 
-    def ended_for(self, subdomain: str) -> list[int]:
+    def stop_subdomain(self, subdomain: str) -> list[int]:
         pids = self.running_for(subdomain)
         for pid in pids:
             try:
@@ -64,14 +64,14 @@ class Tunler:
         return pids
 
     def status(self) -> TunlerStatus:
-        return self._status.given()
+        return self._status.supplied()
 
-    def forget(self) -> None:
-        self._status.fresh()
+    def drop(self) -> None:
+        self._status.is_recent()
         self._domains.drop()
         self._versions.clear()
 
-    def asked(self) -> TunlerStatus:
+    def query(self) -> TunlerStatus:
         command = self.command()
         if not command:
             return TunlerStatus(installed=False)
@@ -86,28 +86,28 @@ class Tunler:
         return TunlerStatus(installed=True, command=command, logged_in=saved and bool(fields.get("auth_ok")), rejected=saved and fields.get("auth_ok") is False,
                             outdated=saved and "auth_ok" not in fields, account=fields.get("user") or fields.get("email", ""), host=fields.get("host", ""))
 
-    def log_in(self, host: str, username: str, password: str, master: str) -> TunlerLogin:
+    def login(self, host: str, username: str, password: str, master: str) -> TunlerLogin:
         hidden = {"TUNLER_PASSWORD": password}
         if master:
             hidden["TUNLER_MASTER_PASSWORD"] = master
         ok, output = self.told("login", username, f"--host={host}", hidden=hidden)
-        self.forget()
+        self.drop()
         if ok:
             return TunlerLogin(connected=True)
         lines = output.splitlines() or ["tunler refused the login"]
         needs = "master password" in output.lower() and not master
         return TunlerLogin(connected=False, needs_master=needs, error=lines[0] if needs else lines[-1])
 
-    def log_out(self) -> None:
+    def logout(self) -> None:
         ok, output = self.told("logout")
-        self.forget()
+        self.drop()
         if not ok:
             raise Rejection(output or "tunler did not log out")
 
     def versions(self, host: str) -> TunlerVersion:
-        return self._versions.setdefault(host, CachedAnswer(lambda: self.asked_versions(host), LIST_CACHE_SECONDS, TunlerVersion("", "", False))).given()
+        return self._versions.setdefault(host, CachedAnswer(lambda: self.version_list(host), LIST_CACHE_SECONDS, TunlerVersion("", "", False))).supplied()
 
-    def asked_versions(self, host: str) -> TunlerVersion:
+    def version_list(self, host: str) -> TunlerVersion:
         ok, output = self.told("update", "--check", "--json", f"--host={host}")
         try:
             reported = json.loads(output) if ok else {}
@@ -132,21 +132,21 @@ class Tunler:
 
     def update(self) -> str:
         ok, output = self.told("update")
-        self.forget()
+        self.drop()
         if not ok:
             raise Rejection(output or "tunler did not update")
         return output.splitlines()[-1] if output else "tunler is up to date"
 
     def domains(self) -> list[str]:
-        return self._domains.given()
+        return self._domains.supplied()
 
-    def asked_domains(self) -> list[str]:
+    def domain_list(self) -> list[str]:
         ok, output = self.told("domains")
         return [line.strip() for line in output.splitlines() if line.strip()] if ok else []
 
     def release(self, domain: str, host: str) -> str:
         ok, output = self.told("release", domain.removesuffix(f".{host}"))
-        self.forget()
+        self.drop()
         return "" if ok else output or f"tunler did not release {domain}"
 
     def install(self, host: str) -> str:
@@ -157,7 +157,7 @@ class Tunler:
         part.chmod(0o700)
         version = self.verified(part)
         part.replace(self.local())
-        self.forget()
+        self.drop()
         return f"tunler {version} is installed"
 
     def download(self, url: str, part: Path, host: str) -> None:

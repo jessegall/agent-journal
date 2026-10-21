@@ -18,7 +18,7 @@ class Registry:
     def has_feature(self, name: str) -> bool:
         return name in self._by_name
 
-    def is_on(self, feature: type[Feature]) -> bool:
+    def is_enabled(self, feature: type[Feature]) -> bool:
         return feature.fixed or bool(self.settings.get(f"features.{feature.name}", feature.default))
 
     def skill_required_in(self, state: str) -> Skill | None:
@@ -49,4 +49,4 @@ class Registry:
         return self._by_name[nudge.feature]
 
     def silenced(self, nudge: Nudge) -> bool:
-        return nudge.feature in self._by_name and not self.is_on(self.owner_of(nudge))
+        return nudge.feature in self._by_name and not self.is_enabled(self.owner_of(nudge))

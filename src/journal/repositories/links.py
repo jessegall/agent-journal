@@ -14,10 +14,10 @@ class Links(Repository[Link]):
     def targets(self, model: Model, kind: str) -> list[Ref]:
         return [link.target for link in self.selected("source = ? AND kind = ? ORDER BY id", (str(Ref.to(model)), kind))]
 
-    def every_target(self, model: Model) -> list[Ref]:
+    def all_targets(self, model: Model) -> list[Ref]:
         return [link.target for link in self.selected("source = ? ORDER BY id", (str(Ref.to(model)),))]
 
-    def every_source(self, model: Model) -> list[Ref]:
+    def all_sources(self, model: Model) -> list[Ref]:
         return [link.source for link in self.selected("target = ? ORDER BY id", (str(Ref.to(model)),))]
 
     def linked(self, column: str, models: list[Model], kind: str) -> list[Link]:
@@ -32,7 +32,7 @@ class Links(Repository[Link]):
     def is_row(self, ref: Ref) -> bool:
         return self.connection.one(f"SELECT 1 AS found FROM {ref.type} WHERE id = ?", (ref.id,)) is not None
 
-    def between(self, source: Model, target: Model) -> list[Link]:
+    def connecting(self, source: Model, target: Model) -> list[Link]:
         return self.matching(source=Ref.to(source), target=Ref.to(target))
 
     def remove_all_of(self, model: Model) -> None:

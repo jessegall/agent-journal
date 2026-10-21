@@ -25,7 +25,7 @@ class ListenerQueue:
     def add(self, work: Callable[[], None]) -> None:
         self._queue.put(lambda context=contextvars.copy_context(): context.run(work))
 
-    def add_unless_behind(self, work: Callable[[], None], what: str) -> None:
+    def add_bounded(self, work: Callable[[], None], what: str) -> None:
         if self.depth() < self.QUEUE_WARNING_LENGTH:
             self.add(work)
             return

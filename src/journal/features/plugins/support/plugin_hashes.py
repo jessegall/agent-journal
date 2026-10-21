@@ -24,7 +24,7 @@ class PluginHashes:
         changed = [path for path, was in plugin.hashes.items() if self.hashed(self.folders.of(plugin) / path) != was]
         if not changed:
             return True
-        self.plugins.save(self.plugins.named(plugin.name).with_(enabled=False), Actor.system())
+        self.plugins.save(self.plugins.lookup(plugin.name).with_(enabled=False), Actor.system())
         self.cards.show(environment_id, "", f"Plugin {plugin.name} is off: {', '.join(changed)} changed since you installed it or switched it on. Read the change, then switch it on with journal plugin enable {plugin.name}", "bolt", tone="bad", shows=CardKind.PLUGINS)
         return False
 

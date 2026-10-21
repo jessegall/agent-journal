@@ -85,7 +85,7 @@ class PlanCommand(Command):
         return 0
 
     def relink(self, task: Task, plan: Plan, caller: Caller) -> None:
-        for link in self.links.between(task, plan):
+        for link in self.links.connecting(task, plan):
             self.links.delete(link, caller.actor)
         self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), caller.actor)
 
@@ -112,9 +112,9 @@ class PlanCommand(Command):
         phase = phases[args.phase - 1]
         for n in args.tasks:
             task = self.tasks.find(n)
-            if not self.links.between(task, plan):
+            if not self.links.connecting(task, plan):
                 self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), caller.actor)
-            for link in [link for other in phases for link in self.links.between(task, other)]:
+            for link in [link for other in phases for link in self.links.connecting(task, other)]:
                 self.links.delete(link, caller.actor)
             self.links.save(Link(source=Ref.to(task), target=Ref.to(phase), kind=PHASE_LINK), caller.actor)
         print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}")
@@ -149,7 +149,7 @@ class PlanCommand(Command):
         return 0
 
     def approve(self, args: Namespace, caller: Caller) -> int:
-        if not caller.actor.is_the_user():
+        if not caller.actor.is_user():
             raise Rejection("only the user approves a plan: ask, then wait for their word")
         plan = self.plans.approve(self.plans.find(args.n), caller.actor)
         print(f"plan {plan.id} {plan.state}")
@@ -164,7 +164,7 @@ class PlanCommand(Command):
     def block(self, args: Namespace, caller: Caller) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
         plan = self.plans.save(self.plans.find(args.n).blocked(args.why, datetime.now(timezone.utc).timestamp()), caller.actor)
-        for ref in self.waits.named(args.on, args.until, args.every, f"plan {plan.id}", caller.actor):
+        for ref in self.waits.created(args.on, args.until, args.every, f"plan {plan.id}", caller.actor):
             self.links.save(Link(source=Ref.to(plan), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"plan {plan.id} blocked, waiting on: {self.tasks.reason(plan)}")
         return 0
@@ -207,6 +207,6 @@ class PlanCommand(Command):
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for plan in self.plans.in_():
+        for plan in self.plans.scoped():
             print(f"{plan.id:>4}  {plan.state:<8} {plan.title}")
         return 0

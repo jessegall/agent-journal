@@ -15,7 +15,7 @@ class ClearPlanWaits(Listener[Updated]):
         self.plans, self.tasks = plans, tasks
 
     def handle(self, event: Updated) -> None:
-        if not WaitTargets.just_settled(event):
+        if not WaitTargets.is_newly_resolved(event):
             return
         ref = Ref.to(event.model)
         for plan in self.plans.waiting_on(event.model):

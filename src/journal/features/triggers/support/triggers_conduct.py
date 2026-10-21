@@ -30,7 +30,7 @@ class TriggersConduct(Conduct):
 
 
 def triggers_met(triggers: tuple[Trigger, ...], text: str) -> list[Trigger]:
-    return [trigger for trigger in triggers if trigger.met_by(text)]
+    return [trigger for trigger in triggers if trigger.matches(text)]
 
 
 def lines_for(triggers: list[Trigger]) -> list[Nudge]:

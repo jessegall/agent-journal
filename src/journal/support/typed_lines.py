@@ -40,16 +40,16 @@ class TypedLines:
     def clear(self, environment_id: int) -> None:
         self._held = [h for h in self._held if h.environment_id != environment_id]
 
-    def is_within_window(self, environment_id: int, seconds: float) -> bool:
+    def is_recent(self, environment_id: int, seconds: float) -> bool:
         return timing.time() - self._sent_at.get(environment_id, 0.0) < seconds
 
     def is_waiting(self, environment_id: int) -> bool:
         return any(t.environment_id == environment_id for t in self._waiting)
 
-    def hold(self, line: QueuedLine) -> None:
+    def queue(self, line: QueuedLine) -> None:
         self._held.append(line)
 
-    def held_as_one(self, environment_id: int) -> QueuedLine | None:
+    def batched(self, environment_id: int) -> QueuedLine | None:
         held = [h for h in self._held if h.environment_id == environment_id]
         if not held:
             return None
@@ -63,18 +63,18 @@ class TypedLines:
         self._waiting.append(TypedLine(environment_id, line, moment))
         self._recent = [t for t in self._recent if moment - t.time < RECENT] + [TypedLine(environment_id, line, moment)]
 
-    def carries(self, environment_id: int, prompt: str) -> bool:
-        return any(t.environment_id == environment_id and t.holds(prompt) for t in self._recent if timing.time() - t.time < RECENT)
+    def contains(self, environment_id: int, prompt: str) -> bool:
+        return any(t.environment_id == environment_id and t.contains(prompt) for t in self._recent if timing.time() - t.time < RECENT)
 
     def confirm(self, environment_id: int, prompt: str) -> bool:
         for typed in self._waiting:
-            if typed.environment_id == environment_id and typed.holds(prompt):
+            if typed.environment_id == environment_id and typed.contains(prompt):
                 self._waiting.remove(typed)
                 return True
         return False
 
     def confirm_naming(self, environment_id: int, message_id: int) -> bool:
-        named = [t for t in self._waiting if t.environment_id == environment_id and message_id in t.messages_named()]
+        named = [t for t in self._waiting if t.environment_id == environment_id and message_id in t.message_numbers()]
         for typed in named:
             self._waiting.remove(typed)
         return bool(named)
@@ -88,5 +88,5 @@ class TypedLines:
         self._recent = [t for t in self._recent if time - t.time < RECENT] + [again]
         return again
 
-    def given_up(self, typed: TypedLine) -> None:
+    def abandon(self, typed: TypedLine) -> None:
         self._waiting.remove(typed)

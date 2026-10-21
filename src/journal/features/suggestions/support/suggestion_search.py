@@ -42,9 +42,9 @@ class SuggestionSearch:
         return self.last_round + float(self.settings.option(SuggestionsFeature.INTERVAL)) * MINUTE
 
     def round(self) -> list[Suggestion]:
-        return [self.made(suggester) for suggester in self.suggesters if not self.suggestions.was_made(suggester.key) and suggester.applies()]
+        return [self.created(suggester) for suggester in self.suggesters if not self.suggestions.was_made(suggester.key) and suggester.applies()]
 
-    def made(self, suggester: Suggester) -> Suggestion:
+    def created(self, suggester: Suggester) -> Suggestion:
         row = self.suggestions.save(Suggestion(key=suggester.key, title=suggester.title()), Actor.system())
         environment_id = self.target_environment().id
         with self.scope.of(environment_id):
@@ -55,27 +55,27 @@ class SuggestionSearch:
         if suggestion.is_answered():
             raise Rejection(f"suggestion {suggestion.id} was answered already: {suggestion.answer}")
         answered = self.suggestions.save(suggestion.answered(answer), actor)
-        suggester = self.named(suggestion.key)
+        suggester = self.lookup(suggestion.key)
         environment_id = self.card_environment(answered)
         with self.scope.of(environment_id):
             self.shown(answered, suggester, environment_id)
-        return suggester.goes_to() if answer == SuggestionAnswer.ACCEPTED else ""
+        return suggester.target() if answer == SuggestionAnswer.ACCEPTED else ""
 
     def shown(self, suggestion: Suggestion, suggester: Suggester, environment_id: int) -> None:
         data = {"kind": "suggestion", "icon": "bulb", "detail": suggester.detail(), "row": f"suggestions:{suggestion.id}", "accept": suggester.accept_label, "answer": suggestion.answer or ""}
         self.cards.keyed(environment_id, self.card_key(suggestion), suggestion.title, data, Actor.system(), CardKind.SUGGESTIONS)
 
     def card_environment(self, suggestion: Suggestion) -> int:
-        return self.messages.keyed_anywhere(self.card_key(suggestion), Actor.system())[0].environment_id
+        return self.messages.keyed_all(self.card_key(suggestion), Actor.system())[0].environment_id
 
-    def named(self, key: str) -> Suggester:
+    def lookup(self, key: str) -> Suggester:
         rows = [s for s in self.suggesters if s.key == key]
         if not rows:
             raise MissingRow("suggesters", key)
         return rows[0]
 
     def target_environment(self) -> Environment:
-        live = self.agents.live_anywhere()
+        live = self.agents.all_current()
         return self.environments.find(live.environment_id) if live else self.environments.all()[0]
 
     @staticmethod

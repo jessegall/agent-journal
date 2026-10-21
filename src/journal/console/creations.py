@@ -30,10 +30,10 @@ class Creations(Listener[Created]):
 
     @classmethod
     def line(cls, made: list[Model], said: str) -> str:
-        unnamed = [name for m in made if (name := cls.named(m)) not in said]
+        unnamed = [name for m in made if (name := cls.lookup(m)) not in said]
         return "created: " + ", ".join(unnamed) if unnamed else ""
 
     @staticmethod
-    def named(made: Model) -> str:
+    def lookup(made: Model) -> str:
         table = made.table()
         return f"{table[:-3] + 'y' if table.endswith('ies') else table[:-1]} {made.id}"

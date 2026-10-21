@@ -22,7 +22,8 @@ A list line is `Old New`, or `Old New # why`; blank lines and lines starting wit
 is refused when the project's plain-name rules ban it or when it already stands where the old one does.
 Any number of renames go in one call or one list: all are planned against one reading of the code and written
 together, and two that reach the same spot are refused. docs/the-rules.md follows a renamed Class.method.
-`--dry-run` reports every place without writing. A rename writes only on a clean working tree, so it can always
+After writing, every attribute use of an old name that no class defines any more is listed as left behind,
+to rename by hand. `--dry-run` reports every place without writing. A rename writes only on a clean working tree, so it can always
 be undone by going back to the last commit. `--root=DIR` works on another checkout. Needs mypy.
 """
 import ast
@@ -319,7 +320,7 @@ class Renamer:
                     place = Place(path, node.end_line, node.end_column - len(name), name, new)
                     if any(root_of(receiver, name) is group for receiver in receivers):
                         plan.places.append(place)
-                    elif not receivers:
+                    elif not receivers or all(root_of(receiver, name) is None for receiver in receivers):
                         plan.loose.append(f"{path}:{node.end_line}")
                         plan.untyped.append(place)
                         if unique:
@@ -434,6 +435,26 @@ def doubled(plans: list[Plan], project: Project) -> list[str]:
     return found
 
 
+def leftovers(plans: list[Plan], root: str) -> list[str]:
+    """Every attribute use, after writing, of an old member name that no class or function defines any more: a use the types could not place, to rename by hand."""
+    olds = {plan.member for plan in plans if plan.member}
+    files = glob.glob(f"{root}/src/journal/**/*.py", recursive=True) + glob.glob(f"{root}/tests/*.py")
+    defined = set()
+    for path in files:
+        for node in ast.walk(ast.parse(open(path, encoding="utf-8").read())):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                defined.add(node.name)
+            elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+                for target in node.targets if isinstance(node, ast.Assign) else [node.target]:
+                    defined.update(n.attr if isinstance(n, ast.Attribute) else n.id for n in ast.walk(target) if isinstance(n, (ast.Name, ast.Attribute)))
+    gone = olds - defined
+    found = []
+    for path in files:
+        toks = list(tokenize.generate_tokens(io.StringIO(open(path, encoding="utf-8").read()).readline))
+        found += [f"{path}:{tok.start[0]} {tok.string}" for i, tok in enumerate(toks) if tok.type == tokenize.NAME and tok.string in gone and i > 1 and toks[i - 1].string == "." and toks[i - 2].string != "args"]
+    return found
+
+
 def snake(name: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
@@ -543,7 +564,10 @@ def main(arguments: list[str]) -> int:
         print("nothing written: commit every change first, so a rename can always be undone by going back to it")
         return 1
     print(f"{written(plans, root)} files changed")
-    return 0
+    left = leftovers(plans, root)
+    for spot in left:
+        print(f"  left behind: {spot}")
+    return 1 if left else 0
 
 
 if __name__ == "__main__":

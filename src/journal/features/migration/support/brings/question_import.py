@@ -20,7 +20,7 @@ class QuestionImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.questions = questions
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Question:
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Question:
         text = "\n\n".join(part for part in (row.title, row.brief) if part)
         options = tuple(option.get("title", "") for option in row.listed("options"))
-        return self.questions.imported(Question(environment_id=into.id, text=text, options=options, answer=row.outcome if row.completed else None), row.made_at(), actor)
+        return self.questions.imported(Question(environment_id=into.id, text=text, options=options, answer=row.outcome if row.completed else None), row.creation_time(), actor)

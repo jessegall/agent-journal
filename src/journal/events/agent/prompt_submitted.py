@@ -10,5 +10,5 @@ class PromptSubmitted(AgentEvent):
     prompt: str
 
     @property
-    def by_user(self) -> bool:
+    def is_users(self) -> bool:
         return not self.prompt.lstrip().startswith(("[journal]", "[plugin ", "<", "[Cross-session "))

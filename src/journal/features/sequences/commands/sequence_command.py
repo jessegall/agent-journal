@@ -76,7 +76,7 @@ class SequenceCommand(Command):
         return 0
 
     def in_hand(self, caller: Caller) -> SequenceRun:
-        run = self.running.in_hand(caller.session, self.scope.id)
+        run = self.running.current(caller.session, self.scope.id)
         if run is None:
             raise Rejection("no sequence is running")
         return run

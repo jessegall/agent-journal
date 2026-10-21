@@ -51,7 +51,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | etiquette | etiquette.no_em_dashes | your chat used em dashes | EtiquetteConduct.on_turn_displayed_etiquette |
 | etiquette | etiquette.blank_lines_between_paragraphs | your last message had no blank lines between paragraphs | EtiquetteConduct.on_turn_displayed_etiquette |
 | etiquette | etiquette.a_line_is_an_instruction | chat etiquette: a line from the journal is an instruction, not a message | EtiquetteDataReader.read, EtiquetteConduct.on_tool_finished_etiquette |
-| faults | faults.slow_request_to_fix | {{method}} {{route}} took {{ms}} ms, over its budget of {{budget}} ms: find what made it slow and fix it at its source | SlowRequests.marked |
+| faults | faults.slow_request_to_fix | {{method}} {{route}} took {{ms}} ms, over its budget of {{budget}} ms: find what made it slow and fix it at its source | SlowRequests.flagged |
 | laws | laws.name_the_model | the dispatch names no model | LawsConduct.on_tool_starting_laws |
 | laws | laws.name_a_profile | the dispatch names no profile of this project: {{asked}} | LawsConduct.on_tool_starting_laws |
 | laws | laws.bind_the_job | the dispatch binds the agent to no concrete job | LawsConduct.on_tool_starting_laws |
@@ -101,7 +101,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | sequences | sequences.sequence_parked | sequence {{n}} is parked at step {{step}}: {{why}} | RunTracker.reminder, SequencesConduct.on_ticked_sequences |
 | sequences | sequences.sequence_ended | sequence {{n}} ran its last step | RunTracker.next, RunTracker.skip |
 | sequences | sequences.sequence_abandoned | sequence {{n}} abandoned | RunTracker.abandon |
-| sequences | sequences.sequence_cannot_finish | sequence {{n}} ended: {{why}} | RunTracker.end_where |
+| sequences | sequences.sequence_cannot_finish | sequence {{n}} ended: {{why}} | RunTracker.finish_matching |
 | sequences | sequences.the_user_skipped_a_step | the user skipped step {{step}} of sequence {{n}} | RunTracker.skip |
 | sequences | sequences.the_user_ended_the_sequence | the user ended sequence {{n}} | RunTracker.end |
 | shell | shell.moved_to_the_background | moved to the background as output {{n}} | ShellRunner.foreground |
@@ -129,7 +129,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | tasks | tasks.parked_task_named_at_close | task {{n}} is still parked: can you continue it now? | TasksConduct.on_task_closed_tasks |
 | tasks | tasks.check_the_wait | check {{what}} now: you have waited {{minutes}} min | ExternalWait.on_ticked |
 | tasks | tasks.check_in_after_quiet | nothing has happened for half an hour: is there anything left for you to do? | Stop.on_ticked |
-| tasks | tasks.wait_over | the wait for {{what}} is over: {{outcome}} | ExternalWait.ended_by |
+| tasks | tasks.wait_over | the wait for {{what}} is over: {{outcome}} | ExternalWait.resolution |
 | tasks | tasks.next_task_while_waiting | while you wait for {{what}}, task {{n}}, {{title}} is next | ExternalWait.on_ticked |
 | tasks | tasks.task_reopened | task {{n}} is open again: {{on}} is answered or closed | TasksConduct.on_task_reopened_tasks |
 | tasks | tasks.fix_the_broken_wait | {{waits}} | Stop.on_stop |

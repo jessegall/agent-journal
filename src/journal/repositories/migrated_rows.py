@@ -10,18 +10,18 @@ from journal.repositories.repository import Repository
 class MigratedRows(Repository[MigratedRow]):
     model = MigratedRow
 
-    def is_brought(self, source: str) -> bool:
+    def is_imported(self, source: str) -> bool:
         return self.connection.one("SELECT 1 AS found FROM migrated_rows WHERE source = ?", (source,)) is not None
 
-    def brought_as(self, source: str) -> Ref | None:
+    def imported_ref(self, source: str) -> Ref | None:
         rows = self.connection.one("SELECT target FROM migrated_rows WHERE source = ?", (source,))
         return None if rows is None else Ref.parse(rows["target"])
 
     def referred(self, environment: str, ref: str) -> Ref | None:
         kind, _, n = ref.partition(":")
-        return self.brought_as(f"environments/{environment}/{kind}/{n}") or self.brought_as(f"project/{kind}/{n}")
+        return self.imported_ref(f"environments/{environment}/{kind}/{n}") or self.imported_ref(f"project/{kind}/{n}")
 
-    def bring(self, source: str, made: Callable[[], Model], actor: Actor) -> None:
+    def import_rows(self, source: str, made: Callable[[], Model], actor: Actor) -> None:
         with self.connection.transaction():
             self.record(source, made(), actor)
 

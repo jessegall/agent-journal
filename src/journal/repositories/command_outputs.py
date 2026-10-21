@@ -16,10 +16,10 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
             raise MissingRow(self.table, chain)
         return rows[-1]
 
-    def in_background(self, session: str) -> list[CommandOutput]:
+    def background(self, session: str) -> list[CommandOutput]:
         return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if self.is_running(Path(o.folder))]
 
-    def ended_untold(self, session: str) -> list[CommandOutput]:
+    def unannounced(self, session: str) -> list[CommandOutput]:
         return self.selected("session = ? AND moved = 1 AND ended = 1 AND told = 0 ORDER BY id", (session,))
 
     @staticmethod
@@ -34,5 +34,5 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
             return False
         return True
 
-    def beyond(self, kept: int) -> list[CommandOutput]:
+    def surplus(self, kept: int) -> list[CommandOutput]:
         return self.selected_everywhere("id NOT IN (SELECT id FROM command_outputs ORDER BY id DESC LIMIT ?) ORDER BY id", (kept,))

@@ -20,7 +20,7 @@ class AgentImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.agents = agents
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Agent:
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Agent:
         transcript = row.data.get("transcript", "")
         session = Path(transcript).stem if transcript else f"version-3-agent-{row.n}"
-        return self.agents.imported(Agent(environment_id=into.id, session=session, provider=row.data.get("provider", "claude"), state="ended"), row.made_at(), actor)
+        return self.agents.imported(Agent(environment_id=into.id, session=session, provider=row.data.get("provider", "claude"), state="ended"), row.creation_time(), actor)

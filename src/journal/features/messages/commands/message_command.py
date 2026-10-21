@@ -63,18 +63,18 @@ class MessageCommand(Command):
             print(f"message {answered.id} already has your reply {earlier.id}: not sent. Send it again only if it says something new, with --confirm")
             return 1
         message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_to=answered.id), caller.actor)
-        self.messages.mark_read(answered, caller.actor, self._tool_use(caller))
+        self.messages.read(answered, caller.actor, self._tool_use(caller))
         print(f"message {message.id} sent")
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for message in self.messages.in_():
+        for message in self.messages.scoped():
             mark = " " if message.read_at else "*"
             print(f"{mark}{message.id:>4}  {message.author:<5} {message.own_words}")
         return 0
 
     def read(self, args: Namespace, caller: Caller) -> int:
-        self.show(self.messages.mark_read(self.messages.find(args.n), caller.actor, self._tool_use(caller)))
+        self.show(self.messages.read(self.messages.find(args.n), caller.actor, self._tool_use(caller)))
         return 0
 
     def unread(self, args: Namespace, caller: Caller) -> int:
@@ -82,7 +82,7 @@ class MessageCommand(Command):
         if not waiting:
             print("nothing unread")
         for message in waiting:
-            self.show(self.messages.mark_read(message, caller.actor, self._tool_use(caller)))
+            self.show(self.messages.read(message, caller.actor, self._tool_use(caller)))
         return 0
 
     def recent(self, args: Namespace, caller: Caller) -> int:
@@ -98,7 +98,7 @@ class MessageCommand(Command):
         message = self.messages.find(args.n)
         reaction = self.reactions.toggle(message, args.face, author, caller.actor)
         if reaction and author == Author.AGENT:
-            self.messages.mark_read(message, caller.actor, self._tool_use(caller))
+            self.messages.read(message, caller.actor, self._tool_use(caller))
         print(f"{args.face} {'on' if reaction else 'off'} message {args.n}")
         return 0
 
@@ -119,7 +119,7 @@ class MessageCommand(Command):
 
     def show(self, message: Message) -> None:
         print(f"message {message.id} from {message.sender}{self.answering(message)}: {message.own_words}")
-        for line in message.quote.split("\n") if message.is_on_a_passage else ():
+        for line in message.quote.split("\n") if message.is_passage_comment else ():
             print(f"  > {line}")
         for name in message.files:
             path = self.config.files / "message" / str(message.id) / name
@@ -128,13 +128,13 @@ class MessageCommand(Command):
         for link in self.links.of(message):
             other = link.target if link.source == Ref.to(message) else link.source
             print(f"  {link.kind} {other}")
-            if link.kind == Messages.COMMENT_LINK and message.is_on_a_passage:
+            if link.kind == Messages.COMMENT_LINK and message.is_passage_comment:
                 print(self.passage_place(other, message.quote))
         print(f"  reply with [!reply:{message.id}] in your turn")
         print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")
 
     def _tool_use(self, caller: Caller) -> int:
-        agents = self.agents.across_environments(session=caller.session) if caller.session else [agent for agent in (self.agents.current(),) if agent]
+        agents = self.agents.global_matching(session=caller.session) if caller.session else [agent for agent in (self.agents.current(),) if agent]
         return agents[0].tool_uses if agents else 0
 
     def passage_place(self, ref: Ref, quote: str) -> str:

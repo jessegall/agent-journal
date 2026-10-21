@@ -56,7 +56,7 @@ class Dump(Scoped):
         return self.with_(items={**self.items, name: {**self.item(name).to_json(), **values}})
 
     @property
-    def all_settled(self) -> bool:
+    def is_complete(self) -> bool:
         settled = [self.item(name).settled for name in self.item_names]
         return bool(settled) and all(settled)
 
@@ -69,7 +69,7 @@ class Dump(Scoped):
     def arrived(self, time: float, by_user: bool) -> "Dump":
         return self.with_event(DumpArrived(environment_id=self.environment_id, time=time, dump_id=self.id, waiting=len(self.waiting()), by_user=by_user))
 
-    def asked(self, text: str, guesses: list[str], time: float) -> "Dump":
+    def posed_question(self, text: str, guesses: list[str], time: float) -> "Dump":
         return self.with_(question={"time": time, "text": text, "guesses": guesses}).with_event(DumpQuestion(environment_id=self.environment_id, time=time, dump_id=self.id))
 
     def answered(self, answer: str, time: float) -> "Dump":
@@ -89,13 +89,13 @@ class Dump(Scoped):
         return self.with_(completed_at=time, outcome=how).with_event(DumpSorted(environment_id=self.environment_id, time=time, dump_id=self.id, outcome=how, stopped=self.stopped))
 
     @staticmethod
-    def items_in(names: list[str]) -> str:
+    def item_rows(names: list[str]) -> str:
         return f"{len(names)} item{'s' * (len(names) != 1)}"
 
     def logged(self, entry: dict, kept: int) -> "Dump":
         return self.with_(log=(*self.log, entry)[-kept:])
 
-    def made_refs(self) -> list[str]:
+    def created_refs(self) -> list[str]:
         refs = [ref for name in self.item_names for ref in self.item(name).refs] + [e["on"] for e in self.log if e.get("on")]
         return list(dict.fromkeys(refs))
 

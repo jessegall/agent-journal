@@ -41,14 +41,14 @@ class Codex(Provider):
         return rows
 
     def latest_session(self, project: Path, since: float) -> str:
-        rollouts = [path for day in self.days_since(since) for path in (self.sessions / day).glob("rollout-*.jsonl") if path.stat().st_mtime >= since]
+        rollouts = [path for day in self.day_count(since) for path in (self.sessions / day).glob("rollout-*.jsonl") if path.stat().st_mtime >= since]
         for path in sorted(rollouts, key=lambda path: path.stat().st_mtime, reverse=True):
             if self.rollout_folder(path) == str(project.resolve()):
                 return path.stem[-36:]
         return ""
 
     @staticmethod
-    def days_since(since: float) -> list[str]:
+    def day_count(since: float) -> list[str]:
         first, last = date.fromtimestamp(since) - timedelta(days=1), date.today() + timedelta(days=1)
         return [(first + timedelta(days=n)).strftime("%Y/%m/%d") for n in range((last - first).days + 1)]
 

@@ -11,16 +11,16 @@ class PrivateFolder:
         self.root = root
 
     def keys_file(self) -> Path:
-        return self.keys_folder() / f"{self.named()}.json"
+        return self.keys_folder() / f"{self.path()}.json"
 
     def phone_push_file(self) -> Path:
-        return self.keys_folder() / f"{self.named()}-phone-push.json"
+        return self.keys_folder() / f"{self.path()}-phone-push.json"
 
     @staticmethod
     def keys_folder() -> Path:
         return Path.home() / ".journal" / "keys"
 
-    def named(self) -> str:
+    def path(self) -> str:
         return str(self.root.resolve()).strip("/").replace("/", "-")
 
     def secrets(self) -> Path:
@@ -29,7 +29,7 @@ class PrivateFolder:
         return Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "agent-journal" / "secrets"
 
     @staticmethod
-    def made(folder: Path) -> Path:
+    def created(folder: Path) -> Path:
         folder.mkdir(parents=True, exist_ok=True)
         folder.chmod(0o700)
         ignore = folder / ".gitignore"

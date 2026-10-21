@@ -885,7 +885,7 @@ def git_at(folder: Path, *argv: str) -> None:
 def session_in_a_worktree(app, replay: Replay, provider: str) -> None:
     """The steps: the environment's worktree is made, a session starts in it, the agent looks, writes inside the worktree and commits there with a trailer, then a merge lands the commit."""
     from journal.support.worktree import Worktree
-    tree = Worktree(project_with_git(app), "main").made()
+    tree = Worktree(project_with_git(app), "main").created()
     replay.step("session starts in the worktree", hook_as(app, provider, "SessionStart")[1])
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["task", "create", "the page", "--start"], AGENT)
@@ -934,6 +934,6 @@ def test_a_workers_worktree_is_its_own_and_a_subagents_worktree_never_moves_the_
     by_name = {s["name"]: s for s in replay.record()}
     assert "worker 1's worktree" in by_name["a write in the worker's worktree"]["answer"]["error"], "the worker's worktree is refused to the agent, with how to work there"
     assert "error" not in by_name["a subagent writes in its own worktree"]["answer"] and "error" not in by_name["a write in the project"]["answer"]
-    stack = [layer["state"] for layer in app.container.get(Agents).for_session("s1").stack]
+    stack = [layer["state"] for layer in app.container.get(Agents).session_agent("s1").stack]
     assert stack == ["idle", "working", "awaiting"], "the worker's dispatch pushed the wait over the work; the subagent's worktree never moved the main conversation"
     assert rows == [], "the record says the same"

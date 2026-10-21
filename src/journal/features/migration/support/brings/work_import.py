@@ -20,14 +20,14 @@ class WorkImport(EnvironmentKind):
         super().__init__(environments, ledger)
         self.logs = logs
 
-    def left_behind(self, row: Version3Row, into: Environment) -> str:
-        return super().left_behind(row, into) or ("" if self.task_of(row, into) else "its to-do did not come across")
+    def skipped(self, row: Version3Row, into: Environment) -> str:
+        return super().skipped(row, into) or ("" if self.task_of(row, into) else "its to-do did not come across")
 
     def task_of(self, row: Version3Row, into: Environment) -> int | None:
         rows = self.ledger.referred(into.name, f"todo:{row.data.get('todo')}")
         return None if rows is None else rows.id
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> TaskLog:
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> TaskLog:
         task = self.task_of(row, into)
         lines = [body for _, body in row.sections if body] or [row.brief]
-        return [self.logs.imported(TaskLog(environment_id=into.id, task_id=task, line=line), row.made_at(), actor) for line in lines][-1]
+        return [self.logs.imported(TaskLog(environment_id=into.id, task_id=task, line=line), row.creation_time(), actor) for line in lines][-1]

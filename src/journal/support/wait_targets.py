@@ -33,6 +33,6 @@ class WaitTargets:
         return f"{'output' if table == CommandOutput.table() else 'check'} {number}"
 
     @staticmethod
-    def just_settled(event: Updated) -> bool:
+    def is_newly_resolved(event: Updated) -> bool:
         model, was = event.model, event.was
-        return isinstance(model, WAIT_TARGETS) and model.is_settled() and (was is None or not was.is_settled())
+        return isinstance(model, WAIT_TARGETS) and model.is_resolved() and (was is None or not was.is_resolved())

@@ -43,10 +43,10 @@ class Worker(Scoped):
     def stopped(self, time: float) -> "Worker":
         return self.with_(state=WorkerState.STOPPED, taken_up=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name))
 
-    def done(self) -> "Worker":
+    def finished(self) -> "Worker":
         return self.with_(taken_up=True)
 
-    def is_out(self) -> bool:
+    def is_running(self) -> bool:
         return self.state == WorkerState.DISPATCHED
 
     def has_report_waiting(self) -> bool:

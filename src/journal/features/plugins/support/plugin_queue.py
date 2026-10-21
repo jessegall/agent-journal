@@ -53,4 +53,4 @@ class PluginQueue:
         rows = self.environments.matching(name=name) if name else []
         if name and not rows:
             raise PluginFault(f"env {name!r} names no environment")
-        return self.protocol.answer_of(json.dumps(data)), rows[0].id if rows else environment_id
+        return self.protocol.parsed_answer(json.dumps(data)), rows[0].id if rows else environment_id

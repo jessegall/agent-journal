@@ -21,12 +21,12 @@ class CommandOutput(Scoped):
         first, *rest = self.command.splitlines() or [""]
         return f"{first} (and {len(rest)} more lines)" if rest else first
 
-    def moved_out(self) -> "CommandOutput":
+    def backgrounded(self) -> "CommandOutput":
         return self.with_(moved=True)
 
     def ended_with(self, status: int, time: float) -> "CommandOutput":
         ended = self.with_(ended=True, status=status)
-        return ended.with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"{self.table()}:{self.id}", outcome=ended.came_to()))
+        return ended.with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"{self.table()}:{self.id}", outcome=ended.outcome()))
 
     def wait_end(self, status: int, time: float) -> "CommandOutput":
         return self.ended_with(status, time).told_of()
@@ -34,8 +34,8 @@ class CommandOutput(Scoped):
     def told_of(self) -> "CommandOutput":
         return self.with_(told=True)
 
-    def is_settled(self) -> bool:
+    def is_resolved(self) -> bool:
         return self.ended
 
-    def came_to(self) -> str:
+    def outcome(self) -> str:
         return f"output {self.id} {'finished' if self.status == 0 else f'failed with code {self.status}'}"

@@ -57,7 +57,7 @@ class PluginInstalling:
             try:
                 self.required(plugin, environment)
                 self.set_up(plugin, environment)
-                filled = self.asked(plugin, environment)
+                filled = self.question(plugin, environment)
             except Rejection:
                 self.undone(plugin, had_data)
                 raise
@@ -81,7 +81,7 @@ class PluginInstalling:
             if ran.returncode != 0:
                 raise Rejection(f"{plugin.name}'s setup step {step.called!r} failed, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
 
-    def asked(self, plugin: Plugin, environment: str) -> dict:
+    def question(self, plugin: Plugin, environment: str) -> dict:
         command = plugin.manifest.installed
         if not command:
             return {}
@@ -101,7 +101,7 @@ class PluginInstalling:
             shutil.rmtree(self.config.home / "plugin-data" / plugin.name, ignore_errors=True)
 
     def upgrade_preview(self, name: str, ref: str | None) -> PluginPreview:
-        plugin = self.plugins.named(name)
+        plugin = self.plugins.lookup(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             manifest = self.same(plugin, self.reader.read(folder))
             changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(manifest))
@@ -110,7 +110,7 @@ class PluginInstalling:
                                  changes=tuple(changes), code=tuple(code), current=not changes and not code)
 
     def upgrade(self, name: str, ref: str | None, environment: str, actor: Actor) -> Plugin:
-        plugin = self.plugins.named(name)
+        plugin = self.plugins.lookup(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             upgraded = plugin.with_(manifest=self.same(plugin, self.reader.read(folder)), commit_sha=commit, release="" if plugin.linked else self.tag_at(folder), waiting="")
             self.services.stop(plugin)
@@ -142,19 +142,19 @@ class PluginInstalling:
 
     def enable(self, name: str, actor: Actor) -> Plugin:
         self.only_the_user(actor, "switches on")
-        plugin = self.plugins.named(name)
+        plugin = self.plugins.lookup(name)
         self.skills.publish(plugin)
         self.services.start(plugin)
         return self.plugins.save(plugin.with_(enabled=True, hashes=self.hashes.of(self.folders.of(plugin), plugin.manifest)), actor)
 
     def disable(self, name: str, actor: Actor) -> Plugin:
-        plugin = self.plugins.named(name)
+        plugin = self.plugins.lookup(name)
         self.skills.withdraw(plugin)
         self.services.stop(plugin)
         return self.plugins.save(plugin.with_(enabled=False), actor)
 
     def remove(self, name: str, actor: Actor) -> None:
-        plugin = self.plugins.named(name)
+        plugin = self.plugins.lookup(name)
         self.skills.withdraw(plugin)
         self.services.stop(plugin)
         if not plugin.linked:
@@ -162,7 +162,7 @@ class PluginInstalling:
         self.plugins.delete(plugin, actor)
 
     def purge(self, name: str, actor: Actor) -> None:
-        data = self.folders.data(self.plugins.named(name))
+        data = self.folders.data(self.plugins.lookup(name))
         self.remove(name, actor)
         shutil.rmtree(data, ignore_errors=True)
         for line in self.dashboard.of(name):
@@ -192,7 +192,7 @@ class PluginInstalling:
 
     def free(self, name: str) -> None:
         try:
-            self.plugins.named(name)
+            self.plugins.lookup(name)
         except MissingRow:
             return
         raise Rejection(f"a plugin named {name} is installed already: journal plugin upgrade {name}")

@@ -15,9 +15,9 @@ class WatchMessage(Listener[Created]):
 
     def handle(self, event: Created) -> None:
         message = event.model
-        if not isinstance(message, Message) or message.author != Author.USER or message.is_typed_in_terminal:
+        if not isinstance(message, Message) or message.author != Author.USER or message.is_terminal_line:
             return
         agent = self.agents.current()
         if agent is None:
             return
-        self.firing.fired(self.triggers.met_by(message.text), agent.session, message.environment_id, True)
+        self.firing.fired(self.triggers.matches(message.text), agent.session, message.environment_id, True)

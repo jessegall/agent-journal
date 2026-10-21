@@ -26,20 +26,20 @@ class WaitImport(EnvironmentKind):
         self.tasks, self.links = tasks, links
         self.dropped: list[str] = []
 
-    def bring(self, folder: Path, actor: Actor) -> ImportTally:
+    def import_rows(self, folder: Path, actor: Actor) -> ImportTally:
         self.dropped = []
-        brought = super().bring(folder, actor)
+        brought = super().import_rows(folder, actor)
         return ImportTally(brought.kind, brought.count, (*brought.skipped, *self.dropped))
 
     def source(self, environment: str, row: Version3Row) -> str:
         return f"environments/{environment}/todo/{row.n}/waits"
 
-    def left_behind(self, row: Version3Row, into: Environment) -> str:
+    def skipped(self, row: Version3Row, into: Environment) -> str:
         if not row.listed("after"):
             return "waits on nothing"
         return "" if self.ledger.referred(into.name, f"todo:{row.n}") else "its to-do did not come across"
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
+    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
         task = self.tasks.find(self.ledger.referred(into.name, f"todo:{row.n}").id)
         for before in [rows for n in row.listed("after") if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
             try:

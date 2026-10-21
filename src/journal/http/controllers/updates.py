@@ -16,7 +16,7 @@ class UpdateController:
         page = self.changelog.page(0)
         return Response.json({**asdict(self.updating.data()), "changelog": page.text, "shown": page.shown, "more": page.more})
 
-    def fresh(self, request: Request) -> Response:
+    def is_recent(self, request: Request) -> Response:
         self.updating.read()
         return self.index(request)
 

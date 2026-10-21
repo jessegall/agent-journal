@@ -29,7 +29,7 @@ class ShareCommand(Command):
     def create(self, args: Namespace, caller: Caller) -> int:
         share = self.actions.create(args.ref, args.expires, args.password, args.comments, caller.actor)
         waits = "open" if share.approved else "waiting for the user's Accept in the chat"
-        print(f"share {share.id}: {self.tunnel.link_of(share.token)}, {waits}")
+        print(f"share {share.id}: {self.tunnel.share_link(share.token)}, {waits}")
         return 0
 
     def opens(self, args: Namespace, caller: Caller) -> int:
@@ -42,12 +42,12 @@ class ShareCommand(Command):
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for share in self.shares.in_():
-            print(f"{share.id:>4}  {self.targets.of(share) or 'gone'}  {self.data(share)}  {self.tunnel.link_of(share.token)}")
+        for share in self.shares.scoped():
+            print(f"{share.id:>4}  {self.targets.of(share) or 'gone'}  {self.data(share)}  {self.tunnel.share_link(share.token)}")
         return 0
 
     @staticmethod
     def data(share: Share) -> str:
-        if not share.is_live(datetime.now(timezone.utc)):
+        if not share.is_active(datetime.now(timezone.utc)):
             return "ended"
         return "open" if share.approved else "waiting for the user's Accept"

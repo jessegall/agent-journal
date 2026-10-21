@@ -90,8 +90,8 @@ def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, s
     b = tasks.save(Task(environment_id=1, title="b"), actor=USER)
     links.save(Link(source=Ref.to(a), target=Ref.to(b), kind="blocks"), actor=AGENT)
     assert links.targets(a, "blocks") == [Ref.to(b)]
-    assert links.every_source(b) == [Ref.to(a)]
-    assert len(links.between(a, b)) == 1
+    assert links.all_sources(b) == [Ref.to(a)]
+    assert len(links.connecting(a, b)) == 1
     tasks.delete(b, actor=USER)
     assert links.of(a) == []
 
@@ -101,12 +101,12 @@ def test_where_reads_typed_values_back(connection, bus, scope):
     tasks.save(Task(environment_id=1, title="open"), actor=USER)
     started = tasks.save(Task(environment_id=1, title="started", state=TaskState.STARTED), actor=USER)
     with scope.of(1):
-        assert tasks.in_state(TaskState.STARTED) == [started]
+        assert tasks.with_state(TaskState.STARTED) == [started]
     with scope.of(2):
-        assert tasks.in_() == [] and tasks.matching(title="open") == [] and tasks.search(["open"]) == [] and tasks.counted_in() == 0, "every read is the scope's, whatever it asks"
+        assert tasks.scoped() == [] and tasks.matching(title="open") == [] and tasks.search(["open"]) == [] and tasks.count() == 0, "every read is the scope's, whatever it asks"
     with pytest.raises(ScopeMissing):
         tasks.matching(title="open")
-    assert [t.title for t in tasks.across_environments(title="open")] == ["open"], "a read across environments says so by its name"
+    assert [t.title for t in tasks.global_matching(title="open")] == ["open"], "a read across environments says so by its name"
 
 
 def test_writes_from_many_threads_all_land(connection, bus, scope):

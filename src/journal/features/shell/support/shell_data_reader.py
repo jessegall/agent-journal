@@ -17,14 +17,14 @@ class ShellDataReader:
 
     def read(self, agent: Agent) -> ShellData:
         from journal.features.shell.feature import Shell
-        background = self.outputs.in_background(agent.session)
+        background = self.outputs.background(agent.session)
         commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session) if e.data.get("tool_name") == "Bash"]
         reads = [OutputReads.shape(c) for c in commands if OutputReads.is_one(c)][:READ_HISTORY_LENGTH]
-        tipped = [*self.entries.lines_said_after(agent.session, Shell.READER_HINT.key, 0), *self.entries.lines_said_after(agent.session, Shell.READER_SUGGESTION.key, 0)]
+        tipped = [*self.entries.recent_lines(agent.session, Shell.READER_HINT.key, 0), *self.entries.recent_lines(agent.session, Shell.READER_SUGGESTION.key, 0)]
         return ShellData(
             background=tuple(o.id for o in background),
             background_since=min((o.created_at.timestamp() for o in background), default=0.0),
-            ended_untold=tuple(EndedOutput(o.id, o.status) for o in self.outputs.ended_untold(agent.session)),
+            ended_untold=tuple(EndedOutput(o.id, o.status) for o in self.outputs.unannounced(agent.session)),
             output_reads=tuple(reads),
             readers=tuple(self.readers.all()),
             tipped=tuple(tipped),

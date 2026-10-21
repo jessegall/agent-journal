@@ -60,14 +60,14 @@ class PhoneConnector:
         return PairedPhone(phone, key)
 
     def disconnect(self, phone: Phone, actor: Actor, time: datetime) -> Phone:
-        if not actor.is_the_user():
+        if not actor.is_user():
             raise Rejection("only the user disconnects a phone")
         ended = self.phones.save(phone.ended(time), actor)
         self.tunnel.settle()
         return ended
 
     def refuse_a_second(self, time: datetime) -> None:
-        live = self.phones.live(time)
+        live = self.phones.active(time)
         if live:
             raise Rejection(f"{live[0].name} is paired: disconnect it first, one phone at a time")
 

@@ -10,4 +10,4 @@ class PairingCodes(ScopedRepository[PairingCode]):
     model = PairingCode
 
     def open(self, time: datetime) -> list[PairingCode]:
-        return [code for code in self.across_environments() if code.is_open(time)]
+        return [code for code in self.global_matching() if code.is_open(time)]

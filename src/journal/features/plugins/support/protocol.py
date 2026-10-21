@@ -26,14 +26,14 @@ class Protocol:
     def published_name(event: Event) -> str:
         return PUBLISHED.get(event.key, event.key)
 
-    def line_of(self, event: Event, environment: str, state: str = "") -> str:
-        line = {"v": self.VERSION, "event": self.published_name(event), "at": datetime.now(timezone.utc).isoformat(), "environment": environment, "state": state, "data": self.data_of(event)}
+    def event_line(self, event: Event, environment: str, state: str = "") -> str:
+        line = {"v": self.VERSION, "event": self.published_name(event), "at": datetime.now(timezone.utc).isoformat(), "environment": environment, "state": state, "data": self.event_data(event)}
         if isinstance(event, AgentEvent):
             line |= {"session": event.session, "provider": event.provider, "subagent": event.subagent}
         return json.dumps(line, default=str)
 
     @staticmethod
-    def data_of(event: Event) -> dict:
+    def event_data(event: Event) -> dict:
         if isinstance(event, ModelEvent):
             row = {"table": event.model.table(), "id": event.model.id, "by": event.actor.stamp}
             return row | {"changed": list(event.changed())} if isinstance(event, Updated) else row
@@ -42,7 +42,7 @@ class Protocol:
             data |= asdict(value) if isinstance(value, ToolCall) else {name: value}
         return data
 
-    def answer_of(self, text: str) -> PluginAnswer:
+    def parsed_answer(self, text: str) -> PluginAnswer:
         if not text.strip():
             return PluginAnswer()
         try:

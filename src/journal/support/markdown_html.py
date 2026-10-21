@@ -36,26 +36,26 @@ class MarkdownHtml:
             level = min(6, len(heading.group(1)) + 2)
             return f"<h{level}>{cls.inline(heading.group(2))}</h{level}>", index + 1
         if LIST_ITEM.match(line):
-            return cls.list_from(lines, index)
+            return cls.list_block(lines, index)
         if line.startswith(">"):
-            stop = cls.end_of(lines, index, lambda l: l.startswith(">"))
+            stop = cls.block_end(lines, index, lambda l: l.startswith(">"))
             return f"<blockquote>{cls.inline(' '.join(l.lstrip('> ') for l in lines[index:stop]))}</blockquote>", stop
         if line.lstrip().startswith("|"):
-            stop = cls.end_of(lines, index, lambda l: l.lstrip().startswith("|"))
+            stop = cls.block_end(lines, index, lambda l: l.lstrip().startswith("|"))
             return cls.table(lines[index:stop]), stop
-        stop = cls.end_of(lines, index, lambda l: l.strip() and not (l.startswith((FENCE, ">")) or HEADING.match(l) or LIST_ITEM.match(l)))
+        stop = cls.block_end(lines, index, lambda l: l.strip() and not (l.startswith((FENCE, ">")) or HEADING.match(l) or LIST_ITEM.match(l)))
         return f"<p>{cls.inline(' '.join(l.strip() for l in lines[index:stop]))}</p>", stop
 
     @staticmethod
-    def end_of(lines: list[str], index: int, continues) -> int:
+    def block_end(lines: list[str], index: int, continues) -> int:
         stop = index
         while stop < len(lines) and continues(lines[stop]):
             stop += 1
         return stop
 
     @classmethod
-    def list_from(cls, lines: list[str], index: int) -> tuple[str, int]:
-        stop = cls.end_of(lines, index, LIST_ITEM.match)
+    def list_block(cls, lines: list[str], index: int) -> tuple[str, int]:
+        stop = cls.block_end(lines, index, LIST_ITEM.match)
         tag = "ol" if LIST_ITEM.match(lines[index]).group(1) else "ul"
         items = "".join(f"<li>{cls.inline(LIST_ITEM.match(l).group(2))}</li>" for l in lines[index:stop])
         return f"<{tag}>{items}</{tag}>", stop

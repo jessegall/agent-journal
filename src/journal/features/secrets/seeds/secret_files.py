@@ -30,7 +30,7 @@ class SecretFiles(Seed):
             return None
         head, brief = json.loads(parts[1]), parts[2].strip()
         data = head.get("data", {})
-        return Secret(title=head.get("title", path.stem), brief=brief, kind=SecretKind.named(data.get("kind") or SecretKind.CUSTOM.value),
+        return Secret(title=head.get("title", path.stem), brief=brief, kind=SecretKind.lookup(data.get("kind") or SecretKind.CUSTOM.value),
                       fields=tuple(data.get("secret_fields", ())), filled=tuple(data.get("filled", {})), programs=tuple(data.get("programs", ())),
                       proposed=tuple(data.get("proposed", ())), helpers=bool(data.get("helpers")), url=data.get("url", ""), auto_login=bool(data.get("auto_login")),
                       used_at=self.time(data.get("used")), session_at=self.time(data.get("session")), session_expires=self.time(data.get("session_expires")),

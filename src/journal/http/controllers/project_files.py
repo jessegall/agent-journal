@@ -17,7 +17,7 @@ class ProjectFileController:
 
     def show(self, request: Request) -> Response:
         rows = self.files.file(request.query.get("path", ""))
-        return Response.json(rows) if rows else Response.not_found("no such file")
+        return Response.json(rows) if rows else Response.absent("no such file")
 
     def diff(self, request: Request) -> Response:
         return Response.json({"diff": self.files.diff(request.query.get("path", ""))})

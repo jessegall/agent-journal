@@ -13,7 +13,7 @@ class Identity:
         self.users, self.tokens = users, tokens
 
     def of(self, headers: dict) -> Actor:
-        claim = PluginClaim.from_headers(headers)
-        if claim.plugin and self.tokens.holds(claim.plugin, claim.token):
+        claim = PluginClaim.header_claim(headers)
+        if claim.plugin and self.tokens.matches(claim.plugin, claim.token):
             return Actor.plugin(claim.plugin)
         return Actor.user(LOCAL_USER)

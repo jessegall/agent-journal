@@ -34,10 +34,10 @@ class ManifestReader:
         if unknown:
             raise Rejection(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
         manifest = PluginManifest.from_json(raw)
-        self.named(manifest)
+        self.name_check(manifest)
         self.spoken(manifest)
-        self.heard(manifest)
-        self.inside(folder, manifest)
+        self.event_check(manifest)
+        self.folder_check(folder, manifest)
         self.skills_free(folder, manifest)
         return manifest
 
@@ -55,7 +55,7 @@ class ManifestReader:
             if name in taken:
                 raise Rejection(f"{manifest.name}'s skill {name} has the name of a skill of {taken[name]}")
 
-    def named(self, manifest: PluginManifest) -> None:
+    def name_check(self, manifest: PluginManifest) -> None:
         if not NAME.match(manifest.name):
             raise Rejection(f"a plugin's name is 2 to 32 lowercase letters, digits and dashes: {manifest.name!r} is not")
         if self.registry.has_feature(manifest.name):
@@ -67,7 +67,7 @@ class ManifestReader:
             raise Rejection(f"{manifest.name} speaks protocol {manifest.protocol}; this journal speaks {', '.join(map(str, PROTOCOLS))}")
 
     @staticmethod
-    def heard(manifest: PluginManifest) -> None:
+    def event_check(manifest: PluginManifest) -> None:
         for event in manifest.hears:
             row = ROW_EVENT.match(event)
             if event not in AGENT_EVENTS and not row:
@@ -83,10 +83,10 @@ class ManifestReader:
                 raise Rejection(f"{manifest.name} holds {window.event} within {window.window_ms} ms: a window is 0 or more milliseconds")
 
     @staticmethod
-    def inside(folder: Path, manifest: PluginManifest) -> None:
+    def folder_check(folder: Path, manifest: PluginManifest) -> None:
         root = folder.resolve()
         named = [(key, getattr(manifest, key)) for key in PATHS if getattr(manifest, key)]
-        named += [(f"service {s.name}", s.program) for s in manifest.services if s.is_in_its_folder]
+        named += [(f"service {s.name}", s.program) for s in manifest.services if s.is_local]
         named += [(f"setup step {step.name}", word) for step in manifest.setup for word in step.run.split()[:2] if "/" in word]
         named += [("installed command", word) for word in manifest.installed.split()[:1] if "/" in word]
         for key, path in named:

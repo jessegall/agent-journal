@@ -28,5 +28,5 @@ class RowEvent(Event):
     def placed_by(self, environment_id: int, time: float, row_id: int, actor: str) -> "RowEvent":
         return replace(self, environment_id=self.environment_id or environment_id, time=self.time or time, row_id=self.row_id or row_id, actor=actor)
 
-    def by_agent(self, session: str) -> bool:
+    def is_agents(self, session: str) -> bool:
         return self.actor == f"agent:{session}"

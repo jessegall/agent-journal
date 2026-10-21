@@ -35,7 +35,7 @@ class ExternalWait(Wait):
     def on_workers(cls, ids: tuple[int, ...], start_time: float) -> "ExternalWait":
         return cls(what=f"{WORKERS} {', '.join(str(n) for n in ids)}", ends_on=",".join(f"{WORKERS}:{n}" for n in ids), start_time=start_time)
 
-    def awaiting(self) -> tuple[str, str]:
+    def wait_description(self) -> tuple[str, str]:
         return self.what, self.ends_on
 
     def waits_on(self) -> list[str]:
@@ -59,7 +59,7 @@ class ExternalWait(Wait):
         return self.unchanged()
 
     def on_row_resolved(self, event: RowResolved, settings: Settings) -> Transition:
-        return self.ended_by(event.ref, event.outcome)
+        return self.resolution(event.ref, event.outcome)
 
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
         if event.dispatched_by != event.session or event.worker_id in self.worker_ids():
@@ -69,13 +69,13 @@ class ExternalWait(Wait):
 
     def on_worker_reported_workers(self, event: WorkerReported, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        return self.ended_by(f"{WORKERS}:{event.worker_id}", f"worker {event.worker_id}, {event.name}, reported", Workers.WORKER_REPORTED.create(n=event.worker_id, name=event.name))
+        return self.resolution(f"{WORKERS}:{event.worker_id}", f"worker {event.worker_id}, {event.name}, reported", Workers.WORKER_REPORTED.create(n=event.worker_id, name=event.name))
 
     def on_worker_stopped_workers(self, event: WorkerStopped, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        return self.ended_by(f"{WORKERS}:{event.worker_id}", f"worker {event.worker_id}, {event.name}, stopped before it reported", Workers.WORKER_STOPPED_UNREPORTED.create(n=event.worker_id, name=event.name))
+        return self.resolution(f"{WORKERS}:{event.worker_id}", f"worker {event.worker_id}, {event.name}, stopped before it reported", Workers.WORKER_STOPPED_UNREPORTED.create(n=event.worker_id, name=event.name))
 
-    def ended_by(self, ref: str, outcome: str, *lines: Nudge) -> Transition:
+    def resolution(self, ref: str, outcome: str, *lines: Nudge) -> Transition:
         from journal.features.tasks.feature import Tasks
         if ref not in self.waits_on():
             return self.unchanged()

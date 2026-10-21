@@ -27,7 +27,7 @@ class LineRetyping(AgentListener[Ticked]):
             if event.time < lost.time + WAIT_LIMIT_SECONDS * 2 ** (lost.tries - 1):
                 continue
             if lost.tries >= TRIES:
-                self.typed.given_up(lost)
+                self.typed.abandon(lost)
                 self.supervisor.release(event.environment_id)
                 self.cards.show(event.environment_id, event.session, f"A line did not reach the agent, typed {TRIES} times over five minutes", "terminal", "bad", lost.line, shows=CardKind.FAULTS)
             else:

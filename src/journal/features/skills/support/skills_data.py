@@ -14,10 +14,10 @@ class SkillsData:
     loaded: dict
     skills: tuple[SkillCard, ...]
 
-    def due_at_start(self, state: str) -> list[SkillCard]:
+    def start_debts(self, state: str) -> list[SkillCard]:
         return self.unread([card for card in self.skills if card.name == JOURNAL] + [card for card in self.skills if state in card.required_in])
 
-    def named_in(self, prompt: str) -> list[SkillCard]:
+    def mentioned(self, prompt: str) -> list[SkillCard]:
         text = {w.lower() for w in re.findall(r"[a-z]+", prompt, re.I)}
         return self.unread([card for card in self.skills if text & {k.lower() for k in card.keywords}])
 

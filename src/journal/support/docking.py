@@ -43,13 +43,13 @@ class Docking:
 
     def undock(self, noun: str, n: int, actor: Actor) -> Message:
         row = self.kinds[noun].find(n)
-        card = self.card_of(row)
+        card = self.card(row)
         if card is None or not card.data.get(DOCKED):
             raise Rejection(f"{row.heading()} is not docked")
         return self.release(card, actor)
 
     def dock_row(self, row: Model, actor: Actor) -> Message:
-        return self.pin(self.card_of(row) or self.new_card(row, actor), row, actor)
+        return self.pin(self.card(row) or self.new_card(row, actor), row, actor)
 
     def pin(self, message: Message, row: Model, actor: Actor) -> Message:
         return self.saved_with(message, {**RowCard.of(row).as_data(), DOCKED: True}, actor)
@@ -60,9 +60,9 @@ class Docking:
     def saved_with(self, message: Message, data: dict, actor: Actor) -> Message:
         return self.messages.save(message.with_(data={**message.data, **data}), actor)
 
-    def card_of(self, row: Model) -> Message | None:
-        cards = self.messages.with_key(self.cards.made_key(row))
+    def card(self, row: Model) -> Message | None:
+        cards = self.messages.with_key(self.cards.creation_key(row))
         return cards[0] if cards else None
 
     def new_card(self, row: Model, actor: Actor) -> Message:
-        return self.cards.keyed(self.scope.id, self.cards.made_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, actor, CardKind.CREATED)
+        return self.cards.keyed(self.scope.id, self.cards.creation_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, actor, CardKind.CREATED)
