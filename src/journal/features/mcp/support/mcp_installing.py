@@ -78,7 +78,7 @@ class McpInstalling:
     def applied(self) -> None:
         self.config_files.write()
         for agent in self.running():
-            resume = self.providers.lookup(agent.provider or "claude").resume(agent.session)
+            resume = self.providers.lookup(agent.provider).resume(agent.session)
             if self.turn.is_finished(agent):
                 self.supervisor.restart_agent(agent.environment_id, resume)
             else:

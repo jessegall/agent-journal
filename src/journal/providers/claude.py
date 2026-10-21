@@ -44,6 +44,7 @@ class Claude(Provider):
     question_model = "haiku"
     settings_files = (".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json")
     profile_suffix = ".md"
+    profile_model = "model"
     default = True
     controls = {
         "groups": [

@@ -1,0 +1,31 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^[\"']?(claude|codex|Bash|Agent|Task|Read|Write|Edit|MultiEdit|NotebookEdit|Skill|SendMessage|AskUserQuestion|apply_patch|exec_command|spawn_agent|send_input|read_file|write_file|request_user_input)[\"']?$"
+            },
+            {
+                "inside": {
+                    "is": "comparison"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/providers/**"
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "provider-name-compared",
+        "description": "Shared code compares a provider's name or an agent program's raw tool name, so it knows a program the provider should know.",
+        "rule": "Ask the provider: read the operation it decoded, or a value it names, such as its capabilities. Only files under providers/ know a program; shared code may show a name, never compare one.",
+        "skill": "plain-code-words"
+    }
+}

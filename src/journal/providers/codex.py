@@ -55,6 +55,7 @@ class Codex(Provider):
     hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
     capabilities = frozenset()
     profile_suffix = ".toml"
+    profile_model = "codex_model"
     default = False
     session_variable = "CODEX_THREAD_ID"
     inherited_markers = ("CODEX_THREAD_ID", "CODEX_SANDBOX", "CODEX_CI")

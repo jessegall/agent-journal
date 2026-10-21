@@ -55,7 +55,7 @@ class AgentActivity:
         kind = last.kind if last else ""
         state = self.states.restored(agent.state, agent.data)
         waiting_state, enabled = self.current.wait_text(agent)
-        provider = self.providers.lookup(agent.provider or "claude")
+        provider = self.providers.lookup(agent.provider)
         status = provider.status(agent.session, self.config.status_home)
         return {
             **ModelFields.build(agent),

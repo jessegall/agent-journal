@@ -22,7 +22,7 @@ class Agents(ScopedRepository[Agent]):
         return [item for item in self.global_matching(environment_id=environment_id) if item.state != "ended"]
 
     def running_peers(self, agent: Agent) -> list[Agent]:
-        return [item for item in self.global_matching(environment_id=agent.environment_id) if item.session != agent.session and (item.provider or "claude") == (agent.provider or "claude") and item.state != "ended"]
+        return [item for item in self.global_matching(environment_id=agent.environment_id) if item.session != agent.session and item.provider == agent.provider and item.state != "ended"]
 
     def all_current(self) -> Agent | None:
         responsive = sorted((item for item in self.all_agents() if item.state != "ended"), key=lambda item: item.updated_at)

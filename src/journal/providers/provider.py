@@ -55,6 +55,7 @@ class Provider(ABC):
     capabilities: ClassVar[frozenset[Capability]]
     decoders: ClassVar[dict[str, Callable[[dict], Operation]]]
     profile_suffix: ClassVar[str]
+    profile_model: ClassVar[str]
     default: ClassVar[bool]
 
     @abstractmethod

@@ -51,7 +51,7 @@ class WorkerCommand(Command):
         self.verb(verbs, "list", "every worker out")
 
     def provider_default(self, caller: Caller) -> str:
-        return self.agents.session_agent(caller.session).provider if caller.session else "claude"
+        return self.agents.session_agent(caller.session).provider if caller.session else self.providers.default().name
 
     def dispatch(self, args: Namespace, caller: Caller) -> int:
         if self.profiles.kind(args.profile) != "worker":
@@ -81,7 +81,7 @@ class WorkerCommand(Command):
 
     def model(self, profile: str, provider: str) -> str:
         shown = self.profiles.read(profile)
-        return shown["codex_model"] if provider == "codex" else shown["model"]
+        return shown[self.providers.lookup(provider).profile_model]
 
     def report(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)

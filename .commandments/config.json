@@ -33,6 +33,8 @@
         "FieldDocstringDetector",
         "ConstantDocstringDetector",
         "StateMachineOutsideEngineDetector",
+        "ProviderNameComparedDetector",
+        "ProviderKeyedTableDetector",
         "StateListenerNotOnDetector",
         "OnListenerWithoutEventTypeDetector",
         "TransitionOutsideBaseStateDetector",

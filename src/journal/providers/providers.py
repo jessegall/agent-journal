@@ -13,6 +13,9 @@ class Providers:
     def lookup(self, name: str) -> Provider:
         return self._by_name[name]
 
+    def default(self) -> Provider:
+        return next(provider for provider in self._by_name.values() if provider.default)
+
     def all(self) -> list[Provider]:
         return list(self._by_name.values())
 

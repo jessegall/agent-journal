@@ -40,6 +40,6 @@ class SequencesDataReader:
         if not run.adopted_at:
             return 0
         start = datetime.fromisoformat(run.adopted_at)
-        provider = self.providers.lookup(agent.provider or "claude")
+        provider = self.providers.lookup(agent.provider)
         later = [e for e in self.entries.tool_starts(agent.session)[1:] if e.created_at and e.created_at > start and not (e.data.get("agent_id") or e.data.get("subagent_id"))]
         return sum(1 for e in later if e.is_write())
