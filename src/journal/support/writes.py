@@ -51,7 +51,7 @@ class Writes:
     def is_code_write_line(cls, line: str) -> bool:
         own = [p for p in Chain.parts(line) if p.recorded]
         writing = [p for p in own if cls.part(p.text)]
-        return bool(writing) and all(p.is_read() or cls.writes_code_inside(p.text) for p in own)
+        return bool(writing) and all(cls.writes_code_inside(p.text) if cls.part(p.text) else p.is_read() for p in own)
 
     @classmethod
     def writes_code_inside(cls, text: str) -> bool:
