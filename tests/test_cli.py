@@ -95,6 +95,8 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
     app.console().run(["message", "send", "hi"], Caller.user("main"))
     app.console().run(["message", "react", "1", "👍"], Providers().caller({"CLAUDECODE": "1"}))
     assert Providers().caller({"JOURNAL_AGENT_SHELL": "1"}).is_unnamed_agent(), "a worker's shell is an agent's whatever its program marks"
+    named = Providers().caller({"CLAUDECODE": "1", "CLAUDE_CODE_SESSION_ID": "abc"})
+    assert named.session == "abc" and named.provider == "claude", "a Claude Code shell names its own session, so its lines and outputs are its agent's"
     with app.container.get(Scope).environment(1):
         assert app.container.get(Reactions).all()[-1].creator.kind == "agent"
 
@@ -155,13 +157,14 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App,
     import os
     import subprocess
     from journal.models.agent import Agent
+    from journal.providers.claude import Claude
     from journal.repositories.agents import Agents
     from journal.repositories.environments import Environments
     agents = app.container.get(Agents)
     development = app.container.get(Environments).lookup("development")
     with app.container.get(Scope).environment(development.id):
         agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", has_overview=False), Actor.system())
-    environ = {key: value for key, value in os.environ.items() if key not in ("JOURNAL_SESSION", "CLAUDECODE", "CODEX_SANDBOX")}
+    environ = {key: value for key, value in os.environ.items() if key not in ("JOURNAL_SESSION", "CODEX_SANDBOX", *Claude.inherited_markers)}
     environ.update(JOURNAL_ROOT=str(app.config.root), JOURNAL_ENV="development", JOURNAL_PORT="0", CODEX_THREAD_ID="codex-session", CODEX_CI="1")
     server = app.server()
     if online:

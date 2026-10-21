@@ -38,7 +38,7 @@ class Claude(Provider):
     foreign_settings = ("settings.local.json",)
     settings_extras = {"enableAllProjectMcpServers": True}
     capabilities = frozenset(Capability)
-    session_variable = ""
+    session_variable = "CLAUDE_CODE_SESSION_ID"
     inherited_markers = ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX")
     question_model = "haiku"
     settings_files = (".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json")

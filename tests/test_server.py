@@ -155,10 +155,10 @@ def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
             urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         thresholds = lambda: [m["data"] for m in call(server, "GET", "/journal/messages?limit=200")[1]["rows"] if m["data"].get("kind") == "subagent"]
         for _ in range(50):
-            if thresholds() and thresholds()[0]["state"] == "done":
+            if any(c["state"] == "done" for c in thresholds()):
                 break
             time.sleep(0.1)
-        assert [(c["detail"], c["agent_type"], c["state"]) for c in thresholds()] == [("review the login", "journal-plan-reviewer", "done")], "a subagent is a message in the chat, settled when it answers"
+        assert [(c["detail"], c["agent_type"], c["state"]) for c in thresholds()] == [("review the login", "journal-plan-reviewer", "running"), ("review the login", "journal-plan-reviewer", "done")], "a subagent's dispatch is a mark in the chat, and its end a mark of its own after it"
     finally:
         app.runtime().stop()
 

@@ -39,7 +39,7 @@ class PluginRelay:
     def listeners(self, event: Event, environment_id: int) -> list[Plugin]:
         hearers = [p for p in self.plugins.enabled() if Protocol.published_name(event) in p.manifest.events and getattr(event, "actor", None) != Actor.plugin(p.name)]
         if hearers and self.steps.is_nested_deep():
-            self.entries.save(Entry(environment_id=environment_id, kind=CUT, actor=Actor.system(), data={"event": Protocol.published_name(event), "by": getattr(event, "actor", Actor.system()).stamp, "plugins": [p.name for p in hearers]}), Actor.system())
+            self.logged(environment_id, CUT, Actor.system(), {"event": Protocol.published_name(event), "by": getattr(event, "actor", Actor.system()).stamp, "plugins": [p.name for p in hearers]})
             return []
         return hearers
 
@@ -91,10 +91,13 @@ class PluginRelay:
         return [e.data["line"] for e in reversed(waiting)]
 
     def line(self, plugin: Plugin, event: Event, environment_id: int, manner: str, text: str) -> None:
-        self.entries.save(Entry(environment_id=environment_id, kind=PLUGIN_LINE_KIND, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": Protocol.published_name(event), "how": manner, "words": text}), Actor.plugin(plugin.name))
+        self.logged(environment_id, PLUGIN_LINE_KIND, Actor.plugin(plugin.name), {"plugin": plugin.name, "event": Protocol.published_name(event), "how": manner, "words": text})
 
     def unanswered(self, plugin: Plugin, event: Event, environment_id: int, reason: str) -> None:
-        self.entries.save(Entry(environment_id=environment_id, kind=UNANSWERED, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": Protocol.published_name(event), "reason": reason}), Actor.system())
+        self.logged(environment_id, UNANSWERED, Actor.plugin(plugin.name), {"plugin": plugin.name, "event": Protocol.published_name(event), "reason": reason})
+
+    def logged(self, environment_id: int, kind: str, actor: Actor, data: dict) -> None:
+        self.entries.save(Entry(environment_id=environment_id, kind=kind, actor=actor, data=data), actor)
 
     def agent_state(self, event: Event) -> str:
         if not isinstance(event, AgentEvent):

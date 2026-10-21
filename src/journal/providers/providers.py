@@ -37,7 +37,8 @@ class Providers:
         return next((provider for provider in self.all() if any(environ.get(marker) for marker in provider.inherited_markers)), self.default())
 
     def caller_variables(self, environ: Mapping[str, str]) -> CallerVariables:
-        return CallerVariables.read(environ, self.shell_provider(environ).name, self.session_variables(), self.inherited_markers())
+        provider = self.shell_provider(environ)
+        return CallerVariables.read(environ, provider.name, tuple(name for name in (provider.session_variable,) if name), self.inherited_markers())
 
     def caller(self, environ: Mapping[str, str]) -> Caller:
         return self.caller_variables(environ).caller()
