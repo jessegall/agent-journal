@@ -13,6 +13,7 @@ from journal.providers.support.context_file import ContextFile
 from journal.providers.support.hooks_ready import HooksReady
 from journal.providers.support.profile import Profile
 from journal.support.undecoded_tool import UndecodedTool
+from journal.support.alias_call import AliasCall
 from journal.support.chain import Chain
 from journal.support.command_part import CommandPart
 from journal.support.reads import Reads
@@ -230,14 +231,14 @@ class Provider(ABC):
         decoder = self.decoders.get(tool)
         return decoder(input) if decoder else UndecodedTool(tool)
 
-    def call(self, tool: str, input: dict) -> ToolCall:
+    def call(self, tool: str, input: dict, aliases: frozenset[str]) -> ToolCall:
         operation = self.operation(tool, input)
-        return ToolCall.decoded(tool, input, operation, tuple(self.parts(operation.line())))
+        return ToolCall.decoded(tool, input, operation, tuple(self.parts(operation.line(), aliases)))
 
     @staticmethod
-    def parts(command: str) -> list[CommandPart]:
+    def parts(command: str, aliases: frozenset[str]) -> list[CommandPart]:
         recorded = [part for part in Chain.parts(command) if part.recorded] if command else []
-        return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text), writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text)), reads_output=OutputReads.is_one(part.text), read_shape=OutputReads.shape(part.text) if OutputReads.is_one(part.text) else part.text) for part in recorded]
+        return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text) and AliasCall.parsed(part.text).name not in aliases, writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text)), reads_output=OutputReads.is_one(part.text), read_shape=OutputReads.shape(part.text) if OutputReads.is_one(part.text) else part.text) for part in recorded]
 
     @staticmethod
     def file_paths(input: dict) -> tuple[str, ...]:

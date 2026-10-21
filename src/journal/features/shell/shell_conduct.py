@@ -5,7 +5,6 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
-from journal.features.aliases.support.alias_call import AliasCall
 from journal.features.shell.support.ended_output import EndedOutput
 from journal.support.chain import Chain
 
@@ -47,9 +46,8 @@ def partial_read_check(state: BaseState, event: ToolStarting, settings: Settings
 
 def journal_isolation_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
     from journal.features.shell.feature import Shell
-    aliases = {alias.name for alias in event.data.part(Shell).aliases}
-    journal = [part for part in event.call.parts if part.is_journal and AliasCall.parsed(part.text).name not in aliases]
-    return state.refuse(Shell.JOURNAL_COMMAND_ISOLATION.create()) if 0 < len(journal) < len(event.call.parts) else state.none()
+    journal, parts = event.call.journal_parts()
+    return state.refuse(Shell.JOURNAL_COMMAND_ISOLATION.create()) if 0 < journal < parts else state.none()
 
 
 def alias_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
