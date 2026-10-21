@@ -5921,3 +5921,27 @@ def test_a_read_message_holds_a_tool_only_after_a_grace_of_tool_uses_with_a_remi
     assert status == 409 and "answer or react to message 1 first" in body["error"], "the tenth waits for the answer"
     app.console().run(["message", "send", "nearly there", "--reply-to", "1"], AGENT)
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "11.py")})[0] == 200, "answered, the tools are free again"
+
+
+def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_reports_fails_is_stopped_and_retired(app):
+    """Each worker is a keyed card: dispatched with its provider and model, then reported with its report's first line, failed in a bad tone when it could not run, stopped, and retired once its work is taken in; one card per worker, updated where it stands."""
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.messages import Messages as MessageRows
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    console = app.console()
+    for name in ("Lady Lovelace", "Dr. Einstein", "Mr. Babbage"):
+        console.run(["worker", "dispatch", name, f"a job for {name}", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    messages = app.container.get(MessageRows)
+    card = lambda n: next(m for m in messages.in_() if m.data.get("key") == f"worker:{n}")
+    assert card(1).text == "Worker 1, Lady Lovelace: dispatched on claude sonnet" and card(1).data["detail"] == "a job for Lady Lovelace" and card(1).data["shows"] == "workers"
+    runner, workers = app.container.get(WorkerRunner), app.container.get(Workers)
+    runner.run(workers.find(1), ["sh", "-c", "echo the footer is fixed"], Actor.agent("s1"))
+    runner.run(workers.find(2), ["sh", "-c", "echo broken >&2; exit 3"], Actor.agent("s1"))
+    console.run(["worker", "stop", "3"], AGENT)
+    assert card(1).text == "Worker 1, Lady Lovelace: reported" and card(1).data["tone"] == "good" and card(1).data["detail"] == "the footer is fixed"
+    assert card(2).text == "Worker 2, Dr. Einstein: failed" and card(2).data["tone"] == "bad" and card(2).data["detail"].startswith("failed with code 3")
+    assert card(3).text == "Worker 3, Mr. Babbage: stopped"
+    console.run(["worker", "done", "1"], AGENT)
+    assert card(1).text == "Worker 1, Lady Lovelace: retired, its work taken in"
+    assert len([m for m in messages.in_() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
