@@ -29,14 +29,14 @@ class MessageController(Controller[Message]):
         page = listing.listed(self.question_list(listing), lambda m: True, timeline=True)
         unread = self.repository.unviewed()
         counts = Counts(all=self.repository.count(), open=len(self.open_ids()) + unread, unread=unread)
-        return RowList(rows=self.shown_page(page["rows"]), more=page["more"], counts=counts)
+        return RowList(rows=self.shown_page(page["rows"]), is_last_page=page["is_last_page"], counts=counts)
 
     def question_list(self, listing: Listing) -> list[Message]:
         if listing.ids:
             return self.repository.numbered(listing.ids)
-        if listing.since:
-            return self.repository.changes(datetime.fromtimestamp(listing.since, timezone.utc))
-        return self.repository.window(listing.limit + 1, listing.before, listing.after)
+        if listing.cutoff_at:
+            return self.repository.changes(datetime.fromtimestamp(listing.cutoff_at, timezone.utc))
+        return self.repository.window(listing.limit + 1, listing.upper_id, listing.lower_id)
 
     def open_ids(self) -> set[int]:
         return {m.id for m in self.repository.unanswered()} | {m.id for m in self.repository.unread()}

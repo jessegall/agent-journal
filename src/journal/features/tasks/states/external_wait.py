@@ -26,14 +26,14 @@ class ExternalWait(Wait):
     allows = frozenset({Permission.FILE_EDITS, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     focus: str = ""
     end_refs: str = ""
-    start_time: float = 0.0
-    reminder_time: float = 0.0
+    started_at: float = 0.0
+    reminded_at: float = 0.0
     next_task_reported: bool = False
     outcomes: str = ""
 
     @classmethod
-    def on_workers(cls, ids: tuple[int, ...], start_time: float) -> "ExternalWait":
-        return cls(focus=f"{WORKERS} {', '.join(str(n) for n in ids)}", end_refs=",".join(f"{WORKERS}:{n}" for n in ids), start_time=start_time)
+    def on_workers(cls, ids: tuple[int, ...], started_at: float) -> "ExternalWait":
+        return cls(focus=f"{WORKERS} {', '.join(str(n) for n in ids)}", end_refs=",".join(f"{WORKERS}:{n}" for n in ids), started_at=started_at)
 
     def wait_description(self) -> tuple[str, str]:
         return self.focus, self.end_refs
@@ -52,10 +52,10 @@ class ExternalWait(Wait):
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         next_open = event.data.part(Tasks).next_open
-        if settings.value(Tasks.AUTO) and not self.next_task_reported and event.time - self.start_time >= NEXT_TASK_DELAY_SECONDS and next_open is not None:
+        if settings.value(Tasks.AUTO) and not self.next_task_reported and event.time - self.started_at >= NEXT_TASK_DELAY_SECONDS and next_open is not None:
             return self.swap(replace(self, next_task_reported=True), Tasks.WAIT_NEXT_TASK.create(what=self.focus, n=next_open.id, title=next_open.title))
-        if event.time - max(self.start_time, self.reminder_time) >= CHECK_REMINDER_INTERVAL_SECONDS:
-            return self.swap(replace(self, reminder_time=event.time), Tasks.WAIT_CHECK.create(what=self.focus, minutes=int((event.time - self.start_time) // 60)))
+        if event.time - max(self.started_at, self.reminded_at) >= CHECK_REMINDER_INTERVAL_SECONDS:
+            return self.swap(replace(self, reminded_at=event.time), Tasks.WAIT_CHECK.create(what=self.focus, minutes=int((event.time - self.started_at) // 60)))
         return self.none()
 
     def on_row_resolved(self, event: RowResolved, settings: Settings) -> Transition:
@@ -64,7 +64,7 @@ class ExternalWait(Wait):
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
         if event.dispatcher != event.session or event.worker_id in self.worker_ids():
             return self.none()
-        widened = ExternalWait.on_workers((*self.worker_ids(), event.worker_id), self.start_time)
+        widened = ExternalWait.on_workers((*self.worker_ids(), event.worker_id), self.started_at)
         return self.swap(replace(self, focus=widened.focus, end_refs=",".join([*self.targets(), f"{WORKERS}:{event.worker_id}"])))
 
     def on_worker_reported_workers(self, event: WorkerReported, settings: Settings) -> Transition:

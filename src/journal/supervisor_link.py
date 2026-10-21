@@ -65,7 +65,7 @@ class SupervisorLink:
             return
         blocked = self.typed.batched(environment_id)
         if blocked is not None:
-            self.type_whole(environment_id, blocked.line, blocked.following_time)
+            self.type_whole(environment_id, blocked.line, blocked.delay_seconds)
 
     def batch_seconds(self) -> float:
         return float(self.settings.project("delivery.batch_seconds", BATCH_SECONDS))

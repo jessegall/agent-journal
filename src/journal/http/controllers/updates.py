@@ -14,7 +14,7 @@ class UpdateController:
 
     def index(self, request: Request) -> Response:
         page = self.changelog.page(0)
-        return Response.json({**asdict(self.updating.data()), "changelog": page.text, "shown": page.shown, "more": page.has_extra})
+        return Response.json({**asdict(self.updating.data()), "changelog": page.text, "shown": page.shown, "is_last_page": page.is_last_page})
 
     def is_recent(self, request: Request) -> Response:
         self.updating.read()
@@ -22,7 +22,7 @@ class UpdateController:
 
     def changes(self, request: Request) -> Response:
         page = self.changelog.page(int(request.queried("skip")))
-        return Response.json({"changelog": page.text, "shown": page.shown, "more": page.has_extra})
+        return Response.json({"changelog": page.text, "shown": page.shown, "is_last_page": page.is_last_page})
 
     def update(self, request: Request) -> Response:
         self.updating.update_immediately(request.actor)

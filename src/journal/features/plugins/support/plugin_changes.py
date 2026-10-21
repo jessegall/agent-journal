@@ -14,7 +14,6 @@ class PluginChanges:
 
     @staticmethod
     def plain(manifest) -> dict:
-        """A manifest as journal-plugin.json writes it, nested values as plain JSON, for comparing two of them."""
         return json.loads(json.dumps(manifest.published(), default=asdict))
 
     @staticmethod

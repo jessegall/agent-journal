@@ -20,6 +20,9 @@
                         "nameMatches": "^(print|save|delete|remove|add|create|push|pull|show|write|load|fetch|tell|ask|make|do|go|take|put|give|send|open|run|exec|next|iter|map|filter|sorted|reversed|any|all|len|str|int|float|bool|list|dict|set|tuple|range|enumerate|zip|min|max|sum|type|getattr|setattr|hasattr|isinstance|repr|round|abs|format|input|id|hash|vars|dir|super|property|staticmethod|classmethod)$"
                     }
                 ]
+            },
+            {
+                "nameMatches": "^(object|glob|do_[A-Z]+)$"
             }
         ]
     },

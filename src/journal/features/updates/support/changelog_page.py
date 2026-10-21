@@ -7,4 +7,4 @@ class ChangelogPage:
 
     text: str
     shown: int
-    has_extra: bool
+    is_last_page: bool

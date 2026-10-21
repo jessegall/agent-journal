@@ -1154,7 +1154,7 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     BaseState.fold((TasksConduct,))
     try:
         pushed = Working(task_id=7).respond(WaitRequest(focus="the build", end_refs="command_outputs:4,checks:2", time=100.0), auto)
-        assert pushed.pushed == ExternalWait(focus="the build", end_refs="command_outputs:4,checks:2", start_time=100.0), "journal await pushes the wait on the work"
+        assert pushed.pushed == ExternalWait(focus="the build", end_refs="command_outputs:4,checks:2", started_at=100.0), "journal await pushes the wait on the work"
         assert Working(task_id=7).respond(ImpasseReport(reason="the login", time=1.0), auto).pushed == Impasse(reason="the login"), "journal stuck pushes Stuck"
     finally:
         BaseState.fold(())
@@ -1164,7 +1164,7 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     assert meanwhile.target == replace(waiting, next_task_reported=True) and meanwhile.nudges[0].rendered().startswith("while you wait for the build, task 9, the next one is next"), "in auto mode the next task is named once after a minute"
     assert waiting.respond(Ticked(silence_seconds=70.0, time=170.0).with_data(of()), manual).nudges == (), "out of auto mode it is not"
     looked = meanwhile.target.respond(Ticked(silence_seconds=310.0, time=410.0).with_data(of()), auto)
-    assert looked.target == replace(meanwhile.target, reminder_time=410.0) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
+    assert looked.target == replace(meanwhile.target, reminded_at=410.0) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
     assert looked.target.respond(Ticked(silence_seconds=400.0, time=500.0).with_data(of()), auto).nudges == (), "and not again before five more"
     first = waiting.respond(RowResolved(environment_id=1, time=200.0, ref="command_outputs:4", outcome="output 4 finished"), auto)
     assert first.target == replace(waiting, end_refs="checks:2", outcomes="output 4 finished") and not first.popped, "one row settled, one still to come"

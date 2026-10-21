@@ -22,7 +22,7 @@ class WritingController(Controller[W]):
         rows = self.rows()
         page = listing.listed(rows, self.is_open)
         linked = self.repository.linked_rows()
-        return RowList(rows=[self.summarised(row, linked) for row in page["rows"]], more=page["more"], counts=self.counts(rows))
+        return RowList(rows=[self.summarised(row, linked) for row in page["rows"]], is_last_page=page["is_last_page"], counts=self.counts(rows))
 
     def shown_page(self, rows: list[W]) -> list[dict]:
         linked = self.repository.linked_rows()

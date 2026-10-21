@@ -182,7 +182,7 @@ export function useDump(every, selected, rowsOf) {
     });
     const current = computed(() => (phase.value === "filing" ? [...timeline.value].reverse().find((line) => !line.mine) || null : null));
     const step = computed(() => {
-        const run = dump.value && rowsOf("agents").find((agent) => agent.sequence?.about === `dumps:${dump.value.id}`)?.sequence;
+        const run = dump.value && rowsOf("agents").find((agent) => agent.sequence?.subject === `dumps:${dump.value.id}`)?.sequence;
         return run ? `Step ${run.step} of ${run.steps}: ${run.text}` : "";
     });
     const thinking = computed(() => {

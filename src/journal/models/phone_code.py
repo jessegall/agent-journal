@@ -5,7 +5,7 @@ from journal.models.scoped import Scoped
 
 
 @dataclass(frozen=True)
-class PairingCode(Scoped):
+class PhoneCode(Scoped):
     """A code the user shows to pair one phone: its link and its short form kept only as hashes, open for minutes, used once, voided after too many wrong tries."""
 
     ATTEMPT_LIMIT = 10
@@ -13,16 +13,16 @@ class PairingCode(Scoped):
     code: str = ""
     short: str = ""
     days: int = 7
-    expiry_time: datetime | None = None
+    expires_at: datetime | None = None
     tries: int = 0
     closed_at: datetime | None = None
 
     def is_open(self, time: datetime) -> bool:
-        return self.closed_at is None and self.expiry_time is not None and self.expiry_time > time
+        return self.closed_at is None and self.expires_at is not None and self.expires_at > time
 
-    def tried(self, time: datetime) -> "PairingCode":
+    def tried(self, time: datetime) -> "PhoneCode":
         tries = self.tries + 1
         return self.with_(tries=tries, closed_at=time if tries >= self.ATTEMPT_LIMIT else self.closed_at)
 
-    def closed(self, time: datetime) -> "PairingCode":
+    def closed(self, time: datetime) -> "PhoneCode":
         return self.with_(closed_at=time)

@@ -16,13 +16,13 @@ const emit = defineEmits(["skip", "end"]);
         <span class="sequence-band">
             <span class="sequence-label">
                 Sequence {{ sequence.sequence_id }}, {{ sequence.title }}: step {{ sequence.step }} of {{ sequence.steps }}
-                <template v-if="sequence.about">· about {{ sequence.about }}</template>
+                <template v-if="sequence.subject">· about {{ sequence.subject }}</template>
             </span>
             <span class="sequence-step">{{ sequence.text }}</span>
-            <span class="sequence-holds">{{ sequence.holds }}</span>
-            <template v-if="sequence.under">
+            <span class="sequence-holds">{{ sequence.blocks }}</span>
+            <template v-if="sequence.waiting_runs">
                 <span class="sequence-holds">
-                    Started inside {{ sequence.under === 1 ? "another sequence" : `${sequence.under} other sequences` }}, which goes on when
+                    Started inside {{ sequence.waiting_runs === 1 ? "another sequence" : `${sequence.waiting_runs} other sequences` }}, which goes on when
                     this one ends.
                 </span>
             </template>

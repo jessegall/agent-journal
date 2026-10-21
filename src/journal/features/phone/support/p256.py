@@ -1,8 +1,8 @@
 import hashlib
 
 P = 0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF
-A = P - 3
-B = 0x5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B
+LINEAR_COEFFICIENT = P - 3
+CONSTANT_COEFFICIENT = 0x5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B
 N = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
 G = (0x6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296, 0x4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5)
 
@@ -19,7 +19,7 @@ class P256:
         if single[0] == counterpart[0] and (single[1] + counterpart[1]) % P == 0:
             return None
         if single == counterpart:
-            slope = (3 * single[0] * single[0] + A) * pow(2 * single[1], -1, P) % P
+            slope = (3 * single[0] * single[0] + LINEAR_COEFFICIENT) * pow(2 * single[1], -1, P) % P
         else:
             slope = (counterpart[1] - single[1]) * pow(counterpart[0] - single[0], -1, P) % P
         x = (slope * slope - single[0] - counterpart[0]) % P
@@ -40,7 +40,7 @@ class P256:
         if len(public) != 65 or public[0] != 4:
             return False
         x, y = int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big")
-        return x < P and y < P and (y * y - x * x * x - A * x - B) % P == 0
+        return x < P and y < P and (y * y - x * x * x - LINEAR_COEFFICIENT * x - CONSTANT_COEFFICIENT) % P == 0
 
     @staticmethod
     def is_signed(public: bytes, message: bytes, signature: bytes) -> bool:

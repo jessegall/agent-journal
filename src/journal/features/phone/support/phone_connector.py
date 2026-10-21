@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 from journal.features.phone.support.paired_phone import PairedPhone
 from journal.features.phone.support.connection_proposal import ConnectionProposal
 from journal.features.sharing.support.tunnel import Tunnel
-from journal.models.pairing_code import PairingCode
+from journal.models.phone_code import PhoneCode
 from journal.models.phone import Phone
-from journal.repositories.pairing_codes import PairingCodes
+from journal.repositories.phone_codes import PhoneCodes
 from journal.repositories.phones import Phones
 from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
@@ -25,7 +25,7 @@ DEVICE_LONGEST = 60
 class PhoneConnector:
     """How a phone pairs, as version 3 did: the user asks for a code on the desk, the phone hands it back once within minutes and is given a key it keeps; one phone at a time, a newer code replacing an older one, too many wrong codes voiding it."""
 
-    def __init__(self, phones: Phones, codes: PairingCodes, tunnel: Tunnel, cards: Cards) -> None:
+    def __init__(self, phones: Phones, codes: PhoneCodes, tunnel: Tunnel, cards: Cards) -> None:
         self.phones, self.codes, self.tunnel, self.cards = phones, codes, tunnel, cards
 
     def proposal(self, days: int, actor: Actor, time: datetime) -> ConnectionProposal:
@@ -40,9 +40,9 @@ class PhoneConnector:
         for older in self.codes.open(time):
             self.codes.save(older.closed(time), actor)
         code, short = secrets.token_urlsafe(24), "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
-        pairing = self.codes.save(PairingCode(code=self.hashed(code), short=self.hashed(short), days=days, expiry_time=time + timedelta(minutes=CODE_MINUTES)), actor)
+        pairing = self.codes.save(PhoneCode(code=self.hashed(code), short=self.hashed(short), days=days, expires_at=time + timedelta(minutes=CODE_MINUTES)), actor)
         self.tunnel.reconcile()
-        return ConnectionProposal(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, expiry_time=pairing.expiry_time)
+        return ConnectionProposal(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, expires_at=pairing.expires_at)
 
     def pair(self, value: str, device: str, time: datetime) -> PairedPhone:
         hashes = {self.hashed(value), self.hashed(self.typed(value))}

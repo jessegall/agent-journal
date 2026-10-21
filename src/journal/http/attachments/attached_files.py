@@ -23,7 +23,7 @@ class AttachedFiles:
         rows = [f for f in all_items if requested.contains(f)]
         shelves = {Message.table(): len(all_items)} if all_items else {}
         images = sum(f.image for f in all_items)
-        return FileView(files=rows[requested.offset:requested.offset + requested.last], more=len(rows) > requested.offset + requested.last, total=len(rows),
+        return FileView(files=rows[requested.offset:requested.offset + requested.last], is_last_page=len(rows) <= requested.offset + requested.last, total=len(rows),
                           counts={"all": len(all_items), "images": images, "other": len(all_items) - images, "shelves": shelves})
 
     def build(self, message: Message) -> list[AttachedFile]:

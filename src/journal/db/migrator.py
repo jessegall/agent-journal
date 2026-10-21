@@ -13,8 +13,7 @@ class Migrator:
         finished = self.schema.version()
         return sorted((m for m in self.migrations if m.number > finished), key=lambda m: m.number)
 
-    def mark_done(self) -> None:
-        """A database made fresh from the current models records every migration as done, since they carry older databases forward."""
+    def record_all(self) -> None:
         with self.connection.transaction() as db:
             for migration in self.migrations:
                 db.execute("INSERT OR IGNORE INTO migrations (number, ran_at) VALUES (?, ?)", (migration.number, datetime.now(timezone.utc).isoformat()))

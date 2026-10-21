@@ -13,7 +13,7 @@ from journal.features.sharing.support.tunler_status import TunlerStatus
 from journal.features.sharing.support.tunnel_cause import TunnelCause
 from journal.features.sharing.support.tunnel_service import TunnelService
 from journal.support.rejection import Rejection
-from journal.repositories.pairing_codes import PairingCodes
+from journal.repositories.phone_codes import PhoneCodes
 from journal.repositories.phones import Phones
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.shares import Shares
@@ -40,7 +40,7 @@ CURRENT_ADDRESS = "{domain} is this journal's own address. Move the journal to a
 class Tunnel:
     """The tunler process that gives the share server its web address: started under the supervisor that hosts the journal while a link is open, every tunler still running for the journal's address ended first, an orphan of an earlier supervisor among them, stopped while none is, and asked whether its address answers."""
 
-    def __init__(self, tunler: Tunler, place: SharePlace, settings: SettingRows, link: SupervisorLink, shares: Shares, phones: Phones, codes: PairingCodes, config: Config) -> None:
+    def __init__(self, tunler: Tunler, place: SharePlace, settings: SettingRows, link: SupervisorLink, shares: Shares, phones: Phones, codes: PhoneCodes, config: Config) -> None:
         self.tunler, self.place, self.settings, self.link, self.shares, self.config = tunler, place, settings, link, shares, config
         self.phones, self.codes = phones, codes
         self.log = config.home / "runtime" / f"{SERVICE}.log"

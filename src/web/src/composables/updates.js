@@ -58,7 +58,7 @@ export function useUpdates() {
 
     async function loadMore() {
         const next = await api.changelog(about.value.shown);
-        about.value = {...about.value, changelog: about.value.changelog + next.changelog, shown: next.shown, more: next.more};
+        about.value = {...about.value, changelog: about.value.changelog + next.changelog, shown: next.shown, is_last_page: next.is_last_page};
     }
 
     return {about, error, status, update, start, loadMore};

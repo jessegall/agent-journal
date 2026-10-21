@@ -34,7 +34,7 @@ onMounted(start);
                 </div>
             </template>
             <TextDisplay class="changelog" :text="about.changelog" />
-            <template v-if="about.more">
+            <template v-if="!about.is_last_page">
                 <Btn class="more-releases" @click="loadMore()">Show older releases</Btn>
             </template>
         </template>

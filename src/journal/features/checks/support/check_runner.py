@@ -49,14 +49,14 @@ class CheckRunner:
         ended = self.executed(check, report, actor)
         prior_failure = check.last_passed is False
         elapsed = timing.time() - check.progress.time
-        ran = self.checks.save(self.checks.find(check.id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), elapsed, self.report(report), ended.fault), actor)
-        if ran.wait_target:
-            return ran
+        check_row = self.checks.save(self.checks.find(check.id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), elapsed, self.report(report), ended.fault), actor)
+        if check_row.wait_target:
+            return check_row
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
         for agent in self.agents.all_agents():
             if agent.state != Ended.name:
-                self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{ran.id}", shows=CardKind.CHECKS)
-        return ran
+                self.cards.show(agent.environment_id, agent.session, f"Check {check_row.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{check_row.id}", shows=CardKind.CHECKS)
+        return check_row
 
     def executed(self, check: Check, report: Path, actor: Actor) -> FinishedRun:
         process = subprocess.Popen(check.command, shell=True, cwd=self.config.root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace",

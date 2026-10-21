@@ -113,7 +113,7 @@ function took(table, got) {
     const held = store.rows[table] || [];
     store.rows[table] = [...stillWhole(held, got.rows), ...withoutAnswered(held.filter((r) => r.id === 0), got.rows)];
     store.paging.size[table] = store.paging.size[table] || PAGE;
-    store.paging.more[table] = got.more;
+    store.paging.more[table] = !got.is_last_page;
 }
 
 const oldest = (held) => {
@@ -126,12 +126,12 @@ const beforeKey = (held) => (Number.isFinite(oldest(held)) ? oldest(held) : 0);
 async function rebuilt(table, size) {
     const first = await api.list(table, {limit: PAGE});
     let rows = first.rows;
-    let more = first.more;
+    let more = !first.is_last_page;
     while (more && rows.length < size) {
         const page = await api.list(table, {limit: PAGE, before: beforeKey(rows)});
         const known = new Set(rows.map((r) => r.id));
         const fresh = page.rows.filter((r) => !known.has(r.id));
-        more = page.more;
+        more = !page.is_last_page;
         if (!fresh.length) break;
         rows = [...fresh, ...rows];
     }
@@ -156,7 +156,7 @@ async function caughtUp(table) {
     const since = Math.max(0, ...(store.rows[table] || []).map(updatedAt));
     const got = await api.list(table, {limit: PAGE, since});
     keptCounts(table, got.counts);
-    if (got.more) return load(table);
+    if (!got.is_last_page) return load(table);
     const held = store.rows[table] || [];
     const fresh = new Map(got.rows.map((r) => [r.id, r]));
     const kept = withoutAnswered(held.filter((r) => !fresh.has(r.id)), got.rows).concat(stillWhole(held, got.rows));
@@ -174,7 +174,7 @@ export async function earlier(...tables) {
             const known = new Set(held.map((r) => r.id));
             store.rows[table] = [...got.rows.filter((r) => !known.has(r.id)), ...held].sort(byId);
             store.paging.size[table] = store.rows[table].length;
-            store.paging.more[table] = got.more;
+            store.paging.more[table] = !got.is_last_page;
         })
     );
     return growing.length > 0;
@@ -193,14 +193,14 @@ export async function closedFirst(table) {
     if (closedMore(table) in store.paging.more) return;
     const got = await api.list(table, {limit: PAGE, closed: true});
     addedRows(table, got);
-    store.paging.more[closedMore(table)] = got.more;
+    store.paging.more[closedMore(table)] = !got.is_last_page;
 }
 
 export async function closedEarlier(table) {
     const before = (store.rows[table] || []).filter(isClosed).reduce((low, r) => Math.min(low, r.id), Infinity);
     const got = await api.list(table, {limit: PAGE, closed: true, before: Number.isFinite(before) ? before : 0});
     addedRows(table, got);
-    store.paging.more[closedMore(table)] = got.more;
+    store.paging.more[closedMore(table)] = !got.is_last_page;
 }
 
 export const closedHasMore = (table) => Boolean(store.paging.more[closedMore(table)]);

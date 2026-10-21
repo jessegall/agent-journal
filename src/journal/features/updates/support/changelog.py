@@ -20,4 +20,4 @@ class Changelog:
         stop = min(omit + PAGE_RELEASES, len(starts))
         first = starts[0] if starts else len(text)
         heading = text[:first] if omit == 0 else ""
-        return ChangelogPage(heading + (text[starts[omit]:ends[stop - 1]] if omit < stop else ""), stop, stop < len(starts))
+        return ChangelogPage(heading + (text[starts[omit]:ends[stop - 1]] if omit < stop else ""), stop, stop >= len(starts))

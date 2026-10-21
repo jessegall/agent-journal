@@ -30,7 +30,7 @@ export function scopeIn(env) {
                     const before = (closed.length ? closed : held).reduce((low, r) => Math.min(low, r.id), Infinity);
                     const got = await there.list(table, {limit: PAGE, before: Number.isFinite(before) ? before : 0});
                     keep(table, got);
-                    more[table] = got.more;
+                    more[table] = !got.is_last_page;
                 })
         );
     }

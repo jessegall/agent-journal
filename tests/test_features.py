@@ -5277,16 +5277,13 @@ def test_a_message_gets_one_reply_unless_the_agent_confirms_a_second(app: App, m
     assert console.run(["message", "send", "Something new after all.", "--reply-to", "1", "--confirm"], AGENT).code == 0, "confirmed, a second reply goes out"
 
 
-def test_a_thread_that_ends_without_releasing_gives_its_connection_back(app: App):
+def test_a_thread_that_ends_without_releasing_gives_its_connection_back(connection):
     import gc
     import threading
-    from journal.db.connection import Connection
-    connection = app.container.get(Connection)
 
     def query():
         connection.one("SELECT 1")
 
-    app.runtime().deferred.drain()
     connection.one("SELECT 1")
     for _ in range(5):
         worker = threading.Thread(target=query)
@@ -5294,7 +5291,6 @@ def test_a_thread_that_ends_without_releasing_gives_its_connection_back(app: App
         worker.join()
         del worker
         gc.collect()
-    app.runtime().deferred.drain()
     opened = len(connection._open)
     for _ in range(5):
         worker = threading.Thread(target=query)

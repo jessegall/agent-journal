@@ -55,7 +55,7 @@ class TypedLines:
             return None
         self._held = [h for h in self._held if h.environment_id != environment_id]
         lines = [h.line.removeprefix(JOURNAL_PREFIX).strip() for h in blocked]
-        return QueuedLine(environment_id, f"{JOURNAL_PREFIX} {' | '.join(lines)}", max(h.following_time for h in blocked))
+        return QueuedLine(environment_id, f"{JOURNAL_PREFIX} {' | '.join(lines)}", max(h.delay_seconds for h in blocked))
 
     def typed(self, environment_id: int, line: str) -> None:
         moment = timing.time()

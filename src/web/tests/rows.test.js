@@ -15,7 +15,7 @@ const {store} = await import("../src/state/store.js");
 const at = (seconds) => new Date(seconds * 1000).toISOString();
 const row = (id, more = {}) => ({table: "tasks", id, state: "open", finished_at: null, created_at: at(id), updated_at: at(id), ...more});
 const done = (id) => row(id, {state: "done", finished_at: at(id)});
-const empty = {rows: [], more: false, counts: {}};
+const empty = {rows: [], is_last_page: true, counts: {}};
 
 beforeEach(async () => {
     api.list.mockReset();
@@ -34,7 +34,7 @@ describe("paging rows", () => {
         store.rows.plans = [row(1, {table: "plans"})];
         api.list.mockImplementation(async () => {
             store.rows.plans = [...store.rows.plans, row(9, {table: "plans"})];
-            return {rows: [row(1, {table: "plans"}), row(2, {table: "plans"})], more: true, counts: {}};
+            return {rows: [row(1, {table: "plans"}), row(2, {table: "plans"})], is_last_page: false, counts: {}};
         });
         await load("plans");
         expect(hasLoaded("plans")).toBe(true);
@@ -59,7 +59,7 @@ describe("paging rows", () => {
     test("an earlier page goes in front, sorted, with no row twice, asked before the oldest closed row", async () => {
         store.rows.tasks = [done(10), row(11)];
         store.paging.more.tasks = true;
-        api.list.mockResolvedValue({rows: [row(8), row(9), done(10)], more: false, counts: {}});
+        api.list.mockResolvedValue({rows: [row(8), row(9), done(10)], is_last_page: true, counts: {}});
         expect(await earlier("tasks")).toBe(true);
         expect(api.list).toHaveBeenCalledWith("tasks", {limit: PAGE, before: 10});
         expect(store.rows.tasks.map((r) => r.id)).toEqual([8, 9, 10, 11]);
@@ -74,7 +74,7 @@ describe("paging rows", () => {
 
     test("holding asks once for rows it lacks and remembers the ones that do not exist", async () => {
         store.rows.tasks = [row(1)];
-        api.list.mockResolvedValue({rows: [row(3)], more: false, counts: {}});
+        api.list.mockResolvedValue({rows: [row(3)], is_last_page: true, counts: {}});
         await holding("tasks", [1, 3, 4]);
         expect(api.list).toHaveBeenCalledWith("tasks", {ids: [3, 4]});
         expect(store.rows.tasks.map((r) => r.id)).toEqual([1, 3]);
@@ -100,7 +100,7 @@ describe("entries", () => {
     });
 
     test("an entry that changes a row reads that table's rows and counts again", async () => {
-        api.list.mockResolvedValue({rows: [row(1)], more: false, counts: {open: 1, all: 1, unread: 0}});
+        api.list.mockResolvedValue({rows: [row(1)], is_last_page: true, counts: {open: 1, all: 1, unread: 0}});
         await takeEntries([{id: 1, kind: "created", data: {table: "tasks", id: 1}}]);
         await vi.waitFor(() => expect(store.rows.tasks).toEqual([row(1)]));
         expect(store.counts.tasks).toEqual({open: 1, all: 1, unread: 0});
@@ -125,7 +125,7 @@ describe("entries", () => {
         store.rows.messages = [];
         api.list.mockImplementation(async (table) => {
             if (table === "messages") throw new Error("tripped");
-            return {counts: {open: 1}, rows: [row(1)], more: false};
+            return {counts: {open: 1}, rows: [row(1)], is_last_page: true};
         });
         rows("messages");
         const settled = refresh(["tasks", "messages"]);
@@ -138,7 +138,7 @@ describe("entries", () => {
 
     test("a table nobody shows has only its counts read", async () => {
         store.rows.questions = [];
-        api.list.mockResolvedValue({rows: [], more: false, counts: {open: 3, all: 4, unread: 1}});
+        api.list.mockResolvedValue({rows: [], is_last_page: true, counts: {open: 3, all: 4, unread: 1}});
         await refresh(["questions"]);
         expect(store.counts.questions).toEqual({open: 3, all: 4, unread: 1});
         expect(api.list).toHaveBeenCalledWith("questions", {limit: 1, closed: true});
@@ -148,7 +148,7 @@ describe("entries", () => {
 describe("optimistic rows", () => {
     test("the row shows while sending and goes once the real one is listed", async () => {
         const mine = row(0, {title: "mine"});
-        api.list.mockResolvedValue({counts: {}, rows: [row(5)], more: false});
+        api.list.mockResolvedValue({counts: {}, rows: [row(5)], is_last_page: true});
         let during = [];
         await optimistic("tasks", mine, async () => (during = store.rows.tasks.slice()));
         expect(during.map((r) => r.title)).toContain("mine");

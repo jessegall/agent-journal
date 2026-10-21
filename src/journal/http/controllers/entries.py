@@ -36,7 +36,7 @@ class EntryController:
             with self.scope.environment(environment):
                 return entries()
 
-        def chunks() -> Iterator[bytes]:
+        def events() -> Iterator[bytes]:
             yield b": open\n\n"
             last, silent = read(self.entries.last_id), 0.0
             while True:
@@ -50,7 +50,7 @@ class EntryController:
                 if silent >= HEARTBEAT_SECONDS:
                     silent = 0.0
                     yield b"event: beat\ndata: keep\n\n"
-        return StreamResponse("text/event-stream", chunks())
+        return StreamResponse("text/event-stream", events())
 
     @staticmethod
     def event(entry: Entry) -> bytes:

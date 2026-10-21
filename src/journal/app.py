@@ -47,7 +47,7 @@ class App:
         schema = Schema(connection, AllModels.MODELS)
         migrator = Migrator(connection, schema, MIGRATIONS)
         if schema.create():
-            migrator.mark_done()
+            migrator.record_all()
         migrator.run()
         return connection
 

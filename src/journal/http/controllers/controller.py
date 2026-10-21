@@ -24,7 +24,7 @@ class Controller(Generic[S]):
     def listed(self, listing: Listing) -> RowList:
         rows = self.rows()
         page = listing.listed(rows, self.is_open, self.timeline)
-        return RowList(rows=self.shown_page(page["rows"]), more=page["more"], counts=self.counts(rows))
+        return RowList(rows=self.shown_page(page["rows"]), is_last_page=page["is_last_page"], counts=self.counts(rows))
 
     def rows(self) -> list[S]:
         return self.repository.all()

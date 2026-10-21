@@ -288,3 +288,17 @@ def test_the_chart_drop_keeps_only_workflows_a_user_or_an_agent_wrote_as_documen
     titles = [row["title"] for row in connection.all("SELECT title FROM docs WHERE title LIKE 'Workflow: %' ORDER BY id")]
     assert titles == ["Workflow: Remind to commit after twenty writes", "Workflow: Ask about an open question after ten quiet minutes"], "a shipped workflow re-drawn by an upgrade is the journal's, however many revisions it counts; one a user or an agent last wrote is kept"
     assert connection.one("SELECT name FROM sqlite_master WHERE name = 'charts'") is None, "the chart's tables are gone"
+
+
+def test_the_timestamp_renames_migration_moves_the_phone_codes_and_the_wait_times_to_their_at_names(connection):
+    """Migration 26: the pairing codes table becomes phone_codes with expires_at, and a wait stored on an agent's row keeps its started and reminded times under their _at names."""
+    import json
+    from journal.db.migrations.timestamp_renames import TimestampRenames
+    connection.execute("ALTER TABLE phone_codes RENAME COLUMN expires_at TO expiry_time")
+    connection.execute("ALTER TABLE phone_codes RENAME TO pairing_codes")
+    wait = {"state": "awaiting", "data": {"focus": "ci", "start_time": 5.0, "reminder_time": 9.0}}
+    connection.execute("INSERT INTO agents (environment_id, session, state, data, stack, created_at, creator) VALUES (1, 's', 'awaiting', ?, ?, '2026-10-21', 'system')", (json.dumps(wait["data"]), json.dumps([{"state": "idle", "data": {}}, wait])))
+    TimestampRenames().apply(connection)
+    assert "expires_at" in {row["name"] for row in connection.all("PRAGMA table_info(phone_codes)")}
+    row = connection.one("SELECT data, stack FROM agents WHERE session = 's'")
+    assert json.loads(row["data"]) == {"focus": "ci", "started_at": 5.0, "reminded_at": 9.0} and json.loads(row["stack"])[-1]["data"]["started_at"] == 5.0

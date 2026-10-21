@@ -50,7 +50,7 @@ def test_tasks_live_over_http(server):
     for n in range(3):
         call(server, "POST", "/journal/tasks", {"title": f"more {n}"})
     page = call(server, "GET", "/journal/tasks?limit=2")[1]
-    assert [t["title"] for t in page["rows"]] == ["more 0", "more 1", "more 2"] and page["more"], "the newest page, and every open task besides"
+    assert [t["title"] for t in page["rows"]] == ["more 0", "more 1", "more 2"] and not page["is_last_page"], "the newest page, and every open task besides"
     closed = call(server, "GET", "/journal/tasks?closed=1")[1]
     assert [t["title"] for t in closed["rows"]] == ["ship it"] and closed["counts"] == {"all": 4, "open": 3, "unread": closed["counts"]["unread"]}
     assert call(server, "GET", "/journal/tasks", environment="other")[0] == 404, "an environment nobody made is not found, never made by a read"
@@ -152,7 +152,7 @@ def test_each_type_is_read_alone_above_the_last_number_seen(server):
     for n in range(3):
         call(server, "POST", "/journal/messages", {"text": f"hello {n}", "idempotency": f"k{n}"})
     tasks = call(server, "GET", "/journal/tasks?after=1&limit=2")[1]
-    assert [r["id"] for r in tasks["rows"]] == [3, 4] and tasks["more"] is True
+    assert [r["id"] for r in tasks["rows"]] == [3, 4] and tasks["is_last_page"] is False
     assert tasks["counts"] == {"all": 4, "open": 0, "unread": 0}
     messages = call(server, "GET", "/journal/messages?after=1&limit=5")[1]
     assert [r["id"] for r in messages["rows"]] == [2, 3] and messages["counts"]["all"] == 3
@@ -526,9 +526,9 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
     listing = Listing.query_listing({})
     assert [r.id for r in listing.listed(rows, lambda r: True)["rows"]] == list(range(1, 61)), "a work list shows every open row, however many"
     page = listing.listed(rows, lambda r: True, timeline=True)
-    assert [r.id for r in page["rows"]] == list(range(11, 61)) and page["more"], "a chat pages strictly: the last fifty, the rest on scrolling up"
+    assert [r.id for r in page["rows"]] == list(range(11, 61)) and not page["is_last_page"], "a chat pages strictly: the last fifty, the rest on scrolling up"
     older = Listing.query_listing({"before": "11"}).listed(rows, lambda r: True, timeline=True)
-    assert [r.id for r in older["rows"]] == list(range(1, 11)) and not older["more"]
+    assert [r.id for r in older["rows"]] == list(range(1, 11)) and older["is_last_page"]
 
 def test_the_profiles_page_lists_the_agents_folder_and_saves_a_profile_as_claude_reads_it(server, journal_root):
     status, read = call(server, "GET", "/journal/profiles")
@@ -974,7 +974,7 @@ def test_the_about_page_reads_the_installed_version_and_the_changelog_a_page_of_
     from journal.version import VERSION
     monkeypatch.setattr(changelog, "PAGE_RELEASES", 2)
     status, topic = call(server, "GET", "/journal/updates")
-    assert status == 200 and topic["installed"] == VERSION and topic["changelog"].startswith("# Changelog") and topic["changelog"].count("\n## ") == 2 and topic["more"], "the heading and the newest releases first"
+    assert status == 200 and topic["installed"] == VERSION and topic["changelog"].startswith("# Changelog") and topic["changelog"].count("\n## ") == 2 and not topic["is_last_page"], "the heading and the newest releases first"
     status, older = call(server, "GET", f"/journal/updates/changelog?skip={topic['shown']}")
     assert status == 200 and older["changelog"].startswith("## ") and older["shown"] == topic["shown"] + 2, "then older releases, a page at a time"
 

@@ -9,6 +9,6 @@ class CurrentSequence(TypedDict):
     step: int
     steps: int
     text: str
-    holds: str
-    about: str
-    under: int
+    blocks: str
+    subject: str
+    waiting_runs: int

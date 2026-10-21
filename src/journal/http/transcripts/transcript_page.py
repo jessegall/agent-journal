@@ -22,7 +22,7 @@ class TranscriptPage:
 
     @staticmethod
     def heading(turn: Turn) -> TranscriptHeading:
-        return TranscriptHeading(line=turn.line, who=turn.speaker, kind=turn.kind, time=turn.time, tools=turn.tools, text=turn.text if turn.kind in SPEAKER_ROLES else "", has_text=bool(turn.text))
+        return TranscriptHeading(line=turn.line, speaker=turn.speaker, kind=turn.kind, time=turn.time, tools=turn.tools, text=turn.text if turn.kind in SPEAKER_ROLES else "", has_text=bool(turn.text))
 
     def entry(self, line: int) -> TranscriptEntry:
         turn = next((t for t in self.turns if t.line == line), None)

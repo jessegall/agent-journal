@@ -19,6 +19,7 @@ from journal.db.migrations.trigger_phrases import TriggerPhrases
 from journal.db.migrations.event_renames import EventRenames
 from journal.db.migrations.column_renames import ColumnRenames
 from journal.db.migrations.state_field_renames import StateFieldRenames
+from journal.db.migrations.timestamp_renames import TimestampRenames
 from journal.db.migrations.dashboard_sections import DashboardSections
 
-MIGRATIONS = (PauseUnwrapping(), FinishCancelledTasks(), SequenceUnwrapping(), PlanBuildingEnd(), LinkWorkerReports(), AgentSkillObligations(), ChatQuestions(), HotReadIndexes(), LinkIndexes(), DispatchIndex(), OldReportClosure(), FrequentReadIndexes(), CardRowTableNames(), FillAgentsEmptyData(), StackSeed(), ChartDrop(), TimeKeys(), TriggerPhrases(), DashboardSections(), EventRenames(), ColumnRenames(), StateFieldRenames())
+MIGRATIONS = (PauseUnwrapping(), FinishCancelledTasks(), SequenceUnwrapping(), PlanBuildingEnd(), LinkWorkerReports(), AgentSkillObligations(), ChatQuestions(), HotReadIndexes(), LinkIndexes(), DispatchIndex(), OldReportClosure(), FrequentReadIndexes(), CardRowTableNames(), FillAgentsEmptyData(), StackSeed(), ChartDrop(), TimeKeys(), TriggerPhrases(), DashboardSections(), EventRenames(), ColumnRenames(), StateFieldRenames(), TimestampRenames())

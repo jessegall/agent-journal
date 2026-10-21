@@ -40,7 +40,6 @@ class PluginManifest:
                       "setup": tuple(SetupStep.parsed(s) for s in data.get("setup", ())), "requires": {program: Requirement.parsed(r) for program, r in data.get("requires", {}).items()}})
 
     def published(self) -> dict:
-        """The manifest in the shape journal-plugin.json writes it, events and blocks under hears and holds."""
         names = {field: key for key, field in PUBLISHED.items()}
         return {names.get(field.name, field.name): getattr(self, field.name) for field in fields(self)} | {"services": [service.published() for service in self.services]}
 

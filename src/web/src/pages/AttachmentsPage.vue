@@ -39,7 +39,7 @@ async function fetchPage(at, skip) {
     const asked = {kind: kind.value, shelf: shelf.value, search: words.value, last: PAGE, skip};
     const got = await api.attachments(asked);
     const held = views[at] || {files: []};
-    views[at] = {files: [...held.files, ...got.files.map(addressed)], more: got.more, found: got.found};
+    views[at] = {files: [...held.files, ...got.files.map(addressed)], more: !got.is_last_page, found: got.found};
     counts.value = got.counts;
 }
 

@@ -83,7 +83,7 @@ class AgentActivity:
         if not runs:
             return None
         run = runs[-1]
-        return CurrentSequence(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.blocks, about=run.subject, under=len(runs) - 1)
+        return CurrentSequence(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, blocks=run.blocks, subject=run.subject, waiting_runs=len(runs) - 1)
 
     def activity(self, state, hooks) -> str:
         last = hooks[-1] if hooks else None
