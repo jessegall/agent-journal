@@ -1,4 +1,5 @@
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from journal.db.condition import Condition
@@ -17,7 +18,7 @@ class Query:
     """A read or a write of one table composed in calls, each returning a new query, and rendered to SQL text and its parameters for the Connection to run; a column the table does not have fails as it is named, and data->key->key names a JSON path in a column."""
 
     table: str
-    columns: tuple[Column, ...]
+    columns: Mapping[str, Column]
     conditions: tuple[Condition, ...] = ()
     orders: tuple[str, ...] = ()
     row_limit: int = -1
@@ -25,7 +26,7 @@ class Query:
 
     @classmethod
     def build(cls, model: type[Model]) -> "Query":
-        return cls(model.table(), Schema.columns(model))
+        return cls(model.table(), {column.name: column for column in Schema.columns(model)})
 
     def filter(self, **fields) -> "Query":
         query = self
@@ -170,7 +171,6 @@ class Query:
         return f"json_extract({matched}, '$.{'.'.join(keys)}')" if keys else matched
 
     def _column(self, name: str) -> Column:
-        matched = next((column for column in self.columns if column.name == name), None)
-        if matched is None:
+        if name not in self.columns:
             raise UnknownColumn(self.table, name)
-        return matched
+        return self.columns[name]

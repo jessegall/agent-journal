@@ -39,11 +39,12 @@ class Repository(Generic[M]):
     def __init__(self, connection: Connection, bus: Bus) -> None:
         self.connection, self.bus = connection, bus
         self.columns: tuple[Column, ...] = Schema.columns(self.model)
+        self.column_map = {column.name: column for column in self.columns}
         self.table = self.model.table()
         self.link_query = Query.build(Link)
 
     def query(self) -> Query:
-        return Query(self.table, self.columns)
+        return Query(self.table, self.column_map)
 
     def find(self, id: int) -> M:
         rows = self._loaded(self.query().filter(id=id))
