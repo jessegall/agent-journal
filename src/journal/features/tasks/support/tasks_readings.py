@@ -19,3 +19,5 @@ class TasksReadings:
     first_parked_why: str
     next_open: OpenTask | None
     last_commands: tuple[str, ...]
+    open_ids: tuple[int, ...] = ()
+    open_summary: str = ""

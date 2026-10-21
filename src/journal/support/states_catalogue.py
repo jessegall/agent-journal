@@ -43,7 +43,7 @@ class StatesCatalogue:
         return self.named("idle", {})
 
     def is_floor(self, state: BaseState) -> bool:
-        return type(state) is type(self.first())
+        return isinstance(state, type(self.first()))
 
     def stack_of(self, agent: Agent) -> Stack:
         if not agent.stack:

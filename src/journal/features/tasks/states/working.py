@@ -52,6 +52,10 @@ class Working(BaseState):
         minutes = int((time - self.logged_at) // 60)
         return "last logged just now" if minutes < 1 else f"last logged {minutes} min ago"
 
+    def plan_state(self, **fields) -> BaseState:
+        from journal.features.plans.states.following_plan import FollowingPlan
+        return FollowingPlan(**fields)
+
     def continue_nudge(self, time: float) -> Nudge:
         from journal.features.tasks.feature import Tasks
         return Tasks.CARRY_ON.create(name=self.named(), logged=self.logged_words(time))
@@ -111,13 +115,13 @@ class Working(BaseState):
         started = event.readings.of(Plans).started
         if self.follows_a_plan() or started is None or event.task_id != self.task_id or event.task_id not in started.tasks:
             return self.unchanged()
-        return self.changed(FollowingPlan(plan_id=started.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at))
+        return self.changed(self.plan_state(plan_id=started.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at))
 
     def on_plan_started(self, event: PlanStarted, settings: Settings) -> Transition:
         from journal.features.plans.states.following_plan import FollowingPlan
         if self.follows_a_plan() or event.task_id != self.task_id:
             return self.unchanged()
-        return self.changed(FollowingPlan(plan_id=event.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at, edits=self.edits, active_at=self.active_at))
+        return self.changed(self.plan_state(plan_id=event.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at, edits=self.edits, active_at=self.active_at))
 
     def on_resume(self, readings: Readings, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.tasks.feature import Tasks

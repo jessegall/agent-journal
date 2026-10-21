@@ -8,11 +8,17 @@ from journal.support.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.listeners.mark_subagents import MarkSubagents
 from journal.features.workers.listeners.worker_cards import WorkerCards
+from journal.features.tasks.states.idle import Idle
+from journal.features.workers.states.delegating import Delegating
+from journal.features.workers.states.orchestrating import Orchestrating
+from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
+from journal.features.workers.states.soloing import Soloing
 
 
 class Workers(Feature):
     """A worker is an agent sent to write: code in a worktree of its own, a document, a change. A subagent only reads; a worker is the one that writes."""
 
+    MODE_FLOORS = {"builder": Idle, "orchestrator": Orchestrating, "solo": Soloing}
     name = "workers"
     title = "Workers"
     help = "Agents sent to write one bounded job; the agent waits for their reports."
@@ -21,6 +27,7 @@ class Workers(Feature):
     MOST_OUT = Option("workers.most_out", "Workers out at once", "The most workers out at a time; a dispatch past it is refused until one reports. 0 is no limit", 3, unit="workers")
     MOST_SUBAGENTS = Option("workers.most_subagents", "Subagents running at once", "The most subagents running at a time; one more is held until one finishes. 0 is no limit", 5, unit="subagents")
     options = (TIMEOUT, MODE, MOST_OUT, MOST_SUBAGENTS)
+    states = (Orchestrating, Soloing, OrchestratingPlan, Delegating)
     commands = (WorkerCommand,)
     seeds = (WorkersAtBoot,)
     listeners = (MarkSubagents, WorkerCards)
@@ -28,6 +35,9 @@ class Workers(Feature):
     conduct = (WorkersConduct,)
 
     WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_after=0)
+    ORCHESTRATE = Nudge(name, "orchestrate", "{{count}} tasks are open across the plans: {{tasks}}", "check the plans and dispatch a worker on each task you can, journal worker dispatch; keep the reviews for yourself", repeat_after=0)
+    DELEGATE_THE_TASK = Nudge(name, "delegate_the_task", "{{name}} is in hand and you orchestrate; {{logged}}", "hand it to a worker, journal worker dispatch, and review its report; log what the worker is on", repeat_after=0)
+    NO_WORKERS_WHEN_SOLO = Nudge(name, "no_workers_when_solo", "you work solo: no worker is dispatched", "do the job yourself, or ask the user to switch the work mode", repeat_after=0)
     WORKER_STOPPED_UNREPORTED = Nudge(name, "worker_stopped_unreported", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)
     TOO_MANY_SUBAGENTS = Nudge(name, "too_many_subagents", "{{running}} subagents are running, the most at once", "wait for one to finish, or keep the work yourself", repeat_after=0)
     TOO_MANY_WORKERS = Nudge(name, "too_many_workers", "{{out}} workers are out, the most at once", "wait for one to report with `journal worker wait`, or give the job to one that reported with `journal worker say`", repeat_after=0)
@@ -44,6 +54,11 @@ A subagent only reads. A worker writes: code in a worktree of its own, a documen
 - `journal worker dispatch "<Name>" "<bounded brief>" --profile journal-senior|journal-medior [--provider claude|codex] [--worktree]`: name it
   after a distinguished figure with a twist on their trade and give it one job. The profile sets its model and what it is told:
   medior, on Sonnet, for a job whose shape is settled; senior, on Opus, only for one that needs judgement. `--model` overrides it.
+- The work mode is the floor of your stack. Builder, the default: you build it yourself and send a worker when a job
+  is better done beside you. Orchestrator: you plan, hand every task you can to a worker and review what comes back;
+  a stop or a long quiet with open tasks tells you to check the plans and dispatch, and a task in hand is one to hand
+  over, never to do yourself. Solo: you do everything yourself and a worker's dispatch is refused. The user sets it
+  with the plan bar's buttons.
 - `journal worker wait <n> [<n>...]` waits until they have reported; stopping is fine while you wait.
 - A worker reports with `journal worker report <n> "<what it found or did>"`; you are told, and told again when
   the last one is back. `journal worker list` shows who is out.

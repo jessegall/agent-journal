@@ -646,7 +646,7 @@ def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_fro
     from journal.features.plans.states.following_plan import FollowingPlan
     from journal.events.rows.plan_approved import PlanApproved
     from journal.events.rows.task_started import TaskStarted
-    settings = SettingsValue({})
+    settings = SettingsValue({WorkersFeature.MODE.key: "builder"})
     from journal.features.plans.support.started_plan import StartedPlan
     plans = PlansReadings(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), tasks_left=2, at_checkpoint=False, checkpoint_phase=0))
     tasks = TasksReadings(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
@@ -962,7 +962,7 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_read
     from journal.models.open_task import OpenTask
     from journal.events.agent.idle import Idle as Stop
     from journal.events.agent.ticked import Ticked
-    auto, manual = SettingsValue({TasksFeature.AUTO.key: True}), SettingsValue({TasksFeature.AUTO.key: False})
+    auto, manual = SettingsValue({TasksFeature.AUTO.key: True, WorkersFeature.MODE.key: "builder"}), SettingsValue({TasksFeature.AUTO.key: False, WorkersFeature.MODE.key: "builder"})
     nothing = TasksReadings(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
     open_next = replace(nothing, next_open=OpenTask(4, "the footer", "", 0))
     parked = replace(open_next, parked=(2,), parked_summary="task 2 (the parser)", first_parked_why="a review first")
@@ -1259,3 +1259,37 @@ def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_a
     assert following.named() == "plan 19, with no task in hand"
     started = following.on(TaskStarted(environment_id=1, time=5.0, task_id=1141, title="the developer tab", plan_id=0).with_readings(Readings({})), settings)
     assert started.to.task_id == 1141 and started.to.named() == "task 1141" and started.to.logged_at == 5.0, "one task is in hand at a time, so the task started is the plan state's task whether the plan holds it or not"
+
+
+def test_the_work_mode_is_the_floor_state_the_orchestrator_dispatches_the_builder_carries_on_and_the_solo_floor_keeps_workers_out():
+    from journal.events.agent.idle import Idle as Stop
+    from journal.events.rows.setting_changed import SettingChanged
+    from journal.features.plans.support.plans_readings import PlansReadings
+    from journal.features.plans.support.started_plan import StartedPlan
+    from journal.features.tasks.support.tasks_readings import TasksReadings
+    from journal.features.workers.feature import Workers
+    from journal.features.workers.states.delegating import Delegating
+    from journal.features.workers.states.orchestrating import Orchestrating
+    from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
+    from journal.features.workers.states.soloing import Soloing
+    from journal.models.open_task import OpenTask
+    settings = lambda mode: SettingsValue({Workers.MODE.key: mode, TasksFeature.AUTO.key: True})
+    tasks = TasksReadings(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=OpenTask(3, "the footer", "", 0), last_commands=(), open_ids=(3, 4), open_summary="task 3 (the footer), task 4 (the margin)")
+    started = StartedPlan(plan_id=2, next_task=3, started_task=0, started_task_briefing="", tasks=(3, 4), tasks_left=2, at_checkpoint=False, checkpoint_phase=0)
+    of = lambda plan: Readings({"plans": PlansReadings((), plan), "tasks": tasks})
+    begun = Idle().on(SessionStarted(time=1.0).with_readings(of(None)), settings("orchestrator"))
+    assert isinstance(begun.to, Orchestrating) and begun.pushed is None, "at a session start the floor becomes the mode's"
+    planned = Idle().on(SessionStarted(time=1.0).with_readings(of(started)), settings("orchestrator"))
+    assert isinstance(planned.to, Orchestrating) and isinstance(planned.pushed, OrchestratingPlan) and planned.pushed.plan_id == 2, "a started plan is pushed over the new floor as the orchestrator's plan state"
+    assert type(Idle().on(SessionStarted(time=1.0).with_readings(of(None)), settings("builder")).to) is Idle, "the builder's floor is Idle"
+    stop = Orchestrating().on(Stop().with_readings(of(None)), settings("orchestrator"))
+    assert stop.held is not None and "task 3 (the footer), task 4 (the margin)" in stop.held.rendered() and "dispatch a worker" in stop.held.rendered(), "the orchestrator's stop is held with the tasks to dispatch"
+    assert "task 3" in Idle().on(Stop().with_readings(of(None)), settings("builder")).held.rendered() and "dispatch" not in Idle().on(Stop().with_readings(of(None)), settings("builder")).held.rendered(), "the builder's stop names the next task to do"
+    assert isinstance(Orchestrating().on(TaskStarted(environment_id=1, time=2.0, task_id=7, title="x", plan_id=0).with_readings(of(None)), settings("orchestrator")).pushed, Delegating), "a task started on the orchestrator's floor is delegating, not working"
+    delegating = Delegating(task_id=7, logged_at=1.0).on(Stop(time=2.0).with_readings(of(None)), settings("orchestrator"))
+    assert delegating.held is not None and "hand it to a worker" in delegating.held.rendered(), "the delegating task says hand it over where working says carry on"
+    changed = Orchestrating().on(SettingChanged(environment_id=1, time=3.0, setting=Workers.MODE.key).with_readings(of(None)), settings("builder"))
+    assert type(changed.to) is Idle, "the mode setting's change swaps the floor"
+    assert isinstance(Idle().on_resume(of(None), settings("solo")).to, Soloing), "and so does a resume to the floor"
+    assert Soloing().on(ToolStarting(call=shell("journal worker dispatch 'Mr. Smith' 'the job' --profile journal-medior")).with_readings(of(None)), settings("solo")).held == Workers.NO_WORKERS_WHEN_SOLO.create(), "solo keeps workers out"
+    assert Soloing().on(ToolStarting(call=shell("ls")).with_readings(of(None)), settings("solo")).held is None

@@ -26,6 +26,7 @@ class TasksReadingsReader:
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
         commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session, LOOKED_BACK) if e.data.get("tool_name") == "Bash"]
         free = self.plans.free()
+        open_tasks = self.tasks.in_state(TaskState.OPEN)
         return TasksReadings(
             in_hand=in_hand.id if in_hand else 0,
             last_log_line=self.last_log(in_hand) if in_hand else "",
@@ -39,6 +40,8 @@ class TasksReadingsReader:
             first_parked_why=parked[0].parked_why if parked else "",
             next_open=OpenTask(free[0].id, free[0].title, free[0].brief, 0) if free else None,
             last_commands=tuple(commands[:POLLED]),
+            open_ids=tuple(t.id for t in open_tasks),
+            open_summary=self.summary(open_tasks),
         )
 
     def last_log(self, task: Task) -> str:
