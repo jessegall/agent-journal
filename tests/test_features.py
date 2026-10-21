@@ -3494,6 +3494,41 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app: App, tmp_path):
     assert refused.code != 0 and "hears nothing, which is no event" in refused.error and [p.name for p in app.container.get(Plugins).all()] == ["echo"], "a refused manifest installs nothing"
 
 
+def test_an_updated_journal_upgrades_each_plugin_to_its_newest_release_that_runs_on_it(app: App, tmp_path):
+    import shutil
+    import subprocess
+    from journal.features.updates.seeds.version_change import VersionChange
+    from journal.repositories.journal_versions import JournalVersions
+    from journal.repositories.messages import Messages
+    from journal.repositories.plugins import Plugins
+    from journal.support.listener_queue import ListenerQueue
+    folder = tmp_path / "echo"
+    shutil.copytree(Path(__file__).parent / "plugins" / "echo", folder)
+    git = lambda *argv: subprocess.run(["git", "-C", str(folder), "-c", "user.name=t", "-c", "user.email=t@t", *argv], capture_output=True, text=True, timeout=30)
+    manifest = json.loads((folder / "journal-plugin.json").read_text())
+    def released(version: str, journal: str) -> None:
+        (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "version": version, "journal": journal}))
+        git("add", "-A")
+        git("commit", "-qm", version)
+        git("tag", f"v{version}")
+    git("init", "-q")
+    released("1.0.0", "4.0.0")
+    console, plugins = app.console(), app.container.get(Plugins)
+    assert console.run(["plugin", "install", f"file://{folder}", "--yes"], USER).code == 0
+    assert plugins.lookup("echo").release == "v1.0.0"
+    released("1.0.5", "4.0.0")
+    released("1.1.0", "99.0.0")
+    versions = app.container.get(JournalVersions)
+    versions.save(versions.current().with_(version="4.0.0"), Actor.system())
+    app.container.get(VersionChange).run()
+    app.container.get(ListenerQueue).drain()
+    assert plugins.lookup("echo").release == "v1.0.5", "the newest release that runs on this journal, never one that needs a newer journal"
+    assert any("upgraded from v1.0.0 to v1.0.5" in m.text for m in app.container.get(Messages).scoped()), "the chat is told what moved"
+    app.container.get(VersionChange).run()
+    app.container.get(ListenerQueue).drain()
+    assert plugins.lookup("echo").release == "v1.0.5", "a start on the same version upgrades nothing"
+
+
 def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(app: App, tmp_path):
     import shutil
     from journal.support.listener_queue import ListenerQueue

@@ -11,6 +11,7 @@ from journal.features.plugins.plugins_conduct import PluginsConduct
 from journal.features.plugins.support.plugins_data_reader import PluginsDataReader
 from journal.features.plugins.support.plugins_data import PluginsData
 from journal.engine.nudge import Nudge
+from journal.features.plugins.listeners.release_upgrade import ReleaseUpgrade
 
 
 class PluginsFeature(Feature[PluginsData]):
@@ -19,7 +20,7 @@ class PluginsFeature(Feature[PluginsData]):
     title = "Plugins"
     help = "Programs you install that hear the journal's events and answer them: refuse a tool, say a line to the agent, show a card or run journal commands, each as itself."
     options = (PLUGIN_ANSWER_WINDOW,)
-    listeners = (PluginAgentRelay, PluginRowRelay, PluginSettingsNotice)
+    listeners = (PluginAgentRelay, PluginRowRelay, PluginSettingsNotice, ReleaseUpgrade)
     data = (PluginsDataReader,)
     conduct = (PluginsConduct,)
     PLUGIN_FILE_OWNERSHIP = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_interval=0)
