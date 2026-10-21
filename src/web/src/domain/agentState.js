@@ -93,6 +93,14 @@ export function lineOf(agent, task, auto = false, workers = []) {
     return agent.doing || phrase("bearings");
 }
 
+// What the chat's status line says while the agent works: the part or tool running now, its thought only when nothing runs.
+export function busyLine(agent, helping = null) {
+    if (agent.status === "compacting") return {thinking: "", doing: "compacting"};
+    if (agent.tool_running) return {thinking: "", doing: agent.doing || "working"};
+    if (agent.thinking) return {thinking: agent.thinking, doing: ""};
+    return {thinking: "", doing: helping ? `Waiting: ${helping.task}` : "working"};
+}
+
 const PHRASES = {
     auto: "ready for the next task",
     idle: "ready for your next message",

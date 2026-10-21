@@ -1,5 +1,6 @@
 <script setup>
 import {subagentsOf} from "../domain/subagents.js";
+import {busyLine} from "../domain/agentState.js";
 import {openQuestion, questionView} from "../state/overlays.js";
 import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
@@ -106,11 +107,8 @@ const planCard = computed(() => cardPlan(rows("plans")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dumps"))));
 const rowDocks = computed(() => dockedRows(rows("messages")));
 const dockCount = computed(() => rowDocks.value.length + [dumpDock.value, planCard.value].filter(Boolean).length);
-const thought = computed(() => (owner.value && owner.value.thinking) || "");
 const helping = computed(() => subagentsOf(owner.value).filter((sub) => sub.running).at(-1));
-const activity = computed(() =>
-    owner.value && owner.value.status === "compacting" ? "compacting" : helping.value ? `Waiting: ${helping.value.task}` : "working"
-);
+const line = computed(() => (owner.value ? busyLine(owner.value, helping.value) : {thinking: "", doing: "working"}));
 const planOpen = ref(true);
 let lastTop = 0;
 let lastScroll = 0;
@@ -456,15 +454,15 @@ watch(
                             </Transition>
                         </div>
                         <Transition name="status">
-                            <div v-if="busy && !waitingNow" class="thread-turn busy" :aria-label="`The agent is ${activity}`">
+                            <div v-if="busy && !waitingNow" class="thread-turn busy" :aria-label="`The agent is ${line.doing || 'thinking'}`">
                                 <div class="thread-meta">
                                     <Dot kind="started" solid :size="6" />
-                                    <template v-if="thought">
+                                    <template v-if="line.thinking">
                                         <span>thinking</span>
-                                        <span class="thread-meta-on thought">{{ thought }}</span>
+                                        <span class="thread-meta-on thought">{{ line.thinking }}</span>
                                     </template>
                                     <template v-else>
-                                        <RunningCommand :idle="activity" />
+                                        <RunningCommand :idle="line.doing" />
                                     </template>
                                 </div>
                             </div>

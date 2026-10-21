@@ -14,6 +14,7 @@ from journal.http.agents.current_sequence import CurrentSequence
 from journal.http.files.project_files import ProjectFiles
 from journal.http.support.model_fields import ModelFields
 from journal.models.agent import Agent
+from journal.models.entry import Entry
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
@@ -100,12 +101,20 @@ class AgentActivity:
 
     def activity(self, state, hooks) -> str:
         last = hooks[-1] if hooks else None
-        if last and last.kind == PART_START:
-            return last.data["doing"]
+        if last and last.kind in (PART_START, PART_END):
+            return last.data["part"]
         if last and last.kind == "ToolStarting":
-            operation = last.recorded_call().get("operation", {})
-            return OPERATION_VERBS.get(operation.get("kind", ""), f"using {operation['name']}" if operation.get("kind") == UndecodedTool.kind else "working")
+            return self.first_part(last) or self.tool_verb(last)
         return self.described(state) or ("at work" if hooks else "")
+
+    @staticmethod
+    def first_part(entry: Entry) -> str:
+        return next((part["text"] for part in entry.recorded_call().get("parts", [])), "")
+
+    @staticmethod
+    def tool_verb(entry: Entry) -> str:
+        operation = entry.recorded_call().get("operation", {})
+        return OPERATION_VERBS.get(operation.get("kind", ""), f"using {operation['name']}" if operation.get("kind") == UndecodedTool.kind else "working")
 
     def described(self, state) -> str:
         if isinstance(state, Wait):
