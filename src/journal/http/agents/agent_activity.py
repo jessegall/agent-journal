@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from journal.engine.support.stack_history import StackHistory
 from journal.engine.states.wait import Wait
 from journal.engine.states_catalogue import StatesCatalogue
@@ -5,7 +7,8 @@ from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.support.shell_record import PART_END, PART_START
 from journal.features.tasks.states.working import Working
 from journal.support.chain import Chain
-from journal.support.context_file import ContextFile
+from journal.config import Config
+from journal.providers.providers import Providers
 from journal.http.agents.current_work import CurrentWork
 from journal.http.agents.current_sequence import CurrentSequence
 from journal.http.files.project_files import ProjectFiles
@@ -14,20 +17,28 @@ from journal.models.agent import Agent
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
+from journal.support.agent_message import AgentMessage
+from journal.support.file_edit import FileEdit
+from journal.support.file_read import FileRead
+from journal.support.file_write import FileWrite
+from journal.support.undecoded_tool import UndecodedTool
+from journal.support.skill_load import SkillLoad
+from journal.support.subagent_dispatch import SubagentDispatch
+from journal.support.user_question import UserQuestion
 
 STATUS = {"Stop": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "ToolFailed": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan", "delegating", "orchestrating_plan"})
 ENTRY_COUNT = 400
 HISTORY_ENTRIES = 5
-TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
+OPERATION_VERBS = {FileRead.kind: "reading a file", FileEdit.kind: "editing files", FileWrite.kind: "writing a file", SubagentDispatch.kind: "waiting for a subagent", SkillLoad.kind: "reading a skill", AgentMessage.kind: "messaging an agent", UserQuestion.kind: "asking you"}
 ENDED = "ended"
 
 
 class AgentActivity:
     """An agent with what it is doing, read from the timeline: its status from its latest hook, the tool or shell part in hand, its latest thought, what it waits for, its model and context, and the sequence it runs."""
 
-    def __init__(self, entries: Entries, states: StatesCatalogue, context: ContextFile, files: ProjectFiles, messages: Messages, current: CurrentWork) -> None:
-        self.entries, self.states, self.context, self.files, self.messages, self.current = entries, states, context, files, messages, current
+    def __init__(self, entries: Entries, states: StatesCatalogue, config: Config, providers: Providers, files: ProjectFiles, messages: Messages, current: CurrentWork) -> None:
+        self.entries, self.states, self.config, self.providers, self.files, self.messages, self.current = entries, states, config, providers, files, messages, current
 
     def page(self, agents: list[Agent]) -> list[dict]:
         recent = list(reversed(self.entries.kind_entries_scoped(ENTRY_COUNT))) if any(item.state != ENDED for item in agents) else []
@@ -44,6 +55,8 @@ class AgentActivity:
         kind = last.kind if last else ""
         state = self.states.restored(agent.state, agent.data)
         waiting_state, enabled = self.current.wait_text(agent)
+        provider = self.providers.lookup(agent.provider)
+        status = provider.status(agent.session, self.config.status_home)
         return {
             **ModelFields.build(agent),
             "status": "stopped" if agent.state == ENDED else self.status(agent.state, STATUS.get(kind, "idle")),
@@ -52,8 +65,8 @@ class AgentActivity:
             "tool_work": self.work(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
             "tool_running": kind == "ToolStarting",
             "awaiting": waiting_state, "wait_refs": enabled, "awaiting_since": agent.updated_at if waiting_state else None,
-            "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),
-            "branch": self.files.branch(), "context": round((self.context.build(agent.session) or 0) * 100),
+            "model": status.model, "effort": status.effort, "usage": [asdict(window) for window in status.windows], "capabilities": sorted(provider.capabilities),
+            "branch": self.files.branch(), "context": round(status.context * 100) if status.context is not None else None,
             "question_id": agent.data.get("question_id", 0) if agent.state == "waiting" else 0,
             "doing": self.activity(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", PART_START, PART_END)]),
             "thinking": self.thinking(agent.session, hooks) if agent.state != ENDED else "",
@@ -90,7 +103,8 @@ class AgentActivity:
         if last and last.kind == PART_START:
             return last.data["doing"]
         if last and last.kind == "ToolStarting":
-            return TOOL_VERBS.get(last.data.get("tool_name", ""), "working")
+            operation = last.recorded_call().get("operation", {})
+            return OPERATION_VERBS.get(operation.get("kind", ""), f"using {operation['name']}" if operation.get("kind") == UndecodedTool.kind else "working")
         return self.described(state) or ("at work" if hooks else "")
 
     def described(self, state) -> str:

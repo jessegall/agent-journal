@@ -4,6 +4,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.support.actor import Actor
 from journal.repositories.statistics import Statistics
+from journal.support.subagent_dispatch import SubagentDispatch
 
 
 class CountProfileUse(AgentListener[ToolStarting]):
@@ -13,7 +14,7 @@ class CountProfileUse(AgentListener[ToolStarting]):
         self.statistics = statistics
 
     def handle(self, event: ToolStarting) -> None:
-        name = event.call.input.get("subagent_type", "") if event.call.tool in ("Agent", "Task") else ""
+        name = event.call.operation.role if isinstance(event.call.operation, SubagentDispatch) else ""
         if not name:
             return
         actor = Actor.agent(event.session)

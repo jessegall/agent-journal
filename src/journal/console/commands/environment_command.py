@@ -55,8 +55,8 @@ class EnvironmentCommand(Command):
             with self.scope.environment(environment.id):
                 agents = self.agents.scoped()
             last = max(agents, key=lambda item: item.updated_at) if agents else None
-            resumable = [item for item in agents if item.session and self.providers.lookup(item.provider or "claude").transcript(self.config.root, item.session)]
-            rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.age(last.updated_at) if last else "", {item.provider or "claude": item.session for item in resumable}))
+            resumable = [item for item in agents if item.session and self.providers.lookup(item.provider).transcript(self.config.root, item.session)]
+            rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.age(last.updated_at) if last else "", {item.provider: item.session for item in resumable}))
         return rows
 
     def overview(self, args: Namespace, caller: Caller) -> int:

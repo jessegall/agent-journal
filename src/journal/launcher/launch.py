@@ -5,29 +5,25 @@ import re
 import subprocess
 import sys
 import traceback
+import uuid
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
 
-from journal.launcher.support.choice import Choice
+from journal.support.choice import Choice
 from journal.launcher.menu import Menu
 from journal.launcher.support.foreign_hooks import ForeignHooks
 from journal.launcher.support.page_wait import PageWait
 from journal.support.project_command import ProjectCommand
-from journal.launcher.support.status_line import StatusLine
+from journal.providers.support.status_line import StatusLine
 from journal.support.worktree import Worktree
 from journal.launcher.support.update_prompt import UpdatePrompt
 from journal.features.updates.support.release_source import ReleaseSource
 from journal.config import Config
-from journal.providers.claude import Claude
-from journal.providers.codex import Codex
+from journal.providers.provider import Provider
+from journal.providers.providers import Providers
 from journal.support.private_folder import PrivateFolder
 
-RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
-PROMPT_FLAGS = {provider.name: list(provider.prompt_flags) for provider in (Claude, Codex)}
-STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
-LOCAL = {"claude": [], "codex": ["--no-daemon"]}
-REACH = {"claude": [], "codex": ["-c", "sandbox_workspace_write.network_access=true"]}
 FLAGS = {"--env": ("environment", 1), "--new": ("new", 0), "--aside": ("stashed", 0), "--skip": ("bypass", 0), "--yes": ("confirmed", 0), "--no-open": ("browser_off", 0), "--no-journal": ("journal_off", 0)}
 WORKTREE = ("--worktree", "-w")
 RESUMING = ("--resume", "-r")
@@ -73,6 +69,10 @@ class Launch:
         return cls(agent, root, tuple(remainder), **flags)
 
     @property
+    def provider(self) -> Provider:
+        return Providers().lookup(self.agent)
+
+    @property
     def package(self) -> Path:
         return Path(__file__).resolve().parents[2]
 
@@ -88,7 +88,7 @@ class Launch:
         return menu.choose(self.agent, matched, self.new, self.stashed, self.is_skipping(), self.confirmed)
 
     def is_skipping(self) -> bool:
-        return self.bypass or any(flag in self.args for flag in PROMPT_FLAGS[self.agent])
+        return self.bypass or any(flag in self.args for flag in self.provider.prompt_flags)
 
     def resume_folder(self, menu: Menu) -> str:
         resumed = next((self.args[i + 1] for i, arg in enumerate(self.args[:-1]) if arg in RESUMING), "")
@@ -97,17 +97,15 @@ class Launch:
         return next((row.name for row in menu.environments() if resumed in row.last_sessions.values()), "")
 
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
-        omit = [flag for flag in PROMPT_FLAGS[self.agent] if choice.prompt_flags and flag not in self.args]
-        reach = [] if choice.prompt_flags else REACH[self.agent]
-        return [self.agent, *LOCAL[self.agent], *omit, *reach, *STATUS[self.agent](status), *self.args]
+        return self.provider.interactive_command(choice, status, self.args)
 
     def journal_command(self) -> list[str]:
         return [sys.executable, str(self.package / "journal.py"), "serve"]
 
-    def environ(self, choice: Choice) -> dict[str, str]:
+    def environ(self, choice: Choice, launch: str) -> dict[str, str]:
         path = os.pathsep.join([str(self.root / ".journal" / "bin"), os.environ.get("PATH", "")])
         runner = self.package / "journal" / "hooks" / "run.sh"
-        return {**os.environ, **self.keys(), "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "AGENT_JOURNAL_ACTIVE": "1", "CLAUDE_CODE_SHELL_PREFIX": str(runner)}
+        return {**os.environ, **self.keys(), **self.provider.launch_environment(runner), "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "JOURNAL_LAUNCH": launch, "AGENT_JOURNAL_ACTIVE": "1"}
 
     def keys(self) -> dict[str, str]:
         path = PrivateFolder(self.root).keys_file()
@@ -117,7 +115,7 @@ class Launch:
         self.log(f"launch: {' '.join([self.agent, *self.args])}")
         try:
             ProjectCommand(self.root, self.package / "journal.sh").write()
-            peers = ForeignHooks(self.root, self.agent)
+            peers = ForeignHooks(self.root, self.provider)
             peers.restore()
             choice = self.choice()
             self.log(f"chosen: environment {choice.environment}, session {choice.resume or 'new'}, hooks aside {choice.stashed_hooks}")
@@ -154,12 +152,14 @@ class Launch:
             path.unlink(missing_ok=True)
 
     def launch_file(self, choice: Choice, status: StatusLine) -> dict:
-        environ = self.environ(choice)
+        launch = uuid.uuid4().hex
+        environ = self.environ(choice, launch)
         worktree = Worktree(self.root, self.worktree or choice.environment)
         folder = worktree.created() if self.worktree_launch or worktree.path.is_dir() else self.root
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
         return {
-            "front": {"command": self.agent_command(choice, status), "resume": RESUME[self.agent](choice.resume) if choice.resume else [], "folder": str(folder), "env": environ},
+            "launch": launch,
+            "front": {"command": self.agent_command(choice, status), "resume": list(self.provider.resume(choice.resume)) if choice.resume else [], "folder": str(folder), "env": environ},
             "services": [] if self.journal_off else [journal],
             "socket": str(self.socket(choice.environment)),
             "announce": str(self.runtime / "inboxes" / choice.environment),

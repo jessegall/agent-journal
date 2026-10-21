@@ -13,6 +13,8 @@ import pytest
 
 from shell_verbs import ShellVerbs
 
+from journal.providers.claude import Claude
+from journal.providers.support.worker_outcome import WorkerOutcome
 from journal.support.tool_call import ToolCall
 
 from journal.app import App
@@ -604,11 +606,15 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
     notified = workers.find(1)
     assert notified.state == WorkerState.DISPATCHED and notified.brief == "now the lexer" and notified.resume == "sess-1" and notified.worktree and started[-1].id == 1
     assert Claude().worker_command("now the lexer", "fast", "sess-1")[-2:] == ["--resume", "sess-1"]
-    assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == ("lexer done", "sess-2")
-    assert Claude().worker_outcome("plain words", "") == ("plain words", "")
-    assert Codex().worker_command("x", "m", "c-9")[:3] == ["codex", "exec", "resume"] and Codex().worker_command("x", "m", "")[:2] == ["codex", "exec"]
-    assert Codex().worker_outcome("done", "session id: 0192f3a4-aaaa-bbbb\nwork") == ("done", "0192f3a4-aaaa-bbbb"), "the answer is the report; the run's log only gives the session"
-    assert Codex().worker_outcome("", "session id: 0192f3a4-aaaa-bbbb\nit broke") == ("session id: 0192f3a4-aaaa-bbbb\nit broke", "0192f3a4-aaaa-bbbb"), "with no answer the log is the report"
+    assert Claude().worker_outcome('{"result": "lexer done", "session_id": "sess-2"}', "") == WorkerOutcome("lexer done", "sess-2")
+    assert Claude().worker_outcome('{"result": "out of credit", "session_id": "sess-2", "is_error": true}', "").error == "out of credit"
+    assert Claude().worker_outcome("plain words", "") == WorkerOutcome("plain words")
+    assert Codex().worker_command("x", "m", "c-9")[:5] == ["codex", "exec", "resume", "c-9", "--json"] and Codex().worker_command("x", "m", "")[:3] == ["codex", "exec", "--json"]
+    runs = Path(__file__).with_name("hook_bodies") / "worker_output"
+    amber, resumed, failed = ((runs / f"codex_0.163.0_{name}.jsonl").read_text() for name in ("amber", "resume", "badmodel"))
+    assert Codex().worker_outcome(amber, "") == WorkerOutcome("amber", "01a15edb-4273-7181-98d3-f0fa7996d6e7") and Codex().worker_outcome(resumed, "").session == "01a15edb-4273-7181-98d3-f0fa7996d6e7", "a real run's session is its thread.started event's, its report the last answer, and a resume keeps the thread"
+    ended = Codex().worker_outcome(failed, "it broke")
+    assert ended.report == "it broke" and ended.error == "The 'no-such-model-9' model is not supported when using Codex with a ChatGPT account.", "a run that exits 0 with a failed turn is failed by it, its message read out of the error"
 
 
 def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: App, monkeypatch, tmp_path):
@@ -653,7 +659,7 @@ def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app: 
     files = app.container.get(ProfileFiles)
     files.write_all()
     assert files.kind("journal-researcher") == "subagent" and files.kind("nobody") == ""
-    from journal.features.profiles.support.profile import Profile
+    from journal.providers.support.profile import Profile
     (files.config.root / ".codex").mkdir(exist_ok=True)
     saved = files.save(Profile("builder", "writes code", "Read, Edit", "You write.\nSay \"done\".", "worker"), "sonnet", "gpt-6")
     assert saved["kind"] == "worker" and saved["model"] == "sonnet" and saved["codex_model"] == "gpt-6"
@@ -1540,7 +1546,8 @@ def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_
     with transcript.open("a") as file:
         file.write(j.dumps(line_text("user", "a prompt")) + "\n" + j.dumps({"type": "response_item", "payload": {"type": "function_call", "name": "exec"}}) + "\n" + j.dumps(line_text("assistant", "The plan is ready.")) + "\n")
     assert Codex().authored_texts(tmp_path, "s1", read).texts == ["The plan is ready."], "only the agent's own words, from where the last look left off"
-    assert Codex().worker_outcome("the tests pass", "session id: 01a1549d-a1ac-75c3\n" + "a long log of the run\n" * 500) == ("the tests pass", "01a1549d-a1ac-75c3"), "a Codex worker's report is its answer, not its log"
+    answered = j.dumps({"type": "thread.started", "thread_id": "01a1549d-a1ac-75c3"}) + "\n" + j.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": "the tests pass"}})
+    assert Codex().worker_outcome(answered, "a long log of the run\n" * 500) == WorkerOutcome("the tests pass", "01a1549d-a1ac-75c3"), "a Codex worker's report is its answer, not its log"
 
 
 def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_the_display_hook_adds_no_second(app: App, monkeypatch, tmp_path):
@@ -3208,7 +3215,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app: App):
     protocol = app.container.get(Protocol)
     from journal.providers.claude import Claude
     tool = json.loads(protocol.event_line(ToolStarting(call=Claude().call("Bash", {"command": "ls"})).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
-    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool_use": 0, "tool": "Bash", "input": {"command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": [], "reads_output": False, "read_shape": "ls"}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": "", "work": "searching"}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
+    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool_use": 0, "tool": "Bash", "input": {"command": "ls"}, "operation": {"kind": "shell line", "command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": [], "reads_output": False, "read_shape": "ls"}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": "", "work": "searching"}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
     row = json.loads(protocol.event_line(Created(model=Task(id=7, environment_id=1, title="t"), actor=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.parsed_answer("").answer == "allow", "an empty answer lets the event through"
@@ -3322,7 +3329,7 @@ def test_a_subagents_event_reaches_a_plugin_and_is_held_only_at_a_tool(app: App)
     from journal.events.agent.tool_starting import ToolStarting
     from journal.features.plugins.listeners.plugin_agent_relay import PluginAgentRelay
     plugin = echo(app)
-    assert PluginAgentRelay.blocks(plugin, ToolStarting(call=ToolCall(tool="Read", input={}), subagent="a1")), "a subagent's tool is held like the agent's"
+    assert PluginAgentRelay.blocks(plugin, ToolStarting(call=ToolCall(tool="Read", input={}, operation=Claude().operation("Read", {})), subagent="a1")), "a subagent's tool is held like the agent's"
     assert not PluginAgentRelay.blocks(plugin, PromptSubmitted(prompt="x", subagent="a1")) and PluginAgentRelay.blocks(plugin, PromptSubmitted(prompt="x")), "a subagent's other events are heard, never held"
 
 

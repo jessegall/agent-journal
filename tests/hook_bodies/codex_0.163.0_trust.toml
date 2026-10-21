@@ -1,0 +1,22 @@
+[hooks.state."/project/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:9ee14040fb53f8ab641ade215446f9f5d8c430ce91b42e996cbe315d5ea48876"
+[hooks.state."/project/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:a3c66db0a925d6c6c9f333df805392f6e33b86471219a80090c080a34360029c"
+[hooks.state."/project/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:cccc1a7eb10e9fb29429565820b857b683bfc1f6d0e72fb0aa614ea6e879a8f3"
+[hooks.state."/project/.codex/hooks.json:pre_compact:0:0"]
+trusted_hash = "sha256:616c16046f09d9aee0083cd2fe0ec5e859ed4662ba1151080c6f6a0ca4251d83"
+[hooks.state."/project/.codex/hooks.json:post_compact:0:0"]
+trusted_hash = "sha256:cc780437f48ffaf223d6a3f48e0e23deaa86522937657278f3054b0ad061962b"
+[hooks.state."/project/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:9ae0d8f39c5d01020dd67a3fccea901887f397c8117f5cf41e4857f5910f57ee"
+[hooks.state."/project/.codex/hooks.json:session_end:0:0"]
+trusted_hash = "sha256:a0ab463847e707e96ff04c165439c656ca2358238c5a55617e7393e16f5c7e7a"
+[hooks.state."/project/.codex/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:6fd186c2401c4959f47c8c7a5fd26dfe70a17585a630ad083e99ed7f6b231c56"
+[hooks.state."/project/.codex/hooks.json:subagent_start:0:0"]
+trusted_hash = "sha256:4c4174c98072a9559d4cc138484bab5466c6fc56aa1d495c5a0645ed6850b600"
+[hooks.state."/project/.codex/hooks.json:subagent_stop:0:0"]
+trusted_hash = "sha256:5957c18206d8bb96ae4cc1952aff17d47ef69b7f581ade3cb395b37faea936c0"
+[hooks.state."/project/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:93087ed71c4f6883487726c22690c7530edebffbbcf196c0a639ad2d87f016b1"

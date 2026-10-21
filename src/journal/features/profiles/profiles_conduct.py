@@ -2,7 +2,7 @@ from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
-from journal.support.dispatch_tools import DISPATCH_TOOLS
+from journal.support.subagent_dispatch import SubagentDispatch
 
 
 class ProfilesConduct(Conduct):
@@ -10,7 +10,7 @@ class ProfilesConduct(Conduct):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.profiles.feature import Profiles
-        name = event.call.input.get("subagent_type", "")
-        if event.call.tool not in DISPATCH_TOOLS or name not in event.data.part(Profiles).workers:
+        dispatch = event.call.operation
+        if not isinstance(dispatch, SubagentDispatch) or dispatch.role not in event.data.part(Profiles).workers:
             return self.none()
-        return self.refuse(Profiles.WORKER_PROFILE_MISUSE.create(name=name))
+        return self.refuse(Profiles.WORKER_PROFILE_MISUSE.create(name=dispatch.role))

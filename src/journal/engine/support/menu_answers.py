@@ -14,7 +14,7 @@ from journal.support.actor import Actor
 
 CHOICES = "menu_choices"
 QUERY_TIMEOUT_SECONDS = 120
-ASKING_MODEL = {"claude": "haiku"}
+EXCLUDED_VARIABLES = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION", "JOURNAL_LAUNCH")
 
 
 class MenuAnswers:
@@ -43,15 +43,15 @@ class MenuAnswers:
 
     def ask(self, menu: Menu, provider: str) -> None:
         program = self.providers.lookup(provider)
-        argv = program.worker_command(self.question(menu), ASKING_MODEL.get(provider, ""), "")
-        environ = {k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION")}
+        argv = program.worker_command(self.question(menu), program.question_model, "")
+        excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers())
+        environ = {k: v for k, v in os.environ.items() if k not in excluded}
         try:
             finished = subprocess.run(argv, capture_output=True, text=True, timeout=QUERY_TIMEOUT_SECONDS, stdin=subprocess.DEVNULL, cwd=tempfile.gettempdir(), env=environ)
         except (OSError, subprocess.SubprocessError):
             self._asked[self.key(menu)] = None
             return
-        line_text, _ = program.worker_outcome(finished.stdout, finished.stderr)
-        number = re.search(r"\d+", line_text)
+        number = re.search(r"\d+", program.worker_outcome(finished.stdout, finished.stderr).report)
         claimed = next((o for o in menu.options if number and o.number == int(number[0])), None)
         self._asked[self.key(menu)] = claimed
         if claimed:

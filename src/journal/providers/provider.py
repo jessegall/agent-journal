@@ -1,25 +1,34 @@
 import json
 import re
+from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import ClassVar, Iterator
+from typing import Callable, ClassVar, Iterator
 
+from journal.support.tool_call import ToolCall
+from journal.support.operation import Operation
+from journal.models.mcp_server import McpServer
+from journal.providers.support.agent_status import AgentStatus
+from journal.providers.support.context_file import ContextFile
+from journal.providers.support.hooks_ready import HooksReady
+from journal.providers.support.profile import Profile
+from journal.support.undecoded_tool import UndecodedTool
 from journal.support.chain import Chain
 from journal.support.command_part import CommandPart
 from journal.support.reads import Reads
-from journal.support.tool_call import ToolCall
 from journal.support.writes import Writes
 from journal.features.shell.support.output_reads import OutputReads
 from journal.support.decision import Decision
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
 from journal.support.response import Response
-from journal.models.entry import Entry
-from journal.support.file_lines import FileLines
-from journal.support.tool_input import ToolInput
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
 from journal.providers.support.file_writes import FileWrites
+from journal.providers.support.capability import Capability
+from journal.providers.support.worker_outcome import WorkerOutcome
+from journal.support.choice import Choice
+from journal.providers.support.status_line import StatusLine
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
@@ -29,32 +38,43 @@ PATH_KEYS = ("file_path", "path", "notebook_path")
 
 VERSION_3_HOOKS = ("/.journal/src/hook.sh", "/.journal/hook.py", "/.journal/journal hook")
 
-class Provider:
-    """One agent program, Claude or Codex: the few things the journal has to know about it and nothing else."""
+class Provider(ABC):
+    """One agent program, Claude Code or Codex: everything the journal knows about it, and nowhere else."""
 
     name: ClassVar[str]
     home: ClassVar[str]
     settings_file: ClassVar[str]
-    edit_tools: ClassVar[frozenset[str]]
-    read_tool: ClassVar[str]
-    shell_tool: ClassVar[str] = "Bash"
-    prompt_flags: ClassVar[tuple[str, ...]] = ()
+    prompt_flags: ClassVar[tuple[str, ...]]
+    session_variable: ClassVar[str]
+    inherited_markers: ClassVar[tuple[str, ...]]
+    question_model: ClassVar[str]
+    settings_files: ClassVar[tuple[str, ...]]
     settings_extras: ClassVar[dict] = {}
     foreign_settings: ClassVar[tuple[str, ...]] = ()
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
     controls: ClassVar[dict] = {"groups": [], "note": ""}
+    capabilities: ClassVar[frozenset[Capability]]
+    decoders: ClassVar[dict[str, Callable[[dict], Operation]]]
+    profile_suffix: ClassVar[str]
+    profile_model: ClassVar[str]
+    default: ClassVar[bool]
 
+    def __init__(self) -> None:
+        self._status_files: dict[Path, ContextFile] = {}
+
+    @abstractmethod
     def transcript(self, project: Path, session: str) -> Path | None: ...
 
-    def latest_session(self, project: Path, start: float) -> str:
-        return ""
+    @abstractmethod
+    def latest_session(self, project: Path, start: float) -> str: ...
 
-    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
-        return None
+    @abstractmethod
+    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None: ...
 
     def turns(self, path: Path) -> list[Turn]:
         return self.turn_rows(self.json_lines(path))
 
+    @abstractmethod
     def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]: ...
 
     @staticmethod
@@ -72,8 +92,8 @@ class Provider:
     def seconds(stamp: str) -> float:
         return datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() if stamp else 0.0
 
-    def turn_thoughts(self, project: Path, session: str) -> list[str]:
-        return []
+    @abstractmethod
+    def turn_thoughts(self, project: Path, session: str) -> list[str]: ...
 
     def earlier_texts(self, project: Path, session: str, read: int, deadline: float) -> FileWrites:
         path = self.transcript(project, session)
@@ -110,11 +130,11 @@ class Provider:
     def edited_files(self, rows: list[dict], time: int) -> FileWrites:
         return FileWrites([text for row in rows for text in self.texts(row)], [arrived for row in rows for arrived in self.peer_messages(row)], time)
 
-    def texts(self, line: dict) -> list[str]:
-        return []
+    @abstractmethod
+    def texts(self, line: dict) -> list[str]: ...
 
-    def peer_messages(self, line: dict) -> list[PeerMessage]:
-        return []
+    @abstractmethod
+    def peer_messages(self, line: dict) -> list[PeerMessage]: ...
 
     @staticmethod
     def last_line_start(path: Path, size: int) -> int:
@@ -125,13 +145,29 @@ class Provider:
         cut = body.rfind(b"\n")
         return max(0, size - TAIL_BYTES) + cut + 1 if cut != -1 else max(0, size - TAIL_BYTES)
 
+    @abstractmethod
+    def interactive_command(self, choice: Choice, status: StatusLine, args: tuple[str, ...]) -> list[str]: ...
+
+    @abstractmethod
+    def launch_environment(self, runner: Path) -> dict[str, str]: ...
+
+    @abstractmethod
     def resume(self, session: str) -> tuple[str, ...]: ...
 
-    def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
-        ...
+    def status(self, session: str, home: Path) -> AgentStatus:
+        return self._status_files.setdefault(home, ContextFile(home)).reading(session)
 
-    def worker_outcome(self, output: str, err: str) -> tuple[str, str]:
-        return output.strip() or err.strip(), ""
+    @abstractmethod
+    def write_mcp(self, project: Path, servers: list[McpServer]) -> Path: ...
+
+    @abstractmethod
+    def profile_text(self, profile: Profile, model: str, codex_model: str) -> str: ...
+
+    @abstractmethod
+    def worker_command(self, brief: str, model: str, resume: str) -> list[str]: ...
+
+    @abstractmethod
+    def worker_outcome(self, output: str, err: str) -> WorkerOutcome: ...
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
         kind = hook.kind
@@ -175,40 +211,30 @@ class Provider:
         text = json.dumps(block)
         return "journal/hooks/hook.sh" in text or any(old in text for old in VERSION_3_HOOKS)
 
-    def hooks_trusted(self, project: Path) -> bool:
-        return True
+    @abstractmethod
+    def hooks_ready(self, project: Path) -> HooksReady: ...
 
-    def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
-        if tool == self.read_tool:
-            return tuple(p for p in (ToolInput.parsed(input).file,) if p)
-        return Reads.build(ToolInput.parsed(input).command) if tool == self.shell_tool else ()
+    def is_wired(self, project: Path) -> bool:
+        path = project / self.home / self.settings_file
+        hooks = (json.loads(path.read_text()).get("hooks") or {}) if path.is_file() else {}
+        return any(self.journal_paths(block) for blocks in hooks.values() for block in blocks)
 
-    def file_lines(self, tool: str, input: dict) -> int:
-        value = ToolInput.parsed(input)
-        if tool != self.read_tool or not value.file or value.limit or value.offset:
-            return 0
-        return FileLines.build(Path(value.file).expanduser())
-
-    def edited_paths(self, tool: str, input: dict) -> list[str]:
-        if tool == self.shell_tool:
-            return Writes.targets(ToolInput.parsed(input).command)
-        return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)] if tool in self.edit_tools else []
-
-    def skill_loaded(self, tool: str, input: dict) -> str:
-        return ToolInput.parsed(input).skill if tool == "Skill" else ""
-
-    def writes(self, tool: str, input: dict) -> bool:
-        return tool in self.edit_tools or (tool == self.shell_tool and Writes.build(ToolInput.parsed(input).command))
+    def operation(self, tool: str, input: dict) -> Operation:
+        decoder = self.decoders.get(tool)
+        return decoder(input) if decoder else UndecodedTool(tool)
 
     def call(self, tool: str, input: dict) -> ToolCall:
-        command = ToolInput.parsed(input).command if tool == self.shell_tool else ""
-        return ToolCall(tool=tool, input=input, command=command, parts=tuple(self.parts(command)), is_journal=bool(command) and Chain.is_journal_line(command), writes=self.writes(tool, input),
-                        edited_paths=tuple(self.edited_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input), work=Chain.work(command) if command else "")
+        operation = self.operation(tool, input)
+        return ToolCall.decoded(tool, input, operation, tuple(self.parts(operation.line())))
 
     @staticmethod
     def parts(command: str) -> list[CommandPart]:
         recorded = [part for part in Chain.parts(command) if part.recorded] if command else []
         return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text), writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text)), reads_output=OutputReads.is_one(part.text), read_shape=OutputReads.shape(part.text) if OutputReads.is_one(part.text) else part.text) for part in recorded]
+
+    @staticmethod
+    def file_paths(input: dict) -> tuple[str, ...]:
+        return tuple(value for key in PATH_KEYS if isinstance(value := input.get(key), str) and value)
 
     @staticmethod
     def folder_name(project: Path) -> str:

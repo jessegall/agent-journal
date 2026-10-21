@@ -21,5 +21,7 @@ from journal.db.migrations.column_renames import ColumnRenames
 from journal.db.migrations.state_field_renames import StateFieldRenames
 from journal.db.migrations.timestamp_renames import TimestampRenames
 from journal.db.migrations.dashboard_sections import DashboardSections
+from journal.db.migrations.operation_dispatch_index import OperationDispatchIndex
+from journal.db.migrations.agent_provider_fill import AgentProviderFill
 
-MIGRATIONS = (PauseUnwrapping(), FinishCancelledTasks(), SequenceUnwrapping(), PlanBuildingEnd(), LinkWorkerReports(), AgentSkillObligations(), ChatQuestions(), HotReadIndexes(), LinkIndexes(), DispatchIndex(), OldReportClosure(), FrequentReadIndexes(), CardRowTableNames(), FillAgentsEmptyData(), StackSeed(), ChartDrop(), TimeKeys(), TriggerPhrases(), DashboardSections(), EventRenames(), ColumnRenames(), StateFieldRenames(), TimestampRenames())
+MIGRATIONS = (PauseUnwrapping(), FinishCancelledTasks(), SequenceUnwrapping(), PlanBuildingEnd(), LinkWorkerReports(), AgentSkillObligations(), ChatQuestions(), HotReadIndexes(), LinkIndexes(), DispatchIndex(), OldReportClosure(), FrequentReadIndexes(), CardRowTableNames(), FillAgentsEmptyData(), StackSeed(), ChartDrop(), TimeKeys(), TriggerPhrases(), DashboardSections(), EventRenames(), ColumnRenames(), StateFieldRenames(), TimestampRenames(), OperationDispatchIndex(), AgentProviderFill())

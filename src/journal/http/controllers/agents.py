@@ -67,7 +67,7 @@ class AgentController(Controller[Agent]):
 
     def control(self, request: Request) -> Response:
         agent = self.repository.find(request.number("id"))
-        provider = self.providers.lookup(agent.provider or "claude")
+        provider = self.providers.lookup(agent.provider)
         action, value = request.body.get("action", ""), request.body.get("value", "")
         choice = next((c for g in provider.controls["groups"] if g["key"] == action for c in g["choices"] if c["value"] == value), None)
         if choice is None:

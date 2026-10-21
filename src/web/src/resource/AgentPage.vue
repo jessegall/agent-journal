@@ -39,7 +39,7 @@ const facts = computed(() => {
         environment.value,
         ...(a.branch ? [a.branch] : []),
         `running for ${span(Date.now() / 1000 - createdAt(a))}`,
-        `context ${Math.round(Number(a.context || 0))}% full`,
+        ...(a.context === null ? [] : [`context ${Math.round(Number(a.context))}% full`]),
     ];
 });
 

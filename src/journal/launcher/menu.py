@@ -5,7 +5,7 @@ from pathlib import Path
 
 from journal.support.worktree import Worktree
 from journal.launcher.support.answers import Answers
-from journal.launcher.support.choice import Choice
+from journal.support.choice import Choice
 from journal.support.environment_row import EnvironmentRow
 from journal.launcher.support.option import Option
 from journal.launcher.support.foreign_hooks import ForeignHooks
@@ -46,7 +46,7 @@ class Menu:
         resume = "" if new or not last else self._continuation(agent, selection, last, asking)
         prompt_flags = omit or confirmed or self._prompts(agent)
         asking = asking and not resume
-        stashed_hooks = stashed or (self._hooks(ForeignHooks(self.root, agent).foreign(), previous.stashed_hooks) if asking else previous.stashed_hooks)
+        stashed_hooks = stashed or (self._hooks(ForeignHooks(self.root, Providers().lookup(agent)).foreign(), previous.stashed_hooks) if asking else previous.stashed_hooks)
         self.remembered.write(Answers(prompt_flags, stashed_hooks))
         choice = Choice(selection, resume, stashed_hooks, prompt_flags)
         if not confirmed:
@@ -91,7 +91,7 @@ class Menu:
         return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if stashed_prior else 1) == 0
 
     def _trust_question(self, agent: str) -> None:
-        if Providers().lookup(agent).hooks_trusted(self.root):
+        if not Providers().lookup(agent).hooks_ready(self.root).needs_trust():
             return
         notes = [f"{agent.capitalize()} asks once to trust the hooks the journal wrote into this project. Choose Trust all and continue", f"when {agent.capitalize()} asks, or the journal cannot follow what {agent.capitalize()} does."]
         self.screen.pick(f"Trust the journal's hooks in {agent.capitalize()}", notes, [Option("Understood")], 0)

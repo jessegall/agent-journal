@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from journal.config import Config
-from journal.features.profiles.support.profile import Profile
+from journal.providers.support.profile import Profile
 from journal.features.profiles.support.profile_view import ProfileView
 from journal.providers.providers import Providers
 from journal.repositories.setting_rows import SettingRows
@@ -84,13 +84,12 @@ class ProfileFiles:
         return [folder for folder in (self.config.root / provider.home / "agents" for provider in self.providers.all()) if folder.is_dir()]
 
     def write(self, profile: Profile, model: str, codex_model: str) -> list[Path]:
-        texts = {"claude": (f"{profile.name}.md", profile.claude_text(model, codex_model)), "codex": (f"{profile.name}.toml", profile.codex_text(codex_model))}
         saved = []
         for provider in self.providers.all():
-            if provider.name != "claude" and not (self.config.root / provider.home).is_dir():
+            if not provider.default and not (self.config.root / provider.home).is_dir():
                 continue
-            file, text = texts[provider.name]
-            path = self.config.root / provider.home / "agents" / file
+            text = provider.profile_text(profile, model, codex_model)
+            path = self.config.root / provider.home / "agents" / f"{profile.name}{provider.profile_suffix}"
             path.parent.mkdir(parents=True, exist_ok=True)
             if not path.is_file() or path.read_text() != text:
                 path.write_text(text)

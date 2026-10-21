@@ -3,8 +3,7 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.question_posed import QuestionPosed
-
-QUESTION_TOOLS = frozenset({"AskUserQuestion", "request_user_input"})
+from journal.support.user_question import UserQuestion
 
 
 class QuestionsConduct(Conduct):
@@ -16,4 +15,4 @@ class QuestionsConduct(Conduct):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.questions.feature import Questions
-        return self.refuse(Questions.JOURNAL_QUESTION_TOOL.create()) if event.call.tool in QUESTION_TOOLS else self.none()
+        return self.refuse(Questions.JOURNAL_QUESTION_TOOL.create()) if isinstance(event.call.operation, UserQuestion) else self.none()

@@ -14,7 +14,6 @@ from journal.runtime import Runtime
 from journal.features.registry import Registry
 from journal.features.standard import Standard
 from journal.engine.support.data_readers import DataReaders
-from journal.support.context_file import ContextFile
 from journal.repositories.setting_rows import SettingRows
 from journal.http.router import Router
 from journal.http.routes.routes import Routes
@@ -33,7 +32,6 @@ class App:
         self.container.instance(Container, self.container)
         self.container.instance(Config, config)
         self.container.instance(Bus, Bus())
-        self.container.bind(ContextFile, lambda: ContextFile(config.status_home))
         self.container.bind(Connection, self.connection)
         self.container.bind(Router, lambda: Routes(self.container).mount(self.container.call(Router)))
         self.container.bind(Console, self._console)
