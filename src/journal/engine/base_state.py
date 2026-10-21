@@ -33,6 +33,7 @@ class BaseState(Conduct):
     def fold(cls, conducts: tuple[type[Conduct], ...]) -> None:
         BaseState.conducts = conducts
         BaseState.listeners.__func__.cache_clear()
+        BaseState.listeners_for.__func__.cache_clear()
 
     @classmethod
     @cache
@@ -47,6 +48,7 @@ class BaseState(Conduct):
         return name.startswith(LISTENER) and "event" in get_type_hints(method)
 
     @classmethod
+    @cache
     def listeners_for(cls, event: type) -> tuple[Callable, ...]:
         return tuple(method for event_kind, method in cls.listeners() if issubclass(event, event_kind))
 

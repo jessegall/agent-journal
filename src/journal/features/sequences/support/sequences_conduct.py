@@ -6,6 +6,7 @@ from journal.events.agent.idle import Idle
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
+from journal.support.command_part import CommandPart
 from journal.features.sequences.support.sequences_snapshot import SequencesSnapshot
 
 QUIET_FOR = 60.0
@@ -18,7 +19,7 @@ class SequencesConduct(Conduct):
     def on_tool_starting_sequences(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.sequences.feature import Sequences
         runs = event.snapshot.of(Sequences)
-        if event.subagent or not runs.has_run() or runs.parked_why or is_step_command(runs, event.call.command):
+        if event.subagent or not runs.has_run() or runs.parked_why or is_step_command(runs, event.call.parts):
             return self.unchanged()
         if self.is_waiting() and runs.can_be_typed and not runs.question_open:
             return self.unchanged().typing(step_line(runs))
@@ -50,10 +51,10 @@ class SequencesConduct(Conduct):
         return self.unchanged().typing(reminder_line(runs))
 
 
-def is_step_command(runs: SequencesSnapshot, command: str) -> bool:
+def is_step_command(runs: SequencesSnapshot, parts: tuple[CommandPart, ...]) -> bool:
     from journal.support.running import Running
     from journal.support.sequence_run import SequenceRun
-    return bool(command) and Running.names(SequenceRun(sequence_id=runs.sequence_id, title="", steps=(runs.step_text,)), command)
+    return bool(parts) and Running.names(SequenceRun(sequence_id=runs.sequence_id, title="", steps=(runs.step_text,)), parts)
 
 
 def step_line(runs: SequencesSnapshot) -> Nudge:

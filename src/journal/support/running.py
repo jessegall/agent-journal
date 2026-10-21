@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from journal.engine.state_machine import StateMachine
 from journal.engine.nudge import Nudge
-from journal.support.chain import Chain
+from journal.support.command_part import CommandPart
 from journal.support.requiring import Requiring
 from journal.support.actor import Actor
 from journal.models.agent import Agent
@@ -141,10 +141,9 @@ class Running:
         self.agents.touch(agent, Actor.system(), sequence_runs=tuple(run.as_dict() for run in runs))
 
     @staticmethod
-    def names(run: SequenceRun, line: str) -> bool:
-        """Whether a part of the shell line runs a command the step in hand names."""
-        named = [words.strip() for words in NAMED.findall(run.text) if words.strip()]
-        return any(part.text.strip().startswith(words) for part in Chain.parts(line) for words in named)
+    def names(run: SequenceRun, parts: tuple[CommandPart, ...]) -> bool:
+        step_commands = [command.strip() for command in NAMED.findall(run.text) if command.strip()]
+        return any(part.text.strip().startswith(command) for part in parts for command in step_commands)
 
     def typed_to(self, session: str, environment_id: int) -> bool:
         """Whether a line for this session may be typed to it: a worker's cannot, it is told at its next stop."""

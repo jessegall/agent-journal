@@ -12,8 +12,8 @@ from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.events.rows.worker_stopped import WorkerStopped
 from journal.support.permission import Permission
 
-MEANWHILE_AFTER = 60.0
-LOOK_EVERY = 300.0
+NEXT_TASK_AFTER = 60.0
+CHECK_REMINDER_EVERY = 300.0
 WORKERS = "workers"
 
 
@@ -26,14 +26,14 @@ class Awaiting(Wait):
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     what: str = ""
     ends_on: str = ""
-    since: float = 0.0
-    reminded_at: float = 0.0
-    meanwhile_said: bool = False
+    start_time: float = 0.0
+    reminder_time: float = 0.0
+    next_task_named: bool = False
     outcomes: str = ""
 
     @classmethod
-    def on_workers(cls, ids: tuple[int, ...], since: float) -> "Awaiting":
-        return cls(what=f"{WORKERS} {', '.join(str(n) for n in ids)}", ends_on=",".join(f"{WORKERS}:{n}" for n in ids), since=since)
+    def on_workers(cls, ids: tuple[int, ...], start_time: float) -> "Awaiting":
+        return cls(what=f"{WORKERS} {', '.join(str(n) for n in ids)}", ends_on=",".join(f"{WORKERS}:{n}" for n in ids), start_time=start_time)
 
     def awaiting(self) -> tuple[str, str]:
         return self.what, self.ends_on
@@ -52,10 +52,10 @@ class Awaiting(Wait):
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         next_open = event.snapshot.of(Tasks).next_open
-        if settings.of(Tasks.AUTO) and not self.meanwhile_said and event.at - self.since >= MEANWHILE_AFTER and next_open is not None:
-            return self.changed(replace(self, meanwhile_said=True), Tasks.NEXT_TASK_MEANWHILE.create(what=self.what, n=next_open.id, title=next_open.title))
-        if event.at - max(self.since, self.reminded_at) >= LOOK_EVERY:
-            return self.changed(replace(self, reminded_at=event.at), Tasks.CHECK_WHAT_YOU_AWAITED.create(what=self.what, minutes=int((event.at - self.since) // 60)))
+        if settings.of(Tasks.AUTO) and not self.next_task_named and event.at - self.start_time >= NEXT_TASK_AFTER and next_open is not None:
+            return self.changed(replace(self, next_task_named=True), Tasks.NEXT_TASK_WHILE_WAITING.create(what=self.what, n=next_open.id, title=next_open.title))
+        if event.at - max(self.start_time, self.reminder_time) >= CHECK_REMINDER_EVERY:
+            return self.changed(replace(self, reminder_time=event.at), Tasks.CHECK_THE_WAIT.create(what=self.what, minutes=int((event.at - self.start_time) // 60)))
         return self.unchanged()
 
     def on_row_settled(self, event: RowSettled, settings: Settings) -> Transition:
@@ -64,7 +64,7 @@ class Awaiting(Wait):
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
         if event.dispatched_by != event.session or event.worker_id in self.worker_ids():
             return self.unchanged()
-        widened = Awaiting.on_workers((*self.worker_ids(), event.worker_id), self.since)
+        widened = Awaiting.on_workers((*self.worker_ids(), event.worker_id), self.start_time)
         return self.changed(replace(self, what=widened.what, ends_on=",".join([*self.waits_on(), f"{WORKERS}:{event.worker_id}"])))
 
     def on_worker_back_workers(self, event: WorkerBack, settings: Settings) -> Transition:

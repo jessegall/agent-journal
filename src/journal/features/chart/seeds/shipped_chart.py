@@ -95,7 +95,7 @@ STILL_OPEN = "[tasks.task_still_open] {{task}} is still open: log where it stand
 ANSWERED = "question {{question_n}} is answered. `journal question show {{question_n}}` reads it whole, with the messages linked to it; act on the answer"
 APPROVED_UNSTARTED = "[plans.approved_unstarted] plan {{approved_plan}} is approved and not started: `journal plan start {{approved_plan}}` begins its first task"
 MEANWHILE = "[tasks.meanwhile] while you wait for {{awaited}}, task {{related_task}} is next: if you can work on it meanwhile, carry on with it; if you need the output first, waiting is fine"
-CHECK_AWAITED = "[tasks.check_what_you_awaited] check {{awaited}} now: you have waited {{minutes.waiting_since}} min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
+CHECK_AWAITED = "[tasks.check_the_wait] check {{awaited}} now: you have waited {{minutes.waiting_since}} min. look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step"
 class ShippedChart(Seed):
     """The workflows the journal ships: the conduct for every state as an Always workflow per shared event and the guards as a locked one, then one per state per trigger it has steps of its own at: made at boot where absent, redrawn when unedited and the shipped drawing is newer, and left alone when the user edited it. Workflows of the older shapes, bound to one event with no state or to a state with no event, retire at boot."""
 

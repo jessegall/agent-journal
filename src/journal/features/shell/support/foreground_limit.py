@@ -12,7 +12,7 @@ class ForegroundLimit:
 
     def of(self, line: str, environment: str) -> int:
         from journal.features.shell.feature import Shell
-        if Chain.is_journal_line(line) or self.announced.holds_line(environment, line):
+        if Chain.is_journal_line(line) or self.announced.is_announced(environment, tuple(Chain.own(line))):
             return 0
         waiting = bool(self.messages.unread())
         return int(self.settings.option(Shell.WHILE_WAITING if waiting else Shell.FOREGROUND))

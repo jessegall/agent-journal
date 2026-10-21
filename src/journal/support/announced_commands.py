@@ -1,38 +1,33 @@
 import threading
 from collections import deque
 
-from journal.support.chain import Chain
-
 KEPT = 50
 
 
 class AnnouncedCommands:
-    """The shell commands a Claude subagent's PreToolUse hooks announced, by environment, until the shim's own post claims each one."""
+    """The shell commands a Claude subagent's PreToolUse hooks announced, by environment, each as the texts of the call's own parts, until the shim's own post claims it with every word of its argv; the agent's own run of the same parts withdraws the announcement, and one still announced is asked for by its parts."""
 
     def __init__(self) -> None:
         self.lock = threading.Lock()
-        self.announced: dict[str, deque[str]] = {}
+        self.announced: dict[str, deque[tuple[str, ...]]] = {}
 
-    def note(self, environment: str, command: str) -> None:
+    def note(self, environment: str, parts: tuple[str, ...]) -> None:
         with self.lock:
-            self.announced.setdefault(environment, deque(maxlen=KEPT)).append(command)
+            self.announced.setdefault(environment, deque(maxlen=KEPT)).append(parts)
 
     def claim(self, environment: str, argv: list[str]) -> bool:
-        """True, and the announcement is used up, when a command announced here holds every word of the argv."""
         with self.lock:
-            for command in self.announced.get(environment, ()):
-                if all(word in command for word in argv):
-                    self.announced[environment].remove(command)
+            for parts in self.announced.get(environment, ()):
+                if all(word in " ".join(parts) for word in argv):
+                    self.announced[environment].remove(parts)
                     return True
         return False
 
-    def holds_line(self, environment: str, line: str) -> bool:
-        """Whether a subagent announced a command that is this line's own commands; the announcement stays."""
+    def is_announced(self, environment: str, parts: tuple[str, ...]) -> bool:
         with self.lock:
-            return any(Chain.own(command) == Chain.own(line) for command in self.announced.get(environment, ()))
+            return parts in self.announced.get(environment, ())
 
-    def withdraw(self, environment: str, line: str) -> None:
-        """The agent's own run of a command supersedes a subagent's earlier announcement of it."""
+    def withdraw(self, environment: str, parts: tuple[str, ...]) -> None:
         with self.lock:
-            kept = [command for command in self.announced.get(environment, ()) if Chain.own(command) != Chain.own(line)]
-            self.announced[environment] = deque(kept, maxlen=KEPT)
+            remaining = [announced for announced in self.announced.get(environment, ()) if announced != parts]
+            self.announced[environment] = deque(remaining, maxlen=KEPT)

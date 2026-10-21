@@ -132,5 +132,5 @@ class MessageCommand(Command):
         print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")
 
     def _tool_use(self, where: Where) -> int:
-        agent = self.agents.for_session(where.session) if where.session else self.agents.live()
-        return agent.tool_uses if agent else 0
+        agents = self.agents.across_environments(session=where.session) if where.session else [agent for agent in (self.agents.live(),) if agent]
+        return agents[0].tool_uses if agents else 0

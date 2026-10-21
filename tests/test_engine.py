@@ -200,7 +200,7 @@ def test_one_task_in_hand_park_resume_and_await(app):
     assert isinstance(app.container.get(StateMachine).current("s1"), Idle), "parked: nothing in hand"
     assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(StateMachine).current("s1").task_id == 1
     assert console.run(["await", "the deploy to finish", "--until", "false"], AGENT).code == 0
-    assert app.container.get(StateMachine).current("s1").name == "expecting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
+    assert app.container.get(StateMachine).current("s1").name == "awaiting" and hook(app, "Stop")[1] == {}, "waiting is quiet at a stop"
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert app.container.get(StateMachine).current("s1").task_id == 1, "working again lifts the wait"
 
@@ -533,7 +533,7 @@ def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_non
         task = tasks.save(Task(environment_id=1, title="first"), Actor.system())
         plan = plans.save(Plan(environment_id=1, title="p", state=PlanState.APPROVED), Actor.system())
         started = plans.save(plan.started(task, 5.0), Actor.system())
-        assert started.events == () and hearing.heard == [PlanStarted(environment_id=1, at=5.0, row_id=plan.id, plan_id=plan.id, task_id=task.id)]
+        assert started.events == () and hearing.heard == [PlanStarted(environment_id=1, at=5.0, row_id=plan.id, actor="system", plan_id=plan.id, task_id=task.id)]
         plans.save(started.with_(title="renamed"), Actor.system())
         assert len(hearing.heard) == 1
 
@@ -1154,17 +1154,17 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     BaseState.fold((TasksConduct,))
     try:
         pushed = Working(task_id=7).on(Awaited(what="the build", ends_on="command_outputs:4,checks:2", at=100.0), auto)
-        assert pushed.pushed == Awaiting(what="the build", ends_on="command_outputs:4,checks:2", since=100.0), "journal await pushes the wait on the work"
+        assert pushed.pushed == Awaiting(what="the build", ends_on="command_outputs:4,checks:2", start_time=100.0), "journal await pushes the wait on the work"
         assert Working(task_id=7).on(StuckDeclared(why="the login", at=1.0), auto).pushed == Stuck(why="the login"), "journal stuck pushes Stuck"
     finally:
         BaseState.fold(())
     waiting = pushed.pushed
     assert waiting.on(Stop(at=130.0).with_snapshot(of()), auto).held is None and waiting.on(Ticked(quiet_for=10.0, at=130.0).with_snapshot(of()), auto).nudges == (), "quiet at a stop and on an early tick"
     meanwhile = waiting.on(Ticked(quiet_for=70.0, at=170.0).with_snapshot(of()), auto)
-    assert meanwhile.to == replace(waiting, meanwhile_said=True) and meanwhile.nudges[0].rendered().startswith("while you wait for the build, task 9, the next one is next"), "in auto mode the next task is named once after a minute"
+    assert meanwhile.to == replace(waiting, next_task_named=True) and meanwhile.nudges[0].rendered().startswith("while you wait for the build, task 9, the next one is next"), "in auto mode the next task is named once after a minute"
     assert waiting.on(Ticked(quiet_for=70.0, at=170.0).with_snapshot(of()), manual).nudges == (), "out of auto mode it is not"
     looked = meanwhile.to.on(Ticked(quiet_for=310.0, at=410.0).with_snapshot(of()), auto)
-    assert looked.to == replace(meanwhile.to, reminded_at=410.0) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
+    assert looked.to == replace(meanwhile.to, reminder_time=410.0) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
     assert looked.to.on(Ticked(quiet_for=400.0, at=500.0).with_snapshot(of()), auto).nudges == (), "and not again before five more"
     first = waiting.on(RowSettled(environment_id=1, at=200.0, ref="command_outputs:4", outcome="output 4 finished"), auto)
     assert first.to == replace(waiting, ends_on="checks:2", outcomes="output 4 finished") and not first.popped, "one row settled, one still to come"
