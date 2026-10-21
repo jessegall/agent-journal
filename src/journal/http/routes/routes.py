@@ -162,6 +162,8 @@ class Routes:
         router.get(f"{API}/docs/search", docs.located)
         self.resource(router, "docs", docs)
         self.acts(router, "docs", docs, "section")
+        router.get(f"{API}/docs/{{id}}/revisions", docs.revision_list)
+        router.post(f"{API}/docs/{{id}}/keep", docs.revision_close)
         router.get(f"{API}/docs/{{id}}/export", docs.export)
         self.resource(router, "reports", reports)
         self.acts(router, "reports", reports, "section")

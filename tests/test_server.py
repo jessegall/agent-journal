@@ -119,6 +119,41 @@ def test_load_counting_names_the_rows_each_request_loaded_only_while_it_is_on(tm
         app.runtime().stop()
 
 
+def test_a_documents_saves_fold_into_its_open_revision_keep_closes_it_and_the_next_edit_opens_the_next(tmp_path: Path):
+    app = App(Config(tmp_path, port=0))
+    app.runtime().boot()
+    server = app.server()
+    server.start()
+    console, user = app.console(), Caller.user("main")
+    text = tmp_path / "doc.md"
+    def written(body: str) -> None:
+        text.write_text(body)
+        console.run(["doc", "update", "1", "--file", str(text)], user)
+    listed = lambda: console.run(["doc", "revisions", "1"], user).text.splitlines()
+    try:
+        assert console.run(["doc", "keep", "1"], user).code == 1, "no document yet"
+        text.write_text("Intro.\n\n## Goals\n\nShip it\n")
+        console.run(["doc", "create", "Plan of record", "--file", str(text)], user)
+        written("Intro.\n\n## Goals\n\nShip it soon\n\n## Risks\n\nNone\n")
+        written("Intro.\n\n## Goals\n\nShip it soon\n\n## Risks\n\nNone\n")
+        assert len(listed()) == 1 and listed()[0].endswith("user   written; added Risks; rewrote Goals"), "a write within the open window folds into the open revision, its change noted; a save that changes nothing adds none"
+        assert console.run(["doc", "keep", "1"], user).text == "revision 1 of doc 1 kept; the next edit opens revision 2\n"
+        assert console.run(["doc", "keep", "1"], user).error.strip() == "revision 1 of doc 1 is already kept"
+        written("Intro.\n\n## Goals\n\nShip it soon\n")
+        assert [line.split()[-2:] for line in listed()] == [["rewrote", "Goals"], ["cut", "Risks"]], "after a keep the next edit opens a new revision"
+        assert console.run(["doc", "revision", "1", "1"], user).text.startswith("doc 1, revision 1 of 2: Plan of record\n"), "an old revision is read whole"
+        assert "## Risks" in console.run(["doc", "revision", "1", "1"], user).text and "## Risks" not in console.run(["doc", "revision", "1", "2"], user).text
+        assert console.run(["doc", "revision", "1", "3"], user).error.strip() == "doc 1 has revisions 1 to 2"
+        call(server, "POST", "/journal/settings", {"docs": {"revision_window": 0}})
+        written("Intro.\n\n## Goals\n\nShip it now\n")
+        written("Intro, again.\n\n## Goals\n\nShip it now\n")
+        revisions = call(server, "GET", "/journal/docs/1/revisions")[1]
+        assert [(r["number"], r["change"]) for r in revisions] == [(1, "written; added Risks; rewrote Goals"), (2, "cut Risks; rewrote Goals"), (3, "reworded the top")], "past the window each edit opens the next revision"
+        assert call(server, "POST", "/journal/docs/1/keep")[0] == 409, "the viewer's keep refuses as the command does"
+    finally:
+        server.stop()
+
+
 def test_a_missing_row_and_a_missing_route_say_so(server):
     assert call(server, "GET", "/journal/tasks/9")[0] == 404
     assert call(server, "GET", "/journal/nothing")[0] == 404

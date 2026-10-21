@@ -8,13 +8,15 @@ from journal.features.docs.support.version3_doc import Version3Doc
 from journal.models.doc import Doc
 from journal.support.rejection import Rejection
 from journal.repositories.docs import Docs
+from journal.repositories.doc_revisions import DocRevisions
+from journal.engine.clock import Clock
 
 
 class DocCommand(Command):
     noun = "doc"
 
-    def __init__(self, docs: Docs) -> None:
-        self.docs = docs
+    def __init__(self, docs: Docs, revisions: DocRevisions, clock: Clock) -> None:
+        self.docs, self.doc_revisions, self.clock = docs, revisions, clock
 
     def arguments(self, verbs) -> None:
         creation = self.verb(verbs, "create", "write a document of the project, the same in every environment")
@@ -29,6 +31,13 @@ class DocCommand(Command):
         display.add_argument("n", type=int)
         Outline.arguments(display)
         self.verb(verbs, "list", "every document of the project")
+        self.verb(verbs, "revisions", "a document's revisions: number, when, who and what changed").add_argument("n", type=int)
+        revision = self.verb(verbs, "revision", "one revision of a document, whole")
+        revision.add_argument("n", type=int)
+        revision.add_argument("k", type=int)
+        closing = self.verb(verbs, "keep", "keep the open revision as it is; the next edit opens a new one")
+        closing.add_argument("n", type=int)
+        closing.set_defaults(verb="close_revision")
         imported = self.verb(verbs, "import", "bring in the documents version 3 kept, each folder's doc.md; one titled as a document here already is left")
         imported.add_argument("folder", help="version 3's project/doc folder")
 
@@ -46,6 +55,27 @@ class DocCommand(Command):
     def show(self, args: Namespace, caller: Caller) -> int:
         doc = self.docs.find(args.n)
         print("\n".join([*filter(None, (f"doc {doc.id}: {doc.title}", doc.abstract)), *Outline.build(doc.body).summary(args)]))
+        return 0
+
+    def revisions(self, args: Namespace, caller: Caller) -> int:
+        for revision in self.doc_revisions.document_revisions(self.docs.find(args.n)):
+            print(f"{revision.number:>3}  {revision.created_at.astimezone():%Y-%m-%d %H:%M}  {revision.creator.kind.value:<6} {revision.change}")
+        return 0
+
+    def revision(self, args: Namespace, caller: Caller) -> int:
+        revisions = self.doc_revisions.document_revisions(self.docs.find(args.n))
+        if not 1 <= args.k <= len(revisions):
+            raise Rejection(f"doc {args.n} has revisions 1 to {len(revisions)}" if revisions else f"doc {args.n} has no revisions yet")
+        revision = revisions[args.k - 1]
+        print(f"""doc {args.n}, revision {revision.number} of {len(revisions)}: {revision.title}
+{revision.abstract}
+
+{revision.body}""".rstrip())
+        return 0
+
+    def close_revision(self, args: Namespace, caller: Caller) -> int:
+        closed = self.doc_revisions.close(self.docs.find(args.n), self.clock.time(), caller.actor)
+        print(f"revision {closed.number} of doc {args.n} kept; the next edit opens revision {closed.number + 1}")
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:

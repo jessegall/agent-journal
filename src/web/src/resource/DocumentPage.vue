@@ -4,6 +4,7 @@ import {computed, nextTick, provide, ref, watch} from "vue";
 import {route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import ResourceBody from "./ResourceBody.vue";
+import DocRevisions from "./DocRevisions.vue";
 import Comments from "./Comments.vue";
 import PlanTimelinePanel from "./PlanTimelinePanel.vue";
 import SequenceRuns from "./SequenceRuns.vue";
@@ -117,7 +118,12 @@ watch(
         <div ref="body" class="document-body">
             <Highlight :off="readOnly" @quote="quote = $event">
                 <slot>
-                    <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')" />
+                    <template v-if="resource.table === 'docs'">
+                        <DocRevisions :resource="resource" :read-only="readOnly" @close="emit('close')" />
+                    </template>
+                    <template v-else>
+                        <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')" />
+                    </template>
                 </slot>
                 <template v-if="!readOnly">
                     <div class="document-links">

@@ -266,8 +266,14 @@ F. **The viewer reads version 4's rows**: its catalogue of tables (titles, icons
    (title, body, closed, times as ISO strings); `domain/acts.js` names what each table offers.
    Deleted with version 3's API, having no version 4 server (the phone came back in 4.2.0): the board and tickets,
    the organisation, the hub of journals, hosting and members, the browser extension,
-   suggestions, collections, document revisions, update reports, layout links, agent pause and
+   suggestions, collections, update reports, layout links, agent pause and
    appoint, agent hooks, work modes, priorities, the plugin services panel, replies on shares.
+   Document revisions came back in task 1227, as version 3 kept them (report 35): a DocRevision row per
+   revision, linked to its document by a `revision_of` Link, written by the docs feature's DocRevisionRecord on
+   every save that changes the text; a save within `docs.revision_window` minutes (30) of the last folds into the
+   open revision with its change noted section by section, a later one opens the next; `journal doc revisions`,
+   `revision` and `keep`, `GET /journal/docs/{id}/revisions` and `POST .../keep`, and the strip and section diff above
+   a document. No restore, as in version 3; the phone and the share page do not show revisions yet.
 D2. **The boot menu** is version 3's, rebuilt in the supervisor and moved to the journal's launcher (`src/journal/launcher`) in plan 8: a banner, then one question
    at a time under it, moved through with ↑ ↓ (or j k), a number to jump, Enter to pick and
    Esc to leave; the space under the banner is cleared before each question. It asks which
