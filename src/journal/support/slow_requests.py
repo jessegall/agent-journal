@@ -24,6 +24,7 @@ TESTS_RUNNING = "tests.running"
 
 
 HOOK = "HOOK"
+OUTWARD_ROUTES = ("/journal/plugins/preview", "/journal/plugins/{n}/remove", "/journal/plugins/{n}/upgrade", "/journal/plugins/{n}/enable", "/journal/plugins", "/journal/updates/install")
 OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin propose", "/cli/setup update", "/cli/update ", "/cli/worker dispatch", "/cli/check run", "/cli/mcp ")
 
 
@@ -37,18 +38,22 @@ class SlowRequests:
 
     def measured(self, method: str, path: str, ms: float) -> None:
         self.deferred.add(lambda: self.counted(method, path, round(ms)))
-        if not self.judging() or path.startswith(OUTWARD_COMMANDS):
+        route = re.sub(r"/\d+(?=/|$)", "/{n}", path)
+        if not self.judging() or self.is_outward(route):
             return
         budget = self.budget(method)
         if not budget or ms <= budget:
             return
-        route = re.sub(r"/\d+(?=/|$)", "/{n}", path)
         self.deferred.add(lambda: self.reported(method, route, round(ms), budget))
 
     def counted(self, method: str, path: str, ms: int) -> None:
         self.statistics.measured("developer.hooks" if method == HOOK else "developer.requests", ms, Actor.system())
         if method == HOOK:
             self.statistics.measured(f"developer.hooks.{path.rsplit('/', 1)[-1]}", ms, Actor.system())
+
+    @staticmethod
+    def is_outward(route: str) -> bool:
+        return route.startswith(OUTWARD_COMMANDS) or route in OUTWARD_ROUTES
 
     def budget(self, method: str) -> int:
         return int(self.settings.option(Faults.WRITE if method == "POST" else Faults.REQUEST))
