@@ -17,7 +17,7 @@ class PinsConduct(Conduct):
 
     def on_turn_written_pins(self, event: TurnWritten, settings: Settings) -> Transition:
         from journal.features.pins.feature import Pins
-        return self.unchanged(*suggestions(event.text, event.snapshot.of(Pins))) if event.final else self.unchanged()
+        return self.unchanged(*suggestions(event.content, event.snapshot.of(Pins))) if event.final else self.unchanged()
 
     def on_tool_finished_pins(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.pins.feature import Pins

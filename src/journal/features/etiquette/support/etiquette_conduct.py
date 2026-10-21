@@ -19,8 +19,8 @@ class EtiquetteConduct(Conduct):
         from journal.features.etiquette.feature import Etiquette
         if not event.final:
             return self.unchanged()
-        rows = [nudge.create() for pattern, nudge in ((SHOP_TALK, Etiquette.NO_SHOP_TALK), (THIRD_PERSON, Etiquette.SAY_YOU_NOT_THE_USER), (EM_DASHES, Etiquette.NO_EM_DASHES)) if pattern.search(event.text)]
-        if runs_together(event.text):
+        rows = [nudge.create() for pattern, nudge in ((SHOP_TALK, Etiquette.NO_SHOP_TALK), (THIRD_PERSON, Etiquette.SAY_YOU_NOT_THE_USER), (EM_DASHES, Etiquette.NO_EM_DASHES)) if pattern.search(event.content)]
+        if runs_together(event.content):
             rows.append(Etiquette.BLANK_LINES_BETWEEN_PARAGRAPHS.create())
         return self.unchanged(*rows)
 

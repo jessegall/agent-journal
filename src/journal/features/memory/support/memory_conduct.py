@@ -41,9 +41,9 @@ class MemoryConduct(Conduct):
 
     def on_anything_memory_whisper(self, event: AgentEvent, settings: Settings) -> Transition:
         feature = memory_feature()
-        if not event.text:
+        if not event.content:
             return self.unchanged()
-        rows = event.snapshot.of(feature).whispered_by(event.text)
+        rows = event.snapshot.of(feature).whispered_by(event.content)
         return self.unchanged().typing(*(feature.MEMORY_WHISPERED_BACK.create(noun=row.noun, n=row.id, text=row.text) for row in rows))
 
     def on_rule_made_memory(self, event: RuleMade, settings: Settings) -> Transition:

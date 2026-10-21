@@ -23,7 +23,7 @@ class AgentEvent(Event):
     tool_use: int = 0
 
     @property
-    def text(self) -> str:
+    def content(self) -> str:
         return ""
 
     def with_snapshot(self, snapshot: Snapshot) -> "AgentEvent":
