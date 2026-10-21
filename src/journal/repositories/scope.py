@@ -1,13 +1,11 @@
-from contextlib import contextmanager
-from contextvars import ContextVar
 from functools import cache
-from typing import Callable, Iterator
+from typing import Callable
 
 from journal.repositories.environments import Environments
+from journal.repositories.scope_binding import CURRENT, ScopeBinding
 from journal.support.scope_missing import ScopeMissing
 
 PROJECT = 0
-_current: ContextVar[Callable[[], int]] = ContextVar("environment")
 
 
 class Scope:
@@ -18,30 +16,17 @@ class Scope:
 
     @property
     def id(self) -> int:
-        environment = _current.get(None)
+        environment = CURRENT.get(None)
         if environment is None:
             raise ScopeMissing()
         return environment()
 
     def id_default(self, foreign: int) -> int:
-        environment = _current.get(None)
+        environment = CURRENT.get(None)
         return foreign if environment is None else environment()
 
-    @contextmanager
-    def environment(self, environment_id: int) -> Iterator[None]:
-        with self._binding(lambda: environment_id):
-            yield
+    def environment(self, environment_id: int) -> ScopeBinding:
+        return ScopeBinding(lambda: environment_id)
 
-    @contextmanager
-    def requested(self, name: Callable[[], str]) -> Iterator[None]:
-        with self._binding(cache(lambda: self.environments.existing(name()).row_id)):
-            yield
-
-    @staticmethod
-    @contextmanager
-    def _binding(environment: Callable[[], int]) -> Iterator[None]:
-        token = _current.set(environment)
-        try:
-            yield
-        finally:
-            _current.reset(token)
+    def requested(self, name: Callable[[], str]) -> ScopeBinding:
+        return ScopeBinding(cache(lambda: self.environments.existing(name()).row_id))
