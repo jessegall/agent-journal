@@ -58,14 +58,13 @@ class SlowRequests:
         return int(self.settings.option(Faults.WRITE if method == "POST" else Faults.REQUEST))
 
     def judging(self) -> bool:
-        """Only in the journal's own checkout, never while it starts and only once it has settled after, while no test run is on, and on a machine not busier than it has cores."""
         starting = self.config.home / "runtime" / STARTING
         if starting.is_file():
             self.started = time.monotonic()
             return False
         settled = time.monotonic() - self.started > SETTLING_SECONDS
         busy = os.getloadavg()[0] > (os.cpu_count() or 1)
-        return Faults.applies_in(self.config.root) and settled and not busy and not self.is_testing()
+        return bool(self.settings.option(Faults.REPORT)) and settled and not busy and not self.is_testing()
 
     def is_testing(self) -> bool:
         """A test run is on: one of the marks the runs leave, each named by its own process, names a process still running; a mark left by a run that died is stale."""

@@ -5763,3 +5763,32 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     from journal.support.plugin_manifest import PluginManifest
     manifest = PluginManifest.from_json({"name": "x", "hears": ["tool_starting", "idle"], "holds": [{"event": "tool_starting", "window_ms": 5000}, "idle"]})
     assert manifest.window_ms("tool_starting", 50) == 50 and manifest.window_ms("idle", 50) == 50 and manifest.window_ms("tool_starting", 9000) == 5000, "a window is cut to the user's ceiling, and a hold named without one takes the ceiling"
+
+
+def test_a_hook_on_a_started_plan_reads_the_plans_tree_once(app, monkeypatch):
+    """The plans snapshot reads the started plan's tasks and phases once per event, whatever their number: a plan of thirty tasks in three phases costs a hook a bounded number of statements."""
+    from journal.db.connection import Connection
+    console = app.console()
+    console.run(["plan", "create", "big", "--brief", "many tasks"], USER)
+    for phase in range(1, 4):
+        console.run(["plan", "phase", "1", f"phase {phase}", "--when", "done"], USER)
+        for number in range(10):
+            console.run(["plan", "add", "1", f"task {phase}.{number}"], USER)
+        console.run(["plan", "todos", "1", str(phase), *(str(n) for n in range(1 + (phase - 1) * 10, 1 + phase * 10))], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    hook(app, "SessionStart")
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    import threading
+    from collections import Counter
+    statements = []
+    execute = Connection.execute
+
+    def counted(self, sql, params=()):
+        if threading.current_thread().name != "deferred":
+            statements.append(sql)
+        return execute(self, sql, params)
+    monkeypatch.setattr(Connection, "execute", counted)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
+    selects = Counter(sql for sql in statements if sql.lstrip().upper().startswith("SELECT"))
+    assert sum(selects.values()) < 90, f"a hook on a started plan of thirty tasks ran {sum(selects.values())} selects, the plan's tree is read once per event and not once per question; the most frequent: {selects.most_common(6)}"

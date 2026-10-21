@@ -23,6 +23,13 @@ class Links(Repository[Link]):
         """What links to the model, by a link of any kind."""
         return [link.source for link in self.selected("target = ? ORDER BY id", (str(Ref.to(model)),))]
 
+    def linked(self, column: str, models: list[Model], kind: str) -> list[Link]:
+        """The links of one kind whose source or target, the column named, is any of these rows: one query for them all."""
+        if not models:
+            return []
+        refs = [str(Ref.to(model)) for model in models]
+        return self.selected(f"{column} IN ({', '.join('?' for _ in refs)}) AND kind = ? ORDER BY id", (*refs, kind))
+
     def sources(self, model: Model, kind: str) -> list[Ref]:
         return [link.source for link in self.selected("target = ? AND kind = ? ORDER BY id", (str(Ref.to(model)), kind))]
 

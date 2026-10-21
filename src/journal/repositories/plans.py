@@ -15,6 +15,7 @@ from journal.repositories.scoped_repository import ScopedRepository
 from journal.repositories.tasks import WAITS_ON, Tasks
 from journal.repositories.workers import Workers
 from journal.models.phase_tasks import PhaseTasks
+from journal.models.plan_tree import PlanTree
 
 IN_PLAN = "in_plan"
 PHASE_OF = "phase_of"
@@ -71,10 +72,16 @@ class Plans(ScopedRepository[Plan]):
         return self.tasks.numbered(ref.id for ref in self.links.sources(phase, IN_PHASE))
 
     def phased(self, plan: Plan) -> list[PhaseTasks]:
-        return [PhaseTasks(number, phase, tuple(self.tasks_in(phase))) for number, phase in enumerate(self.phases_of(plan), 1)]
+        phases = self.phases_of(plan)
+        links = self.links.linked("target", phases, IN_PHASE)
+        tasks = {task.id: task for task in self.tasks.numbered(link.source.id for link in links)}
+        return [PhaseTasks(number, phase, tuple(tasks[link.source.id] for link in links if link.target.id == phase.id and link.source.id in tasks)) for number, phase in enumerate(phases, 1)]
+
+    def tree(self, plan: Plan) -> PlanTree:
+        return PlanTree(plan, tuple(self.tasks_of(plan)), tuple(self.phased(plan)))
 
     def in_order(self, plan: Plan) -> list[Task]:
-        return plan.in_order(self.phased(plan), self.tasks_of(plan))
+        return self.tree(plan).in_order
 
     def in_review(self) -> list[Plan]:
         return self.where(state=PlanState.REVIEWING)
@@ -90,33 +97,43 @@ class Plans(ScopedRepository[Plan]):
         return [task] if task else []
 
     def free(self) -> list[Task]:
-        return [t for t in self.tasks.in_state(TaskState.OPEN) if not self.links.targets(t, IN_PLAN)]
+        open_tasks = self.tasks.in_state(TaskState.OPEN)
+        planned = {link.source.id for link in self.links.linked("source", open_tasks, IN_PLAN)}
+        return [t for t in open_tasks if t.id not in planned]
 
     def finished(self, plan: Plan) -> bool:
         return plan.is_finished(self.tasks_of(plan))
 
     def cannot_start(self, plan: Plan) -> set[int]:
-        tasks = self.tasks_of(plan)
-        waiting = {t.id for t in tasks if self.tasks.open_waits(t)}
-        return waiting | set(self.workers.holding({t.id for t in tasks}))
+        return self.unstartable(self.tree(plan))
+
+    def unstartable(self, tree: PlanTree) -> set[int]:
+        return self.tasks.waiting_ids(list(tree.tasks)) | set(self.workers.holding({t.id for t in tree.tasks}))
 
     def resumable(self, plan: Plan) -> Task | None:
-        return plan.task_to_resume(self.in_order(plan), self.cannot_start(plan))
+        return self.resumable_task(self.tree(plan))
+
+    def resumable_task(self, tree: PlanTree) -> Task | None:
+        return tree.plan.task_to_resume(tree.in_order, self.unstartable(tree))
 
     def started_task(self, plan: Plan) -> Task | None:
         return next((task for task in self.tasks_of(plan) if task.state == TaskState.STARTED), None)
 
     def next_task(self, plan: Plan) -> Task | None:
-        return plan.next_open_task(self.in_order(plan), self.cannot_start(plan))
+        return self.open_task(self.tree(plan))
+
+    def open_task(self, tree: PlanTree) -> Task | None:
+        return tree.plan.next_open_task(tree.in_order, self.unstartable(tree))
 
     def at_checkpoint(self, plan: Plan) -> PhaseTasks | None:
         return plan.checkpoint_at(self.phased(plan))
 
     def start(self, plan: Plan, by: Actor) -> Plan:
         time = datetime.now(timezone.utc)
-        if plan.startable().is_finished(self.tasks_of(plan)):
+        tree = self.tree(plan)
+        if plan.startable().is_finished(list(tree.tasks)):
             return self.save(plan.done(time.timestamp()), by)
-        task = self.resumable(plan)
+        task = self.resumable_task(tree)
         if task is None:
             return self.save(plan.started_without_task(time.timestamp()), by)
         self.tasks.refuse_second(task.started(time))

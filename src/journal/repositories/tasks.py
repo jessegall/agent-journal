@@ -43,6 +43,9 @@ class Tasks(ScopedRepository[Task]):
     def awaited(self, ref: Ref) -> Task | Question | Check:
         return self.awaitable[ref.type].find(ref.id)
 
+    def waiting_ids(self, tasks: list[Task]) -> set[int]:
+        return {link.source.id for link in self.links.linked("source", tasks, WAITS_ON) if not self.awaited(link.target).is_settled()}
+
     def blocked_without_wait(self) -> list[Task]:
         return [task for task in self.in_state(TaskState.BLOCKED) if not self.open_waits(task)]
 

@@ -20,6 +20,12 @@ class Request:
     files: dict = field(default_factory=dict)
     """The files a multipart request carried, by name."""
 
+    def measured_path(self) -> str:
+        """The path the request's time is kept under: a journal command names its noun and verb, since every command shares one route."""
+        if self.path == "/cli":
+            return "/cli/" + " ".join(str(word) for word in self.body.get("argv", [])[:2])
+        return self.path
+
     def with_params(self, params: dict) -> "Request":
         return replace(self, params=params)
 
