@@ -5870,9 +5870,13 @@ def test_a_tool_entry_records_the_calls_reading_beside_the_raw_input(app: App):
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "echo hi > notes.txt && grep -rn foo src"})
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "grep -rn foo src"})
     saved, read = reversed(app.container.get(Entries).tool_starts("s1", 2))
+    from journal.support.recorded_call import RecordedCall
+    from journal.support.shell_line import ShellLine
     call = saved.recorded_call()
-    assert call["command"].startswith("echo hi") and [p["text"] for p in call["parts"]] == ["echo hi > notes.txt", "grep -rn foo src"] and call["written_paths"] == ["notes.txt"] and call["work"] == "running", "the call's one reading is on the entry"
-    assert saved.is_write() and not read.is_write() and read.recorded_call()["work"] == "searching", "the write flag and the work word are read from the record, never from the input again"
+    assert call.command.startswith("echo hi") and [p.text for p in call.parts] == ["echo hi > notes.txt", "grep -rn foo src"] and call.edited_paths == ("notes.txt",) and call.work == "running", "the call's one reading is on the entry"
+    assert call.operation == ShellLine(command=call.command) and RecordedCall.parsed(call.as_data()) == call, "it reads back as the values it was written from, its operation as its own kind"
+    assert saved.is_write() and not read.is_write() and read.recorded_call().work == "searching", "the write flag and the work word are read from the record, never from the input again"
+    assert app.container.get(Entries).kind_entries("SessionStarted", 1)[0].recorded_call() == RecordedCall(), "an entry that records no call reads as an empty call with no operation"
 
 
 def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is_cut_at_the_deadline(app: App):

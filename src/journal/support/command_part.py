@@ -11,3 +11,8 @@ class CommandPart:
     files: tuple[str, ...]
     reads_output: bool
     read_shape: str
+
+    @classmethod
+    def parsed(cls, data: dict) -> "CommandPart":
+        return cls(text=data.get("text", ""), is_journal=bool(data.get("is_journal")), writes=bool(data.get("writes")), files=tuple(data.get("files", ())),
+                   reads_output=bool(data.get("reads_output")), read_shape=data.get("read_shape", ""))

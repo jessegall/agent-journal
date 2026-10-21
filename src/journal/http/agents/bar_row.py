@@ -19,7 +19,7 @@ class BarRow:
 
     @staticmethod
     def is_shown(entry: Entry) -> bool:
-        return entry.kind in (PART_START, PART_END) or (entry.kind in TOOLS and not entry.recorded_call().get("command"))
+        return entry.kind in (PART_START, PART_END) or (entry.kind in TOOLS and not entry.recorded_call().command)
 
     @classmethod
     def build(cls, entry: Entry) -> "BarRow":
@@ -31,7 +31,8 @@ class BarRow:
 
     @classmethod
     def tool_row(cls, entry: Entry) -> "BarRow":
-        tool, paths = entry.data.get("tool_name", ""), entry.recorded_call().get("written_paths") or entry.recorded_call().get("read_paths") or [""]
+        call = entry.recorded_call()
+        tool, paths = entry.data.get("tool_name", ""), call.edited_paths or call.read_paths or ("",)
         path = paths[0]
         return cls(f"{tool} {path}".strip(), tool.lower() or "working", path, entry.created_at.timestamp(), entry.kind == "ToolFinished")
 

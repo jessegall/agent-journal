@@ -14,7 +14,6 @@ from journal.http.agents.current_sequence import CurrentSequence
 from journal.http.files.project_files import ProjectFiles
 from journal.http.support.model_fields import ModelFields
 from journal.models.agent import Agent
-from journal.models.entry import Entry
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
@@ -22,6 +21,7 @@ from journal.support.agent_message import AgentMessage
 from journal.support.file_edit import FileEdit
 from journal.support.file_read import FileRead
 from journal.support.file_write import FileWrite
+from journal.support.recorded_call import RecordedCall
 from journal.support.undecoded_tool import UndecodedTool
 from journal.support.skill_load import SkillLoad
 from journal.support.subagent_dispatch import SubagentDispatch
@@ -47,7 +47,7 @@ class AgentActivity:
 
     @staticmethod
     def work(entry) -> str:
-        return entry.recorded_call().get("work", "")
+        return entry.recorded_call().work
 
     def row(self, agent: Agent, entries) -> dict:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted")]
@@ -104,17 +104,16 @@ class AgentActivity:
         if last and last.kind in (PART_START, PART_END):
             return last.data["part"]
         if last and last.kind == "ToolStarting":
-            return self.first_part(last) or self.tool_verb(last)
+            return self.tool_activity(last.recorded_call())
         return self.described(state) or ("at work" if hooks else "")
 
     @staticmethod
-    def first_part(entry: Entry) -> str:
-        return next((part["text"] for part in entry.recorded_call().get("parts", [])), "")
-
-    @staticmethod
-    def tool_verb(entry: Entry) -> str:
-        operation = entry.recorded_call().get("operation", {})
-        return OPERATION_VERBS.get(operation.get("kind", ""), f"using {operation['name']}" if operation.get("kind") == UndecodedTool.kind else "working")
+    def tool_activity(call: RecordedCall) -> str:
+        if call.parts:
+            return call.parts[0].text
+        if isinstance(call.operation, UndecodedTool):
+            return f"using {call.operation.name}"
+        return OPERATION_VERBS.get(call.operation.kind, "working")
 
     def described(self, state) -> str:
         if isinstance(state, Wait):

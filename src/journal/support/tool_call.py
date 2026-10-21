@@ -1,9 +1,10 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 
 from journal.support.chain import Chain
 from journal.support.command_part import CommandPart
 from journal.support.operation import Operation
+from journal.support.recorded_call import RecordedCall
 
 
 @dataclass(frozen=True)
@@ -33,8 +34,11 @@ class ToolCall:
     def input_text(self) -> str:
         return " ".join(str(value) for value in self.input.values())
 
+    def recorded(self) -> RecordedCall:
+        return RecordedCall(command=self.command, parts=self.parts, writes=self.writes, edited_paths=self.edited_paths, read_paths=self.read_paths, work=self.work, operation=self.operation)
+
     def as_data(self) -> dict:
-        return {"command": self.command, "parts": [asdict(part) for part in self.parts], "writes": self.writes, "written_paths": list(self.edited_paths), "read_paths": list(self.read_paths), "work": self.work, "operation": self.operation.as_data()}
+        return self.recorded().as_data()
 
     def is_folder_write(self, root: Path, folder: Path) -> bool:
         return self.writes and any((root / Path(path).expanduser()).resolve().is_relative_to(folder) for path in self.edited_paths)

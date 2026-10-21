@@ -34,7 +34,7 @@ class SubagentEntries:
 
     @staticmethod
     def is_dispatch_entry(entry: Entry) -> bool:
-        return entry.kind in SUBAGENT_KINDS or (entry.kind in TOOL_MOMENTS and entry.recorded_call().get("operation", {}).get("kind") in (SubagentDispatch.kind, AgentMessage.kind))
+        return entry.kind in SUBAGENT_KINDS or (entry.kind in TOOL_MOMENTS and isinstance(entry.recorded_call().operation, (SubagentDispatch, AgentMessage)))
 
     @staticmethod
     def paired(dispatches) -> list[Subagent]:
@@ -58,16 +58,16 @@ class SubagentEntries:
                 if i is not None:
                     rows[i] = rows[i].finished(SubagentState.FINISHED, time)
                 continue
-            operation = e.recorded_call().get("operation", {})
-            if operation.get("kind") == AgentMessage.kind:
-                SubagentEntries.resumed(rows, background, operation.get("receiver", ""), e.kind, time)
+            operation = e.recorded_call().operation
+            if isinstance(operation, AgentMessage):
+                SubagentEntries.resumed(rows, background, operation.receiver, e.kind, time)
                 continue
-            if operation.get("kind") != SubagentDispatch.kind or e.data.get("refused"):
+            if not isinstance(operation, SubagentDispatch) or e.data.get("refused"):
                 continue
             use = e.data.get("tool_use_id", "")
             if e.kind == "ToolStarting":
-                brief = operation["brief"] or ""
-                rows.append(Subagent(environment_id=e.environment_id, dispatch=f"sub:{e.id}", dispatcher=e.data.get("session_id", ""), started_at=time, task=operation["title"] or brief[:80], brief=f"{operation['title']} {brief}", agent_type=operation["role"] or "subagent", model=operation["model"]))
+                brief = operation.brief or ""
+                rows.append(Subagent(environment_id=e.environment_id, dispatch=f"sub:{e.id}", dispatcher=e.data.get("session_id", ""), started_at=time, task=operation.title or brief[:80], brief=f"{operation.title} {brief}", agent_type=operation.role or "subagent", model=operation.model))
                 open_[use or f"entry:{e.id}"] = len(rows) - 1
             elif e.kind == "ToolFailed" and open_:
                 i = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
@@ -76,10 +76,10 @@ class SubagentEntries:
                 i = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
                 answer = SubagentEntries.answered(e.data.get("tool_response"))
                 rows[i] = rows[i].answered(answer.get("agentId", ""))
-                background_run = answer.get("isAsync") or operation["background"]
+                background_run = answer.get("isAsync") or operation.background
                 if background_run and rows[i].session:
                     background[rows[i].session] = i
-                elif operation["background"]:
+                elif operation.background:
                     unstarted[f"row:{i}"] = i
                 else:
                     rows[i] = rows[i].finished(SubagentState.FINISHED, time)

@@ -59,7 +59,7 @@ class CommitDetection(AgentListener[ToolFinished]):
         if timing.time() - head.committed <= COMMIT_WINDOW_SECONDS:
             return True
         starts = self.entries.tool_starts(event.session, last=RECENT_TOOL_STARTS)
-        return any(part["text"].startswith("git commit") for start in starts for part in start.data.get("call", {}).get("parts", []))
+        return any(part.text.startswith("git commit") for start in starts for part in start.recorded_call().parts)
 
     def head_moved(self, folder: Path) -> bool:
         log = self.head_log(folder)

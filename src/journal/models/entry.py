@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from journal.support.actor import Actor
+from journal.support.recorded_call import RecordedCall
 from journal.models.scoped import Scoped
 
 
@@ -15,8 +16,8 @@ class Entry(Scoped):
     actor: Actor | None = None
     data: dict | None = None
 
-    def recorded_call(self) -> dict:
-        return (self.data or {}).get("call", {})
+    def recorded_call(self) -> RecordedCall:
+        return RecordedCall.parsed((self.data or {}).get("call", {}))
 
     def is_write(self) -> bool:
-        return not (self.data or {}).get("refused") and bool(self.recorded_call().get("writes"))
+        return not (self.data or {}).get("refused") and self.recorded_call().writes
