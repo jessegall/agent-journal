@@ -1,3 +1,4 @@
+from dataclasses import replace
 from journal.support.cards import Cards
 from journal.support.running import Running
 from journal.models.trigger import Trigger
@@ -7,21 +8,18 @@ from journal.support.chat_mark import ChatMark
 
 
 class Firing:
-    """What met triggers record, wherever the words came up: a card for each, and a sequence started at its first step, whose line comes back; what is said of the rest is the triggers conduct's."""
+    """What matched triggers record, wherever the words came up: a card for each, and a sequence started at its first step, whose line comes back; what is said of the rest is the triggers conduct's."""
 
-    def __init__(self, cards: Cards, running: Running, sequences: Sequences) -> None:
-        self.cards, self.running, self.sequences = cards, running, sequences
+    def __init__(self, cards: Cards, runs: Running, sequences: Sequences) -> None:
+        self.cards, self.runs, self.sequences = cards, runs, sequences
 
-    def lines(self, met: list[Trigger], session: str, environment_id: int, by_user: bool) -> list[str]:
-        lines = []
-        for trigger in met:
+    def fired(self, matched: list[Trigger], session: str, environment_id: int, by_user: bool) -> None:
+        for trigger in matched:
             self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.words), f"triggers:{trigger.id}", shows=ChatMark.TRIGGERS)
             if trigger.action == TriggerAction.SEQUENCE and by_user:
-                lines.append(self.started(trigger, session, environment_id))
-        return [line for line in lines if line]
+                self.started(trigger, session, environment_id)
 
-    def started(self, trigger: Trigger, session: str, environment_id: int) -> str:
+    def started(self, trigger: Trigger, session: str, environment_id: int) -> None:
         for sequence in self.sequences.all():
-            if sequence.title == trigger.text:
-                return self.running.start(sequence, session, environment_id)
-        return ""
+            if sequence.title == trigger.text and self.runs.start(sequence, session, environment_id):
+                self.runs.changed(session, environment_id, lambda run: replace(run, said_at=""))

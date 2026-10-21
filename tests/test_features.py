@@ -2337,13 +2337,17 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, mon
     console.run(["trigger", "create", "ship it", "release", "--do", "sequence"], USER)
     body = hook(app, "UserPromptSubmit", prompt="ok, ship it now")[1]
     running = app.container.get(Running)
-    assert running.in_hand("s1", 1).title == "release" and "step 1: bump" in json.dumps(body), "a prompt's words start the sequence and its first step rides on the answer"
+    assert running.in_hand("s1", 1).title == "release" and "step 1: bump" in hook(app, "Stop")[1].get("reason", ""), "a prompt's words start the sequence and its first step is told at the next stop"
     for _ in range(2):
         console.run(["sequence", "follow"], AGENT)
         console.run(["sequence", "next"], AGENT)
     console.run(["message", "send", "could you give me an update?"], USER)
     app.runtime().deferred.drain()
-    assert running.in_hand("s1", 1).title == "Writing an update" and any("Find what changed" in line for line in sent), "the user's message starts the update sequence, typed to the agent"
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=60.0))
+    app.runtime().deferred.drain()
+    assert running.in_hand("s1", 1).title == "Writing an update" and any("Find what changed" in line for line in sent), "the user's message starts the update sequence, and the step is typed to the agent once it is quiet"
 
 def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app):
     hook(app, "SessionStart")

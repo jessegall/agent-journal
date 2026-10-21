@@ -5,14 +5,13 @@ from journal.models.author import Author
 from journal.models.message import Message
 from journal.repositories.agents import Agents
 from journal.repositories.triggers import Triggers
-from journal.supervisor_link import SupervisorLink
 
 
 class WatchMessage(Listener[Created]):
     """The user's words in a message meet the triggers too: each met is recorded as a card and a sequence one names is started; what is said of them is the triggers conduct's, on the message's arrival."""
 
-    def __init__(self, triggers: Triggers, firing: Firing, agents: Agents, supervisor: SupervisorLink) -> None:
-        self.triggers, self.firing, self.agents, self.supervisor = triggers, firing, agents, supervisor
+    def __init__(self, triggers: Triggers, firing: Firing, agents: Agents) -> None:
+        self.triggers, self.firing, self.agents = triggers, firing, agents
 
     def handle(self, event: Created) -> None:
         message = event.model
@@ -21,5 +20,4 @@ class WatchMessage(Listener[Created]):
         agent = self.agents.live()
         if agent is None:
             return
-        for line in self.firing.lines(self.triggers.met_by(message.text), agent.session, message.environment_id, True):
-            self.supervisor.type(message.environment_id, line)
+        self.firing.fired(self.triggers.met_by(message.text), agent.session, message.environment_id, True)

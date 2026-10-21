@@ -24,7 +24,9 @@ class SequencesSnapshotReader:
         run = SequenceRun.of(agent.sequence_runs[-1])
         uses = self.entries.tool_starts(agent.session, last=1)
         last_line = self.entries.said_last(agent.session, STEP_KEYS)
-        line_time = max(last_line.created_at.timestamp() if last_line else 0.0, datetime.fromisoformat(run.said_at).timestamp() if run.said_at else 0.0)
+        started = datetime.fromisoformat(run.started_at).timestamp() if run.started_at else 0.0
+        typed_time = last_line.created_at.timestamp() if last_line and last_line.created_at.timestamp() >= started else 0.0
+        line_time = max(typed_time, datetime.fromisoformat(run.said_at).timestamp() if run.said_at else 0.0)
         return SequencesSnapshot(
             sequence_id=run.sequence_id, step=run.step + 1, step_text=run.text, parked_why=run.parked_why, is_taken_up=bool(run.taken_up_at),
             writes_since_taken_up=self.writes_since(agent, run),

@@ -31,13 +31,19 @@
             },
             {
                 "file": "tests/**"
+            },
+            {
+                "file": "src/journal/features/plugins/listeners/plugins_hear_agents.py"
+            },
+            {
+                "file": "src/journal/features/messages/listeners/tell_inbox.py"
             }
         ]
     },
     "sin": {
         "name": "feature-listener-speaks",
         "description": "A feature's listener speaks to the agent or holds it, outside the states.",
-        "rule": "A listener outside a state only records, links or writes rows; the line or the hold belongs to the state's or the conduct's on_ listener.",
+        "rule": "A listener outside a state only records, links or writes rows; the line or the hold belongs to the state's or the conduct's on_ listener. The plugins' hearing listener is the delivery of a plugin's own answer, a funnel like the engine's message delivery, and stands outside this rule. So does TellInbox, the base of DeliverUnreadAtStart, the engine's delivery of what waits unread.",
         "skill": "stack-machine"
     }
 }

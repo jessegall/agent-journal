@@ -7,6 +7,7 @@ from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
 from journal.features.edits.support.file_snapshots import FileSnapshots
 from journal.features.edits.support.patch_rows import PatchRows
+from journal.features.shell.support.part import Part
 from journal.support.actor import Actor
 from journal.models.edit import Edit
 from journal.repositories.edits import Edits
@@ -27,7 +28,7 @@ class RecordEdit(AgentListener[ToolFinished]):
         if event.call.tool in EDITING:
             self.patched(event)
             return
-        for path in dict.fromkeys(self.project_path(p) for p in event.call.written_paths):
+        for path in dict.fromkeys(self.project_path(p) for p in event.call.written_paths if Part.is_under_project(p)):
             self.changed(event, path)
 
     def patched(self, event: ToolFinished) -> None:
