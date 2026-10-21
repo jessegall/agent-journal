@@ -6,6 +6,7 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
+from journal.features.shell.support.reader_commands import ReaderCommands
 from journal.support.rejection import Rejection
 
 NAME = re.compile(r"[a-z0-9][a-z0-9-]*")
@@ -28,17 +29,18 @@ class ReaderCommand(Command):
         addition.add_argument("--about", required=True, help="what it picks, in a few words")
         addition.add_argument("--progress", default="", help="a pattern whose last match says how far the command has come: one group for a percentage, two for a count of a total")
         addition.add_argument("--label", default="", help="the words shown in front of the progress")
+        addition.add_argument("--commands", default="", help="the commands whose output it reads, comma-separated, such as pytest or dotnet test: a command moved to the background that runs one is told to watch it with this reader")
         self.verb(verbs, "list", "the project's readers, each with what it picks")
 
     def add(self, args: Namespace, caller: Caller) -> int:
         if not NAME.fullmatch(args.name):
             raise Rejection(f"a reader's name is lowercase words joined by -, such as failed-tests, not {args.name}")
         if args.script:
-            self.readers.add_script(args.name, args.about, args.script)
+            self.readers.add_script(args.name, args.about, args.script, ReaderCommands.parsed(args.commands))
         else:
             re.compile(args.pattern)
             re.compile(args.progress)
-            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, args.label))
+            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, args.label, ReaderCommands.parsed(args.commands)))
         print(f"reader {args.name} added: journal output read N --reader {args.name}")
         return 0
 

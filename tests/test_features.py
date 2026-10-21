@@ -5982,6 +5982,29 @@ def test_a_watched_outputs_card_moves_by_itself_and_a_docked_one_stays_docked(ap
     assert card().data["docked"] is True, "a docked card stays docked as it moves"
 
 
+def test_a_command_moved_to_the_background_is_told_to_watch_it_with_the_reader_that_reads_it(app: App):
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.features.shell.support.watch_suggestions import WatchSuggestions
+    from journal.repositories.command_outputs import CommandOutputs
+    suggestions = app.container.get(WatchSuggestions)
+    assert all((app.config.readers / f"{name}.pattern").is_file() for name in ("pytest", "dotnet-test", "phpunit")), "the journal ships its readers"
+    known = "\n".join(suggestions.lines(5, "perl -e 'alarm 590; exec @ARGV' python3 -m pytest -q"))
+    assert "journal output watch 5 --reader pytest" in known and "no reader" not in known, "a runner a reader reads is told its reader"
+    unknown = "\n".join(suggestions.lines(6, "make test"))
+    assert "journal output watch 6`" in unknown and "no reader reads make test yet" in unknown, "a test run no reader reads is told to make one"
+    assert suggestions.lines(7, "sleep 100") == [suggestions.lines(7, "sleep 100")[0]] and "watch it live" in suggestions.lines(7, "sleep 100")[0], "a plain long command is told it can be watched, nothing more"
+    hook(app, "SessionStart")
+    folder = app.config.root / "w"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text("pytest -q")
+    app.container.get(OutputLog).start("w", "pytest -q", folder, Caller.agent("main", "s1", "claude"))
+    outputs = app.container.get(CommandOutputs)
+    outputs.save(outputs.find(1).backgrounded(), Actor.system())
+    assert app.console().run(["await", "the tests", "--output", "1", "--reader", "pytest"], AGENT).code == 0
+    assert outputs.find(1).is_watched and outputs.find(1).watch_reader == "pytest", "waiting with a reader watches the output too"
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog

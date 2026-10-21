@@ -80,7 +80,7 @@ needs no task; file one for work that is an item of its own, that waits, or that
   single quotes, so your shell keeps a `$(...)` in it for each run instead of filling it in once. Unblocking a task or a
   plan, by hand or by its wait, releases its waits and retires the check its block made.
 - Waiting on something outside your hands: `journal await "<what you wait for>" --output <n>` for a command running in the
-  background, or `--until "<script>"`, run every 30 seconds, for anything else. The wait ends by itself once that is done,
+  background (add `--reader <name>` to watch it live while you wait), or `--until "<script>"`, run every 30 seconds, for anything else. The wait ends by itself once that is done,
   and you are told what it came to; working again lifts it too. A wait that names neither, or a wait on the user, is
   refused: ask with `journal question ask`, or end your turn.
 - Log as you go, counted in edits: after twenty-five with nothing logged you are asked to, every twenty-five the work in hand is named

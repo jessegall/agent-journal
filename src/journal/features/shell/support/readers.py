@@ -4,6 +4,7 @@ from typing import Callable
 from journal.config import Config
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.script_reader import ScriptReader
+from journal.features.shell.support.reader_commands import COMMANDS_PREFIX, ReaderCommands
 from journal.support.rejection import Rejection
 
 KINDS: dict[str, Callable[[Path], Reader | ScriptReader]] = {".pattern": Reader.loaded, ".sh": ScriptReader.loaded}
@@ -26,10 +27,14 @@ class Readers:
             raise Rejection(f"no reader named {name}: `journal reader list` names them")
         return KINDS[rows[0].suffix](rows[0])
 
+    def reading(self, line: str) -> Reader | ScriptReader | None:
+        return next((reader for reader in self.all() if reader.commands.is_read(line)), None)
+
     def add(self, reader: Reader) -> None:
         self.config.readers.mkdir(parents=True, exist_ok=True)
         (self.config.readers / f"{reader.name}.pattern").write_text(reader.text())
 
-    def add_script(self, name: str, topic: str, script: Path) -> None:
+    def add_script(self, name: str, topic: str, script: Path, commands: ReaderCommands) -> None:
         self.config.readers.mkdir(parents=True, exist_ok=True)
-        (self.config.readers / f"{name}.sh").write_text(f"# {topic}\n{script.read_text()}")
+        commands_line = f"# {COMMANDS_PREFIX}{commands.text()}\n" if commands.programs else ""
+        (self.config.readers / f"{name}.sh").write_text(f"# {topic}\n{commands_line}{script.read_text()}")

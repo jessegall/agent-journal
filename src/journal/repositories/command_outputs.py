@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from journal.support.actor import Actor
 
 from journal.models.command_output import CommandOutput
 from journal.support.missing_row import MissingRow
@@ -24,6 +25,11 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
 
     def moved_unended(self) -> list[CommandOutput]:
         return self.selected_globally("moved = 1 AND ended = 0 ORDER BY id")
+
+    def watch(self, output: CommandOutput, reader: str, actor: Actor) -> CommandOutput:
+        for watched in self.watched(output.session):
+            self.save(watched.unwatched(), actor)
+        return self.save(output.watched(reader), actor)
 
     def all_watched(self) -> list[CommandOutput]:
         return self.selected_globally("is_watched = 1 ORDER BY id")

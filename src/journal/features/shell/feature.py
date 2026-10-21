@@ -11,6 +11,7 @@ from journal.features.shell.commands.reader_command import ReaderCommand
 from journal.support.skill import Skill
 from journal.features.shell.seeds.cut_off_outputs import CutOffOutputs
 from journal.features.shell.jobs.watch_refresh import WatchRefresh
+from journal.features.shell.seeds.default_readers import DefaultReaders
 
 
 class Shell(Feature[ShellData]):
@@ -27,7 +28,7 @@ class Shell(Feature[ShellData]):
     commands = (OutputCommand, ReaderCommand)
     options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, OUTPUT_COUNT)
     listeners = (OutputNotice, WatchUpdate)
-    seeds = (CutOffOutputs,)
+    seeds = (CutOffOutputs, DefaultReaders)
     jobs = (WatchRefresh,)
     data = (ShellDataReader,)
     conduct = (ShellConduct,)
@@ -41,7 +42,9 @@ class Shell(Feature[ShellData]):
     BACKGROUND_CHECK = Nudge(name, "check_the_background", "output {{background_outputs}} still running", "look at it; hung or stuck: stop it and say why", repeat_interval=300, blocks_regardless=True)
     WATCH_VIEW = Nudge(name, "watched_output", "output {{n}}, which you watch:\n{{lines}}", "`journal output unwatch` ends the watch", repeat_interval=0)
     WATCH_ENDED = Nudge(name, "watched_output_ended", "output {{n}}, which you watched, {{ending}}:\n{{lines}}", "the watch on it has ended; `journal output read {{n}} --summary` says more", repeat_interval=0)
-    nudges = (WATCH_VIEW, WATCH_ENDED, BACKGROUND_MOVE, OUTPUTS_ENDED, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
+    WATCH_SUGGESTION = Nudge(name, "watch_it_live", "watch it live, so the user sees it move: `journal output watch {{n}}{{reader}}`", "or `journal await \"<what>\" --output {{n}}{{reader}}` when you wait on it", repeat_interval=0)
+    NEW_READER_SUGGESTION = Nudge(name, "make_its_reader", "no reader reads {{command}} yet: make one, and its card shows how far it is", "`journal reader add <name> --commands \"{{command}}\" --pattern '<its failure and summary lines>' --progress '<a percent or a count of a total, in groups>' --label Tests`, then watch it with --reader <name>; the next run is told of it by itself", repeat_interval=0)
+    nudges = (WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands
@@ -68,6 +71,11 @@ Every shell command you run goes through the journal's runner.
   sooner. One output is watched at a time. A reader written for a watch picks few lines that read well in the card, and
   may show how far the command has come: `--progress <regex>` takes the last match, its groups a percentage such as
   `\\[(\\d+)%\\]` or a count of a total such as `(\\d+)/(\\d+)`, drawn as a bar in the card, and `--label "<words>"` names it.
+- A reader names the commands whose output it reads, `--commands "pytest"`, and a command moved to the background that
+  runs one is told to watch it with that reader, so one reader serves every later run; a test run or a build no reader
+  reads is told to make one first, with the line to copy. The journal ships readers for pytest, dotnet test and phpunit
+  or pest in .journal/readers as examples. Waiting on a command, `journal await "<what>" --output N --reader <name>`
+  watches it too, so the user sees it move while you wait.
 - A test run, a build or any other command's output is shown whole up to 400 characters; past that you see only a
   line naming the output to read by its number, with its lines, its characters and the part of the line it came from. A command that reads (cat, grep, sed, git diff) is shown up to 8,000
   characters, past that by its two ends. A line of journal commands is shown whole and kept as no output.

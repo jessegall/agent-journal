@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from journal.features.shell.support.progress import Progress
+from journal.features.shell.support.reader_commands import COMMANDS_PREFIX, ReaderCommands
 from journal.support.rejection import Rejection
 
 TIMEOUT_SECONDS = 30
@@ -15,11 +16,14 @@ class ScriptReader:
     name: str
     subject: str
     path: Path
+    commands: ReaderCommands = ReaderCommands()
 
     @classmethod
     def loaded(cls, path: Path) -> "ScriptReader":
-        topic = next((line.removeprefix("#").strip() for line in path.read_text().splitlines() if line.startswith("#") and not line.startswith("#!")), "")
-        return cls(path.stem, topic, path)
+        notes = [line.removeprefix("#").strip() for line in path.read_text().splitlines() if line.startswith("#") and not line.startswith("#!")]
+        commands = next((note.removeprefix(COMMANDS_PREFIX) for note in notes if note.startswith(COMMANDS_PREFIX)), "")
+        topic = next((note for note in notes if not note.startswith(COMMANDS_PREFIX)), "")
+        return cls(path.stem, topic, path, ReaderCommands.parsed(commands))
 
     def matches(self, command: str) -> bool:
         return False

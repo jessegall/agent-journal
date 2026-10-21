@@ -38,7 +38,6 @@ const TOOL_STATES = {
     Bash: "running",
 };
 
-
 const BAR_STATES = {paused: "paused", stopped: "stopped", compacting: "compacting", waiting: "waiting", running: "waiting"};
 
 // An idle agent's figure falls asleep after this many seconds of nothing.
@@ -132,15 +131,15 @@ export function facesAfter(reactions, seenAt) {
         .sort((a, b) => a.time - b.time);
 }
 
-// A test run's card is made when it starts and changes when it ends, so its result is a change seen between two looks: the beats for each
-// test card that has ended since `known` (card key to the state it had) was last filled in, which this fills in
+// A test run is a watched output whose reader's figure says Tests, so its result is its watch card's ending seen between two looks: the
+// beats for each such card that has ended since `known` (card key to the ending it had) was last filled in, which this fills in
 export function testResultsAfter(agent, known) {
-    const ended = (agent?.data?.cards || []).filter((card) => card.key?.startsWith("tests:") && ["done", "failed"].includes(card.state));
-    const fresh = ended.filter((card) => known.get(card.key) !== card.state);
-    fresh.forEach((card) => known.set(card.key, card.state));
+    const ended = (agent?.data?.cards || []).filter((card) => card.watch?.figure?.startsWith("Tests") && card.watch.ending);
+    const fresh = ended.filter((card) => known.get(card.key) !== card.watch.ending);
+    fresh.forEach((card) => known.set(card.key, card.watch.ending));
     return fresh.map((card) => ({
-        beat: card.state === "done" ? "tests_passed" : "tests_failed",
-        time: Number(card.ended || card.time),
+        beat: card.watch.ending === "finished" ? "tests_passed" : "tests_failed",
+        time: Number(card.time),
         card: card.key,
     }));
 }
@@ -155,7 +154,14 @@ export const withSystemCards = (agent, messages) =>
                 ...(agent.data?.cards || []),
                 ...messages
                     .filter((m) => m.author === "system" && [undefined, "", agent.session].includes(m.data?.session))
-                    .map((m) => ({key: refOf(m), time: createdAt(m), icon: m.data.icon, tone: m.data.tone, label: m.text})),
+                    .map((m) => ({
+                        key: refOf(m),
+                        time: createdAt(m),
+                        icon: m.data.icon,
+                        tone: m.data.tone,
+                        label: m.text,
+                        watch: m.data.output ? {figure: m.data.figure || "", ending: m.data.ending || ""} : null,
+                    })),
             ],
         },
     };

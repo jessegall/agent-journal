@@ -1,5 +1,6 @@
 import re
 from argparse import Namespace
+from journal.features.shell.support.readers import Readers
 
 from journal.console.command import Command
 from journal.models.command_output import CommandOutput
@@ -21,13 +22,14 @@ class WaitCommand(Command):
     noun = "await"
     default_verb = "begin"
 
-    def __init__(self, events: CommandEvents, awaitables: WaitTargets) -> None:
-        self.events, self.awaitables = events, awaitables
+    def __init__(self, events: CommandEvents, awaitables: WaitTargets, readers: Readers) -> None:
+        self.events, self.awaitables, self.readers = events, awaitables, readers
 
     def arguments(self, verbs) -> None:
         time = self.verb(verbs, "begin", "say what you wait for, and name what ends the wait")
         time.add_argument("what", help="what you wait for, as its title: the test run, the build, Lady Lovelace's report")
         time.add_argument("--output", type=int, action="append", default=[], metavar="N", help="a command's output; the wait ends once the command is done; more than one waits for all")
+        time.add_argument("--reader", default="", help="with --output, also watch the output live through this reader, so the user sees it move while you wait")
         time.add_argument("--until", default="", metavar="SCRIPT", help="a shell script run every 30 seconds; the wait ends once it passes, such as ! kill -0 <pid> for a process")
 
     def begin(self, args: Namespace, caller: Caller) -> int:
@@ -35,7 +37,12 @@ class WaitCommand(Command):
             raise Rejection(MISSING_WAIT_TARGET)
         if USER_WAIT_PATTERN.search(args.what):
             raise Rejection(USER_WAIT_REFUSAL)
-        names = [self.awaitables.ref(output) for output in self.running(args.output)] + ([self.awaitables.polled_check(args.until, args.what, caller.actor)] if args.until else [])
+        unended = self.running(args.output)
+        if args.reader:
+            self.readers.lookup(args.reader)
+            for output in unended:
+                self.awaitables.outputs.watch(output, args.reader, caller.actor)
+        names = [self.awaitables.ref(output) for output in unended] + ([self.awaitables.polled_check(args.until, args.what, caller.actor)] if args.until else [])
         self.events.wait_declared(args.what, ",".join(names), caller)
         print(f"waiting for {args.what}, on {', '.join(self.awaitables.title(name) for name in names)}; it ends by itself once all of it has settled, or when you work again")
         return 0
