@@ -7,6 +7,11 @@
             {
                 "nameMatches": "(?i)(^|_)(by|of|in|on|for|from|to|into|over|under|out|across|about|until|between|within|around|above|below|through|than|per|via|at|since|their|not|already|most|over|through|every|meanwhile|you|your|yours|me|my|we|us|our|ours|own|in_hand|let_go|in_words|whatever_its|by_itself|to_the_top|at_a_pace|when_a_wait|of_a_deleted|on_its|on_the_hour|ran_out|has_just|is_due|has_news|just|back|forth|held|hold|holds|holding|named|the|a|an|it|its|itself|what|this|that|these|those|them|they|again|still|yet|never|always|only|also|too|now|then|here|there|anew|once_more|one_by_one|by_hand|at_once|as_well|for_good|right_away|all_at_once|as_is|in_turn|in_full|of_the|to_the|in_the|at_the|on_the|for_the|with_the|from_the|into_the|by_the|outside|inside|beyond|behind|ahead|above|below|beneath|around|apart|away|far|near|nearby|elsewhere|somewhere|anywhere|everywhere|nowhere|aside|which|who|whom|whose|why|how|when|where|come|comes|coming|go|goes|going|gone|and|or|but|nor|because|while|until|unless|whether|something|anything|nothing|everything|someone|anyone|nobody|everybody|everyone)(_|$)|_(has|have|had|is|are|was|were|be|been|being|do|does|did|can|could|will|would|shall|should|may|might|must)(_|$)"
             }
+        ],
+        "reject": [
+            {
+                "nameMatches": "^on_"
+            }
         ]
     },
     "sin": {

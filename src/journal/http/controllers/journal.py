@@ -19,6 +19,7 @@ from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
 from journal.repositories.statistics import Statistics
+from journal.repositories.timings import Timings
 from journal.support.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.version import VERSION
@@ -27,14 +28,15 @@ COLOR = "#5e64c9"
 STARTED = timing.time()
 SILENT_AFTER = 900.0
 BAR_SHOWN = 8
+LOGGED_SHOWN = 100
 
 
 class JournalController:
     """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the live agent is doing this moment."""
 
     def __init__(self, config: Config, manifest: Manifest, environments: Environments, agents: Agents, activity: AgentActivity, current: CurrentWork,
-                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateMark, statistics: Statistics) -> None:
-        self.statistics = statistics
+                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateMark, statistics: Statistics, timings: Timings) -> None:
+        self.statistics, self.timings = statistics, timings
         self.config, self.boot, self.environments, self.agents, self.activity, self.current = config, manifest, environments, agents, activity, current
         self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, mark
 
@@ -56,10 +58,12 @@ class JournalController:
         kinds = sorted({key.split(".")[2] for key in numbers if key.startswith("developer.hooks.") and key.count(".") == 3})
         times = {"hooks": AnswerTime.read(numbers, "developer.hooks"), "requests": AnswerTime.read(numbers, "developer.requests")}
         by_kind = {kind: AnswerTime.read(numbers, f"developer.hooks.{kind}").as_data() for kind in kinds}
-        return Response.json({**{key: answer.as_data() for key, answer in times.items()}, "by_kind": by_kind})
+        as_rows = lambda timings: [{"method": t.method, "route": t.route, "ms": t.ms, "time": t.time} for t in timings]
+        return Response.json({**{key: answer.as_data() for key, answer in times.items()}, "by_kind": by_kind, "recent": as_rows(self.timings.recent(LOGGED_SHOWN)), "slowest": as_rows(self.timings.slowest(LOGGED_SHOWN))})
 
     def developer_reset(self, request: Request) -> Response:
         self.statistics.cleared("developer.", request.actor)
+        self.timings.cleared(request.actor)
         return self.developer(request)
 
     def summary(self, request: Request) -> Response:

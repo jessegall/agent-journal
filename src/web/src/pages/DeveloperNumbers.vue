@@ -19,6 +19,9 @@ async function reset() {
     numbers.value = await api.developerReset();
 }
 
+const slowestFirst = ref(false);
+const logged = () => (numbers.value ? (slowestFirst.value ? numbers.value.slowest : numbers.value.recent) || [] : []);
+const clock = (seconds) => new Date(seconds * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
 const row = (title, measured) => ({title, count: measured.count, average: measured.average_ms, slowest: measured.slowest_ms});
 const rows = () =>
     numbers.value
@@ -54,6 +57,35 @@ const rows = () =>
                 <template v-if="!rows().length">
                     <tr>
                         <td colspan="4">Nothing measured yet</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        <div class="developer-head">
+            <h3 class="developer-heading">{{ slowestFirst ? "The slowest of the newest thousand" : "The newest requests" }}</h3>
+            <button class="developer-reset" type="button" @click="slowestFirst = !slowestFirst">{{ slowestFirst ? "Newest first" : "Slowest first" }}</button>
+        </div>
+        <table class="developer-table">
+            <thead>
+                <tr>
+                    <th>When</th>
+                    <th>Kind</th>
+                    <th>Route or command</th>
+                    <th>Milliseconds</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-for="(line, index) in logged()" :key="index">
+                    <tr>
+                        <td>{{ clock(line.time) }}</td>
+                        <td>{{ line.method }}</td>
+                        <td>{{ line.route }}</td>
+                        <td>{{ line.ms }} ms</td>
+                    </tr>
+                </template>
+                <template v-if="!logged().length">
+                    <tr>
+                        <td colspan="4">Nothing logged yet</td>
                     </tr>
                 </template>
             </tbody>

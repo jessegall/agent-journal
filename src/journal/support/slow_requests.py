@@ -13,6 +13,8 @@ from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.statistics import Statistics
+from journal.repositories.timings import Timings
+from journal.models.timing import Timing
 from journal.repositories.setting_rows import SettingRows
 from journal.supervisor_link import SupervisorLink
 from journal.support.scope import Scope
@@ -31,9 +33,10 @@ OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin p
 class SlowRequests:
     """Measures each request against its budget where the journal develops itself, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time."""
 
-    def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred, statistics: Statistics) -> None:
+    def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudger: Nudger, supervisor: SupervisorLink, deferred: Deferred, statistics: Statistics, timings: Timings) -> None:
         self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudger, self.supervisor, self.deferred = config, settings, cards, messages, agents, environments, scope, nudger, supervisor, deferred
         self.statistics = statistics
+        self.timings = timings
         self.started = time.monotonic()
 
     def measured(self, method: str, path: str, ms: float) -> None:
@@ -48,6 +51,7 @@ class SlowRequests:
 
     def counted(self, method: str, path: str, ms: int) -> None:
         self.statistics.measured("developer.hooks" if method == HOOK else "developer.requests", ms, Actor.system())
+        self.timings.logged(Timing(method=method, route=path, ms=ms, time=time.time()), Actor.system())
         if method == HOOK:
             self.statistics.measured(f"developer.hooks.{path.rsplit('/', 1)[-1]}", ms, Actor.system())
 

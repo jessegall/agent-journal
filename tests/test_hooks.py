@@ -194,7 +194,10 @@ def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app):
     with urlopen(request, timeout=5) as reply:
         numbers = json.loads(reply.read())
     assert numbers["hooks"]["count"] == 2 and numbers["hooks"]["average_ms"] >= 200 and numbers["by_kind"]["PreToolUse"]["slowest_ms"] >= 300, numbers
+    hooks = [t for t in numbers["recent"] if t["method"] == "HOOK"]
+    assert [t["route"] for t in hooks][:2] == ["/hooks/PreToolUse"] * 2 and hooks[0]["time"] > 0 and any(t["route"] == "/hooks/claude" for t in numbers["recent"]), "every request is logged with its route, kind and moment, newest first, the hook's own time beside the server's"
+    assert numbers["slowest"][0]["ms"] >= numbers["slowest"][-1]["ms"] and numbers["slowest"][0]["ms"] >= 300, "and listed slowest first at a click"
     reset = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/developer/reset", data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
     with urlopen(reset, timeout=5) as reply:
         numbers = json.loads(reply.read())
-    assert numbers["hooks"]["count"] == 0 and numbers["by_kind"] == {}, "a reset clears every count, so the next reading starts from nothing"
+    assert numbers["hooks"]["count"] == 0 and numbers["by_kind"] == {} and numbers["recent"] == [], "a reset clears every count and the log, so the next reading starts from nothing"

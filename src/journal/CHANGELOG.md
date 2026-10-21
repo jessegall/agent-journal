@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- The Developer tab keeps a rolling log of the newest thousand requests, each with its kind, its route or command, its milliseconds and its moment, logged after the reply from the same funnel as the counts; the tab lists the newest hundred and switches to the slowest at a click, and Reset clears the log with the counts.
 - A comment on a document's or a report's passage, read by the agent, names the section and the lines the passage sits on, with the command to read that section, so the agent reads the row by number instead of searching its whole text.
 4.5.0 is the stack machine. What an agent is doing is a stack of states on its row, Idle at the floor and the state in hand on top: Working, Following a plan, Waiting on a question, Awaiting workers, Stuck, Compacting, Ended, and the work mode's own floors, Orchestrating and Working alone. A pause is a state pushed over the work and popped when what it waits for comes; every push and pop is an entry in the trail, shown under the figure on the Home page with each state's values and what it awaits; `journal panic now <state>` pushes, pops or resets the stack from outside and is always allowed. The journal's conduct toward the agent, every line and every hold, lives in the states' listeners and in each feature's conduct, folded into every state at boot; the numbers it reads are the Settings page's.
 
