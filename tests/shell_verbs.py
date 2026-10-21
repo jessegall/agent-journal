@@ -32,7 +32,7 @@ class ShellVerbs:
 
     def limit(self, line: str = "") -> str:
         with self.scope.environment(self.environment_id):
-            return str(self.app.container.get(ForegroundLimit).build(line, self.caller.environment))
+            return str(self.app.container.get(ForegroundLimit).build(line, self.caller.environment, self.caller.session))
 
     def started(self, part: str, chain: str) -> None:
         with self.scope.environment(self.environment_id):

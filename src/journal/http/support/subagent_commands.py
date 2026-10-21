@@ -14,10 +14,10 @@ class SubagentCommands:
     def __init__(self, announced: AnnouncedCommands, agents: Agents, environments: Environments, scope: Scope) -> None:
         self.announced, self.agents, self.environments, self.scope = announced, agents, environments, scope
 
-    def runs(self, environment: str, argv: list[str], actor: str, thread: str) -> bool:
-        return actor == SUB_AGENT or self.announced.claim(environment, argv) or self.other_thread(environment, thread)
+    def runs(self, environment: str, session: str | None, argv: list[str], actor: str | None, thread: str | None) -> bool:
+        return actor == SUB_AGENT or self.announced.claim(environment, session, argv) or self.other_thread(environment, thread)
 
-    def other_thread(self, environment: str, thread: str) -> bool:
+    def other_thread(self, environment: str, thread: str | None) -> bool:
         if not thread:
             return False
         with self.scope.environment(self.environments.lookup(environment).row_id):

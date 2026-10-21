@@ -145,8 +145,8 @@ def test_a_guard_that_raises_fails_open_and_is_reported_loudly(app: App):
     assert any("A guard failed and let the event through" in m.text for m in app.container.get(Messages).scoped()), "and the user sees a card in the chat"
 
 
-def post_command(app, argv: list[str], headers: dict | None = None) -> dict:
-    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/cli", data=json.dumps({"argv": argv, "env": "main"}).encode(), method="POST", headers={"Content-Type": "application/json", **(headers or {})})
+def post_command(app, argv: list[str], headers: dict | None = None, session: str | None = None) -> dict:
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/cli", data=json.dumps({"argv": argv, "env": "main", "session": session}).encode(), method="POST", headers={"Content-Type": "application/json", **(headers or {})})
     with urlopen(request, timeout=5) as reply:
         return json.loads(reply.read())
 
@@ -154,9 +154,10 @@ def post_command(app, argv: list[str], headers: dict | None = None) -> dict:
 def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app: App):
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Bash", "tool_input": {"command": "journal task list"}})
     assert status == 200 and body == {} and app.container.get(Entries).scoped() == [], "announced, never recorded as the agent's"
-    refused = post_command(app, ["task", "list"], {"X-Journal-Env": "main"})
+    assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, "s2")["code"] == 0, "another session's command is not the subagent's"
+    refused = post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, "s1")
     assert refused["code"] == 1 and "a subagent runs no journal command" in refused["error"]
-    assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"})["code"] == 0, "the announcement is used up by its command"
+    assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, "s1")["code"] == 0, "the announcement is used up by its command"
 
 
 def test_a_command_under_the_sub_agent_actor_is_refused(app: App):

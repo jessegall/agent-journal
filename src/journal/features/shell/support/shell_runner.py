@@ -71,7 +71,7 @@ class ShellRunner:
 
     def foreground(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> Iterator[bytes]:
         display = OutputShow(folder, cap)
-        limit = self.limits.build(request.line, caller.environment)
+        limit = self.limits.build(request.line, caller.environment, caller.session)
         shown, tick, began = 0, 0, time.monotonic()
         while True:
             while folder.has_ended(shown):
@@ -91,7 +91,7 @@ class ShellRunner:
             time.sleep(TICK_SECONDS)
             tick += 1
             if tick % LIMIT_READ_TICKS == 0:
-                limit = self.limits.build(request.line, caller.environment)
+                limit = self.limits.build(request.line, caller.environment, caller.session)
 
     def watched(self, number: int, alias: Alias, caller: Caller) -> list[str]:
         from journal.features.shell.feature import Shell

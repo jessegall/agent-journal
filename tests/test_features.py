@@ -6557,6 +6557,18 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
 
+def test_every_caller_names_its_kind_and_a_subagent_is_told_by_its_agents_session(app: App):
+    from journal.support.announced_commands import AnnouncedCommands
+    from journal.support.caller_kind import CallerKind
+    from journal.http.support.subagent_commands import SubagentCommands
+    assert [c.kind for c in (Caller.user("main"), Caller.agent("main", "s1", "claude"), Caller.shell("main", "claude"), Caller.plugin("main", "echo"), Caller.worker("main", 3, "w-1", "claude"))] == [CallerKind.USER, CallerKind.MAIN_AGENT, CallerKind.MAIN_AGENT, CallerKind.PLUGIN, CallerKind.WORKER]
+    assert Caller.worker("main", 3, "w-1", "claude").subagent_caller().kind == CallerKind.SUBAGENT, "a subagent of a worker is a subagent first"
+    announced, subagents = app.container.get(AnnouncedCommands), app.container.get(SubagentCommands)
+    announced.note("main", "w-1", ("journal task list",))
+    assert not subagents.runs("main", "s1", ["task", "list"], None, None), "a worker's subagent's announcement never claims the main agent's command"
+    assert subagents.runs("main", "w-1", ["task", "list"], None, None), "it claims the command posted from the worker's session"
+
+
 def test_a_subagent_is_a_row_the_census_counts_retire_writes_and_one_from_before_the_rows_is_ended(app: App):
     from journal.features.workers.seeds.subagents_seed import SubagentsSeed
     subagents = app.container.get(Subagents)

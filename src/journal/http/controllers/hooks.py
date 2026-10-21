@@ -21,12 +21,12 @@ class HookController:
         if hook.subagent and hook.kind == HookKind.PRE_TOOL_USE:
             return self.announce(hook)
         if hook.kind == HookKind.PRE_TOOL_USE:
-            self.announced.withdraw(hook.environment, self.shell_parts(hook))
+            self.announced.withdraw(hook.environment, hook.session, self.shell_parts(hook))
         return self.providers.lookup(hook.provider).answer(hook, self.receiver.receive(hook))
 
     def announce(self, hook: Hook) -> Response:
         if parts := self.shell_parts(hook):
-            self.announced.note(hook.environment, parts)
+            self.announced.note(hook.environment, hook.session, parts)
         return Response.json({})
 
     def shell_parts(self, hook: Hook) -> tuple[str, ...]:
