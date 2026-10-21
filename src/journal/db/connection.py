@@ -33,7 +33,7 @@ class Connection:
             self._free.append(local)
 
     def execute(self, sql: str, params: tuple = ()) -> sqlite3.Cursor:
-        return self._local().execute(sql, tuple(self.masks.masked(p) if isinstance(p, str) else p for p in params))
+        return self._local().execute(sql, self.masks.masked(params))
 
     def one(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
         return self.execute(sql, params).fetchone()
