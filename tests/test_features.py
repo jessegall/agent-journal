@@ -5998,7 +5998,12 @@ def test_the_kept_output_line_says_the_lines_the_characters_and_the_part_of_the_
     assert OutputShow(alone, Cap(HINT, 400)).of(0) == f"[journal] output {alone.number()} kept, 80 lines, 631 characters\n", "a line of one part names no part"
     cut = folder_of("cut", "make test 2>&1 | tail -2")
     (cut.folder / "0.out").write_text(eighty)
-    assert OutputShow(cut, Cap(HINT, 400)).of(0) == f"line 79\nline 80\n[journal] the whole output is kept as output {cut.number()}, 80 lines, 631 characters\n", "the cut applied, the whole kept and counted"
+    assert OutputShow(cut, Cap(HINT, 400)).of(0) == f"line 79\nline 80\n[journal] output {cut.number()} kept, 80 lines, 631 characters\n", "the cut applied and shown, the whole kept and named by the one line"
+    chained = folder_of("chained", "make test 2>&1 | tail -2 && npm run build")
+    (chained.folder / "0.out").write_text(eighty)
+    (chained.folder / "1.out").write_text(eighty)
+    both = OutputShow(chained, Cap(HINT, 400))
+    assert both.of(0) == f"line 79\nline 80\n[journal] output {chained.number()} kept, 80 lines, 631 characters, part 1 of the line: make test 2>&1\n" and both.of(1).startswith(f"[journal] output {chained.number()} also holds part 2"), "a cut part and a long part name the one output by one line each, never two wordings"
     read = folder_of("read", "cat /etc/hosts")
     (read.folder / "0.out").write_text("".join(f"l{i:02d}\n" for i in range(1, 51)))
     shown = OutputShow(read, Cap(ENDS, 80)).of(0)

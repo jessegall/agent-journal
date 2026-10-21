@@ -7,7 +7,7 @@ PART_CHARACTERS = 60
 
 
 class OutputShow:
-    """What the agent sees of a part's output in the foreground, as the cap says: whole for a line of journal commands or an output under the cap; a cut part's cut applied, the whole kept; half the characters from each end for a read past the cap, with a line naming the lines shown and the lines cut; and for any other output past the cap one line naming the output to read by its number, with its lines, its characters and the part it came from, and a shorter line for each later part the output also holds."""
+    """What the agent sees of a part's output in the foreground, as the cap says: whole for a line of journal commands or an output under the cap; a cut part's cut applied and shown, the whole kept and named by the same one line; half the characters from each end for a read past the cap, with a line naming the lines shown and the lines cut; and for any other output past the cap one line naming the output to read by its number, with its lines, its characters and the part it came from, and a shorter line for each later part the output also holds."""
 
     def __init__(self, folder: OutputFiles, cap: Cap) -> None:
         self.folder, self.cap = folder, cap
@@ -24,12 +24,15 @@ class OutputShow:
         cut = self.folder.cut_of(i)
         if cut and name == "out":
             shortened = subprocess.run(["sh", "-c", cut], input=text, capture_output=True, text=True).stdout
-            if len(shortened) <= self.cap.characters:
-                return f"{shortened.rstrip(chr(10))}\n[journal] the whole output is kept as output {self.folder.number()}, {self.counts(text)}\n"
+            shown = shortened if len(shortened) <= self.cap.characters else shortened[-self.cap.characters:]
+            return f"{shown.rstrip(chr(10))}\n{self.kept_line(i, text)}"
         if self.cap.is_whole() or len(text) <= self.cap.characters:
             return text
         if self.cap.is_ends():
             return self.ends(text)
+        return self.kept_line(i, text)
+
+    def kept_line(self, i: int, text: str) -> str:
         if self.named:
             return f"[journal] output {self.folder.number()} also holds {self.part_label(i)} ({self.counts(text)})\n"
         self.named = True
