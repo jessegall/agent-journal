@@ -71,7 +71,7 @@ describe("a row docked above the chat", () => {
     test("is taken down by its close X alone", async () => {
         const act = vi.spyOn(api, "act").mockResolvedValue({});
         const host = await shown(RowDock, {message: dockedReport});
-        host.querySelector('[title^="Hide from chat"]').click();
+        host.querySelector('[aria-label^="Hide from chat"]').click();
         expect(act).toHaveBeenCalledWith("messages", 41, "undock");
     });
 
