@@ -1,10 +1,8 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.skills.listeners.owe_skills import OweSkills
 from journal.features.skills.support.skills_conduct import SkillsConduct
 from journal.features.skills.support.skills_snapshot_reader import SkillsSnapshotReader
 from journal.engine.nudge import Nudge
-from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 from journal.features.skills.commands.skill_command import SkillCommand
 from journal.features.skills.listeners.forget_at_compaction import ForgetAtCompaction
@@ -21,13 +19,6 @@ class Skills(Feature):
     listeners = (OweSkills, MarkLoaded, ForgetAtCompaction)
     snapshot = (SkillsSnapshotReader,)
     conduct = (SkillsConduct,)
-    checks = (
-        Entry(NodeKind.CHECK, 'prompt_names_skill', "Prompt names a skill's keyword?", "the prompt the user sent names a keyword of one of the journal's skills"),
-        Entry(NodeKind.CHECK, 'skill_owed', 'Has a skill still to read?', "the agent owes a read of a skill's file: required and not read since"),
-    )
-    actions = (
-        Entry(NodeKind.ACTION, 'require_skill', 'Require a skill to be read', 'the agent owes a read of the skill named in the text, told where its file is; with no text, the skills the prompt names at a prompt, else the skill of the state the agent is in', takes_text=True),
-    )
 
     READ_THE_SKILL_FIRST = Nudge(name, "read_the_skill_first", "read the {{skill}} skill before anything else: {{path}}", "writes wait until you have", repeat_after=0)
     STOPPED_OWING = Nudge(name, "stopped_owing", "you stopped while the journal awaits the {{skills}} skill to be read", "do that first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
@@ -58,7 +49,7 @@ lists the verbs.
   your turn: the wait ends by itself once that is done.
 - `journal search "<words>"` finds every task, plan, message, document, report and agent conversation here that holds
   all the words: look there before saying you do not know or asking the user again.
-- Also: **report**, **doc**, **check**, **chart**, **plugin**, **secret**, **template**, **notice**; `journal <noun> --help` lists the verbs.
+- Also: **report**, **doc**, **check**, **plugin**, **secret**, **template**, **notice**; `journal <noun> --help` lists the verbs.
 - `journal stuck "<why>"` when you are truly stuck: the journal stays quiet until your next tool use.
 
 A line from the journal is an instruction, never a message: act on it, and write nothing about it in the chat.

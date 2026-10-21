@@ -1,7 +1,5 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
-from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand
 from journal.features.questions.listeners.mark_question import MarkQuestion
@@ -19,11 +17,6 @@ class Questions(Feature):
     listeners = (MarkQuestion,)
     conduct = (QuestionsConduct,)
     snapshot = (QuestionsSnapshotReader,)
-    checks = (
-        Entry(NodeKind.CHECK, 'question_answered', 'Question answered?', 'the row is a question the user just answered'),
-        Entry(NodeKind.CHECK, 'agent_waits_on_the_question', 'Agent waits on this question?', 'the agent waits on the question of this row'),
-        Entry(NodeKind.CHECK, 'open_question', 'Has an open question?', 'a question to the user here waits for its answer'),
-    )
 
     QUESTION_ANSWERED = Nudge(name, "question_answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
     ASK_THROUGH_THE_JOURNAL = Nudge(name, "ask_through_the_journal", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options \"a\" \"b\"`; the user answers in the viewer and the answer reaches you", repeat_after=0)

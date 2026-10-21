@@ -1,3 +1,5 @@
+import time
+
 from journal.support.cards import Cards
 from journal.engine.state_machine import StateMachine
 from journal.events.agent.agent_event import AgentEvent
@@ -17,6 +19,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.support.scope import Scope
+from journal.support.slow_requests import SlowRequests
 from journal.support.chat_mark import ChatMark
 
 
@@ -27,13 +30,12 @@ GUARD_FAILED = "guard_failed"
 class Receiver:
     """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents) -> None:
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests) -> None:
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
         self.agents = agents
-        self.transcript, self.cards = transcript, cards
+        self.transcript, self.cards, self.slow = transcript, cards, slow
 
     def receive(self, hook: Hook) -> Decision:
-        """The hook's decision: what the blocking listeners say, the rest deferred; all of it in the environment the hook names."""
         environment = self.environments.named(hook.environment)
         with self.scope.of(environment.id):
             for written in self.transcript.events(hook, environment):
@@ -43,23 +45,27 @@ class Receiver:
             if self.stray(event):
                 return Decision()
             decision = self._blocking(event)
-            if not decision.allowed:
-                self.entries.save(entry.with_(data={**entry.data, "refused": decision.reason}), Actor.agent(hook.session))
+            self.entries.save(entry.with_(data={**entry.data, **self.recorded_outcome(hook, decision)}), Actor.agent(hook.session))
             self._defer(event)
         return decision
 
+    def recorded_outcome(self, hook: Hook, decision: Decision) -> dict:
+        recorded = {} if decision.allowed else {"refused": decision.reason}
+        if not hook.started_ms:
+            return recorded
+        elapsed = int(time.time() * 1000) - hook.started_ms
+        self.slow.measured("HOOK", f"/hooks/{hook.kind.value}", elapsed)
+        return {**recorded, "hook_ms": elapsed}
+
     def stray(self, event: AgentEvent) -> bool:
-        """The end of a session the journal never saw begin, such as a one-off run of the program like claude mcp list: recorded, and no agent made for it."""
         return isinstance(event, SessionEnded) and not self.agents.where(session=event.session)
 
     def _now(self, event: AgentEvent) -> None:
-        """A turn read from the transcript is handled whole and at once, by every listener, so a reply in it answers its message before the hook's own event is judged."""
         blocking, deferred = self._split(event)
         for listener in [*blocking, *deferred]:
             listener.handle(event)
 
     def _blocking(self, event: AgentEvent) -> Decision:
-        """Every blocking listener runs; the first hold wins, and a later refusal adds its words to the answer without a second reason."""
         decision = Decision()
         for listener in self._split(event)[0]:
             if not decision.allowed and getattr(listener, "asked_while_free", False):
@@ -72,7 +78,6 @@ class Receiver:
         return decision
 
     def _guarded(self, listener: Listener, event: AgentEvent) -> Decision | None:
-        """A guard that raises fails open: the event goes through as if the guard had said nothing, and the fault is reported loudly, as an entry, a card in the chat and a line to the agent, so a broken guard is never a silent hold."""
         try:
             return listener.handle(event)
         except Exception as fault:
@@ -86,7 +91,6 @@ class Receiver:
             self.deferred.add(lambda listener=listener: listener.handle(event))
 
     def _split(self, event: AgentEvent) -> tuple[list[AgentListener], list[Listener]]:
-        """The listeners of this event: the machine first, so every other sees the state the event led to, the other blocking ones next and the deferred ones last."""
         listeners = self.bus.listeners(type(event))
         blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: not isinstance(l, StateMachine))
         return blocking, [l for l in listeners if not getattr(l, "blocking", False)]

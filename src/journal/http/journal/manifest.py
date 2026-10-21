@@ -5,8 +5,6 @@ from journal.config import Config
 from journal.features.feature import Feature
 from journal.features.registry import Registry
 from journal.http.journal.journal_facts import JournalFacts
-from journal.models.node_kind import NodeKind
-from journal.repositories.charts import Charts
 from journal.version import VERSION
 
 DIST = Path(__file__).resolve().parents[3] / "web" / "dist" / "index.html"
@@ -19,32 +17,19 @@ SYSTEM_GROUPS = [{"key": "project", "title": "Project", "line": "Settings for th
 class Manifest:
     """What the viewer boots from: the journal's project, version and build, and every feature that means something in this project, with its switch, its words and its options, in the groups the settings page shows."""
 
-    def __init__(self, config: Config, registry: Registry, charts: Charts) -> None:
-        self.config, self.registry, self.charts = config, registry, charts
+    def __init__(self, config: Config, registry: Registry) -> None:
+        self.config, self.registry = config, registry
 
     def of(self, environment: str) -> JournalFacts:
         return JournalFacts(self.config.root.name, environment, VERSION, self.build(), self.features(), self.groups())
 
     def features(self) -> list[dict]:
-        """Every feature as the settings page reads one: its switch, its words and its options, each option with the workflow nodes that read it."""
-        readers = self.read_by()
+        """Every feature as the settings page reads one: its switch, its words and its options."""
         return [{"name": f.name, "title": f.title, "help": f.help, "default": f.default, "fixed": f.fixed,
                  "options": [{"key": o.key, "name": o.name, "title": o.title, "abstract": o.abstract, "kind": o.kind, "default": o.default, "unit": o.unit, "choices": list(o.choices),
-                              "provider": o.provider, "read_by": readers.get(o.key, [])} for o in f.options]}
+                              "provider": o.provider} for o in f.options]}
                 for f in self.applying()]
 
-    def read_by(self) -> dict[str, list[dict]]:
-        """The workflows that read each setting, once each: those with a check node whose text ends with the setting's key, alone or after a count's name."""
-        readers: dict[str, list[dict]] = {}
-        for chart in self.charts.all():
-            for node in self.charts.nodes_of(chart):
-                words = node.text.split()
-                if node.kind != NodeKind.CHECK or not words or "." not in words[-1]:
-                    continue
-                reader = {"workflow": chart.title, "id": chart.id}
-                if reader not in readers.setdefault(words[-1], []):
-                    readers[words[-1]].append(reader)
-        return readers
 
     def applying(self) -> list[type[Feature]]:
         return [f for f in self.registry.features if f.applies_in(self.config.root)]

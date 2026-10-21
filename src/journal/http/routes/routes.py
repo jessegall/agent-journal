@@ -1,7 +1,6 @@
 from journal.container import Container
 from journal.http.controllers.agents import AgentController
 from journal.http.controllers.attachments import AttachmentController
-from journal.http.controllers.chart import ChartController
 from journal.http.controllers.checks import CheckController
 from journal.http.controllers.cli import CliController
 from journal.http.controllers.comments import CommentController
@@ -71,7 +70,6 @@ class Routes:
         self.agents(router)
         self.sharing(router)
         self.extending(router)
-        self.workflows(router)
         return router
 
     def journal(self, router: Router) -> None:
@@ -237,19 +235,6 @@ class Routes:
         router.post(f"{API}/mcp/check", mcp.check)
         for act, handler in (("key", mcp.key), ("remove", mcp.remove), ("sign-in", mcp.sign_in)):
             router.post(f"{API}/mcp/{{name}}/{act}", handler)
-
-    def workflows(self, router: Router) -> None:
-        chart = self.container.get(ChartController)
-        router.get(f"{API}/chart", chart.index)
-        router.post(f"{API}/chart", chart.create)
-        router.post(f"{API}/chart/try", chart.try_)
-        router.get(f"{API}/chart/runs", chart.runs)
-        router.post(f"{API}/chart/order", chart.order)
-        router.get(f"{API}/chart/{{id}}", chart.one)
-        router.get(f"{API}/chart/{{id}}/snapshot", chart.stands)
-        router.post(f"{API}/chart/{{id}}", chart.save)
-        for act, handler in (("reset", chart.reset), ("remove", chart.remove), ("off", chart.off), ("on", chart.on)):
-            router.post(f"{API}/chart/{{id}}/{act}", handler)
 
     @staticmethod
     def listed(router: Router, name: str, controller) -> None:

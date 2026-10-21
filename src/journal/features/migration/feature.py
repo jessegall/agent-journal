@@ -1,9 +1,7 @@
 from journal.engine.nudge import Nudge
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.migration.support.migration_conduct import MigrationConduct
 from journal.features.migration.support.migration_snapshot_reader import MigrationSnapshotReader
-from journal.models.node_kind import NodeKind
 
 
 class MigrationFeature(Feature):
@@ -17,6 +15,3 @@ class MigrationFeature(Feature):
     snapshot = (MigrationSnapshotReader,)
     conduct = (MigrationConduct,)
 
-    checks = (
-        Entry(NodeKind.CHECK, 'version_3_waiting', 'Has a version 3 journal to bring across?', 'the installer kept a version 3 journal here and the user has not brought it across yet'),
-    )

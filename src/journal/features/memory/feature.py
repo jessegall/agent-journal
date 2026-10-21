@@ -1,4 +1,3 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.memory.listeners.mark_whispered import MarkWhispered
 from journal.features.memory.listeners.take_the_mark import TakeTheMark
@@ -13,7 +12,6 @@ from journal.features.memory.listeners.mark_memory_row_made import MarkMemoryRow
 from journal.features.memory.listeners.mark_memory_row_struck import MarkMemoryRowStruck
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
-from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 
 
@@ -28,12 +26,6 @@ class Memory(Feature):
     conduct = (MemoryConduct,)
     listeners = (TakeTheMark, MarkWhispered, MarkCompacted, MarkMemoryRowMade, MarkMemoryRowStruck)
     snapshot = (MemorySnapshotReader,)
-    checks = (
-        Entry(NodeKind.CHECK, 'context_over_mark', 'Context reached the next mark?', "the agent's context window has crossed a mark, a quarter, a half or four fifths, that it has not been asked at yet"),
-        Entry(NodeKind.CHECK, 'memory_older_than', 'Facts, rules or reminders N days old?', "a fact, rule or reminder here has stood at least N days; the text is N or a setting's name", takes_text=True),
-        Entry(NodeKind.CHECK, 'context_over', 'Context over N percent?', "the agent's context window is fuller than N percent, as the event reports it; the text is N or a setting's name", takes_text=True),
-        Entry(NodeKind.CHECK, 'mark_owed', 'Has a context mark still to record?', 'the agent crossed a context mark and has not yet decided what survives it: a fact, a rule or nothing'),
-    )
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
 
     MARKS = (25, 50, 80)

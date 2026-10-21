@@ -1,5 +1,4 @@
 from journal.models.agent import Agent
-from journal.models.chart import Chart
 from journal.models.check import Check
 from journal.models.doc import Doc
 from journal.models.dump import Dump
@@ -12,7 +11,6 @@ from journal.models.fact import Fact
 from journal.models.link import Link
 from journal.models.mcp_server import McpServer
 from journal.models.message import Message
-from journal.models.node import Node
 from journal.models.notice import Notice
 from journal.models.phase import Phase
 from journal.models.plugin import Plugin
@@ -24,8 +22,6 @@ from journal.models.question import Question
 from journal.models.edit import Edit
 from journal.models.reaction import Reaction
 from journal.models.reminder import Reminder
-from journal.models.count import Count
-from journal.models.noted_time import NotedTime
 from journal.models.report import Report
 from journal.models.rule import Rule
 from journal.models.scoped import Scoped
@@ -47,5 +43,5 @@ from journal.models.worker import Worker
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, PlanReview, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Count, NotedTime, Doc, Dump, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Chart, Node, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic, Phone, PairingCode, Suggestion)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, PlanReview, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Doc, Dump, Entry, Setting, Link, Sequence, Worker, Trigger, Check, Template, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic, Phone, PairingCode, Suggestion)
     SCOPED = tuple(model for model in MODELS if issubclass(model, Scoped))

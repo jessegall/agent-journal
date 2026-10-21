@@ -12,7 +12,9 @@ class HookController:
         self.receiver, self.providers, self.announced = receiver, providers, announced
 
     def receive(self, request: Request) -> Response:
-        hook = Hook.parse(request.body, request.environment, request.params["agent"])
+        parsed = Hook.parse(request.body, request.environment, request.params["agent"])
+        stamp = request.headers.get("x-journal-hook-started")
+        hook = parsed.stamped(int(stamp)) if stamp else parsed
         if hook.subagent and hook.kind == HookKind.PRE_TOOL_USE:
             return self.announce(hook)
         if hook.kind == HookKind.PRE_TOOL_USE and hook.tool == "Bash":

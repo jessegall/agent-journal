@@ -1,11 +1,11 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from journal.support.hook_kind import HookKind
 
 
 @dataclass(frozen=True)
 class Hook:
-    """What the agent's hook script posts, as the agent sent it."""
+    """What the agent's hook script posts, as the agent sent it, with the millisecond the script started at when it stamped its request; stored, a tool's response is cut to KEPT characters a text, so a long read or a command's whole output is not kept once more for every call."""
 
     KEPT = 4000
     """Characters of each text in a tool's response the stored record keeps: what is read back from it later, an agent id or a short answer, fits well inside."""
@@ -15,13 +15,16 @@ class Hook:
     environment: str
     provider: str = "claude"
     body: dict = field(default_factory=dict)
+    started_ms: int = 0
 
     @classmethod
     def parse(cls, body: dict, environment: str, provider: str) -> "Hook":
         return cls(HookKind(body["hook_event_name"]), body["session_id"], environment, provider, body)
 
+    def stamped(self, started_ms: int) -> "Hook":
+        return replace(self, started_ms=started_ms)
+
     def stored(self) -> dict:
-        """The body as the record keeps it: a tool's response cut to KEPT characters a text, so a long read or a command's whole output is not stored once more for every call."""
         if "tool_response" not in self.body:
             return self.body
         return {**self.body, "tool_response": self.cut(self.body["tool_response"])}

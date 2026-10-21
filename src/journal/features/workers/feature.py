@@ -1,11 +1,9 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.workers.support.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_snapshot_reader import WorkersSnapshotReader
 from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
-from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.listeners.mark_subagents import MarkSubagents
@@ -27,13 +25,6 @@ class Workers(Feature):
     listeners = (MarkSubagents,)
     snapshot = (WorkersSnapshotReader,)
     conduct = (WorkersConduct,)
-    checks = (
-        Entry(NodeKind.CHECK, 'worker_reported', 'Worker reported?', 'the row is a worker that just reported'),
-        Entry(NodeKind.CHECK, 'worker_stopped', 'Worker stopped?', 'the row is a worker that just stopped before reporting'),
-        Entry(NodeKind.CHECK, 'agent_awaits_the_worker', 'Agent awaits this worker?', 'the agent waits on the worker of this row'),
-        Entry(NodeKind.CHECK, 'last_worker_back', 'Last worker back?', 'every worker the agent waits on has reported or stopped'),
-        Entry(NodeKind.CHECK, 'worker_report_waiting', 'Has a worker report not acted on?', 'a worker here reported and the agent has not given it its next job, stopped it or marked it done'),
-    )
 
     WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_after=0)
     WORKER_STOPPED_UNREPORTED = Nudge(name, "worker_stopped_unreported", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)

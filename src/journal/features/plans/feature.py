@@ -1,11 +1,9 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.plans.support.plans_snapshot_reader import PlansSnapshotReader
 from journal.features.plans.listeners.block_plan_on_its_tasks import BlockPlanOnItsTasks
 from journal.features.plans.listeners.clear_plan_waits import ClearPlanWaits
 from journal.features.plans.listeners.count_plan_reviewers import CountPlanReviewers
 from journal.engine.nudge import Nudge
-from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 from journal.features.plans.commands.plan_command import PlanCommand
 from journal.features.plans.listeners.advance_plan import AdvancePlan
@@ -25,13 +23,6 @@ class Plans(Feature):
     listeners = (BlockPlanOnItsTasks, ClearPlanWaits, CountPlanReviewers, AdvancePlan, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
     conduct = (PlansConduct,)
     snapshot = (PlansSnapshotReader,)
-    checks = (
-        Entry(NodeKind.CHECK, 'plan_moved_on', 'Plan moved on to its next task?', 'a task just closed and the agent follows its plan at the next one'),
-        Entry(NodeKind.CHECK, 'plan_left_waiting', 'Plan has no task to start?', 'a task just closed and no task of the plan can start, the plan at no checkpoint'),
-        Entry(NodeKind.CHECK, 'approved_plan', 'Has an approved plan not started?', 'the user approved a plan here that is not started yet'),
-        Entry(NodeKind.CHECK, 'follows_a_plan', 'Follows a plan?', 'the agent follows a plan, which takes its tasks in hand for it'),
-        Entry(NodeKind.CHECK, 'plan_at_checkpoint', 'Plan at a checkpoint?', 'a started plan stands at a completed checkpoint phase, its next phase not begun'),
-    )
     seeds = (ClosedPlans,)
 
     NEXT_TASK_OF_THE_PLAN = Nudge(name, "next_task_of_the_plan", "plan {{n}}: task {{task}}, {{title}} is next. {{briefing}}", repeat_after=0)

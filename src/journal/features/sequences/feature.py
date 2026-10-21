@@ -1,9 +1,7 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.sequences.support.sequences_snapshot_reader import SequencesSnapshotReader
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
-from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 from journal.features.sequences.commands.sequence_command import SequenceCommand
 from journal.features.sequences.listeners.carry_runs_to_the_next_session import CarryRunsToTheNextSession
@@ -25,9 +23,6 @@ class Sequences(Feature):
     listeners = (StartOnCreated, CarryRunsToTheNextSession, FollowStepByCommand, EndRunsOfADeletedSequence, EndRunsOfADeletedRow, EndRunsOfACancelledRow, RecordRunChanges)
     snapshot = (SequencesSnapshotReader,)
     conduct = (SequencesConduct,)
-    actions = (
-        Entry(NodeKind.ACTION, 'start_sequence', 'Start a sequence', 'starts the sequence named in the text at its first step', takes_text=True),
-    )
     seeds = (ShippedSequences,)
 
     STEP_TO_FOLLOW = Nudge(name, "step_to_follow", "sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` to take it up, `journal sequence next` when it is done", repeat_after=0)

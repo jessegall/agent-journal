@@ -20,7 +20,6 @@ class ChatMark(StrEnum):
     SEQUENCES = "sequences"
     SEQUENCE_STEPS = "sequence_steps"
     TRIGGERS = "triggers"
-    WORKFLOWS = "workflows"
     MENUS = "menus"
     SEARCHES = "searches"
     SUGGESTIONS = "suggestions"

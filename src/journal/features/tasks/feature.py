@@ -1,4 +1,3 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.tasks.support.tasks_snapshot_reader import TasksSnapshotReader
 from journal.features.tasks.commands.await_command import AwaitCommand
@@ -10,7 +9,6 @@ from journal.features.tasks.listeners.no_wait_cycles import NoWaitCycles
 from journal.features.tasks.listeners.one_task_in_hand import OneTaskInHand
 from journal.features.tasks.support.tasks_conduct import TasksConduct
 from journal.engine.nudge import Nudge
-from journal.models.node_kind import NodeKind
 from journal.support.option import Option
 from journal.support.skill import Skill
 from journal.features.tasks.states.awaiting import Awaiting
@@ -33,21 +31,6 @@ class Tasks(Feature):
     listeners = (ClearWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
     conduct = (TasksConduct,)
     snapshot = (TasksSnapshotReader,)
-    checks = (
-        Entry(NodeKind.CHECK, 'open_tasks', 'Has open tasks?', 'the environment has open tasks the agent may take up, outside a plan not yet started'),
-        Entry(NodeKind.CHECK, 'related_tasks', 'Has a task to take up meanwhile?', 'a started plan has a next task, or, with no plan started, a task is open outside a plan'),
-        Entry(NodeKind.CHECK, 'task_in_hand', 'Has a task in hand?', 'the agent has a task started'),
-        Entry(NodeKind.CHECK, 'parked_tasks', 'Has parked tasks?', 'a task is parked'),
-        Entry(NodeKind.CHECK, 'blocked_tasks', 'Has blocked tasks?', 'a task is blocked'),
-        Entry(NodeKind.CHECK, 'blocked_without_wait', 'Has a blocked task nothing opens by itself?', 'a blocked task waits on no task, question or check that opens it, only a reason in words'),
-        Entry(NodeKind.CHECK, 'broken_waits', 'Has a task waiting on a check that cannot run?', 'a blocked task waits until a check whose command could not run, a missing program or a time-out, so it would wait forever'),
-        Entry(NodeKind.CHECK, 'task_just_started', 'Task just started by this agent?', 'the row is a task this agent has just started: this write set when it started, by the agent walking'),
-        Entry(NodeKind.CHECK, 'log_for_task_in_hand', 'Log is for the task in hand?', 'the row is a log line of the task this agent has in hand'),
-        Entry(NodeKind.CHECK, 'task_just_taken', 'Task just taken in hand by this agent?', 'the row is a task this agent has just started, resumed after a park, or claimed'),
-        Entry(NodeKind.CHECK, 'task_just_parked', 'Task just parked?', 'the row is a task that was just parked'),
-        Entry(NodeKind.CHECK, 'task_just_blocked', 'Task just blocked?', 'the row is a task that was just blocked'),
-        Entry(NodeKind.CHECK, 'task_just_done', 'Task just done?', 'the row is a task that was just finished, by command or by a commit'),
-    )
 
     CARRY_ON = Nudge(name, "carry_on", "{{name}} is in hand, {{logged}}: carry on", "`journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
     LOG_FIRST_AT_STOP = Nudge(name, "log_first_at_stop", "{{name}}, {{logged}}: log where it stands first", "{{log_command}} \"<where it stands>\"", repeat_after=0)

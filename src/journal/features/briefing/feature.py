@@ -1,12 +1,10 @@
 from journal.features.briefing.listeners.end_other_sessions import EndOtherSessions
 from journal.features.briefing.listeners.end_silent_sessions import EndSilentSessions
 from journal.features.briefing.listeners.owe_the_look_at_start import OweTheLookAtStart
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.briefing.support.briefing_conduct import BriefingConduct
 from journal.features.briefing.support.briefing_snapshot_reader import BriefingSnapshotReader
 from journal.engine.nudge import Nudge
-from journal.models.node_kind import NodeKind
 
 
 class Briefing(Feature):
@@ -16,15 +14,6 @@ class Briefing(Feature):
     conduct = (BriefingConduct,)
     listeners = (OweTheLookAtStart, EndOtherSessions, EndSilentSessions)
     snapshot = (BriefingSnapshotReader,)
-    checks = (
-        Entry(NodeKind.CHECK, 'not_oriented', 'Has not yet looked at what is in flight?', 'the agent has not looked at what is in flight here since its session started'),
-        Entry(NodeKind.CHECK, 'taken_over', 'Another session worked here lately?', 'another session worked this environment within a day, and this start is not the same session going on after a compaction'),
-        Entry(NodeKind.CHECK, 'after_compaction', 'After a compaction?', "the start is the same session going on after its context was compacted"),
-        Entry(NodeKind.CHECK, 'has_rules', 'Has rules?', 'rules are in force here'),
-        Entry(NodeKind.CHECK, 'has_facts', 'Has facts?', 'facts about this environment are on record'),
-        Entry(NodeKind.CHECK, 'has_reminders', 'Has reminders?', 'reminders are on record here'),
-        Entry(NodeKind.CHECK, 'something_waiting', 'Anything waiting for the agent?', 'open tasks, unread messages or open questions wait for the agent'),
-    )
 
     JOURNAL_READY = Nudge(name, "journal_ready", "the journal is ready on {{env}}", repeat_after=0)
     RULES_IN_FORCE = Nudge(name, "rules_in_force", "{{count}} rules in force: {{rows}}", repeat_after=0)

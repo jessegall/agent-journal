@@ -1,10 +1,8 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.shell.listeners.mark_outputs_told import MarkOutputsTold
 from journal.features.shell.support.shell_conduct import ShellConduct
 from journal.features.shell.support.shell_snapshot_reader import ShellSnapshotReader
 from journal.engine.nudge import Nudge
-from journal.models.node_kind import NodeKind
 from journal.support.option import Option
 from journal.features.shell.commands.output_command import OutputCommand
 from journal.features.shell.commands.reader_command import ReaderCommand
@@ -27,10 +25,6 @@ class Shell(Feature):
     listeners = (MarkOutputsTold,)
     snapshot = (ShellSnapshotReader,)
     conduct = (ShellConduct,)
-    checks = (
-        Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),
-        Entry(NodeKind.CHECK, 'background_running', 'N or more commands running in the background?', "at least N of the agent's commands run in the background now; the text is N", takes_text=True),
-    )
 
     MOVED_TO_THE_BACKGROUND = Nudge(name, "moved_to_the_background", "moved to the background as output {{n}}", "you are told when it ends. Carry on with what does not wait on it", repeat_after=0)
     OUTPUTS_ENDED = Nudge(name, "outputs_ended", "{{outputs}}", "`journal output read {{n}} --summary` says how; --tail 20 or --grep reads the part you need", repeat_after=0)

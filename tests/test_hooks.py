@@ -49,8 +49,9 @@ def app(journal_root: Path):
     app.container.get(Deferred).stop()
 
 
-def post_hook(app, body: dict):
-    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=json.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+def post_hook(app, body: dict, started_ms: int = 0):
+    stamp = {"X-Journal-Hook-Started": str(started_ms)} if started_ms else {}
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=json.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", **stamp})
     try:
         with urlopen(request, timeout=5) as reply:
             return reply.status, json.loads(reply.read())
@@ -167,3 +168,12 @@ def test_a_subagents_write_hook_makes_no_entry_and_moves_no_state(app):
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Write", "tool_input": {"file_path": "a.py"}})
     assert status == 200 and body == {}
     assert len(app.container.get(Entries).in_()) == entries and [a.state for a in app.container.get(Agents).in_()] == states
+
+
+def test_a_hook_that_stamps_its_start_has_its_elapsed_time_on_its_entry(app):
+    import time
+    post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 120)
+    entry = app.container.get(Entries).in_()[-1]
+    assert entry.data["hook_ms"] >= 120, "the server measures from the script's stamp to its answer, so the shell side counts too"
+    post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}})
+    assert "hook_ms" not in app.container.get(Entries).in_()[-1].data, "a hook without the stamp is not measured"

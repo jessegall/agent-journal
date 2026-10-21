@@ -1,4 +1,3 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.messages.support.messages_snapshot_reader import MessagesSnapshotReader
 from journal.features.messages.support.messages_conduct import MessagesConduct
@@ -16,7 +15,6 @@ from journal.features.messages.listeners.mark_inbox_arrival import MarkInboxArri
 from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.run_tags import RunTags
 from journal.engine.nudge import Nudge
-from journal.models.node_kind import NodeKind
 from journal.support.option import Option
 from journal.support.skill import Skill
 
@@ -35,17 +33,6 @@ class Messages(Feature):
     listeners = (MarkInboxArrival, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RecordTurn, RunTags, LinkNamedTasks, LinkReplyUnderComment, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
     snapshot = (MessagesSnapshotReader,)
     conduct = (MessagesConduct,)
-    checks = (
-        Entry(NodeKind.CHECK, 'unread_messages', 'Has unread messages?', 'the user left a message the agent has not read'),
-        Entry(NodeKind.CHECK, 'unread_over', 'N or more messages unread?', 'at least N messages the agent has not read; the text is N', takes_text=True),
-        Entry(NodeKind.CHECK, 'unanswered_messages', 'Has unanswered messages?', 'a message was read and not yet replied to or given a face'),
-        Entry(NodeKind.CHECK, 'unanswered_over', 'N or more messages unanswered?', "at least N messages read and not yet replied to or given a face; the text is N or a setting's name", takes_text=True),
-        Entry(NodeKind.CHECK, 'message_by_user', 'Message written by you?', 'the row is a message the user wrote, not the agent'),
-        Entry(NodeKind.CHECK, 'message_just_read', 'Message just read?', 'the row is a message the agent has just read: this write set when it was read'),
-        Entry(NodeKind.CHECK, 'message_typed_in_terminal', 'Message typed in the terminal?', "the row is a message typed at the agent's own prompt, which the agent reads as it comes, not one sent in the chat"),
-        Entry(NodeKind.CHECK, 'message_is_reply', "Message is the agent's reply?", 'the row is a reply the agent just wrote to a message'),
-        Entry(NodeKind.CHECK, 'tool_reads_their_files', "Tool reads the message's own files?", 'the tool about to run reads a file attached to a message read and left unanswered'),
-    )
 
     NEW_MESSAGE_TO_ANSWER = Nudge(name, "new_message_to_answer", "new message {{n}}", repeat_after=0, answered_in_chat=True)
     NEW_MESSAGES_TO_ANSWER = Nudge(name, "new_messages_to_answer", "new messages {{ns}}", repeat_after=60, answered_in_chat=True)
