@@ -54,7 +54,7 @@ Every shell command you run goes through the journal's runner.
   `journal output read N --reader <name>`; `journal reader list` names the project's readers. The second time you
   read the same shape of output by hand, add a reader for it and say so in the chat.
 - A test run, a build or any other command's output is shown whole up to 400 characters; past that you see only a
-  line naming the output to read by its number. A command that reads (cat, grep, sed, git diff) is shown up to 8,000
+  line naming the output to read by its number, with its lines, its characters and the part of the line it came from. A command that reads (cat, grep, sed, git diff) is shown up to 8,000
   characters, past that by its two ends. A line of journal commands is shown whole and kept as no output.
 - A command that only reads or edits the project's own code, a file, a folder or a glob under the project and outside .journal, runs as written, pipes and all,
   in the shell itself: nothing of it is captured, recorded or kept, and `grep -n x src/app.py | tail -5` answers at once. Any other command's trailing `| tail` or `| head` is taken off the line: the command runs whole, the

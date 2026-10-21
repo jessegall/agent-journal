@@ -5965,3 +5965,35 @@ def test_a_message_sent_to_a_subagent_runs_its_row_again_until_it_ends(app):
     assert [(r["running"], r["status"]) for r in rows()] == [(False, "done")], "and it is done again once it ends"
     send("PreToolUse", tool_name="SendMessage", tool_input={"to": "uds:/tmp/cc-socks/1.sock", "message": "hello"}, tool_use_id="t-3")
     assert len(rows()) == 1 and rows()[0]["running"] is False, "a message to another session is no subagent's"
+
+
+def test_the_kept_output_line_says_the_lines_the_characters_and_the_part_of_the_chain_the_output_holds(app):
+    from journal.features.shell.support.cap import Cap, ENDS, HINT
+    from journal.features.shell.support.output_files import OutputFiles
+    from journal.features.shell.support.output_show import OutputShow
+    hook(app, "SessionStart")
+    eighty = "".join(f"line {i}\n" for i in range(1, 81))
+
+    def folder_of(name: str, line: str) -> OutputFiles:
+        folder = app.config.root / name
+        folder.mkdir()
+        ShellVerbs(app).split(line, str(folder))
+        return OutputFiles(folder)
+
+    chain = folder_of("chain", "make test && npm run build")
+    (chain.folder / "0.out").write_text(eighty)
+    (chain.folder / "1.out").write_text(eighty)
+    show = OutputShow(chain, Cap(HINT, 400))
+    number = chain.number()
+    assert show.of(0) == f"[journal] output {number} kept, 80 lines, 631 characters, part 1 of the line: make test\n", "one line names the output, its size and the part it came from"
+    assert show.of(1) == f"[journal] output {number} also holds part 2 of the line: npm run build (80 lines, 631 characters)\n", "a later part past the cap is named shorter"
+    alone = folder_of("alone", "make test")
+    (alone.folder / "0.out").write_text(eighty)
+    assert OutputShow(alone, Cap(HINT, 400)).of(0) == f"[journal] output {alone.number()} kept, 80 lines, 631 characters\n", "a line of one part names no part"
+    cut = folder_of("cut", "make test 2>&1 | tail -2")
+    (cut.folder / "0.out").write_text(eighty)
+    assert OutputShow(cut, Cap(HINT, 400)).of(0) == f"line 79\nline 80\n[journal] the whole output is kept as output {cut.number()}, 80 lines, 631 characters\n", "the cut applied, the whole kept and counted"
+    read = folder_of("read", "cat /etc/hosts")
+    (read.folder / "0.out").write_text("".join(f"l{i:02d}\n" for i in range(1, 51)))
+    shown = OutputShow(read, Cap(ENDS, 80)).of(0)
+    assert shown.startswith("l01\n") and shown.endswith("l50\n") and f"[journal] output {read.number()}: 50 lines, 200 characters; lines 1-10 and 41-50 shown, 11-40 cut from the middle. journal output read {read.number()} --lines 11-40 or --grep reads them\n" in shown, "a read past the cap names the lines shown and the lines cut"

@@ -3,9 +3,11 @@ import subprocess
 from journal.features.shell.support.cap import Cap
 from journal.features.shell.support.output_files import OutputFiles
 
+PART_CHARACTERS = 60
+
 
 class OutputShow:
-    """What the agent sees of a part's output in the foreground, as the cap says: whole for a line of journal commands or an output under the cap; a cut part's cut applied, the whole kept; half the characters from each end for a read past the cap, with a line naming the middle; and for any other output past the cap one line, once per chain, naming the output to read by its number."""
+    """What the agent sees of a part's output in the foreground, as the cap says: whole for a line of journal commands or an output under the cap; a cut part's cut applied, the whole kept; half the characters from each end for a read past the cap, with a line naming the lines shown and the lines cut; and for any other output past the cap one line naming the output to read by its number, with its lines, its characters and the part it came from, and a shorter line for each later part the output also holds."""
 
     def __init__(self, folder: OutputFiles, cap: Cap) -> None:
         self.folder, self.cap = folder, cap
@@ -23,13 +25,35 @@ class OutputShow:
         if cut and name == "out":
             shortened = subprocess.run(["sh", "-c", cut], input=text, capture_output=True, text=True).stdout
             if len(shortened) <= self.cap.characters:
-                return f"{shortened.rstrip(chr(10))}\n[journal] the whole output is kept as output {self.folder.number()}\n"
+                return f"{shortened.rstrip(chr(10))}\n[journal] the whole output is kept as output {self.folder.number()}, {self.counts(text)}\n"
         if self.cap.is_whole() or len(text) <= self.cap.characters:
             return text
         if self.cap.is_ends():
-            half = self.cap.characters // 2
-            return f"{text[:half]}\n[journal] output {self.folder.number()}: {len(text)} characters, {len(text) - self.cap.characters} cut from the middle. journal output read {self.folder.number()} --lines or --grep reads them\n{text[-half:]}"
+            return self.ends(text)
         if self.named:
-            return ""
+            return f"[journal] output {self.folder.number()} also holds {self.part_label(i)} ({self.counts(text)})\n"
         self.named = True
-        return f"[journal] output {self.folder.number()} kept, {len(text)} characters\n"
+        label = self.part_label(i)
+        return f"[journal] output {self.folder.number()} kept, {self.counts(text)}{', ' + label if label else ''}\n"
+
+    def ends(self, text: str) -> str:
+        half = self.cap.characters // 2
+        head, tail = text[:half], text[-half:]
+        lines, head_lines, tail_lines = self.line_count(text), head.count("\n"), tail.count("\n")
+        number = self.folder.number()
+        cut = f"{head_lines + 1}-{lines - tail_lines}"
+        return f"{head}\n[journal] output {number}: {lines} lines, {len(text)} characters; lines 1-{head_lines} and {lines - tail_lines + 1}-{lines} shown, {cut} cut from the middle. journal output read {number} --lines {cut} or --grep reads them\n{tail}"
+
+    def part_label(self, i: int) -> str:
+        if len(self.folder.kinds()) == 1:
+            return ""
+        first = self.folder.part_text(i).strip().splitlines()[0] if self.folder.part_text(i).strip() else ""
+        shortened = first if len(first) <= PART_CHARACTERS else first[:PART_CHARACTERS] + "\u2026"
+        return f"part {i + 1} of the line: {shortened}"
+
+    def counts(self, text: str) -> str:
+        return f"{self.line_count(text)} lines, {len(text)} characters"
+
+    @staticmethod
+    def line_count(text: str) -> int:
+        return text.count("\n") + (1 if text and not text.endswith("\n") else 0)
