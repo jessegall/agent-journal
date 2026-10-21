@@ -71,6 +71,11 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   RunningSequence, Awaiting, Waiting, Stuck, CatchingUp, AtMark, Subagent, Ended. The last
   five extend `Paused`, which holds `resume` (the state it left, serialised) and goes back
   with `back()`; a pause inside a pause nests in the data, so no stack is kept anywhere.
+- **A span a state waits out is a `Timeout`** (`support/timeout.py`): `Timeout.minutes(15)`,
+  `.seconds(30)`, `.tool_uses(25)`, `.edits(50)`, `.marks(1)`, started or reset at a moment the
+  event carries (its time, its tool-use count, a count of edits or context marks) and asked
+  `is_elapsed` at a later one. A state keeps one as a field (Awaiting's next-task delay and
+  check reminder), stored as a dict in its row's data and restored by its field's type.
 - **Settings, not states**: auto mode and the work mode (hands-on, orchestrator, solo). They
   change what a state allows or says. Liveness (alive, compacting now) is not a state either;
   the viewer derives it from the last event's time.

@@ -15,6 +15,7 @@ from journal.events.rows.plan_started import PlanStarted
 from journal.events.rows.task_started import TaskStarted
 from journal.events.feature_data import FeatureData
 from journal.support.permission import Permission
+from journal.support.timeout import Timeout
 
 OPEN_TASK_LIMIT_SECONDS = 900.0
 COMPACT = "compact"
@@ -64,7 +65,7 @@ class Working(BaseState):
         active = replace(self, active_at=event.time)
         if not event.call.writes or event.subagent:
             return self.swap(active)
-        if self.edits >= int(settings.value(Tasks.LOG_LIMIT)):
+        if Timeout.edits(int(settings.value(Tasks.LOG_LIMIT))).is_elapsed(self.edits):
             return self.refuse(Tasks.LOG_EDIT_BLOCK.create(edits=self.edits, name=self.label(), log=self.log_command()))
         counted = replace(active, edits=self.edits + 1)
         lines = []
@@ -80,7 +81,7 @@ class Working(BaseState):
         approved = event.data.part(Plans).approved
         if approved:
             return self.refuse(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
-        if event.time - self.logged_at >= int(settings.value(Tasks.LOG_AGE_LIMIT)) * 60:
+        if Timeout.minutes(int(settings.value(Tasks.LOG_AGE_LIMIT))).started(self.logged_at).is_elapsed(event.time):
             return self.refuse(Tasks.STOP_LOG_REQUEST.create(name=self.label(), logged=self.logged_words(event.time), log_command=self.log_command()))
         return self.refuse(self.continue_nudge(event.time))
 

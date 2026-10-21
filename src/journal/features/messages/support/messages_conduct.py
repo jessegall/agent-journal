@@ -11,6 +11,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.user_resumed import UserResumed
 from journal.events.rows.reaction_added import ReactionAdded
 from journal.support.chain import Chain
+from journal.support.timeout import Timeout
 
 TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread|recent)|question\s+(?:show|list))\b[^|;&\"']*\|")
 MESSAGE_COMMAND = "journal message send"
@@ -54,8 +55,8 @@ class MessagesConduct(Conduct):
             return self.none()
         if event.call.writes and messages.mention_count >= int(settings.value(feature.EDIT_BLOCK_LIMIT)):
             return self.refuse(feature.INBOX_EDIT_BLOCK.create(count=len(messages.unread)))
-        all_items = int(settings.value(feature.REMINDER_INTERVAL))
-        if all_items > 0 and messages.newest_gap > 0 and messages.newest_gap % all_items == 0:
+        interval = int(settings.value(feature.REMINDER_INTERVAL))
+        if interval > 0 and Timeout.tool_uses(interval).started(messages.reminder_start).is_elapsed(event.tool_use):
             return self.none(feature.inbox(messages.unread))
         return self.none()
 

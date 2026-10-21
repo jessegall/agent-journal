@@ -11,9 +11,10 @@ from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.events.rows.worker_stopped import WorkerStopped
 from journal.support.permission import Permission
+from journal.support.timeout import Timeout
 
-NEXT_TASK_DELAY_SECONDS = 60.0
-CHECK_REMINDER_INTERVAL_SECONDS = 300.0
+NEXT_TASK_DELAY = Timeout.minutes(1)
+CHECK_REMINDER = Timeout.minutes(5)
 WORKERS = "workers"
 
 
@@ -27,13 +28,18 @@ class ExternalWait(Wait):
     focus: str = ""
     end_refs: str = ""
     started_at: float = 0.0
-    reminded_at: float = 0.0
+    next_task_delay: Timeout = NEXT_TASK_DELAY
+    check_reminder: Timeout = CHECK_REMINDER
     next_task_reported: bool = False
     outcomes: str = ""
 
     @classmethod
+    def opened(cls, focus: str, end_refs: str, started_at: float) -> "ExternalWait":
+        return cls(focus=focus, end_refs=end_refs, started_at=started_at, next_task_delay=NEXT_TASK_DELAY.started(started_at), check_reminder=CHECK_REMINDER.started(started_at))
+
+    @classmethod
     def on_workers(cls, ids: tuple[int, ...], started_at: float) -> "ExternalWait":
-        return cls(focus=f"{WORKERS} {', '.join(str(n) for n in ids)}", end_refs=",".join(f"{WORKERS}:{n}" for n in ids), started_at=started_at)
+        return cls.opened(f"{WORKERS} {', '.join(str(n) for n in ids)}", ",".join(f"{WORKERS}:{n}" for n in ids), started_at)
 
     def wait_description(self) -> tuple[str, str]:
         return self.focus, self.end_refs
@@ -52,10 +58,10 @@ class ExternalWait(Wait):
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         next_open = event.data.part(Tasks).next_open
-        if settings.value(Tasks.AUTO) and not self.next_task_reported and event.time - self.started_at >= NEXT_TASK_DELAY_SECONDS and next_open is not None:
+        if settings.value(Tasks.AUTO) and not self.next_task_reported and self.next_task_delay.is_elapsed(event.time) and next_open is not None:
             return self.swap(replace(self, next_task_reported=True), Tasks.WAIT_NEXT_TASK.create(what=self.focus, n=next_open.id, title=next_open.title))
-        if event.time - max(self.started_at, self.reminded_at) >= CHECK_REMINDER_INTERVAL_SECONDS:
-            return self.swap(replace(self, reminded_at=event.time), Tasks.WAIT_CHECK.create(what=self.focus, minutes=int((event.time - self.started_at) // 60)))
+        if self.check_reminder.is_elapsed(event.time):
+            return self.swap(replace(self, check_reminder=self.check_reminder.started(event.time)), Tasks.WAIT_CHECK.create(what=self.focus, minutes=int((event.time - self.started_at) // 60)))
         return self.none()
 
     def on_row_resolved(self, event: RowResolved, settings: Settings) -> Transition:

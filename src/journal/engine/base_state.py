@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields
+from dataclasses import asdict, dataclass, fields
 from functools import cache
 from inspect import getmembers, isfunction
 from typing import Callable, ClassVar, get_type_hints
@@ -12,6 +12,7 @@ from journal.events.agent.compacting import Compacting
 from journal.events.agent.session_ended import SessionEnded
 from journal.events.event import Event
 from journal.support.permission import Permission
+from journal.support.timeout import Timeout
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 
@@ -91,13 +92,13 @@ class BaseState(Conduct):
         return None
 
     def serialized(self) -> dict:
-        return {field.name: getattr(self, field.name) for field in fields(self)}
+        return asdict(self)
 
     def state_text(self) -> str:
-        set_fields = [f"{field.name}={getattr(self, field.name)}" for field in fields(self) if getattr(self, field.name) != field.default and not isinstance(getattr(self, field.name), float)]
+        set_fields = [f"{field.name}={getattr(self, field.name)}" for field in fields(self) if getattr(self, field.name) != field.default and not isinstance(getattr(self, field.name), (float, Timeout))]
         return f"{self.name}({', '.join(set_fields)})" if set_fields else self.name
 
     @classmethod
     def restored(cls, data: dict) -> "BaseState":
-        existing = {field.name for field in fields(cls)}
-        return cls(**{name: value for name, value in data.items() if name in existing})
+        kinds = {field.name: field.type for field in fields(cls)}
+        return cls(**{name: Timeout(**value) if kinds[name] is Timeout else value for name, value in data.items() if name in kinds})

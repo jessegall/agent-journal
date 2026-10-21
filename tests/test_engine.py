@@ -218,6 +218,19 @@ def test_the_job_runner_ticks_each_job_at_its_own_interval_on_a_driven_clock(app
     assert waits == [1.0] * 10, "the runner sleeps until the next job is due"
 
 
+def test_a_timeout_is_started_at_a_moment_asked_at_a_later_one_and_kept_by_a_state_through_its_row():
+    from journal.features.tasks.states.external_wait import ExternalWait
+    from journal.support.timeout import Timeout
+    reminder = Timeout.minutes(15).started(100.0)
+    assert not reminder.is_elapsed(999.0) and reminder.is_elapsed(1000.0), "fifteen minutes after the time it was started at"
+    assert not reminder.started(1000.0).is_elapsed(1899.0), "reset by a later moment, it counts from there"
+    assert Timeout.seconds(30).started(5.0).is_elapsed(35.0) and not Timeout.seconds(30).started(5.0).is_elapsed(34.0)
+    assert Timeout.tool_uses(25).started(10).is_elapsed(35) and not Timeout.tool_uses(25).started(10).is_elapsed(34), "a count of tool uses"
+    assert Timeout.marks(1).started(2).is_elapsed(3) and not Timeout.marks(1).started(2).is_elapsed(2), "a count of context marks"
+    waiting = ExternalWait.opened("the build", "checks:2", 100.0)
+    assert ExternalWait.restored(json.loads(json.dumps(waiting.serialized()))) == waiting, "a state keeps its timeouts through the json on its row"
+
+
 def test_one_task_in_hand_park_resume_and_await(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
@@ -815,7 +828,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     private = tmp_path / "private"
     parts = {
         "plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()),
-        "messages": MessagesData(unread=(7, 8), unanswered=(5,), unanswered_files=(f"{tmp_path}/files/message/5/",), newest_gap=3, mention_count=1, uses_unanswered=4),
+        "messages": MessagesData(unread=(7, 8), unanswered=(5,), unanswered_files=(f"{tmp_path}/files/message/5/",), reminder_start=0, mention_count=1, uses_unanswered=4),
         "profiles": ProfilesData(names=("journal-researcher", "journal-medior"), subagents=("journal-researcher",), workers=("journal-medior",)),
         "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, 0), EndedOutput(4, 1)), output_reads=("journal output read <output> --grep x", "journal output read <output> --grep x"), readers=(Reader("tests", "the failures", "FAILED"),), tipped=()),
         "secrets": SecretsData(root=tmp_path, folders=(private.resolve(),), spellings=(str(private),)),
@@ -830,14 +843,14 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         assert [n.key for n in stop.nudges] == ["messages.new_messages_to_answer", "workers.act_on_the_reports"]
         piped = Ready().respond(ToolStarting(call=shell("journal message read 7 | head -3")).with_data(data), settings)
         assert piped.refusal is not None and piped.refusal.key == "messages.read_the_words_whole"
-        read = Ready().respond(ToolStarting(call=shell("ls")).with_data(data), settings)
+        read = Ready().respond(ToolStarting(call=shell("ls"), tool_use=3).with_data(data), settings)
         assert read.refusal is None and [n.key for n in read.nudges] == ["messages.answer_before_anything_else", "messages.new_messages_to_answer"], "asked for the answer after three uses, and the inbox named every third use"
         their_file = Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": f"{tmp_path}/files/message/5/a.png"}, read_paths=(f"{tmp_path}/files/message/5/a.png",))).with_data(data), settings)
         assert "messages.answer_before_anything_else" not in [n.key for n in their_file.nudges]
-        held_unanswered = FeatureData({**parts, "messages": MessagesData(unread=(), unanswered=(5,), unanswered_files=(), newest_gap=0, mention_count=0, uses_unanswered=10)})
+        held_unanswered = FeatureData({**parts, "messages": MessagesData(unread=(), unanswered=(5,), unanswered_files=(), reminder_start=0, mention_count=0, uses_unanswered=10)})
         assert Ready().respond(ToolStarting(call=shell("ls")).with_data(held_unanswered), settings).refusal.key == "messages.tools_held_until_answered"
         assert Ready().respond(ToolStarting(call=shell("journal task list")).with_data(held_unanswered), settings).refusal is None
-        held_unread = FeatureData({**parts, "messages": MessagesData(unread=(7,), unanswered=(), unanswered_files=(), newest_gap=1, mention_count=5, uses_unanswered=0)})
+        held_unread = FeatureData({**parts, "messages": MessagesData(unread=(7,), unanswered=(), unanswered_files=(), reminder_start=0, mention_count=5, uses_unanswered=0)})
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(held_unread), settings).refusal.key == "messages.write_held_until_read"
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(held_unread), settings).refusal is None
         transmitted = Ready().respond(ToolFinished(call=shell("journal message send hi --reply-to 7"), output="sent").with_data(data), settings)
@@ -1185,7 +1198,7 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     BaseState.fold((TasksConduct,))
     try:
         pushed = Working(task_id=7).respond(WaitRequest(focus="the build", end_refs="command_outputs:4,checks:2", time=100.0), auto)
-        assert pushed.pushed == ExternalWait(focus="the build", end_refs="command_outputs:4,checks:2", started_at=100.0), "journal await pushes the wait on the work"
+        assert pushed.pushed == ExternalWait.opened("the build", "command_outputs:4,checks:2", 100.0), "journal await pushes the wait on the work"
         assert Working(task_id=7).respond(ImpasseReport(reason="the login", time=1.0), auto).pushed == Impasse(reason="the login"), "journal stuck pushes Stuck"
     finally:
         BaseState.fold(())
@@ -1195,7 +1208,7 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     assert meanwhile.target == replace(waiting, next_task_reported=True) and meanwhile.nudges[0].rendered().startswith("while you wait for the build, task 9, the next one is next"), "in auto mode the next task is named once after a minute"
     assert waiting.respond(Ticked(silence_seconds=70.0, time=170.0).with_data(of()), manual).nudges == (), "out of auto mode it is not"
     looked = meanwhile.target.respond(Ticked(silence_seconds=310.0, time=410.0).with_data(of()), auto)
-    assert looked.target == replace(meanwhile.target, reminded_at=410.0) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
+    assert looked.target == replace(meanwhile.target, check_reminder=meanwhile.target.check_reminder.started(410.0)) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
     assert looked.target.respond(Ticked(silence_seconds=400.0, time=500.0).with_data(of()), auto).nudges == (), "and not again before five more"
     first = waiting.respond(RowResolved(environment_id=1, time=200.0, ref="command_outputs:4", outcome="output 4 finished"), auto)
     assert first.target == replace(waiting, end_refs="checks:2", outcomes="output 4 finished") and not first.popped, "one row settled, one still to come"
