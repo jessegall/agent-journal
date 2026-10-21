@@ -105,10 +105,10 @@ class AgentController(Controller[Agent]):
                             output=entry.data["output"], seconds=entry.data["seconds"], status=entry.data["status"], stepped=False, level="everything")
 
     def pause(self, request: Request) -> Response:
-        return Response.json(self.shown(self.pausing.pause(self.repository.find(request.number("id")))))
+        return Response.json(self.shown(self.pausing.pause(self.repository.find(request.number("id")), request.actor)))
 
     def resume(self, request: Request) -> Response:
-        return Response.json(self.shown(self.pausing.resume(self.repository.find(request.number("id")))))
+        return Response.json(self.shown(self.pausing.resume(self.repository.find(request.number("id")), request.actor)))
 
     def skip_step(self, request: Request) -> Response:
         agent = self.running_agent(request.number("id"))

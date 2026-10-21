@@ -5,6 +5,7 @@ from journal.support.cards import Cards
 from journal.engine.state_machine import StateMachine
 from journal.engine.agent_state import AgentState
 from journal.engine.states.paused import Paused
+from journal.engine.states.wait import Wait
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.stuck import Stuck
 from journal.engine.nudger import Nudger
@@ -166,6 +167,9 @@ class Actions:
         """An agent in any pause goes back to the state the pause keeps in resume, told with the line; an agent not paused is left as it is."""
         if not ctx.session:
             return Decision()
+        if isinstance(ctx.state, Wait):
+            self.machine.pop(ctx.session, ctx.environment_id, Actor.system(), "released by a workflow")
+            return self.say(text, ctx) if text else Decision()
         wait = self.machine.states.wait_in(ctx.state) if ctx.state else None
         if wait is None:
             return Decision()

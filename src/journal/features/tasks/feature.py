@@ -65,7 +65,7 @@ class Tasks(Feature):
     PARKED_TASK_NAMED_AT_CLOSE = Nudge(name, "parked_task_named_at_close", "task {{n}} is still parked: can you continue it now?", "it was parked because: {{why}}. `journal task resume {{n}}` picks it up again", repeat_after=0)
     CHECK_WHAT_YOU_AWAITED = Nudge(name, "check_what_you_awaited", "check {{what}} now: you have waited {{minutes}} min", "look at it. Still going: `journal await` again. Done or failed: log what came of it and take the next step", repeat_after=300, held_whatever_its_values=True)
     CHECK_IN_AFTER_QUIET = Nudge(name, "check_in_after_quiet", "nothing has happened for half an hour: is there anything left for you to do?", "carry on, take the next task, or say so in one line", repeat_after=1800)
-    WAIT_OVER = Nudge(name, "wait_over", "the wait for {{what}} is over: {{came}}", "carry on with what you were doing", repeat_after=0)
+    WAIT_OVER = Nudge(name, "wait_over", "the wait for {{what}} is over: {{outcome}}", "carry on with what you were doing", repeat_after=0)
     NEXT_TASK_MEANWHILE = Nudge(name, "next_task_meanwhile", "while you wait for {{what}}, task {{n}}, {{title}} is next", "if you can work on it meanwhile, carry on with it; if you need what you wait for, end your turn", repeat_after=0)
     TASK_REOPENED = Nudge(name, "task_reopened", "task {{n}} is open again: {{on}} is answered or closed", "`journal task start {{n}}` takes it up", repeat_after=0)
     FIX_THE_BROKEN_WAIT = Nudge(name, "fix_the_broken_wait", "{{waits}}", "so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat_after=0)

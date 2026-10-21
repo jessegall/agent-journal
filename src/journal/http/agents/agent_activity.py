@@ -1,5 +1,6 @@
 from journal.engine.support.trail import Trail
 from journal.engine.states.paused import Paused
+from journal.engine.states.wait import Wait
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.support.shell_record import RAN, RUNNING
@@ -97,6 +98,8 @@ class AgentActivity:
         return self.described(state) or ("at work" if hooks else "")
 
     def described(self, state) -> str:
+        if isinstance(state, Wait):
+            return state.awaiting()[0]
         if isinstance(state, Paused):
             return state.awaiting()[0] or (self.described(self.states.named(state.resume["state"], state.resume["data"])) if state.resume else "")
         return state.what if isinstance(state, Working) else ""

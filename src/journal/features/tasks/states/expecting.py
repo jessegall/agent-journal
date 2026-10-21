@@ -46,4 +46,4 @@ class Expecting(Wait):
         outcomes = "; ".join(part for part in (self.outcomes, event.outcome) if part)
         if left:
             return self.changed(replace(self, ends_on=",".join(left), outcomes=outcomes))
-        return self.pop(Tasks.WAIT_OVER.create(what=self.what, came=outcomes))
+        return self.pop(Tasks.WAIT_OVER.create(what=self.what, outcome=outcomes))

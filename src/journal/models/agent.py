@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+from journal.events.rows.user_paused import UserPaused
+from journal.events.rows.user_resumed import UserResumed
 from journal.events.rows.look_taken import LookTaken
 from journal.events.rows.mark_decided import MarkDecided
 from journal.events.rows.skill_read import SkillRead
@@ -20,6 +22,12 @@ class Agent(Scoped):
     mark_owed: int = 0
     skills_owed: tuple[str, ...] = ()
     sequence_runs: tuple = ()
+
+    def paused_by_user(self, time: float) -> "Agent":
+        return self.with_event(UserPaused(environment_id=self.environment_id, at=time, agent_session=self.session))
+
+    def resumed_by_user(self, time: float) -> "Agent":
+        return self.with_event(UserResumed(environment_id=self.environment_id, at=time, agent_session=self.session))
 
     def look_taken(self, at: float) -> "Agent":
         return self.with_(oriented=True).with_event(LookTaken(environment_id=self.environment_id, at=at))
