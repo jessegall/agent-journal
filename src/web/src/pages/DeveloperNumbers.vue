@@ -22,11 +22,17 @@ async function reset() {
 
 const slowestFirst = ref(false);
 const logged = () => (numbers.value ? (slowestFirst.value ? numbers.value.slowest : numbers.value.recent) || [] : []);
+const loads = () => (numbers.value ? numbers.value.loads || [] : []);
+const models = () => (numbers.value ? numbers.value.models || [] : []);
 const clock = (seconds) => new Date(seconds * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
 const row = (title, measured) => ({title, count: measured.count, average: measured.average_ms, slowest: measured.slowest_ms});
 const rows = () =>
     numbers.value
-        ? [row("Hooks", numbers.value.hooks), row("Requests", numbers.value.requests), ...Object.entries(numbers.value.by_kind).map(([kind, measured]) => row(`Hook ${kind}`, measured))]
+        ? [
+              row("Hooks", numbers.value.hooks),
+              row("Requests", numbers.value.requests),
+              ...Object.entries(numbers.value.by_kind).map(([kind, measured]) => row(`Hook ${kind}`, measured)),
+          ]
         : [];
 </script>
 
@@ -36,13 +42,38 @@ const rows = () =>
             <h3 class="developer-heading">Time to answer, in milliseconds</h3>
             <button class="developer-reset" type="button" @click="reset">Reset the counts</button>
         </div>
-        <p class="developer-line">An average is a running total divided by a count, bumped on every measurement. A hook's time runs from the start of its script to the server's answer.</p>
-        <DataTable :columns="['What', 'Measured', 'Average', 'Slowest']" :rows="rows().map((line) => ({cells: [line.title, line.count, `${line.average} ms`, `${line.slowest} ms`]}))" empty="Nothing measured yet" />
+        <p class="developer-line">
+            An average is a running total divided by a count, bumped on every measurement. A hook's time runs from the start of its script
+            to the server's answer.
+        </p>
+        <DataTable
+            :columns="['What', 'Measured', 'Average', 'Slowest']"
+            :rows="rows().map((line) => ({cells: [line.title, line.count, `${line.average} ms`, `${line.slowest} ms`]}))"
+            empty="Nothing measured yet"
+        />
         <div class="developer-head">
             <h3 class="developer-heading">{{ slowestFirst ? "The slowest of the newest thousand" : "The newest requests" }}</h3>
-            <button class="developer-reset" type="button" @click="slowestFirst = !slowestFirst">{{ slowestFirst ? "Newest first" : "Slowest first" }}</button>
+            <button class="developer-reset" type="button" @click="slowestFirst = !slowestFirst">
+                {{ slowestFirst ? "Newest first" : "Slowest first" }}
+            </button>
         </div>
-        <DataTable :columns="['When', 'Kind', 'Route or command', 'Milliseconds']" :rows="logged().map((line) => ({cells: [clock(line.time), line.method, line.route, `${line.ms} ms`]}))" empty="Nothing logged yet" />
+        <DataTable
+            :columns="['When', 'Kind', 'Route or command', 'Milliseconds']"
+            :rows="logged().map((line) => ({cells: [clock(line.time), line.method, line.route, `${line.ms} ms`]}))"
+            empty="Nothing logged yet"
+        />
+        <h3 class="developer-heading">The newest requests with the records they read</h3>
+        <DataTable
+            :columns="['When', 'Request', 'Records read', 'Milliseconds']"
+            :rows="loads().map((line) => ({cells: [clock(line.time), line.label, line.loads, `${line.ms} ms`]}))"
+            empty="Nothing counted: switch on Count the records each request reads above"
+        />
+        <h3 class="developer-heading">Records read per kind since the last reset</h3>
+        <DataTable
+            :columns="['Kind', 'Records read']"
+            :rows="models().map((total) => ({cells: [total.model, total.rows]}))"
+            empty="Nothing counted yet"
+        />
     </section>
 </template>
 
@@ -82,8 +113,8 @@ const rows = () =>
 
 .developer-line {
     margin: 0 0 12px;
-    color: var(--text); opacity: 0.7;
+    color: var(--text);
+    opacity: 0.7;
     font-size: 13px;
 }
-
 </style>

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Callable, Generic, TypeVar
 
 from journal.models.support.column import Column
+from journal.repositories.load_tally import LoadTally
 from journal.db.connection import Connection
 from journal.db.schema import Schema
 from journal.events.models.created import Created
@@ -183,6 +184,7 @@ class Repository(Generic[M]):
         ...
 
     def _load(self, row) -> M:
+        LoadTally.counted(self.table)
         return self.model(**{column.name: value for column in self.columns if (value := column.parsed(row[column.name])) is not None})
 
     def _column(self, name: str) -> Column:

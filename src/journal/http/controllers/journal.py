@@ -2,11 +2,11 @@ import os
 import time as timing
 
 from journal.config import Config
+from journal.features.faults.support.developer_numbers import DeveloperNumbers
 from journal.features.updates.support.update_card import UpdateCard
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.bar_row import BarRow
 from journal.http.agents.current_work import CurrentWork
-from journal.http.journal.answer_time import AnswerTime
 from journal.http.journal.environment_data import EnvironmentData
 from journal.http.journal.task_block import TaskBlock
 from journal.http.journal.manifest import Manifest
@@ -18,8 +18,6 @@ from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
-from journal.repositories.statistics import Statistics
-from journal.repositories.timings import Timings
 from journal.repositories.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.version import VERSION
@@ -28,15 +26,14 @@ COLOR = "#5e64c9"
 STARTED = timing.time()
 SILENCE_LIMIT_SECONDS = 900.0
 ACTIVITY_ENTRIES = 8
-LOG_ENTRIES = 100
 
 
 class JournalController:
     """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the current agent is doing this moment."""
 
     def __init__(self, config: Config, manifest: Manifest, environments: Environments, agents: Agents, activity: AgentActivity, current: CurrentWork,
-                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, threshold: UpdateCard, statistics: Statistics, timings: Timings) -> None:
-        self.statistics, self.timings = statistics, timings
+                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, threshold: UpdateCard, numbers: DeveloperNumbers) -> None:
+        self.numbers = numbers
         self.config, self.boot, self.environments, self.agents, self.activity, self.current = config, manifest, environments, agents, activity, current
         self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, threshold
 
@@ -54,16 +51,15 @@ class JournalController:
         return Response.json([{"port": self.config.port, "project": self.config.root.name, "version": VERSION, "root": str(self.config.home), "current": True}])
 
     def developer(self, request: Request) -> Response:
-        numbers = self.statistics.lower("developer.")
-        kinds = sorted({key.split(".")[2] for key in numbers if key.startswith("developer.hooks.") and key.count(".") == 3})
-        latencies = {"hooks": AnswerTime.read(numbers, "developer.hooks"), "requests": AnswerTime.read(numbers, "developer.requests")}
-        kind_index = {kind: AnswerTime.read(numbers, f"developer.hooks.{kind}").as_data() for kind in kinds}
         as_rows = lambda timings: [{"method": t.method, "route": t.route, "ms": t.ms, "time": t.time} for t in timings]
-        return Response.json({**{key: answer.as_data() for key, answer in latencies.items()}, "by_kind": kind_index, "recent": as_rows(self.timings.recent(LOG_ENTRIES)), "slowest": as_rows(self.timings.slowest(LOG_ENTRIES))})
+        return Response.json({"hooks": self.numbers.hook_time().as_data(), "requests": self.numbers.request_time().as_data(),
+                              "by_kind": {kind: answer.as_data() for kind, answer in self.numbers.hook_averages().items()},
+                              "recent": as_rows(self.numbers.recent()), "slowest": as_rows(self.numbers.slowest()),
+                              "loads": [{"time": t.time, "label": t.label(), "ms": t.ms, "loads": t.loads.line()} for t in self.numbers.loaded()],
+                              "models": [{"model": total.model, "rows": total.rows} for total in self.numbers.model_totals()]})
 
     def developer_reset(self, request: Request) -> Response:
-        self.statistics.cleared("developer.", request.actor)
-        self.timings.cleared(request.actor)
+        self.numbers.reset(request.actor)
         return self.developer(request)
 
     def summary(self, request: Request) -> Response:

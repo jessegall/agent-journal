@@ -13,6 +13,10 @@ class Statistics(Repository[Statistic]):
         with self.connection.transaction():
             return self.save(self.series(key).with_(value=self.series(key).value + 1), actor)
 
+    def added(self, key: str, amount: int, actor: Actor) -> Statistic:
+        with self.connection.transaction():
+            return self.save(self.series(key).with_(value=self.series(key).value + amount), actor)
+
     def measured(self, prefix: str, ms: int, actor: Actor) -> None:
         with self.connection.transaction():
             self.save(self.series(f"{prefix}.count").with_(value=self.series(f"{prefix}.count").value + 1), actor)

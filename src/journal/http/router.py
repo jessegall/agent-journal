@@ -39,6 +39,8 @@ class Router:
         try:
             with self.scope.requested(lambda: request.environment):
                 began = time.perf_counter()
+                if not route.outward:
+                    self.slow.begin()
                 answer = route.handler(request.with_params({name: unquote(value) for name, value in route.params(request.method, request.path).items()}))
                 if not route.outward:
                     self.slow.measured(request.method, request.measured_path(), (time.perf_counter() - began) * 1000)
