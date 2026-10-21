@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.plans.support.review_rounds import ReviewRounds
+from journal.features.tasks.active_task import ActiveTask
 from journal.features.tasks.support.waits import Waits
 from journal.features.workers.support.subagent_entries import SubagentEntries
 from journal.models.link import Link
@@ -23,9 +24,9 @@ from journal.repositories.tasks import Tasks
 class PlanCommand(Command):
     noun = "plan"
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, subagents: SubagentEntries, waits: Waits, rounds: ReviewRounds) -> None:
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, subagents: SubagentEntries, waits: Waits, rounds: ReviewRounds, taking: ActiveTask) -> None:
         self.plans, self.phases, self.tasks, self.links, self.subagents, self.waits = plans, phases, tasks, links, subagents, waits
-        self.rounds = rounds
+        self.rounds, self.taking = rounds, taking
 
     def arguments(self, verbs) -> None:
         creation = self.verb(verbs, "create", "draft a plan")
@@ -169,7 +170,7 @@ class PlanCommand(Command):
         return 0
 
     def start(self, args: Namespace, caller: Caller) -> int:
-        plan = self.plans.start(self.plans.find(args.n), caller.actor)
+        plan = self.plans.start(self.plans.find(args.n), self.taking.holder(caller), caller.actor)
         current = self.plans.started_task(plan)
         print(f"plan {plan.id} {plan.state}" + (f": task {current.id}, {current.title} is started" if current else ""))
         return 0

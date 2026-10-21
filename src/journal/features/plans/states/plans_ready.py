@@ -12,7 +12,7 @@ from journal.features.tasks.states.ready import Ready
 
 @dataclass(frozen=True)
 class PlansReady(Ready):
-    """Idle with plans on: a task of the plan started here, the plan's start and a session that finds one started push the plan's state, and a stop is held while an approved plan waits to start; every other moment is Idle's."""
+    """Idle with plans on: a task of the plan this agent holds started here, the plan's start with a task this agent holds and a session that finds one started push the plan's state, and a stop is held while an approved plan waits to start; every other moment is Idle's."""
 
     def plan_state(self, **fields) -> BaseState:
         from journal.features.plans.states.following_plan import FollowingPlan
@@ -32,12 +32,16 @@ class PlansReady(Ready):
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
+        from journal.features.tasks.feature import Tasks
         started = event.data.part(Plans).started
-        if started and event.task_id in started.tasks:
+        if started and event.task_id in started.tasks and event.task_id in event.data.part(Tasks).agent_tasks:
             return self.push(self.plan_state(plan_id=started.plan_id, task_id=event.task_id, approved=True, logged_at=event.time))
         return super().on_task_started(event, settings)
 
     def on_plan_started(self, event: PlanStarted, settings: Settings) -> Transition:
+        from journal.features.tasks.feature import Tasks
+        if event.task_id and event.task_id not in event.data.part(Tasks).agent_tasks:
+            return self.none()
         return self.push(self.plan_state(plan_id=event.plan_id, task_id=event.task_id, approved=True, logged_at=event.time))
 
     def open_work_answer(self, data: FeatureData, settings: Settings) -> Transition:

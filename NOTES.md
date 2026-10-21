@@ -1356,3 +1356,18 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - An entry's data is a dict, empty when it has none. A phone's and a pairing code's expiry is required.
 - A route answers `Answer`, a JSON response, a file or a stream; `Router.page` is what a phone may reach, never a
   stream.
+
+## The task in hand per agent (task 1232, 2026-10-21)
+
+- Each agent has its own task in hand: an `in_hand` link from its holder to the task, written by `Tasks.holder_started`
+  (and `assign_holder` for a plan's start, before the plan's row moves) wherever a task starts, the one-task
+  refusal checked per holder there. `Tasks.current(agent)` is the started task the agent holds.
+- The holder: a worker's command makes the worker row the holder, since a worker's hooks never reach the journal and
+  it has no agent row; an agent's command its own agent row; the user, at the terminal or in the viewer, the
+  environment's agent at work; a plan's next task, whoever held the task that closed. A task started by another
+  moves to it, and the link from the one before goes.
+- The tasks data carries `agent_tasks`, the tasks this agent holds; Ready, PlansReady and FollowingPlan push or swap
+  only for a task of the agent's own, and the plan's next-task line goes to the agent that holds it. SingleTaskRule
+  is gone: the refusal lives where the holder is known.
+- The viewer's task inspector shows "Held by" on a started task: a worker by number and name, an agent by program
+  and session.

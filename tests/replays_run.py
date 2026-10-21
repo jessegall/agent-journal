@@ -546,7 +546,7 @@ def plan_rules(app, replay: Replay, provider: str) -> None:
     console.run(["plan", "add", "2", "third"], USER)
     console.run(["plan", "ready", "2"], USER)
     console.run(["plan", "approve", "2"], USER)
-    console.run(["plan", "start", "2"], AGENT)
+    console.run(["plan", "start", "2"], Caller.agent("main", "s2", provider))
     console.run(["plan", "cancel", "2"], USER)
     app.runtime().deferred.drain()
     replay.step("a second plan started and cancelled")

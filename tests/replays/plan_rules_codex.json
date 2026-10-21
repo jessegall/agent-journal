@@ -110,12 +110,10 @@
       "answer": null,
       "typed": [
         "[journal] the user approved plan 2. `journal plan start 2` begins its first task",
-        "[journal] plan 2: task 3, third is next. it has no brief and nothing logged yet",
         "[journal] the user abandoned plan 2"
       ],
       "nudges": [
         "plans.the_user_approved_the_plan",
-        "plans.next_task_of_the_plan",
         "plans.the_user_abandoned_the_plan"
       ],
       "stack": [

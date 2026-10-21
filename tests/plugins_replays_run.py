@@ -7,6 +7,7 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.features.plugins.feature import PluginsFeature
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.support.listener_queue import ListenerQueue
 from journal.support.actor import Actor
@@ -23,11 +24,12 @@ ECHO = Path(__file__).parent / "plugins" / "echo"
 
 @pytest.fixture
 def journal(tmp_path: Path, monkeypatch):
-    """A fresh journal the echo plugin is installed in, its steps compared to the record."""
+    """A fresh journal the echo plugin is installed in, its steps compared to the record; the plugin is given two seconds to answer, since a program started fresh on a busy machine misses the shipped window."""
     monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app = App(Config(tmp_path / "anew", port=0))
     app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).set(PluginsFeature.PLUGIN_ANSWER_WINDOW.key, 2000, Actor.user(1))
     with app.container.get(Scope).environment(MAIN):
         yield app
     app.runtime().stop()

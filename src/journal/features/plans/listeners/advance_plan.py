@@ -5,6 +5,7 @@ from journal.events.listener import Listener
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
+from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.repositories.agents import Agents
 from journal.repositories.plans import Plans
@@ -14,7 +15,7 @@ from journal.engine.states_catalogue import StatesCatalogue
 
 
 class AdvancePlan(Listener[Updated]):
-    """A plan is done when its last task closes, whoever closes it. For the agent following the plan with that task in hand, the next open task is started by writing its row; at a checkpoint out of auto mode, or with no task that can start, nothing is written, and the state says what it makes of it. The plan followed is read from the agent's stack, beneath a pause or not."""
+    """A plan is done when its last task closes, whoever closes it. For the agent following the plan with that task in hand, the next open task is started by writing its row, held by whoever held the task that closed; at a checkpoint out of auto mode, or with no task that can start, nothing is written, and the state says what it makes of it. The plan followed is read from the agent's stack, beneath a pause or not."""
 
     def __init__(self, plans: Plans, tasks: Tasks, agents: Agents, settings: SettingRows, states: StatesCatalogue) -> None:
         self.plans, self.tasks, self.agents, self.settings, self.states = plans, tasks, agents, settings, states
@@ -30,10 +31,10 @@ class AdvancePlan(Listener[Updated]):
         if not plan_id:
             return
         plan = self.plans.find(plan_id)
-        following = self.plans.next_task(plan)
-        if following is None or not self.is_advancing(plan):
+        following, holder = self.plans.next_task(plan), self.tasks.holder(task)
+        if following is None or not self.is_advancing(plan, holder):
             return
-        self.tasks.save(following.plan_started(time, plan.row_id), event.actor)
+        self.tasks.holder_started(following.plan_started(time, plan.row_id), holder, event.actor)
 
     def is_checkpoint_stop(self, plan: Plan) -> bool:
         from journal.features.tasks.feature import Tasks as TasksFeature
@@ -47,5 +48,5 @@ class AdvancePlan(Listener[Updated]):
                     return state.plan_id
         return 0
 
-    def is_advancing(self, plan: Plan) -> bool:
-        return plan.state == PlanState.STARTED and not self.is_checkpoint_stop(plan) and self.tasks.current() is None
+    def is_advancing(self, plan: Plan, holder: Ref | None) -> bool:
+        return plan.state == PlanState.STARTED and not self.is_checkpoint_stop(plan) and (holder is None or self.tasks.holder_task(holder) is None)

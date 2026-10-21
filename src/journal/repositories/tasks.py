@@ -1,11 +1,14 @@
 from journal.db.connection import Connection
 from journal.events.bus import Bus
+from journal.models.agent import Agent
 from journal.models.check import Check
+from journal.models.link import Link
 from journal.models.plan import Plan
 from journal.models.question import Question
 from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
+from journal.support.actor import Actor
 from journal.support.rejection import Rejection
 from journal.repositories.checks import Checks
 from journal.repositories.links import Links
@@ -14,6 +17,7 @@ from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 WAIT_LINK = "waits_on"
+CURRENT_TASK_LINK = "in_hand"
 
 
 class Tasks(ScopedRepository[Task]):
@@ -68,13 +72,39 @@ class Tasks(ScopedRepository[Task]):
     def with_state(self, state: TaskState) -> list[Task]:
         return self.matching(state=state)
 
-    def current(self) -> Task | None:
-        return next(iter(self.with_state(TaskState.STARTED)), None)
+    def current(self, agent: Agent) -> Task | None:
+        return self.holder_task(Ref.build(agent))
 
-    def refuse_second(self, task: Task) -> None:
-        counterpart = self.current()
-        if task.state == TaskState.STARTED and counterpart is not None and counterpart.id != task.id:
-            raise Rejection(f"task {counterpart.id} is in hand: finish it, or park it with `journal task suspend {counterpart.id} \"<why>\"`, before task {task.id} is started")
+    def holder_task(self, holder: Ref) -> Task | None:
+        ids = self.holder_task_ids(holder)
+        return next((task for task in self.with_state(TaskState.STARTED) if task.row_id in ids), None)
+
+    def holder_task_ids(self, holder: Ref) -> tuple[int, ...]:
+        return tuple(link.target.id for link in self.links.all_matching(source=holder, kind=CURRENT_TASK_LINK))
+
+    def holder(self, task: Task) -> Ref | None:
+        holders = self.links.sources(task, CURRENT_TASK_LINK)
+        return holders[-1] if holders else None
+
+    def holders(self) -> dict[int, Ref]:
+        return {link.target.id: link.source for link in self.links.all_matching(kind=CURRENT_TASK_LINK)}
+
+    def holder_started(self, started: Task, holder: Ref | None, actor: Actor) -> Task:
+        self.assign_holder(started, holder, actor)
+        return self.save(started, actor)
+
+    def assign_holder(self, started: Task, holder: Ref | None, actor: Actor) -> None:
+        if holder is None:
+            return
+        counterpart = self.holder_task(holder)
+        if counterpart is not None and counterpart.id != started.id:
+            raise Rejection(f"task {counterpart.id} is in hand: finish it, or park it with `journal task suspend {counterpart.id} \"<why>\"`, before task {started.id} is started")
+        task = Ref.build(started)
+        for link in self.links.all_matching(target=task, kind=CURRENT_TASK_LINK):
+            if link.source != holder:
+                self.links.delete(link, actor)
+        if self.holder(started) != holder:
+            self.links.save(Link(source=holder, target=task, kind=CURRENT_TASK_LINK), actor)
 
     def unfinished_count(self) -> int:
         return self.count("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
