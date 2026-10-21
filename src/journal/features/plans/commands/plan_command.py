@@ -11,7 +11,6 @@ from journal.models.link import Link
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
-from journal.models.task_state import TaskState
 from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.repositories.links import Links
@@ -158,7 +157,7 @@ class PlanCommand(Command):
 
     def start(self, args: Namespace, where: Where) -> int:
         plan = self.plans.start(self.plans.find(args.n), where.actor)
-        current = next((t for t in self.plans.tasks_of(plan) if t.state == TaskState.STARTED), None)
+        current = self.plans.started_task(plan)
         print(f"plan {plan.id} {plan.state}" + (f": task {current.id}, {current.title} is started" if current else ""))
         return 0
 

@@ -36,7 +36,7 @@ class TasksSnapshotReader:
             broken_waits=tuple(t.id for t, check in broken),
             broken_waits_summary="; ".join(f"task {task.id} waits on check {check.id}, {check.title}, which cannot run" for task, check in broken),
             first_parked_why=parked[0].parked_why if parked else "",
-            next_open=OpenTask(free[0].id, free[0].title) if free else None,
+            next_open=OpenTask(free[0].id, free[0].title, free[0].brief, 0) if free else None,
             last_commands=tuple(commands[:POLLED]),
         )
 

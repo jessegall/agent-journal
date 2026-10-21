@@ -112,7 +112,7 @@ class Repository(Generic[M]):
             self.bus.dispatch(Saving(model=row, by=by))
             saved = self._insert(row, by, self._now()) if row.is_new else self._update(row, by)
             self.bus.dispatch(Saved(model=saved, by=by))
-            return self.carried(saved)
+            return self.dispatched(saved, by)
 
     def imported(self, row: M, at: datetime, by: Actor) -> M:
         with self.connection.transaction():
@@ -137,7 +137,7 @@ class Repository(Generic[M]):
             now = self.find(row.id)
             changed = change(now)
             differing = {f.name: getattr(changed, f.name) for f in fields(changed) if f.metadata.get("column", True) and getattr(changed, f.name) != getattr(now, f.name)}
-            return self.carried(self.touch(now, by, **differing).with_events(changed.events))
+            return self.dispatched(self.touch(now, by, **differing).with_events(changed.events), by)
 
     def touched(self, row: M, by: Actor, fields_of: Callable[[M], dict]) -> M:
         with self.connection.transaction():
@@ -150,7 +150,7 @@ class Repository(Generic[M]):
             self.connection.execute(f"DELETE FROM {self.table} WHERE id = ?", (row.id,))
             self.written()
             self.bus.dispatch(Deleted(model=row, by=by))
-            self.carried(row)
+            self.dispatched(row, by)
 
     def _insert(self, row: M, by: Actor, now: datetime) -> M:
         Title.check_on(row)
@@ -176,9 +176,9 @@ class Repository(Generic[M]):
         self.bus.dispatch(Updated(model=stamped, by=by, was=was))
         return stamped
 
-    def carried(self, row: M) -> M:
+    def dispatched(self, row: M, by: Actor) -> M:
         for event in row.events:
-            self.bus.dispatch(event.placed_by(getattr(row, "environment_id", 0), row.created_at.timestamp(), row.id) if isinstance(event, RowEvent) else event)
+            self.bus.dispatch(event.placed_by(getattr(row, "environment_id", 0), row.created_at.timestamp(), row.id, by.stamp) if isinstance(event, RowEvent) else event)
         return row.without_events()
 
     def written(self) -> None:

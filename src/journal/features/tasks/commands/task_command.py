@@ -24,15 +24,15 @@ from journal.repositories.task_logs import TaskLogs
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks, WAITS_ON
-from journal.features.tasks.support.after_a_close import AfterAClose
+from journal.features.tasks.support.next_open_task import NextOpenTask
 
 
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: StateMachine, messages: Messages, links: Links, plans: Plans, in_hand: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, after: AfterAClose) -> None:
-        self.clock, self.after = clock, after
-        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.in_hand, self.questions, self.waits, self.briefing = tasks, logs, machine, messages, links, plans, in_hand, questions, waits, briefing
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: StateMachine, messages: Messages, links: Links, plans: Plans, taking: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, next_task: NextOpenTask) -> None:
+        self.clock, self.next_task = clock, next_task
+        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.taking, self.questions, self.waits, self.briefing = tasks, logs, machine, messages, links, plans, taking, questions, waits, briefing
 
     def arguments(self, verbs) -> None:
         create = self.verb(verbs, "create", "file a task")
@@ -69,7 +69,7 @@ class TaskCommand(Command):
         if args.message:
             self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.ABOUT), where.actor)
         if args.start:
-            task = self.in_hand.start(task, where)
+            task = self.taking.start(task, where)
         print(f"task {task.id} {task.state}" + (f" (from message {args.message})" if args.message else ""))
         return 0
 
@@ -89,7 +89,7 @@ class TaskCommand(Command):
     def log(self, args: Namespace, where: Where) -> int:
         task = self.tasks.find(args.n)
         self.logs.save(TaskLog.of(task, args.line, self._now().timestamp()), where.actor)
-        current = self.in_hand.current(where)
+        current = self.taking.current(where)
         if current and current.task_id == task.id:
             self.machine.move(where.session, task.environment_id, current.logged(self.clock.now()))
         print(f"task {task.id} logged")
@@ -104,7 +104,7 @@ class TaskCommand(Command):
         return self.taken(args.n, where, "resumed")
 
     def taken(self, n: int, where: Where, how: str) -> int:
-        task = self.in_hand.start(self.tasks.find(n), where)
+        task = self.taking.start(self.tasks.find(n), where)
         print("\n".join([f"task {task.id} {how}", *self.briefing.lines(task)]))
         return 0
 
@@ -132,11 +132,10 @@ class TaskCommand(Command):
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
         return 0
 
-    def _name_next(self, done: Task) -> None:
-        from journal.features.tasks.feature import Tasks as TasksFeature
-        next_open = self.after.next_open(done)
+    def _name_next(self, closed: Task) -> None:
+        next_open = self.next_task.after(closed)
         if next_open:
-            print(TasksFeature.NEXT_TASK_HOLDS_THE_STOP.create(n=next_open.id, title=next_open.title).rendered())
+            print(next_open.line())
 
     @staticmethod
     def _now() -> datetime:

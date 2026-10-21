@@ -203,9 +203,10 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app, monkeypatch)
     console.run(["plan", "add", "1", "tag it", "--brief", "git tag v4"], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
-    console.run(["task", "done", "2"], AGENT)
+    closed = console.run(["task", "done", "2"], AGENT).out
     app.runtime().deferred.drain()
-    assert any("task 3, tag it is next. brief: git tag v4" in line for line in typed), "the plan's next task comes with its brief"
+    assert "plan 1: task 3, tag it is next. brief: git tag v4" in closed, "the closing command prints the plan's next task with its brief"
+    assert not any("tag it is next" in line for line in typed), "nothing is typed afterwards for a start the agent caused"
 
 
 def test_the_plans_next_task_is_named_once_when_another_of_its_tasks_closes_beside_the_one_in_hand(app, monkeypatch):
@@ -221,10 +222,11 @@ def test_the_plans_next_task_is_named_once_when_another_of_its_tasks_closes_besi
         console.run(["plan", "add", "1", title], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
-    console.run(["task", "done", "1"], AGENT)
-    console.run(["task", "done", "4"], AGENT)
+    first = console.run(["task", "done", "1"], AGENT).out
+    beside = console.run(["task", "done", "4"], AGENT).out
     app.runtime().deferred.drain()
-    assert len([line for line in typed if "task 2, tag it is next" in line]) == 1, "closing a task not in hand says nothing about where the plan went"
+    assert "plan 1: task 2, tag it is next" in first and "is next" not in beside, "closing a task not in hand says nothing about where the plan went"
+    assert not any("task 2, tag it is next" in line for line in typed), "the next task is the command's printed output, never typed afterwards"
 
 
 def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked_until_a_command_passes(app, monkeypatch):
@@ -1365,19 +1367,18 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1"], AGENT)
     machine, plans = app.container.get(StateMachine), app.container.get(Plans)
-    assert machine.current("s1") == FollowingPlan(plan_id=1, moved_from=1) and plans.at_checkpoint(plans.find(1)).phase.title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
+    waiting = machine.current("s1")
+    assert (waiting.name, waiting.plan_id, waiting.task_id, waiting.at_checkpoint) == (FollowingPlan.name, 1, 0, True) and plans.at_checkpoint(plans.find(1)).phase.title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
     status, body = hook(app, "Stop")
-    assert body.get("decision") == "block" and "phase one is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "the checkpoint waits for the user's look, said at the stop"
-    assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1") == FollowingPlan(plan_id=1, task_id=2), "plan start goes on past the checkpoint"
-    hook(app, "SessionStart", session_id="s2")
-    assert machine.current("s2") == FollowingPlan(plan_id=1, task_id=2), "a session that starts while the plan runs follows it, at its task in hand"
+    assert body.get("decision") == "block" and "phase 1 is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "the checkpoint waits for the user's look, said at the stop"
+    assert console.run(["plan", "start", "1"], AGENT).code == 0 and (machine.current("s1").plan_id, machine.current("s1").task_id) == (1, 2), "plan start goes on past the checkpoint"
     console.run(["task", "done", "2"], AGENT)
     settings.save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
     console.run(["plan", "start", "2"], AGENT)
-    console.run(["task", "done", "3"], AGENT)
-    assert app.container.get(Tasks).find(4).state == "started" and machine.current("s1") == FollowingPlan(plan_id=2, task_id=4, moved_from=3), "in auto mode a checkpoint never stops the plan"
+    closed = console.run(["task", "done", "3"], AGENT).out
+    assert app.container.get(Tasks).find(4).state == "started" and (machine.current("s1").plan_id, machine.current("s1").task_id) == (2, 4), "in auto mode a checkpoint never stops the plan"
     app.runtime().deferred.drain()
-    assert any("plan 2: task 4, q second is next" in line for line in typed), "the workflow tells the agent its next task"
+    assert "plan 2: task 4, q second is next" in closed and not any("q second is next" in line for line in typed), "the closing command prints the next task; the state types nothing for a start the agent caused"
     console.run(["plan", "park", "2"], AGENT)
     assert machine.current("s1").name == "idle", "a parked plan is over for the agent following it"
 

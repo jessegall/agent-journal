@@ -12,6 +12,7 @@ class RowEvent(Event):
     at: float = 0.0
     row_id: int = 0
     session: str = ""
+    actor: str = ""
     snapshot: Snapshot = field(default_factory=lambda: Snapshot({}), compare=False)
 
     @property
@@ -24,5 +25,8 @@ class RowEvent(Event):
     def reaching(self, session: str) -> "RowEvent":
         return replace(self, session=session)
 
-    def placed_by(self, environment_id: int, at: float, row_id: int) -> "RowEvent":
-        return replace(self, environment_id=self.environment_id or environment_id, at=self.at or at, row_id=self.row_id or row_id)
+    def placed_by(self, environment_id: int, at: float, row_id: int, actor: str) -> "RowEvent":
+        return replace(self, environment_id=self.environment_id or environment_id, at=self.at or at, row_id=self.row_id or row_id, actor=actor)
+
+    def by_agent(self, session: str) -> bool:
+        return self.actor == f"agent:{session}"

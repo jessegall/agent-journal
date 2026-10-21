@@ -19,7 +19,7 @@ from journal.models.task_state import TaskState
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
 from journal.support.chat_mark import ChatMark
-from journal.features.tasks.support.after_a_close import AfterAClose
+from journal.features.tasks.support.next_open_task import NextOpenTask
 from journal.support.decision import Decision
 
 COMMIT = "commit"
@@ -34,9 +34,9 @@ class SpotCommit(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, tasks: TaskRows, bus: Bus, after: AfterAClose) -> None:
+    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, tasks: TaskRows, bus: Bus, next_task: NextOpenTask) -> None:
         self.config, self.cards, self.messages, self.console, self.environments, self.tasks, self.bus = config, cards, messages, console, environments, tasks, bus
-        self.after = after
+        self.next_task = next_task
 
     def handle(self, event: ToolFinished) -> Decision | None:
         command = event.call.command
@@ -55,7 +55,7 @@ class SpotCommit(AgentListener[ToolFinished]):
         return self.commit(event, head.sha, closed)
 
     def commit(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
-        next_open = self.after.next_open(self.tasks.find(closed[-1])) if closed else None
+        next_open = self.next_task.after(self.tasks.find(closed[-1])) if closed else None
         commit = CommitMade(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.at)
         return next((answer for answer in self.bus.dispatch(commit) if isinstance(answer, Decision)), None)
 

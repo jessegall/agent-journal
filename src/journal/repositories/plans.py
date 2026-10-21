@@ -52,9 +52,6 @@ class Plans(ScopedRepository[Plan]):
     def holding(self, task: Task) -> list[Plan]:
         return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.PARKED, PlanState.BLOCKED)]
 
-    def is_moving(self, task: Task) -> bool:
-        return any(plan.state == PlanState.STARTED for plan in self.holding(task))
-
     def waiting_on(self, model) -> list[Plan]:
         return [plan for ref in self.links.sources(model, WAITS_ON) if ref.type == Plan.table() and (plan := self.find(ref.id)).is_blocked()]
 
@@ -102,6 +99,9 @@ class Plans(ScopedRepository[Plan]):
 
     def resumable(self, plan: Plan) -> Task | None:
         return plan.task_to_resume(self.in_order(plan), self.cannot_start(plan))
+
+    def started_task(self, plan: Plan) -> Task | None:
+        return next((task for task in self.tasks_of(plan) if task.state == TaskState.STARTED), None)
 
     def next_task(self, plan: Plan) -> Task | None:
         return plan.next_open_task(self.in_order(plan), self.cannot_start(plan))
