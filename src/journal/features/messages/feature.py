@@ -45,9 +45,8 @@ class Messages(Feature[MessagesData]):
     FULL_MESSAGE_READ = Nudge(name, "read_the_words_whole", "read the user's words whole: no pipe after `journal message read` or `journal question show`", "run it on its own; every word is for you", repeat_interval=0)
     DUPLICATE_REPLY = Nudge(name, "reply_kept_out_as_replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_interval=0)
     REPEATED_CLOSING_TEXT = Nudge(name, "closing_words_kept_out_as_repeated", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_interval=0)
-    TAG_REPLY = Nudge(name, "reply_by_tag", "a reply needs no command", "type it in your turn with [!reply:N] opening its line, and it reaches the chat as your reply", repeat_interval=0)
     PEER_QUESTION = Nudge(name, "answer_the_other_agent", "agent {{sender}} asked you a question in message {{n}}", "answer it with SendMessage to {{sender}}; a message from another agent that asks nothing needs no answer", repeat_interval=300)
-    nudges = (PEER_QUESTION, NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, USER_REACTION, FACE_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT, TAG_REPLY)
+    nudges = (PEER_QUESTION, NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, USER_REACTION, FACE_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
 # Messages
@@ -58,10 +57,12 @@ The user leaves messages; you answer them before anything else.
 - The journal names a message by its number, never its words: `new message 4`, `new messages 4, 5, 6`, or past three
   `7 messages unread: journal message unread`. `journal message read N` shows one and marks it read; `journal message unread`
   shows every unread one and marks them read.
-- Answer each as a gentleman would, because you were asked: in your next turn, before the work it brought, with the
-  tag `[!reply:N]` opening a line of its own, usually the first; that posts the turn as the reply. Nothing holds your
-  hands for it: the next tool call waits. Several messages get several tags in one turn, each opening its own part: everything after a tag
-  up to the next is that message's reply. `[!reply:N,M]` answers both with one part. A tag inside a line is only text.
+- Answer each as a gentleman would, because you were asked: in your next turn, before the work it brought. A reply in a
+  turn that goes on to call a tool is sent with `journal message send "<text>" --reply-to N`: Claude Code keeps text written
+  before a tool call only as a paraphrased thought, so a reply typed there is lost. A turn that ends with your words takes
+  the tag `[!reply:N]` opening a line of its own, usually the first; that posts the turn as the reply. Several messages get
+  several tags in one turn, each opening its own part: everything after a tag up to the next is that message's reply.
+  `[!reply:N,M]` answers both with one part. A tag inside a line is only text.
 - Every message read is one of two things: steering, which you take as steering, or something to do, which you file
   as a task from it, `journal task create "<title>" --from N`, so the chat shows the task above the message.
 - A message that only needs acknowledging ("ok", "thanks", "carry on") gets a face, not words: `journal message react N "👍"`,
@@ -78,7 +79,7 @@ The user leaves messages; you answer them before anything else.
 - Other tags, each opening a line of its own, run the command they stand for with the turn's words as its text:
   `[!todo="the title"]` files a task with the turn as its brief; `[!log:N]` makes the turn task N's log line and keeps it
   out of the chat; `[!end:N]` finishes task N with the turn as what landed; `[!fact="the claim"]`, `[!rule="the ruling"]`
-  and `[!reminder="the note"]` record one with the turn as its reason. A tag that cannot run is typed back to you. `journal message send "<text>" --reply-to N` answers from a command, and always counts: a reply written just before a tool call is sometimes not saved in Claude Code's transcript, so the journal never sees it; `journal message list` shows the thread,
+  and `[!reminder="the note"]` record one with the turn as its reason. A tag that cannot run is typed back to you. `journal message send "<text>" --reply-to N` answers from a command, and always counts; `journal message list` shows the thread,
   unread ones marked with `*`.
 - A message from another session's agent reaches the chat as that agent's. Read it at once and act on it as steering;
   answer it, with SendMessage to that agent, only when it asks a question, so two agents never answer each other without end.

@@ -1635,13 +1635,11 @@ def test_a_question_whose_options_say_i_or_you_is_refused(app: App):
     assert requested.code == 0 and "1. The user upgrades it, today" in requested.text and "2. The agent upgrades it" in requested.text, "a comma inside a quoted option stays in it, and the options are printed back numbered"
 
 
-def test_a_reply_sent_by_command_comes_back_with_the_hint_that_it_can_be_typed(app: App):
+def test_a_reply_sent_by_command_comes_back_with_no_hint_to_type_it_instead(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
     body = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "journal message send 'on it' --reply-to 1"}, tool_response="message 2 sent")[1]
-    assert "a reply needs no command. type it in your turn with [!reply:N]" in json.dumps(body), "the hint rides on the command's own result"
-    counterpart = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "journal task list"}, tool_response="")[1]
-    assert "a reply needs no command" not in json.dumps(counterpart)
+    assert "a reply needs no command" not in json.dumps(body), "a reply in a turn that calls tools goes by command, since Claude Code keeps text before a tool call only as a thought"
 
 
 def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app: App):

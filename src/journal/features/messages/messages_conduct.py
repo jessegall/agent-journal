@@ -7,14 +7,12 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.stop import Stop
 from journal.events.agent.prompt_submitted import PromptSubmitted
-from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.user_resumed import UserResumed
 from journal.events.rows.reaction_added import ReactionAdded
 from journal.support.chain import Chain
 
 TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread|recent)|question\s+(?:show|list))\b[^|;&\"']*\|")
-MESSAGE_COMMAND = "journal message send"
 
 
 class MessagesConduct(Conduct):
@@ -36,10 +34,6 @@ class MessagesConduct(Conduct):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return Transition.merged(self, [truncated_read_check(self, event, settings), unanswered_check(self, event, settings), unread_check(self, event, settings)])
-
-    def on_tool_finished(self, event: ToolFinished, settings: Settings) -> Transition:
-        command = event.call.command
-        return self.none(messages_feature().TAG_REPLY.create()) if MESSAGE_COMMAND in command else self.none()
 
     def on_reaction_added(self, event: ReactionAdded, settings: Settings) -> Transition:
         return self.none(messages_feature().USER_REACTION.create(face=event.face, n=event.message_id)) if event.user_origin else self.none()
