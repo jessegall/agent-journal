@@ -19,6 +19,7 @@
         "SentenceLabelScriptDetector",
         "SearchMarkLabelDetector",
         "QueryOutsideRepositoryDetector",
+        "WriteOutsideRepositoryDetector",
         "PoeticTypeNameDetector",
         "SentenceTypeNameDetector",
         "PoeticMethodNameDetector",

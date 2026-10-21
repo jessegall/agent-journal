@@ -15,8 +15,12 @@ holds in memory in step through `written()`.
 
 ## When it fires
 
-- **`query-outside-repository`** - code calls `execute`, `executemany`, `all` or `one` on the connection outside
-  the repositories and the database layer: a controller, a shaper, a feature or a listener writing its own SQL.
+- **`query-outside-repository`** - code calls `execute`, `executemany`, `executescript`, `transaction`, `all` or
+  `one` on the connection outside the repositories and the database layer: a controller, a shaper, a feature or a
+  listener writing its own SQL.
+- **`write-outside-repository`** - a file outside the repositories and the database layer imports the Connection at
+  all: whatever it runs on it skips the funnel. The boot, the server's pool and the two plugin listeners that wait on
+  the commit are the named exceptions, and they run no SQL.
 
 ## What to do instead
 
