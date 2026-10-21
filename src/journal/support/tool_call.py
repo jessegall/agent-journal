@@ -46,6 +46,3 @@ class ToolCall:
     def is_script(self) -> bool:
         from journal.support.writes import Writes
         return any(Writes.is_script(part.text) for part in self.parts)
-
-    def journal_parts(self) -> tuple[int, int]:
-        return sum(1 for part in self.parts if part.is_journal), len(self.parts)

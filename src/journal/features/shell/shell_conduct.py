@@ -5,6 +5,7 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
+from journal.features.aliases.support.alias_call import AliasCall
 from journal.features.shell.support.ended_output import EndedOutput
 from journal.support.chain import Chain
 
@@ -13,10 +14,10 @@ BACKGROUND_CHECK_DELAY_SECONDS = 300.0
 
 
 class ShellConduct(Conduct):
-    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone, a read of an output by hand is pointed at a reader or asked to become one, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends."""
+    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone while an alias may chain, a read of an output by hand is pointed at a reader or asked to become one, a line an alias runs is pointed at the alias and a line run three times is asked to become one, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends."""
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return Transition.merged(self, [journal_isolation_check(self, event, settings), partial_read_check(self, event, settings), readers_check(self, event, settings)])
+        return Transition.merged(self, [journal_isolation_check(self, event, settings), partial_read_check(self, event, settings), readers_check(self, event, settings), alias_check(self, event, settings)])
 
     def on_tool_finished(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
@@ -46,8 +47,23 @@ def partial_read_check(state: BaseState, event: ToolStarting, settings: Settings
 
 def journal_isolation_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
     from journal.features.shell.feature import Shell
-    journal, parts = event.call.journal_parts()
-    return state.refuse(Shell.JOURNAL_COMMAND_ISOLATION.create()) if 0 < journal < parts else state.none()
+    aliases = {alias.name for alias in event.data.part(Shell).aliases}
+    journal = [part for part in event.call.parts if part.is_journal and AliasCall.parsed(part.text).name not in aliases]
+    return state.refuse(Shell.JOURNAL_COMMAND_ISOLATION.create()) if 0 < len(journal) < len(event.call.parts) else state.none()
+
+
+def alias_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    from journal.features.shell.feature import Shell
+    shell = event.data.part(Shell)
+    hints = [Shell.ALIAS_HINT.create(name=alias.name, line=part.text) for part in event.call.parts for alias in shell.aliases if alias.matches(part.text)]
+    if hints:
+        return state.none(hints[0])
+    command = event.call.command
+    if command not in shell.repeated or event.call.is_journal or Chain.is_read_line(command):
+        return state.none()
+    reader = next((r.name for r in shell.readers if r.commands.is_read(command)), "<the reader that reads its output>")
+    tip = Shell.ALIAS_SUGGESTION.create(command=command, reader=f" --reader {reader}")
+    return state.none() if tip.rendered() in shell.tipped else state.none(tip)
 
 
 def readers_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:

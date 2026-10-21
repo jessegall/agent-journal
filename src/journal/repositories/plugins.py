@@ -2,7 +2,6 @@ from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.models.plugin import Plugin
 from journal.support.actor import Actor
-from journal.support.missing_row import MissingRow
 from journal.repositories.repository import Repository
 
 
@@ -25,10 +24,7 @@ class Plugins(Repository[Plugin]):
         self.live = None
 
     def lookup(self, name: str) -> Plugin:
-        rows = self.matching(name=name)
-        if not rows:
-            raise MissingRow(self.table, name)
-        return rows[0]
+        return self.single(name=name)
 
     def enabled(self) -> list[Plugin]:
         if self.live is None:

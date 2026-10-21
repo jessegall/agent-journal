@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from journal.console.console import Console
+from journal.features.aliases.support.alias_lines import AliasLines
 from journal.support.caller_variables import CallerVariables
 from journal.providers.providers import Providers
 from journal.support.plugin_tokens import PluginTokens
@@ -15,13 +16,14 @@ from journal.engine.support.launch_files import LaunchFiles
 
 ACTOR_HEADER = "x-journal-actor"
 THREAD_HEADER = "x-journal-thread"
+EXEC = "__journal_exec"
 
 
 class CliController:
-    """The shim posts an argv here; the server runs it on the console it already has loaded and answers with the outcome. A command from a shell whose launch id is not its environment's is not taken as the live agent's."""
+    """The shim posts an argv here; the server runs it on the console it already has loaded and answers with the outcome, or with the line an alias stands for, which the shim runs itself. A command from a shell whose launch id is not its environment's is not taken as the live agent's."""
 
-    def __init__(self, console: Console, tokens: PluginTokens, subagents: SubagentCommands, launches: LaunchFiles, providers: Providers) -> None:
-        self.console, self.tokens, self.subagents, self.launches, self.providers = console, tokens, subagents, launches, providers
+    def __init__(self, console: Console, tokens: PluginTokens, subagents: SubagentCommands, launches: LaunchFiles, providers: Providers, aliases: AliasLines) -> None:
+        self.console, self.tokens, self.subagents, self.launches, self.providers, self.aliases = console, tokens, subagents, launches, providers, aliases
 
     def run(self, request: Request) -> Response:
         variables = CallerVariables.parsed(request.body, self.providers.default().name)
@@ -32,6 +34,9 @@ class CliController:
     def run_posted(self, request: Request) -> StreamResponse:
         posted = CliPost.parsed(request.body["raw"])
         variables = replace(self.providers.caller_variables(posted.environment), environment=request.environment)
+        alias = self.aliases.called(posted.argv)
+        if alias is not None and self.is_known(variables):
+            return StreamResponse("text/plain", iter([f"{EXEC} {alias.terminal_line(posted.argv[1:])}\n{EXIT} 0\n".encode()]))
         outcome = self.outcome(variables, posted.argv, request) if self.is_known(variables) else self.token_refusal(variables)
         text = outcome.text + outcome.error
         return StreamResponse("text/plain", iter([f"{text}{'' if not text or text.endswith(chr(10)) else chr(10)}{EXIT} {outcome.code}\n".encode()]))

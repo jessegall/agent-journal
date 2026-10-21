@@ -40,6 +40,10 @@ class Entries(ScopedRepository[Entry]):
     def output_tool_starts(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected("kind = 'ToolStarting' AND actor = ? AND (data LIKE '%outputs/%' OR data LIKE '%journal output read %') ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
 
+    def repeated_commands(self, session: str, minimum: int, last: int = 200) -> list[str]:
+        rows = self.connection.all("SELECT command FROM (SELECT json_extract(data, '$.call.command') AS command FROM entries WHERE environment_id = ? AND kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?) WHERE command != '' GROUP BY command HAVING COUNT(*) >= ?", (self.scope.id, Actor.agent(session).stamp, last, minimum))
+        return [row["command"] for row in rows]
+
     def tool_ends(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected("kind IN ('ToolFinished', 'ToolFailed') AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
 

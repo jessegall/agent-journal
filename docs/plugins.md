@@ -95,6 +95,15 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
 - `setup`: steps run in order at install, in its folder with its environment, each `{"name": ..., "run": "<shell
   line>"}`. A step that fails stops the install and leaves nothing behind.
 - `installed`: a command run after the setup, whose answer, a JSON object, fills its settings.
+- `aliases`: the commands it ships, each `{"name": ..., "line": "<shell line>", "env": {"KEY": "value"}, "args": ["--changes",
+  "<path>"], "reader": "<reader>", "description": "<what it does>"}`. The line's first word is a path inside the folder; the
+  alias is kept as the project's with that path made whole, so `journal <name> [args]` runs it in the project with
+  `env` put before it and the args at the line's end, or in place of `{args}` where the line has it; `args` says what it
+  takes. A run that moves to the background is watched at once through `reader`. A name that is a journal command or an
+  alias already kept is skipped, the install saying which, and the plugin installs all the same. The readers ship in
+  the folder as `.journal-plugin/readers/<name>.pattern`, in the shape `journal reader add` writes, and are copied into
+  `.journal/readers` with `plugin: <name>` on a line of their own; a reader of the project's of that name is left as it
+  is. Both go when the plugin is removed, and an upgrade writes them again.
 - `version`, `title`, `description`: what the Plugins page shows; `journal`: the least journal version it runs on.
 - `cards`: the kinds of card it shows, each `{"kind": ..., "label": ..., "tone": "good" | "warn" | "danger" | "note" |
   "muted", "icon": ..., "collapsed": true}`.

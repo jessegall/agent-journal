@@ -44,7 +44,10 @@ class Shell(Feature[ShellData]):
     WATCH_ENDED = Nudge(name, "watched_output_ended", "output {{n}}, which you watched, {{ending}}:\n{{lines}}", "the watch on it has ended; `journal output read {{n}} --summary` says more", repeat_interval=0)
     WATCH_SUGGESTION = Nudge(name, "watch_it_live", "watch it live, so the user sees it move: `journal output watch {{n}}{{reader}}`", "or `journal await \"<what>\" --output {{n}}{{reader}}` when you wait on it", repeat_interval=0)
     NEW_READER_SUGGESTION = Nudge(name, "make_its_reader", "no reader reads {{command}} yet: make one, and its card shows how far it is", "`journal reader add <name> --commands \"{{command}}\" --pattern '<its failure and summary lines>' --progress '<a percent or a count of a total, in groups>' --label Tests`, then watch it with --reader <name>; the next run is told of it by itself", repeat_interval=0)
-    nudges = (WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
+    ALIAS_WATCH = Nudge(name, "watched_alias_output", "output {{n}}, the run of journal {{name}}, is watched{{reader}}", "you see its view after every tool use until it ends, and the user sees it move in its card; `journal output unwatch` ends the watch", repeat_interval=0)
+    ALIAS_HINT = Nudge(name, "use_the_alias", "journal {{name}} runs this line: {{line}}", "run `journal {{name}} [args]` next time: it passes the args on and watches a long run through its reader", repeat_interval=0)
+    ALIAS_SUGGESTION = Nudge(name, "add_an_alias", "you ran this line three times or more: {{command}}", "make it an alias, `journal alias add <name> \"{{command}}\"{{reader}}`, and run `journal <name>` from then on", repeat_interval=0)
+    nudges = (ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands
@@ -83,7 +86,15 @@ Every shell command you run goes through the journal's runner.
   in the shell itself: nothing of it is captured, recorded or kept, and `grep -n x src/app.py | tail -5` answers at once. Any other command's trailing `| tail` or `| head` is taken off the line: the command runs whole, the
   whole output is kept under its number, and your cut is applied to it and shown before the one line naming the
   number, so the lines you asked for come back and the rest stays readable.
+- An alias names a command line of the project: `journal alias add <name> "<line>" [--reader <name>] [--about "<what
+  it does>"] [--env KEY=VALUE]`, then `journal <name> [args]` runs the line with the args at its end, recorded as your
+  own command. A run that moves to the background is watched at once through the alias's reader, so the user sees it
+  move. `journal alias list` names them, `journal alias edit <name> [--line] [--reader] [--about]` changes one and
+  `journal alias remove <name>` takes it away; a name that is a journal command or an alias already is refused. The
+  user types the same `journal <name>` in a terminal, and a plugin may ship aliases with their readers. An alias chains
+  with other commands like any command. A line an alias runs, typed by hand, is pointed at the alias; a line you run
+  three times or more with no alias for it is asked once to become one, with the reader that reads it.
 - A test suite is a long runner: run it on its own and chain the commit behind its result in a second call.
 - A journal command runs on its own, or chained only with other journal commands; chained with anything else it is
   refused, since it would move to the background with the rest and its answer lost.
-""", keywords=("background", "long-running"))
+""", keywords=("background", "long-running", "alias"))

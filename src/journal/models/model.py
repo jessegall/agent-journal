@@ -28,6 +28,8 @@ class Model:
         singular = re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__).lower()
         if singular.endswith("y") and singular[-2] not in "aeiou":
             return singular[:-1] + "ies"
+        if singular.endswith("s"):
+            return singular + "es"
         return singular + "s"
 
     @classmethod

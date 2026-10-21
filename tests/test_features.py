@@ -7388,3 +7388,82 @@ def test_a_long_worker_report_keeps_its_start_and_its_end():
     shortened = WorkerRunner.shortened_report(report)
     assert shortened.startswith("Summary: the suite takes 9 s.") and shortened.endswith("last line") and "characters left out" in shortened, "a report's opening is its summary and is never cut"
     assert WorkerRunner.shortened_report("short") == "short"
+
+
+def wrapped_line(command: str) -> str:
+    """The line Claude Code hands the runner: its own set-up, the command in an eval, and a pwd into a file."""
+    return f"true && eval '{command.replace(chr(39), chr(39) + chr(34) + chr(39) + chr(34) + chr(39))}' < /dev/null && pwd -P >| /dev/null"
+
+
+def test_an_alias_runs_its_line_with_the_flags_passed_on_and_its_moved_run_is_watched_through_its_reader(app: App):
+    from journal.features.shell.support.shell_request import ShellRequest
+    from journal.features.shell.support.shell_runner import ShellRunner
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.entries import Entries
+    console, runner = app.console(), app.container.get(ShellRunner)
+    hook(app, "SessionStart")
+    assert console.run(["alias", "add", "greet", "sh -c 'echo \"$GREETING $*\"' greet", "--env", "GREETING=hello"], USER).code == 0
+    assert console.run(["alias", "add", "nap", "sleep", "--reader", "pytest", "--about", "waits"], AGENT).code == 0
+    assert "greet" in console.run(["alias", "list"], USER).text and "(reader pytest)" in console.run(["alias", "list"], USER).text
+    request = lambda line: ShellRequest(line=wrapped_line(line), cwd=str(app.config.root), shell="/bin/sh", environment=dict(os.environ))
+    shown = b"".join(runner.run(request("journal greet --loud world"), AGENT, MAIN)).decode()
+    assert "hello --loud world" in shown, shown
+    assert any("GREETING=hello sh -c" in e.data.get("part", "") for e in app.container.get(Entries).kind_entries("ran", 10)), "the written-out line is what runs and is recorded"
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="shell.foreground", value=1), Actor.system())
+    moved = b"".join(runner.run(request("journal nap 2"), AGENT, MAIN)).decode()
+    assert re.search(r"output (\d+)", moved), repr(moved)
+    number = int(re.search(r"output (\d+)", moved).group(1))
+    output = app.container.get(CommandOutputs).find(number)
+    assert output.is_watched and output.watch_reader == "pytest", "a moved alias run is watched through its reader at once"
+    assert "the run of journal nap, is watched through the reader pytest" in moved and "watch it live" not in moved, "the move says it is watched, not that it could be"
+
+
+def test_an_alias_name_that_is_a_journal_command_or_another_alias_is_refused(app: App):
+    console = app.console()
+    noun = console.run(["alias", "add", "task", "echo hi"], USER)
+    assert noun.code == 1 and "task is a journal command" in noun.error
+    assert console.run(["alias", "add", "hi", "echo hi"], USER).code == 0
+    taken = console.run(["alias", "add", "hi", "echo again"], AGENT)
+    assert taken.code == 1 and "an alias named hi exists" in taken.error
+    assert console.run(["alias", "edit", "hi", "--line", "echo hello"], AGENT).code == 0 and "echo hello" in console.run(["alias", "list"], USER).text
+    assert console.run(["alias", "remove", "hi"], USER).code == 0 and console.run(["alias", "list"], USER).text == ""
+
+
+def test_a_plugins_alias_and_reader_come_with_it_a_taken_name_is_skipped_and_both_go_with_it(app: App, tmp_path):
+    from journal.repositories.aliases import Aliases
+    folder = tmp_path / "judging"
+    (folder / ".journal-plugin" / "readers").mkdir(parents=True)
+    (folder / "journal-plugin.json").write_text(json.dumps({"name": "judging", "version": "1.0.0", "program": "run.py", "aliases": [
+        {"name": "judge", "line": "bin/judge {args} --plain", "env": {"PLAIN": "1"}, "args": ["--changes", "<path>"], "reader": "verdicts"},
+        {"name": "task", "line": "bin/judge"}]}))
+    (folder / "run.py").write_text("")
+    (folder / ".journal-plugin" / "readers" / "verdicts.pattern").write_text("# the verdict\n^verdict\n")
+    console, aliases = app.console(), app.container.get(Aliases)
+    installed = console.run(["plugin", "install", str(folder), "--yes"], USER)
+    assert installed.code == 0 and "brings the alias judge: bin/judge {args} --plain" in installed.text and "skipped its alias task: the name is taken" in installed.text, installed.text + installed.error
+    judge = aliases.single(name="judge")
+    assert judge.plugin == "judging" and judge.command("--changes") == f"PLAIN=1 {folder.resolve() / 'bin' / 'judge'} --changes --plain" and judge.description == "takes --changes, <path>"
+    assert (app.config.readers / "verdicts.pattern").read_text().startswith("# the verdict\n^verdict\n")
+    assert console.run(["plugin", "remove", "judging"], USER).code == 0
+    assert aliases.matching(name="judge") == [] and not (app.config.readers / "verdicts.pattern").exists(), "the plugin's alias and reader go with it"
+
+
+def test_the_shim_runs_an_aliases_line_typed_at_a_terminal(app: App):
+    import subprocess
+    assert app.console().run(["alias", "add", "hello", "echo hi from"], USER).code == 0
+    environ = {**os.environ, "JOURNAL_ROOT": str(app.config.root), "JOURNAL_ENV": "main"}
+    (app.config.home / "port").write_text(str(app.server().port))
+    typed = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "hello", "the terminal"], env=environ, capture_output=True, text=True, timeout=10)
+    assert typed.returncode == 0 and typed.stdout == "hi from the terminal\n", typed.stdout + typed.stderr
+
+
+def test_a_line_an_alias_runs_is_pointed_at_it_and_a_line_run_three_times_is_asked_to_become_one(app: App):
+    hook(app, "SessionStart")
+    app.console().run(["alias", "add", "unit", "pytest -q"], USER)
+    said = lambda command: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": command})[1].get("hookSpecificOutput", {})
+    assert "journal unit runs this line: pytest -q tests" in said("pytest -q tests").get("additionalContext", "")
+    chained = said("cd src && journal unit")
+    assert chained.get("permissionDecision") != "deny" and "runs on its own" not in chained.get("additionalContext", ""), "an alias chains like any command"
+    assert "three times" not in said("make build").get("additionalContext", "") + said("make build").get("additionalContext", "")
+    assert "you ran this line three times or more: make build" in said("make build").get("additionalContext", "")
+    assert "three times" not in said("make build").get("additionalContext", ""), "once per line"
