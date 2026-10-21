@@ -5843,3 +5843,23 @@ def test_a_short_output_with_no_pipe_keeps_no_output_row(app):
         outputs.of_chain("short")
     assert ShellVerbs(app).forget("cut", 120) == "kept" and outputs.of_chain("cut")
     assert ShellVerbs(app).forget("long", 400) == "kept" and outputs.of_chain("long")
+
+
+def test_a_paused_agent_may_stop_with_a_message_unread_read_it_through_the_pause_and_is_told_it_again_on_resume(app, monkeypatch):
+    from journal.repositories.agents import Agents
+    typed = []
+    catch_typed(app, monkeypatch, typed)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    agent_id = app.container.get(Agents).for_session("s1").id
+    assert viewer(app, f"agents/{agent_id}/pause")["state"] == "paused"
+    app.console().run(["message", "send", "look at the footer"], USER)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 409, "paused, a tool call is held"
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal message read 1"})[0] == 200, "a read of the user's words goes through the pause"
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list"})[0] == 409, "any other journal command waits like the rest"
+    status, body = hook(app, "Stop")
+    assert status == 200 and body.get("decision") != "block", "a paused agent ends its turn with the message unread: no deadlock between the hold and the stop"
+    typed.clear()
+    viewer(app, f"agents/{agent_id}/resume")
+    app.runtime().deferred.drain()
+    assert any("resumed" in line for line in typed) and any("new message 1" in line for line in typed), "on resume the agent is told to carry on and that the message waits"

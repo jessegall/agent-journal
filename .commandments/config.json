@@ -27,6 +27,7 @@
         "PoeticParameterNameDetector",
         "DocstringInMethodDetector",
         "FieldDocstringDetector",
+        "ConstantDocstringDetector",
         "StateMachineOutsideEngineDetector",
         "StateListenerNotOnDetector",
         "OnListenerWithoutEventTypeDetector",

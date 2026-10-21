@@ -8,6 +8,7 @@ from journal.events.agent.idle import Idle
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
+from journal.events.rows.user_resumed import UserResumed
 from journal.events.rows.reaction_given import ReactionGiven
 from journal.support.chain import Chain
 
@@ -23,6 +24,13 @@ class MessagesConduct(Conduct):
         return self.unchanged(*inbox_named(event.snapshot.of(messages_feature()).unread))
 
     def on_idle_messages(self, event: Idle, settings: Settings) -> Transition:
+        if self.refuses_every_tool():
+            return self.unchanged()
+        return self.unchanged(*inbox_named(event.snapshot.of(messages_feature()).unread))
+
+    def on_user_resumed_messages(self, event: UserResumed, settings: Settings) -> Transition:
+        if event.agent_session != event.session:
+            return self.unchanged()
         return self.unchanged(*inbox_named(event.snapshot.of(messages_feature()).unread))
 
     def on_tool_starting_messages_read_whole(self, event: ToolStarting, settings: Settings) -> Transition:
