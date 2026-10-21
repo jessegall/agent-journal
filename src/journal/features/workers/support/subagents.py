@@ -3,6 +3,8 @@ import re
 
 from journal.features.workers.support.dispatch import Dispatch
 from journal.repositories.entries import Entries
+from journal.support.agent_message import AgentMessage
+from journal.support.subagent_dispatch import SubagentDispatch
 
 ENDS = frozenset({"Stop", "SessionStarted", "SessionEnded"})
 
@@ -49,14 +51,15 @@ class Subagents:
                 if i is not None:
                     rows[i] = rows[i].finished("done", time)
                 continue
-            if e.data.get("tool_name") == "SendMessage":
-                Subagents.resumed(rows, background, e.data.get("tool_input", {}).get("to", ""), e.kind)
+            operation = e.recorded_call().get("operation", {})
+            if operation.get("kind") == AgentMessage.kind:
+                Subagents.resumed(rows, background, operation.get("receiver", ""), e.kind)
                 continue
-            if e.data.get("tool_name") not in ("Agent", "Task") or e.data.get("refused"):
+            if operation.get("kind") != SubagentDispatch.kind or e.data.get("refused"):
                 continue
-            value, use = e.data.get("tool_input", {}), e.data.get("tool_use_id", "")
+            use = e.data.get("tool_use_id", "")
             if e.kind == "ToolStarting":
-                rows.append(Dispatch(f"sub:{e.id}", time, value.get("description", "") or value.get("prompt", "")[:80], f"{value.get('description', '')} {value.get('prompt', '')}", value.get("subagent_type", "") or "subagent", value.get("model", "")))
+                rows.append(Dispatch(f"sub:{e.id}", time, operation["title"] or operation["brief"][:80], f"{operation['title']} {operation['brief']}", operation["role"] or "subagent", operation["model"]))
                 open_[use or f"entry:{e.id}"] = len(rows) - 1
             elif e.kind == "ToolFailed" and open_:
                 i = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))

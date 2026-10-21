@@ -10,6 +10,7 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.events.agent.stop import Stop
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
@@ -27,6 +28,13 @@ class RefuseWrites(AgentListener[ToolStarting]):
 
     def handle(self, event):
         return Decision.refuse("no work declared") if event.call.tool == "Write" else Decision.allowed_with("carry on")
+
+
+class RefuseEveryStop(AgentListener[Stop]):
+    blocking = True
+
+    def handle(self, event):
+        return Decision.refuse("finish the task in hand first")
 
 
 class Noted(AgentListener[ToolStarting]):
@@ -201,3 +209,83 @@ def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app: A
     with urlopen(reset, timeout=5) as reply:
         numbers = json.loads(reply.read())
     assert numbers["hooks"]["count"] == 0 and numbers["by_kind"] == {} and numbers["recent"] == [], "a reset clears every count and the log, so the next reading starts from nothing"
+
+
+BODIES = Path(__file__).with_name("hook_bodies")
+EVENTS = {"SessionStart": "SessionStarted", "UserPromptSubmit": "PromptSubmitted", "PreToolUse": "ToolStarting", "PostToolUse": "ToolFinished", "PostToolUseFailure": "ToolFailed", "PreCompact": "Compacting",
+          "Stop": "Stop", "SubagentStart": "SubagentStarted", "SubagentStop": "SubagentEnded", "MessageDisplay": "TurnDisplayed", "SessionEnd": "SessionEnded"}
+
+
+def captured(provider: str) -> list[dict]:
+    """Every hook body a real run of the provider's program sent, in order; the file is named for the program's version."""
+    return [json.loads(line) for path in sorted(BODIES.glob(f"{provider}_*.jsonl")) for line in path.read_text().splitlines() if line.strip()]
+
+
+def post_as(app, provider: str, body: dict, launch: str = ""):
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/{provider}", data=json.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", "X-Journal-Launch": launch})
+    try:
+        with urlopen(request, timeout=5) as reply:
+            return reply.status, json.loads(reply.read())
+    except HTTPError as error:
+        return error.code, json.loads(error.read())
+
+
+@pytest.mark.parametrize("provider", sorted({path.name.split("_")[0] for path in BODIES.glob("*.jsonl")}))
+def test_every_hook_a_real_run_sent_decodes_into_its_agent_event(app: App, provider: str):
+    from journal.providers.providers import Providers
+    bodies = [body for body in captured(provider) if not (body.get("agent_id") and body["hook_event_name"] == "PreToolUse")]
+    assert {body["hook_event_name"] for body in bodies} <= {kind.value for kind in Providers().lookup(provider).hook_kinds}, "a real run sends only the kinds the provider wires"
+    for body in bodies:
+        assert post_as(app, provider, body)[0] == 200, body
+    assert [entry.kind for entry in app.container.get(Entries).scoped()] == [EVENTS[body["hook_event_name"]] for body in bodies]
+
+
+def test_each_providers_tool_calls_decode_into_the_operations_the_features_read():
+    from journal.providers.claude import Claude
+    from journal.providers.codex import Codex
+    from journal.support.file_edit import FileEdit
+    from journal.support.file_read import FileRead
+    from journal.support.file_write import FileWrite
+    from journal.support.undecoded_tool import UndecodedTool
+    from journal.support.shell_line import ShellLine
+    from journal.support.skill_load import SkillLoad
+    from journal.support.subagent_dispatch import SubagentDispatch
+    calls = {}
+    for body in captured("claude"):
+        if body["hook_event_name"] == "PreToolUse":
+            calls.setdefault(body["tool_name"], body["tool_input"])
+    claude, codex = Claude(), Codex()
+    ready = ShellLine("printf ready > ready.txt")
+    assert claude.operation("Bash", calls["Bash"]) == ready and codex.operation("Bash", {"command": "printf ready > ready.txt"}) == ready, "both bodies of 5.4 are the same operation"
+    assert codex.operation("exec_command", {"cmd": ["bash", "-lc", "printf ready > ready.txt"]}) == ready and codex.operation("exec_command", {"cmd": ["git", "status", "--short"]}) == ShellLine("git status --short"), "a Codex command given as a list is one line"
+    assert codex.call("exec_command", {"cmd": ["bash", "-lc", "printf ready > ready.txt"]}).writes, "and is read for its writes as Claude's is"
+    patch = "*** Begin Patch\n*** Add File: new.txt\n+hi\n*** Update File: notes.txt\n@@\n-first\n+second\n*** Delete File: old.txt\n*** End Patch\n"
+    assert codex.operation("apply_patch", {"command": patch}) == FileEdit(("new.txt", "notes.txt", "old.txt")), "a patch adding, changing and deleting files is an edit of each path"
+    assert claude.operation("Edit", calls["Edit"]) == FileEdit(("/project/notes.txt",)) and claude.operation("Write", calls["Write"]) == FileWrite("/project/new.txt")
+    assert claude.operation("Read", calls["Read"]) == FileRead("/project/notes.txt", False) and claude.operation("Skill", calls["Skill"]) == SkillLoad("greeting")
+    assert claude.operation("Agent", calls["Agent"]) == SubagentDispatch("general-purpose", "", "Reply with one word", "reply with the word amber")
+    assert isinstance(codex.operation("spawn_agent", {"agent_type": "explorer", "message": "reply with the word amber"}), SubagentDispatch), "a Claude Agent call and a Codex subagent call are both dispatches"
+    assert claude.operation("Grep", {"pattern": "x"}) == UndecodedTool("Grep") and codex.operation("view_image", {}) == UndecodedTool("view_image"), "a tool a provider does not know is another tool"
+
+
+@pytest.mark.parametrize("provider", ["claude", "codex"])
+def test_a_hold_answers_409_and_a_refused_stop_the_block_json_for_both_providers(app: App, provider: str):
+    app.container.get(Bus).listen(ToolStarting, RefuseWrites())
+    app.container.get(Bus).listen(Stop, RefuseEveryStop())
+    assert post_as(app, provider, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Write", "tool_input": {}}) == (409, {"error": "no work declared"})
+    status, body = post_as(app, provider, {"hook_event_name": "Stop", "session_id": "s1", "stop_hook_active": False})
+    assert status == 200 and body["decision"] == "block" and body["reason"].startswith("finish the task in hand first") and "continue" not in body, "a refused stop goes on working; continue:false would end a Codex turn"
+
+
+@pytest.mark.parametrize("provider, tool, value", [
+    ("claude", "Agent", {"subagent_type": "journal-researcher", "model": "haiku", "description": "count the words", "prompt": "count the words in notes.txt"}),
+    ("codex", "spawn_agent", {"agent_type": "journal-researcher", "model": "haiku", "message": "count the words in notes.txt"}),
+])
+def test_a_subagent_dispatch_is_paired_and_counted_for_either_provider(app: App, provider: str, tool: str, value: dict):
+    from journal.support.subagents import Subagents
+    post_as(app, provider, {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
+    post_as(app, provider, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": tool, "tool_input": value, "tool_use_id": "call-7"})
+    subagents = app.container.get(Subagents)
+    assert subagents.running("s1") == 1 and subagents.rows("s1")[0].type == "journal-researcher", "the dispatch counts against the limit"
+    post_as(app, provider, {"hook_event_name": "PostToolUse", "session_id": "s1", "tool_name": tool, "tool_input": value, "tool_use_id": "call-7", "tool_response": {}})
+    assert subagents.running("s1") == 0 and subagents.rows("s1")[0].status == "done", "and is settled by its own call's end"

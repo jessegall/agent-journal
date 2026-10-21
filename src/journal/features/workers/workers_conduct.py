@@ -13,7 +13,7 @@ from journal.events.rows.worker_stopped import WorkerStopped
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.features.workers.support.path_mentions import PathMentions
 from journal.features.workers.support.workers_data import WorkersData
-from journal.support.dispatch_tools import DISPATCH_TOOLS
+from journal.support.subagent_dispatch import SubagentDispatch
 
 INDEPENDENT_ROLES = ("auditor", "reviewer", "plan-reviewer", "critic")
 
@@ -23,7 +23,7 @@ class WorkersConduct(Conduct):
 
     def limit_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        if event.call.tool not in DISPATCH_TOOLS or event.subagent:
+        if not isinstance(event.call.operation, SubagentDispatch) or event.subagent:
             return self.none()
         maximum, active = int(settings.value(Workers.SUBAGENT_LIMIT)), event.data.part(Workers).active_subagents
         return self.refuse(Workers.SUBAGENT_OVERFLOW.create(running=active)) if maximum and active >= maximum else self.none()
@@ -37,12 +37,13 @@ class WorkersConduct(Conduct):
 
     def known_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        value = event.call.input if event.call.tool in DISPATCH_TOOLS else {}
-        kind = value.get("subagent_type", "")
-        matched = PathMentions.build(f"{value.get('description', '')} {value.get('prompt', '')}")
-        if not matched or kind in INDEPENDENT_ROLES:
+        dispatch = event.call.operation
+        if not isinstance(dispatch, SubagentDispatch):
             return self.none()
-        existing = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.is_active and d.session and d.type == kind and matched & PathMentions.build(d.brief)), None)
+        matched = PathMentions.build(f"{dispatch.title} {dispatch.brief}")
+        if not matched or dispatch.role in INDEPENDENT_ROLES:
+            return self.none()
+        existing = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.is_active and d.session and d.type == dispatch.role and matched & PathMentions.build(d.brief)), None)
         return self.refuse(Workers.SUBAGENT_REUSE.create(session=existing.session, task=existing.task)) if existing else self.none()
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:

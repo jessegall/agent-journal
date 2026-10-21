@@ -9,6 +9,14 @@ from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.provider import TAIL_BYTES, Provider
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
+from journal.support.agent_message import AgentMessage
+from journal.support.file_edit import FileEdit
+from journal.support.file_read import FileRead
+from journal.support.file_write import FileWrite
+from journal.support.shell_line import ShellLine
+from journal.support.skill_load import SkillLoad
+from journal.support.subagent_dispatch import SubagentDispatch
+from journal.support.user_question import UserQuestion
 from journal.providers.support.worker_outcome import WorkerOutcome
 from journal.support.choice import Choice
 from journal.providers.support.status_line import StatusLine
@@ -23,8 +31,6 @@ class Claude(Provider):
     home = ".claude"
     settings_file = "settings.json"
     foreign_settings = ("settings.local.json",)
-    edit_tools = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
-    read_tool = "Read"
     settings_extras = {"enableAllProjectMcpServers": True}
     capabilities = frozenset(Capability)
     session_variable = ""
@@ -39,6 +45,23 @@ class Claude(Provider):
         ],
         "note": "Changes apply at once to this Claude Code session.",
     }
+    decoders = {
+        "Bash": lambda input: ShellLine(str(input.get("command", ""))),
+        "Edit": lambda input: FileEdit(Provider.file_paths(input)),
+        "MultiEdit": lambda input: FileEdit(Provider.file_paths(input)),
+        "NotebookEdit": lambda input: FileEdit(Provider.file_paths(input)),
+        "Write": lambda input: FileWrite(str(input.get("file_path", ""))),
+        "Read": lambda input: FileRead(str(input.get("file_path", "")), bool(input.get("limit") or input.get("offset"))),
+        "Skill": lambda input: SkillLoad(str(input.get("skill", ""))),
+        "Agent": lambda input: Claude.subagent(input),
+        "Task": lambda input: Claude.subagent(input),
+        "SendMessage": lambda input: AgentMessage(str(input.get("to", "")), str(input.get("message", ""))),
+        "AskUserQuestion": lambda input: UserQuestion(),
+    }
+
+    @staticmethod
+    def subagent(input: dict) -> SubagentDispatch:
+        return SubagentDispatch(str(input.get("subagent_type", "")), str(input.get("model", "")), str(input.get("description", "")), str(input.get("prompt", "")))
 
     def transcript(self, project: Path, session: str) -> Path | None:
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / f"{session}.jsonl"

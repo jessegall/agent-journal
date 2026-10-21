@@ -14,12 +14,20 @@ from journal.models.agent import Agent
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
+from journal.support.agent_message import AgentMessage
+from journal.support.file_edit import FileEdit
+from journal.support.file_read import FileRead
+from journal.support.file_write import FileWrite
+from journal.support.undecoded_tool import UndecodedTool
+from journal.support.skill_load import SkillLoad
+from journal.support.subagent_dispatch import SubagentDispatch
+from journal.support.user_question import UserQuestion
 
 STATUS = {"Stop": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "ToolFailed": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan", "delegating", "orchestrating_plan"})
 ENTRY_COUNT = 400
 HISTORY_ENTRIES = 5
-TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
+OPERATION_VERBS = {FileRead.kind: "reading a file", FileEdit.kind: "editing files", FileWrite.kind: "writing a file", SubagentDispatch.kind: "waiting for a subagent", SkillLoad.kind: "reading a skill", AgentMessage.kind: "messaging an agent", UserQuestion.kind: "asking you"}
 ENDED = "ended"
 
 
@@ -90,7 +98,8 @@ class AgentActivity:
         if last and last.kind == PART_START:
             return last.data["doing"]
         if last and last.kind == "ToolStarting":
-            return TOOL_VERBS.get(last.data.get("tool_name", ""), "working")
+            operation = last.recorded_call().get("operation", {})
+            return OPERATION_VERBS.get(operation.get("kind", ""), f"using {operation['name']}" if operation.get("kind") == UndecodedTool.kind else "working")
         return self.described(state) or ("at work" if hooks else "")
 
     def described(self, state) -> str:

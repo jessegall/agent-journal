@@ -3,7 +3,7 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
-from journal.support.dispatch_tools import DISPATCH_TOOLS
+from journal.support.subagent_dispatch import SubagentDispatch
 
 LARGE_LINES = 400
 
@@ -14,15 +14,15 @@ class LawsConduct(Conduct):
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.laws.feature import Laws
         from journal.features.profiles.feature import Profiles
-        if event.call.tool not in DISPATCH_TOOLS:
+        dispatch = event.call.operation
+        if not isinstance(dispatch, SubagentDispatch):
             return self.none()
-        if not event.call.input.get("model"):
+        if not dispatch.model:
             return self.refuse(Laws.MISSING_MODEL.create())
         profiles = event.data.part(Profiles)
-        requested = event.call.input.get("subagent_type", "")
-        if requested not in profiles.names:
-            return self.refuse(Laws.MISSING_PROFILE.create(asked=requested or "none", profiles=", ".join(profiles.subagents)))
-        if not event.call.input.get("description") or not event.call.input.get("prompt"):
+        if dispatch.role not in profiles.names:
+            return self.refuse(Laws.MISSING_PROFILE.create(asked=dispatch.role or "none", profiles=", ".join(profiles.subagents)))
+        if not dispatch.title or not dispatch.brief:
             return self.refuse(Laws.UNBOUND_DISPATCH.create())
         return self.none()
 

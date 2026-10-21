@@ -18,7 +18,7 @@ class ShellDataReader:
     def read(self, agent: Agent) -> ShellData:
         from journal.features.shell.feature import Shell
         background = self.outputs.background(agent.session)
-        commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session) if e.data.get("tool_name") == "Bash"]
+        commands = [command for e in self.entries.tool_starts(agent.session) if (command := e.recorded_call().get("command", ""))]
         reads = [OutputReads.shape(c) for c in commands if OutputReads.is_one(c)][:HISTORY_READS]
         tipped = [*self.entries.recent_lines(agent.session, Shell.READER_HINT.key, 0), *self.entries.recent_lines(agent.session, Shell.READER_SUGGESTION.key, 0)]
         return ShellData(

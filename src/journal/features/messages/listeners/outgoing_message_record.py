@@ -5,8 +5,8 @@ from journal.models.message import Message
 from journal.repositories.messages import Messages
 from journal.support.peer_name import PeerName
 from journal.features.workers.support.subagents import Subagents
+from journal.support.agent_message import AgentMessage
 
-SENDS = "SendMessage"
 
 
 class OutgoingMessageRecord(AgentListener[ToolFinished]):
@@ -16,9 +16,10 @@ class OutgoingMessageRecord(AgentListener[ToolFinished]):
         self.messages, self.names = messages, names
 
     def handle(self, event: ToolFinished) -> None:
-        if event.call.tool != SENDS or event.subagent or not str(event.call.input.get("message", "")).strip():
+        message = event.call.operation
+        if not isinstance(message, AgentMessage) or event.subagent or not message.text.strip():
             return
-        receiver, text = str(event.call.input.get("to", "")), str(event.call.input["message"]).strip()
+        receiver, text = message.receiver, message.text.strip()
         answer = Subagents.answered(event.response or event.output)
         if answer.get("success") is False:
             self.messages.save(Message.send_failed(self.names.resolve(receiver), text, event.session, receiver, str(answer.get("message", "the send failed"))), Actor.agent(event.session))

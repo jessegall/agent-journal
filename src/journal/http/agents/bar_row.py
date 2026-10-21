@@ -19,7 +19,7 @@ class BarRow:
 
     @staticmethod
     def is_shown(entry: Entry) -> bool:
-        return entry.kind in (PART_START, PART_END) or (entry.kind in TOOLS and entry.data.get("tool_name") != "Bash")
+        return entry.kind in (PART_START, PART_END) or (entry.kind in TOOLS and not entry.recorded_call().get("command"))
 
     @classmethod
     def build(cls, entry: Entry) -> "BarRow":

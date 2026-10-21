@@ -1,4 +1,5 @@
 import json
+import shlex
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Iterator
@@ -9,9 +10,20 @@ from journal.providers.provider import Provider
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
+from journal.providers.support.patch_paths import PatchPaths
+from journal.support.agent_message import AgentMessage
+from journal.support.file_edit import FileEdit
+from journal.support.file_read import FileRead
+from journal.support.file_write import FileWrite
+from journal.support.shell_line import ShellLine
+from journal.support.subagent_dispatch import SubagentDispatch
+from journal.support.user_question import UserQuestion
 from journal.providers.support.worker_outcome import WorkerOutcome
 from journal.support.choice import Choice
 from journal.providers.support.status_line import StatusLine
+
+SCRIPT_FLAGS = ("-c", "-lc")
+TITLE_CHARACTERS = 80
 
 
 class Codex(Provider):
@@ -21,8 +33,17 @@ class Codex(Provider):
     prompt_flags = ("--dangerously-bypass-approvals-and-sandbox",)
     home = ".codex"
     settings_file = "hooks.json"
-    edit_tools = frozenset({"apply_patch", "write_file"})
-    read_tool = "read_file"
+    decoders = {
+        "Bash": lambda input: ShellLine(Codex.shell_line(input.get("command", ""))),
+        "exec_command": lambda input: ShellLine(Codex.shell_line(input.get("cmd", ""))),
+        "shell": lambda input: ShellLine(Codex.shell_line(input.get("command", ""))),
+        "apply_patch": lambda input: FileEdit(PatchPaths.build(input)),
+        "write_file": lambda input: FileWrite(str(input.get("path", "") or input.get("file_path", ""))),
+        "read_file": lambda input: FileRead(str(input.get("path", "") or input.get("file_path", "")), bool(input.get("offset") or input.get("limit"))),
+        "spawn_agent": lambda input: Codex.subagent(input),
+        "send_input": lambda input: AgentMessage(str(input.get("id", "")), str(input.get("message", ""))),
+        "request_user_input": lambda input: UserQuestion(),
+    }
     hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
     capabilities = frozenset()
     session_variable = "CODEX_THREAD_ID"
@@ -42,6 +63,19 @@ class Codex(Provider):
         settings = Path.home() / ".codex" / "config.toml"
         hooks = project.resolve() / self.home / self.settings_file
         return settings.is_file() and f'[hooks.state."{hooks}:session_start' in settings.read_text()
+
+    @staticmethod
+    def subagent(input: dict) -> SubagentDispatch:
+        brief = str(input.get("message", "") or input.get("prompt", ""))
+        return SubagentDispatch(str(input.get("agent_type", "") or input.get("role", "")), str(input.get("model", "")), brief.strip().split("\n")[0][:TITLE_CHARACTERS], brief)
+
+    @staticmethod
+    def shell_line(command) -> str:
+        if not isinstance(command, list):
+            return str(command)
+        if len(command) == 3 and command[1] in SCRIPT_FLAGS:
+            return str(command[2])
+        return shlex.join(str(part) for part in command)
 
     def transcript(self, project: Path, session: str) -> Path | None:
         stored = self._rollouts.get(session)

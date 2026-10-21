@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from journal.events.agent.agent_event import AgentEvent
+from journal.support.shell_line import ShellLine
 from journal.support.tool_call import ToolCall
 
 
@@ -14,7 +15,7 @@ class ToolFinished(AgentEvent):
 
     @property
     def output_text(self) -> str:
-        return self.output if self.call.tool == "Bash" else ""
+        return self.output if isinstance(self.call.operation, ShellLine) else ""
 
     def recorded(self) -> dict:
         return {"call": self.call.as_data()}

@@ -12,8 +12,8 @@ from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.support.card_kind import CardKind
+from journal.support.subagent_dispatch import SubagentDispatch
 
-DISPATCHING = ("Agent", "Task")
 SUBAGENT_END_KINDS = ENDS | {"SubagentEnded"}
 
 
@@ -32,7 +32,7 @@ class SubagentCards(AgentListener[AgentEvent]):
 
     @staticmethod
     def moves(event: AgentEvent) -> bool:
-        return type(event).__name__ in SUBAGENT_END_KINDS or (isinstance(event, (ToolStarting, ToolFinished, ToolFailed)) and event.call.tool in DISPATCHING)
+        return type(event).__name__ in SUBAGENT_END_KINDS or (isinstance(event, (ToolStarting, ToolFinished, ToolFailed)) and isinstance(event.call.operation, SubagentDispatch))
 
     def carded(self, event: AgentEvent, row: Dispatch, agent: int, actor: Actor) -> None:
         key = f"subagent:{row.id}"

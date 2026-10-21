@@ -13,6 +13,7 @@ import pytest
 
 from shell_verbs import ShellVerbs
 
+from journal.providers.claude import Claude
 from journal.providers.support.worker_outcome import WorkerOutcome
 from journal.support.tool_call import ToolCall
 
@@ -3213,7 +3214,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app: App):
     protocol = app.container.get(Protocol)
     from journal.providers.claude import Claude
     tool = json.loads(protocol.event_line(ToolStarting(call=Claude().call("Bash", {"command": "ls"})).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
-    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool_use": 0, "tool": "Bash", "input": {"command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": [], "reads_output": False, "read_shape": "ls"}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": "", "work": "searching"}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
+    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool_use": 0, "tool": "Bash", "input": {"command": "ls"}, "operation": {"kind": "shell line", "command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": [], "reads_output": False, "read_shape": "ls"}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": "", "work": "searching"}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
     row = json.loads(protocol.event_line(Created(model=Task(id=7, environment_id=1, title="t"), actor=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.parsed_answer("").answer == "allow", "an empty answer lets the event through"
@@ -3327,7 +3328,7 @@ def test_a_subagents_event_reaches_a_plugin_and_is_held_only_at_a_tool(app: App)
     from journal.events.agent.tool_starting import ToolStarting
     from journal.features.plugins.listeners.plugin_agent_relay import PluginAgentRelay
     plugin = echo(app)
-    assert PluginAgentRelay.blocks(plugin, ToolStarting(call=ToolCall(tool="Read", input={}), subagent="a1")), "a subagent's tool is held like the agent's"
+    assert PluginAgentRelay.blocks(plugin, ToolStarting(call=ToolCall(tool="Read", input={}, operation=Claude().operation("Read", {})), subagent="a1")), "a subagent's tool is held like the agent's"
     assert not PluginAgentRelay.blocks(plugin, PromptSubmitted(prompt="x", subagent="a1")) and PluginAgentRelay.blocks(plugin, PromptSubmitted(prompt="x")), "a subagent's other events are heard, never held"
 
 

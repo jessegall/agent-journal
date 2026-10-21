@@ -12,8 +12,9 @@ from journal.support.part import Part
 from journal.support.actor import Actor
 from journal.models.edit import Edit
 from journal.repositories.edits import Edits
+from journal.support.file_edit import FileEdit
+from journal.support.file_write import FileWrite
 
-EDITING = ("Edit", "Write", "MultiEdit")
 ROW_COUNT = 200
 
 
@@ -28,7 +29,7 @@ class RecordEdit(AgentListener[ToolFinished]):
     def handle(self, event: ToolFinished) -> None:
         if event.call.is_journal:
             return
-        if event.call.tool in EDITING:
+        if isinstance(event.call.operation, (FileEdit, FileWrite)):
             self.patched(event)
             return
         call_paths = [p for p in event.call.edited_paths if Part.is_project_file(p)]
@@ -44,9 +45,11 @@ class RecordEdit(AgentListener[ToolFinished]):
             return
         patch = PatchRows.build(event.response)
         if not patch.rows:
-            self.changed(event, path)
+            for file_path in dict.fromkeys(self.project_path(p) for p in event.call.edited_paths):
+                if not Part.is_journal_owned(file_path):
+                    self.changed(event, file_path)
             return
-        self.recorded(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="create" if event.call.tool == "Write" else "edit", time=timing.time(),
+        self.recorded(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="create" if isinstance(event.call.operation, FileWrite) else "edit", time=timing.time(),
                        added=patch.counted("add"), removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROW_COUNT])), event)
 
     def changed(self, event: ToolFinished, path: str) -> None:

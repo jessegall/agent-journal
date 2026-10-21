@@ -3,9 +3,11 @@ from datetime import datetime
 from journal.models.entry import Entry
 from journal.support.actor import Actor
 from journal.repositories.scoped_repository import ScopedRepository
+from journal.support.agent_message import AgentMessage
+from journal.support.subagent_dispatch import SubagentDispatch
 
 
-DISPATCHES = "(kind IN ('SubagentEnded', 'Stop', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished', 'ToolFailed') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task', 'SendMessage')))"
+DISPATCHES = f"(kind IN ('SubagentEnded', 'Stop', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished', 'ToolFailed') AND json_extract(data, '$.call.operation.kind') IN ('{SubagentDispatch.kind}', '{AgentMessage.kind}')))"
 
 
 class Entries(ScopedRepository[Entry]):

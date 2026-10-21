@@ -3,21 +3,20 @@ import re
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import ClassVar, Iterator
+from typing import Callable, ClassVar, Iterator
 
+from journal.support.tool_call import ToolCall
+from journal.support.operation import Operation
+from journal.support.undecoded_tool import UndecodedTool
 from journal.support.chain import Chain
 from journal.support.command_part import CommandPart
 from journal.support.reads import Reads
-from journal.support.tool_call import ToolCall
 from journal.support.writes import Writes
 from journal.features.shell.support.output_reads import OutputReads
 from journal.support.decision import Decision
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
 from journal.support.response import Response
-from journal.models.entry import Entry
-from journal.support.file_lines import FileLines
-from journal.support.tool_input import ToolInput
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
 from journal.providers.support.file_writes import FileWrites
@@ -40,9 +39,6 @@ class Provider(ABC):
     name: ClassVar[str]
     home: ClassVar[str]
     settings_file: ClassVar[str]
-    edit_tools: ClassVar[frozenset[str]]
-    read_tool: ClassVar[str]
-    shell_tool: ClassVar[str] = "Bash"
     prompt_flags: ClassVar[tuple[str, ...]]
     session_variable: ClassVar[str]
     inherited_markers: ClassVar[tuple[str, ...]]
@@ -53,6 +49,7 @@ class Provider(ABC):
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
     controls: ClassVar[dict] = {"groups": [], "note": ""}
     capabilities: ClassVar[frozenset[Capability]]
+    decoders: ClassVar[dict[str, Callable[[dict], Operation]]]
 
     @abstractmethod
     def transcript(self, project: Path, session: str) -> Path | None: ...
@@ -197,37 +194,22 @@ class Provider(ABC):
     @abstractmethod
     def hooks_trusted(self, project: Path) -> bool: ...
 
-    def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
-        if tool == self.read_tool:
-            return tuple(p for p in (ToolInput.parsed(input).file,) if p)
-        return Reads.build(ToolInput.parsed(input).command) if tool == self.shell_tool else ()
-
-    def file_lines(self, tool: str, input: dict) -> int:
-        value = ToolInput.parsed(input)
-        if tool != self.read_tool or not value.file or value.limit or value.offset:
-            return 0
-        return FileLines.build(Path(value.file).expanduser())
-
-    def edited_paths(self, tool: str, input: dict) -> list[str]:
-        if tool == self.shell_tool:
-            return Writes.targets(ToolInput.parsed(input).command)
-        return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)] if tool in self.edit_tools else []
-
-    def skill_loaded(self, tool: str, input: dict) -> str:
-        return ToolInput.parsed(input).skill if tool == "Skill" else ""
-
-    def writes(self, tool: str, input: dict) -> bool:
-        return tool in self.edit_tools or (tool == self.shell_tool and Writes.build(ToolInput.parsed(input).command))
+    def operation(self, tool: str, input: dict) -> Operation:
+        decoder = self.decoders.get(tool)
+        return decoder(input) if decoder else UndecodedTool(tool)
 
     def call(self, tool: str, input: dict) -> ToolCall:
-        command = ToolInput.parsed(input).command if tool == self.shell_tool else ""
-        return ToolCall(tool=tool, input=input, command=command, parts=tuple(self.parts(command)), is_journal=bool(command) and Chain.is_journal_line(command), writes=self.writes(tool, input),
-                        edited_paths=tuple(self.edited_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input), work=Chain.work(command) if command else "")
+        operation = self.operation(tool, input)
+        return ToolCall.decoded(tool, input, operation, tuple(self.parts(operation.line())))
 
     @staticmethod
     def parts(command: str) -> list[CommandPart]:
         recorded = [part for part in Chain.parts(command) if part.recorded] if command else []
         return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text), writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text)), reads_output=OutputReads.is_one(part.text), read_shape=OutputReads.shape(part.text) if OutputReads.is_one(part.text) else part.text) for part in recorded]
+
+    @staticmethod
+    def file_paths(input: dict) -> tuple[str, ...]:
+        return tuple(value for key in PATH_KEYS if isinstance(value := input.get(key), str) and value)
 
     @staticmethod
     def folder_name(project: Path) -> str:
