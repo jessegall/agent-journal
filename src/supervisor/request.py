@@ -32,7 +32,7 @@ class Request:
 
     @classmethod
     def parsed(cls, payload: dict) -> "Request":
-        labels = BandLabels(str(payload["left"]), str(payload["middle"]), str(payload["right"])) if {"left", "middle", "right"} <= payload.keys() else None
+        labels = BandLabels.parsed(payload) if BandLabels.is_carried(payload) else None
         return cls(verb=str(payload.get("verb", "")), name=str(payload.get("name", "")), command=tuple(payload.get("command", ())), folder=str(payload.get("folder", ".")),
                    environ=dict(payload.get("env", {})), log=str(payload.get("log", os.devnull)), persistent=bool(payload.get("keep", True)), inherit=bool(payload.get("inherit", True)),
                    keys=str(payload.get("keys", "")), line=str(payload.get("line", "")), delay_seconds=float(payload.get("after", 0)), data=str(payload.get("data", "")),

@@ -454,6 +454,12 @@ def test_a_closed_window_stops_the_supervisor_without_writing_to_the_screen_that
     assert supervisor.band is None, "a hang-up leaves no band to clear on a terminal that is gone"
 
 
+def test_the_band_a_launch_file_carries_is_read_by_its_wire_keys():
+    from supervisor.band_labels import BandLabels
+    labels = BandLabels.parsed({"left": "agent-journal", "middle": "app · main", "right": "journal starting…"})
+    assert labels == BandLabels("agent-journal", "app · main", "journal starting…"), "the launch file's band keys, left, middle and right, are the band's words"
+
+
 def test_a_new_environment_named_at_the_launch_gets_its_row_before_the_agent_starts(tmp_path: Path, monkeypatch):
     produced = []
     menu = menu_answering(tmp_path, monkeypatch, [])

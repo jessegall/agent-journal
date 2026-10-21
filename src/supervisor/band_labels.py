@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+WIRE_KEYS = frozenset({"left", "middle", "right"})
+
 
 @dataclass(frozen=True)
 class BandLabels:
@@ -8,3 +10,11 @@ class BandLabels:
     start_label: str
     middle_label: str
     end_label: str
+
+    @classmethod
+    def parsed(cls, payload: dict) -> "BandLabels":
+        return cls(str(payload["left"]), str(payload["middle"]), str(payload["right"]))
+
+    @staticmethod
+    def is_carried(payload: dict) -> bool:
+        return WIRE_KEYS <= payload.keys()
