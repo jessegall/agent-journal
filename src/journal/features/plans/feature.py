@@ -64,4 +64,4 @@ by you, approved by them, and then followed: finishing one task starts the next 
   `journal plan block <n> "<why>"`, with `--on question:N`, `--on task:N` or `--until "<command>"` as for a task, so it
   opens by itself; `journal plan unblock <n>` opens it by hand.
 - `journal plan cancel <n>` gives it up, with the tasks that are its alone; tasks another live plan holds stay.
-""", keywords=('plan', 'plans', 'roadmap', 'phases'), required_in=('following_plan',))
+""", keywords=('plan', 'plans', 'roadmap', 'phases'), required_in=('following_plan', 'orchestrating_plan'))

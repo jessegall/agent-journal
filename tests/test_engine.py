@@ -1310,3 +1310,46 @@ def test_the_work_mode_is_the_floor_state_the_orchestrator_dispatches_the_builde
     assert isinstance(Idle().on_resume(of(None), settings("solo")).to, Soloing), "and so does a resume to the floor"
     assert Soloing().on(ToolStarting(call=shell("journal worker dispatch 'Mr. Smith' 'the job' --profile journal-medior")).with_readings(of(None)), settings("solo")).held == Workers.NO_WORKERS_WHEN_SOLO.create(), "solo keeps workers out"
     assert Soloing().on(ToolStarting(call=shell("ls")).with_readings(of(None)), settings("solo")).held is None
+
+
+def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_never_stalls(app, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.setting_rows import SettingRows
+    from journal.repositories.workers import Workers as WorkerRows
+    from journal.supervisor_link import SupervisorLink
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
+    app.container.get(SettingRows).set("workers.mode", "orchestrator", Actor.user(1))
+    hook(app, "SessionStart")
+    console, agents, tasks = app.console(), app.container.get(Agents), app.container.get(Tasks)
+    console.run(["environment", "here"], AGENT)
+    console.run(["plan", "create", "go live", "--brief", "twenty tasks"], USER)
+    console.run(["plan", "phase", "1", "release", "--when", "all twenty done"], USER)
+    for n in range(1, 21):
+        console.run(["plan", "add", "1", f"piece {n}"], USER)
+    console.run(["plan", "todos", "1", "1", *[str(n) for n in range(1, 21)]], USER)
+    assert console.run(["plan", "ready", "1"], AGENT).code == 0 and console.run(["plan", "approve", "1"], USER).code == 0 and console.run(["plan", "start", "1"], AGENT).code == 0
+    stack = lambda: [s["state"] for s in agents.for_session("s1").stack]
+    assert stack() == ["orchestrating", "orchestrating_plan"], "the orchestrator's floor and its plan state, with task 1 in hand"
+    stop = lambda: hook(app, "Stop")[1]
+    first = stop()
+    assert first.get("decision") == "block" and "hand it to a worker" in first["reason"] and "19 tasks are open" in first["reason"] and "dispatch a worker" in first["reason"], "a stop is refused with the task to hand over and the others to dispatch"
+    for n, name in ((2, "Ada"), (3, "Florence"), (4, "Babbage")):
+        assert console.run(["worker", "dispatch", name, f"do piece {n}", "--profile", "journal-medior", "--model", "sonnet", "--task", str(n)], AGENT).code == 0, "a worker is put on a task the plan holds while another is in hand"
+    assert stack()[-1] == "awaiting" and stop().get("decision") != "block", "waiting on the workers, a stop is fine"
+    workers = app.container.get(WorkerRows)
+    for n in (1, 2, 3):
+        app.container.get(WorkerRunner).run(workers.find(n), ["sh", "-c", "echo the piece is done"], Actor.agent("s1"))
+    assert stack() == ["orchestrating", "orchestrating_plan"], "the last report pops the wait and the orchestrator is back on its plan"
+    for n in (1, 2, 3):
+        assert console.run(["worker", "done", str(n)], AGENT).code == 0
+    for n in (2, 3, 4):
+        assert console.run(["task", "done", str(n), "--how", "reviewed and merged"], AGENT).code == 0
+    assert console.run(["task", "done", "1", "--how", "done"], AGENT).code == 0
+    app.runtime().deferred.drain()
+    assert tasks.find(5).state == "started" and stack()[-1] == "orchestrating_plan", "the plan goes on to the next open piece"
+    for n in range(5, 21):
+        assert stop().get("decision") == "block", f"a stop with piece {n} in hand and pieces open is refused, never allowed"
+        assert console.run(["task", "done", str(n), "--how", "done"], AGENT).code == 0
+        app.runtime().deferred.drain()
+    assert app.container.get(Plans).find(1).state == "done" and stack() == ["orchestrating"], "the plan is done and the orchestrator stands on its floor"
+    assert stop().get("decision") != "block", "with nothing open the stop passes"

@@ -10,13 +10,14 @@ from journal.repositories.agents import Agents
 from journal.repositories.plans import Plans
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.tasks import Tasks
+from journal.support.states_catalogue import StatesCatalogue
 
 
 class AdvancePlan(Listener[Updated]):
     """A plan is done when its last task closes, whoever closes it. For the agent following the plan with that task in hand, the next open task is started by writing its row; at a checkpoint out of auto mode, or with no task that can start, nothing is written, and the state says what it makes of it. The plan followed is read from the agent's stack, beneath a pause or not."""
 
-    def __init__(self, plans: Plans, tasks: Tasks, agents: Agents, settings: SettingRows) -> None:
-        self.plans, self.tasks, self.agents, self.settings = plans, tasks, agents, settings
+    def __init__(self, plans: Plans, tasks: Tasks, agents: Agents, settings: SettingRows, states: StatesCatalogue) -> None:
+        self.plans, self.tasks, self.agents, self.settings, self.states = plans, tasks, agents, settings, states
 
     def handle(self, event: Updated) -> None:
         task = event.model
@@ -41,6 +42,7 @@ class AdvancePlan(Listener[Updated]):
     def followed_with(self, task: Task) -> int:
         for agent in self.agents.in_():
             for layer in agent.stack:
-                if layer["state"] == FollowingPlan.name and layer["data"].get("task_id") == task.id:
-                    return int(layer["data"].get("plan_id", 0))
+                state = self.states.named(layer["state"], layer["data"])
+                if isinstance(state, FollowingPlan) and state.task_id == task.id:
+                    return state.plan_id
         return 0

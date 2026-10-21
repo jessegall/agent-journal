@@ -1,7 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from journal.engine.base_state import BaseState
 from journal.engine.nudge import Nudge
+from journal.engine.support.settings import Settings
+from journal.engine.support.transition import Transition
+from journal.events.agent.idle import Idle as Stop
+from journal.features.workers.states.orchestrating import orchestrate
 from journal.features.tasks.states.working import Working
 
 
@@ -19,3 +23,9 @@ class Delegating(Working):
     def continue_nudge(self, time: float) -> Nudge:
         from journal.features.workers.feature import Workers
         return Workers.DELEGATE_THE_TASK.create(name=self.named(), logged=self.logged_words(time))
+
+    def on_stop(self, event: Stop, settings: Settings) -> Transition:
+        from journal.features.tasks.feature import Tasks
+        answer = super().on_stop(event, settings)
+        tasks = event.readings.of(Tasks)
+        return replace(answer, nudges=(*answer.nudges, orchestrate(tasks))) if tasks.open_ids else answer

@@ -44,7 +44,7 @@ class Workers(Feature):
     FILE_IS_THE_WORKERS = Nudge(name, "file_is_the_workers", "that file is in worker {{n}}'s worktree", "{{name}} writes there: `journal worker say {{n}} \"<job>\"`, or wait for its report and merge", repeat_after=0)
     ACT_ON_THE_REPORTS = Nudge(name, "act_on_the_reports", "{{reports_waiting}} reported and you have not acted on it yet", "read its report, then give it its next job, stop it, or mark it done once its work is merged or used", repeat_after=180, held_whatever_its_values=True)
     SEND_THE_JOB_TO_THE_SUBAGENT = Nudge(name, "send_the_job_to_the_subagent", "subagent {{session}} ({{task}}) already worked on the files this job names", "send it the job with SendMessage({to: \"{{session}}\", message: \"<job>\"}), so it goes on with what it knows", repeat_after=0)
-    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, ACT_ON_THE_REPORTS, TOO_MANY_SUBAGENTS, TOO_MANY_WORKERS, FILE_IS_THE_WORKERS, SEND_THE_JOB_TO_THE_SUBAGENT)
+    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, ACT_ON_THE_REPORTS, TOO_MANY_SUBAGENTS, TOO_MANY_WORKERS, FILE_IS_THE_WORKERS, SEND_THE_JOB_TO_THE_SUBAGENT, ORCHESTRATE, DELEGATE_THE_TASK, NO_WORKERS_WHEN_SOLO)
 
     skill = Skill("workers", 'Send a worker to write a bounded job and wait for its report; load it before dispatching one', """
 # Workers
