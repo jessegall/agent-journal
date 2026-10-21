@@ -14,6 +14,8 @@ CODE = re.compile(r"\.(py|pyi|vue|js|mjs|cjs|jsx|ts|tsx|cs|go|rs|swift|kt|kts|ja
 WRITING = re.compile(r">>?(?!\s*/dev/null|&[0-9])|\btee\b")
 INPLACE_EDITORS = {"sed", "perl"}
 VENDOR_FOLDERS = {"node_modules", "dist", "build", ".venv", "venv", "__pycache__", ".git", ".journal"}
+JOURNAL_OWNED = (".claude/skills", ".agents/skills", ".journal")
+WORKTREES = ".journal/worktrees"
 LOCKS = {"package-lock.json", "yarn.lock", "pnpm-lock.yaml", "poetry.lock", "Cargo.lock", "uv.lock", "Pipfile.lock", "composer.lock"}
 HARMLESS = {"echo", "printf", "test", "[", "[[", "true", ":", "pwd", "set"}
 PREFIXES = {"sudo", "env", "nohup", "time", "nice", "command", "exec"}
@@ -96,6 +98,11 @@ class Part:
             return False
         expanded = os.path.expanduser(word)
         return Path(expanded).exists() or any(ch in word for ch in "*?{") and bool(glob.glob(expanded))
+
+    @staticmethod
+    def is_journal_owned(path: str) -> bool:
+        normal = os.path.normpath(path)
+        return not (normal + "/").startswith(WORKTREES + "/") and any((normal + "/").startswith(owned + "/") for owned in JOURNAL_OWNED)
 
     @classmethod
     def is_project_file(cls, word: str) -> bool:

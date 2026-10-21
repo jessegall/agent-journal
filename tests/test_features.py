@@ -6170,3 +6170,23 @@ def test_output_status_says_running_finished_or_failed_and_lists_the_background_
     app.container.get(CommandOutputs).save(app.container.get(CommandOutputs).find(1).backgrounded(), Actor.system())
     listed = console.run(["output", "status"], AGENT).text
     assert "make r" in listed and "running" in listed and "make f" not in listed, "with no number the agent's background outputs are listed with their status"
+
+
+def test_the_journals_own_writes_into_the_project_are_never_edits(app: App):
+    from journal.repositories.edits import Edits
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    owned = app.config.root / ".claude" / "skills" / "journal"
+    owned.mkdir(parents=True, exist_ok=True)
+    (owned / "SKILL.md").write_text("one\n")
+    (app.config.root / "a.txt").write_text("x\n")
+    for command in ("journal task list > a.txt", "echo one > .claude/skills/journal/SKILL.md"):
+        hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": command})
+        hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": command}, tool_response="")
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Edits).rows() == [], "a journal command and a path the journal owns record no edit"
+    (app.config.root / "b.txt").write_text("y\n")
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "echo y > b.txt"})
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "echo y > b.txt"}, tool_response="")
+    with app.container.get(Scope).environment(MAIN):
+        assert [e.path for e in app.container.get(Edits).rows()] == ["b.txt"], "any other write is still an edit"

@@ -25,16 +25,21 @@ class RecordEdit(AgentListener[ToolFinished]):
         self.config, self.edits, self.copies = config, edits, copies
 
     def handle(self, event: ToolFinished) -> None:
+        if event.call.is_journal:
+            return
         if event.call.tool in EDITING:
             self.patched(event)
             return
         for path in dict.fromkeys(self.project_path(p) for p in event.call.edited_paths if Part.is_project_file(p)):
-            self.changed(event, path)
+            if not Part.is_journal_owned(path):
+                self.changed(event, path)
 
     def patched(self, event: ToolFinished) -> None:
         if not event.call.edited_paths:
             return
         path = self.project_path(event.call.edited_paths[0])
+        if Part.is_journal_owned(path):
+            return
         patch = PatchRows.build(event.response)
         if not patch.rows:
             self.changed(event, path)
