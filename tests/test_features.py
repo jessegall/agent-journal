@@ -5492,8 +5492,10 @@ def test_a_typed_line_is_cut_short_and_a_piece_of_one_typed_again_is_still_the_j
     issues = " ".join(f"#{n} [detector-report] ArrayBagDetector - Opened by somebody, handle with care" for n in range(600, 700))
     told = CheckOutput.told(issues)
     assert len(told) <= 310 and told.endswith("handle with care"), "a failing check tells the agent only the end of its output"
-    line = TypedLine.cut("[journal] " + issues)
-    assert len(line) <= TypedLine.LONGEST and line.endswith("..."), "no line typed to an agent is longer than one line holds"
+    pieces = TypedLine.pieces("[journal] " + issues, "[journal]")
+    assert len(pieces) > 1 and all(len(piece) <= TypedLine.LONGEST and piece.startswith("[journal] ") and not piece.endswith("...") for piece in pieces), "a line longer than one line holds is typed in whole marked pieces, never cut short"
+    assert " ".join(piece.removeprefix("[journal] ") for piece in pieces) == issues
+    line = pieces[0]
     typed = TypedLines()
     typed.typed(1, line)
     first = typed.overdue(1, timing.time())[0]

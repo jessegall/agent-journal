@@ -18,14 +18,14 @@ class TypedLine:
     tries: int = 1
 
     @classmethod
-    def pieces(cls, line: str, mark: str) -> list[str]:
-        pieces, rest = [], line
-        while len(rest) > cls.LONGEST:
-            at = rest.rfind(" ", len(mark) + 1, cls.LONGEST)
-            at = at if at > len(mark) else cls.LONGEST
-            pieces.append(rest[:at].rstrip())
-            rest = f"{mark} {rest[at:].strip()}"
-        return [*pieces, rest]
+    def pieces(cls, line: str, prefix: str) -> list[str]:
+        pieces, remainder = [], line
+        while len(remainder) > cls.LONGEST:
+            split_index = remainder.rfind(" ", len(prefix) + 1, cls.LONGEST)
+            split_index = split_index if split_index > len(prefix) else cls.LONGEST
+            pieces.append(remainder[:split_index].rstrip())
+            remainder = f"{prefix} {remainder[split_index:].strip()}"
+        return [*pieces, remainder]
 
     def messages_named(self) -> set[int]:
         return {int(n) for rows in NAMED.findall(self.line) for n in rows.split(", ")}
