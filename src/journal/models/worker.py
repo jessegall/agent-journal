@@ -9,10 +9,11 @@ from journal.events.rows.worker_retired import WorkerRetired
 from journal.events.rows.worker_reused import WorkerReused
 from journal.events.rows.worker_revived import WorkerRevived
 from journal.models.scoped import Scoped
+from journal.models.support.path_overlap import PathOverlap
 from journal.models.worker_state import WorkerState
 from journal.support.timeout import Timeout
 
-QUIET = Timeout.minutes(20)
+SILENCE = Timeout.minutes(20)
 
 
 @dataclass(frozen=True)
@@ -37,43 +38,39 @@ class Worker(Scoped):
     touched_paths: tuple[str, ...] | None = None
     reuse_count: int = 0
     retire_reason: str = ""
-    quiet: Timeout = QUIET
-    quiet_named: bool = False
+    silence: Timeout = SILENCE
+    silence_reported: bool = False
 
     def worker_ref(self) -> str:
         return f"{self.table()}:{self.id}"
 
     def dispatched(self, time: float) -> "Worker":
-        return self.heard(time).with_(state=WorkerState.DISPATCHED).with_event(self.pending(WorkerDispatched, time))
+        return self.contacted(time).with_(state=WorkerState.DISPATCHED).with_event(self.pending(WorkerDispatched, time))
 
     def pending(self, kind: type[WorkerDispatched], time: float) -> WorkerDispatched:
         return kind(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, ref=self.worker_ref(), label=f"worker {self.id}", awaiter=self.dispatcher, brief=self.brief)
 
     def reported(self, time: float, report: int) -> "Worker":
-        return self.heard(time).with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, reported"))
+        return self.contacted(time).with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, reported"))
 
     def running_as(self, pid: int, began: float) -> "Worker":
         return self.with_(pid=pid, began=began, recovered_session="")
 
-    def reused(self, brief: str, time: float) -> "Worker":
+    def resumed(self, brief: str, time: float, kind: type[WorkerReused] | type[WorkerRevived]) -> "Worker":
         instructed = self.instructed(brief, time).with_(reuse_count=self.reuse_count + 1)
-        return instructed.with_event(instructed.pending(WorkerReused, time))
-
-    def revived(self, brief: str, time: float) -> "Worker":
-        instructed = self.instructed(brief, time).with_(reuse_count=self.reuse_count + 1)
-        return instructed.with_event(instructed.pending(WorkerRevived, time))
+        return instructed.with_event(instructed.pending(kind, time))
 
     def instructed(self, brief: str, time: float) -> "Worker":
-        return self.heard(time).with_(brief=brief, state=WorkerState.DISPATCHED, adopted=False, pid=0, began=0.0)
+        return self.contacted(time).with_(brief=brief, state=WorkerState.DISPATCHED, adopted=False, pid=0, began=0.0)
 
-    def heard(self, time: float) -> "Worker":
-        return self.with_(quiet=QUIET.started(time), quiet_named=False)
+    def contacted(self, time: float) -> "Worker":
+        return self.with_(silence=SILENCE.started(time), silence_reported=False)
 
-    def is_quiet(self, time: float) -> bool:
-        return self.is_running() and not self.quiet_named and self.quiet.is_elapsed(time)
+    def is_silent(self, time: float) -> bool:
+        return self.is_running() and not self.silence_reported and self.silence.is_elapsed(time)
 
     def notified(self, text: str, time: float) -> "Worker":
-        return self.heard(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, text=text))
+        return self.contacted(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, text=text))
 
     def stopped(self, time: float, reason: str) -> "Worker":
         return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
@@ -89,7 +86,7 @@ class Worker(Scoped):
         return self.state == WorkerState.REPORTED and not self.adopted
 
     def overlaps(self, paths: set[str]) -> bool:
-        return any(file.endswith(path) or path.endswith(file) for file in self.touched_paths or () for path in paths)
+        return PathOverlap.exists(self.touched_paths or (), paths)
 
     def files_line(self) -> str:
         if self.touched_paths is None:

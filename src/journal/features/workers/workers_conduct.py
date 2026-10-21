@@ -13,6 +13,8 @@ from journal.events.rows.worker_stopped import WorkerStopped
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.features.workers.support.worker_line import WorkerLine
 from journal.features.workers.support.path_mentions import PathMentions
+from journal.models.subagent import Subagent
+from journal.models.support.path_overlap import PathOverlap
 from journal.models.worker import Worker
 from journal.features.workers.support.workers_data import WorkersData
 from journal.support.subagent_dispatch import SubagentDispatch
@@ -21,7 +23,7 @@ INDEPENDENT_ROLES = ("auditor", "reviewer", "plan-reviewer", "critic")
 
 
 class WorkersConduct(Conduct):
-    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, a dispatch whose brief names files an idle worker touched is held in favour of that worker, a dispatch past its profile's kept workers is held while one of them is idle, retiring an idle worker is held until the repeat says why it cannot be reused, the reports not acted on are named at a stop and on the tick, a worker of this agent's quiet for twenty minutes is named once on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
+    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files an idle one of the same kind worked on is held in favour of those, unless they are retired, a dispatch whose brief names files an idle worker touched is held in favour of that worker, a dispatch past its profile's kept workers is held while one of them is idle, retiring an idle worker is held until the repeat says why it cannot be reused, the reports not acted on are named at a stop and on the tick, a worker of this agent's silent for twenty minutes is named once on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
 
     def limit_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
@@ -45,8 +47,8 @@ class WorkersConduct(Conduct):
         matched = PathMentions.build(f"{dispatch.title} {dispatch.brief or ''}")
         if not matched or dispatch.role in INDEPENDENT_ROLES:
             return self.none()
-        existing = next((s for s in reversed(event.data.part(Workers).subagents) if s.is_idle() and s.agent_type == dispatch.role and matched & PathMentions.build(s.brief)), None)
-        return self.refuse(Workers.SUBAGENT_REUSE.create(session=existing.session, task=existing.task)) if existing else self.none()
+        knowing = [s for s in reversed(event.data.part(Workers).subagents) if s.is_idle() and s.agent_type == dispatch.role and PathOverlap.exists(PathMentions.build(s.brief), matched)]
+        return self.refuse(Workers.SUBAGENT_REUSE.create(count=len(knowing), subagents=idle_subagent_list(knowing))) if knowing else self.none()
 
     def files_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
@@ -78,7 +80,7 @@ class WorkersConduct(Conduct):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         workers = event.data.part(workers_feature())
-        silent = [workers_feature().SILENT_WORKER.create(n=w.id, name=w.name, minutes=int(w.quiet.amount // 60)) for w in workers.dispatched_workers if w.dispatcher == event.session and w.is_quiet(event.time)]
+        silent = [workers_feature().SILENT_WORKER.create(n=w.id, name=w.name, minutes=int(w.silence.amount // 60)) for w in workers.dispatched_workers if w.dispatcher == event.session and w.is_silent(event.time)]
         return self.none(*report_mentions(event.data), *silent)
 
     def on_worker_dispatched(self, event: WorkerDispatched, settings: Settings) -> Transition:
@@ -121,6 +123,10 @@ def profile_workers(workers: WorkersData, profile: str) -> list[Worker]:
 def idle_offers(workers: WorkersData, line: WorkerLine) -> tuple[Worker, ...]:
     paths = PathMentions.build(line.brief)
     return tuple(sorted((w for w in workers.idle_workers if w.profile == line.profile), key=lambda w: not w.overlaps(paths)))
+
+
+def idle_subagent_list(subagents: list[Subagent]) -> str:
+    return "\n".join(f"subagent {s.id}, {s.agent_type}, on {s.task}: `SendMessage({{to: \"{s.session}\", message: \"<job>\"}})`" for s in subagents)
 
 
 def is_reviewer(profile: str) -> bool:

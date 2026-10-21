@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from journal.events.rows.worker_reused import WorkerReused
+from journal.events.rows.worker_revived import WorkerRevived
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker import Worker
@@ -17,7 +19,7 @@ NOTIFY_REFUSALS = {
 }
 STARTING = "worker {n}, {name}, has not started its process yet: notify it in a moment"
 ENDED = "worker {n}, {name}, has ended and its report is being filed: wait for it, then give it the job with `journal worker send {n} \"<job>\"`"
-NO_INBOX = "worker {n}, {name}, runs {provider}, which takes no message while it runs: wait for its report, then give it the job with `journal worker send {n} \"<job>\"`"
+INBOX_MISSING = "worker {n}, {name}, runs {provider}, which takes no message while it runs: wait for its report, then give it the job with `journal worker send {n} \"<job>\"`"
 
 
 class WorkerActions:
@@ -58,7 +60,7 @@ class WorkerActions:
             worker = self.runner.settle(worker, actor)
         self.resumable(worker)
         moved, time = worker.with_(dispatcher=dispatcher or worker.dispatcher), datetime.now(timezone.utc).timestamp()
-        worker = self.workers.save(moved.revived(brief, time) if revival else moved.reused(brief, time), actor)
+        worker = self.workers.save(moved.resumed(brief, time, WorkerRevived if revival else WorkerReused), actor)
         self.runner.start(worker, actor)
         return worker
 
@@ -92,16 +94,16 @@ class WorkerActions:
             return STARTING
         if self.runner.is_ended(worker):
             return ENDED
-        return "" if self.providers.lookup(worker.provider).session_inbox else NO_INBOX
+        return "" if self.providers.lookup(worker.provider).session_inbox else INBOX_MISSING
 
-    def stop(self, n: int, why: str, actor: Actor) -> Worker:
+    def stop(self, n: int, reason: str, actor: Actor) -> Worker:
         with self.runner.lock(n):
-            worker = self.workers.save(self.workers.find(n).stopped(datetime.now(timezone.utc).timestamp(), why), actor)
+            worker = self.workers.save(self.workers.find(n).stopped(datetime.now(timezone.utc).timestamp(), reason), actor)
             self.runner.stop(worker)
             return worker
 
-    def complete(self, n: int, why: str, actor: Actor) -> tuple[Worker, str]:
+    def complete(self, n: int, reason: str, actor: Actor) -> tuple[Worker, str]:
         with self.runner.lock(n):
-            worker = self.workers.save(self.workers.find(n).finished(datetime.now(timezone.utc).timestamp(), why), actor)
+            worker = self.workers.save(self.workers.find(n).finished(datetime.now(timezone.utc).timestamp(), reason), actor)
             self.runner.stop(worker)
         return worker, self.branch.dropped(worker)

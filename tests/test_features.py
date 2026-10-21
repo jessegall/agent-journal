@@ -6090,6 +6090,28 @@ def test_a_subagent_is_a_row_the_census_counts_retire_writes_and_one_from_before
     assert [(s.task, s.state) for s in subagents.session_subagents("s1")] == [("map the hooks", "ended"), ("map the routes", "ended")], "the subagents from before the rows are written once from the record, ended where it saw no end"
 
 
+def test_the_worker_list_shows_the_subagents_and_a_job_on_their_files_goes_back_to_the_idle_ones_never_a_retired_one(app: App):
+    researcher = lambda what, prompt, use: {"description": what, "prompt": prompt, "subagent_type": "journal-researcher", "model": "sonnet"}
+    dispatch = lambda what, prompt, use: hook(app, "PreToolUse", tool_name="Agent", tool_input=researcher(what, prompt, use), tool_use_id=use)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    for n, (what, prompt) in enumerate([("map the chain", "Read src/journal/features/shell/chain.py."), ("map the parts", "Read src/journal/features/shell/chain.py and its parts."), ("map the hooks", "Read src/journal/hooks/hook.sh.")], 1):
+        dispatch(what, prompt, f"u{n}")
+        hook(app, "PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": f"r{n}"}, tool_use_id=f"u{n}")
+    hook(app, "SubagentStop", agent_id="r1")
+    hook(app, "SubagentStop", agent_id="r2")
+    listed = app.console().run(["worker", "list"], AGENT).text
+    assert "   1  done       journal-researcher: map the chain\n                session: r1" in listed and "   3  running    journal-researcher: map the hooks" in listed, "the list shows each subagent this agent started with its state and task, an idle one with the session a message reaches"
+    status, body = dispatch("edge cases", "Find the edge cases of chain.py.", "u4")
+    assert status == 409 and "2 idle subagents" in body["error"] and body["error"].index('to: "r2"') < body["error"].index('to: "r1"'), "a bare file name matches the path an idle subagent read, as a worker's files are matched, the newest first; the running one is not offered"
+    assert app.console().run(["subagent", "retire", "2"], AGENT).code == 0
+    status, body = dispatch("edge cases", "Find the edge cases of chain.py.", "u5")
+    assert status == 409 and "1 idle subagents" in body["error"] and 'to: "r2"' not in body["error"], "a retired subagent is never offered"
+    app.console().run(["subagent", "retire", "1"], AGENT)
+    assert dispatch("edge cases", "Find the edge cases of chain.py.", "u6")[0] == 200, "with each one that knew the files retired, the job goes to a fresh subagent"
+    assert "   1  retired    journal-researcher: map the chain" in app.console().run(["worker", "list"], AGENT).text
+
+
 def test_a_message_sent_to_a_subagent_runs_its_row_again_until_it_ends(app: App):
     """A subagent that ended and is given another job by a message to its id is running again in the rows the selector lists, and done once it ends; the hook outage of 2026-10-21 and the resumes showed 0 running while three were out."""
     from dataclasses import asdict
@@ -6827,7 +6849,7 @@ def test_a_worker_quiet_for_twenty_minutes_is_named_to_its_dispatcher_once(app: 
     assert len(quiet()) == 1 and "worker 1, Mr. Harrison" in quiet()[0] and "journal worker notify 1" in quiet()[0]
     tick_after(app, 25 * 60)
     app.runtime().deferred.drain()
-    assert len(quiet()) == 1 and workers.find(1).quiet_named, "it is named once for each quiet span"
+    assert len(quiet()) == 1 and workers.find(1).silence_reported, "it is named once for each quiet span"
 
 
 def test_a_worker_messages_only_its_own_dispatchers_other_workers_and_starts_no_loop(app: App, tmp_path, monkeypatch):

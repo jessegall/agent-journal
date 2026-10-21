@@ -15,15 +15,16 @@ from journal.repositories.agents import Agents
 from journal.support.rejection import Rejection
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
+from journal.repositories.subagents import Subagents
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
 
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions) -> None:
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents) -> None:
         self.workers, self.messages, self.providers, self.agents = workers, messages, providers, agents
-        self.branch, self.settings, self.actions = branch, settings, actions
+        self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
@@ -51,7 +52,7 @@ class WorkerCommand(Command):
             retire = self.verb(verbs, verb, help)
             retire.add_argument("n", type=int)
             retire.add_argument("--why", default="", help="why the worker cannot be reused for the next job")
-        self.verb(verbs, "list", "every worker out")
+        self.verb(verbs, "list", "every worker, and the subagents this agent started")
         self.verb(verbs, "peers", "for a worker: the other workers of the agent that dispatched it, out or idle, and what each is on")
 
     def provider_default(self, caller: Caller) -> str:
@@ -119,8 +120,8 @@ class WorkerCommand(Command):
     def peers(self, args: Namespace, caller: Caller) -> int:
         if not caller.worker:
             raise Rejection("only a worker has peers: `journal worker list` lists the workers you dispatched")
-        me = self.workers.find(caller.worker)
-        peers = [w for w in self.workers.scoped() if w.dispatcher == me.dispatcher and w.id != me.id and (w.is_running() or w.is_idle())]
+        sender = self.workers.find(caller.worker)
+        peers = [w for w in self.workers.scoped() if w.dispatcher == sender.dispatcher and w.id != sender.id and (w.is_running() or w.is_idle())]
         for worker in peers:
             print(f"{worker.id:>4}  {'out' if worker.is_running() else 'idle':<5} {worker.name}: {worker.brief}")
         print(f"`journal worker notify <n> \"<text>\"` tells one that is out, `journal worker send <n> \"<job>\"` gives one that is idle a job" if peers else "no other worker of the agent that dispatched you is out or idle")
@@ -135,4 +136,16 @@ class WorkerCommand(Command):
         output = [str(worker.id) for worker in workers if worker.is_running()]
         if output:
             print(f"`journal worker wait {' '.join(output)}` waits for a report; listing again does not bring it sooner")
+        self.print_subagents(caller.session)
         return 0
+
+    def print_subagents(self, session: str) -> None:
+        subagents = self.subagents.session_subagents(session) if session else []
+        if subagents:
+            print("subagents this agent started:")
+        for subagent in subagents:
+            print(f"{subagent.id:>4}  {subagent.state:<10} {subagent.agent_type}: {subagent.task}")
+            if subagent.is_idle():
+                print(f"{'':>16}session: {subagent.session}")
+        if any(subagent.is_idle() for subagent in subagents):
+            print("an idle subagent takes its next job by SendMessage to its session; `journal subagent retire <n>` lets one go")
