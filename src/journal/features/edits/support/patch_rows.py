@@ -17,12 +17,8 @@ class PatchRows:
     rows: tuple[PatchRow, ...]
 
     @classmethod
-    def of(cls, response: dict, input_: dict, tool: str) -> "PatchRows":
-        hunks = response.get("structuredPatch", [])
-        if not hunks:
-            added = (input_.get("new_string", "") if tool == "Edit" else input_.get("content", "")).splitlines()
-            return cls(tuple(PatchRow("add", n, line) for n, line in enumerate(added, 1)))
-        return cls(tuple(row for hunk in hunks for row in cls.hunk(hunk.get("oldStart", 1), hunk.get("newStart", 1), hunk.get("lines", []))))
+    def of(cls, response: dict) -> "PatchRows":
+        return cls(tuple(row for hunk in response.get("structuredPatch", []) for row in cls.hunk(hunk.get("oldStart", 1), hunk.get("newStart", 1), hunk.get("lines", []))))
 
     @classmethod
     def between(cls, before: str, after: str) -> "PatchRows":

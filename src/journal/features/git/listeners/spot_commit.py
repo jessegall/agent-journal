@@ -39,10 +39,10 @@ class SpotCommit(AgentListener[ToolFinished]):
         self.next_task = next_task
 
     def handle(self, event: ToolFinished) -> Decision | None:
-        command = event.call.command
-        if "git merge" in command:
+        texts = [part.text for part in event.call.parts]
+        if any(text.startswith("git merge") for text in texts):
             return self.merged(event)
-        if "git commit" not in command:
+        if not any(text.startswith("git commit") for text in texts):
             return None
         folder = self.folder(event)
         head = self.head(folder)
