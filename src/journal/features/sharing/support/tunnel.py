@@ -95,7 +95,7 @@ class Tunnel:
             self.reconcile_moment(time)
 
     def is_wanted(self, time: datetime) -> bool:
-        return self.shares.all_open() or bool(self.phones.active(time)) or bool(self.codes.open(time))
+        return bool(self.shares.all_open()) or bool(self.phones.active(time)) or bool(self.codes.open(time))
 
     def start(self) -> None:
         host, command, port = self.link.hosting(), self.tunler.command(), self.place.stored().port

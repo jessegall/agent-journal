@@ -122,7 +122,7 @@ class Repository(Generic[M]):
 
     def touch(self, row: M, actor: Actor, **fields) -> M:
         with self.connection.transaction():
-            prior_row = self.find(row.id)
+            prior_row = self.find(row.row_id)
             stamped = prior_row.with_(**fields, updated_at=self._time(), updater=actor)
             names = [*fields, "updated_at", "updater"]
             values = tuple(self._column(name).sql(getattr(stamped, name)) for name in names)
@@ -133,14 +133,14 @@ class Repository(Generic[M]):
 
     def rewritten(self, row: M, actor: Actor, change: Callable[[M], M]) -> M:
         with self.connection.transaction():
-            time = self.find(row.id)
+            time = self.find(row.row_id)
             changed = change(time)
             differing = {f.name: getattr(changed, f.name) for f in fields(changed) if f.metadata.get("column", True) and getattr(changed, f.name) != getattr(time, f.name)}
             return self.dispatched(self.touch(time, actor, **differing).with_events(changed.events), actor)
 
     def touched(self, row: M, actor: Actor, field_map: Callable[[M], dict]) -> M:
         with self.connection.transaction():
-            time = self.find(row.id)
+            time = self.find(row.row_id)
             return self.touch(time, actor, **field_map(time))
 
     def delete(self, row: M, actor: Actor) -> None:
@@ -150,6 +150,9 @@ class Repository(Generic[M]):
             self.stored()
             self.bus.dispatch(Deleted(model=row, actor=actor))
             self.dispatched(row, actor)
+
+    def remove(self, id: int, actor: Actor) -> None:
+        self.delete(self.find(id), actor)
 
     def _insert(self, row: M, actor: Actor, time: datetime) -> M:
         Title.check_target(row)
@@ -165,7 +168,7 @@ class Repository(Generic[M]):
 
     def _update(self, row: M, actor: Actor) -> M:
         stamped = row.with_(updated_at=self._time(), updater=actor)
-        prior_row = self.find(row.id)
+        prior_row = self.find(row.row_id)
         Title.check_target(row, prior_row)
         self.bus.dispatch(Updating(model=stamped, actor=actor))
         names = [column.name for column in self.columns if column.name != "id"]
@@ -177,7 +180,7 @@ class Repository(Generic[M]):
 
     def dispatched(self, row: M, actor: Actor) -> M:
         for event in row.events:
-            self.bus.dispatch(event.placed(getattr(row, "environment_id", 0), row.created_at.timestamp(), row.id, actor.stamp) if isinstance(event, RowEvent) else event)
+            self.bus.dispatch(event.placed(getattr(row, "environment_id", 0), row.creation_time.timestamp(), row.row_id, actor.stamp) if isinstance(event, RowEvent) else event)
         return row.without_events()
 
     def stored(self) -> None:

@@ -22,5 +22,5 @@ class HelperImport(EnvironmentKind):
         self.workers = workers
 
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Worker:
-        worker = Worker(environment_id=target.id, name=row.data.get("name", row.title), brief=row.brief, provider=row.data.get("provider", "claude"), model=row.data.get("model", ""), state=WorkerState.STOPPED)
+        worker = Worker(environment_id=target.row_id, name=row.data.get("name", row.title), brief=row.brief, provider=row.data.get("provider", "claude"), model=row.data.get("model", ""), state=WorkerState.STOPPED)
         return self.workers.imported(worker, row.creation_moment(), actor)

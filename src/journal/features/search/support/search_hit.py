@@ -13,7 +13,7 @@ class SearchHit:
     passage: str
 
     @classmethod
-    def build(cls, row: Model, terms: list[str]) -> "Found":
+    def build(cls, row: Model, terms: list[str]) -> "SearchHit":
         return cls(f"{row.noun()} {row.id}", cls.excerpt(row.mentioning_text(), terms))
 
     @staticmethod

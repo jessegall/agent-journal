@@ -62,7 +62,7 @@ class WorkerCommand(Command):
             raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
         output = [w for w in self.workers.scoped() if w.is_running()]
-        maximum = int(self.settings.option(Feature.WORKER_LIMIT))
+        maximum = self.settings.integer(Feature.WORKER_LIMIT)
         if maximum and len(output) >= maximum:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
         provider = args.provider or self.provider_default(caller)
@@ -77,13 +77,12 @@ class WorkerCommand(Command):
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
-        self.workers.save(self.workers.find(worker.id).dispatched(moment), caller.actor)
+        self.workers.save(self.workers.find(worker.row_id).dispatched(moment), caller.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
 
     def model(self, profile: str, provider: str) -> str:
-        shown = self.profiles.read(profile)
-        return shown[self.providers.lookup(provider).profile_model]
+        return self.providers.lookup(provider).profile_model(self.profiles.read(profile))
 
     def report(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)

@@ -81,7 +81,7 @@ class Messages(ScopedRepository[Message]):
     def first_reply(self, message: Message) -> Message | None:
         matched = self.selected("reply_target = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
         linked = [self.find(ref.id) for ref in self.links.sources(message, self.ANSWERS)]
-        replies = sorted([*matched, *linked], key=lambda m: m.id)
+        replies = sorted([*matched, *linked], key=lambda m: m.row_id)
         return replies[0] if replies else None
 
     def recent_replies(self, time: datetime) -> list[Message]:

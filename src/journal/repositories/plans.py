@@ -73,7 +73,7 @@ class Plans(ScopedRepository[Plan]):
 
     def phased(self, plan: Plan) -> list[PhaseTasks]:
         phases = self.plan_phases(plan)
-        links = self.links.linked("target", phases, PHASE_LINK)
+        links = self.links.model_links("target", phases, PHASE_LINK)
         tasks = {task.id: task for task in self.tasks.numbered(link.source.id for link in links)}
         return [PhaseTasks(number, phase, tuple(tasks[link.source.id] for link in links if link.target.id == phase.id and link.source.id in tasks)) for number, phase in enumerate(phases, 1)]
 
@@ -98,7 +98,7 @@ class Plans(ScopedRepository[Plan]):
 
     def free(self) -> list[Task]:
         open_tasks = self.tasks.with_state(TaskState.OPEN)
-        planned = {link.source.id for link in self.links.linked("source", open_tasks, PLAN_LINK)}
+        planned = {link.source.id for link in self.links.model_links("source", open_tasks, PLAN_LINK)}
         return [t for t in open_tasks if t.id not in planned]
 
     def finished(self, plan: Plan) -> bool:
@@ -108,7 +108,7 @@ class Plans(ScopedRepository[Plan]):
         return self.unstartable(self.tree(plan))
 
     def unstartable(self, tree: PlanTree) -> set[int]:
-        return self.tasks.waiting_ids(list(tree.tasks)) | set(self.workers.containing({t.id for t in tree.tasks}))
+        return self.tasks.waiting_ids(list(tree.tasks)) | set(self.workers.containing({t.row_id for t in tree.tasks}))
 
     def resumable(self, plan: Plan) -> Task | None:
         return self.resumable_task(self.tree(plan))
@@ -138,7 +138,7 @@ class Plans(ScopedRepository[Plan]):
             return self.save(plan.started_without_task(time.timestamp()), actor)
         self.tasks.refuse_second(task.started(time))
         started = self.save(plan.started(task, time.timestamp()), actor)
-        self.tasks.save(task.plan_started(time, plan.id), actor)
+        self.tasks.save(task.plan_started(time, plan.row_id), actor)
         return started
 
     def postpone(self, plan: Plan, actor: Actor) -> Plan:

@@ -34,7 +34,7 @@ class BarRow:
         call = entry.recorded_call()
         tool, paths = entry.data.get("tool_name", ""), call.edited_paths or call.read_paths or ("",)
         path = paths[0]
-        return cls(f"{tool} {path}".strip(), tool.lower() or "working", path, entry.created_at.timestamp(), entry.kind == "ToolFinished")
+        return cls(f"{tool} {path}".strip(), tool.lower() or "working", path, entry.creation_time.timestamp(), entry.kind == "ToolFinished")
 
     def item(self) -> dict:
         detail = [{"value": self.detail[:80], "color": "muted"}] if self.detail else []

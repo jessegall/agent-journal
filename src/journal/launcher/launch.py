@@ -24,7 +24,8 @@ from journal.providers.provider import Provider
 from journal.providers.providers import Providers
 from journal.support.private_folder import PrivateFolder
 
-FLAGS = {"--env": ("environment", 1), "--new": ("new", 0), "--aside": ("stashed", 0), "--skip": ("bypass", 0), "--yes": ("confirmed", 0), "--no-open": ("browser_off", 0), "--no-journal": ("journal_off", 0)}
+ENVIRONMENT = "--env"
+SWITCHES = {"--new": "new", "--aside": "stashed", "--skip": "bypass", "--yes": "confirmed", "--no-open": "browser_off", "--no-journal": "journal_off"}
 WORKTREE = ("--worktree", "-w")
 RESUMING = ("--resume", "-r")
 
@@ -48,7 +49,10 @@ class Launch:
 
     @classmethod
     def parse(cls, argv: list[str], root: Path) -> "Launch":
-        agent, remainder, flags, args, i = argv[0], [], {}, argv[1:], 0
+        agent, args, i = argv[0], argv[1:], 0
+        remainder: list[str] = []
+        switches: set[str] = set()
+        environment, worktree, worktree_launch = "", "", False
         while i < len(args):
             arg, value = args[i], args[i + 1] if i + 1 < len(args) else ""
             if arg == "--":
@@ -56,17 +60,19 @@ class Launch:
                 break
             if arg in WORKTREE:
                 matched = bool(value) and not value.startswith("-")
-                flags.update(worktree_launch=True, worktree=value if matched else "")
+                worktree_launch, worktree = True, value if matched else ""
                 i += 2 if matched else 1
                 continue
-            if arg in FLAGS:
-                field, arity = FLAGS[arg]
-                flags[field] = value if arity else True
-                i += 2 if arity else 1
+            if arg == ENVIRONMENT:
+                environment, i = value, i + 2
+                continue
+            if arg in SWITCHES:
+                switches.add(SWITCHES[arg])
+                i += 1
                 continue
             remainder.append(arg)
             i += 1
-        return cls(agent, root, tuple(remainder), **flags)
+        return cls(agent, root, tuple(remainder), environment, "new" in switches, "stashed" in switches, "bypass" in switches, "confirmed" in switches, "browser_off" in switches, "journal_off" in switches, worktree, worktree_launch)
 
     @property
     def provider(self) -> Provider:

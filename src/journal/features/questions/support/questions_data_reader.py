@@ -10,4 +10,4 @@ class QuestionsDataReader:
         self.questions = questions
 
     def read(self, agent: Agent) -> QuestionsData:
-        return QuestionsData(open=tuple(question.id for question in self.questions.open()))
+        return QuestionsData(open=tuple(question.row_id for question in self.questions.open()))

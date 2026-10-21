@@ -20,7 +20,9 @@ class PatchRows:
 
     @classmethod
     def version_rows(cls, old_text: str, new_text: str) -> "PatchRows":
-        rows, section, old, new = [], [], 1, 1
+        rows: list[PatchRow] = []
+        section: list[str] = []
+        old, new = 1, 1
         for line in list(difflib.unified_diff(old_text.splitlines(), new_text.splitlines(), lineterm="", n=CONTEXT_LINES))[2:]:
             head = DIFF_HEAD.match(line)
             if head:

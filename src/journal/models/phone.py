@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from journal.models.scoped import Scoped
@@ -13,7 +13,7 @@ class Phone(Scoped):
 
     name: str = ""
     key: str = ""
-    expires_at: datetime | None = None
+    expires_at: datetime = field(kw_only=True)
     last_visited_at: datetime | None = None
     ended_at: datetime | None = None
     subscription: str = ""
@@ -21,7 +21,7 @@ class Phone(Scoped):
     subscription_failed_at: datetime | None = None
 
     def is_active(self, time: datetime) -> bool:
-        return self.ended_at is None and self.expires_at is not None and self.expires_at > time
+        return self.ended_at is None and self.expires_at > time
 
     def is_presence_due(self, time: datetime) -> bool:
         return self.last_visited_at is None or time - self.last_visited_at >= self.PRESENCE_INTERVAL

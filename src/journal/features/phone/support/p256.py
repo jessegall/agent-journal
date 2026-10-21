@@ -1,5 +1,7 @@
 import hashlib
 
+from journal.features.phone.support.infinite_point import InfinitePoint
+
 P = 0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF
 LINEAR_COEFFICIENT = P - 3
 CONSTANT_COEFFICIENT = 0x5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B
@@ -27,13 +29,21 @@ class P256:
 
     @staticmethod
     def scalar_product(scalar: int, point: tuple) -> tuple | None:
-        rows = None
+        rows: tuple | None = None
+        doubled: tuple | None = point
         while scalar:
             if scalar & 1:
-                rows = P256.added(rows, point)
-            point = P256.added(point, point)
+                rows = P256.added(rows, doubled)
+            doubled = P256.added(doubled, doubled)
             scalar >>= 1
         return rows
+
+    @staticmethod
+    def finite_product(scalar: int, point: tuple) -> tuple:
+        product = P256.scalar_product(scalar, point)
+        if product is None:
+            raise InfinitePoint()
+        return product
 
     @staticmethod
     def is_curve_point(public: bytes) -> bool:

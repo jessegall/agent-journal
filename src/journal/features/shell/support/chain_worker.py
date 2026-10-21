@@ -1,4 +1,3 @@
-import subprocess
 import threading
 import time
 from pathlib import Path
@@ -6,6 +5,7 @@ from typing import Callable
 
 from journal.features.shell.support.changed_file import ChangedFile
 from journal.features.shell.support.output_files import OutputFiles
+from journal.features.shell.support.shell_process import ShellProcess
 from journal.features.shell.support.shell_record import ShellRecord
 from journal.features.shell.support.shell_request import ShellRequest
 from journal.support.caller import Caller
@@ -31,14 +31,14 @@ class ChainWorker:
         self.record = record
 
     def run(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, output_text: Callable[[bytes], None]) -> int:
-        shell = subprocess.Popen([request.shell], cwd=request.cwd, env=request.environment, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=False)
+        shell = ShellProcess.started(request)
         pump = threading.Thread(target=lambda: self.pump(shell, output_text), name="shell-output", daemon=True)
         pump.start()
         self.write_part(shell, SHELL_SETUP)
         code = 0
         for i, kind in enumerate(folder.kinds()):
             code = self.part(shell, folder, i, kind, code, direct, caller)
-            if shell.poll() is not None or folder.part_text(i).startswith("exec "):
+            if shell.process.poll() is not None or folder.part_text(i).startswith("exec "):
                 break
         self.write_part(shell, "exit $__journal_code\n")
         code = self.ended(shell, code)
@@ -48,7 +48,7 @@ class ChainWorker:
             self.record.ended(folder.folder.name, code, folder.folder, "\n".join(folder.last(5)), caller)
         return code
 
-    def part(self, shell: subprocess.Popen, folder: OutputFiles, i: int, kind: str, code: int, direct: bool, caller: Caller) -> int:
+    def part(self, shell: ShellProcess, folder: OutputFiles, i: int, kind: str, code: int, direct: bool, caller: Caller) -> int:
         recorded, tail_edges, edges, writes = kind[0] == "R", kind[1] == "&", kind[2] == "&", kind.endswith("w")
         text = folder.part_text(i)
         if tail_edges and code != 0:
@@ -77,33 +77,33 @@ class ChainWorker:
             run = f"__journal_status; eval {part} < /dev/null{redirect}; __journal_code=$?"
         return f"{run}\necho \"$__journal_code\" > {str(folder.folder / f'{i}.status')!r}\n"
 
-    def tree(self, shell: subprocess.Popen, folder: OutputFiles, i: int, moment: str) -> str:
+    def tree(self, shell: ShellProcess, folder: OutputFiles, i: int, moment: str) -> str:
         path = folder.folder / f"{i}.{moment}"
         self.write_part(shell, f"__journal_tree > {str(path)!r} 2>/dev/null; : > {str(path)!r}.ready\n")
         ready = Path(f"{path}.ready")
-        while not ready.is_file() and shell.poll() is None:
+        while not ready.is_file() and shell.process.poll() is None:
             time.sleep(POLL_SECONDS)
         return path.read_text(errors="replace") if path.is_file() else ""
 
     @staticmethod
-    def status_once_ended(shell: subprocess.Popen, folder: OutputFiles, i: int) -> int:
+    def status_once_ended(shell: ShellProcess, folder: OutputFiles, i: int) -> int:
         while not folder.has_ended(i):
-            if shell.poll() is not None:
-                return shell.returncode
+            if shell.process.poll() is not None:
+                return shell.process.returncode
             time.sleep(POLL_SECONDS)
         return folder.status(i)
 
     @staticmethod
-    def ended(shell: subprocess.Popen, code: int) -> int:
+    def ended(shell: ShellProcess, code: int) -> int:
         try:
             shell.stdin.close()
         except OSError:
             pass
-        returned = shell.wait()
+        returned = shell.process.wait()
         return returned if returned != 0 and code == 0 else code
 
     @staticmethod
-    def write_part(shell: subprocess.Popen, script: str) -> None:
+    def write_part(shell: ShellProcess, script: str) -> None:
         try:
             shell.stdin.write(script.encode())
             shell.stdin.flush()
@@ -111,7 +111,7 @@ class ChainWorker:
             return
 
     @staticmethod
-    def pump(shell: subprocess.Popen, output_text: Callable[[bytes], None]) -> None:
+    def pump(shell: ShellProcess, output_text: Callable[[bytes], None]) -> None:
         for block in iter(lambda: shell.stdout.read1(65536), b""):
             output_text(block)
 

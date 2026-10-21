@@ -15,7 +15,7 @@ class MemoryHintCard(AgentListener[LineDelivered]):
 
     def __init__(self, facts: Facts, rules: Rules, reminders: Reminders, cards: Cards) -> None:
         self.cards = cards
-        self.repositories = {"fact": facts, "rule": rules, "reminder": reminders}
+        self.repositories: dict[str, Facts | Rules | Reminders] = {"fact": facts, "rule": rules, "reminder": reminders}
 
     def handle(self, event: LineDelivered) -> None:
         from journal.features.memory.feature import Memory

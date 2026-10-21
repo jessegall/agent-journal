@@ -28,9 +28,9 @@ class PluginReleases:
             environment = self.environments.all()[0]
             self.installing.upgrade(plugin.name, tag, environment.name, actor)
         except (OSError, Rejection) as failed:
-            self.cards.show(self.environments.all()[0].id, "", f"Plugin {plugin.name} was not upgraded for journal {version}: {failed}", "plug", tone="bad", shows=CardKind.PLUGINS)
+            self.cards.show(self.environments.all()[0].row_id, "", f"Plugin {plugin.name} was not upgraded for journal {version}: {failed}", "plug", tone="bad", shows=CardKind.PLUGINS)
             return
-        self.cards.show(environment.id, "", f"Plugin {plugin.name} upgraded from {plugin.release} to {tag} for journal {version}", "plug", tone="good", shows=CardKind.PLUGINS)
+        self.cards.show(environment.row_id, "", f"Plugin {plugin.name} upgraded from {plugin.release} to {tag} for journal {version}", "plug", tone="good", shows=CardKind.PLUGINS)
 
     def fitting_tag(self, plugin: Plugin, journal: Release) -> str | None:
         newer = [release for release in reversed(Release.lookup(self.source.release_tags(plugin.source))) if release.is_newer(Release(plugin.release))]

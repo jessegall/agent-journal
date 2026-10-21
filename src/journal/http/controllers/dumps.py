@@ -10,6 +10,8 @@ from journal.repositories.dumps import Dumps
 class DumpController(Controller[Dump]):
     """What the viewer does to a dump: drop one, add files to it, answer its question, pick or decline its next steps, name it, stop, split or remove it; each with the rows it was filed into."""
 
+    repository: Dumps
+
     def __init__(self, sorting: DumpFiler, dumps: Dumps, attachments: Attachments) -> None:
         self.filing, self.repository, self.attachments = sorting, dumps, attachments
 
@@ -21,7 +23,7 @@ class DumpController(Controller[Dump]):
 
     def shown_page(self, rows: list[Dump]) -> list[dict]:
         filed = self.repository.linked_rows()
-        return [{**ModelFields.build(d), "filed": list(dict.fromkeys(str(ref) for ref in filed.get(d.id, [])))} for d in rows]
+        return [{**ModelFields.build(d), "filed": list(dict.fromkeys(str(ref) for ref in filed.get(d.row_id, [])))} for d in rows]
 
     def store(self, request: Request) -> Response:
         return Response.json(self.shown(self.filing.create(str(request.body.get("brief", "")), request.actor)), 201)
@@ -29,8 +31,8 @@ class DumpController(Controller[Dump]):
     def attach(self, request: Request) -> Response:
         dump = self.repository.find(request.number("id"))
         for name, data in request.files.items():
-            self.filing.attach(dump.id, self.attachments.store(Dump.table(), dump.id, name, data), request.actor)
-        return Response.json(self.shown(self.repository.find(dump.id)))
+            self.filing.attach(dump.row_id, self.attachments.store(Dump.table(), dump.row_id, name, data), request.actor)
+        return Response.json(self.shown(self.repository.find(dump.row_id)))
 
     def choose(self, request: Request) -> Response:
         return self.finish(self.filing.choose(request.number("id"), int(request.body.get("pick", -1)), request.actor))

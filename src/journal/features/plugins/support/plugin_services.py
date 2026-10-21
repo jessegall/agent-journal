@@ -17,7 +17,7 @@ class PluginServices:
     def start(self, plugin: Plugin) -> list[str]:
         started = []
         for environment in self.environments.all():
-            if not self.supervisor.runs(environment.id):
+            if not self.supervisor.runs(environment.row_id):
                 continue
             for service in plugin.manifest.services:
                 if service.condition and self.runner.shell(plugin, environment.name, service.condition, CONDITION_TIMEOUT_SECONDS).returncode != 0:
@@ -25,15 +25,15 @@ class PluginServices:
                 environ = self.runner.environment(plugin, environment.name) | {"JOURNAL_PLUGIN_SOCKET": str(self.folders.socket(plugin, environment.name))}
                 folder = self.folders.folder(plugin)
                 command = [str(folder / service.program) if service.is_local else service.program, *service.command[1:]]
-                self.supervisor.start_clean(environment.id, self.lookup(plugin, service), command, folder, environ, self.folders.data(plugin) / f"{service.name}.log", service.restart != "never")
+                self.supervisor.start_clean(environment.row_id, self.lookup(plugin, service), command, folder, environ, self.folders.data(plugin) / f"{service.name}.log", service.restart != "never")
                 started.append(self.lookup(plugin, service))
         return started
 
     def stop(self, plugin: Plugin) -> None:
         for environment in self.environments.all():
-            if self.supervisor.runs(environment.id):
+            if self.supervisor.runs(environment.row_id):
                 for service in plugin.manifest.services:
-                    self.supervisor.stop_service(environment.id, self.lookup(plugin, service))
+                    self.supervisor.stop_service(environment.row_id, self.lookup(plugin, service))
 
     @staticmethod
     def lookup(plugin: Plugin, service: PluginService) -> str:

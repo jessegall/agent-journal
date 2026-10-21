@@ -16,7 +16,10 @@ class Release:
 
     @property
     def numbers(self) -> tuple[int, ...]:
-        return tuple(int(number) for number in TAG.match(self.tag).groups())
+        matched = TAG.match(self.tag)
+        if matched is None:
+            raise ValueError(f"{self.tag} names no release")
+        return tuple(int(number) for number in matched.groups())
 
     @property
     def version(self) -> str:

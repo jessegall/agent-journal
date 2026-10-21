@@ -29,7 +29,7 @@ class AttachedFiles:
     def build(self, message: Message) -> list[AttachedFile]:
         files = []
         for name in message.files:
-            path = self.attachments.path(Message.table(), message.id, name)
+            path = self.attachments.path(Message.table(), message.row_id, name)
             if path.is_file():
                 files.append(AttachedFile(str(Ref.build(message)), message.text[:TITLE_CHARACTERS], name, message.captions.get(name, ""), path.stat().st_size, path.stat().st_mtime,
                                           (mimetypes.guess_type(name)[0] or "").startswith("image/"), f"/journal/messages/{message.id}/files/{quote(name, safe='')}"))

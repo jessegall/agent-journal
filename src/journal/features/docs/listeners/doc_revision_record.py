@@ -20,7 +20,7 @@ class DocRevisionRecord(Listener[Saved]):
     def recorded(self, doc: Doc, event: Saved) -> None:
         from journal.features.docs.feature import DocsFeature
         time = self.clock.time()
-        closes_at = time + float(self.settings.option(DocsFeature.REVISION_WINDOW)) * 60
+        closes_at = time + self.settings.decimal(DocsFeature.REVISION_WINDOW) * 60
         latest = self.revisions.latest(doc)
         if latest is None:
             self.revisions.added(DocRevision.build(doc, 1, FIRST_NOTE, closes_at), doc, event.actor)

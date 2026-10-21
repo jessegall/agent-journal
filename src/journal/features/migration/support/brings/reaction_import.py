@@ -28,6 +28,6 @@ class ReactionImport(EnvironmentKind):
         return super().skipped(row, target) or ("" if self.message(row, target) else "the message it sits on did not come across")
 
     def created(self, row: Version3Row, receiver: Environment, attached: Path, actor: Actor) -> Reaction:
-        reaction = self.reactions.imported(Reaction(environment_id=receiver.id, face=row.data.get("face", ""), author=Author(row.author())), row.creation_moment(), actor)
-        self.links.save(Link(source=Ref.build(reaction), target=self.message(row, receiver), kind=REACTS), actor)
+        reaction = self.reactions.imported(Reaction(environment_id=receiver.row_id, face=row.data.get("face", ""), author=Author(row.author())), row.creation_moment(), actor)
+        self.links.save(Link(source=Ref.build(reaction), target=self.ledger.counterpart(receiver.name, tuple(ref for ref in row.refs if ref.startswith("message:"))), kind=REACTS), actor)
         return reaction

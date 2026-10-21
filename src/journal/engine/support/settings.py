@@ -16,3 +16,9 @@ class Settings:
 
     def value(self, option: Option) -> object:
         return self.values[option.key]
+
+    def integer(self, option: Option) -> int:
+        return option.integer(self.value(option))
+
+    def decimal(self, option: Option) -> float:
+        return option.decimal(self.value(option))

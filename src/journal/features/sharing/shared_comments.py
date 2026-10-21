@@ -43,7 +43,7 @@ class SharedComments:
 
     def comments(self, share: Share) -> list[Message]:
         with self.scope.environment(share.environment_id):
-            return self.messages.visitor_messages(share.id)
+            return self.messages.visitor_messages(share.row_id)
 
     @staticmethod
     def lookup(value: str) -> str:

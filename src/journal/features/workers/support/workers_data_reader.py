@@ -21,5 +21,5 @@ class WorkersDataReader:
             active_subagents=sum(1 for s in subagents if s.is_running()),
             subagents=tuple(subagents),
             worktrees_root=(self.config.home / "worktrees").resolve(),
-            worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.id, w.name) for w in rows),
+            worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.row_id, w.name) for w in rows),
         )

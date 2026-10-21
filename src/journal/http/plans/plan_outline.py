@@ -20,5 +20,5 @@ class PlanOutline:
         phase_member = {id for phase in phases for id in phase["task_ids"]}
         return {**ModelFields.build(plan), "task_ids": [t.id for t in tasks], "phases": phases, "unphased_task_ids": [t.id for t in tasks if t.id not in phase_member],
                 "current_phase": plan.current_phase(phased), "held": plan.state == PlanState.STARTED and plan.checkpoint_phase(phased) is not None,
-                "delegated": bool(self.workers.containing({t.id for t in tasks})),
+                "delegated": bool(self.workers.containing({t.row_id for t in tasks})),
                 "reviews": [{**ModelFields.build(review), "report_ids": self.rounds.report_ids(review)} for review in self.reviews.reviews(plan)]}

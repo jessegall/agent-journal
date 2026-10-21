@@ -16,7 +16,7 @@ COMMENTED = ("tasks", "plans", "docs", "reports", "facts", "rules", "reminders",
 class CommentController(Controller[Message]):
     """A comment written under a row in the viewer is a message of the user's linked to the row as comments_on, drawn under it; it reaches the agent as any message does."""
 
-    timeline = True
+    is_timeline = True
 
     def __init__(self, messages: Messages, links: Links) -> None:
         self.repository, self.links = messages, links
@@ -27,7 +27,7 @@ class CommentController(Controller[Message]):
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
         enabled = self.repository.linked(Messages.COMMENT_LINK)
-        return [{**ModelFields.build(m), "on": [str(ref) for ref in enabled.get(m.id, [])]} for m in rows]
+        return [{**ModelFields.build(m), "on": [str(ref) for ref in enabled.get(m.row_id, [])]} for m in rows]
 
     def store(self, request: Request) -> Response:
         target = self.row(str(request.body.get("on", "")))

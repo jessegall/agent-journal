@@ -11,7 +11,7 @@ class Container:
         self._factories: dict[type, Callable[[], object]] = {}
         self._instances: dict[type, object] = {}
 
-    def bind(self, kind: type[T], factory: Callable[[], T]) -> None:
+    def bind(self, kind: type, factory: Callable[[], object]) -> None:
         self._factories[kind] = factory
 
     def instance(self, kind: type[T], value: T) -> None:
@@ -20,7 +20,10 @@ class Container:
     def get(self, kind: type[T]) -> T:
         if kind not in self._instances:
             self._instances[kind] = self._factories[kind]() if kind in self._factories else self.call(kind)
-        return self._instances[kind]
+        instance = self._instances[kind]
+        if not isinstance(instance, kind):
+            raise TypeError(f"the container holds a {type(instance).__name__} for {kind.__name__}")
+        return instance
 
     def call(self, fn: Callable[..., T]) -> T:
         target = fn.__init__ if inspect.isclass(fn) else fn

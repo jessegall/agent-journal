@@ -27,7 +27,7 @@ class TodoImport(EnvironmentKind):
         return super().skipped(row, target) or ("struck" if row.data.get("struck") else "")
 
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Task:
-        return self.tasks.imported(self.task(row, Task(environment_id=target.id, title=row.title, brief=row.brief)), row.creation_moment(), actor)
+        return self.tasks.imported(self.task(row, Task(environment_id=target.row_id, title=row.title, brief=row.brief)), row.creation_moment(), actor)
 
     @staticmethod
     def task(row: Version3Row, task: Task) -> Task:

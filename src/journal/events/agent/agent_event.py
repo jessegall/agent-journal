@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, replace
-from typing import ClassVar
+from typing import ClassVar, Self
 
 from journal.events.event import Event
 from journal.events.feature_data import FeatureData
@@ -26,14 +26,14 @@ class AgentEvent(Event):
     def content(self) -> str:
         return ""
 
-    def with_data(self, data: FeatureData) -> "AgentEvent":
+    def with_data(self, data: FeatureData) -> Self:
         return replace(self, data=data)
 
     def recorded(self) -> dict:
         return {}
 
-    def counted(self, tool_use: int) -> "AgentEvent":
+    def counted(self, tool_use: int) -> Self:
         return replace(self, tool_use=tool_use)
 
-    def placed(self, session: str, environment_id: int, provider: str, context: float | None, time: float, subagent: str = "") -> "AgentEvent":
+    def placed(self, session: str, environment_id: int, provider: str, context: float | None, time: float, subagent: str = "") -> Self:
         return replace(self, session=session, environment_id=environment_id, provider=provider, context=context, time=time, subagent=subagent)

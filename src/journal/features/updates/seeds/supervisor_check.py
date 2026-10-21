@@ -12,5 +12,5 @@ class SupervisorCheck(Seed):
 
     def run(self) -> None:
         for environment in self.environments.all():
-            if self.supervisor.is_outdated(environment.id):
-                self.outdated.add(environment.id)
+            if self.supervisor.is_outdated(environment.row_id):
+                self.outdated.add(environment.row_id)

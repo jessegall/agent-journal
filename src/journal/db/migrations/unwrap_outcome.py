@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from journal.db.migrations.stored_state import StoredState
 
 
 @dataclass(frozen=True)

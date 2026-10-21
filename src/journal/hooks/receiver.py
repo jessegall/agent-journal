@@ -1,10 +1,10 @@
+from functools import partial
 import time
 
 from journal.chat.cards import Cards
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.stop import Stop
 from journal.events.agent.session_ended import SessionEnded
-from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
 from journal.events.listener import Listener
 from journal.support.decision import Decision
@@ -40,13 +40,13 @@ class Receiver:
     def receive(self, hook: Hook) -> Decision:
         self.slow.begin()
         environment = self.environments.lookup(hook.environment)
-        with self.scope.environment(environment.id):
+        with self.scope.environment(environment.row_id):
             if not self.launches.is_launch(environment.name, hook.launch):
                 return self.unbound(hook, environment)
             for saved in self.transcript.events(hook, environment):
                 self._immediate(saved)
             event = self.translation.event(hook, environment)
-            entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data={**hook.stored(), **event.recorded()}), Actor.agent(hook.session))
+            entry = self.entries.save(Entry(environment_id=environment.row_id, kind=type(event).__name__, actor=Actor.agent(hook.session), data={**hook.stored(), **event.recorded()}), Actor.agent(hook.session))
             if self.is_unknown_session_end(event):
                 return Decision()
             decision = self._blocking(event)
@@ -55,9 +55,9 @@ class Receiver:
         return decision
 
     def unbound(self, hook: Hook, environment: Environment) -> Decision:
-        self.entries.save(Entry(environment_id=environment.id, kind=UNBOUND_SESSION, actor=Actor.agent(hook.session), data={**hook.stored(), "launch": hook.launch}), Actor.agent(hook.session))
+        self.entries.save(Entry(environment_id=environment.row_id, kind=UNBOUND_SESSION, actor=Actor.agent(hook.session), data={**hook.stored(), "launch": hook.launch}), Actor.agent(hook.session))
         if hook.kind == HookKind.SESSION_START:
-            self.cards.show(environment.id, hook.session, f"Session {hook.session} started without the launch id of {environment.name}: the journal records its hooks and does not take it as this environment's agent", "bolt", tone="bad", shows=CardKind.FAULTS)
+            self.cards.show(environment.row_id, hook.session, f"Session {hook.session} started without the launch id of {environment.name}: the journal records its hooks and does not take it as this environment's agent", "bolt", tone="bad", shows=CardKind.FAULTS)
         return Decision()
 
     def recorded_outcome(self, hook: Hook, decision: Decision) -> dict:
@@ -80,7 +80,7 @@ class Receiver:
         decision = Decision()
         for listener in self._split(event)[0]:
             if not decision.allowed and getattr(listener, "asked_while_free", False):
-                self.deferred.add(lambda listener=listener: listener.handle(event))
+                self.deferred.add(partial(listener.handle, event))
                 continue
             line_text = self._guarded(listener, event)
             if line_text is None:
@@ -90,7 +90,8 @@ class Receiver:
 
     def _guarded(self, listener: Listener, event: AgentEvent) -> Decision | None:
         try:
-            return listener.handle(event)
+            answered = listener.handle(event)
+            return answered if isinstance(answered, Decision) else None
         except Exception as fault:
             text = f"{type(listener).__name__} raised {type(fault).__name__}: {fault}"
             self.entries.save(Entry(environment_id=event.environment_id, kind=GUARD_FAILED, actor=Actor.system(), data={"session": event.session, "event": type(event).__name__, "listener": type(listener).__name__, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
@@ -99,9 +100,9 @@ class Receiver:
 
     def _defer(self, event: AgentEvent) -> None:
         for listener in self._split(event)[1]:
-            self.deferred.add(lambda listener=listener: listener.handle(event))
+            self.deferred.add(partial(listener.handle, event))
 
-    def _split(self, event: AgentEvent) -> tuple[list[AgentListener], list[Listener]]:
+    def _split(self, event: AgentEvent) -> tuple[list[Listener], list[Listener]]:
         listeners = self.bus.listeners(type(event))
         blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: getattr(l, "rank", 1))
         return blocking, [l for l in listeners if not getattr(l, "blocking", False)]

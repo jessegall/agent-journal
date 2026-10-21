@@ -22,10 +22,10 @@ class ListenerQueue:
         self._thread = threading.Thread(target=self._work, name="deferred", daemon=True)
         self._thread.start()
 
-    def add(self, work: Callable[[], None]) -> None:
+    def add(self, work: Callable[[], object]) -> None:
         self._queue.put(lambda context=contextvars.copy_context(): context.run(work))
 
-    def add_bounded(self, work: Callable[[], None], subject: str) -> None:
+    def add_bounded(self, work: Callable[[], object], subject: str) -> None:
         if self.depth() < self.QUEUE_WARNING_ITEMS:
             self.add(work)
             return

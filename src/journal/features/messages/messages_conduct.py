@@ -1,5 +1,6 @@
 import re
 
+from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
@@ -33,35 +34,8 @@ class MessagesConduct(Conduct):
             return self.none()
         return self.none(*inbox_line(event.data.part(messages_feature()).unread))
 
-    def read_whole_check(self, event: ToolStarting, settings: Settings) -> Transition:
-        return self.refuse(messages_feature().FULL_MESSAGE_READ.create()) if TRUNCATED.search(event.call.command) else self.none()
-
-    def unanswered_check(self, event: ToolStarting, settings: Settings) -> Transition:
-        feature = messages_feature()
-        messages = event.data.part(feature)
-        if event.subagent or not messages.unanswered or event.call.is_journal or file_reads(event, messages.unanswered_files):
-            return self.none()
-        obligations = ", ".join(str(n) for n in messages.unanswered)
-        if messages.uses_unanswered >= int(settings.value(feature.TOOL_BLOCK_LIMIT)):
-            return self.refuse(feature.UNANSWERED_TOOL_BLOCK.create(messages=obligations))
-        if messages.uses_unanswered >= int(settings.value(feature.ANSWER_REQUEST_LIMIT)):
-            return self.none(feature.UNANSWERED_MESSAGES.create(messages=obligations))
-        return self.none()
-
-    def unread_check(self, event: ToolStarting, settings: Settings) -> Transition:
-        feature = messages_feature()
-        messages = event.data.part(feature)
-        if event.subagent or event.call.is_journal or not messages.unread:
-            return self.none()
-        if event.call.writes and messages.mention_count >= int(settings.value(feature.EDIT_BLOCK_LIMIT)):
-            return self.refuse(feature.INBOX_EDIT_BLOCK.create(count=len(messages.unread)))
-        interval = int(settings.value(feature.REMINDER_INTERVAL))
-        if interval > 0 and messages.inbox_tool_uses > 0 and messages.inbox_tool_uses % interval == 0:
-            return self.none(feature.inbox(messages.unread))
-        return self.none()
-
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return Transition.merged(self, [MessagesConduct.read_whole_check(self, event, settings), MessagesConduct.unanswered_check(self, event, settings), MessagesConduct.unread_check(self, event, settings)])
+        return Transition.merged(self, [truncated_read_check(self, event, settings), unanswered_check(self, event, settings), unread_check(self, event, settings)])
 
     def on_tool_finished(self, event: ToolFinished, settings: Settings) -> Transition:
         command = event.call.command
@@ -82,3 +56,33 @@ def inbox_line(unread: tuple[int, ...]) -> list[Nudge]:
 
 def file_reads(event: ToolStarting, folders: tuple[str, ...]) -> bool:
     return any(path.startswith(folder) for path in event.call.read_paths for folder in folders)
+
+
+def truncated_read_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    return state.refuse(messages_feature().FULL_MESSAGE_READ.create()) if TRUNCATED.search(event.call.command) else state.none()
+
+
+def unanswered_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    feature = messages_feature()
+    messages = event.data.part(feature)
+    if event.subagent or not messages.unanswered or event.call.is_journal or file_reads(event, messages.unanswered_files):
+        return state.none()
+    obligations = ", ".join(str(n) for n in messages.unanswered)
+    if messages.uses_unanswered >= settings.integer(feature.TOOL_BLOCK_LIMIT):
+        return state.refuse(feature.UNANSWERED_TOOL_BLOCK.create(messages=obligations))
+    if messages.uses_unanswered >= settings.integer(feature.ANSWER_REQUEST_LIMIT):
+        return state.none(feature.UNANSWERED_MESSAGES.create(messages=obligations))
+    return state.none()
+
+
+def unread_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    feature = messages_feature()
+    messages = event.data.part(feature)
+    if event.subagent or event.call.is_journal or not messages.unread:
+        return state.none()
+    if event.call.writes and messages.mention_count >= settings.integer(feature.EDIT_BLOCK_LIMIT):
+        return state.refuse(feature.INBOX_EDIT_BLOCK.create(count=len(messages.unread)))
+    interval = settings.integer(feature.REMINDER_INTERVAL)
+    if interval > 0 and messages.inbox_tool_uses > 0 and messages.inbox_tool_uses % interval == 0:
+        return state.none(feature.inbox(messages.unread))
+    return state.none()

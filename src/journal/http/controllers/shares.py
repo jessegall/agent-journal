@@ -12,6 +12,8 @@ from journal.repositories.shares import Shares
 class ShareController(Controller[Share]):
     """The links that let someone outside read one document, report or plan: each with its address and what it opens, and whether it asks for a password, never the password."""
 
+    repository: Shares
+
     def __init__(self, shares: Shares, actions: ShareActions, targets: ShareTargets, tunnel: Tunnel) -> None:
         self.repository, self.actions, self.targets, self.tunnel = shares, actions, targets, tunnel
 

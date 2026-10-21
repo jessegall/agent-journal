@@ -89,7 +89,7 @@ class AgentActivity:
             return ""
         saved = [e.created_at for e in hooks if e.kind == "TurnDisplayed"]
         later = [time for time in (saved[-1] if saved else None, self.entries.last_prompt(session)) if time is not None]
-        return "" if any(time > thoughts[-1].created_at for time in later) else thoughts[-1].text
+        return "" if any(time > thoughts[-1].creation_time for time in later) else thoughts[-1].text
 
     @staticmethod
     def sequence(agent: Agent) -> CurrentSequence | None:

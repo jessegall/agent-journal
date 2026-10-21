@@ -20,10 +20,10 @@ class RecordRunChanges(Listener[Updated]):
         self.running, self.entries, self.cards = active, entries, cards
 
     def handle(self, event: Updated) -> None:
-        agent = event.model
-        if not isinstance(agent, Agent) or "sequence_runs" not in event.changed():
+        agent, prior = event.model, event.previous_row(Agent)
+        if not isinstance(agent, Agent) or prior is None or "sequence_runs" not in event.changed():
             return
-        previous = {run.sequence_id: run for run in self.running.runs(event.previous)}
+        previous = {run.sequence_id: run for run in self.running.runs(prior)}
         following = {run.sequence_id: run for run in self.running.runs(agent)}
         for n, run in following.items():
             prior_row = previous.get(n)

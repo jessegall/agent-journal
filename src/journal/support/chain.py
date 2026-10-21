@@ -84,7 +84,9 @@ class Chain:
 
     @staticmethod
     def spans(line: str) -> list[tuple[str, str, int, int]]:
-        parts, current, stack, separator, i, start = [], "", [], "", 0, 0
+        parts: list[tuple[str, str, int, int]] = []
+        stack: list[str] = []
+        current, separator, i, start = "", "", 0, 0
         while i < len(line):
             c, inner = line[i], stack[-1] if stack else ""
             if c == "\\" and inner != "'" and i + 1 < len(line):
@@ -225,7 +227,9 @@ class Chain:
 
     @staticmethod
     def compound(parts: list[tuple[str, str, int, int]], line: str) -> list[tuple[str, str]]:
-        joined, closers, short = [], [], False
+        joined: list[tuple[str, str, int]] = []
+        closers: list[str] = []
+        short = False
         for separator, part, start, end in parts:
             segments, text = Chain.segments(part), part.split()
             if short and separator != "&&":

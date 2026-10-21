@@ -37,7 +37,7 @@ class ShellRecord:
         self.cards, self.events, self.agents, self.settings, self.scope, self.states = cards, events, agents, settings, scope, states
 
     def start(self, chain: str, command: str, folder: Path, caller: Caller) -> int:
-        return self.log.start(chain, command, folder, caller).id
+        return self.log.start(chain, command, folder, caller).row_id
 
     def started(self, chain: str, part: str, caller: Caller) -> None:
         self.record(caller, PART_START, {"chain": chain, "part": part, "doing": ActivityLabel.build(part)})
@@ -51,7 +51,7 @@ class ShellRecord:
         if caller.session is not None:
             self.events.moved(output, caller.session)
         self.cards.show(self.scope.id, caller.session, f"Moved to the background: {ActivityLabel.build(part)}", "terminal", key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
-        return output.id
+        return output.row_id
 
     def ended(self, chain: str, status: int, folder: Path, last: str, caller: Caller) -> None:
         self.record(caller, ENDED, {"chain": chain, "status": status, "file": str(folder), "last": last})
@@ -70,7 +70,7 @@ class ShellRecord:
 
     def is_stored(self, chain: str, line: str, size: int, cut: bool) -> bool:
         from journal.features.shell.feature import Shell
-        return size >= int(self.settings.option(Shell.SHORT)) or bool(PIPED.search(line)) or cut
+        return size >= self.settings.integer(Shell.SHORT) or bool(PIPED.search(line)) or cut
 
     def delete_output(self, chain: str, caller: Caller) -> None:
         output = self.outputs.chain_output(chain)

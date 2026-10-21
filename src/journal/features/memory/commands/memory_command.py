@@ -1,24 +1,19 @@
 from argparse import Namespace
-from datetime import datetime, timezone
-from typing import ClassVar
 
 from journal.console.command import Command
+from journal.features.memory.support.threshold_decisions import ThresholdDecisions
 from journal.features.memory.support.memory_context import MemoryContext
 from journal.support.caller import Caller
-from journal.engine.support.session_agents import SessionAgents
-from journal.repositories.agents import Agents
 from journal.repositories.repository import Repository
-from journal.repositories.scope import Scope
 
 
 class MemoryCommand(Command):
     """What fact, rule and reminder share: create, list, read, strike, and lifting a hold at a mark when the agent records one."""
 
-    scoped: ClassVar[bool] = True
     repository: Repository
 
-    def __init__(self, sessions: SessionAgents, scope: Scope, agents: Agents, context: MemoryContext) -> None:
-        self.sessions, self.scope, self.agents, self.context = sessions, scope, agents, context
+    def __init__(self, decisions: ThresholdDecisions, context: MemoryContext) -> None:
+        self.decisions, self.context = decisions, context
 
     def arguments(self, verbs) -> None:
         creation = self.verb(verbs, "create", f"record a {self.noun}")
@@ -31,12 +26,12 @@ class MemoryCommand(Command):
 
     def create(self, args: Namespace, caller: Caller) -> int:
         row = self.repository.save(self.with_keywords(self.new(args), caller), caller.actor)
-        self.decided(caller)
+        self.decisions.decided(caller)
         print(f"{self.noun} {row.id}: {row.text}")
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        rows = self.repository.scoped() if self.scoped else self.repository.all()
+        rows = self.repository.all()
         for row in rows:
             print(f"{row.id:>4}  {row.text}")
         return 0
@@ -60,10 +55,3 @@ class MemoryCommand(Command):
     @staticmethod
     def keywords(args: Namespace) -> tuple[str, ...]:
         return tuple(word.strip().lower() for word in args.keywords.split(",") if word.strip())
-
-    def decided(self, caller: Caller) -> None:
-        if caller.session is None:
-            return
-        agent = self.sessions.agent(caller.session, self.scope.id)
-        if agent.threshold_due:
-            self.agents.save(agent.context_decided(datetime.now(timezone.utc).timestamp()), caller.actor)

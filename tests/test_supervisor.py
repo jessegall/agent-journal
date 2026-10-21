@@ -406,6 +406,7 @@ def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_mak
 def test_the_boot_screen_offers_a_newer_release_of_the_same_major_before_the_journal_starts(tmp_path: Path, monkeypatch):
     import io
     from journal.config import Config
+    from journal.features.updates.support.release import Release
     from journal.features.updates.support.release_installer import ReleaseInstaller
     from journal.features.updates.support.release_source import ReleaseSource
     from journal.launcher.support.update_prompt import UpdatePrompt
@@ -413,7 +414,7 @@ def test_the_boot_screen_offers_a_newer_release_of_the_same_major_before_the_jou
     major = VERSION.split(".")[0]
     monkeypatch.setattr(ReleaseSource, "tags", lambda self, prefix: [f"v{VERSION}", f"v{major}.99.0", f"v{int(major) + 1}.0.0"])
     installed = []
-    monkeypatch.setattr(ReleaseInstaller, "run", lambda self, release: installed.append(release.version))
+    monkeypatch.setattr(ReleaseInstaller, "run", lambda self, tag, repository: installed.append(Release(tag).version))
     answers = iter(["2", "1"])
     monkeypatch.setattr("builtins.input", lambda: next(answers))
     proposal = UpdatePrompt(Config(tmp_path), Screen(io.StringIO()), ReleaseSource())

@@ -42,7 +42,7 @@ class FileModificationTracker:
         return paths
 
     def walked_paths(self) -> list[str]:
-        paths = []
+        paths: list[str] = []
         for folder, names, files in os.walk(self.root):
             names[:] = [name for name in names if name not in VENDOR_FOLDERS]
             paths.extend(os.path.join(folder, name) for name in files)

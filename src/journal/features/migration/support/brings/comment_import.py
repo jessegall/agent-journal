@@ -31,6 +31,6 @@ class CommentImport(EnvironmentKind):
         return next((rows for ref in row.refs if (rows := self.ledger.referred(target.name, ref))), None)
 
     def created(self, row: Version3Row, receiver: Environment, attached: Path, actor: Actor) -> Message:
-        comment = self.messages.imported(Message(environment_id=receiver.id, author=Author(row.author()), text=row.brief, read_at=row.reading_moment()), row.creation_moment(), actor)
-        self.links.save(Link(source=Ref.build(comment), target=self.parent(row, receiver), kind=Messages.COMMENT_LINK), actor)
+        comment = self.messages.imported(Message(environment_id=receiver.row_id, author=Author(row.author()), text=row.brief, read_at=row.reading_moment()), row.creation_moment(), actor)
+        self.links.save(Link(source=Ref.build(comment), target=self.ledger.counterpart(receiver.name, tuple(row.refs)), kind=Messages.COMMENT_LINK), actor)
         return comment

@@ -1,6 +1,6 @@
 import re
 
-VERBS = {"git": {"commit": "committing", "push": "pushing", "pull": "pulling", "add": "staging", "checkout": "switching branch", "merge": "merging", "rebase": "rebasing", "status": "checking git", "diff": "reading a diff", "log": "reading history"},
+VERBS: dict[str, str | dict[str, str]] = {"git": {"commit": "committing", "push": "pushing", "pull": "pulling", "add": "staging", "checkout": "switching branch", "merge": "merging", "rebase": "rebasing", "status": "checking git", "diff": "reading a diff", "log": "reading history"},
          "pytest": "testing", "npm": {"test": "testing", "run": "running a script", "install": "installing", "ci": "installing"}, "pip": "installing", "pip3": "installing", "make": "building",
          "cargo": {"build": "building", "test": "testing", "run": "running"}, "docker": "running docker", "gh": "on github", "journal": "journalling", "cd": "moving", "ls": "listing", "cat": "reading", "sed": "reading", "grep": "searching", "rg": "searching", "find": "searching", "curl": "fetching"}
 RUNNERS = {"python", "python3", "node", "bash", "sh", "zsh", "env", "time", "nohup"}

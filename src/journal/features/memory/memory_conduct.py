@@ -1,3 +1,4 @@
+from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
@@ -13,13 +14,6 @@ COMPACT = "compact"
 
 class MemoryConduct(Conduct):
     """The memory feature's conduct in every state: at a context mark not taken yet the agent is told to decide what to keep, a write and a stop are held until it has, a fact, rule or reminder whose keyword comes up in what it writes or runs is typed back to it, and a rule the agent made is questioned once."""
-
-    def threshold_check(self, event: AgentEvent, settings: Settings) -> Transition:
-        feature = memory_feature()
-        if event.context is None or not event.session:
-            return self.none()
-        threshold = feature.threshold_due(event.context, event.data.part(feature).context_threshold)
-        return self.none(feature.CONTEXT_DECISION.create(percent=threshold)) if threshold else self.none()
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.memory.feature import Memory
@@ -39,15 +33,8 @@ class MemoryConduct(Conduct):
         obligations = event.data.part(feature).threshold_due
         return self.refuse(feature.UNDECIDED_STOP.create(percent=obligations)) if obligations else self.none()
 
-    def hint_check(self, event: AgentEvent, settings: Settings) -> Transition:
-        feature = memory_feature()
-        if not event.content:
-            return self.none()
-        rows = event.data.part(feature).hinted(event.content)
-        return self.none().typing(*(feature.MEMORY_READ_REQUEST.create(noun=row.noun, n=row.id) for row in rows))
-
     def on_agent_event(self, event: AgentEvent, settings: Settings) -> Transition:
-        return Transition.merged(self, [MemoryConduct.hint_check(self, event, settings), MemoryConduct.threshold_check(self, event, settings)])
+        return Transition.merged(self, [hint_check(self, event, settings), threshold_check(self, event, settings)])
 
     def on_rule_created(self, event: RuleCreated, settings: Settings) -> Transition:
         feature = memory_feature()
@@ -57,3 +44,19 @@ class MemoryConduct(Conduct):
 def memory_feature():
     from journal.features.memory.feature import Memory
     return Memory
+
+
+def threshold_check(state: BaseState, event: AgentEvent, settings: Settings) -> Transition:
+    feature = memory_feature()
+    if event.context is None or not event.session:
+        return state.none()
+    threshold = feature.threshold_due(event.context, event.data.part(feature).context_threshold)
+    return state.none(feature.CONTEXT_DECISION.create(percent=threshold)) if threshold else state.none()
+
+
+def hint_check(state: BaseState, event: AgentEvent, settings: Settings) -> Transition:
+    feature = memory_feature()
+    if not event.content:
+        return state.none()
+    rows = event.data.part(feature).hinted(event.content)
+    return state.none().typing(*(feature.MEMORY_READ_REQUEST.create(noun=row.noun, n=row.id) for row in rows))

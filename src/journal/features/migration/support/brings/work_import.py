@@ -28,6 +28,6 @@ class WorkImport(EnvironmentKind):
         return None if rows is None else rows.id
 
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> TaskLog:
-        task = self.task(row, target)
+        task = self.ledger.counterpart(target.name, (f"todo:{row.data.get('todo')}",)).id
         lines = [body for _, body in row.sections if body] or [row.brief]
-        return [self.logs.imported(TaskLog(environment_id=target.id, task_id=task, line=line), row.creation_moment(), actor) for line in lines][-1]
+        return [self.logs.imported(TaskLog(environment_id=target.row_id, task_id=task, line=line), row.creation_moment(), actor) for line in lines][-1]

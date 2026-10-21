@@ -9,6 +9,7 @@ from typing import Iterator
 
 from journal.support.hook_kind import HookKind
 from journal.providers.support.codex_row import CodexRow
+from journal.features.profiles.support.profile_view import ProfileView
 from journal.providers.provider import Provider
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
@@ -50,7 +51,6 @@ class Codex(Provider):
     hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
     capabilities = frozenset()
     profile_suffix = ".toml"
-    profile_model = "codex_model"
     default = False
     session_inbox = False
     session_variable = "CODEX_THREAD_ID"
@@ -96,6 +96,9 @@ class Codex(Provider):
         if len(command) == 3 and command[1] in SCRIPT_FLAGS:
             return str(command[2])
         return shlex.join(str(part) for part in command)
+
+    def profile_model(self, profile: ProfileView) -> str:
+        return profile["codex_model"]
 
     def transcript(self, project: Path, session: str) -> Path | None:
         stored = self._rollouts.get(session)

@@ -43,7 +43,7 @@ class Worker(Scoped):
     silence: WorkerSilence = WorkerSilence(SILENCE)
 
     def mention(self) -> WorkerMention:
-        return WorkerMention(self.id, self.name, self.dispatcher)
+        return WorkerMention(self.row_id, self.name, self.dispatcher)
 
     def dispatched(self, time: float) -> "Worker":
         return self.contacted(time).with_(state=WorkerState.DISPATCHED).with_event(self.pending(WorkerDispatched, time))
@@ -98,4 +98,4 @@ class Worker(Scoped):
         return self.name
 
     def summary_line(self) -> str:
-        return self.first_line(self.brief)
+        return self.opening_line(self.brief)

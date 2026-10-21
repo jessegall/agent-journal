@@ -13,7 +13,7 @@ class AttachmentController:
 
     def __init__(self, files: AttachedFiles, attachments: Attachments, messages: Messages, dumps: Dumps) -> None:
         self.files, self.attachments = files, attachments
-        self.rows = {"messages": messages, "dumps": dumps}
+        self.rows: dict[str, Messages | Dumps] = {"messages": messages, "dumps": dumps}
 
     def index(self, request: Request) -> Response:
         return Response.json(self.files.page(FileRequest.query_request(request.query)))

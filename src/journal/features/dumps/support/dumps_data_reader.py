@@ -13,4 +13,4 @@ class DumpsDataReader:
         dump = self.dumps.current()
         if dump is None:
             return DumpsData(current_dump=0, waiting=0, question_open=False)
-        return DumpsData(current_dump=dump.id, waiting=len(dump.waiting()), question_open=bool(dump.question))
+        return DumpsData(current_dump=dump.row_id, waiting=len(dump.waiting()), question_open=bool(dump.question))

@@ -72,7 +72,7 @@ class SlowRequests:
         return route.startswith(OUTWARD_COMMANDS) or route in OUTWARD_ROUTES
 
     def budget(self, method: str) -> int:
-        return int(self.settings.option(Faults.EDIT_BUDGET if method == "POST" else Faults.REQUEST))
+        return self.settings.integer(Faults.EDIT_BUDGET if method == "POST" else Faults.REQUEST)
 
     def judging(self) -> bool:
         starting = self.config.home / "runtime" / STARTING
@@ -85,7 +85,7 @@ class SlowRequests:
 
     def reported(self, method: str, route: str, ms: int, budget: int) -> None:
         agent = self.agents.all_current()
-        with self.scope.environment(agent.environment_id if agent else self.environments.all()[0].id):
+        with self.scope.environment(agent.environment_id if agent else self.environments.all()[0].row_id):
             self.flagged(method, route, ms, budget)
 
     def flagged(self, method: str, route: str, ms: int, budget: int) -> None:
@@ -94,16 +94,16 @@ class SlowRequests:
         previous = older[0].data if older else {}
         count, worst, moment = previous.get("count", 0) + 1, max(ms, previous.get("worst", 0)), self.clock.time()
         agent = self.agents.current()
-        reportable = agent is not None and self.is_reportable(previous.get("reported_at", 0.0), moment)
-        reported_at = moment if reportable else previous.get("reported_at", 0.0)
+        reported = agent if agent is not None and self.is_reportable(previous.get("reported_at", 0.0), moment) else None
+        reported_at = previous.get("reported_at", 0.0) if reported is None else moment
         data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "row": "", "count": count, "worst": worst, "reported_at": reported_at}
         detail = f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms"
         self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system(), CardKind.FAULTS, detail)
-        if reportable:
-            self.nudges.type_line(agent, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))
+        if reported is not None:
+            self.nudges.type_line(reported, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))
 
     def is_reportable(self, reported_at: float, moment: float) -> bool:
         if not reported_at:
             return True
-        minutes = int(self.settings.option(Faults.REPEAT))
+        minutes = self.settings.integer(Faults.REPEAT)
         return minutes > 0 and Timeout.minutes(minutes).started(reported_at).is_elapsed(moment)

@@ -13,6 +13,8 @@ from journal.support.worktree import Worktree
 class EnvironmentController(Controller[Environment]):
     """The project's environments; an agent is started in one from here, stopped, or the environment removed with everything in it."""
 
+    repository: Environments
+
     def __init__(self, environments: Environments, launcher: AgentLauncher, supervisor: SupervisorLink, config: Config) -> None:
         self.repository, self.launcher, self.supervisor, self.config = environments, launcher, supervisor, config
 
@@ -32,7 +34,7 @@ class EnvironmentController(Controller[Environment]):
 
     def stop(self, request: Request) -> Response:
         environment = self.repository.find(request.number("id"))
-        self.supervisor.stop(environment.id)
+        self.supervisor.stop(environment.row_id)
         return Response.json(environment)
 
     def remove(self, request: Request) -> Response:

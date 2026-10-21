@@ -1,3 +1,4 @@
+from functools import partial
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.command_starting import CommandStarting
 from journal.events.agent.file_edited import FileEdited
@@ -34,7 +35,7 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
         hearers = self.relay.listeners(event, event.environment_id)
-        ceiling_ms = int(self.settings.option(PluginsFeature.PLUGIN_ANSWER_WINDOW))
+        ceiling_ms = self.settings.integer(PluginsFeature.PLUGIN_ANSWER_WINDOW)
         waiting = self.relay.waiting_lines(event.session) if Protocol.published_name(event) in LINE_EVENT_KEYS else []
         if Protocol.published_name(event) in LINE_EVENT_KEYS:
             waiting += [line for plugin in self.relay.plugins.enabled() for line in self.queue.lines(plugin, event)]
@@ -49,7 +50,7 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
     def edited(self, event: AgentEvent) -> list[FileEdited]:
         if not isinstance(event, ToolFinished):
             return []
-        return [FileEdited.recorded(edit, event.environment_id) for edit in self.edits.tool_use_edits(event.session, event.tool_use)]
+        return [FileEdited.build(edit, event.environment_id) for edit in self.edits.tool_use_edits(event.session, event.tool_use)]
 
     def request(self, hearers: list[Plugin], event: AgentEvent, ceiling_ms: int, decision: Decision) -> Decision:
         for plugin in hearers:
@@ -57,7 +58,7 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
                 window = plugin.manifest.window_ms(Protocol.published_name(event), ceiling_ms) / 1000
                 decision = decision.merged(self.decided(plugin, event, self.relay.ask(plugin, event, event.environment_id, window)))
             else:
-                self.deferred.add_bounded(lambda plugin=plugin: self.relay.postponed(plugin, event, event.environment_id), f"{plugin.name} relay {Protocol.published_name(event)}")
+                self.deferred.add_bounded(partial(self.relay.postponed, plugin, event, event.environment_id), f"{plugin.name} relay {Protocol.published_name(event)}")
         return decision
 
     @staticmethod

@@ -11,7 +11,7 @@ from journal.engine.support.settings import Settings
 class StatesCatalogue:
     """Every state by name: the engine's own and those of every feature, a name two features bring held by the one that extends the other. A row's state column becomes the class that holds its behaviour; a name no feature holds any more resolves to the first state, Idle; and the bottom of a stack is the state of the work mode a feature's setting picks, Idle when none does."""
 
-    ENGINE_STATES = (Compacting, Ended)
+    ENGINE_STATES: tuple[type[BaseState], ...] = (Compacting, Ended)
 
     def __init__(self, features: FeatureRegistry) -> None:
         self._states: dict[str, type[BaseState]] = {}
@@ -41,7 +41,7 @@ class StatesCatalogue:
 
     def parent(self, name: str) -> str:
         state = self._states.get(name)
-        return next((base.name for base in state.__mro__[1:] if base in self._states.values()), "") if state else ""
+        return next((registered.name for base in state.__mro__[1:] for registered in self._states.values() if registered is base), "") if state else ""
 
     def listed(self) -> list[dict]:
         names = ["idle"] + [name for name in self._states if name != "idle"]

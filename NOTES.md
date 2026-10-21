@@ -1340,3 +1340,19 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   and nothing on the first; the old fault of Codex going to main is gone.
 - Two records from before the chart's removal, backed up from other journals on this machine, upgraded in-process
   through App and Config: 22 migrations, the chart tables gone, every live agent's stack seeded.
+
+## The type check passes (task 1173, 2026-10-21)
+
+- `python3 -m mypy src/journal` finds no error, and it stays that way: an Optional the design always has is made
+  certain where it is born, never cast or ignored.
+- A saved row answers `row.row_id`, `row.creation_time`, `row.update_time` and `row.creation_actor`; each raises
+  `UnsavedRow` on a row not yet saved, so code that needs a saved row says so and `Model.id` stays `int | None`.
+- `Conduct` extends `BaseState`, not the other way round: a conduct's listener runs with the state as itself, so
+  it is typed as one, and the answers `none`, `swap`, `push`, `pop`, `forward` and `refuse` live on `BaseState`.
+  A conduct holds its `on_` listeners and nothing else; a helper one listener merges is a module function that
+  takes the state.
+- A setting is read by its option's kind: `settings.integer`, `decimal`, `texts`, and `SettingRows.mapping` for a
+  raw key, each raising `WrongSettingKind` on a stored value of another kind.
+- An entry's data is a dict, empty when it has none. A phone's and a pairing code's expiry is required.
+- A route answers `Answer`, a JSON response, a file or a stream; `Router.page` is what a phone may reach, never a
+  stream.

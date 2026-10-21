@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable, Iterator
 
+from journal.db.empty_result import EmptyResult
 from journal.support.masks import Masks
 
 
@@ -36,6 +37,12 @@ class Connection:
 
     def one(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
         return self.execute(sql, params).fetchone()
+
+    def result(self, sql: str, params: tuple = ()) -> sqlite3.Row:
+        row = self.one(sql, params)
+        if row is None:
+            raise EmptyResult(sql)
+        return row
 
     def all(self, sql: str, params: tuple = ()) -> list[sqlite3.Row]:
         return self.execute(sql, params).fetchall()

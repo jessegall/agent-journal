@@ -13,4 +13,4 @@ class Fact(Scoped):
     presence: bool = False
 
     def summary_line(self) -> str:
-        return self.first_line(self.text)
+        return self.opening_line(self.text)

@@ -18,6 +18,7 @@ from journal.support.command_part import CommandPart
 from journal.support.reads import Reads
 from journal.support.writes import Writes
 from journal.features.shell.support.output_reads import OutputReads
+from journal.features.profiles.support.profile_view import ProfileView
 from journal.support.decision import Decision
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
@@ -56,12 +57,14 @@ class Provider(ABC):
     capabilities: ClassVar[frozenset[Capability]]
     decoders: ClassVar[dict[str, Callable[[dict], Operation]]]
     profile_suffix: ClassVar[str]
-    profile_model: ClassVar[str]
     default: ClassVar[bool]
     session_inbox: ClassVar[bool]
 
     def __init__(self) -> None:
         self._status_files: dict[Path, ContextFile] = {}
+
+    @abstractmethod
+    def profile_model(self, profile: ProfileView) -> str: ...
 
     @abstractmethod
     def transcript(self, project: Path, session: str) -> Path | None: ...

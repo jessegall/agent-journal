@@ -26,7 +26,7 @@ class MenuAnswers:
         self._running: set[str] = set()
 
     def stored_answer(self, menu: Menu) -> Option | None:
-        label = dict(self.settings.project(CHOICES, {})).get(self.key(menu))
+        label = self.settings.mapping(CHOICES).get(self.key(menu))
         return next((o for o in menu.options if o.label == label), None)
 
     def query(self, menu: Menu, agent: Agent) -> Option | None:
@@ -55,7 +55,7 @@ class MenuAnswers:
         claimed = next((o for o in menu.options if number and o.number == int(number[0])), None)
         self._asked[self.key(menu)] = claimed
         if claimed:
-            self.settings.set(CHOICES, {**dict(self.settings.project(CHOICES, {})), self.key(menu): claimed.label}, Actor.system())
+            self.settings.set(CHOICES, {**self.settings.mapping(CHOICES), self.key(menu): claimed.label}, Actor.system())
 
     @staticmethod
     def key(menu: Menu) -> str:

@@ -6,6 +6,8 @@ from journal.repositories.subagents import Subagents
 class SubagentController(Controller[Subagent]):
     """The subagents dispatched here, as their rows stand: one running is open, whether it was just sent, works in the background or was resumed."""
 
+    repository: Subagents
+
     def __init__(self, subagents: Subagents) -> None:
         self.repository = subagents
 

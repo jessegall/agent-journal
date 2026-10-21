@@ -60,7 +60,7 @@ class StateMachine(AgentListener[AgentEvent]):
             if answered.context:
                 self.type_lines(agent.environment_id, answered.context, 0.0)
 
-    def answer(self, agent: Agent, event: Event) -> Decision:
+    def answer(self, agent: Agent, event: AgentEvent | RowEvent) -> Decision:
         settings = self.top_state()
         stack = self.states.apply_mode(self.states.stack(agent), settings)
         event = event.with_data(self.readers.agent_data(agent))
@@ -116,21 +116,21 @@ class StateMachine(AgentListener[AgentEvent]):
         return Settings.applied(self.settings, self.features.options())
 
 
-    def hook_machine(self, previous: Stack, following: Stack, settings: SettingRows, data: FeatureData) -> MachineAnswer:
+    def hook_machine(self, previous: Stack, following: Stack, settings: Settings, data: FeatureData) -> MachineAnswer:
         if following.states[:-1] == previous.states and len(following.states) == len(previous.states) + 1:
             return self.pushed_down(previous, following, settings)
         if following == previous.popped() and len(previous.states) > 1:
             return self.forwarded(previous, following, settings, data)
         return MachineAnswer(following)
 
-    def pushed_down(self, previous: Stack, following: Stack, settings: SettingRows) -> MachineAnswer:
+    def pushed_down(self, previous: Stack, following: Stack, settings: Settings) -> MachineAnswer:
         suspended = previous.top().on_suspend(settings)
         pushed = following.top().on_push(settings)
         if isinstance(pushed, Block):
             return MachineAnswer(previous, refusal=pushed, refused=following.top().name)
         return MachineAnswer(following, (*suspended, *pushed))
 
-    def forwarded(self, previous: Stack, following: Stack, settings: SettingRows, data: FeatureData) -> MachineAnswer:
+    def forwarded(self, previous: Stack, following: Stack, settings: Settings, data: FeatureData) -> MachineAnswer:
         popped = previous.top().on_pop(settings)
         resumed = following.top().on_resume(data, settings)
         if not isinstance(resumed, Transition):

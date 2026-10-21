@@ -33,5 +33,5 @@ class Clock(Job):
                 self._tick(agent, time)
 
     def _tick(self, agent: Agent, time: float) -> None:
-        idle_seconds = time - agent.updated_at.timestamp()
+        idle_seconds = time - agent.update_time.timestamp()
         self.bus.dispatch(Ticked(session=agent.session, environment_id=agent.environment_id, time=time, silence_seconds=idle_seconds))

@@ -45,7 +45,7 @@ class DashboardCommand(Command):
 
     def clear(self, args: Namespace, caller: Caller) -> int:
         plugin = self.plugin(caller)
-        for line in self.rows.rows(plugin):
+        for line in self.rows.plugin_rows(plugin):
             self.rows.delete(line, caller.actor)
         print(f"{plugin}'s dashboard cleared")
         return 0

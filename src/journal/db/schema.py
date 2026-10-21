@@ -25,7 +25,7 @@ class Schema:
         return empty
 
     def vacuum_alone(self) -> None:
-        if self.connection.one("PRAGMA auto_vacuum")[0] == FULL:
+        if self.connection.result("PRAGMA auto_vacuum")[0] == FULL:
             return
         self.connection.execute(f"PRAGMA auto_vacuum = {FULL}")
         self.connection.execute("VACUUM")
@@ -46,5 +46,5 @@ class Schema:
         return tuple(Column.build(field.name, hints[field.name]) for field in fields(model) if field.metadata.get("column", True))
 
     def version(self) -> int:
-        row = self.connection.one("SELECT MAX(number) AS number FROM migrations")
+        row = self.connection.result("SELECT MAX(number) AS number FROM migrations")
         return row["number"] or 0

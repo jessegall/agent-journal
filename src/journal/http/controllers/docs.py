@@ -12,6 +12,8 @@ from journal.repositories.doc_revisions import DocRevisions
 class DocController(WritingController[Doc]):
     """The project's documents, the ones a search finds, best first, and each one's revisions, the open one kept on request."""
 
+    repository: Docs
+
     def __init__(self, docs: Docs, search: DocSearch, revisions: DocRevisions, clock: Clock) -> None:
         self.repository, self.search, self.revisions, self.clock = docs, search, revisions, clock
 

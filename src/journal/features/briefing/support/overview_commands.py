@@ -17,7 +17,7 @@ class OverviewCommands:
 
     def lines(self) -> list[ChainedLine]:
         slots = self.slots()
-        return [self.line(command, slots) for command in self.settings.option(Briefing.OVERVIEW_COMMANDS)]
+        return [self.line(command, slots) for command in self.settings.texts(Briefing.OVERVIEW_COMMANDS)]
 
     def slots(self) -> tuple[OverviewSlot, ...]:
         plan = next((p for p in self.plans.scoped() if p.state == PlanState.STARTED), None)

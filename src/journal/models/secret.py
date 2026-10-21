@@ -44,7 +44,7 @@ class Secret(Model):
         allowed = self.programs if programs is None else programs
         new = tuple(p for p in allowed if p not in self.programs)
         if new:
-            return self.with_(programs=allowed, proposed=tuple(p for p in (self.proposed if proposed is None else proposed) if p not in allowed)).with_event(SecretAllowed(secret_id=self.id, title=self.title, programs=new))
+            return self.with_(programs=allowed, proposed=tuple(p for p in (self.proposed if proposed is None else proposed) if p not in allowed)).with_event(SecretAllowed(secret_id=self.row_id, title=self.title, programs=new))
         requested = self.proposed if proposed is None else proposed
         return self.with_(programs=allowed, proposed=tuple(p for p in requested if p not in allowed))
 
@@ -66,4 +66,4 @@ class Secret(Model):
         return self.title
 
     def summary_line(self) -> str:
-        return self.first_line(self.brief)
+        return self.opening_line(self.brief)

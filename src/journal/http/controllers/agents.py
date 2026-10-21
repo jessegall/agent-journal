@@ -23,6 +23,8 @@ EDITS_SHOWN = 50
 class AgentController(Controller[Agent]):
     """The environment's agents with what each is doing; what the user types or picks for the live one goes to its terminal, and the files it changed and the commands it ran are read from here."""
 
+    repository: Agents
+
     def __init__(self, agents: Agents, activity: AgentActivity, supervisor: SupervisorLink, terminal_lines: TerminalLines, edits: Edits, scope: Scope, environments: Environments,
                  providers: Providers, active: RunTracker, config: Config, pausing: AgentPause) -> None:
         self.repository, self.activity, self.supervisor, self.terminal_lines, self.file_edits, self.scope = agents, activity, supervisor, terminal_lines, edits, scope
@@ -40,7 +42,7 @@ class AgentController(Controller[Agent]):
     def current(self, request: Request) -> Response:
         rows = []
         for environment in self.environments.all():
-            with self.scope.environment(environment.id):
+            with self.scope.environment(environment.row_id):
                 agent = self.repository.current()
             if agent:
                 rows.append({"environment": environment.name, "agent": agent})
@@ -94,12 +96,12 @@ class AgentController(Controller[Agent]):
     def skip_step(self, request: Request) -> Response:
         agent = self.running_agent(request.number("id"))
         self.notice(agent, self.running.skip(agent.session, agent.environment_id))
-        return Response.json(self.shown(self.repository.find(agent.id)))
+        return Response.json(self.shown(self.repository.find(agent.row_id)))
 
     def end_sequence(self, request: Request) -> Response:
         agent = self.running_agent(request.number("id"))
         self.notice(agent, self.running.end(agent.session, agent.environment_id))
-        return Response.json(self.shown(self.repository.find(agent.id)))
+        return Response.json(self.shown(self.repository.find(agent.row_id)))
 
     def running_agent(self, id: int) -> Agent:
         agent = self.repository.find(id)

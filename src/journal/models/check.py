@@ -36,7 +36,7 @@ class Check(Model):
         return self.with_(progress=CheckProgress(time))
 
     def completed(self, passed: bool, output: str, time: datetime, elapsed: float, report: CheckReport | None, fault: str) -> "Check":
-        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, prior_failure=self.last_passed is False, wait_target=self.wait_target, failure_reported_at=self.failure_reported_at)
+        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.row_id, title=self.title, passed=passed, output=output, prior_failure=self.last_passed is False, wait_target=self.wait_target, failure_reported_at=self.failure_reported_at)
         recorded = self.with_(last_passed=passed, last_output=output, last_run_at=time, last_duration=elapsed, last_report=report, progress=None, last_fault=fault).with_event(executed)
         if self.wait_target and passed and not self.is_resolved():
             return recorded.with_event(RowResolved(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.outcome()))
@@ -67,4 +67,4 @@ class Check(Model):
         return self.title
 
     def summary_line(self) -> str:
-        return self.first_line(self.brief)
+        return self.opening_line(self.brief)

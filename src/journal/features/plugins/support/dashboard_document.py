@@ -17,7 +17,7 @@ class DashboardDocument:
         saved = self.folders.data(plugin) / "dashboards" / f"{board.get('name', '')}.json"
         if board.get("name") and saved.is_file():
             return DashboardView.parsed(json.loads(saved.read_text()))
-        lines = self.rows.rows(plugin.name)
+        lines = self.rows.plugin_rows(plugin.name)
         if not lines:
             return DashboardView(missing=f"{plugin.name} has written nothing on its dashboard yet.")
         headed: dict[str, list] = {}

@@ -7,6 +7,7 @@ from typing import Iterator
 
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.claude_row import ClaudeRow
+from journal.features.profiles.support.profile_view import ProfileView
 from journal.providers.provider import TAIL_BYTES, Provider
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
@@ -43,7 +44,6 @@ class Claude(Provider):
     question_model = "haiku"
     settings_files = (".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json")
     profile_suffix = ".md"
-    profile_model = "model"
     default = True
     session_inbox = True
     controls = {
@@ -75,6 +75,9 @@ class Claude(Provider):
     @staticmethod
     def config_folder() -> Path:
         return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
+
+    def profile_model(self, profile: ProfileView) -> str:
+        return profile["model"]
 
     def transcript(self, project: Path, session: str) -> Path | None:
         path = self.config_folder() / "projects" / self.folder_name(project) / f"{session}.jsonl"

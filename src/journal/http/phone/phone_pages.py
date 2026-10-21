@@ -39,6 +39,7 @@ PUBLIC = ("voices", "announcements")
 COOKIE = "__Host-phone"
 HEADER = "X-Phone"
 FILE_HEADERS = {"Content-Security-Policy": "sandbox", "X-Content-Type-Options": "nosniff"}
+PHONE_REFUSAL = "a phone reaches only the pages its app uses, in its own environment"
 
 
 class PhonePages:
@@ -118,7 +119,7 @@ class PhonePages:
         if request.rest == ["push"]:
             return self.subscribe(phone, str(value.get("endpoint", "")))
         if request.rest == ["disconnect"]:
-            self.pairing.disconnect(phone, Actor.phone(phone.id), datetime.now(timezone.utc))
+            self.pairing.disconnect(phone, Actor.phone(phone.row_id), datetime.now(timezone.utc))
             return self.json(200, {"disconnected": phone.id}, {"Set-Cookie": f"{COOKIE}=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Strict"})
         return self.json(404, {"error": "no such action"})
 
@@ -155,7 +156,7 @@ class PhonePages:
         time = datetime.now(timezone.utc)
         if not phone.is_active(time):
             return self.json(410, {"error": "this phone was disconnected" if phone.ended_at else "this phone's connection has run out"})
-        return self.phones.save(phone.visit(time), Actor.phone(phone.id)) if phone.is_presence_due(time) else phone
+        return self.phones.save(phone.visit(time), Actor.phone(phone.row_id)) if phone.is_presence_due(time) else phone
 
     def pass_along(self, request: PhoneRequest) -> ShareAnswer:
         phone = self.phone(request)
@@ -165,11 +166,11 @@ class PhonePages:
         url = urlsplit(request.path.removeprefix("/p"))
         query = {name: values[-1] for name, values in parse_qs(url.query).items()}
         environment = self.environments.find(phone.environment_id).name
-        requested = Request(request.method, url.path, query, body, {}, {ENVIRONMENT_HEADER.lower(): environment}, Actor.phone(phone.id))
+        requested = Request(request.method, url.path, query, body, {}, {ENVIRONMENT_HEADER.lower(): environment}, Actor.phone(phone.row_id))
         route = self.router.matched(requested)
         if route is None or not self.allow.allows(route) or query.get("env", environment) != environment:
-            return self.json(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})
-        answer = self.router.route(requested)
+            return self.json(403, {"error": PHONE_REFUSAL})
+        answer = self.router.page(requested)
         if isinstance(answer, FileResponse):
             return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS, **FILE_HEADERS, **answer.headers()})
         return ShareAnswer(answer.status, JsonOut.encoded(answer.body), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})
@@ -181,7 +182,7 @@ class PhonePages:
     def subscribe(self, phone: Phone, endpoint: str) -> ShareAnswer:
         if not self.push.is_allowed(endpoint):
             return self.json(422, {"error": "a phone's notifications come only through Apple's, Google's, Mozilla's or Microsoft's push service"})
-        self.phones.save(phone.subscribed(endpoint, self.waits.refs(phone)), Actor.phone(phone.id))
+        self.phones.save(phone.subscribed(endpoint, self.waits.refs(phone)), Actor.phone(phone.row_id))
         return self.json(201, {"subscribed": True})
 
     def state(self, request: PhoneRequest) -> ShareAnswer:
@@ -189,7 +190,7 @@ class PhonePages:
         return self.json(200, asdict(self.data(phone))) if isinstance(phone, Phone) else phone
 
     def data(self, phone: Phone) -> PhoneData:
-        return PhoneData(phone.name, phone.id, phone.expires_at.isoformat(), self.environments.find(phone.environment_id).name, self.config.root.name, COLOR)
+        return PhoneData(phone.name, phone.row_id, phone.expires_at.isoformat(), self.environments.find(phone.environment_id).name, self.config.root.name, COLOR)
 
     @staticmethod
     def json(status: int, body: dict, headers: dict | None = None) -> ShareAnswer:

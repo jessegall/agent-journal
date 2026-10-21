@@ -156,9 +156,9 @@ class SecretCommand(Command):
 
     def waited(self, secret: Secret) -> int:
         began = time.time()
-        while self.secrets.find(secret.id).login_started_at and time.time() - began < WINDOW_SECONDS:
+        while self.secrets.find(secret.row_id).login_started_at and time.time() - began < WINDOW_SECONDS:
             time.sleep(1)
-        finished = self.secrets.find(secret.id)
+        finished = self.secrets.find(secret.row_id)
         print(f"logged in to {finished.title}" if finished.session_at else f"no login to {finished.title} is saved")
         return 0 if finished.session_at else 1
 

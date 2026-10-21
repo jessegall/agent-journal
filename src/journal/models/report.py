@@ -16,4 +16,4 @@ class Report(Scoped):
         return self.title
 
     def summary_line(self) -> str:
-        return self.abstract or self.first_line(self.body)
+        return self.abstract or self.opening_line(self.body)
