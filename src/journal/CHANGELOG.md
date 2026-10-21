@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- The tunnel starts clean: before the tunler for this journal's address is started, the supervisor's tunnel service is stopped and every tunler still running for that address on the machine is ended, an orphan of an earlier supervisor among them, so the address never stays with a process pointing at a dead port; the share server keeps its port across restarts, as it did.
 - A word typed in the chat is a chat message whatever it replies to and whatever is open beside it: a reply to a comment is linked to the comment and to no row, with no passage carried over, and only the comment box on a row's page files a comment, a reply in that column included.
 - The minutes since a task's last log line before a stop asks for the log first are a setting, Ask for a log at a stop after, ten by default where the number was fixed in code.
 - The Developer tab keeps a rolling log of the newest thousand requests, each with its kind, its route or command, its milliseconds and its moment, logged after the reply from the same funnel as the counts; the tab lists the newest hundred and switches to the slowest at a click, and Reset clears the log with the counts.

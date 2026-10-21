@@ -38,7 +38,7 @@ OWN_ADDRESS = "{domain} is this journal's own address. Move the journal to a new
 
 
 class Tunnel:
-    """The tunler process that gives the share server its web address: started under the supervisor that hosts the journal while a link is open, stopped while none is, and asked whether its address answers."""
+    """The tunler process that gives the share server its web address: started under the supervisor that hosts the journal while a link is open, every tunler still running for the journal's address ended first, an orphan of an earlier supervisor among them, stopped while none is, and asked whether its address answers."""
 
     def __init__(self, tunler: Tunler, place: SharePlace, settings: SettingRows, link: SupervisorLink, shares: Shares, phones: Phones, codes: PairingCodes, config: Config) -> None:
         self.tunler, self.place, self.settings, self.link, self.shares, self.config = tunler, place, settings, link, shares, config
@@ -103,10 +103,9 @@ class Tunnel:
             return
         subdomain = self.place.subdomain()
         kept = self.place.kept()
-        inspector = kept.inspector
-        if kept.tunnel != (port, subdomain) or not inspector:
-            self.link.stop_service(host, SERVICE)
-            inspector = self.free_port()
+        inspector = kept.inspector or self.free_port()
+        self.link.stop_service(host, SERVICE)
+        self.tunler.ended_for(subdomain)
         self.place.keep(tunnel=(port, subdomain), inspector=inspector)
         self.link.start(host, SERVICE, [command, str(port), f"--domain={subdomain}", f"--inspect={inspector}"], self.config.root, dict(os.environ), self.log)
 

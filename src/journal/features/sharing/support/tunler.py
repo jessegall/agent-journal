@@ -3,6 +3,7 @@ import os
 import platform
 import shutil
 import ssl
+import signal
 import subprocess
 from pathlib import Path
 from urllib.request import urlopen
@@ -41,6 +42,26 @@ class Tunler:
     @staticmethod
     def local() -> Path:
         return Path.home() / ".local" / "bin" / "tunler"
+
+    @staticmethod
+    def running_for(subdomain: str) -> list[int]:
+        listed = subprocess.run(["ps", "-axo", "pid=,command="], capture_output=True, text=True, timeout=10)
+        pids = []
+        for line in listed.stdout.splitlines():
+            pid, _, command = line.strip().partition(" ")
+            words = command.split()
+            if any(word.rsplit("/", 1)[-1] == "tunler" for word in words[:2]) and f"--domain={subdomain}" in words:
+                pids.append(int(pid))
+        return pids
+
+    def ended_for(self, subdomain: str) -> list[int]:
+        pids = self.running_for(subdomain)
+        for pid in pids:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                continue
+        return pids
 
     def status(self) -> TunlerStatus:
         return self._status.given()

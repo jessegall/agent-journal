@@ -1115,3 +1115,22 @@ def test_a_comment_on_a_documents_passage_names_the_section_and_lines_it_sits_on
         assert "comments_on docs:1" in shown and "the passage sits in doc 1 at section 2, How, lines 8-9: `journal doc show 1 --section 2` or `--grep`" in shown, shown
     finally:
         server.stop()
+
+
+def test_a_tunler_still_running_for_the_journals_address_is_ended_before_the_tunnel_starts(tmp_path: Path):
+    import subprocess
+    import time
+    from journal.features.sharing.support.tunler import Tunler
+    fake = tmp_path / "tunler"
+    fake.write_text("#!/bin/sh\nsleep 30\n")
+    fake.chmod(0o755)
+    stale = subprocess.Popen([str(fake), "59404", "--domain=abcdef", "--inspect=4040"])
+    other = subprocess.Popen([str(fake), "59404", "--domain=ghijkl", "--inspect=4041"])
+    try:
+        time.sleep(0.2)
+        assert stale.pid in Tunler.running_for("abcdef") and other.pid not in Tunler.running_for("abcdef"), "a tunler is known by the subdomain in its arguments"
+        ended = Tunler().ended_for("abcdef")
+        assert stale.pid in ended and other.pid not in ended, "the one for this address is ended, the other left"
+        assert stale.wait(5) is not None and other.poll() is None, "it is gone, and the tunnel of another address runs on"
+    finally:
+        other.kill()
