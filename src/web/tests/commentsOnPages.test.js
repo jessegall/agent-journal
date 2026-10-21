@@ -21,6 +21,11 @@ describe("comments on a page", () => {
         expect(host.querySelector(".comment-bar")).not.toBeNull();
     });
 
+    test("a document's comments say its text can be selected to comment on a passage", async () => {
+        const host = await shown({resource: row("docs"), focus: 9});
+        expect(host.querySelector(".document-aside .none-hint").textContent).toBe("Select text in the document to comment on that passage.");
+    });
+
     test("the worker and agent dialogs, drawn read-only in the page frame, show no comment box and no comments column", async () => {
         const host = await shown({resource: row("agents"), readOnly: true});
         expect(host.querySelector(".inside")).not.toBeNull();

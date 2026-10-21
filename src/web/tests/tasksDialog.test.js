@@ -139,12 +139,14 @@ describe("the tasks dialog", () => {
         expect([...document.body.querySelectorAll(".task-inspector .fact .label")].map((l) => l.textContent)).not.toContain("Held by");
     });
 
-    test("the inspector's comment form sits below its scrolling content, never over it", async () => {
+    test("the inspector's comment form sits below its scrolling content, and a task's comments carry no document's selection hint", async () => {
         await opened();
         inDialog('.task-row[data-task="1"]').click();
         await flush();
         expect(inDialog(".task-inspector > .write .comment-write")).not.toBeNull();
         expect(inDialog(".task-inspector .body .comment-write")).toBeNull();
+        expect(inDialog(".task-inspector .comments .none").textContent).toContain("No comments yet.");
+        expect(inDialog(".task-inspector .none-hint")).toBeNull();
     });
 
     test("blocking a task offers no task that already waits on it and posts the one picked", async () => {
