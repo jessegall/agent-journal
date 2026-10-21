@@ -11,17 +11,17 @@ class PluginChanges:
     """What changes between two states of a plugin: in its manifest, and in its code, file by file."""
 
     @staticmethod
-    def manifest(was: dict, time: dict) -> list[str]:
+    def manifest(prior_row: dict, time: dict) -> list[str]:
         lines = []
         for key in COMPARED:
-            before, after = was.get(key), time.get(key)
-            if isinstance(after, (list, tuple)):
-                before, after = list(before or ()), list(after)
+            previous, following = prior_row.get(key), time.get(key)
+            if isinstance(following, (list, tuple)):
+                previous, following = list(previous or ()), list(following)
                 if key == "holds":
-                    before, after = [EventWindow.parsed(h).as_text() for h in before], [EventWindow.parsed(h).as_text() for h in after]
-                lines += [f"{key}: + {item}" for item in after if item not in before] + [f"{key}: - {item}" for item in before if item not in after]
-            elif before != after:
-                lines.append(f"{key}: {before} -> {after}")
+                    previous, following = [EventWindow.parsed(h).as_text() for h in previous], [EventWindow.parsed(h).as_text() for h in following]
+                lines += [f"{key}: + {item}" for item in following if item not in previous] + [f"{key}: - {item}" for item in previous if item not in following]
+            elif previous != following:
+                lines.append(f"{key}: {previous} -> {following}")
         return lines
 
     @staticmethod
@@ -29,8 +29,8 @@ class PluginChanges:
         files = sorted({p.relative_to(root) for root in (old, new) for p in root.rglob("*") if p.is_file() and ".git" not in p.relative_to(root).parts})
         lines = []
         for file in files:
-            before, after = PluginChanges.text(old / file), PluginChanges.text(new / file)
-            lines += difflib.unified_diff(before, after, f"a/{file}", f"b/{file}", lineterm="")
+            previous, following = PluginChanges.text(old / file), PluginChanges.text(new / file)
+            lines += difflib.unified_diff(previous, following, f"a/{file}", f"b/{file}", lineterm="")
         return lines[:LINE_LIMIT] + ([f"... {len(lines) - LINE_LIMIT} more lines"] if len(lines) > LINE_LIMIT else [])
 
     @staticmethod

@@ -20,7 +20,7 @@ class TurnGatherer:
         last = self._last.get(key)
         if last is None or any(i not in parts for i in range(last + 1)):
             return event.with_text("").with_final(False)
-        whole = "".join(parts[i] for i in range(last + 1))
+        full = "".join(parts[i] for i in range(last + 1))
         self._parts.pop(key, None)
         self._last.pop(key, None)
-        return event.with_text(whole).with_final(True)
+        return event.with_text(full).with_final(True)

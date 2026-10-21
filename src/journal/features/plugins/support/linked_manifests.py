@@ -24,8 +24,8 @@ class LinkedManifests:
             return
         file = self.folders.folder(plugin) / MANIFEST
         text = file.read_text() if file.is_file() else ""
-        seen = hashlib.sha256(text.encode()).hexdigest()
-        if seen == plugin.waiting:
+        viewed = hashlib.sha256(text.encode()).hexdigest()
+        if viewed == plugin.waiting:
             return
         try:
             changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(self.reader.read(self.folders.folder(plugin))))
@@ -33,5 +33,5 @@ class LinkedManifests:
             changes = [f"the manifest is refused: {refused}"]
         if not changes:
             return
-        self.plugins.save(plugin.with_(waiting=seen), Actor.system())
+        self.plugins.save(plugin.with_(waiting=viewed), Actor.system())
         self.cards.show(environment_id, "", f"Plugin {plugin.name}'s manifest changed in its folder; it runs as installed until you apply it with journal plugin upgrade {plugin.name} --yes", "plug", tone="warn", detail="\n".join(changes), shows=CardKind.PLUGINS)

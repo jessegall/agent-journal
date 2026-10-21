@@ -13,12 +13,12 @@ class TemplateCommand(Command):
         self.templates = templates
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "write a template")
-        create.add_argument("title")
-        create.add_argument("--brief", default="", help="the instructions read before working on anything made from it")
-        create.add_argument("--applies-to", default="", help="the kinds of row it is for, comma-separated, such as plan; empty means any")
-        create.add_argument("--purpose", default="", help="what it is used for, such as critique")
-        create.add_argument("--parts", default="", help="the outline a new item starts with: title: body | title: body")
+        creation = self.verb(verbs, "create", "write a template")
+        creation.add_argument("title")
+        creation.add_argument("--brief", default="", help="the instructions read before working on anything made from it")
+        creation.add_argument("--applies-to", default="", help="the kinds of row it is for, comma-separated, such as plan; empty means any")
+        creation.add_argument("--purpose", default="", help="what it is used for, such as critique")
+        creation.add_argument("--parts", default="", help="the outline a new item starts with: title: body | title: body")
         self.verb(verbs, "show", "a template's instructions and outline").add_argument("n", type=int)
         self.verb(verbs, "list", "every template")
 

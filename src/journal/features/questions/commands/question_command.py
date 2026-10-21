@@ -16,13 +16,13 @@ from journal.repositories.workers import Workers
 class QuestionCommand(Command):
     noun = "question"
 
-    def __init__(self, questions: Questions, answering: AnswerDelivery, messages: Messages, links: Links, workers: Workers) -> None:
-        self.questions, self.answering, self.messages, self.links, self.workers = questions, answering, messages, links, workers
+    def __init__(self, questions: Questions, respondent: AnswerDelivery, messages: Messages, links: Links, workers: Workers) -> None:
+        self.questions, self.answering, self.messages, self.links, self.workers = questions, respondent, messages, links, workers
 
     def arguments(self, verbs) -> None:
-        ask = self.verb(verbs, "ask", "ask the user something and wait")
-        ask.add_argument("text")
-        ask.add_argument("--options", nargs="+", default=[], help="the choices, each quoted on its own: --options \"first\" \"second\"")
+        inquiry = self.verb(verbs, "ask", "ask the user something and wait")
+        inquiry.add_argument("text")
+        inquiry.add_argument("--options", nargs="+", default=[], help="the choices, each quoted on its own: --options \"first\" \"second\"")
         answer = self.verb(verbs, "answer", "answer a question")
         answer.add_argument("n", type=int)
         answer.add_argument("answer")
@@ -35,10 +35,10 @@ class QuestionCommand(Command):
         options = tuple(o.strip() for o in args.options if o.strip())
         if len(options) == 1 and "," in options[0]:
             raise Rejection(f"one option holding a comma: give each choice as its own quoted argument, --options \"first\" \"second\", so a comma inside a choice stays in it")
-        asked = Question(text=args.text, options=options)
-        if asked.unclear_options():
-            raise Rejection(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(asked.unclear_options())}")
-        question = self.questions.save(self.questions.save(asked, caller.actor).posed(datetime.now(timezone.utc).timestamp()), caller.actor)
+        requested = Question(text=args.text, options=options)
+        if requested.unclear_options():
+            raise Rejection(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(requested.unclear_options())}")
+        question = self.questions.save(self.questions.save(requested, caller.actor).posed(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"question {question.id} asked; waiting for the answer")
         for i, option in enumerate(question.options, 1):
             print(f"  {i}. {option}")
@@ -55,12 +55,12 @@ class QuestionCommand(Command):
         print(f"question {question.id}: {question.text}{choices}")
         print(f"  answer: {question.answer}" if question.answer is not None else "  not answered yet")
         for link in self.links.link_rows(question):
-            other = link.target if link.source == Ref.build(question) else link.source
-            if other.type == "messages":
-                message = self.messages.find(other.id)
+            counterpart = link.target if link.source == Ref.build(question) else link.source
+            if counterpart.type == "messages":
+                message = self.messages.find(counterpart.id)
                 print(f"  {link.kind} message {message.id} from the {message.author}: {message.text}")
             else:
-                print(f"  {link.kind} {other}")
+                print(f"  {link.kind} {counterpart}")
         if question.is_answered():
             print("  act on the answer")
         return 0

@@ -19,9 +19,9 @@ class LawsConduct(Conduct):
         if not event.call.input.get("model"):
             return self.refuse(Laws.MISSING_MODEL.create())
         profiles = event.data.part(Profiles)
-        asked = event.call.input.get("subagent_type", "")
-        if asked not in profiles.names:
-            return self.refuse(Laws.MISSING_PROFILE.create(asked=asked or "none", profiles=", ".join(profiles.subagents)))
+        requested = event.call.input.get("subagent_type", "")
+        if requested not in profiles.names:
+            return self.refuse(Laws.MISSING_PROFILE.create(asked=requested or "none", profiles=", ".join(profiles.subagents)))
         if not event.call.input.get("description") or not event.call.input.get("prompt"):
             return self.refuse(Laws.UNBOUND_DISPATCH.create())
         return self.none()

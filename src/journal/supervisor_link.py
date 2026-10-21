@@ -22,24 +22,24 @@ AGENT, JOURNAL = "agent", "journal"
 class SupervisorLink:
     """The journal's end of each supervisor's inbox: a request a line of JSON, its answer a line back, or, to a supervisor that takes datagrams, a datagram with nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
 
-    def __init__(self, config: Config, environments: Environments, typed: TypedLines, settings: SettingRows) -> None:
-        self.config, self.environments, self.typed, self.settings = config, environments, typed, settings
+    def __init__(self, config: Config, environments: Environments, keystrokes: TypedLines, settings: SettingRows) -> None:
+        self.config, self.environments, self.typed, self.settings = config, environments, keystrokes, settings
         self._chosen_at: dict[int, float] = {}
         self._viewer_keyed_at: dict[int, float] = {}
 
-    def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
+    def type(self, environment_id: int, line: str, following: float = 0.0) -> None:
         if self.typed.is_disabled(environment_id):
             return
-        marked = f"{JOURNAL_PREFIX} {' '.join(line.split())}"
+        flagged = f"{JOURNAL_PREFIX} {' '.join(line.split())}"
         if self.is_busy(environment_id):
-            self.typed.queue(QueuedLine(environment_id, marked, after))
+            self.typed.queue(QueuedLine(environment_id, flagged, following))
             return
-        self.type_whole(environment_id, marked, after)
+        self.type_whole(environment_id, flagged, following)
 
-    def type_whole(self, environment_id: int, marked: str, after: float) -> None:
-        for piece in TypedLine.split(marked, JOURNAL_PREFIX):
-            self.typed.typed(environment_id, piece)
-            self._send(environment_id, "type", {"name": AGENT, "line": piece, "after": after})
+    def type_whole(self, environment_id: int, flagged: str, following: float) -> None:
+        for segment in TypedLine.split(flagged, JOURNAL_PREFIX):
+            self.typed.typed(environment_id, segment)
+            self._send(environment_id, "type", {"name": AGENT, "line": segment, "after": following})
 
     def is_busy(self, environment_id: int) -> bool:
         return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_recent(environment_id, self.batch_seconds())
@@ -63,15 +63,15 @@ class SupervisorLink:
     def release(self, environment_id: int) -> None:
         if self.is_busy(environment_id):
             return
-        held = self.typed.batched(environment_id)
-        if held is not None:
-            self.type_whole(environment_id, held.line, held.after)
+        blocked = self.typed.batched(environment_id)
+        if blocked is not None:
+            self.type_whole(environment_id, blocked.line, blocked.after)
 
     def batch_seconds(self) -> float:
         return float(self.settings.project("delivery.batch_seconds", BATCH_SECONDS))
 
-    def retype(self, environment_id: int, marked: str) -> None:
-        self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": 0.0})
+    def retype(self, environment_id: int, flagged: str) -> None:
+        self._send(environment_id, "type", {"name": AGENT, "line": flagged, "after": 0.0})
 
     def type_raw(self, environment_id: int, line: str) -> None:
         self._viewer_keyed_at[environment_id] = time.time()
@@ -100,8 +100,8 @@ class SupervisorLink:
 
     def key_time(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "keyed")
-        at_keyboard = path.stat().st_mtime if path else 0.0
-        return max(at_keyboard, self._viewer_keyed_at.get(environment_id, 0.0))
+        keyboard_input = path.stat().st_mtime if path else 0.0
+        return max(keyboard_input, self._viewer_keyed_at.get(environment_id, 0.0))
 
     def mirrored(self, environment_id: int, kind: str) -> Path | None:
         announced = self.announced(environment_id)
@@ -111,8 +111,8 @@ class SupervisorLink:
     def start(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path) -> SupervisorReply:
         return self._send(environment_id, "start", {"name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log)})
 
-    def start_clean(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path, keep: bool) -> SupervisorReply:
-        return self._send(environment_id, "start", {"name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log), "inherit": False, "keep": keep})
+    def start_clean(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path, retain: bool) -> SupervisorReply:
+        return self._send(environment_id, "start", {"name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log), "inherit": False, "keep": retain})
 
     def stop_service(self, environment_id: int, name: str) -> None:
         self._send(environment_id, "stop", {"name": name})
@@ -156,6 +156,6 @@ class SupervisorLink:
             return SupervisorSocket.ask(announced.socket, {"verb": verb, **fields})
         if not OldSupervisor.takes(verb):
             return SupervisorReply(False, f"the supervisor running predates the protocol and takes no {verb}")
-        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as out:
-            out.sendto(json.dumps(OldSupervisor.datagram(verb, fields)).encode(), announced.socket)
+        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as output:
+            output.sendto(json.dumps(OldSupervisor.datagram(verb, fields)).encode(), announced.socket)
         return SupervisorReply(True)

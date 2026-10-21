@@ -35,12 +35,12 @@ def briefing_feature():
 
 def start_block(briefing: BriefingData, source: str) -> list[Nudge]:
     feature = briefing_feature()
-    taken_over_at = "" if source == COMPACT else briefing.last_other_session_at
+    takeover_time = "" if source == COMPACT else briefing.last_other_session_at
     optional = (
-        (taken_over_at, lambda: feature.TAKEOVER.create(time=taken_over_at)),
+        (takeover_time, lambda: feature.TAKEOVER.create(time=takeover_time)),
         (briefing.rules, lambda: feature.ACTIVE_RULES.create(count=briefing.rules_count, rows=briefing.rules)),
         (briefing.facts, lambda: feature.ENVIRONMENT_FACTS.create(rows=briefing.facts)),
         (briefing.reminders, lambda: feature.ENVIRONMENT_REMINDERS.create(rows=briefing.reminders)),
         (briefing.waiting, lambda: feature.PENDING_ITEMS.create(rows=briefing.waiting)),
     )
-    return [feature.JOURNAL_READY.create(env=briefing.environment), feature.JOURNAL_DISCRETION.create(), feature.JOURNAL_LAWS.create(), *(line() for named, line in optional if named)]
+    return [feature.JOURNAL_READY.create(env=briefing.environment), feature.JOURNAL_DISCRETION.create(), feature.JOURNAL_LAWS.create(), *(line() for matched, line in optional if matched)]

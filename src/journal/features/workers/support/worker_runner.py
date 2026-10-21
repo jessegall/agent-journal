@@ -50,11 +50,11 @@ class WorkerRunner:
 
     def run(self, worker: Worker, command: list[str], actor: Actor) -> None:
         environ = {**{k: v for k, v in os.environ.items() if k not in EXCLUDED_VARIABLES}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
-        out, err = self.outputs(worker)
-        out.parent.mkdir(parents=True, exist_ok=True)
+        output, err = self.outputs(worker)
+        output.parent.mkdir(parents=True, exist_ok=True)
         try:
-            with out.open("w") as printed, err.open("w") as faults:
-                process = subprocess.Popen(command, cwd=self.workplace(worker), env=environ, stdin=subprocess.DEVNULL, stdout=printed, stderr=faults, text=True, start_new_session=True)
+            with output.open("w") as output_text, err.open("w") as faults:
+                process = subprocess.Popen(command, cwd=self.workplace(worker), env=environ, stdin=subprocess.DEVNULL, stdout=output_text, stderr=faults, text=True, start_new_session=True)
         except OSError as error:
             self.reports.file(worker, f"could not start: {error}", actor)
             return
@@ -79,11 +79,11 @@ class WorkerRunner:
         self.finish(worker, END_UNWATCHED, actor)
 
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
-        out, err = self.outputs(worker)
+        output, err = self.outputs(worker)
         provider = self.providers.lookup(worker.provider)
-        printed, resume = provider.worker_outcome(self.read(out), self.read(err))
+        output_text, resume = provider.worker_outcome(self.read(output), self.read(err))
         resume = resume or provider.latest_session(self.place(worker), worker.began)
-        report = printed[-TAIL:] or "(nothing printed)"
+        report = output_text[-TAIL:] or "(nothing printed)"
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
         branch = self.branch.summary(worker)
         self.reports.file(worker.with_(resume=resume or worker.resume), f"{outcome}\n\n{branch}" if branch else outcome, actor)

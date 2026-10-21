@@ -87,23 +87,23 @@ class Repository(Generic[M]):
         return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, MATCH_LIMIT))
 
     def matching_words(self, terms: list[str]) -> tuple[str, tuple]:
-        each = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"
+        entry = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"
         escaped = [word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") for word in terms]
-        return " AND ".join(each for _ in terms), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
+        return " AND ".join(entry for _ in terms), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
 
     def clause(self, fields: dict) -> tuple[str, tuple]:
         return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).sql(value) for name, value in fields.items())
 
-    def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
+    def page(self, limit: int, previous: int | None = None, **fields) -> list[M]:
         clauses = [f"{name} = ?" for name in fields]
         params = [self._column(name).sql(value) for name, value in fields.items()]
-        if before is not None:
+        if previous is not None:
             clauses.append("id < ?")
-            params.append(before)
+            params.append(previous)
         return self.selected(f"{' AND '.join(clauses) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
 
-    def scoped_page(self, limit: int, before: int | None = None) -> list[M]:
-        return self.page(limit, before)
+    def scoped_page(self, limit: int, previous: int | None = None) -> list[M]:
+        return self.page(limit, previous)
 
     def save(self, row: M, actor: Actor) -> M:
         with self.connection.transaction():
@@ -121,13 +121,13 @@ class Repository(Generic[M]):
 
     def touch(self, row: M, actor: Actor, **fields) -> M:
         with self.connection.transaction():
-            was = self.find(row.id)
-            stamped = was.with_(**fields, updated_at=self._time(), updated_by=actor)
+            prior_row = self.find(row.id)
+            stamped = prior_row.with_(**fields, updated_at=self._time(), updated_by=actor)
             names = [*fields, "updated_at", "updated_by"]
             values = tuple(self._column(name).sql(getattr(stamped, name)) for name in names)
             self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
             self.stored()
-            self.bus.dispatch(Updated(model=stamped, actor=actor, was=was))
+            self.bus.dispatch(Updated(model=stamped, actor=actor, was=prior_row))
             return stamped
 
     def rewritten(self, row: M, actor: Actor, change: Callable[[M], M]) -> M:
@@ -137,10 +137,10 @@ class Repository(Generic[M]):
             differing = {f.name: getattr(changed, f.name) for f in fields(changed) if f.metadata.get("column", True) and getattr(changed, f.name) != getattr(time, f.name)}
             return self.dispatched(self.touch(time, actor, **differing).with_events(changed.events), actor)
 
-    def touched(self, row: M, actor: Actor, fields_of: Callable[[M], dict]) -> M:
+    def touched(self, row: M, actor: Actor, field_map: Callable[[M], dict]) -> M:
         with self.connection.transaction():
             time = self.find(row.id)
-            return self.touch(time, actor, **fields_of(time))
+            return self.touch(time, actor, **field_map(time))
 
     def delete(self, row: M, actor: Actor) -> None:
         with self.connection.transaction():
@@ -164,14 +164,14 @@ class Repository(Generic[M]):
 
     def _update(self, row: M, actor: Actor) -> M:
         stamped = row.with_(updated_at=self._time(), updated_by=actor)
-        was = self.find(row.id)
-        Title.check_target(row, was)
+        prior_row = self.find(row.id)
+        Title.check_target(row, prior_row)
         self.bus.dispatch(Updating(model=stamped, actor=actor))
         names = [column.name for column in self.columns if column.name != "id"]
         values = tuple(column.sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
         self.stored()
-        self.bus.dispatch(Updated(model=stamped, actor=actor, was=was))
+        self.bus.dispatch(Updated(model=stamped, actor=actor, was=prior_row))
         return stamped
 
     def dispatched(self, row: M, actor: Actor) -> M:

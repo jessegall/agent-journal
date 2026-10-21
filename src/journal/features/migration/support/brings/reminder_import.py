@@ -16,12 +16,12 @@ class ReminderImport(EnvironmentKind):
     kind = "reminder"
     title = "reminders"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, reminders: Reminders) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, reminders: Reminders) -> None:
+        super().__init__(environments, tally)
         self.reminders = reminders
 
-    def skipped(self, row: Version3Row, into: Environment) -> str:
-        return super().skipped(row, into) or ("retired" if row.completed else "")
+    def skipped(self, row: Version3Row, target: Environment) -> str:
+        return super().skipped(row, target) or ("retired" if row.completed else "")
 
-    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Reminder:
-        return self.reminders.imported(Reminder(environment_id=into.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_time(), actor)
+    def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Reminder:
+        return self.reminders.imported(Reminder(environment_id=target.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_time(), actor)

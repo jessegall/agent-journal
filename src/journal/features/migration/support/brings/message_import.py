@@ -19,17 +19,17 @@ class MessageImport(EnvironmentKind):
     kind = "message"
     title = "messages"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, messages: Messages, config: Config) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, messages: Messages, config: Config) -> None:
+        super().__init__(environments, tally)
         self.messages, self.config = messages, config
 
-    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
-        replied = self.message(row, into)
+    def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Message:
+        replied = self.message(row, target)
         files = tuple(sorted(path.name for path in attached.iterdir())) if attached.is_dir() else ()
-        message = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, reply_to=replied.id if replied else None, read_at=row.read_time(),
+        message = self.messages.imported(Message(environment_id=target.id, author=Author(row.author()), text=row.brief, reply_to=replied.id if replied else None, read_at=row.read_time(),
                                                  idempotency=row.data.get("idempotency", ""), files=files), row.creation_time(), actor)
-        kept = self.config.files / "message" / str(message.id)
+        stored = self.config.files / "message" / str(message.id)
         for name in files:
-            kept.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(attached / name, kept / name)
+            stored.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(attached / name, stored / name)
         return message

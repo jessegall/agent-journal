@@ -30,9 +30,9 @@ class ChainWorker:
     def __init__(self, record: ShellRecord) -> None:
         self.record = record
 
-    def run(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, printed: Callable[[bytes], None]) -> int:
+    def run(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, output_text: Callable[[bytes], None]) -> int:
         shell = subprocess.Popen([request.shell], cwd=request.cwd, env=request.environment, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=False)
-        pump = threading.Thread(target=lambda: self.pump(shell, printed), name="shell-output", daemon=True)
+        pump = threading.Thread(target=lambda: self.pump(shell, output_text), name="shell-output", daemon=True)
         pump.start()
         self.write_part(shell, SHELL_SETUP)
         code = 0
@@ -49,29 +49,29 @@ class ChainWorker:
         return code
 
     def part(self, shell: subprocess.Popen, folder: OutputFiles, i: int, kind: str, code: int, direct: bool, caller: Caller) -> int:
-        recorded, after_and, before_and, writes = kind[0] == "R", kind[1] == "&", kind[2] == "&", kind.endswith("w")
+        recorded, tail_edges, edges, writes = kind[0] == "R", kind[1] == "&", kind[2] == "&", kind.endswith("w")
         text = folder.part_text(i)
-        if after_and and code != 0:
+        if tail_edges and code != 0:
             folder.ended_with(i, code)
             return code
         if recorded:
             self.record.started(folder.folder.name, text, caller)
-        before = self.tree(shell, folder, i, "before") if writes else ""
+        previous = self.tree(shell, folder, i, "before") if writes else ""
         began = time.monotonic()
-        self.write_part(shell, self.script(folder, i, text, before_and, direct))
+        self.write_part(shell, self.script(folder, i, text, edges, direct))
         status = self.status_once_ended(shell, folder, i)
-        after = self.tree(shell, folder, i, "after") if writes else ""
+        following = self.tree(shell, folder, i, "after") if writes else ""
         if recorded:
-            self.record.finish_part(folder.folder.name, text, status, round(time.monotonic() - began, 1), folder.output_text(i), self.changed(before, after), caller)
+            self.record.finish_part(folder.folder.name, text, status, round(time.monotonic() - began, 1), folder.output_text(i), self.changed(previous, following), caller)
         return status
 
     @staticmethod
-    def script(folder: OutputFiles, i: int, text: str, before_and: bool, direct: bool) -> str:
+    def script(folder: OutputFiles, i: int, text: str, edges: bool, direct: bool) -> str:
         part = f'"$(cat {str(folder.folder / f"{i}.part")!r})"'
         redirect = "" if direct else f" > {str(folder.folder / f'{i}.out')!r} 2> {str(folder.folder / f'{i}.err')!r}"
         if text.startswith("exec "):
             run = f"(eval {part} < /dev/null{redirect}); __journal_code=$?"
-        elif before_and:
+        elif edges:
             run = f"if __journal_status; eval {part} < /dev/null{redirect}; then __journal_code=0; else __journal_code=$?; fi"
         else:
             run = f"__journal_status; eval {part} < /dev/null{redirect}; __journal_code=$?"
@@ -111,14 +111,14 @@ class ChainWorker:
             return
 
     @staticmethod
-    def pump(shell: subprocess.Popen, printed: Callable[[bytes], None]) -> None:
+    def pump(shell: subprocess.Popen, output_text: Callable[[bytes], None]) -> None:
         for block in iter(lambda: shell.stdout.read1(65536), b""):
-            printed(block)
+            output_text(block)
 
     @classmethod
-    def changed(cls, before: str, after: str) -> list[ChangedFile]:
-        earlier = set(before.splitlines())
-        return [cls.changed_file(line) for line in after.splitlines() if line not in earlier and line.count("\t") == 2]
+    def changed(cls, previous: str, following: str) -> list[ChangedFile]:
+        older = set(previous.splitlines())
+        return [cls.changed_file(line) for line in following.splitlines() if line not in older and line.count("\t") == 2]
 
     @staticmethod
     def changed_file(line: str) -> ChangedFile:

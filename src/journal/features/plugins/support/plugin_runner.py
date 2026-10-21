@@ -23,39 +23,39 @@ class PluginRunner:
     def __init__(self, config: Config, folders: PluginFolders, tokens: PluginTokens, protocol: Protocol, settings: PluginSettings) -> None:
         self.config, self.folders, self.tokens, self.protocol, self.settings = config, folders, tokens, protocol, settings
 
-    def ask(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
-        listening = self.folders.socket(plugin, environment)
-        if any(s.answers for s in plugin.manifest.services) and listening.is_socket():
+    def ask(self, plugin: Plugin, environment: str, line: str, window: float) -> PluginAnswer:
+        subscribed = self.folders.socket(plugin, environment)
+        if any(s.answers for s in plugin.manifest.services) and subscribed.is_socket():
             try:
-                return self.service_run(listening, line, within)
+                return self.service_run(subscribed, line, window)
             except (ConnectionRefusedError, FileNotFoundError):
-                return self.program_run(plugin, environment, line, within)
-        return self.program_run(plugin, environment, line, within)
+                return self.program_run(plugin, environment, line, window)
+        return self.program_run(plugin, environment, line, window)
 
-    def service_run(self, listening, line: str, within: float) -> PluginAnswer:
+    def service_run(self, subscribed, line: str, window: float) -> PluginAnswer:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as link:
-            link.settimeout(within)
-            link.connect(str(listening))
+            link.settimeout(window)
+            link.connect(str(subscribed))
             try:
                 link.sendall((line + "\n").encode())
                 return self.protocol.parsed_answer(link.makefile("rb").readline().decode())
             except TimeoutError as late:
-                raise WindowMissed(f"its service gave no answer within {within * 1000:.0f} ms, its hold window") from late
+                raise WindowMissed(f"its service gave no answer within {window * 1000:.0f} ms, its hold window") from late
             except OSError as failed:
                 raise PluginFault(f"its service did not answer on its socket: {failed}") from failed
 
-    def program_run(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
+    def program_run(self, plugin: Plugin, environment: str, line: str, window: float) -> PluginAnswer:
         folder = self.folders.folder(plugin)
         process = subprocess.Popen([str(folder / plugin.manifest.program)], cwd=folder, env=self.environment(plugin, environment), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         try:
-            out, err = process.communicate(line + "\n", timeout=within)
+            output, err = process.communicate(line + "\n", timeout=window)
         except subprocess.TimeoutExpired as late:
             os.killpg(process.pid, signal.SIGKILL)
             process.communicate()
-            raise WindowMissed(f"it gave no answer within {within * 1000:.0f} ms, its hold window") from late
+            raise WindowMissed(f"it gave no answer within {window * 1000:.0f} ms, its hold window") from late
         if process.returncode != 0:
             raise PluginFault(f"it exited with {process.returncode}: {err.strip()[-300:]}")
-        return self.protocol.parsed_answer(out)
+        return self.protocol.parsed_answer(output)
 
     def shell(self, plugin: Plugin, environment: str, line: str, seconds: float) -> subprocess.CompletedProcess:
         return subprocess.run(["sh", "-c", line], cwd=self.folders.folder(plugin), env=self.environment(plugin, environment), capture_output=True, text=True, timeout=seconds)

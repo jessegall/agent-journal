@@ -13,9 +13,9 @@ class ReactionController(Controller[Reaction]):
         self.repository = reactions
 
     def counts(self, rows: list[Reaction]) -> Counts:
-        every = self.repository.count()
-        return Counts(all=every, open=every, unread=self.repository.authored(Author.AGENT))
+        all_items = self.repository.count()
+        return Counts(all=all_items, open=all_items, unread=self.repository.authored(Author.AGENT))
 
     def shown_page(self, rows: list[Reaction]) -> list[dict]:
-        on = self.repository.linked(REACTS)
-        return [{**ModelFields.build(r), "message_id": on[r.id][0].id if r.id in on else None} for r in rows]
+        enabled = self.repository.linked(REACTS)
+        return [{**ModelFields.build(r), "message_id": enabled[r.id][0].id if r.id in enabled else None} for r in rows]

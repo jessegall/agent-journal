@@ -28,10 +28,10 @@ class MessageCommand(Command):
         self.docs, self.reports = docs, reports
 
     def arguments(self, verbs) -> None:
-        send = self.verb(verbs, "send", "leave a message")
-        send.add_argument("text")
-        send.add_argument("--reply-to", type=int, default=None)
-        send.add_argument("--confirm", action="store_true", help="send a second reply to a message already answered")
+        transmit = self.verb(verbs, "send", "leave a message")
+        transmit.add_argument("text")
+        transmit.add_argument("--reply-to", type=int, default=None)
+        transmit.add_argument("--confirm", action="store_true", help="send a second reply to a message already answered")
         self.verb(verbs, "list", "every message here")
         self.verb(verbs, "read", "show a message and mark it read").add_argument("n", type=int)
         self.verb(verbs, "unread", "show every unread message and mark them read")
@@ -58,9 +58,9 @@ class MessageCommand(Command):
         if self.messages.reply_text(answered.id, args.text):
             print(f"message {answered.id} already has this reply in the chat: not sent again")
             return 0
-        earlier = self.messages.first_reply(answered)
-        if earlier is not None and not args.confirm:
-            print(f"message {answered.id} already has your reply {earlier.id}: not sent. Send it again only if it says something new, with --confirm")
+        older = self.messages.first_reply(answered)
+        if older is not None and not args.confirm:
+            print(f"message {answered.id} already has your reply {older.id}: not sent. Send it again only if it says something new, with --confirm")
             return 1
         message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_to=answered.id), caller.actor)
         self.messages.read(answered, caller.actor, self._tool_use(caller))
@@ -69,8 +69,8 @@ class MessageCommand(Command):
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for message in self.messages.scoped():
-            mark = " " if message.read_at else "*"
-            print(f"{mark}{message.id:>4}  {message.author:<5} {message.text_body}")
+            threshold = " " if message.read_at else "*"
+            print(f"{threshold}{message.id:>4}  {message.author:<5} {message.text_body}")
         return 0
 
     def read(self, args: Namespace, caller: Caller) -> int:
@@ -123,13 +123,13 @@ class MessageCommand(Command):
             print(f"  > {line}")
         for name in message.files:
             path = self.config.files / "message" / str(message.id) / name
-            seen = message.captions.get(name)
-            print(f"  file {path}" + (f": {seen}" if seen else f" (open it, then `journal message tag {message.id} \"{name}\" \"<what it shows>\"`)"))
+            viewed = message.captions.get(name)
+            print(f"  file {path}" + (f": {viewed}" if viewed else f" (open it, then `journal message tag {message.id} \"{name}\" \"<what it shows>\"`)"))
         for link in self.links.link_rows(message):
-            other = link.target if link.source == Ref.build(message) else link.source
-            print(f"  {link.kind} {other}")
+            counterpart = link.target if link.source == Ref.build(message) else link.source
+            print(f"  {link.kind} {counterpart}")
             if link.kind == Messages.COMMENT_LINK and message.is_passage_comment:
-                print(self.passage_place(other, message.quote))
+                print(self.passage_place(counterpart, message.quote))
         print(f"  reply with [!reply:{message.id}] in your turn")
         print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")
 

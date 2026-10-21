@@ -25,12 +25,12 @@ class ListenerQueue:
     def add(self, work: Callable[[], None]) -> None:
         self._queue.put(lambda context=contextvars.copy_context(): context.run(work))
 
-    def add_bounded(self, work: Callable[[], None], what: str) -> None:
+    def add_bounded(self, work: Callable[[], None], subject: str) -> None:
         if self.depth() < self.QUEUE_WARNING_LENGTH:
             self.add(work)
             return
         if self.skipped % self.LOG_INTERVAL == 0:
-            sys.stderr.write(f"deferred work is {self.depth()} pieces behind: skipped {what} ({self.skipped + 1} skipped so far)\n")
+            sys.stderr.write(f"deferred work is {self.depth()} pieces behind: skipped {subject} ({self.skipped + 1} skipped so far)\n")
         self.skipped += 1
 
     def depth(self) -> int:

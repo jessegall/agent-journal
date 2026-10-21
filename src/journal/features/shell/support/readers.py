@@ -29,6 +29,6 @@ class Readers:
         self.config.readers.mkdir(parents=True, exist_ok=True)
         (self.config.readers / f"{reader.name}.pattern").write_text(reader.text())
 
-    def add_script(self, name: str, about: str, script: Path) -> None:
+    def add_script(self, name: str, topic: str, script: Path) -> None:
         self.config.readers.mkdir(parents=True, exist_ok=True)
-        (self.config.readers / f"{name}.sh").write_text(f"# {about}\n{script.read_text()}")
+        (self.config.readers / f"{name}.sh").write_text(f"# {topic}\n{script.read_text()}")

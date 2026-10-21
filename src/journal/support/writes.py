@@ -50,9 +50,9 @@ class Writes:
 
     @classmethod
     def is_code_write_line(cls, line: str) -> bool:
-        own = [p for p in Chain.parts(line) if p.recorded]
-        writing = [p for p in own if cls.part(p.text)]
-        return bool(writing) and all(cls.writes_code(p.text) if cls.part(p.text) else p.is_read() or p.is_harmless() or p.is_project_cd() for p in own)
+        owned = [p for p in Chain.parts(line) if p.recorded]
+        writing = [p for p in owned if cls.part(p.text)]
+        return bool(writing) and all(cls.writes_code(p.text) if cls.part(p.text) else p.is_read() or p.is_harmless() or p.is_project_cd() for p in owned)
 
     @classmethod
     def writes_code(cls, text: str) -> bool:
@@ -76,14 +76,14 @@ class Writes:
         if not tokens or tokens[0].endswith("journal"):
             return []
         name = tokens[0].rsplit("/", 1)[-1]
-        named = cls.target_names(name, tokens, text)
+        matched = cls.target_names(name, tokens, text)
         script = cls.script(text)
         if name in INTERPRETERS and MARKERS.search(script):
-            named += QUOTED_PATH.findall(script) + [w for w in script.split() if "/" in w] + [w for w in Part(plain.split("\n")[0]).tokens()[1:] if "/" in w or CODE.search(w)]
+            matched += QUOTED_PATH.findall(script) + [w for w in script.split() if "/" in w] + [w for w in Part(plain.split("\n")[0]).tokens()[1:] if "/" in w or CODE.search(w)]
         piped = [t for segment in plain.split("|")[1:] for t in cls.part_targets(segment)]
         if not piped and any(cls.part(segment) for segment in plain.split("|")[1:]):
             piped = [w for w in tokens[1:] if not w.startswith("-") and Part.is_project_path(w)]
-        return REDIRECTED.findall(plain) + named + piped
+        return REDIRECTED.findall(plain) + matched + piped
 
     @classmethod
     def target_names(cls, name: str, tokens: list[str], text: str) -> list[str]:

@@ -34,11 +34,11 @@ class PatchRows:
     def section(old: int, new: int, lines: list[str]) -> list[PatchRow]:
         rows = []
         for text in lines:
-            mark, body = text[:1], text[1:]
-            if mark == "+":
+            threshold, body = text[:1], text[1:]
+            if threshold == "+":
                 rows.append(PatchRow("add", new, body))
                 new += 1
-            elif mark == "-":
+            elif threshold == "-":
                 rows.append(PatchRow("del", old, body))
                 old += 1
             else:

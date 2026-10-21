@@ -43,12 +43,12 @@ def hook_as(app, provider: str, kind: str, session: str = "s1", **body):
         return error.code, json.loads(error.read())
 
 
-def catch_typed(app, monkeypatch, typed: list) -> None:
+def catch_typed(app, monkeypatch, keystrokes: list) -> None:
     """Catches each line typed to the agent into typed and confirms it at once, as the agent's prompt hook would, so the next is not held behind it."""
     lines = app.container.get(TypedLines)
 
     def seen_back(link, environment_id: int, verb: str, fields: dict) -> None:
-        typed.append(fields["line"])
+        keystrokes.append(fields["line"])
         lines.confirm(environment_id, fields["line"])
 
     monkeypatch.setattr(SupervisorLink, "_send", seen_back)
@@ -69,16 +69,16 @@ def pass_time(app, seconds: float) -> None:
     clock.driven_at = clock.held_at
 
 
-def tick_after(app, quiet: float) -> list:
+def tick_after(app, silent: float) -> list:
     """A tick so many seconds after the held moment, once what came before it has settled on the worker thread, as the clock gives it, its answers handed back; the clock is held again after it."""
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     app.runtime().deferred.drain()
     clock = app.container.get(Clock)
-    env = app.container.get(Environments).lookup("main").id
-    clock.driven_at = clock.held_at + quiet
+    environment = app.container.get(Environments).lookup("main").id
+    clock.driven_at = clock.held_at + silent
     try:
-        return app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=env, time=clock.driven_at, quiet_for=quiet))
+        return app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=environment, time=clock.driven_at, quiet_for=silent))
     finally:
         clock.driven_at = clock.held_at
 
@@ -94,16 +94,16 @@ class Replay:
 
     def step(self, name: str, answer=None) -> None:
         """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the environment's counts as they stand once the worker has settled, so a count raised after the reply is in, and what the count checks of the walks since read."""
-        typed = list(self.typed)
+        keystrokes = list(self.typed)
         with self.app.container.get(Scope).environment(self.app.container.get(Environments).lookup("main").id):
             entries = list(reversed(self.app.container.get(Entries).kind_entries_scoped(1000)))
             nudges = [e.data["key"] for e in entries if e.kind == "nudge"]
             self.app.runtime().deferred.drain()
             agent = self.app.container.get(Agents).current()
         stack = [layer["state"] for layer in agent.stack] if agent else []
-        self.steps.append({"name": name, "answer": answer, "typed": typed, "nudges": nudges[self.seen:], "stack": stack})
+        self.steps.append({"name": name, "answer": answer, "typed": keystrokes, "nudges": nudges[self.seen:], "stack": stack})
         self.seen = len(nudges)
-        del self.typed[:len(typed)]
+        del self.typed[:len(keystrokes)]
 
     def record(self) -> list[dict]:
         return list(self.steps)
@@ -120,8 +120,8 @@ class Frozen:
     """A record read back from its file: what the listener side saw, in place of it."""
 
     def __init__(self, name: str) -> None:
-        kept = json.loads((RECORDS / f"{name}.json").read_text())
-        self.nudges, self.steps = kept["nudges"], kept["steps"]
+        stored = json.loads((RECORDS / f"{name}.json").read_text())
+        self.nudges, self.steps = stored["nudges"], stored["steps"]
 
     def record(self) -> list[dict]:
         return list(self.steps)
@@ -157,18 +157,18 @@ def clockless(text: str) -> str:
     return re.sub(r"\b\d\d:\d\d\b", "HH:MM", text)
 
 
-def differences(left: list[dict], right: list[dict], nudges: bool = False) -> list[str]:
+def differences(remaining: list[dict], right: list[dict], nudges: bool = False) -> list[str]:
     """What differs between two records, step by step, in words; nothing when the agent would have seen the same: the same answer's lines, the same lines typed in order, the same stack when both records carry one, and, when asked, the same nudges said."""
     rows = []
-    for a, b in zip(left, right):
-        if lines_of(a["answer"]) != lines_of(b["answer"]):
-            rows.append(f"{a['name']}: the hook's answer differs: {a['answer']} against {b['answer']}")
-        if a["typed"] != b["typed"]:
-            rows.append(f"{a['name']}: the lines typed differ: {a['typed']} against {b['typed']}")
-        if nudges and sorted(a["nudges"]) != sorted(b["nudges"]):
-            rows.append(f"{a['name']}: the nudges said differ: {a['nudges']} against {b['nudges']}")
-        if "stack" in a and "stack" in b and a["stack"] != b["stack"]:
-            rows.append(f"{a['name']}: the stack differs: {a['stack']} against {b['stack']}")
-    if len(left) != len(right):
-        rows.append(f"{len(left)} steps against {len(right)}")
+    for item, b in zip(remaining, right):
+        if lines_of(item["answer"]) != lines_of(b["answer"]):
+            rows.append(f"{item['name']}: the hook's answer differs: {item['answer']} against {b['answer']}")
+        if item["typed"] != b["typed"]:
+            rows.append(f"{item['name']}: the lines typed differ: {item['typed']} against {b['typed']}")
+        if nudges and sorted(item["nudges"]) != sorted(b["nudges"]):
+            rows.append(f"{item['name']}: the nudges said differ: {item['nudges']} against {b['nudges']}")
+        if "stack" in item and "stack" in b and item["stack"] != b["stack"]:
+            rows.append(f"{item['name']}: the stack differs: {item['stack']} against {b['stack']}")
+    if len(remaining) != len(right):
+        rows.append(f"{len(remaining)} steps against {len(right)}")
     return rows

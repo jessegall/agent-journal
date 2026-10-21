@@ -52,24 +52,24 @@ class Launch:
 
     @classmethod
     def parse(cls, argv: list[str], root: Path) -> "Launch":
-        agent, rest, flags, args, i = argv[0], [], {}, argv[1:], 0
+        agent, remainder, flags, args, i = argv[0], [], {}, argv[1:], 0
         while i < len(args):
-            arg, given = args[i], args[i + 1] if i + 1 < len(args) else ""
+            arg, value = args[i], args[i + 1] if i + 1 < len(args) else ""
             if arg == "--":
-                rest.extend(args[i + 1:])
+                remainder.extend(args[i + 1:])
                 break
             if arg in WORKTREE:
-                named = bool(given) and not given.startswith("-")
-                flags.update(in_worktree=True, worktree=given if named else "")
-                i += 2 if named else 1
+                matched = bool(value) and not value.startswith("-")
+                flags.update(in_worktree=True, worktree=value if matched else "")
+                i += 2 if matched else 1
                 continue
             if arg in FLAGS:
-                flags[arg.lstrip("-").replace("-", "_")] = given if FLAGS[arg] else True
+                flags[arg.lstrip("-").replace("-", "_")] = value if FLAGS[arg] else True
                 i += 2 if FLAGS[arg] else 1
                 continue
-            rest.append(arg)
+            remainder.append(arg)
             i += 1
-        return cls(agent, root, tuple(rest), **flags)
+        return cls(agent, root, tuple(remainder), **flags)
 
     @property
     def package(self) -> Path:
@@ -77,14 +77,14 @@ class Launch:
 
     def choice(self) -> Choice:
         menu = Menu(self.root, self.package / "journal.py")
-        named = self.env or self.worktree or self.resume_folder(menu)
+        matched = self.env or self.worktree or self.resume_folder(menu)
         if not sys.stdin.isatty():
-            return Choice(named or "main", "", self.aside, self.is_skipping())
+            return Choice(matched or "main", "", self.aside, self.is_skipping())
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         if not self.yes and UpdatePrompt(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
             self.log("updated before the launch: starting again on the new version")
             os.execv(sys.executable, [sys.executable, *sys.argv])
-        return menu.choose(self.agent, named, self.new, self.aside, self.is_skipping(), self.yes)
+        return menu.choose(self.agent, matched, self.new, self.aside, self.is_skipping(), self.yes)
 
     def is_skipping(self) -> bool:
         return self.skip or any(flag in self.args for flag in PROMPT_FLAGS[self.agent])
@@ -96,9 +96,9 @@ class Launch:
         return next((row.name for row in menu.environments() if resumed in row.last_sessions.values()), "")
 
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
-        skip = [flag for flag in PROMPT_FLAGS[self.agent] if choice.skip_prompts and flag not in self.args]
+        omit = [flag for flag in PROMPT_FLAGS[self.agent] if choice.skip_prompts and flag not in self.args]
         reach = [] if choice.skip_prompts else REACH[self.agent]
-        return [self.agent, *LOCAL[self.agent], *skip, *reach, *STATUS[self.agent](status), *self.args]
+        return [self.agent, *LOCAL[self.agent], *omit, *reach, *STATUS[self.agent](status), *self.args]
 
     def journal_command(self) -> list[str]:
         return [sys.executable, str(self.package / "journal.py"), "serve"]
@@ -116,16 +116,16 @@ class Launch:
         self.log(f"launch: {' '.join([self.agent, *self.args])}")
         try:
             ProjectCommand(self.root, self.package / "journal.sh").write()
-            others = ForeignHooks(self.root, self.agent)
-            others.restore()
+            peers = ForeignHooks(self.root, self.agent)
+            peers.restore()
             choice = self.choice()
             self.log(f"chosen: environment {choice.environment}, session {choice.resume or 'new'}, hooks aside {choice.hooks_aside}")
             if choice.hooks_aside:
-                others.stash()
+                peers.stash()
             try:
                 code = self.supervise(choice)
             finally:
-                others.restore()
+                peers.restore()
             self.log(f"ended: the agent exited with {code}")
             return code
         except BaseException as failed:
@@ -135,8 +135,8 @@ class Launch:
     def log(self, line: str) -> None:
         path = self.runtime / "supervisor.log"
         path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("a") as out:
-            out.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {line}\n")
+        with path.open("a") as output:
+            output.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {line}\n")
 
     def supervise(self, choice: Choice) -> int:
         status = StatusLine(self.root)

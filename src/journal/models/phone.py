@@ -32,18 +32,18 @@ class Phone(Scoped):
     def pushed_refs(self) -> list[str]:
         return self.pushed.split()
 
-    def has_updates(self, owed: list[str]) -> bool:
-        return bool(set(owed) - set(self.pushed_refs()))
+    def has_updates(self, obligations: list[str]) -> bool:
+        return bool(set(obligations) - set(self.pushed_refs()))
 
-    def is_push_due(self, owed: list[str], time: datetime) -> bool:
+    def is_push_due(self, obligations: list[str], time: datetime) -> bool:
         resting = self.push_failed_at is not None and time - self.push_failed_at < self.NOTIFICATION_RETRY_DELAY
-        return self.has_updates(owed) and not resting
+        return self.has_updates(obligations) and not resting
 
-    def subscribed(self, endpoint: str, owed: list[str]) -> "Phone":
-        return self.with_(push=endpoint, pushed=" ".join(owed))
+    def subscribed(self, endpoint: str, obligations: list[str]) -> "Phone":
+        return self.with_(push=endpoint, pushed=" ".join(obligations))
 
-    def notified(self, owed: list[str]) -> "Phone":
-        return self.with_(pushed=" ".join(owed), push_failed_at=None)
+    def notified(self, obligations: list[str]) -> "Phone":
+        return self.with_(pushed=" ".join(obligations), push_failed_at=None)
 
     def push_failed(self, time: datetime) -> "Phone":
         return self.with_(push_failed_at=time)

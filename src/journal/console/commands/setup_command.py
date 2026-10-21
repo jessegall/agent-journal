@@ -75,24 +75,24 @@ class SetupCommand(Command):
 
     def law(self) -> Path:
         path = self.config.root / "AGENTS.md"
-        had = path.read_text() if path.is_file() else "# " + self.config.root.name + "\n"
-        written = LawText.installed(had)
-        if written != had:
-            path.write_text(written)
+        prior = path.read_text() if path.is_file() else "# " + self.config.root.name + "\n"
+        saved = LawText.installed(prior)
+        if saved != prior:
+            path.write_text(saved)
         return path
 
     def claude_md(self) -> Path:
         path = self.config.root / "CLAUDE.md"
-        had = path.read_text() if path.is_file() else ""
-        if "@AGENTS.md" not in had:
-            path.write_text((had.rstrip("\n") + "\n\n" if had.strip() else "") + "@AGENTS.md\n")
+        prior = path.read_text() if path.is_file() else ""
+        if "@AGENTS.md" not in prior:
+            path.write_text((prior.rstrip("\n") + "\n\n" if prior.strip() else "") + "@AGENTS.md\n")
         return path
 
     def ignored(self) -> Path:
         path = self.config.root / ".gitignore"
-        had = path.read_text() if path.is_file() else ""
-        if "/.journal" not in had.splitlines() and ".journal" not in had.splitlines() and ".journal/" not in had.splitlines():
-            path.write_text((had.rstrip("\n") + "\n" if had.strip() else "") + "/.journal\n")
+        prior = path.read_text() if path.is_file() else ""
+        if "/.journal" not in prior.splitlines() and ".journal" not in prior.splitlines() and ".journal/" not in prior.splitlines():
+            path.write_text((prior.rstrip("\n") + "\n" if prior.strip() else "") + "/.journal\n")
         return path
 
     def shim(self) -> Path:

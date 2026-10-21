@@ -53,9 +53,9 @@ class Migrator:
         except Exception as fault:
             return ImportTally(kind.title, 0, (f"the whole kind could not be read: {fault}",))
 
-    def report(self, brought: list[ImportTally]) -> Report:
-        rows = "\n".join(one.line() for one in brought)
-        skipped = "\n".join(f"- {one.kind}: {why}" for one in brought for why in one.skipped) or "Nothing."
+    def report(self, imported: list[ImportTally]) -> Report:
+        rows = "\n".join(single.line() for single in imported)
+        skipped = "\n".join(f"- {single.kind}: {reason}" for single in imported for reason in single.skipped) or "Nothing."
         body = dedent("""\
             ## Brought across
 

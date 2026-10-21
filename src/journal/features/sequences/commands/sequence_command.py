@@ -15,14 +15,14 @@ from journal.support.card_kind import CardKind
 class SequenceCommand(Command):
     noun = "sequence"
 
-    def __init__(self, sequences: Sequences, running: RunTracker, scope: Scope, cards: Cards) -> None:
-        self.sequences, self.running, self.scope, self.cards = sequences, running, scope, cards
+    def __init__(self, sequences: Sequences, active: RunTracker, scope: Scope, cards: Cards) -> None:
+        self.sequences, self.running, self.scope, self.cards = sequences, active, scope, cards
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "write a sequence of steps")
-        create.add_argument("--starts-on", default="", help="the row event that starts it on its own, as kind.created, such as plan.created")
-        create.add_argument("title")
-        create.add_argument("--steps", required=True, help="steps separated by |")
+        creation = self.verb(verbs, "create", "write a sequence of steps")
+        creation.add_argument("--starts-on", default="", help="the row event that starts it on its own, as kind.created, such as plan.created")
+        creation.add_argument("title")
+        creation.add_argument("--steps", required=True, help="steps separated by |")
         self.verb(verbs, "run", "start a sequence at its first step").add_argument("n", type=int)
         self.verb(verbs, "follow", "take the step in hand up, and resume a parked run")
         self.verb(verbs, "next", "the step in hand is done; the next one, or the end")

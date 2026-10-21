@@ -17,17 +17,17 @@ class ScriptReader:
 
     @classmethod
     def loaded(cls, path: Path) -> "ScriptReader":
-        about = next((line.removeprefix("#").strip() for line in path.read_text().splitlines() if line.startswith("#") and not line.startswith("#!")), "")
-        return cls(path.stem, about, path)
+        topic = next((line.removeprefix("#").strip() for line in path.read_text().splitlines() if line.startswith("#") and not line.startswith("#!")), "")
+        return cls(path.stem, topic, path)
 
     def matches(self, command: str) -> bool:
         return False
 
     def read(self, lines: list[str]) -> list[str]:
         try:
-            ran = subprocess.run(["sh", str(self.path)], input="\n".join(lines) + "\n", capture_output=True, text=True, timeout=TIMEOUT)
+            completed = subprocess.run(["sh", str(self.path)], input="\n".join(lines) + "\n", capture_output=True, text=True, timeout=TIMEOUT)
         except subprocess.TimeoutExpired as late:
             raise Rejection(f"reader {self.name} took more than {TIMEOUT} seconds") from late
-        if ran.returncode != 0:
-            raise Rejection(f"reader {self.name} failed with code {ran.returncode}: {ran.stderr.strip()[-300:]}")
-        return ran.stdout.splitlines()
+        if completed.returncode != 0:
+            raise Rejection(f"reader {self.name} failed with code {completed.returncode}: {completed.stderr.strip()[-300:]}")
+        return completed.stdout.splitlines()

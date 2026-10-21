@@ -31,12 +31,12 @@ class Workers(ScopedRepository[Worker]):
         self.links.save(Link(source=Ref.build(worker), target=target, kind=WORKER_LINK), actor)
 
     def containing(self, task_ids: set[int]) -> dict[int, Worker]:
-        held = {}
+        blocked = {}
         for worker in self.global_matching(state=WorkerState.DISPATCHED):
             for ref in self.links.targets(worker, WORKER_LINK):
                 if ref.id in task_ids:
-                    held[ref.id] = worker
-        return held
+                    blocked[ref.id] = worker
+        return blocked
 
     def reports_waiting(self) -> list[Worker]:
         return [worker for worker in self.reported() if worker.has_report_waiting()]

@@ -14,6 +14,6 @@ class TriggerController(Controller[Trigger]):
 
     def update(self, request: Request) -> Response:
         trigger, body = self.repository.find(request.number("id")), request.body
-        action = TriggerAction(body["action"]) if body.get("action") in {a.value for a in TriggerAction} else trigger.action
+        action = TriggerAction(body["action"]) if body.get("action") in {item.value for item in TriggerAction} else trigger.action
         phrases = tuple(str(w).strip() for w in body.get("phrases", trigger.phrases) if str(w).strip())
         return Response.json(self.repository.save(trigger.with_(action=action, phrases=phrases, text=body.get("text", trigger.text)), request.actor))

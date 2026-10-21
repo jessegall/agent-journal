@@ -43,8 +43,8 @@ class ScopedRepository(Repository[S]):
     def scoped_rows(self) -> list[S]:
         return self.rows()
 
-    def scoped_page(self, limit: int, before: int | None = None) -> list[S]:
-        return self.page(limit, before)
+    def scoped_page(self, limit: int, previous: int | None = None) -> list[S]:
+        return self.page(limit, previous)
 
     def _insert(self, row: S, actor: Actor, time: datetime) -> S:
         return super()._insert(self._placed(row), actor, time)

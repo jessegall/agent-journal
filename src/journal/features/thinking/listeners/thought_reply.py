@@ -21,8 +21,8 @@ class ThoughtReply(AgentListener[ToolStarting]):
         if not unanswered:
             return
         for thought in self.providers.lookup(event.provider).turn_thoughts(self.config.root, event.session):
-            named = {int(n) for tag in REPLY_TAG.finditer(thought) for n in tag.group(1).split(",")}
-            if named & unanswered:
+            matched = {int(n) for tag in REPLY_TAG.finditer(thought) for n in tag.group(1).split(",")}
+            if matched & unanswered:
                 turn = TurnDisplayed(text=thought, delta=thought, turn_id=f"{THOUGHT_PREFIX}{hash(thought)}", final=True)
                 self.bus.dispatch(turn.placed(event.session, event.environment_id, event.provider, event.context, event.time))
-                unanswered -= named
+                unanswered -= matched

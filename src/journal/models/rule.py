@@ -16,8 +16,8 @@ class Rule(Model):
     keywords: tuple[str, ...] = ()
     presence: bool = False
 
-    def created(self, by_agent: bool) -> "Rule":
-        return self.with_event(RuleCreated(agent_origin=by_agent))
+    def created(self, agent_index: bool) -> "Rule":
+        return self.with_event(RuleCreated(agent_origin=agent_index))
 
     def summary_line(self) -> str:
         return self.first_line(self.text)

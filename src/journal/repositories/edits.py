@@ -15,13 +15,13 @@ class Edits(ScopedRepository[Edit]):
         super().__init__(connection, bus, scope)
 
     def record(self, edit: Edit, actor: Actor) -> Edit:
-        kept = self.save(edit, actor)
+        stored = self.save(edit, actor)
         for old in self.selected("1 ORDER BY id DESC LIMIT -1 OFFSET ?", (EDIT_LIMIT,)):
             self.delete(old, actor)
-        return kept
+        return stored
 
     def tool_use_edits(self, session: str, tool_use: int) -> list[Edit]:
         return self.selected("session = ? AND tool_use = ? ORDER BY id", (session, tool_use))
 
-    def agent_edits(self, session: str, since: float, last: int) -> list[Edit]:
-        return list(reversed(self.selected("session = ? AND time > ? ORDER BY id DESC LIMIT ?", (session, since, last))))
+    def agent_edits(self, session: str, start: float, last: int) -> list[Edit]:
+        return list(reversed(self.selected("session = ? AND time > ? ORDER BY id DESC LIMIT ?", (session, start, last))))

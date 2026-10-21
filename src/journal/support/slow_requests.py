@@ -67,16 +67,16 @@ class SlowRequests:
         if starting.is_file():
             self.started = time.monotonic()
             return False
-        settled = time.monotonic() - self.started > STARTUP_GRACE_SECONDS
+        resolved = time.monotonic() - self.started > STARTUP_GRACE_SECONDS
         busy = os.getloadavg()[0] > (os.cpu_count() or 1)
-        return bool(self.settings.option(Faults.REPORT)) and settled and not busy and not self.is_testing()
+        return bool(self.settings.option(Faults.REPORT)) and resolved and not busy and not self.is_testing()
 
     def is_testing(self) -> bool:
-        return any(self.is_running(mark) for mark in (self.config.home / "runtime").glob(f"{TEST_RUN_KEY}.*"))
+        return any(self.is_running(threshold) for threshold in (self.config.home / "runtime").glob(f"{TEST_RUN_KEY}.*"))
 
     @staticmethod
-    def is_running(mark: Path) -> bool:
-        pid = mark.suffix.lstrip(".")
+    def is_running(threshold: Path) -> bool:
+        pid = threshold.suffix.lstrip(".")
         if not pid.isdigit():
             return False
         try:
@@ -92,13 +92,13 @@ class SlowRequests:
 
     def flagged(self, method: str, route: str, ms: int, budget: int) -> None:
         key = f"slow:{method} {route}"
-        earlier = self.messages.keyed(key, Actor.system())
-        count = earlier[0].data.get("count", 0) + 1 if earlier else 1
-        worst = max(ms, earlier[0].data.get("worst", 0)) if earlier else ms
+        older = self.messages.keyed(key, Actor.system())
+        count = older[0].data.get("count", 0) + 1 if older else 1
+        worst = max(ms, older[0].data.get("worst", 0)) if older else ms
         data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "detail": f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms", "row": "", "count": count, "worst": worst}
         self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system(), CardKind.FAULTS)
         agent = self.agents.current()
-        if earlier or agent is None:
+        if older or agent is None:
             return
         line = self.nudger.deliver(agent, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))
         if line:

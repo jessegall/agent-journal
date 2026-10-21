@@ -24,8 +24,8 @@ class StartLines:
         return "" if event.source == "compact" else self.other_session_time(event.session)
 
     def other_session_time(self, session: str) -> str:
-        others = self.agents.recent_peers(session, datetime.now(timezone.utc) - TAKEOVER_WINDOW)
-        return others[-1].updated_at.astimezone().strftime("%H:%M") if others else ""
+        peers = self.agents.recent_peers(session, datetime.now(timezone.utc) - TAKEOVER_WINDOW)
+        return peers[-1].updated_at.astimezone().strftime("%H:%M") if peers else ""
 
     def rules_numbered(self) -> str:
         return self.numbered(r.text for r in self.rules.all())

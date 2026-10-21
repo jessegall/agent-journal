@@ -18,8 +18,8 @@ class CommandOutput(Scoped):
     told: bool = False
 
     def headline(self) -> str:
-        first, *rest = self.command.splitlines() or [""]
-        return f"{first} (and {len(rest)} more lines)" if rest else first
+        first, *remainder = self.command.splitlines() or [""]
+        return f"{first} (and {len(remainder)} more lines)" if remainder else first
 
     def backgrounded(self) -> "CommandOutput":
         return self.with_(moved=True)

@@ -97,6 +97,9 @@ class Project:
         self.types = self.result.types
         self.trees: dict[str, MypyFile] = {state.xpath: state.tree for state in self.result.graph.values() if state.tree is not None and state.xpath in self.files}
         self.expressions = {path: get_subexpressions(tree) for path, tree in self.trees.items()}
+        self.sources = {path: open(path, encoding="utf-8").read() for path in self.files}
+        self.syntax = {path: ast.parse(source) for path, source in self.sources.items()}
+        self.tokens = {path: list(tokenize.generate_tokens(io.StringIO(source).readline)) for path, source in self.sources.items()}
 
     def module_of(self, path: str) -> str:
         relative = os.path.relpath(path, f"{self.root}/src" if "/src/" in path else self.root)
@@ -350,7 +353,7 @@ class Renamer:
         takers = set()
         scopes = {}
         for path in self.project.files:
-            tree = ast.parse(open(path, encoding="utf-8").read())
+            tree = self.project.syntax[path]
             functions = [node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))]
             for function in functions:
                 arguments = function.args.args + function.args.kwonlyargs + function.args.posonlyargs
@@ -363,7 +366,7 @@ class Renamer:
         for path, functions in scopes.items():
             if not functions:
                 continue
-            toks = list(tokenize.generate_tokens(io.StringIO(open(path, encoding="utf-8").read()).readline))
+            toks = self.project.tokens[path]
             outermost = [f for f in functions if not any(g is not f and g.lineno <= f.lineno and f.end_lineno <= g.end_lineno for g in functions)]
             for function in outermost:
                 inside = [tok for tok in toks if function.lineno <= tok.start[0] <= function.end_lineno]
@@ -372,7 +375,8 @@ class Renamer:
                     continue
                 plan.places += self.scoped_places(path, toks, function.lineno, function.end_lineno, old, new)
         for path in self.project.files:
-            plan.places += self.taker_keywords(path, takers, old, new)
+            if old in self.project.sources[path]:
+                plan.places += self.taker_keywords(self.project.tokens[path], path, takers, old, new)
         plan.places = sorted(set(plan.places), key=lambda p: (p.path, p.line, p.column))
         return plan
 
@@ -418,10 +422,9 @@ class Renamer:
         return False
 
     @staticmethod
-    def taker_keywords(path: str, takers: set[str], old: str, new: str) -> list[Place]:
+    def taker_keywords(toks, path: str, takers: set[str], old: str, new: str) -> list[Place]:
         """Each old= keyword in a call to a function of the project that takes a parameter of that name."""
         places, stack = [], []
-        toks = list(tokenize.generate_tokens(io.StringIO(open(path, encoding="utf-8").read()).readline))
         for i, tok in enumerate(toks):
             if tok.type == tokenize.OP and tok.string in "([{":
                 callee = toks[i - 1].string if tok.string == "(" and i > 0 and toks[i - 1].type == tokenize.NAME else ""

@@ -44,9 +44,9 @@ class BaseState(Conduct):
     @classmethod
     @cache
     def listeners(cls) -> tuple[tuple[type, Callable], ...]:
-        own = [(get_type_hints(method)["event"], method, method.__name__ not in cls.__dict__) for name, method in getmembers(cls, isfunction) if cls.is_listener(name, method)]
+        owned = [(get_type_hints(method)["event"], method, method.__name__ not in cls.__dict__) for name, method in getmembers(cls, isfunction) if cls.is_listener(name, method)]
         folded = [(get_type_hints(method)["event"], method, 2) for conduct in BaseState.conducts for name, method in getmembers(conduct, isfunction) if cls.is_listener(name, method) and not hasattr(cls, name)]
-        ranked = sorted([*own, *folded], key=lambda entry: (int(entry[2]), -len(entry[0].__mro__)))
+        ranked = sorted([*owned, *folded], key=lambda entry: (int(entry[2]), -len(entry[0].__mro__)))
         return tuple((event_kind, method) for event_kind, method, rank in ranked)
 
     @classmethod
@@ -99,5 +99,5 @@ class BaseState(Conduct):
 
     @classmethod
     def restored(cls, data: dict) -> "BaseState":
-        known = {field.name for field in fields(cls)}
-        return cls(**{name: value for name, value in data.items() if name in known})
+        existing = {field.name for field in fields(cls)}
+        return cls(**{name: value for name, value in data.items() if name in existing})

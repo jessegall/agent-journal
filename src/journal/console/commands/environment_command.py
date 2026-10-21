@@ -55,9 +55,9 @@ class EnvironmentCommand(Command):
         for environment in self.environments.all() or [self.environments.lookup("main")]:
             with self.scope.environment(environment.id):
                 agents = self.agents.scoped()
-            last = max(agents, key=lambda a: a.updated_at) if agents else None
-            resumable = [a for a in agents if a.session and self.providers.lookup(a.provider or "claude").transcript(self.config.root, a.session)]
-            rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.age(last.updated_at) if last else "", {a.provider or "claude": a.session for a in resumable}))
+            last = max(agents, key=lambda item: item.updated_at) if agents else None
+            resumable = [item for item in agents if item.session and self.providers.lookup(item.provider or "claude").transcript(self.config.root, item.session)]
+            rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.age(last.updated_at) if last else "", {item.provider or "claude": item.session for item in resumable}))
         return rows
 
     def overview(self, args: Namespace, caller: Caller) -> int:
@@ -68,12 +68,12 @@ class EnvironmentCommand(Command):
         return 0
 
     def current_work(self, session: str) -> list[str]:
-        since = datetime.now(timezone.utc) - TAKEOVER_WINDOW
-        others = self.agents.recent_peers(session, since)
-        held = self.tasks.with_state(TaskState.STARTED)
+        start = datetime.now(timezone.utc) - TAKEOVER_WINDOW
+        peers = self.agents.recent_peers(session, start)
+        blocked = self.tasks.with_state(TaskState.STARTED)
         lines = [
-            f"taken over from another agent, last seen {others[-1].updated_at.astimezone().strftime('%H:%M')}" if others else "",
-            self.matching_rows("task in hand", [f"{t.id} {t.title}" for t in held]) or "no task in hand",
+            f"taken over from another agent, last seen {peers[-1].updated_at.astimezone().strftime('%H:%M')}" if peers else "",
+            self.matching_rows("task in hand", [f"{t.id} {t.title}" for t in blocked]) or "no task in hand",
             self.matching_rows("open tasks", [f"{t.id} {t.title}" for t in self.tasks.with_state(TaskState.OPEN)]),
             self.matching_rows("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.with_state(TaskState.SUSPENDED)]),
             self.matching_rows("blocked tasks", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.with_state(TaskState.BLOCKED)]),
@@ -94,8 +94,8 @@ class EnvironmentCommand(Command):
         return [f"{e.data['part']} (output in {e.data['file']})" for e in moved if Path(e.data["file"]).is_dir() and not (Path(e.data["file"]) / "done").is_file()]
 
     @staticmethod
-    def matching_rows(what: str, rows: list[str]) -> str:
-        return f"{what}: " + "; ".join(rows) if rows else ""
+    def matching_rows(subject: str, rows: list[str]) -> str:
+        return f"{subject}: " + "; ".join(rows) if rows else ""
 
     def overview_record(self, caller: Caller) -> None:
         if not caller.session:

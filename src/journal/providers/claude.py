@@ -35,10 +35,10 @@ class Claude(Provider):
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / f"{session}.jsonl"
         return path if path.is_file() else None
 
-    def latest_session(self, project: Path, since: float) -> str:
+    def latest_session(self, project: Path, start: float) -> str:
         folder = Path.home() / ".claude" / "projects" / self.folder_name(project)
-        written = [path for path in folder.glob("*.jsonl") if path.stat().st_mtime >= since] if folder.is_dir() else []
-        return max(written, key=lambda path: path.stat().st_mtime).stem if written else ""
+        saved = [path for path in folder.glob("*.jsonl") if path.stat().st_mtime >= start] if folder.is_dir() else []
+        return max(saved, key=lambda path: path.stat().st_mtime).stem if saved else ""
 
     def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / parent / "subagents" / f"agent-{agent_id}.jsonl"
@@ -84,11 +84,11 @@ class Claude(Provider):
         row = ClaudeRow.parsed(line)
         if not row.is_enqueued:
             return []
-        crossed = CROSS_SESSION.match(row.queued.strip())
-        if crossed is None:
+        arrived = CROSS_SESSION.match(row.queued.strip())
+        if arrived is None:
             return []
-        named = SENDER_NAME_PATTERN.search(crossed[1]) or SENDER_ADDRESS_PATTERN.search(crossed[1])
-        return [PeerMessage(sender=named[1] if named else "another session", text=crossed[2].strip())]
+        matched = SENDER_NAME_PATTERN.search(arrived[1]) or SENDER_ADDRESS_PATTERN.search(arrived[1])
+        return [PeerMessage(sender=matched[1] if matched else "another session", text=arrived[2].strip())]
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
@@ -97,11 +97,11 @@ class Claude(Provider):
         resumed = ["--resume", resume] if resume else []
         return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "json", *resumed]
 
-    def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
+    def worker_outcome(self, output: str, err: str) -> tuple[str, str]:
         try:
-            answer = json.loads(out)
+            answer = json.loads(output)
         except ValueError:
-            return out.strip() or err.strip(), ""
+            return output.strip() or err.strip(), ""
         return str(answer.get("result", "")).strip() or err.strip(), str(answer.get("session_id", ""))
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:

@@ -29,10 +29,10 @@ class Messages(ScopedRepository[Message]):
         return next((m for m in self.selected("author = ? ORDER BY id DESC LIMIT 20", (Author.USER.value,)) if not m.is_terminal_line), None)
 
     def unanswered(self) -> list[Message]:
-        spoken_at = self.last_message()
-        since = "" if spoken_at is None else " AND read_at > ?"
-        params = (Author.USER.value,) + (() if spoken_at is None else (spoken_at,))
-        read = self.selected(f"author = ? AND read_at IS NOT NULL{since} ORDER BY id", params)
+        speech_time = self.last_message()
+        start = "" if speech_time is None else " AND read_at > ?"
+        params = (Author.USER.value,) + (() if speech_time is None else (speech_time,))
+        read = self.selected(f"author = ? AND read_at IS NOT NULL{start} ORDER BY id", params)
         return [m for m in read if not m.is_terminal_line and not self.answered(m) and not self.agent_reaction(m)]
 
     def last_message(self) -> str | None:
@@ -49,11 +49,11 @@ class Messages(ScopedRepository[Message]):
     def sent_with(self, key: str) -> list[Message]:
         return self.selected("idempotency = ? ORDER BY id LIMIT 1", (key,))
 
-    def window(self, last: int, before: int = 0, after: int = 0) -> list[Message]:
-        clause, params = ["id > ?"], [after]
-        if before:
+    def window(self, last: int, previous: int = 0, following: int = 0) -> list[Message]:
+        clause, params = ["id > ?"], [following]
+        if previous:
             clause.append("id < ?")
-            params.append(before)
+            params.append(previous)
         return list(reversed(self.selected(f"{' AND '.join(clause)} ORDER BY id DESC LIMIT ?", (*params, last))))
 
     def changes(self, time: datetime) -> list[Message]:
@@ -75,9 +75,9 @@ class Messages(ScopedRepository[Message]):
         return self.selected_globally("json_extract(data, '$.key') = ? AND created_by = ?", (key, actor.stamp))
 
     def first_reply(self, message: Message) -> Message | None:
-        named = self.selected("reply_to = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
+        matched = self.selected("reply_to = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
         linked = [self.find(ref.id) for ref in self.links.sources(message, self.ANSWERS)]
-        replies = sorted([*named, *linked], key=lambda m: m.id)
+        replies = sorted([*matched, *linked], key=lambda m: m.id)
         return replies[0] if replies else None
 
     def recent_replies(self, time: datetime) -> list[Message]:

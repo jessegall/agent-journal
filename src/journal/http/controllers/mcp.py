@@ -18,9 +18,9 @@ class McpController:
 
     def index(self, request: Request) -> Response:
         report = self.health.report()
-        own = [self.row(self.installing.checked_one(s, report)) for s in self.servers.all()]
-        elsewhere = [self.known_row(k) for name, k in report.servers.items() if name not in {s.name for s in own}]
-        present = [*own, *elsewhere]
+        owned = [self.row(self.installing.checked_one(s, report)) for s in self.servers.all()]
+        remote = [self.known_row(k) for name, k in report.servers.items() if name not in {s.name for s in owned}]
+        present = [*owned, *remote]
         return Response.json({
             "servers": present,
             "restart_pending": self.pending.sessions(),
@@ -31,18 +31,18 @@ class McpController:
 
     @staticmethod
     def present(suggestion, servers: list[ServerEntry]) -> bool:
-        marks = {suggestion.url} | {a for a in suggestion.args if a.startswith("@")}
-        return any(s.name == suggestion.name or any(s.origin(m) for m in marks) for s in servers)
+        thresholds = {suggestion.url} | {item for item in suggestion.args if item.startswith("@")}
+        return any(s.name == suggestion.name or any(s.origin(m) for m in thresholds) for s in servers)
 
     def row(self, server) -> ServerEntry:
         return ServerEntry(server.name, server.title, server.transport, server.state, True, command=" ".join([server.command, *server.args]).strip(), url=server.url,
                             auth=server.auth, key_var=server.key_var, has_key=server.needs_key and self.keys.has(server.key_var), last_error=server.last_error)
 
     @staticmethod
-    def known_row(known) -> ServerEntry:
-        if known.how.startswith("http"):
-            return ServerEntry(known.name, known.name, "http", known.state, False, url=known.how, last_error=known.error)
-        return ServerEntry(known.name, known.name, "stdio", known.state, False, command=known.how, last_error=known.error)
+    def known_row(existing) -> ServerEntry:
+        if existing.how.startswith("http"):
+            return ServerEntry(existing.name, existing.name, "http", existing.state, False, url=existing.how, last_error=existing.error)
+        return ServerEntry(existing.name, existing.name, "stdio", existing.state, False, command=existing.how, last_error=existing.error)
 
     def install(self, request: Request) -> Response:
         try:

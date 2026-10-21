@@ -11,8 +11,8 @@ DISPATCHES = "(kind IN ('SubagentEnded', 'Stop', 'SessionStarted', 'SessionEnded
 class Entries(ScopedRepository[Entry]):
     model = Entry
 
-    def trim(self, newest: int, kept: int) -> int:
-        return self.connection.execute("DELETE FROM entries WHERE id <= ?", (newest - kept,)).rowcount
+    def trim(self, newest: int, stored: int) -> int:
+        return self.connection.execute("DELETE FROM entries WHERE id <= ?", (newest - stored,)).rowcount
 
     def last_prompt(self, session: str) -> datetime | None:
         rows = self.selected("kind = 'PromptSubmitted' AND actor = ? ORDER BY id DESC LIMIT 1", (Actor.agent(session).stamp,))
@@ -33,8 +33,8 @@ class Entries(ScopedRepository[Entry]):
         return self.selected("kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
 
     def last_line_entry(self, session: str, keys: tuple[str, ...]) -> Entry | None:
-        marks = ", ".join("?" for _ in keys)
-        rows = self.selected(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({marks}) ORDER BY id DESC LIMIT 1", (session, *keys))
+        thresholds = ", ".join("?" for _ in keys)
+        rows = self.selected(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({thresholds}) ORDER BY id DESC LIMIT 1", (session, *keys))
         return rows[0] if rows else None
 
     def recent_lines(self, session: str, key: str, entry_id: int) -> list[str]:

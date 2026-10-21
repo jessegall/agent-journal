@@ -144,8 +144,8 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App,
     if online:
         server.start()
     try:
-        result = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "environment", "here"], env=environ, capture_output=True, text=True, timeout=10)
-        assert result.returncode == 0, result.stderr
+        outcome = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "environment", "here"], env=environ, capture_output=True, text=True, timeout=10)
+        assert outcome.returncode == 0, outcome.stderr
         with app.container.get(Scope).environment(development.id):
             assert agents.session_agent("codex-session").oriented
     finally:
@@ -158,9 +158,9 @@ def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists
     from journal.models.agent import Agent
     from journal.providers.claude import Claude
     from journal.repositories.agents import Agents
-    kept = tmp_path / "s1.jsonl"
-    kept.write_text("{}\n")
-    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: kept if session == "s1" else None)
+    stored = tmp_path / "s1.jsonl"
+    stored.write_text("{}\n")
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: stored if session == "s1" else None)
     agents = app.container.get(Agents)
     agents.save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
     agents.save(Agent(session="lost", environment_id=1, provider="claude", state="ended"), Actor.system())
@@ -179,8 +179,8 @@ def test_an_environment_is_renamed_with_everything_in_it_and_never_while_an_agen
     spike = environments.lookup("spike")
     with app.container.get(Scope).environment(spike.id):
         app.container.get(Tasks).save(Task(title="in spike"), Actor.user(1))
-    taken = console.run(["environment", "rename", "spike", "main"], MAIN)
-    assert taken.code == 1 and "exists already" in taken.err
+    claimed = console.run(["environment", "rename", "spike", "main"], MAIN)
+    assert claimed.code == 1 and "exists already" in claimed.err
     with app.container.get(Scope).environment(spike.id):
         app.container.get(Agents).save(Agent(session="s-spike", environment_id=spike.id, provider="claude", state="idle"), Actor.system())
     busy = console.run(["environment", "rename", "spike", "probe"], MAIN)

@@ -23,9 +23,9 @@ class Scope:
             raise ScopeMissing()
         return environment()
 
-    def id_default(self, outside: int) -> int:
+    def id_default(self, foreign: int) -> int:
         environment = _current.get(None)
-        return outside if environment is None else environment()
+        return foreign if environment is None else environment()
 
     @contextmanager
     def environment(self, environment_id: int) -> Iterator[None]:

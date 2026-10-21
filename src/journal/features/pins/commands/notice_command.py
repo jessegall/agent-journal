@@ -14,11 +14,11 @@ class NoticeCommand(Command):
         self.notices = notices
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "pin a link above the chat")
-        create.add_argument("title", help="what it is, in the user's words")
-        create.add_argument("--link", required=True, help="an address, or a row's ref such as docs:55, which opens in place")
-        create.add_argument("--label", default="Open", help="the words on its button, such as Open the design")
-        create.add_argument("--tone", default="note", choices=("note", "good", "warn"))
+        creation = self.verb(verbs, "create", "pin a link above the chat")
+        creation.add_argument("title", help="what it is, in the user's words")
+        creation.add_argument("--link", required=True, help="an address, or a row's ref such as docs:55, which opens in place")
+        creation.add_argument("--label", default="Open", help="the words on its button, such as Open the design")
+        creation.add_argument("--tone", default="note", choices=("note", "good", "warn"))
         self.verb(verbs, "close", "take a pin down").add_argument("n", type=int)
         self.verb(verbs, "list", "the pins up here")
 

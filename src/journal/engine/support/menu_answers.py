@@ -46,16 +46,16 @@ class MenuAnswers:
         argv = program.worker_command(self.question(menu), ASKING_MODEL.get(provider, ""), "")
         environ = {k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION")}
         try:
-            done = subprocess.run(argv, capture_output=True, text=True, timeout=QUERY_TIMEOUT_SECONDS, stdin=subprocess.DEVNULL, cwd=tempfile.gettempdir(), env=environ)
+            finished = subprocess.run(argv, capture_output=True, text=True, timeout=QUERY_TIMEOUT_SECONDS, stdin=subprocess.DEVNULL, cwd=tempfile.gettempdir(), env=environ)
         except (OSError, subprocess.SubprocessError):
             self._asked[self.key(menu)] = None
             return
-        said, _ = program.worker_outcome(done.stdout, done.stderr)
-        number = re.search(r"\d+", said)
-        taken = next((o for o in menu.options if number and o.number == int(number[0])), None)
-        self._asked[self.key(menu)] = taken
-        if taken:
-            self.settings.set(CHOICES, {**dict(self.settings.project(CHOICES, {})), self.key(menu): taken.label}, Actor.system())
+        line_text, _ = program.worker_outcome(finished.stdout, finished.stderr)
+        number = re.search(r"\d+", line_text)
+        claimed = next((o for o in menu.options if number and o.number == int(number[0])), None)
+        self._asked[self.key(menu)] = claimed
+        if claimed:
+            self.settings.set(CHOICES, {**dict(self.settings.project(CHOICES, {})), self.key(menu): claimed.label}, Actor.system())
 
     @staticmethod
     def key(menu: Menu) -> str:

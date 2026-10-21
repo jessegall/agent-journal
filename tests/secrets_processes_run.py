@@ -42,10 +42,10 @@ def test_secret_run_gives_a_value_to_an_allowed_program_and_masks_every_form_of_
     assert "no value for key on this machine" in console.run(["secret", "run", "Fake", "--", "fakeapi"], AGENT).err
     app.container.get(SecretValues).put("FAKE_KEY", "s3cretvalue123")
     secrets.save(secrets.find(1).is_filled("key"), Actor.user("u"))
-    ran = console.run(["secret", "run", "1", "--env", "--", "fakeapi"], AGENT)
-    assert ran.code == 0 and "got:[secret FAKE_KEY]" in ran.out and "var:[secret FAKE_KEY]" in ran.out, ran.out
-    assert "s3cretvalue123" not in ran.out and "czNjcmV0dmFsdWUxMjM" not in ran.out, "the value is masked as it is and in base64"
-    assert "/runs/run-" in ran.out, "the program's home is a throwaway one inside the secrets folder"
+    completed = console.run(["secret", "run", "1", "--env", "--", "fakeapi"], AGENT)
+    assert completed.code == 0 and "got:[secret FAKE_KEY]" in completed.out and "var:[secret FAKE_KEY]" in completed.out, completed.out
+    assert "s3cretvalue123" not in completed.out and "czNjcmV0dmFsdWUxMjM" not in completed.out, "the value is masked as it is and in base64"
+    assert "/runs/run-" in completed.out, "the program's home is a throwaway one inside the secrets folder"
     templated = console.run(["secret", "run", "Fake", "--stdin", "Bearer {key}", "--", "fakeapi"], AGENT)
     assert "got:Bearer [secret FAKE_KEY]" in templated.out
     assert "name the program bare" in console.run(["secret", "run", "Fake", "--", str(echoer)], AGENT).err

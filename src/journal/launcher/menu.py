@@ -34,34 +34,34 @@ class Menu:
         except (OSError, subprocess.TimeoutExpired):
             return ""
 
-    def choose(self, agent: str, env: str = "", new: bool = False, aside: bool = False, skip: bool = False, yes: bool = False) -> Choice:
+    def choose(self, agent: str, environment: str = "", new: bool = False, stashed: bool = False, omit: bool = False, confirmed: bool = False) -> Choice:
         self.screen.banner(agent, str(self.root))
-        rows, before = self.environments(), self.remembered.read()
-        asking = not yes
-        chosen = env or (self._environment(agent, rows) if asking else "main")
-        if chosen not in {row.name for row in rows}:
-            self.journal("environment", "create", chosen)
+        rows, previous = self.environments(), self.remembered.read()
+        asking = not confirmed
+        selection = environment or (self._environment(agent, rows) if asking else "main")
+        if selection not in {row.name for row in rows}:
+            self.journal("environment", "create", selection)
             rows = self.environments()
-        last = next((row.last_session(agent) for row in rows if row.name == chosen), "")
-        resume = "" if new or not last else self._continuation(agent, chosen, last, asking)
-        skip_prompts = skip or yes or self._prompts(agent)
+        last = next((row.last_session(agent) for row in rows if row.name == selection), "")
+        resume = "" if new or not last else self._continuation(agent, selection, last, asking)
+        prompt_flags = omit or confirmed or self._prompts(agent)
         asking = asking and not resume
-        hooks_aside = aside or (self._hooks(ForeignHooks(self.root, agent).foreign(), before.hooks_aside) if asking else before.hooks_aside)
-        self.remembered.write(Answers(skip_prompts, hooks_aside))
-        choice = Choice(chosen, resume, hooks_aside, skip_prompts)
-        if not yes:
+        stashed_hooks = stashed or (self._hooks(ForeignHooks(self.root, agent).foreign(), previous.hooks_aside) if asking else previous.hooks_aside)
+        self.remembered.write(Answers(prompt_flags, stashed_hooks))
+        choice = Choice(selection, resume, stashed_hooks, prompt_flags)
+        if not confirmed:
             self._trust_question(agent)
         self._summary(choice)
         return choice
 
     def _environment(self, agent: str, rows: list[EnvironmentRow]) -> str:
         options = [Option(row.name, (*row.badges(), *Worktree(self.root, row.name).badges())) for row in rows] + [Option("A new environment", apart=True)]
-        picked, key = self.screen.choice("Which environment", ["An environment is one line of work with a record of its own."], options, 0, ("x",))
-        if key == "x" and picked < len(rows):
-            self._delete(rows[picked])
+        selected, key = self.screen.choice("Which environment", ["An environment is one line of work with a record of its own."], options, 0, ("x",))
+        if key == "x" and selected < len(rows):
+            self._delete(rows[selected])
             return self._environment(agent, self.environments())
-        if picked < len(rows):
-            return rows[picked].name
+        if selected < len(rows):
+            return rows[selected].name
         return self.screen.ask("Name:") or "main"
 
     def _delete(self, row: EnvironmentRow) -> None:
@@ -77,18 +77,18 @@ class Menu:
 
     def _resume(self, agent: str, environment: str, last: str) -> str:
         notes = [f"An earlier {agent.capitalize()} session worked {environment}. Carrying on opens that conversation again,", "without asking the other questions."]
-        picked = self.screen.pick("Carry on from the last session", notes, [Option("Yes, carry on", (last[:8],)), Option("No, start a new one")], 0)
-        return last if picked == 0 else ""
+        selected = self.screen.pick("Carry on from the last session", notes, [Option("Yes, carry on", (last[:8],)), Option("No, start a new one")], 0)
+        return last if selected == 0 else ""
 
     def _prompts(self, agent: str) -> bool:
         notes = [f"{agent.capitalize()} then runs without stopping to ask before each tool call,", "so the journal can keep it working."]
         return self.screen.pick("Run without permission prompts", notes, [Option("Yes, skip them"), Option("No, ask me each time")], 0) == 0
 
-    def _hooks(self, others: list[Path], aside_before: bool) -> bool:
-        files = f"{len(others)} file" + ("s" if len(others) != 1 else "")
-        rows = [f"Found now, in {files}:", *(f"  {path}" for path in others)] if others else ["None found in the settings right now."]
+    def _hooks(self, peers: list[Path], stashed_prior: bool) -> bool:
+        files = f"{len(peers)} file" + ("s" if len(peers) != 1 else "")
+        rows = [f"Found now, in {files}:", *(f"  {path}" for path in peers)] if peers else ["None found in the settings right now."]
         notes = ["They might conflict with the journal's. Set aside, a copy is kept and they are put back when the journal ends.", *rows]
-        return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if aside_before else 1) == 0
+        return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if stashed_prior else 1) == 0
 
     def _trust_question(self, agent: str) -> None:
         if Providers().lookup(agent).hooks_trusted(self.root):

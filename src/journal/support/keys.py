@@ -19,9 +19,9 @@ class Keys:
         self.path.chmod(0o600)
 
     def drop(self, var: str) -> None:
-        kept = {k: v for k, v in self.all().items() if k != var}
+        stored = {k: v for k, v in self.all().items() if k != var}
         if self.path.is_file():
-            self.path.write_text(json.dumps(kept, indent=2) + "\n")
+            self.path.write_text(json.dumps(stored, indent=2) + "\n")
 
     def has(self, var: str) -> bool:
         return bool(self.all().get(var))

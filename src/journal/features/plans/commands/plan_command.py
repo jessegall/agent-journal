@@ -28,14 +28,14 @@ class PlanCommand(Command):
         self.rounds = rounds
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "draft a plan")
-        create.add_argument("title")
-        create.add_argument("--brief", default="")
-        add = self.verb(verbs, "add", "add a task to a plan, after the ones it has")
-        add.add_argument("n", type=int)
-        add.add_argument("title")
-        add.add_argument("--brief", default="")
-        add.add_argument("--first", action="store_true", help="put it before the tasks the plan has")
+        creation = self.verb(verbs, "create", "draft a plan")
+        creation.add_argument("title")
+        creation.add_argument("--brief", default="")
+        addition = self.verb(verbs, "add", "add a task to a plan, after the ones it has")
+        addition.add_argument("n", type=int)
+        addition.add_argument("title")
+        addition.add_argument("--brief", default="")
+        addition.add_argument("--first", action="store_true", help="put it before the tasks the plan has")
         brief = self.verb(verbs, "brief", "set a plan's goal, what is true when it is done")
         brief.add_argument("n", type=int)
         brief.add_argument("text")
@@ -76,11 +76,11 @@ class PlanCommand(Command):
 
     def add(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        before = self.plans.plan_tasks(plan) if args.first else []
+        previous = self.plans.plan_tasks(plan) if args.first else []
         task = self.tasks.save(Task(environment_id=plan.environment_id, title=args.title, brief=args.brief), caller.actor)
         self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), caller.actor)
-        for other in before:
-            self.relink(other, plan, caller)
+        for counterpart in previous:
+            self.relink(counterpart, plan, caller)
         print(f"task {task.id} added to plan {plan.id}{' first' if args.first else ''}")
         return 0
 
@@ -114,7 +114,7 @@ class PlanCommand(Command):
             task = self.tasks.find(n)
             if not self.links.connecting(task, plan):
                 self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), caller.actor)
-            for link in [link for other in phases for link in self.links.connecting(task, other)]:
+            for link in [link for counterpart in phases for link in self.links.connecting(task, counterpart)]:
                 self.links.delete(link, caller.actor)
             self.links.save(Link(source=Ref.build(task), target=Ref.build(phase), kind=PHASE_LINK), caller.actor)
         print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}")
@@ -128,9 +128,9 @@ class PlanCommand(Command):
         empty = [i for i, phase in enumerate(phases, 1) if not self.plans.phase_tasks(phase)]
         if empty:
             raise Rejection(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
-        out = self.subagents.running_mentioning(caller.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and caller.session else 0
-        if out:
-            raise Rejection(f"plan {plan.id} is in review and {out} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
+        output = self.subagents.running_mentioning(caller.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and caller.session else 0
+        if output:
+            raise Rejection(f"plan {plan.id} is in review and {output} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
         if plan.state == PlanState.REVIEWING:
             self.close_round(plan, args.changed, caller)
         plan = self.plans.save(plan.ready(), caller.actor)

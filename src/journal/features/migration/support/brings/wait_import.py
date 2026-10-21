@@ -21,29 +21,29 @@ class WaitImport(EnvironmentKind):
     kind = "todo"
     title = "waits"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, tasks: Tasks, links: Links) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, tasks: Tasks, links: Links) -> None:
+        super().__init__(environments, tally)
         self.tasks, self.links = tasks, links
         self.dropped: list[str] = []
 
     def import_rows(self, folder: Path, actor: Actor) -> ImportTally:
         self.dropped = []
-        brought = super().import_rows(folder, actor)
-        return ImportTally(brought.kind, brought.count, (*brought.skipped, *self.dropped))
+        imported = super().import_rows(folder, actor)
+        return ImportTally(imported.kind, imported.count, (*imported.skipped, *self.dropped))
 
     def source(self, environment: str, row: Version3Row) -> str:
         return f"environments/{environment}/todo/{row.n}/waits"
 
-    def skipped(self, row: Version3Row, into: Environment) -> str:
+    def skipped(self, row: Version3Row, target: Environment) -> str:
         if not row.listed("after"):
             return "waits on nothing"
-        return "" if self.ledger.referred(into.name, f"todo:{row.n}") else "its to-do did not come across"
+        return "" if self.ledger.referred(target.name, f"todo:{row.n}") else "its to-do did not come across"
 
     def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
         task = self.tasks.find(self.ledger.referred(into.name, f"todo:{row.n}").id)
-        for before in [rows for n in row.listed("after") if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
+        for previous in [rows for n in row.listed("after") if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
             try:
-                self.links.save(Link(source=Ref.build(task), target=before, kind=WAIT_LINK), actor)
+                self.links.save(Link(source=Ref.build(task), target=previous, kind=WAIT_LINK), actor)
             except Rejection as loop:
                 self.dropped.append(f"task {task.id}: {loop}")
         return task

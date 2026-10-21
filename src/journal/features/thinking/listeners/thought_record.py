@@ -15,7 +15,7 @@ class ThoughtRecord(AgentListener[ToolStarting]):
         self.config, self.providers, self.messages = config, providers, messages
 
     def handle(self, event: ToolStarting) -> None:
-        kept = {m.text for m in self.messages.thoughts(event.session)}
-        written = (t.strip() for t in self.providers.lookup(event.provider).turn_thoughts(self.config.root, event.session))
-        for thought in dict.fromkeys(t for t in written if t and t not in kept):
+        stored = {m.text for m in self.messages.thoughts(event.session)}
+        saved = (t.strip() for t in self.providers.lookup(event.provider).turn_thoughts(self.config.root, event.session))
+        for thought in dict.fromkeys(t for t in saved if t and t not in stored):
             self.messages.save(Message(author=Author.AGENT, text=thought, data={"kind": Message.THOUGHT}), Actor.agent(event.session))

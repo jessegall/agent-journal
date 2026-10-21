@@ -40,11 +40,11 @@ class MessagesConduct(Conduct):
         messages = event.data.part(feature)
         if event.subagent or not messages.unanswered or event.call.is_journal or file_reads(event, messages.unanswered_files):
             return self.none()
-        owed = ", ".join(str(n) for n in messages.unanswered)
+        obligations = ", ".join(str(n) for n in messages.unanswered)
         if messages.uses_unanswered >= int(settings.value(feature.TOOL_BLOCK_LIMIT)):
-            return self.refuse(feature.UNANSWERED_TOOL_BLOCK.create(messages=owed))
+            return self.refuse(feature.UNANSWERED_TOOL_BLOCK.create(messages=obligations))
         if messages.uses_unanswered >= int(settings.value(feature.ANSWER_REQUEST_LIMIT)):
-            return self.none(feature.UNANSWERED_MESSAGES.create(messages=owed))
+            return self.none(feature.UNANSWERED_MESSAGES.create(messages=obligations))
         return self.none()
 
     def on_tool_starting_messages_unread(self, event: ToolStarting, settings: Settings) -> Transition:
@@ -54,8 +54,8 @@ class MessagesConduct(Conduct):
             return self.none()
         if event.call.writes and messages.times_named >= int(settings.value(feature.EDIT_BLOCK_LIMIT)):
             return self.refuse(feature.INBOX_EDIT_BLOCK.create(count=len(messages.unread)))
-        every = int(settings.value(feature.REMINDER_INTERVAL))
-        if every > 0 and messages.uses_since_newest > 0 and messages.uses_since_newest % every == 0:
+        all_items = int(settings.value(feature.REMINDER_INTERVAL))
+        if all_items > 0 and messages.uses_since_newest > 0 and messages.uses_since_newest % all_items == 0:
             return self.none(feature.inbox(messages.unread))
         return self.none()
 

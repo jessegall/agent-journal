@@ -17,8 +17,8 @@ from supervisor.terminal import Terminal
 
 
 def pump(supervisor: Supervisor, seconds: float) -> None:
-    until = time.time() + seconds
-    while time.time() < until:
+    deadline = time.time() + seconds
+    while time.time() < deadline:
         supervisor.relay_once(0.05)
         supervisor.services.keep_alive()
 
@@ -47,8 +47,8 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
         pump(supervisor, 0.5)
         assert ask(supervisor, verb="type", name="agent", line="from the journal") == {"ok": True}
         pump(supervisor, 1.0)
-        seen = os.read(out_r, 65536).decode()
-        assert "got:hello" in seen and "got:from the journal" in seen
+        viewed = os.read(out_r, 65536).decode()
+        assert "got:hello" in viewed and "got:from the journal" in viewed
         assert journal.alive()
         pid = journal._process.pid
         journal._process.terminate()
@@ -76,8 +76,8 @@ def test_a_typed_line_can_wait_before_it_goes_in(tmp_path: Path):
         ask(supervisor, verb="type", name="agent", line="now")
         ask(supervisor, verb="type", name="agent", line="later", after=0.8)
         pump(supervisor, 0.6)
-        seen = os.read(out_r, 65536).decode()
-        assert "got:now" in seen and "later" not in seen, "the line with a delay has not gone in yet; lines go in the order they were sent"
+        viewed = os.read(out_r, 65536).decode()
+        assert "got:now" in viewed and "later" not in viewed, "the line with a delay has not gone in yet; lines go in the order they were sent"
         pump(supervisor, 1.0)
         assert "got:later" in os.read(out_r, 65536).decode()
     finally:
@@ -152,7 +152,7 @@ def test_a_typed_lines_enter_waits_until_the_line_has_gone_in(tmp_path: Path):
     terminal.feed()
     time.sleep(terminal_module.ENTER_AFTER + 0.1)
     terminal.pump()
-    assert terminal._enter_due == 0.0 and not any(piece == b"\r" for piece, _ in terminal._pieces), "the line has not gone in: no Enter yet"
+    assert terminal._enter_due == 0.0 and not any(segment == b"\r" for segment, _ in terminal._pieces), "the line has not gone in: no Enter yet"
     os.read(read_end, filled)
     terminal.feed()
     terminal.feed()
@@ -193,27 +193,27 @@ def test_stopping_a_service_ends_every_process_it_started(tmp_path: Path):
     family.stop()
     try:
         os.killpg(group, 0)
-        alive = True
+        responsive = True
     except ProcessLookupError:
-        alive = False
-    assert not alive, "the child it left in the background went with it"
+        responsive = False
+    assert not responsive, "the child it left in the background went with it"
 
 
 def test_a_restart_replaces_only_the_resume_and_keeps_the_rest_of_the_command(tmp_path: Path):
     terminal = Terminal(["env", "KEPT=yes", "sh", "-c", "echo seen:$KEPT:$RESUMED; sleep 5"], str(tmp_path), {"PATH": os.environ["PATH"]}, ("RESUMED=first",))
 
-    def output(until: bytes) -> bytes:
-        seen, began = b"", time.time()
-        while until not in seen and time.time() - began < 3:
-            seen += terminal.read() if select.select([terminal.fd], [], [], 0.1)[0] else b""
-        return seen
+    def output(deadline: bytes) -> bytes:
+        viewed, began = b"", time.time()
+        while deadline not in viewed and time.time() - began < 3:
+            viewed += terminal.read() if select.select([terminal.fd], [], [], 0.1)[0] else b""
+        return viewed
 
     terminal.start()
     assert b"seen:yes:first" in output(b"seen:")
     terminal.restart(("RESUMED=second",))
-    seen = output(b"seen:")
+    viewed = output(b"seen:")
     terminal.stop(1.0)
-    assert b"seen:yes:second" in seen, "the restart put its own resume after the program and kept the rest of the command"
+    assert b"seen:yes:second" in viewed, "the restart put its own resume after the program and kept the rest of the command"
 
 
 def test_an_agent_that_dies_is_started_again_and_one_that_quits_ends_the_supervisor(tmp_path: Path):
@@ -227,8 +227,8 @@ def test_an_agent_that_dies_is_started_again_and_one_that_quits_ends_the_supervi
     journal.start()
     terminal.start()
     try:
-        until = time.time() + 5
-        while time.time() < until and not (marker.exists() and terminal.pid > 0 and supervisor._revivals):
+        deadline = time.time() + 5
+        while time.time() < deadline and not (marker.exists() and terminal.pid > 0 and supervisor._revivals):
             supervisor.relay_once(0.05)
         pump(supervisor, 0.5)
         front = supervisor.described()[0]
@@ -242,8 +242,8 @@ def test_an_agent_that_dies_is_started_again_and_one_that_quits_ends_the_supervi
     quits.inbox.open()
     quitting.start()
     try:
-        until = time.time() + 5
-        while time.time() < until and quits._code is None:
+        deadline = time.time() + 5
+        while time.time() < deadline and quits._code is None:
             quits.relay_once(0.05)
         assert quits._code == 0, "a clean exit ends the supervisor"
     finally:

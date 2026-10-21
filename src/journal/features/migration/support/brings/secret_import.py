@@ -13,8 +13,8 @@ class SecretImport(ProjectKind):
     kind = "secret"
     title = "secrets"
 
-    def __init__(self, ledger: MigratedRows, secrets: Secrets) -> None:
-        super().__init__(ledger)
+    def __init__(self, tally: MigratedRows, secrets: Secrets) -> None:
+        super().__init__(tally)
         self.secrets = secrets
 
     def created(self, row: Version3Row, actor: Actor) -> Secret:

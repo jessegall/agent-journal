@@ -13,8 +13,8 @@ class Profile:
     kind: str = "subagent"
     model: str | None = None
 
-    def model_default(self, chosen: str) -> str:
-        return chosen if self.model is None else self.model
+    def model_default(self, selection: str) -> str:
+        return selection if self.model is None else self.model
 
     def claude_text(self, model: str, codex_model: str) -> str:
         return f"---\nname: {self.name}\ndescription: {self.description}\ntools: {self.tools}\nkind: {self.kind}\nmodel: {model}\ncodex-model: {codex_model}\n---\n\n{self.body}\n"

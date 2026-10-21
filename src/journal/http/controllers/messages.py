@@ -48,9 +48,9 @@ class MessageController(Controller[Message]):
 
     def store(self, request: Request) -> Response:
         key = request.body.get("idempotency", "")
-        already = self.repository.sent_with(key) if key else []
-        if already:
-            return Response.json(self.shown(already[0]), 201)
+        prior_items = self.repository.sent_with(key) if key else []
+        if prior_items:
+            return Response.json(self.shown(prior_items[0]), 201)
         message = Message(author=Author.USER, text=request.body.get("text", ""), reply_to=request.body.get("reply_to"), idempotency=key).arrived()
         return Response.json(self.shown(self.repository.save(message, request.actor)), 201)
 
@@ -70,8 +70,8 @@ class MessageController(Controller[Message]):
         return Response.json(self.shown(self.repository.save(message, request.actor)), 201)
 
     def react(self, request: Request) -> Response:
-        made = self.reactions.toggle(self.repository.find(request.number("id")), request.body.get("face", ""), Author.USER, request.actor)
-        return Response.json(made or {})
+        produced = self.reactions.toggle(self.repository.find(request.number("id")), request.body.get("face", ""), Author.USER, request.actor)
+        return Response.json(produced or {})
 
     def press(self, request: Request) -> Response:
         message = self.repository.find(request.number("id"))

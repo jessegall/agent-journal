@@ -18,8 +18,8 @@ class MemoryConduct(Conduct):
         feature = memory_feature()
         if event.context is None or not event.session:
             return self.none()
-        mark = feature.threshold_due(event.context, event.data.part(feature).context_mark)
-        return self.none(feature.CONTEXT_DECISION.create(percent=mark)) if mark else self.none()
+        threshold = feature.threshold_due(event.context, event.data.part(feature).context_mark)
+        return self.none(feature.CONTEXT_DECISION.create(percent=threshold)) if threshold else self.none()
 
     def on_session_started_memory(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.memory.feature import Memory
@@ -36,8 +36,8 @@ class MemoryConduct(Conduct):
 
     def on_stop_memory(self, event: Stop, settings: Settings) -> Transition:
         feature = memory_feature()
-        owed = event.data.part(feature).mark_owed
-        return self.refuse(feature.UNDECIDED_STOP.create(percent=owed)) if owed else self.none()
+        obligations = event.data.part(feature).mark_owed
+        return self.refuse(feature.UNDECIDED_STOP.create(percent=obligations)) if obligations else self.none()
 
     def on_anything_memory_hint(self, event: AgentEvent, settings: Settings) -> Transition:
         feature = memory_feature()

@@ -5,7 +5,7 @@ from pathlib import Path
 INSTALL = Path(__file__).resolve().parent.parent / "install.sh"
 
 
-def installed_over_version_3(tmp_path: Path, setup_code: int, yes: str = "1", version: str = "3.3.5") -> subprocess.CompletedProcess:
+def installed_over_version_3(tmp_path: Path, setup_code: int, confirmed: str = "1", version: str = "3.3.5") -> subprocess.CompletedProcess:
     """A journal from before version 4, and a stand-in python that passes the version check and ends setup with the given code, so no journal starts."""
     (tmp_path / ".journal" / "src").mkdir(parents=True)
     (tmp_path / ".journal" / "src" / "VERSION").write_text(f"{version}\n")
@@ -15,7 +15,7 @@ def installed_over_version_3(tmp_path: Path, setup_code: int, yes: str = "1", ve
     bin_.mkdir()
     (bin_ / "python3").write_text(f'#!/bin/sh\n[ "$1" = -c ] && exit 0\nexit {setup_code}\n')
     (bin_ / "python3").chmod(0o755)
-    return subprocess.run(["sh", str(INSTALL)], cwd=tmp_path, env={"PATH": f"{bin_}:/usr/bin:/bin", "HOME": str(tmp_path), "AGENT_JOURNAL_YES": yes}, capture_output=True, text=True, timeout=120)
+    return subprocess.run(["sh", str(INSTALL)], cwd=tmp_path, env={"PATH": f"{bin_}:/usr/bin:/bin", "HOME": str(tmp_path), "AGENT_JOURNAL_YES": confirmed}, capture_output=True, text=True, timeout=120)
 
 
 def test_installing_over_a_version_3_journal_keeps_it_whole_in_version_3(tmp_path: Path):
@@ -33,7 +33,7 @@ def test_a_failed_install_puts_the_version_3_journal_back(tmp_path: Path):
 
 
 def test_without_a_yes_the_installer_changes_nothing(tmp_path: Path):
-    run = installed_over_version_3(tmp_path, 0, yes="")
+    run = installed_over_version_3(tmp_path, 0, confirmed="")
     assert run.returncode == 0 and "Nothing changed" in run.stdout, run.stdout
     assert (tmp_path / ".journal" / "src" / "VERSION").read_text() == "3.3.5\n" and not (tmp_path / ".journal" / "version-3").exists()
 

@@ -10,13 +10,13 @@ class Migrator:
         self.connection, self.schema, self.migrations = connection, schema, migrations
 
     def pending(self) -> list[Migration]:
-        done = self.schema.version()
-        return sorted((m for m in self.migrations if m.number > done), key=lambda m: m.number)
+        finished = self.schema.version()
+        return sorted((m for m in self.migrations if m.number > finished), key=lambda m: m.number)
 
     def run(self) -> list[Migration]:
-        ran = self.pending()
-        for migration in ran:
+        completed = self.pending()
+        for migration in completed:
             with self.connection.transaction() as db:
                 migration.apply(db)
                 db.execute("INSERT INTO migrations (number, ran_at) VALUES (?, ?)", (migration.number, datetime.now(timezone.utc).isoformat()))
-        return ran
+        return completed

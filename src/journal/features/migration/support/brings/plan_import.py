@@ -25,16 +25,16 @@ class PlanImport(EnvironmentKind):
     kind = "plan"
     title = "plans"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, plans: Plans, phases: Phases, links: Links) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, plans: Plans, phases: Phases, links: Links) -> None:
+        super().__init__(environments, tally)
         self.plans, self.phases, self.links = plans, phases, links
 
     def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Plan:
         plan = self.plans.imported(Plan(environment_id=into.id, title=row.title, brief=row.brief, state=STATES.get(row.data.get("status", ""), PlanState.DRAFT)), row.creation_time(), actor)
-        for given in row.listed("phases"):
-            phase = self.phases.imported(Phase(environment_id=into.id, title=given.get("title", ""), complete_when=given.get("when", ""), checkpoint=bool(given.get("checkpoint"))), row.creation_time(), actor)
+        for value in row.listed("phases"):
+            phase = self.phases.imported(Phase(environment_id=into.id, title=value.get("title", ""), complete_when=value.get("when", ""), checkpoint=bool(value.get("checkpoint"))), row.creation_time(), actor)
             self.links.save(Link(source=Ref.build(phase), target=Ref.build(plan), kind=PHASE_TASK_LINK), actor)
-            for task in [rows for n in given.get("todos", []) if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
+            for task in [rows for n in value.get("todos", []) if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
                 self.links.save(Link(source=task, target=Ref.build(plan), kind=PLAN_LINK), actor)
                 self.links.save(Link(source=task, target=Ref.build(phase), kind=PHASE_LINK), actor)
         return plan

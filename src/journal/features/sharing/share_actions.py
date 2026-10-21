@@ -24,8 +24,8 @@ class ShareActions:
     def __init__(self, shares: Shares, targets: ShareTargets, tunnel: Tunnel, messages: Messages) -> None:
         self.shares, self.targets, self.tunnel, self.messages = shares, targets, tunnel, messages
 
-    def create(self, named: str, expires: str, password: str, comments: bool, actor: Actor) -> Share:
-        target = self.targets.lookup(named)
+    def create(self, matched: str, expires: str, password: str, comments: bool, actor: Actor) -> Share:
+        target = self.targets.lookup(matched)
         share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.expiry(expires), approved=actor.is_user(),
                                        password=SharePassword.hashed(password) if password else "", comments=comments), actor)
         self.targets.link(share, target, actor)
@@ -54,9 +54,9 @@ class ShareActions:
 
     @staticmethod
     def expiry(expires: str) -> datetime | None:
-        given = expires.strip().lower()
-        if given in DISABLED_VALUES:
+        value = expires.strip().lower()
+        if value in DISABLED_VALUES:
             return None
-        if not re.fullmatch(r"\d+[hd]", given):
+        if not re.fullmatch(r"\d+[hd]", value):
             raise Rejection("expires is a number of hours or days, like 12h or 7d, or never")
-        return datetime.now(timezone.utc) + int(given[:-1]) * SPANS[given[-1]]
+        return datetime.now(timezone.utc) + int(value[:-1]) * SPANS[value[-1]]

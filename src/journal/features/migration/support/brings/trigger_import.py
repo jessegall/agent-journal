@@ -15,8 +15,8 @@ class TriggerImport(BuiltinKind):
     kind = "trigger"
     title = "triggers"
 
-    def __init__(self, ledger: MigratedRows, triggers: Triggers) -> None:
-        super().__init__(ledger)
+    def __init__(self, tally: MigratedRows, triggers: Triggers) -> None:
+        super().__init__(tally)
         self.triggers = triggers
 
     def skipped(self, row: Version3Row) -> str:

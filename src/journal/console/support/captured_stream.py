@@ -22,12 +22,12 @@ class CapturedStream(io.TextIOBase):
 
     @staticmethod
     @contextmanager
-    def capture(out: io.StringIO, err: io.StringIO) -> Iterator[None]:
+    def capture(output: io.StringIO, err: io.StringIO) -> Iterator[None]:
         if not isinstance(sys.stdout, CapturedStream):
             sys.stdout = CapturedStream(sys.stdout, CAPTURED_OUTPUT)
         if not isinstance(sys.stderr, CapturedStream):
             sys.stderr = CapturedStream(sys.stderr, ERR)
-        tokens = CAPTURED_OUTPUT.set(out), ERR.set(err)
+        tokens = CAPTURED_OUTPUT.set(output), ERR.set(err)
         try:
             yield
         finally:

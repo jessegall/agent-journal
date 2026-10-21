@@ -124,8 +124,8 @@ class Tunnel:
         host, old = self.host(), self.place.stored().subdomain
         name = self.place.new_subdomain()
         self.log.parent.mkdir(parents=True, exist_ok=True)
-        with self.log.open("a") as written:
-            written.write(f"{MOVED} {name}\n")
+        with self.log.open("a") as saved:
+            saved.write(f"{MOVED} {name}\n")
         self.place.store(tunnel=())
         self.start()
         if old and f"{old}.{host}" in self.tunler.domains():
@@ -158,10 +158,10 @@ class Tunnel:
 
     def service(self) -> TunnelService:
         if self.link.hosting() is None:
-            state, why = "stopped", SUPERVISOR_MISSING
+            state, reason = "stopped", SUPERVISOR_MISSING
         else:
-            state, why = ("ready", "") if self.answered() else ("starting", "")
-        return TunnelService(SERVICE, state, why, f"http://127.0.0.1:{self.place.stored().inspector}")
+            state, reason = ("ready", "") if self.answered() else ("starting", "")
+        return TunnelService(SERVICE, state, reason, f"http://127.0.0.1:{self.place.stored().inspector}")
 
     def cause(self) -> TunnelCause:
         host, address = self.host(), self.address()

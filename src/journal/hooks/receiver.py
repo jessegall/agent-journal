@@ -37,8 +37,8 @@ class Receiver:
     def receive(self, hook: Hook) -> Decision:
         environment = self.environments.lookup(hook.environment)
         with self.scope.environment(environment.id):
-            for written in self.transcript.events(hook, environment):
-                self._immediate(written)
+            for saved in self.transcript.events(hook, environment):
+                self._immediate(saved)
             event = self.translation.event(hook, environment)
             entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data={**hook.stored(), **event.recorded()}), Actor.agent(hook.session))
             if self.is_unknown_session_end(event):
@@ -70,10 +70,10 @@ class Receiver:
             if not decision.allowed and getattr(listener, "asked_while_free", False):
                 self.deferred.add(lambda listener=listener: listener.handle(event))
                 continue
-            said = self._guarded(listener, event)
-            if said is None:
+            line_text = self._guarded(listener, event)
+            if line_text is None:
                 continue
-            decision = decision.merged(Decision.allowed_with(said.reason) if not said.allowed and not decision.allowed else said)
+            decision = decision.merged(Decision.allowed_with(line_text.reason) if not line_text.allowed and not decision.allowed else line_text)
         return decision
 
     def _guarded(self, listener: Listener, event: AgentEvent) -> Decision | None:

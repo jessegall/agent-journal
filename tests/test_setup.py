@@ -23,7 +23,7 @@ def test_setup_wires_hooks_skills_and_the_law(app: App, monkeypatch):
     monkeypatch.setattr(shutil, "which", lambda name: None)
     root = app.config.root
     (root / "AGENTS.md").write_text("# my project\n\nMy own rules.\n")
-    out = app.console().run(["setup"], Caller("main")).out
+    output = app.console().run(["setup"], Caller("main")).out
     settings = json.loads((root / ".claude/settings.json").read_text())
     assert "SessionStart" in settings["hooks"] and "MessageDisplay" in settings["hooks"]
     command = settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
@@ -33,7 +33,7 @@ def test_setup_wires_hooks_skills_and_the_law(app: App, monkeypatch):
     agents = (root / "AGENTS.md").read_text()
     assert agents.startswith("# my project") and "My own rules." in agents and "L9 - A subagent only reads" in agents
     assert (root / "CLAUDE.md").read_text().strip() == "@AGENTS.md"
-    assert "hooks   .claude/settings.json" in out
+    assert "hooks   .claude/settings.json" in output
     assert not (root / ".codex").exists(), "Codex is wired only where its folder exists or its program is installed"
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/local/bin/{name}")
     assert "hooks   .codex/hooks.json" in app.console().run(["setup"], Caller("main")).out, "a fresh project is wired for Codex when Codex is installed"
@@ -95,8 +95,8 @@ def test_the_private_folder_keeps_keys_and_secrets_to_their_user_and_out_of_git(
     keys, secrets = folder.keys_file(), folder.secrets()
     assert keys.parent == tmp_path / ".journal" / "keys" and secrets == tmp_path / ".config" / "agent-journal" / "secrets", "version 3's secrets folder, so its values open unchanged"
     assert not keys.parent.exists() and not secrets.exists(), "naming the folders makes nothing, so a read never writes into the home folder"
-    for made in (PrivateFolder.created(keys.parent), PrivateFolder.created(secrets)):
-        assert stat.S_IMODE(made.stat().st_mode) == 0o700 and (made / ".gitignore").read_text() == "*\n"
+    for produced in (PrivateFolder.created(keys.parent), PrivateFolder.created(secrets)):
+        assert stat.S_IMODE(produced.stat().st_mode) == 0o700 and (produced / ".gitignore").read_text() == "*\n"
     monkeypatch.setenv(SECRETS_VARIABLE, str(tmp_path / "moved"))
     assert folder.secrets() == tmp_path / "moved"
 

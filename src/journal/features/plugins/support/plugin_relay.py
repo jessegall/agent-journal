@@ -43,13 +43,13 @@ class PluginRelay:
             return []
         return hearers
 
-    def ask(self, plugin: Plugin, event: Event, environment_id: int, within: float) -> PluginAnswer:
+    def ask(self, plugin: Plugin, event: Event, environment_id: int, window: float) -> PluginAnswer:
         if not self.hashes.intact(plugin, environment_id):
             return PluginAnswer()
         self.linked.notice(plugin, environment_id)
         environment = self.environments.find(environment_id).name if environment_id else ""
         try:
-            answer = self.runner.ask(plugin, environment, self.protocol.event_line(event, environment, self.agent_state(event)), within)
+            answer = self.runner.ask(plugin, environment, self.protocol.event_line(event, environment, self.agent_state(event)), window)
         except WindowMissed as missed:
             self.unanswered(plugin, event, environment_id, str(missed))
             return PluginAnswer()
@@ -90,8 +90,8 @@ class PluginRelay:
             self.entries.save(entry.with_(data={**entry.data, "delivered": True}), Actor.system())
         return [e.data["line"] for e in reversed(waiting)]
 
-    def line(self, plugin: Plugin, event: Event, environment_id: int, how: str, text: str) -> None:
-        self.entries.save(Entry(environment_id=environment_id, kind=PLUGIN_LINE_KIND, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": Protocol.published_name(event), "how": how, "words": text}), Actor.plugin(plugin.name))
+    def line(self, plugin: Plugin, event: Event, environment_id: int, manner: str, text: str) -> None:
+        self.entries.save(Entry(environment_id=environment_id, kind=PLUGIN_LINE_KIND, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": Protocol.published_name(event), "how": manner, "words": text}), Actor.plugin(plugin.name))
 
     def unanswered(self, plugin: Plugin, event: Event, environment_id: int, reason: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=UNANSWERED, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": Protocol.published_name(event), "reason": reason}), Actor.system())

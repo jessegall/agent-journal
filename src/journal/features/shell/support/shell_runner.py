@@ -35,40 +35,40 @@ class ShellRunner:
             folder.split(request.line, Chain.parts(request.line))
             if not cap.is_whole() and not cap.is_direct():
                 folder.numbered(self.record.start(folder.folder.name, "\n".join(p.text for p in Chain.parts(request.line) if p.recorded), folder.folder, caller))
-        printed: queue.Queue = queue.Queue()
+        output_text: queue.Queue = queue.Queue()
         ended: list[int] = []
-        thread = threading.Thread(target=lambda: self.worked(folder, request, caller, cap.is_direct(), printed, ended, environment), name="shell-chain", daemon=True)
+        thread = threading.Thread(target=lambda: self.worked(folder, request, caller, cap.is_direct(), output_text, ended, environment), name="shell-chain", daemon=True)
         thread.start()
         last = b"\n"
         with self.scope.environment(environment):
-            for block in (self.direct(printed, thread) if cap.is_direct() else self.foreground(folder, request, caller, cap)):
+            for block in (self.direct(output_text, thread) if cap.is_direct() else self.foreground(folder, request, caller, cap)):
                 last = block[-1:] or last
                 yield block
         if cap.is_direct() or folder.is_finished():
             self.closed(folder, request, caller, cap)
             yield f"{'' if last == b'\n' else chr(10)}{EXIT} {ended[0] if ended else 0}\n".encode()
 
-    def worked(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, printed: queue.Queue, ended: list[int], environment: int) -> None:
+    def worked(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, output_text: queue.Queue, ended: list[int], environment: int) -> None:
         with self.scope.environment(environment):
-            ended.append(self.worker.run(folder, request, caller, direct, printed.put))
-        printed.put(None)
+            ended.append(self.worker.run(folder, request, caller, direct, output_text.put))
+        output_text.put(None)
 
     @staticmethod
-    def direct(printed: queue.Queue, thread: threading.Thread) -> Iterator[bytes]:
+    def direct(output_text: queue.Queue, thread: threading.Thread) -> Iterator[bytes]:
         while True:
-            block = printed.get()
+            block = output_text.get()
             if block is None:
                 thread.join()
                 return
             yield block
 
     def foreground(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> Iterator[bytes]:
-        show = OutputShow(folder, cap)
+        display = OutputShow(folder, cap)
         limit = self.limits.build(request.line, caller.environment)
         shown, tick, began = 0, 0, time.monotonic()
         while True:
             while folder.has_ended(shown):
-                yield show.build(shown).encode()
+                yield display.build(shown).encode()
                 shown += 1
             if folder.is_finished():
                 return

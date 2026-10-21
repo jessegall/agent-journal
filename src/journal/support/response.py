@@ -15,16 +15,16 @@ class Response:
         return cls(status, body)
 
     @classmethod
-    def absent(cls, what: str = "") -> "Response":
-        return cls(404, {"error": what or "not found"})
+    def absent(cls, subject: str = "") -> "Response":
+        return cls(404, {"error": subject or "not found"})
 
     @classmethod
     def missing(cls, error: MissingRow) -> "Response":
         return cls.absent(str(error))
 
     @classmethod
-    def refused(cls, why: str) -> "Response":
-        return cls(409, {"error": why})
+    def refused(cls, reason: str) -> "Response":
+        return cls(409, {"error": reason})
 
     def encoded(self) -> bytes:
         return json.dumps(self.body, cls=JsonOut).encode()

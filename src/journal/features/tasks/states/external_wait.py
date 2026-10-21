@@ -79,8 +79,8 @@ class ExternalWait(Wait):
         from journal.features.tasks.feature import Tasks
         if ref not in self.targets():
             return self.none()
-        left = [waited for waited in self.targets() if waited != ref]
+        remaining = [waited for waited in self.targets() if waited != ref]
         outcomes = "; ".join(part for part in (self.outcomes, outcome) if part)
-        if left:
-            return self.swap(replace(self, ends_on=",".join(left), outcomes=outcomes), *lines)
+        if remaining:
+            return self.swap(replace(self, ends_on=",".join(remaining), outcomes=outcomes), *lines)
         return self.pop(*lines, Tasks.WAIT_END.create(what=self.what, outcome=outcomes))

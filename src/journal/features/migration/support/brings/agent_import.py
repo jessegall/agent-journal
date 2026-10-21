@@ -16,11 +16,11 @@ class AgentImport(EnvironmentKind):
     kind = "agent"
     title = "agents"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, agents: Agents) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, agents: Agents) -> None:
+        super().__init__(environments, tally)
         self.agents = agents
 
-    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Agent:
+    def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Agent:
         transcript = row.data.get("transcript", "")
         session = Path(transcript).stem if transcript else f"version-3-agent-{row.n}"
-        return self.agents.imported(Agent(environment_id=into.id, session=session, provider=row.data.get("provider", "claude"), state="ended"), row.creation_time(), actor)
+        return self.agents.imported(Agent(environment_id=target.id, session=session, provider=row.data.get("provider", "claude"), state="ended"), row.creation_time(), actor)

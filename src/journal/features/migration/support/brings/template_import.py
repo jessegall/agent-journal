@@ -12,8 +12,8 @@ class TemplateImport(BuiltinKind):
     kind = "template"
     title = "templates"
 
-    def __init__(self, ledger: MigratedRows, templates: Templates) -> None:
-        super().__init__(ledger)
+    def __init__(self, tally: MigratedRows, templates: Templates) -> None:
+        super().__init__(tally)
         self.templates = templates
 
     def created(self, row: Version3Row, actor: Actor) -> Template:

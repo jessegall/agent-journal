@@ -28,8 +28,8 @@ class Chain:
 
     @classmethod
     def journal_parts(cls, line: str) -> tuple[int, int]:
-        own = [p for p in cls.parts(line) if p.recorded]
-        return len([p for p in own if cls.is_journal(p.text)]), len(own)
+        owned = [p for p in cls.parts(line) if p.recorded]
+        return len([p for p in owned if cls.is_journal(p.text)]), len(owned)
 
     @classmethod
     def self_parts(cls, line: str) -> list[str]:
@@ -37,10 +37,10 @@ class Chain:
 
     @classmethod
     def work(cls, line: str) -> str:
-        own = [part for part in cls.parts(line) if part.recorded]
-        if not own or not all(part.is_read() for part in own):
+        owned = [part for part in cls.parts(line) if part.recorded]
+        if not owned or not all(part.is_read() for part in owned):
             return "running"
-        return "searching" if any(part.is_search() for part in own) else "reading"
+        return "searching" if any(part.is_search() for part in owned) else "reading"
 
     @classmethod
     def is_journal_line(cls, line: str) -> bool:
@@ -49,13 +49,13 @@ class Chain:
 
     @classmethod
     def is_read_line(cls, line: str) -> bool:
-        own = [p for p in cls.parts(line) if p.recorded]
-        return bool(own) and all(p.is_read() for p in own)
+        owned = [p for p in cls.parts(line) if p.recorded]
+        return bool(owned) and all(p.is_read() for p in owned)
 
     @classmethod
     def is_reading_code_line(cls, line: str) -> bool:
-        own = [p for p in cls.parts(line) if p.recorded]
-        return any(p.is_reading_code() for p in own) and all(p.is_reading_code() or p.is_harmless() or p.is_project_cd() for p in own)
+        owned = [p for p in cls.parts(line) if p.recorded]
+        return any(p.is_reading_code() for p in owned) and all(p.is_reading_code() or p.is_harmless() or p.is_project_cd() for p in owned)
 
     @staticmethod
     def is_journal(part: str) -> bool:
@@ -145,7 +145,7 @@ class Chain:
                     continue
             current, i = current + c, i + 1
         parts.append((separator, Chain.continued(current), start, len(line)))
-        return [(s, p, a, b) for s, p, a, b in parts if p]
+        return [(s, p, item, b) for s, p, item, b in parts if p]
 
     @staticmethod
     def heredoc_end(line: str, start: int, current: str) -> int:
@@ -175,13 +175,13 @@ class Chain:
 
     @staticmethod
     def semicolon_index(line: str, i: int) -> str:
-        alone = line[i:i + 1] == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";"
-        return ";" if alone else ""
+        solitary = line[i:i + 1] == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";"
+        return ";" if solitary else ""
 
     @staticmethod
     def newline_index(line: str, i: int, current: str) -> str:
-        held = current.strip()
-        ends = line[i:i + 1] == "\n" and held and not held.endswith(("|", "||", "|&")) and not held.startswith("#")
+        blocked = current.strip()
+        ends = line[i:i + 1] == "\n" and blocked and not blocked.endswith(("|", "||", "|&")) and not blocked.startswith("#")
         return "\n" if ends else ""
 
     @staticmethod
@@ -215,8 +215,8 @@ class Chain:
     @staticmethod
     def closes(part: str, segments: list[list[str]], closer: str) -> bool:
         text = part.split()
-        after_arm = closer == "esac" and any(w == "esac" and text[i - 1].endswith((";;", ";&", ";|")) for i, w in enumerate(text) if i)
-        return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or after_arm
+        arm_tail = closer == "esac" and any(w == "esac" and text[i - 1].endswith((";;", ";&", ";|")) for i, w in enumerate(text) if i)
+        return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or arm_tail
 
     @staticmethod
     def leads(text: list[str]) -> list[str]:

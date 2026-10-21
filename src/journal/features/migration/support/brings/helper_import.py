@@ -17,10 +17,10 @@ class HelperImport(EnvironmentKind):
     kind = "helper"
     title = "workers"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, workers: Workers) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, workers: Workers) -> None:
+        super().__init__(environments, tally)
         self.workers = workers
 
-    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Worker:
-        worker = Worker(environment_id=into.id, name=row.data.get("name", row.title), brief=row.brief, provider=row.data.get("provider", "claude"), model=row.data.get("model", ""), state=WorkerState.STOPPED)
+    def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Worker:
+        worker = Worker(environment_id=target.id, name=row.data.get("name", row.title), brief=row.brief, provider=row.data.get("provider", "claude"), model=row.data.get("model", ""), state=WorkerState.STOPPED)
         return self.workers.imported(worker, row.creation_time(), actor)

@@ -17,11 +17,11 @@ class ShareCommand(Command):
         self.actions, self.targets, self.shares, self.tunnel = actions, targets, shares, tunnel
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "make a link that opens one document, report or plan, read-only, and nothing else; the agent's waits for the user's Accept in the chat, so share only when the user asks")
-        create.add_argument("ref", help="what it opens, as docs:12, reports:4 or plans:2")
-        create.add_argument("--expires", default="7d", help="when it ends: 12h, 7d or never")
-        create.add_argument("--password", default="", help="a password visitors must give")
-        create.add_argument("--comments", action="store_true", help="let visitors comment under a name of their own; their comments come to the chat")
+        creation = self.verb(verbs, "create", "make a link that opens one document, report or plan, read-only, and nothing else; the agent's waits for the user's Accept in the chat, so share only when the user asks")
+        creation.add_argument("ref", help="what it opens, as docs:12, reports:4 or plans:2")
+        creation.add_argument("--expires", default="7d", help="when it ends: 12h, 7d or never")
+        creation.add_argument("--password", default="", help="a password visitors must give")
+        creation.add_argument("--comments", action="store_true", help="let visitors comment under a name of their own; their comments come to the chat")
         self.verb(verbs, "opens", "what a link to the row would open, before you make it").add_argument("ref")
         self.verb(verbs, "stop", "end a link at once").add_argument("n", type=int)
         self.verb(verbs, "list", "every link here")

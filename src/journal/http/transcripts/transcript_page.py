@@ -15,9 +15,9 @@ class TranscriptPage:
     def __init__(self, turns: list[Turn]) -> None:
         self.turns = turns
 
-    def page(self, since: int = 0, before: int = 0, size: int = PAGE) -> TranscriptSlice:
-        kept = [t for t in self.turns if t.line > since and (not before or t.line < before)]
-        shown = kept[-max(1, min(size, LARGEST)):]
+    def page(self, start: int = 0, previous: int = 0, size: int = PAGE) -> TranscriptSlice:
+        stored = [t for t in self.turns if t.line > start and (not previous or t.line < previous)]
+        shown = stored[-max(1, min(size, LARGEST)):]
         return TranscriptSlice(total=len(self.turns), first=self.turns[0].line if self.turns else 0, turns=[self.heading(t) for t in shown])
 
     @staticmethod

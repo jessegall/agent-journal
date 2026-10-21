@@ -35,10 +35,10 @@ class JournalController:
     """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the current agent is doing this moment."""
 
     def __init__(self, config: Config, manifest: Manifest, environments: Environments, agents: Agents, activity: AgentActivity, current: CurrentWork,
-                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateCard, statistics: Statistics, timings: Timings) -> None:
+                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, threshold: UpdateCard, statistics: Statistics, timings: Timings) -> None:
         self.statistics, self.timings = statistics, timings
         self.config, self.boot, self.environments, self.agents, self.activity, self.current = config, manifest, environments, agents, activity, current
-        self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, mark
+        self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, threshold
 
     def manifest(self, request: Request) -> Response:
         return Response.json(self.boot.assembled(self.first().name))
@@ -57,9 +57,9 @@ class JournalController:
         numbers = self.statistics.lower("developer.")
         kinds = sorted({key.split(".")[2] for key in numbers if key.startswith("developer.hooks.") and key.count(".") == 3})
         times = {"hooks": AnswerTime.read(numbers, "developer.hooks"), "requests": AnswerTime.read(numbers, "developer.requests")}
-        by_kind = {kind: AnswerTime.read(numbers, f"developer.hooks.{kind}").as_data() for kind in kinds}
+        kind_index = {kind: AnswerTime.read(numbers, f"developer.hooks.{kind}").as_data() for kind in kinds}
         as_rows = lambda timings: [{"method": t.method, "route": t.route, "ms": t.ms, "time": t.time} for t in timings]
-        return Response.json({**{key: answer.as_data() for key, answer in times.items()}, "by_kind": by_kind, "recent": as_rows(self.timings.recent(LOGGED_SHOWN)), "slowest": as_rows(self.timings.slowest(LOGGED_SHOWN))})
+        return Response.json({**{key: answer.as_data() for key, answer in times.items()}, "by_kind": kind_index, "recent": as_rows(self.timings.recent(LOGGED_SHOWN)), "slowest": as_rows(self.timings.slowest(LOGGED_SHOWN))})
 
     def developer_reset(self, request: Request) -> Response:
         self.statistics.cleared("developer.", request.actor)
@@ -67,9 +67,9 @@ class JournalController:
         return self.developer(request)
 
     def summary(self, request: Request) -> Response:
-        held = self.mark.paused()
+        blocked = self.mark.paused()
         return Response.json({"project": self.config.root.name, "root": str(self.config.home), "version": VERSION, "started": STARTED, "color": COLOR,
-                              "updating": held.to if held else "", "step": held.step if held else "",
+                              "updating": blocked.to if blocked else "", "step": blocked.step if blocked else "",
                               "environments": [self.data(e) for e in (self.environments.all() or [self.environments.lookup("main")])]})
 
     def data(self, environment: Environment) -> EnvironmentData:

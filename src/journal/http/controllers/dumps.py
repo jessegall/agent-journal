@@ -10,8 +10,8 @@ from journal.repositories.dumps import Dumps
 class DumpController(Controller[Dump]):
     """What the viewer does to a dump: drop one, add files to it, answer its question, pick or decline its next steps, name it, stop, split or remove it; each with the rows it was filed into."""
 
-    def __init__(self, filing: DumpFiler, dumps: Dumps, attachments: Attachments) -> None:
-        self.filing, self.repository, self.attachments = filing, dumps, attachments
+    def __init__(self, sorting: DumpFiler, dumps: Dumps, attachments: Attachments) -> None:
+        self.filing, self.repository, self.attachments = sorting, dumps, attachments
 
     def rows(self) -> list[Dump]:
         return self.repository.in_()

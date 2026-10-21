@@ -18,8 +18,8 @@ class SequenceRun:
 
     @classmethod
     def build(cls, raw: dict) -> "SequenceRun":
-        known = {f.name for f in fields(cls)}
-        return cls(**{**{k: v for k, v in raw.items() if k in known}, "steps": tuple(raw.get("steps", ())), "finishes_in": tuple(raw.get("finishes_in", ()))})
+        existing = {f.name for f in fields(cls)}
+        return cls(**{**{k: v for k, v in raw.items() if k in existing}, "steps": tuple(raw.get("steps", ())), "finishes_in": tuple(raw.get("finishes_in", ()))})
 
     def as_dict(self) -> dict:
         return {**asdict(self), "steps": list(self.steps), "finishes_in": list(self.finishes_in)}
@@ -41,8 +41,8 @@ class SequenceRun:
     def announced(self, time: str) -> "SequenceRun":
         return replace(self, said_at=time)
 
-    def suspended(self, why: str) -> "SequenceRun":
-        return replace(self, parked_why=why)
+    def suspended(self, reason: str) -> "SequenceRun":
+        return replace(self, parked_why=reason)
 
     @property
     def skipped(self) -> tuple[str, ...]:

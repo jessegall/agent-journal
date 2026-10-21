@@ -24,6 +24,6 @@ class FrequentReadIndexes(Migration):
     number: ClassVar[int] = 13
 
     def apply(self, connection: Connection) -> None:
-        for name, on in INDEXES:
-            connection.execute(f"CREATE INDEX IF NOT EXISTS {name} ON {on}")
+        for name, enabled in INDEXES:
+            connection.execute(f"CREATE INDEX IF NOT EXISTS {name} ON {enabled}")
         connection.execute("DROP INDEX IF EXISTS entries_by_kind")

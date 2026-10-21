@@ -13,10 +13,10 @@ class TriggerFire:
     def __init__(self, cards: Cards, runs: RunTracker, sequences: Sequences) -> None:
         self.cards, self.runs, self.sequences = cards, runs, sequences
 
-    def fired(self, matched: list[Trigger], session: str, environment_id: int, by_user: bool) -> None:
+    def fired(self, matched: list[Trigger], session: str, environment_id: int, user_origin: bool) -> None:
         for trigger in matched:
             self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.text), f"triggers:{trigger.id}", shows=CardKind.TRIGGERS)
-            if trigger.action == TriggerAction.SEQUENCE and by_user:
+            if trigger.action == TriggerAction.SEQUENCE and user_origin:
                 self.started(trigger, session, environment_id)
 
     def started(self, trigger: Trigger, session: str, environment_id: int) -> None:

@@ -21,7 +21,7 @@
     {
       "name": "a write in the worker's worktree",
       "answer": {
-        "error": "that file is in worker 1's worktree. Lady Lovelace writes there: `journal worker assign 1 \"<job>\"`, or wait for its report and merge"
+        "error": "that file is in worker 1's worktree. Lady Lovelace writes there: `journal worker send 1 \"<job>\"`, or wait for its report and merge"
       },
       "typed": [],
       "nudges": [

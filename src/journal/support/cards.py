@@ -26,7 +26,7 @@ class Cards:
 
     def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind) -> Message:
         data = {"session": "", "row": "", **data, "key": key, "shows": str(shows)}
-        earlier = self.messages.keyed(key, actor) if key else []
-        if earlier:
-            return self.messages.save(earlier[0].with_(text=label, data=data), actor)
+        older = self.messages.keyed(key, actor) if key else []
+        if older:
+            return self.messages.save(older[0].with_(text=label, data=data), actor)
         return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), actor)

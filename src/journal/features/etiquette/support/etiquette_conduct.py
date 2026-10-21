@@ -26,8 +26,8 @@ class EtiquetteConduct(Conduct):
 
     def on_tool_finished_etiquette(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette
-        every = int(settings.value(Etiquette.REMINDER_INTERVAL))
-        if event.subagent or every <= 0 or event.data.part(Etiquette).lines_since_reminder < every:
+        all_items = int(settings.value(Etiquette.REMINDER_INTERVAL))
+        if event.subagent or all_items <= 0 or event.data.part(Etiquette).lines_since_reminder < all_items:
             return self.none()
         return self.none(Etiquette.JOURNAL_LINE_RULE.create())
 

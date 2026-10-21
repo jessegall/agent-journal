@@ -22,12 +22,12 @@ class Subagents:
     def running_mentioning(self, session: str, subject: str) -> int:
         return sum(1 for row in self.mentioning(session, subject) if row.running)
 
-    def dispatches_mentioning(self, session: str, subject: str, since: float) -> list[Dispatch]:
-        return [row for row in self.mentioning(session, subject) if row.time >= since]
+    def dispatches_mentioning(self, session: str, subject: str, start: float) -> list[Dispatch]:
+        return [row for row in self.mentioning(session, subject) if row.time >= start]
 
     def mentioning(self, session: str, subject: str) -> list[Dispatch]:
-        named = re.compile(rf"\b{re.escape(subject)}\b", re.IGNORECASE)
-        return [row for row in self.rows(session) if named.search(row.brief)]
+        matched = re.compile(rf"\b{re.escape(subject)}\b", re.IGNORECASE)
+        return [row for row in self.rows(session) if matched.search(row.brief)]
 
     def rows(self, session: str) -> list[Dispatch]:
         return self.paired(self.entries.dispatches(session))
@@ -54,9 +54,9 @@ class Subagents:
                 continue
             if e.data.get("tool_name") not in ("Agent", "Task") or e.data.get("refused"):
                 continue
-            given, use = e.data.get("tool_input", {}), e.data.get("tool_use_id", "")
+            value, use = e.data.get("tool_input", {}), e.data.get("tool_use_id", "")
             if e.kind == "ToolStarting":
-                rows.append(Dispatch(f"sub:{e.id}", time, given.get("description", "") or given.get("prompt", "")[:80], f"{given.get('description', '')} {given.get('prompt', '')}", given.get("subagent_type", "") or "subagent", given.get("model", "")))
+                rows.append(Dispatch(f"sub:{e.id}", time, value.get("description", "") or value.get("prompt", "")[:80], f"{value.get('description', '')} {value.get('prompt', '')}", value.get("subagent_type", "") or "subagent", value.get("model", "")))
                 open_[use or f"entry:{e.id}"] = len(rows) - 1
             elif e.kind == "ToolFailed" and open_:
                 i = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
@@ -80,10 +80,10 @@ class Subagents:
             background[receiver] = i
 
     @staticmethod
-    def stopped(rows: list[Dispatch], running: dict[str, int], time: float) -> None:
-        for i in running.values():
+    def stopped(rows: list[Dispatch], active: dict[str, int], time: float) -> None:
+        for i in active.values():
             rows[i] = rows[i].finished("stopped", time)
-        running.clear()
+        active.clear()
 
     @staticmethod
     def answered(response) -> dict:

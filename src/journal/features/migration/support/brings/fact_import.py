@@ -16,12 +16,12 @@ class FactImport(EnvironmentKind):
     kind = "fact"
     title = "facts"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, facts: Facts) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, facts: Facts) -> None:
+        super().__init__(environments, tally)
         self.facts = facts
 
-    def skipped(self, row: Version3Row, into: Environment) -> str:
-        return super().skipped(row, into) or ("struck" if row.completed else "")
+    def skipped(self, row: Version3Row, target: Environment) -> str:
+        return super().skipped(row, target) or ("struck" if row.completed else "")
 
-    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Fact:
-        return self.facts.imported(Fact(environment_id=into.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_time(), actor)
+    def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Fact:
+        return self.facts.imported(Fact(environment_id=target.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_time(), actor)

@@ -19,15 +19,15 @@ class TodoImport(EnvironmentKind):
     kind = "todo"
     title = "tasks"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, tasks: Tasks) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, tasks: Tasks) -> None:
+        super().__init__(environments, tally)
         self.tasks = tasks
 
-    def skipped(self, row: Version3Row, into: Environment) -> str:
-        return super().skipped(row, into) or ("struck" if row.data.get("struck") else "")
+    def skipped(self, row: Version3Row, target: Environment) -> str:
+        return super().skipped(row, target) or ("struck" if row.data.get("struck") else "")
 
-    def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
-        return self.tasks.imported(self.task(row, Task(environment_id=into.id, title=row.title, brief=row.brief)), row.creation_time(), actor)
+    def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Task:
+        return self.tasks.imported(self.task(row, Task(environment_id=target.id, title=row.title, brief=row.brief)), row.creation_time(), actor)
 
     @staticmethod
     def task(row: Version3Row, task: Task) -> Task:

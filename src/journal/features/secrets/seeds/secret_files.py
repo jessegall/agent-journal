@@ -17,12 +17,12 @@ class SecretFiles(Seed):
         self.config, self.secrets = config, secrets
 
     def run(self) -> None:
-        known = {s.title.lower() for s in self.secrets.all()}
+        existing = {s.title.lower() for s in self.secrets.all()}
         for path in sorted((self.config.home / "project" / "secret").glob("*.md")):
             secret = self.read(path)
-            if secret is not None and secret.title.lower() not in known:
+            if secret is not None and secret.title.lower() not in existing:
                 self.secrets.save(secret, Actor.system())
-                known.add(secret.title.lower())
+                existing.add(secret.title.lower())
 
     def read(self, path: Path) -> Secret | None:
         parts = path.read_text().split("---\n", 2)

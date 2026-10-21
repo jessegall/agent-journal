@@ -24,15 +24,15 @@ class WorkerBranch:
         return subprocess.run(["git", *argv], cwd=cwd or self.config.root, capture_output=True, text=True, timeout=GIT_TIMEOUT)
 
     def commit_count(self, worker: Worker) -> list[str]:
-        done = self.git("log", "--reverse", "--format=%h %s", f"HEAD..{self.name(worker)}")
-        return [line for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
+        finished = self.git("log", "--reverse", "--format=%h %s", f"HEAD..{self.name(worker)}")
+        return [line for line in finished.stdout.splitlines() if line.strip()] if finished.returncode == 0 else []
 
     def remaining(self, worker: Worker) -> list[str]:
         folder = self.folder(worker)
         if not folder.is_dir():
             return []
-        done = self.git("status", "--short", cwd=folder)
-        return [line[3:] for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
+        finished = self.git("status", "--short", cwd=folder)
+        return [line[3:] for line in finished.stdout.splitlines() if line.strip()] if finished.returncode == 0 else []
 
     def merge(self, worker: Worker) -> str:
         commits = self.commit_count(worker)

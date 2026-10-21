@@ -68,9 +68,9 @@ class Worktree:
     def dropped(self) -> str:
         if not self.path.is_dir():
             return ""
-        left = [line[3:] for line in self.run_git("status", "--porcelain").stdout.splitlines() if line.strip()]
-        if left:
-            return f"its worktree {self.path} stays, since {len(left)} files in it are not committed: {', '.join(left[:10])}"
+        remaining = [line[3:] for line in self.run_git("status", "--porcelain").stdout.splitlines() if line.strip()]
+        if remaining:
+            return f"its worktree {self.path} stays, since {len(remaining)} files in it are not committed: {', '.join(remaining[:10])}"
         tip = self.run_git("rev-parse", "HEAD").stdout.strip()
         if self.git("merge-base", "--is-ancestor", tip, "HEAD").returncode != 0:
             return f"its worktree {self.path} stays, since its branch has commits not yet in {self.git('rev-parse', '--abbrev-ref', 'HEAD').stdout.strip()}"
@@ -85,10 +85,10 @@ class Worktree:
         return f"worktree {self.path.resolve()}" in listed or f"worktree {self.path}" in listed
 
     def archived(self) -> Path:
-        aside = self.path.with_name(f"{self.name}.moved-aside-{int(time.time())}")
-        self.path.rename(aside)
+        stashed = self.path.with_name(f"{self.name}.moved-aside-{int(time.time())}")
+        self.path.rename(stashed)
         self.git("worktree", "prune")
-        return aside
+        return stashed
 
     def shared(self) -> None:
         wanted = [Path(JOURNAL), *self.untracked(self.skills()), *self.ignored([Path(p) for p in IGNORED_COPIES if (self.root / p).exists()])]
@@ -105,16 +105,16 @@ class Worktree:
         return [path for path in paths if path.parts[:3] not in tracked]
 
     def ignored(self, paths: list[Path]) -> list[Path]:
-        named = set(self.git("check-ignore", *map(str, paths)).stdout.splitlines()) if paths else set()
-        return [path for path in paths if str(path) in named]
+        matched = set(self.git("check-ignore", *map(str, paths)).stdout.splitlines()) if paths else set()
+        return [path for path in paths if str(path) in matched]
 
     def excluded(self, paths: list[Path]) -> None:
         exclude = Path(self.root, self.git("rev-parse", "--git-common-dir").stdout.strip(), "info", "exclude")
         exclude.parent.mkdir(parents=True, exist_ok=True)
-        had = exclude.read_text() if exclude.is_file() else ""
-        lines = [line for line in ("/.claude/worktrees/", *(f"/{path}" for path in paths)) if line not in had.splitlines()]
+        prior = exclude.read_text() if exclude.is_file() else ""
+        lines = [line for line in ("/.claude/worktrees/", *(f"/{path}" for path in paths)) if line not in prior.splitlines()]
         if lines:
-            exclude.write_text(had + ("" if had.endswith("\n") or not had else "\n") + "\n".join(lines) + "\n")
+            exclude.write_text(prior + ("" if prior.endswith("\n") or not prior else "\n") + "\n".join(lines) + "\n")
 
     def cleared(self, place: Path) -> None:
         if place.is_symlink() or not place.is_dir():
@@ -131,10 +131,10 @@ class Worktree:
         if place.exists() and not place.is_symlink():
             return
         place.parent.mkdir(parents=True, exist_ok=True)
-        fresh = place.with_name(f".{place.name}.{os.getpid()}.link")
-        fresh.unlink(missing_ok=True)
-        fresh.symlink_to(target, target_is_directory=target.is_dir())
-        os.replace(fresh, place)
+        recent = place.with_name(f".{place.name}.{os.getpid()}.link")
+        recent.unlink(missing_ok=True)
+        recent.symlink_to(target, target_is_directory=target.is_dir())
+        os.replace(recent, place)
 
     def run_git(self, *args: str) -> subprocess.CompletedProcess:
         return subprocess.run(["git", "-C", str(self.path), *args], capture_output=True, text=True, timeout=GIT_SECONDS)

@@ -50,12 +50,12 @@ class TypedLines:
         self._held.append(line)
 
     def batched(self, environment_id: int) -> QueuedLine | None:
-        held = [h for h in self._held if h.environment_id == environment_id]
-        if not held:
+        blocked = [h for h in self._held if h.environment_id == environment_id]
+        if not blocked:
             return None
         self._held = [h for h in self._held if h.environment_id != environment_id]
-        lines = [h.line.removeprefix(JOURNAL_PREFIX).strip() for h in held]
-        return QueuedLine(environment_id, f"{JOURNAL_PREFIX} {' | '.join(lines)}", max(h.after for h in held))
+        lines = [h.line.removeprefix(JOURNAL_PREFIX).strip() for h in blocked]
+        return QueuedLine(environment_id, f"{JOURNAL_PREFIX} {' | '.join(lines)}", max(h.after for h in blocked))
 
     def typed(self, environment_id: int, line: str) -> None:
         moment = timing.time()
@@ -67,26 +67,26 @@ class TypedLines:
         return any(t.environment_id == environment_id and t.contains(prompt) for t in self._recent if timing.time() - t.time < RECENT)
 
     def confirm(self, environment_id: int, prompt: str) -> bool:
-        for typed in self._waiting:
-            if typed.environment_id == environment_id and typed.contains(prompt):
-                self._waiting.remove(typed)
+        for keystrokes in self._waiting:
+            if keystrokes.environment_id == environment_id and keystrokes.contains(prompt):
+                self._waiting.remove(keystrokes)
                 return True
         return False
 
     def confirm_naming(self, environment_id: int, message_id: int) -> bool:
-        named = [t for t in self._waiting if t.environment_id == environment_id and message_id in t.message_numbers()]
-        for typed in named:
-            self._waiting.remove(typed)
-        return bool(named)
+        matched = [t for t in self._waiting if t.environment_id == environment_id and message_id in t.message_numbers()]
+        for keystrokes in matched:
+            self._waiting.remove(keystrokes)
+        return bool(matched)
 
-    def overdue(self, environment_id: int, before: float) -> list[TypedLine]:
-        return [t for t in self._waiting if t.environment_id == environment_id and t.time <= before]
+    def overdue(self, environment_id: int, previous: float) -> list[TypedLine]:
+        return [t for t in self._waiting if t.environment_id == environment_id and t.time <= previous]
 
-    def retry(self, typed: TypedLine, time: float) -> TypedLine:
-        again = TypedLine(typed.environment_id, typed.line, time, typed.tries + 1)
-        self._waiting[self._waiting.index(typed)] = again
-        self._recent = [t for t in self._recent if time - t.time < RECENT] + [again]
-        return again
+    def retry(self, keystrokes: TypedLine, time: float) -> TypedLine:
+        repeat = TypedLine(keystrokes.environment_id, keystrokes.line, time, keystrokes.tries + 1)
+        self._waiting[self._waiting.index(keystrokes)] = repeat
+        self._recent = [t for t in self._recent if time - t.time < RECENT] + [repeat]
+        return repeat
 
-    def abandon(self, typed: TypedLine) -> None:
-        self._waiting.remove(typed)
+    def abandon(self, keystrokes: TypedLine) -> None:
+        self._waiting.remove(keystrokes)

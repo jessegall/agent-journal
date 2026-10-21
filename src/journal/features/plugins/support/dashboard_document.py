@@ -14,9 +14,9 @@ class DashboardDocument:
 
     def build(self, plugin: Plugin) -> DashboardView:
         board = plugin.manifest.dashboard
-        written = self.folders.data(plugin) / "dashboards" / f"{board.get('name', '')}.json"
-        if board.get("name") and written.is_file():
-            return DashboardView.parsed(json.loads(written.read_text()))
+        saved = self.folders.data(plugin) / "dashboards" / f"{board.get('name', '')}.json"
+        if board.get("name") and saved.is_file():
+            return DashboardView.parsed(json.loads(saved.read_text()))
         lines = self.rows.rows(plugin.name)
         if not lines:
             return DashboardView(missing=f"{plugin.name} has written nothing on its dashboard yet.")

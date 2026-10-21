@@ -46,7 +46,7 @@ class Provider:
 
     def transcript(self, project: Path, session: str) -> Path | None: ...
 
-    def latest_session(self, project: Path, since: float) -> str:
+    def latest_session(self, project: Path, start: float) -> str:
         return ""
 
     def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
@@ -63,8 +63,8 @@ class Provider:
         return Provider.rows(text[: text.rfind("\n") + 1], 0)
 
     @staticmethod
-    def rows(text: str, before: int) -> Iterator[tuple[int, dict]]:
-        for number, line in enumerate(text.splitlines(), before + 1):
+    def rows(text: str, previous: int) -> Iterator[tuple[int, dict]]:
+        for number, line in enumerate(text.splitlines(), previous + 1):
             if line.startswith("{"):
                 yield number, json.loads(line)
 
@@ -75,7 +75,7 @@ class Provider:
     def turn_thoughts(self, project: Path, session: str) -> list[str]:
         return []
 
-    def earlier_texts(self, project: Path, session: str, read: int, until: float) -> FileWrites:
+    def earlier_texts(self, project: Path, session: str, read: int, deadline: float) -> FileWrites:
         path = self.transcript(project, session)
         if path is None or read < 0:
             return FileWrites([], [], read)
@@ -85,7 +85,7 @@ class Provider:
         rows, time = [], read
         for line in raw[:raw.rfind(b"\n") + 1].splitlines(keepends=True):
             row = json.loads(line) if line.startswith(b"{") else {}
-            if self.seconds(str(row.get("timestamp", ""))) >= until:
+            if self.seconds(str(row.get("timestamp", ""))) >= deadline:
                 break
             rows.append(row)
             time += len(line)
@@ -103,12 +103,12 @@ class Provider:
         with path.open("rb") as file:
             file.seek(read)
             raw = file.read()
-        whole = raw.rfind(b"\n") + 1
-        lines = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
-        return self.edited_files(lines, read + whole)
+        full = raw.rfind(b"\n") + 1
+        lines = [json.loads(line) for line in raw[:full].decode(errors="replace").splitlines() if line.startswith("{")]
+        return self.edited_files(lines, read + full)
 
     def edited_files(self, rows: list[dict], time: int) -> FileWrites:
-        return FileWrites([text for row in rows for text in self.texts(row)], [crossed for row in rows for crossed in self.peer_messages(row)], time)
+        return FileWrites([text for row in rows for text in self.texts(row)], [arrived for row in rows for arrived in self.peer_messages(row)], time)
 
     def texts(self, line: dict) -> list[str]:
         return []
@@ -130,8 +130,8 @@ class Provider:
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         ...
 
-    def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
-        return out.strip() or err.strip(), ""
+    def worker_outcome(self, output: str, err: str) -> tuple[str, str]:
+        return output.strip() or err.strip(), ""
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
         kind = hook.kind
@@ -149,8 +149,8 @@ class Provider:
         return {kind.value: [{"hooks": [{"type": "command", "command": command}]}] for kind in self.hook_kinds}
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
-        for other in self.other_settings:
-            self.unwired(project / self.home / other)
+        for counterpart in self.other_settings:
+            self.unwired(project / self.home / counterpart)
         path = project / self.home / self.settings_file
         settings = json.loads(path.read_text()) if path.is_file() else {}
         hooks = {kind: [b for b in blocks if not self.journal_paths(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
@@ -184,10 +184,10 @@ class Provider:
         return Reads.build(ToolInput.parsed(input).command) if tool == self.shell_tool else ()
 
     def file_lines(self, tool: str, input: dict) -> int:
-        given = ToolInput.parsed(input)
-        if tool != self.read_tool or not given.file or given.limit or given.offset:
+        value = ToolInput.parsed(input)
+        if tool != self.read_tool or not value.file or value.limit or value.offset:
             return 0
-        return FileLines.build(Path(given.file).expanduser())
+        return FileLines.build(Path(value.file).expanduser())
 
     def edited_paths(self, tool: str, input: dict) -> list[str]:
         if tool == self.shell_tool:

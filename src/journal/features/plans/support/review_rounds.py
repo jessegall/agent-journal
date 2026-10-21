@@ -32,8 +32,8 @@ class ReviewRounds:
                 self.links.save(Link(source=Ref.build(review), target=Ref.build(report), kind=FILED), caller.actor)
 
     def recent_reports(self, plan: Plan, review: PlanReview) -> list[Report]:
-        about = [ref.id for ref in self.links.sources(plan, Messages.SUBJECT_LINK) if ref.type == Report.table()]
-        return [report for report in self.reports.numbered(about) if report.created_at >= review.created_at]
+        topic = [ref.id for ref in self.links.sources(plan, Messages.SUBJECT_LINK) if ref.type == Report.table()]
+        return [report for report in self.reports.numbered(topic) if report.created_at >= review.created_at]
 
     def report_ids(self, review: PlanReview) -> list[int]:
         return [ref.id for ref in self.links.targets(review, FILED)]

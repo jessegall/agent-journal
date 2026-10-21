@@ -44,13 +44,13 @@ class SharePages:
         shut = self.shut(parts, authorization, place)
         if shut:
             return shut
-        share, rest = self.shares.token_match(parts[1]), parts[2:]
-        if not rest:
+        share, remainder = self.shares.token_match(parts[1]), parts[2:]
+        if not remainder:
             return self.page(share, address)
-        if rest == ["data.json"]:
+        if remainder == ["data.json"]:
             return ShareAnswer(200, json.dumps(self.data.build(share), cls=JsonOut).encode(), "application/json", APP_HEADERS)
-        if rest[0] == "assets" and len(rest) == 2:
-            return self.asset(rest[1])
+        if remainder[0] == "assets" and len(remainder) == 2:
+            return self.asset(remainder[1])
         return self.missing(404)
 
     def post(self, path: str, comment: VisitorComment, authorization: str | None, place: str) -> ShareAnswer:
@@ -84,23 +84,23 @@ class SharePages:
         with self.scope.environment(share.environment_id):
             return self.registry.is_enabled(Sharing)
 
-    def locked(self, share: Share, given: str | None, place: str) -> ShareAnswer | None:
+    def locked(self, share: Share, value: str | None, place: str) -> ShareAnswer | None:
         if not share.password:
             return None
         if self.wrong.locked(place):
             return self.missing(429)
-        if given is not None and self.unlocks(share, given):
+        if value is not None and self.unlocks(share, value):
             return None
-        if given is not None:
+        if value is not None:
             self.wrong.count(place)
         return ShareAnswer(401, headers={"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
 
-    def unlocks(self, share: Share, given: str) -> bool:
-        if self._unlocked.get(share.id) == given:
+    def unlocks(self, share: Share, value: str) -> bool:
+        if self._unlocked.get(share.id) == value:
             return True
-        if not SharePassword.matches(given, share.password):
+        if not SharePassword.matches(value, share.password):
             return False
-        self._unlocked[share.id] = given
+        self._unlocked[share.id] = value
         return True
 
     @staticmethod

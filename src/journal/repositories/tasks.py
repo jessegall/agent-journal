@@ -28,14 +28,14 @@ class Tasks(ScopedRepository[Task]):
         return [ref for ref in self.links.targets(row, WAIT_LINK) if not self.waiting(ref).is_resolved()]
 
     def waits_reach(self, start: Ref, goal: Ref) -> bool:
-        seen, todo = set(), [start]
+        viewed, todo = set(), [start]
         while todo:
             ref = todo.pop()
             if ref == goal:
                 return True
-            if ref in seen or ref.type != Task.table():
+            if ref in viewed or ref.type != Task.table():
                 continue
-            seen.add(ref)
+            viewed.add(ref)
             todo += self.links.targets(self.find(ref.id), WAIT_LINK)
         return False
 
@@ -55,8 +55,8 @@ class Tasks(ScopedRepository[Task]):
         return [task for ref in self.links.sources(model, WAIT_LINK) if ref.type == Task.table() and (task := self.find(ref.id)).state == TaskState.BLOCKED]
 
     def reason(self, row: Task | Plan) -> str:
-        named = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAIT_LINK)]
-        return ", ".join(part for part in (*named, row.blocked_why) if part)
+        matched = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAIT_LINK)]
+        return ", ".join(part for part in (*matched, row.blocked_why) if part)
 
     def with_state(self, state: TaskState) -> list[Task]:
         return self.matching(state=state)
@@ -65,9 +65,9 @@ class Tasks(ScopedRepository[Task]):
         return next(iter(self.with_state(TaskState.STARTED)), None)
 
     def refuse_second(self, task: Task) -> None:
-        other = self.current()
-        if task.state == TaskState.STARTED and other is not None and other.id != task.id:
-            raise Rejection(f"task {other.id} is in hand: finish it, or park it with `journal task suspend {other.id} \"<why>\"`, before task {task.id} is started")
+        counterpart = self.current()
+        if task.state == TaskState.STARTED and counterpart is not None and counterpart.id != task.id:
+            raise Rejection(f"task {counterpart.id} is in hand: finish it, or park it with `journal task suspend {counterpart.id} \"<why>\"`, before task {task.id} is started")
 
     def unfinished_count(self) -> int:
         return self.count("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",

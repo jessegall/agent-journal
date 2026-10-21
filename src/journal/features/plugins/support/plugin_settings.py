@@ -67,14 +67,14 @@ class PluginSettings:
 
     def supplied(self, plugin: Plugin) -> dict[str, str]:
         values = self.values.values()
-        given = {}
+        value = {}
         for setting in plugin.settings.values():
             if not isinstance(setting, dict) or "secret" not in setting:
                 continue
             secret = self.secrets.find(setting["secret"])
             if self.program(plugin) in secret.programs:
-                given |= {f["variable"]: values[f["variable"]] for f in secret.fields if f["variable"] in values}
-        return given
+                value |= {f["variable"]: values[f["variable"]] for f in secret.fields if f["variable"] in values}
+        return value
 
     @staticmethod
     def program(plugin: Plugin) -> str:

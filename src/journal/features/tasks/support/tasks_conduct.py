@@ -25,7 +25,7 @@ class TasksConduct(Conduct):
         from journal.features.tasks.feature import Tasks
         command = event.call.command
         last = event.data.part(Tasks).last_commands
-        if not command or len(last) < POLL_REPEAT_LIMIT or any(earlier != command for earlier in last):
+        if not command or len(last) < POLL_REPEAT_LIMIT or any(older != command for older in last):
             return self.none()
         return self.none(Tasks.STOP_POLLING.create(times=POLL_REPEAT_LIMIT, command=command))
 

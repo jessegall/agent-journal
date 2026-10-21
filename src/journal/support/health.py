@@ -45,11 +45,11 @@ class Health:
 
     def probe(self) -> HealthReport:
         try:
-            out = subprocess.run(["claude", "mcp", "list"], cwd=self.config.root, capture_output=True, text=True, timeout=60).stdout
+            output = subprocess.run(["claude", "mcp", "list"], cwd=self.config.root, capture_output=True, text=True, timeout=60).stdout
         except (OSError, subprocess.TimeoutExpired) as failed:
             return HealthReport(failure=str(failed))
         rows = {}
-        for line in out.splitlines():
+        for line in output.splitlines():
             if match := LINE.match(line.strip()):
                 rows[match["name"]] = ServerCatalogue(match["name"], match["how"].replace(" (HTTP)", "").replace(" (SSE)", ""), STATES[match["mark"]], match["words"].strip())
         return HealthReport(rows)

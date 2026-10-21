@@ -20,7 +20,7 @@ class TasksDataReader:
         self.tasks, self.plans, self.entries, self.logs = tasks, plans, entries, logs
 
     def read(self, agent: Agent) -> TasksData:
-        in_hand = self.tasks.current()
+        current_task = self.tasks.current()
         parked = [task for task in self.tasks.with_state(TaskState.SUSPENDED) if PlanState.SUSPENDED not in self.plans.plan_states(task)]
         blocked_without_wait = self.tasks.blocked_without_wait()
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
@@ -28,8 +28,8 @@ class TasksDataReader:
         free = self.plans.free()
         open_tasks = self.tasks.with_state(TaskState.OPEN)
         return TasksData(
-            in_hand=in_hand.id if in_hand else 0,
-            last_log_line=self.last_log(in_hand) if in_hand else "",
+            current_task=current_task.id if current_task else 0,
+            last_log_line=self.last_log(current_task) if current_task else "",
             parked=tuple(t.id for t in parked),
             parked_summary=", ".join(f"task {task.id} ({task.title}), parked because: {task.parked_why}" for task in parked),
             blocked=tuple(t.id for t in self.tasks.with_state(TaskState.BLOCKED)),

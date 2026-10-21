@@ -34,5 +34,5 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
             return False
         return True
 
-    def surplus(self, kept: int) -> list[CommandOutput]:
-        return self.selected_globally("id NOT IN (SELECT id FROM command_outputs ORDER BY id DESC LIMIT ?) ORDER BY id", (kept,))
+    def surplus(self, stored: int) -> list[CommandOutput]:
+        return self.selected_globally("id NOT IN (SELECT id FROM command_outputs ORDER BY id DESC LIMIT ?) ORDER BY id", (stored,))

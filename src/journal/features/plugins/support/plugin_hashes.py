@@ -21,7 +21,7 @@ class PluginHashes:
         return {path: self.hashed(folder / path) for path in manifest.programs}
 
     def intact(self, plugin: Plugin, environment_id: int) -> bool:
-        changed = [path for path, was in plugin.hashes.items() if self.hashed(self.folders.folder(plugin) / path) != was]
+        changed = [path for path, prior_row in plugin.hashes.items() if self.hashed(self.folders.folder(plugin) / path) != prior_row]
         if not changed:
             return True
         self.plugins.save(self.plugins.lookup(plugin.name).with_(enabled=False), Actor.system())

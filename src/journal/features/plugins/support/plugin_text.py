@@ -15,6 +15,6 @@ class PluginText:
         return f"[plugin {plugin.name}] {self.plain(text)}"
 
     def plain(self, text: str) -> str:
-        for mark, plain in NEUTRAL.items():
-            text = text.replace(mark, plain)
+        for threshold, plain in NEUTRAL.items():
+            text = text.replace(threshold, plain)
         return OutputMask(self.masks.current()).masked(text.encode()).decode()

@@ -17,16 +17,16 @@ class UpdateCard:
     def __init__(self, config: Config) -> None:
         self.path = config.home / "runtime" / "updating.json"
 
-    def claim(self, before: str, to: str) -> None:
-        held = self.paused()
-        if held is not None and not held.is_stale(timing.time()):
-            raise Rejection(f"an update to {held.to} is under way since {timing.strftime('%H:%M', timing.localtime(held.time))}")
-        self.write(UpdatePause(before, to, FIRST_STEP, timing.time(), os.getpid()))
+    def claim(self, previous: str, destination: str) -> None:
+        blocked = self.paused()
+        if blocked is not None and not blocked.is_stale(timing.time()):
+            raise Rejection(f"an update to {blocked.to} is under way since {timing.strftime('%H:%M', timing.localtime(blocked.time))}")
+        self.write(UpdatePause(previous, destination, FIRST_STEP, timing.time(), os.getpid()))
 
     def step(self, step: str) -> None:
-        held = self.paused()
-        if held is not None:
-            self.write(held.step_pause(step))
+        blocked = self.paused()
+        if blocked is not None:
+            self.write(blocked.step_pause(step))
 
     def paused(self) -> UpdatePause | None:
         if not self.path.is_file():
@@ -40,8 +40,8 @@ class UpdateCard:
     def clear(self) -> None:
         self.path.unlink(missing_ok=True)
 
-    def write(self, held: UpdatePause) -> None:
+    def write(self, blocked: UpdatePause) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        written = self.path.with_suffix(".tmp")
-        written.write_text(json.dumps(asdict(held)))
-        written.replace(self.path)
+        saved = self.path.with_suffix(".tmp")
+        saved.write_text(json.dumps(asdict(blocked)))
+        saved.replace(self.path)

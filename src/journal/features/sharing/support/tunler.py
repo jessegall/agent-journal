@@ -49,8 +49,8 @@ class Tunler:
         pids = []
         for line in listed.stdout.splitlines():
             pid, _, command = line.strip().partition(" ")
-            words = command.split()
-            if any(word.rsplit("/", 1)[-1] == "tunler" for word in words[:2]) and f"--domain={subdomain}" in words:
+            terms = command.split()
+            if any(word.rsplit("/", 1)[-1] == "tunler" for word in terms[:2]) and f"--domain={subdomain}" in terms:
                 pids.append(int(pid))
         return pids
 
@@ -75,9 +75,9 @@ class Tunler:
         command = self.command()
         if not command:
             return TunlerStatus(installed=False)
-        done = self.run_result([command, "status", "--json"], STATUS_SECONDS)
+        finished = self.run_result([command, "status", "--json"], STATUS_SECONDS)
         try:
-            fields = json.loads(done.stdout) if done else None
+            fields = json.loads(finished.stdout) if finished else None
         except ValueError:
             fields = None
         if not isinstance(fields, dict):
@@ -90,27 +90,27 @@ class Tunler:
         hidden = {"TUNLER_PASSWORD": password}
         if master:
             hidden["TUNLER_MASTER_PASSWORD"] = master
-        ok, output = self.reported("login", username, f"--host={host}", hidden=hidden)
+        success, output = self.reported("login", username, f"--host={host}", hidden=hidden)
         self.drop()
-        if ok:
+        if success:
             return TunlerLogin(connected=True)
         lines = output.splitlines() or ["tunler refused the login"]
         needs = "master password" in output.lower() and not master
         return TunlerLogin(connected=False, needs_master=needs, error=lines[0] if needs else lines[-1])
 
     def logout(self) -> None:
-        ok, output = self.reported("logout")
+        success, output = self.reported("logout")
         self.drop()
-        if not ok:
+        if not success:
             raise Rejection(output or "tunler did not log out")
 
     def versions(self, host: str) -> TunlerVersion:
         return self._versions.setdefault(host, CachedAnswer(lambda: self.version_list(host), LIST_CACHE_SECONDS, TunlerVersion("", "", False))).supplied()
 
     def version_list(self, host: str) -> TunlerVersion:
-        ok, output = self.reported("update", "--check", "--json", f"--host={host}")
+        success, output = self.reported("update", "--check", "--json", f"--host={host}")
         try:
-            reported = json.loads(output) if ok else {}
+            reported = json.loads(output) if success else {}
         except ValueError:
             reported = {}
         if "update_available" in reported:
@@ -119,8 +119,8 @@ class Tunler:
         return TunlerVersion(current, newest, bool(current and newest and current != newest))
 
     def installed_version(self) -> str:
-        ok, output = self.reported("version")
-        return output.split()[-1] if ok and output else ""
+        success, output = self.reported("version")
+        return output.split()[-1] if success and output else ""
 
     @staticmethod
     def latest(host: str) -> str:
@@ -131,9 +131,9 @@ class Tunler:
             return ""
 
     def update(self) -> str:
-        ok, output = self.reported("update")
+        success, output = self.reported("update")
         self.drop()
-        if not ok:
+        if not success:
             raise Rejection(output or "tunler did not update")
         return output.splitlines()[-1] if output else "tunler is up to date"
 
@@ -141,13 +141,13 @@ class Tunler:
         return self._domains.supplied()
 
     def domain_list(self) -> list[str]:
-        ok, output = self.reported("domains")
-        return [line.strip() for line in output.splitlines() if line.strip()] if ok else []
+        success, output = self.reported("domains")
+        return [line.strip() for line in output.splitlines() if line.strip()] if success else []
 
     def release(self, domain: str, host: str) -> str:
-        ok, output = self.reported("release", domain.removesuffix(f".{host}"))
+        success, output = self.reported("release", domain.removesuffix(f".{host}"))
         self.drop()
-        return "" if ok else output or f"tunler did not release {domain}"
+        return "" if success else output or f"tunler did not release {domain}"
 
     def install(self, host: str) -> str:
         arch = platform.machine().lower()
@@ -170,29 +170,29 @@ class Tunler:
                 part.unlink(missing_ok=True)
                 raise Rejection(f"tunler could not be downloaded from {host}: {error}") from error
         curl = shutil.which("curl")
-        done = self.run_result([curl, "-fsSL", "-o", str(part), url], DOWNLOAD_SECONDS) if curl else None
-        if not done or done.returncode:
+        finished = self.run_result([curl, "-fsSL", "-o", str(part), url], DOWNLOAD_SECONDS) if curl else None
+        if not finished or finished.returncode:
             part.unlink(missing_ok=True)
             raise Rejection(CERTIFICATES)
 
     def verified(self, binary: Path) -> str:
-        done = self.run_result([str(binary), "version"], STATUS_SECONDS)
-        if done and done.returncode == KILLED and platform.system() == "Darwin":
+        finished = self.run_result([str(binary), "version"], STATUS_SECONDS)
+        if finished and finished.returncode == KILLED and platform.system() == "Darwin":
             self.run_result(["codesign", "--force", "--sign", "-", str(binary)], STATUS_SECONDS)
-            done = self.run_result([str(binary), "version"], STATUS_SECONDS)
-        if done and done.returncode == 0 and done.stdout.startswith("tunler "):
-            return done.stdout.split()[-1]
+            finished = self.run_result([str(binary), "version"], STATUS_SECONDS)
+        if finished and finished.returncode == 0 and finished.stdout.startswith("tunler "):
+            return finished.stdout.split()[-1]
         binary.unlink(missing_ok=True)
-        raise Rejection(BLOCKED if done and done.returncode == KILLED else BROKEN_TUNLER)
+        raise Rejection(BLOCKED if finished and finished.returncode == KILLED else BROKEN_TUNLER)
 
     def reported(self, *text: str, hidden: dict | None = None) -> tuple[bool, str]:
         command = self.command()
         if not command:
             return False, "tunler isn't installed on this machine"
-        done = self.run_result([command, *text], COMMAND_SECONDS, hidden)
-        if done is None:
+        finished = self.run_result([command, *text], COMMAND_SECONDS, hidden)
+        if finished is None:
             return False, f"tunler {text[0]} did not finish"
-        return done.returncode == 0, (done.stdout if done.returncode == 0 else done.stderr or done.stdout).strip()
+        return finished.returncode == 0, (finished.stdout if finished.returncode == 0 else finished.stderr or finished.stdout).strip()
 
     @staticmethod
     def run_result(command: list[str], seconds: float, hidden: dict | None = None) -> subprocess.CompletedProcess | None:

@@ -8,8 +8,8 @@ class SessionRunTransfer(AgentListener[SessionStarted]):
 
     blocking = True
 
-    def __init__(self, running: RunTracker) -> None:
-        self.running = running
+    def __init__(self, active: RunTracker) -> None:
+        self.running = active
 
     def handle(self, event: SessionStarted) -> None:
         self.running.transfer(event.session, event.environment_id)

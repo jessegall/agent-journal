@@ -46,30 +46,30 @@ class RecordTurn(AgentListener[TurnDisplayed]):
             self._record(event)
 
     def _record(self, event: TurnDisplayed) -> None:
-        actor, whole = Actor.agent(event.session), event.text
-        for tagged, part in self.sections(whole):
+        actor, full = Actor.agent(event.session), event.text
+        for tagged, part in self.sections(full):
             if self.is_recorded(part):
                 continue
             text = Tags.visible(part)
             answered = self.unanswered(tagged, event)
-            quiet = (Tags.hidden(part) and not answered) or self.is_repeat_reply(text, tagged, event)
+            silent = (Tags.hidden(part) and not answered) or self.is_repeat_reply(text, tagged, event)
             acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._journal_answer(event)
-            if text and not quiet:
+            if text and not silent:
                 reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), actor)
                 for n in answered[1:]:
                     self._other_answers(reply, n, actor)
             for n in answered:
                 self._read_receipt(n, actor)
-        for n in self.orphan_obligation(whole)[:1]:
+        for n in self.orphan_obligation(full)[:1]:
             self.supervisor.type(event.environment_id, f"the [!reply:{n}] tag must open a line of your turn; message {n} is still unanswered")
 
     def unanswered(self, tagged: list[int], event: TurnDisplayed) -> list[int]:
         from journal.features.messages.feature import Messages as MessagesFeature
-        fresh = [n for n in tagged if self.earlier_reply(n) is None]
-        if tagged and not fresh:
-            said = MessagesFeature.DUPLICATE_REPLY.create(n=tagged[0], reply=self.earlier_reply(tagged[0]).id)
-            self.supervisor.type(event.environment_id, said.rendered())
-        return fresh
+        recent = [n for n in tagged if self.earlier_reply(n) is None]
+        if tagged and not recent:
+            line_text = MessagesFeature.DUPLICATE_REPLY.create(n=tagged[0], reply=self.earlier_reply(tagged[0]).id)
+            self.supervisor.type(event.environment_id, line_text.rendered())
+        return recent
 
     def earlier_reply(self, n: int) -> Message | None:
         try:
@@ -91,29 +91,29 @@ class RecordTurn(AgentListener[TurnDisplayed]):
         prompts = [e for e in self.entries.kind_entries("PromptSubmitted") if e.actor and e.actor.id == event.session]
         return prompts[0] if prompts else None
 
-    def orphan_obligation(self, whole: str) -> list[int]:
-        strays = [int(n) for n in STRAY_TAG.findall(Tags.visible(whole))]
+    def orphan_obligation(self, full: str) -> list[int]:
+        strays = [int(n) for n in STRAY_TAG.findall(Tags.visible(full))]
         if not strays:
             return []
-        owed = {m.id for m in self.messages.unread() + self.messages.unanswered()}
-        return [n for n in strays if n in owed]
+        obligations = {m.id for m in self.messages.unread() + self.messages.unanswered()}
+        return [n for n in strays if n in obligations]
 
     def is_recorded(self, part: str) -> bool:
         text = Tags.visible(part)
         return any(m.author == Author.AGENT and m.text == text for m in self.messages.recent(30))
 
     @staticmethod
-    def sections(whole: str) -> list[tuple[list[int], str]]:
-        tags = list(REPLY_TAG.finditer(whole))
+    def sections(full: str) -> list[tuple[list[int], str]]:
+        tags = list(REPLY_TAG.finditer(full))
         numbers = lambda tag: [int(n) for n in tag.group(1).split(",")]
         if len(tags) <= 1:
-            return [([n for tag in tags for n in numbers(tag)], whole)]
+            return [([n for tag in tags for n in numbers(tag)], full)]
         parts = []
         for i, tag in enumerate(tags):
-            end = tags[i + 1].start() if i + 1 < len(tags) else len(whole)
-            lead = whole[: tag.start()].strip() if i == 0 else ""
-            rest = whole[tag.end():end].strip()
-            parts.append((numbers(tag), f"{lead}\n\n{rest}" if lead else rest))
+            end = tags[i + 1].start() if i + 1 < len(tags) else len(full)
+            lead = full[: tag.start()].strip() if i == 0 else ""
+            remainder = full[tag.end():end].strip()
+            parts.append((numbers(tag), f"{lead}\n\n{remainder}" if lead else remainder))
         return parts
 
     def _journal_answer(self, event: TurnDisplayed) -> bool:
@@ -122,12 +122,12 @@ class RecordTurn(AgentListener[TurnDisplayed]):
         if not prompt.startswith(JOURNAL_LINE) or self._chat_answer(event, prompt[len(JOURNAL_LINE):]):
             return False
         provider = self.providers.lookup(event.provider)
-        since = self.entries.recent(entry.id)
-        return not any(e.kind == "ToolStarting" and e.is_write() for e in since)
+        start = self.entries.recent(entry.id)
+        return not any(e.kind == "ToolStarting" and e.is_write() for e in start)
 
     def _chat_answer(self, event: TurnDisplayed, line: str) -> bool:
-        said = [e for e in self.entries.kind_entries("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
-        nudge = self.registry.nudge_keyed(said[-1].data["key"]) if said else None
+        line_text = [e for e in self.entries.kind_entries("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
+        nudge = self.registry.nudge_keyed(line_text[-1].data["key"]) if line_text else None
         return bool(nudge and nudge.answered_in_chat)
 
     def _other_answers(self, reply: Message, n: int, actor: Actor) -> None:

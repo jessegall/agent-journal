@@ -12,5 +12,5 @@ class SavedPlace:
 
     @classmethod
     def parsed(cls, data: dict) -> "SavedPlace":
-        known = {f.name for f in fields(cls)}
-        return cls(**{name: tuple(value) if isinstance(value, list) else value for name, value in data.items() if name in known})
+        existing = {f.name for f in fields(cls)}
+        return cls(**{name: tuple(value) if isinstance(value, list) else value for name, value in data.items() if name in existing})

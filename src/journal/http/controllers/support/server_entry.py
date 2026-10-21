@@ -17,5 +17,5 @@ class ServerEntry:
     has_key: bool = False
     last_error: str = ""
 
-    def origin(self, mark: str) -> bool:
-        return bool(mark) and mark in f"{self.command} {self.url}"
+    def origin(self, threshold: str) -> bool:
+        return bool(threshold) and threshold in f"{self.command} {self.url}"

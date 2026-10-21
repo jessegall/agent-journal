@@ -9,24 +9,24 @@ class Agents(ScopedRepository[Agent]):
     model = Agent
 
     def current(self) -> Agent | None:
-        alive = [a for a in self.scoped() if a.state != "ended"]
-        return alive[-1] if alive else None
+        responsive = [item for item in self.scoped() if item.state != "ended"]
+        return responsive[-1] if responsive else None
 
     def all_agents(self) -> list[Agent]:
         return self.global_matching()
 
     def environment_agents(self) -> list[Agent]:
-        return [a for a in self.global_matching() if a.state != "ended"]
+        return [item for item in self.global_matching() if item.state != "ended"]
 
     def current_scoped(self, environment_id: int) -> list[Agent]:
-        return [a for a in self.global_matching(environment_id=environment_id) if a.state != "ended"]
+        return [item for item in self.global_matching(environment_id=environment_id) if item.state != "ended"]
 
     def running_peers(self, session: str, environment_id: int, provider: str) -> list[Agent]:
-        return [a for a in self.global_matching(environment_id=environment_id) if a.session != session and (a.provider or "claude") == (provider or "claude") and a.state != "ended"]
+        return [item for item in self.global_matching(environment_id=environment_id) if item.session != session and (item.provider or "claude") == (provider or "claude") and item.state != "ended"]
 
     def all_current(self) -> Agent | None:
-        alive = sorted((a for a in self.all_agents() if a.state != "ended"), key=lambda a: a.updated_at)
-        return alive[-1] if alive else None
+        responsive = sorted((item for item in self.all_agents() if item.state != "ended"), key=lambda item: item.updated_at)
+        return responsive[-1] if responsive else None
 
     def with_state(self, name: str) -> list[Agent]:
         return self.matching(state=name)
@@ -37,5 +37,5 @@ class Agents(ScopedRepository[Agent]):
             raise MissingRow(self.table, session)
         return rows[0]
 
-    def recent_peers(self, session: str, since: datetime) -> list[Agent]:
-        return [a for a in self.scoped() if a.session != session and a.updated_at >= since and not (a.state == "ended" and a.updated_at - a.created_at < timedelta(minutes=1))]
+    def recent_peers(self, session: str, start: datetime) -> list[Agent]:
+        return [item for item in self.scoped() if item.session != session and item.updated_at >= start and not (item.state == "ended" and item.updated_at - item.created_at < timedelta(minutes=1))]

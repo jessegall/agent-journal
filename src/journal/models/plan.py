@@ -36,8 +36,8 @@ class Plan(Scoped):
     def reviewing(self) -> "Plan":
         return self.moved(PlanState.REVIEWING)
 
-    def approved(self, time: float, by_user: bool) -> "Plan":
-        return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=by_user))
+    def approved(self, time: float, user_origin: bool) -> "Plan":
+        return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=user_origin))
 
     def startable(self) -> "Plan":
         if self.is_blocked():
@@ -55,14 +55,14 @@ class Plan(Scoped):
     def reopened(self, time: float) -> "Plan":
         return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.id, task_id=0))
 
-    def postponed(self, time: float, by_user: bool) -> "Plan":
-        return self.moved(PlanState.SUSPENDED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=by_user))
+    def postponed(self, time: float, user_origin: bool) -> "Plan":
+        return self.moved(PlanState.SUSPENDED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=user_origin))
 
-    def blocked(self, why: str, time: float) -> "Plan":
-        return self.moved(PlanState.BLOCKED).with_(blocked_why=why).with_event(PlanBlocked(environment_id=self.environment_id, time=time, plan_id=self.id, why=why))
+    def blocked(self, reason: str, time: float) -> "Plan":
+        return self.moved(PlanState.BLOCKED).with_(blocked_why=reason).with_event(PlanBlocked(environment_id=self.environment_id, time=time, plan_id=self.id, why=reason))
 
-    def unblocked(self, why: str, time: float) -> "Plan":
-        return self.moved(PlanState.STARTED).with_(blocked_why="").with_event(PlanReopened(environment_id=self.environment_id, time=time, plan_id=self.id, why=why))
+    def unblocked(self, reason: str, time: float) -> "Plan":
+        return self.moved(PlanState.STARTED).with_(blocked_why="").with_event(PlanReopened(environment_id=self.environment_id, time=time, plan_id=self.id, why=reason))
 
     def is_blocked(self) -> bool:
         return self.state == PlanState.BLOCKED
@@ -70,8 +70,8 @@ class Plan(Scoped):
     def finished(self, time: float) -> "Plan":
         return self.moved(PlanState.FINISHED).with_event(PlanFinished(environment_id=self.environment_id, time=time, plan_id=self.id))
 
-    def cancelled(self, time: float, by_user: bool) -> "Plan":
-        return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=by_user))
+    def cancelled(self, time: float, user_origin: bool) -> "Plan":
+        return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=user_origin))
 
     def moved(self, state: PlanState) -> "Plan":
         if not self.state.can_become(state):
@@ -82,27 +82,27 @@ class Plan(Scoped):
         return bool(tasks) and all(task.is_closed() for task in tasks)
 
     def is_stalled(self, tasks: list[Task]) -> bool:
-        left = [task for task in tasks if not task.is_closed()]
-        return bool(left) and all(task.state == TaskState.BLOCKED for task in left)
+        remaining = [task for task in tasks if not task.is_closed()]
+        return bool(remaining) and all(task.state == TaskState.BLOCKED for task in remaining)
 
     def ordered(self, phases: list[PhaseTasks], tasks: list[Task]) -> list[Task]:
         phased = [task for phase in phases for task in phase.tasks]
         ids = {task.id for task in phased}
         return phased + [task for task in tasks if task.id not in ids]
 
-    def next_open_task(self, in_order: list[Task], cannot_start: set[int]) -> Task | None:
-        return next((task for task in in_order if task.state == TaskState.OPEN and task.id not in cannot_start), None)
+    def next_open_task(self, ordered: list[Task], cannot_start: set[int]) -> Task | None:
+        return next((task for task in ordered if task.state == TaskState.OPEN and task.id not in cannot_start), None)
 
-    def resumable_task(self, in_order: list[Task], cannot_start: set[int]) -> Task | None:
-        return next((task for task in in_order if task.state == TaskState.SUSPENDED), None) or self.next_open_task(in_order, cannot_start)
+    def resumable_task(self, ordered: list[Task], cannot_start: set[int]) -> Task | None:
+        return next((task for task in ordered if task.state == TaskState.SUSPENDED), None) or self.next_open_task(ordered, cannot_start)
 
     def current_phase(self, phases: list[PhaseTasks]) -> int:
         return next((phase.number for phase in phases if phase.has_open_work()), len(phases) or 1)
 
     def checkpoint_phase(self, phases: list[PhaseTasks]) -> PhaseTasks | None:
-        for before, after in zip(phases, phases[1:]):
-            if before.phase.checkpoint and before.is_finished() and after.tasks and not after.has_work_started():
-                return before
+        for previous, following in zip(phases, phases[1:]):
+            if previous.phase.checkpoint and previous.is_finished() and following.tasks and not following.has_work_started():
+                return previous
         return None
 
     def title_words(self) -> str:

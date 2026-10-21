@@ -60,4 +60,4 @@ At a mark of the context window, writes wait until you decide what must survive 
 
     @classmethod
     def threshold_due(cls, context: float, highest: int) -> int:
-        return max([mark for mark in cls.CONTEXT_THRESHOLDS if context * 100 >= mark > highest], default=0)
+        return max([threshold for threshold in cls.CONTEXT_THRESHOLDS if context * 100 >= threshold > highest], default=0)

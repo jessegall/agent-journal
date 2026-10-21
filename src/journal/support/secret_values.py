@@ -78,13 +78,13 @@ class SecretValues:
         PrivateFolder.created(path.parent)
         writing = path.with_suffix(".writing")
         handle = os.open(writing, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(handle, "w") as out:
-            out.write(HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
+        with os.fdopen(handle, "w") as output:
+            output.write(HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
         os.replace(writing, path)
 
     @staticmethod
     def parsed(line: str) -> tuple[str, str] | None:
-        name, equals, rest = line.strip().partition("=")
+        name, equals, remainder = line.strip().partition("=")
         if not equals or name.startswith("#"):
             return None
-        return name.strip(), json.loads(rest) if rest.startswith('"') else rest
+        return name.strip(), json.loads(remainder) if remainder.startswith('"') else remainder

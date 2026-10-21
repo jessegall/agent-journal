@@ -18,13 +18,13 @@ class AttachedFiles:
     def __init__(self, messages: Messages, attachments: Attachments) -> None:
         self.messages, self.attachments = messages, attachments
 
-    def page(self, asked: FileRequest) -> FileView:
-        every = sorted((f for m in self.messages.scoped() for f in self.build(m)), key=lambda f: -f.time)
-        rows = [f for f in every if asked.contains(f)]
-        shelves = {Message.table(): len(every)} if every else {}
-        images = sum(f.image for f in every)
-        return FileView(files=rows[asked.skip:asked.skip + asked.last], more=len(rows) > asked.skip + asked.last, total=len(rows),
-                          counts={"all": len(every), "images": images, "other": len(every) - images, "shelves": shelves})
+    def page(self, requested: FileRequest) -> FileView:
+        all_items = sorted((f for m in self.messages.scoped() for f in self.build(m)), key=lambda f: -f.time)
+        rows = [f for f in all_items if requested.contains(f)]
+        shelves = {Message.table(): len(all_items)} if all_items else {}
+        images = sum(f.image for f in all_items)
+        return FileView(files=rows[requested.skip:requested.skip + requested.last], more=len(rows) > requested.skip + requested.last, total=len(rows),
+                          counts={"all": len(all_items), "images": images, "other": len(all_items) - images, "shelves": shelves})
 
     def build(self, message: Message) -> list[AttachedFile]:
         files = []

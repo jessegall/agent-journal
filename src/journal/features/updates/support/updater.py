@@ -27,9 +27,9 @@ FIRST_CHECK_DELAY_SECONDS = 60
 class Updater:
     """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, and its install: on its own when the user has switched that on, or when they say so."""
 
-    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, mark: UpdateCard, supervisor: SupervisorLink, config: Config) -> None:
+    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config) -> None:
         self.settings, self.source, self.installer = settings, source, installer
-        self.mark, self.supervisor, self.config = mark, supervisor, config
+        self.mark, self.supervisor, self.config = threshold, supervisor, config
         self.releases: list[Release] = []
         self.head = ""
         self.problem = ""
@@ -53,8 +53,8 @@ class Updater:
         self.head = ""
 
     def installed_commit(self) -> str:
-        kept = self.config.home / "src" / "commit"
-        return kept.read_text().strip() if kept.is_file() else ""
+        stored = self.config.home / "src" / "commit"
+        return stored.read_text().strip() if stored.is_file() else ""
 
     def label(self) -> str:
         return f"{self.branch()} at {self.installed_commit()[:7] or 'an unrecorded commit'}" if self.branch() else VERSION
@@ -86,9 +86,9 @@ class Updater:
         return newer[-1].version if newer else VERSION
 
     def data(self) -> UpdateData:
-        held = self.mark.paused()
+        blocked = self.mark.paused()
         return UpdateData(installed=self.label(), latest=self.latest(), newer=self.is_published(), branch=self.branch(), versions=[release.version for release in self.newer()],
-                              updating=held.to if held else "", step=held.step if held else "", problem=self.problem)
+                              updating=blocked.to if blocked else "", step=blocked.step if blocked else "", problem=self.problem)
 
     def tick(self, time: float) -> None:
         self.reconcile(time)
@@ -104,11 +104,11 @@ class Updater:
         return f"{self.label()} is the newest commit of the branch" if self.branch() else f"{VERSION} is the newest release of version {self.running().major}"
 
     def reconcile(self, time: float) -> None:
-        held = self.mark.paused()
-        if held is None or (held.pid == os.getpid() and not held.is_stale(time)):
+        blocked = self.mark.paused()
+        if blocked is None or (blocked.pid == os.getpid() and not blocked.is_stale(time)):
             return
         self.mark.clear()
-        self.problem = "" if held.to == self.label() else f"The update to {held.to} did not finish: .journal/runtime/update.log says how it went"
+        self.problem = "" if blocked.to == self.label() else f"The update to {blocked.to} did not finish: .journal/runtime/update.log says how it went"
 
     def update_immediately(self, actor: Actor) -> None:
         self.mark.claim(self.label(), self.target().label)

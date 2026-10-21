@@ -28,9 +28,9 @@ class GitDataReader:
 
     def status_files(self) -> str:
         try:
-            done = subprocess.run(["git", "status", "--short"], cwd=self.config.root, capture_output=True, text=True, timeout=3)
+            finished = subprocess.run(["git", "status", "--short"], cwd=self.config.root, capture_output=True, text=True, timeout=3)
         except (OSError, subprocess.SubprocessError):
             return "none"
-        files = [line[3:] for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
-        more = f" and {len(files) - SHOWN} more" if len(files) > SHOWN else ""
-        return ", ".join(files[:SHOWN]) + more if files else "none"
+        files = [line[3:] for line in finished.stdout.splitlines() if line.strip()] if finished.returncode == 0 else []
+        extra = f" and {len(files) - SHOWN} more" if len(files) > SHOWN else ""
+        return ", ".join(files[:SHOWN]) + extra if files else "none"

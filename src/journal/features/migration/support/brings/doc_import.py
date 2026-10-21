@@ -13,8 +13,8 @@ class DocImport(ProjectKind):
     kind = "doc"
     title = "documents"
 
-    def __init__(self, ledger: MigratedRows, docs: Docs) -> None:
-        super().__init__(ledger)
+    def __init__(self, tally: MigratedRows, docs: Docs) -> None:
+        super().__init__(tally)
         self.docs = docs
 
     def rows(self, rows: Version3Rows) -> list[Version3Row]:

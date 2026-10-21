@@ -27,7 +27,7 @@ Give the dispatch a description and a bounded prompt. If no suitable specializat
 Everything a tool returns stays in the context for good and is paid for on every turn after it.
 
 **L4 - Related work goes back to the worker or subagent that already worked on it; never start a fresh one on work another already knows.**
-A worker that reported takes its next job with `journal worker assign <n> "<job>"`, with its memory of the last; a subagent takes its next job by a message to the one you started.
+A worker that reported takes its next job with `journal worker send <n> "<job>"`, with its memory of the last; a subagent takes its next job by a message to the one you started.
 
 **L5 - Every subagent and worker is named after a distinguished historical figure with a gentle twist on their trade, such as Lady Lovelace for a programmer, and addresses you, never the user.**
 

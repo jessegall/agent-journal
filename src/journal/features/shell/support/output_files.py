@@ -52,8 +52,8 @@ class OutputFiles:
         return not (self.folder / "done").is_file() and len(self.statuses()) < len(self.recorded())
 
     def outcome(self) -> str:
-        ran = self.statuses()
-        return "still running" if self.is_running() or not ran else self.ended(ran[-1])
+        completed = self.statuses()
+        return "still running" if self.is_running() or not completed else self.ended(completed[-1])
 
     @staticmethod
     def ended(status: int) -> str:

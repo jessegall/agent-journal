@@ -22,22 +22,22 @@ class CommentController(Controller[Message]):
         self.repository, self.links = messages, links
 
     def rows(self) -> list[Message]:
-        on = self.repository.linked(Messages.COMMENT_LINK)
-        return [m for m in self.repository.numbered(tuple(on)) if m.author == Author.USER or m.reply_to] if on else []
+        enabled = self.repository.linked(Messages.COMMENT_LINK)
+        return [m for m in self.repository.numbered(tuple(enabled)) if m.author == Author.USER or m.reply_to] if enabled else []
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
-        on = self.repository.linked(Messages.COMMENT_LINK)
-        return [{**ModelFields.build(m), "on": [str(ref) for ref in on.get(m.id, [])]} for m in rows]
+        enabled = self.repository.linked(Messages.COMMENT_LINK)
+        return [{**ModelFields.build(m), "on": [str(ref) for ref in enabled.get(m.id, [])]} for m in rows]
 
     def store(self, request: Request) -> Response:
         target = self.row(str(request.body.get("on", "")))
-        reply_to = request.body.get("reply_to")
-        message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_to=int(reply_to) if reply_to else None).arrived(), request.actor)
+        reply_ref = request.body.get("reply_to")
+        message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_to=int(reply_ref) if reply_ref else None).arrived(), request.actor)
         self.links.save(Link(source=Ref.build(message), target=target, kind=Messages.COMMENT_LINK), request.actor)
         return Response.json(self.shown(message), 201)
 
-    def row(self, named: str) -> Ref:
-        kind, _, id = named.partition(":")
+    def row(self, matched: str) -> Ref:
+        kind, _, id = matched.partition(":")
         if kind not in COMMENTED or not id.isdigit() or not self.links.is_row(Ref(kind, int(id))):
-            raise Rejection(f"a comment is written under a task, a plan, a document, a report, a fact, a rule, a reminder or a question that is there, named as tasks:12, not {named!r}")
+            raise Rejection(f"a comment is written under a task, a plan, a document, a report, a fact, a rule, a reminder or a question that is there, named as tasks:12, not {matched!r}")
         return Ref(kind, int(id))

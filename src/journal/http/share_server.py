@@ -33,10 +33,10 @@ class ShareServer:
             self._server.shutdown()
             self._server.server_close()
 
-    def _bind(self, kept: int) -> ThreadingHTTPServer:
-        if kept:
+    def _bind(self, stored: int) -> ThreadingHTTPServer:
+        if stored:
             try:
-                return ThreadingHTTPServer(("127.0.0.1", kept), self.handler)
+                return ThreadingHTTPServer(("127.0.0.1", stored), self.handler)
             except OSError:
                 pass
         return ThreadingHTTPServer(("127.0.0.1", 0), self.handler)

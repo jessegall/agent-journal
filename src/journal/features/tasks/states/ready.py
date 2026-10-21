@@ -107,12 +107,12 @@ class Ready(BaseState):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        quiet = event.time - self.quiet_since
+        silent = event.time - self.quiet_since
         tasks = event.data.part(Tasks)
-        if tasks.parked and quiet >= SUSPENDED_REMINDER_DELAY_SECONDS and not self.parked_asked:
+        if tasks.parked and silent >= SUSPENDED_REMINDER_DELAY_SECONDS and not self.parked_asked:
             return self.swap(replace(self, parked_asked=True), Tasks.SUSPENDED_TASK_REMINDER.create(n=tasks.parked[0], why=tasks.first_parked_why))
-        if tasks.blocked_without_wait and quiet >= BLOCKED_REMINDER_DELAY_SECONDS:
+        if tasks.blocked_without_wait and silent >= BLOCKED_REMINDER_DELAY_SECONDS:
             return self.none(Tasks.BLOCKED_TASK_REMINDER.create(tasks=tasks.blocked_without_wait_summary))
-        if settings.value(Tasks.AUTO) and quiet >= IDLE_CHECK_DELAY_SECONDS:
+        if settings.value(Tasks.AUTO) and silent >= IDLE_CHECK_DELAY_SECONDS:
             return self.none(*self.silent_nudges(tasks))
         return self.none()

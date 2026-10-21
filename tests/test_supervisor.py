@@ -22,15 +22,15 @@ OTHER = {"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "say done"
 def settings_with_other_hooks(root: Path) -> Path:
     path = root / ".claude" / "settings.json"
     path.parent.mkdir(parents=True)
-    ours = {"hooks": [{"type": "command", "command": "sh /pkg/journal/hooks/hook.sh claude /p"}]}
-    path.write_text(json.dumps({**OTHER, "hooks": {**OTHER["hooks"], "PreToolUse": [ours]}}))
+    journal_owned = {"hooks": [{"type": "command", "command": "sh /pkg/journal/hooks/hook.sh claude /p"}]}
+    path.write_text(json.dumps({**OTHER, "hooks": {**OTHER["hooks"], "PreToolUse": [journal_owned]}}))
     return path
 
 
 def menu_answering(tmp_path: Path, monkeypatch, answers: list[str]) -> Menu:
     import io
-    given = iter(answers)
-    monkeypatch.setattr("builtins.input", lambda: next(given))
+    value = iter(answers)
+    monkeypatch.setattr("builtins.input", lambda: next(value))
     menu = Menu(tmp_path, tmp_path / "journal.py", Screen(io.StringIO()))
     menu.environments = lambda: ROWS
     return menu
@@ -40,15 +40,15 @@ def test_the_menu_defaults_and_answers_and_remembers(tmp_path: Path, monkeypatch
     settings_with_other_hooks(tmp_path)
     menu = menu_answering(tmp_path, monkeypatch, ["", "2", "1", "2"])
     assert menu.choose("claude") == Choice("main", "", hooks_aside=False, skip_prompts=True)
-    assert menu.choose("claude", yes=True) == Choice("main", "abc", hooks_aside=False, skip_prompts=True), "yes takes the defaults, which are last time's answers"
-    assert menu.choose("claude", env="spike", yes=True).resume == ""
-    assert menu.choose("claude", env="spike", new=True, aside=True, skip=False, yes=True) == Choice("spike", "", hooks_aside=True, skip_prompts=True)
+    assert menu.choose("claude", confirmed=True) == Choice("main", "abc", hooks_aside=False, skip_prompts=True), "yes takes the defaults, which are last time's answers"
+    assert menu.choose("claude", environment="spike", confirmed=True).resume == ""
+    assert menu.choose("claude", environment="spike", new=True, stashed=True, omit=False, confirmed=True) == Choice("spike", "", hooks_aside=True, skip_prompts=True)
 
 
 def test_the_hooks_question_is_asked_even_when_no_other_hooks_are_found_yet(tmp_path: Path, monkeypatch):
     menu = menu_answering(tmp_path, monkeypatch, ["", "2", "2", "1"])
     assert menu.choose("claude") == Choice("main", "", hooks_aside=True, skip_prompts=False)
-    assert menu.choose("claude", yes=True).hooks_aside is True, "remembered"
+    assert menu.choose("claude", confirmed=True).hooks_aside is True, "remembered"
 
 
 def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
@@ -76,9 +76,9 @@ def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_pa
     hooks = ForeignHooks(tmp_path, "claude")
     assert hooks.foreign() == [path]
     hooks.stash()
-    left = json.loads(path.read_text())
-    assert list(left["hooks"]) == ["PreToolUse"] and left["model"] == "opus"
-    path.write_text(json.dumps({**left, "model": "sonnet"}))
+    remaining = json.loads(path.read_text())
+    assert list(remaining["hooks"]) == ["PreToolUse"] and remaining["model"] == "opus"
+    path.write_text(json.dumps({**remaining, "model": "sonnet"}))
     hooks.restore()
     back = json.loads(path.read_text())
     assert set(back["hooks"]) == {"Stop", "PreToolUse"}
@@ -133,15 +133,15 @@ def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, mo
     app.server().start()
     try:
         from journal.launcher.support.page_wait import PageWait
-        said, opened = [], []
-        waiting = PageWait(tmp_path / ".journal" / "port", "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "", said.append)
+        line_text, opened = [], []
+        waiting = PageWait(tmp_path / ".journal" / "port", "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "", line_text.append)
         assert waiting.is_responsive() == f"http://127.0.0.1:{app.server().port}/", "the launch sees the page answer, with no supervisor to tell"
         waiting.wait()
         import webbrowser
         monkeypatch.setattr(webbrowser, "open", lambda url, new=0: opened.append(url) or True)
         monkeypatch.setattr(PageWait, "tab_open", lambda self, url: False)
-        PageWait(tmp_path / ".journal" / "port", "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "?env=main", said.append).wait()
-        assert opened == [f"http://127.0.0.1:{app.server().port}/?env=main"] and said[-1] == f"viewer: opened {opened[0]}", "with no tab open the viewer is opened, and the launch log says so"
+        PageWait(tmp_path / ".journal" / "port", "/tmp/no-supervisor.sock", ("agent-journal", "p · main"), "?env=main", line_text.append).wait()
+        assert opened == [f"http://127.0.0.1:{app.server().port}/?env=main"] and line_text[-1] == f"viewer: opened {opened[0]}", "with no tab open the viewer is opened, and the launch log says so"
     finally:
         app.server().stop()
 
@@ -180,9 +180,9 @@ def test_the_inbox_announces_where_the_screen_is_mirrored(tmp_path: Path):
 def test_the_launch_writes_what_the_supervisor_starts_and_a_bad_launch_file_is_refused(tmp_path: Path, capsys):
     from supervisor.__main__ import main
     launch = Launch.parse(["claude", "--env", "spike", "--no-journal"], tmp_path)
-    written = launch.launch_file(Choice("spike", "s1"), StatusLine(tmp_path))
-    assert written["front"]["command"][0] == "claude" and written["front"]["resume"] == ["--resume", "s1"] and written["services"] == [], "a launch with a journal running already starts none of its own; the resume apart, for a restart to replace"
-    assert written["announce"].endswith("runtime/inboxes/spike") and written["screen"].endswith("runtime/screens/spike.out") and f"journal-{os.getuid()}" in written["socket"]
+    saved = launch.launch_file(Choice("spike", "s1"), StatusLine(tmp_path))
+    assert saved["front"]["command"][0] == "claude" and saved["front"]["resume"] == ["--resume", "s1"] and saved["services"] == [], "a launch with a journal running already starts none of its own; the resume apart, for a restart to replace"
+    assert saved["announce"].endswith("runtime/inboxes/spike") and saved["screen"].endswith("runtime/screens/spike.out") and f"journal-{os.getuid()}" in saved["socket"]
     with_journal = Launch.parse(["claude", "--env", "spike"], tmp_path).launch_file(Choice("spike", ""), StatusLine(tmp_path))
     assert [s["name"] for s in with_journal["services"]] == ["journal"]
     bad = tmp_path / "bad.json"
@@ -198,7 +198,7 @@ def test_the_supervisor_imports_nothing_but_the_standard_library_and_itself():
     foreign = []
     for path in sorted((Path(__file__).parent.parent / "src" / "supervisor").glob("*.py")):
         for node in ast.walk(ast.parse(path.read_text())):
-            names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module] if isinstance(node, ast.ImportFrom) and node.module else []
+            names = [item.name for item in node.names] if isinstance(node, ast.Import) else [node.module] if isinstance(node, ast.ImportFrom) and node.module else []
             foreign += [f"{path.name}: {name}" for name in names if name.split(".")[0] not in (*sys.stdlib_module_names, "supervisor")]
     assert foreign == [], "the supervisor knows no journal module and needs nothing installed"
 
@@ -234,10 +234,10 @@ def test_a_worktree_launch_makes_its_worktree_and_never_hands_the_flag_to_the_ag
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
-    made = Worktree(tmp_path, "1012-inventory-page").created()
-    assert made == tmp_path / ".claude" / "worktrees" / "1012-inventory-page" and (made / ".git").exists(), "made at Claude Code's own place, so an older one is found"
+    produced = Worktree(tmp_path, "1012-inventory-page").created()
+    assert produced == tmp_path / ".claude" / "worktrees" / "1012-inventory-page" and (produced / ".git").exists(), "made at Claude Code's own place, so an older one is found"
     assert "worktree-1012-inventory-page" in git("branch").stdout
-    subprocess.run(["rm", "-rf", str(made)], timeout=30)
+    subprocess.run(["rm", "-rf", str(produced)], timeout=30)
     assert Worktree(tmp_path, "1012-inventory-page").created().is_dir(), "a worktree whose folder went is made again on its branch, and nothing is lost from the branch"
 
 
@@ -250,8 +250,8 @@ def test_a_bare_worktree_flag_takes_the_chosen_environments_name(tmp_path: Path)
         launch = Launch.parse(argv, tmp_path)
         assert launch.in_worktree and launch.worktree == "" and "--worktree" not in launch.args and "-w" not in launch.args
     launch = Launch.parse(["claude", "-w"], tmp_path)
-    made = launch.launch_file(Choice("calm-river", "", False, False), StatusLine(tmp_path))
-    assert made["front"]["folder"] == str(tmp_path / ".claude" / "worktrees" / "calm-river"), "the worktree is named after the environment the menu chose"
+    produced = launch.launch_file(Choice("calm-river", "", False, False), StatusLine(tmp_path))
+    assert produced["front"]["folder"] == str(tmp_path / ".claude" / "worktrees" / "calm-river"), "the worktree is named after the environment the menu chose"
     assert "worktree-calm-river" in git("branch").stdout
 
 
@@ -303,10 +303,10 @@ def test_a_command_or_hook_inside_a_worktree_works_the_worktrees_environment(tmp
     tree = Worktree(tmp_path, "calm-river").created()
     (tree / "deep").mkdir()
     rule = Path(__file__).parents[1] / "src" / "journal" / "hooks" / "environment.sh"
-    named = lambda time, env="": subprocess.run(["sh", "-c", f'. "{rule}"; journal_environment'], cwd=time, capture_output=True, text=True, timeout=30, env={"PATH": os.environ["PATH"], **({"JOURNAL_ENV": env} if env else {})}).stdout
-    assert named(tree / "deep") == "calm-river", "a command run anywhere inside the worktree works its environment"
-    assert named(tmp_path) == "main" and named(tmp_path.parent) == "main", "the project's own checkout, and a folder outside git, work main"
-    assert named(tree, "spike") == "spike", "an environment named outright wins"
+    matched = lambda time, environment="": subprocess.run(["sh", "-c", f'. "{rule}"; journal_environment'], cwd=time, capture_output=True, text=True, timeout=30, env={"PATH": os.environ["PATH"], **({"JOURNAL_ENV": environment} if environment else {})}).stdout
+    assert matched(tree / "deep") == "calm-river", "a command run anywhere inside the worktree works its environment"
+    assert matched(tmp_path) == "main" and matched(tmp_path.parent) == "main", "the project's own checkout, and a folder outside git, work main"
+    assert matched(tree, "spike") == "spike", "an environment named outright wins"
 
 
 def test_a_conversation_resumed_runs_in_its_environment_and_that_environments_worktree(tmp_path: Path, monkeypatch):
@@ -349,8 +349,8 @@ def test_a_worktree_whose_folder_and_branch_went_is_made_again_from_its_kept_tip
     Worktree(tmp_path, "1012-inventory-page").created()
     git("worktree", "remove", "--force", str(tree))
     git("branch", "-D", "worktree-1012-inventory-page")
-    again = Worktree(tmp_path, "1012-inventory-page").created()
-    assert (again / "page.py").read_text() == "PAGE = 1\n", "the committed work comes back from the kept tip though the folder and the branch were removed"
+    repeat = Worktree(tmp_path, "1012-inventory-page").created()
+    assert (repeat / "page.py").read_text() == "PAGE = 1\n", "the committed work comes back from the kept tip though the folder and the branch were removed"
 
 
 def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_make_leaves_nothing_half_made(tmp_path: Path):
@@ -363,9 +363,9 @@ def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_mak
     stray = tmp_path / ".claude" / "worktrees" / "calm-river"
     stray.mkdir(parents=True)
     (stray / "mine.txt").write_text("not a worktree's\n")
-    made = Worktree(tmp_path, "calm-river").created()
-    aside = [p for p in made.parent.iterdir() if p.name.startswith("calm-river.moved-aside-")]
-    assert (made / ".git").exists() and len(aside) == 1 and (aside[0] / "mine.txt").read_text() == "not a worktree's\n", "the stray folder is kept aside and the worktree made"
+    produced = Worktree(tmp_path, "calm-river").created()
+    stashed = [p for p in produced.parent.iterdir() if p.name.startswith("calm-river.moved-aside-")]
+    assert (produced / ".git").exists() and len(stashed) == 1 and (stashed[0] / "mine.txt").read_text() == "not a worktree's\n", "the stray folder is kept aside and the worktree made"
     git("branch", "worktree-taken")
     git("worktree", "add", str(tmp_path / "elsewhere"), "worktree-taken")
     try:
@@ -389,20 +389,20 @@ def test_the_boot_screen_offers_a_newer_release_of_the_same_major_before_the_jou
     monkeypatch.setattr(ReleaseInstaller, "run", lambda self, release: installed.append(release.version))
     answers = iter(["2", "1"])
     monkeypatch.setattr("builtins.input", lambda: next(answers))
-    offer = UpdatePrompt(Config(tmp_path), Screen(io.StringIO()), ReleaseSource())
-    assert offer.newest().version == f"{major}.99.0", "the newest of the same major, never the next major"
-    assert not offer.installed_newer() and installed == [], "Start as it is installs nothing"
-    assert offer.installed_newer() and installed == [f"{major}.99.0"], "Update installs it before the journal starts"
+    proposal = UpdatePrompt(Config(tmp_path), Screen(io.StringIO()), ReleaseSource())
+    assert proposal.newest().version == f"{major}.99.0", "the newest of the same major, never the next major"
+    assert not proposal.installed_newer() and installed == [], "Start as it is installs nothing"
+    assert proposal.installed_newer() and installed == [f"{major}.99.0"], "Update installs it before the journal starts"
 
 
 def test_every_start_asks_to_skip_the_permission_prompts_with_skip_selected_even_when_carrying_on(tmp_path: Path, monkeypatch):
-    asked = []
+    requested = []
     menu = menu_answering(tmp_path, monkeypatch, ["", "", ""])
-    picked = menu.screen.pick
-    monkeypatch.setattr(menu.screen, "pick", lambda heading, notes, options, default: asked.append((heading, default)) or picked(heading, notes, options, default))
+    selected = menu.screen.pick
+    monkeypatch.setattr(menu.screen, "pick", lambda heading, notes, options, default: requested.append((heading, default)) or selected(heading, notes, options, default))
     choice = menu.choose("claude")
     assert choice.resume == "abc" and choice.skip_prompts, "carrying on main's conversation still starts with the prompts skipped"
-    assert ("Run without permission prompts", 0) in asked, "the question is asked, with skip under the cursor"
+    assert ("Run without permission prompts", 0) in requested, "the question is asked, with skip under the cursor"
 
 
 def test_a_start_command_that_skips_the_prompts_itself_is_not_asked(tmp_path: Path):
@@ -427,11 +427,11 @@ def test_a_closed_window_stops_the_supervisor_without_writing_to_the_screen_that
 
 
 def test_a_new_environment_named_at_the_launch_gets_its_row_before_the_agent_starts(tmp_path: Path, monkeypatch):
-    made = []
+    produced = []
     menu = menu_answering(tmp_path, monkeypatch, [])
-    menu.journal = lambda *argv: made.append(argv) or ""
-    assert menu.choose("codex", env="providers", yes=True).environment == "providers"
-    assert made == [("environment", "create", "providers")], "a hook or command in an environment with no row is refused, so the launch makes the row first"
-    made.clear()
-    menu.choose("codex", env="main", yes=True)
-    assert made == [], "an environment that exists is not made again"
+    menu.journal = lambda *argv: produced.append(argv) or ""
+    assert menu.choose("codex", environment="providers", confirmed=True).environment == "providers"
+    assert produced == [("environment", "create", "providers")], "a hook or command in an environment with no row is refused, so the launch makes the row first"
+    produced.clear()
+    menu.choose("codex", environment="main", confirmed=True)
+    assert produced == [], "an environment that exists is not made again"

@@ -44,8 +44,8 @@ class ShareHandler(PooledHandler):
     def do_POST(self) -> None:
         if self.is_phone():
             return self.send(self.phone_post())
-        given = self.comment_sent()
-        self.send(ShareAnswer(400) if given is None else self.pages.post(self.path, given, self.headers.get("Authorization"), self.place()))
+        value = self.comment_sent()
+        self.send(ShareAnswer(400) if value is None else self.pages.post(self.path, value, self.headers.get("Authorization"), self.place()))
 
     def phone_post(self) -> ShareAnswer:
         length = self.headers.get("Content-Length", "")
@@ -60,10 +60,10 @@ class ShareHandler(PooledHandler):
         if self.headers.get("X-Shared-Comment") != "1" or not 0 < size <= BODY_LIMIT_BYTES:
             return None
         try:
-            given = json.loads(self.rfile.read(size))
+            value = json.loads(self.rfile.read(size))
         except ValueError:
             return None
-        return VisitorComment.parsed(given) if isinstance(given, dict) else None
+        return VisitorComment.parsed(value) if isinstance(value, dict) else None
 
     def refused(self) -> None:
         self.send(ShareAnswer(405, headers={"Allow": "GET, HEAD, POST"}))

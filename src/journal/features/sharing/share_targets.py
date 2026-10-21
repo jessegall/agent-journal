@@ -17,10 +17,10 @@ class ShareTargets:
         self.plans, self.links = plans, links
         self.repositories = {"docs": docs, "reports": reports, "plans": plans}
 
-    def lookup(self, named: str) -> Ref:
-        kind, _, number = named.strip().partition(":")
+    def lookup(self, matched: str) -> Ref:
+        kind, _, number = matched.strip().partition(":")
         if kind not in self.repositories or not number.isdigit():
-            raise Rejection(f"only a document, a report or a plan can be shared: name it as docs:12, reports:4 or plans:2, not {named!r}")
+            raise Rejection(f"only a document, a report or a plan can be shared: name it as docs:12, reports:4 or plans:2, not {matched!r}")
         ref = Ref(kind, int(number))
         self.repositories[ref.type].find(ref.id)
         return ref
@@ -39,8 +39,8 @@ class ShareTargets:
         tasks = self.plans.plan_tasks(self.plans.find(target.id)) if target.type == "plans" else []
         return [target, *(Ref.build(task) for task in tasks)]
 
-    def opens(self, named: str) -> list[str]:
-        ref = self.lookup(named)
+    def opens(self, matched: str) -> list[str]:
+        ref = self.lookup(matched)
         row = self.repositories[ref.type].find(ref.id)
         lines = [f"{row.title} ({ref})"]
         if ref.type == "plans":

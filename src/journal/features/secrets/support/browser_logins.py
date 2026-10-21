@@ -60,8 +60,8 @@ class BrowserLogins:
             cookies.update({(c["name"], c["domain"], c["path"]): c for c in state.get("cookies", [])})
             origins.update({o["origin"]: o for o in state.get("origins", [])})
         handle = os.open(self.merged, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(handle, "w") as out:
-            json.dump({"cookies": list(cookies.values()), "origins": list(origins.values())}, out)
+        with os.fdopen(handle, "w") as output:
+            json.dump({"cookies": list(cookies.values()), "origins": list(origins.values())}, output)
         return self.merged
 
     def expires(self, saved: Path, url: str) -> datetime | None:

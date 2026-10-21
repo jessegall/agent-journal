@@ -24,7 +24,7 @@ class TaskMentionLinks(Listener[Created]):
         if not isinstance(reply, Message) or reply.author != Author.AGENT or not reply.reply_to:
             return
         try:
-            asked = self.messages.find(reply.reply_to)
+            requested = self.messages.find(reply.reply_to)
         except MissingRow:
             return
         for n in {int(n) for n in TASK_PATTERN.findall(reply.text)}:
@@ -32,5 +32,5 @@ class TaskMentionLinks(Listener[Created]):
                 task = self.tasks.find(n)
             except MissingRow:
                 continue
-            if Ref.build(task) not in self.links.targets(asked, Messages.SUBJECT_LINK):
-                self.links.save(Link(source=Ref.build(asked), target=Ref.build(task), kind=Messages.SUBJECT_LINK), event.actor)
+            if Ref.build(task) not in self.links.targets(requested, Messages.SUBJECT_LINK):
+                self.links.save(Link(source=Ref.build(requested), target=Ref.build(task), kind=Messages.SUBJECT_LINK), event.actor)

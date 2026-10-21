@@ -15,16 +15,16 @@ class ProjectKind:
     kind: ClassVar[str]
     title: ClassVar[str]
 
-    def __init__(self, ledger: MigratedRows) -> None:
-        self.ledger = ledger
+    def __init__(self, tally: MigratedRows) -> None:
+        self.ledger = tally
 
     def import_rows(self, folder: Path, actor: Actor) -> ImportTally:
         count, skipped = 0, []
         for row in self.rows(Version3Rows(folder)):
             source = f"project/{self.kind}/{row.n}"
-            why = self.skipped(row)
-            if why:
-                skipped.append(f"{self.kind} {row.n}: {why}")
+            reason = self.skipped(row)
+            if reason:
+                skipped.append(f"{self.kind} {row.n}: {reason}")
                 continue
             if self.ledger.is_imported(source):
                 continue

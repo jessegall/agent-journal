@@ -16,9 +16,9 @@ ACTION_HINTS = {"x": "x to delete"}
 class Screen:
     """The terminal the boot menu draws on: a banner once, then one question at a time in the space under it, each moved through with the arrow keys. Without a terminal to draw on, the same questions are numbered lines answered by typing."""
 
-    def __init__(self, out=sys.stdout, keys: Keys | None = None) -> None:
-        self.out = out
-        self.interactive = out.isatty() and sys.stdin.isatty()
+    def __init__(self, output=sys.stdout, keys: Keys | None = None) -> None:
+        self.out = output
+        self.interactive = output.isatty() and sys.stdin.isatty()
         self.colour = self.interactive and os.environ.get("TERM", "dumb") != "dumb" and not os.environ.get("NO_COLOR")
         self.keys = keys or Keys(sys.stdin.fileno() if self.interactive else 0)
 
@@ -77,15 +77,15 @@ class Screen:
     def _pick_with_keys(self, heading: str, notes: list[str], options: list[Option], time: int, actions: tuple[str, ...]) -> tuple[int, str]:
         fd = sys.stdin.fileno()
         saved = termios.tcgetattr(fd)
-        drawn = 0
+        rendered = 0
         try:
             tty.setcbreak(fd)
             self.out.write(HIDE_CURSOR)
             while True:
                 lines = self._lines(heading, notes, options, time, actions)
-                self.out.write((f"\x1b[{drawn}F\x1b[J" if drawn else "") + "\n".join(lines) + "\n")
+                self.out.write((f"\x1b[{rendered}F\x1b[J" if rendered else "") + "\n".join(lines) + "\n")
                 self.out.flush()
-                drawn = len(lines)
+                rendered = len(lines)
                 for key in self.keys.read():
                     if key in Keys.ENTER:
                         return time, ""

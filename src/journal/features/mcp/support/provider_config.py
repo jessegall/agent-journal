@@ -14,9 +14,9 @@ class ProviderConfig:
     def write(self) -> list[Path]:
         servers = self.servers.all()
         claude = self.config.root / ".mcp.json"
-        kept = json.loads(claude.read_text()) if claude.is_file() else {}
-        kept["mcpServers"] = {s.name: s.shape() for s in servers}
-        claude.write_text(json.dumps(kept, indent=2) + "\n")
+        stored = json.loads(claude.read_text()) if claude.is_file() else {}
+        stored["mcpServers"] = {s.name: s.shape() for s in servers}
+        claude.write_text(json.dumps(stored, indent=2) + "\n")
         codex = self.config.root / ".codex" / "config.toml"
         codex.parent.mkdir(exist_ok=True)
         codex.write_text(self.toml(servers))
@@ -29,7 +29,7 @@ class ProviderConfig:
             lines.append(f"[mcp_servers.{s.name}]")
             if s.transport == "stdio":
                 lines.append(f'command = "{s.command}"')
-                lines.append("args = [" + ", ".join(f'"{a}"' for a in s.args) + "]")
+                lines.append("args = [" + ", ".join(f'"{item}"' for item in s.args) + "]")
                 if s.needs_key:
                     lines.append(f'env = {{ {s.key_var} = "${{{s.key_var}}}" }}')
             else:

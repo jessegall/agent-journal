@@ -66,8 +66,8 @@ class Dump(Scoped):
     def open_items(self) -> list[str]:
         return [name for name in self.item_names if not self.item(name).resolved]
 
-    def arrived(self, time: float, by_user: bool) -> "Dump":
-        return self.with_event(DumpArrived(environment_id=self.environment_id, time=time, dump_id=self.id, waiting=len(self.waiting()), by_user=by_user))
+    def arrived(self, time: float, user_origin: bool) -> "Dump":
+        return self.with_event(DumpArrived(environment_id=self.environment_id, time=time, dump_id=self.id, waiting=len(self.waiting()), by_user=user_origin))
 
     def posed_question(self, text: str, guesses: list[str], time: float) -> "Dump":
         return self.with_(question={"time": time, "text": text, "guesses": guesses}).with_event(DumpQuestion(environment_id=self.environment_id, time=time, dump_id=self.id))
@@ -78,22 +78,22 @@ class Dump(Scoped):
 
     def step_chosen(self, pick: int, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": pick, "time": time}
-        taken = {**self.taken, str(pick): choice} if pick >= 0 else self.taken
-        return self.with_(chosen=choice, taken=taken).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=pick, label=label))
+        claimed = {**self.taken, str(pick): choice} if pick >= 0 else self.taken
+        return self.with_(chosen=choice, taken=claimed).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=pick, label=label))
 
     def step_directed(self, label: str, time: float) -> "Dump":
         choice = {"label": label, "pick": USER_TEXT, "time": time}
         return self.with_(chosen=choice, said=(*self.said, choice)).with_event(DumpChoice(environment_id=self.environment_id, time=time, dump_id=self.id, pick=USER_TEXT, label=label))
 
-    def filed(self, how: str, time: float) -> "Dump":
-        return self.with_(completed_at=time, outcome=how).with_event(DumpSorted(environment_id=self.environment_id, time=time, dump_id=self.id, outcome=how, stopped=self.stopped))
+    def filed(self, manner: str, time: float) -> "Dump":
+        return self.with_(completed_at=time, outcome=manner).with_event(DumpSorted(environment_id=self.environment_id, time=time, dump_id=self.id, outcome=manner, stopped=self.stopped))
 
     @staticmethod
     def item_rows(names: list[str]) -> str:
         return f"{len(names)} item{'s' * (len(names) != 1)}"
 
-    def logged(self, entry: dict, kept: int) -> "Dump":
-        return self.with_(log=(*self.log, entry)[-kept:])
+    def logged(self, entry: dict, stored: int) -> "Dump":
+        return self.with_(log=(*self.log, entry)[-stored:])
 
     def created_refs(self) -> list[str]:
         refs = [ref for name in self.item_names for ref in self.item(name).refs] + [e["on"] for e in self.log if e.get("on")]

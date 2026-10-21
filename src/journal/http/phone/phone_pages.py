@@ -43,32 +43,32 @@ FILE_HEADERS = {"Content-Security-Policy": "sandbox", "X-Content-Type-Options": 
 class PhonePages:
     """What the tunnel's listener answers under /p/, as version 3 did: the phone page, its files, its service worker, its manifest and its icons, so the page installs on a phone as an app; the pairing, which sets the phone's cookie; and the phone's own data, read by that cookie alone."""
 
-    def __init__(self, config: Config, pairing: PhoneConnector, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, push: WebPush, waits: PhoneWaits, place: SharePlace) -> None:
+    def __init__(self, config: Config, pairing: PhoneConnector, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, stacked: WebPush, waits: PhoneWaits, place: SharePlace) -> None:
         self.config, self.pairing, self.phones, self.tunnel, self.place = config, pairing, phones, tunnel, place
-        self.router, self.environments, self.allow, self.push, self.waits = router, environments, allow, push, waits
+        self.router, self.environments, self.allow, self.push, self.waits = router, environments, allow, stacked, waits
 
     def get(self, request: PhoneRequest) -> ShareAnswer:
-        rest = request.rest
-        if not rest:
+        remainder = request.rest
+        if not remainder:
             return self.page(request.path.split("?", 1)[0])
-        if rest == ["state"]:
+        if remainder == ["state"]:
             return self.state(request)
-        if rest == ["push-key"]:
+        if remainder == ["push-key"]:
             return self.json(200, {"key": PushKeys.unpadded(self.push.keys().public)})
-        if rest == ["waiting"]:
+        if remainder == ["waiting"]:
             return self.waiting(request)
-        if rest[0] == "journal":
+        if remainder[0] == "journal":
             return self.pass_along(request)
-        if rest[0] == "assets" and len(rest) == 2:
-            return SharePages.asset(rest[1])
-        if rest[0] in PUBLIC:
-            return self.public(rest)
-        if rest == ["sw.js"]:
+        if remainder[0] == "assets" and len(remainder) == 2:
+            return SharePages.asset(remainder[1])
+        if remainder[0] in PUBLIC:
+            return self.public(remainder)
+        if remainder == ["sw.js"]:
             return self.worker()
-        if rest == ["manifest.webmanifest"]:
+        if remainder == ["manifest.webmanifest"]:
             return self.manifest()
-        if len(rest) == 1 and rest[0] in ICONS:
-            return ShareAnswer(200, PhoneIcon(COLOR).png(ICONS[rest[0]]), "image/png", {"Cache-Control": "public, max-age=86400"})
+        if len(remainder) == 1 and remainder[0] in ICONS:
+            return ShareAnswer(200, PhoneIcon(COLOR).png(ICONS[remainder[0]]), "image/png", {"Cache-Control": "public, max-age=86400"})
         return SharePages.missing(404)
 
     @staticmethod
@@ -81,9 +81,9 @@ class PhonePages:
         return ShareAnswer(200, page.read_bytes(), headers=PAGE_HEADERS)
 
     @staticmethod
-    def public(rest: list[str]) -> ShareAnswer:
-        root = (APP / rest[0]).resolve()
-        rows = (APP / "/".join(rest)).resolve()
+    def public(remainder: list[str]) -> ShareAnswer:
+        root = (APP / remainder[0]).resolve()
+        rows = (APP / "/".join(remainder)).resolve()
         if root not in rows.parents or not rows.is_file():
             return SharePages.missing(404)
         kind = mimetypes.guess_type(rows.name)[0] or "application/octet-stream"
@@ -104,18 +104,18 @@ class PhonePages:
         return ShareAnswer(200, json.dumps(body).encode(), "application/manifest+json", {"Cache-Control": "no-store"})
 
     def post(self, request: PhoneRequest) -> ShareAnswer:
-        given = self.supplied(request)
-        if given is None:
+        value = self.supplied(request)
+        if value is None:
             return self.json(403, {"error": "refused"})
         if request.rest == ["pair"]:
-            return self.pair(PairRequest.parsed(given))
+            return self.pair(PairRequest.parsed(value))
         phone = self.phone(request)
         if not isinstance(phone, Phone):
             return phone
         if request.rest[:1] == ["journal"]:
-            return self.forward(request, phone, given)
+            return self.forward(request, phone, value)
         if request.rest == ["push"]:
-            return self.subscribe(phone, str(given.get("endpoint", "")))
+            return self.subscribe(phone, str(value.get("endpoint", "")))
         if request.rest == ["disconnect"]:
             self.pairing.disconnect(phone, Actor.phone(phone.id), datetime.now(timezone.utc))
             return self.json(200, {"disconnected": phone.id}, {"Set-Cookie": f"{COOKIE}=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Strict"})
@@ -134,21 +134,21 @@ class PhonePages:
         port = self.place.stored().port
         return origin in (f"https://{self.tunnel.address()}", f"http://127.0.0.1:{port}", f"http://localhost:{port}")
 
-    def pair(self, asked: PairRequest) -> ShareAnswer:
+    def pair(self, requested: PairRequest) -> ShareAnswer:
         time = datetime.now(timezone.utc)
         try:
-            paired = self.pairing.pair(asked.code, asked.device, time)
+            paired = self.pairing.pair(requested.code, requested.device, time)
         except Rejection as refused:
             return self.json(410, {"error": str(refused)})
-        lasts = int((paired.phone.expires_at - time).total_seconds())
-        cookie = f"{COOKIE}={paired.key}; Max-Age={lasts}; Path=/; Secure; HttpOnly; SameSite=Strict"
+        duration = int((paired.phone.expires_at - time).total_seconds())
+        cookie = f"{COOKIE}={paired.key}; Max-Age={duration}; Path=/; Secure; HttpOnly; SameSite=Strict"
         return self.json(200, asdict(self.data(paired.phone)), {"Set-Cookie": cookie})
 
     def phone(self, request: PhoneRequest) -> Phone | ShareAnswer:
-        kept = SimpleCookie(request.cookies).get(COOKIE)
-        if not (kept and kept.value):
+        stored = SimpleCookie(request.cookies).get(COOKIE)
+        if not (stored and stored.value):
             return self.json(401, {"error": "this phone is not connected"})
-        phone = self.phones.key_match(PhoneConnector.hashed(kept.value))
+        phone = self.phones.key_match(PhoneConnector.hashed(stored.value))
         if phone is None:
             return self.json(401, {"error": "this phone was paired with an earlier version of the journal, or was forgotten: pair it again", "paired_before": True})
         time = datetime.now(timezone.utc)
@@ -164,11 +164,11 @@ class PhonePages:
         url = urlsplit(request.path.removeprefix("/p"))
         query = {name: values[-1] for name, values in parse_qs(url.query).items()}
         environment = self.environments.find(phone.environment_id).name
-        asked = Request(request.method, url.path, query, body, {}, {ENVIRONMENT_HEADER.lower(): environment}, Actor.phone(phone.id))
-        route = self.router.matched(asked)
+        requested = Request(request.method, url.path, query, body, {}, {ENVIRONMENT_HEADER.lower(): environment}, Actor.phone(phone.id))
+        route = self.router.matched(requested)
         if route is None or not self.allow.allows(route) or query.get("env", environment) != environment:
             return self.json(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})
-        answer = self.router.dispatch(asked)
+        answer = self.router.dispatch(requested)
         if isinstance(answer, FileResponse):
             return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS, **FILE_HEADERS, **answer.headers()})
         return ShareAnswer(answer.status, answer.encoded(), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})

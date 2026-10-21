@@ -19,13 +19,13 @@ class TypedLine:
 
     @classmethod
     def split(cls, line: str, prefix: str) -> list[str]:
-        pieces, remainder = [], line
+        segments, remainder = [], line
         while len(remainder) > cls.LONGEST:
             split_index = remainder.rfind(" ", len(prefix) + 1, cls.LONGEST)
             split_index = split_index if split_index > len(prefix) else cls.LONGEST
-            pieces.append(remainder[:split_index].rstrip())
+            segments.append(remainder[:split_index].rstrip())
             remainder = f"{prefix} {remainder[split_index:].strip()}"
-        return [*pieces, remainder]
+        return [*segments, remainder]
 
     def message_numbers(self) -> set[int]:
         return {int(n) for rows in MESSAGES_PATTERN.findall(self.line) for n in rows.split(", ")}

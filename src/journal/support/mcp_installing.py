@@ -57,10 +57,10 @@ class McpInstalling:
     def checked_one(self, server: McpServer, report: HealthReport) -> McpServer:
         if report.failure is not None:
             return server.checked("failed", report.failure)
-        known = report.servers.get(server.name)
-        if known is None:
+        existing = report.servers.get(server.name)
+        if existing is None:
             return server.unchecked(self.unchecked_state(server))
-        return server.checked(known.state, known.text)
+        return server.checked(existing.state, existing.text)
 
     def login(self, server: McpServer) -> bool:
         from journal.features.mcp.feature import Mcp
@@ -72,7 +72,7 @@ class McpInstalling:
         return False
 
     def running(self) -> list[Agent]:
-        newest = {agent.environment_id: agent for agent in sorted(self.agents.all_agents(), key=lambda a: a.updated_at) if agent.state != "ended"}
+        newest = {agent.environment_id: agent for agent in sorted(self.agents.all_agents(), key=lambda item: item.updated_at) if agent.state != "ended"}
         return [agent for environment_id, agent in newest.items() if self.supervisor.runs(environment_id)]
 
     def applied(self) -> None:

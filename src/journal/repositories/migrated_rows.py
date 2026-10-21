@@ -21,9 +21,9 @@ class MigratedRows(Repository[MigratedRow]):
         kind, _, n = ref.partition(":")
         return self.imported_ref(f"environments/{environment}/{kind}/{n}") or self.imported_ref(f"project/{kind}/{n}")
 
-    def import_rows(self, source: str, made: Callable[[], Model], actor: Actor) -> None:
+    def import_rows(self, source: str, produced: Callable[[], Model], actor: Actor) -> None:
         with self.connection.transaction():
-            self.record(source, made(), actor)
+            self.record(source, produced(), actor)
 
     def record(self, source: str, row: Model, actor: Actor) -> None:
         self.save(MigratedRow(source=source, target=str(Ref.build(row))), actor)

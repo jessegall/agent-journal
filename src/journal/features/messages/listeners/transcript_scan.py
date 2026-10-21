@@ -16,10 +16,10 @@ class TranscriptScan(Listener[ClockTicked]):
 
     def handle(self, event: ClockTicked) -> None:
         from journal.features.messages.feature import Messages
-        until = event.time - float(self.settings.option(Messages.TRANSCRIPT_SCAN_DELAY))
+        deadline = event.time - float(self.settings.option(Messages.TRANSCRIPT_SCAN_DELAY))
         for agent in [agent for agent in self.agents.all_agents() if agent.has_program() and agent.state != "ended"]:
             with self.scope.environment(agent.environment_id):
-                written = self.turns.missed(agent.session, agent.provider, until)
-                turns = [TurnDisplayed(text=text, delta=text, turn_id=f"swept:{agent.session}:{event.time}:{i}", final=True) for i, text in enumerate(written.texts)]
-                for swept in [*written.crossed, *turns]:
-                    self.bus.dispatch(swept.placed(agent.session, agent.environment_id, agent.provider, None, event.time))
+                saved = self.turns.missed(agent.session, agent.provider, deadline)
+                turns = [TurnDisplayed(text=text, delta=text, turn_id=f"swept:{agent.session}:{event.time}:{i}", final=True) for i, text in enumerate(saved.texts)]
+                for scanned in [*saved.crossed, *turns]:
+                    self.bus.dispatch(scanned.placed(agent.session, agent.environment_id, agent.provider, None, event.time))

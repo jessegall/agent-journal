@@ -27,9 +27,9 @@ class Version3Row:
 
     @classmethod
     def parsed(cls, text: str) -> "Version3Row":
-        _, header, rest = text.split("---\n", 2)
+        _, header, remainder = text.split("---\n", 2)
         head = json.loads(header)
-        brief, *parts = SECTION.split(rest)
+        brief, *parts = SECTION.split(remainder)
         sections = tuple(tuple(part.split("\n", 1)) if "\n" in part else (part, "") for part in parts)
         return cls(head["type"], int(head["n"]), head.get("title", ""), head.get("abstract", ""), tuple(head.get("refs", ())), tuple(head.get("seen", ())),
                    float(head.get("created", 0)), float(head.get("updated", 0)), float(head.get("deleted", 0)), float(head.get("completed", 0)),

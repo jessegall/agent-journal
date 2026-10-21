@@ -31,4 +31,4 @@ class PluginPreview:
                 counts[name][0] += 1
             elif name and line.startswith("-") and not line.startswith("---"):
                 counts[name][1] += 1
-        return [f"{name} +{added} -{taken}" for name, (added, taken) in counts.items()]
+        return [f"{name} +{added} -{claimed}" for name, (added, claimed) in counts.items()]

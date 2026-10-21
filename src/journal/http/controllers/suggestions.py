@@ -26,5 +26,5 @@ class SuggestionController(Controller[Suggestion]):
         return self.answered(request, SuggestionAnswer.DECLINED)
 
     def answered(self, request: Request, answer: SuggestionAnswer) -> Response:
-        goes_to = self.suggesting.answer(self.repository.find(request.number("id")), answer, request.actor)
-        return Response.json({"answer": answer, "go": goes_to})
+        route = self.suggesting.answer(self.repository.find(request.number("id")), answer, request.actor)
+        return Response.json({"answer": answer, "go": route})

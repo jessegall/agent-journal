@@ -28,9 +28,9 @@ class AgentController(Controller[Agent]):
     """The environment's agents with what each is doing; what the user types or picks for the live one goes to its terminal, and the files it changed and the commands it ran are read from here."""
 
     def __init__(self, agents: Agents, activity: AgentActivity, supervisor: SupervisorLink, entries: Entries, edits: Edits, scope: Scope, environments: Environments,
-                 providers: Providers, running: RunTracker, config: Config, pausing: AgentPause) -> None:
+                 providers: Providers, active: RunTracker, config: Config, pausing: AgentPause) -> None:
         self.repository, self.activity, self.supervisor, self.entries, self.file_edits, self.scope = agents, activity, supervisor, entries, edits, scope
-        self.environments, self.providers, self.running, self.config, self.pausing = environments, providers, running, config, pausing
+        self.environments, self.providers, self.running, self.config, self.pausing = environments, providers, active, config, pausing
 
     def rows(self) -> list[Agent]:
         return self.repository.in_()
@@ -88,9 +88,9 @@ class AgentController(Controller[Agent]):
 
     def terminal(self, request: Request) -> Response:
         agent = self.repository.find(request.number("id"))
-        after = request.queried("after")
-        ran = [e for e in reversed(self.entries.kind_entries(PART_END, 400)) if e.actor and e.actor.id == agent.session and e.data["time"] > after]
-        return Response.json([self.line(agent.id, e) for e in ran][-LINES_SHOWN:])
+        following = request.queried("after")
+        completed = [e for e in reversed(self.entries.kind_entries(PART_END, 400)) if e.actor and e.actor.id == agent.session and e.data["time"] > following]
+        return Response.json([self.line(agent.id, e) for e in completed][-LINES_SHOWN:])
 
     @staticmethod
     def line(agent_id: int, entry: Entry) -> TerminalLine:

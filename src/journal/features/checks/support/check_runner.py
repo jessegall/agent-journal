@@ -47,9 +47,9 @@ class CheckRunner:
         report.parent.mkdir(parents=True, exist_ok=True)
         report.unlink(missing_ok=True)
         ended = self.executed(check, report, actor)
-        was_failing = check.last_passed is False
-        took = timing.time() - check.running.time
-        ran = self.checks.save(self.checks.find(check.id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), took, self.report(report), ended.fault), actor)
+        prior_failure = check.last_passed is False
+        elapsed = timing.time() - check.running.time
+        ran = self.checks.save(self.checks.find(check.id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), elapsed, self.report(report), ended.fault), actor)
         if ran.waited_on:
             return ran
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
@@ -63,15 +63,15 @@ class CheckRunner:
                                    env={**os.environ, "JOURNAL_REPORT": str(report)}, start_new_session=True)
         late = threading.Timer(TIMEOUT, os.killpg, (process.pid, signal.SIGKILL))
         late.start()
-        printed, saved = [], timing.time()
+        output_text, saved = [], timing.time()
         for line in process.stdout:
-            printed.append(line)
+            output_text.append(line)
             if timing.time() - saved >= INTERVAL:
-                self.checks.touch(check, actor, running=CheckOutput.progress("".join(printed), check.running.time))
+                self.checks.touch(check, actor, running=CheckOutput.progress("".join(output_text), check.running.time))
                 saved = timing.time()
         code = process.wait()
         late.cancel()
-        output = "".join(printed)
+        output = "".join(output_text)
         if code == -signal.SIGKILL:
             return FinishedRun(False, f"{output}\ntimed out after {TIMEOUT}s", f"it timed out after {TIMEOUT}s")
         return FinishedRun(code == 0, output, FAULTS.get(code, ""))

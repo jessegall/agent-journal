@@ -30,8 +30,8 @@ class AgentActivity:
         self.entries, self.states, self.context, self.files, self.messages, self.current = entries, states, context, files, messages, current
 
     def page(self, agents: list[Agent]) -> list[dict]:
-        recent = list(reversed(self.entries.kind_entries_scoped(ENTRY_COUNT))) if any(a.state != ENDED for a in agents) else []
-        return [self.row(a, [] if a.state == ENDED else [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in agents]
+        recent = list(reversed(self.entries.kind_entries_scoped(ENTRY_COUNT))) if any(item.state != ENDED for item in agents) else []
+        return [self.row(item, [] if item.state == ENDED else [e for e in recent if e.data.get("session") == item.session or (e.actor and e.actor.id == item.session)]) for item in agents]
 
     @staticmethod
     def work(entry) -> str:
@@ -43,7 +43,7 @@ class AgentActivity:
         last = moves[-1] if moves else None
         kind = last.kind if last else ""
         state = self.states.restored(agent.state, agent.data)
-        awaiting, on = self.current.wait_text(agent)
+        waiting_state, enabled = self.current.wait_text(agent)
         return {
             **ModelFields.build(agent),
             "status": "stopped" if agent.state == ENDED else self.status(agent.state, STATUS.get(kind, "idle")),
@@ -51,7 +51,7 @@ class AgentActivity:
             "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "",
             "tool_work": self.work(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
             "tool_running": kind == "ToolStarting",
-            "awaiting": awaiting, "awaiting_on": on, "awaiting_since": agent.updated_at if awaiting else None,
+            "awaiting": waiting_state, "awaiting_on": enabled, "awaiting_since": agent.updated_at if waiting_state else None,
             "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),
             "branch": self.files.branch(), "context": round((self.context.build(agent.session) or 0) * 100),
             "question_id": agent.data.get("question_id", 0) if agent.state == "waiting" else 0,
@@ -73,8 +73,8 @@ class AgentActivity:
         thoughts = self.messages.thoughts(session, 1)
         if not thoughts:
             return ""
-        written = [e.created_at for e in hooks if e.kind == "TurnDisplayed"]
-        later = [time for time in (written[-1] if written else None, self.entries.last_prompt(session)) if time is not None]
+        saved = [e.created_at for e in hooks if e.kind == "TurnDisplayed"]
+        later = [time for time in (saved[-1] if saved else None, self.entries.last_prompt(session)) if time is not None]
         return "" if any(time > thoughts[-1].created_at for time in later) else thoughts[-1].text
 
     @staticmethod

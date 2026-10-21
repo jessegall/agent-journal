@@ -17,8 +17,8 @@ class ShellVerbs:
         self.app, self.caller, self.environment_id = app, caller, environment_id
         self.record, self.scope = app.container.get(ShellRecord), app.container.get(Scope)
 
-    def split(self, line: str, into: str) -> str:
-        folder = OutputFiles(Path(into))
+    def split(self, line: str, target: str) -> str:
+        folder = OutputFiles(Path(target))
         parts = Chain.parts(line)
         folder.split(line, parts)
         if not Chain.is_journal_line(line):
@@ -39,7 +39,7 @@ class ShellVerbs:
             self.record.started(chain, part, self.caller)
 
     def ran(self, part: str, chain: str, status: int, output: str = "", seconds: float = 0.0, changed: str = "") -> None:
-        files = [ChangedFile(int(a), int(r), path) for a, r, path in (line.split("\t", 2) for line in changed.splitlines() if line.count("\t") == 2)]
+        files = [ChangedFile(int(item), int(r), path) for item, r, path in (line.split("\t", 2) for line in changed.splitlines() if line.count("\t") == 2)]
         with self.scope.environment(self.environment_id):
             self.record.ran(chain, part, status, seconds, output, files, self.caller)
 

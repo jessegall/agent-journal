@@ -20,15 +20,15 @@ class CommentImport(EnvironmentKind):
     kind = "comment"
     title = "comments"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, messages: Messages, links: Links) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, messages: Messages, links: Links) -> None:
+        super().__init__(environments, tally)
         self.messages, self.links = messages, links
 
-    def skipped(self, row: Version3Row, into: Environment) -> str:
-        return super().skipped(row, into) or ("" if self.parent(row, into) else "the row it was written under did not come across")
+    def skipped(self, row: Version3Row, target: Environment) -> str:
+        return super().skipped(row, target) or ("" if self.parent(row, target) else "the row it was written under did not come across")
 
-    def parent(self, row: Version3Row, into: Environment) -> Ref | None:
-        return next((rows for ref in row.refs if (rows := self.ledger.referred(into.name, ref))), None)
+    def parent(self, row: Version3Row, target: Environment) -> Ref | None:
+        return next((rows for ref in row.refs if (rows := self.ledger.referred(target.name, ref))), None)
 
     def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
         comment = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, read_at=row.read_time()), row.creation_time(), actor)

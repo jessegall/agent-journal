@@ -11,19 +11,19 @@ class P256:
     """The NIST P-256 curve, as version 3 wrote it with no library: adding and multiplying its points, and checking a signature, for push's VAPID keys."""
 
     @staticmethod
-    def added(one: tuple | None, other: tuple | None) -> tuple | None:
-        if one is None:
-            return other
-        if other is None:
-            return one
-        if one[0] == other[0] and (one[1] + other[1]) % P == 0:
+    def added(single: tuple | None, counterpart: tuple | None) -> tuple | None:
+        if single is None:
+            return counterpart
+        if counterpart is None:
+            return single
+        if single[0] == counterpart[0] and (single[1] + counterpart[1]) % P == 0:
             return None
-        if one == other:
-            slope = (3 * one[0] * one[0] + A) * pow(2 * one[1], -1, P) % P
+        if single == counterpart:
+            slope = (3 * single[0] * single[0] + A) * pow(2 * single[1], -1, P) % P
         else:
-            slope = (other[1] - one[1]) * pow(other[0] - one[0], -1, P) % P
-        x = (slope * slope - one[0] - other[0]) % P
-        return x, (slope * (one[0] - x) - one[1]) % P
+            slope = (counterpart[1] - single[1]) * pow(counterpart[0] - single[0], -1, P) % P
+        x = (slope * slope - single[0] - counterpart[0]) % P
+        return x, (slope * (single[0] - x) - single[1]) % P
 
     @staticmethod
     def times(scalar: int, point: tuple) -> tuple | None:

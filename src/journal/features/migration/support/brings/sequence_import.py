@@ -12,8 +12,8 @@ class SequenceImport(BuiltinKind):
     kind = "sequence"
     title = "sequences"
 
-    def __init__(self, ledger: MigratedRows, sequences: Sequences) -> None:
-        super().__init__(ledger)
+    def __init__(self, tally: MigratedRows, sequences: Sequences) -> None:
+        super().__init__(tally)
         self.sequences = sequences
 
     def created(self, row: Version3Row, actor: Actor) -> Sequence:

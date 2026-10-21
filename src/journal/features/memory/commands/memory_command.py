@@ -21,10 +21,10 @@ class MemoryCommand(Command):
         self.machine, self.scope, self.agents, self.context = machine, scope, agents, context
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", f"record a {self.noun}")
-        create.add_argument("text")
-        create.add_argument("--reason", default="")
-        create.add_argument("--keywords", default="", help="words that bring it back when you write one, comma-separated")
+        creation = self.verb(verbs, "create", f"record a {self.noun}")
+        creation.add_argument("text")
+        creation.add_argument("--reason", default="")
+        creation.add_argument("--keywords", default="", help="words that bring it back when you write one, comma-separated")
         self.verb(verbs, "list", f"every {self.noun} here")
         self.verb(verbs, "read", f"a {self.noun} whole, which puts it in your context window").add_argument("n", type=int)
         self.verb(verbs, "strike", f"a {self.noun} that no longer holds").add_argument("n", type=int)

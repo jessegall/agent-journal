@@ -23,14 +23,14 @@ class ReportCommand(Command):
         self.reports, self.links = reports, links
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "write a report: what was checked or researched now")
-        create.add_argument("title")
-        create.add_argument("--body", default="", help="the report, as markdown; ## headings are its sections")
-        create.add_argument("--file", default="", help="a file holding the body instead")
-        create.add_argument("--about", default=[], nargs="*", help="the rows it is about, as plans:1 or tasks:12, apart by spaces or commas")
-        show = self.verb(verbs, "show", "a report: its outline, then one section at a time")
-        show.add_argument("n", type=int)
-        Outline.arguments(show)
+        creation = self.verb(verbs, "create", "write a report: what was checked or researched now")
+        creation.add_argument("title")
+        creation.add_argument("--body", default="", help="the report, as markdown; ## headings are its sections")
+        creation.add_argument("--file", default="", help="a file holding the body instead")
+        creation.add_argument("--about", default=[], nargs="*", help="the rows it is about, as plans:1 or tasks:12, apart by spaces or commas")
+        display = self.verb(verbs, "show", "a report: its outline, then one section at a time")
+        display.add_argument("n", type=int)
+        Outline.arguments(display)
         self.verb(verbs, "list", "every report here")
 
     def create(self, args: Namespace, caller: Caller) -> int:
@@ -43,12 +43,12 @@ class ReportCommand(Command):
         return 0
 
     @staticmethod
-    def mentioned_rows(given: list[str]) -> list[Ref]:
-        named = [part.strip() for word in given for part in word.split(",") if part.strip()]
-        wrong = [n for n in named if not ROW.match(n)]
+    def mentioned_rows(value: list[str]) -> list[Ref]:
+        matched = [part.strip() for word in value for part in word.split(",") if part.strip()]
+        wrong = [n for n in matched if not ROW.match(n)]
         if wrong:
             raise Rejection(f"not a row: {', '.join(wrong)}; write each as plans:8 or tasks:12")
-        return [Ref.parse(n) for n in named]
+        return [Ref.parse(n) for n in matched]
 
     def show(self, args: Namespace, caller: Caller) -> int:
         report = self.reports.find(args.n)

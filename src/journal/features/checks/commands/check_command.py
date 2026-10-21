@@ -14,11 +14,11 @@ class CheckCommand(Command):
         self.checks, self.runner = checks, runner
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "a script that passes or fails")
-        create.add_argument("title")
-        create.add_argument("--command", required=True)
-        create.add_argument("--brief", default="", help="what it checks and what a failure means")
-        create.add_argument("--every", type=int, default=0, help="minutes; 0 runs it by hand only")
+        creation = self.verb(verbs, "create", "a script that passes or fails")
+        creation.add_argument("title")
+        creation.add_argument("--command", required=True)
+        creation.add_argument("--brief", default="", help="what it checks and what a failure means")
+        creation.add_argument("--every", type=int, default=0, help="minutes; 0 runs it by hand only")
         edit = self.verb(verbs, "edit", "change a check's title, command, brief or interval")
         edit.add_argument("n", type=int)
         edit.add_argument("--title")
@@ -41,11 +41,11 @@ class CheckCommand(Command):
         return 0
 
     def run(self, args: Namespace, caller: Caller) -> int:
-        ran = self.runner.run(self.checks.find(args.n), caller.actor)
-        print(f"check {ran.id} {'passed' if ran.last_passed else 'failed'}: {ran.title}")
-        if not ran.last_passed:
-            print(ran.last_output.strip())
-        return 0 if ran.last_passed else 1
+        completed = self.runner.run(self.checks.find(args.n), caller.actor)
+        print(f"check {completed.id} {'passed' if completed.last_passed else 'failed'}: {completed.title}")
+        if not completed.last_passed:
+            print(completed.last_output.strip())
+        return 0 if completed.last_passed else 1
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for check in self.checks.all():

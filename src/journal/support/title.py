@@ -14,7 +14,7 @@ class Title:
             raise Rejection("a title holds no colon: say it in one line and put the rest in the brief")
 
     @classmethod
-    def check_target(cls, row, was=None) -> None:
+    def check_target(cls, row, prior_row=None) -> None:
         title = getattr(row, "title", None)
-        if isinstance(title, str) and (was is None or title != getattr(was, "title", None)):
+        if isinstance(title, str) and (prior_row is None or title != getattr(prior_row, "title", None)):
             cls.check(title)

@@ -19,15 +19,15 @@ VISITOR = "visitor"
 class SharedComments:
     """What visitors write under what a link opens: a card of the journal's in the chat, linked to the row as its comment. It is someone else's words, so it never reaches the agent as the user's."""
 
-    def __init__(self, messages: Messages, links: Links, targets: ShareTargets, scope: Scope, sent: CommentRate) -> None:
-        self.messages, self.links, self.targets, self.scope, self.sent = messages, links, targets, scope, sent
+    def __init__(self, messages: Messages, links: Links, targets: ShareTargets, scope: Scope, transmitted: CommentRate) -> None:
+        self.messages, self.links, self.targets, self.scope, self.sent = messages, links, targets, scope, transmitted
 
-    def leave(self, share: Share, on: str, name: str, text: str) -> Message:
+    def leave(self, share: Share, enabled: str, name: str, text: str) -> Message:
         if not share.comments:
             raise Rejection("this link does not take comments")
         name, text = self.lookup(name), self.text(text)
         with self.scope.environment(share.environment_id):
-            row = next((ref for ref in self.targets.shown(share) if str(ref) == on), None)
+            row = next((ref for ref in self.targets.shown(share) if str(ref) == enabled), None)
             if row is None:
                 raise Rejection("that is not part of this link")
             if self.sent.locked(share.token):
@@ -46,15 +46,15 @@ class SharedComments:
             return self.messages.visitor_messages(share.id)
 
     @staticmethod
-    def lookup(given: str) -> str:
-        name = " ".join("".join(ch for ch in str(given) if ch.isprintable() and ch != ":").split())
+    def lookup(value: str) -> str:
+        name = " ".join("".join(ch for ch in str(value) if ch.isprintable() and ch != ":").split())
         if not name or len(name) > NAME_LIMIT:
             raise Rejection(f"a name is 1 to {NAME_LIMIT} characters")
         return name
 
     @staticmethod
-    def text(given: str) -> str:
-        text = str(given).strip()
+    def text(value: str) -> str:
+        text = str(value).strip()
         if not text or len(text) > TEXT_LIMIT:
             raise Rejection(f"a comment is 1 to {TEXT_LIMIT} characters")
         return text

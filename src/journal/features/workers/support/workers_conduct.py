@@ -23,8 +23,8 @@ class WorkersConduct(Conduct):
         from journal.features.workers.feature import Workers
         if event.call.tool not in DISPATCH_TOOLS or event.subagent:
             return self.none()
-        most, running = int(settings.value(Workers.SUBAGENT_LIMIT)), event.data.part(Workers).subagents_running
-        return self.refuse(Workers.SUBAGENT_OVERFLOW.create(running=running)) if most and running >= most else self.none()
+        maximum, active = int(settings.value(Workers.SUBAGENT_LIMIT)), event.data.part(Workers).subagents_running
+        return self.refuse(Workers.SUBAGENT_OVERFLOW.create(running=active)) if maximum and active >= maximum else self.none()
 
     def on_tool_starting_workers_worktrees(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
@@ -35,13 +35,13 @@ class WorkersConduct(Conduct):
 
     def on_tool_starting_workers_known(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        given = event.call.input if event.call.tool in DISPATCH_TOOLS else {}
-        kind = given.get("subagent_type", "")
-        named = PathMentions.build(f"{given.get('description', '')} {given.get('prompt', '')}")
-        if not named or kind in INDEPENDENT_ROLES:
+        value = event.call.input if event.call.tool in DISPATCH_TOOLS else {}
+        kind = value.get("subagent_type", "")
+        matched = PathMentions.build(f"{value.get('description', '')} {value.get('prompt', '')}")
+        if not matched or kind in INDEPENDENT_ROLES:
             return self.none()
-        known = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.running and d.session and d.type == kind and named & PathMentions.build(d.brief)), None)
-        return self.refuse(Workers.SUBAGENT_REUSE.create(session=known.session, task=known.task)) if known else self.none()
+        existing = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.running and d.session and d.type == kind and matched & PathMentions.build(d.brief)), None)
+        return self.refuse(Workers.SUBAGENT_REUSE.create(session=existing.session, task=existing.task)) if existing else self.none()
 
     def on_stop_workers(self, event: Stop, settings: Settings) -> Transition:
         return self.none(*report_mentions(event.data.part(workers_feature())))
@@ -68,10 +68,10 @@ def workers_feature():
     return Workers
 
 
-def worktree_edits(workers: WorkersData, written_paths: tuple[str, ...]):
-    written = [Path(p).expanduser().resolve() for p in written_paths]
-    inside = [p for p in written if p.is_relative_to(workers.worktrees_root)]
-    if not inside:
+def worktree_edits(workers: WorkersData, edited_paths: tuple[str, ...]):
+    saved = [Path(p).expanduser().resolve() for p in edited_paths]
+    contained = [p for p in saved if p.is_relative_to(workers.worktrees_root)]
+    if not contained:
         return None
-    folder = inside[0].relative_to(workers.worktrees_root).parts[0]
+    folder = contained[0].relative_to(workers.worktrees_root).parts[0]
     return next((w for w in workers.worktrees if w.folder == folder), None)

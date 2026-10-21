@@ -12,8 +12,8 @@ class CheckImport(ProjectKind):
     kind = "check"
     title = "checks"
 
-    def __init__(self, ledger: MigratedRows, checks: Checks) -> None:
-        super().__init__(ledger)
+    def __init__(self, tally: MigratedRows, checks: Checks) -> None:
+        super().__init__(tally)
         self.checks = checks
 
     def created(self, row: Version3Row, actor: Actor) -> Check:

@@ -14,23 +14,23 @@ MISSING_STATUSES = (404, 410)
 class PhoneNotice(Listener[ClockTicked]):
     """As the clock ticks, once for the whole journal, the paired phone that subscribed is pushed when something new waits for the user, once for each, as version 3 told it."""
 
-    def __init__(self, phones: Phones, waits: PhoneWaits, push: WebPush) -> None:
-        self.phones, self.waits, self.push = phones, waits, push
+    def __init__(self, phones: Phones, waits: PhoneWaits, stacked: WebPush) -> None:
+        self.phones, self.waits, self.push = phones, waits, stacked
 
     def handle(self, event: ClockTicked) -> None:
         time = datetime.now(timezone.utc)
         for phone in [p for p in self.phones.active(time) if p.push]:
-            owed = self.waits.refs(phone)
-            if phone.is_push_due(owed, time):
-                self.pushed(phone, owed, time)
-            elif not phone.has_updates(owed) and owed != phone.pushed_refs():
-                self.phones.save(phone.notified(owed), Actor.system())
+            obligations = self.waits.refs(phone)
+            if phone.is_push_due(obligations, time):
+                self.pushed(phone, obligations, time)
+            elif not phone.has_updates(obligations) and obligations != phone.pushed_refs():
+                self.phones.save(phone.notified(obligations), Actor.system())
 
-    def pushed(self, phone: Phone, owed: list[str], time: datetime) -> None:
+    def pushed(self, phone: Phone, obligations: list[str], time: datetime) -> None:
         status = self.push.send(phone.push)
         if status in MISSING_STATUSES:
             self.phones.save(phone.unsubscribed(), Actor.system())
         elif 200 <= status < 300:
-            self.phones.save(phone.notified(owed), Actor.system())
+            self.phones.save(phone.notified(obligations), Actor.system())
         else:
             self.phones.save(phone.push_failed(time), Actor.system())

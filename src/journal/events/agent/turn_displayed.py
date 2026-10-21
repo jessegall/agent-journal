@@ -19,8 +19,8 @@ class TurnDisplayed(AgentEvent):
     def content(self) -> str:
         return self.text if self.final else ""
 
-    def with_text(self, whole: str) -> "TurnDisplayed":
-        return replace(self, text=whole)
+    def with_text(self, full: str) -> "TurnDisplayed":
+        return replace(self, text=full)
 
     def with_final(self, final: bool) -> "TurnDisplayed":
         return replace(self, final=final)

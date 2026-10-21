@@ -34,9 +34,9 @@ INSTANCE_CHECK_SECONDS = 2.0
 class Runtime:
     """What the server process keeps alive: the HTTP server and the share server beside it, the deferred worker, the clock and the menu watcher, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
 
-    def __init__(self, container: Container, server: Server, deferred: ListenerQueue, clock: Clock, machine: StateMachine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, standby: InstanceGuard) -> None:
+    def __init__(self, container: Container, server: Server, deferred: ListenerQueue, clock: Clock, machine: StateMachine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, reserve: InstanceGuard) -> None:
         self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
-        self.watcher, self.share_server, self.standby = watcher, share_server, standby
+        self.watcher, self.share_server, self.standby = watcher, share_server, reserve
 
     def register_nudges(self) -> None:
         nudges = self.container.get(NudgeRegistry)
@@ -87,12 +87,12 @@ class Runtime:
 
     def run(self) -> None:
         parent = os.getppid()
-        other = self.standby.other_address()
-        if other:
-            print(f"a journal of this project answers at {other}: waiting until it is gone", flush=True)
-        while other and os.getppid() == parent:
+        counterpart = self.standby.other_address()
+        if counterpart:
+            print(f"a journal of this project answers at {counterpart}: waiting until it is gone", flush=True)
+        while counterpart and os.getppid() == parent:
             time.sleep(INSTANCE_CHECK_SECONDS)
-            other = self.standby.other_address()
+            counterpart = self.standby.other_address()
         if os.getppid() != parent:
             return
         self.start()

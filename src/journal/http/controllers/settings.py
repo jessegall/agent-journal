@@ -23,9 +23,9 @@ class SettingController:
         return Response.json(self.tree())
 
     def saved(self, top: str, inner: dict, actor: Actor) -> None:
-        known = {f.name for f in self.registry.features}
+        existing = {f.name for f in self.registry.features}
         for name, value in inner.items():
-            if top == FEATURES and name not in known:
+            if top == FEATURES and name not in existing:
                 continue
             if value is None:
                 self.settings.unset(f"{top}.{name}", actor)

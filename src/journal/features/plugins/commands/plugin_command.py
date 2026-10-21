@@ -38,9 +38,9 @@ class PluginCommand(Command):
         configure.add_argument("key")
         configure.add_argument("value")
         self.verb(verbs, "settings", "a plugin's settings, what each is and how it is set").add_argument("name")
-        remove = self.verb(verbs, "remove", "take a plugin out; its data folder stays unless --purge")
-        remove.add_argument("name")
-        remove.add_argument("--purge", action="store_true", help="delete its data folder too")
+        removal = self.verb(verbs, "remove", "take a plugin out; its data folder stays unless --purge")
+        removal.add_argument("name")
+        removal.add_argument("--purge", action="store_true", help="delete its data folder too")
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for p in self.plugins.all():

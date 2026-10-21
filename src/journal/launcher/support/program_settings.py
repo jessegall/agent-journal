@@ -24,11 +24,11 @@ class ProgramSettings:
     def stored(self) -> "ProgramSettings":
         if self.hooks is None:
             return self
-        ours = {event: [block for block in blocks if self.is_journals(block)] for event, blocks in self.hooks.items()}
-        return replace(self, hooks={event: blocks for event, blocks in ours.items() if blocks})
+        journal_owned = {event: [block for block in blocks if self.is_journals(block)] for event, blocks in self.hooks.items()}
+        return replace(self, hooks={event: blocks for event, blocks in journal_owned.items() if blocks})
 
-    def with_hook_settings(self, other: "ProgramSettings") -> "ProgramSettings":
-        return replace(self, hooks=other.hooks or {})
+    def with_hook_settings(self, counterpart: "ProgramSettings") -> "ProgramSettings":
+        return replace(self, hooks=counterpart.hooks or {})
 
     @staticmethod
     def is_journals(block: dict) -> bool:

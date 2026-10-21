@@ -19,15 +19,15 @@ class SkillFiles:
 
     def write_all(self) -> list[Path]:
         self.clear()
-        written = []
+        saved = []
         for skill in self.registry.skills():
             for home in HOMES:
                 path = self.path(skill, home)
                 path.parent.mkdir(parents=True, exist_ok=True)
                 if not path.is_file() or path.read_text() != skill.text():
                     path.write_text(skill.text())
-                written.append(path)
-        return written
+                saved.append(path)
+        return saved
 
     def clear(self) -> None:
         for home in HOMES:

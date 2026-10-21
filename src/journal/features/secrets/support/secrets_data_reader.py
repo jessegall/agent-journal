@@ -14,8 +14,8 @@ class SecretsDataReader:
         self.config, self.values = config, values
 
     def read(self, agent: Agent) -> SecretsData:
-        named = [self.values.path.parent, PrivateFolder(self.config.root).keys_file().parent]
-        folders = [folder.resolve() for folder in named]
+        matched = [self.values.path.parent, PrivateFolder(self.config.root).keys_file().parent]
+        folders = [folder.resolve() for folder in matched]
         home = str(Path.home())
-        spellings = [s for folder in {*named, *folders} for s in (str(folder), str(folder).replace(home, "~", 1), str(folder).replace(home, "$HOME", 1))]
+        spellings = [s for folder in {*matched, *folders} for s in (str(folder), str(folder).replace(home, "~", 1), str(folder).replace(home, "$HOME", 1))]
         return SecretsData(root=self.config.root, folders=tuple(folders), spellings=tuple(spellings))

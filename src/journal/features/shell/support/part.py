@@ -50,10 +50,10 @@ class Part:
         while tokens and ("=" in tokens[0] and not tokens[0].startswith("-") or tokens[0] in PREFIXES):
             tokens = tokens[1:]
         if tokens and tokens[0].rsplit("/", 1)[-1] == "git":
-            rest = tokens[1:]
-            while rest and (rest[0] in GIT_OPTIONS or rest[0].startswith(("--git-dir=", "--work-tree="))):
-                rest = rest[2:] if rest[0] in ("-c", "-C", "--git-dir", "--work-tree") else rest[1:]
-            return ["git", *rest]
+            remainder = tokens[1:]
+            while remainder and (remainder[0] in GIT_OPTIONS or remainder[0].startswith(("--git-dir=", "--work-tree="))):
+                remainder = remainder[2:] if remainder[0] in ("-c", "-C", "--git-dir", "--work-tree") else remainder[1:]
+            return ["git", *remainder]
         return tokens
 
     def program(self) -> str:
@@ -119,8 +119,8 @@ class Part:
         trailing = TRAILING_CUT.search(self.text)
         if not self.recorded or trailing is None or "<<" in self.text or self.is_reading_code():
             return ""
-        before = self.text[:trailing.start()]
-        return trailing.group(0).strip() if before.count("'") % 2 == 0 and before.count('"') % 2 == 0 else ""
+        previous = self.text[:trailing.start()]
+        return trailing.group(0).strip() if previous.count("'") % 2 == 0 and previous.count('"') % 2 == 0 else ""
 
     def cut_command(self) -> str:
         return self.cut().lstrip("| ").strip()

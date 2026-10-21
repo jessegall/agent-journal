@@ -23,14 +23,14 @@ class SkillsConduct(Conduct):
         return self.none(*read_first(event.data.part(skills_feature()).mentioned(event.prompt)))
 
     def on_tool_starting_skills(self, event: ToolStarting, settings: Settings) -> Transition:
-        owed = event.data.part(skills_feature()).debt_cards()
-        if event.subagent or not event.call.writes or not owed:
+        obligations = event.data.part(skills_feature()).debt_cards()
+        if event.subagent or not event.call.writes or not obligations:
             return self.none()
-        return self.refuse(read_first(owed)[0])
+        return self.refuse(read_first(obligations)[0])
 
     def on_stop_skills(self, event: Stop, settings: Settings) -> Transition:
-        owed = event.data.part(skills_feature()).owed
-        return self.refuse(skills_feature().UNREAD_SKILL_STOP.create(skills=" and ".join(owed))) if owed else self.none()
+        obligations = event.data.part(skills_feature()).owed
+        return self.refuse(skills_feature().UNREAD_SKILL_STOP.create(skills=" and ".join(obligations))) if obligations else self.none()
 
 
 def skills_feature() -> "type[Skills]":

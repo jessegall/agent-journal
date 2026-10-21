@@ -16,9 +16,9 @@ class TranscriptRead:
     def more(self, provider: Provider, path: Path) -> "TranscriptRead":
         with path.open("rb") as file:
             file.seek(self.offset)
-            written = file.read()
-        whole = written[: written.rfind(b"\n") + 1]
-        if not whole:
+            saved = file.read()
+        full = saved[: saved.rfind(b"\n") + 1]
+        if not full:
             return self
-        text = whole.decode(errors="replace")
-        return TranscriptRead(self.offset + len(whole), self.lines + len(text.splitlines()), self.turns + tuple(provider.turn_rows(Provider.rows(text, self.lines))))
+        text = full.decode(errors="replace")
+        return TranscriptRead(self.offset + len(full), self.lines + len(text.splitlines()), self.turns + tuple(provider.turn_rows(Provider.rows(text, self.lines))))

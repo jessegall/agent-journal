@@ -67,9 +67,9 @@ class CommitDetection(AgentListener[ToolFinished]):
             moment = log.stat().st_mtime
         except OSError:
             return False
-        known = self._head_log_times.get(folder)
+        existing = self._head_log_times.get(folder)
         self._head_log_times[folder] = moment
-        return known is not None and moment != known
+        return existing is not None and moment != existing
 
     @staticmethod
     def head_log(folder: Path) -> Path:
@@ -88,10 +88,10 @@ class CommitDetection(AgentListener[ToolFinished]):
         return tree.path if tree.path.is_dir() else self.config.root
 
     def merged(self, event: ToolFinished) -> Decision | None:
-        landed = subprocess.run(["git", "log", "--format=%H%x00%B%x01", "ORIG_HEAD..HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=5)
-        if landed.returncode != 0:
+        delivered = subprocess.run(["git", "log", "--format=%H%x00%B%x01", "ORIG_HEAD..HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=5)
+        if delivered.returncode != 0:
             return None
-        decisions = [self.commit(event, sha, closed) for sha, _, body in (entry.strip().partition("\0") for entry in landed.stdout.split("\x01") if entry.strip()) if (closed := self.close_mentioned(event, sha, body))]
+        decisions = [self.commit(event, sha, closed) for sha, _, body in (entry.strip().partition("\0") for entry in delivered.stdout.split("\x01") if entry.strip()) if (closed := self.close_mentioned(event, sha, body))]
         return next((decision for decision in decisions if decision), None)
 
     def close_mentioned(self, event: ToolFinished, sha: str, body: str) -> list[int]:
@@ -102,13 +102,13 @@ class CommitDetection(AgentListener[ToolFinished]):
 
     def head(self, folder: Path) -> HeadCommit | None:
         try:
-            out = subprocess.run(["git", "log", "-1", "--format=%H%n%ct%n%s%n%B"], cwd=folder, capture_output=True, text=True, timeout=5)
+            output = subprocess.run(["git", "log", "-1", "--format=%H%n%ct%n%s%n%B"], cwd=folder, capture_output=True, text=True, timeout=5)
             branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=folder, capture_output=True, text=True, timeout=5).stdout.strip()
         except (OSError, subprocess.TimeoutExpired):
             return None
-        if out.returncode != 0 or not out.stdout.strip():
+        if output.returncode != 0 or not output.stdout.strip():
             return None
-        sha, _, rest = out.stdout.strip().partition("\n")
-        committed, _, rest = rest.partition("\n")
-        subject, _, body = rest.partition("\n")
+        sha, _, remainder = output.stdout.strip().partition("\n")
+        committed, _, remainder = remainder.partition("\n")
+        subject, _, body = remainder.partition("\n")
         return HeadCommit(sha, subject, branch, body, int(committed))

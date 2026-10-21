@@ -12,8 +12,8 @@ class RuleImport(ProjectKind):
     kind = "rule"
     title = "rules"
 
-    def __init__(self, ledger: MigratedRows, rules: Rules) -> None:
-        super().__init__(ledger)
+    def __init__(self, tally: MigratedRows, rules: Rules) -> None:
+        super().__init__(tally)
         self.rules = rules
 
     def skipped(self, row: Version3Row) -> str:

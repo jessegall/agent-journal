@@ -45,8 +45,8 @@ class Secret(Model):
         new = tuple(p for p in allowed if p not in self.programs)
         if new:
             return self.with_(programs=allowed, proposed=tuple(p for p in (self.proposed if proposed is None else proposed) if p not in allowed)).with_event(SecretAllowed(secret_id=self.id, title=self.title, programs=new))
-        asked = self.proposed if proposed is None else proposed
-        return self.with_(programs=allowed, proposed=tuple(p for p in asked if p not in allowed))
+        requested = self.proposed if proposed is None else proposed
+        return self.with_(programs=allowed, proposed=tuple(p for p in requested if p not in allowed))
 
     def is_login_expired(self, time: datetime) -> bool:
         if self.session_expires is None or self.session_expires >= time:

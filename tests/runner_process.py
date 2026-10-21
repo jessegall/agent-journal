@@ -110,7 +110,7 @@ CORPUS = [
     "echo a;echo b&&echo c",
     "cd /nonexistent 2>/dev/null || echo nocd; pwd",
     "printf 'x'; printf 'y\\n'",
-    "echo \; && echo \\&\\&",
+    "echo \\; && echo \\&\\&",
     "a=(1 2); echo ${a[2]}; echo ${#a}",
     "false || { echo h1; echo h2; }",
     "if [ 1 -eq 1 ] && [ 2 -eq 2 ]; then echo both; fi",
@@ -138,7 +138,7 @@ CORPUS = [
     "x='1;2'; [[ $x == *\";\"* ]] && echo m",
     "echo a |& cat; echo b &> /dev/null; echo c",
     "(echo in-sub; exit 4); echo $?",
-    "echo \"\$(echo a; echo b)\" && printf '%s\\n' \"$(echo c; echo d)\"",
+    "echo \"\\$(echo a; echo b)\" && printf '%s\\n' \"$(echo c; echo d)\"",
 ]
 
 
@@ -155,14 +155,14 @@ def test_the_runner_agrees_with_the_shell_on_every_line_of_the_corpus(tmp_path: 
         port = app.server().port
         (tmp_path / ".journal" / "port").write_text(str(port))
         urlopen(Request(f"http://127.0.0.1:{port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-        env = {**os.environ, "JOURNAL_ROOT": str(tmp_path), "JOURNAL_ENV": "main", "CLAUDECODE": "1", "SHELL": "/bin/zsh"}
+        environment = {**os.environ, "JOURNAL_ROOT": str(tmp_path), "JOURNAL_ENV": "main", "CLAUDECODE": "1", "SHELL": "/bin/zsh"}
         runner, cwd = str(tmp_path / ".journal" / "src" / "journal" / "hooks" / "run.sh"), tmp_path / "cwd"
         differences = []
         for line in CORPUS:
-            whole = subprocess.run(["/bin/zsh", "-c", line], cwd=tmp_path, capture_output=True, text=True, timeout=20)
-            parts = subprocess.run([runner, wrapped(line, cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
-            if (whole.stdout, whole.returncode) != (parts.stdout, parts.returncode):
-                differences.append((line, whole.stdout, whole.returncode, parts.stdout, parts.returncode, parts.stderr[-200:]))
+            full = subprocess.run(["/bin/zsh", "-c", line], cwd=tmp_path, capture_output=True, text=True, timeout=20)
+            parts = subprocess.run([runner, wrapped(line, cwd)], env=environment, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+            if (full.stdout, full.returncode) != (parts.stdout, parts.returncode):
+                differences.append((line, full.stdout, full.returncode, parts.stdout, parts.returncode, parts.stderr[-200:]))
         assert not differences, "\n".join(repr(d) for d in differences)
     finally:
         app.runtime().stop()

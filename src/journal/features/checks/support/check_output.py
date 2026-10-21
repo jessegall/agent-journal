@@ -26,12 +26,12 @@ class CheckOutput:
     def progress(cls, output: str, time: float) -> CheckProgress:
         counted = COUNTED.findall(output[-2000:])
         if counted and 0 < int(counted[-1][1]) and int(counted[-1][0]) <= int(counted[-1][1]):
-            done, total = int(counted[-1][0]), int(counted[-1][1])
-            return CheckProgress(time, cls.tail(output), done, total, round(done / total * 100, 1))
+            finished, total = int(counted[-1][0]), int(counted[-1][1])
+            return CheckProgress(time, cls.tail(output), finished, total, round(finished / total * 100, 1))
         listed = ITEMS.findall(output)
         total = int(next(filter(None, listed[-1]))) if listed else 0
-        done = sum(len(rows) for rows in STEPS.findall(output))
-        if done and total:
-            return CheckProgress(time, cls.tail(output), min(done, total), total, round(min(done, total) / total * 100, 1))
-        printed = PERCENT.findall(output[-2000:])
-        return CheckProgress(time, cls.tail(output), percent=min(100, int(printed[-1])) if printed else None)
+        finished = sum(len(rows) for rows in STEPS.findall(output))
+        if finished and total:
+            return CheckProgress(time, cls.tail(output), min(finished, total), total, round(min(finished, total) / total * 100, 1))
+        output_text = PERCENT.findall(output[-2000:])
+        return CheckProgress(time, cls.tail(output), percent=min(100, int(output_text[-1])) if output_text else None)

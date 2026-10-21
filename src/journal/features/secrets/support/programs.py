@@ -17,5 +17,5 @@ class Programs:
 
     @classmethod
     def mentioned(cls, instructions: str) -> tuple[str, ...]:
-        named = dict.fromkeys(rows[1] for rows in STATED_COMMAND.finditer(instructions))
-        return tuple(name for name in named if not cls.is_withheld(name) and shutil.which(name))
+        matched = dict.fromkeys(rows[1] for rows in STATED_COMMAND.finditer(instructions))
+        return tuple(name for name in matched if not cls.is_withheld(name) and shutil.which(name))

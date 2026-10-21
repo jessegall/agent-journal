@@ -39,8 +39,8 @@ class Agent(Scoped):
 
     def skill_read(self, name: str, digest: str, time: float) -> "Agent":
         loaded = {**self.skills_loaded, name: digest}
-        owed = tuple(skill for skill in self.skills_owed if skill != name)
-        return self.with_(skills_loaded=loaded, skills_owed=owed).with_event(SkillRead(environment_id=self.environment_id, time=time, skill=name))
+        obligations = tuple(skill for skill in self.skills_owed if skill != name)
+        return self.with_(skills_loaded=loaded, skills_owed=obligations).with_event(SkillRead(environment_id=self.environment_id, time=time, skill=name))
 
     def tool_used(self) -> "Agent":
         return self.with_(tool_uses=self.tool_uses + 1)

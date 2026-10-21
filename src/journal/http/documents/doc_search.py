@@ -17,24 +17,24 @@ class DocSearch:
         self.docs = docs
 
     def located(self, text: str) -> list[DocHit]:
-        asked = text.lower().split()
-        if not asked:
+        requested = text.lower().split()
+        if not requested:
             return []
-        hits = [hit for hit in (self.hit(doc, asked) for doc in self.docs.all()) if hit["score"]]
+        hits = [hit for hit in (self.hit(doc, requested) for doc in self.docs.all()) if hit["score"]]
         return sorted(hits, key=lambda hit: -hit["score"])
 
-    def hit(self, doc: Doc, asked: list[str]) -> DocHit:
+    def hit(self, doc: Doc, requested: list[str]) -> DocHit:
         parts = {"title": doc.title.lower(), "number": f"doc {doc.id}", "abstract": doc.abstract.lower(), "text": doc.body.lower()}
-        whole = " ".join(parts.values())
-        if not all(word in whole for word in asked):
+        full = " ".join(parts.values())
+        if not all(word in full for word in requested):
             return DocHit(id=doc.id, score=0, place="", text="")
-        rows = [part for part, text in parts.items() if any(word in text for word in asked)]
-        return DocHit(id=doc.id, score=sum(WEIGHTS[part] for part in rows), place=rows[0], text=self.passage(doc.body, asked))
+        rows = [part for part, text in parts.items() if any(word in text for word in requested)]
+        return DocHit(id=doc.id, score=sum(WEIGHTS[part] for part in rows), place=rows[0], text=self.passage(doc.body, requested))
 
     @staticmethod
-    def passage(body: str, asked: list[str]) -> str:
+    def passage(body: str, requested: list[str]) -> str:
         flat = SPACES.sub(" ", MARKDOWN_SYMBOLS.sub("", body))
-        time = min((i for i in (flat.lower().find(word) for word in asked) if i >= 0), default=-1)
+        time = min((i for i in (flat.lower().find(word) for word in requested) if i >= 0), default=-1)
         if time < 0:
             return ""
         return flat[max(0, time - SNIPPET_RADIUS):time + SNIPPET_RADIUS].strip()

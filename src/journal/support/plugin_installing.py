@@ -51,7 +51,7 @@ class PluginInstalling:
             self.free(manifest.name)
             linked = Path(source).is_dir()
             plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, release="" if linked else self.tag(folder), linked=linked, manifest=manifest)
-            had_data = (self.config.home / "plugin-data" / plugin.name).is_dir()
+            prior_data = (self.config.home / "plugin-data" / plugin.name).is_dir()
             if not linked:
                 shutil.copytree(folder, self.folders.folder(plugin), ignore=shutil.ignore_patterns(".git"))
             try:
@@ -59,7 +59,7 @@ class PluginInstalling:
                 self.prepare(plugin, environment)
                 filled = self.question(plugin, environment)
             except Rejection:
-                self.undone(plugin, had_data)
+                self.undone(plugin, prior_data)
                 raise
             settings = self.settings.started(plugin, actor)
             hashes = self.hashes.digest(self.folders.folder(plugin), plugin.manifest)
@@ -77,27 +77,27 @@ class PluginInstalling:
 
     def prepare(self, plugin: Plugin, environment: str) -> None:
         for step in plugin.manifest.setup:
-            ran = self.runner.shell(plugin, environment, step.run, STEP_SECONDS)
-            if ran.returncode != 0:
-                raise Rejection(f"{plugin.name}'s setup step {step.called!r} failed, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
+            completed = self.runner.shell(plugin, environment, step.run, STEP_SECONDS)
+            if completed.returncode != 0:
+                raise Rejection(f"{plugin.name}'s setup step {step.called!r} failed, so nothing is installed: {(completed.stderr or completed.stdout).strip()[-300:]}")
 
     def question(self, plugin: Plugin, environment: str) -> dict:
         command = plugin.manifest.installed
         if not command:
             return {}
-        ran = self.runner.shell(plugin, environment, command, STEP_SECONDS)
+        completed = self.runner.shell(plugin, environment, command, STEP_SECONDS)
         try:
-            answer = json.loads(ran.stdout or "{}")
+            answer = json.loads(completed.stdout or "{}")
         except json.JSONDecodeError:
             answer = None
-        if ran.returncode != 0 or not isinstance(answer, dict):
-            raise Rejection(f"{plugin.name}'s installed command {command!r} did not answer with its settings as a JSON object, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
+        if completed.returncode != 0 or not isinstance(answer, dict):
+            raise Rejection(f"{plugin.name}'s installed command {command!r} did not answer with its settings as a JSON object, so nothing is installed: {(completed.stderr or completed.stdout).strip()[-300:]}")
         return answer
 
-    def undone(self, plugin: Plugin, had_data: bool) -> None:
+    def undone(self, plugin: Plugin, prior_data: bool) -> None:
         if not plugin.linked:
             shutil.rmtree(self.folders.folder(plugin), ignore_errors=True)
-        if not had_data:
+        if not prior_data:
             shutil.rmtree(self.config.home / "plugin-data" / plugin.name, ignore_errors=True)
 
     def upgrade_preview(self, name: str, ref: str | None) -> PluginPreview:
@@ -125,20 +125,20 @@ class PluginInstalling:
 
     def replaced(self, plugin: Plugin, upgraded: Plugin, folder: Path, environment: str) -> None:
         target = self.folders.folder(plugin)
-        kept = target.with_name(f"{target.name}.before-upgrade")
-        shutil.rmtree(kept, ignore_errors=True)
-        target.rename(kept)
+        stored = target.with_name(f"{target.name}.before-upgrade")
+        shutil.rmtree(stored, ignore_errors=True)
+        target.rename(stored)
         shutil.copytree(folder, target, ignore=shutil.ignore_patterns(".git"))
         try:
             self.required(upgraded, environment)
             self.prepare(upgraded, environment)
         except Rejection:
             shutil.rmtree(target)
-            kept.rename(target)
+            stored.rename(target)
             if plugin.enabled:
                 self.services.start(plugin)
             raise
-        shutil.rmtree(kept)
+        shutil.rmtree(stored)
 
     def enable(self, name: str, actor: Actor) -> Plugin:
         self.require_user(actor, "switches on")

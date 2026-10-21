@@ -29,12 +29,12 @@ class ReleaseInstaller:
             try:
                 with urlopen(self.script_path(repository, ref), timeout=DOWNLOAD_SECONDS) as answer:
                     script.write_bytes(answer.read())
-                ran = subprocess.run(["sh", str(script)], cwd=self.config.root, env={**os.environ, "AGENT_JOURNAL_REPO": repository, "AGENT_JOURNAL_REF": ref, "AGENT_JOURNAL_YES": "1"},
+                completed = subprocess.run(["sh", str(script)], cwd=self.config.root, env={**os.environ, "AGENT_JOURNAL_REPO": repository, "AGENT_JOURNAL_REF": ref, "AGENT_JOURNAL_YES": "1"},
                                      stdout=log, stderr=subprocess.STDOUT, timeout=INSTALL_SECONDS)
             except (OSError, subprocess.TimeoutExpired) as error:
                 log.write(f"the install could not run: {error}\n")
                 raise Rejection(f"the install of {ref} could not run: {error}") from error
-        if ran.returncode != 0:
+        if completed.returncode != 0:
             raise Rejection(f"the install of {ref} failed: {self.log.read_text(errors='replace').strip()[-300:]}")
 
     @staticmethod

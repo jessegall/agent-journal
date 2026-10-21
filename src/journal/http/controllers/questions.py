@@ -9,8 +9,8 @@ from journal.repositories.questions import Questions
 class QuestionController(Controller[Question]):
     """The agent's questions; one is open until the user answers it."""
 
-    def __init__(self, questions: Questions, answering: AnswerDelivery) -> None:
-        self.repository, self.answering = questions, answering
+    def __init__(self, questions: Questions, respondent: AnswerDelivery) -> None:
+        self.repository, self.answering = questions, respondent
 
     def is_open(self, row: Question) -> bool:
         return not row.is_answered()

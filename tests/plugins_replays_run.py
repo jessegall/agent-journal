@@ -53,10 +53,10 @@ def with_echo(app, replay: Replay, provider: str) -> None:
 
 def test_a_session_with_the_echo_plugin_matches_its_record(journals, monkeypatch):
     recorded_app, anew = journals
-    left = recorded("echo_plugin_claude", recorded_app, monkeypatch, with_echo, "claude")
+    remaining = recorded("echo_plugin_claude", recorded_app, monkeypatch, with_echo, "claude")
     anew.runtime().start()
     right = Replay(anew, monkeypatch)
     with_echo(anew, right, "claude")
     answers = [str(s["answer"]) for s in right.record() if s["answer"] is not None]
     assert "[plugin echo] echo refuses a forbidden tool" in answers[0] and "[plugin echo] echo heard your prompt" in answers[1], "the plugin held the tool and told the prompt"
-    assert differences(left.record(), right.record()) == [], "the agent would have seen the same as the record says"
+    assert differences(remaining.record(), right.record()) == [], "the agent would have seen the same as the record says"

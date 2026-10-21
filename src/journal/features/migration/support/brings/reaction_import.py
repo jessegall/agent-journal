@@ -20,12 +20,12 @@ class ReactionImport(EnvironmentKind):
     kind = "reaction"
     title = "reactions"
 
-    def __init__(self, environments: Environments, ledger: MigratedRows, reactions: Reactions, links: Links) -> None:
-        super().__init__(environments, ledger)
+    def __init__(self, environments: Environments, tally: MigratedRows, reactions: Reactions, links: Links) -> None:
+        super().__init__(environments, tally)
         self.reactions, self.links = reactions, links
 
-    def skipped(self, row: Version3Row, into: Environment) -> str:
-        return super().skipped(row, into) or ("" if self.message(row, into) else "the message it sits on did not come across")
+    def skipped(self, row: Version3Row, target: Environment) -> str:
+        return super().skipped(row, target) or ("" if self.message(row, target) else "the message it sits on did not come across")
 
     def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Reaction:
         reaction = self.reactions.imported(Reaction(environment_id=into.id, face=row.data.get("face", ""), author=Author(row.author())), row.creation_time(), actor)

@@ -27,18 +27,18 @@ class Request:
         return replace(self, params=params)
 
     def number(self, name: str) -> int:
-        given = self.params.get(name, "")
-        if not given.isdigit():
-            raise MissingRow("rows", given or "nothing")
-        return int(given)
+        value = self.params.get(name, "")
+        if not value.isdigit():
+            raise MissingRow("rows", value or "nothing")
+        return int(value)
 
     def queried(self, name: str, default: float = 0.0) -> float:
-        given = self.query.get(name)
-        return float(given) if given else default
+        value = self.query.get(name)
+        return float(value) if value else default
 
     @property
     def environment(self) -> str:
-        named = self.headers.get(ENVIRONMENT_HEADER.lower()) or self.query.get("env")
-        if not named:
+        matched = self.headers.get(ENVIRONMENT_HEADER.lower()) or self.query.get("env")
+        if not matched:
             raise Rejection(f"no environment: send it in the {ENVIRONMENT_HEADER} header")
-        return named
+        return matched

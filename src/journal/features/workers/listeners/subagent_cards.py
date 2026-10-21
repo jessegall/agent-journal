@@ -37,7 +37,7 @@ class SubagentCards(AgentListener[AgentEvent]):
     def carded(self, event: AgentEvent, row: Dispatch, agent: int, actor: Actor) -> None:
         key = f"subagent:{row.id}"
         data = {"kind": "subagent", "session": event.session, "agent": agent, "detail": row.task, "agent_type": row.type, "model": row.model, "subagent": row.session, "state": row.status, "reason": row.reason}
-        earlier = self.messages.keyed(key, actor)
-        if earlier and all(earlier[0].data.get(k) == v for k, v in data.items()):
+        older = self.messages.keyed(key, actor)
+        if older and all(older[0].data.get(k) == v for k, v in data.items()):
             return
         self.cards.keyed(event.environment_id, key, f"Subagent {row.type}: {row.task}", data, actor, CardKind.SUBAGENTS)

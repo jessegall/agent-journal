@@ -8,8 +8,8 @@ class WordOverlap:
     FEWEST = 8
 
     @classmethod
-    def share(cls, text: str, other: str) -> float:
+    def share(cls, text: str, counterpart: str) -> float:
         terms = set(cls.WORD.findall(text.lower()))
         if len(terms) < cls.FEWEST:
             return 0.0
-        return len(terms & set(cls.WORD.findall(other.lower()))) / len(terms)
+        return len(terms & set(cls.WORD.findall(counterpart.lower()))) / len(terms)

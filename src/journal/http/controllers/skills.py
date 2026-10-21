@@ -14,7 +14,7 @@ class SkillController:
         self.registry, self.agents, self.skill_files, self.supervisor, self.scope = registry, agents, skill_files, supervisor, scope
 
     def index(self, request: Request) -> Response:
-        agent = next((a for a in self.agents.all_agents() if str(a.id) == request.query.get("agent", "")), None)
+        agent = next((item for item in self.agents.all_agents() if str(item.id) == request.query.get("agent", "")), None)
         loaded = set(agent.skills_loaded.keys()) if agent else set()
         return Response.json([{"name": skill.name, "description": skill.description, "loaded": skill.name in loaded} for skill in self.registry.skills()])
 

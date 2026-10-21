@@ -31,8 +31,8 @@ class Console:
     def attributed(self, caller: Caller) -> Caller:
         if not caller.from_agent_shell or caller.session:
             return caller
-        live = self.agents.current()
-        return caller.as_(live.session) if live else caller
+        present = self.agents.current()
+        return caller.as_(present.session) if present else caller
 
     def parser(self) -> argparse.ArgumentParser:
         if self._parser is None:
@@ -46,9 +46,9 @@ class Console:
         return self._parser
 
     def run(self, argv: list[str], caller: Caller) -> Outcome:
-        out, err = io.StringIO(), io.StringIO()
+        output, err = io.StringIO(), io.StringIO()
         with self.scope.environment(self.environments.lookup(caller.environment).id):
-            return self.captured(argv, caller, out, err)
+            return self.captured(argv, caller, output, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:
         command = self.commands.get(argv[0]) if argv else None
@@ -69,10 +69,10 @@ class Console:
             return self.row_verbs.perform(args, caller)
         return self.commands[args.noun].perform(args, caller)
 
-    def captured(self, argv: list[str], caller: Caller, out: io.StringIO, err: io.StringIO) -> Outcome:
+    def captured(self, argv: list[str], caller: Caller, output: io.StringIO, err: io.StringIO) -> Outcome:
         argv = self.with_verb(self.switched(argv))
-        made = Creations.begin()
-        with CapturedStream.capture(out, err):
+        produced = Creations.begin()
+        with CapturedStream.capture(output, err):
             try:
                 args = self.parser().parse_args(argv)
                 code = self.perform(args, self.attributed(caller))
@@ -86,7 +86,7 @@ class Console:
                 print(refused, file=err)
                 code = 1
         Creations.end()
-        trailer = Creations.line(made, out.getvalue()) if made else ""
+        trailer = Creations.line(produced, output.getvalue()) if produced else ""
         if trailer:
-            out.write(trailer + "\n")
-        return Outcome(code, out.getvalue(), err.getvalue())
+            output.write(trailer + "\n")
+        return Outcome(code, output.getvalue(), err.getvalue())

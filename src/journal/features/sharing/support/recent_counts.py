@@ -13,8 +13,8 @@ class RecentCounts:
         self.tries: dict[str, list[float]] = {}
 
     def recent(self, key: str) -> list[float]:
-        since = timing.time() - self.WINDOW_SECONDS
-        return [time for time in self.tries.get(key, []) if time > since]
+        start = timing.time() - self.WINDOW_SECONDS
+        return [time for time in self.tries.get(key, []) if time > start]
 
     def locked(self, key: str) -> bool:
         with self.lock:

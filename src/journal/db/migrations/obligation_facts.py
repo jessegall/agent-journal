@@ -9,11 +9,11 @@ class ObligationFacts:
     mark_owed: int = 0
     skills: tuple[str, ...] = ()
 
-    def obligation(self, state: str, mark: int, skill: str) -> "ObligationFacts":
+    def obligation(self, state: str, threshold: int, skill: str) -> "ObligationFacts":
         if state == "orienting":
             return replace(self, oriented=False)
         if state == "at_mark":
-            return replace(self, mark_owed=max(self.mark_owed, mark))
+            return replace(self, mark_owed=max(self.mark_owed, threshold))
         if state == "loading_skill" and skill:
             return replace(self, skills=(*self.skills, skill))
         return self

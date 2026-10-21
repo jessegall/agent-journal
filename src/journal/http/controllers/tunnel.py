@@ -40,11 +40,11 @@ class TunnelController:
     def login(self, request: Request) -> Response:
         body = request.body
         host = str(body.get("endpoint", "")).strip() or self.tunnel.host()
-        made = self.tunler.login(host, str(body.get("username", "")).strip(), str(body.get("password", "")), str(body.get("master_password", "")))
-        if made.connected:
+        produced = self.tunler.login(host, str(body.get("username", "")).strip(), str(body.get("password", "")), str(body.get("master_password", "")))
+        if produced.connected:
             self.settings.set(Sharing.HOST.key, host, request.actor)
             self.tunnel.reconcile()
-        return Response.json({**asdict(made), **self.tunnel.data()})
+        return Response.json({**asdict(produced), **self.tunnel.data()})
 
     def logout(self, request: Request) -> Response:
         self.tunler.logout()

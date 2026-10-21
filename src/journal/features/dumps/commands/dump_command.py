@@ -9,8 +9,8 @@ from journal.repositories.dumps import Dumps
 class DumpCommand(Command):
     noun = "dump"
 
-    def __init__(self, filing: DumpFiler, dumps: Dumps) -> None:
-        self.filing, self.dumps = filing, dumps
+    def __init__(self, sorting: DumpFiler, dumps: Dumps) -> None:
+        self.filing, self.dumps = sorting, dumps
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "create", "drop pasted text as a dump to be sorted and filed").add_argument("brief")
@@ -32,12 +32,12 @@ class DumpCommand(Command):
         log.add_argument("--making", default="", help="what is being made")
         log.add_argument("--detail", default="", help="the sentence behind the status")
         self.numbered(self.verb(verbs, "reply", "answer what the user wrote in the dump, at most 600 characters"), "text")
-        ask = self.verb(verbs, "ask", "ask the user in the dump window")
-        self.numbered(ask, "question")
-        ask.add_argument("--guesses", default="", help="up to four likely answers, apart by |")
-        offer = self.verb(verbs, "propose", "sum up what was filed and offer next steps as buttons")
-        self.numbered(offer, "options")
-        offer.add_argument("--summary", default="", help="what was filed and where")
+        inquiry = self.verb(verbs, "ask", "ask the user in the dump window")
+        self.numbered(inquiry, "question")
+        inquiry.add_argument("--guesses", default="", help="up to four likely answers, apart by |")
+        proposal = self.verb(verbs, "propose", "sum up what was filed and offer next steps as buttons")
+        self.numbered(proposal, "options")
+        proposal.add_argument("--summary", default="", help="what was filed and where")
         self.numbered(self.verb(verbs, "split", "split the pasted text into named parts, one item each"), "parts")
         self.numbered(self.verb(verbs, "answer", "the user's answer to a question"), "text")
         choose = self.verb(verbs, "choose", "the user picks an offered step")

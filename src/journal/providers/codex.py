@@ -32,24 +32,24 @@ class Codex(Provider):
         return settings.is_file() and f'[hooks.state."{hooks}:session_start' in settings.read_text()
 
     def transcript(self, project: Path, session: str) -> Path | None:
-        kept = self._rollouts.get(session)
-        if kept and kept.is_file():
-            return kept
+        stored = self._rollouts.get(session)
+        if stored and stored.is_file():
+            return stored
         rows = next(self.sessions.glob(f"**/rollout-*-{session}.jsonl"), None)
         if rows:
             self._rollouts[session] = rows
         return rows
 
-    def latest_session(self, project: Path, since: float) -> str:
-        rollouts = [path for day in self.day_count(since) for path in (self.sessions / day).glob("rollout-*.jsonl") if path.stat().st_mtime >= since]
+    def latest_session(self, project: Path, start: float) -> str:
+        rollouts = [path for day in self.day_count(start) for path in (self.sessions / day).glob("rollout-*.jsonl") if path.stat().st_mtime >= start]
         for path in sorted(rollouts, key=lambda path: path.stat().st_mtime, reverse=True):
             if self.rollout_folder(path) == str(project.resolve()):
                 return path.stem[-36:]
         return ""
 
     @staticmethod
-    def day_count(since: float) -> list[str]:
-        first, last = date.fromtimestamp(since) - timedelta(days=1), date.today() + timedelta(days=1)
+    def day_count(start: float) -> list[str]:
+        first, last = date.fromtimestamp(start) - timedelta(days=1), date.today() + timedelta(days=1)
         return [(first + timedelta(days=n)).strftime("%Y/%m/%d") for n in range((last - first).days + 1)]
 
     @staticmethod
@@ -87,12 +87,12 @@ class Codex(Provider):
 
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["resume", resume] if resume else []
-        chosen = ["-m", model] if model else []
-        return ["codex", "exec", *resumed, "--dangerously-bypass-approvals-and-sandbox", *chosen, brief]
+        selection = ["-m", model] if model else []
+        return ["codex", "exec", *resumed, "--dangerously-bypass-approvals-and-sandbox", *selection, brief]
 
-    def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
-        rows = re.search(r"session id: ([0-9a-f-]{8,})", f"{out}\n{err}", re.IGNORECASE)
-        return super().worker_outcome(out, err)[0], rows.group(1) if rows else ""
+    def worker_outcome(self, output: str, err: str) -> tuple[str, str]:
+        rows = re.search(r"session id: ([0-9a-f-]{8,})", f"{output}\n{err}", re.IGNORECASE)
+        return super().worker_outcome(output, err)[0], rows.group(1) if rows else ""
 
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}] for kind in self.hook_kinds}

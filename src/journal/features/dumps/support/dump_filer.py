@@ -48,11 +48,11 @@ class DumpFiler:
     def note(self, n: int, item: str, insight: str, actor: Actor) -> Dump:
         return self.filed_item(n, item, actor, insight=insight.strip())
 
-    def filed(self, n: int, item: str, how: str, refs: str, added: str, actor: Actor) -> Dump:
-        if not how.strip():
+    def filed(self, n: int, item: str, manner: str, refs: str, added: str, actor: Actor) -> Dump:
+        if not manner.strip():
             raise Rejection("say what was done with it")
-        rows, own = self.refs(refs), self.refs(added)
-        if set(own) - set(rows):
+        rows, owned = self.refs(refs), self.refs(added)
+        if set(owned) - set(rows):
             raise Rejection("--added names rows you also list in refs")
         dump = self.dumps.find(n)
         missing = [ref for ref in rows if not self.links.is_row(Ref.parse(ref))]
@@ -60,27 +60,27 @@ class DumpFiler:
             raise Rejection(f"not a row here: {', '.join(missing)}")
         for ref in rows:
             self.links.save(Link(source=Ref.build(dump), target=Ref.parse(ref), kind=FILED), actor)
-        return self.filed_item(n, item, actor, outcome=how.strip(), refs=rows, added=own, failed="")
+        return self.filed_item(n, item, actor, outcome=manner.strip(), refs=rows, added=owned, failed="")
 
-    def failed(self, n: int, item: str, why: str, actor: Actor) -> Dump:
-        if not why.strip():
+    def failed(self, n: int, item: str, reason: str, actor: Actor) -> Dump:
+        if not reason.strip():
             raise Rejection("say why it could not be filed")
-        return self.filed_item(n, item, actor, failed=why.strip())
+        return self.filed_item(n, item, actor, failed=reason.strip())
 
     def filed_item(self, n: int, item: str, actor: Actor, **values) -> Dump:
         dump = self.dumps.find(n)
         if item not in dump.item_names:
             raise Rejection(f"dump {n} has no item {item!r}; its items are {', '.join(dump.item_names) or 'none yet'}")
-        written = self.dumps.save(dump.with_item(item, **values), actor)
-        if written.is_completed or not written.is_complete:
-            return written
-        failed = sum(bool(written.item(name).failed) for name in written.item_names)
-        return self.close(written, f"{len(written.item_names) - failed} filed" + (f", {failed} failed" if failed else ""), actor)
+        saved = self.dumps.save(dump.with_item(item, **values), actor)
+        if saved.is_completed or not saved.is_complete:
+            return saved
+        failed = sum(bool(saved.item(name).failed) for name in saved.item_names)
+        return self.close(saved, f"{len(saved.item_names) - failed} filed" + (f", {failed} failed" if failed else ""), actor)
 
-    def close(self, dump: Dump, how: str, actor: Actor) -> Dump:
-        return self.dumps.save(dump.filed(how, time.time()), actor)
+    def close(self, dump: Dump, manner: str, actor: Actor) -> Dump:
+        return self.dumps.save(dump.filed(manner, time.time()), actor)
 
-    def log(self, n: int, status: str, on: str, making: str, detail: str, actor: Actor) -> Dump:
+    def log(self, n: int, status: str, enabled: str, making: str, detail: str, actor: Actor) -> Dump:
         dump = self.dumps.find(n)
         if not status.strip():
             raise Rejection("say what you are doing")
@@ -88,7 +88,7 @@ class DumpFiler:
             raise Rejection(f"a status is a short title of at most {LABEL} characters, like Adding files; the sentence goes in --detail")
         if dump.is_completed and not dump.options and not dump.chosen:
             raise Rejection(f"dump {n} is closed")
-        return self.dumps.save(dump.logged(self.entry(status, on=on, making=making, detail=detail), DUMP_LOG_LENGTH), actor)
+        return self.dumps.save(dump.logged(self.entry(status, enabled=enabled, making=making, detail=detail), DUMP_LOG_LENGTH), actor)
 
     def reply(self, n: int, text: str, actor: Actor) -> Dump:
         if not text.strip():
@@ -141,30 +141,30 @@ class DumpFiler:
             raise Rejection("sum up what you filed with --summary, and offer a next step only where one is worth taking")
         return self.dumps.save(self.dumps.find(n).with_(options=tuple(steps), chosen={}, taken={}, declined=(), summary=summary.strip()), actor)
 
-    def choose(self, n: int, pick: int, actor: Actor) -> Dump:
+    def choose(self, n: int, choice: int, actor: Actor) -> Dump:
         self.require_user(actor, "chooses what a dump does next")
         dump = self.dumps.find(n)
-        if pick >= len(dump.options):
-            raise Rejection(f"dump {n} has no option {pick}: pick is the number of an offered step, or -1 for You decide")
-        if str(pick) in dump.taken:
-            raise Rejection(f"{dump.options[pick]['label']} was already taken on dump {n}")
-        return self.dumps.save(dump.step_chosen(pick, dump.options[pick]["label"] if pick >= 0 else "You decide", time.time()), actor)
+        if choice >= len(dump.options):
+            raise Rejection(f"dump {n} has no option {choice}: pick is the number of an offered step, or -1 for You decide")
+        if str(choice) in dump.taken:
+            raise Rejection(f"{dump.options[choice]['label']} was already taken on dump {n}")
+        return self.dumps.save(dump.step_chosen(choice, dump.options[choice]["label"] if choice >= 0 else "You decide", time.time()), actor)
 
-    def decline(self, n: int, pick: int, actor: Actor) -> Dump:
+    def decline(self, n: int, choice: int, actor: Actor) -> Dump:
         self.require_user(actor, "chooses what a dump does next")
         dump = self.dumps.find(n)
-        if not 0 <= pick < len(dump.options):
-            raise Rejection(f"dump {n} has no option {pick}: pick is the number of an offered step")
-        return self.dumps.save(dump.with_(declined=tuple(sorted({*dump.declined, pick}))), actor)
+        if not 0 <= choice < len(dump.options):
+            raise Rejection(f"dump {n} has no option {choice}: pick is the number of an offered step")
+        return self.dumps.save(dump.with_(declined=tuple(sorted({*dump.declined, choice}))), actor)
 
-    def direct(self, n: int, how: str, actor: Actor) -> Dump:
+    def direct(self, n: int, manner: str, actor: Actor) -> Dump:
         self.require_user(actor, "chooses what a dump does next")
-        if not how.strip():
+        if not manner.strip():
             raise Rejection('say what should happen next: journal dump direct <n> "<what to do>"')
         dump = self.dumps.find(n)
-        message = self.messages.save(Message(author=Author.USER, text=how.strip()).arrived(), actor)
+        message = self.messages.save(Message(author=Author.USER, text=manner.strip()).arrived(), actor)
         self.links.save(Link(source=Ref.build(message), target=Ref.build(dump), kind=Messages.COMMENT_LINK), actor)
-        return self.dumps.save(dump.step_directed(how.strip(), time.time()), actor)
+        return self.dumps.save(dump.step_directed(manner.strip(), time.time()), actor)
 
     def stop(self, n: int, actor: Actor) -> Dump:
         self.require_user(actor, "stops a dump")
@@ -184,8 +184,8 @@ class DumpFiler:
             raise Rejection(f"dump {n} was already removed")
         if not dump.is_completed:
             dump = self.stop(n, actor)
-        gone = [ref for ref in dump.created_refs() if self.deleted(Ref.parse(ref), dump, actor)]
-        return self.dumps.save(dump.with_(removed_at=time.time(), removed_refs=tuple(gone)), actor)
+        missing = [ref for ref in dump.created_refs() if self.deleted(Ref.parse(ref), dump, actor)]
+        return self.dumps.save(dump.with_(removed_at=time.time(), removed_refs=tuple(missing)), actor)
 
     def deleted(self, ref: Ref, dump: Dump, actor: Actor) -> bool:
         repository = self.removable.get(ref.type)
@@ -204,13 +204,13 @@ class DumpFiler:
         return dump
 
     @staticmethod
-    def require_user(actor: Actor, what: str) -> None:
+    def require_user(actor: Actor, subject: str) -> None:
         if actor.kind == ActorKind.AGENT:
-            raise Rejection(f"only the user {what}")
+            raise Rejection(f"only the user {subject}")
 
     @staticmethod
-    def entry(text: str, on: str = "", making: str = "", detail: str = "", **extra) -> dict:
-        return {"time": time.time(), "text": text.strip(), "on": on.strip(), "making": making.strip(), "detail": detail.strip(), **extra}
+    def entry(text: str, enabled: str = "", making: str = "", detail: str = "", **extra) -> dict:
+        return {"time": time.time(), "text": text.strip(), "on": enabled.strip(), "making": making.strip(), "detail": detail.strip(), **extra}
 
     @staticmethod
     def refs(text: str) -> list[str]:

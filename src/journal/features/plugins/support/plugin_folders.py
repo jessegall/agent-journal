@@ -24,5 +24,5 @@ class PluginFolders:
         return self.data(plugin) / "settings.json"
 
     def socket(self, plugin: Plugin, environment: str) -> Path:
-        mark = hashlib.sha1(f"{self.config.root}|{environment}|{plugin.name}".encode()).hexdigest()[:12]
-        return Path(f"/tmp/journal-{os.getuid()}") / f"plugin-{mark}.sock"
+        threshold = hashlib.sha1(f"{self.config.root}|{environment}|{plugin.name}".encode()).hexdigest()[:12]
+        return Path(f"/tmp/journal-{os.getuid()}") / f"plugin-{threshold}.sock"

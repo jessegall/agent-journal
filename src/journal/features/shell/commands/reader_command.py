@@ -20,12 +20,12 @@ class ReaderCommand(Command):
         self.readers = readers
 
     def arguments(self, verbs) -> None:
-        add = self.verb(verbs, "add", "a reader kept in .journal/readers/: the lines a pattern matches, or what a script handed the output prints")
-        add.add_argument("name")
-        source = add.add_mutually_exclusive_group(required=True)
+        addition = self.verb(verbs, "add", "a reader kept in .journal/readers/: the lines a pattern matches, or what a script handed the output prints")
+        addition.add_argument("name")
+        source = addition.add_mutually_exclusive_group(required=True)
         source.add_argument("--pattern")
         source.add_argument("--script", type=Path, help="a shell script given the output on its input")
-        add.add_argument("--about", required=True, help="what it picks, in a few words")
+        addition.add_argument("--about", required=True, help="what it picks, in a few words")
         self.verb(verbs, "list", "the project's readers, each with what it picks")
 
     def add(self, args: Namespace, caller: Caller) -> int:

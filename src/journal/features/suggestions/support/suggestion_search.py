@@ -75,8 +75,8 @@ class SuggestionSearch:
         return rows[0]
 
     def target_environment(self) -> Environment:
-        live = self.agents.all_current()
-        return self.environments.find(live.environment_id) if live else self.environments.all()[0]
+        present = self.agents.all_current()
+        return self.environments.find(present.environment_id) if present else self.environments.all()[0]
 
     @staticmethod
     def card_key(suggestion: Suggestion) -> str:

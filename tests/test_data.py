@@ -86,14 +86,14 @@ def test_a_refusing_listener_stops_the_write(connection, bus, scope):
 def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, scope):
     tasks, links = tasks_of(connection, bus, scope), Links(connection, bus)
     bus.listen(Deleted, UnlinkDeleted(links))
-    a = tasks.save(Task(environment_id=1, title="a"), actor=USER)
+    item = tasks.save(Task(environment_id=1, title="a"), actor=USER)
     b = tasks.save(Task(environment_id=1, title="b"), actor=USER)
-    links.save(Link(source=Ref.build(a), target=Ref.build(b), kind="blocks"), actor=AGENT)
-    assert links.targets(a, "blocks") == [Ref.build(b)]
-    assert links.all_sources(b) == [Ref.build(a)]
-    assert len(links.connecting(a, b)) == 1
+    links.save(Link(source=Ref.build(item), target=Ref.build(b), kind="blocks"), actor=AGENT)
+    assert links.targets(item, "blocks") == [Ref.build(b)]
+    assert links.all_sources(b) == [Ref.build(item)]
+    assert len(links.connecting(item, b)) == 1
     tasks.delete(b, actor=USER)
-    assert links.link_rows(a) == []
+    assert links.link_rows(item) == []
 
 
 def test_where_reads_typed_values_back(connection, bus, scope):
@@ -214,8 +214,8 @@ def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(co
     connection.execute("INSERT INTO dumps (environment_id, question, answers, chosen, taken, created_at, created_by) VALUES (1, ?, ?, '{}', '{}', '2026-10-21', 'system')", (json.dumps({"at": 1.0, "text": "q"}), json.dumps([{"question": "q", "answer": "a", "at": 2.0}])))
     TimeKeys().apply(connection)
     assert "time" in {row["name"] for row in connection.all("PRAGMA table_info(edits)")} and "at" not in {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
-    nudge, ran = [json.loads(row["data"]) for row in connection.all("SELECT data FROM entries ORDER BY id")]
-    assert nudge == {"key": "k", "time": 5.0} and ran == {"command": "ls"}, "the key moves where it is, and a row without it is untouched"
+    nudge, completed = [json.loads(row["data"]) for row in connection.all("SELECT data FROM entries ORDER BY id")]
+    assert nudge == {"key": "k", "time": 5.0} and completed == {"command": "ls"}, "the key moves where it is, and a row without it is untouched"
     assert json.loads(connection.one("SELECT running FROM checks")["running"]) == {"time": 7.0, "output": ""}
     dump = connection.one("SELECT question, answers FROM dumps")
     assert json.loads(dump["question"]) == {"time": 1.0, "text": "q"} and json.loads(dump["answers"]) == [{"question": "q", "answer": "a", "time": 2.0}]
@@ -278,8 +278,8 @@ def test_the_chart_drop_keeps_only_workflows_a_user_or_an_agent_wrote_as_documen
         db.execute("CREATE TABLE counts (id INTEGER PRIMARY KEY)")
         db.execute("CREATE TABLE noted_times (id INTEGER PRIMARY KEY)")
         rows = [("Hold the stop while a task is parked", 5, 1, "system"), ("Remind to commit after twenty writes", 2, 1, "user:1"), ("Ask about an open question after ten quiet minutes", 0, 0, "agent:s1")]
-        for title, revision, shipped, updated_by in rows:
-            db.execute("INSERT INTO charts (created_at, created_by, updated_at, updated_by, title, revision, shipped, event, state, places, drawing, drawn_version, locked) VALUES ('t', 'system', 't', ?, ?, ?, ?, 'idle', 'idle', '', '', 30, 0)", (updated_by, title, revision, shipped))
+        for title, revision, shipped, editor in rows:
+            db.execute("INSERT INTO charts (created_at, created_by, updated_at, updated_by, title, revision, shipped, event, state, places, drawing, drawn_version, locked) VALUES ('t', 'system', 't', ?, ?, ?, ?, 'idle', 'idle', '', '', 30, 0)", (editor, title, revision, shipped))
     ChartDrop().apply(connection)
     titles = [row["title"] for row in connection.all("SELECT title FROM docs WHERE title LIKE 'Workflow: %' ORDER BY id")]
     assert titles == ["Workflow: Remind to commit after twenty writes", "Workflow: Ask about an open question after ten quiet minutes"], "a shipped workflow re-drawn by an upgrade is the journal's, however many revisions it counts; one a user or an agent last wrote is kept"

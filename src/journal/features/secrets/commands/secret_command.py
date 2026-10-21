@@ -31,10 +31,10 @@ class SecretCommand(Command):
         self.secrets, self.values, self.messages, self.servers, self.runner, self.workers, self.window, self.scope = secrets, values, messages, servers, runner, workers, window, scope
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "a secret with its fields, empty until the user fills them")
-        create.add_argument("title")
-        create.add_argument("--brief", default="", help="how it is used: the commands it runs with")
-        create.add_argument("--kind", default=SecretKind.CUSTOM.value)
+        creation = self.verb(verbs, "create", "a secret with its fields, empty until the user fills them")
+        creation.add_argument("title")
+        creation.add_argument("--brief", default="", help="how it is used: the commands it runs with")
+        creation.add_argument("--kind", default=SecretKind.CUSTOM.value)
         request = self.verb(verbs, "request", "ask the user for a secret: it is made, and a message asks them to fill it on the Secrets page")
         request.add_argument("title")
         request.add_argument("--why", required=True, help="what you need it for")
@@ -158,14 +158,14 @@ class SecretCommand(Command):
         began = time.time()
         while self.secrets.find(secret.id).logging_in_at and time.time() - began < WINDOW:
             time.sleep(1)
-        done = self.secrets.find(secret.id)
-        print(f"logged in to {done.title}" if done.session_at else f"no login to {done.title} is saved")
-        return 0 if done.session_at else 1
+        finished = self.secrets.find(secret.id)
+        print(f"logged in to {finished.title}" if finished.session_at else f"no login to {finished.title} is saved")
+        return 0 if finished.session_at else 1
 
-    def lookup(self, given: str) -> Secret:
-        rows = [s for s in self.secrets.active() if str(s.id) == given or s.title.lower() == given.lower()]
+    def lookup(self, value: str) -> Secret:
+        rows = [s for s in self.secrets.active() if str(s.id) == value or s.title.lower() == value.lower()]
         if not rows:
-            raise Rejection(f"no secret is numbered or titled {given!r}: `journal secret list` names them")
+            raise Rejection(f"no secret is numbered or titled {value!r}: `journal secret list` names them")
         return rows[0]
 
     def folder(self, args: Namespace, caller: Caller) -> int:

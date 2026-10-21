@@ -35,16 +35,16 @@ class SecretRun:
         missing = [f.name for f in fields if f.variable not in values]
         if missing:
             raise Rejection(f"secret {secret.id}, {secret.title}, has no value for {', '.join(missing)} on this machine: ask the user with `journal secret request`, and they fill it on the Secrets page")
-        by_name = {f.name: values[f.variable] for f in fields}
-        given = PLACEHOLDER.sub(lambda rows: by_name.get(rows[1], rows[0]), template) if template else next((values[f.variable] for f in fields if f.hidden), "")
+        name_index = {f.name: values[f.variable] for f in fields}
+        value = PLACEHOLDER.sub(lambda rows: name_index.get(rows[1], rows[0]), template) if template else next((values[f.variable] for f in fields if f.hidden), "")
         mask = OutputMask({values[f.variable]: f.variable for f in fields if f.hidden})
         runs = self.values.path.parent / "runs"
         runs.mkdir(mode=0o700, exist_ok=True)
         home = tempfile.mkdtemp(prefix="run-", dir=runs)
         try:
             environ = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(TEMPORARY_HOME_VARIABLES, home), **({f.variable: values[f.variable] for f in fields} if as_variables else {})}
-            done = subprocess.run([program, *command[1:]], input=f"{given}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environ, cwd=self.config.root, timeout=LONGEST)
-            return done.returncode, mask.masked(done.stdout)
+            finished = subprocess.run([program, *command[1:]], input=f"{value}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environ, cwd=self.config.root, timeout=LONGEST)
+            return finished.returncode, mask.masked(finished.stdout)
         finally:
             shutil.rmtree(home, ignore_errors=True)
 
@@ -65,5 +65,5 @@ class SecretRun:
 
     def search_path(self) -> str:
         root = self.config.root.resolve()
-        kept = [p for p in os.environ.get("PATH", "/usr/bin:/bin").split(os.pathsep) if p and not Path(p).resolve().is_relative_to(root)]
-        return os.pathsep.join(kept)
+        stored = [p for p in os.environ.get("PATH", "/usr/bin:/bin").split(os.pathsep) if p and not Path(p).resolve().is_relative_to(root)]
+        return os.pathsep.join(stored)

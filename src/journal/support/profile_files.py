@@ -85,7 +85,7 @@ class ProfileFiles:
 
     def write(self, profile: Profile, model: str, codex_model: str) -> list[Path]:
         texts = {"claude": (f"{profile.name}.md", profile.claude_text(model, codex_model)), "codex": (f"{profile.name}.toml", profile.codex_text(codex_model))}
-        written = []
+        saved = []
         for provider in self.providers.all():
             if provider.name != "claude" and not (self.config.root / provider.home).is_dir():
                 continue
@@ -94,5 +94,5 @@ class ProfileFiles:
             path.parent.mkdir(parents=True, exist_ok=True)
             if not path.is_file() or path.read_text() != text:
                 path.write_text(text)
-            written.append(path)
-        return written
+            saved.append(path)
+        return saved

@@ -44,8 +44,8 @@ class PhoneConnector:
         self.tunnel.reconcile()
         return ConnectionProposal(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, until=pairing.until)
 
-    def pair(self, given: str, device: str, time: datetime) -> PairedPhone:
-        hashes = {self.hashed(given), self.hashed(self.typed(given))}
+    def pair(self, value: str, device: str, time: datetime) -> PairedPhone:
+        hashes = {self.hashed(value), self.hashed(self.typed(value))}
         rows = next((code for code in self.codes.open(time) if hashes & {code.code, code.short}), None)
         if rows is None:
             self.missed(time)
@@ -67,9 +67,9 @@ class PhoneConnector:
         return ended
 
     def refuse_duplicate(self, time: datetime) -> None:
-        live = self.phones.active(time)
-        if live:
-            raise Rejection(f"{live[0].name} is paired: disconnect it first, one phone at a time")
+        present = self.phones.active(time)
+        if present:
+            raise Rejection(f"{present[0].name} is paired: disconnect it first, one phone at a time")
 
     def missed(self, time: datetime) -> None:
         for code in self.codes.open(time):

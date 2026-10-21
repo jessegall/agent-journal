@@ -21,8 +21,8 @@ class Transition:
     dropped: tuple[str, ...] = ()
     handed_down: bool = False
 
-    def typing(self, *typed: Nudge) -> "Transition":
-        return replace(self, typed=typed)
+    def typing(self, *keystrokes: Nudge) -> "Transition":
+        return replace(self, typed=keystrokes)
 
     def has_move(self) -> bool:
         return self.pushed is not None or self.popped

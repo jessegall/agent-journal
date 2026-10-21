@@ -15,8 +15,8 @@ class Conduct:
     def swap(self, next: "Conduct", *nudges: Nudge) -> Transition:
         return Transition(next, nudges=nudges)
 
-    def push(self, to: "Conduct", *nudges: Nudge) -> Transition:
-        return Transition(self, pushed=to, nudges=nudges)
+    def push(self, destination: "Conduct", *nudges: Nudge) -> Transition:
+        return Transition(self, pushed=destination, nudges=nudges)
 
     def pop(self, *nudges: Nudge) -> Transition:
         return Transition(self, popped=True, nudges=nudges)
@@ -24,5 +24,5 @@ class Conduct:
     def forward(self, *nudges: Nudge) -> Transition:
         return Transition(self, popped=True, nudges=nudges, handed_down=True)
 
-    def refuse(self, why: Nudge) -> Transition:
-        return Transition(self, refusal=why)
+    def refuse(self, reason: Nudge) -> Transition:
+        return Transition(self, refusal=reason)

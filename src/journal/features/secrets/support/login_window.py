@@ -59,7 +59,7 @@ class LoginWindow:
         while STORAGE in args:
             time = args.index(STORAGE)
             del args[time:time + 2]
-        args = [a for a in args if a != "--isolated"]
+        args = [item for item in args if item != "--isolated"]
         if merged is not None:
             args += [STORAGE, str(merged), "--isolated"]
         self.servers.save(browser.with_(args=tuple(args)), Actor.system())

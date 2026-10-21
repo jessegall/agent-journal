@@ -10,8 +10,8 @@ CANCELLED = "cancelled"
 class CancelledRowRunEnd(Listener[Updated]):
     """A row a run is about that is cancelled ends the run, and the agent is told."""
 
-    def __init__(self, running: RunTracker, supervisor: SupervisorLink) -> None:
-        self.running, self.supervisor = running, supervisor
+    def __init__(self, active: RunTracker, supervisor: SupervisorLink) -> None:
+        self.running, self.supervisor = active, supervisor
 
     def handle(self, event: Updated) -> None:
         row = event.model

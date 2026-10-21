@@ -29,5 +29,5 @@ class Release:
     def upgrades(self, installed: "Release") -> bool:
         return self.major == installed.major and self.is_newer(installed)
 
-    def is_newer(self, other: "Release") -> bool:
-        return self.numbers > other.numbers
+    def is_newer(self, counterpart: "Release") -> bool:
+        return self.numbers > counterpart.numbers

@@ -18,29 +18,29 @@ class DashboardCommand(Command):
         self.rows = rows
 
     def arguments(self, verbs) -> None:
-        put = self.verb(verbs, "set", "write or rewrite one line of this plugin's dashboard, under its key")
-        put.add_argument("key")
-        put.add_argument("label")
-        put.add_argument("--badge", default="")
-        put.add_argument("--tone", default="", choices=TONES)
-        put.add_argument("--note", default="")
-        put.add_argument("--heading", default="", help="the heading it is shown under")
+        placed = self.verb(verbs, "set", "write or rewrite one line of this plugin's dashboard, under its key")
+        placed.add_argument("key")
+        placed.add_argument("label")
+        placed.add_argument("--badge", default="")
+        placed.add_argument("--tone", default="", choices=TONES)
+        placed.add_argument("--note", default="")
+        placed.add_argument("--heading", default="", help="the heading it is shown under")
         self.verb(verbs, "unset", "take one line off this plugin's dashboard").add_argument("key")
         self.verb(verbs, "clear", "take every line off this plugin's dashboard")
 
     def set(self, args: Namespace, caller: Caller) -> int:
         plugin = self.plugin(caller)
         line = DashboardRow(plugin=plugin, key=args.key, label=args.label, badge=args.badge, tone=args.tone, note=args.note, section=args.heading)
-        had = self.rows.keyed(plugin, args.key)
-        self.rows.save(had.with_(**{f: getattr(line, f) for f in ("label", "badge", "tone", "note", "section")}) if had else line, caller.actor)
+        prior = self.rows.keyed(plugin, args.key)
+        self.rows.save(prior.with_(**{f: getattr(line, f) for f in ("label", "badge", "tone", "note", "section")}) if prior else line, caller.actor)
         print(f"{args.key} set on {plugin}'s dashboard")
         return 0
 
     def unset(self, args: Namespace, caller: Caller) -> int:
-        had = self.rows.keyed(self.plugin(caller), args.key)
-        if had:
-            self.rows.delete(had, caller.actor)
-        print(f"{args.key} {'taken off' if had else 'was not on'} the dashboard")
+        prior = self.rows.keyed(self.plugin(caller), args.key)
+        if prior:
+            self.rows.delete(prior, caller.actor)
+        print(f"{args.key} {'taken off' if prior else 'was not on'} the dashboard")
         return 0
 
     def clear(self, args: Namespace, caller: Caller) -> int:

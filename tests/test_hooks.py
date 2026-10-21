@@ -93,14 +93,14 @@ def test_every_hook_kind_translates(app: App):
 
 def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
     from journal.support.listener_queue import ListenerQueue
-    ran = []
+    completed = []
     deferred = ListenerQueue()
     deferred.start()
     deferred.add(lambda: 1 / 0)
-    deferred.add(lambda: ran.append("after"))
+    deferred.add(lambda: completed.append("after"))
     deferred.drain()
     deferred.stop()
-    assert ran == ["after"] and "ZeroDivisionError" in capsys.readouterr().err
+    assert completed == ["after"] and "ZeroDivisionError" in capsys.readouterr().err
 
 
 def test_a_status_file_caught_half_written_keeps_the_last_whole_reading(tmp_path: Path):
@@ -164,10 +164,10 @@ def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_
 def test_a_subagents_write_hook_makes_no_entry_and_moves_no_state(app: App):
     from journal.repositories.agents import Agents
     post_hook(app, {"hook_event_name": "SessionStart", "session_id": "s1", "source": "startup"})
-    entries, states = len(app.container.get(Entries).scoped()), [a.state for a in app.container.get(Agents).scoped()]
+    entries, states = len(app.container.get(Entries).scoped()), [item.state for item in app.container.get(Agents).scoped()]
     status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Write", "tool_input": {"file_path": "a.py"}})
     assert status == 200 and body == {}
-    assert len(app.container.get(Entries).scoped()) == entries and [a.state for a in app.container.get(Agents).scoped()] == states
+    assert len(app.container.get(Entries).scoped()) == entries and [item.state for item in app.container.get(Agents).scoped()] == states
 
 
 def test_a_hook_that_stamps_its_start_has_its_elapsed_time_on_its_entry(app: App):
@@ -184,12 +184,12 @@ def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app: A
     from journal.repositories.statistics import Statistics
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 100)
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 300)
-    settled = threading.Event()
-    app.container.get(ListenerQueue).add(settled.set)
-    assert settled.wait(5), "the deferred work ran"
-    kept = app.container.get(Statistics).lower("developer.hooks")
-    assert kept["developer.hooks.count"] == 2 and kept["developer.hooks.total_ms"] >= 400 and kept["developer.hooks.slowest_ms"] >= 300, kept
-    assert kept["developer.hooks.PreToolUse.count"] == 2, "a hook's time also counts under its kind"
+    resolved = threading.Event()
+    app.container.get(ListenerQueue).add(resolved.set)
+    assert resolved.wait(5), "the deferred work ran"
+    stored = app.container.get(Statistics).lower("developer.hooks")
+    assert stored["developer.hooks.count"] == 2 and stored["developer.hooks.total_ms"] >= 400 and stored["developer.hooks.slowest_ms"] >= 300, stored
+    assert stored["developer.hooks.PreToolUse.count"] == 2, "a hook's time also counts under its kind"
     request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/developer", headers={"X-Journal-Env": "main"})
     with urlopen(request, timeout=5) as reply:
         numbers = json.loads(reply.read())

@@ -41,10 +41,10 @@ class WorkerCommand(Command):
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
-        say = self.verb(verbs, "assign", "give a worker that reported its next job, with its memory of the last")
-        say.add_argument("n", type=int)
-        say.add_argument("brief")
-        say.add_argument("--task", type=int, help="the task this job works on, which its plan then leaves to it")
+        line = self.verb(verbs, "send", "give a worker that reported its next job, with its memory of the last")
+        line.add_argument("n", type=int)
+        line.add_argument("brief")
+        line.add_argument("--task", type=int, help="the task this job works on, which its plan then leaves to it")
         self.verb(verbs, "wait", "wait until these workers have reported").add_argument("on", type=int, nargs="+")
         self.verb(verbs, "stop", "end a worker").add_argument("n", type=int)
         self.verb(verbs, "complete", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
@@ -57,13 +57,13 @@ class WorkerCommand(Command):
         if self.profiles.kind(args.profile) != "worker":
             raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
-        out = [w for w in self.workers.scoped() if w.is_running()]
-        most = int(self.settings.option(Feature.WORKER_LIMIT))
-        if most and len(out) >= most:
-            raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(out)).rendered())
+        output = [w for w in self.workers.scoped() if w.is_running()]
+        maximum = int(self.settings.option(Feature.WORKER_LIMIT))
+        if maximum and len(output) >= maximum:
+            raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
         knowing = [] if args.fresh else self.related_workers(args.brief)
         if knowing:
-            raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker assign {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
+            raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker send {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         provider = args.provider or self.provider_default(caller)
         worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatched_by=caller.session)
         worker = self.workers.save(worker, caller.actor)
@@ -90,10 +90,10 @@ class WorkerCommand(Command):
         return 0
 
     def related_workers(self, brief: str) -> list[Worker]:
-        named = PathMentions.build(brief)
-        return [w for w in reversed(self.workers.scoped()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & PathMentions.build(w.brief)]
+        matched = PathMentions.build(brief)
+        return [w for w in reversed(self.workers.scoped()) if matched and w.state != WorkerState.DISPATCHED and w.resume and matched & PathMentions.build(w.brief)]
 
-    def assign(self, args: Namespace, caller: Caller) -> int:
+    def send(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
         if worker.state == WorkerState.DISPATCHED:
             raise Rejection(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
@@ -129,7 +129,7 @@ class WorkerCommand(Command):
         workers = self.workers.scoped()
         for worker in workers:
             print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {worker.brief}")
-        out = [str(worker.id) for worker in workers if worker.is_running()]
-        if out:
-            print(f"`journal worker wait {' '.join(out)}` waits for a report; listing again does not bring it sooner")
+        output = [str(worker.id) for worker in workers if worker.is_running()]
+        if output:
+            print(f"`journal worker wait {' '.join(output)}` waits for a report; listing again does not bring it sooner")
         return 0

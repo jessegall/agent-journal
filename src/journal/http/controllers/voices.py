@@ -13,13 +13,13 @@ NAMINGS = (("Historical figures", HISTORICAL), ("Street nicknames", STREET), ("F
 class VoiceController:
     """The voices the agent can talk in, each with a sample in the words it would call the user by, the one chosen, and the choice written back."""
 
-    def __init__(self, chosen: VoiceChoice, settings: SettingRows) -> None:
-        self.chosen, self.settings = chosen, settings
+    def __init__(self, selection: VoiceChoice, settings: SettingRows) -> None:
+        self.chosen, self.settings = selection, settings
 
     def index(self, request: Request) -> Response:
-        title, name, chosen = self.chosen.title(), self.chosen.first_name(), self.chosen.voice().name
+        title, name, selection = self.chosen.title(), self.chosen.first_name(), self.chosen.voice().name
         voices = [{"name": v.name, "text": v.text, "calling": v.calling.value, "sample": v.sample.replace("{you}", v.calling.called(title, name, v.address) or "you"),
-                   "humour": v.humour, "naming": v.naming, "address": v.address, "emoji": v.emoji, "chosen": v.name == chosen} for v in BuiltinCatalogue.ALL]
+                   "humour": v.humour, "naming": v.naming, "address": v.address, "emoji": v.emoji, "chosen": v.name == selection} for v in BuiltinCatalogue.ALL]
         callings = {c.value: c.called(title, name) for c in AddressForm if c is not AddressForm.AGENT_CHOICE}
         return Response.json({"voices": voices, "callings": callings, "namings": [{"label": label, "text": text} for label, text in NAMINGS]})
 
