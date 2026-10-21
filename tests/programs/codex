@@ -1,0 +1,10 @@
+#!/bin/sh
+# Stands in for Codex on the test run's PATH, so no test starts the real program, which reaches the network and is billed.
+# A worker's run answers as Codex's JSON events; everything else does nothing.
+case "$1" in
+    exec)
+        printf '%s\n' '{"type":"thread.started","thread_id":"stand-in-thread"}'
+        printf '%s\n' '{"type":"item.completed","item":{"type":"agent_message","text":"the stand-in did the job"}}'
+        ;;
+esac
+exit 0

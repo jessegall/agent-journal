@@ -1,0 +1,7 @@
+#!/bin/sh
+# Stands in for Claude Code on the test run's PATH, so no test starts the real program, which reaches the network and is billed.
+# A worker's run answers as Claude's stream-json result line; the MCP list names no server; everything else does nothing.
+case "$1" in
+    -p) printf '%s\n' '{"type":"result","subtype":"success","is_error":false,"result":"the stand-in did the job","session_id":"stand-in-session"}' ;;
+esac
+exit 0

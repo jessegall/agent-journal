@@ -23,6 +23,9 @@ from tests.shared_journal import SharedJournal
 os.environ["AGENT_JOURNAL_SECRETS"] = tempfile.mkdtemp(prefix="journal-test-values-")
 """Every test, and every journal a test boots, keeps its secret values in a scratch folder, never the user's own."""
 
+STAND_INS = Path(__file__).resolve().parent / "programs"
+LIVE_SUFFIX = "_live_run"
+
 TESTS_MARK = Path(__file__).resolve().parent.parent / ".journal" / "runtime" / f"{TEST_RUN_KEY}.{os.getpid()}"
 
 
@@ -34,6 +37,17 @@ def pytest_sessionstart(session) -> None:
 
 def pytest_sessionfinish(session, exitstatus) -> None:
     TESTS_MARK.unlink(missing_ok=True)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def stand_ins(request):
+    """Every program a module's tests start finds the stand-ins for Claude Code and Codex first, never the real ones, which reach the network and are billed; a live file, which says so on its first line, keeps the real ones."""
+    if request.module.__name__.endswith(LIVE_SUFFIX):
+        yield
+        return
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("PATH", f"{STAND_INS}{os.pathsep}{os.environ['PATH']}")
+        yield
 
 
 @pytest.fixture
