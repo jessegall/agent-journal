@@ -3,6 +3,7 @@ from journal.features.feature import Feature
 from journal.support.option import Option
 from journal.features.faults.commands.developer_command import DeveloperCommand
 from journal.features.faults.listeners.slow_job_notice import SlowJobNotice
+from journal.features.faults.seeds.stale_test_run_files import StaleTestRunFiles
 
 
 class Faults(Feature):
@@ -20,4 +21,5 @@ class Faults(Feature):
     options = (REPORT, REQUEST, EDIT_BUDGET, REPEAT, LOADS, JOBS)
     nudges = (SLOW_REQUEST, SLOW_JOB)
     listeners = (SlowJobNotice,)
+    seeds = (StaleTestRunFiles,)
     commands = (DeveloperCommand,)

@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import re
 import time
+from journal.features.faults.support.test_run_files import TestRunFiles
 
 from journal.config import Config
 from journal.chat.cards import Cards
@@ -26,7 +27,6 @@ from journal.support.card_kind import CardKind
 
 STARTUP_GRACE_SECONDS = 60.0
 STARTING = "journal.starting"
-TEST_RUN_KEY = "tests.running"
 
 
 HOOK = "HOOK"
@@ -37,10 +37,11 @@ OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin p
 class SlowRequests:
     """Measures each request against its budget where the journal develops itself, with the rows it loaded while load counting is on, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time and again once the set minutes have passed since it was last told, the time it was told kept in the mark's data."""
 
-    def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudges: NudgeLog, clock: Clock, deferred: ListenerQueue, statistics: Statistics, timings: Timings) -> None:
+    def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudges: NudgeLog, clock: Clock, deferred: ListenerQueue, statistics: Statistics, timings: Timings, test_runs: TestRunFiles) -> None:
         self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudges, self.clock, self.deferred = config, settings, cards, messages, agents, environments, scope, nudges, clock, deferred
         self.statistics = statistics
         self.timings = timings
+        self.test_runs = test_runs
         self.started = time.monotonic()
 
     def begin(self) -> None:
@@ -80,21 +81,7 @@ class SlowRequests:
             return False
         resolved = time.monotonic() - self.started > STARTUP_GRACE_SECONDS
         busy = os.getloadavg()[0] > (os.cpu_count() or 1)
-        return bool(self.settings.option(Faults.REPORT)) and resolved and not busy and not self.is_testing()
-
-    def is_testing(self) -> bool:
-        return any(self.is_running(threshold) for threshold in (self.config.home / "runtime").glob(f"{TEST_RUN_KEY}.*"))
-
-    @staticmethod
-    def is_running(threshold: Path) -> bool:
-        pid = threshold.suffix.lstrip(".")
-        if not pid.isdigit():
-            return False
-        try:
-            os.kill(int(pid), 0)
-        except ProcessLookupError:
-            return False
-        return True
+        return bool(self.settings.option(Faults.REPORT)) and resolved and not busy and not self.test_runs.is_testing()
 
     def reported(self, method: str, route: str, ms: int, budget: int) -> None:
         agent = self.agents.all_current()

@@ -26,7 +26,7 @@ class ShellDataReader:
         return ShellData(
             background=tuple(o.id for o in background),
             backgrounded_at=min((o.created_at.timestamp() for o in background), default=0.0),
-            unannounced=tuple(EndedOutput(o.id, o.status) for o in self.outputs.unannounced(agent.session)),
+            unannounced=tuple(EndedOutput(o.id, o.ending()) for o in self.outputs.unannounced(agent.session)),
             output_reads=tuple(reads),
             readers=tuple(self.readers.all()),
             tipped=tuple(tipped),

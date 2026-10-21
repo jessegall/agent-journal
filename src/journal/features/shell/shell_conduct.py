@@ -5,7 +5,6 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.shell.support.ended_output import EndedOutput
-from journal.features.shell.support.output_files import OutputFiles
 from journal.support.chain import Chain
 
 SILENCE_SECONDS = 5.0
@@ -70,5 +69,5 @@ class ShellConduct(Conduct):
 def outcome_text(ended: tuple[EndedOutput, ...]) -> str:
     outcomes: dict[str, list[int]] = {}
     for output in ended:
-        outcomes.setdefault(OutputFiles.ended(output.status), []).append(output.id)
+        outcomes.setdefault(output.ending, []).append(output.id)
     return "; ".join(f"output{'s' if len(ids) > 1 else ''} {', '.join(map(str, ids))} {outcome}" for outcome, ids in outcomes.items())

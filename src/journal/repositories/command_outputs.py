@@ -22,6 +22,9 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def backgrounded(self, session: str | None) -> list[CommandOutput]:
         return self.selected("session IS ? AND moved = 1 ORDER BY id", (session,))
 
+    def moved_unended(self) -> list[CommandOutput]:
+        return self.selected_globally("moved = 1 AND ended = 0 ORDER BY id")
+
     def watched(self, session: str | None) -> list[CommandOutput]:
         return self.selected("session IS ? AND is_watched = 1 ORDER BY id", (session,))
 

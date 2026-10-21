@@ -5908,6 +5908,32 @@ def test_a_plan_with_a_parked_or_a_blocked_task_is_not_done_when_the_rest_close(
     assert app.container.get(Plans).find(1).state != PlanState.FINISHED, "nor does the boot take the plan for done"
 
 
+def test_a_background_command_left_running_by_a_restart_is_ended_as_cut_off_at_boot(app: App):
+    from journal.features.faults.seeds.stale_test_run_files import StaleTestRunFiles
+    from journal.features.shell.seeds.cut_off_outputs import CutOffOutputs
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.features.shell.support.shell_data_reader import ShellDataReader
+    from journal.repositories.agents import Agents
+    from journal.repositories.command_outputs import CommandOutputs
+    hook(app, "SessionStart")
+    folder = app.config.root / "chain"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    app.container.get(OutputLog).start("chain", "make all", folder, Caller.agent("main", "s1", "claude"))
+    outputs = app.container.get(CommandOutputs)
+    outputs.save(outputs.find(1).backgrounded(), Actor.system())
+    app.container.get(CutOffOutputs).run()
+    ended = outputs.find(1)
+    assert ended.ended and ended.ending() == "was cut off when the journal restarted", "its chain died with the server, so it is ended, never left running"
+    shell = app.container.get(ShellDataReader).read(app.container.get(Agents).session_agent("s1"))
+    assert [(o.id, o.ending) for o in shell.unannounced] == [(1, "was cut off when the journal restarted")], "and its agent is told as of any other end"
+    dead = app.config.home / "runtime" / "tests.running.999999"
+    dead.parent.mkdir(parents=True, exist_ok=True)
+    dead.touch()
+    app.container.get(StaleTestRunFiles).run()
+    assert not dead.exists(), "a test run whose process is gone leaves no file behind"
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog
