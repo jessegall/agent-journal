@@ -6457,3 +6457,49 @@ def test_stop_and_send_find_a_workers_process_after_a_restart(app: App, monkeypa
     assert console.run(["worker", "send", "2", "now the locks"], AGENT).code == 0, "a worker whose process died unreported is revived, not refused as still out"
     reports = [m.text for m in app.container.get(Messages).scoped() if m.text.startswith("Mr. Telford reports: ")]
     assert len(reports) == 1 and started[-1] == 2 and workers.find(2).brief == "now the locks", "its missing outcome is filed first, then the job goes out"
+
+
+def test_a_revived_worker_goes_on_in_its_own_worktree_and_branch_and_keeps_its_work(app: App, monkeypatch):
+    import shutil
+    import subprocess
+    from journal.providers.claude import Claude
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    (root / ".gitignore").write_text(".journal/\n")
+    git("add", ".gitignore")
+    git("commit", "-qm", "start")
+    hook(app, "SessionStart")
+    console, workers = app.console(), app.container.get(Workers)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    folder = app.config.home / "worktrees" / "1-Lady-Lovelace"
+    (folder / "parser.py").write_text("committed\n")
+    git("add", "parser.py", cwd=folder)
+    git("commit", "-qm", "the parser", cwd=folder)
+    (folder / "notes.txt").write_text("not committed\n")
+
+    def reported_again() -> None:
+        console.run(["worker", "report", "1", "done"], Caller("main", "w1"))
+        workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
+
+    reported_again()
+    assert console.run(["worker", "send", "1", "now the lexer"], AGENT).code == 0
+    assert (folder / "notes.txt").read_text() == "not committed\n", "a revive in the folder still there keeps what was not committed"
+    reported_again()
+    shutil.rmtree(folder)
+    assert console.run(["worker", "send", "1", "now the printer"], AGENT).code == 0
+    assert (folder / "parser.py").read_text() == "committed\n" and git("rev-parse", "--abbrev-ref", "HEAD", cwd=folder).stdout.strip() == "worker/1-Lady-Lovelace", "a folder gone is made again on the branch it kept"
+    reported_again()
+    shutil.rmtree(folder)
+    git("worktree", "prune")
+    git("branch", "-D", "worker/1-Lady-Lovelace")
+    assert console.run(["worker", "send", "1", "now the tests"], AGENT).code == 0
+    assert folder.is_dir() and not (folder / "parser.py").exists(), "only with both gone is it cut again from the tip"
+    reported_again()
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: None)
+    refused = console.run(["worker", "send", "1", "now the docs"], AGENT)
+    assert refused.code == 1 and "the conversation of its session sess-1 is gone" in refused.error

@@ -61,7 +61,7 @@ class WorkerRunner:
         output.parent.mkdir(parents=True, exist_ok=True)
         try:
             with output.open("w") as output_text, err.open("w") as faults:
-                process = subprocess.Popen(command, cwd=self.workplace(worker), env=environ, stdin=subprocess.DEVNULL, stdout=output_text, stderr=faults, text=True, start_new_session=True)
+                process = subprocess.Popen(command, cwd=self.place(worker), env=environ, stdin=subprocess.DEVNULL, stdout=output_text, stderr=faults, text=True, start_new_session=True)
         except OSError as error:
             self.reports.file(worker, f"could not start: {error}", actor)
             return
@@ -167,13 +167,23 @@ class WorkerRunner:
     def workplace(self, worker: Worker) -> Path:
         folder = self.place(worker)
         if worker.worktree and not folder.is_dir():
-            self.cut(worker, folder)
+            self.added(worker, "-b", self.branch.name(worker), str(folder), "HEAD")
         return folder
 
-    def cut(self, worker: Worker, folder: Path) -> None:
-        if subprocess.run(["git", "rev-parse", "--verify", "-q", "HEAD"], cwd=self.config.root, capture_output=True, timeout=60).returncode != 0:
+    def renewed(self, worker: Worker) -> Path:
+        folder, name = self.place(worker), self.branch.name(worker)
+        if not worker.worktree or folder.is_dir():
+            return folder
+        self.branch.git("worktree", "prune")
+        if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{name}").returncode == 0:
+            self.added(worker, str(folder), name)
+            return folder
+        return self.workplace(worker)
+
+    def added(self, worker: Worker, *argv: str) -> None:
+        if self.branch.git("rev-parse", "--verify", "-q", "HEAD").returncode != 0:
             raise WorktreeFailure(worker.name, "the project has no commit yet, so there is no tip to cut a worktree from; make a first commit")
-        added = subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder), "HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=60)
+        added = self.branch.git("worktree", "add", "-q", *argv)
         if added.returncode != 0:
-            subprocess.run(["git", "worktree", "prune"], cwd=self.config.root, capture_output=True, timeout=60)
+            self.branch.git("worktree", "prune")
             raise WorktreeFailure(worker.name, added.stderr.strip())

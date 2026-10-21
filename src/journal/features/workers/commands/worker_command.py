@@ -119,6 +119,10 @@ class WorkerCommand(Command):
             raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
         if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
             raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
+        try:
+            self.runner.renewed(worker)
+        except WorktreeFailure as failed:
+            raise Rejection(f"worker {worker.name} was not sent the job: {failed}") from failed
         worker = self.workers.save(worker.instructed(args.brief).with_(dispatcher=caller.session), caller.actor)
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
