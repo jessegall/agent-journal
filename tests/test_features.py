@@ -5075,6 +5075,10 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app: 
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/tasks", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         assigned = {row["title"]: row["worker_id"] for row in json.loads(reply.read())["rows"]}
     assert assigned == {"delegated": 1, "mine": None}, "the viewer sees which worker holds which task"
+    console.run(["task", "create", "loose and delegated"], AGENT)
+    console.run(["task", "create", "loose and free"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "build the loose one", "--profile", "journal-medior", "--model", "sonnet", "--task", "3"], AGENT)
+    assert [task.title for task in plans.free()] == ["loose and free"], "a task a worker is out on is never the next free task for anyone else"
 
 
 def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app: App, tmp_path, monkeypatch):

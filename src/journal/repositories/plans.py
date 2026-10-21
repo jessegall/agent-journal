@@ -107,7 +107,8 @@ class Plans(ScopedRepository[Plan]):
     def free(self) -> list[Task]:
         open_tasks = self.tasks.with_state(TaskState.OPEN)
         planned = {link.source.id for link in self.links.model_links("source", open_tasks, PLAN_LINK)}
-        return [t for t in open_tasks if t.id not in planned]
+        delegated = set(self.workers.containing({t.row_id for t in open_tasks}))
+        return [t for t in open_tasks if t.id not in planned and t.id not in delegated]
 
     def finished(self, plan: Plan) -> bool:
         return plan.is_finished(self.plan_tasks(plan))

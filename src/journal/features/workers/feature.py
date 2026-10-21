@@ -66,9 +66,10 @@ class Workers(Feature[WorkersData]):
 
 A subagent only reads. A worker writes: code in a worktree of its own, a document, a change.
 
-- `journal worker dispatch "<Name>" "<bounded brief>" --profile journal-senior|journal-medior [--provider claude|codex] [--worktree]`: name it
+- `journal worker dispatch "<Name>" "<bounded brief>" --profile journal-senior|journal-medior [--task <n>] [--provider claude|codex] [--worktree]`: name it
   after a distinguished figure with a twist on their trade and give it one job. The profile sets its model and what it is told:
   medior, on Sonnet, for a job whose shape is settled; senior, on Opus, only for one that needs judgement. `--model` overrides it.
+  A worker sent on a task names it with `--task <n>`: the task is the worker's from then on, and never offered to you as next.
 - The work mode is the bottom state of your stack. Builder, the default: you build it yourself and send a worker when a job
   is better done beside you. Orchestrator: you plan, hand every task you can to a worker and review what comes back;
   a stop or a long quiet with open tasks tells you to check the plans and dispatch, and a task in hand is one to hand
