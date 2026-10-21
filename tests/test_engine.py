@@ -1207,7 +1207,7 @@ def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instan
     assert app.container.get(StateMachine) is app.container.get(StateMachine) and app.container.get(Agents) is app.container.get(Agents), "the container builds a class once"
 
 
-def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_holds_every_typed_line_until_it_pops_and_starts_the_tool_count_again(app, monkeypatch):
+def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_switches_the_typist_off_until_it_pops_and_starts_the_tool_count_again(app, monkeypatch):
     from journal.events.agent.ticked import Ticked
     from journal.events.rows.message_arrived import MessageArrived
     from journal.supervisor_link import SupervisorLink
@@ -1256,9 +1256,11 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_hold
     link.type(1, "a dump arrived")
     link.type(1, "the wait ended")
     link.release(1)
-    assert sent == [], "every line typed while compacting waits"
+    assert sent == [] and link.typed.held_as_one(1) is None, "the typist is off while compacting: a line is dropped, not queued, since the look after the compaction tells the agent what it missed"
     hook(app, "SessionStart", source="compact")
-    assert agents.for_session("s1").stack[-1]["state"] != "compacting" and sent == ["[journal] a dump arrived | the wait ended"], "the pop types them as one line"
+    assert agents.for_session("s1").stack[-1]["state"] != "compacting" and sent == []
+    link.type(1, "a wait ended")
+    assert sent == ["[journal] a wait ended"], "and on again once the state left"
 
 
 def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_and_its_nudges_name_it():

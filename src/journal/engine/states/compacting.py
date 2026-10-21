@@ -11,7 +11,7 @@ from journal.events.agent.tool_starting import ToolStarting
 
 @dataclass(frozen=True)
 class Compacting(BaseState):
-    """The context is being compacted: every tool is held until the session starts again, which pops it. The state switches the typist off as it enters and on as it leaves, so every line the journal says meanwhile waits and goes as one line after."""
+    """The context is being compacted: every tool is held until the session starts again, which pops it. The state switches the typist off as it enters and on as it leaves: a line the journal would type meanwhile is dropped, and the look at the start after the compaction brings the agent up to date."""
 
     name = "compacting"
     title = "Compacting"
@@ -23,7 +23,7 @@ class Compacting(BaseState):
         return self.pop()
 
     def on_enter(self, typist: Typist) -> None:
-        typist.pause()
+        typist.switch_off()
 
     def on_exit(self, typist: Typist) -> None:
-        typist.resume()
+        typist.switch_on()
