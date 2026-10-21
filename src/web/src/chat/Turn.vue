@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import ChatMark from "../kit/ChatMark.vue";
 import SubagentMark from "./SubagentMark.vue";
@@ -26,11 +26,13 @@ const skillMark = computed(() => ({
     title: `Read the ${props.turn.title} skill`,
 }));
 const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation compacted", time: props.turn.time}));
-const cardMark = computed(() => ({...data.value, time: props.turn.time}));
+const folded = ref(Boolean(props.turn.data?.collapsed));
+const cardMark = computed(() => ({...data.value, detail: folded.value ? "" : data.value.detail, time: props.turn.time}));
 
 function markClick(data) {
     if (data.go) return {click: () => go(data.go)};
-    return data.row ? {click: () => openRef(data.row)} : {};
+    if (data.row) return {click: () => openRef(data.row)};
+    return data.collapsed ? {click: () => (folded.value = !folded.value)} : {};
 }
 </script>
 

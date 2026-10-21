@@ -46,7 +46,7 @@ const SYSTEM_TURNS = {
     }),
     plugin: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.collapsed ? "" : card.detail, title: card.detail, row: card.row},
+        data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.detail, collapsed: Boolean(card.collapsed && card.detail), title: card.detail, row: card.row},
     }),
 };
 
