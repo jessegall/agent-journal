@@ -55,18 +55,26 @@ def viewer(app, path: str, body: dict | None = None) -> dict:
 
 
 @pytest.fixture
-def app(journal_root: Path, monkeypatch):
-    """A fresh journal on a free port; no worker process starts, since a dispatched worker would run its provider headless and file what it printed, or that it could not start, beside the test's own report."""
-    monkeypatch.setattr(Config, "status_home", property(lambda self: journal_root / "status"))
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
-    app = App(Config(journal_root, port=0))
+def app(app: App):
+    with app.container.get(Scope).environment(MAIN):
+        yield app
+
+
+@pytest.fixture(scope="module")
+def boot():
+    return booted
+
+
+def booted(root: Path, patch: pytest.MonkeyPatch) -> App:
+    """A journal started on a free port; no worker process starts, since a dispatched worker would run its provider headless and file what it printed, or that it could not start, beside the test's own report."""
+    patch.setattr(Config, "status_home", property(lambda self: root / "status"))
+    patch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    app = App(Config(root, port=0))
     app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
     app.container.get(SettingRows).save(Setting(environment_id=0, key="plugins.hold_window_ms", value=2000), Actor.system())
     app.runtime().start()
-    with app.container.get(Scope).environment(MAIN):
-        yield app
-    app.runtime().stop()
+    return app
 
 
 def made(output) -> int:

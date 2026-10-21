@@ -95,13 +95,14 @@ AGENT = Caller.agent("main", "s1", "claude")
 USER = Caller.user("main")
 
 
-@pytest.fixture
-def app(journal_root: Path):
-    app = App(Config(journal_root, port=0))
-    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
-    app.runtime().start()
-    yield app
-    app.runtime().stop()
+@pytest.fixture(scope="module")
+def boot():
+    def booted(root: Path, patch: pytest.MonkeyPatch) -> App:
+        app = App(Config(root, port=0))
+        app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+        app.runtime().start()
+        return app
+    return booted
 
 
 def hook(app, kind: str, **body):
