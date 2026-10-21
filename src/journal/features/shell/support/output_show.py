@@ -25,14 +25,14 @@ class OutputShow:
         if cut and name == "out":
             shortened = subprocess.run(["sh", "-c", cut], input=text, capture_output=True, text=True).stdout
             shown = shortened if len(shortened) <= self.cap.characters else shortened[-self.cap.characters:]
-            return f"{shown.rstrip(chr(10))}\n{self.kept_line(i, text)}"
+            return f"{shown.rstrip(chr(10))}\n{self.naming_line(i, text)}"
         if self.cap.is_whole() or len(text) <= self.cap.characters:
             return text
         if self.cap.is_ends():
             return self.ends(text)
-        return self.kept_line(i, text)
+        return self.naming_line(i, text)
 
-    def kept_line(self, i: int, text: str) -> str:
+    def naming_line(self, i: int, text: str) -> str:
         if self.named:
             return f"[journal] output {self.folder.number()} also holds {self.part_label(i)} ({self.counts(text)})\n"
         self.named = True
