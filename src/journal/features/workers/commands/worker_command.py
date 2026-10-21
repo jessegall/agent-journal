@@ -6,9 +6,7 @@ from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.support.worktree_not_made import WorktreeNotMade
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.engine.state_machine import StateMachine
 from journal.support.profile_files import ProfileFiles
-from journal.features.workers.states.awaiting import Awaiting
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.features.workers.support.named_paths import NamedPaths
 from journal.features.workers.support.worker_runner import WorkerRunner
@@ -25,8 +23,8 @@ from journal.repositories.workers import Workers
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, machine: StateMachine, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows) -> None:
-        self.workers, self.messages, self.machine, self.providers, self.agents = workers, messages, machine, providers, agents
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows) -> None:
+        self.workers, self.messages, self.providers, self.agents = workers, messages, providers, agents
         self.branch, self.settings = branch, settings
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
@@ -77,6 +75,7 @@ class WorkerCommand(Command):
         if args.task:
             self.workers.put_on(worker, args.task, where.actor)
         self.runner.start(worker, where.actor)
+        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), where.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
 
@@ -108,15 +107,12 @@ class WorkerCommand(Command):
         if args.task:
             self.workers.put_on(worker, args.task, where.actor)
         self.runner.start(worker, where.actor)
+        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), where.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
 
     def wait(self, args: Namespace, where: Where) -> int:
-        environment = self.scope.id
-        agent = self.machine.agent(where.session, environment)
-        current = self.machine.states.named(agent.state, agent.data)
-        self.machine.move(where.session, environment, Awaiting.leaving(current, workers=tuple(args.on)))
-        print(f"awaiting workers {', '.join(str(n) for n in args.on)}")
+        print(f"awaiting workers {', '.join(str(n) for n in args.on)}: you are told as each reports, and when the last is back")
         return 0
 
     def stop(self, args: Namespace, where: Where) -> int:

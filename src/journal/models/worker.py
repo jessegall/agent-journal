@@ -2,6 +2,7 @@ from typing import ClassVar
 from dataclasses import dataclass
 
 from journal.events.rows.worker_back import WorkerBack
+from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.events.rows.worker_stopped import WorkerStopped
 from journal.models.scoped import Scoped
 from journal.models.worker_state import WorkerState
@@ -26,6 +27,9 @@ class Worker(Scoped):
     pid: int = 0
     began: float = 0.0
     found_session: str = ""
+
+    def dispatched(self, at: float) -> "Worker":
+        return self.with_(state=WorkerState.DISPATCHED).with_event(WorkerDispatched(environment_id=self.environment_id, at=at, worker_id=self.id, name=self.name, dispatched_by=self.dispatched_by))
 
     def reported(self, at: float, report: int) -> "Worker":
         return self.with_(state=WorkerState.REPORTED, taken_up=False, pid=0).with_event(WorkerBack(environment_id=self.environment_id, at=at, worker_id=self.id, name=self.name, report=report, dispatched_by=self.dispatched_by))

@@ -8,6 +8,7 @@ from journal.events.agent.idle import Idle
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.worker_back import WorkerBack
+from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.features.workers.support.named_paths import NamedPaths
 from journal.features.workers.support.workers_snapshot import WorkersSnapshot
 from journal.support.dispatch_tools import DISPATCH_TOOLS
@@ -17,7 +18,7 @@ FRESH = ("auditor", "reviewer", "plan-reviewer", "critic")
 
 
 class WorkersConduct(Conduct):
-    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, the reports not acted on are named at a stop and on the tick, and a worker's report is told as it comes."""
+    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, the reports not acted on are named at a stop and on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
 
     def on_tool_starting_workers_most(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
@@ -48,6 +49,10 @@ class WorkersConduct(Conduct):
 
     def on_ticked_workers(self, event: Ticked, settings: Settings) -> Transition:
         return self.unchanged(*reports_named(event.snapshot.of(workers_feature())))
+
+    def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
+        from journal.features.workers.states.awaiting import Awaiting
+        return self.push(Awaiting(workers=(event.worker_id,))) if event.dispatched_by == event.session else self.unchanged()
 
     def on_worker_back_workers(self, event: WorkerBack, settings: Settings) -> Transition:
         if event.dispatched_by and event.dispatched_by != event.session:

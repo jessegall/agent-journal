@@ -941,6 +941,18 @@ def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
     assert other.to is waiting and other.nudges == (), "a worker it does not wait on is not its business"
     last = Awaiting(workers=(4,)).on(WorkerStopped(environment_id=1, at=2.0, worker_id=4, name="Herr Turing"), settings)
     assert last.popped and [n.key for n in last.nudges] == ["workers.worker_stopped_unreported", "workers.waited_on_came_back"]
+    from journal.events.rows.worker_dispatched import WorkerDispatched
+    from journal.features.workers.support.workers_conduct import WorkersConduct
+    BaseState.fold((WorkersConduct,))
+    try:
+        own = Working(task_id=7).on(WorkerDispatched(environment_id=1, at=3.0, worker_id=5, name="Lady Lovelace", dispatched_by="s1").reaching("s1"), settings)
+        assert own.pushed == Awaiting(workers=(5,)), "a worker this agent dispatches pushes the wait on its work"
+        assert Working(task_id=7).on(WorkerDispatched(environment_id=1, at=3.0, worker_id=5, name="Lady Lovelace", dispatched_by="s2").reaching("s1"), settings).pushed is None, "another session's worker is not waited on here"
+        widened = Awaiting(workers=(5,)).on(WorkerDispatched(environment_id=1, at=4.0, worker_id=6, name="Dr. Einstein", dispatched_by="s1").reaching("s1"), settings)
+        assert widened.to == Awaiting(workers=(5, 6)) and widened.pushed is None, "a second dispatch widens the wait instead of stacking another"
+    finally:
+        BaseState.fold(())
+    assert Awaiting(workers=(5,)).on(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True)), settings).to == Awaiting(workers=(5,)), "the agent works on while its workers run"
 
 
 def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_snapshot():

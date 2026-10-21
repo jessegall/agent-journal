@@ -527,7 +527,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     assert typed[-1] == "[journal] worker 2, Dr. Einstein, stopped before it reported", "one line at a time: the next waits until this one is seen back"
     lines.confirm(1, typed[-1])
     link.release(1)
-    assert typed[-1] == "[journal] what you waited on came back: carry on"
+    assert typed[-1].startswith("[journal] what you waited on came back: carry on"), "the last worker back pops the wait, with the work beneath named after it"
 
 
 def test_a_worker_runs_the_dispatching_agents_own_program(app, monkeypatch):

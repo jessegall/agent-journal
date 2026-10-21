@@ -1,8 +1,9 @@
 #!/bin/sh
-# Claude Code runs every shell command, and its MCP servers, as run.sh '<line>'. A shell command, which Claude wraps in
-# eval, goes to the journal server with the folder, the shell and the environment it runs in: the server runs it part by
-# part in that shell, records each part and streams back what the agent sees; this prints that and ends with the chain's
-# exit code, the stream's last line. Anything else, or a line with no server up, runs as it is.
+# The agent's shell prefix: the launcher sets it, and the agent then runs every shell command, and its MCP servers, as
+# run.sh '<line>'. A shell command, which the agent's tool wraps in eval, goes to the journal server with the folder,
+# the shell and the environment it runs in: the server runs it part by part in that shell, records each part and streams
+# back what the agent sees; this prints that and ends with the chain's exit code, the stream's last line. Anything else,
+# or a line with no server up, runs as it is.
 here=$(cd "$(dirname "$0")" && pwd)
 root=$(cd "$here/../../.." && pwd)
 [ $# -eq 1 ] || exec "$@"
