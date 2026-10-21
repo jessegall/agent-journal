@@ -51,6 +51,10 @@ class Hook:
         return self.printed(self.body.get("tool_response", ""))
 
     @property
+    def error(self) -> str:
+        return str(self.body.get("error", ""))
+
+    @property
     def response(self) -> dict:
         response = self.body.get("tool_response", "")
         return response if isinstance(response, dict) else {}

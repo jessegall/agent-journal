@@ -85,9 +85,9 @@ def test_a_deferred_listener_runs_after_the_reply_and_never_refuses(app):
 
 
 def test_every_hook_kind_translates(app):
-    for kind in ["SessionStart", "UserPromptSubmit", "PostToolUse", "PreCompact", "Stop", "SubagentStart", "SubagentStop", "MessageDisplay", "SessionEnd"]:
+    for kind in ["SessionStart", "UserPromptSubmit", "PostToolUse", "PostToolUseFailure", "PreCompact", "Stop", "SubagentStart", "SubagentStop", "MessageDisplay", "SessionEnd"]:
         assert post_hook(app, {"hook_event_name": kind, "session_id": "s1"})[0] == 200
-    assert len(app.container.get(Entries).in_()) == 9
+    assert len(app.container.get(Entries).in_()) == 10
 
 
 

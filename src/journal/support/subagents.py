@@ -58,6 +58,9 @@ class Subagents:
             if e.kind == "ToolStarting":
                 rows.append(Dispatch(f"sub:{e.id}", time, given.get("description", "") or given.get("prompt", "")[:80], f"{given.get('description', '')} {given.get('prompt', '')}", given.get("subagent_type", "") or "subagent", given.get("model", "")))
                 open_[use or f"entry:{e.id}"] = len(rows) - 1
+            elif e.kind == "ToolFailed" and open_:
+                i = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
+                rows[i] = rows[i].failed(str(e.data.get("error", "")), time)
             elif e.kind == "ToolFinished" and open_:
                 i = open_.pop(use) if use in open_ else open_.pop(next(iter(open_)))
                 answer = Subagents.answered(e.data.get("tool_response"))

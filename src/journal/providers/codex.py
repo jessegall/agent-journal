@@ -17,7 +17,7 @@ class Codex(Provider):
     settings_file = "hooks.json"
     write_tools = frozenset({"apply_patch", "write_file"})
     read_tool = "read_file"
-    hook_kinds = tuple(kind for kind in HookKind if kind != HookKind.MESSAGE_DISPLAY)
+    hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
 
     def __init__(self) -> None:
         self._rollouts: dict[str, Path] = {}

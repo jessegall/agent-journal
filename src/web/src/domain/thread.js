@@ -32,7 +32,7 @@ const SYSTEM_TURNS = {
     subagent: (card) => ({
         kind: "subagent",
         title: card.detail,
-        data: {kind: card.agent_type, model: card.model, agent: card.agent, session: card.subagent, finished: card.state !== "running", stopped: card.state === "stopped"},
+        data: {kind: card.agent_type, model: card.model, agent: card.agent, session: card.subagent, finished: card.state !== "running", stopped: card.state === "stopped", failed: card.state === "failed", reason: card.reason || ""},
     }),
     card: (card, label) => ({
         kind: "card",

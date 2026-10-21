@@ -857,6 +857,16 @@ def test_each_subagent_is_one_message_in_the_chat_settled_in_place(app):
     assert [(d["detail"], d["state"], d["agent"]) for d in marks()] == [("cut off", "stopped", 1)], "and the same message settles when its turn ends"
 
 
+def test_a_dispatch_that_failed_is_a_mark_with_the_tools_error(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "look", "prompt": "read", "model": "haiku"}, tool_use_id="t-f")
+    hook(app, "PostToolUseFailure", tool_name="Agent", tool_input={}, error="Model 'haiku-9' not found", tool_use_id="t-f")
+    app.runtime().deferred.drain()
+    [mark] = [m.data for m in app.container.get(Messages).all() if m.data.get("kind") == "subagent"]
+    assert (mark["detail"], mark["state"], mark["reason"]) == ("look", "failed", "Model 'haiku-9' not found"), "the dispatch's own mark settles as failed with the tool's error, no second mark"
+
+
 def test_a_document_the_agent_writes_is_a_message_in_its_chat(app, tmp_path):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
@@ -889,12 +899,15 @@ def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_tu
     send("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "in the background", "prompt": "read", "model": "haiku"}, tool_use_id="t-bg")
     send("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a7"}, tool_use_id="t-bg")
     assert [r["task"] for r in rows()] == ["cut off", "in the background"], "a dispatch the journal refused never ran"
+    send("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "no such model", "prompt": "read", "model": "haiku"}, tool_use_id="t-failed")
+    send("PostToolUseFailure", tool_name="Agent", tool_input={}, error="Model 'haiku-9' not found", tool_use_id="t-failed")
+    assert [(r["running"], r["status"], r["reason"]) for r in rows()][-1] == (False, "failed", "Model 'haiku-9' not found"), "a dispatch the tool could not run is failed with the tool's error"
     send("Stop")
-    assert [(r["running"], r["status"]) for r in rows()] == [(False, "stopped"), (True, "running")], "a call with no answer ends with its turn; one in the background goes on"
+    assert [(r["running"], r["status"]) for r in rows()] == [(False, "stopped"), (True, "running"), (False, "failed")], "a call with no answer ends with its turn; one in the background goes on"
     send("SessionStart", source="compact")
     assert rows()[1]["running"] is True, "a compaction ends no subagent"
     send("SessionEnd")
-    assert [r["running"] for r in rows()] == [False, False], "a subagent with no stop ends with its session"
+    assert [r["running"] for r in rows()] == [False, False, False], "a subagent with no stop ends with its session"
 
 
 def test_a_task_the_reply_names_is_linked_to_the_message_it_answers_however_old(app):

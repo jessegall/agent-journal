@@ -7,6 +7,7 @@ from journal.events.agent.session_ended import SessionEnded
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.subagent_ended import SubagentEnded
 from journal.events.agent.subagent_started import SubagentStarted
+from journal.events.agent.tool_failed import ToolFailed
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_written import TurnWritten
@@ -28,6 +29,7 @@ class Translation:
         HookKind.USER_PROMPT: lambda hook, provider: PromptSubmitted(prompt=hook.text),
         HookKind.PRE_TOOL_USE: lambda hook, provider: ToolStarting(call=provider.call(hook.tool, hook.input)),
         HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(call=provider.call(hook.tool, hook.input), output=hook.output, response=hook.response),
+        HookKind.POST_TOOL_USE_FAILURE: lambda hook, provider: ToolFailed(call=provider.call(hook.tool, hook.input), error=hook.error),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
         HookKind.STOP: lambda hook, provider: Idle(held_before=hook.stop_held_before),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),

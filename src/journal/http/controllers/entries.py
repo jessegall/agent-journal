@@ -10,7 +10,7 @@ from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 from journal.support.scope import Scope
 
-TOLD = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "Compacting", "Idle", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnWritten",
+TOLD = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "ToolFailed", "Compacting", "Idle", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnWritten",
                   "nudge", "created", "updated", "deleted"})
 RECENT = 100
 BEAT = 15.0

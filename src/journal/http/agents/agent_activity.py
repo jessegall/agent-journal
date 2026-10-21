@@ -15,7 +15,7 @@ from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
 
-STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
+STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "ToolFailed": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan", "delegating", "orchestrating_plan"})
 KEPT = 400
 HISTORY = 5
