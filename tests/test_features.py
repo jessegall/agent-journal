@@ -6786,6 +6786,17 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     deferred.drain()
     after = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
     assert "output 1" not in after and not outputs.find(1).is_watched, "the watch ends with its command"
+def test_a_pytest_runs_bar_moves_with_each_test_between_the_percentages_it_prints_once_a_row():
+    from journal.features.shell.seeds.default_readers import SHIPPED
+    pytest = next(reader for reader in SHIPPED if reader.name == "pytest")
+    rows = ["." * 72 + "                                       [ 12%]", "." * 72 + "                                       [ 24%]"]
+    assert pytest.progress(rows).count == 24, "at a row's end the bar is its percentage"
+    assert pytest.progress([*rows, "." * 36]).count == 30, "half a row on, it is half the row's share past it"
+    assert pytest.progress(["." * 36]).count == 0, "before the first percentage nothing is known"
+    assert pytest.progress([rows[0], "..F" * 12]).count == 18, "a failure is a step as a dot is"
+    assert pytest.progress([*rows, "." * 500]).count == 100, "never past the whole"
+
+
 def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_dispatchers_transcript(app: App, tmp_path, monkeypatch):
     import threading
     from journal.providers.claude import Claude
