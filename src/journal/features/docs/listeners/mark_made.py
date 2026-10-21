@@ -14,6 +14,6 @@ class MarkMade(Listener[Created]):
 
     def handle(self, event: Created) -> None:
         doc = event.model
-        if not isinstance(doc, Doc) or event.by.kind != ActorKind.AGENT:
+        if not isinstance(doc, Doc) or event.actor.kind != ActorKind.AGENT:
             return
-        self.cards.made_mark(self.agents.for_session(event.by.id).environment_id, doc, event.by)
+        self.cards.made_mark(self.agents.for_session(event.actor.id).environment_id, doc, event.actor)

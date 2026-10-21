@@ -46,9 +46,9 @@ class PluginInstalling:
             manifest = self.reader.read(folder)
             return PluginPreview(manifest.name, manifest.title or manifest.name, manifest.version, manifest.description, source, commit, self.rows(manifest, folder), linked=Path(source).is_dir())
 
-    def install(self, source: str, environment: str, by: Actor) -> Plugin:
+    def install(self, source: str, environment: str, actor: Actor) -> Plugin:
         """Its requirements checked, its setup steps run in order and its installed command asked, all before its row is made; a failure leaves nothing."""
-        self.only_the_user(by, "installs")
+        self.only_the_user(actor, "installs")
         with self.staged(source) as (folder, commit):
             manifest = self.reader.read(folder)
             self.free(manifest.name)
@@ -64,9 +64,9 @@ class PluginInstalling:
             except Refused:
                 self.undone(plugin, had_data)
                 raise
-            settings = self.settings.started(plugin, by)
+            settings = self.settings.started(plugin, actor)
             hashes = self.hashes.of(self.folders.of(plugin), plugin.manifest)
-            saved = self.plugins.save(plugin.with_(settings={**settings, **{k: v for k, v in filled.items() if k in settings and not isinstance(settings[k], dict)}}, hashes=hashes), by)
+            saved = self.plugins.save(plugin.with_(settings={**settings, **{k: v for k, v in filled.items() if k in settings and not isinstance(settings[k], dict)}}, hashes=hashes), actor)
             self.folders.data(saved)
             self.skills.publish(saved)
             self.services.start(saved)
@@ -114,7 +114,7 @@ class PluginInstalling:
             return PluginPreview(name, manifest.title or name, manifest.version, manifest.description, plugin.source, commit, self.rows(manifest, folder), was=plugin.commit_sha,
                                  changes=tuple(changes), code=tuple(code), current=not changes and not code)
 
-    def upgrade(self, name: str, ref: str | None, environment: str, by: Actor) -> Plugin:
+    def upgrade(self, name: str, ref: str | None, environment: str, actor: Actor) -> Plugin:
         """A fetched plugin's folder replaced and its setup run again, its old folder put back if the setup fails; a linked one read where it lies."""
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
@@ -122,7 +122,7 @@ class PluginInstalling:
             self.services.stop(plugin)
             if not plugin.linked:
                 self.replaced(plugin, upgraded, folder, environment)
-            saved = self.plugins.save(upgraded.with_(hashes=self.hashes.of(self.folders.of(upgraded), upgraded.manifest)), by)
+            saved = self.plugins.save(upgraded.with_(hashes=self.hashes.of(self.folders.of(upgraded), upgraded.manifest)), actor)
             self.skills.withdraw(saved)
             if saved.enabled:
                 self.skills.publish(saved)
@@ -146,36 +146,36 @@ class PluginInstalling:
             raise
         shutil.rmtree(kept)
 
-    def enable(self, name: str, by: Actor) -> Plugin:
+    def enable(self, name: str, actor: Actor) -> Plugin:
         """On, with its files' hashes taken anew: switching it on is the user's word that its code is read."""
-        self.only_the_user(by, "switches on")
+        self.only_the_user(actor, "switches on")
         plugin = self.plugins.named(name)
         self.skills.publish(plugin)
         self.services.start(plugin)
-        return self.plugins.save(plugin.with_(enabled=True, hashes=self.hashes.of(self.folders.of(plugin), plugin.manifest)), by)
+        return self.plugins.save(plugin.with_(enabled=True, hashes=self.hashes.of(self.folders.of(plugin), plugin.manifest)), actor)
 
-    def disable(self, name: str, by: Actor) -> Plugin:
+    def disable(self, name: str, actor: Actor) -> Plugin:
         plugin = self.plugins.named(name)
         self.skills.withdraw(plugin)
         self.services.stop(plugin)
-        return self.plugins.save(plugin.with_(enabled=False), by)
+        return self.plugins.save(plugin.with_(enabled=False), actor)
 
-    def remove(self, name: str, by: Actor) -> None:
+    def remove(self, name: str, actor: Actor) -> None:
         """Its row and its fetched copy go; its data folder stays."""
         plugin = self.plugins.named(name)
         self.skills.withdraw(plugin)
         self.services.stop(plugin)
         if not plugin.linked:
             shutil.rmtree(self.folders.of(plugin), ignore_errors=True)
-        self.plugins.delete(plugin, by)
+        self.plugins.delete(plugin, actor)
 
-    def purge(self, name: str, by: Actor) -> None:
+    def purge(self, name: str, actor: Actor) -> None:
         """Removed, and its data folder and its dashboard's lines with it."""
         data = self.folders.data(self.plugins.named(name))
-        self.remove(name, by)
+        self.remove(name, actor)
         shutil.rmtree(data, ignore_errors=True)
         for line in self.dashboard.of(name):
-            self.dashboard.delete(line, by)
+            self.dashboard.delete(line, actor)
 
     @staticmethod
     def clear_stale_fetches(home: Path) -> None:
@@ -197,8 +197,8 @@ class PluginInstalling:
         return manifest
 
     @staticmethod
-    def only_the_user(by: Actor, does: str) -> None:
-        if by.kind != ActorKind.USER:
+    def only_the_user(actor: Actor, does: str) -> None:
+        if actor.kind != ActorKind.USER:
             raise Refused(f"only the user {does} a plugin: journal plugin propose <folder or git address> shows them a card to install it themselves")
 
     def free(self, name: str) -> None:

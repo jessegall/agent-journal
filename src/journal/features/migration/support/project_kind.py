@@ -20,7 +20,7 @@ class ProjectKind:
     def __init__(self, ledger: MigratedRows) -> None:
         self.ledger = ledger
 
-    def bring(self, folder: Path, by: Actor) -> Brought:
+    def bring(self, folder: Path, actor: Actor) -> Brought:
         count, skipped = 0, []
         for row in self.rows(Version3Rows(folder)):
             source = f"project/{self.kind}/{row.n}"
@@ -31,7 +31,7 @@ class ProjectKind:
             if self.ledger.is_brought(source):
                 continue
             try:
-                self.ledger.bring(source, lambda: self.made(row, by), by)
+                self.ledger.bring(source, lambda: self.made(row, actor), actor)
             except Exception as fault:
                 skipped.append(f"{self.kind} {row.n}: could not be brought: {fault}")
                 continue
@@ -45,5 +45,5 @@ class ProjectKind:
         """Why the row stays in the backup; empty when it comes across."""
         return "deleted" if row.is_deleted() else ""
 
-    def made(self, row: Version3Row, by: Actor) -> Model:
+    def made(self, row: Version3Row, actor: Actor) -> Model:
         raise NotImplementedError

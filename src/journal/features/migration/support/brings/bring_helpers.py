@@ -21,6 +21,6 @@ class BringHelpers(EnvironmentKind):
         super().__init__(environments, ledger)
         self.workers = workers
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, by: Actor) -> Worker:
+    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Worker:
         worker = Worker(environment_id=into.id, name=row.data.get("name", row.title), brief=row.brief, provider=row.data.get("provider", "claude"), model=row.data.get("model", ""), state=WorkerState.STOPPED)
-        return self.workers.imported(worker, row.made_at(), by)
+        return self.workers.imported(worker, row.made_at(), actor)

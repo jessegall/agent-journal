@@ -21,10 +21,10 @@ class LinkMentions(Listener[Saved]):
     def handle(self, event: Saved) -> None:
         if isinstance(event.model, Link) or not event.model.mentioning_text():
             return
-        self.deferred.add(lambda row=event.model, by=event.by: self.link(row, by))
+        self.deferred.add(lambda row=event.model, actor=event.actor: self.link(row, actor))
 
-    def link(self, row: Model, by: Actor) -> None:
+    def link(self, row: Model, actor: Actor) -> None:
         source = Ref.to(row)
         for target in Mentioned.in_(row.mentioning_text()):
             if target != source and self.links.is_row(target) and not self.links.where(source=source, target=target, kind=MENTIONS):
-                self.links.save(Link(source=source, target=target, kind=MENTIONS), by)
+                self.links.save(Link(source=source, target=target, kind=MENTIONS), actor)

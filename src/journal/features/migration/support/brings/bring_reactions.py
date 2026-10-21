@@ -27,7 +27,7 @@ class BringReactions(EnvironmentKind):
     def left_behind(self, row: Version3Row, into: Environment) -> str:
         return super().left_behind(row, into) or ("" if self.message_of(row, into) else "the message it sits on did not come across")
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, by: Actor) -> Reaction:
-        reaction = self.reactions.imported(Reaction(environment_id=into.id, face=row.data.get("face", ""), author=Author(row.author())), row.made_at(), by)
-        self.links.save(Link(source=Ref.to(reaction), target=self.message_of(row, into), kind=REACTS), by)
+    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Reaction:
+        reaction = self.reactions.imported(Reaction(environment_id=into.id, face=row.data.get("face", ""), author=Author(row.author())), row.made_at(), actor)
+        self.links.save(Link(source=Ref.to(reaction), target=self.message_of(row, into), kind=REACTS), actor)
         return reaction

@@ -25,19 +25,19 @@ class MarkSubagents(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> None:
         if not self.moves(event):
             return
-        by, agent, now = Actor.agent(event.session), self.agents.for_session(event.session).id, time.time()
+        actor, agent, now = Actor.agent(event.session), self.agents.for_session(event.session).id, time.time()
         for row in [row for row in self.subagents.rows(event.session) if row.is_current(now)]:
-            self.marked(event, row, agent, by)
+            self.marked(event, row, agent, actor)
 
     @staticmethod
     def moves(event: AgentEvent) -> bool:
         """An Agent tool's call or answer, a subagent's own stop, or the end of the turn or session that settles what never answered."""
         return type(event).__name__ in SETTLING or (isinstance(event, (ToolStarting, ToolFinished)) and event.call.tool in DISPATCHING)
 
-    def marked(self, event: AgentEvent, row: Dispatch, agent: int, by: Actor) -> None:
+    def marked(self, event: AgentEvent, row: Dispatch, agent: int, actor: Actor) -> None:
         key = f"subagent:{row.id}"
         data = {"kind": "subagent", "session": event.session, "agent": agent, "detail": row.task, "agent_type": row.type, "model": row.model, "subagent": row.session, "state": row.status}
-        earlier = self.messages.keyed(key, by)
+        earlier = self.messages.keyed(key, actor)
         if earlier and all(earlier[0].data.get(k) == v for k, v in data.items()):
             return
-        self.cards.keyed(event.environment_id, key, f"Subagent {row.type}: {row.task}", data, by, ChatMark.SUBAGENTS)
+        self.cards.keyed(event.environment_id, key, f"Subagent {row.type}: {row.task}", data, actor, ChatMark.SUBAGENTS)

@@ -26,8 +26,8 @@ class BringTodos(EnvironmentKind):
     def left_behind(self, row: Version3Row, into: Environment) -> str:
         return super().left_behind(row, into) or ("struck" if row.data.get("struck") else "")
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, by: Actor) -> Task:
-        return self.tasks.imported(self.task(row, Task(environment_id=into.id, title=row.title, brief=row.brief)), row.made_at(), by)
+    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
+        return self.tasks.imported(self.task(row, Task(environment_id=into.id, title=row.title, brief=row.brief)), row.made_at(), actor)
 
     @staticmethod
     def task(row: Version3Row, task: Task) -> Task:

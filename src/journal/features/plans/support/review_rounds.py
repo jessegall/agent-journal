@@ -18,11 +18,11 @@ class ReviewRounds:
     def __init__(self, reviews: PlanReviews, links: Links, reports: Reports, subagents: Subagents) -> None:
         self.reviews, self.links, self.reports, self.subagents = reviews, links, reports, subagents
 
-    def open(self, plan: Plan, by: Actor) -> None:
+    def open(self, plan: Plan, actor: Actor) -> None:
         if self.reviews.open_of(plan):
             return
-        review = self.reviews.save(PlanReview(environment_id=plan.environment_id), by)
-        self.links.save(Link(source=Ref.to(review), target=Ref.to(plan), kind=REVIEWS), by)
+        review = self.reviews.save(PlanReview(environment_id=plan.environment_id), actor)
+        self.links.save(Link(source=Ref.to(review), target=Ref.to(plan), kind=REVIEWS), actor)
 
     def close(self, plan: Plan, changed: str, where: Where) -> None:
         for review in self.reviews.open_of(plan):

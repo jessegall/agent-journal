@@ -39,18 +39,18 @@ class Migrator:
         self.backup, self.migrations, self.reports, self.scope = backup, migrations, reports, scope
         self.kinds = (environments, messages, todos, waits, work, plans, questions, facts, rules, reminders, docs, old_reports, checks, triggers, sequences, templates, settings, agents, helpers, secrets, comments, reactions)
 
-    def begin(self, by: Actor) -> Version3Migration:
-        return self.migrations.save(self.migrations.current().begun(), by)
+    def begin(self, actor: Actor) -> Version3Migration:
+        return self.migrations.save(self.migrations.current().begun(), actor)
 
-    def run(self, migration: Version3Migration, by: Actor) -> Version3Migration:
-        brought = [self.brought(kind, by) for kind in self.kinds]
-        self.reports.save(self.report(brought), by)
-        return self.migrations.save(migration.done(), by)
+    def run(self, migration: Version3Migration, actor: Actor) -> Version3Migration:
+        brought = [self.brought(kind, actor) for kind in self.kinds]
+        self.reports.save(self.report(brought), actor)
+        return self.migrations.save(migration.done(), actor)
 
-    def brought(self, kind, by: Actor) -> Brought:
+    def brought(self, kind, actor: Actor) -> Brought:
         """One kind brought across; a kind that cannot be read at all is named in the report, and the run goes on with the next."""
         try:
-            return kind.bring(self.backup.folder, by)
+            return kind.bring(self.backup.folder, actor)
         except Exception as fault:
             return Brought(kind.title, 0, (f"the whole kind could not be read: {fault}",))
 

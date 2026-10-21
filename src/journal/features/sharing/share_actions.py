@@ -24,33 +24,33 @@ class ShareActions:
     def __init__(self, shares: Shares, targets: ShareTargets, tunnel: Tunnel, messages: Messages) -> None:
         self.shares, self.targets, self.tunnel, self.messages = shares, targets, tunnel, messages
 
-    def create(self, named: str, expires: str, password: str, comments: bool, by: Actor) -> Share:
+    def create(self, named: str, expires: str, password: str, comments: bool, actor: Actor) -> Share:
         """A link the user made opens at once; one the agent made waits for the user's Accept on the card it puts in the chat."""
         target = self.targets.named(named)
-        share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.until(expires), approved=by.is_the_user(),
-                                       password=SharePassword.hashed(password) if password else "", comments=comments), by)
-        self.targets.link(share, target, by)
+        share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.until(expires), approved=actor.is_the_user(),
+                                       password=SharePassword.hashed(password) if password else "", comments=comments), actor)
+        self.targets.link(share, target, actor)
         if share.approved:
             self.tunnel.start()
         else:
-            self.ask(share, target, by)
+            self.ask(share, target, actor)
         return share
 
-    def ask(self, share: Share, target: Ref, by: Actor) -> None:
+    def ask(self, share: Share, target: Ref, actor: Actor) -> None:
         """The card that asks the user to open a link the agent made: what it opens, and Accept or Deny."""
         opens = "\n".join(f"- {line}" for line in self.targets.opens(str(target)))
         comments = "\n\nVisitors can leave comments, which come to the chat." if share.comments else ""
         text = f"The agent wants to share {target}\n\nNothing opens until you accept it. Whoever has the link will be able to view:\n{opens}{comments}\n\n{self.tunnel.link_of(share.token)}"
         buttons = [{"label": "Accept", "path": f"/shares/{share.id}/approve"}, {"label": "Deny", "path": f"/shares/{share.id}/stop"}]
-        self.messages.save(Message(author=Author.AGENT, text=text, data={"buttons": buttons}), by)
+        self.messages.save(Message(author=Author.AGENT, text=text, data={"buttons": buttons}), actor)
 
-    def approve(self, share: Share, by: Actor) -> Share:
-        opened = self.shares.save(share.opened(), by)
+    def approve(self, share: Share, actor: Actor) -> Share:
+        opened = self.shares.save(share.opened(), actor)
         self.tunnel.start()
         return opened
 
-    def stop(self, share: Share, by: Actor) -> Share:
-        stopped = self.shares.save(share.stopped(datetime.now(timezone.utc)), by)
+    def stop(self, share: Share, actor: Actor) -> Share:
+        stopped = self.shares.save(share.stopped(datetime.now(timezone.utc)), actor)
         self.tunnel.settle()
         return stopped
 

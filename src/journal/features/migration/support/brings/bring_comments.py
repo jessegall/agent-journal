@@ -30,7 +30,7 @@ class BringComments(EnvironmentKind):
     def under(self, row: Version3Row, into: Environment) -> Ref | None:
         return next((found for ref in row.refs if (found := self.ledger.referred(into.name, ref))), None)
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, by: Actor) -> Message:
-        comment = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, read_at=row.read_at()), row.made_at(), by)
-        self.links.save(Link(source=Ref.to(comment), target=self.under(row, into), kind=Messages.COMMENTS_ON), by)
+    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
+        comment = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, read_at=row.read_at()), row.made_at(), actor)
+        self.links.save(Link(source=Ref.to(comment), target=self.under(row, into), kind=Messages.COMMENTS_ON), actor)
         return comment

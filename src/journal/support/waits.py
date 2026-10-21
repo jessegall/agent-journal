@@ -27,10 +27,10 @@ class Waits:
         if not why and not on and not until:
             raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
 
-    def named(self, on: list[str], until: str, every: int, about: str, by: Actor) -> list[Ref]:
+    def named(self, on: list[str], until: str, every: int, about: str, actor: Actor) -> list[Ref]:
         refs = [self.awaited(text) for text in on]
         if until:
-            refs.append(Ref.to(self.checks.save(Check(title=f"{about} waits until this passes", command=until, every=every, waited_on=True), by)))
+            refs.append(Ref.to(self.checks.save(Check(title=f"{about} waits until this passes", command=until, every=every, waited_on=True), actor)))
         return refs
 
     def awaited(self, text: str) -> Ref:

@@ -26,8 +26,8 @@ class ShareTargets:
         self.repositories[ref.type].find(ref.id)
         return ref
 
-    def link(self, share: Share, target: Ref, by) -> None:
-        self.links.save(Link(source=Ref.to(share), target=target, kind=SHARES), by)
+    def link(self, share: Share, target: Ref, actor) -> None:
+        self.links.save(Link(source=Ref.to(share), target=target, kind=SHARES), actor)
 
     def of(self, share: Share) -> Ref | None:
         """The row the share opens; none when it was deleted with its links."""

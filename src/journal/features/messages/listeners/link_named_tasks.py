@@ -33,4 +33,4 @@ class LinkNamedTasks(Listener[Created]):
             except NotFound:
                 continue
             if Ref.to(task) not in self.links.targets(asked, Messages.ABOUT):
-                self.links.save(Link(source=Ref.to(asked), target=Ref.to(task), kind=Messages.ABOUT), event.by)
+                self.links.save(Link(source=Ref.to(asked), target=Ref.to(task), kind=Messages.ABOUT), event.actor)

@@ -25,13 +25,13 @@ class SettingRows(ScopedRepository[Setting]):
     def option(self, option: Option) -> object:
         return self.project(option.key, option.default)
 
-    def set(self, key: str, value: object, by) -> Setting:
+    def set(self, key: str, value: object, actor) -> Setting:
         found = [s for s in self.project_rows() if s.key == key]
-        return self.save((found[0] if found else Setting(environment_id=PROJECT, key=key)).set_to(value, self._now().timestamp()), by)
+        return self.save((found[0] if found else Setting(environment_id=PROJECT, key=key)).set_to(value, self._now().timestamp()), actor)
 
-    def unset(self, key: str, by) -> None:
+    def unset(self, key: str, actor) -> None:
         for row in [s for s in self.project_rows() if s.key == key]:
-            self.delete(row, by)
+            self.delete(row, actor)
 
     def tree(self) -> dict:
         """Every setting as the environment sees it, nested on the first dot: tasks.log_after is tree["tasks"]["log_after"]."""

@@ -24,4 +24,4 @@ class RecordChanges(Listener[ModelEvent]):
         model = event.model
         environment = model.environment_id if isinstance(model, Scoped) else PROJECT
         changed = list(event.changed()) if isinstance(event, Updated) else []
-        self.entries.save(Entry(environment_id=environment, kind=action, actor=event.by, data={"table": model.table(), "id": model.id, "title": getattr(model, "title", "") or getattr(model, "text", "")[:80], "changed": changed}), event.by)
+        self.entries.save(Entry(environment_id=environment, kind=action, actor=event.actor, data={"table": model.table(), "id": model.id, "title": getattr(model, "title", "") or getattr(model, "text", "")[:80], "changed": changed}), event.actor)

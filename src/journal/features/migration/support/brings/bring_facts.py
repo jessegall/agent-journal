@@ -23,5 +23,5 @@ class BringFacts(EnvironmentKind):
     def left_behind(self, row: Version3Row, into: Environment) -> str:
         return super().left_behind(row, into) or ("struck" if row.completed else "")
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, by: Actor) -> Fact:
-        return self.facts.imported(Fact(environment_id=into.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.made_at(), by)
+    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Fact:
+        return self.facts.imported(Fact(environment_id=into.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.made_at(), actor)

@@ -52,11 +52,11 @@ class Suggesting:
             self.shown(row, suggester, environment_id)
         return row
 
-    def answer(self, suggestion: Suggestion, answer: SuggestionAnswer, by: Actor) -> str:
+    def answer(self, suggestion: Suggestion, answer: SuggestionAnswer, actor: Actor) -> str:
         """The user's answer kept, the card settled in place; an accepted one names where the viewer goes to finish it."""
         if suggestion.is_answered():
             raise Refused(f"suggestion {suggestion.id} was answered already: {suggestion.answer}")
-        answered = self.suggestions.save(suggestion.answered(answer), by)
+        answered = self.suggestions.save(suggestion.answered(answer), actor)
         suggester = self.named(suggestion.key)
         environment_id = self.card_environment(answered)
         with self.scope.of(environment_id):

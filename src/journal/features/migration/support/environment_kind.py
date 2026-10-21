@@ -23,7 +23,7 @@ class EnvironmentKind:
     def __init__(self, environments: Environments, ledger: MigratedRows) -> None:
         self.environments, self.ledger = environments, ledger
 
-    def bring(self, folder: Path, by: Actor) -> Brought:
+    def bring(self, folder: Path, actor: Actor) -> Brought:
         rows = Version3Rows(folder)
         count, skipped = 0, []
         for environment in [e for e in rows.environments() if self.ledger.is_brought(f"project/environment/{e.n}")]:
@@ -37,7 +37,7 @@ class EnvironmentKind:
                 if self.ledger.is_brought(source):
                     continue
                 try:
-                    self.ledger.bring(source, lambda: self.made(row, into, folder / "environments" / environment.title / self.kind / str(row.n), by), by)
+                    self.ledger.bring(source, lambda: self.made(row, into, folder / "environments" / environment.title / self.kind / str(row.n), actor), actor)
                 except Exception as fault:
                     skipped.append(f"{self.kind} {row.n} in {environment.title}: could not be brought: {fault}")
                     continue
@@ -56,6 +56,6 @@ class EnvironmentKind:
         """The message the row refers to, as it came across; none when it refers to none that came."""
         return next((found for ref in row.refs if ref.startswith("message:") and (found := self.ledger.referred(into.name, ref))), None)
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, by: Actor) -> Model:
+    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Model:
         """The row it becomes here; attached is the folder of its files, when it has one."""
         raise NotImplementedError

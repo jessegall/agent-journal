@@ -26,25 +26,25 @@ class PluginSettings:
         path = plugin.manifest.settings
         return [PluginSetting.from_json(setting) for setting in json.loads((self.folders.of(plugin) / path).read_text())] if path else []
 
-    def started(self, plugin: Plugin, by: Actor) -> dict:
+    def started(self, plugin: Plugin, actor: Actor) -> dict:
         """Its settings at their defaults, and a secret asked for each secret setting, proposed for the plugin."""
         settings = {}
         for setting in self.schema(plugin):
             if setting.is_secret:
-                secret = self.secrets.save(Secret(title=f"{plugin.name} {setting.title}", brief=setting.help, kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields(f"{plugin.name} {setting.key}"), proposed=(self.program(plugin),)), by)
+                secret = self.secrets.save(Secret(title=f"{plugin.name} {setting.title}", brief=setting.help, kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields(f"{plugin.name} {setting.key}"), proposed=(self.program(plugin),)), actor)
                 settings[setting.key] = {"secret": secret.id}
             else:
                 settings[setting.key] = setting.default
         return settings
 
-    def configure(self, name: str, key: str, value: str, by: Actor) -> Plugin:
-        if by.kind != ActorKind.USER:
+    def configure(self, name: str, key: str, value: str, actor: Actor) -> Plugin:
+        if actor.kind != ActorKind.USER:
             raise Refused("only the user configures a plugin")
         plugin = self.plugins.named(name)
         setting = next((s for s in self.schema(plugin) if s.key == key), None)
         if setting is None:
             raise Refused(f"{name} has no setting {key}: it has {', '.join(s.key for s in self.schema(plugin)) or 'none'}")
-        return self.plugins.save(plugin.with_(settings={**plugin.settings, key: self.parsed(setting, value)}), by)
+        return self.plugins.save(plugin.with_(settings={**plugin.settings, key: self.parsed(setting, value)}), actor)
 
     @staticmethod
     def parsed(setting: PluginSetting, value: str) -> object:

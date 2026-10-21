@@ -107,78 +107,78 @@ class Repository(Generic[M]):
     def page_in(self, limit: int, before: int | None = None) -> list[M]:
         return self.page(limit, before)
 
-    def save(self, row: M, by: Actor) -> M:
+    def save(self, row: M, actor: Actor) -> M:
         with self.connection.transaction():
-            self.bus.dispatch(Saving(model=row, by=by))
-            saved = self._insert(row, by, self._now()) if row.is_new else self._update(row, by)
-            self.bus.dispatch(Saved(model=saved, by=by))
-            return self.dispatched(saved, by)
+            self.bus.dispatch(Saving(model=row, actor=actor))
+            saved = self._insert(row, actor, self._now()) if row.is_new else self._update(row, actor)
+            self.bus.dispatch(Saved(model=saved, actor=actor))
+            return self.dispatched(saved, actor)
 
-    def imported(self, row: M, at: datetime, by: Actor) -> M:
+    def imported(self, row: M, at: datetime, actor: Actor) -> M:
         with self.connection.transaction():
-            self.bus.dispatch(Saving(model=row, by=by))
-            saved = self._insert(row, by, at)
-            self.bus.dispatch(Saved(model=saved, by=by))
+            self.bus.dispatch(Saving(model=row, actor=actor))
+            saved = self._insert(row, actor, at)
+            self.bus.dispatch(Saved(model=saved, actor=actor))
             return saved
 
-    def touch(self, row: M, by: Actor, **fields) -> M:
+    def touch(self, row: M, actor: Actor, **fields) -> M:
         with self.connection.transaction():
             was = self.find(row.id)
-            stamped = was.with_(**fields, updated_at=self._now(), updated_by=by)
+            stamped = was.with_(**fields, updated_at=self._now(), updated_by=actor)
             names = [*fields, "updated_at", "updated_by"]
             values = tuple(self._column(name).to_sql(getattr(stamped, name)) for name in names)
             self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
             self.written()
-            self.bus.dispatch(Updated(model=stamped, by=by, was=was))
+            self.bus.dispatch(Updated(model=stamped, actor=actor, was=was))
             return stamped
 
-    def rewritten(self, row: M, by: Actor, change: Callable[[M], M]) -> M:
+    def rewritten(self, row: M, actor: Actor, change: Callable[[M], M]) -> M:
         with self.connection.transaction():
             now = self.find(row.id)
             changed = change(now)
             differing = {f.name: getattr(changed, f.name) for f in fields(changed) if f.metadata.get("column", True) and getattr(changed, f.name) != getattr(now, f.name)}
-            return self.dispatched(self.touch(now, by, **differing).with_events(changed.events), by)
+            return self.dispatched(self.touch(now, actor, **differing).with_events(changed.events), actor)
 
-    def touched(self, row: M, by: Actor, fields_of: Callable[[M], dict]) -> M:
+    def touched(self, row: M, actor: Actor, fields_of: Callable[[M], dict]) -> M:
         with self.connection.transaction():
             now = self.find(row.id)
-            return self.touch(now, by, **fields_of(now))
+            return self.touch(now, actor, **fields_of(now))
 
-    def delete(self, row: M, by: Actor) -> None:
+    def delete(self, row: M, actor: Actor) -> None:
         with self.connection.transaction():
-            self.bus.dispatch(Deleting(model=row, by=by))
+            self.bus.dispatch(Deleting(model=row, actor=actor))
             self.connection.execute(f"DELETE FROM {self.table} WHERE id = ?", (row.id,))
             self.written()
-            self.bus.dispatch(Deleted(model=row, by=by))
-            self.dispatched(row, by)
+            self.bus.dispatch(Deleted(model=row, actor=actor))
+            self.dispatched(row, actor)
 
-    def _insert(self, row: M, by: Actor, now: datetime) -> M:
+    def _insert(self, row: M, actor: Actor, now: datetime) -> M:
         Title.check_on(row)
-        stamped = row.with_(created_at=now, created_by=by, updated_at=now, updated_by=by)
-        self.bus.dispatch(Creating(model=stamped, by=by))
+        stamped = row.with_(created_at=now, created_by=actor, updated_at=now, updated_by=actor)
+        self.bus.dispatch(Creating(model=stamped, actor=actor))
         names = [column.name for column in self.columns if column.name != "id"]
         values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         cursor = self.connection.execute(f"INSERT INTO {self.table} ({', '.join(names)}) VALUES ({', '.join('?' for _ in names)})", values)
         created = stamped.with_(id=cursor.lastrowid)
         self.written()
-        self.bus.dispatch(Created(model=created, by=by))
+        self.bus.dispatch(Created(model=created, actor=actor))
         return created
 
-    def _update(self, row: M, by: Actor) -> M:
-        stamped = row.with_(updated_at=self._now(), updated_by=by)
+    def _update(self, row: M, actor: Actor) -> M:
+        stamped = row.with_(updated_at=self._now(), updated_by=actor)
         was = self.find(row.id)
         Title.check_on(row, was)
-        self.bus.dispatch(Updating(model=stamped, by=by))
+        self.bus.dispatch(Updating(model=stamped, actor=actor))
         names = [column.name for column in self.columns if column.name != "id"]
         values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
         self.written()
-        self.bus.dispatch(Updated(model=stamped, by=by, was=was))
+        self.bus.dispatch(Updated(model=stamped, actor=actor, was=was))
         return stamped
 
-    def dispatched(self, row: M, by: Actor) -> M:
+    def dispatched(self, row: M, actor: Actor) -> M:
         for event in row.events:
-            self.bus.dispatch(event.placed_by(getattr(row, "environment_id", 0), row.created_at.timestamp(), row.id, by.stamp) if isinstance(event, RowEvent) else event)
+            self.bus.dispatch(event.placed_by(getattr(row, "environment_id", 0), row.created_at.timestamp(), row.id, actor.stamp) if isinstance(event, RowEvent) else event)
         return row.without_events()
 
     def written(self) -> None:

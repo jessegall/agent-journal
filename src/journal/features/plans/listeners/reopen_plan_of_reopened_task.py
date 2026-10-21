@@ -20,4 +20,4 @@ class ReopenPlanOfReopenedTask(Listener[Updated]):
             return
         for plan in [self.plans.find(ref.id) for ref in self.links.targets(task, IN_PLAN)]:
             if plan.state == PlanState.DONE:
-                self.plans.save(plan.reopened(datetime.now(timezone.utc).timestamp()), event.by)
+                self.plans.save(plan.reopened(datetime.now(timezone.utc).timestamp()), event.actor)

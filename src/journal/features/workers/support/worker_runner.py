@@ -38,9 +38,9 @@ class WorkerRunner:
         self.environments, self.profiles = environments, profiles
         self._running: dict[int, subprocess.Popen] = {}
 
-    def start(self, worker: Worker, by: Actor) -> None:
+    def start(self, worker: Worker, actor: Actor) -> None:
         command = self.providers.named(worker.provider).worker_command(self.instructed(worker), worker.model, worker.resume)
-        threading.Thread(target=self.run_in_scope, args=(worker, command, by), name=f"worker-{worker.id}", daemon=True).start()
+        threading.Thread(target=self.run_in_scope, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
 
     def instructed(self, worker: Worker) -> str:
         """The job as the worker is given it: on its first run, after the instructions of its profile, which a resumed worker remembers."""
@@ -48,12 +48,12 @@ class WorkerRunner:
             return worker.brief
         return f"{self.profiles.read(worker.profile)['body']}\n\n{worker.brief}"
 
-    def run_in_scope(self, worker: Worker, command: list[str], by: Actor) -> None:
+    def run_in_scope(self, worker: Worker, command: list[str], actor: Actor) -> None:
         """The thread starts in no scope: the worker's report is filed in the worker's environment."""
         with self.scope.of(worker.environment_id):
-            self.run(worker, command, by)
+            self.run(worker, command, actor)
 
-    def run(self, worker: Worker, command: list[str], by: Actor) -> None:
+    def run(self, worker: Worker, command: list[str], actor: Actor) -> None:
         environ = {**{k: v for k, v in os.environ.items() if k not in NOT_HANDED}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
         out, err = self.outputs(worker)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -61,9 +61,9 @@ class WorkerRunner:
             with out.open("w") as printed, err.open("w") as faults:
                 process = subprocess.Popen(command, cwd=self.workplace(worker), env=environ, stdin=subprocess.DEVNULL, stdout=printed, stderr=faults, text=True, start_new_session=True)
         except OSError as error:
-            self.reports.file(worker, f"could not start: {error}", by)
+            self.reports.file(worker, f"could not start: {error}", actor)
             return
-        worker = self.workers.save(worker.running_as(process.pid, time.time()), by)
+        worker = self.workers.save(worker.running_as(process.pid, time.time()), actor)
         self._running[worker.id] = process
         try:
             code = process.wait(timeout=self.limit_left(worker))
@@ -72,18 +72,18 @@ class WorkerRunner:
             process.wait()
             code = TIMED_OUT
         self._running.pop(worker.id, None)
-        self.finish(worker, code, by)
+        self.finish(worker, code, actor)
 
-    def watch(self, worker: Worker, by: Actor) -> None:
+    def watch(self, worker: Worker, actor: Actor) -> None:
         while self.alive(worker.pid):
             if self.limit_left(worker) == 0:
                 os.killpg(worker.pid, signal.SIGKILL)
-                self.finish(worker, TIMED_OUT, by)
+                self.finish(worker, TIMED_OUT, actor)
                 return
             time.sleep(WATCH_EVERY)
-        self.finish(worker, ENDED_UNSEEN, by)
+        self.finish(worker, ENDED_UNSEEN, actor)
 
-    def finish(self, worker: Worker, code: int, by: Actor) -> None:
+    def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         out, err = self.outputs(worker)
         provider = self.providers.named(worker.provider)
         printed, resume = provider.worker_outcome(self.read(out), self.read(err))
@@ -91,7 +91,7 @@ class WorkerRunner:
         report = printed[-TAIL:] or "(nothing printed)"
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
         branch = self.branch.summary(worker)
-        self.reports.file(worker.with_(resume=resume or worker.resume), f"{outcome}\n\n{branch}" if branch else outcome, by)
+        self.reports.file(worker.with_(resume=resume or worker.resume), f"{outcome}\n\n{branch}" if branch else outcome, actor)
 
     def limit_left(self, worker: Worker) -> float | None:
         limit = self.minutes() * 60

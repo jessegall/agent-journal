@@ -15,14 +15,14 @@ class Plugins(Repository[Plugin]):
         super().__init__(connection, bus)
         self.live: list[Plugin] | None = None
 
-    def save(self, row: Plugin, by: Actor) -> Plugin:
+    def save(self, row: Plugin, actor: Actor) -> Plugin:
         """The kept rows are dropped after the write, since a listener of the row's events may read them while the write is on."""
-        saved = super().save(row, by)
+        saved = super().save(row, actor)
         self.live = None
         return saved
 
-    def delete(self, row: Plugin, by: Actor) -> None:
-        super().delete(row, by)
+    def delete(self, row: Plugin, actor: Actor) -> None:
+        super().delete(row, actor)
         self.live = None
 
     def named(self, name: str) -> Plugin:

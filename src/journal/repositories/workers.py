@@ -25,12 +25,12 @@ class Workers(ScopedRepository[Worker]):
     def out(self) -> list[Worker]:
         return self.where(state=WorkerState.DISPATCHED)
 
-    def put_on(self, worker: Worker, task: int, by: Actor) -> None:
+    def put_on(self, worker: Worker, task: int, actor: Actor) -> None:
         """The worker recorded as working on the task, which must be there."""
         target = Ref("tasks", task)
         if not self.links.is_row(target):
             raise NotFound("tasks", task)
-        self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKS_ON), by)
+        self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKS_ON), actor)
 
     def holding(self, task_ids: set[int]) -> dict[int, Worker]:
         """By task number, the worker still out on each of these tasks."""

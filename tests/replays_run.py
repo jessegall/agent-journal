@@ -30,7 +30,7 @@ from tests.test_features import AGENT, MAIN, USER, context
 def journal(tmp_path: Path, monkeypatch, request):
     """One fresh journal and the provider whose agent the steps play; it starts and stops with the test."""
     monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app = App(Config(tmp_path / "journal", port=0))
     app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())

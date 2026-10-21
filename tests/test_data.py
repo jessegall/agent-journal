@@ -53,7 +53,7 @@ class SayNo(Listener[Creating]):
 
 def test_a_saved_task_gets_an_id_and_the_actor_stamp(connection, bus, scope):
     tasks = tasks_of(connection, bus, scope)
-    task = tasks.save(Task(environment_id=1, title="write the release notes"), by=USER)
+    task = tasks.save(Task(environment_id=1, title="write the release notes"), actor=USER)
     assert task.id == 1
     assert task.created_by == USER and task.updated_by == USER
     assert task.created_at is not None
@@ -64,12 +64,12 @@ def test_every_model_event_is_heard_in_order_with_its_actor(connection, bus, sco
     heard = Heard()
     bus.listen(ModelEvent, heard)
     tasks = tasks_of(connection, bus, scope)
-    task = tasks.save(Task(environment_id=1, title="t"), by=USER)
-    tasks.save(task.with_(state=TaskState.STARTED), by=AGENT)
-    tasks.delete(task, by=USER)
+    task = tasks.save(Task(environment_id=1, title="t"), actor=USER)
+    tasks.save(task.with_(state=TaskState.STARTED), actor=AGENT)
+    tasks.delete(task, actor=USER)
     kinds = [type(e).__name__ for e in heard.events]
     assert kinds == ["Saving", "Creating", "Created", "Saved", "Saving", "Updating", "Updated", "Saved", "Deleting", "Deleted"]
-    assert heard.events[5].by == AGENT and heard.events[5].model.state == TaskState.STARTED
+    assert heard.events[5].actor == AGENT and heard.events[5].model.state == TaskState.STARTED
     with pytest.raises(NotFound):
         tasks.find(task.id)
 
@@ -78,7 +78,7 @@ def test_a_refusing_listener_stops_the_write(connection, bus, scope):
     bus.listen(Creating, SayNo())
     tasks = tasks_of(connection, bus, scope)
     with pytest.raises(Refused):
-        tasks.save(Task(environment_id=1, title="t"), by=USER)
+        tasks.save(Task(environment_id=1, title="t"), actor=USER)
     with scope.of(1):
         assert tasks.all() == []
 
@@ -86,20 +86,20 @@ def test_a_refusing_listener_stops_the_write(connection, bus, scope):
 def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, scope):
     tasks, links = tasks_of(connection, bus, scope), Links(connection, bus)
     bus.listen(Deleted, UnlinkDeleted(links))
-    a = tasks.save(Task(environment_id=1, title="a"), by=USER)
-    b = tasks.save(Task(environment_id=1, title="b"), by=USER)
-    links.save(Link(source=Ref.to(a), target=Ref.to(b), kind="blocks"), by=AGENT)
+    a = tasks.save(Task(environment_id=1, title="a"), actor=USER)
+    b = tasks.save(Task(environment_id=1, title="b"), actor=USER)
+    links.save(Link(source=Ref.to(a), target=Ref.to(b), kind="blocks"), actor=AGENT)
     assert links.targets(a, "blocks") == [Ref.to(b)]
     assert links.every_source(b) == [Ref.to(a)]
     assert len(links.between(a, b)) == 1
-    tasks.delete(b, by=USER)
+    tasks.delete(b, actor=USER)
     assert links.of(a) == []
 
 
 def test_where_reads_typed_values_back(connection, bus, scope):
     tasks = tasks_of(connection, bus, scope)
-    tasks.save(Task(environment_id=1, title="open"), by=USER)
-    started = tasks.save(Task(environment_id=1, title="started", state=TaskState.STARTED), by=USER)
+    tasks.save(Task(environment_id=1, title="open"), actor=USER)
+    started = tasks.save(Task(environment_id=1, title="started", state=TaskState.STARTED), actor=USER)
     with scope.of(1):
         assert tasks.in_state(TaskState.STARTED) == [started]
     with scope.of(2):
@@ -113,7 +113,7 @@ def test_writes_from_many_threads_all_land(connection, bus, scope):
     tasks = tasks_of(connection, bus, scope)
 
     def write(n):
-        tasks.save(Task(environment_id=1, title=f"t{n}"), by=USER)
+        tasks.save(Task(environment_id=1, title=f"t{n}"), actor=USER)
 
     threads = [threading.Thread(target=write, args=(n,)) for n in range(20)]
     for t in threads:

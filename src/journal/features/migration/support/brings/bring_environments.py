@@ -13,7 +13,7 @@ class BringEnvironments:
     def __init__(self, environments: Environments, ledger: MigratedRows) -> None:
         self.environments, self.ledger = environments, ledger
 
-    def bring(self, folder: Path, by: Actor) -> Brought:
+    def bring(self, folder: Path, actor: Actor) -> Brought:
         rows = Version3Rows(folder)
         count, skipped = 0, []
         for row in rows.environments():
@@ -23,6 +23,6 @@ class BringEnvironments:
                 continue
             if self.ledger.is_brought(source):
                 continue
-            self.ledger.record(source, self.environments.named(row.title), by)
+            self.ledger.record(source, self.environments.named(row.title), actor)
             count += 1
         return Brought("environments", count, tuple(skipped))

@@ -49,10 +49,10 @@ class Updating:
         from journal.features.updates.feature import Updates
         return str(self.settings.option(Updates.REPOSITORY)).strip()
 
-    def follow(self, branch: str, by: Actor) -> None:
+    def follow(self, branch: str, actor: Actor) -> None:
         """Sets the branch the journal follows; empty follows the releases again."""
         from journal.features.updates.feature import Updates
-        self.settings.set(Updates.BRANCH.key, branch.strip(), by)
+        self.settings.set(Updates.BRANCH.key, branch.strip(), actor)
         self.head = ""
 
     def installed_commit(self) -> str:
@@ -123,9 +123,9 @@ class Updating:
         self.mark.clear()
         self.problem = "" if held.to == self.label() else f"The update to {held.to} did not finish: .journal/runtime/update.log says how it went"
 
-    def update_now(self, by: Actor) -> None:
+    def update_now(self, actor: Actor) -> None:
         self.mark.claim(self.label(), self.target().label)
-        if not self.apart(lambda: self.install_newest(by)):
+        if not self.apart(lambda: self.install_newest(actor)):
             raise Refused("an update is under way already")
 
     def apart(self, work: Callable[[], None]) -> bool:
@@ -167,7 +167,7 @@ class Updating:
         except (OSError, ValueError, subprocess.TimeoutExpired) as error:
             self.problem = f"The releases could not be read from {self.repository()}: {error}"
 
-    def install_newest(self, by: Actor) -> None:
+    def install_newest(self, actor: Actor) -> None:
         """Under the update's mark: the release itself, and the journal restarted on it when the install did not. A plugin is upgraded only when the user or the agent says so, never by the journal's own update."""
         target = self.target()
         self.mark.step("Installing the new version")

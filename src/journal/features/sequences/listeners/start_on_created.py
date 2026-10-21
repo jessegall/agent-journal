@@ -15,12 +15,12 @@ class StartOnCreated(Listener[Created]):
 
     def handle(self, event: Created) -> None:
         row = event.model
-        if event.by.kind != ActorKind.AGENT or not isinstance(row, Scoped):
+        if event.actor.kind != ActorKind.AGENT or not isinstance(row, Scoped):
             return
         moment = f"{type(row).__name__.lower()}.created"
         for sequence in self.sequences.all():
             if sequence.starts_on == moment:
-                line = self.running.start(sequence, event.by.id, row.environment_id, about=f"{row.table()}:{row.id}")
-                if line and self.running.typed_to(event.by.id, row.environment_id):
+                line = self.running.start(sequence, event.actor.id, row.environment_id, about=f"{row.table()}:{row.id}")
+                if line and self.running.typed_to(event.actor.id, row.environment_id):
                     self.supervisor.type(row.environment_id, line)
                 return

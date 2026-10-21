@@ -13,14 +13,14 @@ class AgentPause:
     def __init__(self, agents: Agents) -> None:
         self.agents = agents
 
-    def pause(self, agent: Agent, by: Actor) -> Agent:
+    def pause(self, agent: Agent, actor: Actor) -> Agent:
         if agent.state == PausedByUser.name:
             return agent
-        self.agents.save(agent.paused_by_user(datetime.now(timezone.utc).timestamp()), by)
+        self.agents.save(agent.paused_by_user(datetime.now(timezone.utc).timestamp()), actor)
         return self.agents.find(agent.id)
 
-    def resume(self, agent: Agent, by: Actor) -> Agent:
+    def resume(self, agent: Agent, actor: Actor) -> Agent:
         if agent.state != PausedByUser.name:
             raise Refused(f"agent {agent.id} is not paused")
-        self.agents.save(agent.resumed_by_user(datetime.now(timezone.utc).timestamp()), by)
+        self.agents.save(agent.resumed_by_user(datetime.now(timezone.utc).timestamp()), actor)
         return self.agents.find(agent.id)

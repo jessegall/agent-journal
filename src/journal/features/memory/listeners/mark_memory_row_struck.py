@@ -10,4 +10,4 @@ class MarkMemoryRowStruck(Listener[Deleted]):
         self.marks = marks
 
     def handle(self, event: Deleted) -> None:
-        self.marks.show(event.model, event.by, "struck")
+        self.marks.show(event.model, event.actor, "struck")

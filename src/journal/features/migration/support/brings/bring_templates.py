@@ -16,6 +16,6 @@ class BringTemplates(ShippedKind):
         super().__init__(ledger)
         self.templates = templates
 
-    def made(self, row: Version3Row, by: Actor) -> Template:
+    def made(self, row: Version3Row, actor: Actor) -> Template:
         parts = tuple(f"{title}: {body}" for title, body in row.sections)
-        return self.templates.imported(Template(title=row.title, applies_to=tuple(row.listed("applies_to")), purpose=row.data.get("purpose", ""), brief=row.brief, parts=parts), row.made_at(), by)
+        return self.templates.imported(Template(title=row.title, applies_to=tuple(row.listed("applies_to")), purpose=row.data.get("purpose", ""), brief=row.brief, parts=parts), row.made_at(), actor)

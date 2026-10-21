@@ -42,9 +42,9 @@ class PluginRelay:
 
     def heard_by(self, event: Event, environment_id: int) -> list[Plugin]:
         """The enabled plugins that hear it, in the order they were installed; never the plugin that wrote the row, and none past a step of plugin commands, the cut recorded."""
-        hearers = [p for p in self.plugins.enabled() if event.key in p.manifest.hears and getattr(event, "by", None) != Actor.plugin(p.name)]
+        hearers = [p for p in self.plugins.enabled() if event.key in p.manifest.hears and getattr(event, "actor", None) != Actor.plugin(p.name)]
         if hearers and self.steps.too_deep():
-            self.entries.save(Entry(environment_id=environment_id, kind=CUT, actor=Actor.system(), data={"event": event.key, "by": getattr(event, "by", Actor.system()).stamp, "plugins": [p.name for p in hearers]}), Actor.system())
+            self.entries.save(Entry(environment_id=environment_id, kind=CUT, actor=Actor.system(), data={"event": event.key, "by": getattr(event, "actor", Actor.system()).stamp, "plugins": [p.name for p in hearers]}), Actor.system())
             return []
         return hearers
 

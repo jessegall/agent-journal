@@ -15,12 +15,12 @@ class BringSettings:
     def __init__(self, settings: SettingRows, registry: Registry, ledger: MigratedRows) -> None:
         self.settings, self.registry, self.ledger = settings, registry, ledger
 
-    def bring(self, folder: Path, by: Actor) -> Brought:
+    def bring(self, folder: Path, actor: Actor) -> Brought:
         path = folder / "settings.json"
         if not path.is_file():
             return Brought("settings")
         features = json.loads(path.read_text()).get("features", {})
         kept = {name: on for name, on in features.items() if self.registry.has_feature(name) and not self.ledger.is_brought(f"settings/features.{name}")}
         for name, on in kept.items():
-            self.ledger.record(f"settings/features.{name}", self.settings.save(Setting(environment_id=0, key=f"features.{name}", value=bool(on)), by), by)
+            self.ledger.record(f"settings/features.{name}", self.settings.save(Setting(environment_id=0, key=f"features.{name}", value=bool(on)), actor), actor)
         return Brought("settings", len(kept), tuple(f"feature {name}: version 4 has no feature of that name" for name in features if not self.registry.has_feature(name)))

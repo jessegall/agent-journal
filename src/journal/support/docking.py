@@ -38,31 +38,31 @@ class Docking:
     def nouns(self) -> tuple[str, ...]:
         return tuple(self.kinds)
 
-    def dock(self, noun: str, n: int, by: Actor) -> Message:
-        return self.dock_row(self.kinds[noun].find(n), by)
+    def dock(self, noun: str, n: int, actor: Actor) -> Message:
+        return self.dock_row(self.kinds[noun].find(n), actor)
 
-    def undock(self, noun: str, n: int, by: Actor) -> Message:
+    def undock(self, noun: str, n: int, actor: Actor) -> Message:
         row = self.kinds[noun].find(n)
         card = self.card_of(row)
         if card is None or not card.data.get(DOCKED):
             raise Refused(f"{row.heading()} is not docked")
-        return self.release(card, by)
+        return self.release(card, actor)
 
-    def dock_row(self, row: Model, by: Actor) -> Message:
-        return self.pin(self.card_of(row) or self.new_card(row, by), row, by)
+    def dock_row(self, row: Model, actor: Actor) -> Message:
+        return self.pin(self.card_of(row) or self.new_card(row, actor), row, actor)
 
-    def pin(self, message: Message, row: Model, by: Actor) -> Message:
-        return self.saved_with(message, {**RowCard.of(row).as_data(), DOCKED: True}, by)
+    def pin(self, message: Message, row: Model, actor: Actor) -> Message:
+        return self.saved_with(message, {**RowCard.of(row).as_data(), DOCKED: True}, actor)
 
-    def release(self, message: Message, by: Actor) -> Message:
-        return self.saved_with(message, {DOCKED: False}, by)
+    def release(self, message: Message, actor: Actor) -> Message:
+        return self.saved_with(message, {DOCKED: False}, actor)
 
-    def saved_with(self, message: Message, data: dict, by: Actor) -> Message:
-        return self.messages.save(message.with_(data={**message.data, **data}), by)
+    def saved_with(self, message: Message, data: dict, actor: Actor) -> Message:
+        return self.messages.save(message.with_(data={**message.data, **data}), actor)
 
     def card_of(self, row: Model) -> Message | None:
         cards = self.messages.with_key(self.cards.made_key(row))
         return cards[0] if cards else None
 
-    def new_card(self, row: Model, by: Actor) -> Message:
-        return self.cards.keyed(self.scope.id, self.cards.made_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, by, ChatMark.MADE)
+    def new_card(self, row: Model, actor: Actor) -> Message:
+        return self.cards.keyed(self.scope.id, self.cards.made_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, actor, ChatMark.MADE)

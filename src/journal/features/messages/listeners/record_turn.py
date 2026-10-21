@@ -49,7 +49,7 @@ class RecordTurn(AgentListener[TurnWritten]):
             self._record(event)
 
     def _record(self, event: TurnWritten) -> None:
-        by, whole = Actor.agent(event.session), event.text
+        actor, whole = Actor.agent(event.session), event.text
         for tagged, part in self.sections(whole):
             if self.already_recorded(part):
                 continue
@@ -58,11 +58,11 @@ class RecordTurn(AgentListener[TurnWritten]):
             quiet = (Tags.kept_out(part) and not answered) or self.repeats_a_reply(text, tagged, event)
             acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._answers_a_journal_line(event)
             if text and not quiet:
-                reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
+                reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), actor)
                 for n in answered[1:]:
-                    self._also_answers(reply, n, by)
+                    self._also_answers(reply, n, actor)
             for n in answered:
-                self._mark_read(n, by)
+                self._mark_read(n, actor)
         for n in self.stray_owed(whole)[:1]:
             self.supervisor.type(event.environment_id, f"the [!reply:{n}] tag must open a line of your turn; message {n} is still unanswered")
 
@@ -141,15 +141,15 @@ class RecordTurn(AgentListener[TurnWritten]):
         nudge = self.registry.nudge_keyed(said[-1].data["key"]) if said else None
         return bool(nudge and nudge.answered_in_chat)
 
-    def _also_answers(self, reply: Message, n: int, by: Actor) -> None:
+    def _also_answers(self, reply: Message, n: int, actor: Actor) -> None:
         """A reply naming several messages answers each: the first is what it replies to, the rest are linked."""
         try:
-            self.links.save(Link(source=Ref.to(reply), target=Ref.to(self.messages.find(n)), kind=Messages.ANSWERS), by)
+            self.links.save(Link(source=Ref.to(reply), target=Ref.to(self.messages.find(n)), kind=Messages.ANSWERS), actor)
         except NotFound:
             return
 
-    def _mark_read(self, n: int, by: Actor) -> None:
+    def _mark_read(self, n: int, actor: Actor) -> None:
         try:
-            self.messages.mark_read(self.messages.find(n), by, self.agents.for_session(by.id).tool_uses)
+            self.messages.mark_read(self.messages.find(n), actor, self.agents.for_session(actor.id).tool_uses)
         except NotFound:
             return

@@ -26,11 +26,11 @@ class Reactions(ScopedRepository[Reaction]):
     def by_author(self, author: Author) -> int:
         return self.counted_in("author = ?", (author.value,))
 
-    def toggle(self, message: Message, face: str, author: Author, by: Actor) -> Reaction | None:
+    def toggle(self, message: Message, face: str, author: Author, actor: Actor) -> Reaction | None:
         for reaction in self.on(message):
             if reaction.face == face and reaction.author == author:
-                self.delete(reaction, by)
+                self.delete(reaction, actor)
                 return None
-        reaction = self.save(Reaction(environment_id=message.environment_id, face=face, author=author).given_on(message.id), by)
-        self.links.save(Link(source=Ref.to(reaction), target=Ref.to(message), kind=REACTS), by)
+        reaction = self.save(Reaction(environment_id=message.environment_id, face=face, author=author).given_on(message.id), actor)
+        self.links.save(Link(source=Ref.to(reaction), target=Ref.to(message), kind=REACTS), actor)
         return reaction

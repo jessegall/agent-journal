@@ -31,20 +31,20 @@ class Plans(ScopedRepository[Plan]):
         super().__init__(connection, bus, scope)
         self.links, self.tasks, self.phases, self.workers = links, tasks, phases, workers
 
-    def approve(self, plan: Plan, by: Actor) -> Plan:
+    def approve(self, plan: Plan, actor: Actor) -> Plan:
         if plan.state == PlanState.REVIEWING:
             raise Refused(f"plan {plan.id} is in review: it can be approved once its reviewers are back and their findings are in it")
         if plan.state in (PlanState.STARTED, PlanState.DONE, PlanState.CANCELLED):
             return plan
-        return self.save(plan.approved(self._now().timestamp(), by.is_the_user()), by)
+        return self.save(plan.approved(self._now().timestamp(), actor.is_the_user()), actor)
 
-    def cancel(self, plan: Plan, by: Actor) -> list[Task]:
-        self.save(plan.cancelled(datetime.now(timezone.utc).timestamp(), by.is_the_user()), by)
+    def cancel(self, plan: Plan, actor: Actor) -> list[Task]:
+        self.save(plan.cancelled(datetime.now(timezone.utc).timestamp(), actor.is_the_user()), actor)
         cancelled = []
         for task in self.tasks_of(plan):
             if task.is_closed() or self.is_in_another_plan(task, plan):
                 continue
-            cancelled.append(self.tasks.save(task.cancelled(datetime.now(timezone.utc)), by))
+            cancelled.append(self.tasks.save(task.cancelled(datetime.now(timezone.utc)), actor))
         return cancelled
 
     def is_in_another_plan(self, task: Task, plan: Plan) -> bool:
@@ -128,21 +128,21 @@ class Plans(ScopedRepository[Plan]):
     def at_checkpoint(self, plan: Plan) -> PhaseTasks | None:
         return plan.checkpoint_at(self.phased(plan))
 
-    def start(self, plan: Plan, by: Actor) -> Plan:
+    def start(self, plan: Plan, actor: Actor) -> Plan:
         time = datetime.now(timezone.utc)
         tree = self.tree(plan)
         if plan.startable().is_finished(list(tree.tasks)):
-            return self.save(plan.done(time.timestamp()), by)
+            return self.save(plan.done(time.timestamp()), actor)
         task = self.resumable_task(tree)
         if task is None:
-            return self.save(plan.started_without_task(time.timestamp()), by)
+            return self.save(plan.started_without_task(time.timestamp()), actor)
         self.tasks.refuse_second(task.started(time))
-        started = self.save(plan.started(task, time.timestamp()), by)
-        self.tasks.save(task.started_by_plan(time, plan.id), by)
+        started = self.save(plan.started(task, time.timestamp()), actor)
+        self.tasks.save(task.started_by_plan(time, plan.id), actor)
         return started
 
-    def postpone(self, plan: Plan, by: Actor) -> Plan:
+    def postpone(self, plan: Plan, actor: Actor) -> Plan:
         time = datetime.now(timezone.utc)
         for task in [t for t in self.tasks_of(plan) if t.state == TaskState.STARTED]:
-            self.tasks.save(task.parked(f"plan {plan.id} was parked", time), by)
-        return self.save(plan.postponed(time.timestamp(), by.is_the_user()), by)
+            self.tasks.save(task.parked(f"plan {plan.id} was parked", time), actor)
+        return self.save(plan.postponed(time.timestamp(), actor.is_the_user()), actor)

@@ -21,8 +21,8 @@ class Awaitables:
     def output(self, n: int) -> str:
         return self.ref_of(self.outputs.find(n))
 
-    def until(self, command: str, purpose: str, by) -> str:
-        check = self.checks.save(Check(title=f"the wait for {purpose} ends when this passes", command=command, every=UNTIL_EVERY, waited_on=True), by)
+    def until(self, command: str, purpose: str, actor) -> str:
+        check = self.checks.save(Check(title=f"the wait for {purpose} ends when this passes", command=command, every=UNTIL_EVERY, waited_on=True), actor)
         return self.ref_of(check)
 
     @staticmethod

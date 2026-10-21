@@ -49,8 +49,8 @@ class ScopedRepository(Repository[S]):
     def page_in(self, limit: int, before: int | None = None) -> list[S]:
         return self.page(limit, before)
 
-    def _insert(self, row: S, by: Actor, now: datetime) -> S:
-        return super()._insert(self._placed(row), by, now)
+    def _insert(self, row: S, actor: Actor, now: datetime) -> S:
+        return super()._insert(self._placed(row), actor, now)
 
     def _placed(self, row: S) -> S:
         return row if row.environment_id else row.with_(environment_id=self.scope.id)

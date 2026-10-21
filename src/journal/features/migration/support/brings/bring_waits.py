@@ -26,10 +26,10 @@ class BringWaits(EnvironmentKind):
         self.tasks, self.links = tasks, links
         self.dropped: list[str] = []
 
-    def bring(self, folder: Path, by: Actor) -> Brought:
+    def bring(self, folder: Path, actor: Actor) -> Brought:
         """The waits brought, and each one dropped for closing a loop named beside what stayed behind."""
         self.dropped = []
-        brought = super().bring(folder, by)
+        brought = super().bring(folder, actor)
         return Brought(brought.kind, brought.count, (*brought.skipped, *self.dropped))
 
     def source(self, environment: str, row: Version3Row) -> str:
@@ -40,11 +40,11 @@ class BringWaits(EnvironmentKind):
             return "waits on nothing"
         return "" if self.ledger.referred(into.name, f"todo:{row.n}") else "its to-do did not come across"
 
-    def made(self, row: Version3Row, into: Environment, attached: Path, by: Actor) -> Task:
+    def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
         task = self.tasks.find(self.ledger.referred(into.name, f"todo:{row.n}").id)
         for before in [found for n in row.listed("after") if (found := self.ledger.referred(into.name, f"todo:{n}"))]:
             try:
-                self.links.save(Link(source=Ref.to(task), target=before, kind=WAITS_ON), by)
+                self.links.save(Link(source=Ref.to(task), target=before, kind=WAITS_ON), actor)
             except Refused as loop:
                 self.dropped.append(f"task {task.id}: {loop}")
         return task

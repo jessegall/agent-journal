@@ -10,4 +10,4 @@ class MarkMemoryRowMade(Listener[Created]):
         self.marks = marks
 
     def handle(self, event: Created) -> None:
-        self.marks.show(event.model, event.by, "recorded")
+        self.marks.show(event.model, event.actor, "recorded")

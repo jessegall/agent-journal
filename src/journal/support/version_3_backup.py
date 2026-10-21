@@ -23,5 +23,5 @@ class Version3Backup:
         """Kept, and the user has not yet brought it across."""
         return self.is_kept() and self.migrations.current().state.is_open()
 
-    def put_off(self, by: Actor) -> Version3Migration:
-        return self.migrations.save(self.migrations.current().put_off(), by)
+    def put_off(self, actor: Actor) -> Version3Migration:
+        return self.migrations.save(self.migrations.current().put_off(), actor)

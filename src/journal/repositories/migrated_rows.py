@@ -23,10 +23,10 @@ class MigratedRows(Repository[MigratedRow]):
         kind, _, n = ref.partition(":")
         return self.brought_as(f"environments/{environment}/{kind}/{n}") or self.brought_as(f"project/{kind}/{n}")
 
-    def bring(self, source: str, made: Callable[[], Model], by: Actor) -> None:
+    def bring(self, source: str, made: Callable[[], Model], actor: Actor) -> None:
         """The row made and recorded in one transaction: one that fails to come across leaves nothing half written behind."""
         with self.connection.transaction():
-            self.record(source, made(), by)
+            self.record(source, made(), actor)
 
-    def record(self, source: str, row: Model, by: Actor) -> None:
-        self.save(MigratedRow(source=source, target=str(Ref.to(row))), by)
+    def record(self, source: str, row: Model, actor: Actor) -> None:
+        self.save(MigratedRow(source=source, target=str(Ref.to(row))), actor)

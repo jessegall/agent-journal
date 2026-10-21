@@ -20,9 +20,9 @@ class Environments(Repository[Environment]):
             raise NotFound("environment", name)
         return found[0]
 
-    def wipe(self, environment: Environment, by: Actor) -> None:
+    def wipe(self, environment: Environment, actor: Actor) -> None:
         """Deletes the environment and every row recorded in it, in one transaction and without a model event per row; the environment's own deletion is heard."""
         with self.connection.transaction():
             for model in AllModels.SCOPED:
                 self.connection.execute(f"DELETE FROM {model.table()} WHERE environment_id = ?", (environment.id,))
-            self.delete(environment, by)
+            self.delete(environment, actor)

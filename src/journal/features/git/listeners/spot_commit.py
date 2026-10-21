@@ -46,11 +46,11 @@ class SpotCommit(AgentListener[ToolFinished]):
             return None
         folder = self.folder(event)
         head = self.head(folder)
-        by = Actor.agent(event.session)
-        if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", by):
+        actor = Actor.agent(event.session)
+        if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", actor):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
-        self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject}, by, ChatMark.COMMITS)
+        self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject}, actor, ChatMark.COMMITS)
         closed = self.close_named(event, head.sha, head.body) if folder == self.config.root and time.time() - head.committed <= JUST_MADE else []
         return self.commit(event, head.sha, closed)
 

@@ -22,21 +22,21 @@ class McpInstalling:
         self.servers, self.config_files, self.keys, self.health = servers, config_files, keys, health
         self.agents, self.providers, self.supervisor, self.turn, self.pending, self.nudger = agents, providers, supervisor, turn, pending, nudger
 
-    def add(self, server: McpServer, by: Actor) -> McpServer:
-        saved = self.servers.save(server, by)
+    def add(self, server: McpServer, actor: Actor) -> McpServer:
+        saved = self.servers.save(server, actor)
         self.applied()
         self.health.recheck()
         return saved
 
-    def keyed(self, server: McpServer, value: str, by: Actor) -> McpServer:
+    def keyed(self, server: McpServer, value: str, actor: Actor) -> McpServer:
         """The key kept outside the project; nothing restarts, since a running agent keeps the environment it was launched with: the key applies from its next launch."""
         if not value.strip():
             raise Refused(f"the key for {server.title} is blank")
         self.keys.set(server.key_var, value.strip())
-        return self.servers.save(server.unchecked("installed"), by)
+        return self.servers.save(server.unchecked("installed"), actor)
 
-    def remove(self, server: McpServer, by: Actor) -> None:
-        self.servers.delete(server, by)
+    def remove(self, server: McpServer, actor: Actor) -> None:
+        self.servers.delete(server, actor)
         if server.key_var:
             self.keys.forget(server.key_var)
         self.applied()
@@ -53,9 +53,9 @@ class McpInstalling:
         """How a server the program has not reported on stands: waiting for its key, or installed."""
         return "needs_key" if server.needs_key and not self.keys.has(server.key_var) else "installed"
 
-    def checked(self, by: Actor) -> list[McpServer]:
+    def checked(self, actor: Actor) -> list[McpServer]:
         report = self.health.fresh()
-        return [self.servers.save(self.checked_one(server, report), by) for server in self.servers.all()]
+        return [self.servers.save(self.checked_one(server, report), actor) for server in self.servers.all()]
 
     def checked_one(self, server: McpServer, report: HealthReport) -> McpServer:
         """How the server stands by the program's check: failed with the check itself, as the program saw it, or, unseen, by whether its key is there."""

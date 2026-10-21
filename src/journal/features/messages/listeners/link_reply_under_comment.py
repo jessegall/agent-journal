@@ -27,4 +27,4 @@ class LinkReplyUnderComment(Listener[Created]):
         already = self.links.targets(reply, Messages.COMMENTS_ON)
         for row in self.links.targets(answered, Messages.COMMENTS_ON):
             if row not in already:
-                self.links.save(Link(source=Ref.to(reply), target=row, kind=Messages.COMMENTS_ON), event.by)
+                self.links.save(Link(source=Ref.to(reply), target=row, kind=Messages.COMMENTS_ON), event.actor)

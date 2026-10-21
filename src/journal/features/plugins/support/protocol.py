@@ -32,7 +32,7 @@ class Protocol:
     @staticmethod
     def data_of(event: Event) -> dict:
         if isinstance(event, ModelEvent):
-            row = {"table": event.model.table(), "id": event.model.id, "by": event.by.stamp}
+            row = {"table": event.model.table(), "id": event.model.id, "by": event.actor.stamp}
             return row | {"changed": list(event.changed())} if isinstance(event, Updated) else row
         data = {}
         for name, value in ((f.name, getattr(event, f.name)) for f in fields(event) if f.name not in PLACED):

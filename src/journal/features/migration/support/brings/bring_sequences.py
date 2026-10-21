@@ -16,6 +16,6 @@ class BringSequences(ShippedKind):
         super().__init__(ledger)
         self.sequences = sequences
 
-    def made(self, row: Version3Row, by: Actor) -> Sequence:
+    def made(self, row: Version3Row, actor: Actor) -> Sequence:
         steps = tuple(f"{title}: {body}" if body else title for title, body in row.sections)
-        return self.sequences.imported(Sequence(title=row.title, steps=steps, starts_on=row.data.get("starts_on", "")), row.made_at(), by)
+        return self.sequences.imported(Sequence(title=row.title, steps=steps, starts_on=row.data.get("starts_on", "")), row.made_at(), actor)

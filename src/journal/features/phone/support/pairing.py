@@ -30,9 +30,9 @@ class Pairing:
     def __init__(self, phones: Phones, codes: PairingCodes, tunnel: Tunnel, cards: Cards) -> None:
         self.phones, self.codes, self.tunnel, self.cards = phones, codes, tunnel, cards
 
-    def offer(self, days: int, by: Actor, now: datetime) -> PairingOffer:
+    def offer(self, days: int, actor: Actor, now: datetime) -> PairingOffer:
         """A code for one phone, made only by the user, through the tunnel's address."""
-        if by.kind != ActorKind.USER:
+        if actor.kind != ActorKind.USER:
             raise Refused("only the user pairs a phone, from the viewer's Connect your phone dialog")
         if days not in DAYS:
             raise Refused(f"a phone stays paired for {', '.join(map(str, DAYS))} days, not {days}")
@@ -41,9 +41,9 @@ class Pairing:
             raise Refused("a phone pairs through the tunnel's address, and this journal has none yet: log tunler in under Settings, Share links, then try again")
         self.refuse_a_second(now)
         for older in self.codes.open(now):
-            self.codes.save(older.closed(now), by)
+            self.codes.save(older.closed(now), actor)
         code, short = secrets.token_urlsafe(24), "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
-        pairing = self.codes.save(PairingCode(code=self.hashed(code), short=self.hashed(short), days=days, until=now + timedelta(minutes=CODE_MINUTES)), by)
+        pairing = self.codes.save(PairingCode(code=self.hashed(code), short=self.hashed(short), days=days, until=now + timedelta(minutes=CODE_MINUTES)), actor)
         self.tunnel.settle()
         return PairingOffer(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, until=pairing.until)
 
@@ -63,11 +63,11 @@ class Pairing:
         self.tunnel.settle()
         return PairedPhone(phone, key)
 
-    def disconnect(self, phone: Phone, by: Actor, now: datetime) -> Phone:
+    def disconnect(self, phone: Phone, actor: Actor, now: datetime) -> Phone:
         """The phone stops being paired at once, from the desk; only the user disconnects it."""
-        if not by.is_the_user():
+        if not actor.is_the_user():
             raise Refused("only the user disconnects a phone")
-        ended = self.phones.save(phone.ended(now), by)
+        ended = self.phones.save(phone.ended(now), actor)
         self.tunnel.settle()
         return ended
 

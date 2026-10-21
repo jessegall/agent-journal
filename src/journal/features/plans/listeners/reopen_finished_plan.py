@@ -19,4 +19,4 @@ class ReopenFinishedPlan(Listener[Created]):
             return
         plan = self.plans.find(link.target.id)
         if plan.state == PlanState.DONE and not self.plans.finished(plan):
-            self.plans.save(plan.reopened(datetime.now(timezone.utc).timestamp()), event.by)
+            self.plans.save(plan.reopened(datetime.now(timezone.utc).timestamp()), event.actor)

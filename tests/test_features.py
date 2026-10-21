@@ -54,7 +54,7 @@ def viewer(app, path: str, body: dict | None = None) -> dict:
 def app(journal_root: Path, monkeypatch):
     """A fresh journal on a free port; no worker process starts, since a dispatched worker would run its provider headless and file what it printed, or that it could not start, beside the test's own report."""
     monkeypatch.setattr(Config, "status_home", property(lambda self: journal_root / "status"))
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app = App(Config(journal_root, port=0))
     app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
@@ -533,7 +533,7 @@ def test_a_worker_runs_the_dispatching_agents_own_program(app, monkeypatch):
     from journal.models.agent import Agent
     from journal.repositories.agents import Agents
     from journal.repositories.workers import Workers
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
     console = app.console()
     console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Where("main", "c1"))
@@ -548,7 +548,7 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
     from journal.providers.codex import Codex
     from journal.repositories.workers import Workers
     started = []
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: started.append(worker))
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker))
     conversation = app.config.root / "conversation.jsonl"
     conversation.write_text("{}\n")
     monkeypatch.setattr(Claude, "transcript", lambda self, project, session: conversation)
@@ -3111,7 +3111,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     from journal.providers.claude import Claude
     tool = json.loads(protocol.line_of(ToolStarting(call=Claude().call("Bash", {"command": "ls"})).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
     assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool_use": 0, "tool": "Bash", "input": {"command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": [], "reads_output": False, "read_shape": "ls"}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": "", "work": "searching"}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
-    row = json.loads(protocol.line_of(Created(model=Task(id=7, environment_id=1, title="t"), by=Actor.plugin("echo")), "main"))
+    row = json.loads(protocol.line_of(Created(model=Task(id=7, environment_id=1, title="t"), actor=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.answer_of("").answer == "allow", "an empty answer lets the event through"
     answer = protocol.answer_of(json.dumps({"v": 1, "answer": "refuse", "reason": "not on main", "cards": [{"kind": "sin", "label": "a sin"}], "commands": ["journal task list"]}))
@@ -4611,7 +4611,7 @@ class Plugins:
     def __init__(self) -> None:
         self.upgraded = []
 
-    def upgrade(self, name: str, ref: str, environment: str, by: Actor) -> None:
+    def upgrade(self, name: str, ref: str, environment: str, actor: Actor) -> None:
         self.upgraded.append((name, ref))
 
 

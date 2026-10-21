@@ -68,14 +68,14 @@ class Messages(ScopedRepository[Message]):
     def from_visitors(self, share_id: int) -> list[Message]:
         return self.selected("json_extract(data, '$.share') = ? ORDER BY id", (share_id,))
 
-    def keyed(self, key: str, by: Actor) -> list[Message]:
-        return self.selected("json_extract(data, '$.key') = ? AND created_by = ?", (key, by.stamp))
+    def keyed(self, key: str, actor: Actor) -> list[Message]:
+        return self.selected("json_extract(data, '$.key') = ? AND created_by = ?", (key, actor.stamp))
 
     def with_key(self, key: str) -> list[Message]:
         return self.selected("json_extract(data, '$.key') = ?", (key,))
 
-    def keyed_anywhere(self, key: str, by: Actor) -> list[Message]:
-        return self.selected_everywhere("json_extract(data, '$.key') = ? AND created_by = ?", (key, by.stamp))
+    def keyed_anywhere(self, key: str, actor: Actor) -> list[Message]:
+        return self.selected_everywhere("json_extract(data, '$.key') = ? AND created_by = ?", (key, actor.stamp))
 
     def first_reply(self, message: Message) -> Message | None:
         named = self.selected("reply_to = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
@@ -96,5 +96,5 @@ class Messages(ScopedRepository[Message]):
         rows = self.selected("created_by = ? AND json_extract(data, '$.kind') = ? ORDER BY id DESC LIMIT ?", (Actor.agent(session).stamp, Message.THOUGHT, last))
         return list(reversed(rows))
 
-    def mark_read(self, message: Message, by: Actor, tool_use: int) -> Message:
-        return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc), read_mark=tool_use), by)
+    def mark_read(self, message: Message, actor: Actor, tool_use: int) -> Message:
+        return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc), read_mark=tool_use), actor)

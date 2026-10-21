@@ -10,7 +10,7 @@ class ModelEvent(Event):
     """An event about one row and who is changing it; the repository fires one at each step of a write."""
 
     model: Model
-    by: Actor
+    actor: Actor
 
     @property
     def key(self) -> str:

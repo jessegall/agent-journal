@@ -19,10 +19,10 @@ class MemoryCards:
     def __init__(self, cards: Cards, scope: Scope) -> None:
         self.cards, self.scope = cards, scope
 
-    def show(self, row: Model, by: Actor, verb: str) -> None:
+    def show(self, row: Model, actor: Actor, verb: str) -> None:
         if type(row) not in MARKED:
             return
         noun, shows = MARKED[type(row)]
         environment = getattr(row, "environment_id", 0) or self.scope.id
-        session = by.id if by.kind == ActorKind.AGENT else ""
-        self.cards.show(environment, session, f"{noun} {verb}", "rules", "", row.text, str(Ref.to(row)), by=by, shows=shows)
+        session = actor.id if actor.kind == ActorKind.AGENT else ""
+        self.cards.show(environment, session, f"{noun} {verb}", "rules", "", row.text, str(Ref.to(row)), actor=actor, shows=shows)

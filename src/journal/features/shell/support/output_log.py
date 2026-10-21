@@ -13,11 +13,11 @@ class OutputLog:
     def __init__(self, outputs: CommandOutputs, settings: SettingRows) -> None:
         self.outputs, self.settings = outputs, settings
 
-    def began(self, chain: str, command: str, folder: Path, session: str, by: Actor) -> CommandOutput:
+    def began(self, chain: str, command: str, folder: Path, session: str, actor: Actor) -> CommandOutput:
         from journal.features.shell.feature import Shell
-        output = self.outputs.save(CommandOutput(chain=chain, command=command, session=session, folder=str(folder)), by)
+        output = self.outputs.save(CommandOutput(chain=chain, command=command, session=session, folder=str(folder)), actor)
         for old in self.outputs.beyond(int(self.settings.option(Shell.KEPT))):
             if Path(old.folder).is_dir():
                 shutil.rmtree(old.folder)
-            self.outputs.delete(old, by)
+            self.outputs.delete(old, actor)
         return output

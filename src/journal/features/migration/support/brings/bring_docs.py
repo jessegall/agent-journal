@@ -20,5 +20,5 @@ class BringDocs(ProjectKind):
     def rows(self, rows: Version3Rows) -> list[Version3Row]:
         return rows.docs()
 
-    def made(self, row: Version3Row, by: Actor) -> Doc:
-        return self.docs.imported(Doc(title=row.title, abstract=row.abstract, body=row.markdown()), row.made_at(), by)
+    def made(self, row: Version3Row, actor: Actor) -> Doc:
+        return self.docs.imported(Doc(title=row.title, abstract=row.abstract, body=row.markdown()), row.made_at(), actor)

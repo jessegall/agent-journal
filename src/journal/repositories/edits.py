@@ -15,11 +15,11 @@ class Edits(ScopedRepository[Edit]):
     def __init__(self, connection: Connection, bus: Bus, scope: Scope) -> None:
         super().__init__(connection, bus, scope)
 
-    def record(self, edit: Edit, by: Actor) -> Edit:
+    def record(self, edit: Edit, actor: Actor) -> Edit:
         """An edit kept, and the oldest beyond the last five hundred let go."""
-        kept = self.save(edit, by)
+        kept = self.save(edit, actor)
         for old in self.selected("1 ORDER BY id DESC LIMIT -1 OFFSET ?", (KEEP,)):
-            self.delete(old, by)
+            self.delete(old, actor)
         return kept
 
     def of_agent(self, session: str, since: float, last: int) -> list[Edit]:

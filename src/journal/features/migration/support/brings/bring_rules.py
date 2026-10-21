@@ -19,5 +19,5 @@ class BringRules(ProjectKind):
     def left_behind(self, row: Version3Row) -> str:
         return super().left_behind(row) or ("struck" if row.completed else "")
 
-    def made(self, row: Version3Row, by: Actor) -> Rule:
-        return self.rules.imported(Rule(text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.made_at(), by)
+    def made(self, row: Version3Row, actor: Actor) -> Rule:
+        return self.rules.imported(Rule(text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.made_at(), actor)

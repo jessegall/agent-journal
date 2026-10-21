@@ -25,12 +25,12 @@ class LoginWindow:
     def __init__(self, logins: BrowserLogins, secrets: Secrets, servers: McpServers, installing: McpInstalling, messages: Messages, scope: Scope) -> None:
         self.logins, self.secrets, self.servers, self.installing, self.messages, self.scope = logins, secrets, servers, installing, messages, scope
 
-    def open(self, secret: Secret, environment_id: int, by: Actor) -> Secret:
+    def open(self, secret: Secret, environment_id: int, actor: Actor) -> Secret:
         if not secret.url:
             raise Refused(f"secret {secret.id}, {secret.title}, has no site address to log in to")
         if secret.logging_in_at:
             return secret
-        opening = self.secrets.save(secret.with_(logging_in_at=datetime.now(timezone.utc)), by)
+        opening = self.secrets.save(secret.with_(logging_in_at=datetime.now(timezone.utc)), actor)
         threading.Thread(target=self.taken, args=(opening, environment_id), daemon=True).start()
         return opening
 
@@ -45,10 +45,10 @@ class LoginWindow:
         self.secrets.save(self.secrets.find(secret.id).with_(logging_in_at=None, session_at=datetime.now(timezone.utc), session_expires=self.logins.expires(saved, secret.url)), Actor.system())
         self.given()
 
-    def forgotten(self, secret: Secret, by: Actor) -> Secret:
+    def forgotten(self, secret: Secret, actor: Actor) -> Secret:
         """A login taken back: its saved session deleted, the agent's browser given what remains, and the agents restarted without it."""
         self.logins.forget(secret.title)
-        cleared = self.secrets.save(secret.with_(session_at=None, session_expires=None), by)
+        cleared = self.secrets.save(secret.with_(session_at=None, session_expires=None), actor)
         self.given()
         return cleared
 

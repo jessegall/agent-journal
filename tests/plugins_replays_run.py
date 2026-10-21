@@ -25,7 +25,7 @@ ECHO = Path(__file__).parent / "plugins" / "echo"
 def journals(tmp_path: Path, monkeypatch):
     """Two fresh journals with the echo plugin installed, one for the record and one run anew."""
     monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     apps = []
     for name in ("recorded", "anew"):
         app = App(Config(tmp_path / name, port=0))
