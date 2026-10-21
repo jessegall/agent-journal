@@ -8,7 +8,6 @@ from journal.models.node_kind import NodeKind
 from journal.support.option import Option
 from journal.features.shell.commands.output_command import OutputCommand
 from journal.features.shell.commands.reader_command import ReaderCommand
-from journal.features.shell.commands.shell_command import ShellCommand
 from journal.support.skill import Skill
 
 
@@ -16,7 +15,7 @@ class Shell(Feature):
     name = "shell"
     title = "Shell commands"
     help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."
-    commands = (ShellCommand, OutputCommand, ReaderCommand)
+    commands = (OutputCommand, ReaderCommand)
     FOREGROUND = Option("shell.foreground", "Run a command in the foreground for", "Seconds a part of a command may run before the rest of the chain moves to the background", 30, unit="seconds")
     WHILE_WAITING = Option("shell.foreground_while_waiting", "In the foreground while a message waits", "The same limit while the user has an unread or unanswered message, so they are not kept waiting", 10, unit="seconds")
     SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")

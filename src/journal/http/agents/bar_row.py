@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.features.shell.commands.shell_command import RAN, RUNNING
+from journal.features.shell.support.shell_record import RAN, RUNNING
 from journal.models.entry import Entry
 
 LINGERS = 10.0

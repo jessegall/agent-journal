@@ -53,6 +53,8 @@ class Handler(PooledHandler):
         raw = self.rfile.read(length) if length else b""
         headers = {name.lower(): value for name, value in self.headers.items()}
         query = {k: v[-1] for k, v in parse_qs(url.query).items()}
+        if headers.get("content-type", "") == "application/octet-stream":
+            return Request(self.command, url.path, query, {"raw": raw}, {}, headers, self.identity.of(headers))
         if headers.get("content-type", "").startswith("multipart/form-data"):
             form = Multipart(headers["content-type"], raw)
             return Request(self.command, url.path, query, form.fields(), {}, headers, self.identity.of(headers), form.files())

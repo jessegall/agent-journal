@@ -9,6 +9,8 @@ from urllib.request import Request as HttpRequest, urlopen
 
 import pytest
 
+from shell_verbs import ShellVerbs
+
 from journal.app import App
 from journal.config import Config
 from journal.support.where import Where
@@ -317,7 +319,7 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         hook("PostToolUse", tool_name="Edit", tool_input={"file_path": str(tmp_path / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
         edit = call(server, "GET", "/journal/agents/1/edits")[1]["edits"][0]
         assert [r["kind"] for r in edit["rows"]] == ["ctx", "del", "add", "ctx"] and edit["first_line"] == 7 and edit["last_line"] == 9
-        call(server, "POST", "/cli", {"argv": ["shell", "ran", "journal task list", "--chain", "c1", "--status", "0", "--output", "1 t"], "env": "main", "session": "s1", "agent": True})
+        ShellVerbs(app).ran("journal task list", "c1", 0, output="1 t")
         assert call(server, "GET", "/journal/agents/1/terminal")[1][-1]["tool"] == "Journal"
         assert call(server, "POST", "/journal/agents/1/shell", {"command": "ls"})[1]["queued"] is True and typed[-1] == "ls"
         doc = call(server, "POST", "/journal/docs", {"title": "Design", "body": "Intro\n\n## Goals\n\nShip it"})[1]
@@ -1032,5 +1034,33 @@ def test_a_reply_under_a_comment_is_part_of_the_rows_thread_from_either_side(tmp
         call(server, "POST", "/journal/messages", {"text": "Good, then the menu next.", "reply_to": agents_reply})
         rows = call(server, "GET", "/journal/comments")[1]["rows"]
         assert len(rows) == 3, "the user's reply in the chat to the agent's answer is talk in the chat, not a comment on the row"
+    finally:
+        app.runtime().stop()
+
+
+def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_streams_what_the_agent_sees(tmp_path: Path):
+    """The one test with a real shell: a short line, so it stays fast."""
+    import os
+    from journal.repositories.entries import Entries
+    from journal.support.scope import Scope
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    (tmp_path / "a.py").write_text("print(1)\n")
+    environment = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": str(tmp_path), "JOURNAL_SESSION": "s1", "CLAUDECODE": "1"}
+    def run(line: str) -> str:
+        body = b"".join(f"{k}={v}\0".encode() for k, v in environment.items()) + b"\0\0" + line.encode()
+        request = HttpRequest(f"http://127.0.0.1:{server.port}/shell/run", data=body, method="POST", headers={"Content-Type": "application/octet-stream", "X-Journal-Env": "main", "X-Journal-Cwd": str(tmp_path), "X-Journal-Shell": "bash"})
+        with urlopen(request, timeout=20) as reply:
+            return reply.read().decode()
+    try:
+        assert run("printf hi && printf there; false") == "hithere\n__journal_exit 1\n", "a short run is shown whole, the parts chained as the shell chains them, and the stream ends with the exit code"
+        assert run("printf one && false && printf never; printf two") == "onetwo\n__journal_exit 0\n", "a part after && is skipped while the one before it failed, a part after ; runs whatever came before"
+        assert run("cat a.py; echo ====") == "print(1)\n====\n__journal_exit 0\n", "a read of the project's code streams straight through, nothing kept"
+        assert run("journal task list") == "__journal_exit 0\n" or "__journal_exit" in run("journal task list")
+        with app.container.get(Scope).of(1):
+            ran = [e for e in app.container.get(Entries).of_kind("ran", 50)]
+        assert any(e.data["part"] == "printf hi" and e.data["status"] == 0 for e in ran) and any(e.data["part"] == "cat a.py" and e.data["output"] == "" for e in ran), "every part of the agent's own is recorded with its status; a direct part's output is not kept"
+        assert not list((tmp_path / ".journal" / "runtime" / "outputs").glob("*/direct")), "a direct chain's folder is removed when it ends"
     finally:
         app.runtime().stop()

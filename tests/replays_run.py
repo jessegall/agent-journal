@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+from shell_verbs import ShellVerbs
+
 from journal.app import App
 from journal.config import Config
 from journal.support.where import Where
@@ -766,14 +768,14 @@ def background_every_five_minutes(app, replay: Replay, provider: str) -> None:
     console.run(["environment", "here"], AGENT)
     folder = app.config.root / "c7"
     folder.mkdir()
-    console.run(["shell", "split", "pytest -q", "--into", str(folder)], AGENT)
-    console.run(["shell", "moved", "c7", "pytest -q", "--file", str(folder / "out")], AGENT)
+    ShellVerbs(app).split("pytest -q", str(folder))
+    ShellVerbs(app).moved("c7", "pytest -q", str(folder / "out"))
     replay.step("a command in the background")
     for name, quiet in (("four minutes", 240.0), ("five minutes and some", 310.0), ("ten minutes and some", 610.0)):
         tick(app, quiet)
         app.runtime().deferred.drain()
         replay.step(name)
-    console.run(["shell", "ended", "c7", "--status", "0", "--file", str(folder / "out")], AGENT)
+    ShellVerbs(app).ended("c7", 0, str(folder / "out"))
     replay.step("it ended")
     tick(app, 910.0)
     app.runtime().deferred.drain()

@@ -2,7 +2,7 @@ from journal.engine.support.trail import Trail
 from journal.engine.states.paused import Paused
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
-from journal.features.shell.commands.shell_command import RAN, RUNNING
+from journal.features.shell.support.shell_record import RAN, RUNNING
 from journal.features.tasks.states.working import Working
 from journal.support.chain import Chain
 from journal.support.context_file import ContextFile

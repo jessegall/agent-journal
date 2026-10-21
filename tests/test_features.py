@@ -11,6 +11,8 @@ from urllib.request import Request as HttpRequest, urlopen
 
 import pytest
 
+from shell_verbs import ShellVerbs
+
 from journal.support.tool_call import ToolCall
 
 from journal.app import App
@@ -1523,7 +1525,7 @@ def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_p
     edits = app.container.get(Edits)
     kept = edits.of_agent("s1", 0, 50)
     assert [e.path for e in kept] == ["a.py"] and kept[0].added == 1 and kept[0].removed == 1 and kept[0].first_line == 7 and [r["kind"] for r in kept[0].rows] == ["ctx", "del", "add", "ctx"]
-    app.console().run(["shell", "ran", "sed -i s/x/y/ b.py", "--chain", "c1", "--status", "0", "--output", "", "--changed", "3\t1\tb.py"], AGENT)
+    ShellVerbs(app).ran("sed -i s/x/y/ b.py", "c1", 0, output="", changed="3\t1\tb.py")
     kept = edits.of_agent("s1", 0, 50)
     assert [e.path for e in kept] == ["a.py", "b.py"] and kept[1].added == 3 and kept[1].removed == 1 and kept[1].command and kept[1].rows == ()
     for i in range(KEEP):
@@ -1681,9 +1683,9 @@ def test_a_command_that_reads_the_projects_code_runs_as_written_and_answers_at_o
     for i, line in enumerate(kept[:4]):
         folder = app.config.root / f"code{i}"
         folder.mkdir()
-        console.run(["shell", "split", line, "--into", str(folder)], AGENT)
+        ShellVerbs(app).split(line, str(folder))
         assert (folder / "0.part").read_text() == line and not (folder / "dropped").exists(), f"run whole, nothing dropped: {line}"
-        assert console.run(["shell", "cap", "--line", line], AGENT).out.strip() == "direct 0", f"it runs in the shell as written, nothing captured: {line}"
+        assert ShellVerbs(app).cap(line) == "direct 0", f"it runs in the shell as written, nothing captured: {line}"
 
 
 def test_reading_a_message_names_its_files_links_and_captions(app):
@@ -1751,15 +1753,15 @@ def test_a_chain_is_taken_apart_and_the_shells_wrapping_around_it_is_silent():
 
 def test_the_foreground_limit_is_thirty_seconds_or_ten_while_a_message_waits(app):
     console = app.console()
-    assert console.run(["shell", "limit"], AGENT).out.strip() == "30"
+    assert ShellVerbs(app).limit() == "30"
     wrapped = "source /s 2>/dev/null || true && eval 'journal task list && journal message unread' < /dev/null && pwd -P >| /tmp/cwd"
-    assert console.run(["shell", "limit", "--line", wrapped], AGENT).out.strip() == "0", "a line of journal commands alone is never moved to the background"
-    assert console.run(["shell", "limit", "--line", wrapped.replace("journal message unread", "sleep 60")], AGENT).out.strip() == "30"
+    assert ShellVerbs(app).limit(wrapped) == "0", "a line of journal commands alone is never moved to the background"
+    assert ShellVerbs(app).limit(wrapped.replace("journal message unread", "sleep 60")) == "30"
     console.run(["message", "send", "are you there?"], USER)
-    assert console.run(["shell", "limit"], AGENT).out.strip() == "10"
+    assert ShellVerbs(app).limit() == "10"
     console.run(["message", "read", "1"], AGENT)
     app.container.get(SettingRows).save(Setting(environment_id=0, key="shell.foreground", value=5), Actor.system())
-    assert console.run(["shell", "limit"], AGENT).out.strip() == "5"
+    assert ShellVerbs(app).limit() == "5"
 
 
 def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app, monkeypatch):
@@ -1771,18 +1773,18 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     console, port = app.console(), app.server().port
     folder = app.config.root / "c1"
     folder.mkdir()
-    assert console.run(["shell", "split", "cd src && pytest -q | tail -1; git commit -m 'a\nb'", "--into", str(folder)], AGENT).out == "R;&-\nR&;-\nR;;-\n"
+    assert ShellVerbs(app).split("cd src && pytest -q | tail -1; git commit -m 'a\nb'", str(folder)) == "R;&-\nR&;-\nR;;-\n"
     assert [(folder / f"{i}.part").read_text() for i in range(3)] == ["cd src", "pytest -q", "git commit -m 'a\nb'"]
-    console.run(["shell", "started", "git commit -m done", "--chain", "c1"], AGENT)
+    ShellVerbs(app).started("git commit -m done", "c1")
     bar = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))
     assert bar[-1]["parts"][0]["value"] == "committing" and bar[-1]["done"] is False
-    console.run(["shell", "ran", "git commit -m done", "--chain", "c1", "--status", "0", "--seconds", "2", "--output", "[main 1a2b3c4] done"], AGENT)
+    ShellVerbs(app).ran("git commit -m done", "c1", 0, output="[main 1a2b3c4] done", seconds=2)
     assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))[-1]["done"] is True
     line = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/agents/1/terminal?env=main"), timeout=5))[-1]
     assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2
-    moved = console.run(["shell", "moved", "c1", "pytest -q", "--file", "/tmp/out/c1"], AGENT).out
+    moved = ShellVerbs(app).moved("c1", "pytest -q", "/tmp/out/c1")
     assert "moved to the background as output 1" in moved and "pytest" not in moved, "a background command is named by its number"
-    console.run(["shell", "ended", "c1", "--status", "1", "--file", "/tmp/out/c1", "--last", "2 failed"], AGENT)
+    ShellVerbs(app).ended("c1", 1, "/tmp/out/c1", "2 failed")
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     told = len(typed)
@@ -1796,9 +1798,9 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["command"] == "pytest -q" and cards[-1].data["detail"] == "2 failed", "the one mark of the moved command is settled in place: it names the command, on a line of its own, and how it ended"
     assert cards[-1].data["shows"] == "commands", "a card names the Show in chat switch that hides it"
     (app.config.root / "c2").mkdir()
-    console.run(["shell", "split", "pytest -q", "--into", str(app.config.root / "c2")], AGENT)
-    console.run(["shell", "moved", "c2", "pytest -q", "--file", "/tmp/out/c2"], AGENT)
-    console.run(["shell", "ended", "c2", "--status", "0", "--file", "/tmp/out/c2", "--last", "........ [ 76%]\n....... [100%]"], AGENT)
+    ShellVerbs(app).split("pytest -q", str(app.config.root / "c2"))
+    ShellVerbs(app).moved("c2", "pytest -q", "/tmp/out/c2")
+    ShellVerbs(app).ended("c2", 0, "/tmp/out/c2", "........ [ 76%]\n....... [100%]")
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
     assert card.text == "Finished in the background: testing" and card.data["command"] == "pytest -q" and card.data["detail"] == "", "a last line of progress dots says nothing and is left out"
 
@@ -1869,7 +1871,7 @@ def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app):
 def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
     from urllib.request import urlopen
     hook(app, "SessionStart")
-    app.console().run(["shell", "ran", "sed -i '' s/a/b/ notes.md", "--chain", "c2", "--status", "0", "--changed", "3\t1\tnotes.md\n0\t0\tsame.md"], AGENT)
+    ShellVerbs(app).ran("sed -i '' s/a/b/ notes.md", "c2", 0, changed="3\t1\tnotes.md\n0\t0\tsame.md")
     edits = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents/1/edits?env=main"), timeout=5))["edits"]
     assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 1), ("same.md", 0, 0)] and edits[0]["command"].startswith("sed")
 
@@ -2038,13 +2040,13 @@ def test_commands_run_at_the_same_moment_keep_their_own_output(app):
     console = app.console()
     outs = {}
     def run(n):
-        outs[n] = console.run(["shell", "cap"] if n % 2 else ["shell", "limit"], AGENT).out
+        outs[n] = ShellVerbs(app).cap() if n % 2 else ShellVerbs(app).limit()
     threads = [threading.Thread(target=run, args=(n,)) for n in range(20)]
     for t in threads:
         t.start()
     for t in threads:
         t.join()
-    assert all(outs[n] == ("hint 400\n" if n % 2 else "30\n") for n in range(20)), "each run's output is its own, though they run side by side"
+    assert all(outs[n] == ("hint 400" if n % 2 else "30") for n in range(20)), "each run's output is its own, though they run side by side"
 
 
 def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
@@ -2980,11 +2982,11 @@ def test_await_and_a_command_moved_to_the_background_are_triggers(app):
     console.run(["await", "the build", "--until", "false"], AGENT)
     folder = app.config.root / "c9"
     folder.mkdir()
-    console.run(["shell", "split", "pytest -q", "--into", str(folder)], AGENT)
-    console.run(["shell", "moved", "c9", "pytest -q", "--file", "/tmp/out/c9"], AGENT)
+    ShellVerbs(app).split("pytest -q", str(folder))
+    ShellVerbs(app).moved("c9", "pytest -q", "/tmp/out/c9")
     ended = node("trigger", "command_ended", "")
     console.run(["chart", "line", str(ended), str(node("action", "count_one", "ends"))], USER)
-    console.run(["shell", "ended", "c9", "--status", "0", "--file", "/tmp/out/c9"], AGENT)
+    ShellVerbs(app).ended("c9", 0, "/tmp/out/c9")
     app.runtime().deferred.drain()
     with app.container.get(Scope).of(1):
         assert app.container.get(Counts).of_workflow(made) == {"waits": 1, "moves": 1, "ends": 1}, "journal await, a command moved to the background and its end each walk their own trigger"
@@ -4086,7 +4088,7 @@ def test_command_outputs_are_a_rolling_log_that_drops_the_oldest_with_its_folder
     folders = [app.config.root / f"run{i}" for i in range(3)]
     for folder in folders:
         folder.mkdir()
-        console.run(["shell", "split", "ls", "--into", str(folder)], AGENT)
+        ShellVerbs(app).split("ls", str(folder))
     with app.container.get(Scope).of(MAIN):
         kept = app.container.get(CommandOutputs).every()
     assert [o.chain for o in kept] == ["run1", "run2"] and not folders[0].exists() and folders[2].exists(), "the newest kept, the oldest gone with its files"
@@ -4097,7 +4099,7 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     console = app.console()
     folder = app.config.root / "run"
     folder.mkdir()
-    (folder / "parts").write_text(console.run(["shell", "split", "make test", "--into", str(folder)], AGENT).out)
+    ShellVerbs(app).split("make test", str(folder))
     (folder / "0.out").write_text("\n".join(f"line {i}" for i in range(1, 51)) + "\n")
     (folder / "0.status").write_text("1\n")
     (folder / "done").write_text("1")
@@ -4130,19 +4132,19 @@ def test_a_trailing_tail_or_head_is_taken_off_the_line_and_kept_as_the_cut_to_ap
     for name, line in (("cut", "python3 -m pytest -q 2>&1 | tail -4"), ("head", "git log --oneline | head -3"), ("quoted", 'echo "a | tail -1"')):
         folder = app.config.root / name
         folder.mkdir()
-        console.run(["shell", "split", line, "--into", str(folder)], AGENT)
+        ShellVerbs(app).split(line, str(folder))
     assert (app.config.root / "cut" / "0.part").read_text() == "python3 -m pytest -q 2>&1", "the tail goes; the command runs whole and the output is kept whole"
     assert (app.config.root / "cut" / "0.cut").read_text() == "tail -4", "the cut is kept beside the part, for the runner to apply to the kept output"
     assert (app.config.root / "head" / "0.part").read_text() == "git log --oneline" and (app.config.root / "head" / "0.cut").read_text() == "head -3", "a head is a cut like a tail"
     assert not (app.config.root / "quoted" / "0.cut").exists(), "a pipe inside quotes is text"
-    assert console.run(["shell", "forget", "cut", "--size", "120"], AGENT).out.strip() == "kept", "a cut line's whole output is kept whatever its size"
+    assert ShellVerbs(app).forget("cut", 120) == "kept", "a cut line's whole output is kept whatever its size"
 
 
 def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_its_last_characters_otherwise(app):
     from journal.repositories.command_outputs import CommandOutputs
     hook(app, "SessionStart")
     console = app.console()
-    cap = lambda line: console.run(["shell", "cap", "--line", line], AGENT).out.strip()
+    cap = lambda line: ShellVerbs(app).cap(line)
     assert cap("journal task list") == "whole 0" and cap("cat a.py && git diff") == "ends 8000" and cap("python3 -m pytest -q") == "hint 400"
     assert cap("cat src/journal/app.py") == "direct 0" and cap("grep -rn x src/journal | head -5") == "direct 0" and cap("ls src/journal/engine") == "direct 0", "a read of the project's own code runs in the shell as written, nothing captured"
     assert cap("sed -n 1,3p src/journal/app.py; echo ====; grep -n x src/journal/config.py") == "direct 0" and cap("echo hi; echo there") == "hint 400", "a bare echo between two reads keeps the line a read of code; echoes alone read nothing"
@@ -4153,7 +4155,7 @@ def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_i
     assert cap("echo hi > /tmp/notes.txt") == "hint 400" and cap("cp a.bin b.bin") == "hint 400" and cap("sed -i '' 's/a/b/' src/journal/app.py && python3 -m pytest -q") == "hint 400", "a write outside the project, of no code file, or chained with a run is not"
     folder = app.config.root / "journal-line"
     folder.mkdir()
-    console.run(["shell", "split", "journal task list", "--into", str(folder)], AGENT)
+    ShellVerbs(app).split("journal task list", str(folder))
     with app.container.get(Scope).of(MAIN):
         assert app.container.get(CommandOutputs).every() == [] and not (folder / "number").exists(), "a line of journal commands is no output"
 
@@ -4806,8 +4808,8 @@ def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_
     folder = app.config.root / "c1"
     folder.mkdir()
     outputs = app.container.get(CommandOutputs)
-    app.console().run(["shell", "split", "python3 -m pytest -q", "--into", str(folder)], AGENT)
-    app.console().run(["shell", "moved", "c1", "python3 -m pytest -q", "--file", str(folder / "out")], AGENT)
+    ShellVerbs(app).split("python3 -m pytest -q", str(folder))
+    ShellVerbs(app).moved("c1", "python3 -m pytest -q", str(folder / "out"))
     running = outputs.of_chain("c1")
     tick_after(app, 30.0)
     assert not any("still running" in line for line in typed), "a command moved to the background a moment ago is left to run"
@@ -5375,9 +5377,9 @@ def test_commands_that_end_together_are_named_in_one_line(app, monkeypatch):
     console = app.console()
     for chain, status in (("e1", 0), ("e2", 0), ("e3", 2)):
         (app.config.root / chain).mkdir()
-        console.run(["shell", "split", "make", "--into", str(app.config.root / chain)], AGENT)
-        console.run(["shell", "moved", chain, "make", "--file", f"/tmp/out/{chain}"], AGENT)
-        console.run(["shell", "ended", chain, "--status", str(status), "--file", f"/tmp/out/{chain}", "--last", ""], AGENT)
+        ShellVerbs(app).split("make", str(app.config.root / chain))
+        ShellVerbs(app).moved(chain, "make", f"/tmp/out/{chain}")
+        ShellVerbs(app).ended(chain, status, f"/tmp/out/{chain}", "")
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=6.0))
     ended = [line for line in typed if "journal output read" in line]
     assert len(ended) == 1 and "outputs 1, 2 finished; output 3 failed with code 2" in ended[0], f"three ends in a busy stretch are one line: {ended}"
@@ -5536,9 +5538,9 @@ def test_a_subagents_shell_line_is_never_moved_to_the_background(app):
     hook(app, "SessionStart")
     wrapped = "source /s 2>/dev/null || true && eval 'sleep 60 && echo done' < /dev/null && pwd -P >| /tmp/cwd"
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sleep 60 && echo done"}, agent_id="a1")
-    assert console.run(["shell", "limit", "--line", wrapped], AGENT).out.strip() == "0", "a subagent is never told a command ended, so its line stays in its foreground"
+    assert ShellVerbs(app).limit(wrapped) == "0", "a subagent is never told a command ended, so its line stays in its foreground"
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sleep 60 && echo done"})
-    assert console.run(["shell", "limit", "--line", wrapped], AGENT).out.strip() == "30", "the same line run by the agent itself moves as ever"
+    assert ShellVerbs(app).limit(wrapped) == "30", "the same line run by the agent itself moves as ever"
 
 
 def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(app):
@@ -5633,9 +5635,9 @@ def test_a_file_changed_by_a_shell_command_keeps_its_changed_lines(app):
     hook(app, "SessionStart")
     console = app.console()
     (app.config.root / "notes.txt").write_text("one\ntwo\n")
-    console.run(["shell", "ran", "python3 - <<'EOF'", "--chain", "c1", "--status", "0", "--output", "", "--changed", "2\t0\tnotes.txt"], AGENT)
+    ShellVerbs(app).ran("python3 - <<'EOF'", "c1", 0, output="", changed="2\t0\tnotes.txt")
     (app.config.root / "notes.txt").write_text("one\nTWO\nthree\n")
-    console.run(["shell", "ran", "sed -i s/two/TWO/ notes.txt", "--chain", "c2", "--status", "0", "--output", "", "--changed", "1\t1\tnotes.txt"], AGENT)
+    ShellVerbs(app).ran("sed -i s/two/TWO/ notes.txt", "c2", 0, output="", changed="1\t1\tnotes.txt")
     first, second = [e for e in app.container.get(Edits).all() if e.path == "notes.txt"][-2:]
     assert [r["text"] for r in first.rows if r["kind"] == "add"] == ["one", "two"], "a new file's lines are all added"
     assert [(r["kind"], r["text"]) for r in second.rows if r["kind"] != "ctx"] == [("del", "two"), ("add", "TWO"), ("add", "three")], "a later change is told against the version the journal saw last"
@@ -5794,9 +5796,9 @@ def test_a_short_output_with_no_pipe_keeps_no_output_row(app):
         folder = app.config.root / chain
         folder.mkdir()
         (folder / "line").write_text(line)
-        console.run(["shell", "split", line, "--into", str(folder)], AGENT)
-    assert console.run(["shell", "forget", "short", "--size", "120"], AGENT).out.strip() == "forgotten"
+        ShellVerbs(app).split(line, str(folder))
+    assert ShellVerbs(app).forget("short", 120) == "forgotten"
     with pytest.raises(NotFound):
         outputs.of_chain("short")
-    assert console.run(["shell", "forget", "cut", "--size", "120"], AGENT).out.strip() == "kept" and outputs.of_chain("cut")
-    assert console.run(["shell", "forget", "long", "--size", "400"], AGENT).out.strip() == "kept" and outputs.of_chain("long")
+    assert ShellVerbs(app).forget("cut", 120) == "kept" and outputs.of_chain("cut")
+    assert ShellVerbs(app).forget("long", 400) == "kept" and outputs.of_chain("long")

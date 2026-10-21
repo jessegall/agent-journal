@@ -10,7 +10,7 @@ from journal.support.where import Where
 from journal.support.worktree import Worktree
 from journal.config import Config
 from journal.engine.state_machine import StateMachine
-from journal.features.shell.commands.shell_command import ENDED, MOVED
+from journal.features.shell.support.shell_record import ENDED, MOVED
 from journal.support.environment_row import EnvironmentRow
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers

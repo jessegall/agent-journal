@@ -33,6 +33,7 @@ from journal.http.controllers.search import SearchController
 from journal.http.controllers.secrets import SecretController
 from journal.http.controllers.sequences import SequenceController
 from journal.http.controllers.settings import SettingController
+from journal.http.controllers.shell import ShellController
 from journal.http.controllers.shares import ShareController
 from journal.http.controllers.skills import SkillController
 from journal.http.controllers.tasks import TaskController
@@ -60,6 +61,7 @@ class Routes:
     def mount(self, router: Router) -> Router:
         get = self.container.get
         router.post("/hooks/{agent}", get(HookController).receive)
+        router.post("/shell/run", get(ShellController).run)
         router.post("/cli", get(CliController).run)
         self.journal(router)
         self.work(router)
