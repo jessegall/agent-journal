@@ -39,10 +39,10 @@ class Receiver:
         environment = self.environments.named(hook.environment)
         with self.scope.of(environment.id):
             for written in self.transcript.events(hook, environment):
-                self._now(written)
+                self._handle_at_once(written)
             event = self.translation.event(hook, environment)
             entry = self.entries.save(Entry(environment_id=environment.id, kind=type(event).__name__, actor=Actor.agent(hook.session), data={**hook.stored(), **event.recorded()}), Actor.agent(hook.session))
-            if self.stray(event):
+            if self.is_unknown_session_end(event):
                 return Decision()
             decision = self._blocking(event)
             self.entries.save(entry.with_(data={**entry.data, **self.recorded_outcome(hook, decision)}), Actor.agent(hook.session))
@@ -57,10 +57,10 @@ class Receiver:
         self.slow.measured("HOOK", f"/hooks/{hook.kind.value}", elapsed)
         return {**recorded, "hook_ms": elapsed}
 
-    def stray(self, event: AgentEvent) -> bool:
+    def is_unknown_session_end(self, event: AgentEvent) -> bool:
         return isinstance(event, SessionEnded) and not self.agents.where(session=event.session)
 
-    def _now(self, event: AgentEvent) -> None:
+    def _handle_at_once(self, event: AgentEvent) -> None:
         blocking, deferred = self._split(event)
         for listener in [*blocking, *deferred]:
             listener.handle(event)
