@@ -5883,6 +5883,31 @@ def test_an_unblocked_task_waits_on_nothing_and_the_check_its_block_made_is_reti
         assert all(check.is_retired for check in app.container.get(Checks).rows() if check.wait_target), "the check its block made runs no more"
 
 
+def test_a_plan_with_a_parked_or_a_blocked_task_is_not_done_when_the_rest_close(app: App):
+    from journal.models.plan_state import PlanState
+    from journal.repositories.plans import Plans
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    console.run(["plan", "create", "three", "--brief", "three tasks"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "all done"], USER)
+    for title in ("parked one", "blocked one", "last one"):
+        console.run(["plan", "add", "1", title, "--brief", "done when done"], USER)
+    console.run(["plan", "todos", "1", "1", "1", "2", "3"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    console.run(["plan", "start", "1"], AGENT)
+    console.run(["task", "suspend", "1", "later"], AGENT)
+    console.run(["task", "block", "2", "the user"], AGENT)
+    console.run(["task", "start", "3"], AGENT)
+    console.run(["task", "complete", "3", "--how", "done"], AGENT)
+    app.runtime().deferred.drain()
+    assert app.container.get(Plans).find(1).state != PlanState.FINISHED, "a parked task and a blocked one are still open work"
+    from journal.features.plans.seeds.closed_plans import ClosedPlans
+    app.container.get(ClosedPlans).run()
+    assert app.container.get(Plans).find(1).state != PlanState.FINISHED, "nor does the boot take the plan for done"
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog

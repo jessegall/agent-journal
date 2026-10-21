@@ -9,7 +9,7 @@ from journal.repositories.scope import Scope
 
 
 class ClosedPlans(EnvironmentSeed):
-    """At boot, a started plan with no open task left is done: its tasks are the truth of it, whoever closed them."""
+    """At boot, a started plan whose every task is closed is done: its tasks are the truth of it, whoever closed them; a parked or a blocked task is still open."""
 
     def __init__(self, plans: Plans, environments: Environments, scope: Scope) -> None:
         super().__init__(environments, scope)
@@ -21,4 +21,4 @@ class ClosedPlans(EnvironmentSeed):
                 self.plans.save(plan.finished(datetime.now(timezone.utc).timestamp()), Actor.system())
 
     def is_complete(self, plan: Plan) -> bool:
-        return plan.state == PlanState.STARTED and self.plans.next_task(plan) is None and bool(self.plans.plan_tasks(plan))
+        return plan.state == PlanState.STARTED and self.plans.finished(plan)
