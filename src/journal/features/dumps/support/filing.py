@@ -36,11 +36,11 @@ class Filing:
 
     def create(self, brief: str, by: Actor) -> Dump:
         dump = self.dumps.save(Dump(title="Dump", brief=brief.strip(), queued_at=time.time()), by)
-        return self.dumps.save(dump.with_(title=f"Dump {dump.id}"), by)
+        return self.dumps.save(dump.with_(title=f"Dump {dump.id}").arrived(time.time(), by.is_the_user()), by)
 
     def attach(self, n: int, name: str, by: Actor) -> Dump:
         dump = self.open(n, f"dump {n} is already filed: start a new dump for more")
-        return self.dumps.save(dump.with_(files=tuple(dict.fromkeys((*dump.files, name)))), by)
+        return self.dumps.save(dump.with_(files=tuple(dict.fromkeys((*dump.files, name)))).arrived(time.time(), by.is_the_user()), by)
 
     def items(self, n: int) -> list[str]:
         dump = self.dumps.find(n)
@@ -79,7 +79,7 @@ class Filing:
         return self.close(written, f"{len(written.item_names) - failed} filed" + (f", {failed} failed" if failed else ""), by)
 
     def close(self, dump: Dump, how: str, by: Actor) -> Dump:
-        return self.dumps.save(dump.with_(completed_at=time.time(), outcome=how), by)
+        return self.dumps.save(dump.filed(how, time.time()), by)
 
     def log(self, n: int, status: str, on: str, making: str, detail: str, by: Actor) -> Dump:
         dump = self.dumps.find(n)
@@ -103,7 +103,7 @@ class Filing:
             raise Refused("say what you need to know")
         dump = self.open(n, f"dump {n} is closed")
         found = [g.strip()[:LABEL] for g in guesses.split("|") if g.strip()][:OFFERED]
-        return self.dumps.save(dump.with_(question={"at": time.time(), "text": question.strip(), "guesses": found}), by)
+        return self.dumps.save(dump.asked(question.strip(), found, time.time()), by)
 
     def answer(self, n: int, text: str, by: Actor) -> Dump:
         self.only_user(by, "answers a question on a dump")
@@ -112,8 +112,7 @@ class Filing:
             raise Refused(f"dump {n} has no question waiting")
         if not text.strip():
             raise Refused("say the answer")
-        answered = {"question": dump.question.get("text", ""), "answer": text.strip(), "at": time.time()}
-        return self.dumps.save(dump.with_(question={}, answers=(*dump.answers, answered)), by)
+        return self.dumps.save(dump.answered(text.strip(), time.time()), by)
 
     def split(self, n: int, parts: str, by: Actor) -> Dump:
         dump = self.dumps.find(n)
@@ -150,8 +149,7 @@ class Filing:
             raise Refused(f"dump {n} has no option {pick}: pick is the number of an offered step, or -1 for You decide")
         if str(pick) in dump.taken:
             raise Refused(f"{dump.options[pick]['label']} was already taken on dump {n}")
-        chosen = {"label": dump.options[pick]["label"] if pick >= 0 else "You decide", "pick": pick, "at": time.time()}
-        return self.dumps.save(dump.with_(chosen=chosen, taken={**dump.taken, **({str(pick): chosen} if pick >= 0 else {})}), by)
+        return self.dumps.save(dump.chose(pick, dump.options[pick]["label"] if pick >= 0 else "You decide", time.time()), by)
 
     def decline(self, n: int, pick: int, by: Actor) -> Dump:
         self.only_user(by, "chooses what a dump does next")
@@ -165,10 +163,9 @@ class Filing:
         if not how.strip():
             raise Refused('say what should happen next: journal dump direct <n> "<what to do>"')
         dump = self.dumps.find(n)
-        choice = {"label": how.strip(), "pick": OWN_WORDS, "at": time.time()}
         message = self.messages.save(Message(author=Author.USER, text=how.strip()).arrived(), by)
         self.links.save(Link(source=Ref.to(message), target=Ref.to(dump), kind=Messages.COMMENTS_ON), by)
-        return self.dumps.save(dump.with_(said=(*dump.said, choice), chosen=choice), by)
+        return self.dumps.save(dump.directed(how.strip(), time.time()), by)
 
     def stop(self, n: int, by: Actor) -> Dump:
         self.only_user(by, "stops a dump")

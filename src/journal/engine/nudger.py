@@ -15,7 +15,7 @@ NUDGE = "nudge"
 
 
 class Nudger:
-    """Says a line to an agent, in the agent's environment: drops it when its feature is off or it was nudge lately, writes the entry, tells the bus a line was nudge once the reply has gone, and hands back the words. The caller picks the road: a hook's answer, or the supervisor."""
+    """Says a line to an agent, in the agent's environment: drops it when its feature is off or it was nudge lately, writes the entry, tells the bus a line was nudge once the reply has gone, and hands back the words; a refusal's line is said and recorded the same but never dropped for having been said lately, since a hold stands as long as its reason does. The caller picks the road: a hook's answer, or the supervisor."""
 
     def __init__(self, features: FeaturesKnown, entries: Entries, scope: Scope, bus: Bus, deferred: Deferred, clock: Clock, registry: NudgeRegistry) -> None:
         self.features, self.entries, self.scope, self.bus, self.deferred, self.clock = features, entries, scope, bus, deferred, clock
@@ -28,8 +28,7 @@ class Nudger:
         with self.scope.of(agent.environment_id):
             return self._said(agent, nudge, repeated=True)
 
-    def hold(self, agent: Agent, nudge: Nudge) -> str | None:
-        """A hold's line: said and recorded as any line, but never dropped for having been said lately, since a hold stands as long as its reason does."""
+    def refuse_with(self, agent: Agent, nudge: Nudge) -> str | None:
         with self.scope.of(agent.environment_id):
             return self._said(agent, nudge, repeated=False)
 

@@ -11,4 +11,6 @@ class DumpsSnapshotReader:
 
     def read(self, agent: Agent) -> DumpsSnapshot:
         dump = self.dumps.in_hand()
-        return DumpsSnapshot(in_hand=dump.id if dump else 0)
+        if dump is None:
+            return DumpsSnapshot(in_hand=0, waiting=0, question_open=False)
+        return DumpsSnapshot(in_hand=dump.id, waiting=len(dump.waiting()), question_open=bool(dump.question))

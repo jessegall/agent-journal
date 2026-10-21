@@ -1,11 +1,19 @@
 from typing import ClassVar
 from dataclasses import dataclass, field
 
+from journal.events.rows.dump_answered import DumpAnswered
+from journal.events.rows.dump_arrived import DumpArrived
+from journal.events.rows.dump_asked import DumpAsked
+from journal.events.rows.dump_chosen import DumpChosen
+from journal.events.rows.dump_filed import DumpFiled
 from journal.models.support.dump_item import DumpItem
 from journal.models.scoped import Scoped
 
 TEXT = "text"
 """The name of a dump's pasted text as an item, unless it was split into parts."""
+
+OWN_WORDS = -2
+"""The user said what to do next in their own words, no offered step."""
 
 
 @dataclass(frozen=True)
@@ -59,6 +67,28 @@ class Dump(Scoped):
 
     def unsettled(self) -> list[str]:
         return [name for name in self.item_names if not self.item(name).settled]
+
+    def arrived(self, time: float, by_user: bool) -> "Dump":
+        return self.with_event(DumpArrived(environment_id=self.environment_id, at=time, dump_id=self.id, waiting=len(self.waiting()), by_user=by_user))
+
+    def asked(self, text: str, guesses: list[str], time: float) -> "Dump":
+        return self.with_(question={"at": time, "text": text, "guesses": guesses}).with_event(DumpAsked(environment_id=self.environment_id, at=time, dump_id=self.id))
+
+    def answered(self, answer: str, time: float) -> "Dump":
+        question = self.question.get("text", "")
+        return self.with_(question={}, answers=(*self.answers, {"question": question, "answer": answer, "at": time})).with_event(DumpAnswered(environment_id=self.environment_id, at=time, dump_id=self.id, question=question, answer=answer))
+
+    def chose(self, pick: int, label: str, time: float) -> "Dump":
+        choice = {"label": label, "pick": pick, "at": time}
+        taken = {**self.taken, str(pick): choice} if pick >= 0 else self.taken
+        return self.with_(chosen=choice, taken=taken).with_event(DumpChosen(environment_id=self.environment_id, at=time, dump_id=self.id, pick=pick, label=label))
+
+    def directed(self, label: str, time: float) -> "Dump":
+        choice = {"label": label, "pick": OWN_WORDS, "at": time}
+        return self.with_(chosen=choice, said=(*self.said, choice)).with_event(DumpChosen(environment_id=self.environment_id, at=time, dump_id=self.id, pick=OWN_WORDS, label=label))
+
+    def filed(self, how: str, time: float) -> "Dump":
+        return self.with_(completed_at=time, outcome=how).with_event(DumpFiled(environment_id=self.environment_id, at=time, dump_id=self.id, outcome=how, stopped=self.stopped))
 
     @staticmethod
     def items_in(names: list[str]) -> str:

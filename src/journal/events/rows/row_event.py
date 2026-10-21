@@ -14,6 +14,10 @@ class RowEvent(Event):
     session: str = ""
     snapshot: Snapshot = field(default_factory=lambda: Snapshot({}), compare=False)
 
+    @property
+    def typed_after(self) -> float:
+        return 0.0
+
     def with_snapshot(self, snapshot: Snapshot) -> "RowEvent":
         return replace(self, snapshot=snapshot)
 
