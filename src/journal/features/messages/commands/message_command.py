@@ -150,6 +150,6 @@ class MessageCommand(Command):
         end = start + quote.count("\n")
         section = sum(1 for line in lines[: start + 1] if line.startswith("## "))
         heading = next((line[3:] for line in reversed(lines[: start + 1]) if line.startswith("## ")), "")
-        span = f"lines {start + 1}-{end + 1}" if end > start else f"line {start + 1}"
-        spot = f"section {section}, {heading}, {span}" if section else span
-        return f"  the passage sits in {noun} {ref.id} at {spot}: `journal {noun} show {ref.id} --section {section or 1}` or `--grep`"
+        line_numbers = f"lines {start + 1}-{end + 1}" if end > start else f"line {start + 1}"
+        location = f"section {section}, {heading}, {line_numbers}" if section else line_numbers
+        return f"  the passage sits in {noun} {ref.id} at {location}: `journal {noun} show {ref.id} --section {section or 1}` or `--grep`"
