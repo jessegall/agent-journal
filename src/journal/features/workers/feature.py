@@ -52,9 +52,10 @@ class Workers(Feature[WorkersData]):
     UNREAD_WORKER_REPORTS = Nudge(name, "act_on_the_reports", "{{reports_waiting}} reported and you have not acted on it yet", "read its report, then give it its next job, stop it, or mark it done once its work is merged or used", repeat_interval=180, blocks_regardless=True)
     WORKER_KNOWS_FILES = Nudge(name, "send_it_to_the_worker_that_knows", "{{count}} idle workers already worked on files this job names:\n{{workers}}", "give the job to one of them with its send line, or add --fresh to the dispatch if it truly needs a new worker", repeat_interval=0)
     IDLE_CAP = Nudge(name, "send_it_to_an_idle_worker", "{{kept}} {{profile}} workers are kept, the most of one profile, and {{count}} of them are idle:\n{{workers}}", "give the job to one of them with its send line, or retire one with `journal worker complete <n> --why \"<reason>\"` to free a place", repeat_interval=0)
+    REUSE_QUESTION = Nudge(name, "could_it_be_reused", "Are you sure worker {{n}}, {{name}}, cannot be reused?", "if it can, give it its next job with `journal worker send {{n}} \"<job>\"`; if not, repeat the command with --why \"<why it cannot>\"", repeat_interval=0)
     SUBAGENT_REUSE = Nudge(name, "send_the_job_to_the_subagent", "subagent {{session}} ({{task}}) already worked on the files this job names", "send it the job with SendMessage({to: \"{{session}}\", message: \"<job>\"}), so it goes on with what it knows", repeat_interval=0)
     DISPATCH_REFUSALS = (WORKER_KNOWS_FILES.key, IDLE_CAP.key)
-    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
+    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, REUSE_QUESTION, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
 
     skill = Skill("workers", 'Send a worker to write a bounded job and wait for its report; load it before dispatching one', """
 # Workers

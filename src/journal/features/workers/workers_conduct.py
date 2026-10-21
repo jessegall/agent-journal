@@ -11,7 +11,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_stopped import WorkerStopped
 from journal.events.rows.worker_dispatched import WorkerDispatched
-from journal.features.workers.support.dispatch_line import DispatchLine
+from journal.features.workers.support.worker_line import WorkerLine
 from journal.features.workers.support.path_mentions import PathMentions
 from journal.models.worker import Worker
 from journal.features.workers.support.workers_data import WorkersData
@@ -21,7 +21,7 @@ INDEPENDENT_ROLES = ("auditor", "reviewer", "plan-reviewer", "critic")
 
 
 class WorkersConduct(Conduct):
-    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, a dispatch whose brief names files an idle worker touched is held in favour of that worker, a dispatch past its profile's kept workers is held while one of them is idle, the reports not acted on are named at a stop and on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
+    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, a dispatch whose brief names files an idle worker touched is held in favour of that worker, a dispatch past its profile's kept workers is held while one of them is idle, retiring an idle worker is held until the repeat says why it cannot be reused, the reports not acted on are named at a stop and on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
 
     def limit_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
@@ -50,20 +50,26 @@ class WorkersConduct(Conduct):
 
     def files_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        knowing = [w for line in dispatch_lines(event) if not line.fresh for w in knowing_workers(event.data.part(Workers), line.brief)]
+        knowing = [w for line in worker_lines(event, "dispatch") if not line.fresh for w in knowing_workers(event.data.part(Workers), line.brief)]
         return self.refuse(Workers.WORKER_KNOWS_FILES.create(count=len(knowing), workers=idle_list(tuple(knowing)))) if knowing else self.none()
 
     def idle_cap_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         cap, workers = int(settings.value(Workers.IDLE_KEPT)), event.data.part(Workers)
-        for line in [line for line in dispatch_lines(event) if cap and not is_reviewer(line.profile)]:
+        for line in [line for line in worker_lines(event, "dispatch") if cap and not is_reviewer(line.profile)]:
             kept, idle = kept_workers(workers, line.profile), idle_offers(workers, line)
             if len(kept) >= cap and idle:
                 return self.refuse(Workers.IDLE_CAP.create(kept=len(kept), profile=line.profile, count=len(idle), workers=idle_list(idle)))
         return self.none()
 
+    def retire_check(self, event: ToolStarting, settings: Settings) -> Transition:
+        from journal.features.workers.feature import Workers
+        idle = {w.id: w for w in event.data.part(Workers).idle_workers}
+        asked = [line for line in worker_lines(event, "complete", "stop") if line.number in idle and not line.why]
+        return self.refuse(Workers.REUSE_QUESTION.create(n=asked[0].number, name=idle[asked[0].number].name)) if asked else self.none()
+
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        checks = (WorkersConduct.known_check, WorkersConduct.limit_check, WorkersConduct.worktrees_check, WorkersConduct.files_check, WorkersConduct.idle_cap_check)
+        checks = (WorkersConduct.known_check, WorkersConduct.limit_check, WorkersConduct.worktrees_check, WorkersConduct.files_check, WorkersConduct.idle_cap_check, WorkersConduct.retire_check)
         return Transition.merged(self, [check(self, event, settings) for check in checks])
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
@@ -92,8 +98,8 @@ def report_mentions(data: FeatureData) -> list[Nudge]:
     return [workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=summary)] if summary else []
 
 
-def dispatch_lines(event: ToolStarting) -> list[DispatchLine]:
-    return [line for part in event.call.parts if (line := DispatchLine.parsed(part.text))]
+def worker_lines(event: ToolStarting, *verbs: str) -> list[WorkerLine]:
+    return [line for part in event.call.parts if (line := WorkerLine.parsed(part.text)) and line.verb in verbs]
 
 
 def idle_list(workers: tuple[Worker, ...]) -> str:
@@ -109,7 +115,7 @@ def kept_workers(workers: WorkersData, profile: str) -> list[Worker]:
     return [w for w in (*workers.out_workers, *workers.idle_workers) if w.profile == profile]
 
 
-def idle_offers(workers: WorkersData, line: DispatchLine) -> tuple[Worker, ...]:
+def idle_offers(workers: WorkersData, line: WorkerLine) -> tuple[Worker, ...]:
     named = PathMentions.build(line.brief)
     return tuple(sorted((w for w in workers.idle_workers if w.profile == line.profile), key=lambda w: not w.overlaps(named)))
 

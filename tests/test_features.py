@@ -6743,3 +6743,19 @@ def test_a_dispatch_past_its_profiles_kept_workers_is_refused_naming_the_idle_on
     app.container.get(SettingRows).set(WorkersFeature.IDLE_KEPT.key, 0, USER.actor)
     assert said("journal-medior")[0] == 200, "0 is no limit"
     assert any(m.text == "Dispatch refused, 2 idle workers could take it" for m in app.container.get(Messages).scoped()), "the refusal is a mark in the chat"
+
+
+def test_retiring_an_idle_worker_asks_once_whether_it_could_be_reused_and_the_repeat_with_why_goes_through(app: App):
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    workers = app.container.get(Workers)
+    workers.save(Worker(name="Mr. Idle", state=WorkerState.REPORTED), Actor.system())
+    workers.save(Worker(name="Mr. Out", state=WorkerState.DISPATCHED), Actor.system())
+    run = lambda line: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": f"journal worker {line}"})
+    for verb in ("complete", "stop"):
+        status, body = run(f"{verb} 1")
+        assert status != 200 and "Are you sure worker 1, Mr. Idle, cannot be reused?" in json.dumps(body) and "--why" in json.dumps(body)
+        assert run(f"{verb} 1 --why 'its branch is merged and the work is done'")[0] == 200, "the repeat with its reason pays the question"
+    assert run("stop 2")[0] == 200, "a worker out is never asked"
