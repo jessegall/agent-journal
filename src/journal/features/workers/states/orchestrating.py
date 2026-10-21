@@ -11,7 +11,7 @@ from journal.features.tasks.support.tasks_readings import TasksReadings
 
 @dataclass(frozen=True)
 class Orchestrating(Idle):
-    """The orchestrator's floor: it plans, hands the work to workers and reviews what comes back. A stop or a long quiet with open tasks is answered with the plans to check and the workers to dispatch, a worker's report with the same, and the task and plan states it pushes say delegate where the builder's say carry on."""
+    """The orchestrator's mode state: it plans, hands the work to workers and reviews what comes back. A stop or a long quiet with open tasks is answered with the plans to check and the workers to dispatch, a worker's report with the same, and the task and plan states it pushes say delegate where the builder's say carry on."""
 
     name = "orchestrating"
     title = "Orchestrating"

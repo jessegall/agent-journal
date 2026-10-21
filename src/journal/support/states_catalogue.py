@@ -42,7 +42,7 @@ class StatesCatalogue:
     def first(self) -> BaseState:
         return self.named("idle", {})
 
-    def is_floor(self, state: BaseState) -> bool:
+    def is_bottom(self, state: BaseState) -> bool:
         return isinstance(state, type(self.first()))
 
     def stack_of(self, agent: Agent) -> Stack:
@@ -52,6 +52,6 @@ class StatesCatalogue:
 
     def stack_under(self, state: BaseState) -> Stack:
         layers = [state]
-        if not self.is_floor(layers[-1]):
+        if not self.is_bottom(layers[-1]):
             layers.append(self.first())
         return Stack(tuple(reversed(layers)))

@@ -360,7 +360,7 @@ class Listening(BaseState):
         return "not a listener"
 
 
-def test_the_stack_keeps_its_floor_changes_only_its_top_and_comes_back_from_its_data():
+def test_the_stack_keeps_its_bottom_changes_only_its_top_and_comes_back_from_its_data():
     stack = Stack((Idle(), Working(task_id=3)))
     assert stack.top() == Working(task_id=3)
     assert stack.pushed(Ended()).to_data()[-1] == {"state": "ended", "data": {}}
@@ -415,7 +415,7 @@ def test_a_renamed_state_answers_as_before_through_its_on_listeners_and_a_plain_
     assert set(names[:4]) == {"on_session_started", "on_prompt_submitted", "on_tool_starting", "on_session_ended"} and names[4:] == ["on_compaction"]
 
 
-def test_the_stack_is_seeded_from_the_state_and_its_pause_chain_unwound_with_idle_at_the_floor(connection, bus, scope):
+def test_the_stack_is_seeded_from_the_state_and_its_pause_chain_unwound_with_idle_at_the_bottom(connection, bus, scope):
     agents = Agents(connection, bus, scope)
     stuck = agents.save(Agent(environment_id=1, session="s9", state="stuck", data={"resume": {"state": "working", "data": {"task_id": 3, "resume": {"state": "idle", "data": {}}}}}), Actor.system())
     gone = agents.save(Agent(environment_id=1, session="s8", state="gone", data={}), Actor.system())
@@ -1278,7 +1278,7 @@ def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_a
     assert started.to.task_id == 1141 and started.to.named() == "task 1141" and started.to.logged_at == 5.0, "one task is in hand at a time, so the task started is the plan state's task whether the plan holds it or not"
 
 
-def test_the_work_mode_is_the_floor_state_the_orchestrator_dispatches_the_builder_carries_on_and_the_solo_floor_keeps_workers_out():
+def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_builder_carries_on_and_the_solo_mode_keeps_workers_out():
     from journal.events.agent.idle import Idle as Stop
     from journal.events.rows.setting_changed import SettingChanged
     from journal.features.plans.support.plans_readings import PlansReadings
@@ -1290,24 +1290,24 @@ def test_the_work_mode_is_the_floor_state_the_orchestrator_dispatches_the_builde
     from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
     from journal.features.workers.states.soloing import Soloing
     from journal.models.open_task import OpenTask
-    settings = lambda mode: SettingsValue({Workers.MODE.key: mode, TasksFeature.AUTO.key: True})
+    settings = lambda mode: SettingsValue({Workers.MODE.key: mode, TasksFeature.AUTO.key: True, TasksFeature.LOG_OLD_AFTER.key: 10})
     tasks = TasksReadings(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=OpenTask(3, "the footer", "", 0), last_commands=(), open_ids=(3, 4), open_summary="task 3 (the footer), task 4 (the margin)")
     started = StartedPlan(plan_id=2, next_task=3, started_task=0, started_task_briefing="", tasks=(3, 4), tasks_left=2, at_checkpoint=False, checkpoint_phase=0)
     of = lambda plan: Readings({"plans": PlansReadings((), plan), "tasks": tasks})
     begun = Idle().on(SessionStarted(time=1.0).with_readings(of(None)), settings("orchestrator"))
-    assert isinstance(begun.to, Orchestrating) and begun.pushed is None, "at a session start the floor becomes the mode's"
+    assert isinstance(begun.to, Orchestrating) and begun.pushed is None, "at a session start the bottom state becomes the mode's"
     planned = Idle().on(SessionStarted(time=1.0).with_readings(of(started)), settings("orchestrator"))
-    assert isinstance(planned.to, Orchestrating) and isinstance(planned.pushed, OrchestratingPlan) and planned.pushed.plan_id == 2, "a started plan is pushed over the new floor as the orchestrator's plan state"
-    assert type(Idle().on(SessionStarted(time=1.0).with_readings(of(None)), settings("builder")).to) is Idle, "the builder's floor is Idle"
+    assert isinstance(planned.to, Orchestrating) and isinstance(planned.pushed, OrchestratingPlan) and planned.pushed.plan_id == 2, "a started plan is pushed over the new mode staor as the orchestrator's plan state"
+    assert type(Idle().on(SessionStarted(time=1.0).with_readings(of(None)), settings("builder")).to) is Idle, "the builder's mode state is Idle"
     stop = Orchestrating().on(Stop().with_readings(of(None)), settings("orchestrator"))
     assert stop.held is not None and "task 3 (the footer), task 4 (the margin)" in stop.held.rendered() and "dispatch a worker" in stop.held.rendered(), "the orchestrator's stop is held with the tasks to dispatch"
     assert "task 3" in Idle().on(Stop().with_readings(of(None)), settings("builder")).held.rendered() and "dispatch" not in Idle().on(Stop().with_readings(of(None)), settings("builder")).held.rendered(), "the builder's stop names the next task to do"
-    assert isinstance(Orchestrating().on(TaskStarted(environment_id=1, time=2.0, task_id=7, title="x", plan_id=0).with_readings(of(None)), settings("orchestrator")).pushed, Delegating), "a task started on the orchestrator's floor is delegating, not working"
+    assert isinstance(Orchestrating().on(TaskStarted(environment_id=1, time=2.0, task_id=7, title="x", plan_id=0).with_readings(of(None)), settings("orchestrator")).pushed, Delegating), "a task started in the orchestrator's mode is delegating, not working"
     delegating = Delegating(task_id=7, logged_at=1.0).on(Stop(time=2.0).with_readings(of(None)), settings("orchestrator"))
     assert delegating.held is not None and "hand it to a worker" in delegating.held.rendered(), "the delegating task says hand it over where working says carry on"
     changed = Orchestrating().on(SettingChanged(environment_id=1, time=3.0, setting=Workers.MODE.key).with_readings(of(None)), settings("builder"))
-    assert type(changed.to) is Idle, "the mode setting's change swaps the floor"
-    assert isinstance(Idle().on_resume(of(None), settings("solo")).to, Soloing), "and so does a resume to the floor"
+    assert type(changed.to) is Idle, "the mode setting's change swaps the bottom state"
+    assert isinstance(Idle().on_resume(of(None), settings("solo")).to, Soloing), "and so does a resume to the bottom state"
     assert Soloing().on(ToolStarting(call=shell("journal worker dispatch 'Mr. Smith' 'the job' --profile journal-medior")).with_readings(of(None)), settings("solo")).held == Workers.NO_WORKERS_WHEN_SOLO.create(), "solo keeps workers out"
     assert Soloing().on(ToolStarting(call=shell("ls")).with_readings(of(None)), settings("solo")).held is None
 
@@ -1329,7 +1329,7 @@ def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_neve
     console.run(["plan", "todos", "1", "1", *[str(n) for n in range(1, 21)]], USER)
     assert console.run(["plan", "ready", "1"], AGENT).code == 0 and console.run(["plan", "approve", "1"], USER).code == 0 and console.run(["plan", "start", "1"], AGENT).code == 0
     stack = lambda: [s["state"] for s in agents.for_session("s1").stack]
-    assert stack() == ["orchestrating", "orchestrating_plan"], "the orchestrator's floor and its plan state, with task 1 in hand"
+    assert stack() == ["orchestrating", "orchestrating_plan"], "the orchestrator's mode state and its plan state, with task 1 in hand"
     stop = lambda: hook(app, "Stop")[1]
     first = stop()
     assert first.get("decision") == "block" and "hand it to a worker" in first["reason"] and "19 tasks are open" in first["reason"] and "dispatch a worker" in first["reason"], "a stop is refused with the task to hand over and the others to dispatch"
@@ -1351,7 +1351,7 @@ def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_neve
         assert stop().get("decision") == "block", f"a stop with piece {n} in hand and pieces open is refused, never allowed"
         assert console.run(["task", "done", str(n), "--how", "done"], AGENT).code == 0
         app.runtime().deferred.drain()
-    assert app.container.get(Plans).find(1).state == "done" and stack() == ["orchestrating"], "the plan is done and the orchestrator stands on its floor"
+    assert app.container.get(Plans).find(1).state == "done" and stack() == ["orchestrating"], "the plan is done and the orchestrator is back in its mode state"
     assert stop().get("decision") != "block", "with nothing open the stop passes"
 
 

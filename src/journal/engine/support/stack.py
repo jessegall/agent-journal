@@ -5,7 +5,7 @@ from journal.engine.base_state import BaseState
 
 @dataclass(frozen=True)
 class Stack:
-    """The agent's states, bottom to top, as the row keeps them; the floor is never popped."""
+    """The agent's states, bottom to top, as the row keeps them; the bottom state is never popped."""
 
     states: tuple[BaseState, ...]
 

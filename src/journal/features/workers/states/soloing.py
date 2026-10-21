@@ -10,7 +10,7 @@ DISPATCHES = ("journal worker dispatch", "journal worker say")
 
 @dataclass(frozen=True)
 class Soloing(Idle):
-    """The solo floor: the agent does everything itself, and a worker's dispatch is refused."""
+    """The solo mode state: the agent does everything itself, and a worker's dispatch is refused."""
 
     name = "soloing"
     title = "Working alone"

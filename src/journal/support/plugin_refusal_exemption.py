@@ -4,13 +4,13 @@ from journal.support.skill_files import SkillFiles
 from journal.support.decision import Decision
 
 
-class Floor:
-    """The floor under every plugin's hold: a journal command and the read of a skill's file are how a debt is paid, so no plugin refuses them; the hold's words still reach the agent. The engine's own guards on the shell and on reads stand above it."""
+class PluginRefusalExemption:
+    """What no plugin may refuse: a journal command and the read of a skill's file are how a debt is paid, so they go through with the plugin's words still reaching the agent. The engine's own guards on the shell and on reads are not exempt."""
 
     def __init__(self, files: SkillFiles) -> None:
         self.files = files
 
-    def under(self, event: AgentEvent, decision: Decision) -> Decision:
+    def applied(self, event: AgentEvent, decision: Decision) -> Decision:
         if decision.allowed or not isinstance(event, ToolStarting):
             return decision
         exempt = event.call.is_journal or any(self.files.skill_read(path) for path in event.call.read_paths)

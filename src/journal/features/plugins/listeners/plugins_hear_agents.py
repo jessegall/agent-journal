@@ -10,7 +10,7 @@ from journal.features.plugins.support.plugin_queue import PluginQueue
 from journal.features.plugins.support.plugin_words import PluginWords
 from journal.support.decision import Decision
 from journal.support.deferred import Deferred
-from journal.support.floor import Floor
+from journal.support.plugin_refusal_exemption import PluginRefusalExemption
 from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
 from journal.repositories.edits import Edits
@@ -27,8 +27,8 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     asked_while_free = True
     asked_last = True
 
-    def __init__(self, relay: PluginRelay, deferred: Deferred, settings: SettingRows, floor: Floor, text: PluginWords, queue: PluginQueue, edits: Edits) -> None:
-        self.relay, self.deferred, self.settings, self.floor, self.text, self.queue, self.edits = relay, deferred, settings, floor, text, queue, edits
+    def __init__(self, relay: PluginRelay, deferred: Deferred, settings: SettingRows, exemption: PluginRefusalExemption, text: PluginWords, queue: PluginQueue, edits: Edits) -> None:
+        self.relay, self.deferred, self.settings, self.exemption, self.text, self.queue, self.edits = relay, deferred, settings, exemption, text, queue, edits
 
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
@@ -43,7 +43,7 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
             decision = self.asked(self.relay.heard_by(command, event.environment_id), command, ceiling_ms, decision)
         for edited in self.edited(event):
             decision = self.asked([p for p in self.relay.heard_by(edited, event.environment_id) if p.manifest.has_window(edited.key)], edited, ceiling_ms, decision)
-        return self.floor.under(event, decision)
+        return self.exemption.applied(event, decision)
 
     def edited(self, event: AgentEvent) -> list[FileEdited]:
         if not isinstance(event, ToolFinished):

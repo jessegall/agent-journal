@@ -1000,7 +1000,7 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The packages import one way: `models` and `events` at the bottom, then `db` and `repositories`, `engine`, `providers`,
   `features`, `hooks`, `http` and `console`, with `app.py`, `runtime.py` and `service_start.py` at the top. The bus,
   `Listener`, `AgentListener` and `Decision` live in `events/`; `Said`, `Nudge` and `Deferred` in `engine/`; `Option` in
-  `models/`; `Hook` and `HookKind` in `providers/`; `Floor` in `features/`. The runtime and the service start wire the
+  `models/`; `Hook` and `HookKind` in `providers/`; `PluginRefusalExemption` in `features/`. The runtime and the service start wire the
   features, so they sit beside `app.py`, not in `engine/`: the engine imports nothing from `features/`, and asks
   `FeaturesKnown` (its protocol, which `Registry` implements) for the states and whether a line is switched off.
   CLAUDE.md still lists the runtime among what the engine holds; that line is the user's to change.
@@ -1272,7 +1272,7 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   the context compacts is dropped, since the look at the next start brings the agent up to date. The tool-use
   count and the inbox mark go back to zero at a compaction.
 - The work mode is the floor state: `Idle` is the builder's, `Orchestrating` and `Soloing` are swapped in by the
-  `workers.mode` setting at a session start, at the setting's change and on resume, through `Workers.MODE_FLOORS`,
+  `workers.mode` setting at a session start, at the setting's change and on resume, through `Workers.MODE_STATES`,
   never an if on the mode. A floor pushes its own family: the orchestrator's pushes `OrchestratingPlan` and
   `Delegating`, whose lines say hand it to a worker where the builder's say carry on; the orchestrator's floor
   answers a stop, a long quiet and a worker's report with the open tasks across the plans and the workers to

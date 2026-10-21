@@ -18,7 +18,7 @@ from journal.features.workers.states.soloing import Soloing
 class Workers(Feature):
     """A worker is an agent sent to write: code in a worktree of its own, a document, a change. A subagent only reads; a worker is the one that writes."""
 
-    MODE_FLOORS = {"builder": Idle, "orchestrator": Orchestrating, "solo": Soloing}
+    MODE_STATES = {"builder": Idle, "orchestrator": Orchestrating, "solo": Soloing}
     name = "workers"
     title = "Workers"
     help = "Agents sent to write one bounded job; the agent waits for their reports."
@@ -54,7 +54,7 @@ A subagent only reads. A worker writes: code in a worktree of its own, a documen
 - `journal worker dispatch "<Name>" "<bounded brief>" --profile journal-senior|journal-medior [--provider claude|codex] [--worktree]`: name it
   after a distinguished figure with a twist on their trade and give it one job. The profile sets its model and what it is told:
   medior, on Sonnet, for a job whose shape is settled; senior, on Opus, only for one that needs judgement. `--model` overrides it.
-- The work mode is the floor of your stack. Builder, the default: you build it yourself and send a worker when a job
+- The work mode is the bottom state of your stack. Builder, the default: you build it yourself and send a worker when a job
   is better done beside you. Orchestrator: you plan, hand every task you can to a worker and review what comes back;
   a stop or a long quiet with open tasks tells you to check the plans and dispatch, and a task in hand is one to hand
   over, never to do yourself. Solo: you do everything yourself and a worker's dispatch is refused. The user sets it

@@ -12,7 +12,7 @@ IDLE = "idle"
 
 
 class PanicCommand(Command):
-    """journal panic <state> [name=value ...]: the one hand on the stack from outside the engine, always allowed. A state name pushes that state, pop pops the top, idle empties the stack to the floor; the stack is printed after."""
+    """journal panic <state> [name=value ...]: the one hand on the stack from outside the engine, always allowed. A state name pushes that state, pop pops the top, idle empties the stack to the bottom; the stack is printed after."""
 
     noun = "panic"
     default_verb = "now"

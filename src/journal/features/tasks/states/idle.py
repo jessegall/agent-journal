@@ -23,7 +23,7 @@ CHECK_IN_AFTER = 30 * 60.0
 
 @dataclass(frozen=True)
 class Idle(BaseState):
-    """Nothing in hand: the floor of the stack, never popped, and the builder's mode; the orchestrator's and the solo floors extend it and are swapped in by the work mode setting at a session start, at the setting's change and on resume. A stop here is held by what is still open: a parked task, a blocked task whose check cannot run, an approved plan not started, and in auto mode any open task. The quiet is measured from the agent's last doing. The floor pushes its own family of states for a task and a plan."""
+    """Nothing in hand: the bottom of the stack, never popped, and the builder's mode; the orchestrator's and the solo mode states extend it and are swapped in by the work mode setting at a session start, at the setting's change and on resume. A stop here is held by what is still open: a parked task, a blocked task whose check cannot run, an approved plan not started, and in auto mode any open task. The quiet is measured from the agent's last doing. Each mode state pushes its own states for a task and a plan."""
 
     name = "idle"
     title = "Idle"
@@ -34,10 +34,10 @@ class Idle(BaseState):
     def active(self, time: float) -> "Idle":
         return replace(self, quiet_since=time, parked_asked=False)
 
-    def floor_of(self, settings: Settings) -> "Idle":
+    def mode_state(self, settings: Settings) -> "Idle":
         from journal.features.workers.feature import Workers
-        floor = Workers.MODE_FLOORS[str(settings.of(Workers.MODE))]
-        return self if type(self) is floor else floor()
+        mode_state = Workers.MODE_STATES[str(settings.of(Workers.MODE))]
+        return self if type(self) is mode_state else mode_state()
 
     def plan_state(self, **fields) -> BaseState:
         from journal.features.plans.states.following_plan import FollowingPlan
@@ -50,20 +50,20 @@ class Idle(BaseState):
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         started = event.readings.of(Plans).started
-        floor = self.floor_of(settings).active(event.time)
+        mode_state = self.mode_state(settings).active(event.time)
         if started:
-            return floor.push(floor.plan_state(plan_id=started.plan_id, task_id=started.started_task, approved=True, logged_at=event.time))
-        return self.changed(floor)
+            return mode_state.push(mode_state.plan_state(plan_id=started.plan_id, task_id=started.started_task, approved=True, logged_at=event.time))
+        return self.changed(mode_state)
 
     def on_setting_changed(self, event: SettingChanged, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         if event.setting != Workers.MODE.key:
             return self.unchanged()
-        return self.changed(self.floor_of(settings))
+        return self.changed(self.mode_state(settings))
 
     def on_resume(self, readings: Readings, settings: Settings) -> tuple[Nudge, ...] | Transition:
-        floor = self.floor_of(settings)
-        return () if floor is self else self.changed(floor)
+        mode_state = self.mode_state(settings)
+        return () if mode_state is self else self.changed(mode_state)
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
