@@ -862,20 +862,27 @@ def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_st
     assert not any("check 2" in line for line in keystrokes)
 
 
-def test_a_supervisor_running_other_code_than_the_package_is_restarted_at_the_end_of_its_agents_turn(app: App, monkeypatch):
+def test_a_supervisor_found_outdated_at_boot_is_restarted_once_at_the_end_of_its_agents_turn_and_none_is_asked_at_a_stop(app: App, monkeypatch):
+    from journal.features.updates.seeds.supervisor_check import SupervisorCheck
     from journal.supervisor_link import SupervisorLink
+    from journal.support.supervisor_announcement import SupervisorAnnouncement
     from journal.support.supervisor_reply import SupervisorReply
-    asked, outdated = [], {"now": True}
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: asked.append({"verb": verb, **fields}) or SupervisorReply(True, outdated=outdated["now"]))
+    asked = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: asked.append({"verb": verb, **fields}) or SupervisorReply(True, outdated=True))
     hook(app, "SessionStart")
-    hook(app, "Stop")
-    app.runtime().deferred.drain()
-    assert {"verb": "restart", "name": "supervisor", "resume": ["--resume", "s1"]} in asked, "the agent is resumed on its conversation by the supervisor started again"
+    app.container.get(SupervisorCheck).run()
+    assert asked == [], "with no supervisor announced, none is asked and none is outdated"
+    monkeypatch.setattr(SupervisorLink, "announced", lambda self, environment_id: SupervisorAnnouncement("/tmp/none.sock", protocol=1))
+    app.container.get(SupervisorCheck).run()
+    assert [a["verb"] for a in asked] == ["hello"], "the boot asks each supervisor once"
     asked.clear()
-    outdated["now"] = False
     hook(app, "Stop")
     app.runtime().deferred.drain()
-    assert not [a for a in asked if a["verb"] == "restart"], "a supervisor running the code on disk is left as it is"
+    assert asked == [{"verb": "restart", "name": "supervisor", "resume": ["--resume", "s1"]}], "at the turn's end the kept answer restarts it, the agent resumed on its conversation, and no hello is sent"
+    asked.clear()
+    hook(app, "Stop")
+    app.runtime().deferred.drain()
+    assert asked == [], "it is restarted once; the journal it restarts asks again at its own boot"
 
 
 def test_a_due_check_runs_on_the_clock(app: App):

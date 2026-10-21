@@ -127,6 +127,9 @@ class SupervisorLink:
         self._send(environment_id, "restart", {"name": SUPERVISOR, "resume": list(resume)})
 
     def is_outdated(self, environment_id: int) -> bool:
+        announced = self.announced(environment_id)
+        if announced is None or not announced.is_compatible:
+            return False
         try:
             return self._send(environment_id, "hello", {}).outdated
         except OSError:
