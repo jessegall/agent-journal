@@ -1245,3 +1245,9 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - Working says nothing on resume (the wait that popped said what came; the start block names the task after a compaction), counts its still-open reminder from the agent's quiet time, and says the name-back beside the log line. The machine types a tick's lines; the clock only dispatches.
 - The replay harness runs one journal (played) and lists what differs from the record; a step records the stack, not the chart's counts; records are re-frozen only where the conduct changed on purpose, each reason in task 991's log; the replay fixture switches the chart feature off (tasks 1043, 991).
 - The name rules match a word anywhere in a name, ignore case, forbid prepositions, pronouns, adverbs, verb forms, slang nouns and the journal's voice, have sentence rules for parameters and class names, and flag a string standing alone at the top of a file; report 32 holds the two readers' findings. by is forbidden too: the briefing says save(row, actor) and task 1135 renames it. A quantity names its unit (task 1133).
+
+## The ruling: the workflows are gone (2026-10-21, phase 3 of plan 19)
+
+- The chart feature, its models, repositories, support, controller, routes, page, command, skill and docs are deleted; the states and the conducts carry every line (docs/the-rules.md is generated from the source and names each state and each line's sayer).
+- Migration 19 keeps a workflow the user made or edited as a document, 'Workflow: <title>', from its nodes and lines, then drops charts, nodes, counts and noted_times, the node_of, yes, no and then links, the settings listeners.off, chart.drawings_version and features.chart, and the walk entries. The migrations 6, 15 and 16, which touched the chart's tables, are deleted; migration 13 indexes no counts.
+- The keeping of the user's workflows as documents was the orchestrator's choice; the pull request says so.

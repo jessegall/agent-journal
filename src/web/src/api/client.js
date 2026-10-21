@@ -459,55 +459,19 @@ export class ApiClient {
         return this.get(this.here(`/plugins/${id}/dashboard`));
     }
 
-    // the workflows, the agent profiles and the MCP servers
+    // the agent profiles and the MCP servers
 
-    chart() {
-        return this.get("/chart");
-    }
 
-    chartOne(id) {
-        return this.get(`/chart/${id}`);
-    }
 
-    chartStanding(id) {
-        return this.get(`/chart/${id}/snapshot`);
-    }
 
-    chartNew(body) {
-        return this.post("/chart", body);
-    }
 
-    chartSave(id, body) {
-        return this.post(`/chart/${id}`, body);
-    }
 
-    chartRemove(id) {
-        return this.post(`/chart/${id}/remove`, {});
-    }
 
-    chartReset(id) {
-        return this.post(`/chart/${id}/reset`, {});
-    }
 
-    chartOff(id) {
-        return this.post(`/chart/${id}/off`, {});
-    }
 
-    chartOn(id) {
-        return this.post(`/chart/${id}/on`, {});
-    }
 
-    chartOrder(trigger, order) {
-        return this.post("/chart/order", {trigger, order});
-    }
 
-    chartRuns(last = 10) {
-        return this.get(`/chart/runs?last=${last}`);
-    }
 
-    chartTry(body) {
-        return this.post("/chart/try", body);
-    }
 
     agentProfiles() {
         return this.get("/profiles");

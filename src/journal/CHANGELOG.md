@@ -4,6 +4,8 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- The workflows are gone: the journal's conduct toward the agent is its states, a stack on the agent's row with the features' conduct folded into every state, and the Workflows page, the `journal chart` command, the journal-chart skill and the chart's tables go with them. A workflow the user made or edited is kept as a document named after it, 'Workflow: <title>', with its nodes and lines in words, written by the upgrade before the tables drop. docs/the-rules.md is now the table of every state and every line and who says it.
+- A hook times itself end to end: the hook script stamps its start, the server measures to its answer, keeps the time on the hook's entry, shows it on the activity list and reports a hook over its budget like a slow request.
 - The runner's line after a long command says only 'output N kept' with its size, and after a cut 'the whole output is kept as output N'; it no longer teaches the read command every time.
 - A command's trailing head or tail is taken off the line, the command runs whole and the whole output is kept under its number, and the cut is applied to it before the agent sees it, with a line naming the kept number; before, the agent was shown only the number in place of the lines it asked for.
 - A command whose whole output is under 200 characters, with no pipe in its line, prints as it is and keeps no numbered output and names no number; a longer output, or a line with a pipe into head, tail, grep or any filter, is kept as before. The limit is the setting Keep no output under.

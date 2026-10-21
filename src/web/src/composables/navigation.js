@@ -17,7 +17,7 @@ const typeLink = (t) => ({
 });
 
 // the pages that set how the journal runs: the desk's alone, since a phone changes none of it
-const CONFIGURING = ["plugins", "mcp", "chart", "profiles", "secrets", "settings"];
+const CONFIGURING = ["plugins", "mcp", "profiles", "secrets", "settings"];
 
 const pageLink = (key) => ({key, page: key, count: 0, hot: false, ...PAGES[key]});
 const deskLinks = (keys) => keys.filter((key) => !(onPhone && CONFIGURING.includes(key))).map(pageLink);
@@ -38,7 +38,7 @@ export function useNavigation() {
         {
             key: "project",
             label: "Project",
-            links: [...daily("project"), ...deskLinks(["files", "plugins", "mcp", "chart", "profiles", "secrets", "resources", "settings"])],
+            links: [...daily("project"), ...deskLinks(["files", "plugins", "mcp", "profiles", "secrets", "resources", "settings"])],
         },
     ]);
     const everywhere = computed(() => [...sections.value.flatMap((s) => s.links), ...groups.value.flatMap((g) => g.links)]);

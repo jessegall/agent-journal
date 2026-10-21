@@ -3,8 +3,12 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
+from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.rule_made import RuleMade
+
+
+COMPACT = "compact"
 
 
 class MemoryConduct(Conduct):
@@ -16,6 +20,13 @@ class MemoryConduct(Conduct):
             return self.unchanged()
         mark = feature.mark_due(event.context, event.snapshot.of(feature).context_mark)
         return self.unchanged(feature.DECIDE_AT_THE_MARK.create(percent=mark)) if mark else self.unchanged()
+
+    def on_session_started_memory(self, event: SessionStarted, settings: Settings) -> Transition:
+        from journal.features.memory.feature import Memory
+        stale = event.snapshot.of(Memory).stale
+        if event.source == COMPACT or not stale:
+            return self.unchanged()
+        return self.unchanged(Memory.CHECK_STALE_MEMORY.create(stale_after=settings.of(Memory.STALE_AFTER), stale=", ".join(stale)))
 
     def on_tool_starting_memory(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = memory_feature()

@@ -887,7 +887,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         "plans": PlansSnapshot((), None), "tasks": TasksSnapshot(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=()),
         "skills": SkillsSnapshot(owed=("journal",), loaded={"plans": "h2"}, skills=cards),
         "briefing": BriefingSnapshot(oriented=False, environment="main", last_other_session_at="09:12", rules="1. Always test", rules_count=1, facts="", reminders="1. Log often", waiting="2 tasks"),
-        "memory": MemorySnapshot(mark_owed=50, context_mark=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), ChatMark.FACTS),), lines_in_window=()),
+        "memory": MemorySnapshot(mark_owed=50, context_mark=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), ChatMark.FACTS),), lines_in_window=(), stale=()),
     }
     snapshot = Snapshot(readings)
     BaseState.fold((SkillsConduct, BriefingConduct, MemoryConduct))
@@ -913,14 +913,14 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         looked = Snapshot({**paid.readings, "briefing": BriefingSnapshot(**{**readings["briefing"].__dict__, "oriented": True})})
         assert Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_snapshot(looked), settings).held.key == "memory.write_held_until_decided"
         assert Idle().on(IdleEvent().with_snapshot(looked), settings).held.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
-        decided = Snapshot({**looked.readings, "memory": MemorySnapshot(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=())})
+        decided = Snapshot({**looked.readings, "memory": MemorySnapshot(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=(), stale=())})
         assert Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_snapshot(decided), settings).held is None
         crossed = Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_snapshot(decided), settings)
         assert [n.rendered() for n in crossed.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal nothing survives \"<why>\"`"] or crossed.nudges[0].key == "memory.decide_at_the_mark"
         assert Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.6, session="s1").with_snapshot(decided), settings).nudges == ()
         whispered = Idle().on(ToolStarting(call=shell("lsof -i :port")).with_snapshot(decided), settings)
         assert [n.rendered() for n in whispered.typed] == ["fact 3: the port is 8420"]
-        already = Snapshot({**decided.readings, "memory": MemorySnapshot(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=("fact 3: the port is 8420",))})
+        already = Snapshot({**decided.readings, "memory": MemorySnapshot(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=("fact 3: the port is 8420",), stale=())})
         assert Idle().on(ToolStarting(call=shell("lsof -i :port")).with_snapshot(already), settings).typed == (), "whispered once per context window"
         rule = Idle().on(RuleMade(environment_id=0, at=1.0, row_id=7, by_agent=True).with_snapshot(decided), settings)
         assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()

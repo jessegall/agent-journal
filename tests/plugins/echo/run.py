@@ -15,6 +15,8 @@ def answer(line: dict) -> str:
     mode = json.load(open(os.environ["JOURNAL_SETTINGS"])).get("mode", "")
     if mode == "slow":
         time.sleep(30)
+    if mode == "late":
+        time.sleep(2)
     if mode == "broken":
         return "not json"
     data = line.get("data", {})

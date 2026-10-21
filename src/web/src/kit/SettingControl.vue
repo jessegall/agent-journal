@@ -7,7 +7,6 @@ import ColorSwatch from "./ColorSwatch.vue";
 import FormField from "./FormField.vue";
 import ModelPicker from "./ModelPicker.vue";
 import ResetButton from "./ResetButton.vue";
-import SettingReaders from "./SettingReaders.vue";
 import Segmented from "./Segmented.vue";
 import Switch from "./Switch.vue";
 import SwitchCase from "./SwitchCase.vue";
@@ -62,7 +61,6 @@ function reset() {
                     </template>
                 </SwitchCase>
             </FormField>
-            <SettingReaders :readers="row.readers" />
         </div>
     </template>
     <template v-else>
@@ -78,7 +76,6 @@ function reset() {
                 <template v-if="row.hint">
                     <div class="setting-hint">{{ row.hint }}</div>
                 </template>
-                <SettingReaders :readers="row.readers" />
                 <template v-if="sheet && row.timing">
                     <TimingChip
                         class="setting-timing"

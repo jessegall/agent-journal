@@ -22,7 +22,7 @@ const sorted = (value) =>
 
 export const same = (a, b) => JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
 
-// an option's words, with the workflow node that reads it, or the plain fact that none does
+// an option's words
 
 const hasTiming = (when) => Boolean(when && (when.unit || when.on));
 
@@ -76,7 +76,7 @@ const capital = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const choiceOptions = (setting) => setting.choices.map((key) => ({key, label: (setting.labels || {})[key] || capital(key)}));
 
 function row(fields) {
-    const complete = {indent: false, hint: "", words: "", example: "", prefix: "", readers: [], ...fields};
+    const complete = {indent: false, hint: "", words: "", example: "", prefix: "", ...fields};
     const changed = fields.changed ?? (fields.shipped !== undefined && !same(fields.value, fields.shipped));
     const timed = Boolean(complete.timing && complete.timing.changed);
     return {
@@ -156,7 +156,6 @@ function settingRow(f, setting, settings) {
         kind: setting.kind,
         label: setting.title,
         hint: `${setting.abstract}.`,
-        readers: setting.read_by,
         unit: setting.unit,
         provider: setting.provider,
         indent: Boolean(setting.under),

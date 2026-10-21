@@ -31,6 +31,8 @@ export const REACTIONS = [
     {moment: "reacted:\ud83d\udc94", look: "worried", odds: 1, cooldown: 0},
     {moment: "reacted:\ud83d\ude20", look: "angry", odds: 1, cooldown: 0},
     {moment: "reacted:\ud83c\udfa9", look: "amused", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83e\uddd0", look: "reading", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83e\udd42", look: "amused", odds: 1, cooldown: 0},
 ];
 
 // how long the eyes keep a look, counted only while they are shown

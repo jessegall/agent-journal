@@ -36,7 +36,6 @@ from journal.features.tasks.states.working import Working
 from journal.support.subagents import Subagents
 
 from tests.replay import catch_typed, drive_the_clock, tick_after
-from journal.support.value_name import ValueName
 
 AGENT = Where("main", "s1")
 USER = Where("main")
@@ -71,15 +70,8 @@ def made(out) -> int:
     return int(out.out.split()[1].rstrip(":"))
 
 
-def place(chart) -> int:
-    """A workflow's place at the event it was made for."""
-    return chart.place_at(chart.event)
 
 
-def own_workflow(console, charts, state: str, event: str) -> tuple[int, int]:
-    """A workflow of the user's own for a state at an event, and its trigger's number."""
-    made = int(console.run(["chart", "new", f"{state} at {event}", "--for", state, "--on", event], USER).out.split()[1].rstrip(":"))
-    return made, next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == event)
 
 
 def hook(app, kind: str, **body):
@@ -285,7 +277,6 @@ def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app):
 
 def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_is_named(app, monkeypatch):
     from datetime import datetime, timedelta, timezone
-    from journal.support.fillers import Fillers
     from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     from journal.repositories.tasks import Tasks
@@ -306,7 +297,7 @@ def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_
     runner.run(checks.find(1), Actor.system())
     assert tasks.find(1).state == "blocked" and checks.find(1).last_fault == "", "not passing yet is no fault"
     runner.run(checks.find(2), Actor.system())
-    assert "task 2 waits until `no-such-program-here`, which cannot run: the command is not there" in app.container.get(Fillers).broken_waits(None), "a check that cannot run is named"
+    assert [(task.id, check.last_fault != "") for task, check in tasks.broken_waits()] == [(2, True)], "a check that cannot run is a broken wait, named with its fault"
     assert [t.id for t in tasks.blocked_without_wait()] == [], "a task waiting on a check is not a blocked task nothing opens by itself"
     marker.write_text("")
     runner.run(checks.find(1), Actor.system())
@@ -969,12 +960,12 @@ def test_skills_paid_from_one_look_at_the_agent_each_stay_paid(app):
     from journal.support.skill import Skill
     hook(app, "SessionStart")
     agents, requiring = app.container.get(Agents), app.container.get(Requiring)
-    skills = [Skill(name, "", "") for name in ("tasks", "checks", "chart", "plugins")]
+    skills = [Skill(name, "", "") for name in ("tasks", "checks", "messages", "plugins")]
     requiring.owe(agents.for_session("s1"), skills)
     seen = agents.for_session("s1")
     for skill in skills:
         requiring.paid(seen, skill)
-    assert not set(agents.for_session("s1").skills_owed) & {"tasks", "checks", "chart", "plugins"}, "four skills read at once, each paid from the same look at the agent, are all paid: none is put back by the others"
+    assert not set(agents.for_session("s1").skills_owed) & {"tasks", "checks", "messages", "plugins"}, "four skills read at once, each paid from the same look at the agent, are all paid: none is put back by the others"
 
 
 def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_datagrams(app):
@@ -1239,33 +1230,6 @@ def test_a_commit_trailer_finishes_the_tasks_it_names(app, monkeypatch):
     from journal.repositories.messages import Messages
     marks = [m for m in app.container.get(Messages).all() if m.data.get("tone") == "commit"]
     assert len(marks) == 1 and marks[0].text.startswith("Agent committed ") and marks[0].data["detail"] == "Ship the footer", "the commit is a message in the chat, once"
-
-
-def test_a_user_builds_remind_to_commit_after_n_writes_from_parts(app, monkeypatch):
-    import subprocess
-    from journal.repositories.charts import Charts
-    from journal.repositories.counts import Counts
-    root, console, charts = app.config.root, app.console(), app.container.get(Charts)
-    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
-    made = int(console.run(["chart", "new", "Remind to commit", "--on", "tool_starting"], USER).out.split()[1].rstrip(":"))
-    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, *(["--text", text] if text else []), "--in", str(made)], USER).out.split()[1].rstrip(":"))
-    finished, committed = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "tool_starting"), node("trigger", "commit_made", "")
-    writes, one, zero = node("check", "tool_writes", ""), node("action", "count_one", "writes"), node("action", "count_start", "writes")
-    reached, line = node("check", "count_over", "writes 3"), node("action", "say", "[chart] three writes since the last commit: commit")
-    for a, b, port in ((finished, writes, None), (writes, one, "yes"), (one, reached, None), (reached, line, "yes"), (committed, zero, None)):
-        console.run(["chart", "line", str(a), str(b), *(["--port", port] if port else [])], USER)
-    hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
-    said = lambda body: body.get("hookSpecificOutput", {}).get("additionalContext", "")
-    for path in ("a.py", "b.py"):
-        assert "three writes" not in said(hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": path})[1])
-    assert "three writes since the last commit" in said(hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "c.py"})[1]), "the third write reaches the count"
-    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship it"], cwd=root, check=True)
-    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
-    app.runtime().deferred.drain()
-    with app.container.get(Scope).of(1):
-        assert app.container.get(Counts).of_workflow(made)["writes"] == 0, "a commit made puts the count back at zero, through the workflow's other trigger"
-    assert console.run(["chart", "node", "check", "open_question", "--in", str(made)], USER).code == 0, "Has an open question? is a plain check a user's workflow may ask"
 
 
 def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_waits(app):
@@ -2480,19 +2444,19 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
 
 def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app):
     from journal.engine.nudger import Nudger
-    from journal.features.chart.feature import ChartFeature
+    from journal.features.messages.feature import Messages as MessagesFeature
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     agent, nudger = app.container.get(StateMachine).agent("s1", 1), app.container.get(Nudger)
     after_tool = lambda: hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
     for i in range(50):
-        nudger.say(agent, ChartFeature.LINE.create(text=f"line {i}"))
+        nudger.say(agent, MessagesFeature.NEW_MESSAGE_TO_ANSWER.create(n=i))
     app.runtime().deferred.drain()
     assert "chat etiquette" in after_tool(), "fifty lines since the last reminder, counted once the replies have gone, bring it at the next tool use"
     app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "said, the count starts again"
     for i in range(1000):
-        nudger.say(agent, ChartFeature.LINE.create(text=f"more {i}"))
+        nudger.say(agent, MessagesFeature.NEW_MESSAGE_TO_ANSWER.create(n=1000 + i))
     app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "a thousand lines later but inside the reminder's own window, none again: no flood"
 
@@ -2636,43 +2600,27 @@ def test_the_edits_since_the_log_are_read_from_the_record_the_task_named_the_log
     assert write("d.py")[0] == 200, "logged, the edits since the log are none and the write goes on"
 
 
-def test_a_second_boot_on_a_seeded_journal_changes_nothing(app):
-    from journal.features.chart.seeds.shipped_chart import ShippedChart
-    from journal.repositories.charts import Charts
-    charts, seed = app.container.get(Charts), app.container.get(ShippedChart)
-    picture = lambda: [(c.id, c.title, c.state, c.event, c.places, c.revision, c.locked, c.drawing, c.drawn_version, [(n.id, n.kind, n.key, n.text, n.locked) for n in charts.nodes_of(c)], [(l.source.id, l.target.id, l.kind) for l in charts.lines_of(c)]) for c in charts.all()]
-    seed.run()
-    first = picture()
-    seed.run()
-    assert picture() == first, "a boot on a journal already seeded draws, resets, releases and strips nothing: the second run is a no-op"
-
-
 def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the_skills_owed(skilled):
-    from journal.features.chart.support.context import Context
-    from journal.support.fillers import Fillers
     from journal.support.requiring import Requiring
     from journal.repositories.agents import Agents
     app = skilled
-    agents, requiring, fillers = app.container.get(Agents), app.container.get(Requiring), app.container.get(Fillers)
+    agents, requiring = app.container.get(Agents), app.container.get(Requiring)
     row = lambda: agents.for_session("s1")
-    from journal.events.agent.idle import Idle
-    at = Context(event=Idle(session="s1", environment_id=1), session="s1", environment_id=1)
     hook(app, "SessionStart")
     assert row().oriented is False and requiring.owed_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
-    assert fillers.fill("{{awaiting}} / {{skill_owed}} / {{skill_path}}", at) == "a look at what is in flight here and the journal skill to be read / journal / .claude/skills/journal/SKILL.md"
     read_skill(app, "journal")
     assert requiring.owed_names(row()) == [] and row().skills_loaded and "journal" in row().skills_loaded, "the read removes the owed link and keeps the hash"
     app.console().run(["environment", "here"], AGENT)
-    assert row().oriented is True and fillers.fill("{{awaiting}}", at) == "", "the look sets oriented and nothing is owed"
+    assert row().oriented is True, "the look sets oriented and nothing is owed"
     hook(app, "UserPromptSubmit", prompt="make me a plan for the release")
-    assert requiring.owed_names(row()) == ["plans"] and fillers.fill("{{skill_path}}", at) == ".claude/skills/journal-plans/SKILL.md", "a prompt naming plans: the plans skill owed, with its path"
+    assert requiring.owed_names(row()) == ["plans"], "a prompt naming plans: the plans skill owed"
     read_skill(app, "journal-plans")
     assert requiring.owed_names(row()) == []
     app.console().run(["task", "create", "t", "--start"], AGENT)
     assert requiring.owed_names(row()) == [], "entering a state owes nothing by itself: a state's skill is owed at a start in it"
     context(app, 30)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    assert row().mark_owed == 25 and row().context_mark == 25 and fillers.fill("{{awaiting}}", at) == "a decision at the context mark, 25% full", "the crossing sets the mark owed"
+    assert row().mark_owed == 25 and row().context_mark == 25, "the crossing sets the mark owed"
     app.console().run(["fact", "create", "the login is flaky"], AGENT)
     assert row().mark_owed == 0 and row().context_mark == 25, "the fact clears the mark owed and keeps the mark taken"
     context(app, 55)
@@ -2994,30 +2942,6 @@ def test_the_card_for_a_question_the_user_answered_is_the_users(app):
     card = [m for m in app.container.get(Messages).in_() if m.author == "system"][-1]
     assert card.text == "You answered question 1" and card.created_by.kind == ActorKind.USER, "the user's act is written as the user's"
     assert card.data["detail"] == "", "the mark says only that it was answered, never the answer"
-
-def test_await_and_a_command_moved_to_the_background_are_triggers(app):
-    from journal.repositories.charts import Charts
-    from journal.repositories.counts import Counts
-    console, charts = app.console(), app.container.get(Charts)
-    made = int(console.run(["chart", "new", "Waits and moves", "--on", "awaited"], USER).out.split()[1].rstrip(":"))
-    node = lambda kind, key, text: int(console.run(["chart", "node", kind, key, *(["--text", text] if text else []), "--in", str(made)], USER).out.split()[1].rstrip(":"))
-    awaited, moved = next(n.id for n in charts.nodes_of(charts.find(made)) if n.key == "awaited"), node("trigger", "command_moved", "")
-    waits, moves = node("action", "count_one", "waits"), node("action", "count_one", "moves")
-    console.run(["chart", "line", str(awaited), str(waits)], USER)
-    console.run(["chart", "line", str(moved), str(moves)], USER)
-    hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
-    console.run(["await", "the build", "--until", "false"], AGENT)
-    folder = app.config.root / "c9"
-    folder.mkdir()
-    ShellVerbs(app).split("pytest -q", str(folder))
-    ShellVerbs(app).moved("c9", "pytest -q", "/tmp/out/c9")
-    ended = node("trigger", "command_ended", "")
-    console.run(["chart", "line", str(ended), str(node("action", "count_one", "ends"))], USER)
-    ShellVerbs(app).ended("c9", 0, "/tmp/out/c9")
-    app.runtime().deferred.drain()
-    with app.container.get(Scope).of(1):
-        assert app.container.get(Counts).of_workflow(made) == {"waits": 1, "moves": 1, "ends": 1}, "journal await, a command moved to the background and its end each walk their own trigger"
 
 def test_a_document_is_written_anew_from_a_file(app, tmp_path):
     first, second = tmp_path / "first.md", tmp_path / "second.md"
@@ -3617,68 +3541,6 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app
     assert "read the journal skill before anything else" in held("loading_skill_rules")["a write before the skill is read"]
     assert "`journal environment here`" in held("orienting_rules")["a write before the look"]
     assert "decide what to keep from the context" in held("at_mark_rules")["a write at the mark"]
-    from journal.support.chart_catalogue import ChartCatalogue
-    by_key = {e.key: e for e in app.container.get(ChartCatalogue).triggers()}
-    assert all("codex" in by_key[k].providers for k in ("session_started", "prompt_submitted", "tool_starting")) and by_key["turn_written"].providers == ("claude",), "the events the holds ride on come from Codex too; only the turn written is Claude's alone, and the page says so"
-
-def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
-    """A workflow of the user's with the one node sends the agent back from each pause: awaiting something outside, stuck, waiting on a question, awaiting a worker, running a sequence."""
-    from journal.supervisor_link import SupervisorLink
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
-    from journal.repositories.charts import Charts
-    console, charts, machine = app.console(), app.container.get(Charts), app.container.get(StateMachine)
-    hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
-    console.run(["task", "create", "the footer", "--start"], AGENT)
-    mine = int(console.run(["chart", "new", "Back on a subagent", "--on", "subagent_ended"], USER).out.split()[1].rstrip(":"))
-    trigger = next(n.id for n in charts.nodes_of(charts.find(mine)) if n.kind == "trigger")
-    back = int(console.run(["chart", "node", "action", "release", "--text", "[chart] back to it", "--in", str(mine)], USER).out.split()[1].rstrip(":"))
-    console.run(["chart", "line", str(trigger), str(back)], USER)
-    send_back = lambda: hook(app, "SubagentStop", agent_id="a1")
-    console.run(["await", "the deploy", "--until", "false"], AGENT)
-    assert machine.current("s1").name == "awaiting"
-    send_back()
-    assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "back from awaiting something outside, to the task"
-    console.run(["stuck", "the build is broken"], AGENT)
-    assert machine.current("s1").name == "stuck"
-    send_back()
-    assert machine.current("s1").name == "working", "back from being stuck"
-    console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
-    assert machine.current("s1").name == "waiting"
-    send_back()
-    assert machine.current("s1").name == "working", "back from a question"
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    console.run(["worker", "wait", "1"], AGENT)
-    assert machine.current("s1").name == "awaiting"
-    send_back()
-    assert machine.current("s1").name == "working", "back from a worker"
-    made = re.search(r"sequence (\d+)", console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).out).group(1)
-    console.run(["sequence", "run", made], AGENT)
-    assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "a sequence runs beside the state, which keeps its task"
-
-def test_the_content_checks_read_the_tool_the_prompt_the_context_and_the_clock_for_claude_and_codex(app):
-    import time
-    from journal.events.agent.prompt_submitted import PromptSubmitted
-    from journal.events.agent.ticked import Ticked
-    from journal.events.agent.tool_starting import ToolStarting
-    from journal.features.chart.support.checks import Checks
-    from journal.features.chart.support.context import Context
-    hook(app, "SessionStart")
-    checks = app.container.get(Checks)
-    at = lambda event, provider="claude": Context(event=event, session="s1", environment_id=1, provider=provider)
-    write = at(ToolStarting(call=ToolCall(tool="Write", input={"file_path": "src/deploy.sh"}), session="s1", environment_id=1))
-    shell = at(ToolStarting(call=ToolCall(tool="shell", input={"command": ["bash", "-lc", "git push origin main"]}), session="s1", environment_id=1, provider="codex"), "codex")
-    assert checks.answer("tool_named", write, "Write, Edit") and not checks.answer("tool_named", write, "Bash") and checks.answer("tool_named", shell, "shell"), "the tool's name, as the provider names it"
-    assert checks.answer("tool_input_has", write, "deploy") and checks.answer("tool_input_has", shell, "git push") and not checks.answer("tool_input_has", write, "push"), "the words anywhere in the input, Codex's command list included"
-    prompt = at(PromptSubmitted(prompt="Deploy it to production now", session="s1", environment_id=1))
-    assert checks.answer("prompt_has", prompt, "deploy") and not checks.answer("prompt_has", prompt, "rollback") and not checks.answer("prompt_has", write, "deploy")
-    full = at(ToolStarting(call=ToolCall(tool="Read", input={}), session="s1", environment_id=1, context=0.62))
-    assert checks.answer("context_over", full, "60") and not checks.answer("context_over", full, "70") and not checks.answer("context_over", write, "0"), "the context as the event reports it"
-    night = time.mktime((2026, 10, 17, 23, 30, 0, 0, 0, -1))
-    noon = time.mktime((2026, 10, 17, 12, 0, 0, 0, 0, -1))
-    tick = lambda when: at(Ticked(at=when, quiet_for=0.0, session="s1", environment_id=1))
-    assert checks.answer("time_between", tick(night), "22:00-06:00") and not checks.answer("time_between", tick(noon), "22:00-06:00") and checks.answer("time_between", tick(noon), "09:00-17:00"), "a span past midnight included"
-    assert not checks.answer("time_between", tick(noon), "late"), "a span that is no span answers no"
 
 def test_a_start_after_a_compaction_says_where_the_work_stands(app):
     console = app.console()
@@ -5878,3 +5740,20 @@ def test_a_tool_entry_records_the_calls_reading_beside_the_raw_input(app):
     call = written.recorded_call()
     assert call["command"].startswith("echo hi") and [p["text"] for p in call["parts"]] == ["echo hi > notes.txt", "grep -rn foo src"] and call["written_paths"] == ["notes.txt"] and call["work"] == "running", "the call's one reading is on the entry"
     assert written.is_write() and not read.is_write() and read.recorded_call()["work"] == "searching", "the write flag and the work word are read from the record, never from the input again"
+
+
+def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is_cut_at_the_deadline(app):
+    import time
+    from journal.repositories.plugins import Plugins
+    plugins = app.container.get(Plugins)
+    plugins.save(echo(app, hears=["tool_starting", "tool_finished"], holds=["tool_starting"]).with_(settings={"mode": "late"}), Actor.user(1))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="plugins.deadline", value=1), Actor.system())
+    hook(app, "SessionStart")
+    started = time.monotonic()
+    assert hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, tool_response={})[0] == 200
+    assert time.monotonic() - started < 1.0, "an event the plugin does not hold is handed to it after the reply: the hook never waits on it"
+    started = time.monotonic()
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    waited = time.monotonic() - started
+    assert status == 200 and 1.0 <= waited < 1.9, "the event it holds is asked on the answer path and cut off at the deadline, the hook answered without it"
+    assert "no answer within" in plugins.named("echo").last_fault, "the plugin that overran is marked faulted"

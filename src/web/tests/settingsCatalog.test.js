@@ -148,7 +148,7 @@ describe("the manifest's features", () => {
                 options: [
                     option("timeout_minutes", "number", {default: 60, unit: "min"}),
                     option("mode", "choice", {default: "builder", choices: ["builder", "orchestrator", "solo"]}),
-                    option("model", "model", {default: "sonnet", choices: ["opus", "sonnet"], provider: "claude", read_by: [{workflow: "Send work", id: 4}]}),
+                    option("model", "model", {default: "sonnet", choices: ["opus", "sonnet"], provider: "claude"}),
                 ],
             },
         ],
@@ -172,10 +172,10 @@ describe("the manifest's features", () => {
         expect(mode.value).toBe("builder");
     });
 
-    test("an option's help says only what it does, and the workflows that read it come apart, to be shown as links", () => {
+    test("an option's help says only what it does", () => {
         const [, timeout, , model] = rows({});
-        expect([timeout.hint, timeout.readers]).toEqual(["About timeout_minutes.", []]);
-        expect([model.hint, model.readers]).toEqual(["About model.", [{workflow: "Send work", id: 4}]]);
+        expect(timeout.hint).toBe("About timeout_minutes.");
+        expect(model.hint).toBe("About model.");
         expect(model.provider).toBe("claude");
     });
 

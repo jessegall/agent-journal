@@ -12,7 +12,6 @@ const PAGES = {
     about: "About",
     plugins: "Plugins",
     mcp: "MCP",
-    chart: "Workflows",
     secrets: "Secrets",
     file: "File",
     resources: "Resources",

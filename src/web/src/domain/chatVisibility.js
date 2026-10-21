@@ -37,7 +37,6 @@ export const VISIBILITY_GROUPS = [
             {key: "sequences", label: "Sequences starting and finishing", icon: "list"},
             {key: "sequence_steps", label: "Every step of a sequence", icon: "list"},
             {key: "triggers", label: "Triggers", icon: "bolt"},
-            {key: "workflows", label: "Workflow notes", icon: "bolt"},
             {key: "menus", label: "Menus the journal answered", icon: "bolt"},
             {key: "suggestions", label: "Suggestions", icon: "bulb"},
             {key: "plugins", label: "Plugin notes", icon: "plug"},
