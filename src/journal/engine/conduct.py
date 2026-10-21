@@ -12,8 +12,8 @@ class Conduct:
     def unchanged(self, *nudges: Nudge) -> Transition:
         return Transition(self, nudges=nudges)
 
-    def changed(self, now: "Conduct", *nudges: Nudge) -> Transition:
-        return Transition(now, nudges=nudges)
+    def changed(self, next: "Conduct", *nudges: Nudge) -> Transition:
+        return Transition(next, nudges=nudges)
 
     def push(self, to: "Conduct", *nudges: Nudge) -> Transition:
         return Transition(self, pushed=to, nudges=nudges)

@@ -171,13 +171,13 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
     console.run(["await", "the build", "--until", "false"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
-    assert machine.current("s1").name == "expecting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
+    assert machine.current("s1").name == "awaiting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
     out = console.run(["task", "done", "1"], AGENT).out
     beneath = app.container.get(Agents).for_session("s1").stack[-2]
-    assert machine.current("s1").name == "expecting" and beneath["state"] == "following_plan" and beneath["data"]["task_id"] == 2, "the wait stands, and the agent goes on to task 2 when it ends"
+    assert machine.current("s1").name == "awaiting" and beneath["state"] == "following_plan" and beneath["data"]["task_id"] == 2, "the wait stands, and the agent goes on to task 2 when it ends"
     out = console.run(["task", "done", "2"], AGENT).out
     assert "plan 1 is done" in out
-    assert [layer["state"] for layer in app.container.get(Agents).for_session("s1").stack] == ["idle", "expecting"], "done with the plan, the agent goes to rest when its wait ends"
+    assert [layer["state"] for layer in app.container.get(Agents).for_session("s1").stack] == ["idle", "awaiting"], "done with the plan, the agent goes to rest when its wait ends"
     assert app.container.get(Plans).find(1).state == PlanState.DONE
 
 
@@ -530,7 +530,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     assert typed[-1] == "[journal] worker 2, Dr. Einstein, stopped before it reported", "one line at a time: the next waits until this one is seen back"
     lines.confirm(1, typed[-1])
     link.release(1)
-    assert typed[-1].startswith("[journal] what you waited on came back: carry on"), "the last worker back pops the wait, with the work beneath named after it"
+    assert typed[-1].startswith("[journal] the wait for workers 1, 2 is over: worker 1, Lady Lovelace, reported; worker 2, Dr. Einstein, stopped before it reported"), "the last worker back pops the wait, with the work beneath named after it"
 
 
 def test_a_worker_runs_the_dispatching_agents_own_program(app, monkeypatch):
@@ -2450,9 +2450,9 @@ def test_a_subagents_tool_use_does_not_lift_the_agents_own_wait(app):
     console.run(["environment", "here"], AGENT)
     console.run(["await", "the readers", "--until", "false"], AGENT)
     machine = app.container.get(StateMachine)
-    assert machine.current("s1").name == "expecting"
+    assert machine.current("s1").name == "awaiting"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, agent_id="sub-1")
-    assert machine.current("s1").name == "expecting", "a subagent reading is not the agent working again"
+    assert machine.current("s1").name == "awaiting", "a subagent reading is not the agent working again"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert machine.current("s1").name == "idle", "the agent's own tool use lifts the wait"
 
@@ -2474,7 +2474,7 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
     console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
     app.runtime().deferred.drain()
     assert machine.current("s2").task_id == 1, "the agent awaiting the worker, not the live one, is released by the shipped workflow"
-    assert typed == ["[journal] worker 1, Lady Lovelace, reported in the chat", "[journal] what you waited on came back: carry on"], "told once, on the walk about the agent that waits"
+    assert typed[0] == "[journal] worker 1, Lady Lovelace, reported in the chat" and typed[1].startswith("[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported") and typed[2].startswith("[journal] task 1 is in hand") and len(typed) == 3, "told once, on the walk about the agent that waits, and the work beneath is named after the wait"
 
 def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app):
     from journal.engine.nudger import Nudger
@@ -3634,7 +3634,7 @@ def test_send_the_agent_back_restores_what_every_pause_keeps(app, monkeypatch):
     console.run(["chart", "line", str(trigger), str(back)], USER)
     send_back = lambda: hook(app, "SubagentStop", agent_id="a1")
     console.run(["await", "the deploy", "--until", "false"], AGENT)
-    assert machine.current("s1").name == "expecting"
+    assert machine.current("s1").name == "awaiting"
     send_back()
     assert machine.current("s1").name == "working" and machine.current("s1").task_id == 1, "back from awaiting something outside, to the task"
     console.run(["stuck", "the build is broken"], AGENT)
@@ -5661,11 +5661,11 @@ def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app):
     assert user.code == 1 and "no wait" in user.err, "waiting for the user is no wait"
     output = app.container.get(OutputLog).began("c1", "npm run build", app.config.home / "runtime" / "outputs" / "c1", "s1", Actor.agent("s1"))
     assert console.run(["await", "the build", "--output", str(output.id)], AGENT).code == 0
-    assert app.container.get(StateMachine).current("s1").name == "expecting", "the agent waits"
+    assert app.container.get(StateMachine).current("s1").name == "awaiting", "the agent waits"
     outputs = app.container.get(CommandOutputs)
     outputs.save(outputs.find(output.id).moved_out().ended_with(0), Actor.system())
     app.runtime().deferred.drain()
-    assert app.container.get(StateMachine).current("s1").name != "expecting", "the wait ends by itself once the output it named is done"
+    assert app.container.get(StateMachine).current("s1").name != "awaiting", "the wait ends by itself once the output it named is done"
 
 
 def test_a_file_changed_by_a_shell_command_keeps_its_changed_lines(app):

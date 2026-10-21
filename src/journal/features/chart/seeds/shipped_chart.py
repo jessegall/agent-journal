@@ -20,9 +20,9 @@ from journal.support.drawn_line import NO, THEN, YES
 from journal.repositories.charts import Charts
 from journal.repositories.setting_rows import SettingRows
 
-SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "expecting", "stuck", "ended")
+SHIPPED_STATES = ("idle", "working", "following_plan", "awaiting", "waiting", "stuck", "ended")
 """The states the journal ships workflows for."""
-PLACE_ORDER = ("expecting", "stuck", "awaiting", "waiting", "idle", "following_plan", "working", "ended")
+PLACE_ORDER = ("stuck", "awaiting", "waiting", "idle", "following_plan", "working", "ended")
 """The place the shipped workflows of one event take, the waits first, and a child state before its parent, so following a plan speaks at a checkpoint before Working's lines and can end the walk there."""
 SETTING = re.compile(r"\{([a-z_]+\.[a-z_]+)\}")
 """A setting a shipped title names, filled with its value when the title is drawn."""
@@ -32,9 +32,8 @@ STATELESS = (
 """The Always workflows the journal ships, one subject each, in the order they run at their event: the drawing's name, its title and the builder that draws it."""
 OWN = (
     ("waiting", "questions.updated", "question", "Send the agent back to its work when the question is answered", "waiting_at_question"),
-    ("expecting", "ticked", "remind", "Remind the agent what it waits for after five minutes of quiet", "expecting_at_tick"),
-    ("expecting", "ticked", "meanwhile", "Point to the next task once per wait, after a minute of it, in auto mode", "next_while_waiting"),
-    ("expecting", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
+    ("awaiting", "ticked", "remind", "Remind the agent what it waits for after five minutes of quiet", "expecting_at_tick"),
+    ("awaiting", "ticked", "meanwhile", "Point to the next task once per wait, after a minute of it, in auto mode", "next_while_waiting"),
     ("stuck", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
     ("awaiting", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
     ("waiting", "tool_starting", "back", "Send the agent back to its work when it uses a tool itself", "working_again"),
@@ -56,7 +55,7 @@ DRAWINGS_VERSION_KEY = "chart.drawings_version"
 RETIRED_DRAWINGS_KEY = "chart.retired_drawings"
 RETIRED_STATES = {"orienting": "its state is the look owed now", "at_mark": "its state is the mark owed now", "loading_skill": "its state is the skill owed now"}
 """The pause states that became facts: a user's workflow bound to one is kept, turned off, its title saying what became of its state."""
-RETIRED_MOVES = {"idle": ("go_idle", ""), "expecting": ("wait_outside", ""), "stuck": ("mark_stuck", "")}
+RETIRED_MOVES = {"idle": ("go_idle", ""), "awaiting": ("wait_outside", ""), "stuck": ("mark_stuck", "")}
 """The one move node of the older shape, Change the agent's state, by the state it named: each is an outcome-named action now, the words after the name kept as its text."""
 RETIRED_CHECKS = {"tool_uses_since_unread_every": ("count_every", "uses"), "tool_uses_since_unread_over": ("count_over", "uses"), "tool_uses_since_read_over": ("count_over", "owed"), "unread_reminders_over": ("count_over", "namings"), "edits_since_log_over": ("count_over", "edits"), "edits_since_log_every": ("count_every", "edits"), "edits_since_log_at": ("count_at", "edits")}
 """The counter checks of an older shape, each now a count check on a count read from the journal's record: a user's workflow naming one is rewritten at boot."""

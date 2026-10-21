@@ -13,7 +13,7 @@ from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.support.option import Option
 from journal.support.skill import Skill
-from journal.features.tasks.states.expecting import Expecting
+from journal.features.tasks.states.awaiting import Awaiting
 from journal.features.tasks.states.stuck import Stuck
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.states.working import Working
@@ -23,7 +23,7 @@ class Tasks(Feature):
     name = "tasks"
     title = "Tasks"
     help = "A task is one unit of work with a life; a stop with one in hand is told to carry on, and its log is asked for as the edits mount."
-    states = (Idle, Working, Stuck, Expecting)
+    states = (Idle, Working, Stuck, Awaiting)
     commands = (TaskCommand, AwaitCommand, StuckCommand)
     AUTO = Option("tasks.auto", "Work the list on its own", "At a stop with tasks open, the next one holds the stop until it is taken up; off, the agent stops and waits for you", True, kind="switch")
     FIRST_AFTER = Option("tasks.first_nudge_after", "Ask for a log after", "Edits without a log line before the agent is asked where its task stands", 25, unit="edits")
@@ -104,4 +104,4 @@ needs no task; file one for work that is an item of its own, that waits, or that
   one, and only the user stops you. A stop with parked tasks names them, in auto mode or not: parked is still open.
 - Work you put off in words is work lost: file it as a task instead.
 - Stopping with a task in hand is told to carry on. Truly stuck: `journal stuck "<why>"`.
-""", keywords=('task', 'tasks', 'todo'), required_in=('working', 'stuck', 'expecting'))
+""", keywords=('task', 'tasks', 'todo'), required_in=('working', 'stuck', 'awaiting'))

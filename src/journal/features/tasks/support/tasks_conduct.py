@@ -14,8 +14,8 @@ class TasksConduct(Conduct):
     """The tasks feature's conduct in every state: a polled command named, a task open again told, a parked task named when a task closes, a wait the agent declares pushed as Expecting and a stuck agent pushed as Stuck."""
 
     def on_awaited_tasks(self, event: Awaited, settings: Settings) -> Transition:
-        from journal.features.tasks.states.expecting import Expecting
-        return self.push(Expecting(what=event.what, ends_on=event.ends_on, since=event.at))
+        from journal.features.tasks.states.awaiting import Awaiting
+        return self.push(Awaiting(what=event.what, ends_on=event.ends_on, since=event.at))
 
     def on_stuck_declared_tasks(self, event: StuckDeclared, settings: Settings) -> Transition:
         from journal.features.tasks.states.stuck import Stuck

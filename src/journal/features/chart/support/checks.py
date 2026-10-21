@@ -22,7 +22,7 @@ from journal.support.requiring import Requiring
 from journal.support.chain import Chain
 from journal.features.tasks.states.working import Working
 from journal.features.questions.states.waiting import Waiting
-from journal.features.workers.states.awaiting import Awaiting
+from journal.features.tasks.states.awaiting import Awaiting
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.question import Question
@@ -275,7 +275,7 @@ class Checks:
 
     def agent_awaits_the_worker(self, ctx: Context) -> bool:
         state = self.state(ctx)
-        return isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Worker) and isinstance(state, Awaiting) and ctx.event.model.id in state.workers
+        return isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Worker) and isinstance(state, Awaiting) and ctx.event.model.id in state.worker_ids()
 
     def last_worker_back(self, ctx: Context) -> bool:
         """Every worker the agent awaits has reported or stopped, the one of this row as the row now says."""
@@ -283,7 +283,7 @@ class Checks:
         if not isinstance(state, Awaiting):
             return False
         row = ctx.event.model if isinstance(ctx.event, ModelEvent) and isinstance(ctx.event.model, Worker) else None
-        return all((row.state if row and row.id == n else self.workers.find(n).state) != WorkerState.DISPATCHED for n in state.workers)
+        return all((row.state if row and row.id == n else self.workers.find(n).state) != WorkerState.DISPATCHED for n in state.worker_ids())
 
     def question_answered(self, ctx: Context) -> bool:
         event = ctx.event

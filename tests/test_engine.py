@@ -930,29 +930,29 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
 
 
 def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
-    from journal.features.workers.states.awaiting import Awaiting
+    from journal.features.tasks.states.awaiting import Awaiting
     from journal.events.rows.worker_back import WorkerBack
     from journal.events.rows.worker_stopped import WorkerStopped
     settings = SettingsValue({})
-    waiting = Awaiting(workers=(3, 4))
+    waiting = Awaiting.on_workers((3, 4), 0.0)
     first = waiting.on(WorkerBack(environment_id=1, at=1.0, worker_id=3, name="Lady Lovelace", report=9, dispatched_by="s1"), settings)
-    assert first.to == Awaiting(workers=(4,)) and not first.popped and [n.key for n in first.nudges] == ["workers.worker_reported"]
+    assert first.to.waits_on() == ["workers:4"] and not first.popped and [n.key for n in first.nudges] == ["workers.worker_reported"]
     other = waiting.on(WorkerBack(environment_id=1, at=1.0, worker_id=8, name="x", report=9, dispatched_by="s1"), settings)
     assert other.to is waiting and other.nudges == (), "a worker it does not wait on is not its business"
-    last = Awaiting(workers=(4,)).on(WorkerStopped(environment_id=1, at=2.0, worker_id=4, name="Herr Turing"), settings)
-    assert last.popped and [n.key for n in last.nudges] == ["workers.worker_stopped_unreported", "workers.waited_on_came_back"]
+    last = first.to.on(WorkerStopped(environment_id=1, at=2.0, worker_id=4, name="Herr Turing"), settings)
+    assert last.popped and [n.key for n in last.nudges] == ["workers.worker_stopped_unreported", "tasks.wait_over"] and last.nudges[-1].rendered().startswith("the wait for workers 3, 4 is over: worker 3, Lady Lovelace, reported; worker 4, Herr Turing, stopped before it reported")
     from journal.events.rows.worker_dispatched import WorkerDispatched
     from journal.features.workers.support.workers_conduct import WorkersConduct
     BaseState.fold((WorkersConduct,))
     try:
         own = Working(task_id=7).on(WorkerDispatched(environment_id=1, at=3.0, worker_id=5, name="Lady Lovelace", dispatched_by="s1").reaching("s1"), settings)
-        assert own.pushed == Awaiting(workers=(5,)), "a worker this agent dispatches pushes the wait on its work"
+        assert own.pushed == Awaiting.on_workers((5,), 3.0), "a worker this agent dispatches pushes the wait on its work"
         assert Working(task_id=7).on(WorkerDispatched(environment_id=1, at=3.0, worker_id=5, name="Lady Lovelace", dispatched_by="s2").reaching("s1"), settings).pushed is None, "another session's worker is not waited on here"
-        widened = Awaiting(workers=(5,)).on(WorkerDispatched(environment_id=1, at=4.0, worker_id=6, name="Dr. Einstein", dispatched_by="s1").reaching("s1"), settings)
-        assert widened.to == Awaiting(workers=(5, 6)) and widened.pushed is None, "a second dispatch widens the wait instead of stacking another"
+        widened = Awaiting.on_workers((5,), 3.0).on(WorkerDispatched(environment_id=1, at=4.0, worker_id=6, name="Dr. Einstein", dispatched_by="s1").reaching("s1"), settings)
+        assert widened.to == Awaiting.on_workers((5, 6), 3.0) and widened.pushed is None, "a second dispatch widens the wait instead of stacking another"
     finally:
         BaseState.fold(())
-    assert Awaiting(workers=(5,)).on(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True)), settings).to == Awaiting(workers=(5,)), "the agent works on while its workers run"
+    assert Awaiting.on_workers((5,), 3.0).on(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True)), settings).to == Awaiting.on_workers((5,), 3.0), "the agent works on while its workers run"
 
 
 def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_snapshot():
@@ -1138,7 +1138,7 @@ def test_a_question_asked_pushes_waiting_and_its_answer_pops_it_on_top_or_on_res
 def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_the_last_row_settles_and_stuck_is_quiet():
     from dataclasses import replace
     from journal.features.tasks.feature import Tasks as TasksFeature
-    from journal.features.tasks.states.expecting import Expecting
+    from journal.features.tasks.states.awaiting import Awaiting
     from journal.features.tasks.states.stuck import Stuck
     from journal.models.open_task import OpenTask
     from journal.features.tasks.support.tasks_conduct import TasksConduct
@@ -1154,7 +1154,7 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     BaseState.fold((TasksConduct,))
     try:
         pushed = Working(task_id=7).on(Awaited(what="the build", ends_on="command_outputs:4,checks:2", at=100.0), auto)
-        assert pushed.pushed == Expecting(what="the build", ends_on="command_outputs:4,checks:2", since=100.0), "journal await pushes the wait on the work"
+        assert pushed.pushed == Awaiting(what="the build", ends_on="command_outputs:4,checks:2", since=100.0), "journal await pushes the wait on the work"
         assert Working(task_id=7).on(StuckDeclared(why="the login", at=1.0), auto).pushed == Stuck(why="the login"), "journal stuck pushes Stuck"
     finally:
         BaseState.fold(())

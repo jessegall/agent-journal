@@ -5,7 +5,7 @@ from journal.support.cards import Cards
 from journal.engine.state_machine import StateMachine
 from journal.engine.agent_state import AgentState
 from journal.engine.states.wait import Wait
-from journal.features.tasks.states.expecting import Expecting
+from journal.features.tasks.states.awaiting import Awaiting
 from journal.features.tasks.states.stuck import Stuck
 from journal.engine.nudger import Nudger
 from journal.features.chart.support.context import Context
@@ -173,7 +173,7 @@ class Actions:
 
     def wait_outside(self, text: str, ctx: Context) -> Decision:
         """The agent waits for what the text names, the wait laid over what it is doing."""
-        return self.pause(ctx, Expecting, what=text.strip())
+        return self.pause(ctx, Awaiting, what=text.strip())
 
     def mark_stuck(self, text: str, ctx: Context) -> Decision:
         """The agent is stuck for the reason in the text, the pause laid over what it is doing."""

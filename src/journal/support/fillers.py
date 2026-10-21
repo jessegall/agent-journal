@@ -12,7 +12,7 @@ from journal.features.chart.support.checks import Checks
 from journal.features.chart.support.context import Context
 from journal.support.task_briefing import TaskBriefing
 from journal.support.running import Running
-from journal.features.tasks.states.expecting import Expecting
+from journal.features.tasks.states.awaiting import Awaiting
 from journal.features.tasks.stop_words import ago
 from journal.engine.clock import Clock
 from journal.features.tasks.states.working import Working
@@ -239,9 +239,8 @@ class Fillers:
         return f"`journal task log {state.task_id}`" if isinstance(state, Working) and state.task_id else ""
 
     def awaited(self, ctx: Context) -> str:
-        """What an expecting agent is expecting, in its own words."""
         state = self.state(ctx)
-        return state.what if isinstance(state, Expecting) else ""
+        return state.what if isinstance(state, Awaiting) else ""
 
     def sequence_n(self, ctx: Context) -> str:
         """The number of the sequence in hand."""
