@@ -125,7 +125,7 @@ class SecretCommand(Command):
 
     def run(self, args: Namespace, caller: Caller) -> int:
         secret = self.lookup(args.secret)
-        if not secret.helpers and caller.session and self.workers.session_worker(caller.session):
+        if not secret.helpers and caller.session is not None and self.workers.session_worker(caller.session):
             raise Rejection(f"secret {secret.id} is the main agent's alone: the user lets helpers have it on the Secrets page")
         code, output = self.runner.run(secret, [c for c in args.command if c != "--"], args.stdin, args.env)
         self.secrets.save(secret.with_(used_at=datetime.now(timezone.utc)), caller.actor)

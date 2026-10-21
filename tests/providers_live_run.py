@@ -59,7 +59,7 @@ def live(tmp_path: Path, monkeypatch, provider: str):
     port = app.server().port
     assert port > 20000 and not 8420 <= port <= 8429, f"the scratch server took {port}"
     (tmp_path / ".journal" / "port").write_text(str(port))
-    app.console().run(["setup"], Caller("main"))
+    app.console().run(["setup"], Caller.user("main"))
     if Providers().lookup(provider).hooks_ready(tmp_path) != HooksReady.READY:
         app.runtime().stop()
         pytest.skip(f"{provider}'s hooks are not trusted in this config folder, so no hook would reach the journal: inconclusive")
@@ -121,7 +121,7 @@ def test_untrusted_hooks_are_reported_not_ready_and_claim_no_hold(tmp_path: Path
     app.runtime().start()
     try:
         (tmp_path / ".journal" / "port").write_text(str(app.server().port))
-        app.console().run(["setup"], Caller("main"))
+        app.console().run(["setup"], Caller.user("main"))
         program = Providers().lookup(provider)
         if provider == "codex":
             monkeypatch.setenv("CODEX_HOME", str(tmp_path / "untrusted"))
@@ -189,13 +189,13 @@ def test_a_refused_stop_leads_to_work(live: App, provider: str):
 def test_a_worker_reports_and_resumes_with_its_memory(live: App, provider: str):
     launched(live, provider)
     console, workers, reports = live.console(), live.container.get(Workers), live.container.get(WorkerReports)
-    console.run(["worker", "dispatch", "Lady Lovelace", "Say the word amber and nothing else.", "--provider", provider, "--profile", "medior"], Caller("main"))
+    console.run(["worker", "dispatch", "Lady Lovelace", "Say the word amber and nothing else.", "--provider", provider, "--profile", "medior"], Caller.user("main"))
     with live.container.get(Scope).environment(MAIN):
         first = wait_for(lambda: [(worker, report) for worker in workers.all() if (report := reports.last(worker))], WORKER_SECONDS)
     assert first and "amber" in first[0][1].lower() and first[0][0].session, "the worker's session is read from its output and its report filed"
     worker, report = first[0]
     assert all(entry.actor != Actor.agent(worker.session) for entry in entries(live, "ToolStarting")), "the worker's commands are its own, not its parent's"
-    console.run(["worker", "send", str(worker.id), "What word did you say last time? Answer with that word only."], Caller("main"))
+    console.run(["worker", "send", str(worker.id), "What word did you say last time? Answer with that word only."], Caller.user("main"))
     with live.container.get(Scope).environment(MAIN):
         second = wait_for(lambda: (later := reports.last(workers.find(worker.id))) != report and later, WORKER_SECONDS)
     assert second and "amber" in second.lower(), "a second job resumes the worker and it recalls the word"

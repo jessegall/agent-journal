@@ -9,7 +9,7 @@ class RowPending(RowEvent):
 
     ref: str
     label: str
-    awaiter: str
+    awaiter: str | None
 
     def wait_terms(self) -> tuple[str, str, float]:
         return self.label, self.ref, self.time

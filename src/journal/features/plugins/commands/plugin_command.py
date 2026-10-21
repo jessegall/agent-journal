@@ -65,7 +65,7 @@ class PluginCommand(Command):
     def upgrade(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.upgrade_preview(args.name, args.ref)
         print("\n".join([f"{args.name} from {preview.previous[:12] or preview.source} to {preview.commit[:12] or 'the folder as it is now'}", *(preview.changes or ["nothing it runs, hears or holds changes"])]))
-        if preview.code and caller.session:
+        if preview.code and caller.session is not None:
             print("\nthe files it changes, the whole diff for the user on the Plugins page:\n" + "\n".join(preview.files_changed()))
         elif preview.code:
             print("\nthe code:\n" + "\n".join(preview.code))

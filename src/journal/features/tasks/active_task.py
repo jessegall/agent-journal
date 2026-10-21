@@ -16,7 +16,7 @@ class ActiveTask:
         self.tasks, self.sessions, self.clock = tasks, sessions, clock
 
     def current(self, caller: Caller) -> Working | None:
-        if not caller.session:
+        if caller.session is None:
             return None
         try:
             current = self.sessions.top(caller.session)

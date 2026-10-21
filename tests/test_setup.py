@@ -23,7 +23,7 @@ def test_setup_wires_hooks_skills_and_the_law(app: App, monkeypatch):
     monkeypatch.setattr(shutil, "which", lambda name: None)
     root = app.config.root
     (root / "AGENTS.md").write_text("# my project\n\nMy own rules.\n")
-    output = app.console().run(["setup"], Caller("main")).text
+    output = app.console().run(["setup"], Caller.user("main")).text
     settings = json.loads((root / ".claude/settings.json").read_text())
     assert "SessionStart" in settings["hooks"] and "MessageDisplay" in settings["hooks"]
     command = settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
@@ -36,7 +36,7 @@ def test_setup_wires_hooks_skills_and_the_law(app: App, monkeypatch):
     assert "hooks   .claude/settings.json" in output
     assert not (root / ".codex").exists(), "Codex is wired only where its folder exists or its program is installed"
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/local/bin/{name}")
-    assert "hooks   .codex/hooks.json" in app.console().run(["setup"], Caller("main")).text, "a fresh project is wired for Codex when Codex is installed"
+    assert "hooks   .codex/hooks.json" in app.console().run(["setup"], Caller.user("main")).text, "a fresh project is wired for Codex when Codex is installed"
     assert (root / ".journal/bin/journal").is_file() and "/.journal" in (root / ".gitignore").read_text().splitlines()
     dispatcher = (root / "home/.local/bin/journal").read_text()
     assert ".journal/src/journal.sh" in dispatcher and ".journal/journal" in dispatcher, "the dispatcher serves version 4 and version 3 projects alike"
@@ -46,9 +46,9 @@ def test_setup_is_idempotent_and_keeps_other_hooks(app: App):
     root = app.config.root
     (root / ".claude").mkdir()
     (root / ".claude/settings.json").write_text(json.dumps({"hooks": {"PreToolUse": [{"hooks": [{"type": "command", "command": "echo mine"}]}]}, "theme": "dark"}))
-    app.console().run(["setup"], Caller("main"))
+    app.console().run(["setup"], Caller.user("main"))
     first = (root / ".claude/settings.json").read_text()
-    app.console().run(["setup"], Caller("main"))
+    app.console().run(["setup"], Caller.user("main"))
     assert (root / ".claude/settings.json").read_text() == first
     settings = json.loads(first)
     assert settings["theme"] == "dark"
@@ -82,7 +82,7 @@ def test_each_hooks_ready_state_is_read_from_the_projects_settings_and_codexs_tr
     root = app.config.root
     (root / ".codex").mkdir()
     assert Codex().hooks_ready(root) == HooksReady.UNWIRED and Claude().hooks_ready(root) == HooksReady.UNWIRED, "no journal hook in the settings: not wired"
-    app.console().run(["setup"], Caller("main"))
+    app.console().run(["setup"], Caller.user("main"))
     assert Claude().hooks_ready(root) == HooksReady.READY, "Claude Code runs a project's hooks with no trust step of its own"
     assert Codex().hooks_ready(root) == HooksReady.UNTRUSTED, "wired, but Codex was never asked to trust them"
     hooks = root.resolve() / ".codex" / "hooks.json"
@@ -119,7 +119,7 @@ def test_setup_takes_out_version_3s_hooks_wherever_they_were_wired(app: App):
     mine = {"hooks": [{"type": "command", "command": "echo mine"}]}
     (root / ".claude/settings.local.json").write_text(json.dumps({"hooks": {"PreToolUse": [old, mine]}, "model": "opus"}))
     (root / ".codex/hooks.json").write_text(json.dumps({"hooks": {"Stop": [old]}}))
-    app.console().run(["setup"], Caller("main"))
+    app.console().run(["setup"], Caller.user("main"))
     local = json.loads((root / ".claude/settings.local.json").read_text())
     assert local == {"hooks": {"PreToolUse": [mine]}, "model": "opus"}, "version 3's hook goes from the local settings, the user's own stays"
     assert "/.journal/src/hook.sh" not in (root / ".codex/hooks.json").read_text(), "and from Codex's hooks, where version 4's takes its place"

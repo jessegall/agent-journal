@@ -6,7 +6,7 @@ import time as timing
 from typing import Callable
 
 from journal.config import Config
-from journal.support.caller import Caller
+from journal.support.caller import LOCAL_USER
 from journal.features.updates.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
 from journal.features.updates.support.release_source import ReleaseSource
@@ -140,7 +140,7 @@ class Updater:
         except Rejection as refused:
             self.problem = str(refused)
             return
-        self.install_newest(Caller().actor)
+        self.install_newest(Actor.user(LOCAL_USER))
 
     def read(self) -> None:
         try:

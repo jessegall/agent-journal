@@ -141,7 +141,7 @@ class PlanCommand(Command):
         empty = [i for i, phase in enumerate(phases, 1) if not self.plans.phase_tasks(phase)]
         if empty:
             raise Rejection(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
-        output = self.subagents.running_mentioning(caller.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and caller.session else 0
+        output = self.subagents.running_mentioning(caller.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and caller.session is not None else 0
         if output:
             raise Rejection(f"plan {plan.id} is in review and {output} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
         if plan.state == PlanState.REVIEWING:

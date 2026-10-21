@@ -62,7 +62,7 @@ class MemoryCommand(Command):
         return tuple(word.strip().lower() for word in args.keywords.split(",") if word.strip())
 
     def decided(self, caller: Caller) -> None:
-        if not caller.session:
+        if caller.session is None:
             return
         agent = self.sessions.agent(caller.session, self.scope.id)
         if agent.threshold_due:

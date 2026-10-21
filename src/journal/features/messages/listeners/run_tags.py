@@ -26,7 +26,7 @@ class RunTags(AgentListener[TurnDisplayed]):
         if not event.final:
             return
         text = Tags.visible(event.text)
-        caller = Caller(self.environments.find(event.environment_id).name, event.session)
+        caller = Caller.agent(self.environments.find(event.environment_id).name, event.session, event.provider)
         for name, numbers, argument in Tags.tags(event.text):
             if name not in RUNS:
                 continue

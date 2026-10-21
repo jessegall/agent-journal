@@ -34,12 +34,12 @@ class PanicCommand(Command):
 
     def changed(self, args: Namespace, caller: Caller, text: str):
         if args.state == POP:
-            return self.machine.pop(caller.session, self.scope.id, caller.actor, text)
+            return self.machine.pop(caller.agent_session, self.scope.id, caller.actor, text)
         if args.state == IDLE:
-            return self.machine.reset(caller.session, self.scope.id, caller.actor, text)
+            return self.machine.reset(caller.agent_session, self.scope.id, caller.actor, text)
         if not self.states.known(args.state):
             raise Rejection(f"no state is named {args.state}; the states are {', '.join(self.states.names())}")
-        return self.machine.push(caller.session, self.scope.id, self.states.restored(args.state, self.field_values(args.values)), caller.actor, text)
+        return self.machine.push(caller.agent_session, self.scope.id, self.states.restored(args.state, self.field_values(args.values)), caller.actor, text)
 
     @staticmethod
     def field_values(pairs: list[str]) -> dict:

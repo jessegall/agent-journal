@@ -34,9 +34,9 @@ class OutputViews:
 
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
-        data = {"kind": "card", "session": output.session, "icon": "terminal", "tone": "", "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending}
+        data = {"kind": "card", "icon": "terminal", "tone": "", "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending}
         label = f"Watching output {output.id}: {output.headline()[:HEADLINE_CHARACTERS]}"
-        self.cards.keyed(output.environment_id, OutputView.key(output.id), label, data, Actor.system(), CardKind.COMMANDS, "\n".join(view.lines))
+        self.cards.keyed(output.environment_id, OutputView.key(output.id), label, data if output.session is None else {**data, "session": output.session}, Actor.system(), CardKind.COMMANDS, "\n".join(view.lines))
         return view
 
     def card_view(self, output: CommandOutput) -> OutputView:

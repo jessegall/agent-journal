@@ -31,7 +31,7 @@ class Worker(Scoped):
     worktree: bool = False
     state: WorkerState = WorkerState.DISPATCHED
     session: str = ""
-    dispatcher: str = ""
+    dispatcher: str | None = None
     resume: str = ""
     adopted: bool = False
     pid: int = 0

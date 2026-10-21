@@ -41,8 +41,8 @@ from journal.repositories.subagents import Subagents
 from tests.old_columns import old_columns
 from tests.replay import catch_typed, drive_the_clock, tick_after
 
-AGENT = Caller("main", "s1")
-USER = Caller("main")
+AGENT = Caller.agent("main", "s1", "claude")
+USER = Caller.user("main")
 MAIN = 1
 """The id of main, the environment a fresh journal makes at boot: what a test reads directly, it reads there."""
 
@@ -130,7 +130,7 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app: App):
 
 
 def test_a_rule_binds_the_project_not_an_environment(app: App):
-    app.console().run(["rule", "create", "Always name the model"], Caller("other"))
+    app.console().run(["rule", "create", "Always name the model"], Caller.user("other"))
     assert "Always name the model" in app.console().run(["rule", "list"], USER).text
 
 
@@ -462,7 +462,7 @@ def test_an_output_the_agent_waits_on_is_told_by_the_wait_alone(app: App):
     for chain in ("a", "b", "c"):
         outputs.save(CommandOutput(chain=chain, command="sleep 1", session="s1", folder=str(app.config.root / chain)).backgrounded(), Actor.system())
     record = app.container.get(ShellRecord)
-    caller = Caller(session="s1")
+    caller = Caller.agent("main", "s1", "claude")
     app.console().run(["await", "the build", "--output", "1"], AGENT)
     for chain in ("a", "b"):
         record.ended(chain, 0, app.config.root / chain, "", caller)
@@ -552,7 +552,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app: App, monkeypatch):
     console.run(["worker", "wait", "1", "2"], AGENT)
     machine = app.container.get(StateMachine)
     assert app.container.get(SessionAgents).top("s1").name == "awaiting" and hook(app, "Stop")[1] == {}
-    console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
     assert app.container.get(SessionAgents).top("s1").name == "awaiting" and keystrokes == ["[journal] worker 1, Lady Lovelace, reported in the chat"], "\n".join(stacks)
     lines, link = app.container.get(TypedLines), app.container.get(SupervisorLink)
     lines.confirm(1, keystrokes[0])
@@ -572,11 +572,11 @@ def test_a_worker_runs_the_dispatching_agents_own_program(app: App, monkeypatch)
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
     console = app.console()
-    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller("main", "c1"))
+    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
     console.run(["worker", "dispatch", "Mr. Babbage", "write cli.py", "--profile", "journal-medior", "--model", "sonnet"], USER)
     workers = app.container.get(Workers)
     assert workers.find(1).provider == "codex" and workers.find(2).provider == "claude", "a Codex agent's worker runs Codex, so its model names fit"
-    assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Caller("main", "c1")).text, "a list of workers out points at the wait"
+    assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Caller.agent("main", "c1", "codex")).text, "a list of workers out points at the wait"
 
 
 def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: App, monkeypatch):
@@ -595,7 +595,7 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
         subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast", "--worktree"], AGENT)
     assert console.run(["worker", "send", "1", "now the lexer"], AGENT).code != 0, "still out: its report comes first"
-    console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
     assert console.run(["worker", "send", "1", "now the lexer"], AGENT).code != 0, "no session was captured, so there is nothing to resume"
     workers = app.container.get(Workers)
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
@@ -624,7 +624,7 @@ def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: Ap
     from journal.repositories.workers import Workers
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
-    app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller("main", "c1"))
+    app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
     workers = app.container.get(Workers)
     worker = workers.save(workers.find(1).with_(worktree=True).running_as(1, timing.time() - 5), Actor.system())
     session = "01a15a25-535e-7cc2-993e-d38deedb6b40"
@@ -1718,7 +1718,7 @@ def test_a_worker_that_reported_itself_keeps_its_report_and_session_when_its_pro
     app.console().run(["worker", "dispatch", "Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     workers = app.container.get(Workers)
     stale = workers.find(1)
-    app.console().run(["worker", "report", "1", "the parser is done"], Caller("main", "w1"))
+    app.console().run(["worker", "report", "1", "the parser is done"], Caller.agent("main", "w1", "claude"))
     app.console().run(["worker", "complete", "1"], AGENT)
     app.container.get(WorkerRunner).finish(stale, 0, A.agent("s1"))
     worker = workers.find(1)
@@ -2145,7 +2145,7 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app: A
     app.console().run(["task", "create", "first", "--start"], AGENT)
     app.console().run(["task", "create", "second"], AGENT)
     hook(app, "SessionStart", session_id="s2")
-    refused = app.console().run(["task", "start", "2"], Caller("main", "s2"))
+    refused = app.console().run(["task", "start", "2"], Caller.agent("main", "s2", "claude"))
     assert refused.code == 1 and "task 1 is in hand" in refused.error, "another session cannot start a second"
     app.console().run(["task", "suspend", "1", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
@@ -2537,14 +2537,14 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
     hook(app, "SessionStart")
     console.run(["environment", "overview"], AGENT)
     hook(app, "SessionStart", session_id="s2")
-    console.run(["environment", "overview"], Caller("main", "s2"))
-    console.run(["task", "create", "t", "--start"], Caller("main", "s2"))
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], Caller("main", "s2"))
-    console.run(["worker", "wait", "1"], Caller("main", "s2"))
+    console.run(["environment", "overview"], Caller.agent("main", "s2", "claude"))
+    console.run(["task", "create", "t", "--start"], Caller.agent("main", "s2", "claude"))
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], Caller.agent("main", "s2", "claude"))
+    console.run(["worker", "wait", "1"], Caller.agent("main", "s2", "claude"))
     keystrokes.clear()
     machine = app.container.get(StateMachine)
     assert app.container.get(SessionAgents).top("s2").name == "awaiting"
-    console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
     app.runtime().deferred.drain()
     assert app.container.get(SessionAgents).top("s2").task_id == 1, "the agent awaiting the worker, not the live one, is released by the shipped workflow"
     assert keystrokes[0].startswith("[journal] the wait for worker 1 is over: worker 1, Lady Lovelace, reported") and keystrokes[1] == "[journal] worker 1, Lady Lovelace, reported in the chat" and len(keystrokes) == 2, "told once, on the walk about the agent that waits; the work beneath goes on in silence"
@@ -2674,10 +2674,10 @@ def test_a_read_outside_every_scope_is_refused_and_a_command_reads_its_own_envir
     from journal.support.scope_missing import ScopeMissing
     console = app.console()
     console.run(["task", "create", "main's own"], USER)
-    console.run(["task", "create", "other's own"], Caller("other"))
+    console.run(["task", "create", "other's own"], Caller.user("other"))
     with pytest.raises(ScopeMissing):
         Context().run(app.container.get(Tasks).scoped)
-    in_main, in_other = console.run(["task", "list"], USER).text, console.run(["task", "list"], Caller("other")).text
+    in_main, in_other = console.run(["task", "list"], USER).text, console.run(["task", "list"], Caller.user("other")).text
     assert "main's own" in in_main and "other's own" not in in_main
     assert "other's own" in in_other and "main's own" not in in_other
     assert [t.title for t in app.container.get(Tasks).scoped()] == ["main's own"], "the test reads in main, the scope its fixture entered"
@@ -2825,9 +2825,9 @@ def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app: A
     app.console().run(["environment", "overview"], AGENT)
     app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Pitman", session="s2"), Actor.system())
     hook(app, "SessionStart", session_id="s2")
-    app.console().run(["environment", "overview"], Caller("main", "s2"))
+    app.console().run(["environment", "overview"], Caller.agent("main", "s2", "claude"))
     hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / ".claude/skills/journal-plans/SKILL.md")}, tool_response="", session_id="s2")
-    app.console().run(["plan", "create", "Side work", "--brief", "b"], Caller("main", "s2"))
+    app.console().run(["plan", "create", "Side work", "--brief", "b"], Caller.agent("main", "s2", "claude"))
     app.runtime().deferred.drain()
     active = app.container.get(RunTracker)
     assert active.current("s2", 1).title == "Building a plan" and active.current("s1", 1) is None and not any("Building" in line or "step 1" in line for line in transmitted), "the run is the worker's, and its step is not typed to the agent"
@@ -3004,7 +3004,7 @@ def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app: App):
     console = app.console()
     console.run(["environment", "overview"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    console.run(["worker", "report", "1", "the parser is written"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the parser is written"], Caller.agent("main", "w1", "claude"))
     messages = app.container.get(Messages)
     for i in range(250):
         messages.save(Message(author=Author.USER, text=f"word {i}"), USER.actor)
@@ -3019,7 +3019,7 @@ def test_a_workers_report_message_carries_the_report_kind_and_its_worker(app: Ap
     console = app.console()
     console.run(["environment", "overview"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    console.run(["worker", "report", "1", "the parser is written"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the parser is written"], Caller.agent("main", "w1", "claude"))
     report = next(m for m in app.container.get(Messages).all() if m.data.get("kind") == "report")
     assert (report.text, report.data["worker"], report.data["worker_id"]) == ("Lady Lovelace reports: the parser is written", "Lady Lovelace", 1)
 
@@ -3591,7 +3591,7 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app: App):
     console = app.console()
     console.run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
     plugin = app.container.get(Plugins).lookup("echo")
-    as_echo = Caller("main", plugin="echo")
+    as_echo = Caller.plugin("main", "echo")
     assert "written by its plugin's program" in console.run(["dashboard", "set", "a.py", "a.py"], AGENT).error, "only a plugin writes its dashboard"
     console.run(["dashboard", "set", "a.py", "a.py", "--badge", "2 sins", "--tone", "warn", "--heading", "Files"], as_echo)
     console.run(["dashboard", "set", "b.py", "b.py", "--badge", "clean", "--tone", "good", "--heading", "Files"], as_echo)
@@ -4018,7 +4018,7 @@ def test_a_question_asked_without_a_session_or_from_a_workers_shell_is_refused(a
     workers = app.container.get(Workers)
     workers.save(workers.find(1).with_(session="w1"), USER.actor)
     assert "worker's report" in app.console().run(["question", "ask", "Which?"], USER).error
-    assert app.console().run(["question", "ask", "Which?"], Caller("main", "w1")).code != 0
+    assert app.console().run(["question", "ask", "Which?"], Caller.agent("main", "w1", "claude")).code != 0
     assert app.console().run(["question", "ask", "Which?"], AGENT).code == 0
 
 
@@ -4805,7 +4805,7 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app: A
     stop = hook(app, "Stop")[1]
     assert stop.get("decision") == "block" and "dump 1 is not filed yet" in stop.get("reason", ""), "the stop is held while the dump is open"
     made(console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT))
-    sorting.attach(1, "a.png", Caller("main").actor)
+    sorting.attach(1, "a.png", Caller.user("main").actor)
     assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).text and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).text
     assert keystrokes[-1].startswith("[journal] dump 1 has 2 items to file"), keystrokes
     console.run(["dump", "note", "1", "text", "a list of ideas"], AGENT)
@@ -5669,8 +5669,8 @@ def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App
     assert bare.code == 1 and "a wait names what ends it" in bare.error, "a wait that names nothing to end it is refused"
     user = console.run(["await", "the user's answer", "--until", "false"], AGENT)
     assert user.code == 1 and "no wait" in user.error, "waiting for the user is no wait"
-    output = app.container.get(OutputLog).start("c1", "npm run build", app.config.home / "runtime" / "outputs" / "c1", Caller("main", "s1"))
-    ended = app.container.get(OutputLog).start("c0", "make", app.config.home / "runtime" / "outputs" / "c0", Caller("main", "s1"))
+    output = app.container.get(OutputLog).start("c1", "npm run build", app.config.home / "runtime" / "outputs" / "c1", Caller.agent("main", "s1", "claude"))
+    ended = app.container.get(OutputLog).start("c0", "make", app.config.home / "runtime" / "outputs" / "c0", Caller.agent("main", "s1", "claude"))
     outputs = app.container.get(CommandOutputs)
     outputs.save(outputs.find(ended.id).backgrounded().ended_with(2, 1.0), Actor.system())
     refused = console.run(["await", "the make", "--output", str(ended.id)], AGENT)
@@ -6286,7 +6286,7 @@ def test_output_status_says_running_finished_or_failed_and_lists_the_background_
         (folder / "parts").write_text("R-\n")
         if status is not None:
             (folder / "0.status").write_text(status)
-        log.start(chain, f"make {chain}", folder, Caller("main", "s1"))
+        log.start(chain, f"make {chain}", folder, Caller.agent("main", "s1", "claude"))
     assert [console.run(["output", "status", str(n)], AGENT).text.strip() for n in (1, 2, 3)] == ["running", "finished", "failed with code 3"]
     app.container.get(CommandOutputs).save(app.container.get(CommandOutputs).find(1).backgrounded(), Actor.system())
     listed = console.run(["output", "status"], AGENT).text
@@ -6337,7 +6337,7 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     folder.mkdir()
     (folder / "parts").write_text("R-\n")
     (folder / "0.out").write_text("collecting\n[ 12%] test_a\nFAILED test_b\n[ 40%] test_c\n")
-    app.container.get(OutputLog).start("w", "pytest", folder, Caller("main", "s1"))
+    app.container.get(OutputLog).start("w", "pytest", folder, Caller.agent("main", "s1", "claude"))
     outputs.save(outputs.find(1).backgrounded(), Actor.system())
     console.run(["reader", "add", "failures", "--pattern", "FAILED", "--about", "the failed tests", "--progress", r"\[ *(\d+)%\]", "--label", "Tests"], AGENT)
     assert console.run(["output", "watch", "1", "--reader", "failures"], AGENT).code == 0
@@ -6499,7 +6499,7 @@ def test_two_jobs_sent_to_one_worker_at_once_start_one_run(app: App, monkeypatch
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
     console.run(["worker", "dispatch", "Lady Lovelace", "the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     started.clear()
     gate, codes = threading.Barrier(2), []
@@ -6568,7 +6568,7 @@ def test_a_revived_worker_goes_on_in_its_own_worktree_and_branch_and_keeps_its_w
     (folder / "notes.txt").write_text("not committed\n")
 
     def reported_again() -> None:
-        console.run(["worker", "report", "1", "done"], Caller("main", "w1"))
+        console.run(["worker", "report", "1", "done"], Caller.agent("main", "w1", "claude"))
         workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
 
     reported_again()
@@ -6632,7 +6632,7 @@ def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: Ap
     console.run(["worker", "dispatch", "Mr. Harrison", "the clock", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     profile = app.container.get(ProfileFiles).read("journal-medior")["body"]
     assert runner.instructed(started[-1]).startswith(profile), "a fresh worker is told its profile first"
-    console.run(["worker", "report", "1", "the clock runs"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the clock runs"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="sess-1", began=timing.time() - 3600, pid=99999), USER.actor)
     console.run(["worker", "send", "1", "the escapement"], AGENT)
     resumed = workers.find(1)
@@ -6650,12 +6650,12 @@ def test_a_reused_worker_keeps_every_report_and_is_out_again_until_it_reports(ap
     hook(app, "SessionStart")
     console, workers, links = app.console(), app.container.get(Workers), app.container.get(Links)
     console.run(["worker", "dispatch", "Mr. Stephenson", "the rocket", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    console.run(["worker", "report", "1", "the rocket runs"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the rocket runs"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     console.run(["worker", "complete", "1"], AGENT)
     console.run(["worker", "send", "1", "the tender"], AGENT)
     assert not workers.find(1).adopted and workers.find(1).is_running(), "a report acted on is a thing of the last job; the new one is out"
-    console.run(["worker", "report", "1", "the tender is coupled"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the tender is coupled"], Caller.agent("main", "w1", "claude"))
     assert workers.find(1).is_idle()
     console.run(["worker", "stop", "1"], AGENT)
     console.run(["worker", "send", "1", "the rails"], AGENT)
@@ -6671,13 +6671,13 @@ def test_a_job_sent_to_a_worker_that_reported_puts_the_dispatcher_back_in_its_wa
     console, workers, sessions = app.console(), app.container.get(Workers), app.container.get(SessionAgents)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Mr. Arkwright", "the frame", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    console.run(["worker", "report", "1", "the frame spins"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the frame spins"], Caller.agent("main", "w1", "claude"))
     assert sessions.top("s1").name != "awaiting"
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     console.run(["worker", "send", "1", "the mill"], AGENT)
     waiting = sessions.top("s1")
     assert waiting.name == "awaiting" and waiting.targets() == ["workers:1"], "the dispatcher waits on the worker it sent out again"
-    console.run(["worker", "report", "1", "the mill turns"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the mill turns"], Caller.agent("main", "w1", "claude"))
     assert sessions.top("s1").name != "awaiting", "until it reports again"
 
 
@@ -6692,7 +6692,7 @@ def test_each_worker_moment_after_its_dispatch_is_a_short_mark_of_its_own(app: A
     console, workers, messages = app.console(), app.container.get(Workers), app.container.get(Messages)
     marks = lambda: [(m.text, m.data.get("tone"), m.data.get("detail")) for m in messages.scoped() if m.data.get("shows") == "workers" and not m.data.get("key")]
     console.run(["worker", "dispatch", "Mr. Wedgwood", "the vase", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    console.run(["worker", "report", "1", "the vase is fired"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the vase is fired"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="w-1"), USER.actor)
     console.run(["worker", "send", "1", "the jug"], AGENT)
     process = subprocess.Popen(["sleep", "30"])
@@ -6705,7 +6705,7 @@ def test_each_worker_moment_after_its_dispatch_is_a_short_mark_of_its_own(app: A
         process.wait(5)
     console.run(["worker", "stop", "1"], AGENT)
     console.run(["worker", "send", "1", "the teapot"], AGENT)
-    console.run(["worker", "report", "1", "the teapot pours"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "the teapot pours"], Caller.agent("main", "w1", "claude"))
     console.run(["worker", "complete", "1"], AGENT)
     assert marks() == [
         ("Worker 1, Mr. Wedgwood: reused for its next job", "", "the jug"),
@@ -6738,7 +6738,7 @@ def test_the_files_a_worker_touched_are_read_from_its_branch_when_it_reports_a_r
     (folder / "src" / "lexer.py").write_text("lex\n")
     git("add", ".", cwd=folder)
     git("commit", "-qm", "the parser renamed, the lexer added", cwd=folder)
-    console.run(["worker", "report", "1", "renamed"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "renamed"], Caller.agent("main", "w1", "claude"))
     assert set(workers.find(1).touched_paths) == {"src/old_parser.py", "src/parser.py", "src/lexer.py"}, "a rename counts under both names, each repo-relative"
     workers.save(Worker(name="Mr. Babbage", brief="an old job", state=WorkerState.REPORTED), Actor.system())
     listed = console.run(["worker", "list"], AGENT).text
@@ -6769,13 +6769,13 @@ def test_only_a_send_counts_a_reuse_and_only_a_retire_gives_its_reason(app: App,
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
     console.run(["worker", "dispatch", "Mr. Brindley", "the canal", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    console.run(["worker", "report", "1", "dug"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "dug"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     console.run(["worker", "send", "1", "the aqueduct"], AGENT)
     console.run(["worker", "stop", "1", "--why", "the aqueduct needs a new design"], AGENT)
     console.run(["worker", "send", "1", "the lock"], AGENT)
     assert workers.find(1).updater == AGENT.actor, "the send that counts names its actor"
-    console.run(["worker", "report", "1", "locked"], Caller("main", "w1"))
+    console.run(["worker", "report", "1", "locked"], Caller.agent("main", "w1", "claude"))
     worker = workers.find(1)
     assert worker.reuse_count == 2 and worker.retire_reason == "the aqueduct needs a new design", "each send counts once, a report counts none; the reason is the stop's"
     assert "worker 1's report is acted on: the canal is done" in console.run(["worker", "complete", "1", "--why", "the canal is done"], AGENT).text, "the answer is read back as the reason"
@@ -6893,7 +6893,7 @@ def test_a_worker_messages_only_its_own_dispatchers_other_workers_and_starts_no_
     console, workers = app.console(), app.container.get(Workers)
     for name, dispatcher, state in (("Mr. Watt", "s1", WorkerState.DISPATCHED), ("Mr. Boulton", "s1", WorkerState.REPORTED), ("Mr. Other", "s2", WorkerState.REPORTED), ("Mr. Retired", "s1", WorkerState.STOPPED)):
         workers.save(Worker(name=name, brief="a job", dispatcher=dispatcher, state=state, resume=f"sess-{name}", adopted=state == WorkerState.STOPPED), Actor.system())
-    watt = Caller("main", "", True, "", 1)
+    watt = Caller.worker("main", 1, None, "claude")
     refused = lambda *argv: console.run(["worker", *argv], watt).error
     assert "worker 1 is you" in refused("send", "1", "x") and "worker 1 is you" in refused("notify", "1", "x")
     assert "belongs to another agent" in refused("send", "3", "x") and "belongs to another agent" in refused("notify", "3", "x")
@@ -6901,12 +6901,12 @@ def test_a_worker_messages_only_its_own_dispatchers_other_workers_and_starts_no_
     assert console.run(["worker", "send", "2", "the separate condenser"], watt).code == 0
     boulton = workers.find(2)
     assert boulton.dispatcher == "s1" and boulton.updater == Actor.worker(1) and boulton.is_running(), "the send names the sending worker and keeps the target's dispatcher"
-    assert "is out on a job" in console.run(["worker", "send", "1", "back to you"], Caller("main", "", True, "", 2)).error, "a worker out takes no job from a peer, so two workers sending to each other start no loop"
+    assert "is out on a job" in console.run(["worker", "send", "1", "back to you"], Caller.worker("main", 2, None, "claude")).error, "a worker out takes no job from a peer, so two workers sending to each other start no loop"
     process = subprocess.Popen(["sleep", "30"])
     try:
         workers.save(workers.find(1).running_as(process.pid, timing.time()).with_(resume="w-1"), Actor.system())
         received = listening_session(home, process.pid, "w-1")
-        assert console.run(["worker", "notify", "1", "the condenser is cold"], Caller("main", "", True, "", 2)).code == 0
+        assert console.run(["worker", "notify", "1", "the condenser is cold"], Caller.worker("main", 2, None, "claude")).code == 0
         assert 'from-name="worker 2, Mr. Boulton"' in arrived(received, 2)[-1]["message"]["content"]
     finally:
         process.kill()
@@ -6919,7 +6919,7 @@ def test_a_worker_lists_its_peers_out_or_idle_with_what_each_is_on(app: App):
     workers = app.container.get(Workers)
     for name, dispatcher, state, adopted in (("Mr. Watt", "s1", WorkerState.DISPATCHED, False), ("Mr. Boulton", "s1", WorkerState.REPORTED, False), ("Mr. Murdoch", "s1", WorkerState.DISPATCHED, False), ("Mr. Other", "s2", WorkerState.DISPATCHED, False), ("Mr. Retired", "s1", WorkerState.REPORTED, True)):
         workers.save(Worker(name=name, brief=f"the job of {name}", dispatcher=dispatcher, state=state, adopted=adopted), Actor.system())
-    listed = app.console().run(["worker", "peers"], Caller("main", "", True, "", 1)).text
+    listed = app.console().run(["worker", "peers"], Caller.worker("main", 1, None, "claude")).text
     assert "Mr. Boulton: the job of Mr. Boulton" in listed and "Mr. Murdoch: the job of Mr. Murdoch" in listed, "the dispatcher's other workers, out or idle, with what each is on"
     assert "Mr. Watt" not in listed and "Mr. Other" not in listed and "Mr. Retired" not in listed, "never itself, another agent's or a retired one"
     assert "journal worker notify" in listed

@@ -37,5 +37,5 @@ class Agents(ScopedRepository[Agent]):
             raise MissingRow(self.table, session)
         return rows[0]
 
-    def recent_peers(self, session: str, start: datetime) -> list[Agent]:
+    def recent_peers(self, session: str | None, start: datetime) -> list[Agent]:
         return [item for item in self.scoped() if item.session != session and item.updated_at >= start and not (item.state == "ended" and item.updated_at - item.created_at < timedelta(minutes=1))]

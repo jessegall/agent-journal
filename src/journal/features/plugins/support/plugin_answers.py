@@ -40,7 +40,7 @@ class PluginAnswers:
         if argv[:1] != ["journal"]:
             self.record(plugin, line, environment_id, 1, "a plugin runs journal commands only")
             return
-        outcome = self.console.run(argv[1:], Caller(environment or "main", "", False, plugin.name))
+        outcome = self.console.run(argv[1:], Caller.plugin(environment or "main", plugin.name))
         self.record(plugin, line, environment_id, outcome.code, outcome.error.strip()[-300:])
 
     def record(self, plugin: Plugin, line: str, environment_id: int, code: int, err: str) -> None:

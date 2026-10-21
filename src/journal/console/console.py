@@ -29,10 +29,10 @@ class Console:
         self._parser = None
 
     def attributed(self, caller: Caller) -> Caller:
-        if not caller.agent_shell or caller.session or caller.worker:
+        if not caller.is_unnamed_agent():
             return caller
         present = self.agents.current()
-        return caller.as_(present.session) if present else caller
+        return Caller.agent(caller.environment, present.session, present.provider) if present else caller
 
     def parser(self) -> argparse.ArgumentParser:
         if self._parser is None:

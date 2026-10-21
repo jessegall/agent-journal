@@ -11,7 +11,6 @@ from journal.features.workers.support.worker_reports import WorkerReports
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
-from journal.repositories.agents import Agents
 from journal.support.rejection import Rejection
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
@@ -22,8 +21,8 @@ from journal.features.workers.support.worker_actions import WorkerActions
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents) -> None:
-        self.workers, self.messages, self.providers, self.agents = workers, messages, providers, agents
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents) -> None:
+        self.workers, self.messages, self.providers = workers, messages, providers
         self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
@@ -56,7 +55,7 @@ class WorkerCommand(Command):
         self.verb(verbs, "peers", "for a worker: the other workers of the agent that dispatched it, out or idle, and what each is on")
 
     def provider_default(self, caller: Caller) -> str:
-        return self.agents.session_agent(caller.session).provider if caller.session else self.providers.default().name
+        return self.providers.default().name if caller.provider is None else caller.provider
 
     def dispatch(self, args: Namespace, caller: Caller) -> int:
         if self.profiles.kind(args.profile) != "worker":
@@ -88,19 +87,19 @@ class WorkerCommand(Command):
 
     def report(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
-        message = self.reports.file(worker.with_(session=caller.session or worker.session, touched_paths=self.branch.touched(worker)), args.text, caller.actor)
+        message = self.reports.file(worker.with_(session=worker.session if caller.session is None else caller.session, touched_paths=self.branch.touched(worker)), args.text, caller.actor)
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
 
     def send(self, args: Namespace, caller: Caller) -> int:
-        worker = self.actions.peer_send(args.n, args.brief, caller.worker, caller.actor) if caller.worker else self.actions.send(args.n, args.brief, caller.session, caller.actor)
+        worker = self.actions.peer_send(args.n, args.brief, caller.worker_number, caller.actor) if caller.worker_number is not None else self.actions.send(args.n, args.brief, caller.session, caller.actor)
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
 
     def notify(self, args: Namespace, caller: Caller) -> int:
-        worker = self.actions.peer_notify(args.n, args.text, caller.worker, caller.actor) if caller.worker else self.actions.notify(args.n, args.text, caller.actor)
+        worker = self.actions.peer_notify(args.n, args.text, caller.worker_number, caller.actor) if caller.worker_number is not None else self.actions.notify(args.n, args.text, caller.actor)
         print(f"worker {worker.id} {worker.name} has the message in its session")
         return 0
 
@@ -119,9 +118,9 @@ class WorkerCommand(Command):
         return 0
 
     def peers(self, args: Namespace, caller: Caller) -> int:
-        if not caller.worker:
+        if caller.worker_number is None:
             raise Rejection("only a worker has peers: `journal worker list` lists the workers you dispatched")
-        sender = self.workers.find(caller.worker)
+        sender = self.workers.find(caller.worker_number)
         peers = [w for w in self.workers.scoped() if w.dispatcher == sender.dispatcher and w.id != sender.id and (w.is_running() or w.is_idle())]
         for worker in peers:
             print(f"{worker.id:>4}  {'out' if worker.is_running() else 'idle':<5} {worker.name}: {worker.brief}")
@@ -140,8 +139,8 @@ class WorkerCommand(Command):
         self.print_subagents(caller.session)
         return 0
 
-    def print_subagents(self, session: str) -> None:
-        subagents = self.subagents.session_subagents(session) if session else []
+    def print_subagents(self, session: str | None) -> None:
+        subagents = [] if session is None else self.subagents.session_subagents(session)
         if subagents:
             print("subagents this agent started:")
         for subagent in subagents:

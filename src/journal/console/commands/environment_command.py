@@ -66,7 +66,7 @@ class EnvironmentCommand(Command):
         self.memory.admit_all(caller.actor)
         return 0
 
-    def current_work(self, session: str) -> list[str]:
+    def current_work(self, session: str | None) -> list[str]:
         start = datetime.now(timezone.utc) - TAKEOVER_WINDOW
         peers = self.agents.recent_peers(session, start)
         blocked = self.tasks.with_state(TaskState.STARTED)
@@ -97,7 +97,7 @@ class EnvironmentCommand(Command):
         return f"{subject}: " + "; ".join(rows) if rows else ""
 
     def overview_record(self, caller: Caller) -> None:
-        if not caller.session:
+        if caller.session is None:
             return
         try:
             self.agents.save(self.agents.session_agent(caller.session).overview_read(datetime.now(timezone.utc).timestamp()), caller.actor)
