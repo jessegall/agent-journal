@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from journal.events.rows.worker_mention import WorkerMention
 
 from journal.events.rows.row_event import RowEvent
 
@@ -7,7 +8,5 @@ from journal.events.rows.row_event import RowEvent
 class WorkerNotified(RowEvent):
     """A running worker was given a message in its live session; no wait moves for it."""
 
-    worker_id: int
-    name: str
-    dispatcher: str
+    worker: WorkerMention
     text: str

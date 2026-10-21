@@ -88,14 +88,14 @@ class WorkersConduct(Conduct):
         return self.push(ExternalWait.opened(*event.wait_terms())) if event.awaiter == event.session else self.none()
 
     def on_worker_reported(self, event: WorkerReported, settings: Settings) -> Transition:
-        if event.dispatcher and event.dispatcher != event.session:
+        if event.worker.is_other_dispatcher(event.session):
             return self.none()
-        return self.none(workers_feature().WORKER_REPORTED.create(n=event.worker_id, name=event.name))
+        return self.none(workers_feature().WORKER_REPORTED.create(n=event.worker.id, name=event.worker.name))
 
     def on_worker_stopped(self, event: WorkerStopped, settings: Settings) -> Transition:
-        if event.dispatcher and event.dispatcher != event.session:
+        if event.worker.is_other_dispatcher(event.session):
             return self.none()
-        return self.none(workers_feature().WORKER_STOPPED_UNREPORTED.create(n=event.worker_id, name=event.name))
+        return self.none(workers_feature().WORKER_STOPPED_UNREPORTED.create(n=event.worker.id, name=event.worker.name))
 
 
 def report_mentions(data: FeatureData) -> list[Nudge]:

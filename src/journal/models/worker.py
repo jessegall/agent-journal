@@ -1,6 +1,7 @@
 from typing import ClassVar
 from dataclasses import dataclass
 from journal.models.support.worker_silence import WorkerSilence
+from journal.events.rows.worker_mention import WorkerMention
 
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_dispatched import WorkerDispatched
@@ -41,17 +42,17 @@ class Worker(Scoped):
     retire_reason: str = ""
     silence: WorkerSilence = WorkerSilence(SILENCE)
 
-    def worker_ref(self) -> str:
-        return f"{self.table()}:{self.id}"
+    def mention(self) -> WorkerMention:
+        return WorkerMention(self.id, self.name, self.dispatcher)
 
     def dispatched(self, time: float) -> "Worker":
         return self.contacted(time).with_(state=WorkerState.DISPATCHED).with_event(self.pending(WorkerDispatched, time))
 
     def pending(self, kind: type[WorkerDispatched], time: float) -> WorkerDispatched:
-        return kind(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, ref=self.worker_ref(), label=f"worker {self.id}", awaiter=self.dispatcher, brief=self.brief)
+        return kind(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), label=self.mention().label(), awaiter=self.dispatcher, brief=self.brief)
 
     def reported(self, time: float, report: int) -> "Worker":
-        return self.contacted(time).with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, reported"))
+        return self.contacted(time).with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker=self.mention(), report=report, ref=self.mention().ref(), outcome=f"{self.mention().title()}, reported"))
 
     def running_as(self, pid: int, began: float) -> "Worker":
         return self.with_(pid=pid, began=began, recovered_session="")
@@ -70,13 +71,13 @@ class Worker(Scoped):
         return self.is_running() and self.silence.is_elapsed(time)
 
     def notified(self, text: str, time: float) -> "Worker":
-        return self.contacted(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, text=text))
+        return self.contacted(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker=self.mention(), text=text))
 
     def stopped(self, time: float, reason: str) -> "Worker":
-        return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
+        return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, stopped before it reported"))
 
     def finished(self, time: float, reason: str) -> "Worker":
-        retired = self.with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
+        retired = self.with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker=self.mention()))
         return retired.stopped(time, reason) if self.is_running() else retired
 
     def is_running(self) -> bool:

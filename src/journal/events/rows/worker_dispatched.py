@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from journal.events.rows.worker_mention import WorkerMention
 
 from journal.events.rows.row_pending import RowPending
 
@@ -7,10 +8,5 @@ from journal.events.rows.row_pending import RowPending
 class WorkerDispatched(RowPending):
     """A worker was sent out on a job; its awaiter is the session that dispatched it."""
 
-    worker_id: int
-    name: str
+    worker: WorkerMention
     brief: str = ""
-
-    @property
-    def dispatcher(self) -> str:
-        return self.awaiter

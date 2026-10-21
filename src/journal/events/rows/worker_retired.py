@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from journal.events.rows.worker_mention import WorkerMention
 
 from journal.events.rows.row_event import RowEvent
 
@@ -7,6 +8,4 @@ from journal.events.rows.row_event import RowEvent
 class WorkerRetired(RowEvent):
     """A worker's report was acted on and the worker let go."""
 
-    worker_id: int
-    name: str
-    dispatcher: str
+    worker: WorkerMention

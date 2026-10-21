@@ -24,9 +24,10 @@ class WorkerMomentCards(Listener[RowEvent]):
         self.cards = cards
 
     def handle(self, event: RowEvent) -> None:
-        if type(event) not in MOMENTS:
+        if not isinstance(event, (WorkerReused, WorkerRevived, WorkerNotified, WorkerRetired)):
             return
         text, tone, detail = MOMENTS[type(event)]
-        actor = Actor.agent(event.dispatcher) if event.dispatcher else Actor.system()
-        label = Cards.shortened(f"Worker {event.worker_id}, {event.name}: {text}")
-        self.cards.show(event.environment_id, event.dispatcher, label, "agents", tone=tone, detail=getattr(event, detail) if detail else "", row=Ref("workers", event.worker_id), actor=actor, shows=CardKind.WORKERS)
+        worker = event.worker
+        actor = Actor.agent(worker.dispatcher) if worker.dispatcher else Actor.system()
+        label = Cards.shortened(f"Worker {worker.id}, {worker.name}: {text}")
+        self.cards.show(event.environment_id, worker.dispatcher, label, "agents", tone=tone, detail=getattr(event, detail) if detail else "", row=Ref("workers", worker.id), actor=actor, shows=CardKind.WORKERS)

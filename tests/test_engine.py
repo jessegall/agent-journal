@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
+from journal.events.rows.worker_mention import WorkerMention
 
 import pytest
 
@@ -594,7 +595,7 @@ def test_the_models_carry_the_events_their_changes_mean():
     assert TaskLog.build(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, time=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
     assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowResolved] and question.posed(1.0).events[0].question_id == 4
-    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerReported(environment_id=1, time=5.0, worker_id=9, name="w", report=4, dispatcher="", ref="workers:9", outcome="worker 9, w, reported"),)
+    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerReported(environment_id=1, time=5.0, worker=WorkerMention(9, "w", ""), report=4, ref="workers:9", outcome="worker 9, w, reported"),)
 
 
 def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_reaches_no_state(app: App):
@@ -881,7 +882,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     assert Ready().respond(ToolStarting(call=ToolCall(tool="AskUserQuestion", input={}, operation=Claude().operation("AskUserQuestion", {}))).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "questions.ask_through_the_journal"
     worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
     assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": worktree_file}, operation=Claude().operation("Edit", {"file_path": worktree_file}), writes=True, edited_paths=(worktree_file,))).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "workers.file_is_the_workers"
-    back = Ready().respond(WorkerReported(environment_id=1, time=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatcher="", ref="workers:2", outcome="worker 2, Lady Lovelace, reported").with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    back = Ready().respond(WorkerReported(environment_id=1, time=1.0, worker=WorkerMention(2, "Lady Lovelace", ""), report=40, ref="workers:2", outcome="worker 2, Lady Lovelace, reported").with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
     assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in the chat"]
 
 
@@ -959,18 +960,18 @@ def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
     from journal.events.rows.worker_stopped import WorkerStopped
     settings = SettingsValue({})
     waiting = ExternalWait.opened("worker 3, worker 4", "workers:3,workers:4", 0.0)
-    first = waiting.respond(WorkerReported(environment_id=1, time=1.0, worker_id=3, name="Lady Lovelace", report=9, dispatcher="s1", ref="workers:3", outcome="worker 3, Lady Lovelace, reported"), settings)
+    first = waiting.respond(WorkerReported(environment_id=1, time=1.0, worker=WorkerMention(3, "Lady Lovelace", "s1"), report=9, ref="workers:3", outcome="worker 3, Lady Lovelace, reported"), settings)
     assert first.target.targets() == ["workers:4"] and not first.popped and first.nudges == (), "the wait settles the worker; the workers' conduct says its report"
-    counterpart = waiting.respond(WorkerReported(environment_id=1, time=1.0, worker_id=8, name="x", report=9, dispatcher="s1", ref="workers:8", outcome="worker 8, x, reported"), settings)
+    counterpart = waiting.respond(WorkerReported(environment_id=1, time=1.0, worker=WorkerMention(8, "x", "s1"), report=9, ref="workers:8", outcome="worker 8, x, reported"), settings)
     assert counterpart.target is waiting and counterpart.nudges == (), "a worker it does not wait on is not its business"
-    last = first.target.respond(WorkerStopped(environment_id=1, time=2.0, worker_id=4, name="Herr Turing", ref="workers:4", outcome="worker 4, Herr Turing, stopped before it reported"), settings)
+    last = first.target.respond(WorkerStopped(environment_id=1, time=2.0, worker=WorkerMention(4, "Herr Turing", ""), ref="workers:4", outcome="worker 4, Herr Turing, stopped before it reported"), settings)
     assert last.popped and [n.key for n in last.nudges] == ["tasks.wait_over"] and last.nudges[-1].rendered().startswith("the wait for worker 3, worker 4 is over: worker 3, Lady Lovelace, reported; worker 4, Herr Turing, stopped before it reported")
     from journal.events.rows.worker_dispatched import WorkerDispatched
     from journal.features.workers.workers_conduct import WorkersConduct
-    owned = Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", awaiter="s1", ref="workers:5", label="worker 5").reaching("s1"), settings, (WorkersConduct,))
+    owned = Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker=WorkerMention(5, "Lady Lovelace", "s1"), awaiter="s1", ref="workers:5", label="worker 5").reaching("s1"), settings, (WorkersConduct,))
     assert owned.pushed == ExternalWait.opened("worker 5", "workers:5", 3.0), "a worker this agent dispatches pushes the wait on its work"
-    assert Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", awaiter="s2", ref="workers:5", label="worker 5").reaching("s1"), settings, (WorkersConduct,)).pushed is None, "another session's worker is not waited on here"
-    widened = ExternalWait.opened("worker 5", "workers:5", 3.0).respond(WorkerDispatched(environment_id=1, time=4.0, worker_id=6, name="Dr. Einstein", awaiter="s1", ref="workers:6", label="worker 6").reaching("s1"), settings, (WorkersConduct,))
+    assert Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker=WorkerMention(5, "Lady Lovelace", "s2"), awaiter="s2", ref="workers:5", label="worker 5").reaching("s1"), settings, (WorkersConduct,)).pushed is None, "another session's worker is not waited on here"
+    widened = ExternalWait.opened("worker 5", "workers:5", 3.0).respond(WorkerDispatched(environment_id=1, time=4.0, worker=WorkerMention(6, "Dr. Einstein", "s1"), awaiter="s1", ref="workers:6", label="worker 6").reaching("s1"), settings, (WorkersConduct,))
     assert widened.target == ExternalWait.opened("worker 5, worker 6", "workers:5,workers:6", 3.0) and widened.pushed is None, "a second dispatch widens the wait instead of stacking another"
     assert ExternalWait.opened("worker 5", "workers:5", 3.0).respond(ToolStarting(call=ToolCall(tool="Edit", input={}, operation=Claude().operation("Edit", {}), writes=True)), settings).target == ExternalWait.opened("worker 5", "workers:5", 3.0), "the agent works on while its workers run"
 
