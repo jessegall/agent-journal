@@ -1,3 +1,4 @@
+import os
 import shutil
 import sqlite3
 import types
@@ -32,9 +33,11 @@ class SharedJournal:
         self.rows = sqlite3.connect(":memory:")
         with sqlite3.connect(app.config.database) as live:
             live.backup(self.rows)
-        self.secrets = app.container.get(SecretValues).path
-        self.files = self.contents()
-        self.folders = {path for path in app.config.root.rglob("*") if path.is_dir()}
+        self.secrets = str(app.container.get(SecretValues).path)
+        self.folders, files = self.tree()
+        kept = [path for path in files if not self.is_database(path)] + ([self.secrets] if os.path.isfile(self.secrets) else [])
+        self.files = {path: Path(path).read_bytes() for path in kept}
+        self.stamps = {path: self.stamp(path) for path in kept}
         self.instances = dict(app.container._instances)
         self.fields: dict[int, tuple[object, dict[str, object]]] = {}
         for instance in self.instances.values():
@@ -62,27 +65,41 @@ class SharedJournal:
         if self.app.runtime().deferred._thread:
             self.app.runtime().deferred.drain()
 
-    def contents(self) -> dict[Path, bytes]:
-        kept = {path: path.read_bytes() for path in self.app.config.root.rglob("*") if path.is_file() and not self.is_database(path)}
-        return kept | ({self.secrets: self.secrets.read_bytes()} if self.secrets.is_file() else {})
+    def tree(self) -> tuple[set[str], list[str]]:
+        folders, files = set(), []
+        for folder, inner, names in os.walk(self.app.config.root):
+            folders.update(os.path.join(folder, name) for name in inner)
+            files.extend(os.path.join(folder, name) for name in names)
+        return folders, files
 
     def put_back_files(self) -> None:
-        for path in sorted(self.app.config.root.rglob("*"), reverse=True):
-            if path in self.files or path in self.folders or self.is_database(path):
-                continue
-            if path.is_dir() and not path.is_symlink():
+        folders, files = self.tree()
+        for path in files:
+            if path not in self.files and not self.is_database(path):
+                os.unlink(path)
+        for path in sorted(folders - self.folders, reverse=True):
+            if os.path.islink(path):
+                os.unlink(path)
+            elif os.path.isdir(path):
                 shutil.rmtree(path)
-            else:
-                path.unlink()
-        if self.secrets not in self.files:
-            self.secrets.unlink(missing_ok=True)
+        if self.secrets not in self.files and os.path.isfile(self.secrets):
+            os.unlink(self.secrets)
         for path, content in self.files.items():
-            if not path.is_file() or path.read_bytes() != content:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_bytes(content)
+            if self.stamp(path) != self.stamps[path]:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                Path(path).write_bytes(content)
+                self.stamps[path] = self.stamp(path)
 
-    def is_database(self, path: Path) -> bool:
-        return path.name in {self.app.config.database.name + suffix for suffix in DATABASE_SUFFIXES}
+    @staticmethod
+    def stamp(path: str) -> tuple:
+        try:
+            status = os.stat(path)
+        except FileNotFoundError:
+            return ()
+        return status.st_mtime_ns, status.st_size
+
+    def is_database(self, path: str) -> bool:
+        return os.path.basename(path) in {self.app.config.database.name + suffix for suffix in DATABASE_SUFFIXES}
 
     def remember(self, instance: object) -> None:
         if id(instance) in self.fields or not self.remembers(instance):
