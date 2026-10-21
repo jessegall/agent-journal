@@ -57,7 +57,7 @@ class TypedLines:
             return None
         self._held = [h for h in self._held if h.environment_id != environment_id]
         lines = [h.line.removeprefix(JOURNAL_PREFIX).strip() for h in blocked]
-        return QueuedLine(environment_id, f"{JOURNAL_PREFIX} {' | '.join(lines)}", max(h.delay_seconds for h in blocked))
+        return QueuedLine(environment_id, f"{JOURNAL_PREFIX} {TypedLine.SEPARATOR.join(lines)}", max(h.delay_seconds for h in blocked))
 
     def typed(self, environment_id: int, line: str) -> None:
         moment = timing.time()
@@ -66,14 +66,12 @@ class TypedLines:
         self._recent = [t for t in self._recent if moment - t.time < RECENT_SECONDS] + [TypedLine(environment_id, line, moment)]
 
     def contains(self, environment_id: int, prompt: str) -> bool:
-        return any(t.environment_id == environment_id and t.contains(prompt) for t in self._recent if timing.time() - t.time < RECENT_SECONDS)
+        return any(t.matches_prompt(environment_id, prompt) for t in self._recent if timing.time() - t.time < RECENT_SECONDS)
 
     def confirm(self, environment_id: int, prompt: str) -> bool:
-        for keystrokes in self._waiting:
-            if keystrokes.environment_id == environment_id and keystrokes.contains(prompt):
-                self._waiting.remove(keystrokes)
-                return True
-        return False
+        matches = [t for t in self._waiting if t.matches_prompt(environment_id, prompt)]
+        self._waiting = [t for t in self._waiting if t not in matches]
+        return bool(matches)
 
     def confirm_naming(self, environment_id: int, message_id: int) -> bool:
         matched = [t for t in self._waiting if t.environment_id == environment_id and message_id in t.message_numbers()]
@@ -81,12 +79,15 @@ class TypedLines:
             self._waiting.remove(keystrokes)
         return bool(matched)
 
+    def waiting_count(self, environment_id: int) -> int:
+        return sum(1 for t in self._waiting if t.environment_id == environment_id)
+
     def overdue(self, environment_id: int, previous: float) -> list[TypedLine]:
         return [t for t in self._waiting if t.environment_id == environment_id and t.time <= previous]
 
     def retry(self, keystrokes: TypedLine, time: float) -> TypedLine:
         queued = self.batched(keystrokes.environment_id)
-        line = keystrokes.line if queued is None else f"{keystrokes.line} | {queued.line.removeprefix(JOURNAL_PREFIX).strip()}"
+        line = keystrokes.line if queued is None else f"{keystrokes.line}{TypedLine.SEPARATOR}{queued.line.removeprefix(JOURNAL_PREFIX).strip()}"
         repeat = TypedLine(keystrokes.environment_id, line, time, keystrokes.tries + 1)
         self._waiting[self._waiting.index(keystrokes)] = repeat
         self._recent = [t for t in self._recent if time - t.time < RECENT_SECONDS] + [repeat]

@@ -11,6 +11,7 @@ class TypedLine:
 
     LONGEST_CHARACTERS: ClassVar[int] = 600
     SPLIT_MARGIN: ClassVar[int] = 40
+    SEPARATOR: ClassVar[str] = " | "
 
     environment_id: int
     line: str
@@ -21,15 +22,32 @@ class TypedLine:
     def split(cls, line: str, prefix: str) -> list[str]:
         segments, remainder = [], line
         while len(remainder) > cls.LONGEST_CHARACTERS:
-            split_index = remainder.rfind(" ", len(prefix) + 1, cls.LONGEST_CHARACTERS)
-            split_index = split_index if split_index > len(prefix) else cls.LONGEST_CHARACTERS
-            segments.append(remainder[:split_index].rstrip())
-            remainder = f"{prefix} {remainder[split_index:].strip()}"
+            segment, remainder = cls.opening_segment(remainder, prefix)
+            segments.append(segment)
         return [*segments, remainder]
+
+    @classmethod
+    def opening_segment(cls, line: str, prefix: str) -> tuple[str, str]:
+        if len(line) <= cls.LONGEST_CHARACTERS:
+            return line, ""
+        index = cls.cut_index(line, len(prefix) + 1)
+        remainder = line[index:].strip().removeprefix(cls.SEPARATOR.strip()).strip()
+        return line[:index].rstrip(), f"{prefix} {remainder}"
+
+    @classmethod
+    def cut_index(cls, text: str, start: int) -> int:
+        separator_index = text.rfind(cls.SEPARATOR, start, cls.LONGEST_CHARACTERS)
+        if separator_index > start:
+            return separator_index
+        space_index = text.rfind(" ", start, cls.LONGEST_CHARACTERS)
+        return space_index if space_index > start else cls.LONGEST_CHARACTERS
 
     def message_numbers(self) -> set[int]:
         return {int(n) for rows in MESSAGES_PATTERN.findall(self.line) for n in rows.split(", ")}
 
+    def matches_prompt(self, environment_id: int, prompt: str) -> bool:
+        return self.environment_id == environment_id and self.contains(prompt)
+
     def contains(self, prompt: str) -> bool:
         text = " ".join(prompt.split())
-        return text == self.line or (len(text) >= self.SPLIT_MARGIN and text in self.line)
+        return self.line in text or (len(text) >= self.SPLIT_MARGIN and text in self.line)

@@ -16,6 +16,8 @@ from journal.support.supervisor_socket import SupervisorSocket
 from journal.repositories.environments import Environments
 
 JOURNAL_PREFIX = "[journal]"
+LINE_ERASE = "\x15"
+ERASE_MARGIN_LINES = 2
 AGENT, JOURNAL, SUPERVISOR = "agent", "journal", "supervisor"
 
 
@@ -37,9 +39,11 @@ class SupervisorLink:
         self.type_whole(environment_id, flagged, following)
 
     def type_whole(self, environment_id: int, flagged: str, following: float) -> None:
-        for segment in TypedLine.split(flagged, JOURNAL_PREFIX):
-            self.typed.typed(environment_id, segment)
-            self._send(environment_id, "type", {"name": AGENT, "line": segment, "after": following})
+        segment, remainder = TypedLine.opening_segment(flagged, JOURNAL_PREFIX)
+        self.typed.typed(environment_id, segment)
+        self._send(environment_id, "type", {"name": AGENT, "line": segment, "after": following})
+        if remainder:
+            self.typed.queue(QueuedLine(environment_id, remainder, following))
 
     def is_busy(self, environment_id: int) -> bool:
         return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_recent(environment_id, self.batch_seconds())
@@ -69,6 +73,9 @@ class SupervisorLink:
 
     def batch_seconds(self) -> float:
         return self.settings.decimal(BATCH_OPTION)
+
+    def erase(self, environment_id: int) -> None:
+        self.keys(environment_id, LINE_ERASE * (self.typed.waiting_count(environment_id) + ERASE_MARGIN_LINES))
 
     def retype(self, environment_id: int, flagged: str) -> None:
         self._send(environment_id, "type", {"name": AGENT, "line": flagged, "after": 0.0})

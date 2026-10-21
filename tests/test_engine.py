@@ -1393,8 +1393,15 @@ def test_a_long_journal_line_reaches_the_agent_whole_in_several_marked_pieces(ap
     from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields["line"]))
+    from journal.repositories.setting_rows import SettingRows
+    from journal.support.typed_lines import TypedLines
+    app.container.get(SettingRows).set("delivery.batch_seconds", 0, Actor.user(1))
     terms = " ".join(f"word{n}" for n in range(1, 260))
-    app.container.get(SupervisorLink).type(1, terms)
+    link, lines = app.container.get(SupervisorLink), app.container.get(TypedLines)
+    link.type(1, terms)
+    assert len(transmitted) == 1, "one segment at a time goes into the box"
+    while lines.confirm(1, transmitted[-1]):
+        link.release(1)
     assert len(transmitted) >= 3 and all(len(segment) <= 600 and segment.startswith("[journal] ") for segment in transmitted), "typed in whole pieces a terminal takes, each the journal's"
     assert " ".join(segment.removeprefix("[journal] ") for segment in transmitted) == terms and "..." not in " ".join(transmitted), "nothing cut short"
 

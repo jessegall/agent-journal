@@ -2278,7 +2278,7 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields) if verb == "type" else None)
     hook(app, "SessionStart")
     link, bus = app.container.get(SupervisorLink), app.container.get(Bus)
     link.type(1, "hello there")
@@ -5813,6 +5813,17 @@ def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(
     assert threshold.paused() is None and updating.problem == "", "a journal that came back on the version it went to takes the mark off"
 
 
+def test_a_long_typed_line_is_typed_one_segment_at_a_time(app: App):
+    from journal.supervisor_link import SupervisorLink
+    from journal.support.typed_lines import TypedLines
+    lines = app.container.get(TypedLines)
+    slow = " | ".join(f"HOOK /hooks/Stop{n} took 79 ms, over its budget of 50 ms: find what made it slow and fix it at its source" for n in range(8))
+    app.container.get(SupervisorLink).type_whole(1, "[journal] " + slow, 0.0)
+    assert len(lines.overdue(1, 10 ** 12)) == 1, "only the first segment goes into the box"
+    held = lines.batched(1)
+    assert held is not None and held.line.startswith("[journal] HOOK /hooks/Stop") and held.line.endswith("Stop7 took 79 ms, over its budget of 50 ms: find what made it slow and fix it at its source"), "the rest waits, whole, until the first is seen back"
+
+
 def test_a_long_typed_line_goes_in_whole_pieces_and_a_piece_typed_again_is_still_the_journals():
     import time as timing
     from journal.support.typed_line import TypedLine
@@ -5824,6 +5835,12 @@ def test_a_long_typed_line_goes_in_whole_pieces_and_a_piece_typed_again_is_still
     segments = TypedLine.split("[journal] " + issues, "[journal]")
     assert len(segments) > 1 and all(len(segment) <= TypedLine.LONGEST_CHARACTERS and segment.startswith("[journal] ") and not segment.endswith("...") for segment in segments), "a line longer than one line holds is typed in whole marked pieces, never cut short"
     assert " ".join(segment.removeprefix("[journal] ") for segment in segments) == issues
+    slow = " | ".join(f"HOOK /hooks/Stop{n} took 79 ms, over its budget of 50 ms: find what made it slow and fix it at its source" for n in range(8))
+    assert all(segment.endswith("at its source") for segment in TypedLine.split("[journal] " + slow, "[journal]")), "lines typed together are split between lines, never inside one"
+    both = TypedLines()
+    both.typed(1, "[journal] first line")
+    both.typed(1, "[journal] second line")
+    assert both.confirm(1, "[journal] first line\n[journal] second line") and not both.is_waiting(1), "a prompt carrying two typed lines confirms both"
     line = segments[0]
     keystrokes = TypedLines()
     keystrokes.typed(1, line)
@@ -6110,7 +6127,7 @@ def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_
     from journal.repositories.messages import Messages
     from journal.supervisor_link import SupervisorLink
     transmitted = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields["line"]))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields["line"] if verb == "type" else fields["keys"]))
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
     app.console().run(["message", "send", "are you there?"], USER)
@@ -6125,6 +6142,8 @@ def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_
         tick(later)
     cards = [m.text for m in app.container.get(Messages).scoped() if m.author == "system" and "line" in m.text]
     assert transmitted.count("[journal] look at the build") == 6 and cards == ["A line did not reach the agent, typed 6 times over five minutes"], "six tries, and the chat hears of it once, when the line is given up"
+    retyped = [n for n, sent in enumerate(transmitted) if sent == "[journal] look at the build"][1:]
+    assert all(transmitted[n - 1] == "\x15" * 3 for n in retyped), "before a line is typed again, the box is erased, a Ctrl+U for each line not seen back and two more"
 
 
 def test_a_fact_a_rule_or_a_reminder_recorded_or_struck_is_a_card_in_the_chat(app: App):
