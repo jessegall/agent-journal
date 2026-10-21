@@ -1,6 +1,4 @@
-# The replays boot a journal each and run minutes, so they are not in the default run: python3 -m pytest tests/replays_run.py, before any commit that touches the workflows. The listener side was frozen before the listeners were deleted; REPLAY_FREEZE=1 re-records only what listeners are still in code.
-"""Plan 2's replays: a listener and the workflow that replaces it, run through the same steps on two fresh journals, must leave the agent
-with the same answers and the same typed lines. Each replay freezes the listener's record, so it still stands once the listener is gone."""
+# The replays boot a journal each and run for minutes, so they are not in the default run: python3 -m pytest tests/replays_run.py, before any commit that touches a state or a conduct; REPLAY_FREEZE=1 writes the records anew where the conduct changed on purpose.
 
 from pathlib import Path
 
@@ -23,27 +21,21 @@ from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
 from journal.support.scope import Scope
 from journal.repositories.setting_rows import SettingRows
-from tests.replay import PROVIDERS, TOOLS, Replay, differences, hook_as, pass_time, recorded, tick_after
+from tests.replay import PROVIDERS, TOOLS, Replay, hook_as, pass_time, played, tick_after
 from tests.test_features import AGENT, MAIN, USER, context
 
 
 @pytest.fixture(params=PROVIDERS)
-def journals(tmp_path: Path, monkeypatch, request):
-    """Two fresh journals, one for the listener and one for the workflow, and the provider whose agent the steps play; both start and stop together."""
+def journal(tmp_path: Path, monkeypatch, request):
+    """One fresh journal and the provider whose agent the steps play; it starts and stops with the test."""
     monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
-    apps = []
-    for name in ("listener", "workflow"):
-        app = App(Config(tmp_path / name, port=0))
-        app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
-        app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
-        apps.append(app)
-    with apps[0].container.get(Scope).of(MAIN):
-        yield [*apps, request.param]
-    for app in apps:
-        app.runtime().stop()
-
-
+    app = App(Config(tmp_path / "journal", port=0))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
+    with app.container.get(Scope).of(MAIN):
+        yield [app, request.param]
+    app.runtime().stop()
 
 
 def prompts_with_unread(app, replay: Replay, provider: str) -> None:
@@ -59,15 +51,12 @@ def prompts_with_unread(app, replay: Replay, provider: str) -> None:
     replay.step("a prompt again after 4", hook_as(app, provider, "UserPromptSubmit", prompt="still working")[1])
 
 
-def test_prompt_sent_as_the_shipped_workflow_equals_the_listener(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"prompt_sent_{provider}", with_listener, monkeypatch, prompts_with_unread, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    prompts_with_unread(with_workflow, right, provider)
-    answers = [s["answer"] for s in left.record() if s["answer"] is not None]
+def test_prompt_sent_matches_its_record(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"prompt_sent_{provider}", app, monkeypatch, prompts_with_unread, provider, nudges=True)
+    answers = [s["answer"] for s in replay.record() if s["answer"] is not None]
     assert "new message 1" in str(answers[0]) and "new messages 1, 3, 4" in str(answers[1]) and "4 messages unread" in str(answers[2]) and "unread" not in str(answers[3]), "the listener names one, a few, many, and not again inside the window"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
 def tool_uses_with_the_inbox(app, replay: Replay, provider: str) -> None:
@@ -92,7 +81,7 @@ def tool_uses_with_the_inbox(app, replay: Replay, provider: str) -> None:
     replay.step("a read after the reply", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
 
 
-def count_survives_events(app, replay: Replay, provider: str) -> None:
+def tool_uses_across_events(app, replay: Replay, provider: str) -> None:
     """The steps: a message arrives, two reads, a stop, a prompt, a third read that names the inbox since the count of uses survived the stop and the prompt, a session start, then three reads more, the sixth naming again."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
@@ -154,16 +143,13 @@ def the_clock_ticks(app, replay: Replay, provider: str) -> None:
     replay.step("the agent's own tool use lifts the wait", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
 
 
-def test_clock_ticks_as_the_shipped_workflow_equals_the_two_listeners(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"the_clock_ticks_{provider}", with_listener, monkeypatch, the_clock_ticks, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    the_clock_ticks(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in left.record()}
+def test_clock_ticks_matches_its_record(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"the_clock_ticks_{provider}", app, monkeypatch, the_clock_ticks, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert by_name["quiet for a minute"]["typed"] == [] and "nothing has happened for half an hour" in str(by_name["quiet for half an hour"]["typed"]) and by_name["quiet for half an hour again"]["typed"] == [], "the listener checks in at half an hour, once inside the window"
     assert "task 1 is still parked" in str(by_name["a minute with a task parked"]["typed"]) and by_name["a minute more"]["typed"] == [], "and asks after the parked task, once inside the window"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
 def a_worker_reports(app, replay: Replay, provider: str) -> None:
@@ -199,28 +185,23 @@ def a_question_is_answered(app, replay: Replay, provider: str) -> None:
     replay.step("answered")
 
 
-def test_worker_reports_as_the_shipped_workflow_equals_the_listener(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"a_worker_reports_{provider}", with_listener, monkeypatch, a_worker_reports, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    a_worker_reports(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in left.record()}
+def test_worker_reports_matches_its_record(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"a_worker_reports_{provider}", app, monkeypatch, a_worker_reports, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert by_name["worker 1 reports"]["typed"] == ["[journal] worker 1, Lady Lovelace, reported in the chat"]
     assert by_name["worker 2 is stopped"]["typed"] == ["[journal] worker 2, Dr. Einstein, stopped before it reported", "[journal] what you waited on came back: carry on"]
-    assert with_workflow.container.get(StateMachine).current("s1").task_id == 1, "the workflow released the agent"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert app.container.get(StateMachine).current("s1").task_id == 1, "the workflow released the agent"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
-def test_question_answered_as_the_shipped_workflow_equals_the_listener(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"a_question_is_answered_{provider}", with_listener, monkeypatch, a_question_is_answered, provider, nudges=False)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    a_question_is_answered(with_workflow, right, provider)
-    assert left.record()[-1]["typed"] == ["[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"]
-    assert with_workflow.container.get(StateMachine).current("s1").task_id == 1, "the workflow released the agent"
-    assert differences(left.record(), right.record()) == [], "the agent would have seen the same; the workflow's line is on record too, which the listener never left"
+def test_question_answered_matches_its_record(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"a_question_is_answered_{provider}", app, monkeypatch, a_question_is_answered, provider)
+    typed = replay.record()[-1]["typed"]
+    assert typed[0] == "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer" and typed[1].startswith("[journal] task 1 is in hand"), "the answer is typed, then the work beneath is named"
+    assert app.container.get(StateMachine).current("s1").task_id == 1, "the wait popped back to the task"
+    assert found == [], "the agent would have seen the same; the line is on record"
 
 
 def stops_with_unread(app, replay: Replay, provider: str) -> None:
@@ -247,25 +228,19 @@ def starts_with_unread(app, replay: Replay, provider: str) -> None:
     replay.step("a session starts", hook_as(app, provider, "SessionStart")[1])
 
 
-def test_the_stop_workflow_carries_the_inbox_equal_to_the_listener(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"stops_with_unread_{provider}", with_listener, monkeypatch, stops_with_unread, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    stops_with_unread(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in left.record()}
+def test_the_stop_workflow_carries_the_inbox_matches_its_record(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"stops_with_unread_{provider}", app, monkeypatch, stops_with_unread, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert "new message 1" in str(by_name["a stop with one unread"]["answer"]) and "4 messages unread" in str(by_name["a stop with four unread"]["answer"])
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
-def test_the_start_workflow_carries_the_inbox_equal_to_the_listener(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"starts_with_unread_{provider}", with_listener, monkeypatch, starts_with_unread, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    starts_with_unread(with_workflow, right, provider)
-    assert "new messages 1, 2" in str(left.record()[-1]["answer"]), "the listener names the inbox at a start"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+def test_the_start_workflow_carries_the_inbox_matches_its_record(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"starts_with_unread_{provider}", app, monkeypatch, starts_with_unread, provider, nudges=True)
+    assert "new messages 1, 2" in str(replay.record()[-1]["answer"]), "the listener names the inbox at a start"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
 TOOL_LISTENERS = ("HoldUnread", "HoldUnanswered", "LogCadence")
@@ -291,42 +266,33 @@ def tool_uses_with_changed_settings(app, replay: Replay, provider: str) -> None:
         replay.step(f"write {i}", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
 
 
-def test_changed_settings_keep_their_meaning_in_the_tool_workflow(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"tool_uses_with_changed_settings_{provider}", with_listener, monkeypatch, tool_uses_with_changed_settings, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    tool_uses_with_changed_settings(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in left.record()}
+def test_changed_settings_keep_their_meaning_in_the_tool_workflow(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"tool_uses_with_changed_settings_{provider}", app, monkeypatch, tool_uses_with_changed_settings, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert by_name["read 1 while owed"]["answer"] == {} and "answer or react to message 1 before you do anything else" in str(by_name["read 2 while owed"]["answer"]) and by_name["read 3 while owed"]["answer"] == {}, "the listener asks after two uses, once inside the window"
     assert "error" in by_name["read 4 while owed"]["answer"] and "error" in by_name["read 5 while owed"]["answer"], "and holds after four"
     assert "in hand, 2 edits" in str(by_name["write 3"]["answer"]) and "3 edits since you logged task 1: say where it stands" in str(by_name["write 4"]["answer"]) and "in hand, 4 edits" in str(by_name["write 5"]["answer"]) and by_name["write 6"]["answer"] == {} and "error" in by_name["write 7"]["answer"], "the task is named every two edits, the log asked at three and held at six"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
-def test_tool_about_to_run_as_the_shipped_workflow_equals_the_three_listeners_on_the_inbox(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"tool_uses_with_the_inbox_{provider}", with_listener, monkeypatch, tool_uses_with_the_inbox, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    tool_uses_with_the_inbox(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in left.record()}
+def test_tool_about_to_run_matches_its_record_on_the_inbox(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"tool_uses_with_the_inbox_{provider}", app, monkeypatch, tool_uses_with_the_inbox, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert "new message 1" in str(by_name["read 3"]["answer"]) and by_name["read 4"]["answer"] == {}, "the listener names the inbox every third use"
     assert "you have 1 unread messages" in str(by_name["a write at 17"]["answer"]), "and holds the write after five namings"
     assert "answer or react to message 1 first" in str(by_name["a read while owed"]["answer"]) and by_name["a journal command while owed"]["answer"] == {} and by_name["a look at its files"]["answer"] == {} and by_name["a read after the reply"]["answer"] == {}
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
-def test_tool_about_to_run_as_the_shipped_workflow_equals_the_log_cadence(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"writes_over_the_log_{provider}", with_listener, monkeypatch, writes_over_the_log, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    writes_over_the_log(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in left.record()}
+def test_tool_about_to_run_matches_its_record_on_the_log_cadence(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"writes_over_the_log_{provider}", app, monkeypatch, writes_over_the_log, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert "25 edits since you logged task 1" in str(by_name["write 26"]["answer"]) and by_name["write 27"]["answer"] == {}, "the listener asks for a log at the first threshold"
     assert "50 edits since you logged task 1" in str(by_name["write 51 after the log"]["answer"]) and "error" in by_name["write 51 after the log"]["answer"], "and holds the write when the log is overdue"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
 def message_arrives(app, replay: Replay, provider: str) -> None:
@@ -338,14 +304,11 @@ def message_arrives(app, replay: Replay, provider: str) -> None:
     replay.step("a message arrives")
 
 
-def test_message_arrives_as_the_shipped_workflow_equals_the_listener(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"message_arrives_{provider}", with_listener, monkeypatch, message_arrives, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    message_arrives(with_workflow, right, provider)
-    assert left.record()[-1]["typed"] == ["[journal] new message 1"], "the listener names the message"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+def test_message_arrives_matches_its_record(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"message_arrives_{provider}", app, monkeypatch, message_arrives, provider, nudges=True)
+    assert replay.record()[-1]["typed"] == ["[journal] new message 1"], "the listener names the message"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
 def the_phone_talks(app, replay: Replay, provider: str) -> None:
@@ -366,17 +329,14 @@ def the_phone_talks(app, replay: Replay, provider: str) -> None:
     replay.step("the phone answers")
 
 
-def test_the_phone_is_heard_as_the_user_is(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"the_phone_talks_{provider}", with_listener, monkeypatch, the_phone_talks, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    the_phone_talks(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in left.record()}
+def test_the_phone_is_heard_as_the_user_is(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"the_phone_talks_{provider}", app, monkeypatch, the_phone_talks, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert by_name["the phone leaves a message"]["typed"] == ["[journal] new message 1"], "a message from the phone is named as the user's is"
     assert "question 1 is answered" in str(by_name["the phone answers"]["typed"]), "and an answer from the phone releases the wait"
-    assert with_workflow.container.get(StateMachine).current("s1").task_id == 1, "the agent is working its task again"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert app.container.get(StateMachine).current("s1").task_id == 1, "the agent is working its task again"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
 def tick(app, quiet: float) -> None:
@@ -704,17 +664,13 @@ def silent_session_ends(app, replay: Replay, provider: str) -> None:
 
 
 STATE_RULES = {"plan_building": plan_building, "session_starts": session_starts, "silent_session_ends": silent_session_ends, "pause_exits": pause_exits, "ended_restarts": ended_restarts, "plan_rules": plan_rules, "awaiting_rules": awaiting_rules, "loading_skill_rules": loading_skill_rules, "orienting_rules": orienting_rules, "at_mark_rules": at_mark_rules, "working_rules": working_rules, "expecting_rules": expecting_rules, "sequence_rules": sequence_rules, "owed_pause_rules": owed_pause_rules, "waiting_rules": waiting_rules, "stuck_rules": stuck_rules}
-"""What the states say of their own, frozen before any of it moves into a workflow."""
 
 
 @pytest.mark.parametrize("name", sorted(STATE_RULES))
-def test_a_state_rule_frozen_before_it_moves_still_holds(journals, monkeypatch, name):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"{name}_{provider}", with_listener, monkeypatch, STATE_RULES[name], provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    STATE_RULES[name](with_workflow, right, provider)
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+def test_a_states_conduct_matches_its_record(journal, monkeypatch, name):
+    app, provider = journal
+    replay, found = played(f"{name}_{provider}", app, monkeypatch, STATE_RULES[name], provider, nudges=True)
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
 def still_open_after_quiet(app, replay: Replay, provider: str) -> None:
@@ -834,19 +790,15 @@ def a_subagents_tool_use(app, replay: Replay, provider: str) -> None:
     replay.step("the agent's own read", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py"})[1])
 
 
-BEFORE_PARTS = {"still_open_after_quiet": still_open_after_quiet, "blocked_after_an_hour": blocked_after_an_hour, "meanwhile_while_waiting": meanwhile_while_waiting, "background_every_five_minutes": background_every_five_minutes,
+CONDUCT_RULES = {"still_open_after_quiet": still_open_after_quiet, "blocked_after_an_hour": blocked_after_an_hour, "meanwhile_while_waiting": meanwhile_while_waiting, "background_every_five_minutes": background_every_five_minutes,
                 "log_ask_at_stop_and_start": log_ask_at_stop_and_start, "line_reminder": line_reminder, "hold_after_namings": hold_after_namings, "a_subagents_tool_use": a_subagents_tool_use}
-"""What the shipped workflows with no replay of their own say, frozen before they are drawn from counts and times."""
 
 
-@pytest.mark.parametrize("name", sorted(BEFORE_PARTS))
-def test_a_workflow_frozen_before_it_is_drawn_from_parts_still_holds(journals, monkeypatch, name):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"{name}_{provider}", with_listener, monkeypatch, BEFORE_PARTS[name], provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    BEFORE_PARTS[name](with_workflow, right, provider)
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+@pytest.mark.parametrize("name", sorted(CONDUCT_RULES))
+def test_a_conduct_matches_its_record(journal, monkeypatch, name):
+    app, provider = journal
+    replay, found = played(f"{name}_{provider}", app, monkeypatch, CONDUCT_RULES[name], provider, nudges=True)
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
 def two_agents(app, replay: Replay, provider: str) -> None:
@@ -885,43 +837,33 @@ def two_lines_on_one_write(app, replay: Replay, provider: str) -> None:
     replay.step("a write held twice over", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
 
 
-def test_a_second_session_in_one_environment_takes_the_first_ones_place_and_a_line_is_typed_once(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"two_agents_{provider}", with_listener, monkeypatch, two_agents, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    two_agents(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in left.record()}
+def test_a_second_session_in_one_environment_takes_the_first_ones_place_and_a_line_is_typed_once(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"two_agents_{provider}", app, monkeypatch, two_agents, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert by_name["a message arrives"]["typed"] == ["[journal] new message 1"], "named once for the environment"
     assert by_name["the worker reports"]["typed"] == ["[journal] worker 1, Lady Lovelace, reported in the chat", "[journal] what you waited on came back: carry on"], "the awaiting agent is told and released, once"
-    assert with_workflow.container.get(StateMachine).current("s2").task_id == 1 and with_workflow.container.get(StateMachine).current("s1").name == "ended", "an environment keeps one session: the second took the first one's place"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, and the record says the same"
+    assert app.container.get(StateMachine).current("s2").task_id == 1 and app.container.get(StateMachine).current("s1").name == "ended", "an environment keeps one session: the second took the first one's place"
+    assert found == [], "the agent would have seen the same, and the record says the same"
 
 
-def test_two_lines_on_one_write_the_first_hold_wins(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"two_lines_on_one_write_{provider}", with_listener, monkeypatch, two_lines_on_one_write, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    two_lines_on_one_write(with_workflow, right, provider)
-    held = right.record()[-1]["answer"]["error"]
+def test_two_lines_on_one_write_the_first_hold_wins(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"two_lines_on_one_write_{provider}", app, monkeypatch, two_lines_on_one_write, provider, nudges=True)
+    held = replay.record()[-1]["answer"]["error"]
     assert "answer or react to message 1 first" in held, "the hold over the unanswered message runs first in the order and wins the write"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the agent would have seen the same, in the same order"
+    assert found == [], "the agent would have seen the same, in the same order"
 
 
-def test_a_count_survives_a_stop_a_prompt_and_a_session_start(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"count_survives_events_{provider}", with_listener, monkeypatch, count_survives_events, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    count_survives_events(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in right.record()}
+def test_the_inbox_is_named_on_the_third_tool_use_across_a_stop_a_prompt_and_a_start(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"count_survives_events_{provider}", app, monkeypatch, tool_uses_across_events, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert "new message 1" in str(by_name["read 3, the third use since the message"]["answer"]) and "new message 1" in str(by_name["read 6, the sixth"]["answer"]), "the uses since the message are read from the record across the stop, the prompt and the session start: the third and the sixth name it"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the record says the same"
+    assert found == [], "the record says the same"
 
 
 GIT_AT = {"GIT_AUTHOR_DATE": "2026-01-01T00:00:00Z", "GIT_COMMITTER_DATE": "2026-01-01T00:00:00Z"}
-"""A fixed time for the replays' commits, so a commit's sha is the same in every run and the record compares."""
 
 
 def project_with_git(app) -> Path:
@@ -957,20 +899,17 @@ def session_in_a_worktree(app, replay: Replay, provider: str) -> None:
     replay.step("the merge that lands it", hook_as(app, provider, "PostToolUse", tool_name=TOOLS[provider].shell, tool_input={"command": "git merge worktree-main"}, tool_response={})[1])
 
 
-def test_a_session_in_a_worktree_works_its_environment_and_its_commit_closes_its_task_when_merged(journals, monkeypatch):
+def test_a_session_in_a_worktree_works_its_environment_and_its_commit_closes_its_task_when_merged(journal, monkeypatch):
     from journal.repositories.messages import Messages
     from journal.repositories.tasks import Tasks
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"session_in_a_worktree_{provider}", with_listener, monkeypatch, session_in_a_worktree, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    session_in_a_worktree(with_workflow, right, provider)
-    with_workflow.runtime().deferred.drain()
-    by_name = {s["name"]: s for s in right.record()}
+    app, provider = journal
+    replay, found = played(f"session_in_a_worktree_{provider}", app, monkeypatch, session_in_a_worktree, provider, nudges=True)
+    app.runtime().deferred.drain()
+    by_name = {s["name"]: s for s in replay.record()}
     assert "error" not in by_name["a write inside the worktree"]["answer"], "the agent's own worktree is its to write in"
-    assert "task 1" in str(by_name["the merge that lands it"]["answer"]) and with_workflow.container.get(Tasks).find(1).state.value == "done", "the trailer closes its task when the merge lands it"
-    assert any(m.text.startswith("Working in the worktree main, on the branch worktree-main") for m in with_workflow.container.get(Messages).recent(30)), "the session is marked with its worktree and branch"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the record says the same"
+    assert "task 1" in str(by_name["the merge that lands it"]["answer"]) and app.container.get(Tasks).find(1).state.value == "done", "the trailer closes its task when the merge lands it"
+    assert any(m.text.startswith("Working in the worktree main, on the branch worktree-main") for m in app.container.get(Messages).recent(30)), "the session is marked with its worktree and branch"
+    assert found == [], "the record says the same"
 
 
 def worker_worktree_kept_out(app, replay: Replay, provider: str) -> None:
@@ -990,14 +929,11 @@ def worker_worktree_kept_out(app, replay: Replay, provider: str) -> None:
     replay.step("a write in the project", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": str(root / "elsewhere.py"), "content": "x"})[1])
 
 
-def test_a_workers_worktree_is_its_own_and_a_subagents_worktree_never_moves_the_main_conversation(journals, monkeypatch):
-    with_listener, with_workflow, provider = journals
-    left = recorded(f"worker_worktree_kept_out_{provider}", with_listener, monkeypatch, worker_worktree_kept_out, provider, nudges=True)
-    with_workflow.runtime().start()
-    right = Replay(with_workflow, monkeypatch)
-    worker_worktree_kept_out(with_workflow, right, provider)
-    by_name = {s["name"]: s for s in right.record()}
+def test_a_workers_worktree_is_its_own_and_a_subagents_worktree_never_moves_the_main_conversation(journal, monkeypatch):
+    app, provider = journal
+    replay, found = played(f"worker_worktree_kept_out_{provider}", app, monkeypatch, worker_worktree_kept_out, provider, nudges=True)
+    by_name = {s["name"]: s for s in replay.record()}
     assert "worker 1's worktree" in by_name["a write in the worker's worktree"]["answer"]["error"], "the worker's worktree is refused to the agent, with how to work there"
     assert "error" not in by_name["a subagent writes in its own worktree"]["answer"] and "error" not in by_name["a write in the project"]["answer"]
-    assert with_workflow.container.get(StateMachine).current("s1").name == "working", "the subagent's worktree never moved the main conversation"
-    assert differences(left.record(), right.record(), nudges=True) == [], "the record says the same"
+    assert app.container.get(StateMachine).current("s1").name == "working", "the subagent's worktree never moved the main conversation"
+    assert found == [], "the record says the same"
