@@ -2,6 +2,7 @@ import re
 from argparse import Namespace
 
 from journal.console.command import Command
+from journal.models.command_output import CommandOutput
 from journal.support.wait_targets import WaitTargets
 from journal.support.rejection import Rejection
 from journal.support.caller import Caller
@@ -34,7 +35,15 @@ class WaitCommand(Command):
             raise Rejection(MISSING_WAIT_TARGET)
         if USER_WAIT_PATTERN.search(args.what):
             raise Rejection(USER_WAIT_REFUSAL)
-        names = [self.awaitables.output(n) for n in args.output] + ([self.awaitables.polled_check(args.until, args.what, caller.actor)] if args.until else [])
+        names = [self.awaitables.ref(output) for output in self.running(args.output)] + ([self.awaitables.polled_check(args.until, args.what, caller.actor)] if args.until else [])
         self.events.wait_declared(args.what, ",".join(names), caller)
         print(f"waiting for {args.what}, on {', '.join(self.awaitables.title(name) for name in names)}; it ends by itself once all of it has settled, or when you work again")
         return 0
+
+    def running(self, numbers: list[int]) -> list[CommandOutput]:
+        outputs = [self.awaitables.outputs.find(n) for n in numbers]
+        running = [output for output in outputs if not output.ended]
+        if outputs and not running:
+            ended = ", ".join(f"output {output.id} already {output.ending()}" for output in outputs)
+            raise Rejection(f"{ended}: read it with journal output read <n> --summary")
+        return running

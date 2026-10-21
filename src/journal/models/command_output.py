@@ -37,5 +37,8 @@ class CommandOutput(Scoped):
     def is_resolved(self) -> bool:
         return self.ended
 
+    def ending(self) -> str:
+        return "finished" if self.status == 0 else f"failed with code {self.status}"
+
     def outcome(self) -> str:
-        return f"output {self.id} {'finished' if self.status == 0 else f'failed with code {self.status}'}"
+        return f"output {self.id} {self.ending()}"

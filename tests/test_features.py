@@ -5600,9 +5600,13 @@ def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App
     user = console.run(["await", "the user's answer", "--until", "false"], AGENT)
     assert user.code == 1 and "no wait" in user.error, "waiting for the user is no wait"
     output = app.container.get(OutputLog).start("c1", "npm run build", app.config.home / "runtime" / "outputs" / "c1", "s1", Actor.agent("s1"))
-    assert console.run(["await", "the build", "--output", str(output.id)], AGENT).code == 0
-    assert app.container.get(StateMachine).current("s1").name == "awaiting", "the agent waits"
+    ended = app.container.get(OutputLog).start("c0", "make", app.config.home / "runtime" / "outputs" / "c0", "s1", Actor.agent("s1"))
     outputs = app.container.get(CommandOutputs)
+    outputs.save(outputs.find(ended.id).backgrounded().ended_with(2, 1.0), Actor.system())
+    refused = console.run(["await", "the make", "--output", str(ended.id)], AGENT)
+    assert refused.code == 1 and f"output {ended.id} already failed with code 2" in refused.error and "journal output read" in refused.error, "an output that already ended is no wait"
+    assert console.run(["await", "the build", "--output", str(ended.id), "--output", str(output.id)], AGENT).code == 0
+    assert app.container.get(StateMachine).current("s1").name == "awaiting", "the agent waits on the output still running"
     outputs.save(outputs.find(output.id).backgrounded().ended_with(0, 1.0), Actor.system())
     app.runtime().deferred.drain()
     assert app.container.get(StateMachine).current("s1").name != "awaiting", "the wait ends by itself once the output it named is done"
