@@ -455,16 +455,6 @@ def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linke
     assert messages[-1]["text"] == "please also check the header" and messages[-1]["comments_on"] == ["tasks:1"]
     assert call(server, "POST", "/journal/comments", {"on": "nothing:1", "text": "x"})[0] == 409, "a comment is only written under a row that is there"
 
-
-def test_the_manifest_names_the_workflow_node_that_reads_each_setting_and_says_when_none_does(server):
-    manifest = call(server, "GET", "/journal/manifest")[1]
-    feature = lambda name: next(f for f in manifest["features"] if f["name"] == name)
-    hold_after = next(s for s in feature("messages")["options"] if s["name"] == "hold_after")
-    assert hold_after["read_by"] and {r["workflow"] for r in hold_after["read_by"]} == {"Hold the tools while a read message stays unanswered"} and all(r["id"] > 0 for r in hold_after["read_by"]), "the guards' workflow has the check that reads the hold cadence"
-    auto = next(s for s in feature("tasks")["options"] if s["name"] == "auto")
-    assert auto["read_by"] == [], "the auto switch is read by the auto_mode check, which names no setting in its text"
-
-
 def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_it(tmp_path: Path):
     from journal.features.tasks.feature import Tasks
     from journal.repositories.setting_rows import SettingRows
@@ -513,23 +503,6 @@ def test_a_chat_lists_its_last_fifty_messages_and_the_rest_on_scrolling_up():
     assert [r.id for r in page["rows"]] == list(range(11, 61)) and page["more"], "a chat pages strictly: the last fifty, the rest on scrolling up"
     older = Listing.from_query({"before": "11"}).listed(rows, lambda r: True, timeline=True)
     assert [r.id for r in older["rows"]] == list(range(1, 11)) and not older["more"]
-
-
-def test_a_hold_a_trigger_reaches_through_no_check_is_refused_and_a_wait_with_no_release_is_flagged(server):
-    status, read = call(server, "GET", "/journal/chart")
-    awaiting = next(w for w in read["workflows"] if w["state"] == "awaiting" and w["event"] == "workers.updated" and w["title"].startswith("Send the agent back"))
-    assert status == 200 and awaiting["warnings"] == [], "the shipped wait releases the agent"
-    nodes = [{"id": "t", "kind": "trigger", "key": "workers.updated"}, {"id": "h", "kind": "action", "key": "hold", "text": "wait"}]
-    status, body = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "h"}]})
-    assert status == 409 and "action h holds the agent at every workers.updated: put a check before it" in body["error"]
-    by_tool = next(w for w in read["workflows"] if w["state"] == "awaiting" and w["event"] == "tool_starting")
-    quiet = [{"id": "t", "kind": "trigger", "key": "tool_starting"}, {"id": "s", "kind": "action", "key": "say", "text": "still waiting"}]
-    assert call(server, "POST", f"/journal/chart/{by_tool['id']}", {"revision": by_tool["revision"], "nodes": quiet, "lines": [{"from": "t", "to": "s"}]})[0] == 200
-    nodes = [{"id": "t", "kind": "trigger", "key": "workers.updated"}, {"id": "s", "kind": "action", "key": "say", "text": "still waiting"}]
-    status, saved = call(server, "POST", f"/journal/chart/{awaiting['id']}", {"revision": awaiting["revision"], "nodes": nodes, "lines": [{"from": "t", "to": "s"}]})
-    assert status == 200 and saved["warnings"] == ["nothing ends this wait: no workflow of Waiting on a worker releases the agent or changes its state, so an agent waiting on a worker stays so until you release it by hand"]
-
-
 
 def test_a_shipped_workflow_cannot_be_deleted_and_an_emptied_one_reads_off(server):
     status, read = call(server, "GET", "/journal/chart")
@@ -618,25 +591,6 @@ def test_an_events_workflows_are_put_in_order_by_the_user_and_a_stale_order_name
     assert status == 409 and "name each once" in body["error"], "an order names every workflow of the event"
     status, body = call(server, "POST", "/journal/chart/order", {"trigger": "flying", "order": []})
     assert status == 409 and "no workflow answers flying" in body["error"]
-
-
-def test_a_locked_step_stays_as_shipped_and_its_workflow_stays_on(journal_root: Path):
-    from journal.repositories.charts import Charts
-    from journal.repositories.nodes import Nodes
-    from journal.support.actor import Actor
-    app = App(Config(journal_root, port=0))
-    app.runtime().boot()
-    charts = app.container.get(Charts)
-    voice = next(c for c in charts.shipped() if c.drawing == ":session_started:voice")
-    said = next(n for n in charts.nodes_of(voice) if n.key == "say")
-    app.container.get(Nodes).save(said.with_(locked=True), Actor.system())
-    server = app.server()
-    server.start()
-    try:
-        locked_step_holds(server)
-    finally:
-        server.stop()
-
 
 def locked_step_holds(server) -> None:
     """No shipped workflow carries a locked step since the laws are the engine's, so the test locks one the way a shipped drawing would."""

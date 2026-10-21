@@ -47,15 +47,19 @@ class StateMachine(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> Decision:
         decision = self.answer(self.agent(event.session, event.environment_id, event.provider), event)
         if decision.context and not (event.answers_hook and event.carries_lines):
-            self.supervisor.type(event.environment_id, decision.context, after=event.typed_after)
+            self.type_lines(event.environment_id, decision.context, event.typed_after)
         return decision
+
+    def type_lines(self, environment_id: int, lines: str, after: float) -> None:
+        for line in lines.split("\n"):
+            self.supervisor.type(environment_id, line, after=after)
 
     def row_event(self, event: RowEvent) -> None:
         for agent in self.agents.live_in(event.environment_id) if event.environment_id else self.agents.live_everywhere():
             with self.scope.of(agent.environment_id):
-                answered = self.answer(agent, event)
+                answered = self.answer(agent, event.reaching(agent.session))
             if answered.context:
-                self.supervisor.type(agent.environment_id, answered.context)
+                self.type_lines(agent.environment_id, answered.context, 0.0)
 
     def answer(self, agent: Agent, event: Event) -> Decision:
         stack, settings = self.states.stack_of(agent), self.taken()
@@ -67,8 +71,8 @@ class StateMachine(AgentListener[AgentEvent]):
         agent = self._settle(agent, hooked, event.key, Actor.system())
         lines = [line for nudge in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, nudge))]
         typed = [line for nudge in transition.typed if (line := self.nudger.say(agent, nudge))]
-        if typed:
-            self.supervisor.type(agent.environment_id, "\n".join(typed), after=event.typed_after)
+        for line in typed:
+            self.supervisor.type(agent.environment_id, line, after=event.typed_after)
         if transition.held:
             return Decision.refuse(transition.held.rendered())
         if hooked.held:

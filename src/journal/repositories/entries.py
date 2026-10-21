@@ -40,6 +40,10 @@ class Entries(ScopedRepository[Entry]):
         marks = ", ".join("?" for _ in keys)
         return self.counted_in(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({marks}) AND json_extract(data, '$.at') > ?", (session, *keys, at))
 
+    def last_id_of_kind(self, session: str, kind: str) -> int:
+        row = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = ? AND actor = ?", (kind, f"agent:{session}"))
+        return int(row["id"])
+
     def said_since(self, session: str, key: str) -> int:
         newest = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
         return self.counted_in("kind = 'nudge' AND json_extract(data, '$.session') = ? AND id > ?", (session, int(newest["id"])))

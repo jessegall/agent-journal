@@ -37,7 +37,7 @@ class Workers(Feature):
         Entry(NodeKind.CHECK, 'worker_report_waiting', 'Has a worker report not acted on?', 'a worker here reported and the agent has not given it its next job, stopped it or marked it done'),
     )
 
-    WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in {{message}}", repeat_after=0)
+    WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_after=0)
     WORKER_STOPPED_UNREPORTED = Nudge(name, "worker_stopped_unreported", "worker {{n}}, {{name}}, stopped before it reported", repeat_after=0)
     WAITED_ON_CAME_BACK = Nudge(name, "waited_on_came_back", "what you waited on came back: carry on", repeat_after=0)
     TOO_MANY_SUBAGENTS = Nudge(name, "too_many_subagents", "{{running}} subagents are running, the most at once", "wait for one to finish, or keep the work yourself", repeat_after=0)

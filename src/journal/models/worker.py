@@ -2,6 +2,7 @@ from typing import ClassVar
 from dataclasses import dataclass
 
 from journal.events.rows.worker_back import WorkerBack
+from journal.events.rows.worker_stopped import WorkerStopped
 from journal.models.scoped import Scoped
 from journal.models.worker_state import WorkerState
 
@@ -27,7 +28,7 @@ class Worker(Scoped):
     found_session: str = ""
 
     def reported(self, at: float, report: int) -> "Worker":
-        return self.with_(state=WorkerState.REPORTED, taken_up=False, pid=0).with_event(WorkerBack(environment_id=self.environment_id, at=at, worker_id=self.id, name=self.name, report=report))
+        return self.with_(state=WorkerState.REPORTED, taken_up=False, pid=0).with_event(WorkerBack(environment_id=self.environment_id, at=at, worker_id=self.id, name=self.name, report=report, dispatched_by=self.dispatched_by))
 
     def running_as(self, pid: int, began: float) -> "Worker":
         return self.with_(pid=pid, began=began, found_session="")
@@ -35,8 +36,8 @@ class Worker(Scoped):
     def told(self, brief: str) -> "Worker":
         return self.with_(brief=brief, state=WorkerState.DISPATCHED)
 
-    def stopped(self) -> "Worker":
-        return self.with_(state=WorkerState.STOPPED, taken_up=True)
+    def stopped(self, at: float) -> "Worker":
+        return self.with_(state=WorkerState.STOPPED, taken_up=True).with_event(WorkerStopped(environment_id=self.environment_id, at=at, worker_id=self.id, name=self.name))
 
     def done(self) -> "Worker":
         return self.with_(taken_up=True)

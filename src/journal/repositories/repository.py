@@ -1,3 +1,4 @@
+from dataclasses import fields
 from datetime import datetime, timezone
 from typing import Callable, Generic, TypeVar
 
@@ -130,6 +131,13 @@ class Repository(Generic[M]):
             self.written()
             self.bus.dispatch(Updated(model=stamped, by=by, was=was))
             return stamped
+
+    def rewritten(self, row: M, by: Actor, change: Callable[[M], M]) -> M:
+        with self.connection.transaction():
+            now = self.find(row.id)
+            changed = change(now)
+            differing = {f.name: getattr(changed, f.name) for f in fields(changed) if f.metadata.get("column", True) and getattr(changed, f.name) != getattr(now, f.name)}
+            return self.carried(self.touch(now, by, **differing).with_events(changed.events))
 
     def touched(self, row: M, by: Actor, fields_of: Callable[[M], dict]) -> M:
         with self.connection.transaction():

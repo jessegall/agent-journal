@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from argparse import Namespace
 
 from journal.repositories.setting_rows import SettingRows
@@ -120,7 +121,7 @@ class WorkerCommand(Command):
 
     def stop(self, args: Namespace, where: Where) -> int:
         self.runner.stop(args.n)
-        self.workers.save(self.workers.find(args.n).stopped(), where.actor)
+        self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp()), where.actor)
         print(f"worker {args.n} stopped")
         return 0
 

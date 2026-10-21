@@ -23,6 +23,6 @@ class MarkLoaded(AgentListener[ToolFinished]):
             self.loaded(event, skill)
 
     def loaded(self, event: ToolFinished, skill: Skill) -> None:
-        agent = self.agents.for_session(event.session)
-        self.agents.save(agent.skill_read(skill.name, self.files.hash_of(skill), self.clock.now()), Actor.system())
+        digest = self.files.hash_of(skill)
+        self.agents.rewritten(self.agents.for_session(event.session), Actor.system(), lambda now: now.skill_read(skill.name, digest, self.clock.now()))
         self.cards.show(event.environment_id, event.session, f"Skill {skill.name} loaded", "book", "good", skill.name, kind="skill", shows=ChatMark.SKILLS)

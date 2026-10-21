@@ -11,10 +11,14 @@ class RowEvent(Event):
     environment_id: int = 0
     at: float = 0.0
     row_id: int = 0
+    session: str = ""
     standing: Standing = field(default_factory=lambda: Standing({}), compare=False)
 
     def with_standing(self, standing: Standing) -> "RowEvent":
         return replace(self, standing=standing)
+
+    def reaching(self, session: str) -> "RowEvent":
+        return replace(self, session=session)
 
     def placed_by(self, environment_id: int, at: float, row_id: int) -> "RowEvent":
         return replace(self, environment_id=self.environment_id or environment_id, at=self.at or at, row_id=self.row_id or row_id)

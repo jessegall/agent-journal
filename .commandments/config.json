@@ -21,6 +21,7 @@
         "QueryOutsideRepositoryDetector",
         "PoeticTypeNameDetector",
         "PoeticMethodNameDetector",
+        "SentenceMethodNameDetector",
         "PoeticVariableNameDetector",
         "PoeticParameterNameDetector",
         "DocstringInMethodDetector",

@@ -50,7 +50,9 @@ class WorkersConduct(Conduct):
         return self.unchanged(*reports_named(event.standing.of(workers_feature())))
 
     def on_worker_back_workers(self, event: WorkerBack, settings: Settings) -> Transition:
-        return self.unchanged(workers_feature().WORKER_REPORTED.create(n=event.worker_id, name=event.name, message=event.report))
+        if event.dispatched_by and event.dispatched_by != event.session:
+            return self.unchanged()
+        return self.unchanged(workers_feature().WORKER_REPORTED.create(n=event.worker_id, name=event.name))
 
 
 def reports_named(workers: WorkersStanding) -> list[Nudge]:

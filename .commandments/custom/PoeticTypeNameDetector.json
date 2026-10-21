@@ -5,7 +5,7 @@
         "select": "type-declaration",
         "where": [
             {
-                "nameMatches": "^(Said|Worded|Meaning|Whisper|Muse|TypedNudges|Spoken|Utterance|Stay)$"
+                "nameMatches": "^(Said|Worded|Meaning|Whisper|Muse|TypedNudges|Spoken|Utterance|Stay|Standing|Stance|Posture|Footing|Bearing|Look|Looked|Gazed|Noticed|Spotted|Caught|Grasped|Felt|Sensed|Knew|Learned|Remembered|Forgot|Forgotten|Recalled|Went|Came|Fell|Rose|Stood|Sat|Lay|Awoke|Woke|Wandered|Strayed|Drifted|Readings|Reading|Picture|Impression|Sense|Feel|Notion|Outlook|Landscape|Terrain|Scene|Backdrop|Climate|Weather|Tide|Wave|Footprint|Shadow|Mirror|Pulse|Breath|Temper|Flavour|Taste|Scent|Shade|Hue|Spot|Catch|Offer|Owe|Owed|Pay|Paid|Carry|Carried|Land|Landed|Settle|Settled|Sweep|Swept|Tidy|Cope|Deal|Hush|Born|Birth|Heal|Say|Says)$"
             }
         ]
     },

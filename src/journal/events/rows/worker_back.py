@@ -10,3 +10,4 @@ class WorkerBack(RowEvent):
     worker_id: int
     name: str
     report: int
+    dispatched_by: str

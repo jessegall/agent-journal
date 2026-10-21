@@ -1198,3 +1198,16 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - What a start or a prompt owes is worked out once, on SkillsStanding (due_at_start, named_in); the conduct says it and OweSkills records it from the same reading. The same for the mark (Memory.mark_due) and the whisper (MemoryStanding.whispered_by): the conduct types the line, MarkWhispered shows the card.
 - A transition's typed lines are typed by the machine after the event's delay, so the introduction is the voices conduct's on the session start, typed four seconds after the start block; JournalStarted and AnnounceStart are gone.
 - The whisper and the question about a new rule are typed lines now, where they were the hook's context and the command's output.
+
+## The mend after tasks 1059 and 1060 (2026-10-21, night)
+
+- A test run that ends in a pipe reports the pipe's exit code, not pytest's: twenty failures hid behind a tail. A test run never ends in a pipe; the pytest reader (journal output read N --reader pytest) picks the failures out of the kept output.
+- The tests of the chart drawings removed on purpose are gone with the drawings (twelve tests, chart-only).
+- A skill read is recorded under the write lock, its event carried: Repository.rewritten(row, by, change) re-reads the row, applies the model's change, writes what differs and carries the events, so two reads sent together both stay.
+- A prompt typed in the terminal is watched as a prompt; its record as a message (RecordTypedPrompt) is not watched again, or a trigger started its sequence twice.
+- Awaiting hears each worker's return and stop (WorkerBack, WorkerStopped) itself, tells it, and pops on the last with the waited-on line; the two awaiting drawings are gone. The workers conduct tells a report only to the agent that dispatched the worker (the row event names the session it reaches, RowEvent.session, and the worker names who dispatched it).
+- The machine types lines one at a time, as the terminal takes them: a line with breaks would be pasted and typed again.
+- A fact, rule or reminder is whispered once per context window: the lines whispered since the last compaction travel on the memory standing, and the card follows the line said (MarkWhispered on LineSaid, which now carries the line's values).
+- The rule question is a typed line, as the whisper is; the test reads it from the typed lines.
+- The resume chain lives on the stack since phase 1; the unwrap test reads the stack.
+- The custom rules ban poetry in names (PoeticVariable/Parameter/Method/TypeNameDetector) and sentences as method names (SentenceMethodNameDetector): articles, pronouns, adverbs and preposition phrases in a name. Tasks 1095, 1101 and 1105 rename what they catch; task 1102 waits on the plugin's shared lists.

@@ -31,7 +31,7 @@ class Nudger:
             return None
         line = nudge.rendered()
         self.entries.save(Entry(environment_id=agent.environment_id, kind=NUDGE, actor=Actor.system(), data={"key": nudge.key, "session": agent.session, "line": line, "at": self.clock.now()}), Actor.system())
-        event = LineSaid(nudge=nudge.key).placed(agent.session, agent.environment_id, agent.provider, None, self.clock.now())
+        event = LineSaid(nudge=nudge.key, values=dict(nudge.values)).placed(agent.session, agent.environment_id, agent.provider, None, self.clock.now())
         self.deferred.add(lambda: self.bus.dispatch(event))
         return line
 

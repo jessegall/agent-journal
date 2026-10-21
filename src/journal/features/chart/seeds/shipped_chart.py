@@ -50,8 +50,6 @@ OWN = (
     ("following_plan", "idle", "checkpoint_auto", "Hold the stop at a plan's checkpoint in auto mode", "checkpoint_in_auto_mode"),
     ("following_plan", "idle", "checkpoint", "Wait for the user at a plan's checkpoint", "checkpoint_waits_for_the_user"),
     ("following_plan", "session_started", "checkpoint", "Wait for the user at a plan's checkpoint", "checkpoint_waits_for_the_user"),
-    ("awaiting", "workers.updated", "worker", "Tell the agent a worker reported or stopped", "tell_a_worker_is_back"),
-    ("awaiting", "workers.updated", "back", "Send the agent back to its work when the last worker is back", "back_when_the_last_worker_is_back"),
     ("waiting", "questions.updated", "question", "Send the agent back to its work when the question is answered", "waiting_at_question"),
     ("expecting", "ticked", "remind", "Remind the agent what it waits for after five minutes of quiet", "expecting_at_tick"),
     ("expecting", "ticked", "meanwhile", "Point to the next task once per wait, after a minute of it, in auto mode", "next_while_waiting"),
@@ -114,9 +112,6 @@ IN_HAND = "[tasks.task_in_hand_named_back] {{task}} in hand, {{value.writes}} ed
 CARRY_ON = "[tasks.carry_on] {{task}} is in hand, {{logged}}: carry on. `journal stuck \"<why>\"` if you are truly stuck"
 LOG_OLD = "[tasks.log_first_at_stop] {{task}}, {{logged.last_log}}: log where it stands first. {{log_command}} \"<where it stands>\""
 STILL_OPEN = "[tasks.task_still_open] {{task}} is still open: log where it stands or finish it"
-REPORTED = "[workers.worker_reported] worker {{worker_n}}, {{worker_name}}, reported in the chat"
-STOPPED = "[workers.worker_stopped_unreported] worker {{worker_n}}, {{worker_name}}, stopped before it reported"
-RETURNED = "[workers.waited_on_came_back] what you waited on came back: carry on"
 ANSWERED = "question {{question_n}} is answered. `journal question show {{question_n}}` reads it whole, with the messages linked to it; act on the answer"
 APPROVED_UNSTARTED = "[plans.approved_unstarted] plan {{approved_plan}} is approved and not started: `journal plan start {{approved_plan}}` begins its first task"
 MEANWHILE = "[tasks.meanwhile] while you wait for {{awaited}}, task {{related_task}} is next: if you can work on it meanwhile, carry on with it; if you need the output first, waiting is fine"
@@ -538,16 +533,6 @@ class ShippedChart(Seed):
         self.guarded(chart, self.also_on(chart, "tasks.updated", 1040, 0), 1040, 92, (Guard("task_just_taken"),), "time_note", "last_active")
         self.noted_on_activity(chart, "last_active", 240)
         return self.guarded(chart, ends, 400, 92, (Guard("time_over", "last_active 15 minutes"),), "say", STILL_OPEN)
-
-    def tell_a_worker_is_back(self, chart: Chart, ends: list) -> list:
-        """A worker the agent awaits reports or stops: the agent is told, by typing, since it may be sitting at its prompt."""
-        for column, came, told in ((240, "worker_reported", REPORTED), (560, "worker_stopped", STOPPED)):
-            ends = self.guarded(chart, ends, column, 92, (Guard(came), Guard("agent_awaits_the_worker")), "type", told)
-        return ends
-
-    def back_when_the_last_worker_is_back(self, chart: Chart, ends: list) -> list:
-        """The last worker the agent awaits is back: the agent goes back to what it was doing."""
-        return self.guarded(chart, ends, 240, 92, (Guard("agent_awaits_the_worker"), Guard("last_worker_back")), "release", RETURNED)
 
     def waiting_at_question(self, chart: Chart, ends: list) -> list:
         """An agent waiting on a question: when it is answered the agent goes back to its work, told how to read the answer."""

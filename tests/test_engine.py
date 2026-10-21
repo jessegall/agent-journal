@@ -542,7 +542,7 @@ def test_the_models_carry_the_events_their_changes_mean():
     assert TaskLog.of(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, at=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
     assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowSettled] and question.asked(1.0).events[0].question_id == 4
-    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerBack(environment_id=1, at=5.0, worker_id=9, name="w", report=4),)
+    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerBack(environment_id=1, at=5.0, worker_id=9, name="w", report=4, dispatched_by=""),)
 
 
 def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_reaches_no_state(app):
@@ -843,8 +843,8 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         assert Idle().on(ToolStarting(tool="AskUserQuestion", input={}).with_standing(standing), settings).held.key == "questions.ask_through_the_journal"
         worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
         assert Idle().on(ToolStarting(tool="Edit", input={"file_path": worktree_file}, writes=True, written_paths=(worktree_file,)).with_standing(standing), settings).held.key == "workers.file_is_the_workers"
-        back = Idle().on(WorkerBack(environment_id=1, at=1.0, worker_id=2, name="Lady Lovelace", report=40).with_standing(standing), settings)
-        assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in 40"]
+        back = Idle().on(WorkerBack(environment_id=1, at=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatched_by="").with_standing(standing), settings)
+        assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in the chat"]
     finally:
         BaseState.fold(())
 
@@ -882,7 +882,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         "plans": PlansStanding((), None), "tasks": TasksStanding(in_hand=0, parked=(), blocked=(), broken_waits=(), first_parked_why="", last_commands=()),
         "skills": SkillsStanding(owed=("journal",), loaded={"plans": "h2"}, skills=cards),
         "briefing": BriefingStanding(oriented=False, environment="main", others_lately_at="09:12", rules="1. Always test", rules_count=1, facts="", reminders="1. Log often", waiting="2 tasks"),
-        "memory": MemoryStanding(mark_owed=50, context_mark=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), ChatMark.FACTS),)),
+        "memory": MemoryStanding(mark_owed=50, context_mark=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), ChatMark.FACTS),), lines_in_window=()),
     }
     standing = Standing(readings)
     BaseState.fold((SkillsConduct, BriefingConduct, MemoryConduct))
@@ -908,15 +908,31 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         looked = Standing({**paid.readings, "briefing": BriefingStanding(**{**readings["briefing"].__dict__, "oriented": True})})
         assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_standing(looked), settings).held.key == "memory.write_held_until_decided"
         assert Idle().on(IdleEvent().with_standing(looked), settings).held.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
-        decided = Standing({**looked.readings, "memory": MemoryStanding(mark_owed=0, context_mark=50, rows=readings["memory"].rows)})
+        decided = Standing({**looked.readings, "memory": MemoryStanding(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=())})
         assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_standing(decided), settings).held is None
         crossed = Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}, context=0.81, session="s1").with_standing(decided), settings)
         assert [n.rendered() for n in crossed.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal nothing survives \"<why>\"`"] or crossed.nudges[0].key == "memory.decide_at_the_mark"
         assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}, context=0.6, session="s1").with_standing(decided), settings).nudges == ()
         whispered = Idle().on(ToolStarting(tool="Bash", input={"command": "lsof -i :port"}).with_standing(decided), settings)
         assert [n.rendered() for n in whispered.typed] == ["fact 3: the port is 8420"]
+        already = Standing({**decided.readings, "memory": MemoryStanding(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=("fact 3: the port is 8420",))})
+        assert Idle().on(ToolStarting(tool="Bash", input={"command": "lsof -i :port"}).with_standing(already), settings).typed == (), "whispered once per context window"
         rule = Idle().on(RuleMade(environment_id=0, at=1.0, row_id=7, by_agent=True).with_standing(decided), settings)
         assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
         assert Idle().on(RuleMade(environment_id=0, at=1.0, row_id=7, by_agent=False).with_standing(decided), settings).nudges == ()
     finally:
         BaseState.fold(())
+
+
+def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
+    from journal.features.workers.states.awaiting import Awaiting
+    from journal.events.rows.worker_back import WorkerBack
+    from journal.events.rows.worker_stopped import WorkerStopped
+    settings = SettingsValue({})
+    waiting = Awaiting(workers=(3, 4))
+    first = waiting.on(WorkerBack(environment_id=1, at=1.0, worker_id=3, name="Lady Lovelace", report=9, dispatched_by="s1"), settings)
+    assert first.to == Awaiting(workers=(4,)) and not first.popped and [n.key for n in first.nudges] == ["workers.worker_reported"]
+    other = waiting.on(WorkerBack(environment_id=1, at=1.0, worker_id=8, name="x", report=9, dispatched_by="s1"), settings)
+    assert other.to is waiting and other.nudges == (), "a worker it does not wait on is not its business"
+    last = Awaiting(workers=(4,)).on(WorkerStopped(environment_id=1, at=2.0, worker_id=4, name="Herr Turing"), settings)
+    assert last.popped and [n.key for n in last.nudges] == ["workers.worker_stopped_unreported", "workers.waited_on_came_back"]

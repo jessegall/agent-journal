@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import ClassVar
 
 from journal.events.agent.agent_event import AgentEvent
@@ -11,3 +11,4 @@ class LineSaid(AgentEvent):
     answers_hook: ClassVar[bool] = False
 
     nudge: str
+    values: dict = field(default_factory=dict)

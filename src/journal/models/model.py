@@ -45,5 +45,8 @@ class Model:
     def with_event(self, event: Event) -> "Model":
         return replace(self, events=(*self.events, event))
 
+    def with_events(self, events: tuple) -> "Model":
+        return replace(self, events=events)
+
     def without_events(self) -> "Model":
         return replace(self, events=())

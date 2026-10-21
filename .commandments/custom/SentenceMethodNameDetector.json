@@ -1,0 +1,18 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "nameMatches": "(^|_)(the|a|an|it|its|itself|what|this|that|these|those|them|they|again|still|yet|never|always|only|also|too|now|then|here|there|anew|once_more|one_by_one|by_hand|at_once|as_well|for_good|right_away|all_at_once|as_is|in_turn|in_full|of_the|to_the|in_the|at_the|on_the|for_the|with_the|from_the|into_the|by_the)(_|$)"
+            }
+        ]
+    },
+    "sin": {
+        "name": "sentence-method-name",
+        "description": "A method is named as a sentence: a function word in it, an article, a pronoun, an adverb or a preposition phrase, such as typed_one_by_one, hold_the_stop, tried_again, speaks_to_the_user.",
+        "rule": "A method name is a verb and its object, in the imperative, without articles, pronouns, adverbs or preposition phrases: type_lines, hold_stop, retry, speak_to_user.",
+        "skill": "plain-code-words"
+    }
+}
