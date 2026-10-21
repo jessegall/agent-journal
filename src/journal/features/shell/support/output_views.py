@@ -35,9 +35,17 @@ class OutputViews:
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
         data = {"kind": "card", "icon": "terminal", "tone": "", "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending}
-        label = f"Watching output {output.id}: {output.headline()[:HEADLINE_CHARACTERS]}"
+        label = f"Watching output {output.id}: {self.watched_part(output)[:HEADLINE_CHARACTERS]}"
         self.cards.keyed(output.environment_id, OutputView.key(output.row_id), label, data if output.session is None else {**data, "session": output.session}, Actor.system(), CardKind.COMMANDS, "\n".join(view.lines))
         return view
+
+    @staticmethod
+    def watched_part(output: CommandOutput) -> str:
+        files = OutputFiles(Path(output.folder))
+        if not files.is_stored() or not files.recorded():
+            return output.headline()
+        open_parts = [i for i in files.recorded() if not files.has_ended(i)]
+        return files.part_text(open_parts[0] if open_parts else files.recorded()[-1])
 
     def card_view(self, output: CommandOutput) -> OutputView:
         cards = self.messages.keyed(OutputView.key(output.row_id), Actor.system())

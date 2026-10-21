@@ -10,6 +10,7 @@ from journal.features.shell.commands.output_command import OutputCommand
 from journal.features.shell.commands.reader_command import ReaderCommand
 from journal.support.skill import Skill
 from journal.features.shell.seeds.cut_off_outputs import CutOffOutputs
+from journal.features.shell.jobs.watch_refresh import WatchRefresh
 
 
 class Shell(Feature[ShellData]):
@@ -27,6 +28,7 @@ class Shell(Feature[ShellData]):
     options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, OUTPUT_COUNT)
     listeners = (OutputNotice, WatchUpdate)
     seeds = (CutOffOutputs,)
+    jobs = (WatchRefresh,)
     data = (ShellDataReader,)
     conduct = (ShellConduct,)
 

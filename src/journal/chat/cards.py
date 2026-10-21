@@ -9,6 +9,8 @@ from journal.models.support.ref import Ref
 
 DETAIL_CHARACTERS = 80
 
+DOCKED = "docked"
+
 
 class Cards:
     """A mark in the chat for a moment worth seeing: a check that ran, a trigger that fired, a question answered, a skill loaded, a halt. One funnel writes them, as messages of the system's, each one line with at most a short second line; the viewer draws each as a card by its kind."""
@@ -32,8 +34,12 @@ class Cards:
         data = {"session": "", "row": "", **data, **self.detail_parts(detail), "key": key, "shows": str(shows)}
         older = self.messages.keyed(key, actor) if key else []
         if older:
-            return self.messages.save(older[0].with_(text=label, data=data), actor)
+            return self.messages.save(older[0].with_(text=label, data=self.docked_data(older[0], data)), actor)
         return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), actor)
+
+    @staticmethod
+    def docked_data(older: Message, data: dict) -> dict:
+        return {**data, DOCKED: older.data[DOCKED]} if DOCKED in older.data else data
 
     def detail_parts(self, detail: str) -> dict:
         lines = detail.strip().splitlines()

@@ -18,13 +18,12 @@ from journal.repositories.templates import Templates
 from journal.repositories.triggers import Triggers
 from journal.repositories.workers import Workers
 from journal.support.actor import Actor
-from journal.chat.cards import Cards
+from journal.chat.cards import DOCKED, Cards
 from journal.support.card_kind import CardKind
 from journal.support.rejection import Rejection
 from journal.models.support.row_card import RowCard
 from journal.repositories.scope import Scope
 
-DOCKED = "docked"
 
 
 class Docking:
@@ -53,6 +52,9 @@ class Docking:
 
     def pin(self, message: Message, row: Model, actor: Actor) -> Message:
         return self.saved_with(message, {**RowCard.build(row).as_data(), DOCKED: True}, actor)
+
+    def pin_message(self, message: Message, actor: Actor) -> Message:
+        return self.saved_with(message, {DOCKED: True}, actor)
 
     def release(self, message: Message, actor: Actor) -> Message:
         return self.saved_with(message, {DOCKED: False}, actor)

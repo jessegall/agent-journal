@@ -5936,6 +5936,30 @@ def test_a_background_command_left_running_by_a_restart_is_ended_as_cut_off_at_b
     assert not dead.exists(), "a test run whose process is gone leaves no file behind"
 
 
+def test_a_watched_outputs_card_moves_by_itself_and_a_docked_one_stays_docked(app: App):
+    from journal.chat.docking import Docking
+    from journal.features.shell.jobs.watch_refresh import WatchRefresh
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    console, outputs, messages = app.console(), app.container.get(CommandOutputs), app.container.get(Messages)
+    folder = app.config.root / "w"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text("make all")
+    (folder / "0.out").write_text("step one\n")
+    app.container.get(OutputLog).start("w", "make all", folder, Caller.agent("main", "s1", "claude"))
+    outputs.save(outputs.find(1).backgrounded(), Actor.system())
+    console.run(["output", "watch", "1"], AGENT)
+    card = lambda: messages.with_key("watch:1")[0]
+    app.container.get(Docking).pin_message(card(), Actor.user(1))
+    (folder / "0.out").write_text("step one\nstep two\n")
+    app.container.get(WatchRefresh).tick(0.0)
+    assert "step two" in card().data["lines"], "the card is read again with no tool use"
+    assert card().data["docked"] is True, "a docked card stays docked as it moves"
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog
@@ -6614,6 +6638,7 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     folder = app.config.root / "w"
     folder.mkdir()
     (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text("pytest -q")
     (folder / "0.out").write_text("collecting\n[ 12%] test_a\nFAILED test_b\n[ 40%] test_c\n")
     app.container.get(OutputLog).start("w", "pytest", folder, Caller.agent("main", "s1", "claude"))
     outputs.save(outputs.find(1).backgrounded(), Actor.system())
@@ -6624,6 +6649,7 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     with app.container.get(Scope).environment(MAIN):
         card = app.container.get(Messages).with_key("watch:1")[0]
     assert card.data["figure"] == "Tests 40%" and card.data["fraction"] == 0.4, "the chat card carries the bar"
+    assert card.text == "Watching output 1: pytest -q", "the card names the part being watched"
     (folder / "0.out").write_text("collecting\nFAILED test_b\n[100%] test_d\n")
     outputs.save(outputs.find(1).ended_with(0, 0.0), Actor.system())
     deferred.drain()

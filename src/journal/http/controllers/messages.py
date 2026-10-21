@@ -80,6 +80,9 @@ class MessageController(Controller[Message]):
         pressed = [str(label) for label in request.body.get("pressed", [])]
         return Response.json(self.shown(self.repository.save(message.with_(data={**message.data, "pressed": pressed}), request.actor)))
 
+    def dock(self, request: Request) -> Response:
+        return Response.json(self.shown(self.docking.pin_message(self.repository.find(request.number("id")), request.actor)))
+
     def undock(self, request: Request) -> Response:
         return Response.json(self.shown(self.docking.release(self.repository.find(request.number("id")), request.actor)))
 
