@@ -15,7 +15,7 @@ from journal.models.task_state import TaskState
 from journal.models.phase_tasks import PhaseTasks
 from journal.models.support.dock_button import DockButton
 from journal.models.support.dock_card import DockCard
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 
 @dataclass(frozen=True)
@@ -41,9 +41,9 @@ class Plan(Scoped):
 
     def startable(self) -> "Plan":
         if self.is_blocked():
-            raise Refused(f"plan {self.id} is blocked, waiting on: {self.blocked_why or 'what it was blocked on'}; `journal plan unblock {self.id}` when it may go on")
+            raise Rejection(f"plan {self.id} is blocked, waiting on: {self.blocked_why or 'what it was blocked on'}; `journal plan unblock {self.id}` when it may go on")
         if not self.state.can_be_started():
-            raise Refused(f"plan {self.id} is {self.state}, not approved: the user approves it first")
+            raise Rejection(f"plan {self.id} is {self.state}, not approved: the user approves it first")
         return self
 
     def started(self, first: Task, time: float) -> "Plan":
@@ -75,7 +75,7 @@ class Plan(Scoped):
 
     def moved(self, state: PlanState) -> "Plan":
         if not self.state.can_become(state):
-            raise Refused(f"plan {self.id} is {self.state} and cannot become {state}")
+            raise Rejection(f"plan {self.id} is {self.state} and cannot become {state}")
         return self.with_(state=state)
 
     def is_finished(self, tasks: list[Task]) -> bool:

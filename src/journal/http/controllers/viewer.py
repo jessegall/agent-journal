@@ -1,12 +1,12 @@
 from journal.http.support.request import Request
 from journal.support.response import Response
-from journal.http.support.viewer_seen import ViewerSeen
+from journal.http.support.viewer_presence import ViewerPresence
 
 
 class ViewerController:
     """Whether a viewer tab is open on this journal."""
 
-    def __init__(self, seen: ViewerSeen) -> None:
+    def __init__(self, seen: ViewerPresence) -> None:
         self.seen = seen
 
     def show(self, request: Request) -> Response:

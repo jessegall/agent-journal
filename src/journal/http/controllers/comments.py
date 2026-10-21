@@ -6,7 +6,7 @@ from journal.models.author import Author
 from journal.models.link import Link
 from journal.models.message import Message
 from journal.support.ref import Ref
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 
@@ -39,5 +39,5 @@ class CommentController(Controller[Message]):
     def row(self, named: str) -> Ref:
         kind, _, id = named.partition(":")
         if kind not in COMMENTED or not id.isdigit() or not self.links.is_row(Ref(kind, int(id))):
-            raise Refused(f"a comment is written under a task, a plan, a document, a report, a fact, a rule, a reminder or a question that is there, named as tasks:12, not {named!r}")
+            raise Rejection(f"a comment is written under a task, a plan, a document, a report, a fact, a rule, a reminder or a question that is there, named as tasks:12, not {named!r}")
         return Ref(kind, int(id))

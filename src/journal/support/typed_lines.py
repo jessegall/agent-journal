@@ -1,6 +1,6 @@
 import time as timing
 
-from journal.support.held_line import HeldLine
+from journal.support.queued_line import QueuedLine
 from journal.engine.support.typed_line import TypedLine
 
 RECENT = 60.0
@@ -13,7 +13,7 @@ class TypedLines:
 
     def __init__(self) -> None:
         self._waiting: list[TypedLine] = []
-        self._held: list[HeldLine] = []
+        self._held: list[QueuedLine] = []
         self._recent: list[TypedLine] = []
         self._sent_at: dict[int, float] = {}
         self._disabled_ids: set[int] = set()
@@ -46,16 +46,16 @@ class TypedLines:
     def is_waiting(self, environment_id: int) -> bool:
         return any(t.environment_id == environment_id for t in self._waiting)
 
-    def hold(self, line: HeldLine) -> None:
+    def hold(self, line: QueuedLine) -> None:
         self._held.append(line)
 
-    def held_as_one(self, environment_id: int) -> HeldLine | None:
+    def held_as_one(self, environment_id: int) -> QueuedLine | None:
         held = [h for h in self._held if h.environment_id == environment_id]
         if not held:
             return None
         self._held = [h for h in self._held if h.environment_id != environment_id]
         lines = [h.line.removeprefix(JOURNAL_PREFIX).strip() for h in held]
-        return HeldLine(environment_id, f"{JOURNAL_PREFIX} {' | '.join(lines)}", max(h.after for h in held))
+        return QueuedLine(environment_id, f"{JOURNAL_PREFIX} {' | '.join(lines)}", max(h.after for h in held))
 
     def typed(self, environment_id: int, line: str) -> None:
         moment = timing.time()

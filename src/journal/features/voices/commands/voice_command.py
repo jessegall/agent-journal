@@ -2,20 +2,20 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.features.voices.support.chosen_voice import ChosenVoice
-from journal.support.shipped import Shipped
+from journal.features.voices.support.voice_choice import VoiceChoice
+from journal.support.builtin_catalogue import BuiltinCatalogue
 from journal.repositories.setting_rows import SettingRows
 
 
 class VoiceCommand(Command):
     noun = "voice"
 
-    def __init__(self, settings: SettingRows, chosen: ChosenVoice) -> None:
+    def __init__(self, settings: SettingRows, chosen: VoiceChoice) -> None:
         self.settings, self.chosen = settings, chosen
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "list", "the voices, and which is chosen")
-        self.verb(verbs, "choose", "talk in this voice").add_argument("name", choices=[v.name for v in Shipped.ALL])
+        self.verb(verbs, "choose", "talk in this voice").add_argument("name", choices=[v.name for v in BuiltinCatalogue.ALL])
         me = self.verb(verbs, "me", "what the agent calls you")
         me.add_argument("--title", default=None)
         me.add_argument("--name", default=None)
@@ -23,7 +23,7 @@ class VoiceCommand(Command):
 
     def list(self, args: Namespace, caller: Caller) -> int:
         chosen = self.chosen.voice().name
-        for voice in Shipped.ALL:
+        for voice in BuiltinCatalogue.ALL:
             print(f"{'*' if voice.name == chosen else ' '} {voice.name:<10} {voice.sample.replace('{you}', self.chosen.voice().calling.called(self.chosen.title(), self.chosen.first_name(), voice.address) or 'you')}")
         return 0
 

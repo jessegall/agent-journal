@@ -8,7 +8,7 @@ from journal.support.outline import Outline
 from journal.models.link import Link
 from journal.support.ref import Ref
 from journal.models.report import Report
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.reports import Reports
@@ -47,7 +47,7 @@ class ReportCommand(Command):
         named = [part.strip() for word in given for part in word.split(",") if part.strip()]
         wrong = [n for n in named if not ROW.match(n)]
         if wrong:
-            raise Refused(f"not a row: {', '.join(wrong)}; write each as plans:8 or tasks:12")
+            raise Rejection(f"not a row: {', '.join(wrong)}; write each as plans:8 or tasks:12")
         return [Ref.parse(n) for n in named]
 
     def show(self, args: Namespace, caller: Caller) -> int:

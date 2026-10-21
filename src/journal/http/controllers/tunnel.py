@@ -6,7 +6,7 @@ from journal.features.sharing.support.tunler import Tunler
 from journal.features.sharing.support.tunnel import Tunnel
 from journal.http.support.request import Request
 from journal.support.response import Response
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.setting_rows import SettingRows
 
 
@@ -57,7 +57,7 @@ class TunnelController:
     def install(self, request: Request) -> Response:
         server = str(request.body.get("host", "")).strip().removeprefix("https://").removeprefix("http://").split("/")[0]
         if not server:
-            raise Refused("give the address of the tunler server to install from, such as tunler.example.com")
+            raise Rejection("give the address of the tunler server to install from, such as tunler.example.com")
         installed = self.tunler.install(server)
         self.settings.set(Sharing.HOST.key, server, request.actor)
         return Response.json({"installed": installed})

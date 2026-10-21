@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.features.updates.support.updating import Updating
+from journal.features.updates.support.updater import Updater
 from journal.support.caller import Caller
 
 
@@ -11,7 +11,7 @@ class UpdateCommand(Command):
     noun = "update"
     default_verb = "now"
 
-    def __init__(self, updating: Updating) -> None:
+    def __init__(self, updating: Updater) -> None:
         self.updating = updating
 
     def arguments(self, verbs) -> None:

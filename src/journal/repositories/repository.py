@@ -19,7 +19,7 @@ from journal.support.actor import Actor
 from journal.models.model import Model
 from journal.support.ref import Ref
 from journal.support.title import Title
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 
 M = TypeVar("M", bound=Model)
 
@@ -41,7 +41,7 @@ class Repository(Generic[M]):
     def find(self, id: int) -> M:
         row = self.connection.one(f"SELECT * FROM {self.table} WHERE id = ?", (id,))
         if row is None:
-            raise NotFound(self.table, id)
+            raise MissingRow(self.table, id)
         return self._load(row)
 
     def all(self) -> list[M]:

@@ -6,7 +6,7 @@ from http.cookies import SimpleCookie
 from urllib.parse import parse_qs, urlsplit
 
 from journal.config import Config
-from journal.features.phone.support.pairing import Pairing
+from journal.features.phone.support.phone_connector import PhoneConnector
 from journal.features.phone.support.phone_allow_list import PhoneAllowList
 from journal.features.phone.support.phone_waits import PhoneWaits
 from journal.features.phone.support.push_keys import PushKeys
@@ -27,7 +27,7 @@ from journal.models.phone import Phone
 from journal.repositories.phones import Phones
 from journal.support.share_place import SharePlace
 from journal.support.actor import Actor
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 PAGE = "phone.html"
 WORKER = "phone-sw.js"
@@ -43,7 +43,7 @@ FILE_HEADERS = {"Content-Security-Policy": "sandbox", "X-Content-Type-Options": 
 class PhonePages:
     """What the tunnel's listener answers under /p/, as version 3 did: the phone page, its files, its service worker, its manifest and its icons, so the page installs on a phone as an app; the pairing, which sets the phone's cookie; and the phone's own data, read by that cookie alone."""
 
-    def __init__(self, config: Config, pairing: Pairing, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, push: WebPush, waits: PhoneWaits, place: SharePlace) -> None:
+    def __init__(self, config: Config, pairing: PhoneConnector, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, push: WebPush, waits: PhoneWaits, place: SharePlace) -> None:
         self.config, self.pairing, self.phones, self.tunnel, self.place = config, pairing, phones, tunnel, place
         self.router, self.environments, self.allow, self.push, self.waits = router, environments, allow, push, waits
 
@@ -138,7 +138,7 @@ class PhonePages:
         time = datetime.now(timezone.utc)
         try:
             paired = self.pairing.pair(asked.code, asked.device, time)
-        except Refused as refused:
+        except Rejection as refused:
             return self.json(410, {"error": str(refused)})
         lasts = int((paired.phone.expires_at - time).total_seconds())
         cookie = f"{COOKIE}={paired.key}; Max-Age={lasts}; Path=/; Secure; HttpOnly; SameSite=Strict"
@@ -148,7 +148,7 @@ class PhonePages:
         kept = SimpleCookie(request.cookies).get(COOKIE)
         if not (kept and kept.value):
             return self.json(401, {"error": "this phone is not connected"})
-        phone = self.phones.by_key(Pairing.hashed(kept.value))
+        phone = self.phones.by_key(PhoneConnector.hashed(kept.value))
         if phone is None:
             return self.json(401, {"error": "this phone was paired with an earlier version of the journal, or was forgotten: pair it again", "paired_before": True})
         time = datetime.now(timezone.utc)

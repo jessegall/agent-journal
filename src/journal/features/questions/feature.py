@@ -2,7 +2,7 @@ from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand
-from journal.features.questions.listeners.mark_question import MarkQuestion
+from journal.features.questions.listeners.question_card import QuestionCard
 from journal.features.questions.support.questions_conduct import QuestionsConduct
 from journal.features.questions.support.questions_data_reader import QuestionsDataReader
 from journal.features.questions.states.waiting import Waiting
@@ -14,7 +14,7 @@ class Questions(Feature):
     help = "The agent asks you a question and waits; your answer sends it back to work."
     states = (Waiting,)
     commands = (QuestionCommand,)
-    listeners = (MarkQuestion,)
+    listeners = (QuestionCard,)
     conduct = (QuestionsConduct,)
     data = (QuestionsDataReader,)
 

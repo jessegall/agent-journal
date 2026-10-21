@@ -2,9 +2,9 @@ import re
 import subprocess
 
 from journal.config import Config
-from journal.support.kept_answer import KeptAnswer
+from journal.support.cached_answer import CachedAnswer
 from journal.features.mcp.support.health_report import HealthReport
-from journal.features.mcp.support.known import Known
+from journal.features.mcp.support.server_catalogue import ServerCatalogue
 
 LINE = re.compile(r"^(?P<name>.+?): (?P<how>.+?) - (?P<mark>[✔✘!]) (?P<words>.*)$")
 STATES = {"✔": "connected", "✘": "failed", "!": "needs_auth"}
@@ -16,7 +16,7 @@ class Health:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self._report = KeptAnswer(lambda: self.asked(), HEALTH_VALIDITY_SECONDS, HealthReport())
+        self._report = CachedAnswer(lambda: self.asked(), HEALTH_VALIDITY_SECONDS, HealthReport())
 
     def of_all(self) -> HealthReport:
         return self._report.now()
@@ -51,5 +51,5 @@ class Health:
         rows = {}
         for line in out.splitlines():
             if match := LINE.match(line.strip()):
-                rows[match["name"]] = Known(match["name"], match["how"].replace(" (HTTP)", "").replace(" (SSE)", ""), STATES[match["mark"]], match["words"].strip())
+                rows[match["name"]] = ServerCatalogue(match["name"], match["how"].replace(" (HTTP)", "").replace(" (SSE)", ""), STATES[match["mark"]], match["words"].strip())
         return HealthReport(rows)

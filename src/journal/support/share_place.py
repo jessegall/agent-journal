@@ -4,7 +4,7 @@ import secrets
 from dataclasses import asdict, replace
 
 from journal.config import Config
-from journal.features.sharing.support.kept_place import KeptPlace
+from journal.features.sharing.support.saved_place import SavedPlace
 
 NAME_BYTES = 12
 PREFIX_LETTERS = 20
@@ -17,14 +17,14 @@ class SharePlace:
         self.config = config
         self.path = config.home / "sharing.json"
 
-    def kept(self) -> KeptPlace:
+    def kept(self) -> SavedPlace:
         if not self.path.is_file():
-            return KeptPlace()
+            return SavedPlace()
         try:
             data = json.loads(self.path.read_text())
         except ValueError:
-            return KeptPlace()
-        return KeptPlace.from_json(data) if isinstance(data, dict) else KeptPlace()
+            return SavedPlace()
+        return SavedPlace.from_json(data) if isinstance(data, dict) else SavedPlace()
 
     def keep(self, **fields) -> None:
         self.config.home.mkdir(parents=True, exist_ok=True)

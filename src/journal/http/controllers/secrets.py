@@ -7,7 +7,7 @@ from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.support.scope import Scope
 from journal.repositories.secrets import Secrets
 from journal.support.secret_values import SecretValues
@@ -39,7 +39,7 @@ class SecretController(Controller[Secret]):
     def fill(self, request: Request) -> Response:
         secret, value = self.repository.find(request.number("id")), str(request.body.get("value", ""))
         if not value:
-            raise Refused("an empty value is no value: type it in, or leave the field as it is")
+            raise Rejection("an empty value is no value: type it in, or leave the field as it is")
         field = str(request.body.get("field", ""))
         self.values.put_field(secret.field(field), value)
         return Response.json(self.repository.save(secret.filled_in(field), request.actor))
@@ -70,5 +70,5 @@ class SecretController(Controller[Secret]):
     def allowed(programs) -> tuple[str, ...]:
         refused = [p for p in programs if Programs.never_given(p)]
         if refused:
-            raise Refused(f"a secret is never given to {', '.join(refused)}: allow the program that uses it directly, such as curl or gh")
+            raise Rejection(f"a secret is never given to {', '.join(refused)}: allow the program that uses it directly, such as curl or gh")
         return tuple(dict.fromkeys(programs))

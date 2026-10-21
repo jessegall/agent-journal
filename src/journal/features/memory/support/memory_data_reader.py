@@ -7,7 +7,7 @@ from journal.repositories.facts import Facts
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
 from journal.repositories.setting_rows import SettingRows
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 
 class MemoryDataReader:
@@ -17,7 +17,7 @@ class MemoryDataReader:
         self.facts, self.rules, self.reminders, self.settings = facts, rules, reminders, settings
 
     def read(self, agent: Agent) -> MemoryData:
-        rows = [*(MemoryRow("fact", f.id, f.text, tuple(f.keywords), ChatMark.FACTS, f.presence) for f in self.facts.in_()), *(MemoryRow("rule", r.id, r.text, tuple(r.keywords), ChatMark.RULES, r.presence) for r in self.rules.all()), *(MemoryRow("reminder", r.id, r.text, tuple(r.keywords), ChatMark.REMINDERS, r.presence) for r in self.reminders.in_())]
+        rows = [*(MemoryRow("fact", f.id, f.text, tuple(f.keywords), CardKind.FACTS, f.presence) for f in self.facts.in_()), *(MemoryRow("rule", r.id, r.text, tuple(r.keywords), CardKind.RULES, r.presence) for r in self.rules.all()), *(MemoryRow("reminder", r.id, r.text, tuple(r.keywords), CardKind.REMINDERS, r.presence) for r in self.reminders.in_())]
         from journal.features.memory.feature import Memory
         return MemoryData(mark_owed=agent.mark_owed, context_mark=agent.context_mark, rows=tuple(rows), stale=self.stale(int(self.settings.option(Memory.STALENESS_LIMIT))))
 

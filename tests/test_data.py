@@ -17,18 +17,18 @@ from journal.events.models.updated import Updated
 from journal.events.models.updating import Updating
 from journal.events.listener import Listener
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.support.actor import Actor
 from journal.models.link import Link
 from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.checks import Checks
 from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks
-from journal.support.unscoped import Unscoped
+from journal.support.scope_missing import ScopeMissing
 
 USER = Actor.user(1)
 AGENT = Actor.agent("abc")
@@ -48,7 +48,7 @@ def tasks_of(connection, bus, scope) -> Tasks:
 
 class SayNo(Listener[Creating]):
     def handle(self, event):
-        raise Refused("not today")
+        raise Rejection("not today")
 
 
 def test_a_saved_task_gets_an_id_and_the_actor_stamp(connection, bus, scope):
@@ -70,14 +70,14 @@ def test_every_model_event_is_heard_in_order_with_its_actor(connection, bus, sco
     kinds = [type(e).__name__ for e in heard.events]
     assert kinds == ["Saving", "Creating", "Created", "Saved", "Saving", "Updating", "Updated", "Saved", "Deleting", "Deleted"]
     assert heard.events[5].actor == AGENT and heard.events[5].model.state == TaskState.STARTED
-    with pytest.raises(NotFound):
+    with pytest.raises(MissingRow):
         tasks.find(task.id)
 
 
 def test_a_refusing_listener_stops_the_write(connection, bus, scope):
     bus.listen(Creating, SayNo())
     tasks = tasks_of(connection, bus, scope)
-    with pytest.raises(Refused):
+    with pytest.raises(Rejection):
         tasks.save(Task(environment_id=1, title="t"), actor=USER)
     with scope.of(1):
         assert tasks.all() == []
@@ -104,7 +104,7 @@ def test_where_reads_typed_values_back(connection, bus, scope):
         assert tasks.in_state(TaskState.STARTED) == [started]
     with scope.of(2):
         assert tasks.in_() == [] and tasks.matching(title="open") == [] and tasks.search(["open"]) == [] and tasks.counted_in() == 0, "every read is the scope's, whatever it asks"
-    with pytest.raises(Unscoped):
+    with pytest.raises(ScopeMissing):
         tasks.matching(title="open")
     assert [t.title for t in tasks.across_environments(title="open")] == ["open"], "a read across environments says so by its name"
 
@@ -172,12 +172,12 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
 def test_a_title_is_one_line_of_eighty_characters_without_a_colon_and_an_old_one_is_left_alone(connection, bus, scope):
     from journal.support.actor import Actor
     from journal.models.task import Task
-    from journal.support.refused import Refused
+    from journal.support.rejection import Rejection
     from journal.repositories.tasks import Tasks
     tasks = tasks_of(connection, bus, scope)
-    with pytest.raises(Refused, match="at most 80 characters"):
+    with pytest.raises(Rejection, match="at most 80 characters"):
         tasks.save(Task(environment_id=1, title="x" * 81), Actor.system())
-    with pytest.raises(Refused, match="no colon"):
+    with pytest.raises(Rejection, match="no colon"):
         tasks.save(Task(environment_id=1, title="Titles: the rule"), Actor.system())
     short = tasks.save(Task(environment_id=1, title="The title rule", brief="x" * 500), Actor.system())
     assert tasks.save(short.with_(brief="changed"), Actor.system()).brief == "changed", "a row saved again with the title it had is left alone"

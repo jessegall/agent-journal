@@ -20,8 +20,8 @@ from journal.repositories.environments import Environments
 from journal.features.memory.support.memory_context import MemoryContext
 from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
-from journal.support.not_found import NotFound
-from journal.support.refused import Refused
+from journal.support.missing_row import MissingRow
+from journal.support.rejection import Rejection
 from journal.repositories.questions import Questions
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
@@ -102,7 +102,7 @@ class EnvironmentCommand(Command):
             return
         try:
             self.agents.save(self.agents.for_session(caller.session).look_taken(datetime.now(timezone.utc).timestamp()), caller.actor)
-        except NotFound:
+        except MissingRow:
             return
 
     def list(self, args: Namespace, caller: Caller) -> int:
@@ -132,12 +132,12 @@ class EnvironmentCommand(Command):
     def rename(self, args: Namespace, caller: Caller) -> int:
         rows = self.environments.existing(args.name)
         if self.environments.matching(name=args.new):
-            raise Refused(f"an environment named {args.new} exists already")
+            raise Rejection(f"an environment named {args.new} exists already")
         with self.scope.of(rows.id):
             if self.agents.live() is not None:
-                raise Refused(f"an agent works in {rows.name}: stop it first, then rename")
+                raise Rejection(f"an agent works in {rows.name}: stop it first, then rename")
         if Worktree(self.config.root, rows.name).path.is_dir():
-            raise Refused(f"{rows.name} has a worktree named after it: an environment with a worktree keeps its name")
+            raise Rejection(f"{rows.name} has a worktree named after it: an environment with a worktree keeps its name")
         renamed = self.environments.save(rows.with_(name=args.new), caller.actor)
         print(f"environment {renamed.id} renamed: {args.name} is now {renamed.name}")
         return 0

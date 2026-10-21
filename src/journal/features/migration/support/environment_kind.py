@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import ClassVar
 
-from journal.features.migration.support.brought import Brought
+from journal.features.migration.support.import_tally import ImportTally
 from journal.features.migration.support.version_3_row import Version3Row
 from journal.features.migration.support.version_3_rows import Version3Rows
 from journal.support.actor import Actor
@@ -21,7 +21,7 @@ class EnvironmentKind:
     def __init__(self, environments: Environments, ledger: MigratedRows) -> None:
         self.environments, self.ledger = environments, ledger
 
-    def bring(self, folder: Path, actor: Actor) -> Brought:
+    def bring(self, folder: Path, actor: Actor) -> ImportTally:
         rows = Version3Rows(folder)
         count, skipped = 0, []
         for environment in [e for e in rows.environments() if self.ledger.is_brought(f"project/environment/{e.n}")]:
@@ -40,7 +40,7 @@ class EnvironmentKind:
                     skipped.append(f"{self.kind} {row.n} in {environment.title}: could not be brought: {fault}")
                     continue
                 count += 1
-        return Brought(self.title, count, tuple(skipped))
+        return ImportTally(self.title, count, tuple(skipped))
 
     def source(self, environment: str, row: Version3Row) -> str:
         return f"environments/{environment}/{self.kind}/{row.n}"

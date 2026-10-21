@@ -52,7 +52,7 @@ def test_the_hooks_question_is_asked_even_when_no_other_hooks_are_found_yet(tmp_
 
 
 def test_version_threes_hook_is_somebody_elses(tmp_path: Path):
-    from journal.launcher.support.other_hooks import OtherHooks
+    from journal.launcher.support.foreign_hooks import ForeignHooks
     assert not ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /p/.journal/src/hook.sh claude /p/.journal"}]})
     assert ProgramSettings.is_ours({"hooks": [{"type": "command", "command": "sh /pkg/src/journal/hooks/hook.sh claude /p"}]})
 
@@ -71,9 +71,9 @@ def test_x_on_an_environment_deletes_it_after_a_confirmation_and_never_one_an_ag
 
 
 def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_path: Path):
-    from journal.launcher.support.other_hooks import OtherHooks
+    from journal.launcher.support.foreign_hooks import ForeignHooks
     path = settings_with_other_hooks(tmp_path)
-    hooks = OtherHooks(tmp_path, "claude")
+    hooks = ForeignHooks(tmp_path, "claude")
     assert hooks.others() == [path]
     hooks.set_aside()
     left = json.loads(path.read_text())
@@ -108,7 +108,7 @@ def test_launch_parses_flags_and_builds_the_commands(tmp_path: Path):
 
 
 def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Path):
-    from journal.launcher.support.other_hooks import OtherHooks
+    from journal.launcher.support.foreign_hooks import ForeignHooks
     path = settings_with_other_hooks(tmp_path)
 
     class Launched(Launch):
@@ -123,7 +123,7 @@ def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Pat
         Launched.parse(["claude", "--env", "main", "--aside", "--yes"], tmp_path).run()
     except RuntimeError:
         pass
-    assert set(json.loads(path.read_text())["hooks"]) == {"Stop", "PreToolUse"} and OtherHooks(tmp_path, "claude").put_back() == []
+    assert set(json.loads(path.read_text())["hooks"]) == {"Stop", "PreToolUse"} and ForeignHooks(tmp_path, "claude").put_back() == []
 
 
 def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, monkeypatch):
@@ -356,7 +356,7 @@ def test_a_worktree_whose_folder_and_branch_went_is_made_again_from_its_kept_tip
 def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_make_leaves_nothing_half_made(tmp_path: Path):
     import subprocess
     from journal.support.worktree import Worktree
-    from journal.support.worktree_not_made import WorktreeNotMade
+    from journal.support.worktree_failure import WorktreeFailure
     git = lambda *args: subprocess.run(["git", "-C", str(tmp_path), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
@@ -371,7 +371,7 @@ def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_mak
     try:
         Worktree(tmp_path, "taken").made()
         raise AssertionError("a branch checked out elsewhere cannot be made a second time")
-    except WorktreeNotMade:
+    except WorktreeFailure:
         pass
     assert not (tmp_path / ".claude" / "worktrees" / "taken").exists(), "nothing half made is left at the worktree's place"
 
@@ -381,7 +381,7 @@ def test_the_boot_screen_offers_a_newer_release_of_the_same_major_before_the_jou
     from journal.config import Config
     from journal.features.updates.support.release_installer import ReleaseInstaller
     from journal.features.updates.support.release_source import ReleaseSource
-    from journal.launcher.support.update_offer import UpdateOffer
+    from journal.launcher.support.update_prompt import UpdatePrompt
     from journal.version import VERSION
     major = VERSION.split(".")[0]
     monkeypatch.setattr(ReleaseSource, "tags", lambda self, prefix: [f"v{VERSION}", f"v{major}.99.0", f"v{int(major) + 1}.0.0"])
@@ -389,7 +389,7 @@ def test_the_boot_screen_offers_a_newer_release_of_the_same_major_before_the_jou
     monkeypatch.setattr(ReleaseInstaller, "run", lambda self, release: installed.append(release.version))
     answers = iter(["2", "1"])
     monkeypatch.setattr("builtins.input", lambda: next(answers))
-    offer = UpdateOffer(Config(tmp_path), Screen(io.StringIO()), ReleaseSource())
+    offer = UpdatePrompt(Config(tmp_path), Screen(io.StringIO()), ReleaseSource())
     assert offer.newest().version == f"{major}.99.0", "the newest of the same major, never the next major"
     assert not offer.installed_newer() and installed == [], "Start as it is installs nothing"
     assert offer.installed_newer() and installed == [f"{major}.99.0"], "Update installs it before the journal starts"

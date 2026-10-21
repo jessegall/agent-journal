@@ -6,8 +6,8 @@ from journal.console.command import Command
 from journal.console.creations import Creations
 from journal.console.support.outcome import Outcome
 from journal.console.support.row_verbs import RowVerbs
-from journal.support.refused import Refused
-from journal.support.not_found import NotFound
+from journal.support.rejection import Rejection
+from journal.support.missing_row import MissingRow
 from journal.support.caller import Caller
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
@@ -82,7 +82,7 @@ class Console:
                 code = 2
             except SystemExit as ended:
                 code = ended.code
-            except (NotFound, Refused) as refused:
+            except (MissingRow, Rejection) as refused:
                 print(refused, file=err)
                 code = 1
         Creations.end()

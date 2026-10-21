@@ -1,5 +1,5 @@
 from journal.features.docs.commands.doc_command import DocCommand
-from journal.features.docs.listeners.mark_made import MarkMade
+from journal.features.docs.listeners.document_card import DocumentCard
 from journal.features.feature import Feature
 from journal.support.skill import Skill
 
@@ -9,7 +9,7 @@ class DocsFeature(Feature):
     title = "Documents"
     help = "What the project keeps knowing: documents shared by every environment, listed on the Documents page."
     commands = (DocCommand,)
-    listeners = (MarkMade,)
+    listeners = (DocumentCard,)
 
     skill = Skill("docs", "Keep lasting knowledge of the project in a document; load it when something should still be known next month", """
 # Documents

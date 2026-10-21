@@ -1,7 +1,7 @@
 from dataclasses import dataclass, replace
 
 from journal.engine.nudge import Nudge
-from journal.engine.support.held import Held
+from journal.engine.support.block import Block
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.idle import Idle as Stop
@@ -34,9 +34,9 @@ class FollowingPlan(Working):
     def named(self) -> str:
         return super().named() if self.task_id else f"plan {self.plan_id}, with no task in hand"
 
-    def on_push(self, settings: Settings) -> tuple[Nudge, ...] | Held:
+    def on_push(self, settings: Settings) -> tuple[Nudge, ...] | Block:
         from journal.features.plans.feature import Plans
-        return () if self.approved else Held(Plans.UNAPPROVED_PLAN.create(n=self.plan_id))
+        return () if self.approved else Block(Plans.UNAPPROVED_PLAN.create(n=self.plan_id))
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans

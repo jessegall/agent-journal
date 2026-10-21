@@ -4,7 +4,7 @@ from functools import cache
 from typing import Callable, Iterator
 
 from journal.repositories.environments import Environments
-from journal.support.unscoped import Unscoped
+from journal.support.scope_missing import ScopeMissing
 
 PROJECT = 0
 _current: ContextVar[Callable[[], int]] = ContextVar("environment")
@@ -20,7 +20,7 @@ class Scope:
     def id(self) -> int:
         environment = _current.get(None)
         if environment is None:
-            raise Unscoped()
+            raise ScopeMissing()
         return environment()
 
     def id_or(self, outside: int) -> int:

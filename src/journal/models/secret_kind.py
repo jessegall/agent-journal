@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 
 class SecretKind(StrEnum):
@@ -14,7 +14,7 @@ class SecretKind(StrEnum):
         try:
             return cls(given.strip().lower())
         except ValueError as unknown:
-            raise Refused(f"a secret is one of {', '.join(kind.value for kind in cls)}, not {given!r}") from unknown
+            raise Rejection(f"a secret is one of {', '.join(kind.value for kind in cls)}, not {given!r}") from unknown
 
     def first_fields(self, title: str) -> tuple[dict, ...]:
         stem = "_".join("".join(c if c.isalnum() else " " for c in title).upper().split())

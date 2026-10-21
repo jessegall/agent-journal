@@ -1,7 +1,7 @@
 from journal.events.listener import Listener
 from journal.events.models.saving import Saving
 from journal.models.link import Link
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.tasks import WAIT_LINK, Tasks
 
 
@@ -16,4 +16,4 @@ class NoWaitCycles(Listener[Saving]):
         if not isinstance(link, Link) or link.kind != WAIT_LINK:
             return
         if self.tasks.waits_reach(link.target, link.source):
-            raise Refused(f"{link.source} waiting on {link.target} would close a loop of waits that nothing could ever end")
+            raise Rejection(f"{link.source} waiting on {link.target} would close a loop of waits that nothing could ever end")

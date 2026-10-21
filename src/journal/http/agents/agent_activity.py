@@ -1,4 +1,4 @@
-from journal.engine.support.trail import Trail
+from journal.engine.support.stack_history import StackHistory
 from journal.engine.states.wait import Wait
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
@@ -7,7 +7,7 @@ from journal.features.tasks.states.working import Working
 from journal.support.chain import Chain
 from journal.support.context_file import ContextFile
 from journal.http.agents.current_work import CurrentWork
-from journal.http.agents.sequence_in_hand import SequenceInHand
+from journal.http.agents.current_sequence import CurrentSequence
 from journal.http.files.project_files import ProjectFiles
 from journal.http.support.model_fields import ModelFields
 from journal.models.agent import Agent
@@ -61,7 +61,7 @@ class AgentActivity:
             "stuck": agent.data.get("why", "") if agent.state == "stuck" else "",
             "sequence": self.sequence_of(agent),
             "stack": self.stack_of(agent),
-            "trail": [self.trail_entry(e) for e in [e for e in entries if e.kind == Trail.KIND][-HISTORY:]],
+            "trail": [self.trail_entry(e) for e in [e for e in entries if e.kind == StackHistory.KIND][-HISTORY:]],
             "sequence_history": [{"time": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
         }
 
@@ -78,12 +78,12 @@ class AgentActivity:
         return "" if any(time > thoughts[-1].created_at for time in later) else thoughts[-1].text
 
     @staticmethod
-    def sequence_of(agent: Agent) -> SequenceInHand | None:
+    def sequence_of(agent: Agent) -> CurrentSequence | None:
         runs = [SequenceRun.of(raw) for raw in agent.sequence_runs or ()]
         if not runs:
             return None
         run = runs[-1]
-        return SequenceInHand(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.holds, about=run.about, under=len(runs) - 1)
+        return CurrentSequence(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.holds, about=run.about, under=len(runs) - 1)
 
     def doing(self, state, hooks) -> str:
         last = hooks[-1] if hooks else None

@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.shell.listeners.mark_outputs_told import MarkOutputsTold
+from journal.features.shell.listeners.output_notice import OutputNotice
 from journal.features.shell.support.shell_conduct import ShellConduct
 from journal.features.shell.support.shell_data_reader import ShellDataReader
 from journal.engine.nudge import Nudge
@@ -22,7 +22,7 @@ class Shell(Feature):
     SHORT = Option("shell.short_output", "Keep no output under", "A command whose whole output is under this many characters, with no pipe in its line, is shown as it is and kept as no numbered output; a longer one, or a line with a pipe into head, tail, grep or any filter, is kept", 400, unit="characters")
     OUTPUT_COUNT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
     options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, OUTPUT_COUNT)
-    listeners = (MarkOutputsTold,)
+    listeners = (OutputNotice,)
     data = (ShellDataReader,)
     conduct = (ShellConduct,)
 

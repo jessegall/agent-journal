@@ -17,7 +17,7 @@ from journal.http.sharing.shared_data import SharedData
 from journal.http.sharing.visitor_comment import VisitorComment
 from journal.support.actor import Actor
 from journal.models.share import Share
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.support.scope import Scope
 from journal.repositories.shares import Shares
 
@@ -62,7 +62,7 @@ class SharePages:
             return self.gone(404)
         try:
             comment = self.comments.leave(self.shares.by_token(parts[1]), comment.on, comment.name, comment.text)
-        except Refused as refused:
+        except Rejection as refused:
             return ShareAnswer(409, json.dumps({"error": str(refused)}).encode(), "application/json")
         return ShareAnswer(201, json.dumps(comment, cls=JsonOut).encode(), "application/json")
 

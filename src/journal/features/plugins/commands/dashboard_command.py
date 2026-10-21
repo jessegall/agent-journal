@@ -3,7 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.models.dashboard_row import DashboardRow
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.dashboard_rows import DashboardRows
 
 TONES = ("", "good", "warn", "danger", "note", "muted")
@@ -53,5 +53,5 @@ class DashboardCommand(Command):
     @staticmethod
     def plugin_of(caller: Caller) -> str:
         if not caller.plugin:
-            raise Refused("a dashboard's lines are written by its plugin's program, which the journal gives its name and token")
+            raise Rejection("a dashboard's lines are written by its plugin's program, which the journal gives its name and token")
         return caller.plugin

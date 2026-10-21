@@ -1,5 +1,5 @@
 from journal.engine.nudge import Nudge
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 
 class NudgeRegistry:
@@ -14,7 +14,7 @@ class NudgeRegistry:
 
     def named(self, nudge_id: str) -> Nudge:
         if nudge_id not in self.nudges:
-            raise Refused(f"no nudge is registered as {nudge_id}: a line is said only by a nudge the registry holds, journal nudge list names them")
+            raise Rejection(f"no nudge is registered as {nudge_id}: a line is said only by a nudge the registry holds, journal nudge list names them")
         return self.nudges[nudge_id]
 
     def all(self) -> list[Nudge]:

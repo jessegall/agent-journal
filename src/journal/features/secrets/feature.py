@@ -4,9 +4,9 @@ from journal.support.skill import Skill
 from journal.features.secrets.commands.secret_command import SecretCommand
 from journal.features.secrets.support.secrets_conduct import SecretsConduct
 from journal.features.secrets.support.secrets_data_reader import SecretsDataReader
-from journal.features.secrets.listeners.alarm_on_leak import AlarmOnLeak
-from journal.features.secrets.listeners.ask_when_expired import AskWhenExpired
-from journal.features.secrets.listeners.purge_after_thirty_days import PurgeAfterThirtyDays
+from journal.features.secrets.listeners.leak_alarm import LeakAlarm
+from journal.features.secrets.listeners.expiry_question import ExpiryQuestion
+from journal.features.secrets.listeners.secret_purge import SecretPurge
 from journal.features.secrets.seeds.secret_files import SecretFiles
 
 
@@ -50,6 +50,6 @@ outside the project, and never in the journal; the journal masks a value anywher
 - `journal secret where` names the file the values live in; `journal secret delete <n>` puts one away.
 - A deleted secret keeps its values thirty days for `journal secret restore <n>`, then they go.
 """, keywords=("secret", "secrets", "api key", "token", "password", "login"))
-    listeners = (AlarmOnLeak, AskWhenExpired, PurgeAfterThirtyDays)
+    listeners = (LeakAlarm, ExpiryQuestion, SecretPurge)
     data = (SecretsDataReader,)
     conduct = (SecretsConduct,)

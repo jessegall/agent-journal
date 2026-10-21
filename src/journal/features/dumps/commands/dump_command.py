@@ -2,14 +2,14 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.features.dumps.support.filing import Filing
+from journal.features.dumps.support.dump_filer import DumpFiler
 from journal.repositories.dumps import Dumps
 
 
 class DumpCommand(Command):
     noun = "dump"
 
-    def __init__(self, filing: Filing, dumps: Dumps) -> None:
+    def __init__(self, filing: DumpFiler, dumps: Dumps) -> None:
         self.filing, self.dumps = filing, dumps
 
     def arguments(self, verbs) -> None:

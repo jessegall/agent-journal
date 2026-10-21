@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.support.section import Section
 
 
@@ -42,7 +42,7 @@ class Outline:
         for section in self.sections:
             if wanted == str(section.number) or wanted.lower() == section.heading.lower():
                 return section
-        raise Refused(f"no section {wanted}: the outline numbers them from 1")
+        raise Rejection(f"no section {wanted}: the outline numbers them from 1")
 
     def rows(self, text: str) -> list[str]:
         lowered = text.lower()

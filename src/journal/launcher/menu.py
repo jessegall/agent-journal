@@ -8,8 +8,8 @@ from journal.launcher.support.answers import Answers
 from journal.launcher.support.choice import Choice
 from journal.support.environment_row import EnvironmentRow
 from journal.launcher.support.option import Option
-from journal.launcher.support.other_hooks import OtherHooks
-from journal.launcher.support.remembered import Remembered
+from journal.launcher.support.foreign_hooks import ForeignHooks
+from journal.launcher.support.launcher_memory import LauncherMemory
 from journal.launcher.screen import Screen
 from journal.providers.providers import Providers
 
@@ -20,7 +20,7 @@ class Menu:
     def __init__(self, root: Path, journal_py: Path, screen: Screen | None = None) -> None:
         self.root, self.journal_py = root, journal_py
         self.screen = screen or Screen()
-        self.remembered = Remembered(root)
+        self.remembered = LauncherMemory(root)
 
     def environments(self) -> list[EnvironmentRow]:
         try:
@@ -46,7 +46,7 @@ class Menu:
         resume = "" if new or not last else self._carry_on(agent, chosen, last, asking)
         skip_prompts = skip or yes or self._prompts(agent)
         asking = asking and not resume
-        hooks_aside = aside or (self._hooks(OtherHooks(self.root, agent).others(), before.hooks_aside) if asking else before.hooks_aside)
+        hooks_aside = aside or (self._hooks(ForeignHooks(self.root, agent).others(), before.hooks_aside) if asking else before.hooks_aside)
         self.remembered.write(Answers(skip_prompts, hooks_aside))
         choice = Choice(chosen, resume, hooks_aside, skip_prompts)
         if not yes:

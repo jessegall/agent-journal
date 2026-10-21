@@ -18,7 +18,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.supervisor_link import SupervisorLink
 
 REPLY_TAG = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!reply:(\d+(?:,\d+)*)\](?:\*\*)?[ \t]*", re.MULTILINE)
@@ -74,7 +74,7 @@ class RecordTurn(AgentListener[TurnWritten]):
     def earlier_reply(self, n: int) -> Message | None:
         try:
             return self.messages.first_reply(self.messages.find(n))
-        except NotFound:
+        except MissingRow:
             return None
 
     def repeats_a_reply(self, text: str, tagged: list[int], event: TurnWritten) -> bool:
@@ -133,11 +133,11 @@ class RecordTurn(AgentListener[TurnWritten]):
     def _also_answers(self, reply: Message, n: int, actor: Actor) -> None:
         try:
             self.links.save(Link(source=Ref.to(reply), target=Ref.to(self.messages.find(n)), kind=Messages.ANSWERS), actor)
-        except NotFound:
+        except MissingRow:
             return
 
     def _mark_read(self, n: int, actor: Actor) -> None:
         try:
             self.messages.mark_read(self.messages.find(n), actor, self.agents.for_session(actor.id).tool_uses)
-        except NotFound:
+        except MissingRow:
             return

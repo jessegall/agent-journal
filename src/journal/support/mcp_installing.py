@@ -6,7 +6,7 @@ from journal.features.mcp.support.provider_config import ProviderConfig
 from journal.engine.nudger import Nudger
 from journal.support.actor import Actor
 from journal.models.mcp_server import McpServer
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.support.turn import Turn
@@ -30,7 +30,7 @@ class McpInstalling:
 
     def keyed(self, server: McpServer, value: str, actor: Actor) -> McpServer:
         if not value.strip():
-            raise Refused(f"the key for {server.title} is blank")
+            raise Rejection(f"the key for {server.title} is blank")
         self.keys.set(server.key_var, value.strip())
         return self.servers.save(server.unchecked("installed"), actor)
 

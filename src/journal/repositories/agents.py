@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from journal.models.agent import Agent
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.scoped_repository import ScopedRepository
 
 
@@ -34,7 +34,7 @@ class Agents(ScopedRepository[Agent]):
     def for_session(self, session: str) -> Agent:
         rows = self.across_environments(session=session)
         if not rows:
-            raise NotFound(self.table, session)
+            raise MissingRow(self.table, session)
         return rows[0]
 
     def others_lately(self, session: str, since: datetime) -> list[Agent]:

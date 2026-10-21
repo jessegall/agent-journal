@@ -1,6 +1,6 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
-from journal.features.pausing.states.paused_by_user import PausedByUser
+from journal.features.pausing.states.user_pause import UserPause
 from journal.features.pausing.support.pausing_conduct import PausingConduct
 
 
@@ -13,6 +13,6 @@ class PausingFeature(Feature):
     title = "Pausing the agent"
     fixed = True
     help = "The pause button on the top bar holds the agent: it finishes the step it is on, then waits until you resume it or write to it."
-    states = (PausedByUser,)
+    states = (UserPause,)
     conduct = (PausingConduct,)
     nudges = (PAUSED, RESUMED)

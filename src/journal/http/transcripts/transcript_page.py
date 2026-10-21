@@ -2,7 +2,7 @@ from journal.http.transcripts.transcript_entry import TranscriptEntry
 from journal.http.transcripts.transcript_heading import TranscriptHeading
 from journal.http.transcripts.transcript_slice import TranscriptSlice
 from journal.providers.support.turn import Turn
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 
 SPEAKER_ROLES = ("human", "agent")
 LARGEST = 1000
@@ -27,5 +27,5 @@ class TranscriptPage:
     def entry(self, line: int) -> TranscriptEntry:
         turn = next((t for t in self.turns if t.line == line), None)
         if turn is None:
-            raise NotFound("transcript entries", line)
+            raise MissingRow("transcript entries", line)
         return TranscriptEntry(line=turn.line, text=turn.text, formatted="")

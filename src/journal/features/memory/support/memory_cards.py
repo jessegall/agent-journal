@@ -5,11 +5,11 @@ from journal.models.rule import Rule
 from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
 from journal.support.cards import Cards
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 from journal.support.ref import Ref
 from journal.support.scope import Scope
 
-MEMORY_KINDS = {Fact: ("Fact", ChatMark.FACTS), Rule: ("Rule", ChatMark.RULES), Reminder: ("Reminder", ChatMark.REMINDERS)}
+MEMORY_KINDS = {Fact: ("Fact", CardKind.FACTS), Rule: ("Rule", CardKind.RULES), Reminder: ("Reminder", CardKind.REMINDERS)}
 
 
 class MemoryCards:

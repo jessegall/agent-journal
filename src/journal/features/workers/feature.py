@@ -1,14 +1,14 @@
 from journal.features.feature import Feature
 from journal.features.workers.support.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_data_reader import WorkersDataReader
-from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
+from journal.features.workers.seeds.workers_seed import WorkersSeed
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
-from journal.features.workers.listeners.mark_subagents import MarkSubagents
+from journal.features.workers.listeners.subagent_cards import SubagentCards
 from journal.features.workers.listeners.worker_cards import WorkerCards
-from journal.features.tasks.states.idle import Idle
+from journal.features.tasks.states.ready import Ready
 from journal.features.workers.states.delegating import Delegating
 from journal.features.workers.states.orchestrating import Orchestrating
 from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
@@ -18,7 +18,7 @@ from journal.features.workers.states.soloing import Soloing
 class Workers(Feature):
     """A worker is an agent sent to write: code in a worktree of its own, a document, a change. A subagent only reads; a worker is the one that writes."""
 
-    MODE_STATES = {"builder": Idle, "orchestrator": Orchestrating, "solo": Soloing}
+    MODE_STATES = {"builder": Ready, "orchestrator": Orchestrating, "solo": Soloing}
     name = "workers"
     title = "Workers"
     help = "Agents sent to write one bounded job; the agent waits for their reports."
@@ -29,8 +29,8 @@ class Workers(Feature):
     options = (TIMEOUT, MODE, WORKER_LIMIT, SUBAGENT_LIMIT)
     states = (Orchestrating, Soloing, OrchestratingPlan, Delegating)
     commands = (WorkerCommand,)
-    seeds = (WorkersAtBoot,)
-    listeners = (MarkSubagents, WorkerCards)
+    seeds = (WorkersSeed,)
+    listeners = (SubagentCards, WorkerCards)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
 

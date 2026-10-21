@@ -1,5 +1,5 @@
 from journal.support.actor import Actor
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 from journal.models.author import Author
 from journal.models.model import Model
 from journal.models.message import Message
@@ -13,7 +13,7 @@ class Cards:
     def __init__(self, messages: Messages) -> None:
         self.messages = messages
 
-    def show(self, environment_id: int, session: str, label: str, icon: str, tone: str = "", detail: str = "", row: str = "", kind: str = "card", actor: Actor = Actor.system(), key: str = "", command: str = "", *, shows: ChatMark) -> Message:
+    def show(self, environment_id: int, session: str, label: str, icon: str, tone: str = "", detail: str = "", row: str = "", kind: str = "card", actor: Actor = Actor.system(), key: str = "", command: str = "", *, shows: CardKind) -> Message:
         return self.keyed(environment_id, key, label, {"kind": kind, "session": session, "icon": icon, "tone": tone, "detail": detail, "row": row, "command": command}, actor, shows)
 
     @staticmethod
@@ -22,9 +22,9 @@ class Cards:
 
     def made_mark(self, environment_id: int, row: Model, actor: Actor) -> Message:
         data = {"kind": "made", "session": actor.id, "made_type": row.table(), "n": row.id, **RowCard.of(row).as_data()}
-        return self.keyed(environment_id, self.made_key(row), row.title_words(), data, actor, ChatMark.CREATED)
+        return self.keyed(environment_id, self.made_key(row), row.title_words(), data, actor, CardKind.CREATED)
 
-    def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: ChatMark) -> Message:
+    def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind) -> Message:
         data = {"session": "", "row": "", **data, "key": key, "shows": str(shows)}
         earlier = self.messages.keyed(key, actor) if key else []
         if earlier:

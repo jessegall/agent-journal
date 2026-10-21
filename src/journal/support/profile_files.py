@@ -2,7 +2,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.features.profiles.support.profile import Profile
-from journal.features.profiles.support.profile_shown import ProfileShown
+from journal.features.profiles.support.profile_view import ProfileView
 from journal.providers.providers import Providers
 from journal.repositories.setting_rows import SettingRows
 
@@ -41,7 +41,7 @@ class ProfileFiles:
     def folder(self) -> Path:
         return self.config.root / self.providers.named("claude").home / "agents"
 
-    def read_all(self) -> list[ProfileShown]:
+    def read_all(self) -> list[ProfileView]:
         return sorted((self.read(path.stem) for path in self.folder().glob("*.md")), key=lambda p: p["name"])
 
     def names(self) -> list[str]:
@@ -50,18 +50,18 @@ class ProfileFiles:
     def subagents(self) -> list[str]:
         return [p["name"] for p in self.read_all() if p["kind"] != "worker"]
 
-    def read(self, name: str) -> ProfileShown:
+    def read(self, name: str) -> ProfileView:
         path = self.folder() / f"{name}.md"
         text = path.read_text()
         head, _, body = text.partition("\n---\n") if text.startswith("---\n") else ("", "", text)
         fields = {key.strip(): value.strip() for key, value in (line.partition(":")[::2] for line in head.splitlines()[1:] if ":" in line)}
-        return ProfileShown(name=name, description=fields.get("description", ""), tools=fields.get("tools", ""), kind=fields.get("kind", "subagent"), model=fields.get("model", ""),
+        return ProfileView(name=name, description=fields.get("description", ""), tools=fields.get("tools", ""), kind=fields.get("kind", "subagent"), model=fields.get("model", ""),
                             codex_model=fields.get("codex-model", ""), body=body.strip("\n"), shipped=name in {profile.name for profile in self.PROFILES}, path=str(path.relative_to(self.config.root)))
 
     def kind_of(self, name: str) -> str:
         return self.read(name)["kind"] if (self.folder() / f"{name}.md").is_file() else ""
 
-    def save(self, profile: Profile, model: str, codex_model: str) -> ProfileShown:
+    def save(self, profile: Profile, model: str, codex_model: str) -> ProfileView:
         self.write(profile, model, codex_model)
         return self.read(profile.name)
 

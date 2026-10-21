@@ -5,12 +5,12 @@ from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.rows.worker_back import WorkerBack
-from journal.features.tasks.states.idle import Idle
+from journal.features.tasks.states.ready import Ready
 from journal.features.tasks.support.tasks_data import TasksData
 
 
 @dataclass(frozen=True)
-class Orchestrating(Idle):
+class Orchestrating(Ready):
     """The orchestrator's mode state: it plans, hands the work to workers and reviews what comes back. A stop or a long quiet with open tasks is answered with the plans to check and the workers to dispatch, a worker's report with the same, and the task and plan states it pushes say delegate where the builder's say carry on."""
 
     name = "orchestrating"

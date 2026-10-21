@@ -442,7 +442,7 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
 
 def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_cards_by_number(tmp_path: Path):
     from journal.support.cards import Cards
-    from journal.support.chat_mark import ChatMark
+    from journal.support.card_kind import CardKind
     from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
@@ -455,7 +455,7 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
-        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3", shows=ChatMark.CHECKS)
+        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3", shows=CardKind.CHECKS)
         rows = [r for r in call(server, "GET", "/journal/messages")[1]["rows"] if r["id"] >= n]
         assert [r["id"] for r in rows] == sorted(r["id"] for r in rows)
         assert [(r["author"], r["text"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
@@ -855,9 +855,9 @@ def test_the_tunnel_says_what_keeps_links_from_reaching_the_journal(server, tmp_
 
 
 def test_a_slow_answer_is_asked_once_given_from_memory_and_asked_again_once_dropped():
-    from journal.support.kept_answer import KeptAnswer
+    from journal.support.cached_answer import CachedAnswer
     asked = []
-    kept = KeptAnswer(lambda: asked.append(1) or len(asked), 60, 0)
+    kept = CachedAnswer(lambda: asked.append(1) or len(asked), 60, 0)
     assert (kept.given(), kept.given(), len(asked)) == (1, 1, 1), "the first reader waits for it, the next is given it at once"
     kept.drop()
     assert (kept.given(), len(asked)) == (2, 2), "an answer no longer true is waited for again"
@@ -988,17 +988,17 @@ def test_a_plans_timeline_has_each_start_log_and_done_of_its_tasks_oldest_first(
 
 def test_a_second_journal_of_the_same_project_stands_by_while_the_first_answers(tmp_path: Path):
     import socket
-    from journal.support.standby import Standby
+    from journal.support.instance_guard import InstanceGuard
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         first = probe.getsockname()[1]
     one = App(Config(tmp_path / "one", port=first, span=3))
-    standby = Standby(Config(tmp_path / "one", port=first, span=3))
+    standby = InstanceGuard(Config(tmp_path / "one", port=first, span=3))
     assert standby.another() == "", "no port file, no other journal"
     one.server().start()
     try:
         assert standby.another() == f"http://127.0.0.1:{first}", "the first journal answers on the port its file names, so a second stands by"
-        assert Standby(Config(tmp_path / "two", port=first, span=3)).another() == "", "another project's journal on that port is no reason to stand by"
+        assert InstanceGuard(Config(tmp_path / "two", port=first, span=3)).another() == "", "another project's journal on that port is no reason to stand by"
         App(Config(tmp_path / "one", port=first, span=3)).server()
         with socket.socket() as probe:
             assert probe.connect_ex(("127.0.0.1", first + 1)) != 0, "a journal built to stand by holds no port until it starts"

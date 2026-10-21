@@ -3,19 +3,19 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.support.cards import Cards
-from journal.support.running import Running
+from journal.support.run_tracker import RunTracker
 from journal.models.sequence import Sequence
 from journal.support.scope import Scope
 from journal.support.sequence_run import SequenceRun
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.sequences import Sequences
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 
 class SequenceCommand(Command):
     noun = "sequence"
 
-    def __init__(self, sequences: Sequences, running: Running, scope: Scope, cards: Cards) -> None:
+    def __init__(self, sequences: Sequences, running: RunTracker, scope: Scope, cards: Cards) -> None:
         self.sequences, self.running, self.scope, self.cards = sequences, running, scope, cards
 
     def arguments(self, verbs) -> None:
@@ -53,7 +53,7 @@ class SequenceCommand(Command):
     def next(self, args: Namespace, caller: Caller) -> int:
         run = self.in_hand(caller)
         if not run.taken_up_at:
-            raise Refused(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first")
+            raise Rejection(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first")
         print(self.running.next(caller.session, self.scope.id))
         return 0
 
@@ -66,19 +66,19 @@ class SequenceCommand(Command):
     def abandon(self, args: Namespace, caller: Caller) -> int:
         run = self.in_hand(caller)
         if not run.taken_up_at:
-            raise Refused(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first, then abandon it if it cannot be done")
+            raise Rejection(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first, then abandon it if it cannot be done")
         skipped = "; ".join(f"{run.step + i + 1}. {text}" for i, text in enumerate(run.skipped))
         if not args.sure:
-            raise Refused(f"abandoning sequence {run.sequence_id}, {run.title}, leaves undone: {skipped}. again with --sure to go through")
+            raise Rejection(f"abandoning sequence {run.sequence_id}, {run.title}, leaves undone: {skipped}. again with --sure to go through")
         run, line = self.running.abandon(caller.session, self.scope.id)
-        self.cards.show(self.scope.id, caller.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}", shows=ChatMark.SEQUENCES)
+        self.cards.show(self.scope.id, caller.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}", shows=CardKind.SEQUENCES)
         print(line)
         return 0
 
     def in_hand(self, caller: Caller) -> SequenceRun:
         run = self.running.in_hand(caller.session, self.scope.id)
         if run is None:
-            raise Refused("no sequence is running")
+            raise Rejection("no sequence is running")
         return run
 
     def list(self, args: Namespace, caller: Caller) -> int:

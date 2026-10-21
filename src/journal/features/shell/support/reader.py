@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 
 @dataclass(frozen=True)
@@ -17,7 +17,7 @@ class Reader:
     def from_file(cls, path: Path) -> "Reader":
         lines = path.read_text().splitlines()
         if len(lines) < 2:
-            raise Refused(f"reader {path.stem} needs two lines: '# what it picks', then its pattern")
+            raise Rejection(f"reader {path.stem} needs two lines: '# what it picks', then its pattern")
         return cls(path.stem, lines[0].removeprefix("#").strip(), lines[1])
 
     def text(self) -> str:

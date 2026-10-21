@@ -9,7 +9,7 @@ from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
 from journal.events.listener import Listener
 from journal.support.decision import Decision
-from journal.support.deferred import Deferred
+from journal.support.listener_queue import ListenerQueue
 from journal.support.hook import Hook
 from journal.hooks.support.transcript_turns import TranscriptTurns
 from journal.hooks.translation import Translation
@@ -20,7 +20,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.support.scope import Scope
 from journal.support.slow_requests import HOOK, SlowRequests
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 
 GUARD_FAILED = "guard_failed"
@@ -29,7 +29,7 @@ GUARD_FAILED = "guard_failed"
 class Receiver:
     """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: Deferred, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests) -> None:
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests) -> None:
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
         self.agents = agents
         self.transcript, self.cards, self.slow = transcript, cards, slow
@@ -82,7 +82,7 @@ class Receiver:
         except Exception as fault:
             text = f"{type(listener).__name__} raised {type(fault).__name__}: {fault}"
             self.entries.save(Entry(environment_id=event.environment_id, kind=GUARD_FAILED, actor=Actor.system(), data={"session": event.session, "event": type(event).__name__, "listener": type(listener).__name__, "fault": f"{type(fault).__name__}: {fault}"}), Actor.system())
-            self.cards.show(event.environment_id, event.session, f"A guard failed and let the event through: {text}", "bolt", tone="bad", shows=ChatMark.FAULTS)
+            self.cards.show(event.environment_id, event.session, f"A guard failed and let the event through: {text}", "bolt", tone="bad", shows=CardKind.FAULTS)
             return Decision.allowed_with(f"[journal] a guard failed and let this through: {text}. the journal recorded it; tell the user if it happens again")
 
     def _defer(self, event: AgentEvent) -> None:

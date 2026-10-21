@@ -8,7 +8,7 @@ from journal.features.plugins.support.window_missed import WindowMissed
 from journal.features.plugins.support.plugin_hashes import PluginHashes
 from journal.features.plugins.support.plugin_runner import PluginRunner
 from journal.features.plugins.support.plugin_steps import PluginSteps
-from journal.features.plugins.support.plugin_words import PluginWords
+from journal.features.plugins.support.plugin_text import PluginText
 from journal.features.plugins.support.protocol import Protocol
 from journal.support.actor import Actor
 from journal.models.entry import Entry
@@ -19,7 +19,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins
 from journal.support.scope import Scope
-from journal.support.deferred import Deferred
+from journal.support.listener_queue import ListenerQueue
 
 LATER = 10
 UNANSWERED = "plugin_unanswered"
@@ -31,7 +31,7 @@ CUT = "plugin_cut"
 class PluginRelay:
     """Which plugins hear an event, and one plugin asked about it: the line built where the event happened, and a fault recorded, never raised."""
 
-    def __init__(self, plugins: Plugins, runner: PluginRunner, protocol: Protocol, faults: PluginFaults, environments: Environments, agents: Agents, entries: Entries, answers: PluginAnswers, steps: PluginSteps, deferred: Deferred, hashes: PluginHashes, linked: LinkedManifests, text: PluginWords, scope: Scope) -> None:
+    def __init__(self, plugins: Plugins, runner: PluginRunner, protocol: Protocol, faults: PluginFaults, environments: Environments, agents: Agents, entries: Entries, answers: PluginAnswers, steps: PluginSteps, deferred: ListenerQueue, hashes: PluginHashes, linked: LinkedManifests, text: PluginText, scope: Scope) -> None:
         self.plugins, self.runner, self.protocol, self.faults, self.answers, self.steps = plugins, runner, protocol, faults, answers, steps
         self.environments, self.agents, self.entries, self.deferred, self.hashes, self.linked = environments, agents, entries, deferred, hashes, linked
         self.text, self.scope = text, scope

@@ -9,7 +9,7 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.worker_back import WorkerBack
 from journal.events.rows.worker_dispatched import WorkerDispatched
-from journal.features.workers.support.named_paths import NamedPaths
+from journal.features.workers.support.path_mentions import PathMentions
 from journal.features.workers.support.workers_data import WorkersData
 from journal.support.dispatch_tools import DISPATCH_TOOLS
 
@@ -37,10 +37,10 @@ class WorkersConduct(Conduct):
         from journal.features.workers.feature import Workers
         given = event.call.input if event.call.tool in DISPATCH_TOOLS else {}
         kind = given.get("subagent_type", "")
-        named = NamedPaths.of(f"{given.get('description', '')} {given.get('prompt', '')}")
+        named = PathMentions.of(f"{given.get('description', '')} {given.get('prompt', '')}")
         if not named or kind in INDEPENDENT_ROLES:
             return self.unchanged()
-        known = next((d for d in reversed(event.data.of(Workers).dispatches) if not d.running and d.session and d.type == kind and named & NamedPaths.of(d.brief)), None)
+        known = next((d for d in reversed(event.data.of(Workers).dispatches) if not d.running and d.session and d.type == kind and named & PathMentions.of(d.brief)), None)
         return self.hold(Workers.SUBAGENT_REUSE.create(session=known.session, task=known.task)) if known else self.unchanged()
 
     def on_idle_workers(self, event: Idle, settings: Settings) -> Transition:
@@ -50,8 +50,8 @@ class WorkersConduct(Conduct):
         return self.unchanged(*reports_named(event.data.of(workers_feature())))
 
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
-        from journal.features.tasks.states.awaiting import Awaiting
-        return self.push(Awaiting.on_workers((event.worker_id,), event.time)) if event.dispatched_by == event.session else self.unchanged()
+        from journal.features.tasks.states.external_wait import ExternalWait
+        return self.push(ExternalWait.on_workers((event.worker_id,), event.time)) if event.dispatched_by == event.session else self.unchanged()
 
     def on_worker_back_workers(self, event: WorkerBack, settings: Settings) -> Transition:
         if event.dispatched_by and event.dispatched_by != event.session:

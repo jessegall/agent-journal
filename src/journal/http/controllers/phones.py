@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from journal.features.phone.support.pairing import Pairing
+from journal.features.phone.support.phone_connector import PhoneConnector
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
 from journal.repositories.phones import Phones
@@ -10,7 +10,7 @@ from journal.support.response import Response
 class PhoneController:
     """The desk's side of the phone: a code to pair one, the phone paired now, without its key, and its disconnection."""
 
-    def __init__(self, pairing: Pairing, phones: Phones) -> None:
+    def __init__(self, pairing: PhoneConnector, phones: Phones) -> None:
         self.pairing, self.phones = pairing, phones
 
     def connect(self, request: Request) -> Response:

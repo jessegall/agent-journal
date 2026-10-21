@@ -6,7 +6,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.engine.support.typed_line import TypedLine
-from journal.support.held_line import HeldLine
+from journal.support.queued_line import QueuedLine
 from journal.support.typed_lines import BATCH_SECONDS, TypedLines
 from journal.repositories.setting_rows import SettingRows
 from journal.support.old_supervisor import OldSupervisor
@@ -32,7 +32,7 @@ class SupervisorLink:
             return
         marked = f"{JOURNAL_PREFIX} {' '.join(line.split())}"
         if self.is_busy(environment_id):
-            self.typed.hold(HeldLine(environment_id, marked, after))
+            self.typed.hold(QueuedLine(environment_id, marked, after))
             return
         self.type_whole(environment_id, marked, after)
 

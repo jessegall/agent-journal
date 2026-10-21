@@ -3,20 +3,20 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.features.questions.support.answering import Answering
+from journal.features.questions.support.answer_delivery import AnswerDelivery
 from journal.models.question import Question
 from journal.support.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.workers import Workers
 
 
 class QuestionCommand(Command):
     noun = "question"
 
-    def __init__(self, questions: Questions, answering: Answering, messages: Messages, links: Links, workers: Workers) -> None:
+    def __init__(self, questions: Questions, answering: AnswerDelivery, messages: Messages, links: Links, workers: Workers) -> None:
         self.questions, self.answering, self.messages, self.links, self.workers = questions, answering, messages, links, workers
 
     def arguments(self, verbs) -> None:
@@ -31,13 +31,13 @@ class QuestionCommand(Command):
 
     def ask(self, args: Namespace, caller: Caller) -> int:
         if not caller.session or self.workers.by_session(caller.session):
-            raise Refused("nobody can answer a question asked from here: put it in the worker's report instead")
+            raise Rejection("nobody can answer a question asked from here: put it in the worker's report instead")
         options = tuple(o.strip() for o in args.options if o.strip())
         if len(options) == 1 and "," in options[0]:
-            raise Refused(f"one option holding a comma: give each choice as its own quoted argument, --options \"first\" \"second\", so a comma inside a choice stays in it")
+            raise Rejection(f"one option holding a comma: give each choice as its own quoted argument, --options \"first\" \"second\", so a comma inside a choice stays in it")
         asked = Question(text=args.text, options=options)
         if asked.unclear_options():
-            raise Refused(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(asked.unclear_options())}")
+            raise Rejection(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(asked.unclear_options())}")
         question = self.questions.save(self.questions.save(asked, caller.actor).asked(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"question {question.id} asked; waiting for the answer")
         for i, option in enumerate(question.options, 1):

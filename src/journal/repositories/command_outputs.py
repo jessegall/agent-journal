@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from journal.models.command_output import CommandOutput
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.scoped_repository import ScopedRepository
 
 
@@ -13,7 +13,7 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def of_chain(self, chain: str) -> CommandOutput:
         rows = self.selected_everywhere("chain = ? ORDER BY id", (chain,))
         if not rows:
-            raise NotFound(self.table, chain)
+            raise MissingRow(self.table, chain)
         return rows[-1]
 
     def in_background(self, session: str) -> list[CommandOutput]:

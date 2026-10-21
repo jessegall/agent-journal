@@ -4,14 +4,14 @@ from journal.console.console import Console
 from journal.support.caller import Caller
 from journal.support.cards import Cards
 from journal.features.plugins.support.plugin_steps import PluginSteps
-from journal.features.plugins.support.plugin_words import PluginWords
+from journal.features.plugins.support.plugin_text import PluginText
 from journal.support.actor import Actor
 from journal.models.entry import Entry
 from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
 from journal.features.plugins.support.plugin_card import PluginCard
 from journal.repositories.entries import Entries
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 COMMAND = "plugin_command"
 
@@ -19,7 +19,7 @@ COMMAND = "plugin_command"
 class PluginAnswers:
     """What a plugin's answer asks beyond the hook's reply: its cards in the chat, one with a key replacing the earlier of that key, and its journal commands run as the plugin, a step deeper."""
 
-    def __init__(self, cards: Cards, console: Console, entries: Entries, steps: PluginSteps, text: PluginWords) -> None:
+    def __init__(self, cards: Cards, console: Console, entries: Entries, steps: PluginSteps, text: PluginText) -> None:
         self.cards, self.console, self.entries, self.steps, self.text = cards, console, entries, steps, text
 
     def apply(self, plugin: Plugin, answer: PluginAnswer, environment: str, environment_id: int) -> None:
@@ -33,7 +33,7 @@ class PluginAnswers:
         kind = plugin.manifest.card_kind(card.kind)
         label = self.text.plain(card.label or kind.label)
         data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "detail": self.text.plain(card.detail), "collapsed": kind.collapsed}
-        self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name), ChatMark.PLUGINS)
+        self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name), CardKind.PLUGINS)
 
     def run(self, plugin: Plugin, line: str, environment: str, environment_id: int) -> None:
         argv = shlex.split(line)

@@ -2,7 +2,7 @@ from dataclasses import fields
 from typing import Generic, TypeVar
 
 from journal.http.counts import Counts
-from journal.http.listed import Listed
+from journal.http.row_list import RowList
 from journal.http.listing import Listing
 from journal.http.support.request import Request
 from journal.support.response import Response
@@ -21,10 +21,10 @@ class Controller(Generic[S]):
     def index(self, request: Request) -> Response:
         return Response.json(self.listed(Listing.from_query(request.query)))
 
-    def listed(self, listing: Listing) -> Listed:
+    def listed(self, listing: Listing) -> RowList:
         rows = self.rows()
         page = listing.listed(rows, self.is_open, self.timeline)
-        return Listed(rows=self.shown_page(page["rows"]), more=page["more"], counts=self.counts(rows))
+        return RowList(rows=self.shown_page(page["rows"]), more=page["more"], counts=self.counts(rows))
 
     def rows(self) -> list[S]:
         return self.repository.all()

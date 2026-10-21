@@ -5,7 +5,7 @@ from journal.support.states_catalogue import StatesCatalogue
 from journal.features.tasks.states.working import Working
 from journal.models.agent import Agent
 from journal.models.task import Task
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.tasks import Tasks
 
 
@@ -30,7 +30,7 @@ class CurrentWork:
             return None
         try:
             return AgentWork(self.tasks.find(working.task_id), *self.awaited(agent))
-        except NotFound:
+        except MissingRow:
             return None
 
     def awaited(self, agent: Agent) -> tuple[str, str]:

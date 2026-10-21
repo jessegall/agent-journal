@@ -4,15 +4,15 @@ from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
 from journal.features.sequences.commands.sequence_command import SequenceCommand
-from journal.features.sequences.listeners.carry_runs_to_the_next_session import CarryRunsToTheNextSession
-from journal.features.sequences.listeners.end_runs_of_a_cancelled_row import EndRunsOfACancelledRow
-from journal.features.sequences.listeners.end_runs_of_a_deleted_row import EndRunsOfADeletedRow
-from journal.features.sequences.listeners.end_runs_of_a_deleted_sequence import EndRunsOfADeletedSequence
+from journal.features.sequences.listeners.session_run_transfer import SessionRunTransfer
+from journal.features.sequences.listeners.cancelled_row_run_end import CancelledRowRunEnd
+from journal.features.sequences.listeners.deleted_row_run_end import DeletedRowRunEnd
+from journal.features.sequences.listeners.deleted_sequence_run_end import DeletedSequenceRunEnd
 from journal.features.sequences.listeners.record_run_changes import RecordRunChanges
-from journal.features.sequences.listeners.follow_step_by_command import FollowStepByCommand
-from journal.features.sequences.listeners.start_on_created import StartOnCreated
+from journal.features.sequences.listeners.step_command_match import StepCommandMatch
+from journal.features.sequences.listeners.creation_start import CreationStart
 from journal.features.sequences.support.sequences_conduct import SequencesConduct
-from journal.features.sequences.seeds.shipped_sequences import ShippedSequences
+from journal.features.sequences.seeds.builtin_sequences import BuiltinSequences
 
 
 class Sequences(Feature):
@@ -20,10 +20,10 @@ class Sequences(Feature):
     title = "Sequences"
     help = "Steps the agent follows one at a time."
     commands = (SequenceCommand,)
-    listeners = (StartOnCreated, CarryRunsToTheNextSession, FollowStepByCommand, EndRunsOfADeletedSequence, EndRunsOfADeletedRow, EndRunsOfACancelledRow, RecordRunChanges)
+    listeners = (CreationStart, SessionRunTransfer, StepCommandMatch, DeletedSequenceRunEnd, DeletedRowRunEnd, CancelledRowRunEnd, RecordRunChanges)
     data = (SequencesDataReader,)
     conduct = (SequencesConduct,)
-    seeds = (ShippedSequences,)
+    seeds = (BuiltinSequences,)
 
     PENDING_STEP = Nudge(name, "step_to_follow", "sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` to take it up, `journal sequence next` when it is done", repeat_after=0)
     CURRENT_STEP = Nudge(name, "following_the_step", "following sequence {{n}}, step {{step}}: {{text}}", "`journal sequence next` when it is done", repeat_after=0)

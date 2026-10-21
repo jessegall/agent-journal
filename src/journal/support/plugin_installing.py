@@ -23,9 +23,9 @@ from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
 from journal.models.plugin import Plugin
 from journal.support.plugin_manifest import PluginManifest
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.dashboard_rows import DashboardRows
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.plugins import Plugins
 
 DOWNLOAD_SECONDS = 120
@@ -58,7 +58,7 @@ class PluginInstalling:
                 self.required(plugin, environment)
                 self.set_up(plugin, environment)
                 filled = self.asked(plugin, environment)
-            except Refused:
+            except Rejection:
                 self.undone(plugin, had_data)
                 raise
             settings = self.settings.started(plugin, actor)
@@ -73,13 +73,13 @@ class PluginInstalling:
         for program, need in plugin.manifest.requires.items():
             check = need.check or f"command -v {program}"
             if self.runner.shell(plugin, environment, check, STEP_SECONDS).returncode != 0:
-                raise Refused(f"{plugin.name} needs {program}, which is not here" + (f": {need.hint}" if need.hint else ""))
+                raise Rejection(f"{plugin.name} needs {program}, which is not here" + (f": {need.hint}" if need.hint else ""))
 
     def set_up(self, plugin: Plugin, environment: str) -> None:
         for step in plugin.manifest.setup:
             ran = self.runner.shell(plugin, environment, step.run, STEP_SECONDS)
             if ran.returncode != 0:
-                raise Refused(f"{plugin.name}'s setup step {step.called!r} failed, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
+                raise Rejection(f"{plugin.name}'s setup step {step.called!r} failed, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
 
     def asked(self, plugin: Plugin, environment: str) -> dict:
         command = plugin.manifest.installed
@@ -91,7 +91,7 @@ class PluginInstalling:
         except json.JSONDecodeError:
             answer = None
         if ran.returncode != 0 or not isinstance(answer, dict):
-            raise Refused(f"{plugin.name}'s installed command {command!r} did not answer with its settings as a JSON object, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
+            raise Rejection(f"{plugin.name}'s installed command {command!r} did not answer with its settings as a JSON object, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
         return answer
 
     def undone(self, plugin: Plugin, had_data: bool) -> None:
@@ -132,7 +132,7 @@ class PluginInstalling:
         try:
             self.required(upgraded, environment)
             self.set_up(upgraded, environment)
-        except Refused:
+        except Rejection:
             shutil.rmtree(target)
             kept.rename(target)
             if plugin.enabled:
@@ -182,20 +182,20 @@ class PluginInstalling:
     @staticmethod
     def same(plugin: Plugin, manifest: PluginManifest) -> PluginManifest:
         if manifest.name != plugin.name:
-            raise Refused(f"{plugin.source} now holds the plugin {manifest.name}, not {plugin.name}: install it as a plugin of its own")
+            raise Rejection(f"{plugin.source} now holds the plugin {manifest.name}, not {plugin.name}: install it as a plugin of its own")
         return manifest
 
     @staticmethod
     def only_the_user(actor: Actor, does: str) -> None:
         if actor.kind != ActorKind.USER:
-            raise Refused(f"only the user {does} a plugin: journal plugin propose <folder or git address> shows them a card to install it themselves")
+            raise Rejection(f"only the user {does} a plugin: journal plugin propose <folder or git address> shows them a card to install it themselves")
 
     def free(self, name: str) -> None:
         try:
             self.plugins.named(name)
-        except NotFound:
+        except MissingRow:
             return
-        raise Refused(f"a plugin named {name} is installed already: journal plugin upgrade {name}")
+        raise Rejection(f"a plugin named {name} is installed already: journal plugin upgrade {name}")
 
     @contextmanager
     def staged(self, source: str, ref: str | None = None) -> Iterator[tuple[Path, str]]:
@@ -212,7 +212,7 @@ class PluginInstalling:
             if fetched.returncode == 0 and ref is not None:
                 fetched = subprocess.run(["git", "-C", str(temporary / "plugin"), "checkout", "--quiet", ref], capture_output=True, text=True, timeout=DOWNLOAD_SECONDS)
             if fetched.returncode != 0:
-                raise Refused(f"could not fetch {source}{' at ' + ref if ref is not None else ''}: {fetched.stderr.strip()[-300:]}")
+                raise Rejection(f"could not fetch {source}{' at ' + ref if ref is not None else ''}: {fetched.stderr.strip()[-300:]}")
             commit = subprocess.run(["git", "-C", str(temporary / "plugin"), "rev-parse", "HEAD"], capture_output=True, text=True, timeout=DOWNLOAD_SECONDS).stdout.strip()
             yield temporary / "plugin", commit
         finally:

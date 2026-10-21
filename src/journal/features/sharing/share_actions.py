@@ -10,7 +10,7 @@ from journal.models.author import Author
 from journal.models.message import Message
 from journal.support.ref import Ref
 from journal.models.share import Share
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.messages import Messages
 from journal.repositories.shares import Shares
 
@@ -58,5 +58,5 @@ class ShareActions:
         if given in DISABLED_VALUES:
             return None
         if not re.fullmatch(r"\d+[hd]", given):
-            raise Refused("expires is a number of hours or days, like 12h or 7d, or never")
+            raise Rejection("expires is a number of hours or days, like 12h or 7d, or never")
         return datetime.now(timezone.utc) + int(given[:-1]) * SPANS[given[-1]]

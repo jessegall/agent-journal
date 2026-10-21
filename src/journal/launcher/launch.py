@@ -11,12 +11,12 @@ from pathlib import Path
 
 from journal.launcher.support.choice import Choice
 from journal.launcher.menu import Menu
-from journal.launcher.support.other_hooks import OtherHooks
+from journal.launcher.support.foreign_hooks import ForeignHooks
 from journal.launcher.support.page_wait import PageWait
 from journal.support.project_command import ProjectCommand
 from journal.launcher.support.status_line import StatusLine
 from journal.support.worktree import Worktree
-from journal.launcher.support.update_offer import UpdateOffer
+from journal.launcher.support.update_prompt import UpdatePrompt
 from journal.features.updates.support.release_source import ReleaseSource
 from journal.config import Config
 from journal.providers.claude import Claude
@@ -81,7 +81,7 @@ class Launch:
         if not sys.stdin.isatty():
             return Choice(named or "main", "", self.aside, self.is_skipping())
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
-        if not self.yes and UpdateOffer(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
+        if not self.yes and UpdatePrompt(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
             self.log("updated before the launch: starting again on the new version")
             os.execv(sys.executable, [sys.executable, *sys.argv])
         return menu.choose(self.agent, named, self.new, self.aside, self.is_skipping(), self.yes)
@@ -116,7 +116,7 @@ class Launch:
         self.log(f"launch: {' '.join([self.agent, *self.args])}")
         try:
             ProjectCommand(self.root, self.package / "journal.sh").write()
-            others = OtherHooks(self.root, self.agent)
+            others = ForeignHooks(self.root, self.agent)
             others.put_back()
             choice = self.choice()
             self.log(f"chosen: environment {choice.environment}, session {choice.resume or 'new'}, hooks aside {choice.hooks_aside}")

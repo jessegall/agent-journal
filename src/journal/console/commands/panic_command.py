@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.engine.state_machine import StateMachine
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.support.scope import Scope
 from journal.support.states_catalogue import StatesCatalogue
 from journal.support.caller import Caller
@@ -38,7 +38,7 @@ class PanicCommand(Command):
         if args.state == IDLE:
             return self.machine.reset(caller.session, self.scope.id, caller.actor, text)
         if not self.states.known(args.state):
-            raise Refused(f"no state is named {args.state}; the states are {', '.join(self.states.names())}")
+            raise Rejection(f"no state is named {args.state}; the states are {', '.join(self.states.names())}")
         return self.machine.push(caller.session, self.scope.id, self.states.named(args.state, self.values_of(args.values)), caller.actor, text)
 
     @staticmethod

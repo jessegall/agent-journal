@@ -6,7 +6,7 @@ from journal.events.rows.secret_allowed import SecretAllowed
 from journal.models.model import Model
 from journal.support.secret_field import SecretField
 from journal.models.secret_kind import SecretKind
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 
 @dataclass(frozen=True)
@@ -34,7 +34,7 @@ class Secret(Model):
     def field(self, name: str) -> SecretField:
         rows = next((SecretField.of(raw) for raw in self.fields if raw["name"] == name), None)
         if rows is None:
-            raise Refused(f"secret {self.id} has no field {name!r}; its fields are {', '.join(raw['name'] for raw in self.fields) or 'none yet'}")
+            raise Rejection(f"secret {self.id} has no field {name!r}; its fields are {', '.join(raw['name'] for raw in self.fields) or 'none yet'}")
         return rows
 
     def waiting(self) -> bool:

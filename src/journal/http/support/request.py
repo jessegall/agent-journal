@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field, replace
 
 from journal.support.actor import Actor
-from journal.support.refused import Refused
-from journal.support.not_found import NotFound
+from journal.support.rejection import Rejection
+from journal.support.missing_row import MissingRow
 
 ENVIRONMENT_HEADER = "X-Journal-Env"
 
@@ -29,7 +29,7 @@ class Request:
     def number(self, name: str) -> int:
         given = self.params.get(name, "")
         if not given.isdigit():
-            raise NotFound("rows", given or "nothing")
+            raise MissingRow("rows", given or "nothing")
         return int(given)
 
     def queried(self, name: str, default: float = 0.0) -> float:
@@ -40,5 +40,5 @@ class Request:
     def environment(self) -> str:
         named = self.headers.get(ENVIRONMENT_HEADER.lower()) or self.query.get("env")
         if not named:
-            raise Refused(f"no environment: send it in the {ENVIRONMENT_HEADER} header")
+            raise Rejection(f"no environment: send it in the {ENVIRONMENT_HEADER} header")
         return named

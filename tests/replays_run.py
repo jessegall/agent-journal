@@ -10,7 +10,7 @@ from journal.app import App
 from journal.config import Config
 from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
-from journal.features.questions.support.answering import Answering
+from journal.features.questions.support.answer_delivery import AnswerDelivery
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.message import Message
 from journal.support.actor import Actor
@@ -326,7 +326,7 @@ def the_phone_talks(app, replay: Replay, provider: str) -> None:
     console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     hook_as(app, provider, "Stop")
     replay.step("waiting on the question")
-    app.container.get(Answering).answer(app.container.get(Questions).find(1), "blue", phone)
+    app.container.get(AnswerDelivery).answer(app.container.get(Questions).find(1), "blue", phone)
     app.runtime().deferred.drain()
     replay.step("the phone answers")
 

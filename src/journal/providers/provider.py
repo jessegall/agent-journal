@@ -19,7 +19,7 @@ from journal.support.file_lines import FileLines
 from journal.support.tool_input import ToolInput
 from journal.events.agent.message_crossed import MessageCrossed
 from journal.providers.support.turn import Turn
-from journal.providers.support.written import Written
+from journal.providers.support.file_writes import FileWrites
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
@@ -75,10 +75,10 @@ class Provider:
     def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
         return []
 
-    def texts_written_before(self, project: Path, session: str, read: int, until: float) -> Written:
+    def texts_written_before(self, project: Path, session: str, read: int, until: float) -> FileWrites:
         path = self.transcript(project, session)
         if path is None or read < 0:
-            return Written([], [], read)
+            return FileWrites([], [], read)
         with path.open("rb") as file:
             file.seek(read)
             raw = file.read()
@@ -91,13 +91,13 @@ class Provider:
             time += len(line)
         return self.written_in(rows, time)
 
-    def texts_written(self, project: Path, session: str, read: int) -> Written:
+    def texts_written(self, project: Path, session: str, read: int) -> FileWrites:
         path = self.transcript(project, session)
         if path is None:
-            return Written([], [], read)
+            return FileWrites([], [], read)
         size = path.stat().st_size
         if read > size:
-            return Written([], [], size)
+            return FileWrites([], [], size)
         if read < 0:
             read = self.last_line_start(path, size)
         with path.open("rb") as file:
@@ -107,8 +107,8 @@ class Provider:
         lines = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
         return self.written_in(lines, read + whole)
 
-    def written_in(self, rows: list[dict], time: int) -> Written:
-        return Written([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.crossed_in(row)], time)
+    def written_in(self, rows: list[dict], time: int) -> FileWrites:
+        return FileWrites([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.crossed_in(row)], time)
 
     def texts_in(self, line: dict) -> list[str]:
         return []

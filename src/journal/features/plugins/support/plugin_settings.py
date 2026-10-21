@@ -7,7 +7,7 @@ from journal.support.actor_kind import ActorKind
 from journal.models.plugin import Plugin
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.plugins import Plugins
 from journal.repositories.secrets import Secrets
 from journal.support.secret_values import SecretValues
@@ -38,29 +38,29 @@ class PluginSettings:
 
     def configure(self, name: str, key: str, value: str, actor: Actor) -> Plugin:
         if actor.kind != ActorKind.USER:
-            raise Refused("only the user configures a plugin")
+            raise Rejection("only the user configures a plugin")
         plugin = self.plugins.named(name)
         setting = next((s for s in self.schema(plugin) if s.key == key), None)
         if setting is None:
-            raise Refused(f"{name} has no setting {key}: it has {', '.join(s.key for s in self.schema(plugin)) or 'none'}")
+            raise Rejection(f"{name} has no setting {key}: it has {', '.join(s.key for s in self.schema(plugin)) or 'none'}")
         return self.plugins.save(plugin.with_(settings={**plugin.settings, key: self.parsed(setting, value)}), actor)
 
     @staticmethod
     def parsed(setting: PluginSetting, value: str) -> object:
         kind = setting.kind
         if setting.is_secret:
-            raise Refused(f"{setting.key} is a secret: the user fills it on the Secrets page, never through a command")
+            raise Rejection(f"{setting.key} is a secret: the user fills it on the Secrets page, never through a command")
         if kind == "number":
             try:
                 return float(value) if "." in value else int(value)
             except ValueError:
-                raise Refused(f"{setting.key} is a number; {value!r} is not") from None
+                raise Rejection(f"{setting.key} is a number; {value!r} is not") from None
         if kind == "flag":
             if value.lower() not in FLAGS:
-                raise Refused(f"{setting.key} is on or off; {value!r} is neither")
+                raise Rejection(f"{setting.key} is on or off; {value!r} is neither")
             return FLAGS[value.lower()]
         if kind == "choice" and value not in setting.choices:
-            raise Refused(f"{setting.key} is one of {', '.join(setting.choices)}")
+            raise Rejection(f"{setting.key} is one of {', '.join(setting.choices)}")
         if kind == "list":
             return [item.strip() for item in value.split(",") if item.strip()]
         return value

@@ -14,7 +14,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.events.bus import Bus
 from journal.support.decision import Decision
-from journal.support.deferred import Deferred
+from journal.support.listener_queue import ListenerQueue
 from journal.repositories.entries import Entries
 from journal.support.scope import Scope
 
@@ -41,12 +41,12 @@ class Noted(AgentListener[ToolStarting]):
 @pytest.fixture
 def app(journal_root: Path):
     app = App(Config(journal_root, port=0))
-    app.container.get(Deferred).start()
+    app.container.get(ListenerQueue).start()
     app.server().start()
     with app.container.get(Scope).of(MAIN):
         yield app
     app.server().stop()
-    app.container.get(Deferred).stop()
+    app.container.get(ListenerQueue).stop()
 
 
 def post_hook(app, body: dict, started_ms: int = 0):
@@ -92,9 +92,9 @@ def test_every_hook_kind_translates(app):
 
 
 def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
-    from journal.support.deferred import Deferred
+    from journal.support.listener_queue import ListenerQueue
     ran = []
-    deferred = Deferred()
+    deferred = ListenerQueue()
     deferred.start()
     deferred.add(lambda: 1 / 0)
     deferred.add(lambda: ran.append("after"))
@@ -185,7 +185,7 @@ def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app):
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 100)
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 300)
     settled = threading.Event()
-    app.container.get(Deferred).add(settled.set)
+    app.container.get(ListenerQueue).add(settled.set)
     assert settled.wait(5), "the deferred work ran"
     kept = app.container.get(Statistics).under("developer.hooks")
     assert kept["developer.hooks.count"] == 2 and kept["developer.hooks.total_ms"] >= 400 and kept["developer.hooks.slowest_ms"] >= 300, kept

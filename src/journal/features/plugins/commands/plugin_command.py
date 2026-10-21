@@ -8,7 +8,7 @@ from journal.support.plugin_installing import PluginInstalling
 from journal.features.plugins.support.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
 from journal.support.scope import Scope
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 STEP_DESCRIPTIONS = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill"}
 
@@ -58,7 +58,7 @@ class PluginCommand(Command):
 
     def propose(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.preview(args.source)
-        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=caller.actor, shows=ChatMark.PLUGINS)
+        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=caller.actor, shows=CardKind.PLUGINS)
         print(f"proposed {preview.name}: the user installs it if they want it")
         return 0
 

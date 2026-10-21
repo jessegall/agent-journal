@@ -8,7 +8,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.features.workers.support.worker_runner import WorkerRunner
-from journal.support.deferred import Deferred
+from journal.support.listener_queue import ListenerQueue
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.models.task import Task
@@ -46,8 +46,8 @@ def with_echo(app, replay: Replay, provider: str) -> None:
     replay.step("a forbidden read", hook_as(app, provider, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[1])
     replay.step("a prompt", hook_as(app, provider, "UserPromptSubmit", prompt="hello")[1])
     app.container.get(Tasks).save(Task(environment_id=1, title="echo me"), Actor.user(1))
-    app.container.get(Deferred).drain()
-    app.container.get(Deferred).drain()
+    app.container.get(ListenerQueue).drain()
+    app.container.get(ListenerQueue).drain()
     replay.step("a task is made")
 
 

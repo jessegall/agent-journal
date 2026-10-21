@@ -3,17 +3,17 @@ from argparse import Namespace
 
 from journal.repositories.setting_rows import SettingRows
 from journal.features.workers.support.worker_branch import WorkerBranch
-from journal.support.worktree_not_made import WorktreeNotMade
+from journal.support.worktree_failure import WorktreeFailure
 from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.support.profile_files import ProfileFiles
 from journal.features.workers.support.worker_reports import WorkerReports
-from journal.features.workers.support.named_paths import NamedPaths
+from journal.features.workers.support.path_mentions import PathMentions
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
 from journal.support.scope import Scope
@@ -55,23 +55,23 @@ class WorkerCommand(Command):
 
     def dispatch(self, args: Namespace, caller: Caller) -> int:
         if self.profiles.kind_of(args.profile) != "worker":
-            raise Refused(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
+            raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
         out = [w for w in self.workers.in_() if w.is_out()]
         most = int(self.settings.option(Feature.WORKER_LIMIT))
         if most and len(out) >= most:
-            raise Refused(Feature.WORKER_OVERFLOW.create(out=len(out)).rendered())
+            raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(out)).rendered())
         knowing = [] if args.fresh else self.knowing(args.brief)
         if knowing:
-            raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
+            raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         provider = args.provider or self.own_provider(caller)
         worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model_of(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatched_by=caller.session)
         worker = self.workers.save(worker, caller.actor)
         try:
             self.runner.workplace(worker)
-        except WorktreeNotMade as failed:
+        except WorktreeFailure as failed:
             self.workers.delete(worker, caller.actor)
-            raise Refused(f"worker {worker.name} was not dispatched: {failed}") from failed
+            raise Rejection(f"worker {worker.name} was not dispatched: {failed}") from failed
         if args.task:
             self.workers.put_on(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
@@ -90,17 +90,17 @@ class WorkerCommand(Command):
         return 0
 
     def knowing(self, brief: str) -> list[Worker]:
-        named = NamedPaths.of(brief)
-        return [w for w in reversed(self.workers.in_()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & NamedPaths.of(w.brief)]
+        named = PathMentions.of(brief)
+        return [w for w in reversed(self.workers.in_()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & PathMentions.of(w.brief)]
 
     def say(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
         if worker.state == WorkerState.DISPATCHED:
-            raise Refused(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
+            raise Rejection(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
         if not worker.resume:
-            raise Refused(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
+            raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
         if self.providers.named(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
-            raise Refused(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
+            raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
         worker = self.workers.save(worker.told(args.brief).with_(dispatched_by=caller.session), caller.actor)
         if args.task:
             self.workers.put_on(worker, args.task, caller.actor)

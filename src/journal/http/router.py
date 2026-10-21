@@ -3,19 +3,19 @@ from urllib.parse import unquote
 
 from journal.support.slow_requests import SlowRequests
 
-from journal.support.refused import Refused
-from journal.support.not_found import NotFound
+from journal.support.rejection import Rejection
+from journal.support.missing_row import MissingRow
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.http.support.route import Handler, Route
-from journal.http.support.viewer_seen import ViewerSeen
+from journal.http.support.viewer_presence import ViewerPresence
 from journal.support.scope import Scope
 
 
 class Router:
     """Finds the route a request takes and answers it inside the environment the request names."""
 
-    def __init__(self, scope: Scope, seen: ViewerSeen, slow: SlowRequests) -> None:
+    def __init__(self, scope: Scope, seen: ViewerPresence, slow: SlowRequests) -> None:
         self.scope, self.seen, self.slow = scope, seen, slow
         self.routes: list[Route] = []
 
@@ -43,7 +43,7 @@ class Router:
                 if not route.outward:
                     self.slow.measured(request.method, request.measured_path(), (time.perf_counter() - began) * 1000)
                 return answer
-        except Refused as refused:
+        except Rejection as refused:
             return Response.refused(str(refused))
-        except NotFound as missing:
+        except MissingRow as missing:
             return Response.missing(missing)

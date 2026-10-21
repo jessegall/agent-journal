@@ -8,11 +8,11 @@ import subprocess
 from pathlib import Path
 from urllib.request import urlopen
 
-from journal.support.kept_answer import KeptAnswer
+from journal.support.cached_answer import CachedAnswer
 from journal.features.sharing.support.tunler_login import TunlerLogin
 from journal.features.sharing.support.tunler_status import TunlerStatus
 from journal.features.sharing.support.tunler_version import TunlerVersion
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 TUNLER_PATHS = (Path("/opt/homebrew/bin/tunler"), Path("/usr/local/bin/tunler"))
 STATUS_SECONDS = 5
@@ -32,9 +32,9 @@ class Tunler:
     """The tunler program on this machine, which gives the journal its web address: its status, its version and the domains its account holds, each asked at most once a minute, and its login."""
 
     def __init__(self) -> None:
-        self._status = KeptAnswer(lambda: self.asked(), STATUS_CACHE_SECONDS, TunlerStatus(installed=False))
-        self._domains: KeptAnswer[list[str]] = KeptAnswer(lambda: self.asked_domains(), LIST_CACHE_SECONDS, [])
-        self._versions: dict[str, KeptAnswer[TunlerVersion]] = {}
+        self._status = CachedAnswer(lambda: self.asked(), STATUS_CACHE_SECONDS, TunlerStatus(installed=False))
+        self._domains: CachedAnswer[list[str]] = CachedAnswer(lambda: self.asked_domains(), LIST_CACHE_SECONDS, [])
+        self._versions: dict[str, CachedAnswer[TunlerVersion]] = {}
 
     def command(self) -> str:
         return shutil.which("tunler") or next((str(path) for path in (self.local(), Path.home() / "go" / "bin" / "tunler", *TUNLER_PATHS) if path.is_file()), "")
@@ -102,10 +102,10 @@ class Tunler:
         ok, output = self.told("logout")
         self.forget()
         if not ok:
-            raise Refused(output or "tunler did not log out")
+            raise Rejection(output or "tunler did not log out")
 
     def versions(self, host: str) -> TunlerVersion:
-        return self._versions.setdefault(host, KeptAnswer(lambda: self.asked_versions(host), LIST_CACHE_SECONDS, TunlerVersion("", "", False))).given()
+        return self._versions.setdefault(host, CachedAnswer(lambda: self.asked_versions(host), LIST_CACHE_SECONDS, TunlerVersion("", "", False))).given()
 
     def asked_versions(self, host: str) -> TunlerVersion:
         ok, output = self.told("update", "--check", "--json", f"--host={host}")
@@ -134,7 +134,7 @@ class Tunler:
         ok, output = self.told("update")
         self.forget()
         if not ok:
-            raise Refused(output or "tunler did not update")
+            raise Rejection(output or "tunler did not update")
         return output.splitlines()[-1] if output else "tunler is up to date"
 
     def domains(self) -> list[str]:
@@ -168,12 +168,12 @@ class Tunler:
         except OSError as error:
             if not isinstance(getattr(error, "reason", error), ssl.SSLCertVerificationError):
                 part.unlink(missing_ok=True)
-                raise Refused(f"tunler could not be downloaded from {host}: {error}") from error
+                raise Rejection(f"tunler could not be downloaded from {host}: {error}") from error
         curl = shutil.which("curl")
         done = self.ran([curl, "-fsSL", "-o", str(part), url], DOWNLOAD_SECONDS) if curl else None
         if not done or done.returncode:
             part.unlink(missing_ok=True)
-            raise Refused(CERTIFICATES)
+            raise Rejection(CERTIFICATES)
 
     def verified(self, binary: Path) -> str:
         done = self.ran([str(binary), "version"], STATUS_SECONDS)
@@ -183,7 +183,7 @@ class Tunler:
         if done and done.returncode == 0 and done.stdout.startswith("tunler "):
             return done.stdout.split()[-1]
         binary.unlink(missing_ok=True)
-        raise Refused(BLOCKED if done and done.returncode == KILLED else BROKEN_TUNLER)
+        raise Rejection(BLOCKED if done and done.returncode == KILLED else BROKEN_TUNLER)
 
     def told(self, *text: str, hidden: dict | None = None) -> tuple[bool, str]:
         command = self.command()

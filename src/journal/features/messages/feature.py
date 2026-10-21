@@ -3,14 +3,14 @@ from journal.features.messages.support.messages_data_reader import MessagesDataR
 from journal.features.messages.support.messages_conduct import MessagesConduct
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
 from journal.features.messages.listeners.record_peer_message import RecordPeerMessage
-from journal.features.messages.listeners.record_sent_message import RecordSentMessage
-from journal.features.messages.listeners.sweep_transcripts import SweepTranscripts
+from journal.features.messages.listeners.outgoing_message_record import OutgoingMessageRecord
+from journal.features.messages.listeners.transcript_scan import TranscriptScan
 from journal.features.messages.commands.message_command import MessageCommand
 from journal.features.messages.listeners.deliver_message import DeliverMessage
-from journal.features.messages.listeners.deliver_unread_at_start import DeliverUnreadAtStart
-from journal.features.messages.listeners.link_named_tasks import LinkNamedTasks
-from journal.features.messages.listeners.mark_filed import MarkFiled
-from journal.features.messages.listeners.mark_inbox_arrival import MarkInboxArrival
+from journal.features.messages.listeners.start_inbox_delivery import StartInboxDelivery
+from journal.features.messages.listeners.task_mention_links import TaskMentionLinks
+from journal.features.messages.listeners.dump_item_card import DumpItemCard
+from journal.features.messages.listeners.inbox_arrival_card import InboxArrivalCard
 from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.run_tags import RunTags
 from journal.engine.nudge import Nudge
@@ -29,7 +29,7 @@ class Messages(Feature):
     REMINDER_INTERVAL = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between reminders of messages the agent has not read", 3, unit="tool uses")
     EDIT_BLOCK_LIMIT = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
     options = (ANSWER_REQUEST_LIMIT, TOOL_BLOCK_LIMIT, REMINDER_INTERVAL, EDIT_BLOCK_LIMIT, TRANSCRIPT_SCAN_DELAY)
-    listeners = (MarkInboxArrival, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RecordTurn, RunTags, LinkNamedTasks, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
+    listeners = (InboxArrivalCard, TranscriptScan, RecordTypedPrompt, RecordPeerMessage, OutgoingMessageRecord, RecordTurn, RunTags, TaskMentionLinks, DumpItemCard, DeliverMessage, StartInboxDelivery)
     data = (MessagesDataReader,)
     conduct = (MessagesConduct,)
 

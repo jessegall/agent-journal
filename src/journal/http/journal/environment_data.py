@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.http.journal.held_task import HeldTask
+from journal.http.journal.task_block import TaskBlock
 from journal.models.environment import Environment
 
 
@@ -10,7 +10,7 @@ class EnvironmentData:
 
     environment: Environment
     agent: dict | None
-    task: HeldTask | None
+    task: TaskBlock | None
     questions: int
     messages: int
     tasks: int

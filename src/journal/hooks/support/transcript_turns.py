@@ -4,7 +4,7 @@ from journal.config import Config
 from journal.engine.clock import Clock
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.turn_written import TurnWritten
-from journal.providers.support.written import Written
+from journal.providers.support.file_writes import FileWrites
 from journal.support.context_file import ContextFile
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
@@ -31,7 +31,7 @@ class TranscriptTurns:
         turns = [TurnWritten(text=text, delta=text, turn_id=f"transcript:{hook.session}:{i}", final=True) for i, text in enumerate(written.texts)]
         return [event.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.now(), hook.subagent) for event in [*written.crossed, *turns]]
 
-    def missed(self, session: str, provider: str, until: float) -> Written:
+    def missed(self, session: str, provider: str, until: float) -> FileWrites:
         with self._reading:
             written = self.providers.named(provider).texts_written_before(self.config.root, session, self._read.get(session, START_POSITION), until)
             self._read[session] = written.time

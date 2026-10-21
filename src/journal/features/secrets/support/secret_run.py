@@ -10,7 +10,7 @@ from journal.support.output_mask import OutputMask
 from journal.features.secrets.support.programs import Programs
 from journal.models.secret import Secret
 from journal.support.secret_field import SecretField
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.mcp_servers import McpServers
 from journal.support.secret_values import SecretValues
 
@@ -30,11 +30,11 @@ class SecretRun:
         fields = [SecretField.of(raw) for raw in secret.fields]
         keys = {s.key_var for s in self.servers.all() if s.needs_key}
         if any(f.variable in keys for f in fields):
-            raise Refused(f"{secret.title} is the key of an MCP server, which only the journal itself uses: no program is given it")
+            raise Rejection(f"{secret.title} is the key of an MCP server, which only the journal itself uses: no program is given it")
         values = self.values.values()
         missing = [f.name for f in fields if f.variable not in values]
         if missing:
-            raise Refused(f"secret {secret.id}, {secret.title}, has no value for {', '.join(missing)} on this machine: ask the user with `journal secret request`, and they fill it on the Secrets page")
+            raise Rejection(f"secret {secret.id}, {secret.title}, has no value for {', '.join(missing)} on this machine: ask the user with `journal secret request`, and they fill it on the Secrets page")
         by_name = {f.name: values[f.variable] for f in fields}
         given = PLACEHOLDER.sub(lambda rows: by_name.get(rows[1], rows[0]), template) if template else next((values[f.variable] for f in fields if f.hidden), "")
         mask = OutputMask({values[f.variable]: f.variable for f in fields if f.hidden})
@@ -50,17 +50,17 @@ class SecretRun:
 
     def program(self, secret: Secret, command: list[str]) -> str:
         if not command:
-            raise Refused("name the program after --, such as `journal secret run github -- gh api user`")
+            raise Rejection("name the program after --, such as `journal secret run github -- gh api user`")
         name = command[0]
         if "/" in name:
-            raise Refused(f"name the program bare, as {Path(name).name}: a path could be a file of anyone's making")
+            raise Rejection(f"name the program bare, as {Path(name).name}: a path could be a file of anyone's making")
         if Programs.never_given(name):
-            raise Refused(f"a secret is never given to {name}: name the program that uses it directly, such as curl or gh")
+            raise Rejection(f"a secret is never given to {name}: name the program that uses it directly, such as curl or gh")
         if name not in secret.programs:
-            raise Refused(f"{name} is not among the programs secret {secret.id} may go to ({', '.join(secret.programs) or 'none yet'}): propose it with `journal secret propose {secret.id} {name}`, and the user allows it on the Secrets page")
+            raise Rejection(f"{name} is not among the programs secret {secret.id} may go to ({', '.join(secret.programs) or 'none yet'}): propose it with `journal secret propose {secret.id} {name}`, and the user allows it on the Secrets page")
         rows = shutil.which(name, path=self.search_path())
         if rows is None:
-            raise Refused(f"no program {name} on this machine")
+            raise Rejection(f"no program {name} on this machine")
         return rows
 
     def search_path(self) -> str:

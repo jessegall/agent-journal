@@ -12,7 +12,7 @@ from journal.http.transcripts.transcript_turns import TranscriptTurns
 from journal.providers.provider import Provider
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.workers import Workers
 
 
@@ -31,7 +31,7 @@ class TranscriptController:
     def of_subagent(self, request: Request) -> Response:
         agent, id = self.agents.find(request.number("id")), request.params["session"]
         if not any(row.session == id for row in self.subagents.rows(agent.session)):
-            raise NotFound("subagent sessions", id)
+            raise MissingRow("subagent sessions", id)
         provider = self.providers.named(agent.provider or "claude")
         return self.answer(request, provider, provider.subagent_transcript(self.config.root, agent.session, id))
 

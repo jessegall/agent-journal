@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 from journal.support.kept_tips import TIPS_REF
-from journal.support.worktree_not_made import WorktreeNotMade
+from journal.support.worktree_failure import WorktreeFailure
 
 GIT_SECONDS = 60
 JOURNAL = ".journal"
@@ -63,7 +63,7 @@ class Worktree:
             self.git("worktree", "prune")
             if self.path.exists():
                 self.moved_aside()
-            raise WorktreeNotMade(self.name, added.stderr.strip())
+            raise WorktreeFailure(self.name, added.stderr.strip())
 
     def dropped(self) -> str:
         if not self.path.is_dir():

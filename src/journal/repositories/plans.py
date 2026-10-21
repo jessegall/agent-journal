@@ -5,7 +5,7 @@ from journal.support.actor import Actor
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
@@ -33,7 +33,7 @@ class Plans(ScopedRepository[Plan]):
 
     def approve(self, plan: Plan, actor: Actor) -> Plan:
         if plan.state == PlanState.REVIEWING:
-            raise Refused(f"plan {plan.id} is in review: it can be approved once its reviewers are back and their findings are in it")
+            raise Rejection(f"plan {plan.id} is in review: it can be approved once its reviewers are back and their findings are in it")
         if plan.state in (PlanState.STARTED, PlanState.FINISHED, PlanState.CANCELLED):
             return plan
         return self.save(plan.approved(self._now().timestamp(), actor.is_the_user()), actor)

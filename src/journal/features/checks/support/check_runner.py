@@ -17,7 +17,7 @@ from journal.support.check_report import CheckReport
 from journal.engine.states.ended import Ended
 from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 TIMEOUT = 600
 TAIL = 20
@@ -55,7 +55,7 @@ class CheckRunner:
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
         for agent in self.agents.everywhere():
             if agent.state != Ended.name:
-                self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{ran.id}", shows=ChatMark.CHECKS)
+                self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{ran.id}", shows=CardKind.CHECKS)
         return ran
 
     def executed(self, check: Check, report: Path, actor: Actor) -> FinishedRun:

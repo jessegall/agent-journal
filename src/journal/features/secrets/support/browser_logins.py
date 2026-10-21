@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.support.secret_values import SecretValues
 
 PLAYWRIGHT = "playwright@1.63.0"
@@ -35,14 +35,14 @@ class BrowserLogins:
 
     def record(self, title: str, url: str) -> Path:
         if shutil.which(OPEN_BROWSER[0]) is None:
-            raise Refused("logging in needs npx, which comes with Node.js, on this machine")
+            raise Rejection("logging in needs npx, which comes with Node.js, on this machine")
         self.folder.mkdir(mode=0o700, parents=True, exist_ok=True)
         saved = self.saved_for(title)
         subprocess.run(INSTALL_BROWSER, check=False, capture_output=True, timeout=WINDOW)
         opened = subprocess.run([*OPEN_BROWSER, f"--save-storage={saved}", url], check=False, capture_output=True, text=True, timeout=WINDOW)
         if not saved.is_file():
             errors = [line.strip() for line in opened.stderr.splitlines() if line.strip()]
-            raise Refused(f"no login was saved: {errors[0] if errors else 'log in in the browser that opens, then close its window'}")
+            raise Rejection(f"no login was saved: {errors[0] if errors else 'log in in the browser that opens, then close its window'}")
         saved.chmod(0o600)
         return saved
 

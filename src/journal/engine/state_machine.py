@@ -3,10 +3,10 @@ from journal.engine.support.typist import Typist
 from journal.engine.nudger import Nudger
 from journal.engine.support.settings import Settings
 from journal.repositories.setting_rows import SettingRows
-from journal.support.features_known import FeaturesKnown
+from journal.support.feature_registry import FeatureRegistry
 from journal.engine.states.ended import Ended
-from journal.engine.support.hooked import Hooked
-from journal.engine.support.held import Held
+from journal.engine.support.machine_answer import MachineAnswer
+from journal.engine.support.block import Block
 from journal.engine.support.stack import Stack
 from journal.engine.support.data_readers import DataReaders
 from journal.events.feature_data import FeatureData
@@ -22,11 +22,11 @@ from journal.events.agent_listener import AgentListener
 from journal.support.decision import Decision
 from journal.support.actor import Actor
 from journal.models.agent import Agent
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
-from journal.engine.support.trail import Trail
-from journal.support.not_found import NotFound
+from journal.engine.support.stack_history import StackHistory
+from journal.support.missing_row import MissingRow
 
 
 MOVED = "a feature moved the agent"
@@ -37,7 +37,7 @@ class StateMachine(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeaturesKnown, scope: Scope, supervisor: SupervisorLink, entries: Entries, readers: DataReaders) -> None:
+    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeatureRegistry, scope: Scope, supervisor: SupervisorLink, entries: Entries, readers: DataReaders) -> None:
         self.agents, self.states, self.nudger, self.bus = agents, states, nudger, bus
         self.settings, self.features, self.scope, self.supervisor, self.entries, self.readers = settings, features, scope, supervisor, entries, readers
 
@@ -64,7 +64,7 @@ class StateMachine(AgentListener[AgentEvent]):
         transition = stack.top().on(event, settings)
         hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings, event.data)
         if transition.dropped:
-            self.entries.save(Trail.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
+            self.entries.save(StackHistory.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
         agent = self._settle(agent, hooked, event.key, Actor.system())
         lines = [line for nudge in (*transition.nudges, *hooked.nudges) if (line := self.nudger.say(agent, nudge))]
         typed = [line for nudge in transition.typed if (line := self.nudger.say(agent, nudge))]
@@ -83,7 +83,7 @@ class StateMachine(AgentListener[AgentEvent]):
         hooked = self.through_hooks(self.states.stack_of(agent), self.placed(self.states.stack_of(agent), to), self.taken(), self.read_for(agent))
         settled = self._settle(agent, hooked, MOVED, Actor.system())
         if hooked.held:
-            raise Refused(hooked.held.nudge.rendered())
+            raise Rejection(hooked.held.nudge.rendered())
         for line in [line for nudge in hooked.nudges if (line := self.nudger.say(settled, nudge))]:
             self.supervisor.type(environment_id, line)
         return settled
@@ -104,7 +104,7 @@ class StateMachine(AgentListener[AgentEvent]):
         hooked = self.through_hooks(self.states.stack_of(agent), after, self.taken(), self.read_for(agent))
         settled = self._settle(agent, hooked, text, actor)
         if hooked.held:
-            raise Refused(hooked.held.nudge.rendered())
+            raise Rejection(hooked.held.nudge.rendered())
         for line in [line for nudge in hooked.nudges if (line := self.nudger.say(settled, nudge))]:
             self.supervisor.type(agent.environment_id, line)
         return settled
@@ -116,29 +116,29 @@ class StateMachine(AgentListener[AgentEvent]):
         with self.scope.of(agent.environment_id):
             return self.readers.for_agent(agent)
 
-    def through_hooks(self, before: Stack, after: Stack, settings: SettingRows, data: FeatureData) -> Hooked:
+    def through_hooks(self, before: Stack, after: Stack, settings: SettingRows, data: FeatureData) -> MachineAnswer:
         if after.states[:-1] == before.states and len(after.states) == len(before.states) + 1:
             return self.pushed_through(before, after, settings)
         if after == before.popped() and len(before.states) > 1:
             return self.popped_through(before, after, settings, data)
-        return Hooked(after)
+        return MachineAnswer(after)
 
-    def pushed_through(self, before: Stack, after: Stack, settings: SettingRows) -> Hooked:
+    def pushed_through(self, before: Stack, after: Stack, settings: SettingRows) -> MachineAnswer:
         suspended = before.top().on_suspend(settings)
         pushed = after.top().on_push(settings)
-        if isinstance(pushed, Held):
-            return Hooked(before, held=pushed, refused=after.top().name)
-        return Hooked(after, (*suspended, *pushed))
+        if isinstance(pushed, Block):
+            return MachineAnswer(before, held=pushed, refused=after.top().name)
+        return MachineAnswer(after, (*suspended, *pushed))
 
-    def popped_through(self, before: Stack, after: Stack, settings: SettingRows, data: FeatureData) -> Hooked:
+    def popped_through(self, before: Stack, after: Stack, settings: SettingRows, data: FeatureData) -> MachineAnswer:
         popped = before.top().on_pop(settings)
         resumed = after.top().on_resume(data, settings)
         if not isinstance(resumed, Transition):
-            return Hooked(after, (*popped, *resumed))
+            return MachineAnswer(after, (*popped, *resumed))
         if resumed.popped and len(after.states) > 1:
             beneath = self.popped_through(after, after.popped(), settings, data)
-            return Hooked(beneath.stack, (*popped, *resumed.nudges, *beneath.nudges))
-        return Hooked(after.with_top(resumed.to), (*popped, *resumed.nudges))
+            return MachineAnswer(beneath.stack, (*popped, *resumed.nudges, *beneath.nudges))
+        return MachineAnswer(after.with_top(resumed.to), (*popped, *resumed.nudges))
 
     def moved(self, stack: Stack, transition: Transition) -> Stack:
         if transition.pushed:
@@ -158,10 +158,10 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def agent(self, session: str, environment_id: int, provider: str = "") -> Agent:
         if not session:
-            raise Refused("no agent runs this, so there is no agent to move: only an agent's own session can")
+            raise Rejection("no agent runs this, so there is no agent to move: only an agent's own session can")
         try:
             return self.agents.for_session(session)
-        except NotFound:
+        except MissingRow:
             first = self.states.first()
             return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.to_data()), Actor.system())
 
@@ -176,13 +176,13 @@ class StateMachine(AgentListener[AgentEvent]):
             if type(state) not in kinds_before:
                 state.on_enter(typist)
 
-    def _settle(self, agent: Agent, hooked: Hooked, cause: str, actor: Actor) -> Agent:
+    def _settle(self, agent: Agent, hooked: MachineAnswer, cause: str, actor: Actor) -> Agent:
         stack, to = hooked.stack, hooked.stack.top()
         if hooked.held:
-            self.entries.save(Trail.entry(agent, list(agent.stack), cause, actor, refused=hooked.refused, line=hooked.held.nudge.rendered()), actor)
+            self.entries.save(StackHistory.entry(agent, list(agent.stack), cause, actor, refused=hooked.refused, line=hooked.held.nudge.rendered()), actor)
         if to.name == agent.state and to.to_data() == agent.data and stack.to_data() == list(agent.stack):
             return agent
         self.entered_and_left(agent, stack)
         settled = self.agents.save(agent.with_(state=to.name, data=to.to_data(), stack=tuple(stack.to_data())), actor)
-        self.entries.save(Trail.entry(agent, stack.to_data(), cause, actor), actor)
+        self.entries.save(StackHistory.entry(agent, stack.to_data(), cause, actor), actor)
         return settled

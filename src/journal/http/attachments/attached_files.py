@@ -3,8 +3,8 @@ from urllib.parse import quote
 
 from journal.http.attachments.attached_file import AttachedFile
 from journal.http.attachments.attachments import Attachments
-from journal.http.attachments.files_asked import FilesAsked
-from journal.http.attachments.files_shown import FilesShown
+from journal.http.attachments.file_request import FileRequest
+from journal.http.attachments.file_view import FileView
 from journal.models.message import Message
 from journal.support.ref import Ref
 from journal.repositories.messages import Messages
@@ -18,12 +18,12 @@ class AttachedFiles:
     def __init__(self, messages: Messages, attachments: Attachments) -> None:
         self.messages, self.attachments = messages, attachments
 
-    def page(self, asked: FilesAsked) -> FilesShown:
+    def page(self, asked: FileRequest) -> FileView:
         every = sorted((f for m in self.messages.in_() for f in self.of(m)), key=lambda f: -f.time)
         rows = [f for f in every if asked.holds(f)]
         shelves = {Message.table(): len(every)} if every else {}
         images = sum(f.image for f in every)
-        return FilesShown(files=rows[asked.skip:asked.skip + asked.last], more=len(rows) > asked.skip + asked.last, total=len(rows),
+        return FileView(files=rows[asked.skip:asked.skip + asked.last], more=len(rows) > asked.skip + asked.last, total=len(rows),
                           counts={"all": len(every), "images": images, "other": len(every) - images, "shelves": shelves})
 
     def of(self, message: Message) -> list[AttachedFile]:

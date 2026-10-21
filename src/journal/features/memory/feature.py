@@ -1,16 +1,16 @@
 from journal.features.feature import Feature
-from journal.features.memory.listeners.memory_at_start import MemoryAtStart
-from journal.features.memory.listeners.mark_whispered import MarkWhispered
-from journal.features.memory.listeners.take_the_mark import TakeTheMark
+from journal.features.memory.listeners.start_memory import StartMemory
+from journal.features.memory.listeners.memory_hint_card import MemoryHintCard
+from journal.features.memory.listeners.context_threshold_check import ContextThresholdCheck
 from journal.features.memory.support.memory_conduct import MemoryConduct
 from journal.features.memory.support.memory_data_reader import MemoryDataReader
 from journal.features.memory.commands.fact_command import FactCommand
-from journal.features.memory.commands.nothing_command import NothingCommand
+from journal.features.memory.commands.memory_skip_command import MemorySkipCommand
 from journal.features.memory.commands.reminder_command import ReminderCommand
 from journal.features.memory.commands.rule_command import RuleCommand
-from journal.features.memory.listeners.mark_compacted import MarkCompacted
-from journal.features.memory.listeners.mark_memory_row_made import MarkMemoryRowMade
-from journal.features.memory.listeners.mark_memory_row_struck import MarkMemoryRowStruck
+from journal.features.memory.listeners.compaction_card import CompactionCard
+from journal.features.memory.listeners.memory_row_card import MemoryRowCard
+from journal.features.memory.listeners.memory_strike_card import MemoryStrikeCard
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
@@ -24,9 +24,9 @@ class Memory(Feature):
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
     conduct = (MemoryConduct,)
-    listeners = (TakeTheMark, MarkWhispered, MarkCompacted, MarkMemoryRowMade, MarkMemoryRowStruck, MemoryAtStart)
+    listeners = (ContextThresholdCheck, MemoryHintCard, CompactionCard, MemoryRowCard, MemoryStrikeCard, StartMemory)
     data = (MemoryDataReader,)
-    commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
+    commands = (FactCommand, RuleCommand, ReminderCommand, MemorySkipCommand)
 
     CONTEXT_THRESHOLDS = (25, 50, 80)
 

@@ -6,7 +6,7 @@ from journal.support.ref import Ref
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.links import Links
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
@@ -27,7 +27,7 @@ class Workers(ScopedRepository[Worker]):
     def put_on(self, worker: Worker, task: int, actor: Actor) -> None:
         target = Ref("tasks", task)
         if not self.links.is_row(target):
-            raise NotFound("tasks", task)
+            raise MissingRow("tasks", task)
         self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKER_LINK), actor)
 
     def holding(self, task_ids: set[int]) -> dict[int, Worker]:

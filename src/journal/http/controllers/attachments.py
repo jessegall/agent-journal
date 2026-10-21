@@ -1,6 +1,6 @@
 from journal.http.attachments.attached_files import AttachedFiles
 from journal.http.attachments.attachments import Attachments
-from journal.http.attachments.files_asked import FilesAsked
+from journal.http.attachments.file_request import FileRequest
 from journal.http.support.file_response import FileResponse
 from journal.http.support.request import Request
 from journal.repositories.dumps import Dumps
@@ -16,7 +16,7 @@ class AttachmentController:
         self.rows = {"messages": messages, "dumps": dumps}
 
     def index(self, request: Request) -> Response:
-        return Response.json(self.files.page(FilesAsked.from_query(request.query)))
+        return Response.json(self.files.page(FileRequest.from_query(request.query)))
 
     def file(self, request: Request):
         table, id = request.params["table"], request.number("id")

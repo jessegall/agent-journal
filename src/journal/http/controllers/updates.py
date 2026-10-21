@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from journal.features.updates.support.updating import Updating
+from journal.features.updates.support.updater import Updater
 from journal.features.updates.support.changelog import Changelog
 from journal.http.support.request import Request
 from journal.support.response import Response
@@ -9,7 +9,7 @@ from journal.support.response import Response
 class UpdateController:
     """What the viewer needs to offer the newer release: what is out and the version running, and the update itself."""
 
-    def __init__(self, updating: Updating, changelog: Changelog) -> None:
+    def __init__(self, updating: Updater, changelog: Changelog) -> None:
         self.updating, self.changelog = updating, changelog
 
     def index(self, request: Request) -> Response:

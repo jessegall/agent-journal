@@ -1,7 +1,7 @@
 from typing import TypeVar
 
 from journal.http.controllers.controller import Controller
-from journal.http.listed import Listed
+from journal.http.row_list import RowList
 from journal.http.listing import Listing
 from journal.http.support.download_response import DownloadResponse
 from journal.http.support.model_fields import ModelFields
@@ -16,13 +16,13 @@ W = TypeVar("W", bound=Model)
 class WritingController(Controller[W]):
     """What documents and reports share: a list carries each without its body, which is asked for by id, and each names the rows it links to; a section is added at the end of the body."""
 
-    def listed(self, listing: Listing) -> Listed:
+    def listed(self, listing: Listing) -> RowList:
         if listing.ids:
             return super().listed(listing)
         rows = self.rows()
         page = listing.listed(rows, self.is_open)
         linked = self.repository.every_linked()
-        return Listed(rows=[self.summarised(row, linked) for row in page["rows"]], more=page["more"], counts=self.counts(rows))
+        return RowList(rows=[self.summarised(row, linked) for row in page["rows"]], more=page["more"], counts=self.counts(rows))
 
     def shown_page(self, rows: list[W]) -> list[dict]:
         linked = self.repository.every_linked()

@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
-from journal.support.shipped import Shipped
+from journal.support.builtin_catalogue import BuiltinCatalogue
 from journal.features.voices.commands.voice_command import VoiceCommand
 from journal.features.voices.support.voices_conduct import VoicesConduct
 from journal.features.voices.support.voices_data_reader import VoicesDataReader
@@ -14,7 +14,7 @@ class Voices(Feature):
     title = "Voice"
     help = "The agent talks to you in the voice you choose, by your title and first name."
     commands = (VoiceCommand,)
-    PROFILE = Option("voices.profile", "Voice", "How the agent talks to you", "butler", kind="choice", choices=tuple(v.name for v in Shipped.ALL))
+    PROFILE = Option("voices.profile", "Voice", "How the agent talks to you", "butler", kind="choice", choices=tuple(v.name for v in BuiltinCatalogue.ALL))
     TITLE = Option("voices.title", "Your title", "Sir, Madam, Captain: what the voice calls you before your name", "Sir", kind="text")
     NAME = Option("voices.name", "Your first name", "Empty takes the name git knows you by", "", kind="text")
     VOICE_OPTIONS = (PROFILE, TITLE, NAME)

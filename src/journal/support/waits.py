@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from journal.support.actor import Actor
 from journal.models.check import Check
 from journal.support.ref import Ref
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.checks import Checks
 from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks
@@ -24,7 +24,7 @@ class Waits:
     @staticmethod
     def refuse_unnamed(why: str, on: list[str], until: str) -> None:
         if not why and not on and not until:
-            raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
+            raise Rejection("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
 
     def named(self, on: list[str], until: str, every: int, about: str, actor: Actor) -> list[Ref]:
         refs = [self.awaited(text) for text in on]
@@ -35,7 +35,7 @@ class Waits:
     def awaited(self, text: str) -> Ref:
         kind, _, number = text.partition(":")
         if kind not in ("question", "task") or not number.isdigit():
-            raise Refused(f"--on takes question:N or task:N, not {text}")
+            raise Rejection(f"--on takes question:N or task:N, not {text}")
         ref = Ref(f"{kind}s", int(number))
         (self.questions if kind == "question" else self.tasks).find(ref.id)
         return ref

@@ -6,7 +6,7 @@ from journal.support.caller import Caller
 from journal.support.outline import Outline
 from journal.features.docs.support.version3_doc import Version3Doc
 from journal.models.doc import Doc
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.docs import Docs
 
 
@@ -56,7 +56,7 @@ class DocCommand(Command):
     def import_(self, args: Namespace, caller: Caller) -> int:
         folder = Path(args.folder).expanduser()
         if not folder.is_dir():
-            raise Refused(f"no such folder: {folder}")
+            raise Rejection(f"no such folder: {folder}")
         rows = [doc for doc in map(Version3Doc.read, sorted(p for p in folder.iterdir() if p.is_dir())) if doc]
         new = [doc for doc in rows if not self.docs.titled(doc.title)]
         for doc in new:

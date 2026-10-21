@@ -11,7 +11,7 @@ from journal.support.scope import Scope
 from journal.supervisor_link import SupervisorLink
 from journal.engine.support.launch_files import LaunchFiles
 from journal.engine.support.menu_answers import MenuAnswers
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 INTERVAL = 0.5
 STILLNESS_SECONDS = 1.5
@@ -66,7 +66,7 @@ class MenuWatcher:
         if caused:
             self.supervisor.confirmed(env)
         self._answered[env] = menu.signature()
-        self.cards.show(env, agent.session, f'A menu in the agent\'s terminal was answered: "{menu.question[-160:]}" The journal {said}.', "bolt", shows=ChatMark.MENUS)
+        self.cards.show(env, agent.session, f'A menu in the agent\'s terminal was answered: "{menu.question[-160:]}" The journal {said}.', "bolt", shows=CardKind.MENUS)
         return keys
 
     def answers_permission(self, menu: Menu, env: int) -> bool:

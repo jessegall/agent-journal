@@ -19,8 +19,8 @@ from journal.repositories.triggers import Triggers
 from journal.repositories.workers import Workers
 from journal.support.actor import Actor
 from journal.support.cards import Cards
-from journal.support.chat_mark import ChatMark
-from journal.support.refused import Refused
+from journal.support.card_kind import CardKind
+from journal.support.rejection import Rejection
 from journal.support.row_card import RowCard
 from journal.support.scope import Scope
 
@@ -45,7 +45,7 @@ class Docking:
         row = self.kinds[noun].find(n)
         card = self.card_of(row)
         if card is None or not card.data.get(DOCKED):
-            raise Refused(f"{row.heading()} is not docked")
+            raise Rejection(f"{row.heading()} is not docked")
         return self.release(card, actor)
 
     def dock_row(self, row: Model, actor: Actor) -> Message:
@@ -65,4 +65,4 @@ class Docking:
         return cards[0] if cards else None
 
     def new_card(self, row: Model, actor: Actor) -> Message:
-        return self.cards.keyed(self.scope.id, self.cards.made_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, actor, ChatMark.CREATED)
+        return self.cards.keyed(self.scope.id, self.cards.made_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, actor, CardKind.CREATED)

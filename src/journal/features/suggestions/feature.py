@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.suggestions.listeners.suggest_on_the_hour import SuggestOnTheHour
+from journal.features.suggestions.listeners.hourly_suggestion import HourlySuggestion
 from journal.support.option import Option
 
 
@@ -10,4 +10,4 @@ class SuggestionsFeature(Feature):
     title = "Suggestions"
     help = "Looks for things worth suggesting, first a while after the journal starts and then hourly, and shows each once as a card in the chat: answered or not, it is never suggested again."
     options = (FIRST_DELAY, INTERVAL)
-    listeners = (SuggestOnTheHour,)
+    listeners = (HourlySuggestion,)

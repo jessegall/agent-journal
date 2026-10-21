@@ -5,7 +5,7 @@ from typing import Callable, ClassVar, get_type_hints
 
 from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
-from journal.engine.support.held import Held
+from journal.engine.support.block import Block
 from journal.engine.support.typist import Typist
 from journal.events.feature_data import FeatureData
 from journal.events.agent.compacting import Compacting
@@ -66,7 +66,7 @@ class BaseState(Conduct):
         from journal.engine.states.ended import Ended
         return self.push(Ended())
 
-    def on_push(self, settings: Settings) -> tuple[Nudge, ...] | Held:
+    def on_push(self, settings: Settings) -> tuple[Nudge, ...] | Block:
         return ()
 
     def on_suspend(self, settings: Settings) -> tuple[Nudge, ...]:

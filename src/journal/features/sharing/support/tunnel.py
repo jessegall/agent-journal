@@ -6,13 +6,13 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from journal.config import Config
-from journal.support.kept_answer import KeptAnswer
+from journal.support.cached_answer import CachedAnswer
 from journal.support.share_place import SharePlace
 from journal.features.sharing.support.tunler import Tunler
 from journal.features.sharing.support.tunler_status import TunlerStatus
 from journal.features.sharing.support.tunnel_cause import TunnelCause
 from journal.features.sharing.support.tunnel_service import TunnelService
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.pairing_codes import PairingCodes
 from journal.repositories.phones import Phones
 from journal.repositories.setting_rows import SettingRows
@@ -44,7 +44,7 @@ class Tunnel:
         self.tunler, self.place, self.settings, self.link, self.shares, self.config = tunler, place, settings, link, shares, config
         self.phones, self.codes = phones, codes
         self.log = config.home / "runtime" / f"{SERVICE}.log"
-        self._answer = KeptAnswer(lambda: self.reaches_address(), ANSWER_CACHE_SECONDS, False)
+        self._answer = CachedAnswer(lambda: self.reaches_address(), ANSWER_CACHE_SECONDS, False)
         self.wanted = False
 
     def saved_host(self) -> str:
@@ -116,7 +116,7 @@ class Tunnel:
 
     def restart(self) -> None:
         if self.link.hosting() is None:
-            raise Refused(SUPERVISOR_MISSING)
+            raise Rejection(SUPERVISOR_MISSING)
         self.place.keep(tunnel=())
         self.start()
 
@@ -134,10 +134,10 @@ class Tunnel:
 
     def release(self, domain: str) -> list[str]:
         if domain == self.address():
-            raise Refused(CURRENT_ADDRESS.format(domain=domain))
+            raise Rejection(CURRENT_ADDRESS.format(domain=domain))
         failed = self.tunler.release(domain, self.host())
         if failed:
-            raise Refused(failed)
+            raise Rejection(failed)
         return self.tunler.domains()
 
     def answering(self) -> bool:

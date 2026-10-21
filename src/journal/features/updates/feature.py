@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.updates.commands.update_command import UpdateCommand
-from journal.features.updates.listeners.check_for_releases import CheckForReleases
+from journal.features.updates.listeners.release_check import ReleaseCheck
 from journal.support.option import Option
 
 
@@ -12,5 +12,5 @@ class Updates(Feature):
     title = "Updates"
     help = "Finds the newest release of this version of the journal on GitHub, hourly, and installs it when you say so or, if you switch that on, by itself."
     options = (REPOSITORY, BRANCH, AUTO)
-    listeners = (CheckForReleases,)
+    listeners = (ReleaseCheck,)
     commands = (UpdateCommand,)

@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 
 from journal.http.support.json_out import JsonOut
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,7 @@ class Response:
         return cls(404, {"error": what or "not found"})
 
     @classmethod
-    def missing(cls, error: NotFound) -> "Response":
+    def missing(cls, error: MissingRow) -> "Response":
         return cls.not_found(str(error))
 
     @classmethod

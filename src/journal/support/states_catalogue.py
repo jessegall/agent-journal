@@ -4,7 +4,7 @@ from journal.models.agent import Agent
 from journal.engine.states.wait import Wait
 from journal.engine.states.compacting import Compacting
 from journal.engine.states.ended import Ended
-from journal.support.features_known import FeaturesKnown
+from journal.support.feature_registry import FeatureRegistry
 
 
 class StatesCatalogue:
@@ -12,7 +12,7 @@ class StatesCatalogue:
 
     ENGINE_STATES = (Compacting, Ended)
 
-    def __init__(self, features: FeaturesKnown) -> None:
+    def __init__(self, features: FeatureRegistry) -> None:
         self._states = {state.name: state for state in features.states()} | {state.name: state for state in self.ENGINE_STATES}
 
     def known(self, name: str) -> bool:

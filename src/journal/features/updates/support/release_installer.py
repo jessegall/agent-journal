@@ -6,7 +6,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 from journal.config import Config
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 GITHUB = re.compile(r"^(?:https://github\.com/|git@github\.com:)(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$")
 DOWNLOAD_SECONDS = 30
@@ -33,13 +33,13 @@ class ReleaseInstaller:
                                      stdout=log, stderr=subprocess.STDOUT, timeout=INSTALL_SECONDS)
             except (OSError, subprocess.TimeoutExpired) as error:
                 log.write(f"the install could not run: {error}\n")
-                raise Refused(f"the install of {ref} could not run: {error}") from error
+                raise Rejection(f"the install of {ref} could not run: {error}") from error
         if ran.returncode != 0:
-            raise Refused(f"the install of {ref} failed: {self.log.read_text(errors='replace').strip()[-300:]}")
+            raise Rejection(f"the install of {ref} failed: {self.log.read_text(errors='replace').strip()[-300:]}")
 
     @staticmethod
     def script_at(repository: str, ref: str) -> str:
         rows = GITHUB.match(repository)
         if rows is None:
-            raise Refused(f"the journal installs from GitHub only: {repository} is no GitHub address")
+            raise Rejection(f"the journal installs from GitHub only: {repository} is no GitHub address")
         return f"https://raw.githubusercontent.com/{rows['owner']}/{rows['repo']}/{ref}/install.sh"

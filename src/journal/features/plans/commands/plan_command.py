@@ -14,7 +14,7 @@ from journal.models.plan_state import PlanState
 from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.repositories.links import Links
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.phases import Phases
 from journal.repositories.plans import PHASE_LINK, PLAN_LINK, PHASE_TASK_LINK, Plans
 from journal.repositories.tasks import Tasks, WAIT_LINK
@@ -108,7 +108,7 @@ class PlanCommand(Command):
         plan = self.plans.find(args.n)
         phases = self.plans.phases_of(plan)
         if not 1 <= args.phase <= len(phases):
-            raise Refused(f"plan {plan.id} has {len(phases)} phases: name one by its number from 1")
+            raise Rejection(f"plan {plan.id} has {len(phases)} phases: name one by its number from 1")
         phase = phases[args.phase - 1]
         for n in args.tasks:
             task = self.tasks.find(n)
@@ -124,13 +124,13 @@ class PlanCommand(Command):
         plan = self.plans.find(args.n)
         phases = self.plans.phases_of(plan)
         if not phases:
-            raise Refused(f"plan {plan.id} has no phase yet: journal plan phase {plan.id} \"<title>\" --when \"<complete when>\"")
+            raise Rejection(f"plan {plan.id} has no phase yet: journal plan phase {plan.id} \"<title>\" --when \"<complete when>\"")
         empty = [i for i, phase in enumerate(phases, 1) if not self.plans.tasks_in(phase)]
         if empty:
-            raise Refused(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
+            raise Rejection(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
         out = self.subagents.running_about(caller.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and caller.session else 0
         if out:
-            raise Refused(f"plan {plan.id} is in review and {out} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
+            raise Rejection(f"plan {plan.id} is in review and {out} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
         if plan.state == PlanState.REVIEWING:
             self.close_round(plan, args.changed, caller)
         plan = self.plans.save(plan.ready(), caller.actor)
@@ -139,7 +139,7 @@ class PlanCommand(Command):
 
     def close_round(self, plan: Plan, changed: str | None, caller: Caller) -> None:
         if changed is None:
-            raise Refused(f"plan {plan.id} is in review: say in one line what this round changed, journal plan ready {plan.id} --changed \"<tasks added, merged, moved, reworded>\"")
+            raise Rejection(f"plan {plan.id} is in review: say in one line what this round changed, journal plan ready {plan.id} --changed \"<tasks added, merged, moved, reworded>\"")
         self.rounds.close(plan, changed, caller)
 
     def review(self, args: Namespace, caller: Caller) -> int:
@@ -150,7 +150,7 @@ class PlanCommand(Command):
 
     def approve(self, args: Namespace, caller: Caller) -> int:
         if not caller.actor.is_the_user():
-            raise Refused("only the user approves a plan: ask, then wait for their word")
+            raise Rejection("only the user approves a plan: ask, then wait for their word")
         plan = self.plans.approve(self.plans.find(args.n), caller.actor)
         print(f"plan {plan.id} {plan.state}")
         return 0

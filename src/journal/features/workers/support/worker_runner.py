@@ -17,7 +17,7 @@ from journal.support.scope import Scope
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
-from journal.support.worktree_not_made import WorktreeNotMade
+from journal.support.worktree_failure import WorktreeFailure
 
 TAIL = 4000
 WATCH_INTERVAL_SECONDS = 2.0
@@ -132,8 +132,8 @@ class WorkerRunner:
 
     def cut(self, worker: Worker, folder: Path) -> None:
         if subprocess.run(["git", "rev-parse", "--verify", "-q", "HEAD"], cwd=self.config.root, capture_output=True, timeout=60).returncode != 0:
-            raise WorktreeNotMade(worker.name, "the project has no commit yet, so there is no tip to cut a worktree from; make a first commit")
+            raise WorktreeFailure(worker.name, "the project has no commit yet, so there is no tip to cut a worktree from; make a first commit")
         added = subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder), "HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=60)
         if added.returncode != 0:
             subprocess.run(["git", "worktree", "prune"], cwd=self.config.root, capture_output=True, timeout=60)
-            raise WorktreeNotMade(worker.name, added.stderr.strip())
+            raise WorktreeFailure(worker.name, added.stderr.strip())

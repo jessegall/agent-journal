@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.sharing.commands.share_command import ShareCommand
-from journal.features.sharing.seeds.tunnel_at_boot import TunnelAtBoot
+from journal.features.sharing.seeds.tunnel_seed import TunnelSeed
 from journal.support.option import Option
 
 
@@ -10,5 +10,5 @@ class Sharing(Feature):
     title = "Share links"
     help = "Share one document, report or plan with someone outside the journal. The link opens that item and nothing else, and reaches this journal through a tunler tunnel."
     options = (HOST,)
-    seeds = (TunnelAtBoot,)
+    seeds = (TunnelSeed,)
     commands = (ShareCommand,)

@@ -10,7 +10,7 @@ from journal.features.listeners.unlink_deleted import UnlinkDeleted
 from journal.events.models.model_event import ModelEvent
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.rows.row_event import RowEvent
-from journal.engine.row_events_to_the_top import RowEventsToTheTop
+from journal.engine.row_event_delivery import RowEventDelivery
 from journal.engine.engine import Engine
 from journal.engine.base_state import BaseState
 from journal.engine.nudge_registry import NudgeRegistry
@@ -18,13 +18,13 @@ from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
 from journal.events.bus import Bus
 from journal.features.registry import Registry
-from journal.features.switched import Switched
-from journal.support.deferred import Deferred
+from journal.features.switches import Switches
+from journal.support.listener_queue import ListenerQueue
 from journal.config import Config
 from journal.container import Container
 from journal.support.scope import Scope
 from journal.http.server import Server
-from journal.support.standby import Standby
+from journal.support.instance_guard import InstanceGuard
 from journal.http.share_server import ShareServer
 
 
@@ -34,7 +34,7 @@ INSTANCE_CHECK_SECONDS = 2.0
 class Runtime:
     """What the server process keeps alive: the HTTP server and the share server beside it, the deferred worker, the clock and the menu watcher, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
 
-    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: StateMachine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, standby: Standby) -> None:
+    def __init__(self, container: Container, server: Server, deferred: ListenerQueue, clock: Clock, machine: StateMachine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, standby: InstanceGuard) -> None:
         self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
         self.watcher, self.share_server, self.standby = watcher, share_server, standby
 
@@ -49,13 +49,13 @@ class Runtime:
         self.register_nudges()
         BaseState.fold(self.registry.conducts())
         self.bus.listen(AgentEvent, self.machine)
-        self.bus.listen(RowEvent, self.container.get(RowEventsToTheTop))
+        self.bus.listen(RowEvent, self.container.get(RowEventDelivery))
         self.bus.listen(Created, Creations())
         self.bus.listen(ModelEvent, self.container.get(RecordChanges))
         self.bus.listen(Deleted, self.container.get(UnlinkDeleted))
         for feature in self.registry.features:
             for listener in feature.listeners:
-                self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry, self.scope))
+                self.bus.listen(listener.kind(), Switches(feature, self.container.get(listener), self.registry, self.scope))
             for seed in feature.seeds:
                 self.container.get(seed).run()
         from journal.repositories.environments import Environments

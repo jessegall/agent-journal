@@ -4,7 +4,7 @@ from journal.features.messages.support.mentions import Mentions
 from journal.http.attachments.attachments import Attachments
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts
-from journal.http.listed import Listed
+from journal.http.row_list import RowList
 from journal.http.listing import Listing
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
@@ -25,11 +25,11 @@ class MessageController(Controller[Message]):
         self.agents = agents
         self.repository, self.reactions, self.attachments, self.docking = messages, reactions, attachments, docking
 
-    def listed(self, listing: Listing) -> Listed:
+    def listed(self, listing: Listing) -> RowList:
         page = listing.listed(self.asked(listing), lambda m: True, timeline=True)
         unread = self.repository.unseen_by_user()
         counts = Counts(all=self.repository.count_in(), open=len(self.open_ids()) + unread, unread=unread)
-        return Listed(rows=self.shown_page(page["rows"]), more=page["more"], counts=counts)
+        return RowList(rows=self.shown_page(page["rows"]), more=page["more"], counts=counts)
 
     def asked(self, listing: Listing) -> list[Message]:
         if listing.ids:

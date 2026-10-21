@@ -62,7 +62,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | memory | memory.stopped_at_mark | you stopped while the journal awaits a decision at the context mark, {{percent}}% full | MemoryConduct.on_idle_memory |
 | memory | memory.check_stale_memory | these are {{stale_after}} days old or more, check they still hold: {{stale}} | MemoryConduct.on_session_started_memory |
 | memory | memory.does_the_rule_apply_project_wide | does rule {{n}} apply to the whole project? | MemoryConduct.on_rule_made_memory |
-| memory | memory.memory_whispered_back | {{noun}} {{n}}: {{text}} | MemoryConduct.on_anything_memory_whisper, MemoryDataReader.read, MemoryRow.line, MarkWhispered.handle |
+| memory | memory.memory_whispered_back | {{noun}} {{n}}: {{text}} | MemoryConduct.on_anything_memory_whisper, MemoryDataReader.read, MemoryRow.line, MemoryHintCard.handle |
 | messages | messages.new_message_to_answer | new message {{n}} | DeliverMessage.handle |
 | messages | messages.new_messages_to_answer | new messages {{ns}} | nothing yet |
 | messages | messages.unread_messages_to_read | {{count}} messages unread: `journal message unread` | nothing yet |
@@ -94,16 +94,16 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | questions | questions.ask_through_the_journal | a question goes through the journal, not your own question tool | QuestionsConduct.on_tool_starting_questions |
 | secrets | secrets.secrets_out_of_reach | the secrets and the MCP keys in the private folder are out of your reach | SecretsConduct.on_tool_starting_secrets |
 | secrets | secrets.secret_allowed_for_programs | the user let secret {{n}}, {{title}}, go to {{programs}} | SecretsConduct.on_secret_allowed_secrets |
-| sequences | sequences.step_to_follow | sequence {{n}}, step {{step}}: {{text}} | Running.step, SequencesConduct.on_idle_sequences, SequencesConduct.on_ticked_sequences |
+| sequences | sequences.step_to_follow | sequence {{n}}, step {{step}}: {{text}} | RunTracker.step, SequencesConduct.on_idle_sequences, SequencesConduct.on_ticked_sequences |
 | sequences | sequences.following_the_step | following sequence {{n}}, step {{step}}: {{text}} | SequenceCommand.follow |
 | sequences | sequences.write_held_for_the_step | a write waits for sequence {{n}}, step {{step}}: {{text}} | SequencesConduct.on_tool_starting_sequences |
 | sequences | sequences.step_stale_move_it_on | {{writes}} writes since sequence {{n}}, step {{step}} was taken up: {{text}} | SequencesConduct.on_tool_starting_sequences |
-| sequences | sequences.sequence_parked | sequence {{n}} is parked at step {{step}}: {{why}} | Running.reminder, SequencesConduct.on_ticked_sequences |
-| sequences | sequences.sequence_ended | sequence {{n}} ran its last step | Running.next, Running.skip |
-| sequences | sequences.sequence_abandoned | sequence {{n}} abandoned | Running.abandon |
-| sequences | sequences.sequence_cannot_finish | sequence {{n}} ended: {{why}} | Running.end_where |
-| sequences | sequences.the_user_skipped_a_step | the user skipped step {{step}} of sequence {{n}} | Running.skip |
-| sequences | sequences.the_user_ended_the_sequence | the user ended sequence {{n}} | Running.end |
+| sequences | sequences.sequence_parked | sequence {{n}} is parked at step {{step}}: {{why}} | RunTracker.reminder, SequencesConduct.on_ticked_sequences |
+| sequences | sequences.sequence_ended | sequence {{n}} ran its last step | RunTracker.next, RunTracker.skip |
+| sequences | sequences.sequence_abandoned | sequence {{n}} abandoned | RunTracker.abandon |
+| sequences | sequences.sequence_cannot_finish | sequence {{n}} ended: {{why}} | RunTracker.end_where |
+| sequences | sequences.the_user_skipped_a_step | the user skipped step {{step}} of sequence {{n}} | RunTracker.skip |
+| sequences | sequences.the_user_ended_the_sequence | the user ended sequence {{n}} | RunTracker.end |
 | shell | shell.moved_to_the_background | moved to the background as output {{n}} | ShellRunner.foreground |
 | shell | shell.outputs_ended | {{outputs}} | ShellConduct.on_ticked_shell_ended |
 | shell | shell.use_the_reader | reader {{reader}} already reads this: {{about}} | ShellDataReader.read, ShellConduct.on_tool_starting_shell_readers |
@@ -111,7 +111,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | shell | shell.read_the_file_in_parts | the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output | ShellConduct.on_tool_starting_shell_read_in_parts |
 | shell | shell.journal_command_runs_alone | a journal command runs on its own, or chained only with other journal commands | ShellConduct.on_tool_starting_shell_journal_alone |
 | shell | shell.check_the_background | output {{background_outputs}} still running | ShellConduct.on_ticked_shell_background |
-| skills | skills.read_the_skill_first | read the {{skill}} skill before anything else: {{path}} | Requiring.require, SkillsConduct.on_idle_skills |
+| skills | skills.read_the_skill_first | read the {{skill}} skill before anything else: {{path}} | Requirements.require, SkillsConduct.on_idle_skills |
 | skills | skills.stopped_owing | you stopped while the journal awaits the {{skills}} skill to be read | SkillsConduct.on_idle_skills |
 | tasks | tasks.carry_on | {{name}} is in hand, {{logged}}: carry on | Working.continue_nudge |
 | tasks | tasks.log_first_at_stop | {{name}}, {{logged}}: log where it stands first | Working.on_stop |
@@ -127,10 +127,10 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | tasks | tasks.parked_tasks_still_open | parked tasks, still open: {{tasks}} | Idle.on_stop |
 | tasks | tasks.parked_task_asked_about | task {{n}} is still parked: can you continue it now? | Idle.on_ticked |
 | tasks | tasks.parked_task_named_at_close | task {{n}} is still parked: can you continue it now? | TasksConduct.on_task_closed_tasks |
-| tasks | tasks.check_the_wait | check {{what}} now: you have waited {{minutes}} min | Awaiting.on_ticked |
+| tasks | tasks.check_the_wait | check {{what}} now: you have waited {{minutes}} min | ExternalWait.on_ticked |
 | tasks | tasks.check_in_after_quiet | nothing has happened for half an hour: is there anything left for you to do? | Idle.on_ticked |
-| tasks | tasks.wait_over | the wait for {{what}} is over: {{outcome}} | Awaiting.ended_by |
-| tasks | tasks.next_task_while_waiting | while you wait for {{what}}, task {{n}}, {{title}} is next | Awaiting.on_ticked |
+| tasks | tasks.wait_over | the wait for {{what}} is over: {{outcome}} | ExternalWait.ended_by |
+| tasks | tasks.next_task_while_waiting | while you wait for {{what}}, task {{n}}, {{title}} is next | ExternalWait.on_ticked |
 | tasks | tasks.task_reopened | task {{n}} is open again: {{on}} is answered or closed | TasksConduct.on_task_reopened_tasks |
 | tasks | tasks.fix_the_broken_wait | {{waits}} | Idle.on_stop |
 | tasks | tasks.blocked_task_asked_about | blocked, with nothing that opens it by itself: {{tasks}} | Idle.on_ticked |
@@ -141,8 +141,8 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | voices | voices.introduce_yourself | introduce yourself to the user in the chat | VoicesConduct.on_session_started_voices_introduce |
 | voices | voices.the_voice_changed | the user changed how you talk to them | VoicesConduct.on_setting_changed_voices |
 | voices | voices.say_you_are_back | you are back in a conversation that went on before: say so to the user in a line, in your voice | VoicesConduct.on_session_started_voices_introduce |
-| workers | workers.worker_reported | worker {{n}}, {{name}}, reported in the chat | WorkersConduct.on_worker_back_workers, Awaiting.on_worker_back_workers |
-| workers | workers.worker_stopped_unreported | worker {{n}}, {{name}}, stopped before it reported | Awaiting.on_worker_stopped_workers |
+| workers | workers.worker_reported | worker {{n}}, {{name}}, reported in the chat | WorkersConduct.on_worker_back_workers, ExternalWait.on_worker_back_workers |
+| workers | workers.worker_stopped_unreported | worker {{n}}, {{name}}, stopped before it reported | ExternalWait.on_worker_stopped_workers |
 | workers | workers.too_many_subagents | {{running}} subagents are running, the most at once | WorkersConduct.on_tool_starting_workers_most |
 | workers | workers.too_many_workers | {{out}} workers are out, the most at once | WorkerCommand.dispatch |
 | workers | workers.file_is_the_workers | that file is in worker {{n}}'s worktree | WorkersConduct.on_tool_starting_workers_worktrees |

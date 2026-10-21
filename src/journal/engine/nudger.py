@@ -2,8 +2,8 @@ from journal.engine.clock import Clock
 from journal.engine.nudge_registry import NudgeRegistry
 from journal.events.agent.line_said import LineSaid
 from journal.events.bus import Bus
-from journal.support.deferred import Deferred
-from journal.support.features_known import FeaturesKnown
+from journal.support.listener_queue import ListenerQueue
+from journal.support.feature_registry import FeatureRegistry
 from journal.engine.nudge import Nudge
 from journal.support.actor import Actor
 from journal.models.agent import Agent
@@ -17,7 +17,7 @@ NUDGE = "nudge"
 class Nudger:
     """Says a line to an agent, in the agent's environment: drops it when its feature is off or it was nudge lately, writes the entry, tells the bus a line was nudge once the reply has gone, and hands back the words; a refusal's line is said and recorded the same but never dropped for having been said lately, since a hold stands as long as its reason does. The caller picks the road: a hook's answer, or the supervisor."""
 
-    def __init__(self, features: FeaturesKnown, entries: Entries, scope: Scope, bus: Bus, deferred: Deferred, clock: Clock, registry: NudgeRegistry) -> None:
+    def __init__(self, features: FeatureRegistry, entries: Entries, scope: Scope, bus: Bus, deferred: ListenerQueue, clock: Clock, registry: NudgeRegistry) -> None:
         self.features, self.entries, self.scope, self.bus, self.deferred, self.clock = features, entries, scope, bus, deferred, clock
         self.registry = registry
 

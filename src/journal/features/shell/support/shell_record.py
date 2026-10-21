@@ -6,7 +6,7 @@ from pathlib import Path
 
 from journal.hooks.command_events import CommandEvents
 from journal.features.shell.support.changed_file import ChangedFile
-from journal.features.shell.support.doing import Doing
+from journal.features.shell.support.activity_label import ActivityLabel
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_log import OutputLog
 from journal.models.entry import Entry
@@ -15,7 +15,7 @@ from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.entries import Entries
 from journal.repositories.setting_rows import SettingRows
 from journal.support.cards import Cards
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 from journal.support.scope import Scope
 from journal.support.caller import Caller
 
@@ -36,24 +36,24 @@ class ShellRecord:
         return self.log.began(chain, command, folder, caller.session, caller.actor).id
 
     def started(self, chain: str, part: str, caller: Caller) -> None:
-        self.record(caller, PART_START, {"chain": chain, "part": part, "doing": Doing.of(part)})
+        self.record(caller, PART_START, {"chain": chain, "part": part, "doing": ActivityLabel.of(part)})
 
     def ran(self, chain: str, part: str, status: int, seconds: float, output: str, changed: list[ChangedFile], caller: Caller) -> None:
-        self.record(caller, PART_END, {"chain": chain, "part": part, "doing": Doing.of(part), "status": status, "seconds": seconds, "output": output[-TAIL:], "changed": [asdict(c) for c in changed]})
+        self.record(caller, PART_END, {"chain": chain, "part": part, "doing": ActivityLabel.of(part), "status": status, "seconds": seconds, "output": output[-TAIL:], "changed": [asdict(c) for c in changed]})
 
     def moved(self, chain: str, part: str, folder: Path, caller: Caller) -> int:
-        self.record(caller, MOVED, {"chain": chain, "part": part, "doing": Doing.of(part), "file": str(folder)})
+        self.record(caller, MOVED, {"chain": chain, "part": part, "doing": ActivityLabel.of(part), "file": str(folder)})
         output = self.outputs.save(self.outputs.of_chain(chain).moved_out(), caller.actor)
         if caller.session:
             self.events.moved(output, caller.session)
-        self.cards.show(self.scope.id, caller.session, f"Moved to the background: {Doing.of(part)}", "terminal", key=f"background:{chain}", command=part, shows=ChatMark.COMMANDS)
+        self.cards.show(self.scope.id, caller.session, f"Moved to the background: {ActivityLabel.of(part)}", "terminal", key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
         return output.id
 
     def ended(self, chain: str, status: int, folder: Path, last: str, caller: Caller) -> None:
         self.record(caller, ENDED, {"chain": chain, "status": status, "file": str(folder), "last": last})
         part = next((e.data["part"] for e in self.entries.of_kind(MOVED, 200) if e.data.get("chain") == chain), "")
         outcome = OutputFiles.ended(status)
-        self.cards.show(self.scope.id, caller.session, f"{outcome.capitalize()} in the background: {Doing.of(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", command=part, shows=ChatMark.COMMANDS)
+        self.cards.show(self.scope.id, caller.session, f"{outcome.capitalize()} in the background: {ActivityLabel.of(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
         running = self.agents.live()
         if running:
             self.events.ended(self.outputs.save(self.outputs.of_chain(chain).ended_with(status, datetime.now(timezone.utc).timestamp()), caller.actor), running)

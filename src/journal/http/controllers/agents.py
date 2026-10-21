@@ -2,7 +2,7 @@ import time as timing
 
 from journal.config import Config
 from journal.features.pausing.agent_pause import AgentPause
-from journal.support.running import Running
+from journal.support.run_tracker import RunTracker
 from journal.features.shell.support.shell_record import PART_END
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.terminal_line import TerminalLine
@@ -12,7 +12,7 @@ from journal.support.response import Response
 from journal.models.agent import Agent
 from journal.models.entry import Entry
 from journal.providers.providers import Providers
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.agents import Agents
 from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
@@ -28,7 +28,7 @@ class AgentController(Controller[Agent]):
     """The environment's agents with what each is doing; what the user types or picks for the live one goes to its terminal, and the files it changed and the commands it ran are read from here."""
 
     def __init__(self, agents: Agents, activity: AgentActivity, supervisor: SupervisorLink, entries: Entries, edits: Edits, scope: Scope, environments: Environments,
-                 providers: Providers, running: Running, config: Config, pausing: AgentPause) -> None:
+                 providers: Providers, running: RunTracker, config: Config, pausing: AgentPause) -> None:
         self.repository, self.activity, self.supervisor, self.entries, self.file_edits, self.scope = agents, activity, supervisor, entries, edits, scope
         self.environments, self.providers, self.running, self.config, self.pausing = environments, providers, running, config, pausing
 
@@ -71,7 +71,7 @@ class AgentController(Controller[Agent]):
         action, value = request.body.get("action", ""), request.body.get("value", "")
         choice = next((c for g in provider.controls["groups"] if g["key"] == action for c in g["choices"] if c["value"] == value), None)
         if choice is None:
-            raise Refused(f"{action} {value} is not a choice the agent bar offers")
+            raise Rejection(f"{action} {value} is not a choice the agent bar offers")
         self.supervisor.choose(agent.environment_id, choice["command"])
         return Response.json({"queued": True})
 
@@ -117,7 +117,7 @@ class AgentController(Controller[Agent]):
     def running_agent(self, id: int) -> Agent:
         agent = self.repository.find(id)
         if self.running.in_hand(agent.session, agent.environment_id) is None:
-            raise Refused(f"agent {id} runs no sequence")
+            raise Rejection(f"agent {id} runs no sequence")
         return agent
 
     def told(self, agent: Agent, line: str) -> None:

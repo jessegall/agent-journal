@@ -1,7 +1,7 @@
-from journal.support.deferred import Deferred
+from journal.support.listener_queue import ListenerQueue
 from journal.events.listener import Listener
 from journal.events.models.saved import Saved
-from journal.features.mentions.support.mentioned import Mentioned
+from journal.features.mentions.support.mention_match import MentionMatch
 from journal.support.actor import Actor
 from journal.models.link import Link
 from journal.models.model import Model
@@ -14,7 +14,7 @@ MENTIONS = "mentions"
 class LinkMentions(Listener[Saved]):
     """A row saved with text of its own is linked to every row its text names that exists, on the deferred worker after the write has answered, never on the write's thread."""
 
-    def __init__(self, deferred: Deferred, links: Links) -> None:
+    def __init__(self, deferred: ListenerQueue, links: Links) -> None:
         self.deferred, self.links = deferred, links
 
     def handle(self, event: Saved) -> None:
@@ -24,6 +24,6 @@ class LinkMentions(Listener[Saved]):
 
     def link(self, row: Model, actor: Actor) -> None:
         source = Ref.to(row)
-        for target in Mentioned.in_(row.mentioning_text()):
+        for target in MentionMatch.in_(row.mentioning_text()):
             if target != source and self.links.is_row(target) and not self.links.matching(source=source, target=target, kind=MENTIONS):
                 self.links.save(Link(source=source, target=target, kind=MENTIONS), actor)

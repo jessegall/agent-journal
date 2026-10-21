@@ -2,13 +2,13 @@ import os
 import time as timing
 
 from journal.config import Config
-from journal.features.updates.support.update_mark import UpdateMark
+from journal.features.updates.support.update_card import UpdateCard
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.bar_row import BarRow
 from journal.http.agents.current_work import CurrentWork
 from journal.http.journal.answer_time import AnswerTime
 from journal.http.journal.environment_data import EnvironmentData
-from journal.http.journal.held_task import HeldTask
+from journal.http.journal.task_block import TaskBlock
 from journal.http.journal.manifest import Manifest
 from journal.http.support.request import Request
 from journal.support.response import Response
@@ -35,7 +35,7 @@ class JournalController:
     """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the live agent is doing this moment."""
 
     def __init__(self, config: Config, manifest: Manifest, environments: Environments, agents: Agents, activity: AgentActivity, current: CurrentWork,
-                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateMark, statistics: Statistics, timings: Timings) -> None:
+                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateCard, statistics: Statistics, timings: Timings) -> None:
         self.statistics, self.timings = statistics, timings
         self.config, self.boot, self.environments, self.agents, self.activity, self.current = config, manifest, environments, agents, activity, current
         self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, mark
@@ -77,7 +77,7 @@ class JournalController:
             live = self.agents.live()
             agent = self.activity.page([live])[0] if live else None
             held = self.current.of(live) if live else None
-            task = HeldTask(held.task.id, held.task.title, held.awaiting) if held else None
+            task = TaskBlock(held.task.id, held.task.title, held.awaiting) if held else None
             silent = bool(agent) and agent["status"] in ("busy", "working") and timing.time() - agent["heard_at"].timestamp() > SILENCE_LIMIT_SECONDS
             return EnvironmentData(environment, agent, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
 

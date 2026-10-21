@@ -8,9 +8,9 @@ from journal.features.plugins.support.plugin_changes import PluginChanges
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.support.actor import Actor
 from journal.models.plugin import Plugin
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.plugins import Plugins
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 
 class LinkedManifests:
@@ -29,9 +29,9 @@ class LinkedManifests:
             return
         try:
             changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(self.reader.read(self.folders.of(plugin))))
-        except (Refused, json.JSONDecodeError) as refused:
+        except (Rejection, json.JSONDecodeError) as refused:
             changes = [f"the manifest is refused: {refused}"]
         if not changes:
             return
         self.plugins.save(plugin.with_(waiting=seen), Actor.system())
-        self.cards.show(environment_id, "", f"Plugin {plugin.name}'s manifest changed in its folder; it runs as installed until you apply it with journal plugin upgrade {plugin.name} --yes", "plug", tone="warn", detail="\n".join(changes), shows=ChatMark.PLUGINS)
+        self.cards.show(environment_id, "", f"Plugin {plugin.name}'s manifest changed in its folder; it runs as installed until you apply it with journal plugin upgrade {plugin.name} --yes", "plug", tone="warn", detail="\n".join(changes), shows=CardKind.PLUGINS)

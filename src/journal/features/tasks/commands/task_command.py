@@ -6,9 +6,9 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.engine.clock import Clock
 from journal.engine.state_machine import StateMachine
-from journal.support.refused import Refused
-from journal.features.tasks.states.idle import Idle
-from journal.features.tasks.support.in_hand import InHand
+from journal.support.rejection import Rejection
+from journal.features.tasks.states.ready import Ready
+from journal.features.tasks.support.active_task import ActiveTask
 from journal.support.task_briefing import TaskBriefing
 from journal.support.waits import Waits
 from journal.features.tasks.states.working import Working
@@ -19,7 +19,7 @@ from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
@@ -30,7 +30,7 @@ from journal.features.tasks.support.next_open_task import NextOpenTask
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: StateMachine, messages: Messages, links: Links, plans: Plans, taking: InHand, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, next_task: NextOpenTask) -> None:
+    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: StateMachine, messages: Messages, links: Links, plans: Plans, taking: ActiveTask, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, next_task: NextOpenTask) -> None:
         self.clock, self.next_task = clock, next_task
         self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.taking, self.questions, self.waits, self.briefing = tasks, logs, machine, messages, links, plans, taking, questions, waits, briefing
 

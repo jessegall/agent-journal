@@ -1,4 +1,4 @@
-from journal.features.dumps.support.filing import Filing
+from journal.features.dumps.support.dump_filer import DumpFiler
 from journal.http.attachments.attachments import Attachments
 from journal.http.controllers.controller import Controller
 from journal.http.support.model_fields import ModelFields
@@ -10,7 +10,7 @@ from journal.repositories.dumps import Dumps
 class DumpController(Controller[Dump]):
     """What the viewer does to a dump: drop one, add files to it, answer its question, pick or decline its next steps, name it, stop, split or remove it; each with the rows it was filed into."""
 
-    def __init__(self, filing: Filing, dumps: Dumps, attachments: Attachments) -> None:
+    def __init__(self, filing: DumpFiler, dumps: Dumps, attachments: Attachments) -> None:
         self.filing, self.repository, self.attachments = filing, dumps, attachments
 
     def rows(self) -> list[Dump]:

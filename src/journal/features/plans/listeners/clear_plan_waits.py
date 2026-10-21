@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
-from journal.support.awaitables import Awaitables
+from journal.support.wait_targets import WaitTargets
 from journal.support.actor import Actor
 from journal.support.ref import Ref
 from journal.repositories.plans import Plans
@@ -15,7 +15,7 @@ class ClearPlanWaits(Listener[Updated]):
         self.plans, self.tasks = plans, tasks
 
     def handle(self, event: Updated) -> None:
-        if not Awaitables.just_settled(event):
+        if not WaitTargets.just_settled(event):
             return
         ref = Ref.to(event.model)
         for plan in self.plans.waiting_on(event.model):

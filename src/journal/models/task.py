@@ -8,7 +8,7 @@ from journal.events.rows.task_reopened import TaskReopened
 from journal.events.rows.task_started import TaskStarted
 from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 
 @dataclass(frozen=True)
@@ -41,7 +41,7 @@ class Task(Scoped):
 
     def parked(self, why: str, time: datetime) -> "Task":
         if self.state != TaskState.STARTED:
-            raise Refused(f"task {self.id} is {self.state}: only a started task is parked")
+            raise Rejection(f"task {self.id} is {self.state}: only a started task is parked")
         return self.closed(self.with_(state=TaskState.SUSPENDED, parked_why=why), time, "parked")
 
     def cancelled(self, time: datetime) -> "Task":

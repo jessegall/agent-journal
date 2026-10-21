@@ -7,7 +7,7 @@ from journal.support.masks import Masks
 from journal.db.migrations import MIGRATIONS
 from journal.db.migrator import Migrator
 from journal.db.schema import Schema
-from journal.support.features_known import FeaturesKnown
+from journal.support.feature_registry import FeatureRegistry
 from journal.events.bus import Bus
 from journal.runtime import Runtime
 from journal.features.registry import Registry
@@ -38,7 +38,7 @@ class App:
         self.container.bind(Console, self._console)
         self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))
         self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(SettingRows)))
-        self.container.bind(FeaturesKnown, lambda: self.container.get(Registry))
+        self.container.bind(FeatureRegistry, lambda: self.container.get(Registry))
         self.container.bind(DataReaders, lambda: DataReaders({feature.name: self.container.get(reader) for feature in Standard.FEATURES for reader in feature.data}))
 
     def connection(self) -> Connection:

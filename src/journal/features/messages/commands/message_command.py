@@ -8,7 +8,7 @@ from journal.models.message import Message
 from journal.support.ref import Ref
 from journal.config import Config
 from journal.features.messages.support.faces import Faces
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.agents import Agents
 from journal.repositories.docs import Docs
 from journal.repositories.reports import Reports

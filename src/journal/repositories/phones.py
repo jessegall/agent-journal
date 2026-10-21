@@ -2,7 +2,7 @@ from datetime import datetime
 
 from journal.models.phone import Phone
 from journal.repositories.scoped_repository import ScopedRepository
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 
 
 class Phones(ScopedRepository[Phone]):
@@ -16,7 +16,7 @@ class Phones(ScopedRepository[Phone]):
     def anywhere(self, id: int) -> Phone:
         rows = self.across_environments(id=id)
         if not rows:
-            raise NotFound(f"no phone {id}")
+            raise MissingRow(f"no phone {id}")
         return rows[0]
 
     def by_key(self, key: str) -> Phone | None:

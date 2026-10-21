@@ -7,7 +7,7 @@ from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
 from journal.models.command_output import CommandOutput
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.command_outputs import CommandOutputs
 
 ENDS = 10
@@ -38,7 +38,7 @@ class OutputCommand(Command):
         output = self.outputs.find(args.n)
         files = OutputFiles(Path(output.folder))
         if not files.is_kept():
-            raise Refused(f"output {output.id} has no files left")
+            raise Rejection(f"output {output.id} has no files left")
         if args.tail:
             print("\n".join(files.last(args.tail)))
             return 0
@@ -62,7 +62,7 @@ class OutputCommand(Command):
         if args.summary:
             print(self.summary(output, files, lines))
             return 0
-        raise Refused(f"name the part of output {output.id} to read: --tail 20, --head 20, --grep \"<words>\", --lines 40-80, --reader <name>, --summary for how it ended, or --all for every line")
+        raise Rejection(f"name the part of output {output.id} to read: --tail 20, --head 20, --grep \"<words>\", --lines 40-80, --reader <name>, --summary for how it ended, or --all for every line")
 
     def summary(self, output: CommandOutput, files: OutputFiles, lines: list[str]) -> str:
         head = [f"output {output.id}: {files.outcome()}, {len(lines):,} lines", f"command: {output.headline()}"]

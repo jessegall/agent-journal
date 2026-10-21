@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import ClassVar
 
-from journal.features.migration.support.brought import Brought
+from journal.features.migration.support.import_tally import ImportTally
 from journal.features.migration.support.version_3_row import Version3Row
 from journal.features.migration.support.version_3_rows import Version3Rows
 from journal.support.actor import Actor
@@ -18,7 +18,7 @@ class ProjectKind:
     def __init__(self, ledger: MigratedRows) -> None:
         self.ledger = ledger
 
-    def bring(self, folder: Path, actor: Actor) -> Brought:
+    def bring(self, folder: Path, actor: Actor) -> ImportTally:
         count, skipped = 0, []
         for row in self.rows(Version3Rows(folder)):
             source = f"project/{self.kind}/{row.n}"
@@ -34,7 +34,7 @@ class ProjectKind:
                 skipped.append(f"{self.kind} {row.n}: could not be brought: {fault}")
                 continue
             count += 1
-        return Brought(self.title, count, tuple(skipped))
+        return ImportTally(self.title, count, tuple(skipped))
 
     def rows(self, rows: Version3Rows) -> list[Version3Row]:
         return rows.project(self.kind)

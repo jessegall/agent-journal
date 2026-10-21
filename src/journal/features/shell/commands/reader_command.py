@@ -6,7 +6,7 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 NAME = re.compile(r"[a-z0-9][a-z0-9-]*")
 
@@ -30,7 +30,7 @@ class ReaderCommand(Command):
 
     def add(self, args: Namespace, caller: Caller) -> int:
         if not NAME.fullmatch(args.name):
-            raise Refused(f"a reader's name is lowercase words joined by -, such as failed-tests, not {args.name}")
+            raise Rejection(f"a reader's name is lowercase words joined by -, such as failed-tests, not {args.name}")
         if args.script:
             self.readers.add_script(args.name, args.about, args.script)
         else:

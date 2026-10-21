@@ -1,7 +1,7 @@
 from journal.models.link import Link
 from journal.support.ref import Ref
 from journal.models.share import Share
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.docs import Docs
 from journal.repositories.links import Links
 from journal.repositories.plans import Plans
@@ -20,7 +20,7 @@ class ShareTargets:
     def named(self, named: str) -> Ref:
         kind, _, number = named.strip().partition(":")
         if kind not in self.repositories or not number.isdigit():
-            raise Refused(f"only a document, a report or a plan can be shared: name it as docs:12, reports:4 or plans:2, not {named!r}")
+            raise Rejection(f"only a document, a report or a plan can be shared: name it as docs:12, reports:4 or plans:2, not {named!r}")
         ref = Ref(kind, int(number))
         self.repositories[ref.type].find(ref.id)
         return ref

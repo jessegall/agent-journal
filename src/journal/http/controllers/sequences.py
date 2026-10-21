@@ -4,7 +4,7 @@ from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.models.sequence import Sequence
 from journal.models.trigger_action import TriggerAction
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.sequences import Sequences
 from journal.repositories.triggers import Triggers
 
@@ -26,7 +26,7 @@ class SequenceController(Controller[Sequence]):
             self.triggers.save(self.triggers.find(int(value.removeprefix(TRIGGER))).with_(action=TriggerAction.SEQUENCE, text=sequence.title), request.actor)
             return Response.json(self.shown(self.repository.save(sequence.with_(starts_on=""), request.actor)))
         if value and not value.endswith(".created"):
-            raise Refused(f"a sequence starts by hand, when a row is created, written <table>.created, or by a trigger, written trigger:<id>; {value!r} is none of them")
+            raise Rejection(f"a sequence starts by hand, when a row is created, written <table>.created, or by a trigger, written trigger:<id>; {value!r} is none of them")
         for trigger in self.triggers.starting(sequence.title):
             self.triggers.delete(trigger, request.actor)
         return Response.json(self.shown(self.repository.save(sequence.with_(starts_on=value), request.actor)))

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 
-from journal.db.migrations.unwrapped import Unwrapped
+from journal.db.migrations.unwrap_outcome import UnwrapOutcome
 
 
 @dataclass(frozen=True)
@@ -23,8 +23,8 @@ class StoredState:
     def resumed(self) -> "StoredState":
         return self.resume or StoredState("idle", {})
 
-    def without(self, name: str) -> Unwrapped:
-        inner = self.resume.without(name) if self.resume else Unwrapped(StoredState("idle", {}), ())
+    def without(self, name: str) -> UnwrapOutcome:
+        inner = self.resume.without(name) if self.resume else UnwrapOutcome(StoredState("idle", {}), ())
         if self.name == name:
-            return Unwrapped(inner.state, (*inner.taken, self))
-        return Unwrapped(replace(self, resume=inner.state) if self.resume else self, inner.taken)
+            return UnwrapOutcome(inner.state, (*inner.taken, self))
+        return UnwrapOutcome(replace(self, resume=inner.state) if self.resume else self, inner.taken)

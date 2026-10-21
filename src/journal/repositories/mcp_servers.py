@@ -1,5 +1,5 @@
 from journal.models.mcp_server import McpServer
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.repository import Repository
 
 
@@ -10,4 +10,4 @@ class McpServers(Repository[McpServer]):
         for server in self.all():
             if server.name == name:
                 return server
-        raise NotFound("mcp server", name)
+        raise MissingRow("mcp server", name)

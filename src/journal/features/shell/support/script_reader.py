@@ -2,7 +2,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
 TIMEOUT = 30
 
@@ -27,7 +27,7 @@ class ScriptReader:
         try:
             ran = subprocess.run(["sh", str(self.path)], input="\n".join(lines) + "\n", capture_output=True, text=True, timeout=TIMEOUT)
         except subprocess.TimeoutExpired as late:
-            raise Refused(f"reader {self.name} took more than {TIMEOUT} seconds") from late
+            raise Rejection(f"reader {self.name} took more than {TIMEOUT} seconds") from late
         if ran.returncode != 0:
-            raise Refused(f"reader {self.name} failed with code {ran.returncode}: {ran.stderr.strip()[-300:]}")
+            raise Rejection(f"reader {self.name} failed with code {ran.returncode}: {ran.stderr.strip()[-300:]}")
         return ran.stdout.splitlines()

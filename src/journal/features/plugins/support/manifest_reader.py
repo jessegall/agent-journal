@@ -5,7 +5,7 @@ from pathlib import Path
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.registry import Registry
 from journal.support.plugin_manifest import PluginManifest
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.plugins import Plugins
 
 MANIFEST = "journal-plugin.json"
@@ -28,11 +28,11 @@ class ManifestReader:
     def read(self, folder: Path) -> PluginManifest:
         file = folder / MANIFEST
         if not file.is_file():
-            raise Refused(f"{folder} holds no {MANIFEST}")
+            raise Rejection(f"{folder} holds no {MANIFEST}")
         raw = json.loads(file.read_text())
         unknown = sorted(set(raw) - KEYS)
         if unknown:
-            raise Refused(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
+            raise Rejection(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
         manifest = PluginManifest.from_json(raw)
         self.named(manifest)
         self.spoken(manifest)
@@ -53,34 +53,34 @@ class ManifestReader:
                 taken |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.of(plugin), plugin.manifest)}
         for name in self.skill_names(folder, manifest):
             if name in taken:
-                raise Refused(f"{manifest.name}'s skill {name} has the name of a skill of {taken[name]}")
+                raise Rejection(f"{manifest.name}'s skill {name} has the name of a skill of {taken[name]}")
 
     def named(self, manifest: PluginManifest) -> None:
         if not NAME.match(manifest.name):
-            raise Refused(f"a plugin's name is 2 to 32 lowercase letters, digits and dashes: {manifest.name!r} is not")
+            raise Rejection(f"a plugin's name is 2 to 32 lowercase letters, digits and dashes: {manifest.name!r} is not")
         if self.registry.has_feature(manifest.name):
-            raise Refused(f"{manifest.name} is the name of one of the journal's own features")
+            raise Rejection(f"{manifest.name} is the name of one of the journal's own features")
 
     @staticmethod
     def spoken(manifest: PluginManifest) -> None:
         if manifest.protocol not in PROTOCOLS:
-            raise Refused(f"{manifest.name} speaks protocol {manifest.protocol}; this journal speaks {', '.join(map(str, PROTOCOLS))}")
+            raise Rejection(f"{manifest.name} speaks protocol {manifest.protocol}; this journal speaks {', '.join(map(str, PROTOCOLS))}")
 
     @staticmethod
     def heard(manifest: PluginManifest) -> None:
         for event in manifest.hears:
             row = ROW_EVENT.match(event)
             if event not in AGENT_EVENTS and not row:
-                raise Refused(f"{manifest.name} hears {event}, which is no event")
+                raise Rejection(f"{manifest.name} hears {event}, which is no event")
             if row and row["table"] in PRIVATE_TABLES:
-                raise Refused(f"{manifest.name} hears {event}: the {row['table']} rows are never sent to a plugin")
+                raise Rejection(f"{manifest.name} hears {event}: the {row['table']} rows are never sent to a plugin")
         for window in manifest.holds:
             if window.event not in manifest.hears:
-                raise Refused(f"{manifest.name} holds {window.event} but does not hear it")
+                raise Rejection(f"{manifest.name} holds {window.event} but does not hear it")
             if window.event not in HOLDABLE:
-                raise Refused(f"{manifest.name} holds {window.event}, which no plugin may hold; it may hold {', '.join(HOLDABLE)}")
+                raise Rejection(f"{manifest.name} holds {window.event}, which no plugin may hold; it may hold {', '.join(HOLDABLE)}")
             if window.window_ms < 0:
-                raise Refused(f"{manifest.name} holds {window.event} within {window.window_ms} ms: a window is 0 or more milliseconds")
+                raise Rejection(f"{manifest.name} holds {window.event} within {window.window_ms} ms: a window is 0 or more milliseconds")
 
     @staticmethod
     def inside(folder: Path, manifest: PluginManifest) -> None:
@@ -91,6 +91,6 @@ class ManifestReader:
         named += [("installed command", word) for word in manifest.installed.split()[:1] if "/" in word]
         for key, path in named:
             if Path(path).is_absolute() or not (root / path).resolve().is_relative_to(root):
-                raise Refused(f"{manifest.name}'s {key} {path} leads outside its folder")
+                raise Rejection(f"{manifest.name}'s {key} {path} leads outside its folder")
         if not (root / manifest.program).is_file():
-            raise Refused(f"{manifest.name}'s program {manifest.program} is not in its folder")
+            raise Rejection(f"{manifest.name}'s program {manifest.program} is not in its folder")

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 
 @dataclass(frozen=True)
@@ -11,7 +11,7 @@ class MemoryRow:
     id: int
     text: str
     keywords: tuple[str, ...]
-    mark: ChatMark
+    mark: CardKind
     presence: bool = False
 
     def line(self) -> str:

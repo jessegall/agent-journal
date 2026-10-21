@@ -13,7 +13,7 @@ from journal.models.author import Author
 from journal.models.message import Message
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.mcp_servers import McpServers
 from journal.repositories.messages import Messages
 from journal.support.scope import Scope
@@ -75,7 +75,7 @@ class SecretCommand(Command):
     def request(self, args: Namespace, caller: Caller) -> int:
         reaching = [s.name for s in self.servers.all() if args.title.lower() in (s.name.lower(), s.title.lower())]
         if reaching:
-            raise Refused(f"{args.title} is reached through the MCP server {', '.join(reaching)} already: use its tools, and if they cannot do what you need, say what is missing in the chat")
+            raise Rejection(f"{args.title} is reached through the MCP server {', '.join(reaching)} already: use its tools, and if they cannot do what you need, say what is missing in the chat")
         secret = self.secrets.save(self.file(args.title, "", SecretKind.named(args.kind), caller).with_(url=args.url, asked_at=datetime.now(timezone.utc)), caller.actor)
         asking = f"Please log in to {secret.title} with the Log in button on the Secrets page; a browser opens on your computer, and the login is saved when you close it" if secret.kind == SecretKind.BROWSER_LOGIN else f"Please fill in the secret {secret.title} on the Secrets page, never in the chat"
         self.messages.save(Message(author=Author.AGENT, text=f"{asking}: I need it {args.why}.\n\nsecret {secret.id}"), caller.actor)
@@ -92,17 +92,17 @@ class SecretCommand(Command):
         return 0
 
     def fill(self, args: Namespace, caller: Caller) -> int:
-        raise Refused("a secret's value is filled by the user on the Secrets page, never by a command: ask for it with `journal secret request`")
+        raise Rejection("a secret's value is filled by the user on the Secrets page, never by a command: ask for it with `journal secret request`")
 
     def store(self, args: Namespace, caller: Caller) -> int:
         secret = self.secrets.find(args.n)
         file = Path(args.file)
         if not file.is_file():
-            raise Refused(f"no file at {args.file}: write the value you made to a file, and the journal moves it into the secret")
+            raise Rejection(f"no file at {args.file}: write the value you made to a file, and the journal moves it into the secret")
         value = file.read_text().strip()
         file.unlink()
         if not value:
-            raise Refused(f"{args.file} held no value; it is deleted all the same")
+            raise Rejection(f"{args.file} held no value; it is deleted all the same")
         self.values.put_field(secret.field(args.field), value)
         self.secrets.save(secret.filled_in(args.field), caller.actor)
         print(f"{args.field} of secret {secret.id} stored, and {args.file} deleted")
@@ -126,7 +126,7 @@ class SecretCommand(Command):
     def run(self, args: Namespace, caller: Caller) -> int:
         secret = self.named(args.secret)
         if not secret.helpers and caller.session and self.workers.by_session(caller.session):
-            raise Refused(f"secret {secret.id} is the main agent's alone: the user lets helpers have it on the Secrets page")
+            raise Rejection(f"secret {secret.id} is the main agent's alone: the user lets helpers have it on the Secrets page")
         code, output = self.runner.run(secret, [c for c in args.command if c != "--"], args.stdin, args.env)
         self.secrets.save(secret.with_(used_at=datetime.now(timezone.utc)), caller.actor)
         print(output.decode(errors="replace"), end="")
@@ -136,7 +136,7 @@ class SecretCommand(Command):
         secret = self.secrets.find(args.n)
         name = args.program
         if "/" in name or Programs.never_given(name):
-            raise Refused(f"a secret is never given to {name}: propose the program that uses it directly, named bare, such as curl or gh")
+            raise Rejection(f"a secret is never given to {name}: propose the program that uses it directly, named bare, such as curl or gh")
         if name in secret.programs or name in secret.proposed:
             print(f"{name} is {'allowed' if name in secret.programs else 'proposed'} for secret {secret.id} already")
             return 0
@@ -149,7 +149,7 @@ class SecretCommand(Command):
         if args.wait:
             return self.waited(secret)
         if not secret.auto_login:
-            raise Refused(f"the user logs in to {secret.title} with the Log in button on the Secrets page; ask for it with `journal secret request {secret.title} --kind 'browser login' --url <address> --why <what for>`")
+            raise Rejection(f"the user logs in to {secret.title} with the Log in button on the Secrets page; ask for it with `journal secret request {secret.title} --kind 'browser login' --url <address> --why <what for>`")
         self.window.open(secret, self.scope.id, caller.actor)
         print(f"a browser opens on {secret.url} on the user's computer: wait for it with `journal secret login {secret.id} --wait`")
         return 0
@@ -165,7 +165,7 @@ class SecretCommand(Command):
     def named(self, given: str) -> Secret:
         rows = [s for s in self.secrets.live() if str(s.id) == given or s.title.lower() == given.lower()]
         if not rows:
-            raise Refused(f"no secret is numbered or titled {given!r}: `journal secret list` names them")
+            raise Rejection(f"no secret is numbered or titled {given!r}: `journal secret list` names them")
         return rows[0]
 
     def where(self, args: Namespace, caller: Caller) -> int:

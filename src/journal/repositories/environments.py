@@ -1,7 +1,7 @@
 from journal.support.actor import Actor
 from journal.support.all_models import AllModels
 from journal.models.environment import Environment
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.repository import Repository
 
 
@@ -15,7 +15,7 @@ class Environments(Repository[Environment]):
     def existing(self, name: str) -> Environment:
         rows = self.matching(name=name)
         if not rows:
-            raise NotFound("environment", name)
+            raise MissingRow("environment", name)
         return rows[0]
 
     def wipe(self, environment: Environment, actor: Actor) -> None:

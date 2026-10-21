@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
-from journal.features.git.listeners.spot_commit import SpotCommit
-from journal.features.git.listeners.mark_worktree_session import MarkWorktreeSession
+from journal.features.git.listeners.commit_detection import CommitDetection
+from journal.features.git.listeners.worktree_session_link import WorktreeSessionLink
 from journal.features.git.support.git_conduct import GitConduct
 from journal.features.git.support.git_data_reader import GitDataReader
 
@@ -11,6 +11,6 @@ class Git(Feature):
     name = "git"
     title = "Git"
     help = "Every commit the agent makes is a badge in the chat."
-    listeners = (SpotCommit, MarkWorktreeSession)
+    listeners = (CommitDetection, WorktreeSessionLink)
     data = (GitDataReader,)
     conduct = (GitConduct,)

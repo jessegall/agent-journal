@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.plans.support.plans_data_reader import PlansDataReader
-from journal.features.plans.listeners.block_plan_on_its_tasks import BlockPlanOnItsTasks
+from journal.features.plans.listeners.plan_blockade import PlanBlockade
 from journal.features.plans.listeners.clear_plan_waits import ClearPlanWaits
 from journal.features.plans.listeners.count_plan_reviewers import CountPlanReviewers
 from journal.engine.nudge import Nudge
@@ -8,7 +8,7 @@ from journal.support.skill import Skill
 from journal.features.plans.commands.plan_command import PlanCommand
 from journal.features.plans.listeners.advance_plan import AdvancePlan
 from journal.features.plans.listeners.reopen_finished_plan import ReopenFinishedPlan
-from journal.features.plans.listeners.reopen_plan_of_reopened_task import ReopenPlanOfReopenedTask
+from journal.features.plans.listeners.plan_reopening import PlanReopening
 from journal.features.plans.support.plans_conduct import PlansConduct
 from journal.features.plans.seeds.closed_plans import ClosedPlans
 from journal.features.plans.states.following_plan import FollowingPlan
@@ -20,7 +20,7 @@ class Plans(Feature):
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."
     states = (FollowingPlan,)
     commands = (PlanCommand,)
-    listeners = (BlockPlanOnItsTasks, ClearPlanWaits, CountPlanReviewers, AdvancePlan, ReopenFinishedPlan, ReopenPlanOfReopenedTask)
+    listeners = (PlanBlockade, ClearPlanWaits, CountPlanReviewers, AdvancePlan, ReopenFinishedPlan, PlanReopening)
     conduct = (PlansConduct,)
     data = (PlansDataReader,)
     seeds = (ClosedPlans,)
