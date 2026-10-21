@@ -15,6 +15,8 @@ from journal.repositories.messages import Messages
 from journal.repositories.statistics import Statistics
 from journal.repositories.timings import Timings
 from journal.models.timing import Timing
+from journal.models.support.request_loads import RequestLoads
+from journal.repositories.load_tally import LoadTally
 from journal.repositories.setting_rows import SettingRows
 from journal.engine.support.nudge_log import NudgeLog
 from journal.support.timeout import Timeout
@@ -27,12 +29,13 @@ TEST_RUN_KEY = "tests.running"
 
 
 HOOK = "HOOK"
+LOADS_PREFIX = "developer.loads."
 OUTWARD_ROUTES = ("/journal/plugins/preview", "/journal/plugins/{n}/remove", "/journal/plugins/{n}/upgrade", "/journal/plugins/{n}/enable", "/journal/plugins", "/journal/updates/install")
 OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin propose", "/cli/setup update", "/cli/update ", "/cli/worker dispatch", "/cli/check run", "/cli/mcp ")
 
 
 class SlowRequests:
-    """Measures each request against its budget where the journal develops itself, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time and again once the set minutes have passed since it was last told, the time it was told kept in the mark's data."""
+    """Measures each request against its budget where the journal develops itself, with the rows it loaded while load counting is on, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time and again once the set minutes have passed since it was last told, the time it was told kept in the mark's data."""
 
     def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudges: NudgeLog, clock: Clock, deferred: ListenerQueue, statistics: Statistics, timings: Timings) -> None:
         self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudges, self.clock, self.deferred = config, settings, cards, messages, agents, environments, scope, nudges, clock, deferred
@@ -40,8 +43,13 @@ class SlowRequests:
         self.timings = timings
         self.started = time.monotonic()
 
+    def begin(self) -> None:
+        if self.settings.option(Faults.LOADS):
+            LoadTally.begin()
+
     def measured(self, method: str, path: str, ms: float) -> None:
-        self.deferred.add(lambda: self.counted(method, path, round(ms)))
+        loads = LoadTally.ended()
+        self.deferred.add(lambda: self.counted(method, path, round(ms), loads))
         route = re.sub(r"/\d+(?=/|$)", "/{n}", path)
         if not self.judging() or self.is_outward(route):
             return
@@ -50,9 +58,11 @@ class SlowRequests:
             return
         self.deferred.add(lambda: self.reported(method, route, round(ms), budget))
 
-    def counted(self, method: str, path: str, ms: int) -> None:
+    def counted(self, method: str, path: str, ms: int, loads: RequestLoads) -> None:
         self.statistics.measured("developer.hooks" if method == HOOK else "developer.requests", ms, Actor.system())
-        self.timings.logged(Timing(method=method, route=path, ms=ms, time=self.clock.time()), Actor.system())
+        self.timings.logged(Timing(method=method, route=path, ms=ms, time=self.clock.time(), loads=loads), Actor.system())
+        for count in loads.counts:
+            self.statistics.added(f"{LOADS_PREFIX}{count.model}", count.rows, Actor.system())
         if method == HOOK:
             self.statistics.measured(f"developer.hooks.{path.rsplit('/', 1)[-1]}", ms, Actor.system())
 

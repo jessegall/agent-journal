@@ -38,6 +38,7 @@ class Receiver:
         self.transcript, self.cards, self.slow = transcript, cards, slow
 
     def receive(self, hook: Hook) -> Decision:
+        self.slow.begin()
         environment = self.environments.lookup(hook.environment)
         with self.scope.environment(environment.id):
             if not self.launches.is_launch(environment.name, hook.launch):

@@ -205,6 +205,9 @@ class PlanCommand(Command):
     def show(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
         print(f"plan {plan.id} {plan.state}: {plan.title}")
+        if plan.state == PlanState.STARTED and (phases := self.plans.phased(plan)):
+            current = phases[plan.current_phase(phases) - 1]
+            print(f"phase in hand: {current.number} of {len(phases)}, {current.phase.title}")
         phased = set()
         for i, phase in enumerate(self.plans.plan_phases(plan), 1):
             print(f"phase {i}: {phase.title}" + (f" (complete when {phase.completion_rule})" if phase.completion_rule else "") + (" [checkpoint]" if phase.checkpoint else ""))

@@ -19,7 +19,7 @@ A report holds what was checked or researched now; lasting knowledge goes in a d
 - `journal report create "<title>" --file <path> --about plans:1` writes one from a markdown file, its `##`
   headings as sections, linked to the rows it is about; `--body "<text>"` for a short one.
 - `journal report show <n>` prints its outline, numbered headings with their length; read one section with
-  `--section <n or heading>` (`--bullets` for its bullets alone), or find lines with `--grep "<words>"`. It is never read whole.
-  `journal report list` names them.
+  `--section <n or heading>` (`--bullets` for its bullets alone), or find lines with `--grep "<words>"`. Read it whole with
+  `--all` only when every section matters to the job; the outline and one section are the default. `journal report list` names them.
 - In the chat say in one or two plain lines what it concludes, then its reference on a line of its own, like report 3.
 """, keywords=('report', 'reports', 'critique', 'review', 'write-up'))

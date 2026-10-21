@@ -85,6 +85,33 @@ def test_a_project_files_bytes_are_served_with_their_media_type_and_nothing_outs
     assert call(server, "GET", "/journal/project-files/raw?path=missing.png")[0] == 404
 
 
+def test_load_counting_names_the_rows_each_request_loaded_only_while_it_is_on(server):
+    developer = lambda: call(server, "GET", "/journal/developer")[1]
+    def logged(label):
+        for _ in range(50):
+            found = [line for line in developer()["recent"] if f"{line['method']} {line['route']}" == label]
+            if found:
+                return found
+            time.sleep(0.1)
+        return []
+    for n in range(3):
+        call(server, "POST", "/journal/tasks", {"title": f"task {n}"})
+    call(server, "GET", "/journal/tasks?limit=50")
+    assert logged("GET /journal/tasks") and developer()["loads"] == [] and developer()["models"] == [], "off, a request is timed and nothing is counted"
+    call(server, "POST", "/journal/settings", {"faults": {"count_loads": True}})
+    call(server, "GET", "/journal/tasks?limit=51")
+    for _ in range(50):
+        counted = [line for line in developer()["loads"] if line["label"] == "GET /journal/tasks"]
+        if counted:
+            break
+        time.sleep(0.1)
+    assert counted and int(re.search(r"(\d+) tasks", counted[0]["loads"]).group(1)) >= 3 and counted[0]["ms"] >= 0, "on, a request names the rows it loaded by their table"
+    totals = {total["model"]: total["rows"] for total in developer()["models"]}
+    assert totals["tasks"] >= 3, "and they add up per model since the last reset"
+    reset = call(server, "POST", "/journal/developer/reset")[1]
+    assert "tasks" not in {total["model"] for total in reset["models"]} and all(line["label"] != "GET /journal/tasks" for line in reset["loads"]), "Reset clears the loads with the counts"
+
+
 def test_a_missing_row_and_a_missing_route_say_so(server):
     assert call(server, "GET", "/journal/tasks/9")[0] == 404
     assert call(server, "GET", "/journal/nothing")[0] == 404

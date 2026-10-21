@@ -17,6 +17,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.features.memory.support.memory_context import MemoryContext
+from journal.features.briefing.support.overview_commands import OverviewCommands
 from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.support.missing_row import MissingRow
@@ -34,13 +35,13 @@ TAKEOVER_WINDOW = timedelta(hours=12)
 class EnvironmentCommand(Command):
     noun = "environment"
 
-    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, providers: Providers, config: Config, scope: Scope, memory: MemoryContext) -> None:
+    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, providers: Providers, config: Config, scope: Scope, memory: MemoryContext, overview_commands: OverviewCommands) -> None:
         self.environments, self.agents, self.tasks, self.messages, self.questions, self.workers, self.entries = environments, agents, tasks, messages, questions, workers, entries
         self.rules, self.facts, self.reminders, self.providers, self.config, self.scope = rules, facts, reminders, providers, config, scope
-        self.memory = memory
+        self.memory, self.overview_commands = memory, overview_commands
 
     def arguments(self, verbs) -> None:
-        self.verb(verbs, "overview", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders; owed at every session start")
+        self.verb(verbs, "overview", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders, then each journal command the setting briefing.look_commands names, under its heading; owed at every session start")
         self.verb(verbs, "list", "every environment and when it was last used")
         self.verb(verbs, "json", "the same, for the boot menu")
         self.verb(verbs, "create", "a new line of work").add_argument("name")
@@ -62,6 +63,8 @@ class EnvironmentCommand(Command):
     def overview(self, args: Namespace, caller: Caller) -> int:
         for line in self.current_work(caller.session):
             print(line)
+        for section in self.overview_commands.sections(caller):
+            print(f"\n{section}")
         self.overview_record(caller)
         self.memory.admit_all(caller.actor)
         return 0
