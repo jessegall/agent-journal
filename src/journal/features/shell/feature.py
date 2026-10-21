@@ -63,7 +63,7 @@ Every shell command you run goes through the journal's runner.
   watch ends by itself when the command ends, and you are told once how it ended; `journal output unwatch` ends it
   sooner. One output is watched at a time. A reader written for a watch picks few lines that read well in the card, and
   may show how far the command has come: `--progress <regex>` takes the last match, its groups a percentage such as
-  `\[(\d+)%\]` or a count of a total such as `(\d+)/(\d+)`, drawn as a bar in the card, and `--label "<words>"` names it.
+  `\\[(\\d+)%\\]` or a count of a total such as `(\\d+)/(\\d+)`, drawn as a bar in the card, and `--label "<words>"` names it.
 - A test run, a build or any other command's output is shown whole up to 400 characters; past that you see only a
   line naming the output to read by its number, with its lines, its characters and the part of the line it came from. A command that reads (cat, grep, sed, git diff) is shown up to 8,000
   characters, past that by its two ends. A line of journal commands is shown whole and kept as no output.
