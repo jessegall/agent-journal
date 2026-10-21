@@ -13,7 +13,7 @@ class Timings(Repository[Timing]):
     def logged(self, timing: Timing, actor: Actor) -> Timing:
         with self.connection.transaction():
             row = self.save(timing, actor)
-            self.connection.execute(f"DELETE FROM {self.model.table()} WHERE id <= ?", (row.id - LOG_ROWS,))
+            self.connection.execute(f"DELETE FROM {self.model.table()} WHERE id <= ?", (row.row_id - LOG_ROWS,))
         return row
 
     def recent(self, limit: int) -> list[Timing]:

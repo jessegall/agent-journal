@@ -15,7 +15,7 @@ class TaskBriefing:
         return ([f"brief: {task.brief}"] if task.brief else []) + [f"logged: {line}" for line in logged]
 
     def whole(self, task: Task) -> str:
-        logged = sorted(self.logs.logs(task), key=lambda log: log.id)
+        logged = sorted(self.logs.logs(task), key=lambda log: log.row_id)
         entries = "\n".join(f"  {log.created_at:%Y-%m-%d %H:%M}  {log.line}" for log in logged)
         return f"brief: {task.brief or 'none'}\n" + (f"log ({len(logged)} lines):\n{entries}" if logged else "log: none")
 

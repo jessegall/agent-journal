@@ -34,5 +34,8 @@ class WaitTargets:
 
     @staticmethod
     def is_newly_resolved(event: Updated) -> bool:
-        model, prior_row = event.model, event.previous
-        return isinstance(model, WAIT_TARGETS) and model.is_resolved() and (prior_row is None or not prior_row.is_resolved())
+        model = event.model
+        if not isinstance(model, WAIT_TARGETS):
+            return False
+        prior_row = event.previous_row(type(model))
+        return model.is_resolved() and (prior_row is None or not prior_row.is_resolved())

@@ -5,9 +5,11 @@ from journal.features.faults.support.slow_requests import SlowRequests
 
 from journal.support.rejection import Rejection
 from journal.support.missing_row import MissingRow
+from journal.http.support.file_response import FileResponse
 from journal.http.support.request import Request
+from journal.http.support.stream_response import StreamResponse
 from journal.support.response import Response
-from journal.http.support.route import Handler, Route
+from journal.http.support.route import Answer, Handler, Route
 from journal.http.support.viewer_presence import ViewerPresence
 from journal.repositories.scope import Scope
 
@@ -29,19 +31,28 @@ class Router:
         self.routes.append(Route("GET", path, handler, outward=True))
 
     def matched(self, request: Request) -> Route | None:
-        return next((route for route in self.routes if route.params(request.method, request.path) is not None), None)
+        matching = self.match(request)
+        return None if matching is None else matching[0]
 
-    def route(self, request: Request) -> Response:
+    def match(self, request: Request) -> tuple[Route, dict[str, str]] | None:
+        return next(((route, params) for route in self.routes if (params := route.params(request.method, request.path)) is not None), None)
+
+    def page(self, request: Request) -> Response | FileResponse:
+        answer = self.route(request)
+        return Response.refused(f"{request.method} {request.path} streams, so it is no page") if isinstance(answer, StreamResponse) else answer
+
+    def route(self, request: Request) -> Answer:
         self.presence.record(request.headers)
-        route = self.matched(request)
-        if route is None:
+        matching = self.match(request)
+        if matching is None:
             return Response.absent(f"{request.method} {request.path}")
+        route, params = matching
         try:
             with self.scope.requested(lambda: request.environment):
                 began = time.perf_counter()
                 if not route.outward:
                     self.slow.begin()
-                answer = route.handler(request.with_params({name: unquote(value) for name, value in route.params(request.method, request.path).items()}))
+                answer = route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
                 if not route.outward:
                     self.slow.measured(request.method, request.measured_path(), (time.perf_counter() - began) * 1000)
                 return answer

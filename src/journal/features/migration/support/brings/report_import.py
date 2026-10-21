@@ -21,4 +21,4 @@ class ReportImport(EnvironmentKind):
         self.reports = reports
 
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Report:
-        return self.reports.imported(Report(environment_id=target.id, title=row.title, abstract=row.abstract, body=row.markdown()), row.creation_moment(), actor)
+        return self.reports.imported(Report(environment_id=target.row_id, title=row.title, abstract=row.abstract, body=row.markdown()), row.creation_moment(), actor)

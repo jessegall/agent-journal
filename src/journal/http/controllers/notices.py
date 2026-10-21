@@ -11,6 +11,8 @@ from journal.repositories.notices import Notices
 class NoticeController(Controller[Notice]):
     """Notices pinned for the user, open until closed."""
 
+    repository: Notices
+
     def __init__(self, notices: Notices) -> None:
         self.repository = notices
 

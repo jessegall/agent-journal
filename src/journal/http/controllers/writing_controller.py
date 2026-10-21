@@ -7,10 +7,11 @@ from journal.http.support.download_response import DownloadResponse
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
 from journal.support.response import Response
-from journal.models.model import Model
+from journal.models.doc import Doc
+from journal.models.report import Report
 from journal.support.docx_export import DocxExport
 
-W = TypeVar("W", bound=Model)
+W = TypeVar("W", Doc, Report)
 
 
 class WritingController(Controller[W]):

@@ -9,6 +9,8 @@ NUDGE_ENTRIES = 200
 class NudgeController(Controller[Entry]):
     """The lines the journal typed to the agent, newest page, each an entry of its kind."""
 
+    repository: Entries
+
     def __init__(self, entries: Entries) -> None:
         self.repository = entries
 

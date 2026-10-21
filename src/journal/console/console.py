@@ -50,7 +50,7 @@ class Console:
 
     def run(self, argv: list[str], caller: Caller) -> Outcome:
         output, err = io.StringIO(), io.StringIO()
-        with self.scope.environment(self.environments.lookup(caller.environment).id):
+        with self.scope.environment(self.environments.lookup(caller.environment).row_id):
             return self.captured(argv, caller, output, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:
@@ -82,6 +82,12 @@ class Console:
         outcome = self.run(list(line.argv), caller)
         return (outcome.text or outcome.error).rstrip() or "nothing"
 
+    @staticmethod
+    def exit_status(ended: SystemExit) -> int:
+        if isinstance(ended.code, int):
+            return ended.code
+        return 0 if ended.code is None else 1
+
     def captured(self, argv: list[str], caller: Caller, output: io.StringIO, err: io.StringIO) -> Outcome:
         argv = self.with_verb(self.switched(argv))
         produced = Creations.begin()
@@ -94,7 +100,7 @@ class Console:
                 print(refused, file=err)
                 code = 2
             except SystemExit as ended:
-                code = ended.code
+                code = self.exit_status(ended)
             except (MissingRow, Rejection) as refused:
                 print(refused, file=err)
                 code = 1

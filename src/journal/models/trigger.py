@@ -20,4 +20,4 @@ class Trigger(Model):
         return any(f" {' '.join(re.findall(r'[\w;/-]+', word.lower()))} " in lowered for word in self.phrases)
 
     def summary_line(self) -> str:
-        return self.first_line(self.text)
+        return self.opening_line(self.text)

@@ -6,6 +6,7 @@ from typing import ClassVar, Self
 from journal.events.event import Event
 from journal.support.actor import Actor
 from journal.models.support.dock_card import DockCard
+from journal.support.unsaved_row import UnsavedRow
 
 
 @dataclass(frozen=True)
@@ -37,6 +38,30 @@ class Model:
     def is_new(self) -> bool:
         return self.id is None
 
+    @property
+    def row_id(self) -> int:
+        if self.id is None:
+            raise UnsavedRow(self.table())
+        return self.id
+
+    @property
+    def creation_actor(self) -> Actor:
+        if self.creator is None:
+            raise UnsavedRow(self.table())
+        return self.creator
+
+    @property
+    def creation_time(self) -> datetime:
+        if self.created_at is None:
+            raise UnsavedRow(self.table())
+        return self.created_at
+
+    @property
+    def update_time(self) -> datetime:
+        if self.updated_at is None:
+            raise UnsavedRow(self.table())
+        return self.updated_at
+
     def heading(self) -> str:
         numbered = f"{self.noun().capitalize()} {self.id}"
         title = self.title_words()
@@ -52,7 +77,7 @@ class Model:
         return DockCard.plain()
 
     @staticmethod
-    def first_line(text: str) -> str:
+    def opening_line(text: str) -> str:
         return next((line.strip() for line in text.splitlines() if line.strip() and not line.startswith("#")), "")
 
     def mentioning_text(self) -> str:

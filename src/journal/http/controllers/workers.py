@@ -12,6 +12,8 @@ from journal.repositories.workers import Workers
 class WorkerController(Controller[Worker]):
     """The workers sent from here, each with the last report it filed; one stopped is closed. The viewer sends one its next job, stops it or retires it as the command does."""
 
+    repository: Workers
+
     def __init__(self, workers: Workers, reports: WorkerReports, actions: WorkerActions) -> None:
         self.repository, self.reports, self.actions = workers, reports, actions
 

@@ -35,7 +35,7 @@ class Manifest:
         return [{"key": f.name, "title": f.title, "line": f.help, "section": self.placed(f)[0], "tab": self.placed(f)[1], "lead": f.name} for f in self.applying()] + SYSTEM_GROUPS
 
     @staticmethod
-    def placed(feature: Feature) -> tuple[str, str]:
+    def placed(feature: type[Feature]) -> tuple[str, str]:
         if feature.name in PLACED:
             return PLACED[feature.name]
         return ("Agent", "agent") if feature.states or feature.nudges else ("Features", "features")

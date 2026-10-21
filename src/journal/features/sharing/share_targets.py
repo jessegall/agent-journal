@@ -1,5 +1,6 @@
 from journal.models.link import Link
 from journal.models.support.ref import Ref
+from journal.models.plan import Plan
 from journal.models.share import Share
 from journal.support.rejection import Rejection
 from journal.repositories.docs import Docs
@@ -15,7 +16,7 @@ class ShareTargets:
 
     def __init__(self, docs: Docs, reports: Reports, plans: Plans, links: Links) -> None:
         self.plans, self.links = plans, links
-        self.repositories = {"docs": docs, "reports": reports, "plans": plans}
+        self.repositories: dict[str, Docs | Reports | Plans] = {"docs": docs, "reports": reports, "plans": plans}
 
     def lookup(self, matched: str) -> Ref:
         kind, _, number = matched.strip().partition(":")
@@ -43,6 +44,6 @@ class ShareTargets:
         ref = self.lookup(matched)
         row = self.repositories[ref.type].find(ref.id)
         lines = [f"{row.title} ({ref})"]
-        if ref.type == "plans":
+        if isinstance(row, Plan):
             lines += [f"{task.title} ({Ref.build(task)})" for task in self.plans.plan_tasks(row)]
         return lines

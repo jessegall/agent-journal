@@ -24,10 +24,11 @@ class ShareServer:
         return self.place.stored().port
 
     def start(self) -> None:
-        self._server = self._bind(self.place.stored().port)
-        self._server.daemon_threads = True
-        self.place.store(port=self._server.server_address[1])
-        threading.Thread(target=lambda: self._server.serve_forever(poll_interval=POLL_SECONDS), name="share", daemon=True).start()
+        server = self._bind(self.place.stored().port)
+        server.daemon_threads = True
+        self._server = server
+        self.place.store(port=server.server_address[1])
+        threading.Thread(target=lambda: server.serve_forever(poll_interval=POLL_SECONDS), name="share", daemon=True).start()
 
     def stop(self) -> None:
         if self._server:

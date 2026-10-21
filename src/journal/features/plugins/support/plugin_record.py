@@ -16,7 +16,7 @@ class PluginRecord:
         return [line for line in map(self.line, self.entries.actor_entries(f"plugin:{name}")) if line]
 
     def line(self, entry: Entry) -> RecordLine | None:
-        data, time = entry.data or {}, entry.created_at
+        data, time = entry.data, entry.creation_time
         if entry.kind in CHANGES:
             table = data.get("table", "")
             opens = table in OPENED and entry.kind != "deleted"

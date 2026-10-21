@@ -1,11 +1,12 @@
 from pathlib import Path
+from typing import Callable
 
 from journal.config import Config
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.script_reader import ScriptReader
 from journal.support.rejection import Rejection
 
-KINDS = {".pattern": Reader.loaded, ".sh": ScriptReader.loaded}
+KINDS: dict[str, Callable[[Path], Reader | ScriptReader]] = {".pattern": Reader.loaded, ".sh": ScriptReader.loaded}
 
 
 class Readers:

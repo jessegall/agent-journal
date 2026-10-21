@@ -29,7 +29,7 @@ class TranscriptTurns:
             self._read[hook.session] = saved.time
         turns = [TurnDisplayed(text=text, delta=text, turn_id=f"transcript:{hook.session}:{i}", final=True) for i, text in enumerate(saved.texts)]
         context = self.providers.lookup(hook.provider).status(hook.session, self.config.status_home).context
-        return [event.placed(hook.session, environment.id, hook.provider, context, self.clock.time(), hook.subagent) for event in [*saved.boundary_paths, *turns]]
+        return [event.placed(hook.session, environment.row_id, hook.provider, context, self.clock.time(), hook.subagent) for event in [*saved.boundary_paths, *turns]]
 
     def missed(self, session: str, provider: str, deadline: float) -> FileWrites:
         with self._read_lock:

@@ -19,11 +19,11 @@ class MessagesDataReader:
         newest = self.messages.last_user_message() if unread else None
         read_positions = [m.read_position for m in unanswered if m.read_at]
         return MessagesData(
-            unread=tuple(m.id for m in unread),
-            unanswered=tuple(m.id for m in unanswered),
+            unread=tuple(m.row_id for m in unread),
+            unanswered=tuple(m.row_id for m in unanswered),
             unanswered_files=tuple(f"{self.config.files / 'message' / str(m.id)}/" for m in unanswered),
             inbox_tool_uses=agent.tool_uses - agent.inbox_position if newest else 0,
             mention_count=self.entries.nudge_count(agent.session, tuple(n.key for n in MessagesFeature.inbox_lines()), agent.inbox_position) if newest else 0,
             uses_unanswered=agent.tool_uses - min(read_positions) if read_positions else 0,
-            peer_questions=tuple(PeerQuestion(m.id, m.data[Message.PEER]) for m in self.messages.peer_questions()),
+            peer_questions=tuple(PeerQuestion(m.row_id, m.data[Message.PEER]) for m in self.messages.peer_questions()),
         )

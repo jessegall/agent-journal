@@ -14,7 +14,9 @@ class Outline:
 
     @classmethod
     def build(cls, text: str) -> "Outline":
-        sections, heading, lines, fenced = [], "(before the first heading)", [], False
+        sections: list[Section] = []
+        lines: list[str] = []
+        heading, fenced = "(before the first heading)", False
         for line in text.splitlines():
             fenced ^= line.lstrip().startswith("```")
             if line.startswith("#") and not fenced:

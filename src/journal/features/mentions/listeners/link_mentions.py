@@ -1,3 +1,4 @@
+from functools import partial
 from journal.support.listener_queue import ListenerQueue
 from journal.events.listener import Listener
 from journal.events.models.saved import Saved
@@ -20,7 +21,7 @@ class LinkMentions(Listener[Saved]):
     def handle(self, event: Saved) -> None:
         if isinstance(event.model, Link) or not event.model.mentioning_text():
             return
-        self.deferred.add(lambda row=event.model, actor=event.actor: self.link(row, actor))
+        self.deferred.add(partial(self.link, event.model, event.actor))
 
     def link(self, row: Model, actor: Actor) -> None:
         source = Ref.build(row)

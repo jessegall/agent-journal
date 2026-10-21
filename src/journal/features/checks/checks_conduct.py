@@ -14,7 +14,7 @@ class ChecksConduct(Conduct):
             return self.none()
         if not event.prior_failure:
             return self.none(Checks.CHECK_FAILED.create(n=event.check_id, title=event.title, tail=CheckOutput.summary(event.output)))
-        minutes = float(settings.value(Checks.REPEAT))
+        minutes = settings.decimal(Checks.REPEAT)
         if not minutes or event.time - event.failure_reported_at < minutes * 60:
             return self.none()
         return self.none(Checks.CHECK_FAILURE_REPEAT.create(n=event.check_id, title=event.title, tail=CheckOutput.summary(event.output)))

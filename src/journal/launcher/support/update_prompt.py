@@ -1,7 +1,7 @@
 from journal.config import Config
 from journal.features.updates.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
-from journal.features.updates.support.release_source import ReleaseSource
+from journal.features.updates.support.release_source import REPOSITORY, ReleaseSource
 from journal.launcher.screen import Screen
 from journal.launcher.support.option import Option
 from journal.support.rejection import Rejection
@@ -30,7 +30,7 @@ class UpdatePrompt:
         if self.screen.pick(f"Version {newest.version} is out", [f"This journal runs {VERSION}."], options, 0) != 0:
             return False
         try:
-            ReleaseInstaller(self.config).run(newest)
+            ReleaseInstaller(self.config).run(newest.tag, REPOSITORY)
         except Rejection as failed:
             self.screen.pick("The update did not finish", [str(failed), f"The journal starts with {VERSION}."], [Option("Start")], 0)
             return False

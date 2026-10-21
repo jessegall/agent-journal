@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from journal.models.scoped import Scoped
@@ -13,12 +13,12 @@ class PhoneCode(Scoped):
     code: str = ""
     short: str = ""
     days: int = 7
-    expires_at: datetime | None = None
+    expires_at: datetime = field(kw_only=True)
     tries: int = 0
     closed_at: datetime | None = None
 
     def is_open(self, time: datetime) -> bool:
-        return self.closed_at is None and self.expires_at is not None and self.expires_at > time
+        return self.closed_at is None and self.expires_at > time
 
     def tried(self, time: datetime) -> "PhoneCode":
         tries = self.tries + 1

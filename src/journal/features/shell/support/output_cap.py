@@ -17,5 +17,5 @@ class OutputCap:
         if Chain.is_journal_line(line):
             return Cap(FULL, 0)
         if Chain.is_read_line(line):
-            return Cap(ENDS, int(self.settings.option(Shell.READ_SHOWN)))
-        return Cap(HINT, int(self.settings.option(Shell.COMMAND_SHOWN)))
+            return Cap(ENDS, self.settings.integer(Shell.READ_SHOWN))
+        return Cap(HINT, self.settings.integer(Shell.COMMAND_SHOWN))

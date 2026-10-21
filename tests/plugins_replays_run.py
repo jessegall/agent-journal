@@ -15,26 +15,22 @@ from journal.models.task import Task
 from journal.repositories.scope import Scope
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.tasks import Tasks
-from tests.replay import Replay, differences, hook_as, recorded
+from tests.replay import Replay, hook_as, played
 from tests.test_features import AGENT, MAIN, USER
 
 ECHO = Path(__file__).parent / "plugins" / "echo"
 
 
 @pytest.fixture
-def journals(tmp_path: Path, monkeypatch):
-    """Two fresh journals with the echo plugin installed, one for the record and one run anew."""
+def journal(tmp_path: Path, monkeypatch):
+    """A fresh journal the echo plugin is installed in, its steps compared to the record."""
     monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
-    apps = []
-    for name in ("recorded", "anew"):
-        app = App(Config(tmp_path / name, port=0))
-        app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
-        apps.append(app)
-    with apps[0].container.get(Scope).environment(MAIN):
-        yield apps
-    for app in apps:
-        app.runtime().stop()
+    app = App(Config(tmp_path / "anew", port=0))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    with app.container.get(Scope).environment(MAIN):
+        yield app
+    app.runtime().stop()
 
 
 def with_echo(app, replay: Replay, provider: str) -> None:
@@ -51,12 +47,8 @@ def with_echo(app, replay: Replay, provider: str) -> None:
     replay.step("a task is made")
 
 
-def test_a_session_with_the_echo_plugin_matches_its_record(journals, monkeypatch):
-    recorded_app, anew = journals
-    remaining = recorded("echo_plugin_claude", recorded_app, monkeypatch, with_echo, "claude")
-    anew.runtime().start()
-    right = Replay(anew, monkeypatch)
-    with_echo(anew, right, "claude")
+def test_a_session_with_the_echo_plugin_matches_its_record(journal, monkeypatch):
+    right, differing = played("echo_plugin_claude", journal, monkeypatch, with_echo, "claude")
     answers = [str(s["answer"]) for s in right.record() if s["answer"] is not None]
     assert "[plugin echo] echo refuses a forbidden tool" in answers[0] and "[plugin echo] echo heard your prompt" in answers[1], "the plugin held the tool and told the prompt"
-    assert differences(remaining.record(), right.record()) == [], "the agent would have seen the same as the record says"
+    assert differing == [], "the agent would have seen the same as the record says"

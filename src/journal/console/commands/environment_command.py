@@ -54,11 +54,11 @@ class EnvironmentCommand(Command):
     def rows(self) -> list[EnvironmentRow]:
         rows = []
         for environment in self.environments.all() or [self.environments.lookup("main")]:
-            with self.scope.environment(environment.id):
+            with self.scope.environment(environment.row_id):
                 agents = self.agents.scoped()
-            last = max(agents, key=lambda item: item.updated_at) if agents else None
+            last = max(agents, key=lambda item: item.update_time) if agents else None
             resumable = [item for item in agents if item.session and self.providers.lookup(item.provider).transcript(self.config.root, item.session)]
-            rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.age(last.updated_at) if last else "", {item.provider: item.session for item in resumable}))
+            rows.append(EnvironmentRow(environment.name, last is not None and last.state != "ended", self.age(last.update_time) if last else "", {item.provider: item.session for item in resumable}))
         return rows
 
     def overview(self, args: Namespace, caller: Caller) -> int:
@@ -76,7 +76,7 @@ class EnvironmentCommand(Command):
         peers = self.agents.recent_peers(session, start)
         blocked = self.tasks.with_state(TaskState.STARTED)
         lines = [
-            f"taken over from another agent, last seen {peers[-1].updated_at.astimezone().strftime('%H:%M')}" if peers else "",
+            f"taken over from another agent, last seen {peers[-1].update_time.astimezone().strftime('%H:%M')}" if peers else "",
             self.matching_rows("task in hand", [f"{t.id} {t.title}" for t in blocked]) or "no task in hand",
             self.matching_rows("open tasks", [f"{t.id} {t.title}" for t in self.tasks.with_state(TaskState.OPEN)]),
             self.matching_rows("parked tasks", [f"{t.id} {t.title} ({t.suspension_reason})" for t in self.tasks.with_state(TaskState.SUSPENDED)]),
@@ -137,7 +137,7 @@ class EnvironmentCommand(Command):
         rows = self.environments.existing(args.name)
         if self.environments.matching(name=args.new):
             raise Rejection(f"an environment named {args.new} exists already")
-        with self.scope.environment(rows.id):
+        with self.scope.environment(rows.row_id):
             if self.agents.current() is not None:
                 raise Rejection(f"an agent works in {rows.name}: stop it first, then rename")
         if Worktree(self.config.root, rows.name).path.is_dir():

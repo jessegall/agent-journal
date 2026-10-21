@@ -25,7 +25,7 @@ class Agents(ScopedRepository[Agent]):
         return [item for item in self.global_matching(environment_id=agent.environment_id) if item.session != agent.session and item.provider == agent.provider and item.state != "ended"]
 
     def all_current(self) -> Agent | None:
-        responsive = sorted((item for item in self.all_agents() if item.state != "ended"), key=lambda item: item.updated_at)
+        responsive = sorted((item for item in self.all_agents() if item.state != "ended"), key=lambda item: item.update_time)
         return responsive[-1] if responsive else None
 
     def with_state(self, name: str) -> list[Agent]:
@@ -38,4 +38,4 @@ class Agents(ScopedRepository[Agent]):
         return rows[0]
 
     def recent_peers(self, session: str | None, start: datetime) -> list[Agent]:
-        return [item for item in self.scoped() if item.session != session and item.updated_at >= start and not (item.state == "ended" and item.updated_at - item.created_at < timedelta(minutes=1))]
+        return [item for item in self.scoped() if item.session != session and item.update_time >= start and not (item.state == "ended" and item.update_time - item.creation_time < timedelta(minutes=1))]

@@ -56,19 +56,19 @@ class Working(BaseState):
         active = replace(self, active_at=event.time)
         if not event.call.writes or event.subagent:
             return self.swap(active)
-        if Timeout.edits(int(settings.value(Tasks.LOG_LIMIT))).is_elapsed(self.edits):
+        if Timeout.edits(settings.integer(Tasks.LOG_LIMIT)).is_elapsed(self.edits):
             return self.refuse(Tasks.LOG_EDIT_BLOCK.create(edits=self.edits, name=self.label(), log=self.log_command()))
         counted = replace(active, edits=self.edits + 1)
         lines = []
-        if self.edits == int(settings.value(Tasks.FIRST_DELAY)):
+        if self.edits == settings.integer(Tasks.FIRST_DELAY):
             lines.append(Tasks.LOG_REQUEST.create(edits=self.edits, name=self.label(), log=self.log_command()))
-        if self.edits and self.edits % int(settings.value(Tasks.TASK_REMINDER_INTERVAL)) == 0:
+        if self.edits and self.edits % settings.integer(Tasks.TASK_REMINDER_INTERVAL) == 0:
             lines.append(Tasks.CURRENT_TASK_REMINDER.create(name=self.label(), edits=self.edits))
         return self.swap(counted, *lines)
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        if Timeout.minutes(int(settings.value(Tasks.LOG_AGE_LIMIT))).started(self.logged_at).is_elapsed(event.time):
+        if Timeout.minutes(settings.integer(Tasks.LOG_AGE_LIMIT)).started(self.logged_at).is_elapsed(event.time):
             return self.refuse(Tasks.STOP_LOG_REQUEST.create(name=self.label(), logged=self.logged_words(event.time), log_command=self.log_command()))
         return self.refuse(self.continue_nudge(event.time))
 

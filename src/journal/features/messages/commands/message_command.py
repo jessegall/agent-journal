@@ -55,7 +55,7 @@ class MessageCommand(Command):
 
     def reply(self, args: Namespace, caller: Caller) -> int:
         answered = self.messages.find(args.reply_to)
-        if self.messages.reply_text(answered.id, args.text):
+        if self.messages.reply_text(answered.row_id, args.text):
             print(f"message {answered.id} already has this reply in the chat: not sent again")
             return 0
         older = self.messages.first_reply(answered)
@@ -138,7 +138,7 @@ class MessageCommand(Command):
         return agents[0].tool_uses if agents else 0
 
     def passage_place(self, ref: Ref, quote: str) -> str:
-        texts = {"docs": ("doc", self.docs), "reports": ("report", self.reports)}
+        texts: dict[str, tuple[str, Docs | Reports]] = {"docs": ("doc", self.docs), "reports": ("report", self.reports)}
         if ref.type not in texts:
             return ""
         noun, repository = texts[ref.type]

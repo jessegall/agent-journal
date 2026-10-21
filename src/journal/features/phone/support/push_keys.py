@@ -31,14 +31,14 @@ class PushKeys:
 
     @property
     def public(self) -> bytes:
-        x, y = P256.scalar_product(self.secret, G)
+        x, y = P256.finite_product(self.secret, G)
         return b"\x04" + x.to_bytes(32, "big") + y.to_bytes(32, "big")
 
     def signed(self, message: bytes) -> bytes:
         digest = int.from_bytes(hashlib.sha256(message).digest(), "big")
         while True:
             k = secrets.randbelow(N - 1) + 1
-            r = P256.scalar_product(k, G)[0] % N
+            r = P256.finite_product(k, G)[0] % N
             s = pow(k, -1, N) * (digest + r * self.secret) % N
             if r and s:
                 return r.to_bytes(32, "big") + s.to_bytes(32, "big")

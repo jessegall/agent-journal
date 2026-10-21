@@ -36,7 +36,7 @@ class RunTracker:
         runs = self.runs(agent)
         if any(run.sequence_id == sequence.id for run in runs) or not sequence.steps:
             return ""
-        run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), subject=topic, started_at=self.timestamp(), announced_at=self.timestamp(), end_condition=tuple(sequence.end_condition))
+        run = SequenceRun(sequence.row_id, sequence.title, tuple(sequence.steps), subject=topic, started_at=self.timestamp(), announced_at=self.timestamp(), end_condition=tuple(sequence.end_condition))
         self.rewritten(agent, lambda time: [*time, run])
         liabilities = self.requiring.require(agent, self.requiring.obligations(agent, self.requiring.lookup("sequences")))
         return "\n".join([*liabilities, self.line(run)])

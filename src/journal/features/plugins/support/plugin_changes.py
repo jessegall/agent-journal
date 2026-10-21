@@ -33,7 +33,7 @@ class PluginChanges:
     @staticmethod
     def code(old: Path, new: Path) -> list[str]:
         files = sorted({p.relative_to(root) for root in (old, new) for p in root.rglob("*") if p.is_file() and ".git" not in p.relative_to(root).parts})
-        lines = []
+        lines: list[str] = []
         for file in files:
             previous, following = PluginChanges.text(old / file), PluginChanges.text(new / file)
             lines += difflib.unified_diff(previous, following, f"a/{file}", f"b/{file}", lineterm="")

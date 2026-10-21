@@ -19,4 +19,4 @@ class Template(Model):
         return self.title
 
     def summary_line(self) -> str:
-        return self.first_line(self.brief)
+        return self.opening_line(self.brief)

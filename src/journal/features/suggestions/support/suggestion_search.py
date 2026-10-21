@@ -38,15 +38,15 @@ class SuggestionSearch:
     def next_round(self) -> float:
         from journal.features.suggestions.feature import SuggestionsFeature
         if self.last_round is None:
-            return self.started_at + float(self.settings.option(SuggestionsFeature.FIRST_DELAY)) * MINUTE_SECONDS
-        return self.last_round + float(self.settings.option(SuggestionsFeature.INTERVAL)) * MINUTE_SECONDS
+            return self.started_at + self.settings.decimal(SuggestionsFeature.FIRST_DELAY) * MINUTE_SECONDS
+        return self.last_round + self.settings.decimal(SuggestionsFeature.INTERVAL) * MINUTE_SECONDS
 
     def round(self) -> list[Suggestion]:
         return [self.created(suggester) for suggester in self.suggesters if not self.suggestions.is_recorded(suggester.key) and suggester.applies()]
 
     def created(self, suggester: Suggester) -> Suggestion:
         row = self.suggestions.save(Suggestion(key=suggester.key, title=suggester.title()), Actor.system())
-        environment_id = self.target_environment().id
+        environment_id = self.target_environment().row_id
         with self.scope.environment(environment_id):
             self.shown(row, suggester, environment_id)
         return row

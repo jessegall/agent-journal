@@ -26,7 +26,7 @@ class EtiquetteConduct(Conduct):
 
     def on_tool_finished(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette
-        all_items = int(settings.value(Etiquette.REMINDER_INTERVAL))
+        all_items = settings.integer(Etiquette.REMINDER_INTERVAL)
         if event.subagent or all_items <= 0 or event.data.part(Etiquette).reminder_gap < all_items:
             return self.none()
         return self.none(Etiquette.JOURNAL_LINE_RULE.create())

@@ -1,3 +1,4 @@
+from functools import partial
 from journal.db.commit_queue import CommitQueue
 from journal.events.agent.file_edited import FileEdited
 from journal.events.models.created import Created
@@ -17,8 +18,8 @@ class PluginRowRelay(Listener[ModelEvent]):
 
     def handle(self, event: ModelEvent) -> None:
         environment_id = self.scope.id_default(0)
-        notified = FileEdited.recorded(event.model, environment_id) if isinstance(event, Created) and isinstance(event.model, Edit) else event
+        notified = FileEdited.build(event.model, environment_id) if isinstance(event, Created) and isinstance(event.model, Edit) else event
         for plugin in self.relay.listeners(notified, environment_id):
             if plugin.manifest.has_window(notified.key):
                 continue
-            self.commits.add(lambda plugin=plugin: self.deferred.add_bounded(lambda: self.relay.postponed(plugin, notified, environment_id), f"{plugin.name} relay {notified.key}"))
+            self.commits.add(partial(self.deferred.add_bounded, partial(self.relay.postponed, plugin, notified, environment_id), f"{plugin.name} relay {notified.key}"))

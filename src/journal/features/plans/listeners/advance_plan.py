@@ -21,7 +21,7 @@ class AdvancePlan(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         task = event.model
-        if not isinstance(task, Task) or not task.is_newly_closed(event.previous):
+        if not isinstance(task, Task) or not task.is_newly_closed(event.previous_row(Task)):
             return
         time = datetime.now(timezone.utc)
         for plan in [p for p in self.plans.containing(task) if self.plans.finished(p)]:
@@ -31,9 +31,9 @@ class AdvancePlan(Listener[Updated]):
             return
         plan = self.plans.find(plan_id)
         following = self.plans.next_task(plan)
-        if not self.is_advancing(plan, following):
+        if following is None or not self.is_advancing(plan):
             return
-        self.tasks.save(following.plan_started(time, plan.id), event.actor)
+        self.tasks.save(following.plan_started(time, plan.row_id), event.actor)
 
     def is_checkpoint_stop(self, plan: Plan) -> bool:
         from journal.features.tasks.feature import Tasks as TasksFeature
@@ -47,5 +47,5 @@ class AdvancePlan(Listener[Updated]):
                     return state.plan_id
         return 0
 
-    def is_advancing(self, plan: Plan, following: Task | None) -> bool:
-        return plan.state == PlanState.STARTED and not self.is_checkpoint_stop(plan) and following is not None and self.tasks.current() is None
+    def is_advancing(self, plan: Plan) -> bool:
+        return plan.state == PlanState.STARTED and not self.is_checkpoint_stop(plan) and self.tasks.current() is None

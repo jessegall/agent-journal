@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from journal.models.link import Link
 from journal.models.model import Model
 from journal.models.support.ref import Ref
@@ -20,7 +22,7 @@ class Links(Repository[Link]):
     def all_sources(self, model: Model) -> list[Ref]:
         return [link.source for link in self.selected("target = ? ORDER BY id", (str(Ref.build(model)),))]
 
-    def linked(self, column: str, models: list[Model], kind: str) -> list[Link]:
+    def model_links(self, column: str, models: Sequence[Model], kind: str) -> list[Link]:
         if not models:
             return []
         refs = [str(Ref.build(model)) for model in models]

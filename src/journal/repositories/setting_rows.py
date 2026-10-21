@@ -1,6 +1,7 @@
 from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.support.option import Option
+from journal.support.wrong_setting_kind import WrongSettingKind
 from journal.models.setting import Setting
 from journal.repositories.scope import PROJECT, Scope
 from journal.repositories.scoped_repository import ScopedRepository
@@ -25,6 +26,21 @@ class SettingRows(ScopedRepository[Setting]):
     def option(self, option: Option) -> object:
         return self.project(option.key, option.default)
 
+    def mapping(self, key: str) -> dict:
+        value = self.project(key, {})
+        if not isinstance(value, dict):
+            raise WrongSettingKind(key, value)
+        return value
+
+    def texts(self, option: Option) -> tuple[str, ...]:
+        return option.texts(self.option(option))
+
+    def integer(self, option: Option) -> int:
+        return option.integer(self.option(option))
+
+    def decimal(self, option: Option) -> float:
+        return option.decimal(self.option(option))
+
     def set(self, key: str, value: object, actor) -> Setting:
         rows = [s for s in self.project_rows() if s.key == key]
         return self.save((rows[0] if rows else Setting(environment_id=PROJECT, key=key)).with_value(value, self._time().timestamp()), actor)
@@ -48,15 +64,15 @@ class SettingRows(ScopedRepository[Setting]):
         return tree
 
     def merged(self) -> dict:
-        return {**{s.key: s.value for s in self.rows(self.scope.id)}, **self.project_values()}
+        return {**{s.key: s.value for s in self.environment_rows(self.scope.id)}, **self.project_values()}
 
     def project_values(self) -> dict:
         return {s.key: s.value for s in self.project_rows()}
 
     def project_rows(self) -> list[Setting]:
-        return self.rows(PROJECT)
+        return self.environment_rows(PROJECT)
 
-    def rows(self, environment_id: int) -> list[Setting]:
+    def environment_rows(self, environment_id: int) -> list[Setting]:
         if environment_id not in self._kept:
             self._kept[environment_id] = self.global_matching(environment_id=environment_id)
         return self._kept[environment_id]

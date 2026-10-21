@@ -25,12 +25,12 @@ class SequencesDataReader:
         uses = self.entries.tool_starts(agent.session, last=1)
         last_line = self.entries.last_line_entry(agent.session, STEP_KEYS)
         started = datetime.fromisoformat(run.started_at).timestamp() if run.started_at else 0.0
-        keyed_at = last_line.created_at.timestamp() if last_line and last_line.created_at.timestamp() >= started else 0.0
+        keyed_at = last_line.creation_time.timestamp() if last_line and last_line.creation_time.timestamp() >= started else 0.0
         line_time = max(keyed_at, datetime.fromisoformat(run.announced_at).timestamp() if run.announced_at else 0.0)
         return SequencesData(
             sequence_id=run.sequence_id, step=run.step + 1, step_text=run.text, suspension_reason=run.suspension_reason, is_adopted=bool(run.adopted_at),
             adoption_edits=self.edit_count(agent, run),
-            step_repeated=line_time > (uses[0].created_at.timestamp() if uses else 0.0),
+            step_repeated=line_time > (uses[0].creation_time.timestamp() if uses else 0.0),
             step_silence_seconds=datetime.now(timezone.utc).timestamp() - line_time if line_time else DISTANT_SECONDS,
             is_typable=not any(agent.session in (w.session, w.resume) for w in self.workers.global_matching(environment_id=agent.environment_id)),
             question_open=bool(self.questions.open()),

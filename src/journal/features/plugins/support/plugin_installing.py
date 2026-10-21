@@ -164,7 +164,7 @@ class PluginInstalling:
         data = self.folders.data(self.plugins.lookup(name))
         self.remove(name, actor)
         shutil.rmtree(data, ignore_errors=True)
-        for line in self.dashboard.rows(name):
+        for line in self.dashboard.plugin_rows(name):
             self.dashboard.delete(line, actor)
 
     @staticmethod

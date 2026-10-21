@@ -34,7 +34,7 @@ class Scope:
 
     @contextmanager
     def requested(self, name: Callable[[], str]) -> Iterator[None]:
-        with self._binding(cache(lambda: self.environments.existing(name()).id)):
+        with self._binding(cache(lambda: self.environments.existing(name()).row_id)):
             yield
 
     @staticmethod

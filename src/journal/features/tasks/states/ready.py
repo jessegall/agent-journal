@@ -1,4 +1,5 @@
 from dataclasses import dataclass, replace
+from typing import Self
 
 from journal.engine.base_state import BaseState
 from journal.support.permission import Permission
@@ -29,7 +30,7 @@ class Ready(BaseState):
     silenced_at: float = 0.0
     suspension_reported: bool = False
 
-    def active(self, time: float) -> "Ready":
+    def active(self, time: float) -> Self:
         return replace(self, silenced_at=time, suspension_reported=False)
 
     def working_state(self, **fields) -> BaseState:

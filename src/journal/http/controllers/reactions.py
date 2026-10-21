@@ -9,6 +9,8 @@ from journal.repositories.reactions import REACTS, Reactions
 class ReactionController(Controller[Reaction]):
     """The faces on messages, each with the message it sits on; a face the agent put on counts as unseen."""
 
+    repository: Reactions
+
     def __init__(self, reactions: Reactions) -> None:
         self.repository = reactions
 

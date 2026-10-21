@@ -7,7 +7,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.support.typed_line import TypedLine
 from journal.support.queued_line import QueuedLine
-from journal.support.typed_lines import BATCH_SECONDS, TypedLines
+from journal.support.typed_lines import BATCH_OPTION, TypedLines
 from journal.repositories.setting_rows import SettingRows
 from journal.support.old_supervisor import OldSupervisor
 from journal.support.supervisor_announcement import SupervisorAnnouncement
@@ -68,7 +68,7 @@ class SupervisorLink:
             self.type_whole(environment_id, blocked.line, blocked.delay_seconds)
 
     def batch_seconds(self) -> float:
-        return float(self.settings.project("delivery.batch_seconds", BATCH_SECONDS))
+        return self.settings.decimal(BATCH_OPTION)
 
     def retype(self, environment_id: int, flagged: str) -> None:
         self._send(environment_id, "type", {"name": AGENT, "line": flagged, "after": 0.0})
@@ -128,7 +128,7 @@ class SupervisorLink:
 
     def hosting(self) -> int | None:
         hosts = self.environments.matching(name=os.environ.get("JOURNAL_ENV", ""))
-        return hosts[0].id if hosts and self.runs(hosts[0].id) else None
+        return hosts[0].id if hosts and self.runs(hosts[0].row_id) else None
 
     def runs(self, environment_id: int) -> bool:
         announced = self.announced(environment_id)

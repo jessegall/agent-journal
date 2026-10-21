@@ -23,5 +23,5 @@ class InboxNotice(AgentListener[E]):
         unread = self.messages.unread()
         if not unread:
             return None
-        line = self.nudger.deliver(self.sessions.agent(event.session, event.environment_id), MessagesFeature.inbox(tuple(m.id for m in unread)))
+        line = self.nudger.deliver(self.sessions.agent(event.session, event.environment_id), MessagesFeature.inbox(tuple(m.row_id for m in unread)))
         return Decision.allowed_with(line) if line else None

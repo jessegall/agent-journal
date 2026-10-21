@@ -108,7 +108,7 @@ class WorkerRunner:
 
     def recorded_end(self, worker: Worker, actor: Actor) -> Worker:
         self.finish(worker, END_UNWATCHED, actor)
-        return self.workers.find(worker.id)
+        return self.workers.find(worker.row_id)
 
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         output, err = self.outputs(worker)
@@ -118,7 +118,7 @@ class WorkerRunner:
         report = (ended.error or ended.report)[-TAIL_CHARACTERS:] or "(nothing printed)"
         code = code or (ERROR_STATUS if ended.error else 0)
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
-        current = self.workers.find(worker.id)
+        current = self.workers.find(worker.row_id)
         current = current.with_(resume=resume or current.resume)
         if current.state != WorkerState.DISPATCHED:
             self.workers.save(current, actor)
@@ -136,7 +136,7 @@ class WorkerRunner:
 
     def minutes(self) -> float:
         from journal.features.workers.feature import Workers
-        return float(self.settings.option(Workers.TIMEOUT))
+        return self.settings.decimal(Workers.TIMEOUT)
 
     def outputs(self, worker: Worker) -> tuple[Path, Path]:
         folder = self.config.home / "runtime" / "workers"

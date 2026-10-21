@@ -16,14 +16,14 @@ class Controller(Generic[S]):
     """One per model: its list, one row, a new one and a change, over its repository as the request's environment sees it. A resource whose rows close says which are open; one that shows more than its fields says what in shown."""
 
     repository: Repository[S]
-    timeline = False
+    is_timeline = False
 
     def index(self, request: Request) -> Response:
         return Response.json(self.listed(Listing.query_listing(request.query)))
 
     def listed(self, listing: Listing) -> RowList:
         rows = self.rows()
-        page = listing.listed(rows, self.is_open, self.timeline)
+        page = listing.listed(rows, self.is_open, self.is_timeline)
         return RowList(rows=self.shown_page(page["rows"]), is_last_page=page["is_last_page"], counts=self.counts(rows))
 
     def rows(self) -> list[S]:

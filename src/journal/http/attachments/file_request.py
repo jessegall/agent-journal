@@ -15,9 +15,8 @@ class FileRequest:
 
     @classmethod
     def query_request(cls, query: dict) -> "FileRequest":
-        terms = {name: query[name] for name in ("kind", "shelf", "search") if query.get(name)}
-        numbers = {name: int(query[name]) for name in ("last", "skip") if query.get(name)}
-        return cls(**terms, **numbers)
+        default = cls()
+        return cls(query.get("kind", default.kind), query.get("shelf", default.shelf), query.get("search", default.search), int(query.get("last", default.last)), int(query.get("skip", default.offset)))
 
     def contains(self, file: AttachedFile) -> bool:
         kind = self.kind == "all" or file.image is (self.kind == "images")

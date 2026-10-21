@@ -18,6 +18,8 @@ from journal.repositories.workers import Workers
 class TaskController(Controller[Task]):
     """Tasks with the plan each is in, the worker that holds it and what it waits on; started from the viewer, a task is taken up by the current agent."""
 
+    repository: Tasks
+
     def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, waits: Waits) -> None:
         self.repository, self.task_logs, self.workers, self.waits = tasks, logs, workers, waits
 
@@ -31,9 +33,9 @@ class TaskController(Controller[Task]):
         return Counts(all=self.repository.count(), open=self.repository.unfinished_count(), unread=self.repository.unviewed())
 
     def shown_page(self, rows: list[Task]) -> list[dict]:
-        plans, holders, waits = self.repository.linked(PLAN_LINK), self.workers.containing({t.id for t in rows}), self.repository.open_wait_refs(rows)
-        return [{**ModelFields.build(t), "plan_id": plans[t.id][0].id if t.id in plans else None, "worker_id": holders[t.id].id if t.id in holders else None,
-                 "waits": [str(ref) for ref in waits.get(t.id, [])]} for t in rows]
+        plans, holders, waits = self.repository.linked(PLAN_LINK), self.workers.containing({t.row_id for t in rows}), self.repository.open_wait_refs(rows)
+        return [{**ModelFields.build(t), "plan_id": plans[t.row_id][0].id if t.row_id in plans else None, "worker_id": holders[t.row_id].id if t.row_id in holders else None,
+                 "waits": [str(ref) for ref in waits.get(t.row_id, [])]} for t in rows]
 
     def start(self, request: Request) -> Response:
         task = self.repository.save(self.repository.find(request.number("id")).started(self.time()), request.actor)

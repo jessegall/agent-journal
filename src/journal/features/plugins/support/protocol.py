@@ -39,7 +39,7 @@ class Protocol:
         if isinstance(event, ModelEvent):
             row = {"table": event.model.table(), "id": event.model.id, "by": event.actor.stamp}
             return row | {"changed": list(event.changed())} if isinstance(event, Updated) else row
-        data = {}
+        data: dict[str, object] = {}
         for name, value in ((f.name, getattr(event, f.name)) for f in fields(event) if f.name not in PLACED):
             data |= {**asdict(value), "operation": value.operation.as_data()} if isinstance(value, ToolCall) else {name: value}
         return {FIELD_NAMES.get(name, name): value for name, value in data.items()}

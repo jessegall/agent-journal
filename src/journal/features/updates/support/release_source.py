@@ -2,6 +2,7 @@ import json
 import subprocess
 from urllib.request import Request, urlopen
 
+REPOSITORY = "https://github.com/jessegall/agent-journal"
 TAGS = "https://api.github.com/repos/jessegall/agent-journal/git/matching-refs/tags/{prefix}"
 READ_SECONDS = 10
 LIST_SECONDS = 60

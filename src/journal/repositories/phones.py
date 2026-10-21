@@ -16,7 +16,7 @@ class Phones(ScopedRepository[Phone]):
     def all_phones(self, id: int) -> Phone:
         rows = self.global_matching(id=id)
         if not rows:
-            raise MissingRow(f"no phone {id}")
+            raise MissingRow(self.table, id)
         return rows[0]
 
     def key_match(self, key: str) -> Phone | None:

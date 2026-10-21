@@ -41,10 +41,10 @@ class SharePages:
         parts = self.parts(path)
         if parts == [HEALTH]:
             return ShareAnswer(200, MARKER.encode(), "text/plain")
-        shut = self.shut(parts, authorization, place)
-        if shut:
-            return shut
-        share, remainder = self.shares.token_match(parts[1]), parts[2:]
+        share = self.opened(parts, authorization, place)
+        if isinstance(share, ShareAnswer):
+            return share
+        remainder = parts[2:]
         if not remainder:
             return self.page(share, address)
         if remainder == ["data.json"]:
@@ -55,22 +55,22 @@ class SharePages:
 
     def post(self, path: str, comment: VisitorComment, authorization: str | None, place: str) -> ShareAnswer:
         parts = self.parts(path)
-        shut = self.shut(parts, authorization, place)
-        if shut:
-            return shut
+        share = self.opened(parts, authorization, place)
+        if isinstance(share, ShareAnswer):
+            return share
         if parts[2:] != ["comment"]:
             return self.missing(404)
         try:
-            comment = self.comments.leave(self.shares.token_match(parts[1]), comment.target_ref, comment.name, comment.text)
+            saved = self.comments.leave(share, comment.target_ref, comment.name, comment.text)
         except Rejection as refused:
             return ShareAnswer(409, json.dumps({"error": str(refused)}).encode(), "application/json")
-        return ShareAnswer(201, json.dumps(comment, cls=JsonOut).encode(), "application/json")
+        return ShareAnswer(201, json.dumps(saved, cls=JsonOut).encode(), "application/json")
 
     @staticmethod
     def parts(path: str) -> list[str]:
         return [unquote(part) for part in path.split("?", 1)[0].split("/") if part]
 
-    def shut(self, parts: list[str], authorization: str | None, place: str) -> ShareAnswer | None:
+    def opened(self, parts: list[str], authorization: str | None, place: str) -> Share | ShareAnswer:
         if len(parts) < 2 or parts[0] != "s":
             return self.missing(404)
         share = self.shares.token_match(parts[1])
@@ -78,7 +78,7 @@ class SharePages:
             return self.missing(404)
         if not share.is_active(datetime.now(timezone.utc)):
             return self.missing(410)
-        return self.locked(share, self.password(authorization), place)
+        return self.locked(share, self.password(authorization), place) or share
 
     def is_sharing(self, share: Share) -> bool:
         with self.scope.environment(share.environment_id):
@@ -96,11 +96,11 @@ class SharePages:
         return ShareAnswer(401, headers={"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
 
     def unlocks(self, share: Share, value: str) -> bool:
-        if self._unlocked.get(share.id) == value:
+        if self._unlocked.get(share.row_id) == value:
             return True
         if not SharePassword.matches(value, share.password):
             return False
-        self._unlocked[share.id] = value
+        self._unlocked[share.row_id] = value
         return True
 
     @staticmethod

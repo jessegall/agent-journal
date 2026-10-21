@@ -2256,8 +2256,9 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     hook(app, "Stop")
     for later in (120, 150, 200, 300, 500, 900):
         tick(later)
-    assert [s["line"] for s in transmitted].count("[journal] while at work") == 6, "six tries, each after twice the wait, then the chat is told"
-    assert [s["line"] for s in transmitted][-1] == "[journal] after it", "a line given up lets the one held behind it go in"
+    lines = [s["line"] for s in transmitted]
+    assert len([line for line in lines if line.startswith("[journal] while at work")]) == 6, "six tries, each after twice the wait, then the chat is told"
+    assert lines[3:] == ["[journal] while at work | after it"] * 5, "a line typed again carries the one held behind it"
 
 
 def test_commands_run_at_the_same_moment_keep_their_own_output(app: App):
@@ -3741,7 +3742,7 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app: App):
         assert json.loads(reply.read())["start"] == "overview", "a document the plugin wrote in its data folder is its dashboard"
     console.run(["plugin", "remove", "echo", "--purge"], USER)
     from journal.repositories.dashboard_rows import DashboardRows
-    assert app.container.get(DashboardRows).rows("echo") == [], "purged with its plugin"
+    assert app.container.get(DashboardRows).plugin_rows("echo") == [], "purged with its plugin"
 
 
 def test_a_plugins_line_after_the_reply_reaches_the_agent_at_its_next_hook(app: App):
@@ -3872,7 +3873,7 @@ def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app
 
 def test_a_secret_row_holds_its_fields_and_its_values_live_in_a_private_file(app: App, tmp_path, monkeypatch):
     import stat
-    from datetime import datetime, timezone
+    from datetime import datetime, timedelta, timezone
     from journal.support.secret_values import SecretValues
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
@@ -3891,7 +3892,7 @@ def test_a_secret_row_holds_its_fields_and_its_values_live_in_a_private_file(app
     values.drop(["GITHUB_KEY"])
     assert values.values() == {}
     missing = secrets.save(secrets.find(secret.id).deleted(datetime.now(timezone.utc)), Actor.user("u"))
-    assert secrets.active() == [] and secrets.retired() == [missing]
+    assert secrets.active() == [] and secrets.stale_retired(datetime.now(timezone.utc) + timedelta(days=1)) == [missing]
 
 
 def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app: App, tmp_path, monkeypatch):
@@ -4297,7 +4298,7 @@ def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_i
     direct = ['grep -rn "-> None" src/journal', 'grep -rn "=>" src/web/src', "awk 'NR>=10' src/journal/app.py", "grep -i foo src/journal", "rg -i cap src", "sed -i.bak 's/a/b/' src/journal/app.py",
               f"cd {root} && grep -rn cap src/journal", "rg -n foo", "git grep -n foo", "ls", "tree -L 2", "git --no-pager diff -- src/journal/app.py", "GIT_PAGER=cat git log -3 -- src",
               "sed -i '' 's/a/b/' src/journal/app.py && echo done", "touch src/journal/x.py && echo ok", "mkdir -p src/journal/features/new && touch src/journal/features/new/__init__.py", "rm -rf src/journal/features/old", 'echo "x" >> .gitignore',
-              "grep -rln foo src | xargs sed -i '' 's/foo/bar/g'", "find src -name '*.py' -exec sed -i '' 's/a/b/' {} +", "cat ~/projects/agent-journal/src/journal/app.py", f"cat {root}/.journal/worktrees/3-lady-lovelace/src/journal/app.py",
+              "grep -rln foo src | xargs sed -i '' 's/foo/bar/g'", "find src -name '*.py' -exec sed -i '' 's/a/b/' {} +", f"cat {root.replace(os.path.expanduser('~'), '~', 1)}/src/journal/app.py", f"cat {root}/.journal/worktrees/3-lady-lovelace/src/journal/app.py",
               "printf '\\n--- app ---\\n'; cat src/journal/app.py", "[ -f src/journal/app.py ] && cat src/journal/app.py", "pwd && ls src", "set -o pipefail; grep -rn foo src | head", "# where the cap is decided\ngrep -rn cap src/journal",
               "ls src/journal/features/*/states", 'grep -rn foo "src/my dir"', "git checkout -- src/journal/app.py", "git restore src/journal/app.py", "git mv src/journal/a.py src/journal/b.py",
               "find src -name '*.pyc' -delete", "find src -name '*.py' | xargs rm", "perl -pi -e 's/a/b/' src/journal/app.py", "python3 - src/journal/app.py <<'EOF'\nfrom pathlib import Path\nPath(sys.argv[1]).write_text('x')\nEOF"]
@@ -4777,7 +4778,7 @@ def test_a_worker_report_not_acted_on_is_named_until_it_is(app: App):
     app.console().run(["environment", "overview"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).environment(MAIN):
-        worker = workers.save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet").reported(0.0, 0), Actor.system())
+        worker = workers.save(workers.save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet"), Actor.system()).reported(0.0, 0), Actor.system())
     assert "worker 1 (Lady Lovelace) reported and you have not acted on it yet" in json.dumps(hook(app, "Stop")[1])
     app.console().run(["worker", "complete", str(worker.id)], AGENT)
     assert "not acted on it yet" not in json.dumps(hook(app, "Stop")[1]), "once acted on it is named no more"
@@ -5591,7 +5592,8 @@ def test_the_record_is_a_rolling_log_of_its_newest_entries_and_the_projects_rows
     for _ in range(4):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     app.console().run(["message", "send", "keep me"], USER)
-    assert len(entries.selected_globally("1")) <= 5, "every entry written trims the record to the setting's newest"
+    kept = entries.selected_globally("1")
+    assert len([e for e in kept if e.kind != "nudge"]) <= 5 and len([e for e in kept if e.kind == "nudge"]) <= 5, "every entry written trims the record to the setting's newest, the lines said to the agents kept apart as many of their own"
     assert [m.text for m in app.container.get(Messages).all()][-1] == "keep me", "a message is the project's own and stays"
 
 
@@ -5772,7 +5774,7 @@ def test_messages_between_sessions_reach_the_chat_both_ways_named_by_their_agent
     transmitted = [m for m in app.container.get(MessageRows).all() if m.data.get("sent_to")]
     failed = transmitted.pop()
     assert failed.data["failure"].startswith("Failed to send to") and failed.data["sent_to"] == "uds:/tmp/cc-socks/65859.sock", "a send the tool answered as failed is kept as failed with its reason, never as sent"
-    assert [(m.text, m.data["sent_to"]) for m in transmitted] == [("thank you", "code-commandments-12"), ("the fix is in", "agent-journal"), ("anyone there?", "uds:/tmp/cc-socks/999999.sock")], "a message the agent sent is kept as sent to that agent, a socket named by the project folder of the process behind it and left as the path when no process answers; a bare idle subscription is not"
+    assert [(m.text, m.data["sent_to"]) for m in transmitted] == [("thank you", "code-commandments-12"), ("the fix is in", Path.cwd().name), ("anyone there?", "uds:/tmp/cc-socks/999999.sock")], "a message the agent sent is kept as sent to that agent, a socket named by the project folder of the process behind it and left as the path when no process answers; a bare idle subscription is not"
     assert transmitted[1].data["address"] == f"uds:/tmp/cc-socks/{os.getpid()}.sock", "the socket stays on the row beside the name"
 
 

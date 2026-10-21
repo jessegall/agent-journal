@@ -17,6 +17,8 @@ from journal.repositories.tasks import Tasks
 class PlanController(Controller[Plan]):
     """Plans in outline, and the user's moves on one: approve, start, park, finish and abandon."""
 
+    repository: Plans
+
     def __init__(self, plans: Plans, tasks: Tasks, links: Links, outline: PlanOutline, timeline: PlanTimeline) -> None:
         self.repository, self.tasks, self.links, self.outline, self.moments = plans, tasks, links, outline, timeline
 
@@ -56,7 +58,7 @@ class PlanController(Controller[Plan]):
     def abandon(self, request: Request) -> Response:
         plan = self.repository.find(request.number("id"))
         self.repository.cancel(plan, request.actor)
-        return Response.json(self.shown(self.repository.find(plan.id)))
+        return Response.json(self.shown(self.repository.find(plan.row_id)))
 
     def moved(self, request: Request, move) -> Response:
         return Response.json(self.shown(self.repository.save(move(self.repository.find(request.number("id"))), request.actor)))

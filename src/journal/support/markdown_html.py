@@ -55,10 +55,15 @@ class MarkdownHtml:
 
     @classmethod
     def list_block(cls, lines: list[str], index: int) -> tuple[str, int]:
-        stop = cls.block_end(lines, index, LIST_ITEM.match)
-        tag = "ol" if LIST_ITEM.match(lines[index]).group(1) else "ul"
-        items = "".join(f"<li>{cls.inline(LIST_ITEM.match(l).group(2))}</li>" for l in lines[index:stop])
-        return f"<{tag}>{items}</{tag}>", stop
+        matches = []
+        for line in lines[index:]:
+            match = LIST_ITEM.match(line)
+            if match is None:
+                break
+            matches.append(match)
+        tag = "ol" if matches[0].group(1) else "ul"
+        items = "".join(f"<li>{cls.inline(match.group(2))}</li>" for match in matches)
+        return f"<{tag}>{items}</{tag}>", index + len(matches)
 
     @classmethod
     def table(cls, block: list[str]) -> str:

@@ -26,14 +26,14 @@ class ReviewRounds:
 
     def close(self, plan: Plan, changed: str, caller: Caller) -> None:
         for review in self.reviews.open_review(plan):
-            dispatched = [] if caller.session is None else self.subagents.dispatches_mentioning(caller.session, f"plan {plan.id}", review.created_at.timestamp())
+            dispatched = [] if caller.session is None else self.subagents.dispatches_mentioning(caller.session, f"plan {plan.id}", review.creation_time.timestamp())
             self.reviews.save(review.closed(tuple(row.task for row in dispatched), changed), caller.actor)
             for report in self.recent_reports(plan, review):
                 self.links.save(Link(source=Ref.build(review), target=Ref.build(report), kind=FILED), caller.actor)
 
     def recent_reports(self, plan: Plan, review: PlanReview) -> list[Report]:
         topic = [ref.id for ref in self.links.sources(plan, Messages.SUBJECT_LINK) if ref.type == Report.table()]
-        return [report for report in self.reports.numbered(topic) if report.created_at >= review.created_at]
+        return [report for report in self.reports.numbered(topic) if report.creation_time >= review.creation_time]
 
     def report_ids(self, review: PlanReview) -> list[int]:
         return [ref.id for ref in self.links.targets(review, FILED)]

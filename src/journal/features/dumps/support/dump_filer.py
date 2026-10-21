@@ -31,7 +31,7 @@ class DumpFiler:
 
     def __init__(self, dumps: Dumps, links: Links, messages: Messages, docs: Docs, reports: Reports, tasks: Tasks, plans: Plans) -> None:
         self.dumps, self.links, self.messages = dumps, links, messages
-        self.removable = {"docs": docs, "reports": reports, "tasks": tasks, "plans": plans}
+        self.removable: dict[str, Docs | Reports | Tasks | Plans] = {"docs": docs, "reports": reports, "tasks": tasks, "plans": plans}
 
     def create(self, brief: str, actor: Actor) -> Dump:
         dump = self.dumps.save(Dump(title="Dump", brief=brief.strip(), queued_at=time.time()), actor)
@@ -191,10 +191,9 @@ class DumpFiler:
         repository = self.removable.get(ref.type)
         if repository is None or not self.links.is_row(ref):
             return False
-        row = repository.find(ref.id)
-        if row.created_at < dump.created_at:
+        if repository.find(ref.id).creation_time < dump.creation_time:
             return False
-        repository.delete(row, actor)
+        repository.remove(ref.id, actor)
         return True
 
     def open(self, n: int, closed: str) -> Dump:

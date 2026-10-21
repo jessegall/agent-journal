@@ -16,8 +16,8 @@ class RecordTrim(Listener[Saved]):
         from journal.features.record.feature import Record
         if not isinstance(event.model, Entry):
             return
-        stored = int(self.settings.option(Record.RECORD_LENGTH))
+        stored = self.settings.integer(Record.RECORD_LENGTH)
         if event.model.kind == NUDGE:
             self.entries.trim_lines(stored)
             return
-        self.entries.trim(event.model.id, stored)
+        self.entries.trim(event.model.row_id, stored)

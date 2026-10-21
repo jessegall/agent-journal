@@ -37,7 +37,7 @@ class Plan(Scoped):
         return self.moved(PlanState.REVIEWING)
 
     def approved(self, time: float, user_origin: bool) -> "Plan":
-        return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.id, user_origin=user_origin))
+        return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.row_id, user_origin=user_origin))
 
     def startable(self) -> "Plan":
         if self.is_blocked():
@@ -47,31 +47,31 @@ class Plan(Scoped):
         return self
 
     def started(self, first: Task, time: float) -> "Plan":
-        return self.startable().moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.id, task_id=first.id))
+        return self.startable().moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.row_id, task_id=first.row_id))
 
     def started_without_task(self, time: float) -> "Plan":
         return self.startable().reopened(time)
 
     def reopened(self, time: float) -> "Plan":
-        return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.id, task_id=0))
+        return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.row_id, task_id=0))
 
     def postponed(self, time: float, user_origin: bool) -> "Plan":
-        return self.moved(PlanState.SUSPENDED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.id, user_origin=user_origin))
+        return self.moved(PlanState.SUSPENDED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.row_id, user_origin=user_origin))
 
     def blocked(self, reason: str, time: float) -> "Plan":
-        return self.moved(PlanState.BLOCKED).with_(block_reason=reason).with_event(PlanBlocked(environment_id=self.environment_id, time=time, plan_id=self.id, reason=reason))
+        return self.moved(PlanState.BLOCKED).with_(block_reason=reason).with_event(PlanBlocked(environment_id=self.environment_id, time=time, plan_id=self.row_id, reason=reason))
 
     def unblocked(self, reason: str, time: float) -> "Plan":
-        return self.moved(PlanState.STARTED).with_(block_reason="").with_event(PlanReopened(environment_id=self.environment_id, time=time, plan_id=self.id, reason=reason))
+        return self.moved(PlanState.STARTED).with_(block_reason="").with_event(PlanReopened(environment_id=self.environment_id, time=time, plan_id=self.row_id, reason=reason))
 
     def is_blocked(self) -> bool:
         return self.state == PlanState.BLOCKED
 
     def finished(self, time: float) -> "Plan":
-        return self.moved(PlanState.FINISHED).with_event(PlanFinished(environment_id=self.environment_id, time=time, plan_id=self.id))
+        return self.moved(PlanState.FINISHED).with_event(PlanFinished(environment_id=self.environment_id, time=time, plan_id=self.row_id))
 
     def cancelled(self, time: float, user_origin: bool) -> "Plan":
-        return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.id, user_origin=user_origin))
+        return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.row_id, user_origin=user_origin))
 
     def moved(self, state: PlanState) -> "Plan":
         if not self.state.can_become(state):
@@ -109,7 +109,7 @@ class Plan(Scoped):
         return self.title
 
     def summary_line(self) -> str:
-        return self.first_line(self.brief)
+        return self.opening_line(self.brief)
 
     def docked(self) -> DockCard:
         return DockCard((DockButton("Open plan", "open"), DockButton("Approve", "approve"), DockButton("Close", "close")))

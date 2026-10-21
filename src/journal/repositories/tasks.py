@@ -22,7 +22,7 @@ class Tasks(ScopedRepository[Task]):
     def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links, questions: Questions, checks: Checks) -> None:
         super().__init__(connection, bus, scope)
         self.links, self.checks = links, checks
-        self.awaitable = {Task.table(): self, Question.table(): questions, Check.table(): checks}
+        self.awaitable: dict[str, Tasks | Questions | Checks] = {Task.table(): self, Question.table(): questions, Check.table(): checks}
 
     def open_waits(self, row: Task | Plan) -> list[Ref]:
         return [ref for ref in self.links.targets(row, WAIT_LINK) if not self.waiting(ref).is_resolved()]
@@ -47,7 +47,7 @@ class Tasks(ScopedRepository[Task]):
 
     def open_wait_refs(self, tasks: list[Task]) -> dict[int, list[Ref]]:
         waits: dict[int, list[Ref]] = {}
-        for link in self.links.linked("source", tasks, WAIT_LINK):
+        for link in self.links.model_links("source", tasks, WAIT_LINK):
             if not self.waiting(link.target).is_resolved():
                 waits.setdefault(link.source.id, []).append(link.target)
         return waits
@@ -86,4 +86,4 @@ class Tasks(ScopedRepository[Task]):
     def shown(self) -> list[Task]:
         finished = (TaskState.FINISHED.value, TaskState.CANCELLED.value)
         unfinished = self.selected("state NOT IN (?, ?) ORDER BY id", (*finished,))
-        return sorted([*unfinished, *self.newest("state IN (?, ?)", (*finished,))], key=lambda t: t.id)
+        return sorted([*unfinished, *self.newest("state IN (?, ?)", (*finished,))], key=lambda t: t.row_id)

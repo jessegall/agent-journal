@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import ClassVar
 
 from journal.support.actor import Actor
@@ -14,10 +14,10 @@ class Entry(Scoped):
 
     kind: str = ""
     actor: Actor | None = None
-    data: dict | None = None
+    data: dict = field(default_factory=dict)
 
     def recorded_call(self) -> RecordedCall:
-        return RecordedCall.parsed((self.data or {}).get("call", {}))
+        return RecordedCall.parsed(self.data.get("call", {}))
 
     def is_write(self) -> bool:
-        return not (self.data or {}).get("refused") and self.recorded_call().writes
+        return not self.data.get("refused") and self.recorded_call().writes

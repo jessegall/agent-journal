@@ -1,3 +1,4 @@
+from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
@@ -11,21 +12,23 @@ STARTS = ("startup", "resume")
 class VoicesConduct(Conduct):
     """The voices feature's conduct in every state: how to talk to the user at a start, the introduction when the journal started the agent, and the new voice when the user changes it."""
 
-    def voices_check(self, event: SessionStarted, settings: Settings) -> Transition:
-        from journal.features.voices.feature import Voices
-        return self.none(Voices.VOICE_INSTRUCTION.create(voice=event.data.part(Voices).instruction))
-
-    def introduce_check(self, event: SessionStarted, settings: Settings) -> Transition:
-        from journal.features.voices.feature import Voices
-        if event.source not in STARTS:
-            return self.none()
-        return self.none().typing((Voices.RETURN_GREETING if event.source == RESUME else Voices.INTRODUCE_YOURSELF).create())
-
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
-        return Transition.merged(self, [VoicesConduct.voices_check(self, event, settings), VoicesConduct.introduce_check(self, event, settings)])
+        return Transition.merged(self, [voices_check(self, event, settings), introduce_check(self, event, settings)])
 
     def on_setting_changed(self, event: SettingChanged, settings: Settings) -> Transition:
         from journal.features.voices.feature import Voices
         if event.setting not in {option.key for option in Voices.VOICE_OPTIONS}:
             return self.none()
         return self.none(Voices.VOICE_CHANGE.create(voice=event.data.part(Voices).instruction))
+
+
+def voices_check(state: BaseState, event: SessionStarted, settings: Settings) -> Transition:
+    from journal.features.voices.feature import Voices
+    return state.none(Voices.VOICE_INSTRUCTION.create(voice=event.data.part(Voices).instruction))
+
+
+def introduce_check(state: BaseState, event: SessionStarted, settings: Settings) -> Transition:
+    from journal.features.voices.feature import Voices
+    if event.source not in STARTS:
+        return state.none()
+    return state.none().typing((Voices.RETURN_GREETING if event.source == RESUME else Voices.INTRODUCE_YOURSELF).create())

@@ -75,10 +75,10 @@ class MenuWatcher(Job):
         if self.answers_permission(menu, agent.environment_id):
             claimed = menu.accepting()
             return menu.keys(claimed), f'chose "{claimed.label}", since the launch skips the permission prompts'
-        claimed = self.answers.stored_answer(menu) or menu.declining() or self.answers.query(menu, agent)
-        if claimed is None and self.answers.is_asking(menu):
+        answer = self.answers.stored_answer(menu) or menu.declining() or self.answers.query(menu, agent)
+        if answer is None and self.answers.is_asking(menu):
             return None
-        claimed = claimed or self.answers.query(menu, agent)
-        if claimed:
-            return menu.keys(claimed), f'chose "{claimed.label}"'
+        answer = answer or self.answers.query(menu, agent)
+        if answer:
+            return menu.keys(answer), f'chose "{answer.label}"'
         return ESCAPE, "closed it with Escape, since even an asked agent could not say what it was for"

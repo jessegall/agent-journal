@@ -15,5 +15,5 @@ class TaskLog(Scoped):
 
     @classmethod
     def build(cls, task: Task, line: str, time: float) -> "TaskLog":
-        return cls(environment_id=task.environment_id, task_id=task.id, line=line).with_event(TaskLogged(environment_id=task.environment_id, time=time, task_id=task.id))
+        return cls(environment_id=task.environment_id, task_id=task.row_id, line=line).with_event(TaskLogged(environment_id=task.environment_id, time=time, task_id=task.row_id))
 

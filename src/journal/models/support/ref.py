@@ -12,7 +12,7 @@ class Ref:
 
     @classmethod
     def build(cls, model: Model) -> "Ref":
-        return cls(model.table(), model.id)
+        return cls(model.table(), model.row_id)
 
     @classmethod
     def parse(cls, text: str) -> "Ref":

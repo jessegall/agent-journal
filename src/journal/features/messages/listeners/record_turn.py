@@ -65,9 +65,10 @@ class RecordTurn(AgentListener[TurnDisplayed]):
 
     def unanswered(self, tagged: list[int], event: TurnDisplayed) -> list[int]:
         from journal.features.messages.feature import Messages as MessagesFeature
-        recent = [n for n in tagged if self.earlier_reply(n) is None]
-        if tagged and not recent:
-            line_text = MessagesFeature.DUPLICATE_REPLY.create(n=tagged[0], reply=self.earlier_reply(tagged[0]).id)
+        replied = [(n, reply) for n in tagged if (reply := self.earlier_reply(n)) is not None]
+        recent = [n for n in tagged if n not in {m for m, _ in replied}]
+        if replied and not recent:
+            line_text = MessagesFeature.DUPLICATE_REPLY.create(n=replied[0][0], reply=replied[0][1].id)
             self.supervisor.type(event.environment_id, line_text.rendered())
         return recent
 
@@ -82,7 +83,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
         prompt = self.turn_prompt(event)
         if tagged or not text or prompt is None:
             return False
-        repeated = [r for r in self.messages.recent_replies(prompt.created_at) if WordOverlap.share(text, r.text) >= REPEAT_OVERLAP_RATIO]
+        repeated = [r for r in self.messages.recent_replies(prompt.creation_time) if WordOverlap.share(text, r.text) >= REPEAT_OVERLAP_RATIO]
         if repeated:
             self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_CLOSING_TEXT.create(reply=repeated[0].id, n=repeated[0].reply_target).rendered())
         return bool(repeated)
@@ -118,11 +119,13 @@ class RecordTurn(AgentListener[TurnDisplayed]):
 
     def _journal_answer(self, event: TurnDisplayed) -> bool:
         entry = self.turn_prompt(event)
-        prompt = entry.data.get("prompt", "") if entry else ""
+        if entry is None:
+            return False
+        prompt = entry.data.get("prompt", "")
         if not prompt.startswith(JOURNAL_LINE) or self._chat_answer(event, prompt[len(JOURNAL_LINE):]):
             return False
         provider = self.providers.lookup(event.provider)
-        start = self.entries.recent(entry.id)
+        start = self.entries.recent(entry.row_id)
         return not any(e.kind == "ToolStarting" and e.is_write() for e in start)
 
     def _chat_answer(self, event: TurnDisplayed, line: str) -> bool:

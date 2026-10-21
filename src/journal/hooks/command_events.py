@@ -17,10 +17,10 @@ class CommandEvents:
         self.bus, self.clock, self.scope = bus, clock, scope
 
     def moved(self, output: CommandOutput, session: str) -> None:
-        self.bus.dispatch(CommandMoved(output=output.id).placed(session, self.scope.id, "", None, self.clock.time()))
+        self.bus.dispatch(CommandMoved(output=output.row_id).placed(session, self.scope.id, "", None, self.clock.time()))
 
     def ended(self, output: CommandOutput, agent: Agent) -> None:
-        self.bus.dispatch(CommandEnded(output=output.id, status=output.status).placed(agent.session, self.scope.id, agent.provider, None, self.clock.time()))
+        self.bus.dispatch(CommandEnded(output=output.row_id, status=output.status).placed(agent.session, self.scope.id, agent.provider, None, self.clock.time()))
 
     def wait_declared(self, subject: str, end_refs: str, caller: Caller) -> None:
         self.bus.dispatch(WaitRequest(focus=subject, end_refs=end_refs).placed(caller.agent_session, self.scope.id, caller.agent_provider, None, self.clock.time()))

@@ -20,11 +20,11 @@ class TerminalLines:
         ended_ids = {e.data.get("tool_use_id") for e in self.entries.tool_ends(agent.session, ENTRIES_READ)}
         shell_calls = [e for e in reversed(self.entries.tool_starts(agent.session, ENTRIES_READ)) if e.recorded_call().command and e.data.get("tool_use_id") in ended_ids]
         part_ends = sorted((e for e in self.entries.kind_entries(PART_END, ENTRIES_READ) if e.actor and e.actor.id == agent.session), key=lambda e: e.data["time"])
-        all_lines = [line for call in shell_calls for line in self.call_lines(agent.id, call, part_ends)]
+        all_lines = [line for call in shell_calls for line in self.call_lines(agent.row_id, call, part_ends)]
         return [line for line in all_lines if line["time"] > cursor][-LINES_SHOWN:]
 
     def call_lines(self, agent_id: int, call: Entry, part_ends: list[Entry]) -> list[TerminalLine]:
-        start_time = call.created_at.timestamp()
+        start_time = call.creation_time.timestamp()
         parts = call.recorded_call().parts
         return [self.part_line(agent_id, start_time + i * PART_STEP, part, self.part_end(part.text, start_time, part_ends)) for i, part in enumerate(parts)]
 

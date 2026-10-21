@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -12,5 +12,5 @@ class SavedPlace:
 
     @classmethod
     def parsed(cls, data: dict) -> "SavedPlace":
-        existing = {f.name for f in fields(cls)}
-        return cls(**{name: tuple(value) if isinstance(value, list) else value for name, value in data.items() if name in existing})
+        default = cls()
+        return cls(str(data.get("subdomain", default.subdomain)), int(data.get("port", default.port)), int(data.get("inspector", default.inspector)), tuple(data.get("tunnel", default.tunnel)))

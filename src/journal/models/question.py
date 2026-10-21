@@ -27,10 +27,10 @@ class Question(Scoped):
         return [option for option in self.options if self.PERSONAL.search(option)]
 
     def posed(self, time: float) -> "Question":
-        return self.with_event(QuestionPosed(environment_id=self.environment_id, time=time, question_id=self.id))
+        return self.with_event(QuestionPosed(environment_id=self.environment_id, time=time, question_id=self.row_id))
 
     def answered(self, answer: str, time: float) -> "Question":
-        return self.with_(answer=answer).with_event(QuestionAnswered(environment_id=self.environment_id, time=time, question_id=self.id)).with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"questions:{self.id}"))
+        return self.with_(answer=answer).with_event(QuestionAnswered(environment_id=self.environment_id, time=time, question_id=self.row_id)).with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"questions:{self.id}"))
 
     def summary_line(self) -> str:
-        return self.first_line(self.text)
+        return self.opening_line(self.text)

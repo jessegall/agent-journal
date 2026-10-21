@@ -38,7 +38,7 @@ class Menu:
         rows = list(OPTION.finditer(upper))
         if not rows:
             return None
-        block = []
+        block: list[re.Match[str]] = []
         for match in reversed(rows):
             if block and int(match["number"]) != int(block[0]["number"]) - 1:
                 break
@@ -64,7 +64,7 @@ class Menu:
     def signature(self) -> tuple:
         return (self.question[-200:], *(o.label for o in self.options))
 
-    def accepting(self) -> Option | None:
+    def accepting(self) -> Option:
         return next((o for o in self.options if ACCEPT.search(o.label)), None) or next((o for o in self.options if o.cursor), self.options[0])
 
     def confirming(self) -> bool:

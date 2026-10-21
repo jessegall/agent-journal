@@ -37,11 +37,11 @@ class LoginWindow:
         try:
             saved = self.logins.record(secret.title, secret.url)
         except (Rejection, OSError, subprocess.TimeoutExpired) as failed:
-            self.secrets.save(self.secrets.find(secret.id).with_(login_started_at=None), Actor.system())
+            self.secrets.save(self.secrets.find(secret.row_id).with_(login_started_at=None), Actor.system())
             with self.scope.environment(environment_id):
                 self.messages.save(Message(author=Author.AGENT, text=f"The login to {secret.title} was not saved: {failed}"), Actor.system())
             return
-        self.secrets.save(self.secrets.find(secret.id).with_(login_started_at=None, session_at=datetime.now(timezone.utc), session_expires=self.logins.expires(saved, secret.url)), Actor.system())
+        self.secrets.save(self.secrets.find(secret.row_id).with_(login_started_at=None, session_at=datetime.now(timezone.utc), session_expires=self.logins.expires(saved, secret.url)), Actor.system())
         self.supplied()
 
     def dropped(self, secret: Secret, actor: Actor) -> Secret:

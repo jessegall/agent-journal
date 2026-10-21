@@ -28,19 +28,19 @@ class TasksDataReader:
         free = self.plans.free()
         open_tasks = self.tasks.with_state(TaskState.OPEN)
         return TasksData(
-            current_task=current_task.id if current_task else 0,
+            current_task=current_task.row_id if current_task else 0,
             last_log_line=self.last_log(current_task) if current_task else "",
-            suspended=tuple(t.id for t in suspended_tasks),
+            suspended=tuple(t.row_id for t in suspended_tasks),
             suspension_summary=", ".join(f"task {task.id} ({task.title}), parked because: {task.suspension_reason}" for task in suspended_tasks),
-            blocked=tuple(t.id for t in self.tasks.with_state(TaskState.BLOCKED)),
-            blocked_without_wait=tuple(t.id for t in blocked_without_wait),
+            blocked=tuple(t.row_id for t in self.tasks.with_state(TaskState.BLOCKED)),
+            blocked_without_wait=tuple(t.row_id for t in blocked_without_wait),
             blocked_without_wait_summary=self.summary(blocked_without_wait),
-            broken_waits=tuple(t.id for t, check in broken),
+            broken_waits=tuple(t.row_id for t, check in broken),
             broken_waits_summary="; ".join(f"task {task.id} waits on check {check.id}, {check.title}, which cannot run" for task, check in broken),
             first_suspension_reason=suspended_tasks[0].suspension_reason if suspended_tasks else "",
-            next_open=OpenTask(free[0].id, free[0].title, free[0].brief, 0) if free else None,
+            next_open=OpenTask(free[0].row_id, free[0].title, free[0].brief, 0) if free else None,
             last_commands=tuple(commands[:POLL_COMMANDS]),
-            open_ids=tuple(t.id for t in open_tasks),
+            open_ids=tuple(t.row_id for t in open_tasks),
             open_summary=self.summary(open_tasks),
         )
 

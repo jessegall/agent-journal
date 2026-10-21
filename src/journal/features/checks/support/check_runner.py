@@ -34,23 +34,25 @@ class CheckRunner:
         self.config, self.checks, self.agents, self.cards = config, checks, agents, cards
 
     def run(self, check: Check, actor: Actor) -> Check:
-        return self.finished(self.checks.save(check.started(timing.time()), actor), actor)
+        started = timing.time()
+        return self.finished(self.checks.save(check.started(started), actor), started, actor)
 
     def start(self, check: Check, actor: Actor) -> Check:
         if check.progress is not None:
             return check
-        commenced = self.checks.save(check.started(timing.time()), actor)
-        threading.Thread(target=self.finished, args=(commenced, actor), name=f"check-{commenced.id}", daemon=True).start()
+        started = timing.time()
+        commenced = self.checks.save(check.started(started), actor)
+        threading.Thread(target=self.finished, args=(commenced, started, actor), name=f"check-{commenced.id}", daemon=True).start()
         return commenced
 
-    def finished(self, check: Check, actor: Actor) -> Check:
+    def finished(self, check: Check, started: float, actor: Actor) -> Check:
         report = self.config.home / "runtime" / "check-reports" / f"{check.id}.json"
         report.parent.mkdir(parents=True, exist_ok=True)
         report.unlink(missing_ok=True)
-        ended = self.executed(check, report, actor)
+        ended = self.executed(check, report, started, actor)
         prior_failure = check.last_passed is False
-        elapsed = timing.time() - check.progress.time
-        check_row = self.checks.save(self.checks.find(check.id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), elapsed, self.report(report), ended.fault), actor)
+        elapsed = timing.time() - started
+        check_row = self.checks.save(self.checks.find(check.row_id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), elapsed, self.report(report), ended.fault), actor)
         if check_row.wait_target:
             return check_row
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL_LINES:])
@@ -59,16 +61,18 @@ class CheckRunner:
                 self.cards.show(agent.environment_id, agent.session, f"Check {check_row.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, Ref.build(check_row), shows=CardKind.CHECKS)
         return check_row
 
-    def executed(self, check: Check, report: Path, actor: Actor) -> FinishedRun:
+    def executed(self, check: Check, report: Path, started: float, actor: Actor) -> FinishedRun:
         process = subprocess.Popen(check.command, shell=True, cwd=self.config.root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace",
                                    env={**os.environ, "JOURNAL_REPORT": str(report)}, start_new_session=True)
+        if process.stdout is None:
+            raise OSError(f"check {check.row_id} started without its output pipe")
         late = threading.Timer(TIMEOUT_SECONDS, os.killpg, (process.pid, signal.SIGKILL))
         late.start()
         output_text, saved = [], timing.time()
         for line in process.stdout:
             output_text.append(line)
             if timing.time() - saved >= INTERVAL_SECONDS:
-                self.checks.touch(check, actor, progress=CheckOutput.progress("".join(output_text), check.progress.time))
+                self.checks.touch(check, actor, progress=CheckOutput.progress("".join(output_text), started))
                 saved = timing.time()
         code = process.wait()
         late.cancel()

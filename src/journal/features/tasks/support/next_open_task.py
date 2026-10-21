@@ -20,11 +20,11 @@ class NextOpenTask:
         if self.tasks.current() is not None or self.tasks.with_state(TaskState.SUSPENDED):
             return None
         free = self.plans.free()
-        return OpenTask(free[0].id, free[0].title, free[0].brief, 0) if free else None
+        return OpenTask(free[0].row_id, free[0].title, free[0].brief, 0) if free else None
 
     def plan_next(self, plan: Plan, closed: Task) -> OpenTask | None:
         current = self.plans.started_task(plan)
-        if current is not None and current.started_at < closed.finished_at:
+        if current is not None and current.started_at is not None and closed.finished_at is not None and current.started_at < closed.finished_at:
             return None
         task = current or self.plans.next_task(plan)
-        return OpenTask(task.id, task.title, task.brief, plan.id) if task else None
+        return OpenTask(task.row_id, task.title, task.brief, plan.row_id) if task else None

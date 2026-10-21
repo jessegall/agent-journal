@@ -16,8 +16,8 @@ class PlanBlockade(Listener[Updated]):
 
     def handle(self, event: Updated) -> None:
         from journal.features.plans.feature import Plans as PlansFeature
-        task = event.model
-        if not isinstance(task, Task) or event.previous is None or task.state == event.previous.state:
+        task, previous = event.model, event.previous_row(Task)
+        if not isinstance(task, Task) or previous is None or task.state == previous.state:
             return
         for plan in self.plans.containing(task):
             if plan.state == PlanState.STARTED and self.plans.is_stalled(plan):

@@ -24,7 +24,7 @@ class WorkerReports:
     def file(self, worker: Worker, text: str, actor: Actor) -> Message:
         message = self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=f"{self.lead(worker)}{text}", data={"kind": Message.REPORT, "worker": worker.name, "worker_id": worker.id}), actor)
         self.links.save(Link(source=Ref.build(worker), target=Ref.build(message), kind=REPORTED), actor)
-        self.workers.save(worker.reported(datetime.now(timezone.utc).timestamp(), message.id), actor)
+        self.workers.save(worker.reported(datetime.now(timezone.utc).timestamp(), message.row_id), actor)
         return message
 
     def last(self, worker: Worker) -> str:

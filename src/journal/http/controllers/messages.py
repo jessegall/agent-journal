@@ -19,7 +19,9 @@ from journal.chat.docking import Docking
 class MessageController(Controller[Message]):
     """The chat: the user's, the agent's and the journal's messages by id, read a page at a time from the database; the user's are sent from here, as the user."""
 
-    timeline = True
+    is_timeline = True
+
+    repository: Messages
 
     def __init__(self, messages: Messages, reactions: Reactions, attachments: Attachments, docking: Docking, agents: Agents) -> None:
         self.agents = agents
@@ -39,12 +41,12 @@ class MessageController(Controller[Message]):
         return self.repository.window(listing.limit + 1, listing.upper_id, listing.lower_id)
 
     def open_ids(self) -> set[int]:
-        return {m.id for m in self.repository.unanswered()} | {m.id for m in self.repository.unread()}
+        return {m.row_id for m in self.repository.unanswered()} | {m.row_id for m in self.repository.unread()}
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
         filed, commented, unanswered = self.repository.linked(Messages.SUBJECT_LINK), self.repository.linked(Messages.COMMENT_LINK), {m.id for m in self.repository.unanswered()}
-        return [{**ModelFields.build(m), "answered": m.id not in unanswered, "filed": [ref.id for ref in filed.get(m.id, [])],
-                 "comments_on": [str(ref) for ref in commented.get(m.id, [])], "mentions": [str(ref) for ref in Mentions.found(m.text)]} for m in rows]
+        return [{**ModelFields.build(m), "answered": m.id not in unanswered, "filed": [ref.id for ref in filed.get(m.row_id, [])],
+                 "comments_on": [str(ref) for ref in commented.get(m.row_id, [])], "mentions": [str(ref) for ref in Mentions.found(m.text)]} for m in rows]
 
     def store(self, request: Request) -> Response:
         key = request.body.get("idempotency", "")
@@ -83,7 +85,7 @@ class MessageController(Controller[Message]):
 
     def attach(self, request: Request) -> Response:
         message = self.repository.find(request.number("id"))
-        names = tuple(self.attachments.store(Message.table(), message.id, name, data) for name, data in request.files.items())
+        names = tuple(self.attachments.store(Message.table(), message.row_id, name, data) for name, data in request.files.items())
         saved = self.repository.save(message.with_(files=(*message.files, *names)), request.actor) if names else message
         return Response.json(self.shown(saved))
 
