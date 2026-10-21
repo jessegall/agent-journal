@@ -33,7 +33,6 @@ const content = useFileContent(() => ({name: props.name, url: props.url, text: p
                 <EmptyState loading />
             </template>
         </SwitchCase>
-        <figcaption class="name">{{ name }}</figcaption>
     </figure>
 </template>
 
@@ -89,14 +88,5 @@ const content = useFileContent(() => ({name: props.name, url: props.url, text: p
 .note a {
     display: block;
     margin-top: 6px;
-}
-
-.name {
-    flex: none;
-    overflow: hidden;
-    color: var(--text-2);
-    font-size: 12px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 </style>

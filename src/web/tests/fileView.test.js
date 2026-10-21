@@ -43,11 +43,12 @@ describe("a file drawn by its kind", () => {
         expect(isText(bytes(0xff, 0xfe, 0xfd))).toBe(false);
     });
 
-    test("a picture is an image of the file with its name, and its bytes are never read", async () => {
+    test("a picture is an image of the file, named by its alt, never by a caption, and its bytes are never read", async () => {
         const read = vi.spyOn(api, "fileBytes");
         const host = await shown(FileView, {name: "diagram.svg", url: "/journal/messages/3/files/diagram.svg?env=main"});
         expect(host.querySelector("img").getAttribute("src")).toBe("/journal/messages/3/files/diagram.svg?env=main");
-        expect(host.querySelector(".name").textContent).toBe("diagram.svg");
+        expect(host.querySelector("img").getAttribute("alt")).toBe("diagram.svg");
+        expect(host.querySelector("figcaption")).toBeNull();
         expect(host.querySelector("pre")).toBeNull();
         expect(read).not.toHaveBeenCalled();
     });
@@ -56,7 +57,7 @@ describe("a file drawn by its kind", () => {
         vi.spyOn(api, "fileBytes").mockResolvedValue(words("line one\nline two"));
         const host = await shown(FileView, {name: "notes.md", url: "/journal/dumps/2/files/notes.md?env=main"});
         expect(host.querySelector("pre").textContent).toBe("line one\nline two");
-        expect(host.querySelector(".name").textContent).toBe("notes.md");
+        expect(host.textContent).not.toContain("notes.md");
     });
 
     test("text the caller already holds is shown without reading the file again", async () => {
@@ -83,7 +84,7 @@ describe("opening a file", () => {
         await flush();
         await flush();
         expect(host.querySelector(".lightbox .file-view pre").textContent).toBe("the log");
-        expect(host.querySelector(".lightbox .file-view .name").textContent).toBe("run.log");
+        expect(host.querySelector(".lightbox .lightbox-name").textContent).toBe("run.log");
     });
 
     test("a row's file opens in the viewer among the row's other files, never in a new tab", async () => {

@@ -30,6 +30,7 @@ useWindowEvent("keydown", keys);
                 <FileView :key="file.url" :name="file.name" :url="file.url" />
             </div>
             <div class="lightbox-foot">
+                <span class="lightbox-name">{{ file.name }}</span>
                 <template v-if="ui.lightbox.files.length > 1">
                     <span class="lightbox-count">{{ ui.lightbox.at + 1 }} of {{ ui.lightbox.files.length }}</span>
                 </template>
@@ -74,6 +75,14 @@ useWindowEvent("keydown", keys);
 
 .lightbox-count {
     color: var(--text-3);
+}
+
+.lightbox-name {
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .lightbox-x {
