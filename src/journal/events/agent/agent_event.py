@@ -29,6 +29,9 @@ class AgentEvent(Event):
     def with_snapshot(self, snapshot: Snapshot) -> "AgentEvent":
         return replace(self, snapshot=snapshot)
 
+    def recorded(self) -> dict:
+        return {}
+
     def counted(self, tool_use: int) -> "AgentEvent":
         return replace(self, tool_use=tool_use)
 

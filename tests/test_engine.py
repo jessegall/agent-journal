@@ -1188,3 +1188,19 @@ def test_a_part_knows_whether_it_reads_an_output_and_the_shape_of_that_read():
     assert (parts[0].reads_output, parts[0].read_shape) == (True, "journal output read <output> --grep FAILED"), "the number taken out, the read keeps its shape"
     assert not parts[1].reads_output and parts[1].read_shape == "ls src", "a part that reads no output has its own text as its shape"
     assert not shell("journal output read 3").parts[0].reads_output, "a plain read of a summary is no read by hand"
+
+
+def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instance_per_class(app):
+    from journal.events.agent.idle import Idle as Stop
+    from journal.features.messages.support.messages_conduct import MessagesConduct
+    from journal.repositories.agents import Agents
+    assert Working.listeners() is Working.listeners(), "a state's listener table is built once per class"
+    assert Working.listeners_for(ToolStarting) is Working.listeners_for(ToolStarting) and Working.listeners_for(Stop) is Working.listeners_for(Stop), "the pick per event type is cached"
+    before = Working.listeners_for(ToolStarting)
+    folded = BaseState.conducts
+    BaseState.fold((MessagesConduct,))
+    try:
+        assert Working.listeners_for(ToolStarting) is not before, "folding the conducts in clears the cache, so the fold is seen"
+    finally:
+        BaseState.fold(folded)
+    assert app.container.get(StateMachine) is app.container.get(StateMachine) and app.container.get(Agents) is app.container.get(Agents), "the container builds a class once"

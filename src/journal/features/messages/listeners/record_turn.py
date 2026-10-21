@@ -133,7 +133,7 @@ class RecordTurn(AgentListener[TurnWritten]):
             return False
         provider = self.providers.named(event.provider)
         since = self.entries.since(entry.id)
-        return not any(e.kind == "ToolStarting" and provider.writes(e.data.get("tool_name", ""), e.data.get("tool_input", {})) for e in since)
+        return not any(e.kind == "ToolStarting" and e.is_write() for e in since)
 
     def _answered_in_chat(self, event: TurnWritten, line: str) -> bool:
         """The nudge the typed line came from, when it is one whose answer belongs in the chat."""

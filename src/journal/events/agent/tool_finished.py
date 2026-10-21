@@ -16,3 +16,6 @@ class ToolFinished(AgentEvent):
     def printed(self) -> str:
         """What the shell line printed; nothing for any other tool, whose answer may carry a whole file."""
         return self.output if self.call.tool == "Bash" else ""
+
+    def recorded(self) -> dict:
+        return {"call": self.call.as_data()}

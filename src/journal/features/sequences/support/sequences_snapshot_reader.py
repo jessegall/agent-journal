@@ -42,4 +42,4 @@ class SequencesSnapshotReader:
         since = datetime.fromisoformat(run.taken_up_at)
         provider = self.providers.named(agent.provider or "claude")
         later = [e for e in self.entries.tool_starts(agent.session)[1:] if e.created_at and e.created_at > since and not (e.data.get("agent_id") or e.data.get("subagent_id"))]
-        return sum(1 for e in later if provider.wrote(e))
+        return sum(1 for e in later if e.is_write())

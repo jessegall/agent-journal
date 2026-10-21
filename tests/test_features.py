@@ -1133,6 +1133,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app, monk
     sent = []
     catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart", source="startup")
+    app.console().run(["environment", "here"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] the journal is ready on main")
     hook(app, "MessageDisplay", message="Noted.")
     app.runtime().deferred.drain()
@@ -5863,3 +5864,15 @@ def test_a_paused_agent_may_stop_with_a_message_unread_read_it_through_the_pause
     viewer(app, f"agents/{agent_id}/resume")
     app.runtime().deferred.drain()
     assert any("resumed" in line for line in typed) and any("new message 1" in line for line in typed), "on resume the agent is told to carry on and that the message waits"
+
+
+def test_a_tool_entry_records_the_calls_reading_beside_the_raw_input(app):
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "echo hi > notes.txt && grep -rn foo src"})
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "grep -rn foo src"})
+    written, read = reversed(app.container.get(Entries).tool_starts("s1", 2))
+    call = written.recorded_call()
+    assert call["command"].startswith("echo hi") and [p["text"] for p in call["parts"]] == ["echo hi > notes.txt", "grep -rn foo src"] and call["written_paths"] == ["notes.txt"] and call["work"] == "running", "the call's one reading is on the entry"
+    assert written.is_write() and not read.is_write() and read.recorded_call()["work"] == "searching", "the write flag and the work word are read from the record, never from the input again"

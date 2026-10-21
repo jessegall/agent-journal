@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from journal.support.command_part import CommandPart
 
@@ -17,10 +17,14 @@ class ToolCall:
     read_paths: tuple[str, ...] = ()
     file_lines: int = 0
     skill_loaded: str = ""
+    work: str = ""
 
     @property
     def input_text(self) -> str:
         return " ".join(str(value) for value in self.input.values())
+
+    def as_data(self) -> dict:
+        return {"command": self.command, "parts": [asdict(part) for part in self.parts], "writes": self.writes, "written_paths": list(self.written_paths), "read_paths": list(self.read_paths), "work": self.work}
 
     def journal_parts(self) -> tuple[int, int]:
         return sum(1 for part in self.parts if part.is_journal), len(self.parts)

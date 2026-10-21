@@ -13,3 +13,6 @@ class ToolStarting(AgentEvent):
     @property
     def words(self) -> str:
         return self.call.command
+
+    def recorded(self) -> dict:
+        return {"call": self.call.as_data()}

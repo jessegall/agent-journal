@@ -200,16 +200,13 @@ class Provider:
     def skill_loaded(self, tool: str, input: dict) -> str:
         return ToolInput.from_json(input).skill if tool == "Skill" else ""
 
-    def wrote(self, use: Entry) -> bool:
-        return not use.data.get("refused") and self.writes(use.data.get("tool_name", ""), use.data.get("tool_input", {}) or {})
-
     def writes(self, tool: str, input: dict) -> bool:
         return tool in self.write_tools or (tool == self.shell_tool and Writes.of(ToolInput.from_json(input).command))
 
     def call(self, tool: str, input: dict) -> ToolCall:
         command = ToolInput.from_json(input).command if tool == self.shell_tool else ""
         return ToolCall(tool=tool, input=input, command=command, parts=tuple(self.parts_of(command)), is_journal=bool(command) and Chain.is_journal_line(command), writes=self.writes(tool, input),
-                        written_paths=tuple(self.written_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input))
+                        written_paths=tuple(self.written_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input), work=Chain.work_of(command) if command else "")
 
     @staticmethod
     def parts_of(command: str) -> list[CommandPart]:

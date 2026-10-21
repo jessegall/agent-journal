@@ -19,7 +19,7 @@ class ShellSnapshotReader:
     def read(self, agent: Agent) -> ShellSnapshot:
         from journal.features.shell.feature import Shell
         background = self.outputs.in_background(agent.session)
-        commands = [e.data.get("tool_input", {}).get("command", "") for e in self.entries.tool_starts(agent.session) if e.data.get("tool_name") == "Bash"]
+        commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session) if e.data.get("tool_name") == "Bash"]
         reads = [OutputReads.shape(c) for c in commands if OutputReads.is_one(c)][:KEPT]
         tipped = [*self.entries.lines_said_after(agent.session, Shell.USE_THE_READER.key, 0), *self.entries.lines_said_after(agent.session, Shell.ADD_A_READER.key, 0)]
         return ShellSnapshot(

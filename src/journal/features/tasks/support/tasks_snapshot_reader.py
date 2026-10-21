@@ -23,7 +23,7 @@ class TasksSnapshotReader:
         in_hand = self.tasks.in_hand()
         parked, blocked_without_wait = self.tasks.in_state(TaskState.PARKED), self.tasks.blocked_without_wait()
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
-        commands = [e.data.get("tool_input", {}).get("command", "") for e in self.entries.tool_starts(agent.session, LOOKED_BACK) if e.data.get("tool_name") == "Bash"]
+        commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session, LOOKED_BACK) if e.data.get("tool_name") == "Bash"]
         free = self.plans.free()
         return TasksSnapshot(
             in_hand=in_hand.id if in_hand else 0,

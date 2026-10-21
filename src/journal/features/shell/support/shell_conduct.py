@@ -35,8 +35,8 @@ class ShellConduct(Conduct):
         tips = [Shell.USE_THE_READER.create(reader=r.name, about=r.about) for r in shell.readers if r.matches(reads[0].text)]
         if shell.output_reads.count(reads[0].read_shape) >= 2:
             tips.append(Shell.ADD_A_READER.create(command=reads[0].read_shape))
-        untold = [tip for tip in tips if tip.rendered() not in shell.tipped]
-        return self.unchanged(untold[0]) if untold else self.unchanged()
+        new_tips = [tip for tip in tips if tip.rendered() not in shell.tipped]
+        return self.unchanged(new_tips[0]) if new_tips else self.unchanged()
 
     def on_ticked_shell_ended(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell

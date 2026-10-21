@@ -31,7 +31,8 @@ class BarRow:
 
     @classmethod
     def of_tool(cls, entry: Entry) -> "BarRow":
-        tool, path = entry.data.get("tool_name", ""), entry.data.get("tool_input", {}).get("file_path", "")
+        tool, paths = entry.data.get("tool_name", ""), entry.recorded_call().get("written_paths") or entry.recorded_call().get("read_paths") or [""]
+        path = paths[0]
         return cls(f"{tool} {path}".strip(), tool.lower() or "working", path, entry.created_at.timestamp(), entry.kind == "ToolFinished")
 
     def item(self) -> dict:

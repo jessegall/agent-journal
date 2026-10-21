@@ -37,8 +37,7 @@ class AgentActivity:
 
     @staticmethod
     def work_of(entry) -> str:
-        tool = entry.data.get("tool_input", {})
-        return Chain.work_of(str(tool.get("command", ""))) if entry.data.get("tool_name") == "Bash" else ""
+        return entry.recorded_call().get("work", "")
 
     def of(self, agent: Agent, entries) -> dict:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted")]
