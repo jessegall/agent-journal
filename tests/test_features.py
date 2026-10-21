@@ -6190,3 +6190,16 @@ def test_the_journals_own_writes_into_the_project_are_never_edits(app: App):
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "echo y > b.txt"}, tool_response="")
     with app.container.get(Scope).environment(MAIN):
         assert [e.path for e in app.container.get(Edits).rows()] == ["b.txt"], "any other write is still an edit"
+
+
+def test_a_scripts_file_edits_are_found_from_the_files_whose_time_moved(app: App):
+    from journal.repositories.edits import Edits
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    (app.config.root / "kept.txt").write_text("same\n")
+    command = "python3 -c \"import pathlib; pathlib.Path('built' + '.txt').write_text('made\\n')\""
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": command})
+    (app.config.root / "built.txt").write_text("made\n")
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": command}, tool_response="")
+    with app.container.get(Scope).environment(MAIN):
+        assert [e.path for e in app.container.get(Edits).rows()] == ["built.txt"], "the file the script wrote under a built name is an edit; the file it left alone is not"

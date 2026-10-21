@@ -44,6 +44,11 @@ class Writes:
             return bool(MARKERS.search(text))
         return any(cls.part(piped) for piped in part.unquoted().split("|")[1:])
 
+    @classmethod
+    def is_script(cls, text: str) -> bool:
+        tokens = cls.tokens(Part(text))
+        return bool(tokens) and tokens[0].rsplit("/", 1)[-1] in INTERPRETERS and bool(MARKERS.search(cls.script(text)))
+
     @staticmethod
     def tokens(part: Part) -> list[str]:
         return [w for w in part.tokens() if "=" not in w or w.startswith("-")]

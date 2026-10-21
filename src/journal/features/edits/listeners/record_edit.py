@@ -6,6 +6,7 @@ from journal.config import Config
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
 from journal.features.edits.support.file_copies import FileCopies
+from journal.features.edits.support.file_times import FileTimes
 from journal.features.edits.support.patch_rows import PatchRows
 from journal.features.shell.support.part import Part
 from journal.support.actor import Actor
@@ -17,12 +18,12 @@ ROWS_LIMIT = 200
 
 
 class RecordEdit(AgentListener[ToolFinished]):
-    """When a call that writes files ends, each file it wrote is kept as an edit row before the hook answers, so the pane that polls next sees it: the editor's tools from the patch they answer with, or from the file against its last copy when they answer with none, a shell line from the call's written paths against the file as the journal saw it last; the file as it now is is kept, so the next change is told against it."""
+    """When a call that writes files ends, each file it wrote is kept as an edit row before the hook answers, so the pane that polls next sees it: the editor's tools from the patch they answer with, or from the file against its last copy when they answer with none, a shell line from the call's written paths against the file as the journal saw it last; the file as it now is is kept, so the next change is told against it. A script that writes files by paths it builds is found by the files whose modification time moved."""
 
     blocking = True
 
-    def __init__(self, config: Config, edits: Edits, copies: FileCopies) -> None:
-        self.config, self.edits, self.copies = config, edits, copies
+    def __init__(self, config: Config, edits: Edits, copies: FileCopies, times: FileTimes) -> None:
+        self.config, self.edits, self.copies, self.times = config, edits, copies, times
 
     def handle(self, event: ToolFinished) -> None:
         if event.call.is_journal:
@@ -30,7 +31,8 @@ class RecordEdit(AgentListener[ToolFinished]):
         if event.call.tool in EDITING:
             self.patched(event)
             return
-        for path in dict.fromkeys(self.project_path(p) for p in event.call.edited_paths if Part.is_project_file(p)):
+        named = [p for p in event.call.edited_paths if Part.is_project_file(p)]
+        for path in dict.fromkeys(self.project_path(p) for p in [*named, *self.times.moved(event.tool_use)]):
             if not Part.is_journal_owned(path):
                 self.changed(event, path)
 
