@@ -57,7 +57,7 @@ def alias_check(state: BaseState, event: ToolStarting, settings: Settings) -> Tr
     if hints:
         return state.none(hints[0])
     command = event.call.command
-    if command not in shell.repeated or event.call.is_journal or Chain.is_read_line(command):
+    if command not in shell.repeated or Chain.is_journal(command) or Chain.is_read_line(command):
         return state.none()
     reader = next((r.name for r in shell.readers if r.commands.is_read(command)), "<the reader that reads its output>")
     tip = Shell.ALIAS_SUGGESTION.create(command=command, reader=f" --reader {reader}")

@@ -7486,6 +7486,7 @@ def test_a_line_an_alias_runs_is_pointed_at_it_and_a_line_run_three_times_is_ask
     assert "three times" not in said("make build").get("additionalContext", "") + said("make build").get("additionalContext", "")
     assert "you ran this line three times or more: make build" in said("make build").get("additionalContext", "")
     assert "three times" not in said("make build").get("additionalContext", ""), "once per line"
+    assert all("three times" not in said("journal unit").get("additionalContext", "") for _ in range(4)), "an alias call is never asked to become an alias"
 
 
 def test_an_alias_call_is_a_shell_command_to_every_hold_not_a_journal_command(app: App):
