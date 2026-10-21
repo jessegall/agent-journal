@@ -1,9 +1,11 @@
+import shutil
 import subprocess
 from pathlib import Path
 
 from journal.support.worktree_refs import TIPS_REF
 from journal.config import Config
 from journal.models.worker import Worker
+from journal.support.listener_queue import ListenerQueue
 
 GIT_TIMEOUT_SECONDS = 30
 
@@ -11,8 +13,9 @@ GIT_TIMEOUT_SECONDS = 30
 class WorkerBranch:
     """A worker's worktree and the branch it commits on: what it left there when it ended, and its commits taken into the branch the project is on."""
 
-    def __init__(self, config: Config) -> None:
-        self.config = config
+    def __init__(self, config: Config, deferred: ListenerQueue) -> None:
+        self.config, self.deferred = config, deferred
+        self.removed_root = config.home / "removed-worktrees"
 
     def name(self, worker: Worker) -> str:
         return f"worker/{worker.id}-{worker.name}".replace(" ", "-")
@@ -87,9 +90,19 @@ class WorkerBranch:
         if leftover:
             return f"its worktree {folder} stays, since {len(leftover)} files in it are not committed: {', '.join(leftover[:10])}"
         self.git("update-ref", f"{TIPS_REF}/{folder.name}", self.git("rev-parse", self.name(worker)).stdout.strip())
-        self.git("worktree", "remove", str(folder))
+        self.removed(folder)
         self.git("branch", "-D", self.name(worker))
         return f"its worktree and branch are removed; its last commit is kept as {TIPS_REF}/{folder.name}"
+
+    def removed(self, folder: Path) -> None:
+        self.removed_root.mkdir(parents=True, exist_ok=True)
+        folder.rename(self.removed_root / folder.name)
+        self.git("worktree", "prune")
+        self.deferred.add(self.cleared)
+
+    def cleared(self) -> None:
+        for folder in self.removed_root.iterdir():
+            shutil.rmtree(folder)
 
     def summary(self, worker: Worker) -> str:
         if not worker.worktree:
