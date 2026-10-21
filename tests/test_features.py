@@ -6396,3 +6396,35 @@ def test_a_running_workers_session_takes_the_notify_after_its_key_and_only_as_th
     finally:
         process.kill()
         process.wait(5)
+
+
+def test_two_jobs_sent_to_one_worker_at_once_start_one_run(app: App, monkeypatch):
+    import threading
+    from journal.providers.claude import Claude
+    from journal.repositories.workers import Workers
+    started = []
+
+    def slow_start(self, worker, actor):
+        started.append(worker.id)
+        timing.sleep(0.3)
+
+    monkeypatch.setattr(WorkerRunner, "start", slow_start)
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    hook(app, "SessionStart")
+    console, workers = app.console(), app.container.get(Workers)
+    console.run(["worker", "dispatch", "Lady Lovelace", "the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
+    workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
+    started.clear()
+    gate, codes = threading.Barrier(2), []
+
+    def send(brief: str) -> None:
+        gate.wait()
+        codes.append(console.run(["worker", "send", "1", brief], AGENT).code)
+
+    sends = [threading.Thread(target=send, args=(brief,)) for brief in ("the lexer", "the printer")]
+    for thread in sends:
+        thread.start()
+    for thread in sends:
+        thread.join(10)
+    assert started == [1] and sorted(codes) == [0, 1], "the second send finds the worker out and is refused"

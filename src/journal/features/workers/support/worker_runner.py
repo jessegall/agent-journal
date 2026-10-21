@@ -36,6 +36,12 @@ class WorkerRunner:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
         self.environments, self.profiles = environments, profiles
         self._running: dict[int, subprocess.Popen] = {}
+        self._locks: dict[int, threading.Lock] = {}
+        self._locks_lock = threading.Lock()
+
+    def lock(self, worker_id: int) -> threading.Lock:
+        with self._locks_lock:
+            return self._locks.setdefault(worker_id, threading.Lock())
 
     def start(self, worker: Worker, actor: Actor) -> None:
         command = self.providers.lookup(worker.provider).worker_command(self.instructed(worker), worker.model, worker.resume)

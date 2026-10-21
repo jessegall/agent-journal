@@ -104,7 +104,12 @@ class WorkerCommand(Command):
         return [w for w in reversed(self.workers.scoped()) if matched and w.state != WorkerState.DISPATCHED and w.resume and matched & PathMentions.build(w.brief)]
 
     def send(self, args: Namespace, caller: Caller) -> int:
-        worker = self.workers.find(args.n)
+        with self.runner.lock(args.n):
+            worker = self.sent(self.workers.find(args.n), args, caller)
+        print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
+        return 0
+
+    def sent(self, worker: Worker, args: Namespace, caller: Caller) -> Worker:
         if worker.state == WorkerState.DISPATCHED:
             raise Rejection(f"worker {worker.id}, {worker.name}, is still out: tell it with `journal worker notify {worker.id} \"<text>\"`, or wait for its report and send it the job then")
         if not worker.resume:
@@ -115,16 +120,15 @@ class WorkerCommand(Command):
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
-        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
-        print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
-        return 0
+        return self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
 
     def notify(self, args: Namespace, caller: Caller) -> int:
-        worker = self.workers.find(args.n)
-        refusal = self.notify_refusal(worker)
-        if refusal:
-            raise Rejection(refusal.format(n=worker.id, name=worker.name, provider=worker.provider.capitalize()))
-        self.inbox.deliver(worker.pid, worker.resume, "the agent that dispatched you", args.text)
+        with self.runner.lock(args.n):
+            worker = self.workers.find(args.n)
+            refusal = self.notify_refusal(worker)
+            if refusal:
+                raise Rejection(refusal.format(n=worker.id, name=worker.name, provider=worker.provider.capitalize()))
+            self.inbox.deliver(worker.pid, worker.resume, "the agent that dispatched you", args.text)
         print(f"worker {worker.id} {worker.name} has the message in its session")
         return 0
 
