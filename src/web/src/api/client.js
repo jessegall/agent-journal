@@ -192,6 +192,15 @@ export class ApiClient {
         return this.address(`/${table}/${id}/files/${encoded(name)}`);
     }
 
+    // a document's revisions in order, and keeping the open one as it is
+    docRevisions(id) {
+        return this.get(this.here(`/docs/${id}/revisions`));
+    }
+
+    keepDoc(id) {
+        return this.act("docs", id, "keep");
+    }
+
     // a document or report as a file to download, named by the journal
     exportUrl(table, id) {
         return this.address(`/${table}/${id}/export`);
