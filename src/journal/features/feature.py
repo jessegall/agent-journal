@@ -4,6 +4,7 @@ from typing import ClassVar
 from journal.console.command import Command
 from journal.engine.conduct import Conduct
 from journal.engine.base_state import BaseState
+from journal.engine.job import Job
 from journal.events.listener import Listener
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
@@ -13,7 +14,7 @@ from journal.support.skill import Skill
 
 
 class Feature[D]:
-    """One switchable subject. It brings its states, its nudges, its state-free listeners and its commands; nothing else knows a feature exists. D is the class of the part it reads into the feature data an event carries."""
+    """One switchable subject. It brings its states, its nudges, its state-free listeners, its jobs and its commands; nothing else knows a feature exists. D is the class of the part it reads into the feature data an event carries."""
 
     name: ClassVar[str]
     title: ClassVar[str] = ""
@@ -27,6 +28,7 @@ class Feature[D]:
     conduct: ClassVar[tuple[type[Conduct], ...]] = ()
     commands: ClassVar[tuple[type[Command], ...]] = ()
     seeds: ClassVar[tuple[type[Seed], ...]] = ()
+    jobs: ClassVar[tuple[type[Job], ...]] = ()
     skill: ClassVar[Skill | None] = None
     services: ClassVar[tuple[Service, ...]] = ()
     default: ClassVar[bool] = True

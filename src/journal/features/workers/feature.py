@@ -3,6 +3,7 @@ from journal.features.workers.support.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_data_reader import WorkersDataReader
 from journal.features.workers.support.workers_data import WorkersData
 from journal.features.workers.seeds.workers_seed import WorkersSeed
+from journal.features.workers.jobs.worker_watch import WorkerWatch
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
@@ -31,6 +32,7 @@ class Workers(Feature[WorkersData]):
     states = (Orchestrating, Soloing, OrchestratingPlan, Delegating)
     commands = (WorkerCommand,)
     seeds = (WorkersSeed,)
+    jobs = (WorkerWatch,)
     listeners = (SubagentCards, WorkerCards)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)

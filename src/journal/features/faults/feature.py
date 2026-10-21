@@ -1,6 +1,7 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
 from journal.support.option import Option
+from journal.features.faults.listeners.slow_job_notice import SlowJobNotice
 
 
 class Faults(Feature):
@@ -10,6 +11,9 @@ class Faults(Feature):
     REPORT = Option("faults.report", "Report slow requests to the agent", "A request over its budget is marked in the chat and the agent is told to fix it; off, the Developer tab still counts every request's time", False, kind="switch")
     REQUEST = Option("faults.budget.request", "Budget for a request that reads", "Milliseconds a request that reads may take before it is reported; 0 reports none", 50, unit="ms")
     EDIT_BUDGET = Option("faults.budget.write", "Budget for a request that writes", "Milliseconds a request that writes may take before it is reported; 0 reports none", 50, unit="ms")
+    JOBS = Option("faults.jobs", "Tell the agent about slow jobs", "A background job whose tick runs longer than a second is always logged; on, the agent is told to fix it too", False, kind="switch")
     SLOW_REQUEST = Nudge(name, "slow_request_to_fix", "{{method}} {{route}} took {{ms}} ms, over its budget of {{budget}} ms: find what made it slow and fix it at its source", "a request over its budget is a fault of the journal's own")
-    options = (REPORT, REQUEST, EDIT_BUDGET)
-    nudges = (SLOW_REQUEST,)
+    SLOW_JOB = Nudge(name, "slow_job_to_fix", "the background job {{job}} took {{seconds}} seconds for one tick", "every other job waited on it: find what made it slow and fix it at its source")
+    options = (REPORT, REQUEST, EDIT_BUDGET, JOBS)
+    nudges = (SLOW_REQUEST, SLOW_JOB)
+    listeners = (SlowJobNotice,)

@@ -21,7 +21,6 @@ from journal.repositories.environments import Environments
 from journal.support.worktree_failure import WorktreeFailure
 
 TAIL = 4000
-WATCH_INTERVAL_SECONDS = 2.0
 TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
 ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}"}
@@ -70,14 +69,15 @@ class WorkerRunner:
         self._running.pop(worker.id, None)
         self.finish(worker, code, actor)
 
-    def watch(self, worker: Worker, actor: Actor) -> None:
-        while self.is_running(worker.pid):
-            if self.remaining_minutes(worker) == 0:
-                os.killpg(worker.pid, signal.SIGKILL)
-                self.finish(worker, TIMEOUT_STATUS, actor)
-                return
-            time.sleep(WATCH_INTERVAL_SECONDS)
-        self.finish(worker, END_UNWATCHED, actor)
+    def is_finished(self, worker: Worker, actor: Actor) -> bool:
+        if not self.is_running(worker.pid):
+            self.finish(worker, END_UNWATCHED, actor)
+            return True
+        if self.remaining_minutes(worker) == 0:
+            os.killpg(worker.pid, signal.SIGKILL)
+            self.finish(worker, TIMEOUT_STATUS, actor)
+            return True
+        return False
 
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         output, err = self.outputs(worker)

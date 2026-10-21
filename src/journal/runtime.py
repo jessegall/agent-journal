@@ -1,6 +1,7 @@
 import os
 import time
 from journal.engine.clock import Clock
+from journal.engine.job_runner import JobRunner
 from journal.engine.menu_watcher import MenuWatcher
 from journal.support.service_start import ServiceStart
 from journal.engine.state_machine import StateMachine
@@ -32,11 +33,11 @@ INSTANCE_CHECK_SECONDS = 2.0
 
 
 class Runtime:
-    """What the server process keeps alive: the HTTP server and the share server beside it, the deferred worker, the clock and the menu watcher, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
+    """What the server process keeps alive: the HTTP server and the share server beside it, the deferred worker and the job runner with the clock, the menu watcher and every feature's jobs, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
 
-    def __init__(self, container: Container, server: Server, deferred: ListenerQueue, clock: Clock, machine: StateMachine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, reserve: InstanceGuard) -> None:
+    def __init__(self, container: Container, server: Server, deferred: ListenerQueue, clock: Clock, machine: StateMachine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, reserve: InstanceGuard, jobs: JobRunner) -> None:
         self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
-        self.watcher, self.share_server, self.standby = watcher, share_server, reserve
+        self.watcher, self.share_server, self.standby, self.jobs = watcher, share_server, reserve, jobs
 
     def register_nudges(self) -> None:
         nudges = self.container.get(NudgeRegistry)
@@ -80,10 +81,17 @@ class Runtime:
         self.container.get(SkillFiles).write_all()
         self.container.get(ProfileFiles).write_all()
         self.deferred.start()
-        self.clock.start()
-        self.watcher.start()
+        self.register_jobs()
+        self.jobs.start()
         self.server.start()
         self.container.get(ServiceStart).run()
+
+    def register_jobs(self) -> None:
+        self.jobs.register(self.clock)
+        self.jobs.register(self.watcher)
+        for feature in self.registry.features:
+            for job in feature.jobs:
+                self.jobs.register(self.container.get(job))
 
     def run(self) -> None:
         parent = os.getppid()
@@ -103,7 +111,6 @@ class Runtime:
     def stop(self) -> None:
         self.server.stop()
         self.share_server.stop()
-        self.clock.stop()
-        self.watcher.stop()
+        self.jobs.stop()
         self.deferred.stop()
         BaseState.fold(())

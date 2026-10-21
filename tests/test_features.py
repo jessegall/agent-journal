@@ -841,7 +841,7 @@ def test_a_due_check_runs_on_the_clock(app: App):
     from journal.engine.clock import Clock
     from journal.repositories.checks import Checks
     app.console().run(["check", "create", "due", "--command", "true", "--every", "1"], USER)
-    app.container.get(Clock).tick()
+    app.container.get(Clock).tick(app.container.get(Clock).time())
     assert app.container.get(Checks).find(1).last_passed is True
 
 
@@ -5691,10 +5691,10 @@ def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_
     app.runtime().deferred.drain()
     link.type(1, "new message 3")
     link.type(1, "the user put 👍 on message 2")
-    app.container.get(Clock).tick()
+    app.container.get(Clock).tick(app.container.get(Clock).time())
     assert keystrokes == ["[journal] new message 2"], "a line within five seconds of the last waits, even once the last is confirmed"
     app.container.get(SettingRows).set("delivery.batch_seconds", 0, Actor.user(1))
-    app.container.get(Clock).tick()
+    app.container.get(Clock).tick(app.container.get(Clock).time())
     assert keystrokes == ["[journal] new message 2", "[journal] new message 3 | the user put 👍 on message 2"], "the window up, the held lines go as one line"
 
 

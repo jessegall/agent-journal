@@ -29,6 +29,7 @@ from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
 from journal.models.task import Task
 from journal.events.listener import Listener
+from journal.engine.job import Job
 from journal.events.bus import Bus
 from journal.events.rows.plan_started import PlanStarted
 from journal.events.rows.row_event import RowEvent
@@ -183,8 +184,38 @@ def test_a_tick_reaches_the_machine_without_a_hook(app: App):
     from journal.engine.clock import Clock
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
-    app.container.get(Clock).tick()
+    app.container.get(Clock).tick(app.container.get(Clock).time())
     assert isinstance(app.container.get(StateMachine).current("s1"), Ready)
+
+
+class Counting(Job):
+    """A job that notes the time of each of its ticks."""
+
+    def __init__(self, interval_seconds: float) -> None:
+        self.interval_seconds, self.ticks = interval_seconds, []
+
+    def tick(self, time: float) -> None:
+        self.ticks.append(time)
+
+
+class Failing(Counting):
+    def tick(self, time: float) -> None:
+        super().tick(time)
+        raise RuntimeError("a tick that fails")
+
+
+def test_the_job_runner_ticks_each_job_at_its_own_interval_on_a_driven_clock(app: App):
+    from journal.engine.clock import Clock
+    from journal.engine.job_runner import JobRunner
+    runner = JobRunner(app.container.get(Clock), Bus())
+    every_second, every_three_seconds, failing = Counting(1.0), Counting(3.0), Failing(2.0)
+    for job in (every_second, every_three_seconds, failing):
+        runner.register(job)
+    waits = [runner.run_due(float(second)) for second in range(10)]
+    assert every_second.ticks == [float(second) for second in range(1, 10)], "a job is first due one interval after the runner sees it"
+    assert every_three_seconds.ticks == [3.0, 6.0, 9.0], "each job at its own interval"
+    assert failing.ticks == [2.0, 4.0, 6.0, 8.0], "a job that raises is logged and ticked again at its next turn"
+    assert waits == [1.0] * 10, "the runner sleeps until the next job is due"
 
 
 def test_one_task_in_hand_park_resume_and_await(app: App):
