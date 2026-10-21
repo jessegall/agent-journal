@@ -1,4 +1,5 @@
 from journal.features.plugins.support.dashboard_document import DashboardDocument
+from journal.features.plugins.support.plugin_aliases import PluginAliases
 from journal.features.plugins.support.plugin_installing import PluginInstalling
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.plugins.support.plugin_record import PluginRecord
@@ -14,12 +15,12 @@ from journal.repositories.scope import Scope
 
 
 class PluginController(Controller[Plugin]):
-    """What the Plugins page reads and does, as the user: each plugin with whether it is on, failing or off and its settings' schema, never a secret's value; a preview of a source and its install, a setting changed, a plugin switched, upgraded, removed or purged, and its logs, its record and its dashboard."""
+    """What the Plugins page reads and does, as the user: each plugin with whether it is on, failing or off and its settings' schema, never a secret's value; a preview of a source and its install with the aliases it skipped, a setting changed, a plugin switched, upgraded, removed or purged, and its logs, its record and its dashboard."""
 
     def __init__(self, plugins: Plugins, installing: PluginInstalling, settings: PluginSettings, folders: PluginFolders, record: PluginRecord, dashboards: DashboardDocument,
-                 scope: Scope, environments: Environments) -> None:
+                 scope: Scope, environments: Environments, aliases: PluginAliases) -> None:
         self.repository, self.installing, self.settings, self.folders, self.record, self.dashboards = plugins, installing, settings, folders, record, dashboards
-        self.scope, self.environments = scope, environments
+        self.scope, self.environments, self.aliases = scope, environments, aliases
 
     def shown_page(self, rows: list[Plugin]) -> list[dict]:
         return [{**ModelFields.build(p), "status": self.status(p), "schema": self.settings.schema(p)} for p in rows]
@@ -35,7 +36,7 @@ class PluginController(Controller[Plugin]):
 
     def install(self, request: Request) -> Response:
         plugin = self.installing.install(str(request.body.get("source", "")).strip(), self.local(), request.actor)
-        return Response.json(self.shown(plugin), 201)
+        return Response.json({**self.shown(plugin), "skipped_aliases": sorted(self.aliases.skipped(plugin))}, 201)
 
     def configure(self, request: Request) -> Response:
         plugin = self.repository.find(request.number("id"))

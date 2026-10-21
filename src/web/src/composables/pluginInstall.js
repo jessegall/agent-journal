@@ -29,7 +29,8 @@ export function usePluginInstall(busy = ref(""), fresh = () => {}) {
         try {
             const upgrading = previewed.value.upgrading;
             const installed = upgrading ? await api.upgradePlugin(upgrading) : await api.installPlugin(source);
-            outcome.value = {ok: true, text: `${installed.manifest.title || installed.name} is ${upgrading ? "up to date" : "installed"}.`};
+            const skipped = installed.skipped_aliases?.length ? ` Its aliases ${installed.skipped_aliases.join(", ")} were not added: those names are taken.` : "";
+            outcome.value = {ok: true, text: `${installed.manifest.title || installed.name} is ${upgrading ? "up to date" : "installed"}.${skipped}`};
             if (!upgrading) fresh(installed.name, installed);
         } catch (e) {
             outcome.value = {ok: false, text: e.message};

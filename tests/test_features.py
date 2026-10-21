@@ -7487,3 +7487,11 @@ def test_an_alias_call_is_a_shell_command_to_every_hold_not_a_journal_command(ap
     call = app.container.get(Entries).kind_entries("ToolStarting", 1)[0].recorded_call()
     assert not call.parts[0].is_journal and top() != "awaiting", "an alias runs a real command, which lifts the wait like any other"
 
+
+def test_the_viewers_plugin_install_names_the_aliases_it_skipped(app: App, tmp_path):
+    folder = tmp_path / "judging"
+    folder.mkdir()
+    (folder / "journal-plugin.json").write_text(json.dumps({"name": "judging", "version": "1.0.0", "program": "run.py", "aliases": [{"name": "judge", "line": "run.py"}, {"name": "task", "line": "run.py"}]}))
+    (folder / "run.py").write_text("")
+    installed = viewer(app, "plugins", {"source": str(folder)})
+    assert installed["name"] == "judging" and installed["skipped_aliases"] == ["task"]
