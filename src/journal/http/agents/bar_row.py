@@ -14,7 +14,7 @@ class BarRow:
     key: str
     verb: str
     detail: str
-    at: float
+    time: float
     ended: bool
 
     @staticmethod
@@ -27,7 +27,7 @@ class BarRow:
 
     @classmethod
     def of_part(cls, entry: Entry) -> "BarRow":
-        return cls(f"{entry.data['chain']} {entry.data['part']}", entry.data["doing"], entry.data["part"], entry.data["at"], entry.kind == RAN)
+        return cls(f"{entry.data['chain']} {entry.data['part']}", entry.data["doing"], entry.data["part"], entry.data["time"], entry.kind == RAN)
 
     @classmethod
     def of_tool(cls, entry: Entry) -> "BarRow":
@@ -37,4 +37,4 @@ class BarRow:
 
     def item(self) -> dict:
         detail = [{"value": self.detail[:80], "color": "muted"}] if self.detail else []
-        return {"id": self.at, "key": self.key, "parts": [{"value": self.verb, "color": "gray"}, *detail], "at": self.at, "done": False, "for": 0, "clock": True, "hold": 0.25, "lingers": LINGERS}
+        return {"id": self.time, "key": self.key, "parts": [{"value": self.verb, "color": "gray"}, *detail], "time": self.time, "done": False, "for": 0, "clock": True, "hold": 0.25, "lingers": LINGERS}

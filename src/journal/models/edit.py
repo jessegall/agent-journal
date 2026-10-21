@@ -10,7 +10,7 @@ class Edit(Scoped):
     session: str = ""
     path: str = ""
     kind: str = "edit"
-    at: float = 0.0
+    time: float = 0.0
     added: int = 0
     removed: int = 0
     first_line: int = 1

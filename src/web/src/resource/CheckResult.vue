@@ -52,8 +52,8 @@ async function save(key, value) {
                 <span class="verdict">{{ VERDICTS[state.verdict] }}</span>
                 <span class="since">
                     <template v-if="state.verdict === 'running'">started {{ seconds(state.elapsed) }} ago</template>
-                    <template v-else-if="last.at">
-                        {{ last.ok ? "passed" : "failed" }} {{ age(last.at) }} in
+                    <template v-else-if="last.time">
+                        {{ last.ok ? "passed" : "failed" }} {{ age(last.time) }} in
                         {{ seconds(last.took) }}
                     </template>
                     <template v-else>press Run to check now</template>
@@ -118,7 +118,7 @@ async function save(key, value) {
                     <li>
                         <span :class="['mark', r.ok ? 'ok' : 'bad']">{{ r.ok ? "Passed" : `Failed · exit ${r.code}` }}</span>
                         <span class="grow" />
-                        <span class="meta">{{ seconds(r.took) }} · {{ age(r.at) }}</span>
+                        <span class="meta">{{ seconds(r.took) }} · {{ age(r.time) }}</span>
                     </li>
                 </template>
             </ul>

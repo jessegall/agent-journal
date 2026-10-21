@@ -99,7 +99,7 @@ defineExpose({scroller});
                             <span class="fold-mark">{{ folded.has(t.line) ? "show" : "hide" }}</span>
                         </template>
                     </button>
-                    <span class="when">{{ stamp(t.at) }}</span>
+                    <span class="when">{{ stamp(t.time) }}</span>
                     <span class="line">{{ t.kind === "whisper" ? t.line : `#${t.line}` }}</span>
                     <template v-if="t.tools.length">
                         <span class="tools">used {{ t.tools.join(", ") }}</span>

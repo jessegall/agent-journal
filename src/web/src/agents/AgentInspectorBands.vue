@@ -45,7 +45,7 @@ const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume", "skip-st
                     @close="briefOpen = false"
                 >
                     <template #more>
-                        <small class="inspector-sent">Sent {{ clock(brief.at) }}</small>
+                        <small class="inspector-sent">Sent {{ clock(brief.time) }}</small>
                     </template>
                 </OpenableText>
             </Notice>

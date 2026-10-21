@@ -98,14 +98,14 @@ async function drop() {
         @mouseleave="picking = false"
     >
         <template v-if="opening">
-            <TurnBriefMarker :at="turn.at" />
+            <TurnBriefMarker :time="turn.time" />
         </template>
         <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" data-figure-bubble :data-figure-mark="turn.key" @click="resourceComment && openComment()">
             <template v-if="fromMain">
-                <TurnFromMain :at="turn.at" :data="turn.data" />
+                <TurnFromMain :time="turn.time" :data="turn.data" />
             </template>
             <template v-if="report">
-                <TurnReport :worker="report.worker" :at="turn.at" />
+                <TurnReport :worker="report.worker" :time="turn.time" />
             </template>
             <template v-if="resourceComment">
                 <TurnParent :label="commentParent.label" @open="openComment" />

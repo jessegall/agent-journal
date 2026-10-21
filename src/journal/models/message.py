@@ -29,8 +29,8 @@ class Message(Scoped):
     data: dict = field(default_factory=dict)
 
     @classmethod
-    def from_agent(cls, sender: str, text: str, session: str, at: datetime) -> "Message":
-        return cls(author=Author.SYSTEM, text=text, read_at=at, data={"kind": cls.PEER, cls.PEER: sender, "session": session})
+    def from_agent(cls, sender: str, text: str, session: str, time: datetime) -> "Message":
+        return cls(author=Author.SYSTEM, text=text, read_at=time, data={"kind": cls.PEER, cls.PEER: sender, "session": session})
 
     @classmethod
     def sent_to(cls, receiver: str, text: str, session: str) -> "Message":

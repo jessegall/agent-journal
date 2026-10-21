@@ -24,5 +24,5 @@ class ReplyFromThought(AgentListener[ToolStarting]):
             named = {int(n) for tag in REPLY_TAG.finditer(thought) for n in tag.group(1).split(",")}
             if named & unanswered:
                 turn = TurnWritten(text=thought, delta=thought, turn_id=f"{FROM_THOUGHT}{hash(thought)}", final=True)
-                self.bus.dispatch(turn.placed(event.session, event.environment_id, event.provider, event.context, event.at))
+                self.bus.dispatch(turn.placed(event.session, event.environment_id, event.provider, event.context, event.time))
                 unanswered -= named

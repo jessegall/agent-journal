@@ -1,5 +1,5 @@
 import threading
-import time
+import time as timing
 
 from journal.engine.states.ended import Ended
 from journal.support.states_catalogue import StatesCatalogue
@@ -26,11 +26,11 @@ class Clock:
         self._thread.start()
 
     def now(self) -> float:
-        return time.time()
+        return timing.time()
 
     def tick(self) -> None:
         now = self.now()
-        self.bus.dispatch(ClockTicked(at=now))
+        self.bus.dispatch(ClockTicked(time=now))
         for agent in self.agents.everywhere():
             if isinstance(self.states.named(agent.state, agent.data), Ended):
                 continue
@@ -39,7 +39,7 @@ class Clock:
 
     def _tick(self, agent: Agent, now: float) -> None:
         idle_seconds = now - agent.updated_at.timestamp()
-        self.bus.dispatch(Ticked(session=agent.session, environment_id=agent.environment_id, at=now, quiet_for=idle_seconds))
+        self.bus.dispatch(Ticked(session=agent.session, environment_id=agent.environment_id, time=now, quiet_for=idle_seconds))
 
     def stop(self) -> None:
         self._stopping.set()

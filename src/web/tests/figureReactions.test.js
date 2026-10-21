@@ -86,13 +86,13 @@ test("only a jump of more than the figure's own height sometimes turns over, and
 });
 
 test("a test card that ends is seen once, as a pass or a failure, and a card already known is not seen again", () => {
-    const card = (key, state) => ({key, state, at: 5, ended: 9});
+    const card = (key, state) => ({key, state, time: 5, ended: 9});
     const known = new Map();
     const agent = (...cards) => ({data: {cards}});
     expect(testResultsAfter(agent(card("tests:1", "running")), known)).toEqual([]);
-    expect(testResultsAfter(agent(card("tests:1", "done")), known)).toEqual([{beat: "tests_passed", at: 9, card: "tests:1"}]);
+    expect(testResultsAfter(agent(card("tests:1", "done")), known)).toEqual([{beat: "tests_passed", time: 9, card: "tests:1"}]);
     expect(testResultsAfter(agent(card("tests:1", "done")), known)).toEqual([]);
-    expect(testResultsAfter(agent(card("tests:2", "failed")), known)).toEqual([{beat: "tests_failed", at: 9, card: "tests:2"}]);
+    expect(testResultsAfter(agent(card("tests:2", "failed")), known)).toEqual([{beat: "tests_failed", time: 9, card: "tests:2"}]);
 });
 
 test("the user typing now and then makes its eyes read, and finishing a long stretch of work now and then makes it stretch", () => {
@@ -107,12 +107,12 @@ test("every moment a reaction waits for is one the journal makes, from cards sha
     // features/git_actions, features/checks (a failing check and a test run), features/journal_laws, features/ask_questions,
     // and the person_at runner/hook_report stamps when the user writes
     const cards = [
-        {at: 2, tone: "commit", icon: "branch"},
-        {at: 2, icon: "check", tone: "danger"},
-        {at: 2, icon: "terminal", tone: "danger"},
-        {at: 2, icon: "question"},
-        {at: 2, key: "tests:1", icon: "check", state: "done", ended: 3},
-        {at: 2, key: "tests:2", icon: "check", state: "failed", ended: 3},
+        {time: 2, tone: "commit", icon: "branch"},
+        {time: 2, icon: "check", tone: "danger"},
+        {time: 2, icon: "terminal", tone: "danger"},
+        {time: 2, icon: "question"},
+        {time: 2, key: "tests:1", icon: "check", state: "done", ended: 3},
+        {time: 2, key: "tests:2", icon: "check", state: "failed", ended: 3},
     ];
     const agent = {data: {cards, person_at: 2}};
     const faces = FACES.map((face, n) => ({table: "reactions", id: n + 1, author: "user", created_at: new Date(2000).toISOString(), face, message_id: n}));
@@ -157,22 +157,22 @@ test("the laptop is rolled once for a stretch of work and kept from one tool to 
 });
 
 test("typing is a moment, and so is the end of a stretch of work long enough, timed from when the work began", () => {
-    expect(workMoments("idle", true, 0, 50)).toEqual({moments: [{beat: "typing", at: 50}], began: 0});
+    expect(workMoments("idle", true, 0, 50)).toEqual({moments: [{beat: "typing", time: 50}], began: 0});
     expect(workMoments("running", false, 0, 50)).toEqual({moments: [], began: 50});
     expect(workMoments("thinking", false, 50, 60).began).toBe(50);
-    expect(workMoments("idle", false, 50, 50 + WORKED_SECONDS)).toEqual({moments: [{beat: "work_done", at: 50 + WORKED_SECONDS}], began: 0});
+    expect(workMoments("idle", false, 50, 50 + WORKED_SECONDS)).toEqual({moments: [{beat: "work_done", time: 50 + WORKED_SECONDS}], began: 0});
     expect(workMoments("idle", false, 50, 51).moments).toEqual([]);
 });
 
 test("a moment is answered by its egg first, else by its reaction, a beat for the body or a look for the eyes, and a missing clip by nothing", () => {
     const memory = () => ({reacted: new Map(), played: []});
     const has = () => true;
-    expect(answerTo({beat: "failed", at: 1}, "squire", memory(), 0, () => 0, has)).toEqual({beat: {clip: "squire_chase", card: ""}});
-    expect(answerTo({beat: "reacted:\u2764\ufe0f", at: 1}, "butler", memory(), 0, () => 0, has)).toEqual({look: "hearts"});
-    expect(answerTo({beat: "tests_passed", at: 1, card: "tests:1"}, "butler", memory(), 0, () => 0, has)).toEqual({
+    expect(answerTo({beat: "failed", time: 1}, "squire", memory(), 0, () => 0, has)).toEqual({beat: {clip: "squire_chase", card: ""}});
+    expect(answerTo({beat: "reacted:\u2764\ufe0f", time: 1}, "butler", memory(), 0, () => 0, has)).toEqual({look: "hearts"});
+    expect(answerTo({beat: "tests_passed", time: 1, card: "tests:1"}, "butler", memory(), 0, () => 0, has)).toEqual({
         beat: {clip: "joy", card: "tests:1"},
     });
-    expect(answerTo({beat: "tests_passed", at: 1}, "butler", memory(), 0, () => 0, () => false)).toBe(null);
+    expect(answerTo({beat: "tests_passed", time: 1}, "butler", memory(), 0, () => 0, () => false)).toBe(null);
 });
 
 test("the figure does something by itself only while it is calm: idle, not hanging, with nothing to play and neither coming nor going", () => {

@@ -12,7 +12,7 @@ INDEXES = (
     ("messages_by_update", "messages (environment_id, updated_at)"),
     ("tasks_by_state", "tasks (environment_id, state, id)"),
     ("outputs_by_chain", "command_outputs (chain, id)"),
-    ("edits_by_session", "edits (environment_id, session, at)"),
+    ("edits_by_session", "edits (environment_id, session, time)"),
     ("agents_by_session", "agents (session)"),
     ("statistics_by_key", "statistics (key)"),
 )

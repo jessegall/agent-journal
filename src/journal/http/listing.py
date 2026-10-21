@@ -41,5 +41,5 @@ class Listing:
         return ListedPage(rows=sorted([*open_, *page], key=lambda r: r.id), more=len(wanted) > self.limit)
 
     @staticmethod
-    def seconds(at: datetime | None) -> float:
-        return at.timestamp() if at else 0.0
+    def seconds(time: datetime | None) -> float:
+        return time.timestamp() if time else 0.0

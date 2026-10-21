@@ -46,7 +46,7 @@ class ShellConduct(Conduct):
     def on_ticked_shell_background(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
         shell = event.snapshot.of(Shell)
-        if not shell.background or event.at - shell.background_since < LOOK_AFTER:
+        if not shell.background or event.time - shell.background_since < LOOK_AFTER:
             return self.unchanged()
         return self.unchanged(Shell.CHECK_THE_BACKGROUND.create(background_outputs=", ".join(str(n) for n in shell.background)))
 

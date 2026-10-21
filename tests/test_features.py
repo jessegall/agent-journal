@@ -3,7 +3,7 @@
 import json
 import os
 import re
-import time
+import time as timing
 from dataclasses import asdict
 from pathlib import Path
 from urllib.error import HTTPError
@@ -586,7 +586,7 @@ def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app, mo
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
     app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Where("main", "c1"))
     workers = app.container.get(Workers)
-    worker = workers.save(workers.find(1).running_as(1, time.time() - 5), Actor.system())
+    worker = workers.save(workers.find(1).running_as(1, timing.time() - 5), Actor.system())
     session = "01a15a25-535e-7cc2-993e-d38deedb6b40"
     rollout = tmp_path / "home" / ".codex" / "sessions" / date.today().strftime("%Y/%m/%d") / f"rollout-2026-10-20T18-29-18-{session}.jsonl"
     rollout.parent.mkdir(parents=True)
@@ -597,7 +597,7 @@ def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app, mo
     assert workers.find(1).found_session == session, "the session found in Codex's files is kept on the worker's row"
     rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": "/elsewhere"}}) + "\n" + json.dumps(said) + "\n")
     assert [turn["text"] for turn in read()["turns"]] == ["Storage is written."], "the next read takes the kept session and does not look through the rollouts again"
-    assert workers.save(workers.find(1).running_as(2, time.time()), Actor.system()).found_session == "", "a new run looks for its own session"
+    assert workers.save(workers.find(1).running_as(2, timing.time()), Actor.system()).found_session == "", "a new run looks for its own session"
 
 
 def test_a_dispatch_without_a_model_a_profile_or_a_job_is_refused(app):
@@ -758,7 +758,7 @@ def test_the_documents_page_lists_the_projects_documents_their_search_and_the_at
 
 
 def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app):
-    import time as clock
+    import timing as clock
     from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     report = '{"title": "Sins", "summary": "1 sin", "findings": [{"name": "python-dict-bag", "file": "src/x.py", "line": 3, "group": "value objects"}]}'
@@ -1434,13 +1434,13 @@ def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app):
 
 def test_words_the_hooks_missed_are_swept_from_the_transcript_into_the_chat_once(app, monkeypatch, tmp_path):
     import json as j
-    import time
+    import time as timing
     from datetime import datetime, timezone
     from journal.events.bus import Bus
     from journal.events.clock_ticked import ClockTicked
     from journal.providers.claude import Claude
     from journal.repositories.messages import Messages
-    now = time.time()
+    now = timing.time()
     stamp = lambda seconds_ago: datetime.fromtimestamp(now - seconds_ago, timezone.utc).isoformat().replace("+00:00", "Z")
     said = lambda text, ago: j.dumps({"type": "assistant", "timestamp": stamp(ago), "message": {"content": [{"type": "text", "text": text}]}}) + "\n"
     transcript = tmp_path / "s1.jsonl"
@@ -1450,8 +1450,8 @@ def test_words_the_hooks_missed_are_swept_from_the_transcript_into_the_chat_once
     with transcript.open("a") as file:
         file.write(said("Missed by every hook.", 20) + said("Still the hooks' to bring.", 5))
     bus, messages = app.container.get(Bus), app.container.get(Messages)
-    bus.dispatch(ClockTicked(at=now))
-    bus.dispatch(ClockTicked(at=now + 1))
+    bus.dispatch(ClockTicked(time=now))
+    bus.dispatch(ClockTicked(time=now + 1))
     agents = lambda: [m.text for m in messages.across_environments() if m.author == "agent"]
     assert agents().count("Missed by every hook.") == 1 and "Still the hooks' to bring." not in agents(), "older words the hooks did not read are swept in once; the newest are left to the hooks"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
@@ -1466,7 +1466,7 @@ def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_
     transcript.write_text(j.dumps(said("assistant", "Long ago.")) + "\n" + j.dumps(said("assistant", "On it, Sir Jesse.")) + "\n")
     monkeypatch.setattr(Codex, "transcript", lambda self, project, session: transcript)
     first = Codex().texts_written(tmp_path, "s1", -1)
-    texts, read = first.texts, first.at
+    texts, read = first.texts, first.time
     assert texts == ["On it, Sir Jesse."], "the first look reads the turn in hand"
     with transcript.open("a") as file:
         file.write(j.dumps(said("user", "a prompt")) + "\n" + j.dumps({"type": "response_item", "payload": {"type": "function_call", "name": "exec"}}) + "\n" + j.dumps(said("assistant", "The plan is ready.")) + "\n")
@@ -1517,7 +1517,7 @@ def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_p
     kept = edits.of_agent("s1", 0, 50)
     assert [e.path for e in kept] == ["a.py", "b.py"] and kept[1].added == 2 and kept[1].removed == 0 and kept[1].command.startswith("sed") and [r["kind"] for r in kept[1].rows] == ["add", "add"], "a shell line's edit is read from the call's written paths when the call ends, against the file as the journal saw it last"
     for i in range(KEEP):
-        edits.record(Edit(session="s1", path=f"f{i}.py", at=float(i + 10)), Actor.agent("s1"))
+        edits.record(Edit(session="s1", path=f"f{i}.py", time=float(i + 10)), Actor.agent("s1"))
     assert len(edits.in_()) == KEEP, "the oldest go as new ones come"
     assert edits.in_()[0].path == "f0.py" and edits.in_()[-1].path == f"f{KEEP - 1}.py", "the two oldest went"
 
@@ -1546,7 +1546,7 @@ def test_a_session_silent_for_an_hour_is_ended(app):
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     hook(app, "SessionStart")
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=3601.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=3601.0))
     assert app.container.get(StateMachine).current("s1").name == "ended"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert app.container.get(StateMachine).current("s1").name != "ended", "a session that goes on after an hour's silence lives: it is not left ended"
@@ -1560,7 +1560,7 @@ def test_the_agent_a_supervisor_runs_stays_live_however_long_it_is_idle_and_is_t
     catch_typed(app, monkeypatch, typed)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     hook(app, "SessionStart")
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=36000.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=36000.0))
     assert app.container.get(StateMachine).current("s1").name != "ended", "an agent idle for ten hours under a supervisor is waiting, not gone"
     app.console().run(["message", "send", "are you there?"], USER)
     app.runtime().deferred.drain()
@@ -1780,11 +1780,11 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app,
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     told = len(typed)
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
     assert len(typed) == told, "while the agent is busy, the end waits"
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=6.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=6.0))
     assert "output 1 failed with code 1" in typed[-1] and "pytest" not in typed[-1] and "2 failed" not in typed[-1], "once it is quiet, its end names the number and how it ended, never the command or its lines"
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=12.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=12.0))
     assert len(typed) == told + 1, "an end is named once"
     cards = [m for m in app.container.get(Messages).in_() if m.author == "system"]
     assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["command"] == "pytest -q" and cards[-1].data["detail"] == "2 failed", "the one mark of the moved command is settled in place: it names the command, on a line of its own, and how it ended"
@@ -1898,9 +1898,9 @@ def test_the_mcp_page_shows_every_server_as_the_kept_check_found_it_without_a_re
     monkeypatch.setattr(Health, "asked", lambda self: HealthReport({"blender": Known("blender", "uvx blender-mcp", "connected", "")}))
     read = lambda: j.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))
     read()
-    deadline = time.monotonic() + 5
-    while not read()["checked_at"] and time.monotonic() < deadline:
-        time.sleep(0.05)
+    deadline = timing.monotonic() + 5
+    while not read()["checked_at"] and timing.monotonic() < deadline:
+        timing.sleep(0.05)
     shown = read()
     assert not shown["checking"] and [(s["name"], s["state"]) for s in shown["servers"]] == [("blender", "connected")], "the next read shows the servers as the check found them"
 
@@ -1993,7 +1993,7 @@ def test_a_long_file_is_not_read_whole(app, tmp_path):
 
 
 def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_lost(app, monkeypatch):
-    import time
+    import time as timing
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     from journal.supervisor_link import SupervisorLink
@@ -2003,7 +2003,7 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     hook(app, "SessionStart")
     link, bus = app.container.get(SupervisorLink), app.container.get(Bus)
     link.type(1, "hello there")
-    tick = lambda later: bus.dispatch(Ticked(session="s1", environment_id=1, at=time.time() + later, quiet_for=later))
+    tick = lambda later: bus.dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + later, quiet_for=later))
     tick(2)
     assert [s["line"] for s in sent] == ["[journal] hello there"], "a fresh line is given time"
     tick(30)
@@ -2331,7 +2331,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app, mon
     app.runtime().deferred.drain()
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=60.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=60.0))
     app.runtime().deferred.drain()
     assert running.in_hand("s1", 1).title == "Writing an update" and any("Find what changed" in line for line in sent), "the user's message starts the update sequence, and the step is typed to the agent once it is quiet"
 
@@ -2763,7 +2763,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app, m
     sent.clear()
 
     def tick():
-        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=120.0))
+        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=120.0))
         app.runtime().deferred.drain()
     tick()
     assert sent == [], "a step just said is not said again"
@@ -2917,14 +2917,14 @@ def test_a_workers_report_message_carries_the_report_kind_and_its_worker(app):
 def test_a_block_arriving_twice_at_once_is_recorded_once(app, monkeypatch):
     import contextvars
     import threading
-    import time
+    import time as timing
     from journal.events.agent.turn_written import TurnWritten
     from journal.features.messages.listeners.record_turn import RecordTurn
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     record = app.container.get(RecordTurn)
     checked = RecordTurn.already_recorded
-    monkeypatch.setattr(RecordTurn, "already_recorded", lambda self, part: (checked(self, part), time.sleep(0.2))[0])
+    monkeypatch.setattr(RecordTurn, "already_recorded", lambda self, part: (checked(self, part), timing.sleep(0.2))[0])
     block = TurnWritten(text="Checking the worker's inspector now.", delta="", turn_id="t1", final=True).placed("s1", 1, "claude", 0.0, 0.0)
     threads = [threading.Thread(target=contextvars.copy_context().run, args=(record.handle, block)) for _ in range(2)]
     [t.start() for t in threads]
@@ -3529,9 +3529,9 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     app.container.get(SettingRows).set(PluginsFeature.HOLD_WINDOW.key, 1000, Actor.user(1))
     plugins.save(plugins.named("echo").with_(settings={"mode": "slow"}), Actor.user(1))
     plugins.save(echo(app, "echo-two").with_(settings={"mode": "slow"}), Actor.user(1))
-    began = time.monotonic()
+    began = timing.monotonic()
     status, _ = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
-    assert status == 200 and time.monotonic() - began < 3, "two slow plugins are each cut at their window and the event goes through"
+    assert status == 200 and timing.monotonic() - began < 3, "two slow plugins are each cut at their window and the event goes through"
     missed = [e.data["plugin"] for e in app.container.get(Entries).where(kind="plugin_unanswered") if "no answer within" in e.data["reason"]]
     assert missed == ["echo", "echo-two"] and plugins.named("echo").faults_in_a_row == 0, "each miss is recorded as unanswered and counts as no fault, so the plugin is asked again next time"
 
@@ -3666,7 +3666,7 @@ def test_a_secret_value_is_masked_out_of_every_write_and_the_leak_is_shown(app, 
     stored = b"".join(path.read_bytes() for path in app.config.home.glob("journal.db*"))
     assert b"[secret GITHUB_KEY]" in stored and b"ghp_0123456789abcdef" not in stored, "not in a hook's entry either, in the database or its log"
     assert app.container.get(Masks).leaks
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
     app.runtime().deferred.drain()
     with app.container.get(Scope).of(1):
         assert any("was masked: GITHUB_KEY" in m.text for m in app.container.get(Messages).in_()), "the leak is shown once"
@@ -3755,7 +3755,7 @@ def test_the_agent_is_told_when_the_user_allows_a_program(app, monkeypatch):
 
 def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_taken_back(app, tmp_path, monkeypatch):
     import json as j
-    import time
+    import time as timing
     from journal.support.mcp_installing import McpInstalling
     from journal.features.secrets.support.browser_logins import BrowserLogins
     from journal.models.mcp_server import McpServer
@@ -3779,9 +3779,9 @@ def test_a_browser_login_is_taken_in_a_window_given_to_the_agents_browser_and_ta
     secret = secrets.save(Secret(title="Example", kind=SecretKind.BROWSER_LOGIN, url="https://app.example.com/login"), Actor.user("u"))
     assert "the user logs in to Example with the Log in button" in app.console().run(["secret", "login", str(secret.id)], AGENT).err, "the agent logs in on its own only where the user allows it"
     viewer(app, f"secrets/{secret.id}/allow-login")
-    began = time.time()
-    while secrets.find(secret.id).logging_in_at and time.time() - began < 5:
-        time.sleep(0.05)
+    began = timing.time()
+    while secrets.find(secret.id).logging_in_at and timing.time() - began < 5:
+        timing.sleep(0.05)
     done = secrets.find(secret.id)
     assert done.auto_login and done.session_at and done.session_expires.year == 2100
     merged = app.container.get(BrowserLogins).merged
@@ -3815,7 +3815,7 @@ def test_a_replaced_value_stays_masked_and_a_login_that_ran_out_asks_again_once(
     secrets.save(Secret(title="Example", kind=SecretKind.BROWSER_LOGIN, url="https://example.com", session_at=datetime.now(timezone.utc) - timedelta(days=2), session_expires=datetime.now(timezone.utc) - timedelta(days=1)), Actor.user("u"))
     hook(app, "SessionStart")
     for _ in range(2):
-        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+        app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
         app.runtime().deferred.drain()
     asked = [m for m in app.container.get(Messages).in_() if "Your login to Example has run out" in m.text]
     assert len(asked) == 1, "asked once for each time it runs out"
@@ -3836,7 +3836,7 @@ def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app, tmp
     recent = secrets.save(Secret(title="Recent", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Recent"), deleted_at=datetime.now(timezone.utc)), Actor.user("u"))
     values.write({"OLD_KEY": "a", "RECENT_KEY": "b", f"{RETIRED}X{AT}{int(long_ago.timestamp())}": "c", "LIVE_KEY": "d"})
     hook(app, "SessionStart")
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=1.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
     app.runtime().deferred.drain()
     assert [s.id for s in secrets.all()] == [recent.id], "the one deleted thirty days ago is gone, the recent one kept for a restore"
     assert values.values() == {"RECENT_KEY": "b", "LIVE_KEY": "d"}, "its values and the old retired one go with it"
@@ -3911,7 +3911,7 @@ def test_a_question_asked_without_a_session_or_from_a_workers_shell_is_refused(a
 
 def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app):
     import subprocess
-    import time
+    import time as timing
     from journal.features.workers.seeds.workers_at_boot import WorkersAtBoot
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.models.worker import Worker
@@ -3925,11 +3925,11 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app):
     out, _ = runner.outputs(running)
     out.parent.mkdir(parents=True, exist_ok=True)
     started = subprocess.run(["sh", "-c", f"(sleep 0.5; echo the parser is done) > '{out}' 2>&1 & echo $!"], capture_output=True, text=True, timeout=10)
-    workers.save(running.running_as(int(started.stdout.strip()), time.time()), Actor.system())
+    workers.save(running.running_as(int(started.stdout.strip()), timing.time()), Actor.system())
     app.container.get(WorkersAtBoot).run()
-    end = time.time() + 10
-    while time.time() < end and any(w.is_out() for w in workers.across_environments()):
-        time.sleep(0.1)
+    end = timing.time() + 10
+    while timing.time() < end and any(w.is_out() for w in workers.across_environments()):
+        timing.sleep(0.1)
     with scope.of(1):
         texts = [m.text for m in app.container.get(Messages).in_()]
     assert "Mr. Babbage reports: the parser is done" in "\n".join(texts), "a worker still running when the journal came back is watched until it ends, its report read from its file"
@@ -4208,23 +4208,23 @@ def test_every_version_3_message_comes_across_with_its_author_time_reply_and_att
 
 
 def test_the_mcp_list_answers_at_once_and_asks_the_program_on_a_thread_of_its_own(app, monkeypatch):
-    import time
+    import time as timing
     from journal.support.health import Health
     from journal.features.mcp.support.health_report import HealthReport
     from journal.features.mcp.support.known import Known
     asked = []
     def slow(self):
         asked.append(1)
-        time.sleep(0.5)
+        timing.sleep(0.5)
         return HealthReport({"github": Known("github", "npx", "connected", "")})
     monkeypatch.setattr(Health, "asked", slow)
     health = app.container.get(Health)
-    began = time.time()
-    assert health.of_all().servers == {} and health.of_all().servers == {} and time.time() - began < 0.2, "no request waits on the program"
+    began = timing.time()
+    assert health.of_all().servers == {} and health.of_all().servers == {} and timing.time() - began < 0.2, "no request waits on the program"
     for _ in range(20):
         if health.of_all().servers:
             break
-        time.sleep(0.1)
+        timing.sleep(0.1)
     assert list(health.of_all().servers) == ["github"] and asked == [1], "asked once, in the background, and the next request has it"
 
 
@@ -5288,7 +5288,7 @@ def test_commands_that_end_together_are_named_in_one_line(app, monkeypatch):
         ShellVerbs(app).split("make", str(app.config.root / chain))
         ShellVerbs(app).moved(chain, "make", f"/tmp/out/{chain}")
         ShellVerbs(app).ended(chain, status, f"/tmp/out/{chain}", "")
-    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=0.0, quiet_for=6.0))
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=6.0))
     ended = [line for line in typed if "journal output read" in line]
     assert len(ended) == 1 and "outputs 1, 2 finished; output 3 failed with code 2" in ended[0], f"three ends in a busy stretch are one line: {ended}"
 
@@ -5301,7 +5301,7 @@ def test_a_closing_line_of_a_few_words_is_never_taken_for_a_repeated_reply():
 
 
 def test_an_mcp_change_restarts_the_conversation_on_screen_never_an_older_session(app, monkeypatch):
-    import time
+    import time as timing
     from journal.models.mcp_server import McpServer
     from journal.support.mcp_installing import McpInstalling
     from journal.supervisor_link import SupervisorLink
@@ -5310,7 +5310,7 @@ def test_an_mcp_change_restarts_the_conversation_on_screen_never_an_older_sessio
     monkeypatch.setattr(SupervisorLink, "restart_agent", lambda self, environment_id, resume: restarted.append(resume))
     hook(app, "SessionStart")
     hook(app, "Stop")
-    time.sleep(0.01)
+    timing.sleep(0.01)
     hook(app, "SessionStart", session_id="s2")
     hook(app, "Stop", session_id="s2")
     app.container.get(McpInstalling).add(McpServer(name="context7", title="Context7", transport="http", url="https://mcp.context7.com/mcp"), Actor.user(1))
@@ -5397,7 +5397,7 @@ def test_the_journals_skills_and_profiles_are_written_fresh_and_a_projects_own_a
 
 
 def test_the_thinking_line_shows_only_a_thought_of_the_turn_in_progress(app):
-    import time
+    import time as timing
     from journal.http.agents.agent_activity import AgentActivity
     from journal.models.author import Author
     from journal.models.message import Message
@@ -5405,10 +5405,10 @@ def test_the_thinking_line_shows_only_a_thought_of_the_turn_in_progress(app):
     hook(app, "SessionStart")
     messages, activity = app.container.get(Messages), app.container.get(AgentActivity)
     hook(app, "UserPromptSubmit", prompt="look at the login")
-    time.sleep(0.01)
+    timing.sleep(0.01)
     messages.save(Message(author=Author.AGENT, text="the login reads the old store", data={"kind": Message.THOUGHT}), Actor.agent("s1"))
     assert activity.thinking("s1", []) == "the login reads the old store", "a thought of this turn is shown while the agent works"
-    time.sleep(0.01)
+    timing.sleep(0.01)
     hook(app, "UserPromptSubmit", prompt="and the logout?")
     assert activity.thinking("s1", []) == "", "a new turn began: the thought from before its prompt is not shown as now"
 
@@ -5453,7 +5453,7 @@ def test_a_subagents_shell_line_is_never_moved_to_the_background(app):
 
 def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(app):
     import dataclasses
-    import time
+    import time as timing
     from journal.features.updates.support.update_held import UpdateHeld
     from journal.features.updates.support.update_mark import UpdateMark
     from journal.support.refused import Refused
@@ -5468,15 +5468,15 @@ def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(
     except Refused as refused:
         assert "an update to 4.99.0 is under way" in str(refused), "a second update waits for the first"
     mark.write(dataclasses.replace(mark.held(), pid=-1))
-    updating.settle(time.time())
+    updating.settle(timing.time())
     assert mark.held() is None and "did not finish" in updating.problem and "update.log" in updating.problem, "a journal that came back on the old version says the update did not finish"
-    mark.write(UpdateHeld("4.0.0", VERSION, "Restarting the journal", time.time(), -1))
-    updating.settle(time.time())
+    mark.write(UpdateHeld("4.0.0", VERSION, "Restarting the journal", timing.time(), -1))
+    updating.settle(timing.time())
     assert mark.held() is None and updating.problem == "", "a journal that came back on the version it went to takes the mark off"
 
 
 def test_a_typed_line_is_cut_short_and_a_piece_of_one_typed_again_is_still_the_journals():
-    import time
+    import time as timing
     from journal.engine.support.typed_line import TypedLine
     from journal.features.checks.support.check_output import CheckOutput
     from journal.support.typed_lines import TypedLines
@@ -5487,9 +5487,9 @@ def test_a_typed_line_is_cut_short_and_a_piece_of_one_typed_again_is_still_the_j
     assert len(line) <= TypedLine.LONGEST and line.endswith("..."), "no line typed to an agent is longer than one line holds"
     typed = TypedLines()
     typed.typed(1, line)
-    first = typed.overdue(1, time.time())[0]
+    first = typed.overdue(1, timing.time())[0]
     typed._recent = []
-    typed.tried_again(first, time.time())
+    typed.tried_again(first, timing.time())
     piece = line[200:320].replace(" ", "\n", 1)
     assert typed.carries(1, piece), "a piece of a line typed again, broken by the terminal, is the journal's, not the user's"
     assert not typed.carries(1, "handle with care"), "a short answer of the user's that sits inside a typed line stays the user's"
@@ -5605,7 +5605,7 @@ def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_
 
 
 def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_hears_only_of_a_line_given_up(app, monkeypatch):
-    import time
+    import time as timing
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     from journal.repositories.messages import Messages
@@ -5618,7 +5618,7 @@ def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_
     assert sent[-1] == "[journal] new message 1"
     app.console().run(["message", "read", "1"], AGENT)
     app.runtime().deferred.drain()
-    tick = lambda later: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, at=time.time() + later, quiet_for=later))
+    tick = lambda later: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + later, quiet_for=later))
     tick(30)
     assert sent.count("[journal] new message 1") == 1, "the message read, the line that named it has arrived, whatever the prompt hook saw: it is not typed again"
     app.container.get(SupervisorLink).type(1, "look at the build")
@@ -5745,18 +5745,18 @@ def test_a_tool_entry_records_the_calls_reading_beside_the_raw_input(app):
 
 
 def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is_cut_at_the_deadline(app):
-    import time
+    import time as timing
     from journal.repositories.plugins import Plugins
     from journal.repositories.entries import Entries
     plugins = app.container.get(Plugins)
     plugins.save(echo(app, hears=["tool_starting", "tool_finished"], holds=[{"event": "tool_starting", "window_ms": 1000}]).with_(settings={"mode": "late"}), Actor.user(1))
     hook(app, "SessionStart")
-    started = time.monotonic()
+    started = timing.monotonic()
     assert hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, tool_response={})[0] == 200
-    assert time.monotonic() - started < 1.0, "an event the plugin does not hold is handed to it after the reply: the hook never waits on it"
-    started = time.monotonic()
+    assert timing.monotonic() - started < 1.0, "an event the plugin does not hold is handed to it after the reply: the hook never waits on it"
+    started = timing.monotonic()
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
-    waited = time.monotonic() - started
+    waited = timing.monotonic() - started
     assert status == 200 and 1.0 <= waited < 1.9, "the event it holds is asked on the answer path and cut at the window its manifest declares, the hook answered without it"
     missed = app.container.get(Entries).where(kind="plugin_unanswered")
     assert "no answer within 1000 ms" in missed[-1].data["reason"] and plugins.named("echo").faults_in_a_row == 0 and plugins.named("echo").enabled, "the miss is on the plugin's record, no fault counted, and the plugin stays on to be asked next time"

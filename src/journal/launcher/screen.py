@@ -62,7 +62,7 @@ class Screen:
     def _fresh(self) -> None:
         self.out.write(BACK_TO_SAVED if self.interactive else "\n")
 
-    def _lines(self, heading: str, notes: list[str], options: list[Option], at: int, actions: tuple[str, ...]) -> list[str]:
+    def _lines(self, heading: str, notes: list[str], options: list[Option], time: int, actions: tuple[str, ...]) -> list[str]:
         width = max(len(option.label) for option in options)
         lines = [f"  {self.paint(ACCENT, '?')} {self.paint(BOLD, heading)}", ""]
         lines += [f"    {self.paint(DIM, note)}" for note in notes] + ([""] if notes else [])
@@ -70,11 +70,11 @@ class Screen:
             badges = "".join(f"  {self.paint(BADGE, '[' + badge + ']')}" for badge in option.badges)
             label = f"{option.label:<{width}}"
             lines += [""] if option.apart and i else []
-            lines.append(f"  {self.paint(ACCENT, '❯')} {self.paint(BOLD, label)}{badges}" if i == at else f"    {label}{badges}")
+            lines.append(f"  {self.paint(ACCENT, '❯')} {self.paint(BOLD, label)}{badges}" if i == time else f"    {label}{badges}")
         hint = " · ".join([HINT, *(ACTION_HINTS[key] for key in actions)])
         return [*lines, "", f"  {self.paint(DIM, hint)}"]
 
-    def _pick_with_keys(self, heading: str, notes: list[str], options: list[Option], at: int, actions: tuple[str, ...]) -> tuple[int, str]:
+    def _pick_with_keys(self, heading: str, notes: list[str], options: list[Option], time: int, actions: tuple[str, ...]) -> tuple[int, str]:
         fd = sys.stdin.fileno()
         saved = termios.tcgetattr(fd)
         drawn = 0
@@ -82,32 +82,32 @@ class Screen:
             tty.setcbreak(fd)
             self.out.write(HIDE_CURSOR)
             while True:
-                lines = self._lines(heading, notes, options, at, actions)
+                lines = self._lines(heading, notes, options, time, actions)
                 self.out.write((f"\x1b[{drawn}F\x1b[J" if drawn else "") + "\n".join(lines) + "\n")
                 self.out.flush()
                 drawn = len(lines)
                 for key in self.keys.read():
                     if key in Keys.ENTER:
-                        return at, ""
+                        return time, ""
                     if key in actions:
-                        return at, key
+                        return time, key
                     if key == Keys.ESCAPE:
                         raise SystemExit("journal: left without starting")
-                    at = self._moved(at, key, len(options))
+                    time = self._moved(time, key, len(options))
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, saved)
             self.out.write(SHOW_CURSOR)
             self.out.flush()
 
     @staticmethod
-    def _moved(at: int, key: str, count: int) -> int:
+    def _moved(time: int, key: str, count: int) -> int:
         if key in Keys.UP:
-            return (at - 1) % count
+            return (time - 1) % count
         if key in Keys.DOWN:
-            return (at + 1) % count
+            return (time + 1) % count
         if key.isdigit() and 1 <= int(key) <= count:
             return int(key) - 1
-        return at
+        return time
 
     def _pick_by_number(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
         self.out.write(f"\n  {heading}\n  {'─' * len(heading)}\n")

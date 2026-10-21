@@ -9,8 +9,8 @@ const agent = {
         {name: "idle", title: "Idle", values: {}, awaits: ""},
     ],
     trail: [
-        {at: 1, before: ["idle"], after: ["idle", "working"], cause: "TaskStarted", refused: "", line: ""},
-        {at: 2, before: ["idle", "working"], after: ["idle", "working"], cause: "WorkerDispatched", refused: "wait", line: "a worker is still out"},
+        {time: 1, before: ["idle"], after: ["idle", "working"], cause: "TaskStarted", refused: "", line: ""},
+        {time: 2, before: ["idle", "working"], after: ["idle", "working"], cause: "WorkerDispatched", refused: "wait", line: "a worker is still out"},
     ],
 };
 

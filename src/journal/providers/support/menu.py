@@ -81,6 +81,6 @@ class Menu:
         return bool(SWITCHING_MODEL.search(self.question))
 
     def keys_for(self, taken: Option) -> str:
-        at = next((i for i, o in enumerate(self.options) if o.cursor), 0)
+        time = next((i for i, o in enumerate(self.options) if o.cursor), 0)
         to = list(self.options).index(taken)
-        return (DOWN if to >= at else UP) * abs(to - at) + ENTER
+        return (DOWN if to >= time else UP) * abs(to - time) + ENTER

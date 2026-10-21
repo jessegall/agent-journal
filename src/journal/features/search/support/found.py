@@ -19,9 +19,9 @@ class Found:
     @staticmethod
     def around(text: str, words: list[str]) -> str:
         flat = " ".join(text.split())
-        at = max(0, flat.lower().find(words[0].lower()) - AROUND // 4)
-        cut = flat[at:at + AROUND]
-        return ("…" if at else "") + cut + ("…" if at + AROUND < len(flat) else "")
+        time = max(0, flat.lower().find(words[0].lower()) - AROUND // 4)
+        cut = flat[time:time + AROUND]
+        return ("…" if time else "") + cut + ("…" if time + AROUND < len(flat) else "")
 
     def line(self) -> str:
         return f"{self.ref}: {self.passage}"

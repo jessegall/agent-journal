@@ -10,7 +10,7 @@ const props = defineProps({mark: {type: Object, required: true}});
 const attrs = useAttrs();
 const tag = computed(() => (attrs.onClick ? "button" : "span"));
 const shade = computed(() => props.mark.color || (props.mark.tone ? `var(--tone-${props.mark.tone})` : ""));
-const hover = computed(() => [props.mark.title, props.mark.at ? clock(props.mark.at) : ""].filter(Boolean).join(" · "));
+const hover = computed(() => [props.mark.title, props.mark.time ? clock(props.mark.time) : ""].filter(Boolean).join(" · "));
 const tint = computed(() => ({
     ...(shade.value ? {"--mark": shade.value} : {}),
     ...(props.mark.depth ? {"--depth": props.mark.depth} : {}),

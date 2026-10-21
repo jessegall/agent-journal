@@ -7,9 +7,9 @@ vi.mock("../src/api/client.js", () => ({api: {pluginRecord}}));
 test("a plugin's record lists what it did, a row it wrote opening, and says what cannot be listed", async () => {
     pluginRecord.mockResolvedValue({
         record: [
-            {at: 1760000100, kind: "row", text: "made task log 4", ref: "todo:3"},
-            {at: 1760000050, kind: "command", text: 'ran journal task log 3 "echoed"', ref: ""},
-            {at: 1760000000, kind: "said", text: "held at tool_starting: echo refuses a forbidden tool", ref: ""},
+            {time: 1760000100, kind: "row", text: "made task log 4", ref: "todo:3"},
+            {time: 1760000050, kind: "command", text: 'ran journal task log 3 "echoed"', ref: ""},
+            {time: 1760000000, kind: "said", text: "held at tool_starting: echo refuses a forbidden tool", ref: ""},
         ],
     });
     const {default: PluginRecord} = await import("../src/pages/PluginRecord.vue");

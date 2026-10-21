@@ -23,13 +23,13 @@ class RetypeLost(AgentListener[Ticked]):
         agent = self.machine.agent(event.session, event.environment_id)
         if not self.turn.over(agent):
             return
-        for lost in self.typed.overdue(event.environment_id, event.at - PATIENCE):
-            if event.at < lost.at + PATIENCE * 2 ** (lost.tries - 1):
+        for lost in self.typed.overdue(event.environment_id, event.time - PATIENCE):
+            if event.time < lost.time + PATIENCE * 2 ** (lost.tries - 1):
                 continue
             if lost.tries >= TRIES:
                 self.typed.given_up(lost)
                 self.supervisor.release(event.environment_id)
                 self.cards.show(event.environment_id, event.session, f"A line did not reach the agent, typed {TRIES} times over five minutes", "terminal", "bad", lost.line, shows=ChatMark.FAULTS)
             else:
-                again = self.typed.tried_again(lost, event.at)
+                again = self.typed.tried_again(lost, event.time)
                 self.supervisor.type_again(event.environment_id, again.line)

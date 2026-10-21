@@ -16,8 +16,8 @@ class Notice(Scoped):
     tone: str = "note"
     closed_at: datetime | None = None
 
-    def closed(self, at: datetime) -> "Notice":
-        return self.with_(closed_at=at)
+    def closed(self, time: datetime) -> "Notice":
+        return self.with_(closed_at=time)
 
     def title_words(self) -> str:
         return self.title

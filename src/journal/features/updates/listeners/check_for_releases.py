@@ -10,4 +10,4 @@ class CheckForReleases(Listener[ClockTicked]):
         self.updating = updating
 
     def handle(self, event: ClockTicked) -> None:
-        self.updating.tick(event.at)
+        self.updating.tick(event.time)

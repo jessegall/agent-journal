@@ -56,8 +56,8 @@ class Secret(Model):
     def filled_in(self, name: str) -> "Secret":
         return self.with_(filled=tuple(dict.fromkeys((*self.filled, self.field(name).name))), asked_at=None)
 
-    def deleted(self, at: datetime) -> "Secret":
-        return self.with_(deleted_at=at)
+    def deleted(self, time: datetime) -> "Secret":
+        return self.with_(deleted_at=time)
 
     def restored(self) -> "Secret":
         return self.with_(deleted_at=None)

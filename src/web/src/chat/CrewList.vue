@@ -14,7 +14,7 @@ const props = defineProps({
 const emit = defineEmits(["open"]);
 const now = useNow();
 const minutes = computed(() => Number(((store.settings && store.settings.agent_sessions) || {}).recent ?? 60));
-const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.at || 0) <= minutes.value * 60));
+const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.time || 0) <= minutes.value * 60));
 const listed = computed(() => [...recent.value.filter((r) => r.running), ...recent.value.filter((r) => !r.running).reverse()]);
 const hidden = computed(() => Math.max(0, props.total - listed.value.length));
 const running = computed(() => props.rows.filter((r) => r.running).length);
@@ -25,8 +25,8 @@ const summary = computed(
 );
 
 function lasted(row) {
-    if (!row.at) return "";
-    return row.running ? `running ${span(now.value - row.at)}` : `${row.status || "finished"} · ${span((row.ended || row.at) - row.at)}`;
+    if (!row.time) return "";
+    return row.running ? `running ${span(now.value - row.time)}` : `${row.status || "finished"} · ${span((row.ended || row.time) - row.time)}`;
 }
 
 function detail(row) {

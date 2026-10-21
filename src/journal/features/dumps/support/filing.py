@@ -210,7 +210,7 @@ class Filing:
 
     @staticmethod
     def entry(text: str, on: str = "", making: str = "", detail: str = "", **extra) -> dict:
-        return {"at": time.time(), "text": text.strip(), "on": on.strip(), "making": making.strip(), "detail": detail.strip(), **extra}
+        return {"time": time.time(), "text": text.strip(), "on": on.strip(), "making": making.strip(), "detail": detail.strip(), **extra}
 
     @staticmethod
     def named_refs(text: str) -> list[str]:

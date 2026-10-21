@@ -82,14 +82,14 @@ class Provider:
         with path.open("rb") as file:
             file.seek(read)
             raw = file.read()
-        rows, at = [], read
+        rows, time = [], read
         for line in raw[:raw.rfind(b"\n") + 1].splitlines(keepends=True):
             row = json.loads(line) if line.startswith(b"{") else {}
             if self.seconds(str(row.get("timestamp", ""))) >= until:
                 break
             rows.append(row)
-            at += len(line)
-        return self.written_in(rows, at)
+            time += len(line)
+        return self.written_in(rows, time)
 
     def texts_written(self, project: Path, session: str, read: int) -> Written:
         path = self.transcript(project, session)
@@ -107,8 +107,8 @@ class Provider:
         lines = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
         return self.written_in(lines, read + whole)
 
-    def written_in(self, rows: list[dict], at: int) -> Written:
-        return Written([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.crossed_in(row)], at)
+    def written_in(self, rows: list[dict], time: int) -> Written:
+        return Written([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.crossed_in(row)], time)
 
     def texts_in(self, line: dict) -> list[str]:
         return []

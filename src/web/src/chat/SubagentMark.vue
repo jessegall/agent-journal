@@ -14,7 +14,7 @@ const props = defineProps({
     report: {type: Number, default: 0},
     agent: {type: Number, default: 0},
     session: {type: String, default: ""},
-    at: {type: Number, required: true},
+    time: {type: Number, required: true},
 });
 
 const open = () => peek("agents", props.agent, 0, props.session);
@@ -34,7 +34,7 @@ const mark = computed(() => ({
     tone: tone.value,
     label: label.value,
     name: name.value,
-    at: props.at,
+    time: props.time,
     detail: detail.value,
 }));
 const openable = computed(() => ({...mark.value, title: "Open the subagent"}));

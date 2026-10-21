@@ -22,11 +22,11 @@ const skillMark = computed(() => ({
     tone: "good",
     label: "Loaded skill",
     name: props.turn.title,
-    at: props.turn.at,
+    time: props.turn.time,
     title: `Read the ${props.turn.title} skill`,
 }));
-const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation compacted", at: props.turn.at}));
-const cardMark = computed(() => ({...data.value, at: props.turn.at}));
+const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation compacted", time: props.turn.time}));
+const cardMark = computed(() => ({...data.value, time: props.turn.time}));
 
 function markClick(data) {
     if (data.go) return {click: () => go(data.go)};
@@ -59,12 +59,12 @@ function markClick(data) {
         </template>
         <template #whisper>
             <div class="thread-turn whisper" :data-ref="turn.key">
-                <WhisperMark v-bind="data" :title="turn.title" :at="turn.at" />
+                <WhisperMark v-bind="data" :title="turn.title" :time="turn.time" />
             </div>
         </template>
         <template #subagent>
             <div class="thread-turn subagent" :data-ref="turn.key">
-                <SubagentMark v-bind="data" :task="turn.title" :at="turn.at" />
+                <SubagentMark v-bind="data" :task="turn.title" :time="turn.time" />
             </div>
         </template>
         <template #made>

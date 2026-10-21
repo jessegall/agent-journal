@@ -82,7 +82,7 @@ export const LONG_WALK_SECONDS = 5;
 export function walkingMoment(trip, began, now) {
     if (!trip?.moves || trip.hopping) return {began: 0, moment: null};
     const since = began || now;
-    return {began: since, moment: now - since >= LONG_WALK_SECONDS ? {beat: "long_walk", at: now} : null};
+    return {began: since, moment: now - since >= LONG_WALK_SECONDS ? {beat: "long_walk", time: now} : null};
 }
 
 export const WORKED_SECONDS = 30;
@@ -135,9 +135,9 @@ export function stretchClip(state, rolled, random) {
 // The moments of the agent's work and of the user at the compose box at `now`: typing since the last look, and the end of a stretch of
 // work that lasted WORKED_SECONDS. `began` is when the work in hand began, 0 with none; it returns the moments and that time as it is now.
 export function workMoments(state, typed, began, now) {
-    const moments = typed ? [{beat: "typing", at: now}] : [];
+    const moments = typed ? [{beat: "typing", time: now}] : [];
     if (WORKING.has(state)) return {moments, began: began || now};
-    if (began && now - began >= WORKED_SECONDS) moments.push({beat: "work_done", at: now});
+    if (began && now - began >= WORKED_SECONDS) moments.push({beat: "work_done", time: now});
     return {moments, began: 0};
 }
 

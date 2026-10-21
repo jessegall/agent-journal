@@ -34,7 +34,7 @@ class DocSearch:
     @staticmethod
     def passage(body: str, asked: list[str]) -> str:
         flat = SPACES.sub(" ", MARKS.sub("", body))
-        at = min((i for i in (flat.lower().find(word) for word in asked) if i >= 0), default=-1)
-        if at < 0:
+        time = min((i for i in (flat.lower().find(word) for word in asked) if i >= 0), default=-1)
+        if time < 0:
             return ""
-        return flat[max(0, at - AROUND):at + AROUND].strip()
+        return flat[max(0, time - AROUND):time + AROUND].strip()

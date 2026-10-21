@@ -37,7 +37,7 @@ const extension = computed(() => {
             </span>
         </span>
         <span class="file-row-end">
-            <span class="file-row-age">{{ age(file.at) }}</span>
+            <span class="file-row-age">{{ age(file.time) }}</span>
             <a class="file-row-act" :href="file.url" target="_blank" :title="`Open ${file.name} in a new tab`">
                 <Icon name="open" :size="13" />
             </a>

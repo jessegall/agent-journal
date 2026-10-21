@@ -73,4 +73,4 @@ class ShellRecord:
         return line if WORDS_IN.search(line) else ""
 
     def record(self, where: Where, kind: str, data: dict) -> None:
-        self.entries.save(Entry(environment_id=self.scope.id, kind=kind, actor=where.actor, data={**data, "session": where.session, "at": datetime.now(timezone.utc).timestamp()}), where.actor)
+        self.entries.save(Entry(environment_id=self.scope.id, kind=kind, actor=where.actor, data={**data, "session": where.session, "time": datetime.now(timezone.utc).timestamp()}), where.actor)

@@ -1,4 +1,4 @@
-import time
+import time as timing
 
 from journal.support.held_line import HeldLine
 from journal.engine.support.typed_line import TypedLine
@@ -18,7 +18,7 @@ class TypedLines:
         self._sent_at: dict[int, float] = {}
 
     def is_within_window(self, environment_id: int, seconds: float) -> bool:
-        return time.time() - self._sent_at.get(environment_id, 0.0) < seconds
+        return timing.time() - self._sent_at.get(environment_id, 0.0) < seconds
 
     def is_waiting(self, environment_id: int) -> bool:
         return any(t.environment_id == environment_id for t in self._waiting)
@@ -35,13 +35,13 @@ class TypedLines:
         return HeldLine(environment_id, TypedLine.cut(f"{MARK} {' | '.join(lines)}"), max(h.after for h in held))
 
     def typed(self, environment_id: int, line: str) -> None:
-        now = time.time()
+        now = timing.time()
         self._sent_at[environment_id] = now
         self._waiting.append(TypedLine(environment_id, line, now))
-        self._recent = [t for t in self._recent if now - t.at < RECENT] + [TypedLine(environment_id, line, now)]
+        self._recent = [t for t in self._recent if now - t.time < RECENT] + [TypedLine(environment_id, line, now)]
 
     def carries(self, environment_id: int, prompt: str) -> bool:
-        return any(t.environment_id == environment_id and t.holds(prompt) for t in self._recent if time.time() - t.at < RECENT)
+        return any(t.environment_id == environment_id and t.holds(prompt) for t in self._recent if timing.time() - t.time < RECENT)
 
     def confirm(self, environment_id: int, prompt: str) -> bool:
         for typed in self._waiting:
@@ -57,12 +57,12 @@ class TypedLines:
         return bool(named)
 
     def overdue(self, environment_id: int, before: float) -> list[TypedLine]:
-        return [t for t in self._waiting if t.environment_id == environment_id and t.at <= before]
+        return [t for t in self._waiting if t.environment_id == environment_id and t.time <= before]
 
-    def tried_again(self, typed: TypedLine, at: float) -> TypedLine:
-        again = TypedLine(typed.environment_id, typed.line, at, typed.tries + 1)
+    def tried_again(self, typed: TypedLine, time: float) -> TypedLine:
+        again = TypedLine(typed.environment_id, typed.line, time, typed.tries + 1)
         self._waiting[self._waiting.index(typed)] = again
-        self._recent = [t for t in self._recent if at - t.at < RECENT] + [again]
+        self._recent = [t for t in self._recent if time - t.time < RECENT] + [again]
         return again
 
     def given_up(self, typed: TypedLine) -> None:

@@ -19,4 +19,4 @@ class FileEdited(AgentEvent):
 
     @classmethod
     def recorded(cls, edit: Edit, environment_id: int) -> "FileEdited":
-        return cls(path=edit.path, kind=edit.kind, added=edit.added, removed=edit.removed, first_line=edit.first_line, last_line=edit.last_line, lines=edit.rows, command=edit.command, tool_use=edit.tool_use).placed(edit.session, environment_id, "", None, edit.at)
+        return cls(path=edit.path, kind=edit.kind, added=edit.added, removed=edit.removed, first_line=edit.first_line, last_line=edit.last_line, lines=edit.rows, command=edit.command, tool_use=edit.tool_use).placed(edit.session, environment_id, "", None, edit.time)

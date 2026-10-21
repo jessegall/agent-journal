@@ -112,10 +112,10 @@ class Repository(Generic[M]):
             self.bus.dispatch(Saved(model=saved, actor=actor))
             return self.dispatched(saved, actor)
 
-    def imported(self, row: M, at: datetime, actor: Actor) -> M:
+    def imported(self, row: M, time: datetime, actor: Actor) -> M:
         with self.connection.transaction():
             self.bus.dispatch(Saving(model=row, actor=actor))
-            saved = self._insert(row, actor, at)
+            saved = self._insert(row, actor, time)
             self.bus.dispatch(Saved(model=saved, actor=actor))
             return saved
 

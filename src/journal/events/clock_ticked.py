@@ -7,4 +7,4 @@ from journal.events.event import Event
 class ClockTicked(Event):
     """The clock, every interval, once for the whole journal: for what runs on a schedule of its own."""
 
-    at: float
+    time: float

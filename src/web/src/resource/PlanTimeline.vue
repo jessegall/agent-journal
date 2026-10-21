@@ -21,7 +21,7 @@ const days = computed(() => momentDays(props.items));
         <template v-for="group in days" :key="group.day">
             <h3 class="day">{{ group.day }}</h3>
             <ol class="moments">
-                <template v-for="item in group.items" :key="`${item.at}-${item.kind}-${item.task}`">
+                <template v-for="item in group.items" :key="`${item.time}-${item.kind}-${item.task}`">
                     <li :class="['moment', item.kind]">
                         <span class="mark"><Icon :name="MOMENTS[item.kind].icon" :size="11" /></span>
                         <div class="what">
@@ -30,7 +30,7 @@ const days = computed(() => momentDays(props.items));
                                 <button type="button" class="todo" :title="`Open task ${item.task}`" @click="emit('open', item.task)">
                                     #{{ item.task }} {{ item.title }}
                                 </button>
-                                <span class="at">{{ timeOf(item.at) }}</span>
+                                <span class="at">{{ timeOf(item.time) }}</span>
                             </div>
                             <template v-if="item.text && item.kind !== 'started'">
                                 <TextDisplay class="text" :text="item.text" />
@@ -148,7 +148,7 @@ const days = computed(() => momentDays(props.items));
     color: var(--accent-text);
 }
 
-.at {
+.time {
     flex: none;
     color: var(--text-3);
     font-size: 11.5px;

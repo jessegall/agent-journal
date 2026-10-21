@@ -24,4 +24,4 @@ class Edits(ScopedRepository[Edit]):
         return self.selected("session = ? AND tool_use = ? ORDER BY id", (session, tool_use))
 
     def of_agent(self, session: str, since: float, last: int) -> list[Edit]:
-        return list(reversed(self.selected("session = ? AND at > ? ORDER BY id DESC LIMIT ?", (session, since, last))))
+        return list(reversed(self.selected("session = ? AND time > ? ORDER BY id DESC LIMIT ?", (session, since, last))))

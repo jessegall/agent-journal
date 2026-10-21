@@ -7,7 +7,7 @@ class TranscriptHeading(TypedDict):
     line: int
     who: str
     kind: str
-    at: float
+    time: float
     tools: list[str]
     text: str
     has_text: bool

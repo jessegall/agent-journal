@@ -27,14 +27,14 @@ class Check(Model):
     last_fault: str = ""
     waited_on: bool = False
 
-    def started(self, at: float) -> "Check":
-        return self.with_(running=CheckProgress(at))
+    def started(self, time: float) -> "Check":
+        return self.with_(running=CheckProgress(time))
 
-    def ran(self, passed: bool, output: str, at: datetime, took: float, report: CheckReport | None, fault: str) -> "Check":
-        ran = CheckRan(environment_id=0, at=at.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, failed_before=self.last_passed is False, waited_on=self.waited_on)
-        recorded = self.with_(last_passed=passed, last_output=output, last_ran_at=at, last_took=took, last_report=report, running=None, last_fault=fault).with_event(ran)
+    def ran(self, passed: bool, output: str, time: datetime, took: float, report: CheckReport | None, fault: str) -> "Check":
+        ran = CheckRan(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, failed_before=self.last_passed is False, waited_on=self.waited_on)
+        recorded = self.with_(last_passed=passed, last_output=output, last_ran_at=time, last_took=took, last_report=report, running=None, last_fault=fault).with_event(ran)
         if self.waited_on and passed and not self.is_settled():
-            return recorded.with_event(RowSettled(environment_id=0, at=at.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.came_to()))
+            return recorded.with_event(RowSettled(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.came_to()))
         return recorded
 
     def due_at(self, now: datetime) -> bool:

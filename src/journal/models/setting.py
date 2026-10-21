@@ -11,5 +11,5 @@ class Setting(Scoped):
     key: str = ""
     value: object | None = None
 
-    def set_to(self, value: object, at: float) -> "Setting":
-        return self.with_(value=value).with_event(SettingChanged(environment_id=self.environment_id, at=at, setting=self.key))
+    def set_to(self, value: object, time: float) -> "Setting":
+        return self.with_(value=value).with_event(SettingChanged(environment_id=self.environment_id, time=time, setting=self.key))

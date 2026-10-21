@@ -57,8 +57,8 @@ class LoginWindow:
             return
         args = list(browser.args)
         while STORAGE in args:
-            at = args.index(STORAGE)
-            del args[at:at + 2]
+            time = args.index(STORAGE)
+            del args[time:time + 2]
         args = [a for a in args if a != "--isolated"]
         if merged is not None:
             args += [STORAGE, str(merged), "--isolated"]

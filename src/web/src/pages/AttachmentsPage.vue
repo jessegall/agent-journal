@@ -66,7 +66,7 @@ const shelves = computed(() => [
 ]);
 const listedFiles = computed(() => (view.value ? view.value.files : []));
 const groups = computed(() =>
-    ageGroups(listedFiles.value, (f) => f.at).map((g) => ({
+    ageGroups(listedFiles.value, (f) => f.time).map((g) => ({
         ...g,
         images: g.list.filter((f) => f.image),
         others: g.list.filter((f) => !f.image),

@@ -3,7 +3,7 @@ import os
 import signal
 import subprocess
 import threading
-import time
+import time as timing
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -33,12 +33,12 @@ class CheckRunner:
         self.config, self.checks, self.agents, self.cards = config, checks, agents, cards
 
     def run(self, check: Check, actor: Actor) -> Check:
-        return self.finished(self.checks.save(check.started(time.time()), actor), actor)
+        return self.finished(self.checks.save(check.started(timing.time()), actor), actor)
 
     def start(self, check: Check, actor: Actor) -> Check:
         if check.running is not None:
             return check
-        begun = self.checks.save(check.started(time.time()), actor)
+        begun = self.checks.save(check.started(timing.time()), actor)
         threading.Thread(target=self.finished, args=(begun, actor), name=f"check-{begun.id}", daemon=True).start()
         return begun
 
@@ -48,7 +48,7 @@ class CheckRunner:
         report.unlink(missing_ok=True)
         ended = self.executed(check, report, actor)
         was_failing = check.last_passed is False
-        took = time.time() - check.running.at
+        took = timing.time() - check.running.time
         ran = self.checks.save(self.checks.find(check.id).ran(ended.passed, ended.output[-KEPT:], datetime.now(timezone.utc), took, self.report_of(report), ended.fault), actor)
         if ran.waited_on:
             return ran
@@ -63,12 +63,12 @@ class CheckRunner:
                                    env={**os.environ, "JOURNAL_REPORT": str(report)}, start_new_session=True)
         late = threading.Timer(TIMEOUT, os.killpg, (process.pid, signal.SIGKILL))
         late.start()
-        printed, saved = [], time.time()
+        printed, saved = [], timing.time()
         for line in process.stdout:
             printed.append(line)
-            if time.time() - saved >= EVERY:
-                self.checks.touch(check, actor, running=CheckOutput.progress("".join(printed), check.running.at))
-                saved = time.time()
+            if timing.time() - saved >= EVERY:
+                self.checks.touch(check, actor, running=CheckOutput.progress("".join(printed), check.running.time))
+                saved = timing.time()
         code = process.wait()
         late.cancel()
         output = "".join(printed)

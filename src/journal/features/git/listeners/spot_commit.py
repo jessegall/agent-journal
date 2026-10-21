@@ -1,6 +1,6 @@
 import re
 import subprocess
-import time
+import time as timing
 from pathlib import Path
 
 from journal.config import Config
@@ -49,12 +49,12 @@ class SpotCommit(AgentListener[ToolFinished]):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject}, actor, ChatMark.COMMITS)
-        closed = self.close_named(event, head.sha, head.body) if folder == self.config.root and time.time() - head.committed <= JUST_MADE else []
+        closed = self.close_named(event, head.sha, head.body) if folder == self.config.root and timing.time() - head.committed <= JUST_MADE else []
         return self.commit(event, head.sha, closed)
 
     def commit(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
         next_open = self.next_task.after(self.tasks.find(closed[-1])) if closed else None
-        commit = CommitMade(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.at)
+        commit = CommitMade(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.time)
         return next((answer for answer in self.bus.dispatch(commit) if isinstance(answer, Decision)), None)
 
     def folder(self, event: ToolFinished) -> Path:

@@ -35,7 +35,7 @@ function amount(part) {
 }
 
 watch(
-    () => state.value.at,
+    () => state.value.time,
     () => (counted.value = {})
 );
 watch(runningLine, (now) => {

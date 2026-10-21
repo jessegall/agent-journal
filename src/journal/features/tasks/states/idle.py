@@ -27,16 +27,16 @@ class Idle(AgentState):
     quiet_since: float = 0.0
     parked_asked: bool = False
 
-    def active(self, at: float) -> "Idle":
-        return replace(self, quiet_since=at, parked_asked=False)
+    def active(self, time: float) -> "Idle":
+        return replace(self, quiet_since=time, parked_asked=False)
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.plans.states.following_plan import FollowingPlan
         started = event.snapshot.of(Plans).started
         if started:
-            return self.push(FollowingPlan(plan_id=started.plan_id, task_id=started.started_task, approved=True, logged_at=event.at))
-        return self.changed(self.active(event.at))
+            return self.push(FollowingPlan(plan_id=started.plan_id, task_id=started.started_task, approved=True, logged_at=event.time))
+        return self.changed(self.active(event.time))
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
@@ -44,18 +44,18 @@ class Idle(AgentState):
         from journal.features.tasks.states.working import Working
         started = event.snapshot.of(Plans).started
         if started and event.task_id in started.tasks:
-            return self.push(FollowingPlan(plan_id=started.plan_id, task_id=event.task_id, approved=True, logged_at=event.at))
-        return self.push(Working(task_id=event.task_id, logged_at=event.at))
+            return self.push(FollowingPlan(plan_id=started.plan_id, task_id=event.task_id, approved=True, logged_at=event.time))
+        return self.push(Working(task_id=event.task_id, logged_at=event.time))
 
     def on_plan_started(self, event: PlanStarted, settings: Settings) -> Transition:
         from journal.features.plans.states.following_plan import FollowingPlan
-        return self.push(FollowingPlan(plan_id=event.plan_id, task_id=event.task_id, approved=True, logged_at=event.at))
+        return self.push(FollowingPlan(plan_id=event.plan_id, task_id=event.task_id, approved=True, logged_at=event.time))
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
-        return self.changed(self.active(event.at))
+        return self.changed(self.active(event.time))
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return self.changed(self.active(event.at))
+        return self.changed(self.active(event.time))
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
@@ -75,7 +75,7 @@ class Idle(AgentState):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        quiet = event.at - self.quiet_since
+        quiet = event.time - self.quiet_since
         tasks = event.snapshot.of(Tasks)
         if tasks.parked and quiet >= ASK_ABOUT_PARKED_AFTER and not self.parked_asked:
             return self.changed(replace(self, parked_asked=True), Tasks.PARKED_TASK_ASKED_ABOUT.create(n=tasks.parked[0], why=tasks.first_parked_why))

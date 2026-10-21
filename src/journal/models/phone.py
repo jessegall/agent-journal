@@ -26,8 +26,8 @@ class Phone(Scoped):
     def is_due_a_sighting(self, now: datetime) -> bool:
         return self.last_seen_at is None or now - self.last_seen_at >= self.SEEN_EVERY
 
-    def seen(self, at: datetime) -> "Phone":
-        return self.with_(last_seen_at=at)
+    def seen(self, time: datetime) -> "Phone":
+        return self.with_(last_seen_at=time)
 
     def pushed_refs(self) -> list[str]:
         return self.pushed.split()
@@ -45,11 +45,11 @@ class Phone(Scoped):
     def told(self, owed: list[str]) -> "Phone":
         return self.with_(pushed=" ".join(owed), push_failed_at=None)
 
-    def push_failed(self, at: datetime) -> "Phone":
-        return self.with_(push_failed_at=at)
+    def push_failed(self, time: datetime) -> "Phone":
+        return self.with_(push_failed_at=time)
 
     def unsubscribed(self) -> "Phone":
         return self.with_(push="", push_failed_at=None)
 
-    def ended(self, at: datetime) -> "Phone":
-        return self.with_(ended_at=at)
+    def ended(self, time: datetime) -> "Phone":
+        return self.with_(ended_at=time)

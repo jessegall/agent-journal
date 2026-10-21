@@ -19,8 +19,8 @@ class Share(Scoped):
     def opened(self) -> "Share":
         return self.with_(approved=True)
 
-    def stopped(self, at: datetime) -> "Share":
-        return self.with_(stopped_at=at)
+    def stopped(self, time: datetime) -> "Share":
+        return self.with_(stopped_at=time)
 
     def viewed(self) -> "Share":
         return self.with_(views=self.views + 1)

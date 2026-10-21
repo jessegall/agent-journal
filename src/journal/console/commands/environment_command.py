@@ -140,8 +140,8 @@ class EnvironmentCommand(Command):
         return 0
 
     @staticmethod
-    def ago(at: datetime) -> str:
-        seconds = (datetime.now(timezone.utc) - at).total_seconds()
+    def ago(time: datetime) -> str:
+        seconds = (datetime.now(timezone.utc) - time).total_seconds()
         for unit, span in (("day", 86400), ("hour", 3600), ("minute", 60)):
             if seconds >= span:
                 n = int(seconds // span)

@@ -33,9 +33,9 @@ class SecretFiles(Seed):
         return Secret(title=head.get("title", path.stem), brief=brief, kind=SecretKind.named(data.get("kind") or SecretKind.CUSTOM.value),
                       fields=tuple(data.get("secret_fields", ())), filled=tuple(data.get("filled", {})), programs=tuple(data.get("programs", ())),
                       proposed=tuple(data.get("proposed", ())), helpers=bool(data.get("helpers")), url=data.get("url", ""), auto_login=bool(data.get("auto_login")),
-                      used_at=self.at(data.get("used")), session_at=self.at(data.get("session")), session_expires=self.at(data.get("session_expires")),
-                      deleted_at=self.at(head.get("deleted")))
+                      used_at=self.time(data.get("used")), session_at=self.time(data.get("session")), session_expires=self.time(data.get("session_expires")),
+                      deleted_at=self.time(head.get("deleted")))
 
     @staticmethod
-    def at(stamp) -> datetime | None:
+    def time(stamp) -> datetime | None:
         return datetime.fromtimestamp(stamp, timezone.utc) if stamp else None

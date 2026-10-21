@@ -1,4 +1,4 @@
-import time
+import time as timing
 
 OPEN_WITHIN = 15.0
 VIEWER = "x-journal-viewer"
@@ -8,11 +8,11 @@ class ViewerSeen:
     """When a viewer tab last asked the journal anything, kept in memory: a launch asks it before opening a new tab."""
 
     def __init__(self) -> None:
-        self.at = 0.0
+        self.time = 0.0
 
     def saw(self, headers: dict) -> None:
         if headers.get(VIEWER):
-            self.at = time.time()
+            self.time = timing.time()
 
     def open(self) -> bool:
-        return time.time() - self.at < OPEN_WITHIN
+        return timing.time() - self.time < OPEN_WITHIN

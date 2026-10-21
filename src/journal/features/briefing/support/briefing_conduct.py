@@ -37,7 +37,7 @@ def start_block(briefing: BriefingSnapshot, source: str) -> list[Nudge]:
     feature = briefing_feature()
     taken_over_at = "" if source == COMPACT else briefing.last_other_session_at
     optional = (
-        (taken_over_at, lambda: feature.YOU_TOOK_OVER.create(at=taken_over_at)),
+        (taken_over_at, lambda: feature.YOU_TOOK_OVER.create(time=taken_over_at)),
         (briefing.rules, lambda: feature.RULES_IN_FORCE.create(count=briefing.rules_count, rows=briefing.rules)),
         (briefing.facts, lambda: feature.FACTS_HERE.create(rows=briefing.facts)),
         (briefing.reminders, lambda: feature.REMINDERS_HERE.create(rows=briefing.reminders)),

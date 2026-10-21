@@ -10,11 +10,11 @@ class UpdateHeld:
     before: str
     to: str
     step: str
-    at: float
+    time: float
     pid: int
 
     def at_step(self, step: str) -> "UpdateHeld":
         return replace(self, step=step)
 
     def is_stale(self, now: float) -> bool:
-        return now - self.at > LASTS
+        return now - self.time > LASTS

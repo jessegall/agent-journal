@@ -22,12 +22,12 @@ class Entries(ScopedRepository[Entry]):
         return self.counted_in("kind = 'nudge' AND json_extract(data, '$.session') = ?", (session,))
 
     def last_said(self, session: str, key: str, line: str) -> float:
-        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.at')), 0) AS at", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (session, key, line))
-        return float(row["at"])
+        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.time')), 0) AS time", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (session, key, line))
+        return float(row["time"])
 
     def last_said_of(self, session: str, key: str) -> float:
-        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.at')), 0) AS at", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
-        return float(row["at"])
+        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.time')), 0) AS time", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
+        return float(row["time"])
 
     def tool_starts(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected("kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))

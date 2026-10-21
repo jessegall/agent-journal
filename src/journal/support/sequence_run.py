@@ -35,11 +35,11 @@ class SequenceRun:
     def moved_on(self) -> "SequenceRun":
         return replace(self, step=self.step + 1, taken_up_at="", said_at="", parked_why="")
 
-    def taken_up(self, at: str) -> "SequenceRun":
-        return replace(self, taken_up_at=at)
+    def taken_up(self, time: str) -> "SequenceRun":
+        return replace(self, taken_up_at=time)
 
-    def said(self, at: str) -> "SequenceRun":
-        return replace(self, said_at=at)
+    def said(self, time: str) -> "SequenceRun":
+        return replace(self, said_at=time)
 
     def parked(self, why: str) -> "SequenceRun":
         return replace(self, parked_why=why)

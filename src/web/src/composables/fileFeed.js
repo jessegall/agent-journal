@@ -22,7 +22,7 @@ function merged(card, edit) {
         last_line: edit.last_line,
         added: card.added + edit.added,
         removed: card.removed + edit.removed,
-        at: edit.at,
+        time: edit.time,
         latest: edit.id,
     };
 }
@@ -59,7 +59,7 @@ export function useFileFeed(agent, follow, client = api) {
             const live = ready.value;
             ready.value = true;
             if (!live) older.value = !!got.older;
-            if (oldest === null && got.edits.length) oldest = got.edits[0].at;
+            if (oldest === null && got.edits.length) oldest = got.edits[0].time;
             if (!got.edits.length) return;
             cards.value = got.edits.reduce(land, cards.value);
             latest.value = live ? got.edits[got.edits.length - 1].id : "";
@@ -74,7 +74,7 @@ export function useFileFeed(agent, follow, client = api) {
             const got = await client.olderEdits(agent, oldest, PAGE);
             older.value = !!got.older;
             if (!got.edits.length) return false;
-            oldest = got.edits[0].at;
+            oldest = got.edits[0].time;
             cards.value = [...got.edits.reduce(land, []), ...cards.value];
             return true;
         } finally {

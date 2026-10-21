@@ -1,6 +1,7 @@
 import json
+from dataclasses import fields
 import os
-import time
+import time as timing
 from dataclasses import asdict
 
 from journal.config import Config
@@ -18,9 +19,9 @@ class UpdateMark:
 
     def claim(self, before: str, to: str) -> None:
         held = self.held()
-        if held is not None and not held.is_stale(time.time()):
-            raise Refused(f"an update to {held.to} is under way since {time.strftime('%H:%M', time.localtime(held.at))}")
-        self.write(UpdateHeld(before, to, FIRST_STEP, time.time(), os.getpid()))
+        if held is not None and not held.is_stale(timing.time()):
+            raise Refused(f"an update to {held.to} is under way since {timing.strftime('%H:%M', timing.localtime(held.time))}")
+        self.write(UpdateHeld(before, to, FIRST_STEP, timing.time(), os.getpid()))
 
     def step(self, step: str) -> None:
         held = self.held()
@@ -28,7 +29,13 @@ class UpdateMark:
             self.write(held.at_step(step))
 
     def held(self) -> UpdateHeld | None:
-        return UpdateHeld(**json.loads(self.path.read_text())) if self.path.is_file() else None
+        if not self.path.is_file():
+            return None
+        data = json.loads(self.path.read_text())
+        if set(data) != {f.name for f in fields(UpdateHeld)}:
+            self.path.unlink()
+            return None
+        return UpdateHeld(**data)
 
     def clear(self) -> None:
         self.path.unlink(missing_ok=True)

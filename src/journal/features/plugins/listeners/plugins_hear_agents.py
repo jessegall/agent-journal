@@ -64,7 +64,7 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         if not isinstance(event, ToolStarting):
             return []
         parts = [part for part in event.call.parts if not part.is_journal]
-        return [CommandStarting(text=part.text, writes=part.writes, files=part.files, position=position, parts=len(parts), tool_use=event.tool_use).placed(event.session, event.environment_id, event.provider, event.context, event.at, event.subagent) for position, part in enumerate(parts, 1)]
+        return [CommandStarting(text=part.text, writes=part.writes, files=part.files, position=position, parts=len(parts), tool_use=event.tool_use).placed(event.session, event.environment_id, event.provider, event.context, event.time, event.subagent) for position, part in enumerate(parts, 1)]
 
     @staticmethod
     def holds(plugin: Plugin, event: AgentEvent) -> bool:

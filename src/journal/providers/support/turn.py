@@ -8,6 +8,6 @@ class Turn:
     line: int
     who: str
     kind: str
-    at: float
+    time: float
     text: str = ""
     tools: list[str] = field(default_factory=list)

@@ -19,7 +19,7 @@ class AttachedFiles:
         self.messages, self.attachments = messages, attachments
 
     def page(self, asked: FilesAsked) -> FilesShown:
-        every = sorted((f for m in self.messages.in_() for f in self.of(m)), key=lambda f: -f.at)
+        every = sorted((f for m in self.messages.in_() for f in self.of(m)), key=lambda f: -f.time)
         found = [f for f in every if asked.holds(f)]
         shelves = {Message.table(): len(every)} if every else {}
         images = sum(f.image for f in every)

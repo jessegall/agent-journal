@@ -1,5 +1,5 @@
 import threading
-import time
+import time as timing
 
 
 class RecentCounts:
@@ -13,8 +13,8 @@ class RecentCounts:
         self.tries: dict[str, list[float]] = {}
 
     def recent(self, key: str) -> list[float]:
-        since = time.time() - self.WITHIN
-        return [at for at in self.tries.get(key, []) if at > since]
+        since = timing.time() - self.WITHIN
+        return [time for time in self.tries.get(key, []) if time > since]
 
     def locked(self, key: str) -> bool:
         with self.lock:
@@ -22,4 +22,4 @@ class RecentCounts:
 
     def count(self, key: str) -> None:
         with self.lock:
-            self.tries[key] = [*self.recent(key), time.time()]
+            self.tries[key] = [*self.recent(key), timing.time()]

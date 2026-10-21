@@ -63,7 +63,7 @@ class FollowingPlan(Working):
         started = event.snapshot.of(Plans).started
         if event.task_id != self.task_id and event.plan_id != self.plan_id and not (started and event.task_id in started.tasks):
             return self.unchanged()
-        return self.changed(replace(self, task_id=event.task_id, at_checkpoint=False, phase=0, logged_at=event.at, edits=0))
+        return self.changed(replace(self, task_id=event.task_id, at_checkpoint=False, phase=0, logged_at=event.time, edits=0))
 
     def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans

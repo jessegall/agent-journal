@@ -2,12 +2,12 @@
 import {clock} from "../format/time.js";
 import {briefOpen} from "../composables/briefBand.js";
 
-defineProps({at: {type: Number, default: 0}});
+defineProps({time: {type: Number, default: 0}});
 </script>
 
 <template>
     <p class="brief-marker">
-        Brief from the main agent · {{ clock(at) }} ·
+        Brief from the main agent · {{ clock(time) }} ·
         <button type="button" class="brief-show" @click="briefOpen = true">Show it</button>
     </p>
 </template>

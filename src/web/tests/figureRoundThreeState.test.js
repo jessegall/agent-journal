@@ -40,9 +40,9 @@ test("each voice has its own available, occasional pastime", () => {
 test("messages select a voice greeting, with odds and cooldown", () => {
     for (const voice of VOICES) {
         const remembered = memory(), expected = voice === "butler" ? "bow" : voice === "squire" ? "salute" : "nod";
-        expect(answerTo({beat: "heard", at: 1}, voice, remembered, 1, () => 0.99, has(voice))).toBe(null);
-        expect(answerTo({beat: "heard", at: 2}, voice, remembered, 2, () => 0, has(voice)).beat.clip).toBe(expected);
-        expect(answerTo({beat: "heard", at: 3}, voice, remembered, 3, () => 0, has(voice))).toBe(null);
+        expect(answerTo({beat: "heard", time: 1}, voice, remembered, 1, () => 0.99, has(voice))).toBe(null);
+        expect(answerTo({beat: "heard", time: 2}, voice, remembered, 2, () => 0, has(voice)).beat.clip).toBe(expected);
+        expect(answerTo({beat: "heard", time: 3}, voice, remembered, 3, () => 0, has(voice))).toBe(null);
     }
 });
 
@@ -56,9 +56,9 @@ test("a long walk can stumble, but a hop and a stationary figure never do", () =
 });
 
 test("only a newly seen card produces an arrival glance", () => {
-    const known = new Set(), row = {data: {cards: [{key: "card:1", at: 10}]}};
-    expect(cardsAfter(row, known)).toEqual([{beat: "card_arrived", card: "card:1", at: 10}]);
-    row.data.cards[0].at = 20;
+    const known = new Set(), row = {data: {cards: [{key: "card:1", time: 10}]}};
+    expect(cardsAfter(row, known)).toEqual([{beat: "card_arrived", card: "card:1", time: 10}]);
+    row.data.cards[0].time = 20;
     expect(cardsAfter(row, known)).toEqual([]);
     for (const voice of VOICES) expect(answerTo({beat: "card_arrived", card: "card:1"}, voice, memory(), 10, () => 0, has(voice)).beat).toEqual({clip: "glance", card: "card:1"});
 });

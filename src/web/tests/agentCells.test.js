@@ -19,7 +19,7 @@ test("agents take their cells by number, and a new agent joins at the end whatev
 test("a state change moves no cell, and a hidden agent keeps its place for when it shows again", () => {
     const all = [cell("worker", 2), cell("worker", 4), cell("worker", 6)];
     const slots = slotsFor([], all);
-    const changed = all.map((e) => ({...e, at: e.n === 6 ? 999 : 1}));
+    const changed = all.map((e) => ({...e, time: e.n === 6 ? 999 : 1}));
     expect(ordered(changed, "number", slots).map((e) => e.n)).toEqual([2, 4, 6]);
     expect(ordered([all[2], all[0]], "number", slots).map((e) => e.n)).toEqual([2, 6]);
 });

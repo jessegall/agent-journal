@@ -201,3 +201,21 @@ def test_a_row_answers_its_heading_its_summary_and_its_dock_card():
     from journal.support.export_name import ExportName
     assert RowCard.of(report).as_data() == {"row": "reports:33", "heading": "Report 33: What the dock showed", "summary": "One line about it", "dock": {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}, "file": f"What the dock showed.{ExportName.extension()}"}
     assert RowCard.of(task).file == "", "a task is not downloaded as a document"
+
+
+def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(connection):
+    """Migration 20: the edits column at becomes time, and the at key inside an entry's data, a check's progress and a dump's question and answers becomes time; a record without them is left as it is."""
+    import json
+    from journal.db.migrations.time_keys import TimeKeys
+    connection.execute("ALTER TABLE edits RENAME COLUMN time TO at")
+    connection.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, created_by) VALUES (1, 'nudge', 'system', ?, '2026-10-21', 'system')", (json.dumps({"key": "k", "at": 5.0}),))
+    connection.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, created_by) VALUES (1, 'ran', 'system', ?, '2026-10-21', 'system')", (json.dumps({"command": "ls"}),))
+    connection.execute("INSERT INTO checks (title, running, created_at, created_by) VALUES ('c', ?, '2026-10-21', 'system')", (json.dumps({"at": 7.0, "output": ""}),))
+    connection.execute("INSERT INTO dumps (environment_id, question, answers, chosen, taken, created_at, created_by) VALUES (1, ?, ?, '{}', '{}', '2026-10-21', 'system')", (json.dumps({"at": 1.0, "text": "q"}), json.dumps([{"question": "q", "answer": "a", "at": 2.0}])))
+    TimeKeys().up(connection)
+    assert "time" in {row["name"] for row in connection.all("PRAGMA table_info(edits)")} and "at" not in {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
+    nudge, ran = [json.loads(row["data"]) for row in connection.all("SELECT data FROM entries ORDER BY id")]
+    assert nudge == {"key": "k", "time": 5.0} and ran == {"command": "ls"}, "the key moves where it is, and a row without it is untouched"
+    assert json.loads(connection.one("SELECT running FROM checks")["running"]) == {"time": 7.0, "output": ""}
+    dump = connection.one("SELECT question, answers FROM dumps")
+    assert json.loads(dump["question"]) == {"time": 1.0, "text": "q"} and json.loads(dump["answers"]) == [{"question": "q", "answer": "a", "time": 2.0}]

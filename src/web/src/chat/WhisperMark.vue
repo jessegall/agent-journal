@@ -8,7 +8,7 @@ const props = defineProps({
     row: {type: String, required: true},
     title: {type: String, required: true},
     words: {type: String, default: ""},
-    at: {type: Number, required: true},
+    time: {type: Number, required: true},
 });
 
 const type = computed(() => props.row.split(":")[0]);
@@ -17,7 +17,7 @@ const named = computed(() => `${(meta(type.value) || {title: type.value}).title.
 const mark = computed(() => ({
     icon: "reminders",
     label: props.words || props.title,
-    at: props.at,
+    time: props.time,
     title: `Open ${named.value}: ${props.title}`,
 }));
 </script>

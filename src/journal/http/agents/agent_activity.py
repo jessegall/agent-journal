@@ -62,7 +62,7 @@ class AgentActivity:
             "sequence": self.sequence_of(agent),
             "stack": self.stack_of(agent),
             "trail": [self.trail_entry(e) for e in [e for e in entries if e.kind == Trail.KIND][-HISTORY:]],
-            "sequence_history": [{"at": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
+            "sequence_history": [{"time": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
         }
 
     @staticmethod
@@ -74,8 +74,8 @@ class AgentActivity:
         if not thoughts:
             return ""
         written = [e.created_at for e in hooks if e.kind == "TurnWritten"]
-        later = [at for at in (written[-1] if written else None, self.entries.last_prompt_of(session)) if at is not None]
-        return "" if any(at > thoughts[-1].created_at for at in later) else thoughts[-1].text
+        later = [time for time in (written[-1] if written else None, self.entries.last_prompt_of(session)) if time is not None]
+        return "" if any(time > thoughts[-1].created_at for time in later) else thoughts[-1].text
 
     @staticmethod
     def sequence_of(agent: Agent) -> SequenceInHand | None:
@@ -107,4 +107,4 @@ class AgentActivity:
 
     @staticmethod
     def trail_entry(entry) -> dict:
-        return {"at": entry.created_at, "before": [row["state"] for row in entry.data.get("before", [])], "after": [row["state"] for row in entry.data.get("after", [])], "cause": entry.data.get("cause", ""), "refused": entry.data.get("refused", ""), "line": entry.data.get("line", "")}
+        return {"time": entry.created_at, "before": [row["state"] for row in entry.data.get("before", [])], "after": [row["state"] for row in entry.data.get("after", [])], "cause": entry.data.get("cause", ""), "refused": entry.data.get("refused", ""), "line": entry.data.get("line", "")}

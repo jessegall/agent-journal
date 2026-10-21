@@ -15,7 +15,7 @@ class TasksConduct(Conduct):
 
     def on_awaited_tasks(self, event: Awaited, settings: Settings) -> Transition:
         from journal.features.tasks.states.awaiting import Awaiting
-        return self.push(Awaiting(what=event.what, ends_on=event.ends_on, start_time=event.at))
+        return self.push(Awaiting(what=event.what, ends_on=event.ends_on, start_time=event.time))
 
     def on_stuck_declared_tasks(self, event: StuckDeclared, settings: Settings) -> Transition:
         from journal.features.tasks.states.stuck import Stuck

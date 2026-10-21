@@ -52,10 +52,10 @@ class Awaiting(Wait):
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         next_open = event.snapshot.of(Tasks).next_open
-        if settings.of(Tasks.AUTO) and not self.next_task_named and event.at - self.start_time >= NEXT_TASK_DELAY_SECONDS and next_open is not None:
+        if settings.of(Tasks.AUTO) and not self.next_task_named and event.time - self.start_time >= NEXT_TASK_DELAY_SECONDS and next_open is not None:
             return self.changed(replace(self, next_task_named=True), Tasks.NEXT_TASK_WHILE_WAITING.create(what=self.what, n=next_open.id, title=next_open.title))
-        if event.at - max(self.start_time, self.reminder_time) >= CHECK_REMINDER_INTERVAL_SECONDS:
-            return self.changed(replace(self, reminder_time=event.at), Tasks.CHECK_THE_WAIT.create(what=self.what, minutes=int((event.at - self.start_time) // 60)))
+        if event.time - max(self.start_time, self.reminder_time) >= CHECK_REMINDER_INTERVAL_SECONDS:
+            return self.changed(replace(self, reminder_time=event.time), Tasks.CHECK_THE_WAIT.create(what=self.what, minutes=int((event.time - self.start_time) // 60)))
         return self.unchanged()
 
     def on_row_settled(self, event: RowSettled, settings: Settings) -> Transition:

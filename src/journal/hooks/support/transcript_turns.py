@@ -27,12 +27,12 @@ class TranscriptTurns:
             return []
         with self._reading:
             written = self.providers.named(hook.provider).texts_written(self.config.root, hook.session, self._read.get(hook.session, FIRST_LOOK))
-            self._read[hook.session] = written.at
+            self._read[hook.session] = written.time
         turns = [TurnWritten(text=text, delta=text, turn_id=f"transcript:{hook.session}:{i}", final=True) for i, text in enumerate(written.texts)]
         return [event.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.now(), hook.subagent) for event in [*written.crossed, *turns]]
 
     def missed(self, session: str, provider: str, until: float) -> Written:
         with self._reading:
             written = self.providers.named(provider).texts_written_before(self.config.root, session, self._read.get(session, FIRST_LOOK), until)
-            self._read[session] = written.at
+            self._read[session] = written.time
         return written

@@ -51,7 +51,7 @@ class WorkersConduct(Conduct):
 
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.awaiting import Awaiting
-        return self.push(Awaiting.on_workers((event.worker_id,), event.at)) if event.dispatched_by == event.session else self.unchanged()
+        return self.push(Awaiting.on_workers((event.worker_id,), event.time)) if event.dispatched_by == event.session else self.unchanged()
 
     def on_worker_back_workers(self, event: WorkerBack, settings: Settings) -> Transition:
         if event.dispatched_by and event.dispatched_by != event.session:

@@ -1,5 +1,5 @@
 import subprocess
-import time
+import time as timing
 from pathlib import Path
 
 from journal.config import Config
@@ -18,10 +18,10 @@ class ProjectFiles:
         self._branch = ("", 0.0)
 
     def branch(self) -> str:
-        name, at = self._branch
-        if time.time() - at > 5:
+        name, time = self._branch
+        if timing.time() - time > 5:
             done = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=self.root, capture_output=True, text=True, timeout=5)
-            self._branch = (done.stdout.strip() if done.returncode == 0 else "", time.time())
+            self._branch = (done.stdout.strip() if done.returncode == 0 else "", timing.time())
         return self._branch[0]
 
     def folder(self, given: str) -> list[ProjectEntry]:

@@ -30,7 +30,7 @@ const opened = (file) => showFile(file.path, file.line || 0);
         <template v-if="document">
             <template v-if="settled">
                 <p class="settled" role="status">
-                    Marked as {{ settled.how }}<template v-if="settled.at"> on {{ stamp(settled.at) }}</template>. The page below shows it as it was found.
+                    Marked as {{ settled.how }}<template v-if="settled.time"> on {{ stamp(settled.time) }}</template>. The page below shows it as it was found.
                 </p>
             </template>
             <Dashboard :document="document" :page="page" @file="opened" />

@@ -36,8 +36,8 @@ class Messages(ScopedRepository[Message]):
         return [m for m in read if not m.is_typed_in_terminal and not self.answered(m) and not self.reacted_by_agent(m)]
 
     def last_spoken(self) -> str | None:
-        row = self.aggregate("max(created_at) AS at", "author = ? AND acknowledgement = 0 AND coalesce(json_extract(data, '$.kind'), '') != ?", (Author.AGENT.value, Message.THOUGHT))
-        return row["at"] if row else None
+        row = self.aggregate("max(created_at) AS time", "author = ? AND acknowledgement = 0 AND coalesce(json_extract(data, '$.kind'), '') != ?", (Author.AGENT.value, Message.THOUGHT))
+        return row["time"] if row else None
 
     def answered(self, message: Message) -> bool:
         replied = self.connection.one("SELECT id FROM messages WHERE reply_to = ? AND author = ? LIMIT 1", (message.id, Author.AGENT.value))
@@ -56,8 +56,8 @@ class Messages(ScopedRepository[Message]):
             params.append(before)
         return list(reversed(self.selected(f"{' AND '.join(clause)} ORDER BY id DESC LIMIT ?", (*params, last))))
 
-    def changed_since(self, at: datetime) -> list[Message]:
-        return self.selected("updated_at > ? ORDER BY id LIMIT 500", (at.isoformat(),))
+    def changed_since(self, time: datetime) -> list[Message]:
+        return self.selected("updated_at > ? ORDER BY id LIMIT 500", (time.isoformat(),))
 
     def count_in(self) -> int:
         return self.counted_in()
@@ -83,8 +83,8 @@ class Messages(ScopedRepository[Message]):
         replies = sorted([*named, *linked], key=lambda m: m.id)
         return replies[0] if replies else None
 
-    def replies_since(self, at: datetime) -> list[Message]:
-        return self.selected("author = ? AND reply_to IS NOT NULL AND created_at >= ? ORDER BY id", (Author.AGENT.value, at.isoformat()))
+    def replies_since(self, time: datetime) -> list[Message]:
+        return self.selected("author = ? AND reply_to IS NOT NULL AND created_at >= ? ORDER BY id", (Author.AGENT.value, time.isoformat()))
 
     def reply_saying(self, n: int, text: str) -> list[Message]:
         return self.selected("reply_to = ? AND author = ? AND text = ?", (n, Author.AGENT.value, text.strip()))

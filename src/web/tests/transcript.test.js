@@ -13,7 +13,7 @@ function opened() {
         transcript: async (agent, session, fields) => {
             asked.push(fields);
             if (fields.entry) return {line: fields.entry, text: "the whole output", said: ""};
-            return {total: 1, first: 1, turns: [{line: 1, who: "tool", kind: "tool", at: 1, tools: [], text: "", has_text: true}]};
+            return {total: 1, first: 1, turns: [{line: 1, who: "tool", kind: "tool", time: 1, tools: [], text: "", has_text: true}]};
         },
     };
     let log;

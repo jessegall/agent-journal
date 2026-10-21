@@ -7,7 +7,7 @@ const PROMISED_WITHIN = 5;
 
 // A turn of the chat: a message's own fields, with its kind, who said it, a key that stays while a placeholder becomes the
 // real message, and when, in seconds. A card of the journal's carries what it draws in its data.
-const turnOf = (m, kind, who, extra = {}) => ({...m, kind, who, key: m.key || refOf(m), at: seconds(m.created_at), ...extra});
+const turnOf = (m, kind, who, extra = {}) => ({...m, kind, who, key: m.key || refOf(m), time: seconds(m.created_at), ...extra});
 
 const spoken = (m) => {
     if (m.data?.kind === "thought") return turnOf(m, "thought", "agent");
@@ -84,9 +84,9 @@ export function threadTurns(messages, pending, older = false, hidden = []) {
         ...messages.filter(fromSystem).map(systemTurn),
         ...pending.filter((p) => !messages.some((m) => promisedFor(p, m) && delivered(p, m))).map((p) => turnOf(p, "message", "user")),
     ]
-        .filter((t) => t.kind === "message" || t.at >= floor)
+        .filter((t) => t.kind === "message" || t.time >= floor)
         .filter(visibleIn(hidden))
-        .sort((a, b) => a.at - b.at);
+        .sort((a, b) => a.time - b.time);
     return {turns: grouped(turns), keys};
 }
 
@@ -116,7 +116,7 @@ function folded(run) {
         key: `group:${run[0].key}`,
         kind: "group",
         who: "agent",
-        at: last.at,
+        time: last.time,
         data: {tone: run.every((t) => t.data.settled) ? "good" : group.tone || "", color: group.color || ""},
         title: group.label(run.length, run),
         text: "",

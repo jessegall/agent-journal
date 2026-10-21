@@ -14,7 +14,7 @@ class TypedLine:
 
     environment_id: int
     line: str
-    at: float
+    time: float
     tries: int = 1
 
     @classmethod

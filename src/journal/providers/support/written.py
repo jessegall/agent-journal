@@ -9,4 +9,4 @@ class Written:
 
     texts: list[str]
     crossed: list[MessageCrossed]
-    at: int
+    time: int

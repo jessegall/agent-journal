@@ -12,5 +12,5 @@ class MessageCrossed(AgentEvent):
     sender: str
     text: str
 
-    def message(self, at: datetime) -> Message:
-        return Message.from_agent(self.sender, self.text, self.session, at)
+    def message(self, time: datetime) -> Message:
+        return Message.from_agent(self.sender, self.text, self.session, time)

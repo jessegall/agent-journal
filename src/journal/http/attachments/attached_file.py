@@ -10,7 +10,7 @@ class AttachedFile:
     name: str
     description: str
     size: int
-    at: float
+    time: float
     image: bool
     url: str
 

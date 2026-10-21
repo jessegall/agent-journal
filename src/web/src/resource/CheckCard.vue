@@ -44,7 +44,7 @@ const {asked, run} = useCheckRun(() => props.resource);
                 <CheckRuns :runs="state.runs" />
                 <span class="grow" />
                 <span class="when">
-                    <template v-if="state.last.at">{{ age(state.last.at) }} · {{ seconds(state.last.took) }}</template>
+                    <template v-if="state.last.time">{{ age(state.last.time) }} · {{ seconds(state.last.took) }}</template>
                     <template v-else>{{ every ? `every ${every} min` : "by hand" }}</template>
                 </span>
             </div>

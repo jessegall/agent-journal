@@ -14,7 +14,7 @@ class PlanTimeline:
 
     def of(self, plan: Plan) -> list[TimelineMoment]:
         moments = [moment for task in self.plans.tasks_of(plan) for moment in self.moments(task)]
-        return sorted(moments, key=lambda m: m.at)
+        return sorted(moments, key=lambda m: m.time)
 
     def moments(self, task: Task) -> list[TimelineMoment]:
         found = [TimelineMoment(log.created_at.timestamp(), "log", task.id, task.title, log.line) for log in self.task_logs.of(task)]

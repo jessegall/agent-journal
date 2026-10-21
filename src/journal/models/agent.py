@@ -26,21 +26,21 @@ class Agent(Scoped):
     inbox_mark: int = 0
 
     def paused_by_user(self, time: float) -> "Agent":
-        return self.with_event(UserPaused(environment_id=self.environment_id, at=time, agent_session=self.session))
+        return self.with_event(UserPaused(environment_id=self.environment_id, time=time, agent_session=self.session))
 
     def resumed_by_user(self, time: float) -> "Agent":
-        return self.with_event(UserResumed(environment_id=self.environment_id, at=time, agent_session=self.session))
+        return self.with_event(UserResumed(environment_id=self.environment_id, time=time, agent_session=self.session))
 
-    def look_taken(self, at: float) -> "Agent":
-        return self.with_(oriented=True).with_event(LookTaken(environment_id=self.environment_id, at=at))
+    def look_taken(self, time: float) -> "Agent":
+        return self.with_(oriented=True).with_event(LookTaken(environment_id=self.environment_id, time=time))
 
-    def mark_decided(self, at: float) -> "Agent":
-        return self.with_(mark_owed=0).with_event(MarkDecided(environment_id=self.environment_id, at=at, mark=self.mark_owed))
+    def mark_decided(self, time: float) -> "Agent":
+        return self.with_(mark_owed=0).with_event(MarkDecided(environment_id=self.environment_id, time=time, mark=self.mark_owed))
 
-    def skill_read(self, name: str, digest: str, at: float) -> "Agent":
+    def skill_read(self, name: str, digest: str, time: float) -> "Agent":
         loaded = {**self.skills_loaded, name: digest}
         owed = tuple(skill for skill in self.skills_owed if skill != name)
-        return self.with_(skills_loaded=loaded, skills_owed=owed).with_event(SkillRead(environment_id=self.environment_id, at=at, skill=name))
+        return self.with_(skills_loaded=loaded, skills_owed=owed).with_event(SkillRead(environment_id=self.environment_id, time=time, skill=name))
 
     def tool_used(self) -> "Agent":
         return self.with_(tool_uses=self.tool_uses + 1)

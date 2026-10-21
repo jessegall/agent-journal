@@ -12,7 +12,7 @@ export const timeOf = (at) => new Date(at * 1000).toLocaleTimeString(undefined, 
 export function momentDays(items) {
     const grouped = [];
     for (const item of [...items].reverse()) {
-        const day = dayOf(item.at);
+        const day = dayOf(item.time);
         if (grouped.at(-1)?.day !== day) grouped.push({day, items: []});
         grouped.at(-1).items.push(item);
     }

@@ -1,4 +1,4 @@
-import time
+import time as timing
 from dataclasses import asdict
 from pathlib import Path
 
@@ -39,7 +39,7 @@ class RecordEdit(AgentListener[ToolFinished]):
         if not patch.rows:
             self.changed(event, path)
             return
-        self.recorded(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="create" if event.call.tool == "Write" else "edit", at=time.time(),
+        self.recorded(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="create" if event.call.tool == "Write" else "edit", time=timing.time(),
                        added=patch.counted("add"), removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), event)
 
     def changed(self, event: ToolFinished, path: str) -> None:
@@ -51,14 +51,14 @@ class RecordEdit(AgentListener[ToolFinished]):
         patch = PatchRows.from_versions(last_text, text)
         if not patch.rows:
             return
-        self.recorded(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="create" if not last_text else "edit", at=time.time(), command=event.call.command,
+        self.recorded(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="create" if not last_text else "edit", time=timing.time(), command=event.call.command,
                        added=patch.counted("add"), removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), event)
 
     def deleted(self, event: ToolFinished, path: str, last_text: str) -> None:
         if not last_text:
             return
         patch = PatchRows.from_versions(last_text, "")
-        self.edits.record(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="delete", at=time.time(), command=event.call.command, added=0, removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), Actor.agent(event.session))
+        self.edits.record(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="delete", time=timing.time(), command=event.call.command, added=0, removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), Actor.agent(event.session))
         self.snapshots.keep(path, "")
 
     def recorded(self, edit: Edit, event: ToolFinished) -> None:

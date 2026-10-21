@@ -1,6 +1,6 @@
 import json
 import os
-import time
+import time as timing
 import uuid
 from functools import cached_property
 from pathlib import Path
@@ -40,11 +40,11 @@ class SecretValues:
 
     def put(self, variable: str, value: str) -> None:
         current = self.values()
-        retired = {f"{RETIRED}{variable}{AT}{int(time.time())}": current[variable]} if current.get(variable) and current[variable] != value else {}
+        retired = {f"{RETIRED}{variable}{AT}{int(timing.time())}": current[variable]} if current.get(variable) and current[variable] != value else {}
         self.write({**current, **retired, variable: value})
 
-    def retired_before(self, at: float) -> list[str]:
-        return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(AT, 1)[1]) < at]
+    def retired_before(self, time: float) -> list[str]:
+        return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(AT, 1)[1]) < time]
 
     def drop(self, variables: list[str]) -> None:
         self.write({name: value for name, value in self.values().items() if name not in variables})

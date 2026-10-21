@@ -10,4 +10,4 @@ class SuggestOnTheHour(Listener[ClockTicked]):
         self.suggesting = suggesting
 
     def handle(self, event: ClockTicked) -> None:
-        self.suggesting.tick(event.at)
+        self.suggesting.tick(event.time)

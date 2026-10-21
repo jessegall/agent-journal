@@ -16,11 +16,11 @@ class PluginRecord:
         return [line for line in map(self.line, self.entries.of_actor(f"plugin:{name}")) if line]
 
     def line(self, entry: Entry) -> RecordLine | None:
-        data, at = entry.data or {}, entry.created_at
+        data, time = entry.data or {}, entry.created_at
         if entry.kind in CHANGES:
             table = data.get("table", "")
             opens = table in OPENED and entry.kind != "deleted"
-            return RecordLine(at=at, kind="row", text=f"{CHANGES[entry.kind]} {table[:-1].replace('_', ' ')} {data.get('id', '')}" + (f": {data['title']}" if data.get("title") else ""), ref=f"{table}:{data.get('id')}" if opens else "")
+            return RecordLine(time=time, kind="row", text=f"{CHANGES[entry.kind]} {table[:-1].replace('_', ' ')} {data.get('id', '')}" + (f": {data['title']}" if data.get("title") else ""), ref=f"{table}:{data.get('id')}" if opens else "")
         said = {
             "plugin_said": lambda: f"{data.get('how', '')} at {data.get('event', '')}: {data.get('words', '')}",
             "plugin_line_waiting": lambda: f"said after the reply to {data.get('event', '')}, for the agent's next hook: {data.get('line', '')}" if data.get("session") else f"said after the reply to {data.get('event', '')}, with no agent to hear it: {data.get('line', '')}",
@@ -28,4 +28,4 @@ class PluginRecord:
             "plugin_fault": lambda: f"faulted at {data.get('event', '')}: {data.get('fault', '')}",
             "plugin_unanswered": lambda: f"refused {data.get('event', '')} after the reply, too late to hold it: {data.get('reason', '')}",
         }.get(entry.kind)
-        return RecordLine(at=at, kind=entry.kind.removeprefix("plugin_"), text=said(), ref="") if said else None
+        return RecordLine(time=time, kind=entry.kind.removeprefix("plugin_"), text=said(), ref="") if said else None

@@ -2,7 +2,7 @@
 
 import json
 import os
-import time
+import time as timing
 from pathlib import Path
 
 from supervisor.inbox import Inbox
@@ -259,7 +259,7 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
     import subprocess
     import threading
     from journal.support.worktree import Worktree
-    git = lambda *args, at=tmp_path: subprocess.run(["git", "-C", str(at), *args], capture_output=True, text=True, timeout=30)
+    git = lambda *args, time=tmp_path: subprocess.run(["git", "-C", str(time), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     (tmp_path / ".gitignore").write_text("/.journal\n/.claude/settings.json\n")
     (tmp_path / "AGENTS.md").write_text("the law\n")
@@ -277,7 +277,7 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
     assert (tree / ".journal" / "port").read_text() == "8421" and (tree / ".journal").is_symlink(), "the worktree reads the project's journal, made four times at once"
     assert (tree / ".claude" / "skills" / "journal" / "SKILL.md").is_file() and (tree / ".claude" / "settings.json").is_symlink(), "an untracked skill and an ignored hook file are shared"
     assert not (tree / "AGENTS.md").is_symlink(), "a tracked file comes with the checkout, never a link"
-    assert git("status", "--porcelain", at=tree).stdout == "" and git("status", "--porcelain").stdout == "", "git sees none of it, in the worktree or the project"
+    assert git("status", "--porcelain", time=tree).stdout == "" and git("status", "--porcelain").stdout == "", "git sees none of it, in the worktree or the project"
 
 
 def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_files(tmp_path: Path):
@@ -303,7 +303,7 @@ def test_a_command_or_hook_inside_a_worktree_works_the_worktrees_environment(tmp
     tree = Worktree(tmp_path, "calm-river").made()
     (tree / "deep").mkdir()
     rule = Path(__file__).parents[1] / "src" / "journal" / "hooks" / "environment.sh"
-    named = lambda at, env="": subprocess.run(["sh", "-c", f'. "{rule}"; journal_environment'], cwd=at, capture_output=True, text=True, timeout=30, env={"PATH": os.environ["PATH"], **({"JOURNAL_ENV": env} if env else {})}).stdout
+    named = lambda time, env="": subprocess.run(["sh", "-c", f'. "{rule}"; journal_environment'], cwd=time, capture_output=True, text=True, timeout=30, env={"PATH": os.environ["PATH"], **({"JOURNAL_ENV": env} if env else {})}).stdout
     assert named(tree / "deep") == "calm-river", "a command run anywhere inside the worktree works its environment"
     assert named(tmp_path) == "main" and named(tmp_path.parent) == "main", "the project's own checkout, and a folder outside git, work main"
     assert named(tree, "spike") == "spike", "an environment named outright wins"
@@ -339,13 +339,13 @@ def test_the_menu_marks_an_environment_with_a_worktree_and_its_branch(tmp_path: 
 def test_a_worktree_whose_folder_and_branch_went_is_made_again_from_its_kept_tip(tmp_path: Path):
     import subprocess
     from journal.support.worktree import Worktree
-    git = lambda *args, at=tmp_path: subprocess.run(["git", "-C", str(at), *args], capture_output=True, text=True, timeout=30)
+    git = lambda *args, time=tmp_path: subprocess.run(["git", "-C", str(time), *args], capture_output=True, text=True, timeout=30)
     git("init", "-q")
     git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "start")
     tree = Worktree(tmp_path, "1012-inventory-page").made()
     (tree / "page.py").write_text("PAGE = 1\n")
-    git("add", "page.py", at=tree)
-    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m", "the page", at=tree)
+    git("add", "page.py", time=tree)
+    git("-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m", "the page", time=tree)
     Worktree(tmp_path, "1012-inventory-page").made()
     git("worktree", "remove", "--force", str(tree))
     git("branch", "-D", "worktree-1012-inventory-page")

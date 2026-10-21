@@ -9,7 +9,7 @@ class RowEvent(Event):
     """What happened to a row, named for the moment: carried by the model that made the change, dispatched by its repository on save, and answered by every live agent of the environment."""
 
     environment_id: int = 0
-    at: float = 0.0
+    time: float = 0.0
     row_id: int = 0
     session: str = ""
     actor: str = ""
@@ -25,8 +25,8 @@ class RowEvent(Event):
     def reaching(self, session: str) -> "RowEvent":
         return replace(self, session=session)
 
-    def placed_by(self, environment_id: int, at: float, row_id: int, actor: str) -> "RowEvent":
-        return replace(self, environment_id=self.environment_id or environment_id, at=self.at or at, row_id=self.row_id or row_id, actor=actor)
+    def placed_by(self, environment_id: int, time: float, row_id: int, actor: str) -> "RowEvent":
+        return replace(self, environment_id=self.environment_id or environment_id, time=self.time or time, row_id=self.row_id or row_id, actor=actor)
 
     def by_agent(self, session: str) -> bool:
         return self.actor == f"agent:{session}"

@@ -1,5 +1,5 @@
 import os
-import time
+import time as timing
 
 from journal.config import Config
 from journal.features.updates.support.update_mark import UpdateMark
@@ -24,7 +24,7 @@ from journal.repositories.tasks import Tasks
 from journal.version import VERSION
 
 COLOR = "#5e64c9"
-STARTED = time.time()
+STARTED = timing.time()
 SILENT_AFTER = 900.0
 BAR_SHOWN = 8
 
@@ -74,7 +74,7 @@ class JournalController:
             agent = self.activity.page([live])[0] if live else None
             held = self.current.of(live) if live else None
             task = HeldTask(held.task.id, held.task.title, held.awaiting) if held else None
-            silent = bool(agent) and agent["status"] in ("busy", "working") and time.time() - agent["heard_at"].timestamp() > SILENT_AFTER
+            silent = bool(agent) and agent["status"] in ("busy", "working") and timing.time() - agent["heard_at"].timestamp() > SILENT_AFTER
             return EnvironmentSnapshot(environment, agent, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
 
     def bar(self, request: Request) -> Response:
@@ -88,7 +88,7 @@ class JournalController:
                 open_[row.key] = row.item()
                 queue.append(open_[row.key])
             elif row.key in open_:
-                open_[row.key].update(done=True, **{"for": max(0.0, row.at - open_[row.key]["at"])})
+                open_[row.key].update(done=True, **{"for": max(0.0, row.time - open_[row.key]["time"])})
         return Response.json(queue[-BAR_SHOWN:])
 
     def first(self) -> Environment:

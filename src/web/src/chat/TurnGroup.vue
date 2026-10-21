@@ -11,7 +11,7 @@ const mark = computed(() => ({
     tone: props.turn.data.tone,
     color: props.turn.data.color,
     label: props.turn.title,
-    at: props.turn.at,
+    time: props.turn.time,
     title: unfolded.value ? "Fold them back into one line" : "Show each of them",
 }));
 </script>

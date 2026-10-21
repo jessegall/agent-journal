@@ -13,8 +13,8 @@ watch(
     () => {
         for (const entry of store.entries.filter(wrote)) {
             const key = `${entry.data.table}:${entry.data.id}`;
-            const at = seconds(entry.created_at);
-            if ((store.agentWrites[key]?.at || 0) < at) store.agentWrites[key] = {at, section: ""};
+            const time = seconds(entry.created_at);
+            if ((store.agentWrites[key]?.time || 0) < time) store.agentWrites[key] = {time, section: ""};
         }
     },
     {immediate: true}
@@ -28,6 +28,6 @@ export function useWriting(key) {
     return computed(() => {
         if (!WRITTEN_IN_PARTS.has(key().split(":")[0])) return null;
         const write = store.agentWrites[key()];
-        return write && agentWorking.value && now.value - write.at < WRITING_FOR ? write : null;
+        return write && agentWorking.value && now.value - write.time < WRITING_FOR ? write : null;
     });
 }

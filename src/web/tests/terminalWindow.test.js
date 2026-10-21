@@ -15,7 +15,7 @@ test("the terminal pane shows the commands the agent ran, asked for by the agent
     const client = {
         terminal: (id, after) => {
             asked.push([id, after]);
-            return Promise.resolve([{agent_id: id, at: 1, tool: "Bash", command: "pytest -q", output: "12 passed", seconds: 2, status: 0, stepped: false, level: "everything"}]);
+            return Promise.resolve([{agent_id: id, time: 1, tool: "Bash", command: "pytest -q", output: "12 passed", seconds: 2, status: 0, stepped: false, level: "everything"}]);
         },
         runShell: () => Promise.resolve({}),
     };

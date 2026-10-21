@@ -50,7 +50,7 @@ test("what the agent sends to another agent sits on the agent's side and names w
 
 test("what the agent receives from another agent or from the main agent sits on the incoming side and names who sent it", async () => {
     const [received] = threadTurns(messages, []).turns;
-    const [fromMain] = fromMainAgent([{type: "line", who: "agent", data: {}, kind: "message", text: "hi", key: "line:1", at: 1}, {type: "line", who: "user", data: {}, kind: "message", text: "brief", key: "line:2", at: 2}]).slice(1);
+    const [fromMain] = fromMainAgent([{type: "line", who: "agent", data: {}, kind: "message", text: "hi", key: "line:1", time: 1}, {type: "line", who: "user", data: {}, kind: "message", text: "brief", key: "line:2", time: 2}]).slice(1);
     const [peer, main] = [await drawn(received), await drawn(fromMain)];
     expect(peer.mine).toBe(true);
     expect(peer.head).toContain("Message from Coco");

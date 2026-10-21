@@ -17,7 +17,7 @@ class AgentEvent(Event):
     environment_id: int = 0
     provider: str = ""
     context: float | None = None
-    at: float = 0.0
+    time: float = 0.0
     snapshot: Snapshot = field(default_factory=lambda: Snapshot({}), compare=False)
     subagent: str = ""
     tool_use: int = 0
@@ -35,5 +35,5 @@ class AgentEvent(Event):
     def counted(self, tool_use: int) -> "AgentEvent":
         return replace(self, tool_use=tool_use)
 
-    def placed(self, session: str, environment_id: int, provider: str, context: float | None, at: float, subagent: str = "") -> "AgentEvent":
-        return replace(self, session=session, environment_id=environment_id, provider=provider, context=context, at=at, subagent=subagent)
+    def placed(self, session: str, environment_id: int, provider: str, context: float | None, time: float, subagent: str = "") -> "AgentEvent":
+        return replace(self, session=session, environment_id=environment_id, provider=provider, context=context, time=time, subagent=subagent)

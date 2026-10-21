@@ -1,4 +1,4 @@
-import time
+import time as timing
 
 from journal.config import Config
 from journal.features.pausing.agent_pause import AgentPause
@@ -77,7 +77,7 @@ class AgentController(Controller[Agent]):
 
     def edits(self, request: Request) -> Response:
         agent = self.repository.find(request.number("id"))
-        return Response.json({"cursor": time.time(), "edits": self.file_edits.of_agent(agent.session, request.queried("since"), EDITS_SHOWN)})
+        return Response.json({"cursor": timing.time(), "edits": self.file_edits.of_agent(agent.session, request.queried("since"), EDITS_SHOWN)})
 
     def edited_file(self, request: Request) -> Response:
         path = request.query.get("path", "")
@@ -89,13 +89,13 @@ class AgentController(Controller[Agent]):
     def terminal(self, request: Request) -> Response:
         agent = self.repository.find(request.number("id"))
         after = request.queried("after")
-        ran = [e for e in reversed(self.entries.of_kind(RAN, 400)) if e.actor and e.actor.id == agent.session and e.data["at"] > after]
+        ran = [e for e in reversed(self.entries.of_kind(RAN, 400)) if e.actor and e.actor.id == agent.session and e.data["time"] > after]
         return Response.json([self.line(agent.id, e) for e in ran][-LINES_SHOWN:])
 
     @staticmethod
     def line(agent_id: int, entry: Entry) -> TerminalLine:
         part = entry.data["part"]
-        return TerminalLine(agent_id=agent_id, at=entry.data["at"], tool="Journal" if part.split(" ")[0].endswith("journal") else "Bash", command=part,
+        return TerminalLine(agent_id=agent_id, time=entry.data["time"], tool="Journal" if part.split(" ")[0].endswith("journal") else "Bash", command=part,
                             output=entry.data["output"], seconds=entry.data["seconds"], status=entry.data["status"], stepped=False, level="everything")
 
     def pause(self, request: Request) -> Response:

@@ -17,7 +17,7 @@ const mine = computed(() => props.turn.who === "user");
             <span class="thread-meta-dot" />
         </template>
         <template v-if="!turn.pending">
-            <span>{{ clock(turn.at) }}</span>
+            <span>{{ clock(turn.time) }}</span>
         </template>
         <template v-if="mine && !turn.pending">
             <ReadTicks :message="turn" />
