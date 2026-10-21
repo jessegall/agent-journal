@@ -98,18 +98,18 @@ class WorkerBranch:
         leftover = self.remaining(worker)
         if leftover:
             return f"its worktree {folder} stays, since {len(leftover)} files in it are not committed: {', '.join(leftover[:10])}"
-        self.git("update-ref", f"{TIPS_REF}/{folder.name}", self.git("rev-parse", self.name(worker)).stdout.strip())
-        self.removed(folder)
-        self.git("branch", "-D", self.name(worker))
+        self.git("update-ref", f"{TIPS_REF}/{folder.name}", self.name(worker))
+        self.removed(folder, self.name(worker))
         return f"its worktree and branch are removed; its last commit is kept as {TIPS_REF}/{folder.name}"
 
-    def removed(self, folder: Path) -> None:
+    def removed(self, folder: Path, branch: str) -> None:
         self.removed_root.mkdir(parents=True, exist_ok=True)
         folder.rename(self.removed_root / folder.name)
-        self.git("worktree", "prune")
-        self.deferred.add(self.cleared)
+        self.deferred.add(lambda: self.cleared(branch))
 
-    def cleared(self) -> None:
+    def cleared(self, branch: str) -> None:
+        self.git("worktree", "prune")
+        self.git("branch", "-D", branch)
         for folder in self.removed_root.iterdir():
             shutil.rmtree(folder)
 

@@ -5003,6 +5003,8 @@ def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_n
     missing = app.console().run(["worker", "complete", "1"], AGENT).text
     assert "its worktree and branch are removed; its last commit is kept as refs/journal/worktrees/1-Lady-Lovelace" in missing and not tree.exists()
     assert git("log", "-1", "--format=%s", "refs/journal/worktrees/1-Lady-Lovelace").stdout.strip() == "the parser", "its last commit can still be taken in"
+    app.runtime().deferred.drain()
+    assert git("branch", "--list", "worker/1-Lady-Lovelace").stdout.strip() == "" and git("worktree", "list").stdout.count("\n") == 1, "its branch and worktree go after the reply"
 
 
 def test_deleting_an_environment_keeps_its_worktree_while_it_holds_work_and_takes_a_merged_one_with_it(app: App):
