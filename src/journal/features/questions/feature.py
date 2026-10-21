@@ -6,6 +6,7 @@ from journal.support.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand
 from journal.features.questions.listeners.mark_question import MarkQuestion
 from journal.features.questions.support.questions_conduct import QuestionsConduct
+from journal.features.questions.support.questions_snapshot_reader import QuestionsSnapshotReader
 from journal.features.questions.states.waiting import Waiting
 
 
@@ -17,6 +18,7 @@ class Questions(Feature):
     commands = (QuestionCommand,)
     listeners = (MarkQuestion,)
     conduct = (QuestionsConduct,)
+    snapshot = (QuestionsSnapshotReader,)
     checks = (
         Entry(NodeKind.CHECK, 'question_answered', 'Question answered?', 'the row is a question the user just answered'),
         Entry(NodeKind.CHECK, 'agent_waits_on_the_question', 'Agent waits on this question?', 'the agent waits on the question of this row'),

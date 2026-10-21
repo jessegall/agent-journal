@@ -11,7 +11,7 @@ SEARCHERS = {"grep", "egrep", "fgrep", "rg", "ag", "find"}
 GIT_READS = {"show", "diff", "log", "status", "blame", "grep", "ls-files"}
 """The git subcommands that only read."""
 CODE = re.compile(r"\.(py|pyi|vue|js|mjs|cjs|jsx|ts|tsx|cs|go|rs|swift|kt|kts|java|scala|php|rb|ex|exs|erl|hs|ml|clj|c|h|cc|cpp|hpp|m|mm|lua|dart|r|jl|sh|bash|zsh|fish|ps1|sql|css|scss|sass|less|html|htm|svelte|astro|json|jsonl|yaml|yml|toml|ini|cfg|xml|gradle|tf|proto|graphql|md|txt)\b")
-"""A file the agent reads as code or as the project's own text: reading it is the work itself, so it is run as written, pipes and all."""
+"""A file the agent reads as code or as the project's own text: reading it is the work itself, so it is run as written, pipes and all, shown whole and kept as no output."""
 WRITING = re.compile(r"(^|\s)-i(\s|$)|>|\btee\b")
 """A reading command that writes after all: an in-place edit, a redirect into a file, or a tee."""
 
@@ -39,10 +39,18 @@ class Part:
         return bool(words) and words[0].rsplit("/", 1)[-1] in SEARCHERS
 
     def is_reading_code(self) -> bool:
-        """A command that only reads, and names code files of the project's own, by a path inside its folder or a glob of a code type, and none outside it."""
-        named = [word.strip("'\"") for word in self.text.split() if CODE.search(word)]
-        inside = str(Path.cwd())
-        return self.is_read() and not WRITING.search(self.text) and bool(named) and all(not word.startswith(("/", "~", "..")) or word.startswith(inside) for word in named)
+        """A command that only reads, and names the project's own code: a code file or glob, or a path that exists under the project, none outside it and none in the journal's own folder."""
+        paths = [word for word in (w.strip("'\"") for w in self.text.split()[1:]) if CODE.search(word) or self.is_project_path(word)]
+        return self.is_read() and not WRITING.search(self.text) and bool(paths) and all(self.is_under_project(word) for word in paths)
+
+    @staticmethod
+    def is_project_path(word: str) -> bool:
+        return not word.startswith("-") and Path(word).exists()
+
+    @staticmethod
+    def is_under_project(word: str) -> bool:
+        root = str(Path.cwd())
+        return (not word.startswith(("/", "~", "..")) or word.startswith(root)) and not word.startswith((".journal/", f"{root}/.journal/"))
 
     def cut(self) -> str:
         found = TRAILING_CUT.search(self.text)

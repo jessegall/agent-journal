@@ -1,11 +1,16 @@
 from dataclasses import dataclass
 
-from journal.engine.states.paused import Paused
+from journal.engine.nudge import Nudge
+from journal.engine.states.wait import Wait
+from journal.engine.support.settings import Settings
+from journal.engine.support.transition import Transition
+from journal.events.rows.question_answered import QuestionAnswered
+from journal.events.snapshot import Snapshot
 
 
 @dataclass(frozen=True)
-class Waiting(Paused):
-    """The agent asked the user something. Idle is fine, and the answer takes it back; a prompt from the user is the answer in other words."""
+class Waiting(Wait):
+    """The agent asked the user something. Idle is fine; the answer pops it and names the question to read, a prompt from the user is the answer in other words, and beneath another state it pops on resume once its question is answered. Pushed by the questions conduct on QuestionAsked."""
 
     name = "waiting"
     title = "Waiting on a question"
@@ -14,3 +19,10 @@ class Waiting(Paused):
     def awaiting(self) -> tuple[str, str]:
         return f"your answer to question {self.question_id}", f"questions:{self.question_id}"
 
+    def on_question_answered(self, event: QuestionAnswered, settings: Settings) -> Transition:
+        from journal.features.questions.feature import Questions
+        return self.pop(Questions.QUESTION_ANSWERED.create(n=event.question_id)) if event.question_id == self.question_id else self.unchanged()
+
+    def on_resume(self, snapshot: Snapshot, settings: Settings) -> tuple[Nudge, ...] | Transition:
+        from journal.features.questions.feature import Questions
+        return () if self.question_id in snapshot.of(Questions).open else self.pop(Questions.QUESTION_ANSWERED.create(n=self.question_id))

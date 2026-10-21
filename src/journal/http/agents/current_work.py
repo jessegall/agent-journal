@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
+from journal.engine.base_state import BaseState
 from journal.engine.states.paused import Paused
+from journal.engine.states.wait import Wait
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.tasks.states.working import Working
 from journal.models.agent import Agent
@@ -19,27 +21,20 @@ class AgentWork:
 
 
 class CurrentWork:
-    """Reads an agent's state down through its pauses to the task it holds: the viewer's status line names the task, or "Waiting for …" while a pause stands on it."""
+    """Reads an agent's stack down through its waits to the task it holds: the viewer's status line names the task, or "Waiting for …" while a wait stands on it, from the topmost wait that names what it waits for."""
 
     def __init__(self, states: StatesCatalogue, tasks: Tasks) -> None:
         self.states, self.tasks = states, tasks
 
     def of(self, agent: Agent) -> AgentWork | None:
-        state = self.states.named(agent.state, agent.data)
-        while isinstance(state, Paused):
-            state = self.states.resumed(state)
-        if not isinstance(state, Working):
+        layers = self.states.stack_of(agent).states
+        working = next((layer for layer in reversed(layers) if isinstance(layer, Working)), None)
+        if working is None:
             return None
         try:
-            return AgentWork(self.tasks.find(state.task_id), *self.awaited(agent))
+            return AgentWork(self.tasks.find(working.task_id), *self.awaited(layers))
         except NotFound:
             return None
 
-    def awaited(self, agent: Agent) -> tuple[str, str]:
-        """What the agent waits for and on what, from the topmost pause that names it, with a task in hand or none."""
-        state = self.states.named(agent.state, agent.data)
-        while isinstance(state, Paused):
-            if state.awaiting()[0]:
-                return state.awaiting()
-            state = self.states.resumed(state)
-        return "", ""
+    def awaited(self, layers: tuple[BaseState, ...]) -> tuple[str, str]:
+        return next((layer.awaiting() for layer in reversed(layers) if isinstance(layer, (Wait, Paused)) and layer.awaiting()[0]), ("", ""))

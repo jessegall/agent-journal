@@ -60,6 +60,11 @@ class Chain:
         own = [p for p in cls.parts(line) if p.recorded]
         return bool(own) and all(p.is_read() for p in own)
 
+    @classmethod
+    def is_reading_code_line(cls, line: str) -> bool:
+        own = [p for p in cls.parts(line) if p.recorded]
+        return bool(own) and all(p.is_reading_code() for p in own)
+
     @staticmethod
     def is_journal(part: str) -> bool:
         words = part.split()
