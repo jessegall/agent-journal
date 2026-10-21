@@ -12,10 +12,13 @@ import TurnThought from "./TurnThought.vue";
 import {useTurnLinks} from "./turnLinks.js";
 import {go} from "../route.js";
 import {store} from "../state/store.js";
+import {useScope} from "../composables/scope.js";
 
 const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "edit", "grew"]);
 const {openRef} = useTurnLinks();
+const scope = useScope();
+const dock = () => scope.api.act("messages", props.turn.id, "dock");
 const data = computed(() => props.turn.data);
 const skillMark = computed(() => ({
     icon: "book",
@@ -54,15 +57,12 @@ function markClick(data) {
         </template>
         <template #card>
             <div :class="['thread-turn', 'card', {mine: data.side === 'user'}]" :data-ref="turn.key">
-                <ChatMark :mark="cardMark" v-on="markClick(data)" />
-                <template v-if="data.figure">
-                    <div class="mark-progress" :title="data.figure">
-                        <div class="mark-progress-bar">
-                            <div class="mark-progress-fill" :style="{width: `${Math.round(data.fraction * 100)}%`}"></div>
-                        </div>
-                        <span class="mark-progress-figure">{{ data.figure }}</span>
-                    </div>
-                </template>
+                <span class="mark-row">
+                    <ChatMark :mark="cardMark" v-on="markClick(data)" />
+                    <template v-if="data.output && !data.docked">
+                        <button type="button" class="mark-dock" title="Dock the live view above the chat" @click="dock">Dock</button>
+                    </template>
+                </span>
                 <template v-if="opened && lines.length">
                     <ul class="mark-lines">
                         <template v-for="line in lines" :key="line">
@@ -132,31 +132,34 @@ function markClick(data) {
     overflow-wrap: anywhere;
 }
 
-.mark-progress {
-    display: flex;
+.mark-row {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 0 0 22px;
+    gap: 6px;
+    max-width: 100%;
+}
+
+.mark-dock {
+    padding: 1px 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 5px;
+    background: none;
     color: var(--text-3);
+    font: inherit;
     font-size: 11px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease;
 }
 
-.mark-progress-bar {
-    width: 160px;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--border);
-    overflow: hidden;
+.thread-turn.card:hover .mark-dock,
+.mark-dock:focus-visible {
+    opacity: 1;
 }
 
-.mark-progress-fill {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.3s ease;
-}
-
-.mark-progress-figure {
-    font-variant-numeric: tabular-nums;
+.mark-dock:hover {
+    color: var(--text-2);
+    border-color: var(--border);
 }
 
 .thread-turn.card.mine {

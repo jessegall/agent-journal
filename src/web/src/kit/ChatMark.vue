@@ -35,7 +35,13 @@ const tint = computed(() => ({
             <template v-if="mark.state || mark.started">
                 <ChatMarkStatus :mark="mark" />
             </template>
+            <template v-if="mark.figure">
+                <span class="figure">{{ mark.figure }}</span>
+            </template>
         </span>
+        <template v-if="mark.figure">
+            <span class="progress" :style="{width: `${Math.round((mark.fraction || 0) * 100)}%`}"></span>
+        </template>
         <template v-if="mark.settled">
             <span class="settled">{{ mark.settled }}</span>
         </template>
@@ -109,6 +115,28 @@ button.mark:hover {
 
 .mark.tinted .ico {
     color: var(--mark);
+}
+
+.mark:has(.progress) {
+    position: relative;
+    overflow: hidden;
+}
+
+.figure {
+    margin-left: auto;
+    padding-left: 8px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.8;
+    transition: width 0.4s ease;
 }
 
 .head {

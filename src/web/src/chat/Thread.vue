@@ -32,6 +32,7 @@ import OutputDialog from "./OutputDialog.vue";
 import DumpDock from "./DumpDock.vue";
 import {dockedDump, dockedRows} from "../domain/docks.js";
 import RowDock from "./RowDock.vue";
+import WatchDock from "./WatchDock.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
@@ -46,7 +47,9 @@ const pane = computed(() => props.view || store.pane);
 const scope = useScope();
 const here = !scope.env;
 const rows = (table) => scope.rows(table);
-const owner = computed(() => (here ? agent.value : [...rows("agents")].sort((a, b) => seconds(b.heard_at) - seconds(a.heard_at))[0] || null));
+const owner = computed(() =>
+    here ? agent.value : [...rows("agents")].sort((a, b) => seconds(b.heard_at) - seconds(a.heard_at))[0] || null
+);
 const threadRoot = ref(null);
 const askHere = (id) => !!threadRoot.value?.offsetParent && (openQuestion(id, threadRoot.value), true);
 const outputOpen = ref(0);
@@ -107,7 +110,11 @@ const planCard = computed(() => cardPlan(rows("plans")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dumps"))));
 const rowDocks = computed(() => dockedRows(rows("messages")));
 const dockCount = computed(() => rowDocks.value.length + [dumpDock.value, planCard.value].filter(Boolean).length);
-const helping = computed(() => subagentsOf(owner.value).filter((sub) => sub.running).at(-1));
+const helping = computed(() =>
+    subagentsOf(owner.value)
+        .filter((sub) => sub.running)
+        .at(-1)
+);
 const line = computed(() => (owner.value ? busyLine(owner.value, helping.value) : {thinking: "", doing: "working"}));
 const planOpen = ref(true);
 let lastTop = 0;
@@ -328,7 +335,11 @@ async function promised(body, files, idempotency) {
         const size = f.type.startsWith("image/") ? await measured(previews[f.name]) : null;
         if (size) pictures[f.name] = size;
     }
-    return promise("messages", {text: body, idempotency}, {author: "user", files: files.map((f) => f.name), previews, pictures, data: {}, reply_target: null, read_at: null});
+    return promise(
+        "messages",
+        {text: body, idempotency},
+        {author: "user", files: files.map((f) => f.name), previews, pictures, data: {}, reply_target: null, read_at: null}
+    );
 }
 
 watch(busy, async () => {
@@ -443,7 +454,12 @@ watch(
                         <div :class="['chat-docks', {docked: dockCount}]" :data-figure-docked-bars="dockCount ? '' : null">
                             <TransitionGroup name="dock">
                                 <template v-for="docked in rowDocks" :key="docked.id">
-                                    <RowDock :message="docked" :folded="short || !planOpen" />
+                                    <template v-if="docked.data.output">
+                                        <WatchDock :message="docked" :folded="short || !planOpen" />
+                                    </template>
+                                    <template v-else>
+                                        <RowDock :message="docked" :folded="short || !planOpen" />
+                                    </template>
                                 </template>
                             </TransitionGroup>
                             <Transition name="dock">
@@ -454,7 +470,11 @@ watch(
                             </Transition>
                         </div>
                         <Transition name="status">
-                            <div v-if="busy && !waitingNow" class="thread-turn busy" :aria-label="`The agent is ${line.doing || 'thinking'}`">
+                            <div
+                                v-if="busy && !waitingNow"
+                                class="thread-turn busy"
+                                :aria-label="`The agent is ${line.doing || 'thinking'}`"
+                            >
                                 <div class="thread-meta">
                                     <Dot kind="started" solid :size="6" />
                                     <template v-if="line.thinking">
