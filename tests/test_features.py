@@ -7426,7 +7426,8 @@ def test_an_alias_name_that_is_a_journal_command_or_another_alias_is_refused(app
     console = app.console()
     noun = console.run(["alias", "add", "task", "echo hi"], USER)
     assert noun.code == 1 and "task is a journal command" in noun.error
-    assert console.run(["alias", "add", "hi", "echo hi"], USER).code == 0
+    added = console.run(["alias", "add", "hi", "echo hi"], USER)
+    assert added.code == 0 and "created: alias 1" in added.text, "a row the command made is named by its model's noun"
     taken = console.run(["alias", "add", "hi", "echo again"], AGENT)
     assert taken.code == 1 and "an alias named hi exists" in taken.error
     assert console.run(["alias", "edit", "hi", "--line", "echo hello"], AGENT).code == 0 and "echo hello" in console.run(["alias", "list"], USER).text

@@ -35,5 +35,4 @@ class Creations(Listener[Created]):
 
     @staticmethod
     def lookup(produced: Model) -> str:
-        table = produced.table()
-        return f"{table[:-3] + 'y' if table.endswith('ies') else table[:-1]} {produced.id}"
+        return f"{produced.noun()} {produced.id}"
