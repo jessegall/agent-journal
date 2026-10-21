@@ -20,6 +20,7 @@ class AgentEvent(Event):
     at: float = 0.0
     snapshot: Snapshot = field(default_factory=lambda: Snapshot({}), compare=False)
     subagent: str = ""
+    tool_use: int = 0
 
     @property
     def words(self) -> str:
@@ -27,6 +28,9 @@ class AgentEvent(Event):
 
     def with_snapshot(self, snapshot: Snapshot) -> "AgentEvent":
         return replace(self, snapshot=snapshot)
+
+    def counted(self, tool_use: int) -> "AgentEvent":
+        return replace(self, tool_use=tool_use)
 
     def placed(self, session: str, environment_id: int, provider: str, context: float | None, at: float, subagent: str = "") -> "AgentEvent":
         return replace(self, session=session, environment_id=environment_id, provider=provider, context=context, at=at, subagent=subagent)

@@ -21,6 +21,7 @@ class Message(Scoped):
     text: str = ""
     reply_to: int | None = None
     read_at: datetime | None = None
+    read_mark: int = 0
     idempotency: str = ""
     acknowledgement: bool = False
     files: tuple[str, ...] = ()

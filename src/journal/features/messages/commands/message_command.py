@@ -9,6 +9,7 @@ from journal.support.ref import Ref
 from journal.config import Config
 from journal.features.messages.support.faces import Faces
 from journal.support.not_found import NotFound
+from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions
@@ -19,7 +20,8 @@ RECENT = 20
 class MessageCommand(Command):
     noun = "message"
 
-    def __init__(self, messages: Messages, reactions: Reactions, links: Links, config: Config) -> None:
+    def __init__(self, messages: Messages, reactions: Reactions, links: Links, config: Config, agents: Agents) -> None:
+        self.agents = agents
         self.messages, self.reactions, self.links, self.config = messages, reactions, links, config
 
     def arguments(self, verbs) -> None:
@@ -58,7 +60,7 @@ class MessageCommand(Command):
             print(f"message {answered.id} already has your reply {earlier.id}: not sent. Send it again only if it says something new, with --confirm")
             return 1
         message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_to=answered.id), where.actor)
-        self.messages.mark_read(answered, where.actor)
+        self.messages.mark_read(answered, where.actor, self._tool_use(where))
         print(f"message {message.id} sent")
         return 0
 
@@ -70,7 +72,7 @@ class MessageCommand(Command):
 
     def read(self, args: Namespace, where: Where) -> int:
         """The words reach the agent here, once it opens the message, with how to answer it."""
-        self.show(self.messages.mark_read(self.messages.find(args.n), where.actor))
+        self.show(self.messages.mark_read(self.messages.find(args.n), where.actor, self._tool_use(where)))
         return 0
 
     def unread(self, args: Namespace, where: Where) -> int:
@@ -78,7 +80,7 @@ class MessageCommand(Command):
         if not waiting:
             print("nothing unread")
         for message in waiting:
-            self.show(self.messages.mark_read(message, where.actor))
+            self.show(self.messages.mark_read(message, where.actor, self._tool_use(where)))
         return 0
 
     def recent(self, args: Namespace, where: Where) -> int:
@@ -94,7 +96,7 @@ class MessageCommand(Command):
         message = self.messages.find(args.n)
         reaction = self.reactions.toggle(message, args.face, author, where.actor)
         if reaction and author == Author.AGENT:
-            self.messages.mark_read(message, where.actor)
+            self.messages.mark_read(message, where.actor, self._tool_use(where))
         print(f"{args.face} {'on' if reaction else 'off'} message {args.n}")
         return 0
 
@@ -128,3 +130,7 @@ class MessageCommand(Command):
             print(f"  {link.kind} {other}")
         print(f"  reply with [!reply:{message.id}] in your turn")
         print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")
+
+    def _tool_use(self, where: Where) -> int:
+        agent = self.agents.for_session(where.session) if where.session else self.agents.live()
+        return agent.tool_uses if agent else 0

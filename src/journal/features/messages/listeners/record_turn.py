@@ -14,6 +14,7 @@ from journal.models.link import Link
 from journal.models.message import Message
 from journal.support.ref import Ref
 from journal.providers.providers import Providers
+from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
@@ -33,8 +34,8 @@ REPEATS = 0.6
 class RecordTurn(AgentListener[TurnWritten]):
     """Every whole turn the agent writes for the user becomes a message in the chat, its tags taken out. A [!reply:N] tag opening a line makes it the answer to message N (N,M answers both) and marks them read; a tag elsewhere is text, and the agent is told so. A [!log:N] turn belongs to the task's log alone. A turn that is only a face is not posted: the agent is told to react. A turn that only answered a journal line and changed nothing is kept as an acknowledgement, out of the chat."""
 
-    def __init__(self, messages: Messages, entries: Entries, providers: Providers, registry: Registry, supervisor: SupervisorLink, links: Links) -> None:
-        self.messages, self.entries, self.providers, self.registry, self.supervisor, self.links = messages, entries, providers, registry, supervisor, links
+    def __init__(self, messages: Messages, entries: Entries, providers: Providers, registry: Registry, supervisor: SupervisorLink, links: Links, agents: Agents) -> None:
+        self.messages, self.entries, self.providers, self.registry, self.supervisor, self.links, self.agents = messages, entries, providers, registry, supervisor, links, agents
         self.recording = threading.Lock()  # the same block arrives at once from the transcript and from the display hook
 
     def handle(self, event: TurnWritten) -> None:
@@ -149,6 +150,6 @@ class RecordTurn(AgentListener[TurnWritten]):
 
     def _mark_read(self, n: int, by: Actor) -> None:
         try:
-            self.messages.mark_read(self.messages.find(n), by)
+            self.messages.mark_read(self.messages.find(n), by, self.agents.for_session(by.id).tool_uses)
         except NotFound:
             return

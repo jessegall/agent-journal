@@ -41,6 +41,9 @@ class Entries(ScopedRepository[Entry]):
     def lines_said_after(self, session: str, key: str, entry_id: int) -> list[str]:
         return [e.data["line"] for e in self.selected("kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND id > ? ORDER BY id", (session, key, entry_id))]
 
+    def lines_said_since_use(self, session: str, key: str, tool_use: int) -> list[str]:
+        return [e.data["line"] for e in self.selected("kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.tool_use') > ? ORDER BY id", (session, key, tool_use))]
+
     def said_count_after(self, session: str, keys: tuple[str, ...], at: float) -> int:
         marks = ", ".join("?" for _ in keys)
         return self.counted_in(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({marks}) AND json_extract(data, '$.at') > ?", (session, *keys, at))

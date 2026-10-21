@@ -22,6 +22,8 @@ class Agent(Scoped):
     mark_owed: int = 0
     skills_owed: tuple[str, ...] = ()
     sequence_runs: tuple = ()
+    tool_uses: int = 0
+    inbox_mark: int = 0
 
     def paused_by_user(self, time: float) -> "Agent":
         return self.with_event(UserPaused(environment_id=self.environment_id, at=time, agent_session=self.session))
@@ -39,6 +41,12 @@ class Agent(Scoped):
         loaded = {**self.skills_loaded, name: digest}
         owed = tuple(skill for skill in self.skills_owed if skill != name)
         return self.with_(skills_loaded=loaded, skills_owed=owed).with_event(SkillRead(environment_id=self.environment_id, at=at, skill=name))
+
+    def tool_used(self) -> "Agent":
+        return self.with_(tool_uses=self.tool_uses + 1)
+
+    def message_arrived(self) -> "Agent":
+        return self.with_(inbox_mark=self.tool_uses)
 
     def has_program(self) -> bool:
         return bool(self.provider)

@@ -1173,3 +1173,11 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     assert last.popped and last.nudges[0].rendered().startswith("the wait for the build is over: output 4 finished; check 2 passed"), "the last row settled pops the wait with what each came to"
     assert Stuck(why="the login").on(Stop(at=1.0).with_snapshot(of()), auto).held is None and Stuck(why="the login").on(Ticked(quiet_for=900.0, at=901.0).with_snapshot(of()), auto).nudges == (), "stuck is quiet"
     assert Stuck(why="the login").on(ToolStarting(call=ToolCall(tool="Read", input={})), auto).popped, "its own tool use pops it"
+
+
+def test_a_journal_command_is_no_tool_use_to_a_wait():
+    from journal.features.questions.states.waiting import Waiting
+    settings = SettingsValue({})
+    waiting = Waiting(question_id=4)
+    assert waiting.on(ToolStarting(call=shell("journal task list")), settings).popped is False, "a journal command lifts no wait"
+    assert waiting.on(ToolStarting(call=shell("ls src")), settings).popped, "the agent's own tool use does"

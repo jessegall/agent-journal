@@ -12,6 +12,7 @@ from journal.features.messages.listeners.deliver_unread_at_start import DeliverU
 from journal.features.messages.listeners.link_named_tasks import LinkNamedTasks
 from journal.features.messages.listeners.link_reply_under_comment import LinkReplyUnderComment
 from journal.features.messages.listeners.mark_filed import MarkFiled
+from journal.features.messages.listeners.mark_inbox_arrival import MarkInboxArrival
 from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.run_tags import RunTags
 from journal.engine.nudge import Nudge
@@ -31,7 +32,7 @@ class Messages(Feature):
     REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between reminders of messages the agent has not read", 3, unit="tool uses")
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS, SWEEP_AFTER)
-    listeners = (SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RecordTurn, RunTags, LinkNamedTasks, LinkReplyUnderComment, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
+    listeners = (MarkInboxArrival, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RecordTurn, RunTags, LinkNamedTasks, LinkReplyUnderComment, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
     snapshot = (MessagesSnapshotReader,)
     conduct = (MessagesConduct,)
     checks = (

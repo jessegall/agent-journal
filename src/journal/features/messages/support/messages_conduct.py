@@ -13,7 +13,7 @@ from journal.support.chain import Chain
 
 TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread|recent)|question\s+(?:show|list))\b[^|;&\"']*\|")
 """A read of the user's words, a message or a question, as a command and not as words quoted inside another, piped into anything: head, tail, grep, cut. The whole of it is the point."""
-SENT = "journal message send"
+SEND_COMMAND = "journal message send"
 
 
 class MessagesConduct(Conduct):
@@ -43,7 +43,7 @@ class MessagesConduct(Conduct):
     def on_tool_starting_messages_unread(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = messages_feature()
         messages = event.snapshot.of(feature)
-        if event.subagent or not messages.unread:
+        if event.subagent or event.call.is_journal or not messages.unread:
             return self.unchanged()
         if event.call.writes and messages.times_named >= int(settings.of(feature.HOLD_AFTER_REMINDERS)):
             return self.hold(feature.WRITE_HELD_UNTIL_READ.create(count=len(messages.unread)))
@@ -54,7 +54,7 @@ class MessagesConduct(Conduct):
 
     def on_tool_finished_messages(self, event: ToolFinished, settings: Settings) -> Transition:
         command = event.call.command
-        return self.unchanged(messages_feature().REPLY_BY_TAG.create()) if SENT in command else self.unchanged()
+        return self.unchanged(messages_feature().REPLY_BY_TAG.create()) if SEND_COMMAND in command else self.unchanged()
 
     def on_reaction_given_messages(self, event: ReactionGiven, settings: Settings) -> Transition:
         return self.unchanged(messages_feature().THE_USER_REACTED.create(face=event.face, n=event.message_id)) if event.by_user else self.unchanged()

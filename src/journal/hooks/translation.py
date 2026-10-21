@@ -13,6 +13,7 @@ from journal.events.agent.turn_written import TurnWritten
 from journal.support.context_file import ContextFile
 from journal.support.hook import Hook
 from journal.hooks.support.turn_gatherer import TurnGatherer
+from journal.hooks.tool_uses import ToolUses
 from journal.support.hook_kind import HookKind
 from journal.models.environment import Environment
 from journal.providers.providers import Providers
@@ -35,10 +36,10 @@ class Translation:
         HookKind.SESSION_END: lambda hook, provider: SessionEnded(),
     }
 
-    def __init__(self, context: ContextFile, providers: Providers, turns: TurnGatherer, entries: Entries, clock: Clock) -> None:
+    def __init__(self, context: ContextFile, providers: Providers, turns: TurnGatherer, entries: Entries, clock: Clock, uses: ToolUses) -> None:
         self.context, self.providers, self.turns = context, providers, turns
-        self.entries, self.clock = entries, clock
+        self.entries, self.clock, self.uses = entries, clock, uses
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
         bare = self.EVENTS[hook.kind](hook, self.providers.named(hook.provider))
-        return self.turns.fold(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.now(), hook.subagent))
+        return self.turns.fold(self.uses.counted(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.now(), hook.subagent)))

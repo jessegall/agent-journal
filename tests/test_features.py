@@ -1277,8 +1277,11 @@ def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["message", "send", "look at the footer"], USER)
-    named = [i for i in range(1, 16) if "new message 1" in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1])]
-    assert named == [3, 6, 9, 12, 15] or len(named) >= 4, "every third tool use names the inbox"
+    from journal.repositories.agents import Agents
+    journal_said = lambda: json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list"})[1])
+    named = [i for i in range(1, 16) if "new message 1" in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1]) and "new message 1" not in journal_said()]
+    assert named == [3, 6, 9, 12, 15] or len(named) >= 4, "every third tool use names the inbox, and a journal command between is no tool use"
+    assert app.container.get(Agents).for_session("s1").tool_uses == 15, "one counter on the agent's row: fifteen plain tool uses moved it by fifteen, the fifteen journal commands by nothing"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     assert status == 409 and "unread messages" in body["error"]
     app.console().run(["message", "read", "1"], AGENT)

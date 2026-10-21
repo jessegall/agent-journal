@@ -96,5 +96,5 @@ class Messages(ScopedRepository[Message]):
         rows = self.selected("created_by = ? AND json_extract(data, '$.kind') = ? ORDER BY id DESC LIMIT ?", (Actor.agent(session).stamp, Message.THOUGHT, last))
         return list(reversed(rows))
 
-    def mark_read(self, message: Message, by: Actor) -> Message:
-        return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc)), by)
+    def mark_read(self, message: Message, by: Actor, tool_use: int) -> Message:
+        return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc), read_mark=tool_use), by)

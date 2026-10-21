@@ -11,6 +11,7 @@ from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.models.author import Author
 from journal.models.message import Message
+from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.repositories.reactions import Reactions
 from journal.support.docking import Docking
@@ -20,7 +21,8 @@ class MessageController(Controller[Message]):
 
     timeline = True
 
-    def __init__(self, messages: Messages, reactions: Reactions, attachments: Attachments, docking: Docking) -> None:
+    def __init__(self, messages: Messages, reactions: Reactions, attachments: Attachments, docking: Docking, agents: Agents) -> None:
+        self.agents = agents
         self.repository, self.reactions, self.attachments, self.docking = messages, reactions, attachments, docking
 
     def listed(self, listing: Listing) -> Listed:
@@ -53,13 +55,13 @@ class MessageController(Controller[Message]):
         return Response.json(self.shown(self.repository.save(message, request.actor)), 201)
 
     def read(self, request: Request) -> Response:
-        return Response.json(self.shown(self.repository.mark_read(self.repository.find(request.number("id")), request.actor)))
+        return Response.json(self.shown(self.repository.mark_read(self.repository.find(request.number("id")), request.actor, self._tool_use())))
 
     def read_all(self, request: Request) -> Response:
         if "ids" not in request.body:
             return Response.json({})
         for id in request.body["ids"]:
-            self.repository.mark_read(self.repository.find(int(id)), request.actor)
+            self.repository.mark_read(self.repository.find(int(id)), request.actor, self._tool_use())
         return Response.json({})
 
     def reply(self, request: Request) -> Response:
@@ -84,3 +86,7 @@ class MessageController(Controller[Message]):
         names = tuple(self.attachments.store(Message.table(), message.id, name, data) for name, data in request.files.items())
         saved = self.repository.save(message.with_(files=(*message.files, *names)), request.actor) if names else message
         return Response.json(self.shown(saved))
+
+    def _tool_use(self) -> int:
+        agent = self.agents.live()
+        return agent.tool_uses if agent else 0
