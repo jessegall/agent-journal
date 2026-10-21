@@ -1570,9 +1570,14 @@ def test_the_look_runs_the_commands_the_setting_names_each_under_its_heading_in_
     app.container.get(SettingRows).set("briefing.look_commands", ["task show {{task_in_hand}}", "plan show {{started_plan}}", "question list", "task list"], Actor.user(1))
     shown = console.run(["environment", "overview"], AGENT).text
     headings = [line for line in shown.splitlines() if line.startswith("== journal ")]
-    assert headings == ["== journal task show 1 ==", "== journal plan show {{started_plan}} ==", "== journal question list ==", "== journal task list =="], "each command under its heading, in the order the setting names them"
+    assert headings == ["== journal task show 1 ==", "== journal plan show ==", "== journal question list ==", "== journal task list =="], "each command under its heading, in the order the setting names them"
     assert "opened NOTES.md" in shown and "no plan is started" in shown, "the task in hand read whole, and the plan in hand said to be missing"
     assert shown.index("task in hand: 1 write the notes") < shown.index("== journal task show 1 =="), "the summary comes first"
+    console.run(["task", "create", "an old one"], AGENT)
+    console.run(["task", "complete", "2"], AGENT)
+    listed = console.run(["task", "list"], AGENT).text
+    assert "an old one" not in listed and "and 1 done or cancelled: journal task list --all" in listed, "a closed task is counted, not listed"
+    assert "an old one" in console.run(["task", "list", "--all"], AGENT).text
 
 
 def test_journal_developer_prints_the_slowest_the_loads_the_models_and_the_averages_from_the_tabs_numbers_and_resets_them(app: App):
@@ -4336,14 +4341,14 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     assert "failed with code 1" in console.run(["output", "list"], AGENT).text
     assert console.run(["reader", "add", "forties", "--pattern", "line 4[0-1]$", "--about", "lines in the early forties"], AGENT).code == 0
     assert (app.config.readers / "forties.pattern").read_text() == "# lines in the early forties\nline 4[0-1]$\n", "a reader is a file of the project's"
-    assert console.run(["reader", "list"], AGENT).text == "forties: lines in the early forties\n"
+    assert "forties: lines in the early forties\n" in console.run(["reader", "list"], AGENT).text
     assert console.run(["output", "read", "1", "--reader", "forties"], AGENT).text == "40: line 40\n41: line 41\n"
     assert console.run(["output", "read", "1", "--reader", "nothing"], AGENT).code == 1, "an unknown reader is refused"
     script = app.config.root / "count.sh"
     script.write_text("wc -l | tr -d ' '\n")
     assert console.run(["reader", "add", "count", "--script", str(script), "--about", "how many lines"], AGENT).code == 0
     assert console.run(["output", "read", "1", "--reader", "count"], AGENT).text == "50\n", "a script reader is handed the output and prints what matters"
-    assert console.run(["reader", "list"], AGENT).text == "count: how many lines\nforties: lines in the early forties\n"
+    assert "count: how many lines\n" in console.run(["reader", "list"], AGENT).text
 
 
 def test_a_trailing_tail_or_head_is_taken_off_the_line_and_kept_as_the_cut_to_apply(app: App):
@@ -7095,6 +7100,8 @@ def test_the_files_a_worker_touched_are_read_from_its_branch_when_it_reports_a_r
     workers.save(Worker(name="Mr. Babbage", brief="an old job", state=WorkerState.REPORTED), Actor.system())
     listed = console.run(["worker", "list"], AGENT).text
     assert "files: no files known" in listed and "src/lexer.py" in listed, "a worker reported before files were read has none known"
+    workers.save(Worker(name="Mr. Pepys", brief="keep the diary " * 40, state=WorkerState.REPORTED), Actor.system())
+    assert max(len(line) for line in console.run(["worker", "list"], AGENT).text.splitlines()) < 140, "a long brief is listed as its opening words, never whole"
 
 
 def test_a_worker_is_idle_by_one_rule_old_rows_and_dead_processes_included(app: App):

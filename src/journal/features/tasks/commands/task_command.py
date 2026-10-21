@@ -61,7 +61,7 @@ class TaskCommand(Command):
         suspension.add_argument("why")
         self.verb(verbs, "resume", "pick a parked task up again").add_argument("n", type=int)
         self.verb(verbs, "show", "a task whole: its title, state, plan and phase, brief and every log line in order").add_argument("n", type=int)
-        self.verb(verbs, "list", "every open task here")
+        self.verb(verbs, "list", "every task here not closed, and how many are done or cancelled").add_argument("--all", action="store_true", help="every task, the closed ones too")
 
     def create(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.save(Task(title=args.title, brief=args.brief), caller.actor)
@@ -139,8 +139,12 @@ state: {task.state}
         return f"plan {plan.id}: {plan.title}" + (f", phase {phase.number} of {len(phases)}: {phase.phase.title}" if phase else "")
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for task in self.tasks.scoped():
+        tasks = self.tasks.scoped()
+        shown = tasks if args.all else [task for task in tasks if not task.is_closed()]
+        for task in shown:
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
+        if len(shown) < len(tasks):
+            print(f"and {len(tasks) - len(shown)} done or cancelled: journal task list --all")
         return 0
 
     def _name_next(self, closed: Task) -> None:

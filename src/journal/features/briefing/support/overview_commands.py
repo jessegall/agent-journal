@@ -27,5 +27,5 @@ class OverviewCommands:
     def line(self, command: str, slots: tuple[OverviewSlot, ...]) -> ChainedLine:
         missing = next((slot for slot in slots if slot.is_missing(command)), None)
         if missing:
-            return ChainedLine.missing(command, missing.absent)
+            return ChainedLine.missing(missing.emptied(command), missing.absent)
         return ChainedLine.runnable(reduce(lambda text, slot: slot.filled(text), slots, command))

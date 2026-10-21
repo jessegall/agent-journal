@@ -16,5 +16,8 @@ class OverviewSlot:
     def is_missing(self, command: str) -> bool:
         return self.marker in command and not self.value
 
+    def emptied(self, command: str) -> str:
+        return command.replace(self.marker, "").strip()
+
     def filled(self, command: str) -> str:
         return command.replace(self.marker, self.value)
