@@ -1029,15 +1029,17 @@ def test_a_request_over_its_budget_is_one_mark_per_route_told_the_first_time_and
     monkeypatch.setattr("os.getloadavg", lambda: (0.0, 0.0, 0.0))
     with app.container.get(Scope).environment(MAIN):
         slow.measured("GET", "/journal/plans", 80)
+        slow.measured("GET", "/journal/messages/12/read", 70)
         assert [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")] == [], "nothing is judged in the first minute after a start"
         slow.started -= 120
+        slow.measured("GET", "/journal/docs", 200)
         slow.measured("GET", "/journal/plans", 30)
         slow.measured("GET", "/journal/plans", 80)
         slow.measured("GET", "/journal/plans", 95)
         slow.measured("GET", "/journal/messages/12/read", 70)
         app.runtime().deferred.drain()
         thresholds = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
-    assert [(m.text, m.data["count"], m.data["worst"]) for m in thresholds] == [("Slow request: GET /journal/plans", 2, 95), ("Slow request: GET /journal/messages/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted"
+    assert [(m.text, m.data["count"], m.data["worst"]) for m in thresholds] == [("Slow request: GET /journal/plans", 2, 95), ("Slow request: GET /journal/messages/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted, nor a route's first since the boot, which loads its code"
     assert sum("over its budget of 50 ms" in t for t in keystrokes) == 2, "the agent is told the first time of each"
     told_at = thresholds[0].data["reported_at"]
     plans_lines = lambda: sum("GET /journal/plans took" in t for t in keystrokes)
@@ -1056,6 +1058,7 @@ def test_a_request_over_its_budget_is_one_mark_per_route_told_the_first_time_and
         slow.measured("GET", "/journal/plans", 90)
         app.runtime().deferred.drain()
     assert plans_lines() == 2, "0 tells it once only"
+    slow.measured("GET", "/journal/environments", 90)
     slow.measured("GET", "/journal/environments", 90)
     app.runtime().deferred.drain()
     assert any(m.text == "Slow request: GET /journal/environments" for m in app.container.get(Messages).all()), "a request that named no environment is marked in the live agent's, never failing on the missing one"

@@ -35,7 +35,7 @@ OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin p
 
 
 class SlowRequests:
-    """Measures each request against its budget where the journal develops itself, with the rows it loaded while load counting is on, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time and again once the set minutes have passed since it was last told, the time it was told kept in the mark's data."""
+    """Measures each request against its budget where the journal develops itself, every one but a route's first since the boot, which loads its code and a cold cache once, with the rows it loaded while load counting is on, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time and again once the set minutes have passed since it was last told, the time it was told kept in the mark's data."""
 
     def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudges: NudgeLog, clock: Clock, deferred: ListenerQueue, statistics: Statistics, timings: Timings, test_runs: TestRunFiles) -> None:
         self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudges, self.clock, self.deferred = config, settings, cards, messages, agents, environments, scope, nudges, clock, deferred
@@ -43,6 +43,7 @@ class SlowRequests:
         self.timings = timings
         self.test_runs = test_runs
         self.started = time.monotonic()
+        self.measured_routes: set[str] = set()
 
     def begin(self) -> None:
         if self.settings.option(Faults.LOADS):
@@ -52,7 +53,7 @@ class SlowRequests:
         loads = LoadTally.ended()
         self.deferred.add(lambda: self.counted(method, path, round(ms), loads))
         route = re.sub(r"/\d+(?=/|$)", "/{n}", path)
-        if not self.judging() or self.is_outward(route):
+        if self.is_first(f"{method} {route}") or not self.judging() or self.is_outward(route):
             return
         budget = self.budget(method)
         if not budget or ms <= budget:
@@ -66,6 +67,11 @@ class SlowRequests:
             self.statistics.added(f"{LOADS_PREFIX}{count.model}", count.rows, Actor.system())
         if method == HOOK:
             self.statistics.measured(f"developer.hooks.{path.rsplit('/', 1)[-1]}", ms, Actor.system())
+
+    def is_first(self, route: str) -> bool:
+        first = route not in self.measured_routes
+        self.measured_routes.add(route)
+        return first
 
     @staticmethod
     def is_outward(route: str) -> bool:
