@@ -38,5 +38,5 @@ class PluginReleases:
 
     def is_compatible(self, plugin: Plugin, tag: str, journal: Release) -> bool:
         with self.installing.staged(plugin.source, tag) as (folder, _):
-            least = self.installing.reader.read(folder).journal
+            least = self.installing.reader.least_journal(folder)
         return not least or not Release(least).is_newer(journal)

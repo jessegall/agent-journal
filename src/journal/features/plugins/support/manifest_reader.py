@@ -5,7 +5,9 @@ from pathlib import Path
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.registry import Registry
 from journal.models.support.plugin_manifest import PUBLISHED, PluginManifest
+from journal.features.updates.support.release import Release
 from journal.support.rejection import Rejection
+from journal.version import VERSION
 from journal.repositories.plugins import Plugins
 
 MANIFEST = "journal-plugin.json"
@@ -26,10 +28,10 @@ class ManifestReader:
         self.registry, self.plugins, self.folders = registry, plugins, folders
 
     def read(self, folder: Path) -> PluginManifest:
-        file = folder / MANIFEST
-        if not file.is_file():
-            raise Rejection(f"{folder} holds no {MANIFEST}")
-        raw = json.loads(file.read_text())
+        raw = json.loads(self.manifest_file(folder).read_text())
+        least = str(raw.get("journal", ""))
+        if not self.is_fitting(least):
+            raise Rejection(f"{raw.get('name', folder.name)} needs journal {least} or newer; this journal is {VERSION}")
         unknown = sorted(set(raw) - KEYS)
         if unknown:
             raise Rejection(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
@@ -40,6 +42,20 @@ class ManifestReader:
         self.folder_check(folder, manifest)
         self.skills_free(folder, manifest)
         return manifest
+
+    def least_journal(self, folder: Path) -> str:
+        return str(json.loads(self.manifest_file(folder).read_text()).get("journal", ""))
+
+    @staticmethod
+    def is_fitting(least: str) -> bool:
+        return not least or not Release(least).is_newer(Release(VERSION))
+
+    @staticmethod
+    def manifest_file(folder: Path) -> Path:
+        file = folder / MANIFEST
+        if not file.is_file():
+            raise Rejection(f"{folder} holds no {MANIFEST}")
+        return file
 
     @staticmethod
     def skill_names(folder: Path, manifest: PluginManifest) -> list[str]:

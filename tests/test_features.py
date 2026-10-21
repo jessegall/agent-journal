@@ -3705,6 +3705,20 @@ def test_a_plugins_skills_are_published_stamped_and_taken_away(app: App):
     assert not any(p.exists() for p in published), "removed, its skills go"
 
 
+def test_a_plugin_that_needs_a_newer_journal_is_refused_by_that_before_any_key_it_brings(app: App, tmp_path):
+    from journal.features.plugins.support.manifest_reader import ManifestReader
+    from journal.support.rejection import Rejection
+    from journal.version import VERSION
+    folder = tmp_path / "later"
+    folder.mkdir()
+    (folder / "journal-plugin.json").write_text(json.dumps({"name": "later", "journal": "99.0.0", "keys_of_a_later_journal": []}))
+    reader = app.container.get(ManifestReader)
+    with pytest.raises(Rejection) as refused:
+        reader.read(folder)
+    assert str(refused.value) == f"later needs journal 99.0.0 or newer; this journal is {VERSION}", "an install hears the version it needs, not a key it cannot know"
+    assert reader.least_journal(folder) == "99.0.0", "an upgrade reads the minimum alone, so an older journal passes the release by"
+
+
 def test_plugins_come_back_when_the_journal_starts_again(app: App):
     app.console().run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
     (app.config.home / "plugin-data" / "echo" / "kept.txt").write_text("kept")
