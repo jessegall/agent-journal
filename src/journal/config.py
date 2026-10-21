@@ -45,7 +45,7 @@ class Config:
         return (int(text),) if text.isdigit() else ()
 
     @classmethod
-    def time(cls, root: Path) -> "Config":
+    def rooted(cls, root: Path) -> "Config":
         if "JOURNAL_PORT" in os.environ:
             return cls(root.resolve(), int(os.environ["JOURNAL_PORT"]), span=1)
         return cls(root.resolve())
