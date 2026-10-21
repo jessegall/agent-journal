@@ -58,6 +58,6 @@ class CliController:
 
     def caller(self, variables: CallerVariables, argv: list[str], request: Request) -> Caller:
         caller = (variables if self.launches.is_launch(variables.environment, variables.launch) else replace(variables, agent_shell=False)).caller()
-        if self.subagents.runs(caller.environment, variables.session, argv, request.headers.get(ACTOR_HEADER), request.headers.get(THREAD_HEADER)):
+        if self.subagents.runs(caller, argv, request.headers.get(ACTOR_HEADER), request.headers.get(THREAD_HEADER)):
             return caller.subagent_caller()
         return caller

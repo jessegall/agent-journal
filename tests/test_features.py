@@ -6565,8 +6565,13 @@ def test_every_caller_names_its_kind_and_a_subagent_is_told_by_its_agents_sessio
     assert Caller.worker("main", 3, "w-1", "claude").subagent_caller().kind == CallerKind.SUBAGENT, "a subagent of a worker is a subagent first"
     announced, subagents = app.container.get(AnnouncedCommands), app.container.get(SubagentCommands)
     announced.note("main", "w-1", ("journal task list",))
-    assert not subagents.runs("main", "s1", ["task", "list"], None, None), "a worker's subagent's announcement never claims the main agent's command"
-    assert subagents.runs("main", "w-1", ["task", "list"], None, None), "it claims the command posted from the worker's session"
+    assert not subagents.runs(Caller.agent("main", "s1", "claude"), ["task", "list"], None, None), "a worker's subagent's announcement never claims the main agent's command"
+    assert subagents.runs(Caller.worker("main", 3, "w-1", "claude"), ["task", "list"], None, None), "it claims the command posted from the worker's session"
+    from journal.models.agent import Agent
+    from journal.repositories.agents import Agents
+    app.container.get(Agents).save(Agent(session="thread-1", provider="codex"), Actor.system())
+    assert not subagents.runs(Caller.worker("main", 4, "thread-9", "codex"), ["task", "list"], None, "thread-9"), "a Codex worker's own thread is its own, not a subagent's"
+    assert subagents.runs(Caller.shell("main", "codex"), ["task", "list"], None, "thread-9"), "another thread in the main agent's Codex shell is a subagent's"
 
 
 def test_a_subagent_is_a_row_the_census_counts_retire_writes_and_one_from_before_the_rows_is_ended(app: App):

@@ -145,8 +145,8 @@ def test_a_guard_that_raises_fails_open_and_is_reported_loudly(app: App):
     assert any("A guard failed and let the event through" in m.text for m in app.container.get(Messages).scoped()), "and the user sees a card in the chat"
 
 
-def post_command(app, argv: list[str], headers: dict | None = None, session: str | None = None) -> dict:
-    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/cli", data=json.dumps({"argv": argv, "env": "main", "session": session}).encode(), method="POST", headers={"Content-Type": "application/json", **(headers or {})})
+def post_command(app, argv: list[str], headers: dict | None = None, session: str | None = None, body: dict | None = None) -> dict:
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/cli", data=json.dumps({"argv": argv, "env": "main", "session": session, **(body or {})}).encode(), method="POST", headers={"Content-Type": "application/json", **(headers or {})})
     with urlopen(request, timeout=5) as reply:
         return json.loads(reply.read())
 
@@ -171,8 +171,9 @@ def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_
     from journal.support.actor import Actor
     from journal.repositories.agents import Agents
     app.container.get(Agents).save(Agent(session="thread-1", provider="codex"), Actor.system())
-    assert "a subagent runs no journal command" in post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-2"})["error"]
-    assert post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-1"})["code"] == 0
+    shell = {"agent": True, "provider": "codex"}
+    assert "a subagent runs no journal command" in post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-2"}, body=shell)["error"]
+    assert post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-1"}, body=shell)["code"] == 0
 
 
 def test_a_subagents_write_hook_makes_no_entry_and_moves_no_state(app: App):
