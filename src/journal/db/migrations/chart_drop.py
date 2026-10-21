@@ -4,7 +4,7 @@ from typing import ClassVar
 from journal.db.connection import Connection
 from journal.db.migration import Migration
 
-USER_WORKFLOWS = "SELECT id, title, event, state, shipped, revision FROM charts WHERE shipped = 0 OR revision > 0"
+USER_WORKFLOWS = "SELECT id, title, event, state, shipped, revision FROM charts WHERE shipped = 0 OR updated_by NOT LIKE 'system%'"
 NODES_OF = "SELECT nodes.id, nodes.kind, nodes.key, nodes.text FROM nodes JOIN links ON links.source = 'nodes:' || nodes.id WHERE links.kind = 'node_of' AND links.target = ? ORDER BY nodes.id"
 LINES_OF = "SELECT source, target, kind FROM links WHERE kind IN ('yes', 'no', 'then') AND source IN ({refs}) ORDER BY id"
 LINK_KINDS = ("node_of", "yes", "no", "then")
