@@ -13,7 +13,7 @@ from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_logged import TaskLogged
 from journal.events.rows.plan_started import PlanStarted
 from journal.events.rows.task_started import TaskStarted
-from journal.events.snapshot import Snapshot
+from journal.events.readings import Readings
 from journal.support.permission import Permission
 
 LOG_OLD_AFTER = 600.0
@@ -74,7 +74,7 @@ class Working(AgentState):
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
-        approved = event.snapshot.of(Plans).approved
+        approved = event.readings.of(Plans).approved
         if approved:
             return self.hold(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
         if event.time - self.logged_at >= LOG_OLD_AFTER:
@@ -87,7 +87,7 @@ class Working(AgentState):
         from journal.features.tasks.feature import Tasks
         nudges = [self.continue_nudge(event.time)]
         if event.source == COMPACT:
-            nudges.append(Briefing.BRIEF_AND_LOG_AFTER_COMPACTION.create(task=self.named(), last_log=event.snapshot.of(Tasks).last_log_line, uncommitted=event.snapshot.of(Git).uncommitted))
+            nudges.append(Briefing.BRIEF_AND_LOG_AFTER_COMPACTION.create(task=self.named(), last_log=event.readings.of(Tasks).last_log_line, uncommitted=event.readings.of(Git).uncommitted))
         return self.changed(replace(self, active_at=event.time), *nudges)
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
@@ -108,7 +108,7 @@ class Working(AgentState):
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.plans.states.following_plan import FollowingPlan
-        started = event.snapshot.of(Plans).started
+        started = event.readings.of(Plans).started
         if self.follows_a_plan() or started is None or event.task_id != self.task_id or event.task_id not in started.tasks:
             return self.unchanged()
         return self.changed(FollowingPlan(plan_id=started.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at))
@@ -119,8 +119,8 @@ class Working(AgentState):
             return self.unchanged()
         return self.changed(FollowingPlan(plan_id=event.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at, edits=self.edits, active_at=self.active_at))
 
-    def on_resume(self, snapshot: Snapshot, settings: Settings) -> tuple[Nudge, ...] | Transition:
+    def on_resume(self, readings: Readings, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.tasks.feature import Tasks
-        if self.task_id and snapshot.of(Tasks).in_hand != self.task_id:
+        if self.task_id and readings.of(Tasks).in_hand != self.task_id:
             return self.pop()
         return ()

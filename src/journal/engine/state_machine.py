@@ -8,8 +8,8 @@ from journal.engine.states.ended import Ended
 from journal.engine.support.hooked import Hooked
 from journal.engine.support.held import Held
 from journal.engine.support.stack import Stack
-from journal.engine.support.snapshot_readers import SnapshotReaders
-from journal.events.snapshot import Snapshot
+from journal.engine.support.readings_readers import ReadingsReaders
+from journal.events.readings import Readings
 from journal.supervisor_link import SupervisorLink
 from journal.events.event import Event
 from journal.events.rows.row_event import RowEvent
@@ -37,7 +37,7 @@ class StateMachine(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeaturesKnown, scope: Scope, supervisor: SupervisorLink, entries: Entries, readers: SnapshotReaders) -> None:
+    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeaturesKnown, scope: Scope, supervisor: SupervisorLink, entries: Entries, readers: ReadingsReaders) -> None:
         self.agents, self.states, self.nudger, self.bus = agents, states, nudger, bus
         self.settings, self.features, self.scope, self.supervisor, self.entries, self.readers = settings, features, scope, supervisor, entries, readers
 
@@ -60,9 +60,9 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def answer(self, agent: Agent, event: Event) -> Decision:
         stack, settings = self.states.stack_of(agent), self.taken()
-        event = event.with_snapshot(self.readers.for_agent(agent))
+        event = event.with_readings(self.readers.for_agent(agent))
         transition = stack.top().on(event, settings)
-        hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings, event.snapshot)
+        hooked = self.through_hooks(stack, self.moved(self.placed(stack, transition.to), transition), settings, event.readings)
         if transition.dropped:
             self.entries.save(Trail.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
         agent = self._settle(agent, hooked, event.key, Actor.system())
@@ -111,15 +111,15 @@ class StateMachine(AgentListener[AgentEvent]):
     def taken(self) -> Settings:
         return Settings.taken(self.settings, self.features.options())
 
-    def read_for(self, agent: Agent) -> Snapshot:
+    def read_for(self, agent: Agent) -> Readings:
         with self.scope.of(agent.environment_id):
             return self.readers.for_agent(agent)
 
-    def through_hooks(self, before: Stack, after: Stack, settings: SettingRows, snapshot: Snapshot) -> Hooked:
+    def through_hooks(self, before: Stack, after: Stack, settings: SettingRows, readings: Readings) -> Hooked:
         if after.states[:-1] == before.states and len(after.states) == len(before.states) + 1:
             return self.pushed_through(before, after, settings)
         if after == before.popped() and len(before.states) > 1:
-            return self.popped_through(before, after, settings, snapshot)
+            return self.popped_through(before, after, settings, readings)
         return Hooked(after)
 
     def pushed_through(self, before: Stack, after: Stack, settings: SettingRows) -> Hooked:
@@ -129,13 +129,13 @@ class StateMachine(AgentListener[AgentEvent]):
             return Hooked(before, held=pushed, refused=after.top().name)
         return Hooked(after, (*suspended, *pushed))
 
-    def popped_through(self, before: Stack, after: Stack, settings: SettingRows, snapshot: Snapshot) -> Hooked:
+    def popped_through(self, before: Stack, after: Stack, settings: SettingRows, readings: Readings) -> Hooked:
         popped = before.top().on_pop(settings)
-        resumed = after.top().on_resume(snapshot, settings)
+        resumed = after.top().on_resume(readings, settings)
         if not isinstance(resumed, Transition):
             return Hooked(after, (*popped, *resumed))
         if resumed.popped and len(after.states) > 1:
-            beneath = self.popped_through(after, after.popped(), settings, snapshot)
+            beneath = self.popped_through(after, after.popped(), settings, readings)
             return Hooked(beneath.stack, (*popped, *resumed.nudges, *beneath.nudges))
         return Hooked(after.with_top(resumed.to), (*popped, *resumed.nudges))
 

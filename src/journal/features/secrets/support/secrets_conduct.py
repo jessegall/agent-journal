@@ -10,7 +10,7 @@ class SecretsConduct(Conduct):
 
     def on_tool_starting_secrets(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.secrets.feature import Secrets
-        return self.hold(Secrets.SECRETS_OUT_OF_REACH.create()) if event.snapshot.of(Secrets).reaches(event.call.input) else self.unchanged()
+        return self.hold(Secrets.SECRETS_OUT_OF_REACH.create()) if event.readings.of(Secrets).reaches(event.call.input) else self.unchanged()
 
     def on_secret_allowed_secrets(self, event: SecretAllowed, settings: Settings) -> Transition:
         from journal.features.secrets.feature import Secrets

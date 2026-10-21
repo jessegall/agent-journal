@@ -18,15 +18,15 @@ class ShippedSequences(Seed):
     def run(self) -> None:
         present = {sequence.title: sequence for sequence in self.sequences.all()}
         for sequence in SHIPPED:
-            snapshot = present.get(sequence.title)
-            if snapshot is None:
+            readings = present.get(sequence.title)
+            if readings is None:
                 self.sequences.save(sequence, Actor.system())
-            elif snapshot.updated_by == Actor.system() and (snapshot.steps, snapshot.finishes_in) != (sequence.steps, sequence.finishes_in):
-                self.sequences.save(replace(snapshot, steps=sequence.steps, finishes_in=sequence.finishes_in), Actor.system())
+            elif readings.updated_by == Actor.system() and (readings.steps, readings.finishes_in) != (sequence.steps, sequence.finishes_in):
+                self.sequences.save(replace(readings, steps=sequence.steps, finishes_in=sequence.finishes_in), Actor.system())
         for title in RETIRED:
-            snapshot = present.get(title)
-            if snapshot is not None and snapshot.updated_by == Actor.system():
-                self.sequences.delete(snapshot, Actor.system())
+            readings = present.get(title)
+            if readings is not None and readings.updated_by == Actor.system():
+                self.sequences.delete(readings, Actor.system())
         for title, phrases in WORDS.items():
             if title not in present and not self.triggers.starting(title):
                 self.triggers.save(Trigger(phrases=phrases, action=TriggerAction.SEQUENCE, text=title), Actor.system())

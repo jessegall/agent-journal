@@ -117,7 +117,7 @@ class Replay:
 
 
 class Frozen:
-    """A record read back from its file: what the listener side saw, snapshot in for it."""
+    """A record read back from its file: what the listener side saw, readings in for it."""
 
     def __init__(self, name: str) -> None:
         kept = json.loads((RECORDS / f"{name}.json").read_text())

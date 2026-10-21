@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.messages.support.messages_snapshot_reader import MessagesSnapshotReader
+from journal.features.messages.support.messages_readings_reader import MessagesReadingsReader
 from journal.features.messages.support.messages_conduct import MessagesConduct
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
 from journal.features.messages.listeners.record_peer_message import RecordPeerMessage
@@ -31,7 +31,7 @@ class Messages(Feature):
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
     options = (NUDGE_AFTER, HOLD_AFTER, REMIND_EVERY, HOLD_AFTER_REMINDERS, SWEEP_AFTER)
     listeners = (MarkInboxArrival, SweepTranscripts, RecordTypedPrompt, RecordPeerMessage, RecordSentMessage, RecordTurn, RunTags, LinkNamedTasks, LinkReplyUnderComment, MarkFiled, DeliverMessage, DeliverUnreadAtStart)
-    snapshot = (MessagesSnapshotReader,)
+    readings = (MessagesReadingsReader,)
     conduct = (MessagesConduct,)
 
     NEW_MESSAGE_TO_ANSWER = Nudge(name, "new_message_to_answer", "new message {{n}}", repeat_after=0, answered_in_chat=True)

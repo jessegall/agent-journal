@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
 
 from journal.events.event import Event
-from journal.events.snapshot import Snapshot
+from journal.events.readings import Readings
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -13,14 +13,14 @@ class RowEvent(Event):
     row_id: int = 0
     session: str = ""
     actor: str = ""
-    snapshot: Snapshot = field(default_factory=lambda: Snapshot({}), compare=False)
+    readings: Readings = field(default_factory=lambda: Readings({}), compare=False)
 
     @property
     def typed_after(self) -> float:
         return 0.0
 
-    def with_snapshot(self, snapshot: Snapshot) -> "RowEvent":
-        return replace(self, snapshot=snapshot)
+    def with_readings(self, readings: Readings) -> "RowEvent":
+        return replace(self, readings=readings)
 
     def reaching(self, session: str) -> "RowEvent":
         return replace(self, session=session)

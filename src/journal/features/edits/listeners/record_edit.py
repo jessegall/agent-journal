@@ -5,7 +5,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
-from journal.features.edits.support.file_snapshots import FileSnapshots
+from journal.features.edits.support.file_copies import FileCopies
 from journal.features.edits.support.patch_rows import PatchRows
 from journal.features.shell.support.part import Part
 from journal.support.actor import Actor
@@ -17,12 +17,12 @@ ROWS_LIMIT = 200
 
 
 class RecordEdit(AgentListener[ToolFinished]):
-    """When a call that writes files ends, each file it wrote is kept as an edit row before the hook answers, so the pane that polls next sees it: the editor's tools from the patch they answer with, or from the file against its last snapshot when they answer with none, a shell line from the call's written paths against the file as the journal saw it last; the file as it now is is kept, so the next change is told against it."""
+    """When a call that writes files ends, each file it wrote is kept as an edit row before the hook answers, so the pane that polls next sees it: the editor's tools from the patch they answer with, or from the file against its last readings when they answer with none, a shell line from the call's written paths against the file as the journal saw it last; the file as it now is is kept, so the next change is told against it."""
 
     blocking = True
 
-    def __init__(self, config: Config, edits: Edits, snapshots: FileSnapshots) -> None:
-        self.config, self.edits, self.snapshots = config, edits, snapshots
+    def __init__(self, config: Config, edits: Edits, copies: FileCopies) -> None:
+        self.config, self.edits, self.copies = config, edits, copies
 
     def handle(self, event: ToolFinished) -> None:
         if event.call.tool in EDITING:
@@ -43,8 +43,8 @@ class RecordEdit(AgentListener[ToolFinished]):
                        added=patch.counted("add"), removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), event)
 
     def changed(self, event: ToolFinished, path: str) -> None:
-        text = self.snapshots.now(path)
-        last_text = self.snapshots.before(path)
+        text = self.copies.current_text(path)
+        last_text = self.copies.last_text(path)
         if text is None:
             self.deleted(event, path, last_text)
             return
@@ -59,13 +59,13 @@ class RecordEdit(AgentListener[ToolFinished]):
             return
         patch = PatchRows.from_versions(last_text, "")
         self.edits.record(Edit(session=event.session, tool_use=event.tool_use, path=path, kind="delete", time=timing.time(), command=event.call.command, added=0, removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), Actor.agent(event.session))
-        self.snapshots.keep(path, "")
+        self.copies.store(path, "")
 
     def recorded(self, edit: Edit, event: ToolFinished) -> None:
         self.edits.record(edit, Actor.agent(event.session))
-        text = self.snapshots.now(edit.path)
+        text = self.copies.current_text(edit.path)
         if text is not None:
-            self.snapshots.keep(edit.path, text)
+            self.copies.store(edit.path, text)
 
     def project_path(self, path: str) -> str:
         try:

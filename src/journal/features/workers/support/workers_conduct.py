@@ -10,7 +10,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.worker_back import WorkerBack
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.features.workers.support.named_paths import NamedPaths
-from journal.features.workers.support.workers_snapshot import WorkersSnapshot
+from journal.features.workers.support.workers_readings import WorkersReadings
 from journal.support.dispatch_tools import DISPATCH_TOOLS
 
 FRESH = ("auditor", "reviewer", "plan-reviewer", "critic")
@@ -23,14 +23,14 @@ class WorkersConduct(Conduct):
         from journal.features.workers.feature import Workers
         if event.call.tool not in DISPATCH_TOOLS or event.subagent:
             return self.unchanged()
-        most, running = int(settings.of(Workers.MOST_SUBAGENTS)), event.snapshot.of(Workers).subagents_running
+        most, running = int(settings.of(Workers.MOST_SUBAGENTS)), event.readings.of(Workers).subagents_running
         return self.hold(Workers.TOO_MANY_SUBAGENTS.create(running=running)) if most and running >= most else self.unchanged()
 
     def on_tool_starting_workers_worktrees(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         if event.subagent or not event.call.writes:
             return self.unchanged()
-        owner = worktree_written(event.snapshot.of(Workers), event.call.written_paths)
+        owner = worktree_written(event.readings.of(Workers), event.call.written_paths)
         return self.hold(Workers.FILE_IS_THE_WORKERS.create(n=owner.worker_id, name=owner.worker_name)) if owner else self.unchanged()
 
     def on_tool_starting_workers_known(self, event: ToolStarting, settings: Settings) -> Transition:
@@ -40,14 +40,14 @@ class WorkersConduct(Conduct):
         named = NamedPaths.of(f"{given.get('description', '')} {given.get('prompt', '')}")
         if not named or kind in FRESH:
             return self.unchanged()
-        known = next((d for d in reversed(event.snapshot.of(Workers).dispatches) if not d.running and d.session and d.type == kind and named & NamedPaths.of(d.brief)), None)
+        known = next((d for d in reversed(event.readings.of(Workers).dispatches) if not d.running and d.session and d.type == kind and named & NamedPaths.of(d.brief)), None)
         return self.hold(Workers.SEND_THE_JOB_TO_THE_SUBAGENT.create(session=known.session, task=known.task)) if known else self.unchanged()
 
     def on_idle_workers(self, event: Idle, settings: Settings) -> Transition:
-        return self.unchanged(*reports_named(event.snapshot.of(workers_feature())))
+        return self.unchanged(*reports_named(event.readings.of(workers_feature())))
 
     def on_ticked_workers(self, event: Ticked, settings: Settings) -> Transition:
-        return self.unchanged(*reports_named(event.snapshot.of(workers_feature())))
+        return self.unchanged(*reports_named(event.readings.of(workers_feature())))
 
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.awaiting import Awaiting
@@ -59,7 +59,7 @@ class WorkersConduct(Conduct):
         return self.unchanged(workers_feature().WORKER_REPORTED.create(n=event.worker_id, name=event.name))
 
 
-def reports_named(workers: WorkersSnapshot) -> list[Nudge]:
+def reports_named(workers: WorkersReadings) -> list[Nudge]:
     return [workers_feature().ACT_ON_THE_REPORTS.create(reports_waiting=workers.reports_summary)] if workers.reports_waiting else []
 
 
@@ -68,7 +68,7 @@ def workers_feature():
     return Workers
 
 
-def worktree_written(workers: WorkersSnapshot, written_paths: tuple[str, ...]):
+def worktree_written(workers: WorkersReadings, written_paths: tuple[str, ...]):
     written = [Path(p).expanduser().resolve() for p in written_paths]
     inside = [p for p in written if p.is_relative_to(workers.worktrees_root)]
     if not inside:

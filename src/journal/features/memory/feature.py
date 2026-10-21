@@ -2,7 +2,7 @@ from journal.features.feature import Feature
 from journal.features.memory.listeners.mark_whispered import MarkWhispered
 from journal.features.memory.listeners.take_the_mark import TakeTheMark
 from journal.features.memory.support.memory_conduct import MemoryConduct
-from journal.features.memory.support.memory_snapshot_reader import MemorySnapshotReader
+from journal.features.memory.support.memory_readings_reader import MemoryReadingsReader
 from journal.features.memory.commands.fact_command import FactCommand
 from journal.features.memory.commands.nothing_command import NothingCommand
 from journal.features.memory.commands.reminder_command import ReminderCommand
@@ -24,7 +24,7 @@ class Memory(Feature):
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
     conduct = (MemoryConduct,)
     listeners = (TakeTheMark, MarkWhispered, MarkCompacted, MarkMemoryRowMade, MarkMemoryRowStruck)
-    snapshot = (MemorySnapshotReader,)
+    readings = (MemoryReadingsReader,)
     commands = (FactCommand, RuleCommand, ReminderCommand, NothingCommand)
 
     MARKS = (25, 50, 80)

@@ -16,7 +16,7 @@ from journal.http.controllers.journal import COLOR
 from journal.http.phone.pair_request import PairRequest
 from journal.http.phone.phone_icon import PhoneIcon
 from journal.http.phone.phone_request import PhoneRequest
-from journal.http.phone.phone_snapshot import PhoneSnapshot
+from journal.http.phone.phone_readings import PhoneReadings
 from journal.http.sharing.share_pages import APP, APP_HEADERS, SharePages
 from journal.http.router import Router
 from journal.http.support.file_response import FileResponse
@@ -41,7 +41,7 @@ FILE_HEADERS = {"Content-Security-Policy": "sandbox", "X-Content-Type-Options": 
 
 
 class PhonePages:
-    """What the tunnel's listener answers under /p/, as version 3 did: the phone page, its files, its service worker, its manifest and its icons, so the page installs on a phone as an app; the pairing, which sets the phone's cookie; and the phone's own snapshot, read by that cookie alone."""
+    """What the tunnel's listener answers under /p/, as version 3 did: the phone page, its files, its service worker, its manifest and its icons, so the page installs on a phone as an app; the pairing, which sets the phone's cookie; and the phone's own readings, read by that cookie alone."""
 
     def __init__(self, config: Config, pairing: Pairing, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, push: WebPush, waits: PhoneWaits, place: SharePlace) -> None:
         self.config, self.pairing, self.phones, self.tunnel, self.place = config, pairing, phones, tunnel, place
@@ -142,7 +142,7 @@ class PhonePages:
             return self.json(410, {"error": str(refused)})
         lasts = int((paired.phone.expires_at - time).total_seconds())
         cookie = f"{COOKIE}={paired.key}; Max-Age={lasts}; Path=/; Secure; HttpOnly; SameSite=Strict"
-        return self.json(200, asdict(self.snapshot(paired.phone)), {"Set-Cookie": cookie})
+        return self.json(200, asdict(self.readings(paired.phone)), {"Set-Cookie": cookie})
 
     def phone(self, request: PhoneRequest) -> Phone | ShareAnswer:
         kept = SimpleCookie(request.cookies).get(COOKIE)
@@ -185,10 +185,10 @@ class PhonePages:
 
     def state(self, request: PhoneRequest) -> ShareAnswer:
         phone = self.phone(request)
-        return self.json(200, asdict(self.snapshot(phone))) if isinstance(phone, Phone) else phone
+        return self.json(200, asdict(self.readings(phone))) if isinstance(phone, Phone) else phone
 
-    def snapshot(self, phone: Phone) -> PhoneSnapshot:
-        return PhoneSnapshot(phone.name, phone.id, phone.expires_at.isoformat(), self.environments.find(phone.environment_id).name, self.config.root.name, COLOR)
+    def readings(self, phone: Phone) -> PhoneReadings:
+        return PhoneReadings(phone.name, phone.id, phone.expires_at.isoformat(), self.environments.find(phone.environment_id).name, self.config.root.name, COLOR)
 
     @staticmethod
     def json(status: int, body: dict, headers: dict | None = None) -> ShareAnswer:

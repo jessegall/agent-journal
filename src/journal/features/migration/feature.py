@@ -1,7 +1,7 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
 from journal.features.migration.support.migration_conduct import MigrationConduct
-from journal.features.migration.support.migration_snapshot_reader import MigrationSnapshotReader
+from journal.features.migration.support.migration_readings_reader import MigrationReadingsReader
 
 
 class MigrationFeature(Feature):
@@ -12,6 +12,6 @@ class MigrationFeature(Feature):
 
     VERSION_3_NOT_BROUGHT_ACROSS = Nudge(name, "version_3_not_brought_across", "a version 3 journal is kept whole in .journal/version-3, not yet brought across", "the user brings it across from the viewer; never start it yourself", repeat_after=0)
     nudges = (VERSION_3_NOT_BROUGHT_ACROSS,)
-    snapshot = (MigrationSnapshotReader,)
+    readings = (MigrationReadingsReader,)
     conduct = (MigrationConduct,)
 

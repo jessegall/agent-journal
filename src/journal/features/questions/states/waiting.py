@@ -5,7 +5,7 @@ from journal.engine.states.wait import Wait
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.rows.question_answered import QuestionAnswered
-from journal.events.snapshot import Snapshot
+from journal.events.readings import Readings
 
 
 @dataclass(frozen=True)
@@ -23,6 +23,6 @@ class Waiting(Wait):
         from journal.features.questions.feature import Questions
         return self.pop(Questions.QUESTION_ANSWERED.create(n=event.question_id)) if event.question_id == self.question_id else self.unchanged()
 
-    def on_resume(self, snapshot: Snapshot, settings: Settings) -> tuple[Nudge, ...] | Transition:
+    def on_resume(self, readings: Readings, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.questions.feature import Questions
-        return () if self.question_id in snapshot.of(Questions).open else self.pop(Questions.QUESTION_ANSWERED.create(n=self.question_id))
+        return () if self.question_id in readings.of(Questions).open else self.pop(Questions.QUESTION_ANSWERED.create(n=self.question_id))

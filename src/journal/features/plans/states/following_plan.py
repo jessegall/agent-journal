@@ -12,7 +12,7 @@ from journal.events.rows.plan_done import PlanDone
 from journal.events.rows.plan_postponed import PlanPostponed
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_started import TaskStarted
-from journal.events.snapshot import Snapshot
+from journal.events.readings import Readings
 from journal.features.tasks.states.working import Working
 
 
@@ -60,7 +60,7 @@ class FollowingPlan(Working):
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        started = event.snapshot.of(Plans).started
+        started = event.readings.of(Plans).started
         if event.task_id != self.task_id and event.plan_id != self.plan_id and not (started and event.task_id in started.tasks):
             return self.unchanged()
         return self.changed(replace(self, task_id=event.task_id, at_checkpoint=False, phase=0, logged_at=event.time, edits=0))
@@ -69,7 +69,7 @@ class FollowingPlan(Working):
         from journal.features.plans.feature import Plans
         if event.task_id != self.task_id:
             return self.unchanged()
-        started = event.snapshot.of(Plans).started
+        started = event.readings.of(Plans).started
         if started is not None and started.at_checkpoint:
             return self.changed(replace(self, task_id=0, moved_from=event.task_id, at_checkpoint=True, phase=started.checkpoint_phase))
         return self.changed(replace(self, task_id=0, moved_from=event.task_id))
@@ -90,11 +90,11 @@ class FollowingPlan(Working):
             return self.unchanged()
         return self.pop(Plans.THE_USER_ABANDONED_THE_PLAN.create(n=event.plan_id)) if event.by_user else self.pop()
 
-    def on_resume(self, snapshot: Snapshot, settings: Settings) -> tuple[Nudge, ...] | Transition:
+    def on_resume(self, readings: Readings, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.plans.feature import Plans
-        started = snapshot.of(Plans).started
+        started = readings.of(Plans).started
         if started is None or started.plan_id != self.plan_id:
             return self.pop()
         if started.started_task and started.started_task != self.task_id:
             return self.changed(replace(self, task_id=started.started_task, at_checkpoint=False, phase=0, edits=0))
-        return super().on_resume(snapshot, settings)
+        return super().on_resume(readings, settings)

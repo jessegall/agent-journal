@@ -11,25 +11,25 @@ from journal.repositories.setting_rows import SettingRows
 
 
 class TunnelController:
-    """The tunnel that carries links to the journal: its snapshot and what keeps it from answering, a restart, tunler's login, version and domains, and the journal's address."""
+    """The tunnel that carries links to the journal: its readings and what keeps it from answering, a restart, tunler's login, version and domains, and the journal's address."""
 
     def __init__(self, tunnel: Tunnel, tunler: Tunler, settings: SettingRows) -> None:
         self.tunnel, self.tunler, self.settings = tunnel, tunler, settings
 
     def show(self, request: Request) -> Response:
-        return Response.json(self.tunnel.snapshot())
+        return Response.json(self.tunnel.readings())
 
     def services(self, request: Request) -> Response:
         return Response.json([self.tunnel.service()] if self.tunnel.is_wanted(datetime.now(timezone.utc)) else [])
 
     def check(self, request: Request) -> Response:
         self.tunler.forget()
-        return Response.json(self.tunnel.snapshot())
+        return Response.json(self.tunnel.readings())
 
     def restart(self, request: Request) -> Response:
         self.tunler.forget()
         self.tunnel.restart()
-        return Response.json(self.tunnel.snapshot())
+        return Response.json(self.tunnel.readings())
 
     def cause(self, request: Request) -> Response:
         return Response.json(asdict(self.tunnel.cause()))
@@ -44,12 +44,12 @@ class TunnelController:
         if made.connected:
             self.settings.set(Sharing.HOST.key, host, request.actor)
             self.tunnel.settle()
-        return Response.json({**asdict(made), **self.tunnel.snapshot()})
+        return Response.json({**asdict(made), **self.tunnel.readings()})
 
     def logout(self, request: Request) -> Response:
         self.tunler.log_out()
         self.tunnel.stop()
-        return Response.json(self.tunnel.snapshot())
+        return Response.json(self.tunnel.readings())
 
     def version(self, request: Request) -> Response:
         return Response.json(asdict(self.tunler.versions(self.tunnel.host())))

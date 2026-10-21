@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.shell.listeners.mark_outputs_told import MarkOutputsTold
 from journal.features.shell.support.shell_conduct import ShellConduct
-from journal.features.shell.support.shell_snapshot_reader import ShellSnapshotReader
+from journal.features.shell.support.shell_readings_reader import ShellReadingsReader
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.features.shell.commands.output_command import OutputCommand
@@ -23,7 +23,7 @@ class Shell(Feature):
     KEPT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
     options = (FOREGROUND, WHILE_WAITING, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, KEPT)
     listeners = (MarkOutputsTold,)
-    snapshot = (ShellSnapshotReader,)
+    readings = (ShellReadingsReader,)
     conduct = (ShellConduct,)
 
     MOVED_TO_THE_BACKGROUND = Nudge(name, "moved_to_the_background", "moved to the background as output {{n}}", "you are told when it ends. Carry on with what does not wait on it", repeat_after=0)

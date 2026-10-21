@@ -4,7 +4,7 @@ from journal.support.option import Option
 from journal.support.shipped import Shipped
 from journal.features.voices.commands.voice_command import VoiceCommand
 from journal.features.voices.support.voices_conduct import VoicesConduct
-from journal.features.voices.support.voices_snapshot_reader import VoicesSnapshotReader
+from journal.features.voices.support.voices_readings_reader import VoicesReadingsReader
 
 
 class Voices(Feature):
@@ -21,7 +21,7 @@ class Voices(Feature):
     AVATAR = Option("voices.avatar", "Show a figure in the chat", "A small figure beside the chat shows what the agent is doing, in the voice it speaks", True, kind="switch")
     AVATAR_SHOWN = Option("voices.avatar_shown", "Show the figure", "Always, only while the agent works, or never", "always", kind="choice", choices=("always", "working", "never"))
     options = (PROFILE, TITLE, NAME, AVATAR, AVATAR_SHOWN)
-    snapshot = (VoicesSnapshotReader,)
+    readings = (VoicesReadingsReader,)
     conduct = (VoicesConduct,)
 
     HOW_TO_TALK_TO_THE_USER = Nudge(name, "how_to_talk_to_the_user", "how to talk to the user", "{{voice}}", repeat_after=0)

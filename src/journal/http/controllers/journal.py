@@ -7,7 +7,7 @@ from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.bar_row import BarRow
 from journal.http.agents.current_work import CurrentWork
 from journal.http.journal.answer_time import AnswerTime
-from journal.http.journal.environment_snapshot import EnvironmentSnapshot
+from journal.http.journal.environment_readings import EnvironmentReadings
 from journal.http.journal.held_task import HeldTask
 from journal.http.journal.manifest import Manifest
 from journal.http.support.request import Request
@@ -66,16 +66,16 @@ class JournalController:
         held = self.mark.held()
         return Response.json({"project": self.config.root.name, "root": str(self.config.home), "version": VERSION, "started": STARTED, "color": COLOR,
                               "updating": held.to if held else "", "step": held.step if held else "",
-                              "environments": [self.snapshot(e) for e in (self.environments.all() or [self.environments.named("main")])]})
+                              "environments": [self.readings(e) for e in (self.environments.all() or [self.environments.named("main")])]})
 
-    def snapshot(self, environment: Environment) -> EnvironmentSnapshot:
+    def readings(self, environment: Environment) -> EnvironmentReadings:
         with self.scope.of(environment.id):
             live = self.agents.live()
             agent = self.activity.page([live])[0] if live else None
             held = self.current.of(live) if live else None
             task = HeldTask(held.task.id, held.task.title, held.awaiting) if held else None
             silent = bool(agent) and agent["status"] in ("busy", "working") and timing.time() - agent["heard_at"].timestamp() > SILENT_AFTER
-            return EnvironmentSnapshot(environment, agent, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
+            return EnvironmentReadings(environment, agent, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
 
     def bar(self, request: Request) -> Response:
         live = self.agents.live()

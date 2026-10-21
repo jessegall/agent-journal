@@ -3,7 +3,7 @@ from journal.features.dumps.commands.dump_command import DumpCommand
 from journal.features.dumps.states.sorting_dump import SortingDump
 from journal.features.feature import Feature
 from journal.features.dumps.support.dumps_conduct import DumpsConduct
-from journal.features.dumps.support.dumps_snapshot_reader import DumpsSnapshotReader
+from journal.features.dumps.support.dumps_readings_reader import DumpsReadingsReader
 from journal.support.skill import Skill
 
 
@@ -13,7 +13,7 @@ class DumpsFeature(Feature):
     help = "The agent sorts files you drop together by subject and files each as a row of its own."
     commands = (DumpCommand,)
     states = (SortingDump,)
-    snapshot = (DumpsSnapshotReader,)
+    readings = (DumpsReadingsReader,)
     conduct = (DumpsConduct,)
 
     DUMP_ARRIVED_FILE_IT = Nudge(name, "dump_arrived_file_it", "dump {{n}} has {{count}} to file - journal dump items {{n}}", "load journal-dumps if it is not loaded, then file it step by step. Tell the user what you do with journal dump log; ask only in the dump window, never in the chat.", repeat_after=300)

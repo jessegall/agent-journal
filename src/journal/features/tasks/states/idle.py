@@ -33,7 +33,7 @@ class Idle(AgentState):
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.plans.states.following_plan import FollowingPlan
-        started = event.snapshot.of(Plans).started
+        started = event.readings.of(Plans).started
         if started:
             return self.push(FollowingPlan(plan_id=started.plan_id, task_id=started.started_task, approved=True, logged_at=event.time))
         return self.changed(self.active(event.time))
@@ -42,7 +42,7 @@ class Idle(AgentState):
         from journal.features.plans.feature import Plans
         from journal.features.plans.states.following_plan import FollowingPlan
         from journal.features.tasks.states.working import Working
-        started = event.snapshot.of(Plans).started
+        started = event.readings.of(Plans).started
         if started and event.task_id in started.tasks:
             return self.push(FollowingPlan(plan_id=started.plan_id, task_id=event.task_id, approved=True, logged_at=event.time))
         return self.push(Working(task_id=event.task_id, logged_at=event.time))
@@ -60,7 +60,7 @@ class Idle(AgentState):
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
-        tasks, plans = event.snapshot.of(Tasks), event.snapshot.of(Plans)
+        tasks, plans = event.readings.of(Tasks), event.readings.of(Plans)
         if tasks.parked:
             return self.hold(Tasks.PARKED_TASKS_STILL_OPEN.create(tasks=tasks.parked_summary))
         if event.held_before:
@@ -76,7 +76,7 @@ class Idle(AgentState):
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         quiet = event.time - self.quiet_since
-        tasks = event.snapshot.of(Tasks)
+        tasks = event.readings.of(Tasks)
         if tasks.parked and quiet >= ASK_ABOUT_PARKED_AFTER and not self.parked_asked:
             return self.changed(replace(self, parked_asked=True), Tasks.PARKED_TASK_ASKED_ABOUT.create(n=tasks.parked[0], why=tasks.first_parked_why))
         if tasks.blocked_without_wait and quiet >= ASK_ABOUT_BLOCKED_AFTER:

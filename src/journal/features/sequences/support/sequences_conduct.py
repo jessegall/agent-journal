@@ -7,7 +7,7 @@ from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.support.command_part import CommandPart
-from journal.features.sequences.support.sequences_snapshot import SequencesSnapshot
+from journal.features.sequences.support.sequences_readings import SequencesReadings
 
 QUIET_FOR = 60.0
 
@@ -17,7 +17,7 @@ class SequencesConduct(Conduct):
 
     def on_tool_starting_sequences(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.sequences.feature import Sequences
-        runs = event.snapshot.of(Sequences)
+        runs = event.readings.of(Sequences)
         if event.subagent or not runs.has_run() or runs.parked_why or is_step_command(runs, event.call.parts):
             return self.unchanged()
         if self.is_waiting() and runs.can_be_typed and not runs.question_open:
@@ -32,17 +32,17 @@ class SequencesConduct(Conduct):
 
     def on_idle_sequences(self, event: Idle, settings: Settings) -> Transition:
         from journal.features.sequences.feature import Sequences
-        runs = event.snapshot.of(Sequences)
+        runs = event.readings.of(Sequences)
         if not runs.has_run() or runs.parked_why or runs.question_open or runs.debts_owed or runs.step_said_after_last_tool or self.is_waiting():
             return self.unchanged()
         return self.hold(Sequences.STEP_TO_FOLLOW.create(n=runs.sequence_id, step=runs.step, text=runs.step_text))
 
     def on_session_started_sequences(self, event: SessionStarted, settings: Settings) -> Transition:
-        runs = event.snapshot.of(sequences_feature())
+        runs = event.readings.of(sequences_feature())
         return self.unchanged(reminder_line(runs)) if runs.has_run() else self.unchanged()
 
     def on_ticked_sequences(self, event: Ticked, settings: Settings) -> Transition:
-        runs = event.snapshot.of(sequences_feature())
+        runs = event.readings.of(sequences_feature())
         if not runs.has_run() or runs.parked_why or runs.question_open or not runs.can_be_typed or event.quiet_for < QUIET_FOR:
             return self.unchanged()
         if runs.step_unsaid_seconds < float(settings.of(sequences_feature().SAY_EVERY)) * 60:
@@ -50,17 +50,17 @@ class SequencesConduct(Conduct):
         return self.unchanged().typing(reminder_line(runs))
 
 
-def is_step_command(runs: SequencesSnapshot, parts: tuple[CommandPart, ...]) -> bool:
+def is_step_command(runs: SequencesReadings, parts: tuple[CommandPart, ...]) -> bool:
     from journal.support.running import Running
     from journal.support.sequence_run import SequenceRun
     return bool(parts) and Running.names(SequenceRun(sequence_id=runs.sequence_id, title="", steps=(runs.step_text,)), parts)
 
 
-def step_line(runs: SequencesSnapshot) -> Nudge:
+def step_line(runs: SequencesReadings) -> Nudge:
     return sequences_feature().STEP_TO_FOLLOW.create(n=runs.sequence_id, step=runs.step, text=runs.step_text)
 
 
-def reminder_line(runs: SequencesSnapshot) -> Nudge:
+def reminder_line(runs: SequencesReadings) -> Nudge:
     if runs.parked_why:
         return sequences_feature().SEQUENCE_PARKED.create(n=runs.sequence_id, step=runs.step, why=runs.parked_why)
     return step_line(runs)

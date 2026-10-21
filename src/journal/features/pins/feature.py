@@ -2,7 +2,7 @@ from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.features.pins.commands.notice_command import NoticeCommand
 from journal.features.pins.support.pins_conduct import PinsConduct
-from journal.features.pins.support.pins_snapshot_reader import PinsSnapshotReader
+from journal.features.pins.support.pins_readings_reader import PinsReadingsReader
 from journal.support.option import Option
 from journal.support.skill import Skill
 
@@ -14,7 +14,7 @@ class Pins(Feature):
     commands = (NoticeCommand,)
     SUGGEST_EVERY = Option("pins.suggest_every", "Suggest an unpinned link again after", "The agent's tool uses before a link it has not pinned is suggested again", 50, unit="tool uses")
     options = (SUGGEST_EVERY,)
-    snapshot = (PinsSnapshotReader,)
+    readings = (PinsReadingsReader,)
     conduct = (PinsConduct,)
 
     PIN_THE_LINK = Nudge(name, "pin_the_link", "{{url}} is not pinned; if the user will come back to it, pin it", "`journal notice create \"<what it is>\" --link \"{{url}}\" --label \"<Open ...>\"`", repeat_after=0)
