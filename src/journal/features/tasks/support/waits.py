@@ -2,18 +2,21 @@ from argparse import ArgumentParser
 
 from journal.support.actor import Actor
 from journal.models.check import Check
+from journal.models.link import Link
+from journal.models.model import Model
 from journal.models.support.ref import Ref
 from journal.support.rejection import Rejection
 from journal.repositories.checks import Checks
+from journal.repositories.links import Links
 from journal.repositories.questions import Questions
-from journal.repositories.tasks import Tasks
+from journal.repositories.tasks import Tasks, WAIT_LINK
 
 
 class Waits:
     """What a blocked task or plan waits on, as the command line names it: a question or task by --on, a command by --until; each a row the wait links to, and opens it once settled."""
 
-    def __init__(self, tasks: Tasks, questions: Questions, checks: Checks) -> None:
-        self.tasks, self.questions, self.checks = tasks, questions, checks
+    def __init__(self, tasks: Tasks, questions: Questions, checks: Checks, links: Links) -> None:
+        self.tasks, self.questions, self.checks, self.links = tasks, questions, checks, links
 
     @staticmethod
     def arguments(parser: ArgumentParser, subject: str) -> None:
@@ -31,6 +34,10 @@ class Waits:
         if deadline:
             refs.append(Ref.build(self.checks.save(Check(title=f"{topic} waits until this passes", command=deadline, interval=all_items, wait_target=True), actor)))
         return refs
+
+    def linked(self, row: Model, enabled: list[str], deadline: str, interval: int, actor: Actor) -> None:
+        for ref in self.created(enabled, deadline, interval, f"{row.table()[:-1]} {row.id}", actor):
+            self.links.save(Link(source=Ref.build(row), target=ref, kind=WAIT_LINK), actor)
 
     def wait_targets(self, text: str) -> Ref:
         kind, _, number = text.partition(":")

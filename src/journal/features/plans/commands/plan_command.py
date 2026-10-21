@@ -17,7 +17,7 @@ from journal.repositories.links import Links
 from journal.support.rejection import Rejection
 from journal.repositories.phases import Phases
 from journal.repositories.plans import PHASE_LINK, PLAN_LINK, PHASE_TASK_LINK, Plans
-from journal.repositories.tasks import Tasks, WAIT_LINK
+from journal.repositories.tasks import Tasks
 
 
 class PlanCommand(Command):
@@ -177,8 +177,7 @@ class PlanCommand(Command):
     def block(self, args: Namespace, caller: Caller) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
         plan = self.plans.save(self.plans.find(args.n).blocked(args.why, datetime.now(timezone.utc).timestamp()), caller.actor)
-        for ref in self.waits.created(args.on, args.until, args.every, f"plan {plan.id}", caller.actor):
-            self.links.save(Link(source=Ref.build(plan), target=ref, kind=WAIT_LINK), caller.actor)
+        self.waits.linked(plan, args.on, args.until, args.every, caller.actor)
         print(f"plan {plan.id} blocked, waiting on: {self.tasks.reason(plan)}")
         return 0
 

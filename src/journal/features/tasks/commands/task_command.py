@@ -21,7 +21,7 @@ from journal.support.missing_row import MissingRow
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
-from journal.repositories.tasks import Tasks, WAIT_LINK
+from journal.repositories.tasks import Tasks
 from journal.features.tasks.support.next_open_task import NextOpenTask
 
 
@@ -106,8 +106,7 @@ class TaskCommand(Command):
     def block(self, args: Namespace, caller: Caller) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._time()), caller.actor)
-        for ref in self.waits.created(args.on, args.until, args.every, f"task {task.id}", caller.actor):
-            self.links.save(Link(source=Ref.build(task), target=ref, kind=WAIT_LINK), caller.actor)
+        self.waits.linked(task, args.on, args.until, args.every, caller.actor)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0
 
