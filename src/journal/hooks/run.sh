@@ -27,7 +27,7 @@ __journal_changed() {
     done
 }
 
-# The foreground shows a part's output as the journal's cap says: direct for a read or a write of the project's code, which never gets here, whole for a line of journal commands, half of the
+# The foreground shows a part's output as the journal's cap says: direct for a read or a write of the project's code, whose parts ran in the foreground with their output to the terminal and never get here, whole for a line of journal commands, half of the
 # characters from each end for a command that reads, and for any other whole up to the cap and past it not at all; a line
 # names the output by its number.
 __journal_show() {
@@ -55,6 +55,13 @@ __journal_show() {
     [ -z "$__journal_said_kept" ] || return
     __journal_said_kept=1
     printf '[journal] output %s kept, %s characters\n' "$__journal_n" "$__journal_size"
+}
+
+# A part runs as the shell would run it, its output into its files for the foreground to show; for a read or a write of
+# the project's own code, which the foreground runs itself, the output goes straight to the terminal and nothing of it
+# is written, capped or kept, while the part is still recorded with its status, its time and the files it changed.
+__journal_eval() {
+    if [ -f "$__journal_folder/direct" ]; then eval "$1" < /dev/null; else eval "$1" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; fi
 }
 
 # The worker. Its own variables carry a prefix, since the parts run in the same shell and may set i or code.
@@ -94,14 +101,14 @@ if [ "$1" = "--chain" ]; then
         case "$__journal_kind" in ???w) __journal_tree > "$__journal_folder/$__journal_i.before" || true ;; esac
         __journal_began=$SECONDS
         case "$__journal_part" in
-            exec\ *) (eval "$__journal_part") > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; __journal_code=$?; echo "$__journal_code" > "$__journal_folder/$__journal_i.status"; break ;;
+            exec\ *) (__journal_eval "$__journal_part"); __journal_code=$?; echo "$__journal_code" > "$__journal_folder/$__journal_i.status"; break ;;
             *) case "$__journal_kind" in
-                   ??'&'?) if __journal_status; eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; then __journal_code=0; else __journal_code=$?; fi ;;
-                   *) __journal_status; eval "$__journal_part" < /dev/null > "$__journal_folder/$__journal_i.out" 2> "$__journal_folder/$__journal_i.err"; __journal_code=$? ;;
+                   ??'&'?) if __journal_status; __journal_eval "$__journal_part"; then __journal_code=0; else __journal_code=$?; fi ;;
+                   *) __journal_status; __journal_eval "$__journal_part"; __journal_code=$? ;;
                esac ;;
         esac
         case "$__journal_kind" in ???w) __journal_tree > "$__journal_folder/$__journal_i.after" || true ;; esac
-        case "$__journal_kind" in R*) sh "$__journal_cli" shell ran "$__journal_part" --chain "$__journal_id" --status "$__journal_code" --seconds "$((SECONDS - __journal_began))" --output "$(cat "$__journal_folder/$__journal_i.out" "$__journal_folder/$__journal_i.err" | tail -c 2000)" --changed "$(__journal_changed "$__journal_i")" >/dev/null 2>&1 ;; esac
+        case "$__journal_kind" in R*) sh "$__journal_cli" shell ran "$__journal_part" --chain "$__journal_id" --status "$__journal_code" --seconds "$((SECONDS - __journal_began))" --output "$(cat "$__journal_folder/$__journal_i.out" "$__journal_folder/$__journal_i.err" 2>/dev/null | tail -c 2000)" --changed "$(__journal_changed "$__journal_i")" >/dev/null 2>&1 ;; esac
         echo "$__journal_code" > "$__journal_folder/$__journal_i.status"
         __journal_i=$((__journal_i + 1))
     done < "$__journal_folder/parts"
@@ -112,16 +119,23 @@ fi
 [ $# -eq 1 ] || exec "$@"
 case "$1" in *"&& eval '"*"' < /dev/null && pwd -P"* | *"&& eval '"*"' && pwd -P"*) ;; *) exec "${SHELL:-bash}" -c "$1" ;; esac
 [ -f "$root/port" ] || exec "${SHELL:-bash}" -c "$1"
-# A read or a write of the project's own code is the work itself: it runs as written in the shell, nothing captured, nothing recorded.
 cap=$(sh "$__journal_cli" shell cap --line "$1" 2>/dev/null); cap=${cap:-hint 400}
 show=${cap%% *}
 cap=${cap##* }
-[ "$show" = direct ] && exec "${SHELL:-bash}" -c "$1"
 id=$(date +%s)-$$
 folder="$root/runtime/outputs/$id"
 mkdir -p "$folder"
 printf '%s' "$1" > "$folder/line"
 sh "$__journal_cli" shell split "$1" --into "$folder" > "$folder/parts" 2>/dev/null || exec "${SHELL:-bash}" -c "$1"
+# A read or a write of the project's own code is the work itself: its parts run here in the foreground, recorded as any
+# other, with their output straight to the terminal; no limit, no cap, no output kept.
+if [ "$show" = direct ]; then
+    touch "$folder/direct"
+    "${SHELL:-bash}" "$0" --chain "$folder" < /dev/null
+    code=$?
+    rm -rf "$folder"
+    exit "$code"
+fi
 ("${SHELL:-bash}" "$0" --chain "$folder" </dev/null >/dev/null 2>&1 &)
 limit=$(sh "$__journal_cli" shell limit --line "$1" 2>/dev/null); limit=${limit:-30}
 trap 'touch "$folder/moved"; exit 143' TERM INT HUP
