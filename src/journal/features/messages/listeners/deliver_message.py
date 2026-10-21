@@ -9,7 +9,7 @@ from journal.supervisor_link import SupervisorLink
 
 
 class DeliverMessage(Listener[Created]):
-    """A message the user leaves is typed into the live agent's terminal by number: the engine's own delivery, not a workflow."""
+    """A message the user leaves is typed into the live agent's terminal by number: the engine's own delivery, no state's to change."""
 
     def __init__(self, agents: Agents, machine: StateMachine, nudger: Nudger, supervisor: SupervisorLink) -> None:
         self.agents, self.machine, self.nudger, self.supervisor = agents, machine, nudger, supervisor

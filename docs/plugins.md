@@ -240,7 +240,7 @@ Every key of a version 3 `plugin.json` and of its answers, and where it went.
 - `reads`: dropped. The line for `tool_starting` says whether the tool `writes`, and the plugin decides for itself.
 - `events` (a plugin's own kinds of card, each with a title and a tone): become `cards`.
 - `load` (skills the agent must load at an event): dropped. A plugin's skills are published with the journal's;
-  requiring one in a state waits for a workflow action that names a skill.
+  requiring one in a state is the skills feature's, said by its conduct.
 - `command` (a command of the plugin's own under `journal`): dropped. A plugin acts through the journal's own commands,
   as itself.
 - `dashboards`: kept as one `dashboard`.

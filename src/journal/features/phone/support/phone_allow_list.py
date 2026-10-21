@@ -12,7 +12,7 @@ READS = frozenset((
     "/journal/agents/live", "/journal/agents/controls/{provider}", "/journal/agents/{id}/edits", "/journal/agents/{id}/edits/file", "/journal/agents/{id}/terminal", "/journal/agents/{id}/transcript",
     "/journal/agents/{id}/subagents/{session}/transcript", "/journal/skills", "/journal/skills/{name}", "/journal/shares/opens",
 ))
-"""The reads the phone's pages make, each by name: no secret, and no read that starts a program, such as the MCP check, nor the pages that set how the journal runs: workflows, plugins, the tunnel and profiles. A stream is not among them: the tunnel's listener answers whole replies, so the phone asks again instead."""
+"""The reads the phone's pages make, each by name: no secret, and no read that starts a program, such as the MCP check, nor the pages that set how the journal runs: plugins, the tunnel and profiles. A stream is not among them: the tunnel's listener answers whole replies, so the phone asks again instead."""
 WRITES = frozenset((
     "/journal/mode",
     "/journal/tasks", "/journal/tasks/{id}", "/journal/tasks/{id}/start", "/journal/tasks/{id}/finish", "/journal/tasks/{id}/reopen", "/journal/tasks/{id}/log",
@@ -26,7 +26,7 @@ WRITES = frozenset((
     "/journal/shares", "/journal/shares/{id}/approve", "/journal/shares/{id}/stop",
     "/journal/phones/{id}/disconnect",
 ))
-"""The acts the phone app makes: talking to the agent, answering, approving and following plans, tasks, comments and dumps, pausing the agent, sharing a row, and disconnecting itself. Settings, plugins, MCP servers, secrets, the tunnel, workflows and anything that runs a command are not among them."""
+"""The acts the phone app makes: talking to the agent, answering, approving and following plans, tasks, comments and dumps, pausing the agent, sharing a row, and disconnecting itself. Settings, plugins, MCP servers, secrets, the tunnel and anything that runs a command are not among them."""
 
 
 class PhoneAllowList:

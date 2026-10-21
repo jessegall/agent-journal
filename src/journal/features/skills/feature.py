@@ -14,7 +14,7 @@ class Skills(Feature):
 
     name = "skills"
     title = "Skills"
-    help = "The journal's skills are written for the agent and required by the workflows at the moments they matter: the journal's at a start, a state's at a start in it, the ones a prompt names; a write waits until the file is read."
+    help = "The journal's skills are written for the agent and required by the states at the moments they matter: the journal's at a start, a state's at a start in it, the ones a prompt names; a write waits until the file is read."
     commands = (SkillCommand,)
     listeners = (OweSkills, MarkLoaded, ForgetAtCompaction)
     snapshot = (SkillsSnapshotReader,)

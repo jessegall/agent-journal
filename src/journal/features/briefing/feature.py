@@ -10,7 +10,7 @@ from journal.engine.nudge import Nudge
 class Briefing(Feature):
     name = "briefing"
     title = "Session briefing"
-    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any Session start workflow."
+    help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any state's own line at the start."
     conduct = (BriefingConduct,)
     listeners = (OweTheLookAtStart, EndOtherSessions, EndSilentSessions)
     snapshot = (BriefingSnapshotReader,)

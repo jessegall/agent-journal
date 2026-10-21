@@ -16,8 +16,8 @@ session picks up where the last one left off.
   needs a decision, it asks a question with choices for you to pick.
 - **Memory that survives.** Facts, rules and reminders are handed to the agent at every start and after every
   compaction, so it does not relearn your project each session.
-- **Workflows you can see and edit.** How the journal treats the agent is drawn as flowcharts: when it reminds,
-  what it says, what it holds back. You change them in the viewer.
+- **Conduct you can read.** How the journal treats the agent is a stack of states on its row, shown on the Home page
+  with its trail: when it reminds, what it says, what it holds back, each line with the state that said it.
 - **Workers and subagents.** The agent hands jobs to workers and subagents, each named, each on the model that fits the job, and
   each coding worker in its own git worktree.
 - **Every command kept.** Long commands move to the background, and each output is numbered, so the agent reads

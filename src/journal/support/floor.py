@@ -5,7 +5,7 @@ from journal.support.decision import Decision
 
 
 class Floor:
-    """The floor under every workflow's hold: a journal command and the read of a skill's file are how a debt is paid, so no workflow refuses them; the hold's words still reach the agent. The engine's own guards on the shell and on reads stand above it."""
+    """The floor under every plugin's hold: a journal command and the read of a skill's file are how a debt is paid, so no plugin refuses them; the hold's words still reach the agent. The engine's own guards on the shell and on reads stand above it."""
 
     def __init__(self, files: SkillFiles) -> None:
         self.files = files
