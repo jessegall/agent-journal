@@ -429,14 +429,15 @@ def written(plans: list[Plan], root: str) -> int:
     for plan in plans:
         for place in plan.places:
             by_file[place.path].add(place)
+    contents = {}
     for path, places in by_file.items():
         lines = lines_of(path)
-        for place in sorted(places, key=lambda p: (p.line, p.column), reverse=True):
+        for place in sorted({located(lines, place) for place in places}, key=lambda p: (p.line, p.column), reverse=True):
             text = lines[place.line - 1]
-            if text[place.column:place.column + len(place.old)] != place.old:
-                raise SystemExit(f"{path}:{place.line}:{place.column} holds no {place.old}: {text.strip()}")
             lines[place.line - 1] = text[:place.column] + place.new + text[place.column + len(place.old):]
-        open(path, "w", encoding="utf-8").write("".join(lines))
+        contents[path] = "".join(lines)
+    for path, text in contents.items():
+        open(path, "w", encoding="utf-8").write(text)
     table = os.path.join(root, "docs/the-rules.md")
     if os.path.exists(table):
         text = open(table, encoding="utf-8").read()
@@ -461,6 +462,17 @@ def written(plans: list[Plan], root: str) -> int:
                 open(path, "w", encoding="utf-8").write(updated)
                 by_file[path] = by_file.get(path, set())
     return len(by_file)
+
+
+def located(lines: list[str], place: Place) -> Place:
+    """The place with its column in characters: mypy counts a line's columns in UTF-8 bytes, so a line with a character beyond ASCII before the name is counted again; a place that holds no old name stops the run before any file is written."""
+    text = lines[place.line - 1]
+    if text[place.column:place.column + len(place.old)] == place.old:
+        return place
+    column = len(text.encode("utf-8")[:place.column].decode("utf-8", errors="ignore"))
+    if text[column:column + len(place.old)] != place.old:
+        raise SystemExit(f"nothing written: {place.path}:{place.line}:{place.column} holds no {place.old}: {text.strip()}")
+    return Place(place.path, place.line, column, place.old, place.new, place.quoted)
 
 
 def module_path(path: str, root: str) -> str:
