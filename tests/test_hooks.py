@@ -192,14 +192,13 @@ def test_a_hook_that_stamps_its_start_has_its_elapsed_time_on_its_entry(app: App
     assert "hook_ms" not in app.container.get(Entries).scoped()[-1].data, "a hook without the stamp is not measured"
 
 
-def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app: App):
+def test_the_developer_numbers_average_every_stamped_hook_once_they_are_written(app: App):
     import time
     from journal.repositories.statistics import Statistics
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 100)
     post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "tool_name": "Read", "tool_input": {"file_path": "a.py"}}, started_ms=int(time.time() * 1000) - 300)
-    resolved = threading.Event()
-    app.container.get(ListenerQueue).add(resolved.set)
-    assert resolved.wait(5), "the deferred work ran"
+    from journal.features.faults.support.developer_tally import DeveloperTally
+    app.container.get(DeveloperTally).write()
     stored = app.container.get(Statistics).lower("developer.hooks")
     assert stored["developer.hooks.count"] == 2 and stored["developer.hooks.total_ms"] >= 400 and stored["developer.hooks.slowest_ms"] >= 300, stored
     assert stored["developer.hooks.PreToolUse.count"] == 2, "a hook's time also counts under its kind"

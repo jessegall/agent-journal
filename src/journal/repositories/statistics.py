@@ -21,9 +21,13 @@ class Statistics(Repository[Statistic]):
         with self.connection.transaction():
             self.added(f"{prefix}.count", 1, actor)
             self.added(f"{prefix}.total_ms", ms, actor)
-            slowest = self.series(f"{prefix}.slowest_ms")
-            if ms > slowest.value:
-                self.save(slowest.with_(value=ms), actor)
+            self.raised(f"{prefix}.slowest_ms", ms, actor)
+
+    def raised(self, key: str, value: int, actor: Actor) -> None:
+        with self.connection.transaction():
+            row = self.series(key)
+            if value > row.value:
+                self.save(row.with_(value=value), actor)
 
     def cleared(self, prefix: str, actor: Actor) -> None:
         with self.connection.transaction():
