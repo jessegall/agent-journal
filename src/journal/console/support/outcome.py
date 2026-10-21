@@ -8,3 +8,7 @@ class Outcome:
     code: int
     text: str
     error: str = ""
+
+    @classmethod
+    def refused(cls, error: str) -> "Outcome":
+        return cls(1, "", error)

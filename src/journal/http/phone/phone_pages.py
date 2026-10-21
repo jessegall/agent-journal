@@ -169,7 +169,7 @@ class PhonePages:
         route = self.router.matched(requested)
         if route is None or not self.allow.allows(route) or query.get("env", environment) != environment:
             return self.json(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})
-        answer = self.router.dispatch(requested)
+        answer = self.router.route(requested)
         if isinstance(answer, FileResponse):
             return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS, **FILE_HEADERS, **answer.headers()})
         return ShareAnswer(answer.status, JsonOut.encoded(answer.body), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})

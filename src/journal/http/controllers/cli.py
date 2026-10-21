@@ -23,5 +23,5 @@ class CliController:
         caller = Caller(request.body.get("env", "main"), request.body.get("session", ""), bool(request.body.get("agent")), plugin)
         argv = request.body.get("argv", [])
         if self.subagents.runs(caller.environment, argv, request.headers.get(ACTOR_HEADER, ""), request.headers.get(THREAD_HEADER, "")):
-            return Response.json(Outcome(1, "", REFUSAL))
+            return Response.json(Outcome.refused(REFUSAL))
         return Response.json(self.console.run(argv, caller))

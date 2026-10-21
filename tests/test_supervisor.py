@@ -157,8 +157,8 @@ def test_the_supervisor_imports_every_module_at_start_so_an_upgrade_never_change
 
 
 def test_the_mirror_goes_with_its_supervisor(tmp_path: Path):
-    from supervisor.mirror import Mirror
-    mirror = Mirror(tmp_path / "screens" / "main.out")
+    from supervisor.screen_copy import ScreenCopy
+    mirror = ScreenCopy(tmp_path / "screens" / "main.out")
     mirror.add(b"Switch model?")
     mirror._written_at = 0
     mirror.flush()
@@ -208,7 +208,7 @@ def test_a_service_that_cannot_start_dies_in_its_log_and_never_takes_the_supervi
     from supervisor.services import Services
     services = Services(Service("mypy", ["bin/gone", "serve"], tmp_path / "moved-mid-upgrade", {}, tmp_path / "mypy.log"))
     services.start_all()
-    services.keep_alive()
+    services.revive_stopped()
     assert not services.runs("mypy") and "mypy could not start" in (tmp_path / "mypy.log").read_text(), "its folder gone, as mid-upgrade, the start dies at once and says why"
 
 
@@ -219,8 +219,8 @@ def test_a_fault_in_a_verb_or_a_turn_is_written_down_and_the_supervisor_carries_
     from supervisor.terminal import Terminal
     faults = tmp_path / "supervisor.log"
     supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(), stdin=None, faults=faults)
-    reply = supervisor.verbs.handle(Request.from_json({"verb": "start", "name": "mypy", "command": ["true"], "folder": str(tmp_path), "env": {"COUNT": 3}}))
-    assert not reply.ok and "start failed in the supervisor, which carries on" in reply.error, "a verb that raises is answered with why"
+    reply = supervisor.verbs.handle(Request.parsed({"verb": "start", "name": "mypy", "command": ["true"], "folder": str(tmp_path), "env": {"COUNT": 3}}))
+    assert not reply.is_success and "start failed in the supervisor, which carries on" in reply.error, "a verb that raises is answered with why"
     supervisor.turn()
     assert faults.read_text().count("supervisor fault, carried on") == 2, "the verb's fault and the turn's are both written down, and neither ended the supervisor"
 
@@ -413,15 +413,15 @@ def test_a_start_command_that_skips_the_prompts_itself_is_not_asked(tmp_path: Pa
 
 def test_a_closed_window_stops_the_supervisor_without_writing_to_the_screen_that_went(tmp_path: Path):
     from supervisor.band import Band
-    from supervisor.band_words import BandWords
+    from supervisor.band_labels import BandLabels
     from supervisor.services import Services
     from supervisor.supervisor import Supervisor
     from supervisor.terminal import Terminal
     read, write = os.pipe()
     os.close(read)
     os.close(write)
-    supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(), stdin=None, stdout=write, band=Band(BandWords("a", "b", "c"), write))
-    supervisor.hung_up()
+    supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(), stdin=None, stdout=write, band=Band(BandLabels("a", "b", "c"), write))
+    supervisor.handle_hangup()
     supervisor.stop()
     assert supervisor.band is None, "a hang-up leaves no band to clear on a terminal that is gone"
 

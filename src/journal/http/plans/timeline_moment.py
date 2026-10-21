@@ -9,4 +9,4 @@ class TimelineMoment:
     kind: str
     task: int
     title: str
-    text: str
+    text: str = ""

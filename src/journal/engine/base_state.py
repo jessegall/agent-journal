@@ -26,28 +26,21 @@ class BaseState(Conduct):
 
     title: ClassVar[str] = ""
     allows: ClassVar[frozenset[Permission]] = frozenset()
-    conducts: ClassVar[tuple[type[Conduct], ...]] = ()
 
-    def respond(self, event: Event, settings: Settings) -> Transition:
+    def respond(self, event: Event, settings: Settings, conducts: tuple[type[Conduct], ...] = ()) -> Transition:
         answers: list[Transition] = []
         event.propagation.reset()
-        for listener in self.event_listeners(type(event)):
+        for listener in self.event_listeners(type(event), conducts):
             answers.append(listener(self, event, settings))
             if not event.propagation.ongoing:
                 break
         return Transition.merged(self, answers)
 
     @classmethod
-    def fold(cls, conducts: tuple[type[Conduct], ...]) -> None:
-        BaseState.conducts = conducts
-        BaseState.listeners.__func__.cache_clear()
-        BaseState.event_listeners.__func__.cache_clear()
-
-    @classmethod
     @cache
-    def listeners(cls) -> tuple[tuple[type, Callable], ...]:
+    def listeners(cls, conducts: tuple[type[Conduct], ...] = ()) -> tuple[tuple[type, Callable], ...]:
         owned = [(get_type_hints(method)["event"], method, method.__name__ not in cls.__dict__) for name, method in getmembers(cls, isfunction) if cls.is_listener(name, method)]
-        folded = [(get_type_hints(method)["event"], method, 2) for conduct in BaseState.conducts for name, method in getmembers(conduct, isfunction) if cls.is_listener(name, method)]
+        folded = [(get_type_hints(method)["event"], method, 2) for conduct in conducts for name, method in getmembers(conduct, isfunction) if cls.is_listener(name, method)]
         ranked = sorted([*owned, *folded], key=lambda entry: (int(entry[2]), -len(entry[0].__mro__)))
         return tuple((event_kind, method) for event_kind, method, rank in ranked)
 
@@ -57,8 +50,8 @@ class BaseState(Conduct):
 
     @classmethod
     @cache
-    def event_listeners(cls, event: type) -> tuple[Callable, ...]:
-        return tuple(method for event_kind, method in cls.listeners() if issubclass(event, event_kind))
+    def event_listeners(cls, event: type, conducts: tuple[type[Conduct], ...] = ()) -> tuple[Callable, ...]:
+        return tuple(method for event_kind, method in cls.listeners(conducts) if issubclass(event, event_kind))
 
     def on_compacting(self, event: Compacting, settings: Settings) -> Transition:
         from journal.engine.states.compacting import Compacting as CompactingState

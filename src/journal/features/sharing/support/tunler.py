@@ -105,7 +105,7 @@ class Tunler:
             raise Rejection(output or "tunler did not log out")
 
     def versions(self, host: str) -> TunlerVersion:
-        return self._versions.setdefault(host, CachedAnswer(lambda: self.version_list(host), LIST_CACHE_SECONDS, TunlerVersion("", "", False))).supplied()
+        return self._versions.setdefault(host, CachedAnswer(lambda: self.version_list(host), LIST_CACHE_SECONDS, TunlerVersion.unknown())).supplied()
 
     def version_list(self, host: str) -> TunlerVersion:
         success, output = self.reported("update", "--check", "--json", f"--host={host}")

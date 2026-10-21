@@ -32,7 +32,7 @@ class Handler(PooledHandler):
 
     def _dispatched(self, request: Request):
         try:
-            return self.router.dispatch(request)
+            return self.router.route(request)
         except Exception as fault:
             traceback.print_exc()
             return Response(500, {"error": f"{type(fault).__name__}: {fault}"})

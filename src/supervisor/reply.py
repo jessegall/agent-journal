@@ -5,19 +5,19 @@ from dataclasses import dataclass, field
 class Reply:
     """A request's answer: whether it was done, why not when it was not, and what the verb answers with."""
 
-    ok: bool
+    is_success: bool
     error: str = ""
     answer: dict = field(default_factory=dict)
 
     @classmethod
-    def done(cls, **answer) -> "Reply":
+    def success(cls, **answer) -> "Reply":
         return cls(True, answer=answer)
 
     @classmethod
-    def refused(cls, why: str) -> "Reply":
-        return cls(False, why)
+    def refused(cls, reason: str) -> "Reply":
+        return cls(False, reason)
 
-    def to_json(self) -> dict:
-        if self.ok:
+    def as_json(self) -> dict:
+        if self.is_success:
             return {"ok": True, **self.answer}
         return {"ok": False, "error": self.error}

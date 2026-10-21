@@ -20,7 +20,7 @@ def pump(supervisor: Supervisor, seconds: float) -> None:
     deadline = time.time() + seconds
     while time.time() < deadline:
         supervisor.relay_once(0.05)
-        supervisor.services.keep_alive()
+        supervisor.services.revive_stopped()
 
 
 def ask(supervisor: Supervisor, **request) -> dict:
@@ -49,13 +49,13 @@ def test_the_loop_relays_keys_output_and_typed_lines(tmp_path: Path):
         pump(supervisor, 1.0)
         viewed = os.read(out_r, 65536).decode()
         assert "got:hello" in viewed and "got:from the journal" in viewed
-        assert journal.alive()
+        assert journal.is_active()
         pid = journal._process.pid
         journal._process.terminate()
         journal._process.wait()
         journal._last_start = 0
         pump(supervisor, 0.3)
-        assert journal.alive() and journal._process.pid != pid, "a dead journal is started again"
+        assert journal.is_active() and journal._process.pid != pid, "a dead journal is started again"
     finally:
         supervisor.stop()
         journal.stop()
@@ -150,7 +150,7 @@ def test_a_typed_lines_enter_waits_until_the_line_has_gone_in(tmp_path: Path):
     terminal.type("from the journal")
     terminal.pump()
     terminal.feed()
-    time.sleep(terminal_module.ENTER_AFTER + 0.1)
+    time.sleep(terminal_module.ENTER_DELAY_SECONDS + 0.1)
     terminal.pump()
     assert terminal._enter_due == 0.0 and not any(segment == b"\r" for segment, _ in terminal._pieces), "the line has not gone in: no Enter yet"
     os.read(read_end, filled)
@@ -159,7 +159,7 @@ def test_a_typed_lines_enter_waits_until_the_line_has_gone_in(tmp_path: Path):
     assert os.read(read_end, 1024) == b"kfrom the journal", "the key and the line, each in a write of its own, and no Enter in the same piece"
     terminal.pump()
     assert not terminal.has_pending, "the Enter waits a moment after the line is in"
-    time.sleep(terminal_module.ENTER_AFTER + 0.1)
+    time.sleep(terminal_module.ENTER_DELAY_SECONDS + 0.1)
     terminal.pump()
     terminal.feed()
     assert os.read(read_end, 1024) == b"\r"
@@ -170,18 +170,18 @@ def test_a_typed_lines_enter_waits_until_the_line_has_gone_in(tmp_path: Path):
 def test_a_service_that_keeps_dying_is_started_again_less_often_and_never_left_down(tmp_path: Path, monkeypatch):
     import supervisor.service as service
     monkeypatch.setattr(service, "BACKOFF", 0.05)
-    monkeypatch.setattr(service, "LONGEST_WAIT", 0.2)
+    monkeypatch.setattr(service, "LONGEST_WAIT_SECONDS", 0.2)
     crashing = Service("crashing", ["sh", "-c", "exit 1"], tmp_path, {"PATH": os.environ["PATH"]}, tmp_path / "crash.log")
     crashing.start()
     began = time.time()
     while crashing.described()["restarts"] < 8 and time.time() - began < 5:
-        crashing.keep_alive()
+        crashing.revive()
         time.sleep(0.02)
     assert crashing.described()["restarts"] >= 8, "a kept service is started again however often it dies"
-    once = Service("once", ["true"], tmp_path, {}, tmp_path / "once.log", keep=False)
+    once = Service("once", ["true"], tmp_path, {}, tmp_path / "once.log", persistent=False)
     once.start()
     time.sleep(0.2)
-    once.keep_alive()
+    once.revive()
     assert once.described()["restarts"] == 0, "a process not kept is left down when it ends"
 
 
@@ -232,7 +232,7 @@ def test_an_agent_that_dies_is_started_again_and_one_that_quits_ends_the_supervi
             supervisor.relay_once(0.05)
         pump(supervisor, 0.5)
         front = supervisor.described()[0]
-        assert supervisor._code is None and front["running"] and front["restarts"] == 1 and journal.alive(), "the agent died, was started again, and the journal kept running"
+        assert supervisor._code is None and front["running"] and front["restarts"] == 1 and journal.is_active(), "the agent died, was started again, and the journal kept running"
     finally:
         supervisor.stop()
         supervisor.services.stop_all()

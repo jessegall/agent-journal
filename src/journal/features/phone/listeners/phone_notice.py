@@ -14,8 +14,8 @@ MISSING_STATUSES = (404, 410)
 class PhoneNotice(Listener[ClockTicked]):
     """As the clock ticks, once for the whole journal, the paired phone that subscribed is pushed when something new waits for the user, once for each, as version 3 told it."""
 
-    def __init__(self, phones: Phones, waits: PhoneWaits, stacked: WebPush) -> None:
-        self.phones, self.waits, self.push = phones, waits, stacked
+    def __init__(self, phones: Phones, waits: PhoneWaits, notifications: WebPush) -> None:
+        self.phones, self.waits, self.notifications = phones, waits, notifications
 
     def handle(self, event: ClockTicked) -> None:
         time = datetime.now(timezone.utc)
@@ -27,7 +27,7 @@ class PhoneNotice(Listener[ClockTicked]):
                 self.phones.save(phone.notified(obligations), Actor.system())
 
     def pushed(self, phone: Phone, obligations: list[str], time: datetime) -> None:
-        status = self.push.send(phone.subscription)
+        status = self.notifications.send(phone.subscription)
         if status in MISSING_STATUSES:
             self.phones.save(phone.unsubscribed(), Actor.system())
         elif 200 <= status < 300:

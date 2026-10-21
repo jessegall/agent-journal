@@ -672,17 +672,13 @@ class LawsConduct(Conduct):
 
 
 def test_the_features_conduct_is_folded_into_the_base_state_and_every_matching_listener_runs_the_states_own_first():
-    BaseState.fold((InboxConduct, LawsConduct))
-    try:
-        settings, event = SettingsValue({}), ToolStarting(call=ToolCall(tool="Write", input={}))
-        answered = Listening().respond(event, settings)
-        assert answered.nudges == (LINE, OTHER, OTHER) and answered.refusal is WHY and answered.popped and answered.dropped == ()
-        pushing = Catching().respond(event, settings)
-        assert [method.__name__ for _, method in Catching.listeners()][-3:] == ["on_tool_starting", "on_tool_starting", "on_agent_event"]
-        assert pushing.popped
-        assert Ended().respond(event, settings).popped and Ended().respond(event, settings).dropped == ("pop",)
-    finally:
-        BaseState.fold(())
+    settings, event = SettingsValue({}), ToolStarting(call=ToolCall(tool="Write", input={}))
+    answered = Listening().respond(event, settings, (InboxConduct, LawsConduct))
+    assert answered.nudges == (LINE, OTHER, OTHER) and answered.refusal is WHY and answered.popped and answered.dropped == ()
+    pushing = Catching().respond(event, settings, (InboxConduct, LawsConduct))
+    assert [method.__name__ for _, method in Catching.listeners((InboxConduct, LawsConduct))][-3:] == ["on_tool_starting", "on_tool_starting", "on_agent_event"]
+    assert pushing.popped
+    assert Ended().respond(event, settings, (InboxConduct, LawsConduct)).popped and Ended().respond(event, settings, (InboxConduct, LawsConduct)).dropped == ("pop",)
     assert all("laws" not in method.__name__ for _, method in Ended.listeners())
 
 
@@ -705,16 +701,12 @@ def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_fro
     started = TaskStarted(environment_id=1, time=1.0, task_id=7, title="t", plan_id=0).with_data(data)
     assert PlansWorking(task_id=7, logged_at=2.0).respond(started, settings).target == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=2.0)
     assert FollowingPlan(plan_id=5, task_id=7).respond(started, settings).target == FollowingPlan(plan_id=5, task_id=7, logged_at=1.0)
-    BaseState.fold((PlansConduct,))
-    try:
-        approved = PlansReady().respond(PlanApproved(environment_id=1, time=1.0, plan_id=5, user_origin=True).with_data(data), settings)
-        assert [nudge.key for nudge in approved.nudges] == ["plans.the_user_approved_the_plan"]
-        agent_index = PlansReady().respond(PlanApproved(environment_id=1, time=1.0, plan_id=5, user_origin=False).with_data(data), settings)
-        assert agent_index.nudges == ()
-        next_task = PlansReady().respond(TaskStarted(environment_id=1, time=1.0, task_id=8, title="the next", plan_id=5).with_data(data), settings)
-        assert next_task.nudges[0].rendered() == "plan 5: task 8, the next is next. it has no brief and nothing logged yet"
-    finally:
-        BaseState.fold(())
+    approved = PlansReady().respond(PlanApproved(environment_id=1, time=1.0, plan_id=5, user_origin=True).with_data(data), settings, (PlansConduct,))
+    assert [nudge.key for nudge in approved.nudges] == ["plans.the_user_approved_the_plan"]
+    agent_index = PlansReady().respond(PlanApproved(environment_id=1, time=1.0, plan_id=5, user_origin=False).with_data(data), settings, (PlansConduct,))
+    assert agent_index.nudges == ()
+    next_task = PlansReady().respond(TaskStarted(environment_id=1, time=1.0, task_id=8, title="the next", plan_id=5).with_data(data), settings, (PlansConduct,))
+    assert next_task.nudges[0].rendered() == "plan 5: task 8, the next is next. it has no brief and nothing logged yet"
 
 
 def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data():
@@ -735,26 +727,22 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data(
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.tasks.support.tasks_data import TasksData
     data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()), "voices": VoicesData(instruction="as a butler"), "etiquette": EtiquetteData(reminder_gap=50), "pins": PinsData(pinned=("https://a.test/pinned",), recent_suggestions=("https://a.test/said",)), "migration": MigrationData(version_3_waiting=True)})
-    BaseState.fold((VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
-    try:
-        started = Ready().respond(SessionStarted().with_data(data), settings)
-        assert [nudge.key for nudge in started.nudges] == ["voices.how_to_talk_to_the_user", "migration.version_3_not_brought_across"]
-        assert "as a butler" in started.nudges[0].rendered()
-        assert [n.key for n in Ready().respond(SessionStarted(source="resume").with_data(data), settings).terminal_lines] == ["voices.say_you_are_back"]
-        changed = Ready().respond(SettingChanged(environment_id=1, time=1.0, setting=Voices.VOICE_OPTIONS[0].key).with_data(data), settings)
-        assert [n.key for n in changed.nudges] == ["voices.the_voice_changed"]
-        assert Ready().respond(SettingChanged(environment_id=1, time=1.0, setting="shell.short_output").with_data(data), settings).nudges == ()
-        turn = Ready().respond(TurnDisplayed(text="the user should run journal task complete 3, see https://a.test/new and https://a.test/said").with_data(data), settings)
-        assert [n.key for n in turn.nudges] == ["etiquette.no_shop_talk", "etiquette.say_you_not_the_user", "pins.pin_the_link"]
-        assert "https://a.test/new" in turn.nudges[2].rendered()
-        assert Ready().respond(TurnDisplayed(text="see https://a.test/pinned", final=False).with_data(data), settings).nudges == ()
-        finished = Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="opened https://a.test/pr/1").with_data(data), settings)
-        assert [n.key for n in finished.nudges] == ["etiquette.a_line_is_an_instruction", "pins.pin_the_link"]
-        silent = FeatureData({**data.parts, "etiquette": EtiquetteData(reminder_gap=3)})
-        assert Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing", subagent="s1").with_data(data), settings).nudges == ()
-        assert Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing").with_data(silent), settings).nudges == ()
-    finally:
-        BaseState.fold(())
+    started = Ready().respond(SessionStarted().with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
+    assert [nudge.key for nudge in started.nudges] == ["voices.how_to_talk_to_the_user", "migration.version_3_not_brought_across"]
+    assert "as a butler" in started.nudges[0].rendered()
+    assert [n.key for n in Ready().respond(SessionStarted(source="resume").with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct)).terminal_lines] == ["voices.say_you_are_back"]
+    changed = Ready().respond(SettingChanged(environment_id=1, time=1.0, setting=Voices.VOICE_OPTIONS[0].key).with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
+    assert [n.key for n in changed.nudges] == ["voices.the_voice_changed"]
+    assert Ready().respond(SettingChanged(environment_id=1, time=1.0, setting="shell.short_output").with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct)).nudges == ()
+    turn = Ready().respond(TurnDisplayed(text="the user should run journal task complete 3, see https://a.test/new and https://a.test/said").with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
+    assert [n.key for n in turn.nudges] == ["etiquette.no_shop_talk", "etiquette.say_you_not_the_user", "pins.pin_the_link"]
+    assert "https://a.test/new" in turn.nudges[2].rendered()
+    assert Ready().respond(TurnDisplayed(text="see https://a.test/pinned", final=False).with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct)).nudges == ()
+    finished = Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="opened https://a.test/pr/1").with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
+    assert [n.key for n in finished.nudges] == ["etiquette.a_line_is_an_instruction", "pins.pin_the_link"]
+    silent = FeatureData({**data.parts, "etiquette": EtiquetteData(reminder_gap=3)})
+    assert Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing", subagent="s1").with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct)).nudges == ()
+    assert Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing").with_data(silent), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct)).nudges == ()
 
 
 def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_event_and_the_data():
@@ -778,27 +766,23 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
     triggers = (Trigger(id=1, phrases=("deploy",), action=TriggerAction.DENY, text="no deploys tonight"), Trigger(id=2, phrases=("release",), action=TriggerAction.INSTRUCT, text="bump the version"), Trigger(id=3, phrases=("plan",), action=TriggerAction.SEQUENCE, text="Building a plan"))
     plugin_file = str(Path(".journal", "plugins", "x", "run.sh"))
     data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()), "triggers": TriggersData(triggers=triggers), "plugins": PluginsData(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
-    BaseState.fold((GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
-    try:
-        assert Ready().respond(CommitDetected(sha="abcdef0123").with_data(data), settings).nudges == ()
-        closed = Ready().respond(CommitDetected(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next", "", 0)).with_data(data), settings)
-        assert [n.rendered() for n in closed.nudges] == ["commit abcdef01 closed task 4, task 5", "tasks are open, and auto mode is on: task 6 next: the next. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"]
-        failed = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="a\nb c", prior_failure=False, wait_target=False).with_data(data), settings)
-        assert [n.key for n in failed.nudges] == ["checks.check_failed"] and "b c" in failed.nudges[0].rendered()
-        repeat = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=False).with_data(data), settings)
-        assert [n.key for n in repeat.nudges] == ["checks.check_still_failing"]
-        assert Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=True).with_data(data), settings).nudges == ()
-        prompt = Ready().respond(PromptSubmitted(prompt="release it and plan the rest").with_data(data), settings)
-        assert [n.rendered() for n in prompt.nudges] == ["do this now: bump the version"]
-        arrived = Ready().respond(MessageArrived(environment_id=1, time=1.0, text="deploy now").with_data(data), settings)
-        assert [n.rendered() for n in arrived.nudges] == ["no deploys tonight"]
-        denied = Ready().respond(ToolStarting(call=shell("deploy prod")).with_data(data), settings)
-        assert denied.refusal is not None and denied.refusal.rendered() == "a trigger denies this: no deploys tonight"
-        withheld = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": plugin_file}, writes=True, edited_paths=(plugin_file,))).with_data(data), settings)
-        assert withheld.refusal is not None and withheld.refusal.key == "plugins.plugin_files_are_the_users"
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "src/a.py"}, writes=True, edited_paths=("src/a.py",))).with_data(data), settings).refusal is None
-    finally:
-        BaseState.fold(())
+    assert Ready().respond(CommitDetected(sha="abcdef0123").with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct)).nudges == ()
+    closed = Ready().respond(CommitDetected(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next", "", 0)).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    assert [n.rendered() for n in closed.nudges] == ["commit abcdef01 closed task 4, task 5", "tasks are open, and auto mode is on: task 6 next: the next. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"]
+    failed = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="a\nb c", prior_failure=False, wait_target=False).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    assert [n.key for n in failed.nudges] == ["checks.check_failed"] and "b c" in failed.nudges[0].rendered()
+    repeat = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=False).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    assert [n.key for n in repeat.nudges] == ["checks.check_still_failing"]
+    assert Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", prior_failure=True, wait_target=True).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct)).nudges == ()
+    prompt = Ready().respond(PromptSubmitted(prompt="release it and plan the rest").with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    assert [n.rendered() for n in prompt.nudges] == ["do this now: bump the version"]
+    arrived = Ready().respond(MessageArrived(environment_id=1, time=1.0, text="deploy now").with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    assert [n.rendered() for n in arrived.nudges] == ["no deploys tonight"]
+    denied = Ready().respond(ToolStarting(call=shell("deploy prod")).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    assert denied.refusal is not None and denied.refusal.rendered() == "a trigger denies this: no deploys tonight"
+    withheld = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": plugin_file}, writes=True, edited_paths=(plugin_file,))).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
+    assert withheld.refusal is not None and withheld.refusal.key == "plugins.plugin_files_are_the_users"
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "src/a.py"}, writes=True, edited_paths=("src/a.py",))).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct)).refusal is None
 
 
 def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_workers_speak_and_hold_from_the_data(tmp_path):
@@ -841,65 +825,61 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         "workers": WorkersData(active_workers=(), reports_waiting=(2,), reports_summary="worker 2 (Lady Lovelace)", active_subagents=2, dispatches=(Dispatch(id="d1", time=1.0, task="read the plan", brief="look at src/a.py", type="journal-researcher", model="sonnet", session="sub-1", is_active=False),), worktrees_root=tmp_path / "worktrees", worktrees=(WorkerWorktree("3-Lady-Lovelace", 3, "Lady Lovelace"),)),
     }
     data = FeatureData(parts)
-    BaseState.fold((MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
-    try:
-        prompt = Ready().respond(PromptSubmitted(prompt="go on").with_data(data), settings)
-        assert [n.rendered() for n in prompt.nudges] == ["new messages 7, 8"]
-        stop = Ready().respond(Stop().with_data(data), settings)
-        assert [n.key for n in stop.nudges] == ["messages.new_messages_to_answer", "workers.act_on_the_reports"]
-        piped = Ready().respond(ToolStarting(call=shell("journal message read 7 | head -3")).with_data(data), settings)
-        assert piped.refusal is not None and piped.refusal.key == "messages.read_the_words_whole"
-        read = Ready().respond(ToolStarting(call=shell("ls"), tool_use=3).with_data(data), settings)
-        assert read.refusal is None and [n.key for n in read.nudges] == ["messages.answer_before_anything_else", "messages.new_messages_to_answer"], "asked for the answer after three uses, and the inbox named every third use"
-        their_file = Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": f"{tmp_path}/files/message/5/a.png"}, read_paths=(f"{tmp_path}/files/message/5/a.png",))).with_data(data), settings)
-        assert "messages.answer_before_anything_else" not in [n.key for n in their_file.nudges]
-        held_unanswered = FeatureData({**parts, "messages": MessagesData(unread=(), unanswered=(5,), unanswered_files=(), inbox_tool_uses=0, mention_count=0, uses_unanswered=10)})
-        assert Ready().respond(ToolStarting(call=shell("ls")).with_data(held_unanswered), settings).refusal.key == "messages.tools_held_until_answered"
-        assert Ready().respond(ToolStarting(call=shell("journal task list")).with_data(held_unanswered), settings).refusal is None
-        held_unread = FeatureData({**parts, "messages": MessagesData(unread=(7,), unanswered=(), unanswered_files=(), inbox_tool_uses=0, mention_count=5, uses_unanswered=0)})
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(held_unread), settings).refusal.key == "messages.write_held_until_read"
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(held_unread), settings).refusal is None
-        transmitted = Ready().respond(ToolFinished(call=shell("journal message send hi --reply-to 7"), output="sent").with_data(data), settings)
-        assert [n.key for n in transmitted.nudges] == ["messages.reply_by_tag"]
-        face = Ready().respond(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, user_origin=True).with_data(data), settings)
-        assert [n.rendered() for n in face.nudges][0].startswith("the user put 👍 on message 7")
-        assert Ready().respond(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, user_origin=False).with_data(data), settings).nudges == ()
-        dispatch = lambda **value: Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input=value)).with_data(data), settings)
-        assert dispatch(subagent_type="journal-researcher", description="d", prompt="p").refusal.key == "laws.name_the_model"
-        assert dispatch(model="sonnet", subagent_type="general-purpose", description="d", prompt="p").refusal.key == "laws.name_a_profile"
-        assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d").refusal.key == "laws.bind_the_job"
-        assert dispatch(model="sonnet", subagent_type="journal-medior", description="d", prompt="p").refusal.key == "profiles.worker_profile_is_not_a_subagent"
-        assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d", prompt="p").refusal.key == "workers.too_many_subagents"
-        fewer = FeatureData({**parts, "workers": WorkersData(**{**parts["workers"].__dict__, "active_subagents": 1})})
-        existing = Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/a.py again"})).with_data(fewer), settings)
-        assert existing.refusal.key == "workers.send_the_job_to_the_subagent" and "sub-1" in existing.refusal.rendered()
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/b.py"})).with_data(fewer), settings).refusal is None
-        big = Ready().respond(ToolFinished(call=shell("ls"), output="\n" * 400).with_data(data), settings)
-        assert [n.key for n in big.nudges] == ["laws.cap_the_output"]
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}, file_lines=201)).with_data(data), settings).refusal.key == "shell.read_the_file_in_parts"
-        assert Ready().respond(ToolStarting(call=shell("journal task list && ls")).with_data(data), settings).refusal.key == "shell.journal_command_runs_alone"
-        reader = Ready().respond(ToolStarting(call=shell("journal output read 9 --grep FAILED")).with_data(data), settings)
-        shell_lines = lambda answered: [n.key for n in answered.nudges if n.key.startswith("shell.")]
-        assert shell_lines(reader) == ["shell.use_the_reader"]
-        repeat = Ready().respond(ToolStarting(call=shell("journal output read 9 --grep x")).with_data(data), settings)
-        assert shell_lines(repeat) == ["shell.add_a_reader"]
-        tipped = FeatureData({**parts, "shell": ShellData(**{**parts["shell"].__dict__, "tipped": (Shell.READER_SUGGESTION.create(command="journal output read <output> --grep x").rendered(),)})})
-        assert shell_lines(Ready().respond(ToolStarting(call=shell("journal output read 9 --grep x")).with_data(tipped), settings)) == []
-        tick = Ready().respond(Ticked(silence_seconds=6.0, time=500.0).with_data(data), settings)
-        by_key = {n.key: n.rendered() for n in tick.nudges}
-        assert by_key["shell.outputs_ended"].startswith("output 3 finished; output 4 failed with code 1") and by_key["shell.check_the_background"].startswith("output 12 still running")
-        assert sorted(by_key) == ["shell.check_the_background", "shell.outputs_ended", "workers.act_on_the_reports"]
-        assert [n.key for n in Ready().respond(Ticked(silence_seconds=1.0, time=200.0).with_data(data), settings).nudges] == ["workers.act_on_the_reports"]
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": str(private / "keys.json")})).with_data(data), settings).refusal.key == "secrets.secrets_out_of_reach"
-        allowed = Ready().respond(SecretAllowed(environment_id=0, time=1.0, secret_id=2, title="GitHub", programs=("gh",)).with_data(data), settings)
-        assert [n.rendered() for n in allowed.nudges][0].startswith("the user let secret 2, GitHub, go to gh")
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="AskUserQuestion", input={})).with_data(data), settings).refusal.key == "questions.ask_through_the_journal"
-        worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": worktree_file}, writes=True, edited_paths=(worktree_file,))).with_data(data), settings).refusal.key == "workers.file_is_the_workers"
-        back = Ready().respond(WorkerReported(environment_id=1, time=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatcher="", ref="workers:2", outcome="worker 2, Lady Lovelace, reported").with_data(data), settings)
-        assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in the chat"]
-    finally:
-        BaseState.fold(())
+    prompt = Ready().respond(PromptSubmitted(prompt="go on").with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert [n.rendered() for n in prompt.nudges] == ["new messages 7, 8"]
+    stop = Ready().respond(Stop().with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert [n.key for n in stop.nudges] == ["messages.new_messages_to_answer", "workers.act_on_the_reports"]
+    piped = Ready().respond(ToolStarting(call=shell("journal message read 7 | head -3")).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert piped.refusal is not None and piped.refusal.key == "messages.read_the_words_whole"
+    read = Ready().respond(ToolStarting(call=shell("ls"), tool_use=3).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert read.refusal is None and [n.key for n in read.nudges] == ["messages.answer_before_anything_else", "messages.new_messages_to_answer"], "asked for the answer after three uses, and the inbox named every third use"
+    their_file = Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": f"{tmp_path}/files/message/5/a.png"}, read_paths=(f"{tmp_path}/files/message/5/a.png",))).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert "messages.answer_before_anything_else" not in [n.key for n in their_file.nudges]
+    held_unanswered = FeatureData({**parts, "messages": MessagesData(unread=(), unanswered=(5,), unanswered_files=(), inbox_tool_uses=0, mention_count=0, uses_unanswered=10)})
+    assert Ready().respond(ToolStarting(call=shell("ls")).with_data(held_unanswered), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "messages.tools_held_until_answered"
+    assert Ready().respond(ToolStarting(call=shell("journal task list")).with_data(held_unanswered), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal is None
+    held_unread = FeatureData({**parts, "messages": MessagesData(unread=(7,), unanswered=(), unanswered_files=(), inbox_tool_uses=0, mention_count=5, uses_unanswered=0)})
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(held_unread), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "messages.write_held_until_read"
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(held_unread), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal is None
+    transmitted = Ready().respond(ToolFinished(call=shell("journal message send hi --reply-to 7"), output="sent").with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert [n.key for n in transmitted.nudges] == ["messages.reply_by_tag"]
+    face = Ready().respond(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, user_origin=True).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert [n.rendered() for n in face.nudges][0].startswith("the user put 👍 on message 7")
+    assert Ready().respond(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, user_origin=False).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).nudges == ()
+    dispatch = lambda **value: Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input=value)).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert dispatch(subagent_type="journal-researcher", description="d", prompt="p").refusal.key == "laws.name_the_model"
+    assert dispatch(model="sonnet", subagent_type="general-purpose", description="d", prompt="p").refusal.key == "laws.name_a_profile"
+    assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d").refusal.key == "laws.bind_the_job"
+    assert dispatch(model="sonnet", subagent_type="journal-medior", description="d", prompt="p").refusal.key == "profiles.worker_profile_is_not_a_subagent"
+    assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d", prompt="p").refusal.key == "workers.too_many_subagents"
+    fewer = FeatureData({**parts, "workers": WorkersData(**{**parts["workers"].__dict__, "active_subagents": 1})})
+    existing = Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/a.py again"})).with_data(fewer), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert existing.refusal.key == "workers.send_the_job_to_the_subagent" and "sub-1" in existing.refusal.rendered()
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/b.py"})).with_data(fewer), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal is None
+    big = Ready().respond(ToolFinished(call=shell("ls"), output="\n" * 400).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert [n.key for n in big.nudges] == ["laws.cap_the_output"]
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}, file_lines=201)).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "shell.read_the_file_in_parts"
+    assert Ready().respond(ToolStarting(call=shell("journal task list && ls")).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "shell.journal_command_runs_alone"
+    reader = Ready().respond(ToolStarting(call=shell("journal output read 9 --grep FAILED")).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    shell_lines = lambda answered: [n.key for n in answered.nudges if n.key.startswith("shell.")]
+    assert shell_lines(reader) == ["shell.use_the_reader"]
+    repeat = Ready().respond(ToolStarting(call=shell("journal output read 9 --grep x")).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert shell_lines(repeat) == ["shell.add_a_reader"]
+    tipped = FeatureData({**parts, "shell": ShellData(**{**parts["shell"].__dict__, "tipped": (Shell.READER_SUGGESTION.create(command="journal output read <output> --grep x").rendered(),)})})
+    assert shell_lines(Ready().respond(ToolStarting(call=shell("journal output read 9 --grep x")).with_data(tipped), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))) == []
+    tick = Ready().respond(Ticked(silence_seconds=6.0, time=500.0).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    by_key = {n.key: n.rendered() for n in tick.nudges}
+    assert by_key["shell.outputs_ended"].startswith("output 3 finished; output 4 failed with code 1") and by_key["shell.check_the_background"].startswith("output 12 still running")
+    assert sorted(by_key) == ["shell.check_the_background", "shell.outputs_ended", "workers.act_on_the_reports"]
+    assert [n.key for n in Ready().respond(Ticked(silence_seconds=1.0, time=200.0).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).nudges] == ["workers.act_on_the_reports"]
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": str(private / "keys.json")})).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "secrets.secrets_out_of_reach"
+    allowed = Ready().respond(SecretAllowed(environment_id=0, time=1.0, secret_id=2, title="GitHub", programs=("gh",)).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert [n.rendered() for n in allowed.nudges][0].startswith("the user let secret 2, GitHub, go to gh")
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="AskUserQuestion", input={})).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "questions.ask_through_the_journal"
+    worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": worktree_file}, writes=True, edited_paths=(worktree_file,))).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "workers.file_is_the_workers"
+    back = Ready().respond(WorkerReported(environment_id=1, time=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatcher="", ref="workers:2", outcome="worker 2, Lady Lovelace, reported").with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in the chat"]
 
 
 def test_a_state_whose_own_listener_stops_the_walk_answers_in_the_conducts_place():
@@ -908,12 +888,8 @@ def test_a_state_whose_own_listener_stops_the_walk_answers_in_the_conducts_place
             event.stop_propagation()
             return self.none()
 
-    BaseState.fold((InboxConduct,))
-    try:
-        assert Listening().respond(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({})).nudges == (LINE, OTHER, OTHER)
-        assert Quiet().respond(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({})).nudges == (), "a state that stops the walk answers alone; the conduct's listener is never heard"
-    finally:
-        BaseState.fold(())
+    assert Listening().respond(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({}), (InboxConduct,)).nudges == (LINE, OTHER, OTHER)
+    assert Quiet().respond(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({}), (InboxConduct,)).nudges == (), "a state that stops the walk answers alone; the conduct's listener is never heard"
 
 
 def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_and_whisper_from_the_data():
@@ -939,43 +915,39 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         "memory": MemoryData(threshold_due=50, context_threshold=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), CardKind.FACTS),), stale=()),
     }
     data = FeatureData(parts)
-    BaseState.fold((SkillsConduct, BriefingConduct, MemoryConduct))
-    try:
-        started = Ready().respond(SessionStarted(source="startup").with_data(data), settings)
-        keys = [n.key for n in started.nudges]
-        assert keys[:4] == ["skills.read_the_skill_first", "briefing.journal_ready", "briefing.handle_the_journal_quietly", "briefing.the_laws_apply"]
-        assert "briefing.you_took_over" in keys and "briefing.rules_in_force" in keys and "briefing.facts_here" not in keys and "briefing.reminders_here" in keys and "briefing.waiting_for_you" in keys and keys[-1] == "briefing.look_before_the_first_write"
-        assert ".claude/skills/journal/SKILL.md" in started.nudges[0].rendered()
-        compacted = Ready().respond(SessionStarted(source="compact").with_data(data), settings)
-        assert "briefing.you_took_over" not in [n.key for n in compacted.nudges]
-        prompt = Ready().respond(PromptSubmitted(prompt="draw me a roadmap").with_data(data), settings)
-        assert [n.key for n in prompt.nudges] == [], "the plans skill is read already, by its hash"
-        unread = FeatureData({**parts, "skills": SkillsData(skills_due=(), loaded={}, skills=cards)})
-        assert [n.rendered() for n in Ready().respond(PromptSubmitted(prompt="draw me a roadmap").with_data(unread), settings).nudges][0].startswith("read the plans skill before anything else")
-        withheld = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(data), settings)
-        assert withheld.refusal is not None and withheld.refusal.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(data), settings).refusal is None
-        stop = Ready().respond(Stop().with_data(data), settings)
-        assert stop.refusal is not None and stop.refusal.key == "skills.stopped_owing"
-        paid = FeatureData({**parts, "skills": SkillsData(skills_due=(), loaded={}, skills=cards)})
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(paid), settings).refusal.key == "briefing.look_before_the_first_write"
-        looked = FeatureData({**paid.parts, "briefing": BriefingData(**{**parts["briefing"].__dict__, "has_overview": True})})
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(looked), settings).refusal.key == "memory.write_held_until_decided"
-        assert Ready().respond(Stop().with_data(looked), settings).refusal.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
-        decided = FeatureData({**looked.parts, "memory": MemoryData(threshold_due=0, context_threshold=50, rows=parts["memory"].rows, stale=())})
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(decided), settings).refusal is None
-        arrived = Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_data(decided), settings)
-        assert [n.rendered() for n in arrived.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal memory skip \"<why>\"`"] or arrived.nudges[0].key == "memory.decide_at_the_mark"
-        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.6, session="s1").with_data(decided), settings).nudges == ()
-        whispered = Ready().respond(ToolStarting(call=shell("lsof -i :port")).with_data(decided), settings)
-        assert [n.rendered() for n in whispered.terminal_lines] == ["fact 3 is about this and not in your context: journal fact read 3"], "a whisper tells the agent to read the row, never its words"
-        prior_items = FeatureData({**decided.parts, "memory": MemoryData(threshold_due=0, context_threshold=50, rows=tuple(replace(row, presence=True) for row in parts["memory"].rows), stale=())})
-        assert Ready().respond(ToolStarting(call=shell("lsof -i :port")).with_data(prior_items), settings).terminal_lines == (), "a row in the context window is not whispered"
-        rule = Ready().respond(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=True).with_data(decided), settings)
-        assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
-        assert Ready().respond(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=False).with_data(decided), settings).nudges == ()
-    finally:
-        BaseState.fold(())
+    started = Ready().respond(SessionStarted(source="startup").with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
+    keys = [n.key for n in started.nudges]
+    assert keys[:4] == ["skills.read_the_skill_first", "briefing.journal_ready", "briefing.handle_the_journal_quietly", "briefing.the_laws_apply"]
+    assert "briefing.you_took_over" in keys and "briefing.rules_in_force" in keys and "briefing.facts_here" not in keys and "briefing.reminders_here" in keys and "briefing.waiting_for_you" in keys and keys[-1] == "briefing.look_before_the_first_write"
+    assert ".claude/skills/journal/SKILL.md" in started.nudges[0].rendered()
+    compacted = Ready().respond(SessionStarted(source="compact").with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
+    assert "briefing.you_took_over" not in [n.key for n in compacted.nudges]
+    prompt = Ready().respond(PromptSubmitted(prompt="draw me a roadmap").with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
+    assert [n.key for n in prompt.nudges] == [], "the plans skill is read already, by its hash"
+    unread = FeatureData({**parts, "skills": SkillsData(skills_due=(), loaded={}, skills=cards)})
+    assert [n.rendered() for n in Ready().respond(PromptSubmitted(prompt="draw me a roadmap").with_data(unread), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).nudges][0].startswith("read the plans skill before anything else")
+    withheld = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
+    assert withheld.refusal is not None and withheld.refusal.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal is None
+    stop = Ready().respond(Stop().with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
+    assert stop.refusal is not None and stop.refusal.key == "skills.stopped_owing"
+    paid = FeatureData({**parts, "skills": SkillsData(skills_due=(), loaded={}, skills=cards)})
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(paid), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal.key == "briefing.look_before_the_first_write"
+    looked = FeatureData({**paid.parts, "briefing": BriefingData(**{**parts["briefing"].__dict__, "has_overview": True})})
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(looked), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal.key == "memory.write_held_until_decided"
+    assert Ready().respond(Stop().with_data(looked), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
+    decided = FeatureData({**looked.parts, "memory": MemoryData(threshold_due=0, context_threshold=50, rows=parts["memory"].rows, stale=())})
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(decided), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal is None
+    arrived = Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_data(decided), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
+    assert [n.rendered() for n in arrived.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal memory skip \"<why>\"`"] or arrived.nudges[0].key == "memory.decide_at_the_mark"
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.6, session="s1").with_data(decided), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).nudges == ()
+    whispered = Ready().respond(ToolStarting(call=shell("lsof -i :port")).with_data(decided), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
+    assert [n.rendered() for n in whispered.terminal_lines] == ["fact 3 is about this and not in your context: journal fact read 3"], "a whisper tells the agent to read the row, never its words"
+    prior_items = FeatureData({**decided.parts, "memory": MemoryData(threshold_due=0, context_threshold=50, rows=tuple(replace(row, presence=True) for row in parts["memory"].rows), stale=())})
+    assert Ready().respond(ToolStarting(call=shell("lsof -i :port")).with_data(prior_items), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).terminal_lines == (), "a row in the context window is not whispered"
+    rule = Ready().respond(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=True).with_data(decided), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
+    assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
+    assert Ready().respond(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=False).with_data(decided), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).nudges == ()
 
 
 def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
@@ -992,15 +964,11 @@ def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
     assert last.popped and [n.key for n in last.nudges] == ["tasks.wait_over"] and last.nudges[-1].rendered().startswith("the wait for worker 3, worker 4 is over: worker 3, Lady Lovelace, reported; worker 4, Herr Turing, stopped before it reported")
     from journal.events.rows.worker_dispatched import WorkerDispatched
     from journal.features.workers.workers_conduct import WorkersConduct
-    BaseState.fold((WorkersConduct,))
-    try:
-        owned = Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", awaiter="s1", ref="workers:5", label="worker 5").reaching("s1"), settings)
-        assert owned.pushed == ExternalWait.opened("worker 5", "workers:5", 3.0), "a worker this agent dispatches pushes the wait on its work"
-        assert Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", awaiter="s2", ref="workers:5", label="worker 5").reaching("s1"), settings).pushed is None, "another session's worker is not waited on here"
-        widened = ExternalWait.opened("worker 5", "workers:5", 3.0).respond(WorkerDispatched(environment_id=1, time=4.0, worker_id=6, name="Dr. Einstein", awaiter="s1", ref="workers:6", label="worker 6").reaching("s1"), settings)
-        assert widened.target == ExternalWait.opened("worker 5, worker 6", "workers:5,workers:6", 3.0) and widened.pushed is None, "a second dispatch widens the wait instead of stacking another"
-    finally:
-        BaseState.fold(())
+    owned = Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", awaiter="s1", ref="workers:5", label="worker 5").reaching("s1"), settings, (WorkersConduct,))
+    assert owned.pushed == ExternalWait.opened("worker 5", "workers:5", 3.0), "a worker this agent dispatches pushes the wait on its work"
+    assert Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", awaiter="s2", ref="workers:5", label="worker 5").reaching("s1"), settings, (WorkersConduct,)).pushed is None, "another session's worker is not waited on here"
+    widened = ExternalWait.opened("worker 5", "workers:5", 3.0).respond(WorkerDispatched(environment_id=1, time=4.0, worker_id=6, name="Dr. Einstein", awaiter="s1", ref="workers:6", label="worker 6").reaching("s1"), settings, (WorkersConduct,))
+    assert widened.target == ExternalWait.opened("worker 5, worker 6", "workers:5,workers:6", 3.0) and widened.pushed is None, "a second dispatch widens the wait instead of stacking another"
     assert ExternalWait.opened("worker 5", "workers:5", 3.0).respond(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True)), settings).target == ExternalWait.opened("worker 5", "workers:5", 3.0), "the agent works on while its workers run"
 
 
@@ -1176,20 +1144,16 @@ def test_a_question_asked_pushes_waiting_and_its_answer_pops_it_on_top_or_on_res
     from journal.events.agent.stop import Stop
     settings = SettingsValue({})
     of = lambda *open: FeatureData({"questions": QuestionsData(open=open)})
-    BaseState.fold((QuestionsConduct,))
-    try:
-        requested = Working(task_id=7, logged_at=1.0).respond(QuestionPosed(environment_id=1, time=2.0, question_id=4).with_data(of(4)), settings)
-        assert requested.pushed == Waiting(question_id=4), "a question asked pushes the wait on the work in hand"
-        waiting = Waiting(question_id=4)
-        answered = waiting.respond(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings)
-        assert answered.popped and [n.rendered() for n in answered.nudges][0].startswith("question 4 is answered")
-        assert not waiting.respond(QuestionAnswered(environment_id=1, time=3.0, question_id=5).with_data(of(4)), settings).popped, "another question's answer is not this one's"
-        assert waiting.respond(SessionStarted(time=4.0).with_data(of(4)), settings).popped is False and waiting.respond(Stop().with_data(of(4)), settings).refusal is None, "a stop while waiting is fine"
-        assert waiting.on_resume(of(4), settings) == (), "beneath a compaction the wait stands while the question is open"
-        assert waiting.on_resume(of(), settings).popped, "answered meanwhile, it pops on resume with the line"
-        assert not Compacting().respond(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings).popped, "the answer under a compaction waits for the resume"
-    finally:
-        BaseState.fold(())
+    requested = Working(task_id=7, logged_at=1.0).respond(QuestionPosed(environment_id=1, time=2.0, question_id=4).with_data(of(4)), settings, (QuestionsConduct,))
+    assert requested.pushed == Waiting(question_id=4), "a question asked pushes the wait on the work in hand"
+    waiting = Waiting(question_id=4)
+    answered = waiting.respond(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings, (QuestionsConduct,))
+    assert answered.popped and [n.rendered() for n in answered.nudges][0].startswith("question 4 is answered")
+    assert not waiting.respond(QuestionAnswered(environment_id=1, time=3.0, question_id=5).with_data(of(4)), settings, (QuestionsConduct,)).popped, "another question's answer is not this one's"
+    assert waiting.respond(SessionStarted(time=4.0).with_data(of(4)), settings, (QuestionsConduct,)).popped is False and waiting.respond(Stop().with_data(of(4)), settings, (QuestionsConduct,)).refusal is None, "a stop while waiting is fine"
+    assert waiting.on_resume(of(4), settings) == (), "beneath a compaction the wait stands while the question is open"
+    assert waiting.on_resume(of(), settings).popped, "answered meanwhile, it pops on resume with the line"
+    assert not Compacting().respond(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings, (QuestionsConduct,)).popped, "the answer under a compaction waits for the resume"
 
 
 def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_the_last_row_settles_and_stuck_is_quiet():
@@ -1208,13 +1172,9 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     auto, manual = SettingsValue({TasksFeature.AUTO.key: True}), SettingsValue({TasksFeature.AUTO.key: False})
     tasks = TasksData(current_task=7, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=OpenTask(9, "the next one", "", 0), last_commands=())
     of = lambda: FeatureData({"tasks": tasks})
-    BaseState.fold((TasksConduct,))
-    try:
-        pushed = Working(task_id=7).respond(WaitRequest(focus="the build", end_refs="command_outputs:4,checks:2", time=100.0), auto)
-        assert pushed.pushed == ExternalWait.opened("the build", "command_outputs:4,checks:2", 100.0), "journal await pushes the wait on the work"
-        assert Working(task_id=7).respond(ImpasseReport(reason="the login", time=1.0), auto).pushed == Impasse(reason="the login"), "journal stuck pushes Stuck"
-    finally:
-        BaseState.fold(())
+    pushed = Working(task_id=7).respond(WaitRequest(focus="the build", end_refs="command_outputs:4,checks:2", time=100.0), auto, (TasksConduct,))
+    assert pushed.pushed == ExternalWait.opened("the build", "command_outputs:4,checks:2", 100.0), "journal await pushes the wait on the work"
+    assert Working(task_id=7).respond(ImpasseReport(reason="the login", time=1.0), auto, (TasksConduct,)).pushed == Impasse(reason="the login"), "journal stuck pushes Stuck"
     waiting = pushed.pushed
     assert waiting.respond(Stop(time=130.0).with_data(of()), auto).refusal is None and waiting.respond(Ticked(silence_seconds=10.0, time=130.0).with_data(of()), auto).nudges == (), "quiet at a stop and on an early tick"
     meanwhile = waiting.respond(Ticked(silence_seconds=70.0, time=170.0).with_data(of()), auto)
@@ -1254,12 +1214,7 @@ def test_the_engine_builds_its_listener_tables_once_and_the_container_one_instan
     assert Working.listeners() is Working.listeners(), "a state's listener table is built once per class"
     assert Working.event_listeners(ToolStarting) is Working.event_listeners(ToolStarting) and Working.event_listeners(Stop) is Working.event_listeners(Stop), "the pick per event type is cached"
     previous = Working.event_listeners(ToolStarting)
-    folded = BaseState.conducts
-    BaseState.fold((MessagesConduct,))
-    try:
-        assert Working.event_listeners(ToolStarting) is not previous, "folding the conducts in clears the cache, so the fold is seen"
-    finally:
-        BaseState.fold(folded)
+    assert Working.event_listeners(ToolStarting, (MessagesConduct,)) is not previous, "the conducts a state hears are part of what its listeners are kept by"
     assert app.container.get(StateMachine) is app.container.get(StateMachine) and app.container.get(Agents) is app.container.get(Agents), "the container builds a class once"
 
 
@@ -1269,10 +1224,10 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
     from journal.supervisor_link import SupervisorLink
 
     class Talkative(Conduct):
-        def on_ticked_talkative(self, event: Ticked, settings: SettingsValue) -> Transition:
+        def on_ticked(self, event: Ticked, settings: SettingsValue) -> Transition:
             return self.none(LINE)
 
-        def on_message_arrived_talkative(self, event: MessageArrived, settings: SettingsValue) -> Transition:
+        def on_message_arrived(self, event: MessageArrived, settings: SettingsValue) -> Transition:
             return self.none(OTHER)
 
     @dataclass(frozen=True)
@@ -1288,18 +1243,14 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
             return self.none()
 
     settings = SettingsValue({})
-    BaseState.fold((Talkative,))
-    try:
-        tick = Ticked(silence_seconds=1.0).with_data(FeatureData({}))
-        arrived = MessageArrived(environment_id=1, time=2.0, text="hi").with_data(FeatureData({}))
-        assert Plain().respond(tick, settings).nudges == (LINE,) and Plain().respond(arrived, settings).nudges == (OTHER,), "in any other state the conduct speaks"
-        assert Stopping().respond(tick, settings).nudges == (), "a listener that stops the event's propagation is the last to hear it, so the conduct is silent"
-        assert Plain().respond(tick, settings).nudges == (LINE,), "the next walk of the same event starts again"
-        assert CompactingState().respond(arrived, settings).nudges == (OTHER,), "compacting stops nothing itself: what the conduct says queues at the typist"
-        assert CompactingState().respond(ToolStarting(call=shell("ls")).with_data(FeatureData({})), settings).refusal == Engine.COMPACTION_PAUSE.create(), "the hold on every tool stands"
-        assert CompactingState().respond(SessionStarted(source="compact").with_data(FeatureData({})), settings).popped, "and the session's start still pops it"
-    finally:
-        BaseState.fold(())
+    tick = Ticked(silence_seconds=1.0).with_data(FeatureData({}))
+    arrived = MessageArrived(environment_id=1, time=2.0, text="hi").with_data(FeatureData({}))
+    assert Plain().respond(tick, settings, (Talkative,)).nudges == (LINE,) and Plain().respond(arrived, settings, (Talkative,)).nudges == (OTHER,), "in any other state the conduct speaks"
+    assert Stopping().respond(tick, settings, (Talkative,)).nudges == (), "a listener that stops the event's propagation is the last to hear it, so the conduct is silent"
+    assert Plain().respond(tick, settings, (Talkative,)).nudges == (LINE,), "the next walk of the same event starts again"
+    assert CompactingState().respond(arrived, settings, (Talkative,)).nudges == (OTHER,), "compacting stops nothing itself: what the conduct says queues at the typist"
+    assert CompactingState().respond(ToolStarting(call=shell("ls")).with_data(FeatureData({})), settings, (Talkative,)).refusal == Engine.COMPACTION_PAUSE.create(), "the hold on every tool stands"
+    assert CompactingState().respond(SessionStarted(source="compact").with_data(FeatureData({})), settings, (Talkative,)).popped, "and the session's start still pops it"
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields["line"]))
     hook(app, "SessionStart")

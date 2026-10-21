@@ -52,8 +52,7 @@ class SequencesConduct(Conduct):
 
 def is_step_command(runs: SequencesData, parts: tuple[CommandPart, ...]) -> bool:
     from journal.features.sequences.support.run_tracker import RunTracker
-    from journal.support.sequence_run import SequenceRun
-    return bool(parts) and RunTracker.names(SequenceRun(sequence_id=runs.sequence_id, title="", steps=(runs.step_text,)), parts)
+    return bool(parts) and RunTracker.names(runs.step_text, parts)
 
 
 def step_line(runs: SequencesData) -> Nudge:

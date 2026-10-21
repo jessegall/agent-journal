@@ -73,7 +73,7 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             <FormField
                 label="Kind"
                 for="profile-kind"
-                help="A subagent only reads and is started with the Agent tool; a worker writes and is started with journal worker dispatch."
+                help="A subagent only reads and is started with the Agent tool; a worker writes and is sent out by the agent with a journal command."
             >
                 <Segmented :options="KINDS" :value="draft.kind" @pick="draft.kind = $event" />
             </FormField>

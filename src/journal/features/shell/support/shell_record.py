@@ -37,7 +37,7 @@ class ShellRecord:
         self.cards, self.events, self.agents, self.settings, self.scope, self.states = cards, events, agents, settings, scope, states
 
     def start(self, chain: str, command: str, folder: Path, caller: Caller) -> int:
-        return self.log.start(chain, command, folder, caller.session, caller.actor).id
+        return self.log.start(chain, command, folder, caller).id
 
     def started(self, chain: str, part: str, caller: Caller) -> None:
         self.record(caller, PART_START, {"chain": chain, "part": part, "doing": ActivityLabel.build(part)})

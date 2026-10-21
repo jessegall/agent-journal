@@ -20,7 +20,7 @@ class SequencesDataReader:
 
     def read(self, agent: Agent) -> SequencesData:
         if not agent.sequence_runs:
-            return SequencesData(0, 0, "", "", False, 0, False, DISTANT_SECONDS, False, False, False)
+            return SequencesData.empty(DISTANT_SECONDS)
         run = SequenceRun.build(agent.sequence_runs[-1])
         uses = self.entries.tool_starts(agent.session, last=1)
         last_line = self.entries.last_line_entry(agent.session, STEP_KEYS)

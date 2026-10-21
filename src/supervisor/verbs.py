@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from supervisor.supervisor import Supervisor
 
 VERBS = ("hello", "start", "stop", "restart", "list", "keys", "type", "send", "band")
-"""The verbs this supervisor takes; a later protocol adds verbs and never changes one."""
 
 
 class Verbs:
@@ -34,42 +33,39 @@ class Verbs:
             return Reply.refused(f"{request.verb} failed in the supervisor, which carries on: {fault}")
 
     def hello(self, request: Request) -> Reply:
-        return Reply.done(protocol=PROTOCOL, verbs=list(VERBS))
+        return Reply.success(protocol=PROTOCOL, verbs=list(VERBS))
 
     def start(self, request: Request) -> Reply:
-        """A service started under its name, with its command, folder, environment and log, and whether it is started again when it dies; one already running under the name is left as it is. With inherit false it gets the environment it is given and nothing of the supervisor's. One whose program cannot be run dies at once, as its log says."""
         request.needs("name", "command")
-        was_running = self.supervisor.services.runs(request.name)
+        existing = self.supervisor.services.runs(request.name)
         inherited = os.environ if request.inherit else {}
-        self.supervisor.services.add(Service(request.name, list(request.command), Path(request.folder), {**inherited, **request.env}, Path(request.log), request.keep))
-        return Reply.done(started=not was_running)
+        self.supervisor.services.add(Service(request.name, list(request.command), Path(request.folder), {**inherited, **request.environ}, Path(request.log), request.persistent))
+        return Reply.success(started=not existing)
 
     def list(self, request: Request) -> Reply:
-        return Reply.done(processes=self.supervisor.described())
+        return Reply.success(processes=self.supervisor.described())
 
     def keys(self, request: Request) -> Reply:
-        self.supervisor.terminal_named(request.needs("name", "keys").name).write(request.keys.encode())
-        return Reply.done()
+        self.supervisor.find_terminal(request.needs("name", "keys").name).write(request.keys.encode())
+        return Reply.success()
 
     def type(self, request: Request) -> Reply:
-        self.supervisor.terminal_named(request.needs("name", "line").name).type(request.line, request.after)
-        return Reply.done()
+        self.supervisor.find_terminal(request.needs("name", "line").name).type(request.line, request.delay_seconds)
+        return Reply.success()
 
     def send(self, request: Request) -> Reply:
-        """Text carried to a named process's input, as it is."""
         self.supervisor.send(request.needs("name", "data").name, request.data.encode())
-        return Reply.done()
+        return Reply.success()
 
     def band(self, request: Request) -> Reply:
-        """The words of the line at the top of the screen, left, middle and right."""
         request.needs("left", "middle", "right")
-        self.supervisor.say(request.words)
-        return Reply.done()
+        self.supervisor.display_band(request.labels)
+        return Reply.success()
 
     def restart(self, request: Request) -> Reply:
         self.supervisor.restart(request.needs("name").name, request.resume)
-        return Reply.done()
+        return Reply.success()
 
     def stop(self, request: Request) -> Reply:
-        self.supervisor.stop_named(request.needs("name").name)
-        return Reply.done()
+        self.supervisor.stop_service(request.needs("name").name)
+        return Reply.success()

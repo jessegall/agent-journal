@@ -33,7 +33,7 @@ def test_an_upgrade_leaves_the_agent_running(app, tmp_path: Path):
         try:
             while not stopping.is_set():
                 supervisor.relay_once(0.05)
-                supervisor.services.keep_alive()
+                supervisor.services.revive_stopped()
         except Exception as fault:
             faults.append(fault)
     loop = threading.Thread(target=turn, daemon=True)

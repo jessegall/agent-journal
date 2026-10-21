@@ -33,14 +33,6 @@ class TimestampRenames(Migration):
             connection.execute(f"DROP TABLE {new}")
         connection.execute(f"ALTER TABLE {old} RENAME TO {new}")
 
-    @staticmethod
-    def column_rename(connection: Connection, table: str, old: str, new: str) -> None:
-        present = {row["name"] for row in connection.all(f"PRAGMA table_info({table})")}
-        if old not in present:
-            return
-        if new in present:
-            connection.execute(f"ALTER TABLE {table} DROP COLUMN {new}")
-        connection.execute(f"ALTER TABLE {table} RENAME COLUMN {old} TO {new}")
 
 def renamed(state: str, data: dict) -> dict:
     fields = STATE_FIELDS.get(state, {})

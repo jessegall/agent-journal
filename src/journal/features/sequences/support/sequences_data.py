@@ -19,3 +19,7 @@ class SequencesData:
 
     def has_run(self) -> bool:
         return self.sequence_id > 0
+
+    @classmethod
+    def empty(cls, step_silence_seconds: float) -> "SequencesData":
+        return cls(sequence_id=0, step=0, step_text="", suspension_reason="", is_adopted=False, adoption_edits=0, step_repeated=False, step_silence_seconds=step_silence_seconds, is_typable=False, question_open=False, obligations_due=False)

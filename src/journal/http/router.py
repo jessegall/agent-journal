@@ -31,7 +31,7 @@ class Router:
     def matched(self, request: Request) -> Route | None:
         return next((route for route in self.routes if route.params(request.method, request.path) is not None), None)
 
-    def dispatch(self, request: Request) -> Response:
+    def route(self, request: Request) -> Response:
         self.presence.record(request.headers)
         route = self.matched(request)
         if route is None:

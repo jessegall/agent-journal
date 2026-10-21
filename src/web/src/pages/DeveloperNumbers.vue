@@ -1,4 +1,5 @@
 <script setup>
+import DataTable from "../kit/DataTable.vue";
 import {onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 
@@ -36,60 +37,12 @@ const rows = () =>
             <button class="developer-reset" type="button" @click="reset">Reset the counts</button>
         </div>
         <p class="developer-line">An average is a running total divided by a count, bumped on every measurement. A hook's time runs from the start of its script to the server's answer.</p>
-        <table class="developer-table">
-            <thead>
-                <tr>
-                    <th>What</th>
-                    <th>Measured</th>
-                    <th>Average</th>
-                    <th>Slowest</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template v-for="line in rows()" :key="line.title">
-                    <tr>
-                        <td>{{ line.title }}</td>
-                        <td>{{ line.count }}</td>
-                        <td>{{ line.average }} ms</td>
-                        <td>{{ line.slowest }} ms</td>
-                    </tr>
-                </template>
-                <template v-if="!rows().length">
-                    <tr>
-                        <td colspan="4">Nothing measured yet</td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
+        <DataTable :columns="['What', 'Measured', 'Average', 'Slowest']" :rows="rows().map((line) => ({cells: [line.title, line.count, `${line.average} ms`, `${line.slowest} ms`]}))" empty="Nothing measured yet" />
         <div class="developer-head">
             <h3 class="developer-heading">{{ slowestFirst ? "The slowest of the newest thousand" : "The newest requests" }}</h3>
             <button class="developer-reset" type="button" @click="slowestFirst = !slowestFirst">{{ slowestFirst ? "Newest first" : "Slowest first" }}</button>
         </div>
-        <table class="developer-table">
-            <thead>
-                <tr>
-                    <th>When</th>
-                    <th>Kind</th>
-                    <th>Route or command</th>
-                    <th>Milliseconds</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template v-for="(line, index) in logged()" :key="index">
-                    <tr>
-                        <td>{{ clock(line.time) }}</td>
-                        <td>{{ line.method }}</td>
-                        <td>{{ line.route }}</td>
-                        <td>{{ line.ms }} ms</td>
-                    </tr>
-                </template>
-                <template v-if="!logged().length">
-                    <tr>
-                        <td colspan="4">Nothing logged yet</td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
+        <DataTable :columns="['When', 'Kind', 'Route or command', 'Milliseconds']" :rows="logged().map((line) => ({cells: [clock(line.time), line.method, line.route, `${line.ms} ms`]}))" empty="Nothing logged yet" />
     </section>
 </template>
 
@@ -133,21 +86,4 @@ const rows = () =>
     font-size: 13px;
 }
 
-.developer-table {
-    border-collapse: collapse;
-    width: 100%;
-    font-size: 13px;
-}
-
-.developer-table th,
-.developer-table td {
-    padding: 6px 10px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-}
-
-.developer-table th {
-    color: var(--text); opacity: 0.7;
-    font-weight: 500;
-}
 </style>

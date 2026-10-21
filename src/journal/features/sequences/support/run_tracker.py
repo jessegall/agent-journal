@@ -128,8 +128,8 @@ class RunTracker:
         self.agents.touch(agent, Actor.system(), sequence_runs=tuple(run.as_dict() for run in runs))
 
     @staticmethod
-    def names(run: SequenceRun, parts: tuple[CommandPart, ...]) -> bool:
-        step_commands = [command.strip() for command in COMMAND_PATTERN.findall(run.text) if command.strip()]
+    def names(step_text: str, parts: tuple[CommandPart, ...]) -> bool:
+        step_commands = [command.strip() for command in COMMAND_PATTERN.findall(step_text) if command.strip()]
         return any(part.text.strip().startswith(command) for part in parts for command in step_commands)
 
     def typed_agent(self, session: str, environment_id: int) -> bool:

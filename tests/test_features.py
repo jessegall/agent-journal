@@ -5368,7 +5368,7 @@ def test_a_read_that_asks_a_server_outside_is_not_judged_against_the_budget(app:
     router = app.container.get(Router)
     router.get_outward("/journal/far", lambda request: Response.json({}))
     router.get("/journal/near", lambda request: Response.json({}))
-    inquiry = lambda path: router.dispatch(Request("GET", path, {}, {}, {}, {"X-Journal-Env": "main"}, Actor.user(1)))
+    inquiry = lambda path: router.route(Request("GET", path, {}, {}, {}, {"X-Journal-Env": "main"}, Actor.user(1)))
     inquiry("/journal/far")
     inquiry("/journal/near")
     assert measured == ["/journal/near"], "the tunnel's answer waits on the network, so only the journal's own reads are held to a budget"
@@ -5635,8 +5635,8 @@ def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App
     assert bare.code == 1 and "a wait names what ends it" in bare.error, "a wait that names nothing to end it is refused"
     user = console.run(["await", "the user's answer", "--until", "false"], AGENT)
     assert user.code == 1 and "no wait" in user.error, "waiting for the user is no wait"
-    output = app.container.get(OutputLog).start("c1", "npm run build", app.config.home / "runtime" / "outputs" / "c1", "s1", Actor.agent("s1"))
-    ended = app.container.get(OutputLog).start("c0", "make", app.config.home / "runtime" / "outputs" / "c0", "s1", Actor.agent("s1"))
+    output = app.container.get(OutputLog).start("c1", "npm run build", app.config.home / "runtime" / "outputs" / "c1", Caller("main", "s1"))
+    ended = app.container.get(OutputLog).start("c0", "make", app.config.home / "runtime" / "outputs" / "c0", Caller("main", "s1"))
     outputs = app.container.get(CommandOutputs)
     outputs.save(outputs.find(ended.id).backgrounded().ended_with(2, 1.0), Actor.system())
     refused = console.run(["await", "the make", "--output", str(ended.id)], AGENT)
@@ -6201,7 +6201,7 @@ def test_output_status_says_running_finished_or_failed_and_lists_the_background_
         (folder / "parts").write_text("R-\n")
         if status is not None:
             (folder / "0.status").write_text(status)
-        log.start(chain, f"make {chain}", folder, "s1", Actor.agent("s1"))
+        log.start(chain, f"make {chain}", folder, Caller("main", "s1"))
     assert [console.run(["output", "status", str(n)], AGENT).text.strip() for n in (1, 2, 3)] == ["running", "finished", "failed with code 3"]
     app.container.get(CommandOutputs).save(app.container.get(CommandOutputs).find(1).backgrounded(), Actor.system())
     listed = console.run(["output", "status"], AGENT).text

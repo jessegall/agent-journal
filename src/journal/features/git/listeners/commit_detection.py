@@ -9,7 +9,7 @@ from journal.support.caller import Caller
 from journal.chat.cards import Cards
 from journal.events.agent.commit_detected import CommitDetected
 from journal.events.agent.tool_finished import ToolFinished
-from journal.events.bus import Bus
+from journal.hooks.agent_event_post import AgentEventPost
 from journal.features.git.support.head_commit import HeadCommit
 from journal.events.agent_listener import AgentListener
 from journal.support.actor import Actor
@@ -34,8 +34,8 @@ class CommitDetection(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, tasks: TaskRows, bus: Bus, next_task: NextOpenTask, entries: Entries) -> None:
-        self.config, self.cards, self.messages, self.console, self.environments, self.tasks, self.bus = config, cards, messages, console, environments, tasks, bus
+    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, tasks: TaskRows, events: AgentEventPost, next_task: NextOpenTask, entries: Entries) -> None:
+        self.config, self.cards, self.messages, self.console, self.environments, self.tasks, self.events = config, cards, messages, console, environments, tasks, events
         self.next_task, self.entries = next_task, entries
         self._head_log_times: dict[Path, float] = {}
 
@@ -51,7 +51,7 @@ class CommitDetection(AgentListener[ToolFinished]):
         if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", actor):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
-        self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject}, actor, CardKind.COMMITS)
+        self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit"}, actor, CardKind.COMMITS, head.subject)
         closed = self.close_mentioned(event, head.sha, head.body) if folder == self.config.root and self.is_agents(event, head) else []
         return self.commit(event, head.sha, closed)
 
@@ -81,7 +81,7 @@ class CommitDetection(AgentListener[ToolFinished]):
     def commit(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
         next_open = self.next_task.following(self.tasks.find(closed[-1])) if closed else None
         commit = CommitDetected(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.time)
-        return next((answer for answer in self.bus.dispatch(commit) if isinstance(answer, Decision)), None)
+        return next((answer for answer in self.events.post(commit) if isinstance(answer, Decision)), None)
 
     def folder(self, event: ToolFinished) -> Path:
         tree = Worktree(self.config.root, self.environments.find(event.environment_id).name)

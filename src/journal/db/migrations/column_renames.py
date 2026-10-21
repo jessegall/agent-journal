@@ -31,10 +31,5 @@ class ColumnRenames(Migration):
     def apply(self, connection: Connection) -> None:
         tables = [row["name"] for row in connection.all("SELECT name FROM sqlite_master WHERE type = 'table'")]
         for table in tables:
-            present = {row["name"] for row in connection.all(f"PRAGMA table_info({table})")}
             for old, new in {**COMMON_COLUMNS, **TABLES.get(table, {})}.items():
-                if old not in present:
-                    continue
-                if new in present:
-                    connection.execute(f"ALTER TABLE {table} DROP COLUMN {new}")
-                connection.execute(f"ALTER TABLE {table} RENAME COLUMN {old} TO {new}")
+                self.column_rename(connection, table, old, new)

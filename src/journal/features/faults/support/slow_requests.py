@@ -99,8 +99,9 @@ class SlowRequests:
         agent = self.agents.current()
         reportable = agent is not None and self.is_reportable(previous.get("reported_at", 0.0), moment)
         reported_at = moment if reportable else previous.get("reported_at", 0.0)
-        data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "detail": f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms", "row": "", "count": count, "worst": worst, "reported_at": reported_at}
-        self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system(), CardKind.FAULTS)
+        data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "row": "", "count": count, "worst": worst, "reported_at": reported_at}
+        detail = f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms"
+        self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system(), CardKind.FAULTS, detail)
         if reportable:
             self.nudges.type_line(agent, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))
 

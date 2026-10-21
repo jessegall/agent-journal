@@ -16,7 +16,7 @@ class Cards:
         self.messages = messages
 
     def show(self, environment_id: int, session: str, label: str, icon: str, tone: str = "", detail: str = "", row: str = "", kind: str = "card", actor: Actor = Actor.system(), key: str = "", command: str = "", *, shows: CardKind) -> Message:
-        return self.keyed(environment_id, key, label, {"kind": kind, "session": session, "icon": icon, "tone": tone, "detail": detail, "row": row, "command": command}, actor, shows)
+        return self.keyed(environment_id, key, label, {"kind": kind, "session": session, "icon": icon, "tone": tone, "row": row, "command": command}, actor, shows, detail)
 
     @staticmethod
     def creation_key(row: Model) -> str:
@@ -26,17 +26,17 @@ class Cards:
         data = {"kind": "made", "session": actor.id, "made_type": row.table(), "n": row.id, **RowCard.build(row).as_data()}
         return self.keyed(environment_id, self.creation_key(row), row.title_words(), data, actor, CardKind.CREATED)
 
-    def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind) -> Message:
-        data = {"session": "", "row": "", **data, **self.detail_parts(data), "key": key, "shows": str(shows)}
+    def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind, detail: str = "") -> Message:
+        data = {"session": "", "row": "", **data, **self.detail_parts(detail), "key": key, "shows": str(shows)}
         older = self.messages.keyed(key, actor) if key else []
         if older:
             return self.messages.save(older[0].with_(text=label, data=data), actor)
         return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), actor)
 
-    def detail_parts(self, data: dict) -> dict:
-        lines = str(data.get("detail", "")).strip().splitlines()
+    def detail_parts(self, detail: str) -> dict:
+        lines = detail.strip().splitlines()
         if not lines:
-            return {}
+            return {"detail": ""}
         head = {"detail": self.shortened(lines[0])}
         return head | {"lines": lines} if len(lines) > 1 else head
 

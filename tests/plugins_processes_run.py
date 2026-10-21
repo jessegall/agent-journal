@@ -30,7 +30,7 @@ def test_a_plugins_service_answers_a_held_event_on_its_socket(app, tmp_path: Pat
     def turn() -> None:
         while not stopping.is_set():
             supervisor.relay_once(0.05)
-            supervisor.services.keep_alive()
+            supervisor.services.revive_stopped()
     loop = threading.Thread(target=turn, daemon=True)
     loop.start()
     try:

@@ -1,4 +1,4 @@
-"""Rename a name in the journal package and its tests, with everything that depends on it.
+"""Rename a name in the journal and supervisor packages and the tests, with everything that depends on it.
 
   python3 scripts/refactoring/rename.py Clock Timepiece
   python3 scripts/refactoring/rename.py Agents.live current
@@ -83,7 +83,7 @@ class Project:
 
     def __init__(self, root: str) -> None:
         self.root = root
-        self.files = sorted(glob.glob(f"{root}/src/journal/**/*.py", recursive=True)) + sorted(glob.glob(f"{root}/tests/*.py"))
+        self.files = sorted((glob.glob(f"{root}/src/journal/**/*.py", recursive=True) + glob.glob(f"{root}/src/supervisor/**/*.py", recursive=True))) + sorted(glob.glob(f"{root}/tests/*.py"))
         options = Options()
         options.export_types = True
         options.ignore_missing_imports = True
@@ -193,7 +193,7 @@ class Renamer:
             return self.everywhere(old[1:], new)
         if ":" in old:
             return self.local(old, new)
-        if "." in old and old.split(".")[0] == "journal":
+        if "." in old and old.split(".")[0] in ("journal", "supervisor"):
             return self.module_name(old, new)
         if "." in old:
             return self.member(old, new)
@@ -327,7 +327,7 @@ class Renamer:
                     place = Place(path, node.end_line, node.end_column - len(name), name, new)
                     if any(root_of(receiver, name) is group for receiver in receivers):
                         plan.places.append(place)
-                    elif not receivers or all(root_of(receiver, name) is None and receiver.fullname.startswith(("journal.", "tests.")) for receiver in receivers):
+                    elif not receivers or all(root_of(receiver, name) is None and receiver.fullname.startswith(("journal.", "supervisor.", "tests.")) for receiver in receivers):
                         plan.loose.append(f"{path}:{node.end_line}")
                         plan.untyped.append(place)
                         if unique:
@@ -535,7 +535,7 @@ def doubled(plans: list[Plan], project: Project) -> list[str]:
 def leftovers(plans: list[Plan], root: str) -> list[str]:
     """Every attribute use, after writing, of an old member name that no class or function defines any more: a use the types could not place, to rename by hand."""
     olds = {plan.member for plan in plans if plan.member}
-    files = glob.glob(f"{root}/src/journal/**/*.py", recursive=True) + glob.glob(f"{root}/tests/*.py")
+    files = (glob.glob(f"{root}/src/journal/**/*.py", recursive=True) + glob.glob(f"{root}/src/supervisor/**/*.py", recursive=True)) + glob.glob(f"{root}/tests/*.py")
     defined = set()
     for path in files:
         for node in ast.walk(ast.parse(open(path, encoding="utf-8").read())):
@@ -586,7 +586,7 @@ def written(plans: list[Plan], root: str) -> int:
             subprocess.run(["git", "-C", root, "mv", os.path.relpath(old, root), os.path.relpath(new, root)], check=True)
             modules[module_path(old, root)] = module_path(new, root)
     if modules:
-        for path in glob.glob(f"{root}/src/journal/**/*.py", recursive=True) + glob.glob(f"{root}/tests/*.py"):
+        for path in (glob.glob(f"{root}/src/journal/**/*.py", recursive=True) + glob.glob(f"{root}/src/supervisor/**/*.py", recursive=True)) + glob.glob(f"{root}/tests/*.py"):
             source = open(path, encoding="utf-8").read()
             updated = source
             for old, new in modules.items():

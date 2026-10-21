@@ -64,7 +64,7 @@ class StateMachine(AgentListener[AgentEvent]):
         settings = self.top_state()
         stack = self.states.apply_mode(self.states.stack(agent), settings)
         event = event.with_data(self.readers.agent_data(agent))
-        transition = stack.top().respond(event, settings)
+        transition = stack.top().respond(event, settings, self.features.conducts())
         machine_answer = self.hook_machine(stack, self.moved(self.placed(stack, transition.target), transition), settings, event.data)
         if transition.dropped:
             self.entries.save(StackHistory.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())

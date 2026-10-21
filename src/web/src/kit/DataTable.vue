@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 
-const props = defineProps({columns: {type: Array, required: true}, rows: {type: Array, required: true}});
+const props = defineProps({columns: {type: Array, required: true}, rows: {type: Array, required: true}, empty: {type: String, default: ""}});
 const emit = defineEmits(["open"]);
 const grid = computed(() => ({gridTemplateColumns: `2fr repeat(${Math.max(0, props.columns.length - 1)}, 1fr)`}));
 </script>
@@ -25,6 +25,9 @@ const grid = computed(() => ({gridTemplateColumns: `2fr repeat(${Math.max(0, pro
                     <span class="cell">{{ cell }}</span>
                 </template>
             </component>
+        </template>
+        <template v-if="!rows.length && empty">
+            <div class="table-row empty">{{ empty }}</div>
         </template>
     </div>
 </template>
@@ -53,6 +56,11 @@ const grid = computed(() => ({gridTemplateColumns: `2fr repeat(${Math.max(0, pro
     font-size: 11.5px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+}
+
+.table-row.empty {
+    display: block;
+    color: var(--text-3);
 }
 
 .table-row.opens {

@@ -32,8 +32,8 @@ class PluginAnswers:
     def show(self, plugin: Plugin, card: PluginCard, environment_id: int) -> None:
         kind = plugin.manifest.card_kind(card.kind)
         label = self.text.plain(card.label or kind.label)
-        data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "detail": self.text.plain(card.detail), "collapsed": kind.collapsed}
-        self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name), CardKind.PLUGINS)
+        data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "collapsed": kind.collapsed}
+        self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name), CardKind.PLUGINS, self.text.plain(card.detail))
 
     def run(self, plugin: Plugin, line: str, environment: str, environment_id: int) -> None:
         argv = shlex.split(line)

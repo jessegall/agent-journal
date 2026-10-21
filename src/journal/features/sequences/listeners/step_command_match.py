@@ -13,6 +13,6 @@ class StepCommandMatch(Listener[ToolStarting]):
 
     def handle(self, event: ToolStarting) -> None:
         run = None if event.subagent else self.runs.current(event.session, event.environment_id)
-        if run is None or run.suspension_reason or run.adopted_at or not self.runs.names(run, event.call.parts):
+        if run is None or run.suspension_reason or run.adopted_at or not self.runs.names(run.text, event.call.parts):
             return
         self.runs.follow(event.session, event.environment_id)

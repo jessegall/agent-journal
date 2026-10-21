@@ -11,7 +11,7 @@ import Segmented from "../kit/Segmented.vue";
 const props = defineProps({resource: Object, bare: Boolean});
 const MODES = [
     {key: "hand", label: "Only when you or the agent start it"},
-    {key: "event", label: "When a row is created"},
+    {key: "event", label: "When a record is made"},
     {key: "trigger", label: "When a trigger matches"},
 ];
 const error = ref("");
@@ -52,7 +52,7 @@ const triggerChoices = computed(() =>
             <Segmented fill wrap :options="MODES" :value="mode" @pick="pickMode" />
         </FormField>
         <template v-if="mode === 'event'">
-            <FormField label="Row that starts this sequence when it is created">
+            <FormField label="Record that starts this sequence when one is made">
                 <ChoiceList :choices="kindChoices" @pick="(table) => save(`${table}.created`)" />
             </FormField>
         </template>

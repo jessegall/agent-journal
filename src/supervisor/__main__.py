@@ -6,7 +6,6 @@ from supervisor.launch_file import LaunchFile
 
 
 def main(argv: list[str]) -> int:
-    """The supervisor started from the launch file named; a file it cannot start from is refused in one line."""
     if len(argv) != 1:
         print("usage: python3 -m supervisor <launch file>", file=sys.stderr)
         return 2
@@ -19,4 +18,4 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    raise SystemExit(main(sys.argv[1:]))

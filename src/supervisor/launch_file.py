@@ -4,16 +4,15 @@ from pathlib import Path
 
 from supervisor.bad_launch_file import BadLaunchFile
 from supervisor.band import Band
-from supervisor.band_words import BandWords
+from supervisor.band_labels import BandLabels
 from supervisor.inbox import Inbox
-from supervisor.mirror import Mirror
+from supervisor.screen_copy import ScreenCopy
 from supervisor.service import Service
 from supervisor.services import Services
 from supervisor.supervisor import Supervisor
 from supervisor.terminal import Terminal
 
 PROCESS = ("command", "folder", "env")
-"""What every process in the file names."""
 
 
 class LaunchFile:
@@ -38,6 +37,6 @@ class LaunchFile:
     def supervisor(self) -> Supervisor:
         front = self.data["front"]
         services = Services(*(Service(s["name"], s["command"], Path(s["folder"]), s["env"], Path(s["log"]), s.get("keep", True)) for s in self.data.get("services", [])))
-        band = Band(BandWords(**self.data["band"])) if self.data.get("band") and os.isatty(1) else None
-        mirror = Mirror(Path(self.data["screen"])) if self.data.get("screen") else None
-        return Supervisor(Terminal(front["command"], front["folder"], front["env"], tuple(front.get("resume", ()))), Inbox(Path(self.data["socket"]), Path(self.data["announce"])), services, stdin=0 if os.isatty(0) else None, band=band, mirror=mirror, faults=Path(self.data["announce"]).parents[1] / "supervisor.log")
+        band = Band(BandLabels(**self.data["band"])) if self.data.get("band") and os.isatty(1) else None
+        screen_copy = ScreenCopy(Path(self.data["screen"])) if self.data.get("screen") else None
+        return Supervisor(Terminal(front["command"], front["folder"], front["env"], tuple(front.get("resume", ()))), Inbox(Path(self.data["socket"]), Path(self.data["announce"])), services, stdin=0 if os.isatty(0) else None, band=band, screen_copy=screen_copy, faults=Path(self.data["announce"]).parents[1] / "supervisor.log")
