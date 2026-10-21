@@ -58,6 +58,7 @@ class Provider(ABC):
     profile_suffix: ClassVar[str]
     profile_model: ClassVar[str]
     default: ClassVar[bool]
+    session_inbox: ClassVar[bool]
 
     def __init__(self) -> None:
         self._status_files: dict[Path, ContextFile] = {}
@@ -168,6 +169,20 @@ class Provider(ABC):
 
     @abstractmethod
     def worker_outcome(self, output: str, err: str) -> WorkerOutcome: ...
+
+    def printed_session(self, output: str, err: str) -> str:
+        return ""
+
+    @staticmethod
+    def printed_rows(output: str) -> list[dict]:
+        return [row for line in output.splitlines() if isinstance(row := Provider.printed_row(line), dict)]
+
+    @staticmethod
+    def printed_row(line: str) -> object:
+        try:
+            return json.loads(line)
+        except ValueError:
+            return None
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
         kind = hook.kind

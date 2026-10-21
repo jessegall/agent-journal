@@ -6,7 +6,7 @@ import subprocess
 import threading
 
 from journal.config import Config
-from journal.support.caller import AGENT_SHELL
+from journal.support.caller import AGENT_SHELL, WORKER
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor
@@ -21,6 +21,7 @@ from journal.repositories.environments import Environments
 from journal.support.worktree_failure import WorktreeFailure
 
 TAIL_CHARACTERS = 4000
+SESSION_POLL_SECONDS = 0.5
 TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
 ERROR_STATUS = -3
@@ -34,7 +35,12 @@ class WorkerRunner:
     def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
         self.environments, self.profiles = environments, profiles
-        self._running: dict[int, subprocess.Popen] = {}
+        self._locks: dict[int, threading.Lock] = {}
+        self._locks_lock = threading.Lock()
+
+    def lock(self, worker_id: int) -> threading.Lock:
+        with self._locks_lock:
+            return self._locks.setdefault(worker_id, threading.Lock())
 
     def start(self, worker: Worker, actor: Actor) -> None:
         command = self.providers.lookup(worker.provider).worker_command(self.instructed(worker), worker.model, worker.resume)
@@ -50,56 +56,81 @@ class WorkerRunner:
             self.run(worker, command, actor)
 
     def run(self, worker: Worker, command: list[str], actor: Actor) -> None:
-        environ = self.environment_variables(self.environments.find(worker.environment_id).name)
+        environ = {**self.environment_variables(self.environments.find(worker.environment_id).name), WORKER: str(worker.id)}
         output, err = self.outputs(worker)
         output.parent.mkdir(parents=True, exist_ok=True)
         try:
             with output.open("w") as output_text, err.open("w") as faults:
-                process = subprocess.Popen(command, cwd=self.workplace(worker), env=environ, stdin=subprocess.DEVNULL, stdout=output_text, stderr=faults, text=True, start_new_session=True)
+                process = subprocess.Popen(command, cwd=self.place(worker), env=environ, stdin=subprocess.DEVNULL, stdout=output_text, stderr=faults, text=True, start_new_session=True)
         except OSError as error:
             self.reports.file(worker, f"could not start: {error}", actor)
             return
         worker = self.workers.save(worker.running_as(process.pid, time.time()), actor)
-        self._running[worker.id] = process
-        try:
-            code = process.wait(timeout=self.remaining_minutes(worker))
-        except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
-            process.wait()
-            code = TIMEOUT_STATUS
-        self._running.pop(worker.id, None)
-        self.finish(worker, code, actor)
+        self.finish(worker, self.waited(worker, process, actor), actor)
 
     def environment_variables(self, environment: str) -> dict[str, str]:
         excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers())
         return {**{k: v for k, v in os.environ.items() if k not in excluded}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": environment}
+    def waited(self, worker: Worker, process: subprocess.Popen, actor: Actor) -> int:
+        while True:
+            try:
+                return process.wait(timeout=self.wait_step(worker))
+            except subprocess.TimeoutExpired:
+                if self.remaining_seconds(worker) == 0:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    process.wait()
+                    return TIMEOUT_STATUS
+                worker = self.session_recorded(worker, actor)
+
+    def wait_step(self, worker: Worker) -> float | None:
+        remaining = self.remaining_seconds(worker)
+        if worker.resume:
+            return remaining
+        return SESSION_POLL_SECONDS if remaining is None else min(remaining, SESSION_POLL_SECONDS)
+
+    def session_recorded(self, worker: Worker, actor: Actor) -> Worker:
+        output, err = self.outputs(worker)
+        session = self.providers.lookup(worker.provider).printed_session(self.read(output), self.read(err))
+        return self.workers.touch(worker, actor, resume=session) if session else worker
 
     def is_finished(self, worker: Worker, actor: Actor) -> bool:
         if not self.is_running(worker.pid):
-            self.finish(worker, END_UNWATCHED, actor)
+            self.settle(worker, actor)
             return True
-        if self.remaining_minutes(worker) == 0:
+        if self.remaining_seconds(worker) == 0:
             os.killpg(worker.pid, signal.SIGKILL)
             self.finish(worker, TIMEOUT_STATUS, actor)
             return True
         return False
 
+    def is_ended(self, worker: Worker) -> bool:
+        return worker.is_running() and worker.pid > 0 and not self.is_running(worker.pid)
+
+    def settle(self, worker: Worker, actor: Actor) -> Worker:
+        self.finish(worker, END_UNWATCHED, actor)
+        return self.workers.find(worker.id)
+
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         output, err = self.outputs(worker)
         provider = self.providers.lookup(worker.provider)
         ended = provider.worker_outcome(self.read(output), self.read(err))
-        resume = ended.session or provider.latest_session(self.place(worker), worker.began)
+        resume = ended.session or self.own_session(worker)
         report = (ended.error or ended.report)[-TAIL_CHARACTERS:] or "(nothing printed)"
         code = code or (ERROR_STATUS if ended.error else 0)
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
-        current = self.workers.find(worker.id).with_(resume=resume or worker.resume)
-        if current.state == WorkerState.REPORTED:
+        current = self.workers.find(worker.id)
+        current = current.with_(resume=resume or current.resume)
+        if current.state != WorkerState.DISPATCHED:
             self.workers.save(current, actor)
             return
+        current = current.with_(touched_paths=self.branch.touched(current))
         branch = self.branch.summary(current)
         self.reports.file(current, f"{outcome}\n\n{branch}" if branch else outcome, actor)
 
-    def remaining_minutes(self, worker: Worker) -> float | None:
+    def own_session(self, worker: Worker) -> str:
+        return self.providers.lookup(worker.provider).latest_session(self.place(worker), worker.began) if worker.worktree and worker.began else ""
+
+    def remaining_seconds(self, worker: Worker) -> float | None:
         limit = self.minutes() * 60
         return max(0.0, limit - (time.time() - worker.began)) if limit else None
 
@@ -127,10 +158,9 @@ class WorkerRunner:
             return True
         return True
 
-    def stop(self, worker_id: int) -> None:
-        process = self._running.get(worker_id)
-        if process:
-            process.terminate()
+    def stop(self, worker: Worker) -> None:
+        if self.is_running(worker.pid) and os.getpgid(worker.pid) == worker.pid:
+            os.killpg(worker.pid, signal.SIGTERM)
 
     def place(self, worker: Worker) -> Path:
         return self.branch.folder(worker) if worker.worktree else self.config.root
@@ -138,13 +168,23 @@ class WorkerRunner:
     def workplace(self, worker: Worker) -> Path:
         folder = self.place(worker)
         if worker.worktree and not folder.is_dir():
-            self.cut(worker, folder)
+            self.added(worker, "-b", self.branch.name(worker), str(folder), "HEAD")
         return folder
 
-    def cut(self, worker: Worker, folder: Path) -> None:
-        if subprocess.run(["git", "rev-parse", "--verify", "-q", "HEAD"], cwd=self.config.root, capture_output=True, timeout=60).returncode != 0:
+    def renewed(self, worker: Worker) -> Path:
+        folder, name = self.place(worker), self.branch.name(worker)
+        if not worker.worktree or folder.is_dir():
+            return folder
+        self.branch.git("worktree", "prune")
+        if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{name}").returncode == 0:
+            self.added(worker, str(folder), name)
+            return folder
+        return self.workplace(worker)
+
+    def added(self, worker: Worker, *argv: str) -> None:
+        if self.branch.git("rev-parse", "--verify", "-q", "HEAD").returncode != 0:
             raise WorktreeFailure(worker.name, "the project has no commit yet, so there is no tip to cut a worktree from; make a first commit")
-        added = subprocess.run(["git", "worktree", "add", "-q", "-b", self.branch.name(worker), str(folder), "HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=60)
+        added = self.branch.git("worktree", "add", "-q", *argv)
         if added.returncode != 0:
-            subprocess.run(["git", "worktree", "prune"], cwd=self.config.root, capture_output=True, timeout=60)
+            self.branch.git("worktree", "prune")
             raise WorktreeFailure(worker.name, added.stderr.strip())

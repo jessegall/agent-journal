@@ -99,4 +99,4 @@ class BaseState(Conduct):
     @classmethod
     def restored(cls, data: dict) -> "BaseState":
         kinds = {field.name: field.type for field in fields(cls)}
-        return cls(**{name: Timeout(**value) if kinds[name] is Timeout else value for name, value in data.items() if name in kinds})
+        return cls(**{name: Timeout.parsed(value) if kinds[name] is Timeout else value for name, value in data.items() if name in kinds})

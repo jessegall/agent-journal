@@ -2,16 +2,22 @@ from journal.features.feature import Feature
 from journal.features.workers.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_data_reader import WorkersDataReader
 from journal.features.workers.support.workers_data import WorkersData
+from journal.features.workers.seeds.subagents_seed import SubagentsSeed
 from journal.features.workers.seeds.workers_seed import WorkersSeed
 from journal.features.workers.jobs.worker_watch import WorkerWatch
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
+from journal.features.workers.commands.subagent_command import SubagentCommand
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.listeners.subagent_cards import SubagentCards
+from journal.features.workers.listeners.subagent_record import SubagentRecord
 from journal.features.workers.listeners.worker_cards import WorkerCards
 from journal.engine.support.modes import Modes
 from journal.features.plans.states.plans_ready import PlansReady
+from journal.features.workers.listeners.worker_marks import WorkerMarks
+from journal.features.workers.listeners.dispatch_refusal_cards import DispatchRefusalCards
+from journal.features.workers.listeners.silent_worker_record import SilentWorkerRecord
 from journal.features.workers.states.delegating import Delegating
 from journal.features.workers.states.orchestrating import Orchestrating
 from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
@@ -24,17 +30,18 @@ class Workers(Feature[WorkersData]):
     MODE = Option("workers.mode", "Work mode", "Builder: the agent builds it itself and sends workers when a job is better done beside it. Orchestrator: it plans, hands the work to workers, then reviews and merges it. Solo: it does everything itself, with no workers", "builder", kind="choice", choices=("builder", "orchestrator", "solo"))
     WORKER_LIMIT = Option("workers.most_out", "Workers out at once", "The most workers out at a time; a dispatch past it is refused until one reports. 0 is no limit", 3, unit="workers")
     SUBAGENT_LIMIT = Option("workers.most_subagents", "Subagents running at once", "The most subagents running at a time; one more is held until one finishes. 0 is no limit", 5, unit="subagents")
+    PROFILE_LIMIT = Option("workers.idle_kept", "Workers kept for reuse per profile", "The most workers of one profile kept out or idle for reuse; past it a dispatch of that profile is refused while one of them is idle, so the job goes to that one. Reviewers always start fresh. 0 is no limit", 8, unit="workers")
 
     name = "workers"
     title = "Workers"
     help = "Agents sent to write one bounded job; the agent waits for their reports."
     modes = Modes(MODE, {"builder": PlansReady, "orchestrator": Orchestrating, "solo": Soloing})
-    options = (TIMEOUT, MODE, WORKER_LIMIT, SUBAGENT_LIMIT)
+    options = (TIMEOUT, MODE, WORKER_LIMIT, SUBAGENT_LIMIT, PROFILE_LIMIT)
     states = (Orchestrating, Soloing, OrchestratingPlan, Delegating)
-    commands = (WorkerCommand,)
-    seeds = (WorkersSeed,)
+    commands = (WorkerCommand, SubagentCommand)
+    seeds = (WorkersSeed, SubagentsSeed)
     jobs = (WorkerWatch,)
-    listeners = (SubagentCards, WorkerCards)
+    listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMarks, DispatchRefusalCards, SilentWorkerRecord)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
 
@@ -47,8 +54,12 @@ class Workers(Feature[WorkersData]):
     WORKER_OVERFLOW = Nudge(name, "too_many_workers", "{{out}} workers are out, the most at once", "wait for one to report with `journal worker wait`, or give the job to one that reported with `journal worker send`", repeat_interval=0)
     WORKER_FILE = Nudge(name, "file_is_the_workers", "that file is in worker {{n}}'s worktree", "{{name}} writes there: `journal worker send {{n}} \"<job>\"`, or wait for its report and merge", repeat_interval=0)
     UNREAD_WORKER_REPORTS = Nudge(name, "act_on_the_reports", "{{reports_waiting}} reported and you have not acted on it yet", "read its report, then give it its next job, stop it, or mark it done once its work is merged or used", repeat_interval=180, blocks_regardless=True)
-    SUBAGENT_REUSE = Nudge(name, "send_the_job_to_the_subagent", "subagent {{session}} ({{task}}) already worked on the files this job names", "send it the job with SendMessage({to: \"{{session}}\", message: \"<job>\"}), so it goes on with what it knows", repeat_interval=0)
-    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
+    WORKER_KNOWS_FILES = Nudge(name, "send_it_to_the_worker_that_knows", "{{count}} idle workers already worked on files this job names:\n{{workers}}", "give the job to one of them with its send line, or add --fresh to the dispatch if it truly needs a new worker", repeat_interval=0)
+    IDLE_CAP = Nudge(name, "send_it_to_an_idle_worker", "{{kept}} {{profile}} workers are kept, the most of one profile, and {{count}} of them are idle:\n{{workers}}", "give the job to one of them with its send line, or retire one with `journal worker complete <n> --why \"<reason>\"` to free a place", repeat_interval=0)
+    REUSE_QUESTION = Nudge(name, "could_it_be_reused", "Are you sure worker {{n}}, {{name}}, cannot be reused?", "if it can, give it its next job with `journal worker send {{n}} \"<job>\"`; if not, repeat the command with --why \"<why it cannot>\"", repeat_interval=0)
+    SILENT_WORKER = Nudge(name, "worker_quiet", "worker {{n}}, {{name}}, has been quiet for {{minutes}} minutes", "look at its transcript on its worker page, tell it something with `journal worker notify {{n}} \"<text>\"`, or stop it", repeat_interval=0)
+    SUBAGENT_REUSE = Nudge(name, "send_the_job_to_the_subagent", "{{count}} idle subagents already worked on files this job names:\n{{subagents}}", "send the job to one of them with its SendMessage line, so it goes on with what it knows, or retire it with `journal subagent retire <n>` if the job needs a fresh one", repeat_interval=0)
+    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, REUSE_QUESTION, SILENT_WORKER, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
 
     skill = Skill("workers", 'Send a worker to write a bounded job and wait for its report; load it before dispatching one', """
 # Workers
@@ -65,11 +76,24 @@ A subagent only reads. A worker writes: code in a worktree of its own, a documen
   with the plan bar's buttons.
 - `journal worker wait <n> [<n>...]` waits until they have reported; stopping is fine while you wait.
 - A worker reports with `journal worker report <n> "<what it found or did>"`; you are told, and told again when
-  the last one is back. `journal worker list` shows who is out.
+  the last one is back. `journal worker list` shows every worker, and the subagents you started with their state and task.
 - A report is acted on once you give the worker its next job, `journal worker stop <n>` it, or `journal worker complete <n>`
   when its work is merged or used; until then you are told again at once and every three minutes.
 - A worker that runs past 60 minutes is stopped and its report says so (setting workers.timeout_minutes, 0 for no limit).
-- Related work goes back to the worker that knows it: `journal worker send <n> "<next job>"` sends a worker that
-  reported out again with its memory of the last job, in the same worktree. Never dispatch a fresh worker for
-  work one already out has done part of.
-""", keywords=('worker', 'workers', 'helper', 'dispatch', 'worktree', 'say'), required_states=('awaiting',))
+- Related work goes back to the worker that knows it: `journal worker send <n> "<next job>"` gives a worker that
+  reported, or was stopped, its next job in its last session, with its memory of the last job, in the same worktree.
+  Never dispatch a fresh worker for work one already out has done part of.
+- A worker still running takes a word in its live session: `journal worker notify <n> "<text>"`. Only a Claude
+  worker has a session inbox; a Codex worker, and one that reported or was stopped, are refused with what to use instead.
+- A dispatch whose brief names files an idle worker touched is refused, naming that worker and its send line; add
+  `--fresh` only when the job truly needs a new worker. Once a profile has as many workers out or idle as the setting
+  workers.idle_kept (8, 0 for no limit), a dispatch of that profile is refused while one of them is idle. A reviewer
+  always starts fresh.
+- `journal worker complete <n>` or `journal worker stop <n>` of an idle worker first asks whether it could be reused;
+  repeat it with `--why "<reason>"` to retire it. A worker out silent for 20 minutes is named to you once.
+- A worker lists the other workers of the agent that dispatched it with `journal worker peers` and reaches one with
+  notify when it is out or send when it is idle; never itself, a retired one or another agent's workers.
+- A subagent job on files an idle subagent of the same kind read is refused, naming its SendMessage line, so the
+  subagent that knows the files takes it. `journal subagent retire <n>` lets a subagent go: it is no longer offered
+  and no longer counts among the subagents running at once (workers.most_subagents).
+""", keywords=('worker', 'workers', 'helper', 'dispatch', 'worktree', 'send', 'notify'), required_states=('awaiting',))

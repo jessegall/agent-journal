@@ -4,13 +4,21 @@ from dataclasses import dataclass
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.events.rows.worker_stopped import WorkerStopped
+from journal.events.rows.worker_notified import WorkerNotified
+from journal.events.rows.worker_retired import WorkerRetired
+from journal.events.rows.worker_reused import WorkerReused
+from journal.events.rows.worker_revived import WorkerRevived
 from journal.models.scoped import Scoped
+from journal.models.support.path_overlap import PathOverlap
 from journal.models.worker_state import WorkerState
+from journal.support.timeout import Timeout
+
+SILENCE = Timeout.minutes(20)
 
 
 @dataclass(frozen=True)
 class Worker(Scoped):
-    """An agent sent to write one bounded job, in a worktree of its own when it changes code. A subagent only reads; a worker writes."""
+    """An agent sent to write one bounded job, in a worktree of its own when it changes code: out while dispatched whatever its process, so one ended unreported or mid-report still counts as out until its report is filed; idle once it reported, until its report is acted on; retired once stopped or acted on."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("name", "brief")
     name: str = ""
@@ -27,33 +35,63 @@ class Worker(Scoped):
     pid: int = 0
     began: float = 0.0
     recovered_session: str = ""
+    touched_paths: tuple[str, ...] | None = None
+    reuse_count: int = 0
+    retire_reason: str = ""
+    silence: Timeout = SILENCE
+    silence_reported: bool = False
 
     def worker_ref(self) -> str:
         return f"{self.table()}:{self.id}"
 
     def dispatched(self, time: float) -> "Worker":
-        return self.with_(state=WorkerState.DISPATCHED).with_event(WorkerDispatched(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, ref=self.worker_ref(), label=f"worker {self.id}", awaiter=self.dispatcher))
+        return self.contacted(time).with_(state=WorkerState.DISPATCHED).with_event(self.pending(WorkerDispatched, time))
+
+    def pending(self, kind: type[WorkerDispatched], time: float) -> WorkerDispatched:
+        return kind(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, ref=self.worker_ref(), label=f"worker {self.id}", awaiter=self.dispatcher, brief=self.brief)
 
     def reported(self, time: float, report: int) -> "Worker":
-        return self.with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, reported"))
+        return self.contacted(time).with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, reported"))
 
     def running_as(self, pid: int, began: float) -> "Worker":
         return self.with_(pid=pid, began=began, recovered_session="")
 
-    def instructed(self, brief: str) -> "Worker":
-        return self.with_(brief=brief, state=WorkerState.DISPATCHED)
+    def resumed(self, brief: str, time: float, kind: type[WorkerReused] | type[WorkerRevived]) -> "Worker":
+        instructed = self.instructed(brief, time).with_(reuse_count=self.reuse_count + 1)
+        return instructed.with_event(instructed.pending(kind, time))
 
-    def stopped(self, time: float) -> "Worker":
-        return self.with_(state=WorkerState.STOPPED, adopted=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
+    def instructed(self, brief: str, time: float) -> "Worker":
+        return self.contacted(time).with_(brief=brief, state=WorkerState.DISPATCHED, adopted=False, pid=0, began=0.0)
 
-    def finished(self) -> "Worker":
-        return self.with_(adopted=True)
+    def contacted(self, time: float) -> "Worker":
+        return self.with_(silence=SILENCE.started(time), silence_reported=False)
+
+    def is_silent(self, time: float) -> bool:
+        return self.is_running() and not self.silence_reported and self.silence.is_elapsed(time)
+
+    def notified(self, text: str, time: float) -> "Worker":
+        return self.contacted(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, text=text))
+
+    def stopped(self, time: float, reason: str) -> "Worker":
+        return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
+
+    def finished(self, time: float, reason: str) -> "Worker":
+        retired = self.with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
+        return retired.stopped(time, reason) if self.is_running() else retired
 
     def is_running(self) -> bool:
         return self.state == WorkerState.DISPATCHED
 
-    def has_report_waiting(self) -> bool:
+    def is_idle(self) -> bool:
         return self.state == WorkerState.REPORTED and not self.adopted
+
+    def overlaps(self, paths: set[str]) -> bool:
+        return PathOverlap.exists(self.touched_paths or (), paths)
+
+    def files_line(self) -> str:
+        if self.touched_paths is None:
+            return "no files known"
+        return ", ".join(self.touched_paths) or "no files changed"
 
     def title_words(self) -> str:
         return self.name

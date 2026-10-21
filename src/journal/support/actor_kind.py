@@ -8,3 +8,4 @@ class ActorKind(StrEnum):
     PLUGIN = "plugin"
     PHONE = "phone"
     EXTERNAL = "external"
+    WORKER = "worker"

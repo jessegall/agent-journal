@@ -76,6 +76,9 @@ class Entries(ScopedRepository[Entry]):
     def dispatches(self, session: str) -> list[Entry]:
         return self.selected(f"json_extract(data, '$.session_id') = ? AND {DISPATCHES} ORDER BY id", (session,))
 
+    def global_dispatches(self) -> list[Entry]:
+        return self.selected_globally(f"{DISPATCHES} ORDER BY id")
+
     def agent_calls(self, last: int = 500) -> list[Entry]:
         return self.selected(f"{DISPATCHES} AND kind = 'ToolStarting' ORDER BY id DESC LIMIT ?", (last,))
 

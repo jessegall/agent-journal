@@ -23,7 +23,7 @@ class CliController:
             return Response.json({"text": "", "error": f"the journal does not know this token for plugin {plugin}\n", "code": 1}, 403)
         environment = request.body.get("env", "main")
         agent_shell = bool(request.body.get("agent")) and self.launches.is_launch(environment, request.body.get("launch", ""))
-        caller = Caller(environment, request.body.get("session", ""), agent_shell, plugin)
+        caller = Caller(environment, request.body.get("session", ""), agent_shell, plugin, int(request.body.get("worker") or 0))
         argv = request.body.get("argv", [])
         if self.subagents.runs(caller.environment, argv, request.headers.get(ACTOR_HEADER, ""), request.headers.get(THREAD_HEADER, "")):
             return Response.json(Outcome.refused(REFUSAL))

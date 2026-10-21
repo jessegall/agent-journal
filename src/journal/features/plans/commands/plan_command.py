@@ -6,7 +6,7 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.plans.support.review_rounds import ReviewRounds
 from journal.features.tasks.support.waits import Waits
-from journal.features.workers.support.subagents import Subagents
+from journal.features.workers.support.subagent_entries import SubagentEntries
 from journal.models.link import Link
 from journal.models.phase import Phase
 from journal.models.plan import Plan
@@ -23,7 +23,7 @@ from journal.repositories.tasks import Tasks, WAIT_LINK
 class PlanCommand(Command):
     noun = "plan"
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, subagents: Subagents, waits: Waits, rounds: ReviewRounds) -> None:
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, subagents: SubagentEntries, waits: Waits, rounds: ReviewRounds) -> None:
         self.plans, self.phases, self.tasks, self.links, self.subagents, self.waits = plans, phases, tasks, links, subagents, waits
         self.rounds = rounds
 

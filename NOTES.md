@@ -766,12 +766,18 @@ ProfileFiles and serves them at /journal/profiles. The journal's own three (rese
 shipped and setup puts them back. The critic profile is gone and the designer profile has no critique rounds: a
 design is one designer's work, judged by the orchestrator against what the user wants.
 
-Worker reuse, 2026-10-16 on the user's word (task 210): a worker keeps the provider's session of its last run
-(Claude answers in JSON with its session id; Codex names its session id in the run's header) and `journal worker
-say <n> "<next job>"` sends a reported worker out again on that session, in the same worktree, so its memory of
-the last job comes with it; a worker still out is told to report first, and one whose session was not captured is
-dispatched again. Subagents are reused the same way by the orchestrator's own message to the agent it already
-started, never a fresh one on work another knows.
+Worker reuse, 2026-10-16 on the user's word (task 210), as version 3 reused them since plan 21 (2026-10-21): a
+worker keeps the provider's session of its last run, saved the moment the run prints it, and `journal worker send
+<n> "<next job>"` gives a worker that reported, or was stopped, its next job in that session and its own worktree
+and branch, so its memory of the last job comes with it; each send counts one reuse on its row. A worker still out
+takes a message in its live session with `journal worker notify`, Claude only. A dispatch whose brief names files
+an idle worker's branch touched is refused in favour of that worker unless `--fresh`, and a dispatch past
+workers.idle_kept workers of one profile is refused while one of them is idle; reviewers start fresh. Retiring an
+idle worker asks whether it could be reused and keeps the --why as its reason. A worker out silent for twenty
+minutes is named once. A worker reaches only its own dispatcher's other workers, with `journal worker peers`, send
+and notify. Subagents are rows written from the hook entries: the census counts the running ones against
+workers.most_subagents, `journal worker list` shows them, a job on files an idle subagent read is refused with its
+SendMessage line, and `journal subagent retire` lets one go.
 
 The plan state, 2026-10-16 at night on the user's word (tasks 211 to 213): Following a plan holds the agent for the
 plan's whole life. A checkpoint stands in the plan's state with no task in hand, said as "plan N, readings at a

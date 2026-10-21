@@ -35,6 +35,10 @@ class Timeout:
     def marks(cls, count: int) -> "Timeout":
         return cls(count, cls.CONTEXT_THRESHOLDS)
 
+    @classmethod
+    def parsed(cls, data: dict) -> "Timeout":
+        return cls(**data)
+
     def started(self, moment: float) -> "Timeout":
         return replace(self, start=moment)
 

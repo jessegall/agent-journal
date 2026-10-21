@@ -8,24 +8,23 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.profiles.support.profile_files import ProfileFiles
 from journal.features.workers.support.worker_reports import WorkerReports
-from journal.features.workers.support.path_mentions import PathMentions
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.support.rejection import Rejection
-from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
+from journal.repositories.subagents import Subagents
 from journal.repositories.workers import Workers
-
+from journal.features.workers.support.worker_actions import WorkerActions
 
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows) -> None:
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, agents: Agents, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents) -> None:
         self.workers, self.messages, self.providers, self.agents = workers, messages, providers, agents
-        self.branch, self.settings = branch, settings
+        self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
 
     def arguments(self, verbs) -> None:
@@ -41,14 +40,20 @@ class WorkerCommand(Command):
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
-        line = self.verb(verbs, "send", "give a worker that reported its next job, with its memory of the last")
+        line = self.verb(verbs, "send", "give a worker that reported or was stopped its next job, in its last session with its memory of the last")
         line.add_argument("n", type=int)
         line.add_argument("brief")
         line.add_argument("--task", type=int, help="the task this job works on, which its plan then leaves to it")
+        notify = self.verb(verbs, "notify", "give a running worker a message in its live session")
+        notify.add_argument("n", type=int)
+        notify.add_argument("text")
         self.verb(verbs, "wait", "wait until these workers have reported").add_argument("on", type=int, nargs="+")
-        self.verb(verbs, "stop", "end a worker").add_argument("n", type=int)
-        self.verb(verbs, "complete", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
-        self.verb(verbs, "list", "every worker out")
+        for verb, help in (("stop", "end a worker"), ("complete", "a worker's report acted on: merged, used or set aside, so it is no longer named")):
+            retire = self.verb(verbs, verb, help)
+            retire.add_argument("n", type=int)
+            retire.add_argument("--why", default="", help="why the worker cannot be reused for the next job")
+        self.verb(verbs, "list", "every worker, and the subagents this agent started")
+        self.verb(verbs, "peers", "for a worker: the other workers of the agent that dispatched it, out or idle, and what each is on")
 
     def provider_default(self, caller: Caller) -> str:
         return self.agents.session_agent(caller.session).provider if caller.session else self.providers.default().name
@@ -61,9 +66,6 @@ class WorkerCommand(Command):
         maximum = int(self.settings.option(Feature.WORKER_LIMIT))
         if maximum and len(output) >= maximum:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
-        knowing = [] if args.fresh else self.related_workers(args.brief)
-        if knowing:
-            raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker send {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         provider = args.provider or self.provider_default(caller)
         worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
         worker = self.workers.save(worker, caller.actor)
@@ -85,28 +87,20 @@ class WorkerCommand(Command):
 
     def report(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
-        message = self.reports.file(worker.with_(session=caller.session or worker.session), args.text, caller.actor)
+        message = self.reports.file(worker.with_(session=caller.session or worker.session, touched_paths=self.branch.touched(worker)), args.text, caller.actor)
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
 
-    def related_workers(self, brief: str) -> list[Worker]:
-        matched = PathMentions.build(brief)
-        return [w for w in reversed(self.workers.scoped()) if matched and w.state != WorkerState.DISPATCHED and w.resume and matched & PathMentions.build(w.brief)]
-
     def send(self, args: Namespace, caller: Caller) -> int:
-        worker = self.workers.find(args.n)
-        if worker.state == WorkerState.DISPATCHED:
-            raise Rejection(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
-        if not worker.resume:
-            raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
-        if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
-            raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
-        worker = self.workers.save(worker.instructed(args.brief).with_(dispatcher=caller.session), caller.actor)
+        worker = self.actions.peer_send(args.n, args.brief, caller.worker, caller.actor) if caller.worker else self.actions.send(args.n, args.brief, caller.session, caller.actor)
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
-        self.runner.start(worker, caller.actor)
-        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
+        return 0
+
+    def notify(self, args: Namespace, caller: Caller) -> int:
+        worker = self.actions.peer_notify(args.n, args.text, caller.worker, caller.actor) if caller.worker else self.actions.notify(args.n, args.text, caller.actor)
+        print(f"worker {worker.id} {worker.name} has the message in its session")
         return 0
 
     def wait(self, args: Namespace, caller: Caller) -> int:
@@ -114,22 +108,44 @@ class WorkerCommand(Command):
         return 0
 
     def stop(self, args: Namespace, caller: Caller) -> int:
-        self.runner.stop(args.n)
-        self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp()), caller.actor)
-        print(f"worker {args.n} stopped")
+        self.actions.stop(args.n, args.why, caller.actor)
+        print(f"worker {args.n} stopped" + (f": {args.why}" if args.why else ""))
         return 0
 
     def complete(self, args: Namespace, caller: Caller) -> int:
-        worker = self.workers.save(self.workers.find(args.n).finished(), caller.actor)
-        dropped = self.branch.dropped(worker)
-        print(f"worker {worker.id}'s report is acted on" + (f"; {dropped}" if dropped else ""))
+        worker, dropped = self.actions.complete(args.n, args.why, caller.actor)
+        print(f"worker {worker.id}'s report is acted on" + (f": {args.why}" if args.why else "") + (f"; {dropped}" if dropped else ""))
+        return 0
+
+    def peers(self, args: Namespace, caller: Caller) -> int:
+        if not caller.worker:
+            raise Rejection("only a worker has peers: `journal worker list` lists the workers you dispatched")
+        sender = self.workers.find(caller.worker)
+        peers = [w for w in self.workers.scoped() if w.dispatcher == sender.dispatcher and w.id != sender.id and (w.is_running() or w.is_idle())]
+        for worker in peers:
+            print(f"{worker.id:>4}  {'out' if worker.is_running() else 'idle':<5} {worker.name}: {worker.brief}")
+        print(f"`journal worker notify <n> \"<text>\"` tells one that is out, `journal worker send <n> \"<job>\"` gives one that is idle a job" if peers else "no other worker of the agent that dispatched you is out or idle")
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
         workers = self.workers.scoped()
         for worker in workers:
             print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {worker.brief}")
+            if not worker.is_running():
+                print(f"{'':>16}files: {worker.files_line()}")
         output = [str(worker.id) for worker in workers if worker.is_running()]
         if output:
             print(f"`journal worker wait {' '.join(output)}` waits for a report; listing again does not bring it sooner")
+        self.print_subagents(caller.session)
         return 0
+
+    def print_subagents(self, session: str) -> None:
+        subagents = self.subagents.session_subagents(session) if session else []
+        if subagents:
+            print("subagents this agent started:")
+        for subagent in subagents:
+            print(f"{subagent.id:>4}  {subagent.state:<10} {subagent.agent_type}: {subagent.task}")
+            if subagent.is_idle():
+                print(f"{'':>16}session: {subagent.session}")
+        if any(subagent.is_idle() for subagent in subagents):
+            print("an idle subagent takes its next job by SendMessage to its session; `journal subagent retire <n>` lets one go")

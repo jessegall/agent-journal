@@ -686,6 +686,16 @@ def test_the_settings_page_has_its_system_and_sharing_tabs(server):
     assert saved["sharing"]["host"] == "tunler.example"
 
 
+def test_the_reuse_rules_are_said_in_the_workers_skill_law_four_the_notes_and_the_settings_page(server):
+    from journal.features.workers.feature import Workers
+    from journal.support.law_text import LawText
+    skill, notes = Workers.skill.body, (Path(__file__).resolve().parents[1] / "NOTES.md").read_text()
+    assert all(words in skill for words in ("journal worker notify <n>", "reported, or was stopped", "--fresh", "workers.idle_kept", "--why", "journal worker peers", "journal subagent retire <n>")), "the skill says notify, send, the dispatch refusals, the reuse question, peers and subagent retire"
+    assert 'journal worker send <n> "<job>"' in LawText.BLOCK and "worker say" not in LawText.BLOCK and "journal worker send" in notes and "worker\nsay" not in notes
+    workers = next(f for f in call(server, "GET", "/journal/manifest")[1]["features"] if f["name"] == "workers")
+    assert {s["name"]: s["title"] for s in workers["options"]}["idle_kept"] == "Workers kept for reuse per profile", "the Settings page shows the cap in plain words"
+
+
 def test_the_phone_page_installs_from_the_tunnels_listener_as_an_app(sharing):
     _, share_server = sharing
     assert visit(share_server, "/p")[0] == 301, "the page's address ends in a slash, so its files are found beside it"

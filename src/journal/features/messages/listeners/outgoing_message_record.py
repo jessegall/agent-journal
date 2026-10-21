@@ -4,7 +4,7 @@ from journal.support.actor import Actor
 from journal.models.message import Message
 from journal.repositories.messages import Messages
 from journal.support.peer_name import PeerName
-from journal.features.workers.support.subagents import Subagents
+from journal.features.workers.support.subagent_entries import SubagentEntries
 from journal.support.agent_message import AgentMessage
 
 
@@ -20,7 +20,7 @@ class OutgoingMessageRecord(AgentListener[ToolFinished]):
         if not isinstance(message, AgentMessage) or event.subagent or not message.text.strip():
             return
         receiver, text = message.receiver, message.text.strip()
-        answer = Subagents.answered(event.response or event.output)
+        answer = SubagentEntries.answered(event.response or event.output)
         if answer.get("success") is False:
             self.messages.save(Message.send_failed(self.names.resolve(receiver), text, event.session, receiver, str(answer.get("message", "the send failed"))), Actor.agent(event.session))
             return

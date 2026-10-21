@@ -3,7 +3,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.models.worker import Worker
 from journal.support.actor import Actor
-from journal.features.workers.support.subagents import Subagents
+from journal.repositories.subagents import Subagents
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.http.support.request import Request
 from journal.support.response import Response
@@ -30,7 +30,7 @@ class TranscriptController:
 
     def subagent_transcript(self, request: Request) -> Response:
         agent, id = self.agents.find(request.number("id")), request.params["session"]
-        if not any(row.session == id for row in self.subagents.rows(agent.session)):
+        if not any(row.session == id for row in self.subagents.session_subagents(agent.session)):
             raise MissingRow("subagent sessions", id)
         provider = self.providers.lookup(agent.provider)
         return self.answer(request, provider, provider.subagent_transcript(self.config.root, agent.session, id))
@@ -39,11 +39,11 @@ class TranscriptController:
         worker = self.workers.find(request.number("id"))
         provider = self.providers.lookup(worker.provider)
         place = self.runner.place(worker)
-        session = worker.resume or worker.recovered_session or self.found_session(worker, provider, place)
+        session = worker.resume or worker.recovered_session or self.found_session(worker)
         return self.answer(request, provider, provider.transcript(place, session) if session else None)
 
-    def found_session(self, worker: Worker, provider: Provider, place: Path) -> str:
-        session = provider.latest_session(place, worker.began) if worker.began else ""
+    def found_session(self, worker: Worker) -> str:
+        session = self.runner.own_session(worker)
         if session:
             self.workers.touch(worker, Actor.system(), recovered_session=session)
         return session

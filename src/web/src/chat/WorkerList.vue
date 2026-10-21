@@ -13,13 +13,13 @@ const emit = defineEmits(["close"]);
 const sections = computed(() => workersBySection(props.rows));
 const counts = computed(() => workerCounts(props.rows));
 const countsLine = computed(() =>
-    [counts.value.working && `${counts.value.working} working`, counts.value.reported && `${counts.value.reported} with reports`]
+    [counts.value.working && `${counts.value.working} working`, counts.value.idle && `${counts.value.idle} idle`]
         .filter(Boolean)
         .join(" · ")
 );
 const OPEN_SECTIONS = [
     {key: "working", title: "Working"},
-    {key: "waiting", title: "Reported"},
+    {key: "idle", title: "Idle"},
 ];
 const retiredOpen = ref(false);
 
@@ -54,7 +54,7 @@ function inspect(row) {
                 </template>
             </template>
             <template v-if="sections.retired.length">
-                <FoldGroup bar class="workers-closed" label="Closed" :count="sections.retired.length" :open="retiredOpen" @toggle="retiredOpen = !retiredOpen">
+                <FoldGroup bar class="workers-closed" label="Retired" :count="sections.retired.length" :open="retiredOpen" @toggle="retiredOpen = !retiredOpen">
                     <template v-for="row in sections.retired" :key="row.id">
                         <Btn kind="text" class="workers-retired" v-tip="'Open this worker'" @click="inspect(row)">
                             {{ workerName(row) }}

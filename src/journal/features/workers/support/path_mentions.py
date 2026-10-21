@@ -1,6 +1,6 @@
 import re
 
-PATH = re.compile(r"(?:[\w.-]+/)+[\w.-]+\.\w+")
+PATH = re.compile(r"[\w.-]+(?:/[\w.-]+)+\.\w+|\b[\w-]+\.(?:py|js|ts|vue|md|json|toml|css|sh)\b")
 
 
 class PathMentions:
