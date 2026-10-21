@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from typing import ClassVar
+from journal.console.support.chained_line import ChainedLine
 
 from journal.support.caller import Caller
 
@@ -16,6 +17,10 @@ class Command:
 
     def perform(self, args: Namespace, caller: Caller) -> int:
         return (getattr(self, f"{args.verb}_", None) or getattr(self, args.verb))(args, caller)
+
+    def chained(self, args: Namespace, caller: Caller) -> list[ChainedLine]:
+        chain = getattr(self, f"{args.verb}_chain", None)
+        return chain(args, caller) if chain else []
 
     @staticmethod
     def verb(verbs, name: str, help: str) -> ArgumentParser:

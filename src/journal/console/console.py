@@ -1,5 +1,6 @@
 import argparse
 import io
+from journal.console.support.chained_line import ChainedLine
 
 from journal.console.support.captured_stream import CapturedStream
 from journal.console.command import Command
@@ -67,7 +68,17 @@ class Console:
     def perform(self, args: argparse.Namespace, caller: Caller) -> int:
         if self.row_verbs.has(args.noun, args.verb):
             return self.row_verbs.perform(args, caller)
-        return self.commands[args.noun].perform(args, caller)
+        command = self.commands[args.noun]
+        code = command.perform(args, caller)
+        for line in command.chained(args, caller):
+            print(f"\n{line.heading()}\n{self.chained_text(line, caller)}")
+        return code
+
+    def chained_text(self, line: ChainedLine, caller: Caller) -> str:
+        if not line.argv:
+            return line.absent
+        outcome = self.run(list(line.argv), caller)
+        return (outcome.text or outcome.error).rstrip() or "nothing"
 
     def captured(self, argv: list[str], caller: Caller, output: io.StringIO, err: io.StringIO) -> Outcome:
         argv = self.with_verb(self.switched(argv))

@@ -4,6 +4,7 @@ from argparse import Namespace
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from journal.console.support.chained_line import ChainedLine
 
 from journal.console.command import Command
 from journal.support.caller import Caller
@@ -63,11 +64,12 @@ class EnvironmentCommand(Command):
     def overview(self, args: Namespace, caller: Caller) -> int:
         for line in self.current_work(caller.session):
             print(line)
-        for section in self.overview_commands.sections(caller):
-            print(f"\n{section}")
         self.overview_record(caller)
         self.memory.admit_all(caller.actor)
         return 0
+
+    def overview_chain(self, args: Namespace, caller: Caller) -> list[ChainedLine]:
+        return self.overview_commands.lines()
 
     def current_work(self, session: str | None) -> list[str]:
         start = datetime.now(timezone.utc) - TAKEOVER_WINDOW
