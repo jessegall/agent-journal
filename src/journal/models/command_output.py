@@ -52,7 +52,7 @@ class CommandOutput(Scoped):
 
     def ending(self) -> str:
         if self.is_interrupted:
-            return "was cut off when the journal restarted"
+            return "cut off when the journal restarted"
         return "finished" if self.status == 0 else f"failed with code {self.status}"
 
     def outcome(self) -> str:

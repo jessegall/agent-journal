@@ -5924,9 +5924,9 @@ def test_a_background_command_left_running_by_a_restart_is_ended_as_cut_off_at_b
     outputs.save(outputs.find(1).backgrounded(), Actor.system())
     app.container.get(CutOffOutputs).run()
     ended = outputs.find(1)
-    assert ended.ended and ended.ending() == "was cut off when the journal restarted", "its chain died with the server, so it is ended, never left running"
+    assert ended.ended and ended.ending() == "cut off when the journal restarted", "its chain died with the server, so it is ended, never left running"
     shell = app.container.get(ShellDataReader).read(app.container.get(Agents).session_agent("s1"))
-    assert [(o.id, o.ending) for o in shell.unannounced] == [(1, "was cut off when the journal restarted")], "and its agent is told as of any other end"
+    assert [(o.id, o.ending) for o in shell.unannounced] == [(1, "cut off when the journal restarted")], "and its agent is told as of any other end"
     dead = app.config.home / "runtime" / "tests.running.999999"
     dead.parent.mkdir(parents=True, exist_ok=True)
     dead.touch()
