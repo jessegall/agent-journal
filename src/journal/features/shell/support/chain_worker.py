@@ -8,7 +8,7 @@ from journal.features.shell.support.changed_file import ChangedFile
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.shell_record import ShellRecord
 from journal.features.shell.support.shell_request import ShellRequest
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 PRELUDE = """
 ulimit -n 65536 2>/dev/null || ulimit -n 10240 2>/dev/null || ulimit -n "$(ulimit -Hn)" 2>/dev/null
@@ -30,14 +30,14 @@ class ChainWorker:
     def __init__(self, record: ShellRecord) -> None:
         self.record = record
 
-    def run(self, folder: OutputFiles, request: ShellRequest, where: Where, direct: bool, printed: Callable[[bytes], None]) -> int:
+    def run(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, printed: Callable[[bytes], None]) -> int:
         shell = subprocess.Popen([request.shell], cwd=request.cwd, env=request.environment, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=False)
         pump = threading.Thread(target=lambda: self.pump(shell, printed), name="shell-output", daemon=True)
         pump.start()
         self.write_to(shell, PRELUDE)
         code = 0
         for i, kind in enumerate(folder.kinds()):
-            code = self.part(shell, folder, i, kind, code, direct, where)
+            code = self.part(shell, folder, i, kind, code, direct, caller)
             if shell.poll() is not None or folder.part_text(i).startswith("exec "):
                 break
         self.write_to(shell, "exit $__journal_code\n")
@@ -45,24 +45,24 @@ class ChainWorker:
         pump.join(timeout=2)
         folder.done(code)
         if folder.is_moved():
-            self.record.ended(folder.folder.name, code, folder.folder, "\n".join(folder.last(5)), where)
+            self.record.ended(folder.folder.name, code, folder.folder, "\n".join(folder.last(5)), caller)
         return code
 
-    def part(self, shell: subprocess.Popen, folder: OutputFiles, i: int, kind: str, code: int, direct: bool, where: Where) -> int:
+    def part(self, shell: subprocess.Popen, folder: OutputFiles, i: int, kind: str, code: int, direct: bool, caller: Caller) -> int:
         recorded, after_and, before_and, writes = kind[0] == "R", kind[1] == "&", kind[2] == "&", kind.endswith("w")
         text = folder.part_text(i)
         if after_and and code != 0:
             folder.ended_with(i, code)
             return code
         if recorded:
-            self.record.started(folder.folder.name, text, where)
+            self.record.started(folder.folder.name, text, caller)
         before = self.tree(shell, folder, i, "before") if writes else ""
         began = time.monotonic()
         self.write_to(shell, self.script(folder, i, text, before_and, direct))
         status = self.status_once_ended(shell, folder, i)
         after = self.tree(shell, folder, i, "after") if writes else ""
         if recorded:
-            self.record.ran(folder.folder.name, text, status, round(time.monotonic() - began, 1), folder.printed(i), self.changed(before, after), where)
+            self.record.ran(folder.folder.name, text, status, round(time.monotonic() - began, 1), folder.printed(i), self.changed(before, after), caller)
         return status
 
     @staticmethod

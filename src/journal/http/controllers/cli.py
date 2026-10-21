@@ -1,5 +1,5 @@
 from journal.console.console import Console
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.plugin_tokens import PluginTokens
 from journal.support.subagent_commands import REFUSAL, SubagentCommands
 from journal.console.support.outcome import Outcome
@@ -20,8 +20,8 @@ class CliController:
         plugin = request.body.get("plugin", "")
         if plugin and not self.tokens.holds(plugin, request.body.get("token", "")):
             return Response.json({"out": "", "err": f"the journal does not know this token for plugin {plugin}\n", "code": 1}, 403)
-        where = Where(request.body.get("env", "main"), request.body.get("session", ""), bool(request.body.get("agent")), plugin)
+        caller = Caller(request.body.get("env", "main"), request.body.get("session", ""), bool(request.body.get("agent")), plugin)
         argv = request.body.get("argv", [])
-        if self.subagents.runs(where.environment, argv, request.headers.get(ACTOR_HEADER, ""), request.headers.get(THREAD_HEADER, "")):
+        if self.subagents.runs(caller.environment, argv, request.headers.get(ACTOR_HEADER, ""), request.headers.get(THREAD_HEADER, "")):
             return Response.json(Outcome(1, "", REFUSAL))
-        return Response.json(self.console.run(argv, where))
+        return Response.json(self.console.run(argv, caller))

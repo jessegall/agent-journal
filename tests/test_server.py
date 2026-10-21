@@ -13,7 +13,7 @@ from shell_verbs import ShellVerbs
 
 from journal.app import App
 from journal.config import Config
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 
 @pytest.fixture
@@ -193,17 +193,17 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         row = call(server, "GET", f"/journal/messages/{n}")[1]
         assert row["read_at"] and row["answered"] is False, "read, and not answered"
         call(server, "POST", f"/journal/messages/{n}/react", {"face": "👍"})
-        app.console().run(["message", "react", str(n), "🎉"], Where("main", "s1"))
+        app.console().run(["message", "react", str(n), "🎉"], Caller("main", "s1"))
         assert call(server, "GET", f"/journal/messages/{n}")[1]["answered"] is True, "a face from the agent answers it"
-        app.console().run(["plan", "create", "p"], Where("main"))
-        app.console().run(["plan", "approve", "1"], Where("main"))
-        app.console().run(["plan", "start", "1"], Where("main", "s1"))
+        app.console().run(["plan", "create", "p"], Caller("main"))
+        app.console().run(["plan", "approve", "1"], Caller("main"))
+        app.console().run(["plan", "start", "1"], Caller("main", "s1"))
         assert call(server, "GET", "/journal/plans/1")[1]["state"] == "started"
-        app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
-        app.console().run(["check", "run", "1"], Where("main"))
+        app.console().run(["check", "create", "truthy", "--command", "true"], Caller("main"))
+        app.console().run(["check", "run", "1"], Caller("main"))
         check = call(server, "GET", "/journal/checks/1")[1]
         assert check["last_passed"] is True and "running" in check
-        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
+        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).out.split()[1].rstrip(":")
         assert call(server, "GET", f"/journal/sequences/{release}")[1]["steps"] == ["tag", "push"]
         snapshot = call(server, "GET", "/journal/summary")[1]["environments"][0]
         assert {"messages", "tasks", "questions"} <= set(snapshot)
@@ -224,7 +224,7 @@ def test_the_viewers_start_takes_the_plans_first_task_in_hand_and_its_park_postp
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()
-    user, agent = Where("main"), Where("main", "s1")
+    user, agent = Caller("main"), Caller("main", "s1")
     try:
         console = app.console()
         console.run(["plan", "create", "p", "--brief", "b"], user)
@@ -248,7 +248,7 @@ def test_a_started_plans_phase_shown_advances_when_its_tasks_are_all_done(tmp_pa
     app.runtime().start()
     server = app.server()
     try:
-        console, user, agent = app.console(), Where("main"), Where("main", "s1")
+        console, user, agent = app.console(), Caller("main"), Caller("main", "s1")
         console.run(["plan", "create", "p", "--brief", "b"], user)
         for title in ("first", "second", "third"):
             console.run(["plan", "add", "1", title], user)
@@ -281,10 +281,10 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
     try:
         data = json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode()
         urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-        app.console().run(["task", "create", "the footer", "--start"], Where("main", "s1"))
+        app.console().run(["task", "create", "the footer", "--start"], Caller("main", "s1"))
         held = call(server, "GET", "/journal/summary")[1]["environments"][0]["task"]
         assert held == {"id": 1, "title": "the footer", "awaiting": ""}
-        app.console().run(["stuck", "stuck on the login"], Where("main", "s1"))
+        app.console().run(["stuck", "stuck on the login"], Caller("main", "s1"))
         agent = call(server, "GET", "/journal/agents")[1]["rows"][0]
         assert agent["awaiting"] == "stuck on the login" and agent["awaiting_since"]
         assert call(server, "GET", "/journal/summary")[1]["environments"][0]["task"]["awaiting"] == "stuck on the login"
@@ -309,9 +309,9 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
     try:
         hook("SessionStart")
         n = call(server, "POST", "/journal/messages", {"text": "hello", "idempotency": "k"})[1]["id"]
-        app.console().run(["message", "read", str(n)], Where("main", "s1"))
-        app.console().run(["task", "create", "t", "--start"], Where("main", "s1"))
-        app.console().run(["task", "done", "1", "--how", "shipped"], Where("main", "s1"))
+        app.console().run(["message", "read", str(n)], Caller("main", "s1"))
+        app.console().run(["task", "create", "t", "--start"], Caller("main", "s1"))
+        app.console().run(["task", "done", "1", "--how", "shipped"], Caller("main", "s1"))
         entries = call(server, "GET", "/journal/entries?last=50")[1]
         assert any(e["kind"] == "updated" and e["data"]["table"] == "messages" and "read_at" in e["data"]["changed"] for e in entries)
         assert any(e["kind"] == "updated" and e["data"]["table"] == "tasks" and "finished_at" in e["data"]["changed"] for e in entries)
@@ -326,8 +326,8 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         doc = call(server, "POST", f"/journal/docs/{doc['id']}/section", {"title": "Risks", "body": "None"})[1]
         assert doc["body"].endswith("## Risks\n\nNone\n") and "## Goals" in doc["body"]
         assert call(server, "POST", f"/journal/docs/{doc['id']}", {"title": "Design v2"})[1]["title"] == "Design v2"
-        app.console().run(["task", "create", "later", "--start"], Where("main", "s1"))
-        app.console().run(["task", "park", "2", "waiting"], Where("main", "s1"))
+        app.console().run(["task", "create", "later", "--start"], Caller("main", "s1"))
+        app.console().run(["task", "park", "2", "waiting"], Caller("main", "s1"))
         assert call(server, "GET", "/journal/tasks/2")[1]["state"] == "parked"
     finally:
         app.runtime().stop()
@@ -342,9 +342,9 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
     app.runtime().start()
     server = app.server()
     try:
-        app.console().run(["plan", "create", "p"], Where("main"))
+        app.console().run(["plan", "create", "p"], Caller("main"))
         assert call(server, "POST", "/journal/plans/1/finish", {})[1]["state"] == "done"
-        app.console().run(["check", "create", "truthy", "--command", "true"], Where("main"))
+        app.console().run(["check", "create", "truthy", "--command", "true"], Caller("main"))
         assert call(server, "POST", "/journal/checks/1/run", {})[1]["running"]["at"], "the page's run answers at once, the check running"
         ran = lambda: call(server, "GET", "/journal/checks?ids=1")[1]["rows"][0]
         for _ in range(50):
@@ -353,9 +353,9 @@ def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
             time.sleep(0.1)
         assert ran()["last_passed"] is True, "and its result lands on the row"
         assert call(server, "POST", "/journal/checks/1", {"every": 5})[1]["every"] == 5
-        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Where("main")).out.split()[1].rstrip(":")
+        release = app.console().run(["sequence", "create", "release", "--steps", "tag|push"], Caller("main")).out.split()[1].rstrip(":")
         assert call(server, "POST", f"/journal/sequences/{release}/steps", {"steps": ["tag", "test", "push"]})[1]["steps"] == ["tag", "test", "push"]
-        app.console().run(["trigger", "create", "deploy", "say so"], Where("main"))
+        app.console().run(["trigger", "create", "deploy", "say so"], Caller("main"))
         updated = call(server, "POST", "/journal/triggers/1", {"words": ["deploy", "release"], "action": "deny", "text": "wait"})[1]
         assert updated["words"] == ["deploy", "release"] and updated["action"] == "deny"
         skills = call(server, "GET", "/journal/skills?agent=1")[1]
@@ -472,7 +472,7 @@ def test_the_board_is_off_and_stays_off(server):
 
 
 def test_a_comment_written_under_a_task_in_the_viewer_is_the_users_message_linked_to_it(server):
-    from journal.support.where import Where
+    from journal.support.caller import Caller
     call(server, "POST", "/journal/tasks", {"title": "the footer"})
     status, made = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "please also check the header"})
     assert status == 201 and made["on"] == ["tasks:1"] and made["text"] == "please also check the header"
@@ -514,7 +514,7 @@ def test_a_read_of_an_unknown_environment_is_not_found_and_makes_none(tmp_path: 
     server = app.server()
     try:
         assert call(server, "GET", "/journal/tasks", env="settings")[0] == 404
-        assert not app.container.get(Environments).where(name="settings"), "a stray address in the browser never makes an environment"
+        assert not app.container.get(Environments).matching(name="settings"), "a stray address in the browser never makes an environment"
     finally:
         app.runtime().stop()
 
@@ -1017,7 +1017,7 @@ def test_a_comment_is_deleted_from_its_column(server):
 
 
 def test_a_reply_under_a_comment_is_part_of_the_rows_thread_from_either_side(tmp_path: Path):
-    from journal.support.where import Where
+    from journal.support.caller import Caller
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()
@@ -1026,7 +1026,7 @@ def test_a_reply_under_a_comment_is_part_of_the_rows_thread_from_either_side(tmp
         status, comment = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "is the footer fixed?"})
         status, reply = call(server, "POST", "/journal/comments", {"on": "tasks:1", "text": "and the header?", "reply_to": comment["id"]})
         assert status == 201 and reply["reply_to"] == comment["id"] and reply["on"] == ["tasks:1"], "a reply written in the column hangs under its comment, on the same row"
-        app.console().run(["message", "send", "Yes, both are fixed.", "--reply-to", str(comment["id"])], Where("main", "s1"))
+        app.console().run(["message", "send", "Yes, both are fixed.", "--reply-to", str(comment["id"])], Caller("main", "s1"))
         app.runtime().deferred.drain()
         rows = call(server, "GET", "/journal/comments")[1]["rows"]
         assert [(r["author"], r["reply_to"], r["on"]) for r in rows] == [("user", None, ["tasks:1"]), ("user", comment["id"], ["tasks:1"]), ("agent", comment["id"], ["tasks:1"])], "the agent's reply to the comment is in the thread too, linked to the row by its answer"

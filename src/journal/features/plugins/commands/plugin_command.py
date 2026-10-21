@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.cards import Cards
 from journal.features.plugins.support.plugin_preview import PluginPreview
 from journal.support.plugin_installing import PluginInstalling
@@ -42,65 +42,65 @@ class PluginCommand(Command):
         remove.add_argument("name")
         remove.add_argument("--purge", action="store_true", help="delete its data folder too")
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for p in self.plugins.all():
             print(f"{p.name:<20} {'on' if p.enabled else 'off':<4} {p.manifest.version}" + (f"  last fault: {p.last_fault}" if p.last_fault else ""))
         return 0
 
-    def install(self, args: Namespace, where: Where) -> int:
+    def install(self, args: Namespace, caller: Caller) -> int:
         print(self.said(self.installing.preview(args.source)))
         if not args.yes:
             print(f"nothing installed yet: journal plugin install {args.source} --yes")
             return 0
-        plugin = self.installing.install(args.source, where.environment, where.actor)
+        plugin = self.installing.install(args.source, caller.environment, caller.actor)
         print(f"installed {plugin.name}, on")
         return 0
 
-    def propose(self, args: Namespace, where: Where) -> int:
+    def propose(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.preview(args.source)
-        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=where.actor, shows=ChatMark.PLUGINS)
+        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=caller.actor, shows=ChatMark.PLUGINS)
         print(f"proposed {preview.name}: the user installs it if they want it")
         return 0
 
-    def upgrade(self, args: Namespace, where: Where) -> int:
+    def upgrade(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.upgrade_preview(args.name, args.ref)
         print("\n".join([f"{args.name} from {preview.was[:12] or preview.source} to {preview.commit[:12] or 'the folder as it is now'}", *(preview.changes or ["nothing it runs, hears or holds changes"])]))
-        if preview.code and where.session:
+        if preview.code and caller.session:
             print("\nthe files it changes, the whole diff for the user on the Plugins page:\n" + "\n".join(preview.files_changed()))
         elif preview.code:
             print("\nthe code:\n" + "\n".join(preview.code))
         if not args.yes:
             print(f"nothing upgraded yet: journal plugin upgrade {args.name}{' --ref ' + args.ref if args.ref is not None else ''} --yes")
             return 0
-        self.installing.upgrade(args.name, args.ref, where.environment, where.actor)
+        self.installing.upgrade(args.name, args.ref, caller.environment, caller.actor)
         print(f"upgraded {args.name}")
         return 0
 
-    def enable(self, args: Namespace, where: Where) -> int:
-        self.installing.enable(args.name, where.actor)
+    def enable(self, args: Namespace, caller: Caller) -> int:
+        self.installing.enable(args.name, caller.actor)
         print(f"{args.name} on")
         return 0
 
-    def disable(self, args: Namespace, where: Where) -> int:
-        self.installing.disable(args.name, where.actor)
+    def disable(self, args: Namespace, caller: Caller) -> int:
+        self.installing.disable(args.name, caller.actor)
         print(f"{args.name} off")
         return 0
 
-    def remove(self, args: Namespace, where: Where) -> int:
+    def remove(self, args: Namespace, caller: Caller) -> int:
         if args.purge:
-            self.installing.purge(args.name, where.actor)
+            self.installing.purge(args.name, caller.actor)
             print(f"removed {args.name} and its data")
             return 0
-        self.installing.remove(args.name, where.actor)
+        self.installing.remove(args.name, caller.actor)
         print(f"removed {args.name}; its data folder stays in .journal/plugin-data/{args.name}")
         return 0
 
-    def configure(self, args: Namespace, where: Where) -> int:
-        plugin = self.schemas.configure(args.name, args.key, args.value, where.actor)
+    def configure(self, args: Namespace, caller: Caller) -> int:
+        plugin = self.schemas.configure(args.name, args.key, args.value, caller.actor)
         print(f"{args.name} {args.key} = {plugin.settings[args.key]}")
         return 0
 
-    def settings(self, args: Namespace, where: Where) -> int:
+    def settings(self, args: Namespace, caller: Caller) -> int:
         plugin = self.plugins.named(args.name)
         for setting in self.schemas.schema(plugin):
             value = plugin.settings.get(setting.key)

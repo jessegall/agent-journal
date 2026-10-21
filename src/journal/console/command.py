@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 
 class Command:
@@ -14,8 +14,8 @@ class Command:
     def arguments(self, verbs) -> None:
         ...
 
-    def perform(self, args: Namespace, where: Where) -> int:
-        return (getattr(self, f"{args.verb}_", None) or getattr(self, args.verb))(args, where)
+    def perform(self, args: Namespace, caller: Caller) -> int:
+        return (getattr(self, f"{args.verb}_", None) or getattr(self, args.verb))(args, caller)
 
     @staticmethod
     def verb(verbs, name: str, help: str) -> ArgumentParser:

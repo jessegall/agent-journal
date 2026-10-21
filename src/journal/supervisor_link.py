@@ -103,7 +103,7 @@ class SupervisorLink:
         self._send(environment_id, "stop", {"name": AGENT})
 
     def hosting(self) -> int | None:
-        hosts = self.environments.where(name=os.environ.get("JOURNAL_ENV", ""))
+        hosts = self.environments.matching(name=os.environ.get("JOURNAL_ENV", ""))
         return hosts[0].id if hosts and self.runs(hosts[0].id) else None
 
     def runs(self, environment_id: int) -> bool:

@@ -50,7 +50,7 @@ class PluginQueue:
         if not isinstance(data, dict):
             raise PluginFault("not a JSON object")
         name = str(data.pop("env", ""))
-        rows = self.environments.where(name=name) if name else []
+        rows = self.environments.matching(name=name) if name else []
         if name and not rows:
             raise PluginFault(f"env {name!r} names no environment")
         return self.protocol.answer_of(json.dumps(data)), rows[0].id if rows else environment_id

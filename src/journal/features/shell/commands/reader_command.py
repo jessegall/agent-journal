@@ -3,7 +3,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
 from journal.support.refused import Refused
@@ -28,7 +28,7 @@ class ReaderCommand(Command):
         add.add_argument("--about", required=True, help="what it picks, in a few words")
         self.verb(verbs, "list", "the project's readers, each with what it picks")
 
-    def add(self, args: Namespace, where: Where) -> int:
+    def add(self, args: Namespace, caller: Caller) -> int:
         if not NAME.fullmatch(args.name):
             raise Refused(f"a reader's name is lowercase words joined by -, such as failed-tests, not {args.name}")
         if args.script:
@@ -39,7 +39,7 @@ class ReaderCommand(Command):
         print(f"reader {args.name} added: journal output read N --reader {args.name}")
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for reader in self.readers.all():
             print(f"{reader.name}: {reader.about}")
         return 0

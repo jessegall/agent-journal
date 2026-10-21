@@ -14,7 +14,7 @@ shell = lambda line: Claude().call("Bash", {"command": line})
 
 from journal.app import App
 from journal.config import Config
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
 from journal.features.tasks.states.stuck import Stuck
 from journal.features.tasks.states.idle import Idle
@@ -88,8 +88,8 @@ from journal.engine.support.stack import Stack
 from journal.support.states_catalogue import StatesCatalogue
 from journal.engine.support.transition import Transition
 
-AGENT = Where("main", "s1")
-USER = Where("main")
+AGENT = Caller("main", "s1")
+USER = Caller("main")
 
 
 @pytest.fixture

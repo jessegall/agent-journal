@@ -23,7 +23,7 @@ class PackageCommandments(Suggester):
         self.config, self.plugins = config, plugins
 
     def applies(self) -> bool:
-        return (self.version() is not None or self.wires_hooks()) and not self.plugins.where(name=PLUGIN)
+        return (self.version() is not None or self.wires_hooks()) and not self.plugins.matching(name=PLUGIN)
 
     def title(self) -> str:
         return "Code Commandments runs here as a package. Run it as a journal plugin instead?"

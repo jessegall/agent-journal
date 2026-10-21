@@ -6,7 +6,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.law_text import LawText
 from journal.support.profile_files import ProfileFiles
 from journal.support.skill_files import SkillFiles
@@ -32,9 +32,9 @@ class SetupCommand(Command):
         self.verb(verbs, "hooks", "wire the hooks only")
         self.verb(verbs, "restart", "restart the running journals on the installed code; the agents keep running")
 
-    def project(self, args: Namespace, where: Where) -> int:
+    def project(self, args: Namespace, caller: Caller) -> int:
         self.config.home.mkdir(parents=True, exist_ok=True)
-        self.hooks(args, where)
+        self.hooks(args, caller)
         for path in self.files.write_all():
             print(f"skill   {path.relative_to(self.config.root)}")
         for path in self.profiles.write_all():
@@ -49,7 +49,7 @@ class SetupCommand(Command):
             print(f"restart {name}: the journal of that environment runs the new code")
         return 0
 
-    def restart(self, args: Namespace, where: Where) -> int:
+    def restart(self, args: Namespace, caller: Caller) -> int:
         names = self.restarted()
         for name in names:
             print(f"restart {name}: the journal of that environment runs the new code")
@@ -64,7 +64,7 @@ class SetupCommand(Command):
                 self.supervisor.restart_journal(environment.id)
         return names
 
-    def hooks(self, args: Namespace, where: Where) -> int:
+    def hooks(self, args: Namespace, caller: Caller) -> int:
         script = self.package / "hooks" / "hook.sh"
         for provider in self.providers.all():
             if provider.name != "claude" and not (self.config.root / provider.home).is_dir() and not shutil.which(provider.name):

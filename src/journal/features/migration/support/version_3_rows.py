@@ -21,17 +21,17 @@ class Version3Rows:
     def of(self, environment: str, kind: str) -> list[Version3Row]:
         return self.read(self.folder / "environments" / environment / kind)
 
-    def read(self, where: Path) -> list[Version3Row]:
-        if not where.is_dir():
+    def read(self, caller: Path) -> list[Version3Row]:
+        if not caller.is_dir():
             return []
-        rows = {row.n: row for row in self.packed(where)}
-        rows.update({row.n: row for row in (Version3Row.from_text(path.read_text()) for path in where.glob("*.md"))})
+        rows = {row.n: row for row in self.packed(caller)}
+        rows.update({row.n: row for row in (Version3Row.from_text(path.read_text()) for path in caller.glob("*.md"))})
         return [rows[n] for n in sorted(rows)]
 
     @staticmethod
-    def packed(where: Path) -> list[Version3Row]:
+    def packed(caller: Path) -> list[Version3Row]:
         rows = []
-        for path in sorted((where / "packed").glob("*.zip")):
+        for path in sorted((caller / "packed").glob("*.zip")):
             with zipfile.ZipFile(path) as packed:
                 rows += [Version3Row.from_text(packed.read(name).decode()) for name in packed.namelist() if name.endswith(".md")]
         return rows

@@ -213,7 +213,7 @@ class Routes:
         for path, handler in (("/check", tunnel.check), ("/restart", tunnel.restart), ("/login", tunnel.login), ("/logout", tunnel.logout), ("/install", tunnel.install),
                               ("/update", tunnel.update), ("/release", tunnel.release), ("/readdress", tunnel.readdress)):
             router.post(f"{API}/tunnel{path}", handler)
-        router.get(f"{API}/secrets/where", secrets.where)
+        router.get(f"{API}/secrets/where", secrets.location)
         self.resource(router, "secrets", secrets)
         self.acts(router, "secrets", secrets, "fill", "delete", "restore", "login")
         for act, handler in (("allow-login", secrets.allow_login), ("revoke-login", secrets.revoke_login), ("forget-login", secrets.forget_login)):

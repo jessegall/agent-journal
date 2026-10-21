@@ -59,7 +59,7 @@ class Tasks(ScopedRepository[Task]):
         return ", ".join(part for part in (*named, row.blocked_why) if part)
 
     def in_state(self, state: TaskState) -> list[Task]:
-        return self.where(state=state)
+        return self.matching(state=state)
 
     def in_hand(self) -> Task | None:
         return next(iter(self.in_state(TaskState.STARTED)), None)

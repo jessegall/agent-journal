@@ -57,7 +57,7 @@ class Receiver:
         return {**recorded, "hook_ms": elapsed}
 
     def is_unknown_session_end(self, event: AgentEvent) -> bool:
-        return isinstance(event, SessionEnded) and not self.agents.where(session=event.session)
+        return isinstance(event, SessionEnded) and not self.agents.matching(session=event.session)
 
     def _handle_at_once(self, event: AgentEvent) -> None:
         blocking, deferred = self._split(event)

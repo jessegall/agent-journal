@@ -2,7 +2,7 @@ from argparse import Namespace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.features.sharing.support.tunnel import Tunnel
 from journal.features.sharing.share_actions import ShareActions
 from journal.features.sharing.share_targets import ShareTargets
@@ -26,22 +26,22 @@ class ShareCommand(Command):
         self.verb(verbs, "stop", "end a link at once").add_argument("n", type=int)
         self.verb(verbs, "list", "every link here")
 
-    def create(self, args: Namespace, where: Where) -> int:
-        share = self.actions.create(args.ref, args.expires, args.password, args.comments, where.actor)
+    def create(self, args: Namespace, caller: Caller) -> int:
+        share = self.actions.create(args.ref, args.expires, args.password, args.comments, caller.actor)
         waits = "open" if share.approved else "waiting for the user's Accept in the chat"
         print(f"share {share.id}: {self.tunnel.link_of(share.token)}, {waits}")
         return 0
 
-    def opens(self, args: Namespace, where: Where) -> int:
+    def opens(self, args: Namespace, caller: Caller) -> int:
         print("\n".join(self.targets.opens(args.ref)))
         return 0
 
-    def stop(self, args: Namespace, where: Where) -> int:
-        share = self.actions.stop(self.shares.find(args.n), where.actor)
+    def stop(self, args: Namespace, caller: Caller) -> int:
+        share = self.actions.stop(self.shares.find(args.n), caller.actor)
         print(f"share {share.id} stopped")
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for share in self.shares.in_():
             print(f"{share.id:>4}  {self.targets.of(share) or 'gone'}  {self.snapshot(share)}  {self.tunnel.link_of(share.token)}")
         return 0

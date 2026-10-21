@@ -22,7 +22,7 @@ class Workers(ScopedRepository[Worker]):
         self.links = links
 
     def out(self) -> list[Worker]:
-        return self.where(state=WorkerState.DISPATCHED)
+        return self.matching(state=WorkerState.DISPATCHED)
 
     def put_on(self, worker: Worker, task: int, actor: Actor) -> None:
         target = Ref("tasks", task)
@@ -42,7 +42,7 @@ class Workers(ScopedRepository[Worker]):
         return [worker for worker in self.in_state_reported() if worker.has_report_waiting()]
 
     def in_state_reported(self) -> list[Worker]:
-        return self.where(state=WorkerState.REPORTED)
+        return self.matching(state=WorkerState.REPORTED)
 
     def by_session(self, session: str) -> list[Worker]:
         return [w for w in self.in_() if session and session in (w.session, w.resume)]

@@ -46,7 +46,7 @@ class Suggesting:
 
     def made(self, suggester: Suggester) -> Suggestion:
         row = self.suggestions.save(Suggestion(key=suggester.key, title=suggester.title()), Actor.system())
-        environment_id = self.where_shown().id
+        environment_id = self.target_environment().id
         with self.scope.of(environment_id):
             self.shown(row, suggester, environment_id)
         return row
@@ -74,7 +74,7 @@ class Suggesting:
             raise NotFound("suggesters", key)
         return found[0]
 
-    def where_shown(self) -> Environment:
+    def target_environment(self) -> Environment:
         live = self.agents.live_anywhere()
         return self.environments.find(live.environment_id) if live else self.environments.all()[0]
 

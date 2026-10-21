@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from journal.support.where import LOCAL_USER
+from journal.support.caller import LOCAL_USER
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent_listener import AgentListener
 from journal.support.actor import Actor

@@ -7,7 +7,7 @@ class Users(Repository[User]):
     model = User
 
     def by_email(self, email: str) -> User:
-        found = self.where(email=email)
+        found = self.matching(email=email)
         if not found:
             raise NotFound(self.table, email)
         return found[0]

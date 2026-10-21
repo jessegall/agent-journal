@@ -24,6 +24,7 @@ TESTS_RUNNING = "tests.running"
 
 
 HOOK = "HOOK"
+OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin propose", "/cli/setup update", "/cli/update ", "/cli/worker dispatch", "/cli/check run", "/cli/mcp ")
 
 
 class SlowRequests:
@@ -36,7 +37,7 @@ class SlowRequests:
 
     def measured(self, method: str, path: str, ms: float) -> None:
         self.deferred.add(lambda: self.counted(method, path, round(ms)))
-        if not self.judging():
+        if not self.judging() or path.startswith(OUTWARD_COMMANDS):
             return
         budget = self.budget(method)
         if not budget or ms <= budget:

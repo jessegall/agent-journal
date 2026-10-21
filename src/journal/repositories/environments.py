@@ -9,11 +9,11 @@ class Environments(Repository[Environment]):
     model = Environment
 
     def named(self, name: str) -> Environment:
-        found = self.where(name=name)
+        found = self.matching(name=name)
         return found[0] if found else self.save(Environment(name=name), Actor.system())
 
     def existing(self, name: str) -> Environment:
-        found = self.where(name=name)
+        found = self.matching(name=name)
         if not found:
             raise NotFound("environment", name)
         return found[0]

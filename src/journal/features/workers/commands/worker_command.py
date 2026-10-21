@@ -5,7 +5,7 @@ from journal.repositories.setting_rows import SettingRows
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.support.worktree_not_made import WorktreeNotMade
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.profile_files import ProfileFiles
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.features.workers.support.named_paths import NamedPaths
@@ -50,10 +50,10 @@ class WorkerCommand(Command):
         self.verb(verbs, "done", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
         self.verb(verbs, "list", "every worker out")
 
-    def own_provider(self, where: Where) -> str:
-        return self.agents.for_session(where.session).provider if where.session else "claude"
+    def own_provider(self, caller: Caller) -> str:
+        return self.agents.for_session(caller.session).provider if caller.session else "claude"
 
-    def dispatch(self, args: Namespace, where: Where) -> int:
+    def dispatch(self, args: Namespace, caller: Caller) -> int:
         if self.profiles.kind_of(args.profile) != "worker":
             raise Refused(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
@@ -64,18 +64,18 @@ class WorkerCommand(Command):
         knowing = [] if args.fresh else self.knowing(args.brief)
         if knowing:
             raise Refused(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
-        provider = args.provider or self.own_provider(where)
-        worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model_of(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatched_by=where.session)
-        worker = self.workers.save(worker, where.actor)
+        provider = args.provider or self.own_provider(caller)
+        worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model_of(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatched_by=caller.session)
+        worker = self.workers.save(worker, caller.actor)
         try:
             self.runner.workplace(worker)
         except WorktreeNotMade as failed:
-            self.workers.delete(worker, where.actor)
+            self.workers.delete(worker, caller.actor)
             raise Refused(f"worker {worker.name} was not dispatched: {failed}") from failed
         if args.task:
-            self.workers.put_on(worker, args.task, where.actor)
-        self.runner.start(worker, where.actor)
-        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), where.actor)
+            self.workers.put_on(worker, args.task, caller.actor)
+        self.runner.start(worker, caller.actor)
+        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
 
@@ -83,9 +83,9 @@ class WorkerCommand(Command):
         shown = self.profiles.read(profile)
         return shown["codex_model"] if provider == "codex" else shown["model"]
 
-    def report(self, args: Namespace, where: Where) -> int:
+    def report(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
-        message = self.reports.file(worker, args.text, where.actor, where.session)
+        message = self.reports.file(worker, args.text, caller.actor, caller.session)
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
 
@@ -93,7 +93,7 @@ class WorkerCommand(Command):
         named = NamedPaths.of(brief)
         return [w for w in reversed(self.workers.in_()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & NamedPaths.of(w.brief)]
 
-    def say(self, args: Namespace, where: Where) -> int:
+    def say(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
         if worker.state == WorkerState.DISPATCHED:
             raise Refused(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
@@ -101,31 +101,31 @@ class WorkerCommand(Command):
             raise Refused(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
         if self.providers.named(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
             raise Refused(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
-        worker = self.workers.save(worker.told(args.brief).with_(dispatched_by=where.session), where.actor)
+        worker = self.workers.save(worker.told(args.brief).with_(dispatched_by=caller.session), caller.actor)
         if args.task:
-            self.workers.put_on(worker, args.task, where.actor)
-        self.runner.start(worker, where.actor)
-        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), where.actor)
+            self.workers.put_on(worker, args.task, caller.actor)
+        self.runner.start(worker, caller.actor)
+        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
 
-    def wait(self, args: Namespace, where: Where) -> int:
+    def wait(self, args: Namespace, caller: Caller) -> int:
         print(f"awaiting workers {', '.join(str(n) for n in args.on)}: you are told as each reports, and when the last is back")
         return 0
 
-    def stop(self, args: Namespace, where: Where) -> int:
+    def stop(self, args: Namespace, caller: Caller) -> int:
         self.runner.stop(args.n)
-        self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp()), where.actor)
+        self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"worker {args.n} stopped")
         return 0
 
-    def done(self, args: Namespace, where: Where) -> int:
-        worker = self.workers.save(self.workers.find(args.n).done(), where.actor)
+    def done(self, args: Namespace, caller: Caller) -> int:
+        worker = self.workers.save(self.workers.find(args.n).done(), caller.actor)
         dropped = self.branch.dropped(worker)
         print(f"worker {worker.id}'s report is acted on" + (f"; {dropped}" if dropped else ""))
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         workers = self.workers.in_()
         for worker in workers:
             print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {worker.brief}")

@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
 from journal.repositories.agents import Agents
 from journal.features.memory.commands.memory_command import MemoryCommand
@@ -19,7 +19,7 @@ class NothingCommand(Command):
     def arguments(self, verbs) -> None:
         self.verb(verbs, "survives", "say why nothing needs recording").add_argument("why")
 
-    def survives(self, args: Namespace, where: Where) -> int:
-        MemoryCommand.decided(self, where)
+    def survives(self, args: Namespace, caller: Caller) -> int:
+        MemoryCommand.decided(self, caller)
         print("noted; carry on")
         return 0

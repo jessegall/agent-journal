@@ -3,7 +3,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.engine.clock import Clock
 from journal.engine.state_machine import StateMachine
 from journal.support.refused import Refused
@@ -64,70 +64,70 @@ class TaskCommand(Command):
         self.verb(verbs, "resume", "pick a parked task up again").add_argument("n", type=int)
         self.verb(verbs, "list", "every open task here")
 
-    def create(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(Task(title=args.title, brief=args.brief), where.actor)
+    def create(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.save(Task(title=args.title, brief=args.brief), caller.actor)
         if args.message:
-            self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.ABOUT), where.actor)
+            self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.ABOUT), caller.actor)
         if args.start:
-            task = self.taking.start(task, where)
+            task = self.taking.start(task, caller)
         print(f"task {task.id} {task.state}" + (f" (from message {args.message})" if args.message else ""))
         return 0
 
-    def start(self, args: Namespace, where: Where) -> int:
-        return self.taken(args.n, where, "started")
+    def start(self, args: Namespace, caller: Caller) -> int:
+        return self.taken(args.n, caller, "started")
 
-    def rename(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).with_(title=args.title), where.actor)
+    def rename(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).with_(title=args.title), caller.actor)
         print(f"task {task.id} is now: {task.title}")
         return 0
 
-    def brief(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).with_(brief=args.brief), where.actor)
+    def brief(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).with_(brief=args.brief), caller.actor)
         print(f"task {task.id} brief written anew")
         return 0
 
-    def log(self, args: Namespace, where: Where) -> int:
+    def log(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.find(args.n)
-        self.logs.save(TaskLog.of(task, args.line, self._now().timestamp()), where.actor)
-        current = self.taking.current(where)
+        self.logs.save(TaskLog.of(task, args.line, self._now().timestamp()), caller.actor)
+        current = self.taking.current(caller)
         if current and current.task_id == task.id:
-            self.machine.move(where.session, task.environment_id, current.logged(self.clock.now()))
+            self.machine.move(caller.session, task.environment_id, current.logged(self.clock.now()))
         print(f"task {task.id} logged")
         return 0
 
-    def park(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).parked(args.why, self._now()), where.actor)
+    def park(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).parked(args.why, self._now()), caller.actor)
         print(f"task {task.id} parked")
         return 0
 
-    def resume(self, args: Namespace, where: Where) -> int:
-        return self.taken(args.n, where, "resumed")
+    def resume(self, args: Namespace, caller: Caller) -> int:
+        return self.taken(args.n, caller, "resumed")
 
-    def taken(self, n: int, where: Where, how: str) -> int:
-        task = self.taking.start(self.tasks.find(n), where)
+    def taken(self, n: int, caller: Caller, how: str) -> int:
+        task = self.taking.start(self.tasks.find(n), caller)
         print("\n".join([f"task {task.id} {how}", *self.briefing.lines(task)]))
         return 0
 
-    def block(self, args: Namespace, where: Where) -> int:
+    def block(self, args: Namespace, caller: Caller) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
-        task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._now()), where.actor)
-        for ref in self.waits.named(args.on, args.until, args.every, f"task {task.id}", where.actor):
-            self.links.save(Link(source=Ref.to(task), target=ref, kind=WAITS_ON), where.actor)
+        task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._now()), caller.actor)
+        for ref in self.waits.named(args.on, args.until, args.every, f"task {task.id}", caller.actor):
+            self.links.save(Link(source=Ref.to(task), target=ref, kind=WAITS_ON), caller.actor)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0
 
-    def unblock(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).unblocked("the user opened it", self._now().timestamp()), where.actor)
+    def unblock(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).unblocked("the user opened it", self._now().timestamp()), caller.actor)
         print(f"task {task.id} open again")
         return 0
 
-    def done(self, args: Namespace, where: Where) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).finished(self._now(), args.how), where.actor)
+    def done(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).finished(self._now(), args.how), caller.actor)
         print(f"task {task.id} done")
         self._name_next(task)
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for task in self.tasks.in_():
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
         return 0

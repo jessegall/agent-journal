@@ -29,7 +29,7 @@ class Agents(ScopedRepository[Agent]):
         return alive[-1] if alive else None
 
     def in_state(self, name: str) -> list[Agent]:
-        return self.where(state=name)
+        return self.matching(state=name)
 
     def for_session(self, session: str) -> Agent:
         found = self.across_environments(session=session)

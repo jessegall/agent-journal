@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.features.checks.support.check_runner import CheckRunner
 from journal.models.check import Check
 from journal.repositories.checks import Checks
@@ -22,19 +22,19 @@ class CheckCommand(Command):
         self.verb(verbs, "run", "run a check now").add_argument("n", type=int)
         self.verb(verbs, "list", "every check and how it last went")
 
-    def create(self, args: Namespace, where: Where) -> int:
-        check = self.checks.save(Check(title=args.title, brief=args.brief, command=args.command, every=args.every), where.actor)
+    def create(self, args: Namespace, caller: Caller) -> int:
+        check = self.checks.save(Check(title=args.title, brief=args.brief, command=args.command, every=args.every), caller.actor)
         print(f"check {check.id}: {check.title}")
         return 0
 
-    def run(self, args: Namespace, where: Where) -> int:
-        ran = self.runner.run(self.checks.find(args.n), where.actor)
+    def run(self, args: Namespace, caller: Caller) -> int:
+        ran = self.runner.run(self.checks.find(args.n), caller.actor)
         print(f"check {ran.id} {'passed' if ran.last_passed else 'failed'}: {ran.title}")
         if not ran.last_passed:
             print(ran.last_output.strip())
         return 0 if ran.last_passed else 1
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for check in self.checks.all():
             state = {True: "passed", False: "failed", None: "not run"}[check.last_passed]
             print(f"{check.id:>4}  {state:<8} {check.title}")

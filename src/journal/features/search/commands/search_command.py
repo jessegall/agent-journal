@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.cards import Cards
 from journal.features.search.support.search import CONVERSATION, Search
 from journal.support.scope import Scope
@@ -22,11 +22,11 @@ class SearchCommand(Command):
         verbs_for.add_argument("words", nargs="+")
         verbs_for.add_argument("--model", default="", help=f"only these models, by name and comma apart: {', '.join(self.search.models())}; {CONVERSATION} reads the agents' conversations too")
 
-    def for_(self, args: Namespace, where: Where) -> int:
+    def for_(self, args: Namespace, caller: Caller) -> int:
         words = " ".join(args.words).split()
         found = self.search.found_in(words, args.model.split(",")) if args.model else self.search.found(words)
         lines = [one.line() for one in found]
         said = "\n".join(lines) if lines else f"nothing here holds all of: {' '.join(words)}"
         print(said)
-        self.cards.show(self.scope.id, where.session, f"Searched for \"{' '.join(words)}\"", "search", detail=said, kind="search", shows=ChatMark.SEARCHES)
+        self.cards.show(self.scope.id, caller.session, f"Searched for \"{' '.join(words)}\"", "search", detail=said, kind="search", shows=ChatMark.SEARCHES)
         return 0

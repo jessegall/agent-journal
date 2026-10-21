@@ -99,5 +99,5 @@ class PluginRelay:
     def state_of(self, event: Event) -> str:
         if not isinstance(event, AgentEvent):
             return ""
-        agents = self.agents.where(session=event.session)
+        agents = self.agents.matching(session=event.session)
         return agents[0].state if agents else ""

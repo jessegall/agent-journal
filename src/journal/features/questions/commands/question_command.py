@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.features.questions.support.answering import Answering
 from journal.models.question import Question
 from journal.support.ref import Ref
@@ -29,8 +29,8 @@ class QuestionCommand(Command):
         self.verb(verbs, "list", "every open question here")
         self.verb(verbs, "show", "a question whole: its words, its choices, the answer and the messages linked to it").add_argument("n", type=int)
 
-    def ask(self, args: Namespace, where: Where) -> int:
-        if not where.session or self.workers.by_session(where.session):
+    def ask(self, args: Namespace, caller: Caller) -> int:
+        if not caller.session or self.workers.by_session(caller.session):
             raise Refused("nobody can answer a question asked from here: put it in the worker's report instead")
         options = tuple(o.strip() for o in args.options if o.strip())
         if len(options) == 1 and "," in options[0]:
@@ -38,18 +38,18 @@ class QuestionCommand(Command):
         asked = Question(text=args.text, options=options)
         if asked.unclear_options():
             raise Refused(f"an option says who acts by name, the agent or the user, never I, we or you: {'; '.join(asked.unclear_options())}")
-        question = self.questions.save(self.questions.save(asked, where.actor).asked(datetime.now(timezone.utc).timestamp()), where.actor)
+        question = self.questions.save(self.questions.save(asked, caller.actor).asked(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"question {question.id} asked; waiting for the answer")
         for i, option in enumerate(question.options, 1):
             print(f"  {i}. {option}")
         return 0
 
-    def answer(self, args: Namespace, where: Where) -> int:
-        question = self.answering.answer(self.questions.find(args.n), args.answer, where.actor)
+    def answer(self, args: Namespace, caller: Caller) -> int:
+        question = self.answering.answer(self.questions.find(args.n), args.answer, caller.actor)
         print(f"question {question.id} answered: {question.answer}")
         return 0
 
-    def show(self, args: Namespace, where: Where) -> int:
+    def show(self, args: Namespace, caller: Caller) -> int:
         question = self.questions.find(args.n)
         choices = f"  [{' / '.join(question.options)}]" if question.options else ""
         print(f"question {question.id}: {question.text}{choices}")
@@ -65,7 +65,7 @@ class QuestionCommand(Command):
             print("  act on the answer")
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for question in self.questions.open():
             choices = f"  [{' / '.join(question.options)}]" if question.options else ""
             print(f"{question.id:>4}  {question.text}{choices}")

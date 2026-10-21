@@ -5,7 +5,7 @@ from journal.engine.state_machine import StateMachine
 from journal.support.refused import Refused
 from journal.support.scope import Scope
 from journal.support.states_catalogue import StatesCatalogue
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 POP = "pop"
 IDLE = "idle"
@@ -26,20 +26,20 @@ class PanicCommand(Command):
         now.add_argument("state")
         now.add_argument("values", nargs="*", help="the state's values as name=value")
 
-    def now(self, args: Namespace, where: Where) -> int:
+    def now(self, args: Namespace, caller: Caller) -> int:
         words = " ".join(["journal panic", args.state, *args.values])
-        agent = self.changed(args, where, words)
+        agent = self.changed(args, caller, words)
         print(f"the stack, bottom to top: {', '.join(state.printed() for state in self.machine.states.stack_of(agent).states)}")
         return 0
 
-    def changed(self, args: Namespace, where: Where, words: str):
+    def changed(self, args: Namespace, caller: Caller, words: str):
         if args.state == POP:
-            return self.machine.pop(where.session, self.scope.id, where.actor, words)
+            return self.machine.pop(caller.session, self.scope.id, caller.actor, words)
         if args.state == IDLE:
-            return self.machine.reset(where.session, self.scope.id, where.actor, words)
+            return self.machine.reset(caller.session, self.scope.id, caller.actor, words)
         if not self.states.known(args.state):
             raise Refused(f"no state is named {args.state}; the states are {', '.join(self.states.names())}")
-        return self.machine.push(where.session, self.scope.id, self.states.named(args.state, self.values_of(args.values)), where.actor, words)
+        return self.machine.push(caller.session, self.scope.id, self.states.named(args.state, self.values_of(args.values)), caller.actor, words)
 
     @staticmethod
     def values_of(pairs: list[str]) -> dict:

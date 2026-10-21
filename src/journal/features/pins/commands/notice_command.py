@@ -2,7 +2,7 @@ from argparse import Namespace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.models.notice import Notice
 from journal.repositories.notices import Notices
 
@@ -22,17 +22,17 @@ class NoticeCommand(Command):
         self.verb(verbs, "close", "take a pin down").add_argument("n", type=int)
         self.verb(verbs, "list", "the pins up here")
 
-    def create(self, args: Namespace, where: Where) -> int:
-        notice = self.notices.save(Notice(title=args.title, link=args.link, label=args.label, tone=args.tone), where.actor)
+    def create(self, args: Namespace, caller: Caller) -> int:
+        notice = self.notices.save(Notice(title=args.title, link=args.link, label=args.label, tone=args.tone), caller.actor)
         print(f"notice {notice.id} pinned: {notice.title} -> {notice.link}")
         return 0
 
-    def close(self, args: Namespace, where: Where) -> int:
-        notice = self.notices.save(self.notices.find(args.n).closed(datetime.now(timezone.utc)), where.actor)
+    def close(self, args: Namespace, caller: Caller) -> int:
+        notice = self.notices.save(self.notices.find(args.n).closed(datetime.now(timezone.utc)), caller.actor)
         print(f"notice {notice.id} closed")
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for notice in self.notices.open_in():
             print(f"{notice.id:>4}  {notice.title}: {notice.link}")
         return 0

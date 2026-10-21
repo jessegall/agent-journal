@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.support.actor_kind import ActorKind
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 from journal.engine.state_machine import StateMachine
 from journal.repositories.agents import Agents
@@ -21,8 +21,8 @@ class RuleCommand(MemoryCommand):
         super().__init__(machine, scope, agents)
         self.repository = rules
 
-    def carrying(self, row: Rule, where: Where) -> Rule:
-        return row.made(where.actor.kind == ActorKind.AGENT)
+    def carrying(self, row: Rule, caller: Caller) -> Rule:
+        return row.made(caller.actor.kind == ActorKind.AGENT)
 
     def new(self, args: Namespace) -> Rule:
         return Rule(text=args.text, reason=args.reason, keywords=self.keywords(args))

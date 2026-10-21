@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.mcp_catalogue import McpCatalogue
 from journal.support.mcp_installing import McpInstalling
 from journal.support.keys import Keys
@@ -24,32 +24,32 @@ class McpCommand(Command):
         self.verb(verbs, "remove", "take a server out and restart the agents").add_argument("name")
         self.verb(verbs, "check", "ask the agent program how each server stands")
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for s in self.servers.all():
             print(f"{s.name:<12} {s.state:<11} {s.title}" + (f": {s.last_error}" if s.last_error else ""))
         return 0
 
-    def suggested(self, args: Namespace, where: Where) -> int:
+    def suggested(self, args: Namespace, caller: Caller) -> int:
         for s in self.catalogue.all():
             print(f"{s.name:<12} {s.title}: {s.about}" + s.let_in)
         return 0
 
-    def install(self, args: Namespace, where: Where) -> int:
-        server = self.installing.add(self.catalogue.named(args.name).server(), where.actor)
+    def install(self, args: Namespace, caller: Caller) -> int:
+        server = self.installing.add(self.catalogue.named(args.name).server(), caller.actor)
         print(f"installed {server.name}" + (f": needs its key, journal mcp key {server.name} <value>" if server.state == "needs_key" else ""))
         return 0
 
-    def key(self, args: Namespace, where: Where) -> int:
-        server = self.installing.keyed(self.servers.named(args.name), args.value, where.actor)
+    def key(self, args: Namespace, caller: Caller) -> int:
+        server = self.installing.keyed(self.servers.named(args.name), args.value, caller.actor)
         print(f"key kept for {server.name}, outside the project")
         return 0
 
-    def remove(self, args: Namespace, where: Where) -> int:
-        self.installing.remove(self.servers.named(args.name), where.actor)
+    def remove(self, args: Namespace, caller: Caller) -> int:
+        self.installing.remove(self.servers.named(args.name), caller.actor)
         print(f"removed {args.name}")
         return 0
 
-    def check(self, args: Namespace, where: Where) -> int:
-        for s in self.installing.checked(where.actor):
+    def check(self, args: Namespace, caller: Caller) -> int:
+        for s in self.installing.checked(caller.actor):
             print(f"{s.name:<12} {s.state:<11}" + (f" {s.last_error}" if s.last_error else ""))
         return 0

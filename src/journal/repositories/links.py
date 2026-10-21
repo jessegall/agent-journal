@@ -33,7 +33,7 @@ class Links(Repository[Link]):
         return self.connection.one(f"SELECT 1 AS found FROM {ref.type} WHERE id = ?", (ref.id,)) is not None
 
     def between(self, source: Model, target: Model) -> list[Link]:
-        return self.where(source=Ref.to(source), target=Ref.to(target))
+        return self.matching(source=Ref.to(source), target=Ref.to(target))
 
     def remove_all_of(self, model: Model) -> None:
         ref = str(Ref.to(model))

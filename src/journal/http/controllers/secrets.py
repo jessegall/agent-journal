@@ -63,7 +63,7 @@ class SecretController(Controller[Secret]):
     def forget_login(self, request: Request) -> Response:
         return Response.json(self.window.forgotten(self.repository.find(request.number("id")), request.actor))
 
-    def where(self, request: Request) -> Response:
+    def location(self, request: Request) -> Response:
         return Response.json({"path": str(self.values.path)})
 
     @staticmethod

@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.features.voices.support.chosen_voice import ChosenVoice
 from journal.support.shipped import Shipped
 from journal.repositories.setting_rows import SettingRows
@@ -21,30 +21,30 @@ class VoiceCommand(Command):
         me.add_argument("--name", default=None)
         self.verb(verbs, "show", "the instruction the agent is given")
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         chosen = self.chosen.voice().name
         for voice in Shipped.ALL:
             print(f"{'*' if voice.name == chosen else ' '} {voice.name:<10} {voice.sample.replace('{you}', self.chosen.voice().calling.called(self.chosen.title(), self.chosen.first_name(), voice.address) or 'you')}")
         return 0
 
-    def choose(self, args: Namespace, where: Where) -> int:
+    def choose(self, args: Namespace, caller: Caller) -> int:
         from journal.features.voices.feature import Voices
-        self._set(Voices.PROFILE.key, args.name, where)
+        self._set(Voices.PROFILE.key, args.name, caller)
         print(f"voice: {args.name}")
         return 0
 
-    def me(self, args: Namespace, where: Where) -> int:
+    def me(self, args: Namespace, caller: Caller) -> int:
         from journal.features.voices.feature import Voices
         if args.title is not None:
-            self._set(Voices.TITLE.key, args.title, where)
+            self._set(Voices.TITLE.key, args.title, caller)
         if args.name is not None:
-            self._set(Voices.NAME.key, args.name, where)
+            self._set(Voices.NAME.key, args.name, caller)
         print(f"the agent calls you {self.chosen.voice().calling.called(self.chosen.title(), self.chosen.first_name(), self.chosen.voice().address) or 'nothing'}")
         return 0
 
-    def show(self, args: Namespace, where: Where) -> int:
+    def show(self, args: Namespace, caller: Caller) -> int:
         print(self.chosen.instruction())
         return 0
 
-    def _set(self, key: str, value: str, where: Where) -> None:
-        self.settings.set(key, value, where.actor)
+    def _set(self, key: str, value: str, caller: Caller) -> None:
+        self.settings.set(key, value, caller.actor)

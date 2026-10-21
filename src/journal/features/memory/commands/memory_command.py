@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import ClassVar
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
 from journal.repositories.agents import Agents
 from journal.repositories.repository import Repository
@@ -27,24 +27,24 @@ class MemoryCommand(Command):
         self.verb(verbs, "list", f"every {self.noun} here")
         self.verb(verbs, "strike", f"a {self.noun} that no longer holds").add_argument("n", type=int)
 
-    def create(self, args: Namespace, where: Where) -> int:
-        row = self.repository.save(self.carrying(self.new(args), where), where.actor)
-        self.decided(where)
+    def create(self, args: Namespace, caller: Caller) -> int:
+        row = self.repository.save(self.carrying(self.new(args), caller), caller.actor)
+        self.decided(caller)
         print(f"{self.noun} {row.id}: {row.text}")
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         rows = self.repository.in_() if self.scoped else self.repository.all()
         for row in rows:
             print(f"{row.id:>4}  {row.text}")
         return 0
 
-    def strike(self, args: Namespace, where: Where) -> int:
-        self.repository.delete(self.repository.find(args.n), where.actor)
+    def strike(self, args: Namespace, caller: Caller) -> int:
+        self.repository.delete(self.repository.find(args.n), caller.actor)
         print(f"{self.noun} {args.n} struck")
         return 0
 
-    def carrying(self, row, where: Where):
+    def carrying(self, row, caller: Caller):
         return row
 
     def new(self, args: Namespace):
@@ -54,9 +54,9 @@ class MemoryCommand(Command):
     def keywords(args: Namespace) -> tuple[str, ...]:
         return tuple(word.strip().lower() for word in args.keywords.split(",") if word.strip())
 
-    def decided(self, where: Where) -> None:
-        if not where.session:
+    def decided(self, caller: Caller) -> None:
+        if not caller.session:
             return
-        agent = self.machine.agent(where.session, self.scope.id)
+        agent = self.machine.agent(caller.session, self.scope.id)
         if agent.mark_owed:
-            self.agents.save(agent.mark_decided(datetime.now(timezone.utc).timestamp()), where.actor)
+            self.agents.save(agent.mark_decided(datetime.now(timezone.utc).timestamp()), caller.actor)

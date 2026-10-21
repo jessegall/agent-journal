@@ -103,9 +103,9 @@ def test_where_reads_typed_values_back(connection, bus, scope):
     with scope.of(1):
         assert tasks.in_state(TaskState.STARTED) == [started]
     with scope.of(2):
-        assert tasks.in_() == [] and tasks.where(title="open") == [] and tasks.search(["open"]) == [] and tasks.counted_in() == 0, "every read is the scope's, whatever it asks"
+        assert tasks.in_() == [] and tasks.matching(title="open") == [] and tasks.search(["open"]) == [] and tasks.counted_in() == 0, "every read is the scope's, whatever it asks"
     with pytest.raises(Unscoped):
-        tasks.where(title="open")
+        tasks.matching(title="open")
     assert [t.title for t in tasks.across_environments(title="open")] == ["open"], "a read across environments says so by its name"
 
 

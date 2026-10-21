@@ -8,7 +8,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.console.commands.setup_command import SetupCommand
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def test_setup_wires_hooks_skills_and_the_law(app, monkeypatch):
     monkeypatch.setattr(shutil, "which", lambda name: None)
     root = app.config.root
     (root / "AGENTS.md").write_text("# my project\n\nMy own rules.\n")
-    out = app.console().run(["setup"], Where("main")).out
+    out = app.console().run(["setup"], Caller("main")).out
     settings = json.loads((root / ".claude/settings.json").read_text())
     assert "SessionStart" in settings["hooks"] and "MessageDisplay" in settings["hooks"]
     command = settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
@@ -36,7 +36,7 @@ def test_setup_wires_hooks_skills_and_the_law(app, monkeypatch):
     assert "hooks   .claude/settings.json" in out
     assert not (root / ".codex").exists(), "Codex is wired only where its folder exists or its program is installed"
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/local/bin/{name}")
-    assert "hooks   .codex/hooks.json" in app.console().run(["setup"], Where("main")).out, "a fresh project is wired for Codex when Codex is installed"
+    assert "hooks   .codex/hooks.json" in app.console().run(["setup"], Caller("main")).out, "a fresh project is wired for Codex when Codex is installed"
     assert (root / ".journal/bin/journal").is_file() and "/.journal" in (root / ".gitignore").read_text().splitlines()
     dispatcher = (root / "home/.local/bin/journal").read_text()
     assert ".journal/src/journal.sh" in dispatcher and ".journal/journal" in dispatcher, "the dispatcher serves version 4 and version 3 projects alike"
@@ -46,9 +46,9 @@ def test_setup_is_idempotent_and_keeps_other_hooks(app):
     root = app.config.root
     (root / ".claude").mkdir()
     (root / ".claude/settings.json").write_text(json.dumps({"hooks": {"PreToolUse": [{"hooks": [{"type": "command", "command": "echo mine"}]}]}, "theme": "dark"}))
-    app.console().run(["setup"], Where("main"))
+    app.console().run(["setup"], Caller("main"))
     first = (root / ".claude/settings.json").read_text()
-    app.console().run(["setup"], Where("main"))
+    app.console().run(["setup"], Caller("main"))
     assert (root / ".claude/settings.json").read_text() == first
     settings = json.loads(first)
     assert settings["theme"] == "dark"
@@ -109,7 +109,7 @@ def test_setup_takes_out_version_3s_hooks_wherever_they_were_wired(app):
     mine = {"hooks": [{"type": "command", "command": "echo mine"}]}
     (root / ".claude/settings.local.json").write_text(json.dumps({"hooks": {"PreToolUse": [old, mine]}, "model": "opus"}))
     (root / ".codex/hooks.json").write_text(json.dumps({"hooks": {"Stop": [old]}}))
-    app.console().run(["setup"], Where("main"))
+    app.console().run(["setup"], Caller("main"))
     local = json.loads((root / ".claude/settings.local.json").read_text())
     assert local == {"hooks": {"PreToolUse": [mine]}, "model": "opus"}, "version 3's hook goes from the local settings, the user's own stays"
     assert "/.journal/src/hook.sh" not in (root / ".codex/hooks.json").read_text(), "and from Codex's hooks, where version 4's takes its place"

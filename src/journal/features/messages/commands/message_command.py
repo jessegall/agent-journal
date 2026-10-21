@@ -2,7 +2,7 @@ from argparse import Namespace
 from datetime import datetime, timezone
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.support.ref import Ref
@@ -41,16 +41,16 @@ class MessageCommand(Command):
         react.add_argument("n", type=int)
         react.add_argument("face")
 
-    def send(self, args: Namespace, where: Where) -> int:
-        author = Author.of(where.actor)
+    def send(self, args: Namespace, caller: Caller) -> int:
+        author = Author.of(caller.actor)
         if args.reply_to and author == Author.AGENT:
-            return self.reply(args, where)
+            return self.reply(args, caller)
         draft = Message(author=author, text=args.text, reply_to=args.reply_to)
-        message = self.messages.save(draft.arrived() if author == Author.USER else draft, where.actor)
+        message = self.messages.save(draft.arrived() if author == Author.USER else draft, caller.actor)
         print(f"message {message.id} sent")
         return 0
 
-    def reply(self, args: Namespace, where: Where) -> int:
+    def reply(self, args: Namespace, caller: Caller) -> int:
         answered = self.messages.find(args.reply_to)
         if self.messages.reply_saying(answered.id, args.text):
             print(f"message {answered.id} already has this reply in the chat: not sent again")
@@ -59,52 +59,52 @@ class MessageCommand(Command):
         if earlier is not None and not args.confirm:
             print(f"message {answered.id} already has your reply {earlier.id}: not sent. Send it again only if it says something new, with --confirm")
             return 1
-        message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_to=answered.id), where.actor)
-        self.messages.mark_read(answered, where.actor, self._tool_use(where))
+        message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_to=answered.id), caller.actor)
+        self.messages.mark_read(answered, caller.actor, self._tool_use(caller))
         print(f"message {message.id} sent")
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for message in self.messages.in_():
             mark = " " if message.read_at else "*"
             print(f"{mark}{message.id:>4}  {message.author:<5} {message.own_words}")
         return 0
 
-    def read(self, args: Namespace, where: Where) -> int:
-        self.show(self.messages.mark_read(self.messages.find(args.n), where.actor, self._tool_use(where)))
+    def read(self, args: Namespace, caller: Caller) -> int:
+        self.show(self.messages.mark_read(self.messages.find(args.n), caller.actor, self._tool_use(caller)))
         return 0
 
-    def unread(self, args: Namespace, where: Where) -> int:
+    def unread(self, args: Namespace, caller: Caller) -> int:
         waiting = self.messages.unread()
         if not waiting:
             print("nothing unread")
         for message in waiting:
-            self.show(self.messages.mark_read(message, where.actor, self._tool_use(where)))
+            self.show(self.messages.mark_read(message, caller.actor, self._tool_use(caller)))
         return 0
 
-    def recent(self, args: Namespace, where: Where) -> int:
+    def recent(self, args: Namespace, caller: Caller) -> int:
         for message in self.messages.recent(RECENT):
             print(f"{message.id:>4}  {message.author:<5} {message.own_words}")
         return 0
 
-    def react(self, args: Namespace, where: Where) -> int:
+    def react(self, args: Namespace, caller: Caller) -> int:
         if args.face not in Faces.ALL:
             print(f"a reaction is one of {' '.join(Faces.ALL)}")
             return 1
-        author = Author.of(where.actor)
+        author = Author.of(caller.actor)
         message = self.messages.find(args.n)
-        reaction = self.reactions.toggle(message, args.face, author, where.actor)
+        reaction = self.reactions.toggle(message, args.face, author, caller.actor)
         if reaction and author == Author.AGENT:
-            self.messages.mark_read(message, where.actor, self._tool_use(where))
+            self.messages.mark_read(message, caller.actor, self._tool_use(caller))
         print(f"{args.face} {'on' if reaction else 'off'} message {args.n}")
         return 0
 
-    def tag(self, args: Namespace, where: Where) -> int:
+    def tag(self, args: Namespace, caller: Caller) -> int:
         message = self.messages.find(args.n)
         if args.name not in message.files:
             print(f"message {args.n} has no file named {args.name}")
             return 1
-        self.messages.save(message.with_(captions={**message.captions, args.name: args.caption}), where.actor)
+        self.messages.save(message.with_(captions={**message.captions, args.name: args.caption}), caller.actor)
         print(f"{args.name} on message {args.n}: {args.caption}")
         return 0
 
@@ -128,6 +128,6 @@ class MessageCommand(Command):
         print(f"  reply with [!reply:{message.id}] in your turn")
         print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")
 
-    def _tool_use(self, where: Where) -> int:
-        agents = self.agents.across_environments(session=where.session) if where.session else [agent for agent in (self.agents.live(),) if agent]
+    def _tool_use(self, caller: Caller) -> int:
+        agents = self.agents.across_environments(session=caller.session) if caller.session else [agent for agent in (self.agents.live(),) if agent]
         return agents[0].tool_uses if agents else 0

@@ -7,7 +7,7 @@ import pytest
 from journal.app import App
 from journal.support.scope import Scope
 from journal.config import Config
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.actor import Actor
 from journal.models.task import Task
 from journal.models.task_state import TaskState
@@ -15,7 +15,7 @@ from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 
 
-MAIN = Where("main")
+MAIN = Caller("main")
 
 
 @pytest.fixture
@@ -39,13 +39,13 @@ def test_a_task_lives_through_the_cli(app):
 
 
 def test_the_agent_is_the_actor_when_its_session_is_set(app):
-    app.console().run(["task", "create", "t", "--start"], Where("main", "s-1"))
+    app.console().run(["task", "create", "t", "--start"], Caller("main", "s-1"))
     assert app.container.get(Tasks).find(1).created_by == Actor.agent("s-1")
 
 
 def test_the_environment_is_made_on_first_use(app):
     from journal.repositories.environments import Environments
-    app.console().run(["task", "create", "t"], Where("other"))
+    app.console().run(["task", "create", "t"], Caller("other"))
     assert app.container.get(Tasks).find(1).environment_id == app.container.get(Environments).named("other").id
 
 
@@ -74,7 +74,7 @@ def test_the_server_runs_the_same_console_for_the_shim(app):
 def test_deleting_an_environment_takes_everything_recorded_in_it(app):
     from journal.repositories.environments import Environments
     from journal.repositories.tasks import Tasks
-    app.console().run(["task", "create", "t"], Where("spike"))
+    app.console().run(["task", "create", "t"], Caller("spike"))
     app.console().run(["task", "create", "kept"], MAIN)
     outcome = app.console().run(["environment", "delete", "spike"], MAIN)
     assert "deleted environment" in outcome.out and outcome.code == 0
@@ -85,24 +85,24 @@ def test_deleting_an_environment_takes_everything_recorded_in_it(app):
 
 
 def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_from(app):
-    from journal.support.where import Where
+    from journal.support.caller import Caller
     from journal.repositories.reactions import Reactions
     from journal.support.actor import Actor
     from journal.models.agent import Agent
     from journal.repositories.agents import Agents
     app.container.get(Agents).save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
-    app.console().run(["message", "send", "hi"], Where("main"))
-    app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"}))
-    assert Where.from_environ({"JOURNAL_AGENT_SHELL": "1"}).from_agent_shell, "a worker's shell is an agent's whatever its program marks"
+    app.console().run(["message", "send", "hi"], Caller("main"))
+    app.console().run(["message", "react", "1", "👍"], Caller.from_environ({"CLAUDECODE": "1"}))
+    assert Caller.from_environ({"JOURNAL_AGENT_SHELL": "1"}).from_agent_shell, "a worker's shell is an agent's whatever its program marks"
     with app.container.get(Scope).of(1):
         assert app.container.get(Reactions).all()[-1].created_by.kind == "agent"
 
 
 def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app):
-    from journal.support.where import Where
+    from journal.support.caller import Caller
     from journal.repositories.reactions import Reactions
-    app.console().run(["message", "send", "hi"], Where("main"))
-    assert app.console().run(["message", "react", "1", "👍"], Where.from_environ({"CLAUDECODE": "1"})).code == 0
+    app.console().run(["message", "send", "hi"], Caller("main"))
+    assert app.console().run(["message", "react", "1", "👍"], Caller.from_environ({"CLAUDECODE": "1"})).code == 0
     with app.container.get(Scope).of(1):
         assert app.container.get(Reactions).all()[-1].created_by.kind == "user", "a shell outside the journal is the user's"
 
@@ -116,15 +116,15 @@ def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app):
     with app.container.get(Scope).of(development.id):
         agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", oriented=False), Actor.system())
         agents.save(Agent(session="claude-session", environment_id=development.id, provider="claude", oriented=False), Actor.system())
-    where = Where.from_environ({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "codex-session", "CODEX_CI": "1"})
-    assert app.console().run(["environment", "here"], where).code == 0
+    caller = Caller.from_environ({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "codex-session", "CODEX_CI": "1"})
+    assert app.console().run(["environment", "here"], caller).code == 0
     with app.container.get(Scope).of(development.id):
         assert agents.for_session("codex-session").oriented
         assert not agents.for_session("claude-session").oriented
-    assert app.console().run(["task", "create", "Codex task"], where).code == 0
+    assert app.console().run(["task", "create", "Codex task"], caller).code == 0
     with app.container.get(Scope).of(development.id):
         assert app.container.get(Tasks).all()[-1].created_by == Actor.agent("codex-session")
-    assert Where.from_environ({"JOURNAL_SESSION": "worker-session", "CODEX_THREAD_ID": "parent-session"}).session == "worker-session"
+    assert Caller.from_environ({"JOURNAL_SESSION": "worker-session", "CODEX_THREAD_ID": "parent-session"}).session == "worker-session"
 
 
 @pytest.mark.parametrize("online", [False, True])
@@ -153,7 +153,7 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app, onli
 
 
 def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists(app, monkeypatch, tmp_path):
-    from journal.support.where import Where
+    from journal.support.caller import Caller
     from journal.support.actor import Actor
     from journal.models.agent import Agent
     from journal.providers.claude import Claude
@@ -165,7 +165,7 @@ def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists
     agents.save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
     agents.save(Agent(session="lost", environment_id=1, provider="claude", state="ended"), Actor.system())
     import json as j
-    rows = j.loads(app.console().run(["environment", "json"], Where("main")).out)
+    rows = j.loads(app.console().run(["environment", "json"], Caller("main")).out)
     assert rows[0]["last_sessions"] == {"claude": "s1"}, "a codex launch finds no Claude session to carry on"
 
 
@@ -190,7 +190,7 @@ def test_an_environment_is_renamed_with_everything_in_it_and_never_while_an_agen
     assert console.run(["environment", "rename", "spike", "probe"], MAIN).code == 0
     with app.container.get(Scope).of(environments.named("probe").id):
         assert [t.title for t in app.container.get(Tasks).all()] == ["in spike"], "its rows go with it"
-    assert not environments.where(name="spike")
+    assert not environments.matching(name="spike")
 
 
 def test_any_row_docks_above_the_chat_by_noun_and_number_in_either_order(app):

@@ -6,7 +6,7 @@ import subprocess
 import threading
 
 from journal.config import Config
-from journal.support.where import AGENT_SHELL
+from journal.support.caller import AGENT_SHELL
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor

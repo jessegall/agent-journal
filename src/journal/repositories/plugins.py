@@ -25,7 +25,7 @@ class Plugins(Repository[Plugin]):
         self.live = None
 
     def named(self, name: str) -> Plugin:
-        found = self.where(name=name)
+        found = self.matching(name=name)
         if not found:
             raise NotFound(self.table, name)
         return found[0]

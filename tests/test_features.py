@@ -27,7 +27,7 @@ from journal.models.setting import Setting
 from journal.support.supervisor_reply import SupervisorReply
 from journal.support.scope import Scope
 from journal.repositories.setting_rows import SettingRows
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
 from journal.support.running import Running
 from journal.features.updates.support.release import Release
@@ -37,8 +37,8 @@ from journal.support.subagents import Subagents
 
 from tests.replay import catch_typed, drive_the_clock, tick_after
 
-AGENT = Where("main", "s1")
-USER = Where("main")
+AGENT = Caller("main", "s1")
+USER = Caller("main")
 MAIN = 1
 """The id of main, the environment a fresh journal makes at boot: what a test reads directly, it reads there."""
 
@@ -126,7 +126,7 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app):
 
 
 def test_a_rule_binds_the_project_not_an_environment(app):
-    app.console().run(["rule", "create", "Always name the model"], Where("other"))
+    app.console().run(["rule", "create", "Always name the model"], Caller("other"))
     assert "Always name the model" in app.console().run(["rule", "list"], USER).out
 
 
@@ -516,7 +516,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app, monkeypatch):
     console.run(["worker", "wait", "1", "2"], AGENT)
     machine = app.container.get(StateMachine)
     assert machine.current("s1").name == "awaiting" and hook(app, "Stop")[1] == {}
-    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
     assert machine.current("s1").name == "awaiting" and typed == ["[journal] worker 1, Lady Lovelace, reported in the chat"], "\n".join(stacks)
     lines, link = app.container.get(TypedLines), app.container.get(SupervisorLink)
     lines.confirm(1, typed[0])
@@ -536,11 +536,11 @@ def test_a_worker_runs_the_dispatching_agents_own_program(app, monkeypatch):
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
     console = app.console()
-    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Where("main", "c1"))
+    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller("main", "c1"))
     console.run(["worker", "dispatch", "Mr. Babbage", "write cli.py", "--profile", "journal-medior", "--model", "sonnet"], USER)
     workers = app.container.get(Workers)
     assert workers.find(1).provider == "codex" and workers.find(2).provider == "claude", "a Codex agent's worker runs Codex, so its model names fit"
-    assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Where("main", "c1")).out, "a list of workers out points at the wait"
+    assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Caller("main", "c1")).out, "a list of workers out points at the wait"
 
 
 def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, monkeypatch):
@@ -559,7 +559,7 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app, m
         subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast", "--worktree"], AGENT)
     assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code != 0, "still out: its report comes first"
-    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
     assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code != 0, "no session was captured, so there is nothing to resume"
     workers = app.container.get(Workers)
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
@@ -584,7 +584,7 @@ def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app, mo
     from journal.repositories.workers import Workers
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
-    app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Where("main", "c1"))
+    app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller("main", "c1"))
     workers = app.container.get(Workers)
     worker = workers.save(workers.find(1).running_as(1, timing.time() - 5), Actor.system())
     session = "01a15a25-535e-7cc2-993e-d38deedb6b40"
@@ -2043,7 +2043,7 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app):
     app.console().run(["task", "create", "first", "--start"], AGENT)
     app.console().run(["task", "create", "second"], AGENT)
     hook(app, "SessionStart", session_id="s2")
-    refused = app.console().run(["task", "start", "2"], Where("main", "s2"))
+    refused = app.console().run(["task", "start", "2"], Caller("main", "s2"))
     assert refused.code == 1 and "task 1 is in hand" in refused.err, "another session cannot start a second"
     app.console().run(["task", "park", "1", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
@@ -2425,20 +2425,20 @@ def test_a_subagents_tool_use_does_not_lift_the_agents_own_wait(app):
 
 def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(app, monkeypatch):
     typed = []
-    from journal.support.where import Where
+    from journal.support.caller import Caller
     catch_typed(app, monkeypatch, typed)
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "here"], AGENT)
     hook(app, "SessionStart", session_id="s2")
-    console.run(["environment", "here"], Where("main", "s2"))
-    console.run(["task", "create", "t", "--start"], Where("main", "s2"))
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], Where("main", "s2"))
-    console.run(["worker", "wait", "1"], Where("main", "s2"))
+    console.run(["environment", "here"], Caller("main", "s2"))
+    console.run(["task", "create", "t", "--start"], Caller("main", "s2"))
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], Caller("main", "s2"))
+    console.run(["worker", "wait", "1"], Caller("main", "s2"))
     typed.clear()
     machine = app.container.get(StateMachine)
     assert machine.current("s2").name == "awaiting"
-    console.run(["worker", "report", "1", "parser done"], Where("main", "w1"))
+    console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
     app.runtime().deferred.drain()
     assert machine.current("s2").task_id == 1, "the agent awaiting the worker, not the live one, is released by the shipped workflow"
     assert typed[0] == "[journal] worker 1, Lady Lovelace, reported in the chat" and typed[1].startswith("[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported") and len(typed) == 2, "told once, on the walk about the agent that waits; the work beneath goes on in silence"
@@ -2567,10 +2567,10 @@ def test_a_read_outside_every_scope_is_refused_and_a_command_reads_its_own_envir
     from journal.support.unscoped import Unscoped
     console = app.console()
     console.run(["task", "create", "main's own"], USER)
-    console.run(["task", "create", "other's own"], Where("other"))
+    console.run(["task", "create", "other's own"], Caller("other"))
     with pytest.raises(Unscoped):
         Context().run(app.container.get(Tasks).in_)
-    in_main, in_other = console.run(["task", "list"], USER).out, console.run(["task", "list"], Where("other")).out
+    in_main, in_other = console.run(["task", "list"], USER).out, console.run(["task", "list"], Caller("other")).out
     assert "main's own" in in_main and "other's own" not in in_main
     assert "other's own" in in_other and "main's own" not in in_other
     assert [t.title for t in app.container.get(Tasks).in_()] == ["main's own"], "the test reads in main, the scope its fixture entered"
@@ -2716,9 +2716,9 @@ def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app, m
     app.console().run(["environment", "here"], AGENT)
     app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Pitman", session="s2"), Actor.system())
     hook(app, "SessionStart", session_id="s2")
-    app.console().run(["environment", "here"], Where("main", "s2"))
+    app.console().run(["environment", "here"], Caller("main", "s2"))
     hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / ".claude/skills/journal-plans/SKILL.md")}, tool_response="", session_id="s2")
-    app.console().run(["plan", "create", "Side work", "--brief", "b"], Where("main", "s2"))
+    app.console().run(["plan", "create", "Side work", "--brief", "b"], Caller("main", "s2"))
     app.runtime().deferred.drain()
     running = app.container.get(Running)
     assert running.in_hand("s2", 1).title == "Building a plan" and running.in_hand("s1", 1) is None and not any("Building" in line or "step 1" in line for line in sent), "the run is the worker's, and its step is not typed to the agent"
@@ -2895,7 +2895,7 @@ def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app):
     console = app.console()
     console.run(["environment", "here"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    console.run(["worker", "report", "1", "the parser is written"], Where("main", "w1"))
+    console.run(["worker", "report", "1", "the parser is written"], Caller("main", "w1"))
     messages = app.container.get(Messages)
     for i in range(250):
         messages.save(Message(author=Author.USER, text=f"word {i}"), USER.actor)
@@ -2910,7 +2910,7 @@ def test_a_workers_report_message_carries_the_report_kind_and_its_worker(app):
     console = app.console()
     console.run(["environment", "here"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    console.run(["worker", "report", "1", "the parser is written"], Where("main", "w1"))
+    console.run(["worker", "report", "1", "the parser is written"], Caller("main", "w1"))
     report = next(m for m in app.container.get(Messages).all() if m.data.get("kind") == "report")
     assert (report.text, report.data["worker"], report.data["worker_id"]) == ("Lady Lovelace reports: the parser is written", "Lady Lovelace", 1)
 
@@ -3165,7 +3165,7 @@ def test_a_plugin_hears_the_events_it_names_and_holds_what_it_may(app):
     echo(app, "echo-two")
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
     app.container.get(Deferred).drain()
-    assert status == 409 and "plugin echo-two" not in body["error"] and [e.data["plugin"] for e in app.container.get(Entries).where(kind="plugin_unanswered")] == ["echo-two"], "the first plugin's refusal answers; the second hears it after the reply, recorded unanswered"
+    assert status == 409 and "plugin echo-two" not in body["error"] and [e.data["plugin"] for e in app.container.get(Entries).matching(kind="plugin_unanswered")] == ["echo-two"], "the first plugin's refusal answers; the second hears it after the reply, recorded unanswered"
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list forbidden"})
     assert status == 200 and "echo refuses a forbidden tool" in body["hookSpecificOutput"]["additionalContext"], "a journal command goes through a plugin's refusal, its words told"
 
@@ -3190,7 +3190,7 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     card = [m for m in messages.recent(5) if m.data.get("kind") == "plugin"]
     assert [(m.text, m.data["key"], m.created_by) for m in card] == [(f"Echoed task {task.id}", f"task {task.id}", Actor.plugin("echo"))], "a card from the answer, written as the plugin"
     from journal.repositories.task_logs import TaskLogs
-    assert [(l.line, l.created_by) for l in app.container.get(TaskLogs).where(task_id=task.id)] == [("echoed", Actor.plugin("echo"))], "its command ran as the plugin and found the task its row event named"
+    assert [(l.line, l.created_by) for l in app.container.get(TaskLogs).matching(task_id=task.id)] == [("echoed", Actor.plugin("echo"))], "its command ran as the plugin and found the task its row event named"
     answers = app.container.get(PluginAnswers)
     for label in ("first", "second"):
         answers.apply(plugin, PluginAnswer(cards=(PluginCard("echoed", label, key="k"),)), "main", 1)
@@ -3205,7 +3205,7 @@ def test_a_plugins_answer_shows_cards_runs_commands_and_never_loops(app):
     for _ in range(6):
         deferred.drain()
     heard = [m.text for m in messages.recent(20) if m.text.startswith("heard message")]
-    assert len(heard) == 4 and entries.where(kind="plugin_cut"), "two plugins answer each other's rows one step deep, then the cut is recorded"
+    assert len(heard) == 4 and entries.matching(kind="plugin_cut"), "two plugins answer each other's rows one step deep, then the cut is recorded"
 
 def test_a_plugin_holds_a_stop_once_a_turn(app):
     from journal.repositories.entries import Entries
@@ -3216,7 +3216,7 @@ def test_a_plugin_holds_a_stop_once_a_turn(app):
     assert status == 200 and body["decision"] == "block" and "[plugin echo] echo holds the stop" in body["reason"]
     status, body = hook(app, "Stop", stop_hook_active=True)
     assert status == 200 and "decision" not in body, "a stop held once already goes through"
-    assert [e.data["reason"] for e in app.container.get(Entries).where(kind="plugin_unanswered")] == ["echo holds the stop"], "the second refusal is recorded unanswered"
+    assert [e.data["reason"] for e in app.container.get(Entries).matching(kind="plugin_unanswered")] == ["echo holds the stop"], "the second refusal is recorded unanswered"
 
 
 def test_a_subagents_event_reaches_a_plugin_and_is_held_only_at_a_tool(app):
@@ -3470,7 +3470,7 @@ def test_a_plugins_record_lists_what_it_did(app):
     assert f'ran journal task log {task.id} "echoed"' in texts, "a command it ran"
     logged = [line for line in record if line["kind"] == "row" and line["text"].startswith("made task log")]
     assert logged and logged[0]["ref"] == "", "a row it wrote; a task log opens nothing of its own"
-    assert record == sorted(record, key=lambda line: line["at"], reverse=True), "newest first"
+    assert record == sorted(record, key=lambda line: line["time"], reverse=True), "newest first"
 
 
 def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
@@ -3478,7 +3478,7 @@ def test_a_plugins_dashboard_is_drawn_from_the_lines_it_wrote(app):
     console = app.console()
     console.run(["plugin", "install", str(Path(__file__).parent / "plugins" / "echo"), "--yes"], USER)
     plugin = app.container.get(Plugins).named("echo")
-    as_echo = Where("main", plugin="echo")
+    as_echo = Caller("main", plugin="echo")
     assert "written by its plugin's program" in console.run(["dashboard", "set", "a.py", "a.py"], AGENT).err, "only a plugin writes its dashboard"
     console.run(["dashboard", "set", "a.py", "a.py", "--badge", "2 sins", "--tone", "warn", "--heading", "Files"], as_echo)
     console.run(["dashboard", "set", "b.py", "b.py", "--badge", "clean", "--tone", "good", "--heading", "Files"], as_echo)
@@ -3522,7 +3522,7 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
         assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[0] == 200, "a fault is never a refusal"
     row = plugins.named("echo")
     assert row.faults_in_a_row == 5 and row.failing_since and "not JSON" in row.last_fault
-    assert len(app.container.get(Entries).where(kind="plugin_fault")) == 5 and [m.text for m in messages.recent(20)].count("Plugin echo is failing: it faulted 5 times in a row, and events go through without it") == 1, "the failing card comes once, at the fifth"
+    assert len(app.container.get(Entries).matching(kind="plugin_fault")) == 5 and [m.text for m in messages.recent(20)].count("Plugin echo is failing: it faulted 5 times in a row, and events go through without it") == 1, "the failing card comes once, at the fifth"
     plugins.save(row.with_(settings={}), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
     assert plugins.named("echo").faults_in_a_row == 0 and "Plugin echo answers again" in [m.text for m in messages.recent(5)]
@@ -3532,7 +3532,7 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     began = timing.monotonic()
     status, _ = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
     assert status == 200 and timing.monotonic() - began < 3, "two slow plugins are each cut at their window and the event goes through"
-    missed = [e.data["plugin"] for e in app.container.get(Entries).where(kind="plugin_unanswered") if "no answer within" in e.data["reason"]]
+    missed = [e.data["plugin"] for e in app.container.get(Entries).matching(kind="plugin_unanswered") if "no answer within" in e.data["reason"]]
     assert missed == ["echo", "echo-two"] and plugins.named("echo").faults_in_a_row == 0, "each miss is recorded as unanswered and counts as no fault, so the plugin is asked again next time"
 
 def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app):
@@ -3905,7 +3905,7 @@ def test_a_question_asked_without_a_session_or_from_a_workers_shell_is_refused(a
     workers = app.container.get(Workers)
     workers.save(workers.find(1).with_(session="w1"), USER.actor)
     assert "worker's report" in app.console().run(["question", "ask", "Which?"], USER).err
-    assert app.console().run(["question", "ask", "Which?"], Where("main", "w1")).code != 0
+    assert app.console().run(["question", "ask", "Which?"], Caller("main", "w1")).code != 0
     assert app.console().run(["question", "ask", "Which?"], AGENT).code == 0
 
 
@@ -4691,7 +4691,7 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app, t
     stop = hook(app, "Stop")[1]
     assert stop.get("decision") == "block" and "dump 1 is not filed yet" in stop.get("reason", ""), "the stop is held while the dump is open"
     made(console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT))
-    filing.attach(1, "a.png", Where("main").actor)
+    filing.attach(1, "a.png", Caller("main").actor)
     assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).out and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).out
     assert typed[-1].startswith("[journal] dump 1 has 2 items to file"), typed
     console.run(["dump", "note", "1", "text", "a list of ideas"], AGENT)
@@ -5140,12 +5140,12 @@ def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, 
     app.console().run(["question", "ask", "Which colour?"], AGENT)
     tell.handle(None)
     tell.handle(None)
-    failed = phones.where(name="iPhone")[0]
+    failed = phones.matching(name="iPhone")[0]
     assert len(sent) == 2 and failed.push_failed_at and failed.has_news(["questions:2"]), "a push that did not reach the service stays owed and waits a minute before it is tried again"
     phones.save(failed.push_failed(now - timedelta(minutes=2)), Actor.system())
     answers[0] = 410
     tell.handle(None)
-    assert len(sent) == 3 and phones.where(name="iPhone")[0].push == "", "an address the service no longer knows is forgotten until the phone subscribes again"
+    assert len(sent) == 3 and phones.matching(name="iPhone")[0].push == "", "an address the service no longer knows is forgotten until the phone subscribes again"
 
 
 def test_a_line_naming_a_list_that_changes_is_said_once_inside_its_window(app):
@@ -5758,7 +5758,7 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     waited = timing.monotonic() - started
     assert status == 200 and 1.0 <= waited < 1.9, "the event it holds is asked on the answer path and cut at the window its manifest declares, the hook answered without it"
-    missed = app.container.get(Entries).where(kind="plugin_unanswered")
+    missed = app.container.get(Entries).matching(kind="plugin_unanswered")
     assert "no answer within 1000 ms" in missed[-1].data["reason"] and plugins.named("echo").faults_in_a_row == 0 and plugins.named("echo").enabled, "the miss is on the plugin's record, no fault counted, and the plugin stays on to be asked next time"
     from journal.support.plugin_manifest import PluginManifest
     manifest = PluginManifest.from_json({"name": "x", "hears": ["tool_starting", "idle"], "holds": [{"event": "tool_starting", "window_ms": 5000}, "idle"]})
@@ -5817,7 +5817,7 @@ def test_a_plugins_queue_is_drained_at_every_hook_and_its_line_rides_on_the_answ
     app.container.get(Deferred).drain()
     assert "Sins in a.py" in [m.text for m in app.container.get(Messages).recent(10)], "the queued card is shown"
     assert any("fix a.py" == t.title for t in app.container.get(Tasks).in_()), "the queued command ran as the plugin"
-    assert any("4.json" in e.data["fault"] for e in app.container.get(Entries).where(kind="plugin_fault")), "the file that does not parse is a fault naming it"
+    assert any("4.json" in e.data["fault"] for e in app.container.get(Entries).matching(kind="plugin_fault")), "the file that does not parse is a fault naming it"
     _, again = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "d.py"})
     assert "two sins" not in json.dumps(again), "a drained line is said once"
 

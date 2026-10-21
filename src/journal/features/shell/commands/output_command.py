@@ -2,7 +2,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
@@ -34,7 +34,7 @@ class OutputCommand(Command):
         listed = self.verb(verbs, "list", "the newest outputs, one a line: number, how it ended, command")
         listed.add_argument("--last", type=int, default=20)
 
-    def read(self, args: Namespace, where: Where) -> int:
+    def read(self, args: Namespace, caller: Caller) -> int:
         output = self.outputs.find(args.n)
         files = OutputFiles(Path(output.folder))
         if not files.is_kept():
@@ -71,7 +71,7 @@ class OutputCommand(Command):
         cut = f"... {len(lines) - ENDS * 2:,} lines; read them with --lines, --grep, --head or --tail ..."
         return "\n".join([*head, *lines[:ENDS], cut, *lines[-ENDS:]])
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for output in self.outputs.page(args.last):
             files = OutputFiles(Path(output.folder))
             outcome = files.outcome() if files.is_kept() else "files gone"

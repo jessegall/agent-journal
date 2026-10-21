@@ -5,7 +5,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.console.console import Console
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.cards import Cards
 from journal.events.agent.commit_made import CommitMade
 from journal.events.agent.tool_finished import ToolFinished
@@ -70,9 +70,9 @@ class SpotCommit(AgentListener[ToolFinished]):
 
     def close_named(self, event: ToolFinished, sha: str, body: str) -> list[int]:
         numbers = [int(n) for found in TRAILER.finditer(body) for n in re.findall(r"\d+", found.group(1))]
-        numbers = [n for n in numbers if self.tasks.where(id=n, state=TaskState.OPEN) or self.tasks.where(id=n, state=TaskState.STARTED)]
-        where = Where(self.environments.find(event.environment_id).name, event.session)
-        return [n for n in numbers if self.console.run(["task", "done", str(n), "--how", f"commit {sha[:8]}"], where).code == 0]
+        numbers = [n for n in numbers if self.tasks.matching(id=n, state=TaskState.OPEN) or self.tasks.matching(id=n, state=TaskState.STARTED)]
+        caller = Caller(self.environments.find(event.environment_id).name, event.session)
+        return [n for n in numbers if self.console.run(["task", "done", str(n), "--how", f"commit {sha[:8]}"], caller).code == 0]
 
     def head(self, folder: Path) -> HeadCommit | None:
         try:

@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.features.updates.support.updating import Updating
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 
 class UpdateCommand(Command):
@@ -21,25 +21,25 @@ class UpdateCommand(Command):
         follow.add_argument("branch", help="the branch's name")
         self.verb(verbs, "unfollow", "follow the releases of this major version again")
 
-    def now(self, args: Namespace, where: Where) -> int:
+    def now(self, args: Namespace, caller: Caller) -> int:
         self.updating.read()
         target = self.updating.target()
-        self.updating.update_now(where.actor)
+        self.updating.update_now(caller.actor)
         print(f"updating from {self.updating.label()} to {target.label}: the journal restarts on it once the install is done, within a few minutes")
         return 0
 
-    def follow(self, args: Namespace, where: Where) -> int:
-        self.updating.follow(args.branch, where.actor)
+    def follow(self, args: Namespace, caller: Caller) -> int:
+        self.updating.follow(args.branch, caller.actor)
         self.updating.read()
         print(f"following the branch {args.branch}: {self.updating.said()}")
         return 0
 
-    def unfollow(self, args: Namespace, where: Where) -> int:
-        self.updating.follow("", where.actor)
+    def unfollow(self, args: Namespace, caller: Caller) -> int:
+        self.updating.follow("", caller.actor)
         print("following the releases again")
         return 0
 
-    def check(self, args: Namespace, where: Where) -> int:
+    def check(self, args: Namespace, caller: Caller) -> int:
         self.updating.read()
         print(self.updating.said())
         return 0

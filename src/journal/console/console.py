@@ -8,7 +8,7 @@ from journal.console.support.outcome import Outcome
 from journal.console.support.row_verbs import RowVerbs
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.support.scope import Scope
@@ -28,11 +28,11 @@ class Console:
         self.commands[command.noun] = self.container.get(command)
         self._parser = None
 
-    def attributed(self, where: Where) -> Where:
-        if not where.from_agent_shell or where.session:
-            return where
+    def attributed(self, caller: Caller) -> Caller:
+        if not caller.from_agent_shell or caller.session:
+            return caller
         live = self.agents.live()
-        return where.as_(live.session) if live else where
+        return caller.as_(live.session) if live else caller
 
     def parser(self) -> argparse.ArgumentParser:
         if self._parser is None:
@@ -45,10 +45,10 @@ class Console:
             self._parser = parser
         return self._parser
 
-    def run(self, argv: list[str], where: Where) -> Outcome:
+    def run(self, argv: list[str], caller: Caller) -> Outcome:
         out, err = io.StringIO(), io.StringIO()
-        with self.scope.of(self.environments.named(where.environment).id):
-            return self.captured(argv, where, out, err)
+        with self.scope.of(self.environments.named(caller.environment).id):
+            return self.captured(argv, caller, out, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:
         command = self.commands.get(argv[0]) if argv else None
@@ -64,18 +64,18 @@ class Console:
         command.arguments(verbs)
         return set(verbs.choices) | self.row_verbs.of(command.noun)
 
-    def perform(self, args: argparse.Namespace, where: Where) -> int:
+    def perform(self, args: argparse.Namespace, caller: Caller) -> int:
         if self.row_verbs.has(args.noun, args.verb):
-            return self.row_verbs.perform(args, where)
-        return self.commands[args.noun].perform(args, where)
+            return self.row_verbs.perform(args, caller)
+        return self.commands[args.noun].perform(args, caller)
 
-    def captured(self, argv: list[str], where: Where, out: io.StringIO, err: io.StringIO) -> Outcome:
+    def captured(self, argv: list[str], caller: Caller, out: io.StringIO, err: io.StringIO) -> Outcome:
         argv = self.with_verb(self.turned(argv))
         made = Creations.begin()
         with CapturedStream.into(out, err):
             try:
                 args = self.parser().parse_args(argv)
-                code = self.perform(args, self.attributed(where))
+                code = self.perform(args, self.attributed(caller))
             except argparse.ArgumentError as refused:
                 self.parser().print_usage(err)
                 print(refused, file=err)

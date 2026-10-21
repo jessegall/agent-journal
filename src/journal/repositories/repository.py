@@ -65,11 +65,11 @@ class Repository(Generic[M]):
             found.setdefault(Ref.parse(link["source"]).id, []).append(Ref.parse(link["target"]))
         return found
 
-    def where(self, **fields) -> list[M]:
-        return self.newest(*self.matching(fields))
+    def matching(self, **fields) -> list[M]:
+        return self.newest(*self.clause(fields))
 
-    def every_where(self, **fields) -> list[M]:
-        clause, params = self.matching(fields)
+    def all_matching(self, **fields) -> list[M]:
+        clause, params = self.clause(fields)
         return self.selected(f"{clause} ORDER BY id", params)
 
     def newest(self, clause: str, params: tuple) -> list[M]:
@@ -91,16 +91,16 @@ class Repository(Generic[M]):
         escaped = [word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") for word in words]
         return " AND ".join(each for _ in words), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
 
-    def matching(self, fields: dict) -> tuple[str, tuple]:
+    def clause(self, fields: dict) -> tuple[str, tuple]:
         return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).to_sql(value) for name, value in fields.items())
 
     def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
-        where = [f"{name} = ?" for name in fields]
+        clauses = [f"{name} = ?" for name in fields]
         params = [self._column(name).to_sql(value) for name, value in fields.items()]
         if before is not None:
-            where.append("id < ?")
+            clauses.append("id < ?")
             params.append(before)
-        return self.selected(f"{' AND '.join(where) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
+        return self.selected(f"{' AND '.join(clauses) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
 
     def page_in(self, limit: int, before: int | None = None) -> list[M]:
         return self.page(limit, before)

@@ -27,9 +27,9 @@ class DocSearch:
         parts = {"title": doc.title.lower(), "number": f"doc {doc.id}", "abstract": doc.abstract.lower(), "text": doc.body.lower()}
         whole = " ".join(parts.values())
         if not all(word in whole for word in asked):
-            return DocHit(id=doc.id, score=0, where="", text="")
+            return DocHit(id=doc.id, score=0, place="", text="")
         found = [part for part, words in parts.items() if any(word in words for word in asked)]
-        return DocHit(id=doc.id, score=sum(WEIGHTS[part] for part in found), where=found[0], text=self.passage(doc.body, asked))
+        return DocHit(id=doc.id, score=sum(WEIGHTS[part] for part in found), place=found[0], text=self.passage(doc.body, asked))
 
     @staticmethod
     def passage(body: str, asked: list[str]) -> str:

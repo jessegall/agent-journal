@@ -3,7 +3,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.outline import Outline
 from journal.models.link import Link
 from journal.support.ref import Ref
@@ -33,12 +33,12 @@ class ReportCommand(Command):
         Outline.arguments(show)
         self.verb(verbs, "list", "every report here")
 
-    def create(self, args: Namespace, where: Where) -> int:
+    def create(self, args: Namespace, caller: Caller) -> int:
         body = Path(args.file).read_text() if args.file else args.body
         rows = self.rows_named(args.about)
-        report = self.reports.save(Report(title=args.title, body=body), where.actor)
+        report = self.reports.save(Report(title=args.title, body=body), caller.actor)
         for row in rows:
-            self.links.save(Link(source=Ref.to(report), target=row, kind=Messages.ABOUT), where.actor)
+            self.links.save(Link(source=Ref.to(report), target=row, kind=Messages.ABOUT), caller.actor)
         print(f"report {report.id}: {report.title}" + (f", about {', '.join(map(str, rows))}" if rows else ""))
         return 0
 
@@ -50,12 +50,12 @@ class ReportCommand(Command):
             raise Refused(f"not a row: {', '.join(wrong)}; write each as plans:8 or tasks:12")
         return [Ref.parse(n) for n in named]
 
-    def show(self, args: Namespace, where: Where) -> int:
+    def show(self, args: Namespace, caller: Caller) -> int:
         report = self.reports.find(args.n)
         print("\n".join([*filter(None, (f"report {report.id}: {report.title}", report.abstract)), *Outline.of(report.body).told(args)]))
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for report in self.reports.in_():
             print(f"{report.id:>4}  {report.title}")
         return 0

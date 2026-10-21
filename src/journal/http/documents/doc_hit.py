@@ -6,5 +6,5 @@ class DocHit(TypedDict):
 
     id: int
     score: int
-    where: str
+    place: str
     text: str

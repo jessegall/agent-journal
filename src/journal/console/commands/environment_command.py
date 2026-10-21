@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.worktree import Worktree
 from journal.config import Config
 from journal.engine.state_machine import StateMachine
@@ -58,10 +58,10 @@ class EnvironmentCommand(Command):
             rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.ago(last.updated_at) if last else "", {a.provider or "claude": a.session for a in resumable}))
         return rows
 
-    def here(self, args: Namespace, where: Where) -> int:
-        for line in self.in_flight(where.session):
+    def here(self, args: Namespace, caller: Caller) -> int:
+        for line in self.in_flight(caller.session):
             print(line)
-        self.oriented(where)
+        self.oriented(caller)
         return 0
 
     def in_flight(self, session: str) -> list[str]:
@@ -94,48 +94,48 @@ class EnvironmentCommand(Command):
     def named(what: str, rows: list[str]) -> str:
         return f"{what}: " + "; ".join(rows) if rows else ""
 
-    def oriented(self, where: Where) -> None:
-        if not where.session:
+    def oriented(self, caller: Caller) -> None:
+        if not caller.session:
             return
         try:
-            self.agents.save(self.agents.for_session(where.session).look_taken(datetime.now(timezone.utc).timestamp()), where.actor)
+            self.agents.save(self.agents.for_session(caller.session).look_taken(datetime.now(timezone.utc).timestamp()), caller.actor)
         except NotFound:
             return
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for row in self.rows():
             print(f"{row.name:<20} {row.last_used}")
         return 0
 
-    def json(self, args: Namespace, where: Where) -> int:
+    def json(self, args: Namespace, caller: Caller) -> int:
         print(json.dumps([asdict(row) for row in self.rows()]))
         return 0
 
-    def create(self, args: Namespace, where: Where) -> int:
+    def create(self, args: Namespace, caller: Caller) -> int:
         environment = self.environments.named(args.name)
         print(f"environment {environment.id}: {environment.name}")
         return 0
 
-    def delete(self, args: Namespace, where: Where) -> int:
-        found = self.environments.where(name=args.name)
+    def delete(self, args: Namespace, caller: Caller) -> int:
+        found = self.environments.matching(name=args.name)
         if not found:
             print(f"no environment named {args.name}")
             return 1
-        self.environments.wipe(found[0], where.actor)
+        self.environments.wipe(found[0], caller.actor)
         dropped = Worktree(self.config.root, found[0].name).dropped()
         print(f"deleted environment {found[0].id}: {found[0].name}, with everything recorded in it" + (f"; {dropped}" if dropped else ""))
         return 0
 
-    def rename(self, args: Namespace, where: Where) -> int:
+    def rename(self, args: Namespace, caller: Caller) -> int:
         found = self.environments.existing(args.name)
-        if self.environments.where(name=args.new):
+        if self.environments.matching(name=args.new):
             raise Refused(f"an environment named {args.new} exists already")
         with self.scope.of(found.id):
             if self.agents.live() is not None:
                 raise Refused(f"an agent works in {found.name}: stop it first, then rename")
         if Worktree(self.config.root, found.name).path.is_dir():
             raise Refused(f"{found.name} has a worktree named after it: an environment with a worktree keeps its name")
-        renamed = self.environments.save(found.with_(name=args.new), where.actor)
+        renamed = self.environments.save(found.with_(name=args.new), caller.actor)
         print(f"environment {renamed.id} renamed: {args.name} is now {renamed.name}")
         return 0
 

@@ -34,8 +34,8 @@ const place = (finding) => (finding.line ? `${finding.file}:${finding.line}` : f
                         <li class="finding">
                             <div class="head">
                                 <span class="name">{{ finding.name }}</span>
-                                <template v-if="finding.where">
-                                    <span class="where">{{ finding.where }}</span>
+                                <template v-if="finding.place">
+                                    <span class="where">{{ finding.place }}</span>
                                 </template>
                                 <span class="grow" />
                                 <template v-if="finding.file">

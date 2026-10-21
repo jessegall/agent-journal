@@ -8,7 +8,7 @@ AGENT_SHELL = "JOURNAL_AGENT_SHELL"
 
 
 @dataclass(frozen=True)
-class Where:
+class Caller:
     """Where a command runs and who runs it: the environment's name, the agent's session when an agent ran it, and the plugin's name when a plugin's program did."""
 
     environment: str = "main"
@@ -28,4 +28,4 @@ class Where:
         return cls(environ.get("JOURNAL_ENV", "main"), session, bool(environ.get("CLAUDECODE") or environ.get("CODEX_SANDBOX") or environ.get("CODEX_CI") or environ.get(AGENT_SHELL)), environ.get("JOURNAL_PLUGIN", ""))
 
     def as_(self, session: str) -> "Where":
-        return Where(self.environment, session)
+        return Caller(self.environment, session)

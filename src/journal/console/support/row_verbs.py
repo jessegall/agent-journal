@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.support.docking import Docking
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 
 class RowVerbs:
@@ -21,7 +21,7 @@ class RowVerbs:
     def has(self, noun: str, verb: str) -> bool:
         return verb in self.of(noun)
 
-    def perform(self, args: Namespace, where: Where) -> int:
-        message = getattr(self.docking, args.verb)(args.noun, args.n, where.actor)
+    def perform(self, args: Namespace, caller: Caller) -> int:
+        message = getattr(self.docking, args.verb)(args.noun, args.n, caller.actor)
         print(f"{message.data['heading']} {'docked above the chat' if args.verb == 'dock' else 'undocked'}")
         return 0

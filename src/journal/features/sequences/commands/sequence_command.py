@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.cards import Cards
 from journal.support.running import Running
 from journal.models.sequence import Sequence
@@ -32,56 +32,56 @@ class SequenceCommand(Command):
         abandon.add_argument("--sure", action="store_true", help="go through, once the steps it skips are read")
         self.verb(verbs, "list", "every sequence")
 
-    def create(self, args: Namespace, where: Where) -> int:
+    def create(self, args: Namespace, caller: Caller) -> int:
         steps = tuple(s.strip() for s in args.steps.split("|") if s.strip())
-        sequence = self.sequences.save(Sequence(title=args.title, steps=steps, starts_on=args.starts_on), where.actor)
+        sequence = self.sequences.save(Sequence(title=args.title, steps=steps, starts_on=args.starts_on), caller.actor)
         print(f"sequence {sequence.id}: {sequence.title}, {len(steps)} steps")
         return 0
 
-    def run(self, args: Namespace, where: Where) -> int:
+    def run(self, args: Namespace, caller: Caller) -> int:
         sequence = self.sequences.find(args.n)
-        print(self.running.start(sequence, where.session, self.scope.id) or f"sequence {sequence.id} is running already")
+        print(self.running.start(sequence, caller.session, self.scope.id) or f"sequence {sequence.id} is running already")
         return 0
 
-    def follow(self, args: Namespace, where: Where) -> int:
-        self.in_hand(where)
+    def follow(self, args: Namespace, caller: Caller) -> int:
+        self.in_hand(caller)
         from journal.features.sequences.feature import Sequences
-        run = self.running.follow(where.session, self.scope.id)
+        run = self.running.follow(caller.session, self.scope.id)
         print(Sequences.FOLLOWING_THE_STEP.create(n=run.sequence_id, step=run.step + 1, text=run.text).rendered())
         return 0
 
-    def next(self, args: Namespace, where: Where) -> int:
-        run = self.in_hand(where)
+    def next(self, args: Namespace, caller: Caller) -> int:
+        run = self.in_hand(caller)
         if not run.taken_up_at:
             raise Refused(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first")
-        print(self.running.next(where.session, self.scope.id))
+        print(self.running.next(caller.session, self.scope.id))
         return 0
 
-    def park(self, args: Namespace, where: Where) -> int:
-        self.in_hand(where)
-        run = self.running.park(where.session, self.scope.id, args.why)
+    def park(self, args: Namespace, caller: Caller) -> int:
+        self.in_hand(caller)
+        run = self.running.park(caller.session, self.scope.id, args.why)
         print(f"sequence {run.sequence_id} parked at step {run.step + 1}: {args.why}. `journal sequence follow` resumes it")
         return 0
 
-    def abandon(self, args: Namespace, where: Where) -> int:
-        run = self.in_hand(where)
+    def abandon(self, args: Namespace, caller: Caller) -> int:
+        run = self.in_hand(caller)
         if not run.taken_up_at:
             raise Refused(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first, then abandon it if it cannot be done")
         skipped = "; ".join(f"{run.step + i + 1}. {text}" for i, text in enumerate(run.skipped))
         if not args.sure:
             raise Refused(f"abandoning sequence {run.sequence_id}, {run.title}, leaves undone: {skipped}. again with --sure to go through")
-        run, line = self.running.abandon(where.session, self.scope.id)
-        self.cards.show(self.scope.id, where.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}", shows=ChatMark.SEQUENCES)
+        run, line = self.running.abandon(caller.session, self.scope.id)
+        self.cards.show(self.scope.id, caller.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}", shows=ChatMark.SEQUENCES)
         print(line)
         return 0
 
-    def in_hand(self, where: Where) -> SequenceRun:
-        run = self.running.in_hand(where.session, self.scope.id)
+    def in_hand(self, caller: Caller) -> SequenceRun:
+        run = self.running.in_hand(caller.session, self.scope.id)
         if run is None:
             raise Refused("no sequence is running")
         return run
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for sequence in self.sequences.all():
             starts = f", starts on {sequence.starts_on}" if sequence.starts_on else ""
             print(f"{sequence.id:>4}  {sequence.title} ({len(sequence.steps)} steps{starts})")

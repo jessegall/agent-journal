@@ -25,7 +25,7 @@ class ScopedRepository(Repository[S]):
         return super().selected(f"environment_id IN (?, ?) AND {clause}", (self.scope.id, PROJECT, *params))
 
     def across_environments(self, **fields) -> list[S]:
-        clause, params = self.matching(fields)
+        clause, params = self.clause(fields)
         return self.selected_everywhere(f"{clause} ORDER BY id", params)
 
     def selected_everywhere(self, clause: str, params: tuple = ()) -> list[S]:

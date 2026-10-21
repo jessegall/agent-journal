@@ -1,7 +1,7 @@
 import shlex
 
 from journal.console.console import Console
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.cards import Cards
 from journal.features.plugins.support.plugin_steps import PluginSteps
 from journal.features.plugins.support.plugin_words import PluginWords
@@ -40,7 +40,7 @@ class PluginAnswers:
         if argv[:1] != ["journal"]:
             self.record(plugin, line, environment_id, 1, "a plugin runs journal commands only")
             return
-        outcome = self.console.run(argv[1:], Where(environment or "main", "", False, plugin.name))
+        outcome = self.console.run(argv[1:], Caller(environment or "main", "", False, plugin.name))
         self.record(plugin, line, environment_id, outcome.code, outcome.err.strip()[-300:])
 
     def record(self, plugin: Plugin, line: str, environment_id: int, code: int, err: str) -> None:

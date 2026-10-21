@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.engine.nudge_registry import NudgeRegistry
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 
 class NudgeCommand(Command):
@@ -16,7 +16,7 @@ class NudgeCommand(Command):
     def arguments(self, verbs) -> None:
         self.verb(verbs, "list", "every registered nudge: its id, its feature and its words")
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for nudge in self.registry.all():
             words = f"{nudge.title}. {nudge.brief}" if nudge.brief else nudge.title
             print(f"{nudge.key}  [{nudge.feature or 'engine'}]  {words}")

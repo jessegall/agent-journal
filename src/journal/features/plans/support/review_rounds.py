@@ -9,7 +9,7 @@ from journal.repositories.reports import Reports
 from journal.support.actor import Actor
 from journal.support.ref import Ref
 from journal.support.subagents import Subagents
-from journal.support.where import Where
+from journal.support.caller import Caller
 
 
 class ReviewRounds:
@@ -24,12 +24,12 @@ class ReviewRounds:
         review = self.reviews.save(PlanReview(environment_id=plan.environment_id), actor)
         self.links.save(Link(source=Ref.to(review), target=Ref.to(plan), kind=REVIEWS), actor)
 
-    def close(self, plan: Plan, changed: str, where: Where) -> None:
+    def close(self, plan: Plan, changed: str, caller: Caller) -> None:
         for review in self.reviews.open_of(plan):
-            dispatched = self.subagents.dispatched_about(where.session, f"plan {plan.id}", review.created_at.timestamp())
-            self.reviews.save(review.closed(tuple(row.task for row in dispatched), changed), where.actor)
+            dispatched = self.subagents.dispatched_about(caller.session, f"plan {plan.id}", review.created_at.timestamp())
+            self.reviews.save(review.closed(tuple(row.task for row in dispatched), changed), caller.actor)
             for report in self.filed_since(plan, review):
-                self.links.save(Link(source=Ref.to(review), target=Ref.to(report), kind=FILED), where.actor)
+                self.links.save(Link(source=Ref.to(review), target=Ref.to(report), kind=FILED), caller.actor)
 
     def filed_since(self, plan: Plan, review: PlanReview) -> list[Report]:
         about = [ref.id for ref in self.links.sources(plan, Messages.ABOUT) if ref.type == Report.table()]

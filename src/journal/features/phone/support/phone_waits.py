@@ -13,4 +13,4 @@ class PhoneWaits:
 
     def refs(self, phone: Phone) -> list[str]:
         with self.scope.of(phone.environment_id):
-            return [*(f"questions:{q.id}" for q in self.questions.open()), *(f"plans:{p.id}" for p in self.plans.where(state=PlanState.READY))]
+            return [*(f"questions:{q.id}" for q in self.questions.open()), *(f"plans:{p.id}" for p in self.plans.matching(state=PlanState.READY))]

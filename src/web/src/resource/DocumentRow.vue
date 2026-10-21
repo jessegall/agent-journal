@@ -34,8 +34,8 @@ const summary = computed(() => props.hit?.text || props.doc.abstract || "");
             </span>
             <template v-if="summary">
                 <span class="doc-row-summary">
-                    <template v-if="hit?.where">
-                        <span class="doc-row-where">In “{{ hit.where }}”</span>
+                    <template v-if="hit?.place">
+                        <span class="doc-row-where">In “{{ hit.place }}”</span>
                     </template>
                     <MarkedText :text="summary" :words="words" />
                 </span>

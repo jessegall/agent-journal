@@ -84,10 +84,10 @@ class Plans(ScopedRepository[Plan]):
         return self.tree(plan).in_order
 
     def in_review(self) -> list[Plan]:
-        return self.where(state=PlanState.REVIEWING)
+        return self.matching(state=PlanState.REVIEWING)
 
     def approved(self) -> list[Plan]:
-        return self.where(state=PlanState.APPROVED)
+        return self.matching(state=PlanState.APPROVED)
 
     def related(self) -> list[Task]:
         started = [plan for plan in self.in_() if plan.state == PlanState.STARTED]
