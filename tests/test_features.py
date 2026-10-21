@@ -5747,6 +5747,20 @@ def test_a_removed_check_runs_no_more_leaves_the_list_and_opens_a_task_that_wait
     assert "removed already" in console.run(["check", "remove", "1"], USER).error
 
 
+def test_an_unblocked_task_waits_on_nothing_and_the_check_its_block_made_is_retired(app: App):
+    from journal.repositories.checks import Checks
+    from journal.repositories.tasks import Tasks
+    console = app.console()
+    console.run(["task", "create", "ship it"], USER)
+    console.run(["task", "block", "1", "the build", "--until", "false"], USER)
+    assert console.run(["task", "unblock", "1"], USER).code == 0
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        tasks = app.container.get(Tasks)
+        assert tasks.reason(tasks.find(1)) == "" and tasks.open_waits(tasks.find(1)) == [], "no wait is left on it"
+        assert all(check.is_retired for check in app.container.get(Checks).rows() if check.wait_target), "the check its block made runs no more"
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog

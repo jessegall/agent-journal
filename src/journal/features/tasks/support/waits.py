@@ -13,7 +13,7 @@ from journal.repositories.tasks import Tasks, WAIT_LINK
 
 
 class Waits:
-    """What a blocked task or plan waits on, as the command line names it: a question or task by --on, a command by --until; each a row the wait links to, and opens it once settled."""
+    """What a blocked task or plan waits on, as the command line names it: a question or task by --on, a command by --until; each a row the wait links to, and opens it once settled; once it is open, its waits are released and the checks its block made retired."""
 
     def __init__(self, tasks: Tasks, questions: Questions, checks: Checks, links: Links) -> None:
         self.tasks, self.questions, self.checks, self.links = tasks, questions, checks, links
@@ -46,3 +46,16 @@ class Waits:
         ref = Ref(f"{kind}s", int(number))
         (self.questions if kind == "question" else self.tasks).find(ref.id)
         return ref
+
+    def released(self, row: Model, time: float, actor: Actor) -> None:
+        source = Ref.build(row)
+        for link in [link for link in self.links.link_rows(row) if link.kind == WAIT_LINK and link.source == source]:
+            self.retired_check(link.target, time, actor)
+            self.links.delete(link, actor)
+
+    def retired_check(self, target: Ref, time: float, actor: Actor) -> None:
+        if target.type != Check.table():
+            return
+        check = self.checks.find(target.id)
+        if check.wait_target and not check.is_retired:
+            self.checks.save(check.retired(time), actor)

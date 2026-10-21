@@ -16,6 +16,7 @@ from journal.features.plans.seeds.closed_plans import ClosedPlans
 from journal.features.plans.states.following_plan import FollowingPlan
 from journal.features.plans.states.plans_ready import PlansReady
 from journal.features.plans.states.plans_working import PlansWorking
+from journal.features.plans.listeners.release_plan_waits import ReleasePlanWaits
 
 
 class Plans(Feature[PlansData]):
@@ -25,7 +26,7 @@ class Plans(Feature[PlansData]):
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."
     states = (PlansReady, PlansWorking, FollowingPlan)
     commands = (PlanCommand,)
-    listeners = (PlanBlockade, ClearPlanWaits, CountPlanReviewers, AdvancePlan, ReopenFinishedPlan, PlanReopening)
+    listeners = (PlanBlockade, ClearPlanWaits, ReleasePlanWaits, CountPlanReviewers, AdvancePlan, ReopenFinishedPlan, PlanReopening)
     conduct = (PlansConduct,)
     data = (PlansDataReader, TaskSuccessionReader)
     seeds = (ClosedPlans,)

@@ -15,6 +15,7 @@ from journal.features.tasks.states.external_wait import ExternalWait
 from journal.features.tasks.states.impasse import Impasse
 from journal.features.tasks.states.ready import Ready
 from journal.features.tasks.states.working import Working
+from journal.features.tasks.listeners.release_waits import ReleaseWaits
 
 
 class Tasks(Feature[TasksData]):
@@ -29,7 +30,7 @@ class Tasks(Feature[TasksData]):
     states = (Ready, Working, Impasse, ExternalWait)
     commands = (TaskCommand, WaitCommand, ImpasseCommand)
     options = (AUTO, FIRST_DELAY, TASK_REMINDER_INTERVAL, LOG_LIMIT, LOG_AGE_LIMIT)
-    listeners = (ClearWaits, SingleTaskRule, WaitCycleCheck)
+    listeners = (ClearWaits, ReleaseWaits, SingleTaskRule, WaitCycleCheck)
     conduct = (TasksConduct,)
     data = (TasksDataReader,)
 
@@ -75,7 +76,9 @@ needs no task; file one for work that is an item of its own, that waits, or that
   `journal task block <n> "<what it waits on>"`. Blocked is neither offered nor nudged, only listed with its reason;
   `journal task unblock <n>` opens it again when what it waited on came. `journal task block <n> --on question:12`
   (or `--on task:7`) opens it by itself once that row is answered or closed; `--until "<command>"` runs the command
-  every two minutes, such as a check that a pull request is merged, and opens it once the command passes.
+  every two minutes, such as a check that a pull request is merged, and opens it once the command passes; quote it in
+  single quotes, so your shell keeps a `$(...)` in it for each run instead of filling it in once. Unblocking a task or a
+  plan, by hand or by its wait, releases its waits and retires the check its block made.
 - Waiting on something outside your hands: `journal await "<what you wait for>" --output <n>` for a command running in the
   background, or `--until "<script>"`, run every 30 seconds, for anything else. The wait ends by itself once that is done,
   and you are told what it came to; working again lifts it too. A wait that names neither, or a wait on the user, is
