@@ -11,7 +11,7 @@ from journal.support.caller import Caller
 from journal.support.actor import Actor
 from journal.repositories.scope import Scope
 
-AGENT = Caller("main", "s1")
+AGENT = Caller.agent("main", "s1", "claude")
 
 
 @pytest.fixture

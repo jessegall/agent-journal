@@ -91,8 +91,8 @@ from journal.engine.support.stack import Stack
 from journal.engine.states_catalogue import StatesCatalogue
 from journal.engine.support.transition import Transition
 
-AGENT = Caller("main", "s1")
-USER = Caller("main")
+AGENT = Caller.agent("main", "s1", "claude")
+USER = Caller.user("main")
 
 
 @pytest.fixture
@@ -595,7 +595,7 @@ def test_the_models_carry_the_events_their_changes_mean():
     assert TaskLog.build(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, time=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
     assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowResolved] and question.posed(1.0).events[0].question_id == 4
-    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerReported(environment_id=1, time=5.0, worker=WorkerMention(9, "w", ""), report=4, ref="workers:9", outcome="worker 9, w, reported"),)
+    assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerReported(environment_id=1, time=5.0, worker=WorkerMention(9, "w", None), report=4, ref="workers:9", outcome="worker 9, w, reported"),)
 
 
 def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_reaches_no_state(app: App):
@@ -882,7 +882,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     assert Ready().respond(ToolStarting(call=ToolCall(tool="AskUserQuestion", input={}, operation=Claude().operation("AskUserQuestion", {}))).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "questions.ask_through_the_journal"
     worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
     assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": worktree_file}, operation=Claude().operation("Edit", {"file_path": worktree_file}), writes=True, edited_paths=(worktree_file,))).with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct)).refusal.key == "workers.file_is_the_workers"
-    back = Ready().respond(WorkerReported(environment_id=1, time=1.0, worker=WorkerMention(2, "Lady Lovelace", ""), report=40, ref="workers:2", outcome="worker 2, Lady Lovelace, reported").with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
+    back = Ready().respond(WorkerReported(environment_id=1, time=1.0, worker=WorkerMention(2, "Lady Lovelace", None), report=40, ref="workers:2", outcome="worker 2, Lady Lovelace, reported").with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
     assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in the chat"]
 
 

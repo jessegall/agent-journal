@@ -16,7 +16,7 @@ from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 
 
-MAIN = Caller("main")
+MAIN = Caller.user("main")
 
 
 @pytest.fixture
@@ -40,13 +40,13 @@ def test_a_task_lives_through_the_cli(app: App):
 
 
 def test_the_agent_is_the_actor_when_its_session_is_set(app: App):
-    app.console().run(["task", "create", "t", "--start"], Caller("main", "s-1"))
+    app.console().run(["task", "create", "t", "--start"], Caller.agent("main", "s-1", "claude"))
     assert app.container.get(Tasks).find(1).creator == Actor.agent("s-1")
 
 
 def test_the_environment_is_made_on_first_use(app: App):
     from journal.repositories.environments import Environments
-    app.console().run(["task", "create", "t"], Caller("other"))
+    app.console().run(["task", "create", "t"], Caller.user("other"))
     assert app.container.get(Tasks).find(1).environment_id == app.container.get(Environments).lookup("other").id
 
 
@@ -75,7 +75,7 @@ def test_the_server_runs_the_same_console_for_the_shim(app: App):
 def test_deleting_an_environment_takes_everything_recorded_in_it(app: App):
     from journal.repositories.environments import Environments
     from journal.repositories.tasks import Tasks
-    app.console().run(["task", "create", "t"], Caller("spike"))
+    app.console().run(["task", "create", "t"], Caller.user("spike"))
     app.console().run(["task", "create", "kept"], MAIN)
     outcome = app.console().run(["environment", "delete", "spike"], MAIN)
     assert "deleted environment" in outcome.text and outcome.code == 0
@@ -92,17 +92,39 @@ def test_a_command_from_the_agents_shell_is_the_live_agents_wherever_it_came_fro
     from journal.models.agent import Agent
     from journal.repositories.agents import Agents
     app.container.get(Agents).save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
-    app.console().run(["message", "send", "hi"], Caller("main"))
+    app.console().run(["message", "send", "hi"], Caller.user("main"))
     app.console().run(["message", "react", "1", "👍"], Providers().caller({"CLAUDECODE": "1"}))
-    assert Providers().caller({"JOURNAL_AGENT_SHELL": "1"}).agent_shell, "a worker's shell is an agent's whatever its program marks"
+    assert Providers().caller({"JOURNAL_AGENT_SHELL": "1"}).is_unnamed_agent(), "a worker's shell is an agent's whatever its program marks"
     with app.container.get(Scope).environment(1):
         assert app.container.get(Reactions).all()[-1].creator.kind == "agent"
+
+
+def test_a_shells_variables_name_its_caller_by_kind_with_the_provider_that_marks_it():
+    from journal.support.caller_variables import CallerVariables
+    providers = Providers()
+    assert providers.caller({"JOURNAL_PLUGIN": ""}) == Caller.user("main") and Caller.user("main").actor == Actor.user(1), "a shell nothing marks is the user's, and a variable set empty is no plugin"
+    assert providers.caller({"CODEX_THREAD_ID": "t1", "CODEX_CI": "1"}) == Caller.agent("main", "t1", "codex"), "an agent knows its own provider from the markers its shell carries"
+    assert providers.caller({"CLAUDECODE": "1"}) == Caller.shell("main", "claude"), "a Claude shell names no session, only its provider"
+    assert providers.caller({"JOURNAL_PLUGIN": "echo", "JOURNAL_PLUGIN_TOKEN": "x"}) == Caller.plugin("main", "echo")
+    assert providers.caller({"JOURNAL_WORKER": "3", "JOURNAL_AGENT_SHELL": "1", "CLAUDECODE": "1"}) == Caller.worker("main", 3, None, "claude")
+    variables = providers.caller_variables({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "t1", "JOURNAL_LAUNCH": "l1"})
+    assert CallerVariables.parsed(variables.body(), "claude") == variables, "what the shim posts reads back as the variables it posted"
+
+
+def test_a_codex_agent_with_no_row_yet_dispatches_a_codex_worker_and_raises_its_events(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    codex = Caller.agent("main", "t9", "codex")
+    assert app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], codex).code == 0
+    assert app.container.get(Workers).find(1).provider == "codex", "the provider comes with the caller, not from the agent's row"
+    assert app.console().run(["stuck", "the build is red"], MAIN).code == 1, "only an agent says it is stuck"
 
 
 def test_a_command_from_an_agents_shell_with_no_agent_live_is_the_users_own(app: App):
     from journal.support.caller import Caller
     from journal.repositories.reactions import Reactions
-    app.console().run(["message", "send", "hi"], Caller("main"))
+    app.console().run(["message", "send", "hi"], Caller.user("main"))
     assert app.console().run(["message", "react", "1", "👍"], Providers().caller({"CLAUDECODE": "1"})).code == 0
     with app.container.get(Scope).environment(1):
         assert app.container.get(Reactions).all()[-1].creator.kind == "user", "a shell outside the journal is the user's"
@@ -166,7 +188,7 @@ def test_the_boot_menu_is_offered_only_a_session_whose_conversation_still_exists
     agents.save(Agent(session="s1", environment_id=1, provider="claude"), Actor.system())
     agents.save(Agent(session="lost", environment_id=1, provider="claude", state="ended"), Actor.system())
     import json as j
-    rows = j.loads(app.console().run(["environment", "json"], Caller("main")).text)
+    rows = j.loads(app.console().run(["environment", "json"], Caller.user("main")).text)
     assert rows[0]["last_sessions"] == {"claude": "s1"}, "a codex launch finds no Claude session to carry on"
 
 

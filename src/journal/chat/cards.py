@@ -16,8 +16,9 @@ class Cards:
     def __init__(self, messages: Messages) -> None:
         self.messages = messages
 
-    def show(self, environment_id: int, session: str, label: str, icon: str, tone: str = "", detail: str = "", row: Ref | None = None, kind: str = "card", actor: Actor = Actor.system(), key: str = "", command: str = "", *, shows: CardKind) -> Message:
-        return self.keyed(environment_id, key, label, {"kind": kind, "session": session, "icon": icon, "tone": tone, "row": str(row) if row else "", "command": command}, actor, shows, detail)
+    def show(self, environment_id: int, session: str | None, label: str, icon: str, tone: str = "", detail: str = "", row: Ref | None = None, kind: str = "card", actor: Actor = Actor.system(), key: str = "", command: str = "", *, shows: CardKind) -> Message:
+        fields = {"kind": kind, "icon": icon, "tone": tone, "row": str(row) if row else "", "command": command}
+        return self.keyed(environment_id, key, label, fields if session is None else {**fields, "session": session}, actor, shows, detail)
 
     @staticmethod
     def creation_key(row: Model) -> str:

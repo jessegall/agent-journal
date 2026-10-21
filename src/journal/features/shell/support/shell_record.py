@@ -48,7 +48,7 @@ class ShellRecord:
     def moved(self, chain: str, part: str, folder: Path, caller: Caller) -> int:
         self.record(caller, MOVED, {"chain": chain, "part": part, "doing": ActivityLabel.build(part), "file": str(folder)})
         output = self.outputs.save(self.outputs.chain_output(chain).backgrounded(), caller.actor)
-        if caller.session:
+        if caller.session is not None:
             self.events.moved(output, caller.session)
         self.cards.show(self.scope.id, caller.session, f"Moved to the background: {ActivityLabel.build(part)}", "terminal", key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
         return output.id

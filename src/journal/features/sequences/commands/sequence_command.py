@@ -41,13 +41,13 @@ class SequenceCommand(Command):
 
     def run(self, args: Namespace, caller: Caller) -> int:
         sequence = self.sequences.find(args.n)
-        print(self.running.start(sequence, caller.session, self.scope.id) or f"sequence {sequence.id} is running already")
+        print(self.running.start(sequence, caller.agent_session, self.scope.id) or f"sequence {sequence.id} is running already")
         return 0
 
     def follow(self, args: Namespace, caller: Caller) -> int:
         self.current_run(caller)
         from journal.features.sequences.feature import Sequences
-        run = self.running.follow(caller.session, self.scope.id)
+        run = self.running.follow(caller.agent_session, self.scope.id)
         print(Sequences.CURRENT_STEP.create(n=run.sequence_id, step=run.step + 1, text=run.text).rendered())
         return 0
 
@@ -55,12 +55,12 @@ class SequenceCommand(Command):
         run = self.current_run(caller)
         if not run.adopted_at:
             raise Rejection(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first")
-        print(self.running.next(caller.session, self.scope.id))
+        print(self.running.next(caller.agent_session, self.scope.id))
         return 0
 
     def suspend(self, args: Namespace, caller: Caller) -> int:
         self.current_run(caller)
-        run = self.running.suspend(caller.session, self.scope.id, args.why)
+        run = self.running.suspend(caller.agent_session, self.scope.id, args.why)
         print(f"sequence {run.sequence_id} parked at step {run.step + 1}: {args.why}. `journal sequence follow` resumes it")
         return 0
 
@@ -71,13 +71,13 @@ class SequenceCommand(Command):
         skipped = "; ".join(f"{run.step + i + 1}. {text}" for i, text in enumerate(run.skipped))
         if not args.sure:
             raise Rejection(f"abandoning sequence {run.sequence_id}, {run.title}, leaves undone: {skipped}. again with --sure to go through")
-        run, line = self.running.abandon(caller.session, self.scope.id)
-        self.cards.show(self.scope.id, caller.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", Ref("sequences", run.sequence_id), shows=CardKind.SEQUENCES)
+        run, line = self.running.abandon(caller.agent_session, self.scope.id)
+        self.cards.show(self.scope.id, caller.agent_session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", Ref("sequences", run.sequence_id), shows=CardKind.SEQUENCES)
         print(line)
         return 0
 
     def current_run(self, caller: Caller) -> SequenceRun:
-        run = self.running.current(caller.session, self.scope.id)
+        run = self.running.current(caller.agent_session, self.scope.id)
         if run is None:
             raise Rejection("no sequence is running")
         return run

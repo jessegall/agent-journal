@@ -1,9 +1,10 @@
+from dataclasses import replace
+
 from journal.features.shell.support.shell_request import ShellRequest
 from journal.features.shell.support.shell_runner import ShellRunner
 from journal.http.support.request import Request
 from journal.http.support.stream_response import StreamResponse
 from journal.repositories.scope import Scope
-from journal.support.caller import Caller
 from journal.providers.providers import Providers
 
 CWD_HEADER = "x-journal-cwd"
@@ -18,5 +19,5 @@ class ShellController:
 
     def run(self, request: Request) -> StreamResponse:
         posted = ShellRequest.parse(request.body["raw"], request.headers.get(CWD_HEADER, ""), request.headers.get(SHELL_HEADER, ""))
-        caller = self.providers.caller(posted.environment)
-        return StreamResponse("text/plain", self.runner.run(posted, Caller(request.environment, caller.session, caller.agent_shell), self.scope.id))
+        caller = replace(self.providers.caller_variables(posted.environment), environment=request.environment).caller()
+        return StreamResponse("text/plain", self.runner.run(posted, caller, self.scope.id))

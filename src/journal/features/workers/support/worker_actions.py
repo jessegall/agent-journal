@@ -28,7 +28,7 @@ class WorkerActions:
     def __init__(self, workers: Workers, runner: WorkerRunner, providers: Providers, inbox: SessionInbox, branch: WorkerBranch) -> None:
         self.workers, self.runner, self.providers, self.inbox, self.branch = workers, runner, providers, inbox, branch
 
-    def send(self, n: int, brief: str, dispatcher: str, actor: Actor) -> Worker:
+    def send(self, n: int, brief: str, dispatcher: str | None, actor: Actor) -> Worker:
         with self.runner.lock(n):
             return self.sent(self.workers.find(n), brief, dispatcher, actor)
 
@@ -37,7 +37,7 @@ class WorkerActions:
             worker = self.peer(n, sender)
             if worker.is_running():
                 raise Rejection(f"worker {worker.id}, {worker.name}, is out on a job: tell it with `journal worker notify {worker.id} \"<text>\"`, or send it the job once it reports")
-            return self.sent(worker, brief, "", actor)
+            return self.sent(worker, brief, None, actor)
 
     def peer_notify(self, n: int, text: str, sender: int, actor: Actor) -> Worker:
         with self.runner.lock(n):
@@ -54,12 +54,12 @@ class WorkerActions:
             raise Rejection(f"worker {worker.id}, {worker.name}, belongs to another agent: you message only the workers of the agent that dispatched you, `journal worker peers` lists them")
         return worker
 
-    def sent(self, worker: Worker, brief: str, dispatcher: str, actor: Actor) -> Worker:
+    def sent(self, worker: Worker, brief: str, dispatcher: str | None, actor: Actor) -> Worker:
         revival = worker.state == WorkerState.STOPPED or self.runner.is_ended(worker)
         if self.runner.is_ended(worker):
             worker = self.runner.recorded_end(worker, actor)
         self.resumable(worker)
-        moved, time = worker.with_(dispatcher=dispatcher or worker.dispatcher), datetime.now(timezone.utc).timestamp()
+        moved, time = worker.with_(dispatcher=worker.dispatcher if dispatcher is None else dispatcher), datetime.now(timezone.utc).timestamp()
         worker = self.workers.save(moved.resumed(brief, time, WorkerRevived if revival else WorkerReused), actor)
         self.runner.start(worker, actor)
         return worker

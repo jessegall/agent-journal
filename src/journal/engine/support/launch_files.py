@@ -15,7 +15,7 @@ class LaunchFiles:
         command = self.launch(self.environments.find(environment_id).name).get("front", {}).get("command", [])
         return any(flag in command for provider in self.providers.all() for flag in provider.prompt_flags)
 
-    def is_launch(self, environment: str, launch_id: str) -> bool:
+    def is_launch(self, environment: str, launch_id: str | None) -> bool:
         current = self.launch(environment).get("launch", "")
         return not current or launch_id == current
 

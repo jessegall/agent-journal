@@ -97,7 +97,7 @@ class CommitDetection(AgentListener[ToolFinished]):
     def close_mentioned(self, event: ToolFinished, sha: str, body: str) -> list[int]:
         numbers = [int(n) for rows in TRAILER.finditer(body) for n in re.findall(r"\d+", rows.group(1))]
         numbers = [n for n in numbers if self.tasks.matching(id=n, state=TaskState.OPEN) or self.tasks.matching(id=n, state=TaskState.STARTED)]
-        caller = Caller(self.environments.find(event.environment_id).name, event.session)
+        caller = Caller.agent(self.environments.find(event.environment_id).name, event.session, event.provider)
         return [n for n in numbers if self.console.run(["task", "complete", str(n), "--how", f"commit {sha[:8]}"], caller).code == 0]
 
     def head(self, folder: Path) -> HeadCommit | None:

@@ -13,7 +13,7 @@ from journal.support.caller import Caller
 
 
 class ShellVerbs:
-    def __init__(self, app, caller: Caller = Caller("main", "s1"), environment_id: int = 1) -> None:
+    def __init__(self, app, caller: Caller = Caller.agent("main", "s1", "claude"), environment_id: int = 1) -> None:
         self.app, self.caller, self.environment_id = app, caller, environment_id
         self.record, self.scope = app.container.get(ShellRecord), app.container.get(Scope)
 

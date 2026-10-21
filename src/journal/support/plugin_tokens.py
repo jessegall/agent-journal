@@ -11,6 +11,6 @@ class PluginTokens:
     def build(self, name: str) -> str:
         return self._issued.setdefault(name, secrets.token_hex(24))
 
-    def matches(self, name: str, token: str) -> bool:
-        issued = self._issued.get(name, "")
-        return bool(issued) and hmac.compare_digest(issued, token)
+    def matches(self, name: str, token: str | None) -> bool:
+        issued = self._issued.get(name)
+        return issued is not None and token is not None and hmac.compare_digest(issued, token)

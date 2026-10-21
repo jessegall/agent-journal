@@ -10,7 +10,7 @@ class CommandOutput(Scoped):
 
     chain: str = ""
     command: str = ""
-    session: str = ""
+    session: str | None = None
     folder: str = ""
     moved: bool = False
     ended: bool = False

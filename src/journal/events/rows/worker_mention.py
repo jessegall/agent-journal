@@ -7,7 +7,7 @@ class WorkerMention:
 
     id: int
     name: str
-    dispatcher: str
+    dispatcher: str | None
 
     def ref(self) -> str:
         return f"workers:{self.id}"
@@ -19,4 +19,4 @@ class WorkerMention:
         return f"worker {self.id}, {self.name}"
 
     def is_other_dispatcher(self, session: str) -> bool:
-        return bool(self.dispatcher) and self.dispatcher != session
+        return self.dispatcher is not None and self.dispatcher != session

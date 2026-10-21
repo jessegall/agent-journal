@@ -22,6 +22,6 @@ class ImpasseCommand(Command):
 
     def declare(self, args: Namespace, caller: Caller) -> int:
         self.events.help_needed(args.why, caller)
-        self.cards.show(self.scope.id, caller.session, "Agent stuck", "warn", "bad", args.why, shows=CardKind.IMPASSE)
+        self.cards.show(self.scope.id, caller.agent_session, "Agent stuck", "warn", "bad", args.why, shows=CardKind.IMPASSE)
         print("stuck; your next tool use or prompt lifts it")
         return 0

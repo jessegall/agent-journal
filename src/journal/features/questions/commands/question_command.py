@@ -30,7 +30,7 @@ class QuestionCommand(Command):
         self.verb(verbs, "show", "a question whole: its words, its choices, the answer and the messages linked to it").add_argument("n", type=int)
 
     def ask(self, args: Namespace, caller: Caller) -> int:
-        if not caller.session or self.workers.session_worker(caller.session):
+        if caller.session is None or self.workers.session_worker(caller.session):
             raise Rejection("nobody can answer a question asked from here: put it in the worker's report instead")
         options = tuple(o.strip() for o in args.options if o.strip())
         if len(options) == 1 and "," in options[0]:

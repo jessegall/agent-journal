@@ -29,4 +29,4 @@ class HookController:
         return Response.json({})
 
     def shell_parts(self, hook: Hook) -> tuple[str, ...]:
-        return tuple(part.text for part in self.providers.lookup(hook.provider).call(hook.tool, hook.input).parts)
+        return tuple(part.text for part in self.providers.hook_call(hook).parts)

@@ -26,7 +26,7 @@ class ReviewRounds:
 
     def close(self, plan: Plan, changed: str, caller: Caller) -> None:
         for review in self.reviews.open_review(plan):
-            dispatched = self.subagents.dispatches_mentioning(caller.session, f"plan {plan.id}", review.created_at.timestamp())
+            dispatched = [] if caller.session is None else self.subagents.dispatches_mentioning(caller.session, f"plan {plan.id}", review.created_at.timestamp())
             self.reviews.save(review.closed(tuple(row.task for row in dispatched), changed), caller.actor)
             for report in self.recent_reports(plan, review):
                 self.links.save(Link(source=Ref.build(review), target=Ref.build(report), kind=FILED), caller.actor)
