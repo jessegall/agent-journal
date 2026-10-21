@@ -21,32 +21,85 @@ const SYSTEM_TURNS = {
     compacted: () => ({kind: "compacted", data: {}}),
     question: (card, label, m) => ({
         kind: "question",
-        question: {id: Number(card.row.split(":")[1]), options: card.options, answer: card.answer ?? null, closedAt: card.answer == null ? 0 : seconds(m.updated_at)},
+        question: {
+            id: Number(card.row.split(":")[1]),
+            options: card.options,
+            answer: card.answer ?? null,
+            closedAt: card.answer == null ? 0 : seconds(m.updated_at),
+        },
         data: {},
     }),
-    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.summary, file: card.file}, data: {}}),
+    made: (card, label) => ({
+        kind: "made",
+        made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.summary, file: card.file},
+        data: {},
+    }),
     docked: (card) => ({
         kind: "card",
-        data: {icon: meta(String(card.row).split(":")[0])?.icon || "pin", label: card.docked ? "Docked above the chat" : "Was docked above the chat", detail: card.heading, title: card.heading, row: card.row},
+        data: {
+            icon: meta(String(card.row).split(":")[0])?.icon || "pin",
+            label: card.docked ? "Docked above the chat" : "Was docked above the chat",
+            detail: card.heading,
+            title: card.heading,
+            row: card.row,
+        },
     }),
     subagent: (card) => ({
         kind: "subagent",
         title: card.detail,
-        data: {kind: card.agent_type, model: card.model, agent: card.agent, session: card.subagent, finished: card.state !== "running", stopped: card.state === "stopped", failed: card.state === "failed", reason: card.reason || ""},
+        data: {
+            kind: card.agent_type,
+            model: card.model,
+            agent: card.agent,
+            session: card.subagent,
+            finished: card.state !== "running",
+            stopped: card.state === "stopped",
+            failed: card.state === "failed",
+            reason: card.reason || "",
+        },
     }),
     card: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon, tone: card.tone, color: card.shows === "workers" && !card.tone ? SUBAGENT_COLOR : "", label, detail: card.detail, lines: card.lines || [], figure: card.figure || "", fraction: card.fraction || 0, command: card.command, title: card.detail || card.command, row: card.row, visitor: card.visitor},
+        data: {
+            icon: card.icon,
+            tone: card.tone,
+            color: card.shows === "workers" && !card.tone ? SUBAGENT_COLOR : "",
+            label,
+            detail: card.detail,
+            lines: card.lines || [],
+            figure: card.figure || "",
+            fraction: card.fraction || 0,
+            command: card.command,
+            title: card.detail || card.command,
+            row: card.row,
+            visitor: card.visitor,
+        },
     }),
     peer: (card) => ({kind: "message", data: {peer: card.peer, sent_to: card.sent_to, failure: card.failure || ""}}),
     suggestion: (card, label) => ({
         kind: "suggestion",
-        suggestion: {id: Number(String(card.row).split(":")[1]), title: label, detail: card.detail, accept: card.accept, answer: card.answer},
+        suggestion: {
+            id: Number(String(card.row).split(":")[1]),
+            title: label,
+            detail: card.detail,
+            accept: card.accept,
+            answer: card.answer,
+        },
         data: {},
     }),
     plugin: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.detail, lines: card.lines || [], collapsed: Boolean(card.collapsed && card.detail), title: card.detail, row: card.row},
+        data: {
+            icon: card.icon || "plug",
+            tone: card.tone,
+            label,
+            name: card.plugin,
+            detail: card.detail,
+            lines: card.lines || [],
+            collapsed: Boolean(card.collapsed && card.detail),
+            title: card.detail,
+            row: card.row,
+        },
     }),
 };
 
@@ -61,11 +114,16 @@ const byUser = (m) => (m.creator || "").startsWith("user");
 const systemTurn = (m) => {
     const card = m.data || {};
     const turn = (SYSTEM_TURNS[card.kind] || ((_, label) => plainTurn(m, label)))(card, m.text, m);
-    return turnOf(m, turn.kind, byUser(m) ? "user" : "agent", {...turn, data: {...turn.data, shows: card.shows || "", side: byUser(m) ? "user" : ""}});
+    return turnOf(m, turn.kind, byUser(m) ? "user" : "agent", {
+        ...turn,
+        data: {...turn.data, shows: card.shows || "", side: byUser(m) ? "user" : ""},
+    });
 };
 
 const promisedFor = (p, m) =>
-    p.idempotency && m.idempotency ? p.idempotency === m.idempotency : withoutChips(m.text) === p.text && seconds(m.created_at) >= seconds(p.created_at) - PROMISED_WITHIN;
+    p.idempotency && m.idempotency
+        ? p.idempotency === m.idempotency
+        : withoutChips(m.text) === p.text && seconds(m.created_at) >= seconds(p.created_at) - PROMISED_WITHIN;
 
 const delivered = (p, m) => m.files.length >= p.files.length;
 
