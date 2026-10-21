@@ -16,5 +16,5 @@ class UpdateHeld:
     def at_step(self, step: str) -> "UpdateHeld":
         return replace(self, step=step)
 
-    def is_stale(self, now: float) -> bool:
-        return now - self.time > LASTS
+    def is_stale(self, time: float) -> bool:
+        return time - self.time > LASTS

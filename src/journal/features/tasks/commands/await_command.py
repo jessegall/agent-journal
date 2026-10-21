@@ -24,10 +24,10 @@ class AwaitCommand(Command):
         self.events, self.awaitables = events, awaitables
 
     def arguments(self, verbs) -> None:
-        now = self.verb(verbs, "now", "say what you wait for, and name what ends the wait")
-        now.add_argument("what", help="what you wait for, as its title: the test run, the build, Lady Lovelace's report")
-        now.add_argument("--output", type=int, action="append", default=[], metavar="N", help="a command's output; the wait ends once the command is done; more than one waits for all")
-        now.add_argument("--until", default="", metavar="SCRIPT", help="a shell script run every 30 seconds; the wait ends once it passes, such as ! kill -0 <pid> for a process")
+        time = self.verb(verbs, "now", "say what you wait for, and name what ends the wait")
+        time.add_argument("what", help="what you wait for, as its title: the test run, the build, Lady Lovelace's report")
+        time.add_argument("--output", type=int, action="append", default=[], metavar="N", help="a command's output; the wait ends once the command is done; more than one waits for all")
+        time.add_argument("--until", default="", metavar="SCRIPT", help="a shell script run every 30 seconds; the wait ends once it passes, such as ! kill -0 <pid> for a process")
 
     def now(self, args: Namespace, caller: Caller) -> int:
         if not args.output and not args.until:

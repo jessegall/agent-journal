@@ -25,8 +25,8 @@ class MarkSubagents(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> None:
         if not self.moves(event):
             return
-        actor, agent, now = Actor.agent(event.session), self.agents.for_session(event.session).id, time.time()
-        for row in [row for row in self.subagents.rows(event.session) if row.is_current(now)]:
+        actor, agent, moment = Actor.agent(event.session), self.agents.for_session(event.session).id, time.time()
+        for row in [row for row in self.subagents.rows(event.session) if row.is_current(moment)]:
             self.marked(event, row, agent, actor)
 
     @staticmethod

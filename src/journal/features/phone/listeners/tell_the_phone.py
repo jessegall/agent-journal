@@ -18,19 +18,19 @@ class TellThePhone(Listener[ClockTicked]):
         self.phones, self.waits, self.push = phones, waits, push
 
     def handle(self, event: ClockTicked) -> None:
-        now = datetime.now(timezone.utc)
-        for phone in [p for p in self.phones.live(now) if p.push]:
+        time = datetime.now(timezone.utc)
+        for phone in [p for p in self.phones.live(time) if p.push]:
             owed = self.waits.refs(phone)
-            if phone.is_owed_a_push(owed, now):
-                self.pushed(phone, owed, now)
+            if phone.is_owed_a_push(owed, time):
+                self.pushed(phone, owed, time)
             elif not phone.has_news(owed) and owed != phone.pushed_refs():
                 self.phones.save(phone.told(owed), Actor.system())
 
-    def pushed(self, phone: Phone, owed: list[str], now: datetime) -> None:
+    def pushed(self, phone: Phone, owed: list[str], time: datetime) -> None:
         status = self.push.send(phone.push)
         if status in GONE:
             self.phones.save(phone.unsubscribed(), Actor.system())
         elif 200 <= status < 300:
             self.phones.save(phone.told(owed), Actor.system())
         else:
-            self.phones.save(phone.push_failed(now), Actor.system())
+            self.phones.save(phone.push_failed(time), Actor.system())

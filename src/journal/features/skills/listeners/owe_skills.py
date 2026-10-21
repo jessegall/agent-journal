@@ -23,4 +23,4 @@ class OweSkills(AgentListener[AgentEvent]):
         due = snapshot.named_in(event.prompt) if isinstance(event, PromptSubmitted) else snapshot.due_at_start(agent.state)
         names = tuple(card.name for card in due)
         if set(names) - set(agent.skills_owed):
-            self.agents.touched(agent, Actor.system(), lambda now: {"skills_owed": tuple(dict.fromkeys((*now.skills_owed, *names)))})
+            self.agents.touched(agent, Actor.system(), lambda time: {"skills_owed": tuple(dict.fromkeys((*time.skills_owed, *names)))})

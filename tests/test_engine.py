@@ -539,11 +539,11 @@ def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_non
 
 
 def test_the_models_carry_the_events_their_changes_mean():
-    now = datetime(2026, 10, 20, 23, 0, tzinfo=timezone.utc)
+    time = datetime(2026, 10, 20, 23, 0, tzinfo=timezone.utc)
     task = Task(id=7, environment_id=1, title="t", state=TaskState.STARTED)
-    assert [type(e) for e in task.finished(now, "x").events] == [TaskClosed, RowSettled] and task.finished(now, "x").events[1].ref == "tasks:7"
-    assert task.parked("later", now).events[0] == TaskClosed(environment_id=1, time=now.timestamp(), task_id=7, how="parked")
-    assert Task(id=8, environment_id=1, title="u").started(now).events == (TaskStarted(environment_id=1, time=now.timestamp(), task_id=8, title="u", plan_id=0),)
+    assert [type(e) for e in task.finished(time, "x").events] == [TaskClosed, RowSettled] and task.finished(time, "x").events[1].ref == "tasks:7"
+    assert task.parked("later", time).events[0] == TaskClosed(environment_id=1, time=time.timestamp(), task_id=7, how="parked")
+    assert Task(id=8, environment_id=1, title="u").started(time).events == (TaskStarted(environment_id=1, time=time.timestamp(), task_id=8, title="u", plan_id=0),)
     assert TaskLog.of(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, time=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
     assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowSettled] and question.asked(1.0).events[0].question_id == 4

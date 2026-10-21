@@ -29,17 +29,17 @@ class Clock:
         return timing.time()
 
     def tick(self) -> None:
-        now = self.now()
-        self.bus.dispatch(ClockTicked(time=now))
+        time = self.now()
+        self.bus.dispatch(ClockTicked(time=time))
         for agent in self.agents.everywhere():
             if isinstance(self.states.named(agent.state, agent.data), Ended):
                 continue
             with self.scope.of(agent.environment_id):
-                self._tick(agent, now)
+                self._tick(agent, time)
 
-    def _tick(self, agent: Agent, now: float) -> None:
-        idle_seconds = now - agent.updated_at.timestamp()
-        self.bus.dispatch(Ticked(session=agent.session, environment_id=agent.environment_id, time=now, quiet_for=idle_seconds))
+    def _tick(self, agent: Agent, time: float) -> None:
+        idle_seconds = time - agent.updated_at.timestamp()
+        self.bus.dispatch(Ticked(session=agent.session, environment_id=agent.environment_id, time=time, quiet_for=idle_seconds))
 
     def stop(self) -> None:
         self._stopping.set()

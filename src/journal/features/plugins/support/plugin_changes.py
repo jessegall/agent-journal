@@ -11,10 +11,10 @@ class PluginChanges:
     """What changes between two states of a plugin: in its manifest, and in its code, file by file."""
 
     @staticmethod
-    def manifest(was: dict, now: dict) -> list[str]:
+    def manifest(was: dict, time: dict) -> list[str]:
         lines = []
         for key in COMPARED:
-            before, after = was.get(key), now.get(key)
+            before, after = was.get(key), time.get(key)
             if isinstance(after, (list, tuple)):
                 before, after = list(before or ()), list(after)
                 if key == "holds":

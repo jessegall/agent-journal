@@ -10,8 +10,8 @@ class Phones(ScopedRepository[Phone]):
 
     model = Phone
 
-    def live(self, now: datetime) -> list[Phone]:
-        return [phone for phone in self.across_environments() if phone.is_live(now)]
+    def live(self, time: datetime) -> list[Phone]:
+        return [phone for phone in self.across_environments() if phone.is_live(time)]
 
     def anywhere(self, id: int) -> Phone:
         rows = self.across_environments(id=id)

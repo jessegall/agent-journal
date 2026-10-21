@@ -20,11 +20,11 @@ class Phone(Scoped):
     pushed: str = ""
     push_failed_at: datetime | None = None
 
-    def is_live(self, now: datetime) -> bool:
-        return self.ended_at is None and self.expires_at is not None and self.expires_at > now
+    def is_live(self, time: datetime) -> bool:
+        return self.ended_at is None and self.expires_at is not None and self.expires_at > time
 
-    def is_due_a_sighting(self, now: datetime) -> bool:
-        return self.last_seen_at is None or now - self.last_seen_at >= self.SEEN_EVERY
+    def is_due_a_sighting(self, time: datetime) -> bool:
+        return self.last_seen_at is None or time - self.last_seen_at >= self.SEEN_EVERY
 
     def seen(self, time: datetime) -> "Phone":
         return self.with_(last_seen_at=time)
@@ -35,8 +35,8 @@ class Phone(Scoped):
     def has_news(self, owed: list[str]) -> bool:
         return bool(set(owed) - set(self.pushed_refs()))
 
-    def is_owed_a_push(self, owed: list[str], now: datetime) -> bool:
-        resting = self.push_failed_at is not None and now - self.push_failed_at < self.PUSH_RETRY_AFTER
+    def is_owed_a_push(self, owed: list[str], time: datetime) -> bool:
+        resting = self.push_failed_at is not None and time - self.push_failed_at < self.PUSH_RETRY_AFTER
         return self.has_news(owed) and not resting
 
     def subscribed(self, endpoint: str, owed: list[str]) -> "Phone":

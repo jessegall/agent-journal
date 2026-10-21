@@ -37,7 +37,7 @@ class Running:
         if any(run.sequence_id == sequence.id for run in runs) or not sequence.steps:
             return ""
         run = SequenceRun(sequence.id, sequence.title, tuple(sequence.steps), about=about, started_at=self.now(), said_at=self.now(), finishes_in=tuple(sequence.finishes_in))
-        self.rewritten(agent, lambda now: [*now, run])
+        self.rewritten(agent, lambda time: [*time, run])
         owed = self.requiring.require(agent, self.requiring.owed(agent, self.requiring.named("sequences")))
         return "\n".join([*owed, self.said(run)])
 
@@ -48,14 +48,14 @@ class Running:
         run = runs[-1]
         self.refuse_an_unfinished_end(run)
         if not run.last:
-            return self.said(self.changed(session, environment_id, lambda now: now.moved_on().said(self.now())))
+            return self.said(self.changed(session, environment_id, lambda time: time.moved_on().said(self.now())))
         return self.ended(agent, runs, Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered())
 
     def ended(self, agent: Agent, runs: list[SequenceRun], ended: str) -> str:
         if len(runs) == 1:
             self.kept(agent, [])
             return ended
-        outer = self.rewritten(agent, lambda now: [*now[:-2], now[-2].said(self.now())])[-1]
+        outer = self.rewritten(agent, lambda time: [*time[:-2], time[-2].said(self.now())])[-1]
         return f"{ended}\n{self.said(outer)}"
 
     def skip(self, session: str, environment_id: int) -> str:
@@ -66,7 +66,7 @@ class Running:
         skipped = Sequences.THE_USER_SKIPPED_A_STEP.create(n=run.sequence_id, step=run.step + 1).rendered()
         if run.last:
             return self.ended(agent, runs, f"{skipped}\n{Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered()}")
-        moved = self.changed(session, environment_id, lambda now: now.moved_on().said(self.now()))
+        moved = self.changed(session, environment_id, lambda time: time.moved_on().said(self.now()))
         return f"{skipped}\n{self.said(moved)}"
 
     def end(self, session: str, environment_id: int) -> str:
@@ -110,10 +110,10 @@ class Running:
         return self.changed(session, environment_id, lambda run: run.said(self.now()))
 
     def changed(self, session: str, environment_id: int, change) -> SequenceRun:
-        return self.rewritten(self.machine.agent(session, environment_id), lambda now: [*now[:-1], change(now[-1])])[-1]
+        return self.rewritten(self.machine.agent(session, environment_id), lambda time: [*time[:-1], change(time[-1])])[-1]
 
     def rewritten(self, agent: Agent, change) -> list[SequenceRun]:
-        fresh = self.agents.touched(agent, Actor.system(), lambda now: {"sequence_runs": tuple(run.as_dict() for run in change(self.runs(now)))})
+        fresh = self.agents.touched(agent, Actor.system(), lambda time: {"sequence_runs": tuple(run.as_dict() for run in change(self.runs(time)))})
         return self.runs(fresh)
 
     def carry(self, session: str, environment_id: int) -> None:

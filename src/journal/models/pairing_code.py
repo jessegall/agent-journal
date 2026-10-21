@@ -17,8 +17,8 @@ class PairingCode(Scoped):
     tries: int = 0
     closed_at: datetime | None = None
 
-    def is_open(self, now: datetime) -> bool:
-        return self.closed_at is None and self.until is not None and self.until > now
+    def is_open(self, time: datetime) -> bool:
+        return self.closed_at is None and self.until is not None and self.until > time
 
     def tried(self, time: datetime) -> "PairingCode":
         tries = self.tries + 1

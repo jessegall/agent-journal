@@ -22,9 +22,9 @@ class PanicCommand(Command):
         self.machine, self.states, self.scope = machine, states, scope
 
     def arguments(self, verbs) -> None:
-        now = self.verb(verbs, "now", "push a state by name, pop the top, or idle to empty the stack")
-        now.add_argument("state")
-        now.add_argument("values", nargs="*", help="the state's values as name=value")
+        time = self.verb(verbs, "now", "push a state by name, pop the top, or idle to empty the stack")
+        time.add_argument("state")
+        time.add_argument("values", nargs="*", help="the state's values as name=value")
 
     def now(self, args: Namespace, caller: Caller) -> int:
         text = " ".join(["journal panic", args.state, *args.values])

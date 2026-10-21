@@ -132,15 +132,15 @@ class Repository(Generic[M]):
 
     def rewritten(self, row: M, actor: Actor, change: Callable[[M], M]) -> M:
         with self.connection.transaction():
-            now = self.find(row.id)
-            changed = change(now)
-            differing = {f.name: getattr(changed, f.name) for f in fields(changed) if f.metadata.get("column", True) and getattr(changed, f.name) != getattr(now, f.name)}
-            return self.dispatched(self.touch(now, actor, **differing).with_events(changed.events), actor)
+            time = self.find(row.id)
+            changed = change(time)
+            differing = {f.name: getattr(changed, f.name) for f in fields(changed) if f.metadata.get("column", True) and getattr(changed, f.name) != getattr(time, f.name)}
+            return self.dispatched(self.touch(time, actor, **differing).with_events(changed.events), actor)
 
     def touched(self, row: M, actor: Actor, fields_of: Callable[[M], dict]) -> M:
         with self.connection.transaction():
-            now = self.find(row.id)
-            return self.touch(now, actor, **fields_of(now))
+            time = self.find(row.id)
+            return self.touch(time, actor, **fields_of(time))
 
     def delete(self, row: M, actor: Actor) -> None:
         with self.connection.transaction():
@@ -150,9 +150,9 @@ class Repository(Generic[M]):
             self.bus.dispatch(Deleted(model=row, actor=actor))
             self.dispatched(row, actor)
 
-    def _insert(self, row: M, actor: Actor, now: datetime) -> M:
+    def _insert(self, row: M, actor: Actor, time: datetime) -> M:
         Title.check_on(row)
-        stamped = row.with_(created_at=now, created_by=actor, updated_at=now, updated_by=actor)
+        stamped = row.with_(created_at=time, created_by=actor, updated_at=time, updated_by=actor)
         self.bus.dispatch(Creating(model=stamped, actor=actor))
         names = [column.name for column in self.columns if column.name != "id"]
         values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")

@@ -83,19 +83,19 @@ class Tunnel:
     def settle(self) -> None:
         self.settle_at(datetime.now(timezone.utc))
 
-    def settle_at(self, now: datetime) -> None:
-        self.wanted = self.is_wanted(now)
+    def settle_at(self, time: datetime) -> None:
+        self.wanted = self.is_wanted(time)
         if self.wanted:
             self.start()
         else:
             self.stop()
 
-    def settle_when_changed(self, now: datetime) -> None:
-        if self.is_wanted(now) != self.wanted:
-            self.settle_at(now)
+    def settle_when_changed(self, time: datetime) -> None:
+        if self.is_wanted(time) != self.wanted:
+            self.settle_at(time)
 
-    def is_wanted(self, now: datetime) -> bool:
-        return self.shares.open_anywhere() or bool(self.phones.live(now)) or bool(self.codes.open(now))
+    def is_wanted(self, time: datetime) -> bool:
+        return self.shares.open_anywhere() or bool(self.phones.live(time)) or bool(self.codes.open(time))
 
     def start(self) -> None:
         host, command, port = self.link.hosting(), self.tunler.command(), self.place.kept().port

@@ -26,11 +26,11 @@ class Requiring:
     def owe(self, agent: Agent, skills: list[Skill]) -> None:
         names = tuple(skill.name for skill in skills)
         if set(names) - set(agent.skills_owed):
-            self.agents.touched(agent, Actor.system(), lambda now: {"skills_owed": tuple(dict.fromkeys((*now.skills_owed, *names)))})
+            self.agents.touched(agent, Actor.system(), lambda time: {"skills_owed": tuple(dict.fromkeys((*time.skills_owed, *names)))})
 
     def paid(self, agent: Agent, skill: Skill) -> None:
         if skill.name in agent.skills_owed:
-            self.agents.touched(agent, Actor.system(), lambda now: {"skills_owed": tuple(name for name in now.skills_owed if name != skill.name)})
+            self.agents.touched(agent, Actor.system(), lambda time: {"skills_owed": tuple(name for name in time.skills_owed if name != skill.name)})
 
     def owed(self, agent: Agent, skills: list[Skill]) -> list[Skill]:
         loaded = agent.skills_loaded

@@ -25,8 +25,8 @@ class Share(Scoped):
     def viewed(self) -> "Share":
         return self.with_(views=self.views + 1)
 
-    def is_live(self, now: datetime) -> bool:
-        return self.stopped_at is None and (self.expires_at is None or self.expires_at > now)
+    def is_live(self, time: datetime) -> bool:
+        return self.stopped_at is None and (self.expires_at is None or self.expires_at > time)
 
-    def opens(self, now: datetime) -> bool:
-        return self.approved and self.is_live(now)
+    def opens(self, time: datetime) -> bool:
+        return self.approved and self.is_live(time)

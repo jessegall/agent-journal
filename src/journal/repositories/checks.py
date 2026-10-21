@@ -10,8 +10,8 @@ class Checks(Repository[Check]):
     def all(self) -> list[Check]:
         return self.newest("waited_on = 0", ())
 
-    def due(self, now: datetime) -> list[Check]:
-        return [check for check in self.every() if check.due_at(now)]
+    def due(self, time: datetime) -> list[Check]:
+        return [check for check in self.every() if check.due_at(time)]
 
     def broken_waits(self) -> list[Check]:
         return [check for check in self.all_matching(waited_on=True) if check.cannot_run() and not check.is_settled()]

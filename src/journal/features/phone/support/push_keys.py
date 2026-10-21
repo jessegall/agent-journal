@@ -43,10 +43,10 @@ class PushKeys:
             if r and s:
                 return r.to_bytes(32, "big") + s.to_bytes(32, "big")
 
-    def token(self, endpoint: str, contact: str, now: float) -> str:
+    def token(self, endpoint: str, contact: str, time: float) -> str:
         parts = urlsplit(endpoint)
         head = self.unpadded(json.dumps({"typ": "JWT", "alg": "ES256"}).encode())
-        claims = self.unpadded(json.dumps({"aud": f"{parts.scheme}://{parts.netloc}", "exp": int(now + VALID_FOR), "sub": contact}).encode())
+        claims = self.unpadded(json.dumps({"aud": f"{parts.scheme}://{parts.netloc}", "exp": int(time + VALID_FOR), "sub": contact}).encode())
         signed = f"{head}.{claims}"
         return f"{signed}.{self.unpadded(self.signed(signed.encode()))}"
 

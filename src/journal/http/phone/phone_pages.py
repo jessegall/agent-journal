@@ -135,12 +135,12 @@ class PhonePages:
         return origin in (f"https://{self.tunnel.address()}", f"http://127.0.0.1:{port}", f"http://localhost:{port}")
 
     def pair(self, asked: PairRequest) -> ShareAnswer:
-        now = datetime.now(timezone.utc)
+        time = datetime.now(timezone.utc)
         try:
-            paired = self.pairing.pair(asked.code, asked.device, now)
+            paired = self.pairing.pair(asked.code, asked.device, time)
         except Refused as refused:
             return self.json(410, {"error": str(refused)})
-        lasts = int((paired.phone.expires_at - now).total_seconds())
+        lasts = int((paired.phone.expires_at - time).total_seconds())
         cookie = f"{COOKIE}={paired.key}; Max-Age={lasts}; Path=/; Secure; HttpOnly; SameSite=Strict"
         return self.json(200, asdict(self.snapshot(paired.phone)), {"Set-Cookie": cookie})
 
@@ -151,10 +151,10 @@ class PhonePages:
         phone = self.phones.by_key(Pairing.hashed(kept.value))
         if phone is None:
             return self.json(401, {"error": "this phone was paired with an earlier version of the journal, or was forgotten: pair it again", "paired_before": True})
-        now = datetime.now(timezone.utc)
-        if not phone.is_live(now):
+        time = datetime.now(timezone.utc)
+        if not phone.is_live(time):
             return self.json(410, {"error": "this phone was disconnected" if phone.ended_at else "this phone's connection has run out"})
-        return self.phones.save(phone.seen(now), Actor.phone(phone.id)) if phone.is_due_a_sighting(now) else phone
+        return self.phones.save(phone.seen(time), Actor.phone(phone.id)) if phone.is_due_a_sighting(time) else phone
 
     def through(self, request: PhoneRequest) -> ShareAnswer:
         phone = self.phone(request)

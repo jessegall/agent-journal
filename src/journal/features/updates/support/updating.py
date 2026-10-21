@@ -2,7 +2,7 @@ import contextvars
 import os
 import subprocess
 import threading
-import time
+import time as timing
 from typing import Callable
 
 from journal.config import Config
@@ -33,7 +33,7 @@ class Updating:
         self.releases: list[Release] = []
         self.head = ""
         self.problem = ""
-        self._checked_at = time.time() - CHECK_EVERY + FIRST_CHECK_AFTER
+        self._checked_at = timing.time() - CHECK_EVERY + FIRST_CHECK_AFTER
         self._working = threading.Lock()
 
     def running(self) -> Release:
@@ -90,10 +90,10 @@ class Updating:
         return UpdateSnapshot(installed=self.label(), latest=self.latest(), newer=self.is_out(), branch=self.branch(), versions=[release.version for release in self.newer()],
                               updating=held.to if held else "", step=held.step if held else "", problem=self.problem)
 
-    def tick(self, now: float) -> None:
-        self.settle(now)
-        if now - self._checked_at >= CHECK_EVERY:
-            self._checked_at = now
+    def tick(self, time: float) -> None:
+        self.settle(time)
+        if time - self._checked_at >= CHECK_EVERY:
+            self._checked_at = time
             self.apart(self.checked)
 
     def said(self) -> str:
@@ -103,9 +103,9 @@ class Updating:
             return f"{self.target().label} is out; {self.label()} is installed. journal update installs it"
         return f"{self.label()} is the newest commit of the branch" if self.branch() else f"{VERSION} is the newest release of version {self.running().major}"
 
-    def settle(self, now: float) -> None:
+    def settle(self, time: float) -> None:
         held = self.mark.held()
-        if held is None or (held.pid == os.getpid() and not held.is_stale(now)):
+        if held is None or (held.pid == os.getpid() and not held.is_stale(time)):
             return
         self.mark.clear()
         self.problem = "" if held.to == self.label() else f"The update to {held.to} did not finish: .journal/runtime/update.log says how it went"

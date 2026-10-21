@@ -12,5 +12,5 @@ class Shares(ScopedRepository[Share]):
         return rows[0] if rows else None
 
     def open_anywhere(self) -> list[Share]:
-        now = datetime.now(timezone.utc)
-        return [share for share in self.selected_everywhere("1 ORDER BY id") if share.opens(now)]
+        time = datetime.now(timezone.utc)
+        return [share for share in self.selected_everywhere("1 ORDER BY id") if share.opens(time)]

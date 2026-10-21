@@ -48,8 +48,8 @@ class Working(AgentState):
     def log_command(self) -> str:
         return f"journal task log {self.task_id}" if self.task_id else "journal task log"
 
-    def logged_words(self, now: float) -> str:
-        minutes = int((now - self.logged_at) // 60)
+    def logged_words(self, time: float) -> str:
+        minutes = int((time - self.logged_at) // 60)
         return "last logged just now" if minutes < 1 else f"last logged {minutes} min ago"
 
     def continue_nudge(self, time: float) -> Nudge:

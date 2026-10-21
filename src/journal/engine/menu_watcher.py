@@ -44,15 +44,15 @@ class MenuWatcher:
                         self.look(agent)
 
     def look(self, agent: Agent) -> str:
-        env, now = agent.environment_id, time.time()
+        env, moment = agent.environment_id, time.time()
         menu = Menu.on(self.supervisor.screen(env)[-8192:])
         if menu is None or not (menu.foreign() or self.answers_permission(menu, env)):
             self._seen.pop(env, None)
             self._answered.pop(env, None)
             return ""
         if self._seen.get(env) != menu.signature():
-            self._seen[env], self._seen_at[env] = menu.signature(), now
-        if self._answered.get(env) == menu.signature() or self.still_drawing(env, now):
+            self._seen[env], self._seen_at[env] = menu.signature(), moment
+        if self._answered.get(env) == menu.signature() or self.still_drawing(env, moment):
             return ""
         yours = self.supervisor.keyed_at(env) > self._seen_at[env] - YOURS_WITHIN
         if yours and not menu.confirming():
@@ -72,8 +72,8 @@ class MenuWatcher:
     def answers_permission(self, menu: Menu, env: int) -> bool:
         return menu.asking_permission() and self.launches.skips_prompts(env)
 
-    def still_drawing(self, env: int, now: float) -> bool:
-        return now - self._seen_at[env] < QUIET and now - self.supervisor.screen_changed_at(env) < QUIET
+    def still_drawing(self, env: int, moment: float) -> bool:
+        return moment - self._seen_at[env] < QUIET and moment - self.supervisor.screen_changed_at(env) < QUIET
 
     def decided(self, menu: Menu, caused: bool, agent: Agent) -> tuple[str, str] | None:
         if caused or menu.trusting() or menu.switching_model():

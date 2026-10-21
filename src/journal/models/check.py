@@ -37,10 +37,10 @@ class Check(Model):
             return recorded.with_event(RowSettled(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.came_to()))
         return recorded
 
-    def due_at(self, now: datetime) -> bool:
+    def due_at(self, time: datetime) -> bool:
         if self.every <= 0 or (self.waited_on and self.is_settled()):
             return False
-        return self.last_ran_at is None or (now - self.last_ran_at).total_seconds() >= self.every * 60
+        return self.last_ran_at is None or (time - self.last_ran_at).total_seconds() >= self.every * 60
 
     def is_settled(self) -> bool:
         return self.last_passed is True

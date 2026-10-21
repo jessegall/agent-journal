@@ -22,9 +22,9 @@ class AdvancePlan(Listener[Updated]):
         task = event.model
         if not isinstance(task, Task) or not task.has_just_closed(event.was):
             return
-        now = datetime.now(timezone.utc)
+        time = datetime.now(timezone.utc)
         for plan in [p for p in self.plans.holding(task) if self.plans.finished(p)]:
-            self.plans.save(plan.done(now.timestamp()), event.actor)
+            self.plans.save(plan.done(time.timestamp()), event.actor)
         plan_id = self.followed_with(task)
         if not plan_id:
             return
@@ -32,7 +32,7 @@ class AdvancePlan(Listener[Updated]):
         following = self.plans.next_task(plan)
         if plan.state != PlanState.STARTED or self.is_stopped_at_checkpoint(plan) or following is None or self.tasks.in_hand() is not None:
             return
-        self.tasks.save(following.started_by_plan(now, plan.id), event.actor)
+        self.tasks.save(following.started_by_plan(time, plan.id), event.actor)
 
     def is_stopped_at_checkpoint(self, plan: Plan) -> bool:
         from journal.features.tasks.feature import Tasks as TasksFeature

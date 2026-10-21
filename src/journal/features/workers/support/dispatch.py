@@ -18,8 +18,8 @@ class Dispatch:
     running: bool = True
     ended: float = 0.0
 
-    def is_current(self, now: float) -> bool:
-        return self.running or now - self.ended < CURRENT_SECONDS
+    def is_current(self, time: float) -> bool:
+        return self.running or time - self.ended < CURRENT_SECONDS
 
     def answered(self, session: str) -> "Dispatch":
         return replace(self, session=session)

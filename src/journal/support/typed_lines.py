@@ -35,10 +35,10 @@ class TypedLines:
         return HeldLine(environment_id, TypedLine.cut(f"{MARK} {' | '.join(lines)}"), max(h.after for h in held))
 
     def typed(self, environment_id: int, line: str) -> None:
-        now = timing.time()
-        self._sent_at[environment_id] = now
-        self._waiting.append(TypedLine(environment_id, line, now))
-        self._recent = [t for t in self._recent if now - t.time < RECENT] + [TypedLine(environment_id, line, now)]
+        moment = timing.time()
+        self._sent_at[environment_id] = moment
+        self._waiting.append(TypedLine(environment_id, line, moment))
+        self._recent = [t for t in self._recent if moment - t.time < RECENT] + [TypedLine(environment_id, line, moment)]
 
     def carries(self, environment_id: int, prompt: str) -> bool:
         return any(t.environment_id == environment_id and t.holds(prompt) for t in self._recent if timing.time() - t.time < RECENT)

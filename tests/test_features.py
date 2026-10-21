@@ -1440,8 +1440,8 @@ def test_words_the_hooks_missed_are_swept_from_the_transcript_into_the_chat_once
     from journal.events.clock_ticked import ClockTicked
     from journal.providers.claude import Claude
     from journal.repositories.messages import Messages
-    now = timing.time()
-    stamp = lambda seconds_ago: datetime.fromtimestamp(now - seconds_ago, timezone.utc).isoformat().replace("+00:00", "Z")
+    time = timing.time()
+    stamp = lambda seconds_ago: datetime.fromtimestamp(time - seconds_ago, timezone.utc).isoformat().replace("+00:00", "Z")
     said = lambda text, ago: j.dumps({"type": "assistant", "timestamp": stamp(ago), "message": {"content": [{"type": "text", "text": text}]}}) + "\n"
     transcript = tmp_path / "s1.jsonl"
     transcript.write_text(said("Hello, Sir Jesse.", 60))
@@ -1450,8 +1450,8 @@ def test_words_the_hooks_missed_are_swept_from_the_transcript_into_the_chat_once
     with transcript.open("a") as file:
         file.write(said("Missed by every hook.", 20) + said("Still the hooks' to bring.", 5))
     bus, messages = app.container.get(Bus), app.container.get(Messages)
-    bus.dispatch(ClockTicked(time=now))
-    bus.dispatch(ClockTicked(time=now + 1))
+    bus.dispatch(ClockTicked(time=time))
+    bus.dispatch(ClockTicked(time=time + 1))
     agents = lambda: [m.text for m in messages.across_environments() if m.author == "agent"]
     assert agents().count("Missed by every hook.") == 1 and "Still the hooks' to bring." not in agents(), "older words the hooks did not read are swept in once; the newest are left to the hooks"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
@@ -2249,7 +2249,7 @@ def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app)
     assert rows()[0]["running"] is True and rows()[0]["status"] == "running", "the tool's instant answer does not end a background subagent"
     hook(app, "SubagentStop", agent_id="a1", agent_type="researcher")
     row = rows()[0]
-    assert row["running"] is False and row["status"] == "done" and row["ended"] >= row["at"]
+    assert row["running"] is False and row["status"] == "done" and row["ended"] >= row["time"]
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "a quick one", "model": "haiku", "prompt": "x"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "a quick one"}, tool_response="the finished work")
     assert rows()[1]["running"] is False, "a subagent that answered in the tool's own result is done at once"
@@ -3864,7 +3864,7 @@ def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app):
     with app.container.get(Scope).of(MAIN):
         stale = machine.agent("s1", 1)
         console.run(["sequence", "next"], AGENT)
-        running.rewritten(stale, lambda now: [*now[:-1], now[-1].said(running.now())])
+        running.rewritten(stale, lambda time: [*time[:-1], time[-1].said(running.now())])
         assert running.in_hand("s1", 1).step == 1, "the pace's own write, read before the step moved on, keeps the step it moved to"
 
 
@@ -5046,30 +5046,30 @@ def test_a_phone_pairs_once_by_its_code_one_at_a_time_as_version_3_did(app):
     from journal.repositories.setting_rows import SettingRows
     from journal.support.refused import Refused
     app.container.get(SettingRows).set("sharing.host", "tunler.example", Actor.user(1))
-    pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
+    pairing, time = app.container.get(Pairing), datetime.now(timezone.utc)
     with pytest.raises(Refused, match="only the user pairs"):
-        pairing.offer(7, Actor.agent("s1"), now)
+        pairing.offer(7, Actor.agent("s1"), time)
     with pytest.raises(Refused, match="1, 7, 30 days"):
-        pairing.offer(3, Actor.user(1), now)
-    first = pairing.offer(7, Actor.user(1), now)
-    assert app.container.get(Tunnel).is_wanted(now), "a live code keeps the tunnel open, so the phone can reach the journal"
+        pairing.offer(3, Actor.user(1), time)
+    first = pairing.offer(7, Actor.user(1), time)
+    assert app.container.get(Tunnel).is_wanted(time), "a live code keeps the tunnel open, so the phone can reach the journal"
     assert first.link.startswith("https://") and ".tunler.example/p/#" in first.link and len(first.short) == 9, "a link through the tunnel and a short code in two halves"
-    newer = pairing.offer(7, Actor.user(1), now)
+    newer = pairing.offer(7, Actor.user(1), time)
     with pytest.raises(Refused, match="pairs no phone"):
-        pairing.pair(first.link.split("#")[1], "iPhone", now)
-    paired = pairing.pair(newer.short.lower(), "  iPhone   of Jesse ", now)
-    assert paired.phone.name == "iPhone of Jesse" and paired.phone.key != paired.key and paired.phone.expires_at - now == timedelta(days=7), "the short code typed in any case pairs; the key is kept only as its hash"
+        pairing.pair(first.link.split("#")[1], "iPhone", time)
+    paired = pairing.pair(newer.short.lower(), "  iPhone   of Jesse ", time)
+    assert paired.phone.name == "iPhone of Jesse" and paired.phone.key != paired.key and paired.phone.expires_at - time == timedelta(days=7), "the short code typed in any case pairs; the key is kept only as its hash"
     assert any(m.text == "A phone paired: iPhone of Jesse" for m in app.container.get(Messages).in_()), "the desk is told"
     with pytest.raises(Refused, match="one phone at a time"):
-        pairing.offer(7, Actor.user(1), now)
+        pairing.offer(7, Actor.user(1), time)
     with pytest.raises(Refused, match="pairs no phone"):
-        pairing.pair(newer.short, "Android", now)
+        pairing.pair(newer.short, "Android", time)
     listed = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/phones", headers={"X-Journal-Env": "main"}), timeout=5))["phones"]
     assert [p["name"] for p in listed] == ["iPhone of Jesse"] and "key" not in listed[0], "the desk sees the phone, never its key's hash"
-    assert app.container.get(Tunnel).is_wanted(now), "a paired phone keeps the tunnel open, with no link shared"
+    assert app.container.get(Tunnel).is_wanted(time), "a paired phone keeps the tunnel open, with no link shared"
     assert viewer(app, f"phones/{paired.phone.id}/disconnect")["disconnected"] == paired.phone.id
     assert not app.container.get(Tunnel).is_wanted(datetime.now(timezone.utc)), "with the phone disconnected and no code live, nothing keeps it open"
-    assert pairing.offer(7, Actor.user(1), now).short, "once it is disconnected, another phone may pair"
+    assert pairing.offer(7, Actor.user(1), time).short, "once it is disconnected, another phone may pair"
 
 
 def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):
@@ -5079,20 +5079,20 @@ def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app):
     from journal.repositories.setting_rows import SettingRows
     from journal.support.refused import Refused
     app.container.get(SettingRows).set("sharing.host", "tunler.example", Actor.user(1))
-    pairing, now = app.container.get(Pairing), datetime.now(timezone.utc)
-    late = pairing.offer(1, Actor.user(1), now)
+    pairing, time = app.container.get(Pairing), datetime.now(timezone.utc)
+    late = pairing.offer(1, Actor.user(1), time)
     tunnel = app.container.get(Tunnel)
     assert tunnel.wanted, "a live code keeps the tunnel open"
-    tunnel.settle_when_changed(now + timedelta(minutes=11))
+    tunnel.settle_when_changed(time + timedelta(minutes=11))
     assert not tunnel.wanted, "and once it runs out, the clock closes the tunnel again"
     with pytest.raises(Refused):
-        pairing.pair(late.short, "iPhone", now + timedelta(minutes=11))
-    guessed = pairing.offer(1, Actor.user(1), now)
+        pairing.pair(late.short, "iPhone", time + timedelta(minutes=11))
+    guessed = pairing.offer(1, Actor.user(1), time)
     for _ in range(10):
         with pytest.raises(Refused):
-            pairing.pair("WRONGCODE", "iPhone", now)
+            pairing.pair("WRONGCODE", "iPhone", time)
     with pytest.raises(Refused):
-        pairing.pair(guessed.short, "iPhone", now)
+        pairing.pair(guessed.short, "iPhone", time)
     assert viewer(app, "phones/connect", {"days": 30})["short"], "the viewer asks for a code as the user"
 
 
@@ -5126,8 +5126,8 @@ def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, 
     assert not WebPush.is_allowed("http://web.push.apple.com/abc") and not WebPush.is_allowed("https://evil.example/push"), "a push goes only to the phone makers' services, over https"
     sent, answers = [], [201]
     monkeypatch.setattr(WebPush, "send", lambda self, endpoint: sent.append(endpoint) or answers[0])
-    phones, now = app.container.get(Phones), datetime.now(timezone.utc)
-    phones.save(Phone(name="iPhone", key="k", expires_at=now + timedelta(days=1), push="https://web.push.apple.com/abc"), Actor.user(1))
+    phones, time = app.container.get(Phones), datetime.now(timezone.utc)
+    phones.save(Phone(name="iPhone", key="k", expires_at=time + timedelta(days=1), push="https://web.push.apple.com/abc"), Actor.user(1))
     hook(app, "SessionStart")
     tell = app.container.get(TellThePhone)
     tell.handle(None)
@@ -5142,7 +5142,7 @@ def test_a_phone_is_pushed_once_for_each_new_thing_that_waits_for_the_user(app, 
     tell.handle(None)
     failed = phones.matching(name="iPhone")[0]
     assert len(sent) == 2 and failed.push_failed_at and failed.has_news(["questions:2"]), "a push that did not reach the service stays owed and waits a minute before it is tried again"
-    phones.save(failed.push_failed(now - timedelta(minutes=2)), Actor.system())
+    phones.save(failed.push_failed(time - timedelta(minutes=2)), Actor.system())
     answers[0] = 410
     tell.handle(None)
     assert len(sent) == 3 and phones.matching(name="iPhone")[0].push == "", "an address the service no longer knows is forgotten until the phone subscribes again"

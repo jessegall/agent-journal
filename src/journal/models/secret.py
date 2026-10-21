@@ -48,8 +48,8 @@ class Secret(Model):
         asked = self.proposed if proposed is None else proposed
         return self.with_(programs=allowed, proposed=tuple(p for p in asked if p not in allowed))
 
-    def login_ran_out_unasked(self, now: datetime) -> bool:
-        if self.session_expires is None or self.session_expires >= now:
+    def login_ran_out_unasked(self, time: datetime) -> bool:
+        if self.session_expires is None or self.session_expires >= time:
             return False
         return self.asked_at is None or self.asked_at < self.session_expires
 

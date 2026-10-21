@@ -1,4 +1,4 @@
-import time
+import time as timing
 
 from journal.features.suggestions.support.package_commandments import PackageCommandments
 from journal.features.suggestions.support.suggester import Suggester
@@ -26,13 +26,13 @@ class Suggesting:
     def __init__(self, settings: SettingRows, suggestions: Suggestions, cards: Cards, agents: Agents, environments: Environments, messages: Messages, scope: Scope, commandments: PackageCommandments) -> None:
         self.settings, self.suggestions, self.cards, self.agents, self.environments, self.messages, self.scope = settings, suggestions, cards, agents, environments, messages, scope
         self.suggesters: tuple[Suggester, ...] = (commandments,)
-        self.started_at = time.time()
+        self.started_at = timing.time()
         self.last_round: float | None = None
 
-    def tick(self, now: float) -> None:
-        if now < self.next_round():
+    def tick(self, time: float) -> None:
+        if time < self.next_round():
             return
-        self.last_round = now
+        self.last_round = time
         self.round()
 
     def next_round(self) -> float:
