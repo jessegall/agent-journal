@@ -1,4 +1,3 @@
-import time
 from urllib.parse import unquote
 
 from journal.features.faults.support.slow_requests import SlowRequests
@@ -49,12 +48,11 @@ class Router:
         route, params = matching
         try:
             with self.scope.requested(lambda: request.environment):
-                began = time.perf_counter()
-                if not route.outward:
-                    self.slow.begin()
+                if route.outward:
+                    return route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
+                timer = self.slow.begin()
                 answer = route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
-                if not route.outward:
-                    self.slow.measured(request.method, request.measured_path(), (time.perf_counter() - began) * 1000)
+                self.slow.measured(request.method, request.measured_path(), timer.wall_ms(), timer.cpu_ms())
                 return answer
         except Rejection as refused:
             return Response.refused(str(refused))

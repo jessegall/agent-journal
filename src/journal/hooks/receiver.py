@@ -1,6 +1,7 @@
 from functools import partial
 import time
 
+from journal.features.faults.support.request_timer import RequestTimer
 from journal.chat.cards import Cards
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.stop import Stop
@@ -38,7 +39,7 @@ class Receiver:
         self.transcript, self.cards, self.slow = transcript, cards, slow
 
     def receive(self, hook: Hook) -> Decision:
-        self.slow.begin()
+        timer = self.slow.begin()
         environment = self.environments.lookup(hook.environment)
         with self.scope.environment(environment.row_id):
             if not self.launches.is_launch(environment.name, hook.launch):
@@ -50,7 +51,7 @@ class Receiver:
             if self.is_unknown_session_end(event):
                 return Decision()
             decision = self._blocking(event)
-            self.entries.save(entry.with_(data={**entry.data, **self.recorded_outcome(hook, decision)}), Actor.agent(hook.session))
+            self.entries.save(entry.with_(data={**entry.data, **self.recorded_outcome(hook, decision, timer)}), Actor.agent(hook.session))
             self._defer(event)
         return decision
 
@@ -60,12 +61,12 @@ class Receiver:
             self.cards.show(environment.row_id, hook.session, f"Session {hook.session} started without the launch id of {environment.name}: the journal records its hooks and does not take it as this environment's agent", "bolt", tone="bad", shows=CardKind.FAULTS)
         return Decision()
 
-    def recorded_outcome(self, hook: Hook, decision: Decision) -> dict:
+    def recorded_outcome(self, hook: Hook, decision: Decision, timer: RequestTimer) -> dict:
         recorded = {} if decision.allowed else {"refused": decision.reason}
         if not hook.started_ms:
             return recorded
         elapsed = int(time.time() * 1000) - hook.started_ms
-        self.slow.measured(HOOK, f"/hooks/{hook.kind.value}", elapsed)
+        self.slow.measured(HOOK, f"/hooks/{hook.kind.value}", elapsed, timer.cpu_ms())
         return {**recorded, "hook_ms": elapsed}
 
     def is_unknown_session_end(self, event: AgentEvent) -> bool:

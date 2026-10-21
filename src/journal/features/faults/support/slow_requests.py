@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import re
 import time
+from journal.features.faults.support.request_timer import RequestTimer
 from journal.features.faults.support.test_run_files import TestRunFiles
 
 from journal.config import Config
@@ -35,7 +36,7 @@ OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin p
 
 
 class SlowRequests:
-    """Measures each request against its budget where the journal develops itself, every one but a route's first since the boot, which loads its code and a cold cache once, with the rows it loaded while load counting is on, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time and again once the set minutes have passed since it was last told, the time it was told kept in the mark's data."""
+    """Measures each request against its budget, on the CPU time the journal's thread spent on it so a busy machine or a process it waits on is not the journal's fault, where the journal develops itself, every one but a route's first since the boot, which loads its code and a cold cache once, with the rows it loaded while load counting is on, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time and again once the set minutes have passed since it was last told, the time it was told kept in the mark's data."""
 
     def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudges: NudgeLog, clock: Clock, deferred: ListenerQueue, statistics: Statistics, timings: Timings, test_runs: TestRunFiles) -> None:
         self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudges, self.clock, self.deferred = config, settings, cards, messages, agents, environments, scope, nudges, clock, deferred
@@ -45,20 +46,21 @@ class SlowRequests:
         self.started = time.monotonic()
         self.measured_routes: set[str] = set()
 
-    def begin(self) -> None:
+    def begin(self) -> RequestTimer:
         if self.settings.option(Faults.LOADS):
             LoadTally.begin()
+        return RequestTimer.started()
 
-    def measured(self, method: str, path: str, ms: float) -> None:
+    def measured(self, method: str, path: str, ms: float, cpu_ms: float) -> None:
         loads = LoadTally.ended()
         self.deferred.add(lambda: self.counted(method, path, round(ms), loads))
         route = re.sub(r"/\d+(?=/|$)", "/{n}", path)
         if self.is_first(f"{method} {route}") or not self.judging() or self.is_outward(route):
             return
         budget = self.budget(method)
-        if not budget or ms <= budget:
+        if not budget or cpu_ms <= budget:
             return
-        self.deferred.add(lambda: self.reported(method, route, round(ms), budget))
+        self.deferred.add(lambda: self.reported(method, route, round(cpu_ms), budget))
 
     def counted(self, method: str, path: str, ms: int, loads: RequestLoads) -> None:
         self.statistics.measured("developer.hooks" if method == HOOK else "developer.requests", ms, Actor.system())

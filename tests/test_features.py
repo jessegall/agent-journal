@@ -1028,25 +1028,26 @@ def test_a_request_over_its_budget_is_one_mark_per_route_told_the_first_time_and
     slow = app.container.get(SlowRequests)
     monkeypatch.setattr("os.getloadavg", lambda: (0.0, 0.0, 0.0))
     with app.container.get(Scope).environment(MAIN):
-        slow.measured("GET", "/journal/plans", 80)
-        slow.measured("GET", "/journal/messages/12/read", 70)
+        slow.measured("GET", "/journal/plans", 80, 80)
+        slow.measured("GET", "/journal/messages/12/read", 70, 70)
         assert [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")] == [], "nothing is judged in the first minute after a start"
         slow.started -= 120
-        slow.measured("GET", "/journal/docs", 200)
-        slow.measured("GET", "/journal/plans", 30)
-        slow.measured("GET", "/journal/plans", 80)
-        slow.measured("GET", "/journal/plans", 95)
-        slow.measured("GET", "/journal/messages/12/read", 70)
+        slow.measured("GET", "/journal/docs", 200, 200)
+        slow.measured("GET", "/journal/plans", 30, 30)
+        slow.measured("GET", "/journal/plans", 80, 80)
+        slow.measured("GET", "/journal/plans", 95, 95)
+        slow.measured("GET", "/journal/messages/12/read", 70, 70)
+        slow.measured("GET", "/journal/messages/12/read", 400, 12)
         app.runtime().deferred.drain()
         thresholds = [m for m in app.container.get(Messages).all() if m.text.startswith("Slow request")]
-    assert [(m.text, m.data["count"], m.data["worst"]) for m in thresholds] == [("Slow request: GET /journal/plans", 2, 95), ("Slow request: GET /journal/messages/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted, nor a route's first since the boot, which loads its code"
+    assert [(m.text, m.data["count"], m.data["worst"]) for m in thresholds] == [("Slow request: GET /journal/plans", 2, 95), ("Slow request: GET /journal/messages/{n}/read", 1, 70)], "one mark per path, its numbers folded, with its worst time and how often; a request inside its budget not counted, nor a route's first since the boot, which loads its code, nor one slow by the clock while the journal spent little CPU time on it"
     assert sum("over its budget of 50 ms" in t for t in keystrokes) == 2, "the agent is told the first time of each"
     told_at = thresholds[0].data["reported_at"]
     plans_lines = lambda: sum("GET /journal/plans took" in t for t in keystrokes)
     for minutes, said in ((10, 1), (16, 2), (20, 2)):
         monkeypatch.setattr(Clock, "time", lambda self, at=told_at + minutes * 60: at)
         with app.container.get(Scope).environment(MAIN):
-            slow.measured("GET", "/journal/plans", 60 + minutes)
+            slow.measured("GET", "/journal/plans", 60 + minutes, 60 + minutes)
             app.runtime().deferred.drain()
         assert plans_lines() == said, f"{minutes} minutes after it was first told, the slow route is told {said} times: again once fifteen minutes have passed since it was last reported, and not before"
     with app.container.get(Scope).environment(MAIN):
@@ -1055,11 +1056,11 @@ def test_a_request_over_its_budget_is_one_mark_per_route_told_the_first_time_and
     app.container.get(SettingRows).set("faults.repeat_minutes", 0, Actor.user(1))
     monkeypatch.setattr(Clock, "time", lambda self, at=told_at + 7200: at)
     with app.container.get(Scope).environment(MAIN):
-        slow.measured("GET", "/journal/plans", 90)
+        slow.measured("GET", "/journal/plans", 90, 90)
         app.runtime().deferred.drain()
     assert plans_lines() == 2, "0 tells it once only"
-    slow.measured("GET", "/journal/environments", 90)
-    slow.measured("GET", "/journal/environments", 90)
+    slow.measured("GET", "/journal/environments", 90, 90)
+    slow.measured("GET", "/journal/environments", 90, 90)
     app.runtime().deferred.drain()
     assert any(m.text == "Slow request: GET /journal/environments" for m in app.container.get(Messages).all()), "a request that named no environment is marked in the live agent's, never failing on the missing one"
     runtime = app.config.home / "runtime"
@@ -5653,7 +5654,7 @@ def test_a_read_that_asks_a_server_outside_is_not_judged_against_the_budget(app:
     from journal.support.response import Response
     from journal.features.faults.support.slow_requests import SlowRequests
     measured = []
-    monkeypatch.setattr(SlowRequests, "measured", lambda self, method, path, ms: measured.append(path))
+    monkeypatch.setattr(SlowRequests, "measured", lambda self, method, path, ms, cpu_ms: measured.append(path))
     router = app.container.get(Router)
     router.get_outward("/journal/far", lambda request: Response.json({}))
     router.get("/journal/near", lambda request: Response.json({}))
