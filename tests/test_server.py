@@ -80,6 +80,7 @@ def test_a_project_files_bytes_are_served_with_their_media_type_and_nothing_outs
     request = HttpRequest(f"http://127.0.0.1:{server.port}/journal/project-files/raw?path=dot.png", headers={"X-Journal-Env": "main"})
     with urlopen(request, timeout=5) as reply:
         assert reply.headers["Content-Type"].startswith("image/png") and reply.read() == b"\x89PNG\r\n\x1a\n"
+        assert (reply.headers["Content-Security-Policy"], reply.headers["X-Content-Type-Options"]) == ("sandbox", "nosniff"), "nothing opened from its address runs in the journal's origin"
     assert call(server, "GET", "/journal/project-files/raw?path=../outside.png")[0] == 404
     assert call(server, "GET", "/journal/project-files/raw?path=missing.png")[0] == 404
 

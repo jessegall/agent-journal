@@ -1,5 +1,5 @@
 from journal.http.files.project_files import ProjectFiles
-from journal.http.support.file_response import FileResponse
+from journal.http.support.sandboxed_file_response import SandboxedFileResponse
 from journal.http.support.request import Request
 from journal.support.response import Response
 
@@ -20,9 +20,9 @@ class ProjectFileController:
         rows = self.files.file(request.query.get("path", ""))
         return Response.json(rows) if rows else Response.absent("no such file")
 
-    def raw(self, request: Request) -> FileResponse | Response:
+    def raw(self, request: Request) -> SandboxedFileResponse | Response:
         file = self.files.raw(request.query.get("path", ""))
-        return FileResponse(*file) if file else Response.absent("no such file")
+        return SandboxedFileResponse(*file) if file else Response.absent("no such file")
 
     def diff(self, request: Request) -> Response:
         return Response.json({"diff": self.files.diff(request.query.get("path", ""))})
