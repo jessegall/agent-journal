@@ -149,7 +149,8 @@ One line of JSON on its output, the last line counting; an empty output is `allo
 - `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`. Its `kind` is one the
   manifest's `cards` names, and its tone is the kind's unless it gives one; a kind marked `collapsed` keeps the detail
   to the card's tooltip. A `key` is any text, unique within the plugin, and a card with a key settles the plugin's
-  earlier card of that key in place, where it stands in the chat. A card is drawn with the plugin's name on it and
+  earlier card of that key in place, where it stands in the chat, while the user has written nothing since it; an
+  earlier card from before the user's latest message is taken out and the new one shown at the bottom. A card is drawn with the plugin's name on it and
   written as the plugin.
 - `commands`: journal command lines, at most 20, run after the reply as the plugin; each leaves a `plugin_command`
   entry with its exit code. A row a plugin's command writes is heard by the other plugins, and a row their commands

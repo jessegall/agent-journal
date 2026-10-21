@@ -37,6 +37,16 @@ class Cards:
             return self.messages.save(older[0].with_(text=label, data=self.docked_data(older[0], data)), actor)
         return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), actor)
 
+    def keyed_recent(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind, detail: str = "") -> Message:
+        older = self.messages.keyed(key, actor) if key else []
+        if older and self.predates_user_message(older[0]):
+            self.messages.delete(older[0], actor)
+        return self.keyed(environment_id, key, label, data, actor, shows, detail)
+
+    def predates_user_message(self, card: Message) -> bool:
+        latest = self.messages.last_user_message()
+        return latest is not None and card.row_id < latest.row_id
+
     @staticmethod
     def docked_data(older: Message, data: dict) -> dict:
         return {**data, DOCKED: older.data[DOCKED]} if DOCKED in older.data else data

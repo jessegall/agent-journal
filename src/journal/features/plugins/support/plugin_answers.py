@@ -17,7 +17,7 @@ COMMAND = "plugin_command"
 
 
 class PluginAnswers:
-    """What a plugin's answer asks beyond the hook's reply: its cards in the chat, one with a key replacing the earlier of that key, and its journal commands run as the plugin, a step deeper."""
+    """What a plugin's answer asks beyond the hook's reply: its cards in the chat, one with a key replacing the earlier of that key where it stands if the user has not written since, else at the bottom of the chat, and its journal commands run as the plugin, a step deeper."""
 
     def __init__(self, cards: Cards, console: Console, entries: Entries, steps: PluginSteps, text: PluginText) -> None:
         self.cards, self.console, self.entries, self.steps, self.text = cards, console, entries, steps, text
@@ -33,7 +33,7 @@ class PluginAnswers:
         kind = plugin.manifest.card_kind(card.kind)
         label = self.text.plain(card.label or kind.label)
         data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "collapsed": kind.collapsed}
-        self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name), CardKind.PLUGINS, self.text.plain(card.detail))
+        self.cards.keyed_recent(environment_id, card.key, label, data, Actor.plugin(plugin.name), CardKind.PLUGINS, self.text.plain(card.detail))
 
     def run(self, plugin: Plugin, line: str, environment: str, environment_id: int) -> None:
         argv = shlex.split(line)
