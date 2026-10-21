@@ -20,8 +20,8 @@ if [ -n "$port" ]; then
     body=$("$py" -c '
 import json, os, sys
 sys.path.insert(0, sys.argv[1])
-from journal.support.where import Where
-where = Where.from_environ(os.environ)
+from journal.support.caller import Caller
+caller = Caller.from_environ(os.environ)
 print(json.dumps({"argv": sys.argv[2:], "env": where.environment, "session": where.session, "agent": where.from_agent_shell, "plugin": where.plugin, "token": os.environ.get("JOURNAL_PLUGIN_TOKEN", "")}))
 ' "$here" "$@") &&
     reply=$(curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" -H "X-Journal-Actor: ${JOURNAL_ACTOR:-agent}" -H "X-Journal-Thread: ${CODEX_THREAD_ID:-}" --data-binary "$body") &&

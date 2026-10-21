@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from journal.app import App  # noqa: E402
 from journal.config import Config  # noqa: E402
-from journal.support.where import Where  # noqa: E402
+from journal.support.caller import Caller  # noqa: E402
 
 AGENTS = ("claude", "codex")
 
@@ -20,7 +20,7 @@ def main(argv: list[str]) -> int:
     if argv[:1] == ["serve"]:
         app.runtime().run()
         return 0
-    outcome = app.console().run(argv, Where.from_environ(os.environ))
+    outcome = app.console().run(argv, Caller.from_environ(os.environ))
     sys.stdout.write(outcome.out)
     sys.stderr.write(outcome.err)
     return outcome.code
