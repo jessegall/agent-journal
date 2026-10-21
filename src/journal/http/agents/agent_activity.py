@@ -64,7 +64,7 @@ class AgentActivity:
             "heard_at": last.created_at if last else agent.updated_at,
             "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "",
             "tool_work": self.work(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
-            "tool_running": kind == "ToolStarting",
+            "tool_running": kind == "ToolStarting" or self.unended_part(entries) is not None,
             "awaiting": waiting_state, "wait_refs": enabled, "awaiting_since": agent.updated_at if waiting_state else None,
             "model": status.model, "effort": status.effort, "usage": [asdict(window) for window in status.windows], "capabilities": sorted(provider.capabilities),
             "branch": self.files.branch(), "context": round(status.context * 100) if status.context is not None else None,
@@ -105,7 +105,15 @@ class AgentActivity:
             return last.data["part"]
         if last and last.kind == "ToolStarting":
             return self.tool_activity(last.recorded_call())
+        part = self.unended_part(hooks)
+        if part is not None:
+            return part.data["part"]
         return self.described(state) or ("at work" if hooks else "")
+
+    @staticmethod
+    def unended_part(entries):
+        parts = [e for e in entries if e.kind in (PART_START, PART_END)]
+        return parts[-1] if parts and parts[-1].kind == PART_START else None
 
     @staticmethod
     def tool_activity(call: RecordedCall) -> str:

@@ -325,6 +325,12 @@ def test_an_agents_doing_is_the_part_of_a_chained_command_running_now(tmp_path: 
         assert doing() not in ("cd src", "git status"), "a finished call is no longer what the agent is doing"
         hook("PreToolUse", tool_name="Read", tool_input={"file_path": str(tmp_path / "a.py")}, tool_use_id="t-2")
         assert doing() == "reading a file", "another tool is its verb"
+        hook("PostToolUse", tool_name="Read", tool_input={"file_path": str(tmp_path / "a.py")}, tool_response="", tool_use_id="t-2")
+        hook("PreToolUse", tool_name="Bash", tool_input={"command": "pytest -q"}, tool_use_id="t-3")
+        ShellVerbs(app).started("pytest -q", "c2")
+        hook("PostToolUse", tool_name="Bash", tool_input={"command": "pytest -q"}, tool_response={"stdout": "moved to the background"}, tool_use_id="t-3")
+        row = call(server, "GET", "/journal/agents")[1]["rows"][0]
+        assert row["doing"] == "pytest -q" and row["tool_running"], "a command moved to the background is what the agent is doing until its part ends"
     finally:
         app.runtime().stop()
 
