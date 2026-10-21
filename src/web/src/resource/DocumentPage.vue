@@ -148,7 +148,13 @@ watch(
                         <PlanTimelinePanel class="timeline-aside" :plan="resource" />
                     </template>
                     <template #default>
-                        <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
+                        <Comments
+                            :resource="resource"
+                            :quote="quote"
+                            :focus="props.focus"
+                            hint="Select text in the document to comment on that passage."
+                            @sent="quote = ''"
+                        />
                     </template>
                 </SwitchCase>
             </aside>

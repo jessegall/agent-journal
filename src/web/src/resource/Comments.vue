@@ -17,6 +17,7 @@ import QuickCommentBar from "../kit/QuickCommentBar.vue";
 const props = defineProps({
     resource: Object,
     quote: {type: String, default: ""},
+    hint: {type: String, default: ""},
     showThread: {type: Boolean, default: true},
     compose: {type: Boolean, default: true},
     focus: {type: Number, default: 0},
@@ -130,7 +131,9 @@ const quick = (text) => comment(text);
                 <div class="none">
                     <Icon name="bubble" :size="16" />
                     <p>No comments yet.</p>
-                    <p class="none-hint">Select text in the document to comment on that passage.</p>
+                    <template v-if="hint">
+                        <p class="none-hint">{{ hint }}</p>
+                    </template>
                 </div>
             </template>
             <template v-for="c in thread" :key="c.key || c.id">
