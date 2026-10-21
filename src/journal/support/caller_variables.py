@@ -27,8 +27,8 @@ class CallerVariables:
 
     @classmethod
     def parsed(cls, body: dict, provider: str) -> "CallerVariables":
-        given = {key: value for key, value in body.items() if value not in ("", None)}
-        return cls(given.get("env", "main"), given.get("provider", provider), bool(given.get("agent")), given.get("session"), given.get("plugin"), given.get("token"), given.get("worker"), given.get("launch"))
+        fields = {key: value for key, value in body.items() if value not in ("", None)}
+        return cls(fields.get("env", "main"), fields.get("provider", provider), bool(fields.get("agent")), fields.get("session"), fields.get("plugin"), fields.get("token"), fields.get("worker"), fields.get("launch"))
 
     def body(self) -> dict:
         return {"env": self.environment, "provider": self.provider, "agent": self.agent_shell, "session": self.session, "plugin": self.plugin, "token": self.token, "worker": self.worker, "launch": self.launch}
