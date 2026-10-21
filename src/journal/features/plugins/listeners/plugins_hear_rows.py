@@ -17,12 +17,8 @@ class PluginsHearRows(Listener[ModelEvent]):
 
     def handle(self, event: ModelEvent) -> None:
         environment_id = self.scope.id_or(0)
-        told = self.file_edited(event, environment_id) if isinstance(event, Created) and isinstance(event.model, Edit) else event
+        told = FileEdited.recorded(event.model, environment_id) if isinstance(event, Created) and isinstance(event.model, Edit) else event
         for plugin in self.relay.heard_by(told, environment_id):
+            if plugin.manifest.has_window(told.key):
+                continue
             self.connection.after_commit(lambda plugin=plugin: self.deferred.add_unless_behind(lambda: self.relay.later(plugin, told, environment_id), f"{plugin.name} relay {told.key}"))
-
-    @staticmethod
-    def file_edited(event: ModelEvent, environment_id: int) -> FileEdited:
-        """An edit row's creation told as file_edited, the edit precomputed on the line."""
-        edit = event.model
-        return FileEdited(path=edit.path, kind=edit.kind, added=edit.added, removed=edit.removed, first_line=edit.first_line, last_line=edit.last_line, lines=edit.rows, command=edit.command).placed(edit.session, environment_id, "", None, edit.at)

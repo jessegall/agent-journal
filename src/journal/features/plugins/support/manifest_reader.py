@@ -14,7 +14,7 @@ NAME = re.compile(r"^[a-z0-9][a-z0-9-]{1,31}$")
 PROTOCOLS = (1,)
 """The protocol versions this journal speaks; a later one adds fields and never changes one."""
 AGENT_EVENTS = ("tool_starting", "command_starting", "tool_finished", "file_edited", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked", "plugin.updated")
-HOLDABLE = ("tool_starting", "command_starting", "idle", "prompt_submitted", "session_started")
+HOLDABLE = ("tool_starting", "command_starting", "file_edited", "idle", "prompt_submitted", "session_started")
 """The events a plugin may answer before the agent goes on; at a prompt and a start it may only tell, never refuse."""
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")
 NEVER_TABLES = ("secrets", "mcp_servers", "users")

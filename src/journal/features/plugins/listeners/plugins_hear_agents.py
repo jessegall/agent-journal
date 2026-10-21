@@ -1,5 +1,7 @@
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.command_starting import CommandStarting
+from journal.events.agent.file_edited import FileEdited
+from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
@@ -11,11 +13,12 @@ from journal.support.deferred import Deferred
 from journal.support.floor import Floor
 from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
+from journal.repositories.edits import Edits
 from journal.repositories.setting_rows import SettingRows
 
 CARRIES = ("tool_starting", "tool_finished", "prompt_submitted", "session_started")
 """The hooks whose answer can carry a line to the agent without holding it, where a plugin's waiting lines are handed over."""
-REFUSABLE = ("tool_starting", "command_starting", "idle")
+REFUSABLE = ("tool_starting", "command_starting", "file_edited", "idle")
 """The held events a plugin may refuse; at a prompt and a start its refusal is only said, and a stop it holds once a turn, never again after the agent went on because a stop was held."""
 
 
@@ -24,9 +27,11 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
 
     blocking = True
     asked_while_free = True
+    asked_last = True
+    """Runs after the other blocking listeners, so a file's edit is on its row when the plugins holding file_edited are asked."""
 
-    def __init__(self, relay: PluginRelay, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords, queue: PluginQueue) -> None:
-        self.relay, self.deferred, self.settings, self.floor, self.words, self.queue = relay, deferred, settings, floor, words, queue
+    def __init__(self, relay: PluginRelay, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords, queue: PluginQueue, edits: Edits) -> None:
+        self.relay, self.deferred, self.settings, self.floor, self.words, self.queue, self.edits = relay, deferred, settings, floor, words, queue, edits
 
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
@@ -39,7 +44,15 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         decision = self.asked(hearers, event, ceiling_ms, decision)
         for command in self.commands(event):
             decision = self.asked(self.relay.heard_by(command, event.environment_id), command, ceiling_ms, decision)
+        for edited in self.edited(event):
+            decision = self.asked([p for p in self.relay.heard_by(edited, event.environment_id) if p.manifest.has_window(edited.key)], edited, ceiling_ms, decision)
         return self.floor.under(event, decision)
+
+    def edited(self, event: AgentEvent) -> list[FileEdited]:
+        """One event per file the tool that ended changed, for the plugins that hold file_edited; the rest hear the edit row after the reply."""
+        if not isinstance(event, ToolFinished):
+            return []
+        return [FileEdited.recorded(edit, event.environment_id) for edit in self.edits.of_tool_use(event.session, event.tool_use)]
 
     def asked(self, hearers: list[Plugin], event: AgentEvent, ceiling_ms: int, decision: Decision) -> Decision:
         for plugin in hearers:
@@ -60,7 +73,7 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
 
     @staticmethod
     def holds(plugin: Plugin, event: AgentEvent) -> bool:
-        return plugin.manifest.has_window(event.key) and (not event.subagent or event.key in ("tool_starting", "command_starting"))
+        return plugin.manifest.has_window(event.key) and (not event.subagent or event.key in ("tool_starting", "command_starting", "file_edited"))
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
         if answer.answer == "refuse" and isinstance(event, Idle) and event.held_before:

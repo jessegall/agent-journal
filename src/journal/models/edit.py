@@ -20,3 +20,5 @@ class Edit(Scoped):
     """The changed lines with their numbers, as the pane draws them; none for a shell command's change."""
     command: str = ""
     """The shell command that changed the file, when one did."""
+    tool_use: int = 0
+    """The session's tool use that made the change, so the plugins asked at the tool's end find the file's edits."""

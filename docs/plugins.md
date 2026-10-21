@@ -65,8 +65,9 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   `tool_starting`.
 - `holds`: the events it hears that it answers before the agent goes on, each with the window in milliseconds it
   answers in: `[{"event": "tool_starting", "window_ms": 5}]`; a bare name takes the journal's ceiling, the setting
-  `plugins.hold_window_ms` (50), and a window above the ceiling is cut to it. `tool_starting`, `command_starting` and `idle` may be refused,
-  `prompt_submitted` and `session_started` only told; a refused command holds the whole tool. A hold inside a few milliseconds cannot start a process: a plugin
+  `plugins.hold_window_ms` (50), and a window above the ceiling is cut to it. `tool_starting`, `command_starting`, `file_edited` and `idle` may be refused,
+  `prompt_submitted` and `session_started` only told; a refused command holds the whole tool, and a refused edit
+  blocks the tool's result, so the agent must put the file right before it goes on. A hold inside a few milliseconds cannot start a process: a plugin
   that holds runs a service with `answers` and decides from what it already knows, never from a judge. A line told at an event it hears but does not hold reaches the
   agent at its next tool use or prompt; hold the event for the line to come with it.
 - `settings`: a path to its settings file, described under Settings.
@@ -117,7 +118,7 @@ One line of JSON, ending in a newline:
   command of a shell line as the journal cut the chain, the command's `text`, whether it `writes`, the `files` it
   touches, its `position` in the chain and the chain's `parts`, a journal command never among them; `tool_finished`
   the same as `tool_starting` with its `output` and `response`; `file_edited`, one per file a tool changed, once
-  the journal has recorded the edit and after the reply: the `path` inside the project, the `kind` (`create` for a file
+  the journal has recorded the edit, at the tool's end for a plugin that holds it and after the reply for the rest: the `path` inside the project, the `kind` (`create` for a file
   written whole, `edit` for a change inside one, `delete` for a file gone), the lines `added` and `removed`, the span
   `first_line` to `last_line`, the changed `lines` as `{kind: add|del|ctx, line, text}` up to two hundred, every
   line of a created or deleted file among them, and the shell `command` when one made the change; a file outside the

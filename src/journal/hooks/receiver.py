@@ -92,5 +92,5 @@ class Receiver:
 
     def _split(self, event: AgentEvent) -> tuple[list[AgentListener], list[Listener]]:
         listeners = self.bus.listeners(type(event))
-        blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: not isinstance(l, StateMachine))
+        blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: (not isinstance(l, StateMachine), getattr(l, "asked_last", False)))
         return blocking, [l for l in listeners if not getattr(l, "blocking", False)]
