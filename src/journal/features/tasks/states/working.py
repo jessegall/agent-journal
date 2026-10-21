@@ -16,7 +16,6 @@ from journal.events.rows.task_started import TaskStarted
 from journal.events.readings import Readings
 from journal.support.permission import Permission
 
-LOG_OLD_AFTER = 600.0
 STILL_OPEN_AFTER = 900.0
 COMPACT = "compact"
 
@@ -81,7 +80,7 @@ class Working(BaseState):
         approved = event.readings.of(Plans).approved
         if approved:
             return self.hold(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
-        if event.time - self.logged_at >= LOG_OLD_AFTER:
+        if event.time - self.logged_at >= int(settings.of(Tasks.LOG_OLD_AFTER)) * 60:
             return self.hold(Tasks.LOG_FIRST_AT_STOP.create(name=self.named(), logged=self.logged_words(event.time), log_command=self.log_command()))
         return self.hold(self.continue_nudge(event.time))
 

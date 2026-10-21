@@ -1002,7 +1002,7 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     from journal.events.agent.ticked import Ticked
     from journal.events.rows.task_closed import TaskClosed
     from journal.events.rows.task_logged import TaskLogged
-    settings = SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_AFTER.key: 4, TasksFeature.FIRST_AFTER.key: 2, TasksFeature.NAME_EVERY.key: 3})
+    settings = SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_AFTER.key: 4, TasksFeature.FIRST_AFTER.key: 2, TasksFeature.NAME_EVERY.key: 3, TasksFeature.LOG_OLD_AFTER.key: 10})
     tasks = TasksReadings(in_hand=7, last_log_line='"the parser reads"', parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
     of = lambda in_hand=7, approved=(): Readings({"tasks": replace(tasks, in_hand=in_hand), "plans": PlansReadings(approved, None), "git": GitReadings(uncommitted="a.py, b.py")})
     working = Working(task_id=7, logged_at=1000.0)
@@ -1353,3 +1353,15 @@ def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_neve
         app.runtime().deferred.drain()
     assert app.container.get(Plans).find(1).state == "done" and stack() == ["orchestrating"], "the plan is done and the orchestrator stands on its floor"
     assert stop().get("decision") != "block", "with nothing open the stop passes"
+
+
+def test_a_stop_with_the_tasks_log_older_than_the_set_minutes_asks_for_the_log_line_first():
+    from journal.events.agent.idle import Idle as Stop
+    from journal.features.plans.support.plans_readings import PlansReadings
+    from journal.features.tasks.support.tasks_readings import TasksReadings
+    readings = Readings({"plans": PlansReadings((), None), "tasks": TasksReadings(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())})
+    settings = lambda minutes: SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_OLD_AFTER.key: minutes, WorkersFeature.MODE.key: "builder"})
+    working = Working(task_id=7, logged_at=0.0)
+    assert working.on(Stop(time=5 * 60.0).with_readings(readings), settings(10)).held.key == "tasks.carry_on", "within the minutes a stop is told to carry on"
+    assert working.on(Stop(time=11 * 60.0).with_readings(readings), settings(10)).held.key == "tasks.log_first_at_stop", "past them the log line comes first"
+    assert working.on(Stop(time=2 * 60.0).with_readings(readings), settings(1)).held.key == "tasks.log_first_at_stop", "the minutes are the user's to set"
