@@ -806,6 +806,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     from journal.features.workers.workers_conduct import WorkersConduct
     from journal.features.workers.support.workers_data import WorkersData
     from journal.features.workers.support.worker_worktree import WorkerWorktree
+    from journal.features.shell.support.output_view import OutputView
     from journal.models.subagent import Subagent
     from journal.models.subagent_state import SubagentState
     from journal.features.plans.support.plans_data import PlansData
@@ -822,7 +823,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         "plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()),
         "messages": MessagesData(unread=(7, 8), unanswered=(5,), unanswered_files=(f"{tmp_path}/files/message/5/",), inbox_tool_uses=3, mention_count=1, uses_unanswered=4),
         "profiles": ProfilesData(names=("journal-researcher", "journal-medior"), subagents=("journal-researcher",), workers=("journal-medior",)),
-        "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, 0), EndedOutput(4, 1)), output_reads=("journal output read <output> --grep x", "journal output read <output> --grep x"), readers=(Reader("tests", "the failures", "FAILED"),), tipped=()),
+        "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, 0), EndedOutput(4, 1)), output_reads=("journal output read <output> --grep x", "journal output read <output> --grep x"), readers=(Reader("tests", "the failures", "FAILED"),), tipped=(), watch=OutputView.empty()),
         "secrets": SecretsData(root=tmp_path, folders=(private.resolve(),), spellings=(str(private),)),
         "workers": WorkersData(dispatched_workers=(), idle_workers=(Worker(id=2, name="Lady Lovelace", state=WorkerState.REPORTED),), active_subagents=2, subagents=(Subagent(id=1, dispatch="sub:1", started_at=1.0, task="read the plan", brief="look at src/a.py", agent_type="journal-researcher", model="sonnet", session="sub-1", state=SubagentState.FINISHED),), worktrees_root=tmp_path / "worktrees", worktrees=(WorkerWorktree("3-Lady-Lovelace", 3, "Lady Lovelace"),)),
     }
