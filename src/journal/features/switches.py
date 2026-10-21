@@ -25,4 +25,6 @@ class Switches(Listener[Event]):
         model = getattr(event, "model", None)
         if isinstance(model, Scoped):
             return model.environment_id
-        return getattr(event, "environment_id", self.scope.id_default(PROJECT))
+        if hasattr(event, "environment_id"):
+            return event.environment_id
+        return self.scope.id_default(PROJECT)
