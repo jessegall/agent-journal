@@ -1,12 +1,11 @@
 import threading
-from http.server import ThreadingHTTPServer
 
 from journal.db.connection import Connection
 from journal.features.sharing.support.share_place import SharePlace
 from journal.http.phone.phone_pages import PhonePages
-from journal.http.server import POLL_SECONDS
 from journal.http.share_handler import ShareHandler
 from journal.http.sharing.share_pages import SharePages
+from journal.http.threading_server import ThreadingServer
 
 READ_SECONDS = 15
 
@@ -17,7 +16,7 @@ class ShareServer:
     def __init__(self, pages: SharePages, phone: PhonePages, place: SharePlace, database: Connection) -> None:
         self.place = place
         self.handler = type("BoundShareHandler", (ShareHandler,), {"pages": pages, "phone": phone, "database": database, "timeout": READ_SECONDS})
-        self._server: ThreadingHTTPServer | None = None
+        self._server: ThreadingServer | None = None
 
     @property
     def port(self) -> int:
@@ -25,19 +24,18 @@ class ShareServer:
 
     def start(self) -> None:
         self._server = self._bind(self.place.stored().port)
-        self._server.daemon_threads = True
         self.place.store(port=self._server.server_address[1])
-        threading.Thread(target=lambda: self._server.serve_forever(poll_interval=POLL_SECONDS), name="share", daemon=True).start()
+        threading.Thread(target=self._server.serve_forever, name="share", daemon=True).start()
 
     def stop(self) -> None:
         if self._server:
             self._server.shutdown()
             self._server.server_close()
 
-    def _bind(self, stored: int) -> ThreadingHTTPServer:
+    def _bind(self, stored: int) -> ThreadingServer:
         if stored:
             try:
-                return ThreadingHTTPServer(("127.0.0.1", stored), self.handler)
+                return ThreadingServer(("127.0.0.1", stored), self.handler)
             except OSError:
                 pass
-        return ThreadingHTTPServer(("127.0.0.1", 0), self.handler)
+        return ThreadingServer(("127.0.0.1", 0), self.handler)
