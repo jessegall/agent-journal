@@ -3,7 +3,8 @@ import {expect, test} from "vitest";
 import WorkerRow from "../src/chat/WorkerRow.vue";
 import {workerActions, workerCounts, workerEnding, workerFiles, workerReuses, workersBySection, workerTag} from "../src/domain/workers.js";
 
-const at = (minutes) => new Date(Date.now() - minutes * 60000).toISOString();
+const NOW = Date.now();
+const at = (minutes) => new Date(NOW - minutes * 60000).toISOString();
 const worker = (id, state, more = {}) => ({id, name: `Worker ${id}`, brief: "a job", state, created_at: at(10), updated_at: at(5), ...more});
 
 test("a worker's cell says how often it was reused, and nothing before its first reuse", () => {
