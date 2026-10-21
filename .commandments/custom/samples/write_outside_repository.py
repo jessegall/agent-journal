@@ -12,6 +12,7 @@ class TaskCloser:
         # @sin QueryOutsideRepositoryDetector
         with self.connection.transaction():
             # @sin QueryOutsideRepositoryDetector
+            # @sin SqlOutsideDatabaseLayerDetector
             self.connection.execute("UPDATE tasks SET state = 'done' WHERE id = ?", (number,))
 
     def finish(self, number: int, actor) -> None:

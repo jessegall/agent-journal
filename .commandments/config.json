@@ -48,7 +48,8 @@
         "StateHearsModelEventDetector",
         "FeatureListenerSpeaksDetector",
         "DispatchOutsideFunnelsDetector",
-        "LifecycleHandlerNotFirstDetector"
+        "LifecycleHandlerNotFirstDetector",
+        "SqlOutsideDatabaseLayerDetector"
     ],
     "parallel": 2,
     "configure": {
