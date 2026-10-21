@@ -219,3 +219,8 @@ def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(co
     assert json.loads(connection.one("SELECT running FROM checks")["running"]) == {"time": 7.0, "output": ""}
     dump = connection.one("SELECT question, answers FROM dumps")
     assert json.loads(dump["question"]) == {"time": 1.0, "text": "q"} and json.loads(dump["answers"]) == [{"question": "q", "answer": "a", "time": 2.0}]
+    connection.execute("ALTER TABLE edits ADD COLUMN at REAL DEFAULT 0")
+    connection.execute("INSERT INTO edits (environment_id, session, path, at, time, created_at, created_by) VALUES (1, 's', 'a.py', 9.0, 0, '2026-10-21', 'system')")
+    TimeKeys().up(connection)
+    names = {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
+    assert "at" not in names and connection.one("SELECT time FROM edits")["time"] == 9.0, "where the schema already added the time column, the old at column's values move into it and the column goes"

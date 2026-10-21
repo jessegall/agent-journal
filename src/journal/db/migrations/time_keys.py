@@ -8,13 +8,18 @@ ENTRY_KEY = "UPDATE entries SET data = json_set(json_remove(data, '$.at'), '$.ti
 
 
 class TimeKeys(Migration):
-    """The name at is time everywhere: the edits table's column, the time key in an entry's data, a check's running progress, and a dump's question, answers and choices."""
+    """The name at is time everywhere: the edits table's column, carried over into the time column the schema already added when both are there, the time key in an entry's data, a check's running progress, and a dump's question, answers and choices."""
 
     number: ClassVar[int] = 20
 
     def up(self, connection: Connection) -> None:
         columns = {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
-        if "at" in columns:
+        if "at" in columns and "time" in columns:
+            connection.execute("UPDATE edits SET time = at")
+            connection.execute("DROP INDEX IF EXISTS edits_by_session")
+            connection.execute("ALTER TABLE edits DROP COLUMN at")
+            connection.execute("CREATE INDEX IF NOT EXISTS edits_by_session ON edits (environment_id, session, time)")
+        elif "at" in columns:
             connection.execute("ALTER TABLE edits RENAME COLUMN at TO time")
         connection.execute(ENTRY_KEY)
         for row in connection.all("SELECT id, running FROM checks WHERE running IS NOT NULL AND running != ''"):
