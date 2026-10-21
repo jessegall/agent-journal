@@ -100,3 +100,9 @@ class Dump(Scoped):
     def made_refs(self) -> list[str]:
         refs = [ref for name in self.item_names for ref in self.item(name).refs] + [e["on"] for e in self.log if e.get("on")]
         return list(dict.fromkeys(refs))
+
+    def title_words(self) -> str:
+        return self.title
+
+    def summary(self) -> str:
+        return self.first_line(self.brief)

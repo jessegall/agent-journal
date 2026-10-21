@@ -51,3 +51,9 @@ class Worker(Scoped):
 
     def has_report_waiting(self) -> bool:
         return self.state == WorkerState.REPORTED and not self.taken_up
+
+    def title_words(self) -> str:
+        return self.name
+
+    def summary(self) -> str:
+        return self.first_line(self.brief)

@@ -50,3 +50,9 @@ class Check(Model):
 
     def cannot_run(self) -> bool:
         return bool(self.last_fault)
+
+    def title_words(self) -> str:
+        return self.title
+
+    def summary(self) -> str:
+        return self.first_line(self.brief)

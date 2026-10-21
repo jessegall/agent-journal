@@ -18,3 +18,9 @@ class Template(Model):
     """The instructions read before working on anything made from it."""
     parts: tuple[str, ...] = ()
     """The outline a new item starts with, each part as title: body."""
+
+    def title_words(self) -> str:
+        return self.title
+
+    def summary(self) -> str:
+        return self.first_line(self.brief)

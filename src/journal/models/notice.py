@@ -18,3 +18,6 @@ class Notice(Scoped):
 
     def closed(self, at: datetime) -> "Notice":
         return self.with_(closed_at=at)
+
+    def title_words(self) -> str:
+        return self.title

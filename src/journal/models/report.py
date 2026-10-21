@@ -13,3 +13,8 @@ class Report(Scoped):
     """A line that says what the report is."""
     body: str = ""
 
+    def title_words(self) -> str:
+        return self.title
+
+    def summary(self) -> str:
+        return self.abstract or self.first_line(self.body)

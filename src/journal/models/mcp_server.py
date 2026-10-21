@@ -51,3 +51,6 @@ class McpServer(Model):
     @property
     def needs_key(self) -> bool:
         return self.auth == "key"
+
+    def title_words(self) -> str:
+        return self.title

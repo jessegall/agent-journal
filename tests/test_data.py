@@ -181,3 +181,21 @@ def test_a_title_is_one_line_of_eighty_characters_without_a_colon_and_an_old_one
         tasks.save(Task(environment_id=1, title="Titles: the rule"), Actor.system())
     short = tasks.save(Task(environment_id=1, title="The title rule", brief="x" * 500), Actor.system())
     assert tasks.save(short.with_(brief="changed"), Actor.system()).brief == "changed", "a row saved again with the title it had is left alone"
+
+
+def test_a_row_answers_its_heading_its_summary_and_its_dock_card():
+    from journal.models.doc import Doc
+    from journal.models.fact import Fact
+    from journal.models.plan import Plan
+    from journal.models.report import Report
+    from journal.models.support.dock_card import DockCard
+    from journal.support.row_card import RowCard
+    report = Report(id=33, title="What the dock showed", abstract="One line about it", body="## First\n\ntext")
+    assert report.heading() == "Report 33: What the dock showed" and report.summary() == "One line about it"
+    assert Doc(id=3, title="Notes", body="# Notes\n\nThe first line.\nThe second.").summary() == "The first line."
+    task = Task(id=12, title="Write it", brief="First line of the brief\nmore")
+    assert task.heading() == "Task 12: Write it" and task.summary() == "First line of the brief"
+    assert Fact(id=2, text="Ports are fixed").heading() == "Fact 2" and Fact(id=2).summary() == ""
+    assert task.docked() == DockCard.plain() and [b.label for b in DockCard.plain().buttons] == ["Open", "Close"]
+    assert [(b.label, b.act) for b in Plan(id=1).docked().buttons] == [("Open plan", "open"), ("Approve", "approve"), ("Close", "close")]
+    assert RowCard.of(report).as_data() == {"row": "reports:33", "heading": "Report 33: What the dock showed", "summary": "One line about it", "dock": {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}}

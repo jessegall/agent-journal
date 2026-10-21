@@ -61,3 +61,9 @@ class Secret(Model):
 
     def restored(self) -> "Secret":
         return self.with_(deleted_at=None)
+
+    def title_words(self) -> str:
+        return self.title
+
+    def summary(self) -> str:
+        return self.first_line(self.brief)

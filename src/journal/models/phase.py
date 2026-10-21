@@ -12,3 +12,6 @@ class Phase(Scoped):
     title: str = ""
     complete_when: str = ""
     checkpoint: bool = False
+
+    def title_words(self) -> str:
+        return self.title

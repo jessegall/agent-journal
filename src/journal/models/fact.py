@@ -12,3 +12,5 @@ class Fact(Scoped):
     keywords: tuple[str, ...] = ()
     """Words that, when the agent writes one, bring the row back to it as a whisper."""
 
+    def summary(self) -> str:
+        return self.first_line(self.text)

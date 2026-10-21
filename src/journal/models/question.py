@@ -32,3 +32,5 @@ class Question(Scoped):
     def answered(self, answer: str, at: float) -> "Question":
         return self.with_(answer=answer).with_event(QuestionAnswered(environment_id=self.environment_id, at=at, question_id=self.id)).with_event(RowSettled(environment_id=self.environment_id, at=at, ref=f"questions:{self.id}"))
 
+    def summary(self) -> str:
+        return self.first_line(self.text)

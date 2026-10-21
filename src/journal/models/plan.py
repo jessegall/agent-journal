@@ -13,6 +13,8 @@ from journal.models.scoped import Scoped
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.models.phase_tasks import PhaseTasks
+from journal.models.support.dock_button import DockButton
+from journal.models.support.dock_card import DockCard
 from journal.support.refused import Refused
 
 
@@ -102,3 +104,12 @@ class Plan(Scoped):
             if before.phase.checkpoint and before.is_done() and after.tasks and not after.has_work_started():
                 return before
         return None
+
+    def title_words(self) -> str:
+        return self.title
+
+    def summary(self) -> str:
+        return self.first_line(self.brief)
+
+    def docked(self) -> DockCard:
+        return DockCard((DockButton("Open plan", "open"), DockButton("Approve", "approve"), DockButton("Close", "close")))

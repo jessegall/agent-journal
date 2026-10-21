@@ -19,3 +19,6 @@ class Trigger(Model):
         """The words as a phrase in the text, punctuation and case aside: update? meets update."""
         lowered = f" {' '.join(re.findall(r'[\w;/-]+', text.lower()))} "
         return any(f" {' '.join(re.findall(r'[\w;/-]+', word.lower()))} " in lowered for word in self.words)
+
+    def summary(self) -> str:
+        return self.first_line(self.text)

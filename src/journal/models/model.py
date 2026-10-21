@@ -5,6 +5,7 @@ from typing import ClassVar
 
 from journal.events.event import Event
 from journal.support.actor import Actor
+from journal.models.support.dock_card import DockCard
 
 
 @dataclass(frozen=True)
@@ -35,6 +36,24 @@ class Model:
     @property
     def is_new(self) -> bool:
         return self.id is None
+
+    def heading(self) -> str:
+        numbered = f"{self.noun().capitalize()} {self.id}"
+        title = self.title_words()
+        return f"{numbered}: {title}" if title else numbered
+
+    def title_words(self) -> str:
+        return ""
+
+    def summary(self) -> str:
+        return ""
+
+    def docked(self) -> DockCard:
+        return DockCard.plain()
+
+    @staticmethod
+    def first_line(text: str) -> str:
+        return next((line.strip() for line in text.splitlines() if line.strip() and not line.startswith("#")), "")
 
     def mentioning_text(self) -> str:
         return "\n".join(str(getattr(self, name)) for name in self.text_fields)

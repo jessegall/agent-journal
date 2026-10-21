@@ -59,3 +59,8 @@ class Task(Scoped):
     def finished(self, at: datetime, outcome: str) -> "Task":
         return self.closed(self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome), at, "done")
 
+    def title_words(self) -> str:
+        return self.title
+
+    def summary(self) -> str:
+        return self.first_line(self.brief)
