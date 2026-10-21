@@ -6803,3 +6803,34 @@ def test_a_worker_quiet_for_twenty_minutes_is_named_to_its_dispatcher_once(app: 
     tick_after(app, 25 * 60)
     app.runtime().deferred.drain()
     assert len(quiet()) == 1 and workers.find(1).quiet_named, "it is named once for each quiet span"
+
+
+def test_a_worker_messages_only_its_own_dispatchers_other_workers_and_starts_no_loop(app: App, tmp_path, monkeypatch):
+    import subprocess
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    kept_conversation(app, monkeypatch)
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+    hook(app, "SessionStart")
+    console, workers = app.console(), app.container.get(Workers)
+    for name, dispatcher, state in (("Mr. Watt", "s1", WorkerState.DISPATCHED), ("Mr. Boulton", "s1", WorkerState.REPORTED), ("Mr. Other", "s2", WorkerState.REPORTED), ("Mr. Retired", "s1", WorkerState.STOPPED)):
+        workers.save(Worker(name=name, brief="a job", dispatcher=dispatcher, state=state, resume=f"sess-{name}", adopted=state == WorkerState.STOPPED), Actor.system())
+    watt = Caller("main", "", True, "", 1)
+    refused = lambda *argv: console.run(["worker", *argv], watt).error
+    assert "worker 1 is you" in refused("send", "1", "x") and "worker 1 is you" in refused("notify", "1", "x")
+    assert "belongs to another agent" in refused("send", "3", "x") and "belongs to another agent" in refused("notify", "3", "x")
+    assert "is retired" in refused("send", "4", "x") and "is retired" in refused("notify", "4", "x"), "a peer never revives a retired worker"
+    assert console.run(["worker", "send", "2", "the separate condenser"], watt).code == 0
+    boulton = workers.find(2)
+    assert boulton.dispatcher == "s1" and boulton.updater == Actor.worker(1) and boulton.is_running(), "the send names the sending worker and keeps the target's dispatcher"
+    assert "is out on a job" in console.run(["worker", "send", "1", "back to you"], Caller("main", "", True, "", 2)).error, "a worker out takes no job from a peer, so two workers sending to each other start no loop"
+    process = subprocess.Popen(["sleep", "30"])
+    try:
+        workers.save(workers.find(1).running_as(process.pid, timing.time()).with_(resume="w-1"), Actor.system())
+        received = listening_session(home, process.pid, "w-1")
+        assert console.run(["worker", "notify", "1", "the condenser is cold"], Caller("main", "", True, "", 2)).code == 0
+        assert 'from-name="worker 2, Mr. Boulton"' in arrived(received, 2)[-1]["message"]["content"]
+    finally:
+        process.kill()
+        process.wait(5)

@@ -1,7 +1,7 @@
 from journal.providers.claude import Claude
 from journal.providers.codex import Codex
 from journal.providers.provider import Provider
-from journal.support.caller import AGENT_SHELL, Caller
+from journal.support.caller import AGENT_SHELL, WORKER, Caller
 
 
 class Providers:
@@ -28,4 +28,4 @@ class Providers:
     def caller(self, environ: dict) -> Caller:
         session = next((environ[name] for name in ("JOURNAL_SESSION", *self.session_variables()) if environ.get(name)), "")
         agent_shell = any(environ.get(name) for name in (*self.inherited_markers(), AGENT_SHELL))
-        return Caller(environ.get("JOURNAL_ENV", "main"), session, agent_shell, environ.get("JOURNAL_PLUGIN", ""))
+        return Caller(environ.get("JOURNAL_ENV", "main"), session, agent_shell, environ.get("JOURNAL_PLUGIN", ""), int(environ.get(WORKER) or 0))

@@ -30,6 +30,28 @@ class WorkerActions:
         with self.runner.lock(n):
             return self.sent(self.workers.find(n), brief, dispatcher, actor)
 
+    def peer_send(self, n: int, brief: str, sender: int, actor: Actor) -> Worker:
+        with self.runner.lock(n):
+            worker = self.peer(n, sender)
+            if worker.is_running():
+                raise Rejection(f"worker {worker.id}, {worker.name}, is out on a job: tell it with `journal worker notify {worker.id} \"<text>\"`, or send it the job once it reports")
+            return self.sent(worker, brief, "", actor)
+
+    def peer_notify(self, n: int, text: str, sender: int, actor: Actor) -> Worker:
+        with self.runner.lock(n):
+            worker, writer = self.peer(n, sender), self.workers.find(sender)
+            return self.notified(worker, text, f"worker {writer.id}, {writer.name}", actor)
+
+    def peer(self, n: int, sender: int) -> Worker:
+        worker, writer = self.workers.find(n), self.workers.find(sender)
+        if worker.id == writer.id:
+            raise Rejection(f"worker {n} is you: a job of your own you do yourself")
+        if worker.adopted or worker.state == WorkerState.STOPPED:
+            raise Rejection(f"worker {worker.id}, {worker.name}, is retired: only the agent that dispatched you brings it back")
+        if worker.dispatcher != writer.dispatcher:
+            raise Rejection(f"worker {worker.id}, {worker.name}, belongs to another agent: you message only the workers of the agent that dispatched you, `journal worker peers` lists them")
+        return worker
+
     def sent(self, worker: Worker, brief: str, dispatcher: str, actor: Actor) -> Worker:
         revival = worker.state == WorkerState.STOPPED or self.runner.is_ended(worker)
         if self.runner.is_ended(worker):
@@ -54,12 +76,14 @@ class WorkerActions:
 
     def notify(self, n: int, text: str, actor: Actor) -> Worker:
         with self.runner.lock(n):
-            worker = self.workers.find(n)
-            refusal = self.notify_refusal(worker)
-            if refusal:
-                raise Rejection(refusal.format(n=worker.id, name=worker.name, provider=worker.provider.capitalize()))
-            self.inbox.deliver(worker.pid, worker.resume, "the agent that dispatched you", text)
-            return self.workers.save(worker.notified(text, datetime.now(timezone.utc).timestamp()), actor)
+            return self.notified(self.workers.find(n), text, "the agent that dispatched you", actor)
+
+    def notified(self, worker: Worker, text: str, sender: str, actor: Actor) -> Worker:
+        refusal = self.notify_refusal(worker)
+        if refusal:
+            raise Rejection(refusal.format(n=worker.id, name=worker.name, provider=worker.provider.capitalize()))
+        self.inbox.deliver(worker.pid, worker.resume, sender, text)
+        return self.workers.save(worker.notified(text, datetime.now(timezone.utc).timestamp()), actor)
 
     def notify_refusal(self, worker: Worker) -> str:
         if worker.state in NOTIFY_REFUSALS:

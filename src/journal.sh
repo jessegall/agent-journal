@@ -22,7 +22,7 @@ import json, os, sys
 sys.path.insert(0, sys.argv[1])
 from journal.providers.providers import Providers
 caller = Providers().caller(os.environ)
-print(json.dumps({"argv": sys.argv[2:], "env": caller.environment, "session": caller.session, "agent": caller.agent_shell, "plugin": caller.plugin, "token": os.environ.get("JOURNAL_PLUGIN_TOKEN", ""), "launch": os.environ.get("JOURNAL_LAUNCH", "")}))
+print(json.dumps({"argv": sys.argv[2:], "env": caller.environment, "session": caller.session, "agent": caller.agent_shell, "plugin": caller.plugin, "worker": caller.worker, "token": os.environ.get("JOURNAL_PLUGIN_TOKEN", ""), "launch": os.environ.get("JOURNAL_LAUNCH", "")}))
 ' "$here" "$@") &&
     reply=$(curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli" -H "Content-Type: application/json" -H "X-Journal-Actor: ${JOURNAL_ACTOR:-agent}" -H "X-Journal-Thread: ${CODEX_THREAD_ID:-}" --data-binary "$body") &&
     { printf '%s' "$reply" | "$py" -c 'import json,sys; o=json.load(sys.stdin); sys.stdout.write(o.get("text", "")); sys.stderr.write(o.get("error", "the journal failed: " + str(o) + "\n")); sys.exit(o.get("code", 1))'; exit $?; }

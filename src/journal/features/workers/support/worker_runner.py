@@ -6,7 +6,7 @@ import subprocess
 import threading
 
 from journal.config import Config
-from journal.support.caller import AGENT_SHELL
+from journal.support.caller import AGENT_SHELL, WORKER
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor
@@ -56,7 +56,7 @@ class WorkerRunner:
             self.run(worker, command, actor)
 
     def run(self, worker: Worker, command: list[str], actor: Actor) -> None:
-        environ = self.environment_variables(self.environments.find(worker.environment_id).name)
+        environ = {**self.environment_variables(self.environments.find(worker.environment_id).name), WORKER: str(worker.id)}
         output, err = self.outputs(worker)
         output.parent.mkdir(parents=True, exist_ok=True)
         try:

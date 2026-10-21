@@ -90,14 +90,14 @@ class WorkerCommand(Command):
         return 0
 
     def send(self, args: Namespace, caller: Caller) -> int:
-        worker = self.actions.send(args.n, args.brief, caller.session, caller.actor)
+        worker = self.actions.peer_send(args.n, args.brief, caller.worker, caller.actor) if caller.worker else self.actions.send(args.n, args.brief, caller.session, caller.actor)
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
 
     def notify(self, args: Namespace, caller: Caller) -> int:
-        worker = self.actions.notify(args.n, args.text, caller.actor)
+        worker = self.actions.peer_notify(args.n, args.text, caller.worker, caller.actor) if caller.worker else self.actions.notify(args.n, args.text, caller.actor)
         print(f"worker {worker.id} {worker.name} has the message in its session")
         return 0
 
