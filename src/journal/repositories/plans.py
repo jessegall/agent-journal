@@ -14,6 +14,7 @@ from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 from journal.repositories.tasks import WAITS_ON, Tasks
 from journal.repositories.workers import Workers
+from journal.models.phase_tasks import PhaseTasks
 
 IN_PLAN = "in_plan"
 PHASE_OF = "phase_of"
@@ -21,6 +22,8 @@ IN_PHASE = "in_phase"
 
 
 class Plans(ScopedRepository[Plan]):
+    """The plans and their rows: tasks and phases in the order they were added, the plan's questions answered over them, and its writes: approve, start (a finished plan is done, else its postponed or next task is taken in hand, one at a time, else it waits for a task to open), postpone (its task in hand postponed first, so the plan's event comes last), cancel (with the tasks that are its alone)."""
+
     model = Plan
 
     def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links, tasks: Tasks, phases: Phases, workers: Workers) -> None:
@@ -28,7 +31,6 @@ class Plans(ScopedRepository[Plan]):
         self.links, self.tasks, self.phases, self.workers = links, tasks, phases, workers
 
     def approve(self, plan: Plan, by: Actor) -> Plan:
-        """The user's word on a plan: approved from ready, refused while it is in review, and left as it is once started, so a second word cannot set a running plan back."""
         if plan.state == PlanState.REVIEWING:
             raise Refused(f"plan {plan.id} is in review: it can be approved once its reviewers are back and their findings are in it")
         if plan.state in (PlanState.STARTED, PlanState.DONE, PlanState.CANCELLED):
@@ -36,17 +38,15 @@ class Plans(ScopedRepository[Plan]):
         return self.save(plan.approved(self._now().timestamp(), by.is_the_user()), by)
 
     def cancel(self, plan: Plan, by: Actor) -> list[Task]:
-        """The plan cancelled with the tasks that are its alone: a task not done that another live plan also holds stays; the cancelled tasks are returned."""
         cancelled = []
         for task in self.tasks_of(plan):
-            if task.is_closed() or self.held_elsewhere(task, plan):
+            if task.is_closed() or self.is_in_another_plan(task, plan):
                 continue
             cancelled.append(self.tasks.save(task.cancelled(datetime.now(timezone.utc)), by))
-        self.save(plan.cancelled(), by)
+        self.save(plan.cancelled(datetime.now(timezone.utc).timestamp(), by.is_the_user()), by)
         return cancelled
 
-    def held_elsewhere(self, task: Task, plan: Plan) -> bool:
-        """Whether another plan that is not cancelled holds this task too."""
+    def is_in_another_plan(self, task: Task, plan: Plan) -> bool:
         return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, IN_PLAN))
 
     def holding(self, task: Task) -> list[Plan]:
@@ -59,35 +59,30 @@ class Plans(ScopedRepository[Plan]):
         return [plan for ref in self.links.sources(model, WAITS_ON) if ref.type == Plan.table() and (plan := self.find(ref.id)).is_blocked()]
 
     def all_left_blocked(self, plan: Plan) -> bool:
-        left = [task for task in self.tasks_of(plan) if not task.is_closed()]
-        return bool(left) and all(task.state == TaskState.BLOCKED for task in left)
+        return plan.is_all_left_blocked(self.tasks_of(plan))
 
     def tasks_of(self, plan: Plan) -> list[Task]:
-        """In the order they were added."""
         return self.tasks.numbered(ref.id for ref in self.links.sources(plan, IN_PLAN))
 
     def phases_of(self, plan: Plan) -> list[Phase]:
-        """In the order they were added."""
         return self.phases.numbered(ref.id for ref in self.links.sources(plan, PHASE_OF))
 
     def tasks_in(self, phase: Phase) -> list[Task]:
         return self.tasks.numbered(ref.id for ref in self.links.sources(phase, IN_PHASE))
 
+    def phased(self, plan: Plan) -> list[PhaseTasks]:
+        return [PhaseTasks(number, phase, tuple(self.tasks_in(phase))) for number, phase in enumerate(self.phases_of(plan), 1)]
+
     def in_order(self, plan: Plan) -> list[Task]:
-        """Phase by phase, then the tasks under no phase."""
-        phased = [t for phase in self.phases_of(plan) for t in self.tasks_in(phase)]
-        ids = {t.id for t in phased}
-        return phased + [t for t in self.tasks_of(plan) if t.id not in ids]
+        return plan.in_order(self.phased(plan), self.tasks_of(plan))
 
     def in_review(self) -> list[Plan]:
         return self.where(state=PlanState.REVIEWING)
 
     def approved(self) -> list[Plan]:
-        """The plans the user approved that are not started yet."""
         return self.where(state=PlanState.APPROVED)
 
     def related(self) -> list[Task]:
-        """What an agent waiting on something may take up meanwhile: a started plan's next task while a plan is followed, else the free ones."""
         started = [plan for plan in self.in_() if plan.state == PlanState.STARTED]
         if not started:
             return self.free()
@@ -95,39 +90,39 @@ class Plans(ScopedRepository[Plan]):
         return [task] if task else []
 
     def free(self) -> list[Task]:
-        """The open tasks an agent may take up on its own: a plan hands out its own in its order, so those are never offered."""
         return [t for t in self.tasks.in_state(TaskState.OPEN) if not self.links.targets(t, IN_PLAN)]
 
     def finished(self, plan: Plan) -> bool:
-        """Every task of the plan done or cancelled: a blocked or parked one keeps it open, and a plan with no task yet is not finished."""
+        return plan.is_finished(self.tasks_of(plan))
+
+    def cannot_start(self, plan: Plan) -> set[int]:
         tasks = self.tasks_of(plan)
-        return bool(tasks) and all(t.is_closed() for t in tasks)
+        waiting = {t.id for t in tasks if self.tasks.open_waits(t)}
+        return waiting | set(self.workers.holding({t.id for t in tasks}))
 
     def resumable(self, plan: Plan) -> Task | None:
-        """The task a start takes up: the plan's parked task first, put aside when the plan was, else its next open one."""
-        return next((t for t in self.in_order(plan) if t.state == TaskState.PARKED), None) or self.next_task(plan)
+        return plan.task_to_resume(self.in_order(plan), self.cannot_start(plan))
 
     def next_task(self, plan: Plan) -> Task | None:
-        """The plan's next open task with nothing to wait on and no worker out on it."""
-        open_ = [t for t in self.in_order(plan) if t.state == TaskState.OPEN and not self.tasks.open_waits(t)]
-        held = self.workers.holding({t.id for t in open_})
-        return next((t for t in open_ if t.id not in held), None)
+        return plan.next_open_task(self.in_order(plan), self.cannot_start(plan))
 
-    def current_phase(self, plan: Plan) -> int:
-        """The number from 1 of the first phase with a task still to close, or of the last when none has."""
-        return self.current_of([self.tasks_in(phase) for phase in self.phases_of(plan)])
+    def at_checkpoint(self, plan: Plan) -> PhaseTasks | None:
+        return plan.checkpoint_at(self.phased(plan))
 
-    @staticmethod
-    def current_of(phases: list[list[Task]]) -> int:
-        """Given each phase's tasks in order: the number from 1 of the first with a task still to close, or of the last when none has."""
-        return next((i for i, tasks in enumerate(phases, 1) if any(not t.is_closed() for t in tasks)), len(phases) or 1)
+    def start(self, plan: Plan, by: Actor) -> Plan:
+        time = datetime.now(timezone.utc)
+        if plan.startable().is_finished(self.tasks_of(plan)):
+            return self.save(plan.done(time.timestamp()), by)
+        task = self.resumable(plan)
+        if task is None:
+            return self.save(plan.started_without_task(time.timestamp()), by)
+        self.tasks.refuse_second(task.started(time))
+        started = self.save(plan.started(task, time.timestamp()), by)
+        self.tasks.save(task.started_by_plan(time, plan.id), by)
+        return started
 
-    def at_checkpoint(self, plan: Plan) -> Phase | None:
-        """The checkpoint phase the plan stands at: every task of it closed, marked for the user's look, and no task of the phase after it started or done, whatever else they are; None when the plan stands at no checkpoint."""
-        phases = self.phases_of(plan)
-        for before, after in zip(phases, phases[1:]):
-            done = self.tasks_in(before)
-            coming = self.tasks_in(after)
-            if before.checkpoint and done and all(t.is_closed() for t in done) and coming and not any(t.state in (TaskState.STARTED, TaskState.DONE) for t in coming):
-                return before
-        return None
+    def postpone(self, plan: Plan, by: Actor) -> Plan:
+        time = datetime.now(timezone.utc)
+        for task in [t for t in self.tasks_of(plan) if t.state == TaskState.STARTED]:
+            self.tasks.save(task.parked(f"plan {plan.id} was parked", time), by)
+        return self.save(plan.postponed(time.timestamp(), by.is_the_user()), by)

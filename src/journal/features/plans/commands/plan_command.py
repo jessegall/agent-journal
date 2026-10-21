@@ -4,10 +4,7 @@ from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.support.where import Where
-from journal.engine.state_machine import StateMachine
-from journal.features.plans.support.plan_control import PlanControl
 from journal.features.plans.support.review_rounds import ReviewRounds
-from journal.features.plans.states.following_plan import FollowingPlan
 from journal.support.waits import Waits
 from journal.support.subagents import Subagents
 from journal.models.link import Link
@@ -27,8 +24,8 @@ from journal.repositories.tasks import Tasks, WAITS_ON
 class PlanCommand(Command):
     noun = "plan"
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: StateMachine, subagents: Subagents, control: PlanControl, waits: Waits, rounds: ReviewRounds) -> None:
-        self.plans, self.phases, self.tasks, self.links, self.machine, self.subagents, self.control, self.waits = plans, phases, tasks, links, machine, subagents, control, waits
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, subagents: Subagents, waits: Waits, rounds: ReviewRounds) -> None:
+        self.plans, self.phases, self.tasks, self.links, self.subagents, self.waits = plans, phases, tasks, links, subagents, waits
         self.rounds = rounds
 
     def arguments(self, verbs) -> None:
@@ -89,7 +86,6 @@ class PlanCommand(Command):
         return 0
 
     def relink(self, task: Task, plan: Plan, where: Where) -> None:
-        """A plan's tasks stand in the order their links were made: a task linked again goes to the end."""
         for link in self.links.between(task, plan):
             self.links.delete(link, where.actor)
         self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
@@ -110,7 +106,6 @@ class PlanCommand(Command):
         return 0
 
     def todos(self, args: Namespace, where: Where) -> int:
-        """Tasks put under a phase, in the order given and after the ones it has: a task under another phase of the plan moves from it."""
         plan = self.plans.find(args.n)
         phases = self.plans.phases_of(plan)
         if not 1 <= args.phase <= len(phases):
@@ -162,7 +157,9 @@ class PlanCommand(Command):
         return 0
 
     def start(self, args: Namespace, where: Where) -> int:
-        print(self.control.start(self.plans.find(args.n), where.session, where.actor).rendered())
+        plan = self.plans.start(self.plans.find(args.n), where.actor)
+        current = next((t for t in self.plans.tasks_of(plan) if t.state == TaskState.STARTED), None)
+        print(f"plan {plan.id} {plan.state}" + (f": task {current.id}, {current.title} is started" if current else ""))
         return 0
 
     def block(self, args: Namespace, where: Where) -> int:
@@ -179,14 +176,14 @@ class PlanCommand(Command):
         return 0
 
     def park(self, args: Namespace, where: Where) -> int:
-        plan = self.control.park(self.plans.find(args.n), where.session, where.actor)
+        plan = self.plans.postpone(self.plans.find(args.n), where.actor)
         print(f"plan {plan.id} parked")
         return 0
 
     def cancel(self, args: Namespace, where: Where) -> int:
         plan = self.plans.find(args.n)
-        gone = self.control.abandon(plan, where.session, where.actor)
-        print(f"plan {plan.id} cancelled" + (f", with tasks {', '.join(str(t.id) for t in gone)}" if gone else ""))
+        cancelled = self.plans.cancel(plan, where.actor)
+        print(f"plan {plan.id} cancelled" + (f", with tasks {', '.join(str(t.id) for t in cancelled)}" if cancelled else ""))
         return 0
 
     def brief(self, args: Namespace, where: Where) -> int:

@@ -37,7 +37,8 @@ class Plans(Feature):
     NEXT_TASK_OF_THE_PLAN = Nudge(name, "next_task_of_the_plan", "plan {{n}}: task {{task}}, {{title}} is next. {{briefing}}", repeat_after=0)
     PLAN_DONE = Nudge(name, "plan_done", "plan {{n}} is done: its last task closed", repeat_after=0)
     PLAN_WAITS_ON_ITS_TASKS = Nudge(name, "plan_waits_on_its_tasks", "plan {{n}}: no task can start now; {{left}} parked, blocked or waiting", "`journal task list` says what each waits on; when one can go on, `journal plan start {{n}}` takes it up", repeat_after=0)
-    THE_USER_PARKED_THE_PLAN = Nudge(name, "the_user_parked_the_plan", "the user parked plan {{n}}")
+    THE_USER_POSTPONED_THE_PLAN = Nudge(name, "the_user_postponed_the_plan", "the user postponed plan {{n}}")
+    THE_USER_ABANDONED_THE_PLAN = Nudge(name, "the_user_abandoned_the_plan", "the user abandoned plan {{n}}")
     THE_USER_APPROVED_THE_PLAN = Nudge(name, "the_user_approved_the_plan", "the user approved plan {{n}}", "`journal plan start {{n}}` begins its first task", repeat_after=0)
     PHASE_COMPLETE_AT_A_CHECKPOINT = Nudge(name, "phase_complete_at_a_checkpoint", "plan {{n}}: phase {{phase}} is complete and a checkpoint", "the user looks before the next phase; wait for their word, then `journal plan start {{n}}`", repeat_after=0)
     PHASE_COMPLETE_GO_ON = Nudge(name, "phase_complete_go_on", "plan {{n}}: phase {{phase}} is complete, and in auto mode it does not stop you", "`journal plan start {{n}}` begins the next phase; carry on", repeat_after=0)
@@ -46,7 +47,7 @@ class Plans(Feature):
     ALL_BLOCKED = "all its tasks left are blocked"
     PLAN_NOT_APPROVED = Nudge(name, "plan_not_approved", "plan {{n}} is not approved, so it cannot be followed", "only the user approves a plan, on the plan page or with `journal plan approve {{n}}`", repeat_after=0)
     APPROVED_UNSTARTED = Nudge(name, "approved_unstarted", "plan {{n}} is approved and not started", "`journal plan start {{n}}` begins its first task", repeat_after=0)
-    nudges = (PLAN_NOT_APPROVED, APPROVED_UNSTARTED, NEXT_TASK_OF_THE_PLAN, PLAN_DONE, PLAN_WAITS_ON_ITS_TASKS, THE_USER_PARKED_THE_PLAN, THE_USER_APPROVED_THE_PLAN, PHASE_COMPLETE_AT_A_CHECKPOINT, PHASE_COMPLETE_GO_ON, PLAN_BLOCKED, PLAN_REOPENED)
+    nudges = (PLAN_NOT_APPROVED, APPROVED_UNSTARTED, NEXT_TASK_OF_THE_PLAN, PLAN_DONE, PLAN_WAITS_ON_ITS_TASKS, THE_USER_POSTPONED_THE_PLAN, THE_USER_ABANDONED_THE_PLAN, THE_USER_APPROVED_THE_PLAN, PHASE_COMPLETE_AT_A_CHECKPOINT, PHASE_COMPLETE_GO_ON, PLAN_BLOCKED, PLAN_REOPENED)
 
     skill = Skill("plans", 'Build and follow a plan of ordered tasks; load it when the user asks for a plan or a roadmap', """
 # Plans

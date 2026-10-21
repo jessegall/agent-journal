@@ -1065,3 +1065,28 @@ def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_wh
     assert planned.pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=2.0)
     became = Working(task_id=7, logged_at=1.0, edits=2).on(PlanStarted(environment_id=1, at=3.0, plan_id=5, task_id=7).with_snapshot(of(plan)), auto)
     assert became.to == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=1.0, edits=2)
+
+
+def test_following_plan_pops_when_the_plan_is_postponed_or_abandoned_and_on_resume_when_it_is_no_longer_started():
+    from dataclasses import replace
+    from journal.features.plans.states.following_plan import FollowingPlan
+    from journal.features.plans.support.plans_snapshot import PlansSnapshot
+    from journal.features.plans.support.started_plan import StartedPlan
+    from journal.features.tasks.support.tasks_snapshot import TasksSnapshot
+    from journal.events.rows.plan_abandoned import PlanAbandoned
+    from journal.events.rows.plan_postponed import PlanPostponed
+    settings = SettingsValue({})
+    tasks = TasksSnapshot(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
+    plan = StartedPlan(plan_id=5, next_task=8, started_task=7, started_task_briefing="", tasks=(7, 8), tasks_left=2, at_checkpoint=False, checkpoint_phase=0)
+    of = lambda started: Snapshot({"tasks": tasks, "plans": PlansSnapshot((), started)})
+    following = FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=10.0)
+    by_user = following.on(PlanPostponed(environment_id=1, at=20.0, plan_id=5, by_user=True).with_snapshot(of(None)), settings)
+    assert by_user.popped and [n.rendered() for n in by_user.nudges] == ["the user postponed plan 5"]
+    by_agent = following.on(PlanPostponed(environment_id=1, at=20.0, plan_id=5, by_user=False).with_snapshot(of(None)), settings)
+    assert by_agent.popped and by_agent.nudges == (), "the agent's own command needs no line"
+    assert not following.on(PlanPostponed(environment_id=1, at=20.0, plan_id=6, by_user=True).with_snapshot(of(plan)), settings).popped
+    abandoned = following.on(PlanAbandoned(environment_id=1, at=20.0, plan_id=5, by_user=True).with_snapshot(of(None)), settings)
+    assert abandoned.popped and [n.rendered() for n in abandoned.nudges] == ["the user abandoned plan 5"]
+    assert following.on_resume(of(None), settings).popped, "beneath a wait, a plan postponed meanwhile is over on resume"
+    assert following.on_resume(of(replace(plan, plan_id=6)), settings).popped, "another plan started meanwhile: this one is over"
+    assert isinstance(following.on_resume(of(plan), settings), tuple), "still the plan started here: the work goes on, with the carry-on line"

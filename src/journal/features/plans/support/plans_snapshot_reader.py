@@ -22,9 +22,9 @@ class PlansSnapshotReader:
 
     def started_plan(self, plan: Plan) -> StartedPlan:
         tasks = self.plans.tasks_of(plan)
-        task = self.plans.resumable(plan) or self.plans.next_task(plan)
-        in_hand = next((t for t in tasks if t.state == TaskState.STARTED), None)
-        briefing = (self.briefing.said(in_hand) or NOTHING_YET) if in_hand else ""
+        task = self.plans.resumable(plan)
+        current = next((t for t in tasks if t.state == TaskState.STARTED), None)
+        briefing = (self.briefing.said(current) or NOTHING_YET) if current else ""
         checkpoint = self.plans.at_checkpoint(plan)
-        phase = self.plans.phases_of(plan).index(checkpoint) + 1 if checkpoint is not None else 0
-        return StartedPlan(plan_id=plan.id, next_task=task.id if task else 0, started_task=in_hand.id if in_hand else 0, started_task_briefing=briefing, tasks=tuple(t.id for t in tasks), tasks_left=sum(1 for t in tasks if not t.is_closed()), at_checkpoint=checkpoint is not None, checkpoint_phase=phase)
+        phase = checkpoint.number if checkpoint is not None else 0
+        return StartedPlan(plan_id=plan.id, next_task=task.id if task else 0, started_task=current.id if current else 0, started_task_briefing=briefing, tasks=tuple(t.id for t in tasks), tasks_left=sum(1 for t in tasks if not t.is_closed()), at_checkpoint=checkpoint is not None, checkpoint_phase=phase)

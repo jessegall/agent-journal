@@ -4,12 +4,13 @@ from journal.engine.support.transition import Transition
 from journal.events.rows.plan_approved import PlanApproved
 from journal.events.rows.plan_blocked import PlanBlocked
 from journal.events.rows.plan_reopened import PlanReopened
+from journal.events.rows.plan_started import PlanStarted
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_started import TaskStarted
 
 
 class PlansConduct(Conduct):
-    """The plans feature's conduct in every state: the user's approval told, a plan blocked or open again told, the plan's next task named when the plan starts it, and the wait named when none can start."""
+    """The plans feature's conduct in every state: the user's approval told, a plan blocked or open again told, the plan's next task named when the plan starts it, and the wait named when none can start, at a start or a close."""
 
     def on_plan_approved_plans(self, event: PlanApproved, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
@@ -22,6 +23,13 @@ class PlansConduct(Conduct):
     def on_plan_reopened_plans(self, event: PlanReopened, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         return self.unchanged(Plans.PLAN_REOPENED.create(n=event.plan_id, why=event.why))
+
+    def on_plan_started_plans(self, event: PlanStarted, settings: Settings) -> Transition:
+        from journal.features.plans.feature import Plans
+        started = event.snapshot.of(Plans).started
+        if event.task_id or started is None or not started.tasks_left:
+            return self.unchanged()
+        return self.unchanged(Plans.PLAN_WAITS_ON_ITS_TASKS.create(n=event.plan_id, left=started.tasks_left))
 
     def on_task_started_plans(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans

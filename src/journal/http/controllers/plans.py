@@ -45,10 +45,10 @@ class PlanController(Controller[Plan]):
         return Response.json(self.shown(self.repository.approve(self.repository.find(request.number("id")), request.actor)))
 
     def start(self, request: Request) -> Response:
-        return self.moved(request, lambda plan: plan.started_with_nothing_to_start(datetime.now(timezone.utc).timestamp()))
+        return Response.json(self.shown(self.repository.start(self.repository.find(request.number("id")), request.actor)))
 
     def park(self, request: Request) -> Response:
-        return self.moved(request, lambda plan: plan.parked())
+        return Response.json(self.shown(self.repository.postpone(self.repository.find(request.number("id")), request.actor)))
 
     def finish(self, request: Request) -> Response:
         return self.moved(request, lambda plan: plan.done(datetime.now(timezone.utc).timestamp()))

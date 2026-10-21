@@ -131,7 +131,7 @@ class Fillers:
     def checkpoint_phase(self, ctx: Context) -> str:
         """The title of the checkpoint phase a started plan stands at."""
         plan = self.plan_at_checkpoint()
-        return self.plans.at_checkpoint(plan).title if plan else ""
+        return self.plans.at_checkpoint(plan).phase.title if plan else ""
 
     def plan_at_checkpoint(self):
         return next((p for p in self.plans.in_() if p.state == PlanState.STARTED and self.plans.at_checkpoint(p)), None)

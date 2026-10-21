@@ -217,6 +217,30 @@ def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
         app.runtime().stop()
 
 
+def test_the_viewers_start_takes_the_plans_first_task_in_hand_and_its_park_postpones_it_with_the_plan(tmp_path: Path):
+    from journal.engine.state_machine import StateMachine
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    user, agent = Where("main"), Where("main", "s1")
+    try:
+        console = app.console()
+        console.run(["plan", "create", "p", "--brief", "b"], user)
+        console.run(["plan", "add", "1", "first"], user)
+        console.run(["plan", "add", "1", "second"], user)
+        assert call(server, "POST", "/journal/plans/1/start", {})[0] == 409, "an unapproved plan is refused before any row is written"
+        console.run(["plan", "approve", "1"], user)
+        call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "cwd": str(tmp_path)})
+        started = call(server, "POST", "/journal/plans/1/start", {})[1]
+        assert started["state"] == "started" and call(server, "GET", "/journal/tasks/1")[1]["state"] == "started", "the viewer's start takes the first task in hand, as the command does"
+        assert app.container.get(StateMachine).current("s1").name == "following_plan"
+        parked = call(server, "POST", "/journal/plans/1/park", {})[1]
+        assert parked["state"] == "parked" and call(server, "GET", "/journal/tasks/1")[1]["state"] == "parked", "the plan's task in hand is postponed with it"
+        assert app.container.get(StateMachine).current("s1").name == "idle", "the agent following the plan is popped by the plan's own event"
+    finally:
+        app.runtime().stop()
+
+
 def test_a_started_plans_phase_shown_advances_when_its_tasks_are_all_done(tmp_path: Path):
     app = App(Config(tmp_path, port=0))
     app.runtime().start()

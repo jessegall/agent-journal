@@ -161,7 +161,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     hook(app, "SessionStart")
     console.run(["plan", "approve", "1"], USER)
     out = console.run(["plan", "start", "1"], AGENT).out
-    assert "task 1," in out and "is next" in out
+    assert "task 1," in out and "is started" in out
     machine = app.container.get(StateMachine)
     assert machine.current("s1") == FollowingPlan(plan_id=1, task_id=1)
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
@@ -1347,7 +1347,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app, 
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "done", "1"], AGENT)
     machine, plans = app.container.get(StateMachine), app.container.get(Plans)
-    assert machine.current("s1") == FollowingPlan(plan_id=1, moved_from=1) and plans.at_checkpoint(plans.find(1)).title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
+    assert machine.current("s1") == FollowingPlan(plan_id=1, moved_from=1) and plans.at_checkpoint(plans.find(1)).phase.title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "phase one is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "the checkpoint waits for the user's look, said at the stop"
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and machine.current("s1") == FollowingPlan(plan_id=1, task_id=2), "plan start goes on past the checkpoint"
@@ -1542,7 +1542,7 @@ def test_a_plan_is_done_when_its_last_task_closes_whoever_closes_it(app):
     assert app.container.get(Plans).find(1).state == "done", "the user closed the last task: the plan is done, no agent following it"
     from journal.features.plans.seeds.closed_plans import ClosedPlans
     plans = app.container.get(Plans)
-    plans.save(plans.find(1).started_with_nothing_to_start(0.0), Actor.user(1))
+    plans.save(plans.find(1).reopened(0.0), Actor.user(1))
     app.container.get(ClosedPlans).run()
     assert plans.find(1).state == "done", "a plan left started with every task done is closed at boot"
     console.run(["plan", "add", "1", "more"], USER)

@@ -7,15 +7,18 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.idle import Idle as Stop
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
+from journal.events.rows.plan_abandoned import PlanAbandoned
 from journal.events.rows.plan_done import PlanDone
+from journal.events.rows.plan_postponed import PlanPostponed
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_started import TaskStarted
+from journal.events.snapshot import Snapshot
 from journal.features.tasks.states.working import Working
 
 
 @dataclass(frozen=True)
 class FollowingPlan(Working):
-    """Working with a plan in hand, for the plan's whole life. A finished task starts the next: the plans feature writes it and the state keeps the top as that task. At a checkpoint the state has no task in hand: the stop waits for the user, or in auto mode is refused and the agent told to go on. Popped when the plan is done."""
+    """Working with a plan in hand, for the plan's whole life. A finished task starts the next: the plans feature writes it and the state keeps the top as that task. At a checkpoint the state has no task in hand: the stop waits for the user, or in auto mode is refused and the agent told to go on. Popped when the plan is done, postponed or abandoned, and on resume when the plan is no longer the one started here."""
 
     name = "following_plan"
     title = "Following a plan"
@@ -74,3 +77,22 @@ class FollowingPlan(Working):
     def on_plan_done(self, event: PlanDone, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         return self.pop(Plans.PLAN_DONE.create(n=event.plan_id)) if event.plan_id == self.plan_id else self.unchanged()
+
+    def on_plan_postponed(self, event: PlanPostponed, settings: Settings) -> Transition:
+        from journal.features.plans.feature import Plans
+        if event.plan_id != self.plan_id:
+            return self.unchanged()
+        return self.pop(Plans.THE_USER_POSTPONED_THE_PLAN.create(n=event.plan_id)) if event.by_user else self.pop()
+
+    def on_plan_abandoned(self, event: PlanAbandoned, settings: Settings) -> Transition:
+        from journal.features.plans.feature import Plans
+        if event.plan_id != self.plan_id:
+            return self.unchanged()
+        return self.pop(Plans.THE_USER_ABANDONED_THE_PLAN.create(n=event.plan_id)) if event.by_user else self.pop()
+
+    def on_resume(self, snapshot: Snapshot, settings: Settings) -> tuple[Nudge, ...] | Transition:
+        from journal.features.plans.feature import Plans
+        started = snapshot.of(Plans).started
+        if started is None or started.plan_id != self.plan_id:
+            return self.pop()
+        return super().on_resume(snapshot, settings)
