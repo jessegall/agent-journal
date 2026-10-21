@@ -6719,3 +6719,27 @@ def test_a_dispatch_names_the_idle_worker_whose_branch_touched_the_briefs_files_
     assert "1 idle workers" in refused and "worker 1, Mr. Babbage, last on src/journal/features/shell/chain.py, docs/chain.md: `journal worker send 1" in refused, "a path the brief names by its end matches the file the branch touched"
     assert "Mr. Brunel" not in refused and "Mr. Telford" not in refused, "an old brief naming the file is no evidence, and a worker acted on is retired"
     assert "idle workers" not in said("look at src/engine.py"), "the old brief's own files are not what it touched"
+
+
+def test_a_dispatch_past_its_profiles_kept_workers_is_refused_naming_the_idle_ones_those_that_know_the_files_first(app: App):
+    from journal.features.workers.feature import Workers as WorkersFeature
+    from journal.models.worker import Worker
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    app.container.get(SettingRows).set(WorkersFeature.IDLE_KEPT.key, 3, USER.actor)
+    workers = app.container.get(Workers)
+    for name, state, paths in (("Mr. Out", WorkerState.DISPATCHED, None), ("Mr. Idle", WorkerState.REPORTED, ("docs/a.md",)), ("Mr. Knows", WorkerState.REPORTED, ("src/lexer.py",))):
+        workers.save(Worker(name=name, state=state, profile="journal-medior", touched_paths=paths), Actor.system())
+    workers.save(Worker(name="Mr. Senior", state=WorkerState.REPORTED, profile="journal-senior"), Actor.system())
+    said = lambda profile, brief="tidy src/parser.py": hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": f"journal worker dispatch 'Ada' '{brief}' --profile {profile} --fresh"})
+    status, body = said("journal-medior", "speed up the lexer.py")
+    text = json.dumps(body)
+    assert status != 200 and "3 journal-medior workers are kept" in text and "2 of them are idle" in text, "the profile's cap is reached while two of its workers wait, and --fresh is no way past it"
+    assert text.index("worker 3, Mr. Knows") < text.index("worker 2, Mr. Idle") and "journal worker send 3" in text and "Mr. Out" not in text.split("idle:")[1], "the idle ones are named with their send lines, the one that knows the files first"
+    assert said("journal-senior")[0] == 200, "another profile has places of its own"
+    assert said("journal-plan-reviewer")[0] == 200, "a reviewer always starts fresh"
+    app.container.get(SettingRows).set(WorkersFeature.IDLE_KEPT.key, 0, USER.actor)
+    assert said("journal-medior")[0] == 200, "0 is no limit"
+    assert any(m.text == "Dispatch refused, 2 idle workers could take it" for m in app.container.get(Messages).scoped()), "the refusal is a mark in the chat"

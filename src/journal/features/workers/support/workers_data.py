@@ -8,9 +8,9 @@ from journal.models.worker import Worker
 
 @dataclass(frozen=True)
 class WorkersData:
-    """The workers feature's reading: the workers out, the idle workers whose report is not acted on, the subagents running besides the newest dispatch, every subagent this session dispatched, and the workers' worktrees."""
+    """The workers feature's reading: the workers out and the idle workers whose report is not acted on, the subagents running besides the newest dispatch, every subagent this session dispatched, and the workers' worktrees."""
 
-    active_workers: tuple[int, ...]
+    out_workers: tuple[Worker, ...]
     idle_workers: tuple[Worker, ...]
     active_subagents: int
     dispatches: tuple[Dispatch, ...]

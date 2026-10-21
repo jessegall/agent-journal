@@ -16,7 +16,7 @@ class WorkersDataReader:
     def read(self, agent: Agent) -> WorkersData:
         rows = self.workers.scoped()
         return WorkersData(
-            active_workers=tuple(w.id for w in rows if w.is_running()),
+            out_workers=tuple(w for w in rows if w.is_running()),
             idle_workers=tuple(w for w in rows if w.is_idle()),
             active_subagents=self.subagents.running_earlier(agent.session),
             dispatches=tuple(self.subagents.rows(agent.session)),
