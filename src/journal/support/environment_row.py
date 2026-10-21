@@ -11,7 +11,7 @@ class EnvironmentRow:
     last_sessions: dict[str, str] = field(default_factory=dict)
 
     @classmethod
-    def from_json(cls, data: dict) -> "EnvironmentRow":
+    def parsed(cls, data: dict) -> "EnvironmentRow":
         return cls(**data)
 
     def last_session(self, agent: str) -> str:

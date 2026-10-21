@@ -63,7 +63,7 @@ class ShareHandler(PooledHandler):
             given = json.loads(self.rfile.read(size))
         except ValueError:
             return None
-        return VisitorComment.from_payload(given) if isinstance(given, dict) else None
+        return VisitorComment.parsed(given) if isinstance(given, dict) else None
 
     def refused(self) -> None:
         self.send(ShareAnswer(405, headers={"Allow": "GET, HEAD, POST"}))

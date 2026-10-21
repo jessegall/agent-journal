@@ -10,5 +10,5 @@ class VisitorComment:
     text: str
 
     @classmethod
-    def from_payload(cls, payload: dict) -> "VisitorComment":
+    def parsed(cls, payload: dict) -> "VisitorComment":
         return cls(str(payload.get("on", "")), str(payload.get("name", "")), str(payload.get("text", "")))

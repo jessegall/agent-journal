@@ -41,7 +41,7 @@ def with_echo(app, replay: Replay, provider: str) -> None:
     """The steps: echo is installed, a session starts, a forbidden read is held, a prompt is told a line, and a task made is heard after the reply."""
     app.console().run(["plugin", "install", str(ECHO), "--yes"], USER)
     hook_as(app, provider, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     replay.step("session starts")
     replay.step("a forbidden read", hook_as(app, provider, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[1])
     replay.step("a prompt", hook_as(app, provider, "UserPromptSubmit", prompt="hello")[1])

@@ -16,9 +16,9 @@ class ClaudeRow:
     queued: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "ClaudeRow":
+    def parsed(cls, data: dict) -> "ClaudeRow":
         content = data.get("message", {}).get("content", [])
-        blocks = (ClaudeBlock("text", content),) if isinstance(content, str) else tuple(ClaudeBlock.from_json(b) for b in content if isinstance(b, dict))
+        blocks = (ClaudeBlock("text", content),) if isinstance(content, str) else tuple(ClaudeBlock.parsed(b) for b in content if isinstance(b, dict))
         return cls(str(data.get("type", "")), blocks, bool(data.get("isCompactSummary")), bool(data.get("isMeta")), str(data.get("timestamp", "")),
                    str(data.get("operation", "")), str(data.get("content", "")) if data.get("type") == "queue-operation" else "")
 

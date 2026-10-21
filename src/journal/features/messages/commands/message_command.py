@@ -112,13 +112,13 @@ class MessageCommand(Command):
         return 0
 
     @staticmethod
-    def answering(message: Message) -> str:
+    def reply_target(message: Message) -> str:
         if message.reply_to:
             return f", a reply to message {message.reply_to}"
         return ", on the passage quoted below it" if message.quoted_lines else ""
 
     def show(self, message: Message) -> None:
-        print(f"message {message.id} from {message.sender}{self.answering(message)}: {message.text_body}")
+        print(f"message {message.id} from {message.sender}{self.reply_target(message)}: {message.text_body}")
         for line in message.quote.split("\n") if message.is_passage_comment else ():
             print(f"  > {line}")
         for name in message.files:

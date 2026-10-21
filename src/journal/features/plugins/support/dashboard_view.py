@@ -11,7 +11,7 @@ class DashboardView:
     missing: str = ""
 
     @classmethod
-    def from_json(cls, raw: dict) -> "DashboardView":
+    def parsed(cls, raw: dict) -> "DashboardView":
         return cls(title=str(raw.get("title", "")), start=str(raw.get("start", "")), pages=dict(raw.get("pages", {})))
 
     def serialized(self) -> dict:

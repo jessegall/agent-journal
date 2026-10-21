@@ -14,25 +14,25 @@ class TriggersConduct(Conduct):
 
     def on_prompt_submitted_triggers(self, event: PromptSubmitted, settings: Settings) -> Transition:
         from journal.features.triggers.feature import Triggers
-        return self.none(*lines_for(triggers_met(event.data.part(Triggers).triggers, event.prompt)))
+        return self.none(*trigger_lines(matching_triggers(event.data.part(Triggers).triggers, event.prompt)))
 
     def on_message_arrived_triggers(self, event: MessageArrived, settings: Settings) -> Transition:
         from journal.features.triggers.feature import Triggers
-        return self.none(*lines_for(triggers_met(event.data.part(Triggers).triggers, event.text)))
+        return self.none(*trigger_lines(matching_triggers(event.data.part(Triggers).triggers, event.text)))
 
     def on_tool_starting_triggers(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.triggers.feature import Triggers
-        rows = triggers_met(event.data.part(Triggers).triggers, event.call.input_text)
+        rows = matching_triggers(event.data.part(Triggers).triggers, event.call.input_text)
         denied = [t for t in rows if t.action == TriggerAction.DENY]
         if denied:
             return self.refuse(Triggers.DENIED.create(title=denied[0].text))
-        return self.none(*lines_for(rows))
+        return self.none(*trigger_lines(rows))
 
 
-def triggers_met(triggers: tuple[Trigger, ...], text: str) -> list[Trigger]:
+def matching_triggers(triggers: tuple[Trigger, ...], text: str) -> list[Trigger]:
     return [trigger for trigger in triggers if trigger.matches(text)]
 
 
-def lines_for(triggers: list[Trigger]) -> list[Nudge]:
+def trigger_lines(triggers: list[Trigger]) -> list[Nudge]:
     from journal.features.triggers.feature import Triggers
     return [(Triggers.INSTRUCT if trigger.action == TriggerAction.INSTRUCT else Triggers.NUDGE).create(title=trigger.text) for trigger in triggers if trigger.action != TriggerAction.SEQUENCE]

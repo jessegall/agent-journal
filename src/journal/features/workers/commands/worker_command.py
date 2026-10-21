@@ -41,16 +41,16 @@ class WorkerCommand(Command):
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
-        say = self.verb(verbs, "say", "give a worker that reported its next job, with its memory of the last")
+        say = self.verb(verbs, "assign", "give a worker that reported its next job, with its memory of the last")
         say.add_argument("n", type=int)
         say.add_argument("brief")
         say.add_argument("--task", type=int, help="the task this job works on, which its plan then leaves to it")
         self.verb(verbs, "wait", "wait until these workers have reported").add_argument("on", type=int, nargs="+")
         self.verb(verbs, "stop", "end a worker").add_argument("n", type=int)
-        self.verb(verbs, "done", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
+        self.verb(verbs, "complete", "a worker's report acted on: merged, used or set aside, so it is no longer named").add_argument("n", type=int)
         self.verb(verbs, "list", "every worker out")
 
-    def own_provider(self, caller: Caller) -> str:
+    def provider_default(self, caller: Caller) -> str:
         return self.agents.session_agent(caller.session).provider if caller.session else "claude"
 
     def dispatch(self, args: Namespace, caller: Caller) -> int:
@@ -61,11 +61,11 @@ class WorkerCommand(Command):
         most = int(self.settings.option(Feature.WORKER_LIMIT))
         if most and len(out) >= most:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(out)).rendered())
-        knowing = [] if args.fresh else self.knowing(args.brief)
+        knowing = [] if args.fresh else self.related_workers(args.brief)
         if knowing:
-            raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker say {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
-        provider = args.provider or self.own_provider(caller)
-        worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model_of(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatched_by=caller.session)
+            raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker assign {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
+        provider = args.provider or self.provider_default(caller)
+        worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatched_by=caller.session)
         worker = self.workers.save(worker, caller.actor)
         try:
             self.runner.workplace(worker)
@@ -79,7 +79,7 @@ class WorkerCommand(Command):
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
 
-    def model_of(self, profile: str, provider: str) -> str:
+    def model(self, profile: str, provider: str) -> str:
         shown = self.profiles.read(profile)
         return shown["codex_model"] if provider == "codex" else shown["model"]
 
@@ -89,11 +89,11 @@ class WorkerCommand(Command):
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
 
-    def knowing(self, brief: str) -> list[Worker]:
+    def related_workers(self, brief: str) -> list[Worker]:
         named = PathMentions.build(brief)
         return [w for w in reversed(self.workers.scoped()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & PathMentions.build(w.brief)]
 
-    def say(self, args: Namespace, caller: Caller) -> int:
+    def assign(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
         if worker.state == WorkerState.DISPATCHED:
             raise Rejection(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")
@@ -119,7 +119,7 @@ class WorkerCommand(Command):
         print(f"worker {args.n} stopped")
         return 0
 
-    def done(self, args: Namespace, caller: Caller) -> int:
+    def complete(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.save(self.workers.find(args.n).finished(), caller.actor)
         dropped = self.branch.dropped(worker)
         print(f"worker {worker.id}'s report is acted on" + (f"; {dropped}" if dropped else ""))

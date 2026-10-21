@@ -19,7 +19,7 @@
     {
       "name": "a write before the step is taken up",
       "answer": {
-        "error": "a write waits for sequence 5, step 1: tag it. `journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside"
+        "error": "a write waits for sequence 5, step 1: tag it. `journal sequence follow` takes it up; `journal sequence suspend --why \"<why>\"` sets the run aside"
       },
       "typed": [],
       "nudges": [

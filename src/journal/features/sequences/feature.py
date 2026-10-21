@@ -28,8 +28,8 @@ class Sequences(Feature[SequencesData]):
 
     PENDING_STEP = Nudge(name, "step_to_follow", "sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` to take it up, `journal sequence next` when it is done", repeat_after=0)
     CURRENT_STEP = Nudge(name, "following_the_step", "following sequence {{n}}, step {{step}}: {{text}}", "`journal sequence next` when it is done", repeat_after=0)
-    STEP_EDIT_BLOCK = Nudge(name, "write_held_for_the_step", "a write waits for sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside", repeat_after=0)
-    STALE_STEP = Nudge(name, "step_stale_move_it_on", "{{writes}} writes since sequence {{n}}, step {{step}} was taken up: {{text}}", "`journal sequence next` if it is done, `journal sequence follow` to carry on with it, or `journal sequence park --why \"<why>\"`", repeat_after=0)
+    STEP_EDIT_BLOCK = Nudge(name, "write_held_for_the_step", "a write waits for sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` takes it up; `journal sequence suspend --why \"<why>\"` sets the run aside", repeat_after=0)
+    STALE_STEP = Nudge(name, "step_stale_move_it_on", "{{writes}} writes since sequence {{n}}, step {{step}} was taken up: {{text}}", "`journal sequence next` if it is done, `journal sequence follow` to carry on with it, or `journal sequence suspend --why \"<why>\"`", repeat_after=0)
     SEQUENCE_SUSPENDED = Nudge(name, "sequence_parked", "sequence {{n}} is parked at step {{step}}: {{why}}", "`journal sequence follow` resumes it", repeat_after=0)
     SEQUENCE_ENDED = Nudge(name, "sequence_ended", "sequence {{n}} ran its last step", repeat_after=0)
     SEQUENCE_ABANDONED = Nudge(name, "sequence_abandoned", "sequence {{n}} abandoned", repeat_after=0)
@@ -54,7 +54,7 @@ until its last step is done.
 - `journal sequence next` when the step is done: you are told the next one, or that the sequence ended and what
   you were doing before it. A step never taken up cannot be moved on.
 - A step taken up that stands for many writes holds the next write again: move it on, follow it again, or park it.
-- `journal sequence park --why "<why>"` sets the run aside, its holds quiet; `journal sequence follow` resumes it.
+- `journal sequence suspend --why "<why>"` sets the run aside, its holds quiet; `journal sequence follow` resumes it.
 - A sequence about a row ends only when the row is where it promises: Building a plan's last step waits for a ready
   plan. A row cancelled or deleted, or the sequence deleted, ends the run and you are told.
 - `journal sequence abandon --why "<why>"` names the steps it would leave undone; again with `--sure` it gives the run

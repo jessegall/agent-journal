@@ -30,7 +30,7 @@ class WorkersConduct(Conduct):
         from journal.features.workers.feature import Workers
         if event.subagent or not event.call.writes:
             return self.none()
-        owner = worktree_written(event.data.part(Workers), event.call.written_paths)
+        owner = worktree_edits(event.data.part(Workers), event.call.written_paths)
         return self.refuse(Workers.WORKER_FILE.create(n=owner.worker_id, name=owner.worker_name)) if owner else self.none()
 
     def on_tool_starting_workers_known(self, event: ToolStarting, settings: Settings) -> Transition:
@@ -44,10 +44,10 @@ class WorkersConduct(Conduct):
         return self.refuse(Workers.SUBAGENT_REUSE.create(session=known.session, task=known.task)) if known else self.none()
 
     def on_stop_workers(self, event: Stop, settings: Settings) -> Transition:
-        return self.none(*reports_named(event.data.part(workers_feature())))
+        return self.none(*report_mentions(event.data.part(workers_feature())))
 
     def on_ticked_workers(self, event: Ticked, settings: Settings) -> Transition:
-        return self.none(*reports_named(event.data.part(workers_feature())))
+        return self.none(*report_mentions(event.data.part(workers_feature())))
 
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
@@ -59,7 +59,7 @@ class WorkersConduct(Conduct):
         return self.none(workers_feature().WORKER_REPORTED.create(n=event.worker_id, name=event.name))
 
 
-def reports_named(workers: WorkersData) -> list[Nudge]:
+def report_mentions(workers: WorkersData) -> list[Nudge]:
     return [workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=workers.reports_summary)] if workers.reports_waiting else []
 
 
@@ -68,7 +68,7 @@ def workers_feature():
     return Workers
 
 
-def worktree_written(workers: WorkersData, written_paths: tuple[str, ...]):
+def worktree_edits(workers: WorkersData, written_paths: tuple[str, ...]):
     written = [Path(p).expanduser().resolve() for p in written_paths]
     inside = [p for p in written if p.is_relative_to(workers.worktrees_root)]
     if not inside:

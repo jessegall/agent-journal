@@ -59,7 +59,7 @@ class PlanCommand(Command):
         self.verb(verbs, "review", "reviewers are reading the plan: it cannot be approved until they are back and their findings are in it").add_argument("n", type=int)
         self.verb(verbs, "approve", "the user's word: the plan may start").add_argument("n", type=int)
         self.verb(verbs, "start", "follow an approved plan, or go on past a checkpoint: its next open task is started").add_argument("n", type=int)
-        self.verb(verbs, "park", "put a plan aside").add_argument("n", type=int)
+        self.verb(verbs, "suspend", "put a plan aside").add_argument("n", type=int)
         block = self.verb(verbs, "block", "a started plan waits on one thing before any of its work can go on; a plan whose every task left is blocked blocks itself")
         block.add_argument("n", type=int)
         block.add_argument("why", nargs="?", default="")
@@ -174,7 +174,7 @@ class PlanCommand(Command):
         print(f"plan {plan.id} open again: `journal plan start {plan.id}` goes on with it")
         return 0
 
-    def park(self, args: Namespace, caller: Caller) -> int:
+    def suspend(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.postpone(self.plans.find(args.n), caller.actor)
         print(f"plan {plan.id} parked")
         return 0

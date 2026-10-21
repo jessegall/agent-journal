@@ -41,7 +41,7 @@ class EnvironmentCommand(Command):
         self.memory = memory
 
     def arguments(self, verbs) -> None:
-        self.verb(verbs, "here", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders; owed at every session start")
+        self.verb(verbs, "overview", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders; owed at every session start")
         self.verb(verbs, "list", "every environment and when it was last used")
         self.verb(verbs, "json", "the same, for the boot menu")
         self.verb(verbs, "create", "a new line of work").add_argument("name")
@@ -57,13 +57,13 @@ class EnvironmentCommand(Command):
                 agents = self.agents.scoped()
             last = max(agents, key=lambda a: a.updated_at) if agents else None
             resumable = [a for a in agents if a.session and self.providers.lookup(a.provider or "claude").transcript(self.config.root, a.session)]
-            rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.ago(last.updated_at) if last else "", {a.provider or "claude": a.session for a in resumable}))
+            rows.append(EnvironmentRow(environment.name, bool(last) and last.state != "ended", self.age(last.updated_at) if last else "", {a.provider or "claude": a.session for a in resumable}))
         return rows
 
-    def here(self, args: Namespace, caller: Caller) -> int:
+    def overview(self, args: Namespace, caller: Caller) -> int:
         for line in self.current_work(caller.session):
             print(line)
-        self.oriented(caller)
+        self.overview_record(caller)
         self.memory.admit_all(caller.actor)
         return 0
 
@@ -73,18 +73,18 @@ class EnvironmentCommand(Command):
         held = self.tasks.with_state(TaskState.STARTED)
         lines = [
             f"taken over from another agent, last seen {others[-1].updated_at.astimezone().strftime('%H:%M')}" if others else "",
-            self.named("task in hand", [f"{t.id} {t.title}" for t in held]) or "no task in hand",
-            self.named("open tasks", [f"{t.id} {t.title}" for t in self.tasks.with_state(TaskState.OPEN)]),
-            self.named("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.with_state(TaskState.SUSPENDED)]),
-            self.named("blocked tasks", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.with_state(TaskState.BLOCKED)]),
-            self.named("unread messages", [str(m.id) for m in self.messages.unread()]),
-            self.named("messages read and unanswered", [str(m.id) for m in self.messages.unanswered()]),
-            self.named("questions waiting for the user", [f"{q.id} {q.text}" for q in self.questions.open()]),
-            self.named("workers out", [f"{w.id} {w.name}" for w in self.workers.active()]),
-            self.named("running in the background", self.background()),
-            self.named("rules in force", [f"{r.id} {r.text}" for r in self.rules.all()]),
-            self.named("facts about this environment", [f"{f.id} {f.text}" for f in self.facts.scoped()]),
-            self.named("reminders here", [f"{r.id} {r.text}" for r in self.reminders.scoped()]),
+            self.matching_rows("task in hand", [f"{t.id} {t.title}" for t in held]) or "no task in hand",
+            self.matching_rows("open tasks", [f"{t.id} {t.title}" for t in self.tasks.with_state(TaskState.OPEN)]),
+            self.matching_rows("parked tasks", [f"{t.id} {t.title} ({t.parked_why})" for t in self.tasks.with_state(TaskState.SUSPENDED)]),
+            self.matching_rows("blocked tasks", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.with_state(TaskState.BLOCKED)]),
+            self.matching_rows("unread messages", [str(m.id) for m in self.messages.unread()]),
+            self.matching_rows("messages read and unanswered", [str(m.id) for m in self.messages.unanswered()]),
+            self.matching_rows("questions waiting for the user", [f"{q.id} {q.text}" for q in self.questions.open()]),
+            self.matching_rows("workers out", [f"{w.id} {w.name}" for w in self.workers.active()]),
+            self.matching_rows("running in the background", self.background()),
+            self.matching_rows("rules in force", [f"{r.id} {r.text}" for r in self.rules.all()]),
+            self.matching_rows("facts about this environment", [f"{f.id} {f.text}" for f in self.facts.scoped()]),
+            self.matching_rows("reminders here", [f"{r.id} {r.text}" for r in self.reminders.scoped()]),
         ]
         return [line for line in lines if line]
 
@@ -94,10 +94,10 @@ class EnvironmentCommand(Command):
         return [f"{e.data['part']} (output in {e.data['file']})" for e in moved if Path(e.data["file"]).is_dir() and not (Path(e.data["file"]) / "done").is_file()]
 
     @staticmethod
-    def named(what: str, rows: list[str]) -> str:
+    def matching_rows(what: str, rows: list[str]) -> str:
         return f"{what}: " + "; ".join(rows) if rows else ""
 
-    def oriented(self, caller: Caller) -> None:
+    def overview_record(self, caller: Caller) -> None:
         if not caller.session:
             return
         try:
@@ -143,7 +143,7 @@ class EnvironmentCommand(Command):
         return 0
 
     @staticmethod
-    def ago(time: datetime) -> str:
+    def age(time: datetime) -> str:
         seconds = (datetime.now(timezone.utc) - time).total_seconds()
         for unit, span in (("day", 86400), ("hour", 3600), ("minute", 60)):
             if seconds >= span:

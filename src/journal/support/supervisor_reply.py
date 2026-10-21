@@ -9,5 +9,5 @@ class SupervisorReply:
     error: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "SupervisorReply":
+    def parsed(cls, data: dict) -> "SupervisorReply":
         return cls(bool(data.get("ok")), str(data.get("error", "")))

@@ -30,7 +30,7 @@ class MemoryCommand(Command):
         self.verb(verbs, "strike", f"a {self.noun} that no longer holds").add_argument("n", type=int)
 
     def create(self, args: Namespace, caller: Caller) -> int:
-        row = self.repository.save(self.carrying(self.new(args), caller), caller.actor)
+        row = self.repository.save(self.with_keywords(self.new(args), caller), caller.actor)
         self.decided(caller)
         print(f"{self.noun} {row.id}: {row.text}")
         return 0
@@ -51,7 +51,7 @@ class MemoryCommand(Command):
         print(f"{self.noun} {args.n} struck")
         return 0
 
-    def carrying(self, row, caller: Caller):
+    def with_keywords(self, row, caller: Caller):
         return row
 
     def new(self, args: Namespace):

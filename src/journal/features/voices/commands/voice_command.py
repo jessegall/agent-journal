@@ -16,7 +16,7 @@ class VoiceCommand(Command):
     def arguments(self, verbs) -> None:
         self.verb(verbs, "list", "the voices, and which is chosen")
         self.verb(verbs, "choose", "talk in this voice").add_argument("name", choices=[v.name for v in BuiltinCatalogue.ALL])
-        me = self.verb(verbs, "me", "what the agent calls you")
+        me = self.verb(verbs, "address", "what the agent calls you")
         me.add_argument("--title", default=None)
         me.add_argument("--name", default=None)
         self.verb(verbs, "show", "the instruction the agent is given")
@@ -33,7 +33,7 @@ class VoiceCommand(Command):
         print(f"voice: {args.name}")
         return 0
 
-    def me(self, args: Namespace, caller: Caller) -> int:
+    def address(self, args: Namespace, caller: Caller) -> int:
         from journal.features.voices.feature import Voices
         if args.title is not None:
             self._set(Voices.TITLE.key, args.title, caller)

@@ -26,7 +26,7 @@ class SequenceCommand(Command):
         self.verb(verbs, "run", "start a sequence at its first step").add_argument("n", type=int)
         self.verb(verbs, "follow", "take the step in hand up, and resume a parked run")
         self.verb(verbs, "next", "the step in hand is done; the next one, or the end")
-        self.verb(verbs, "park", "set the run aside, its holds quiet until it is followed again").add_argument("--why", required=True)
+        self.verb(verbs, "suspend", "set the run aside, its holds quiet until it is followed again").add_argument("--why", required=True)
         abandon = self.verb(verbs, "abandon", "give the run up, its remaining steps undone; the user is told")
         abandon.add_argument("--why", required=True)
         abandon.add_argument("--sure", action="store_true", help="go through, once the steps it skips are read")
@@ -44,27 +44,27 @@ class SequenceCommand(Command):
         return 0
 
     def follow(self, args: Namespace, caller: Caller) -> int:
-        self.in_hand(caller)
+        self.current_run(caller)
         from journal.features.sequences.feature import Sequences
         run = self.running.follow(caller.session, self.scope.id)
         print(Sequences.CURRENT_STEP.create(n=run.sequence_id, step=run.step + 1, text=run.text).rendered())
         return 0
 
     def next(self, args: Namespace, caller: Caller) -> int:
-        run = self.in_hand(caller)
+        run = self.current_run(caller)
         if not run.taken_up_at:
             raise Rejection(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first")
         print(self.running.next(caller.session, self.scope.id))
         return 0
 
-    def park(self, args: Namespace, caller: Caller) -> int:
-        self.in_hand(caller)
+    def suspend(self, args: Namespace, caller: Caller) -> int:
+        self.current_run(caller)
         run = self.running.suspend(caller.session, self.scope.id, args.why)
         print(f"sequence {run.sequence_id} parked at step {run.step + 1}: {args.why}. `journal sequence follow` resumes it")
         return 0
 
     def abandon(self, args: Namespace, caller: Caller) -> int:
-        run = self.in_hand(caller)
+        run = self.current_run(caller)
         if not run.taken_up_at:
             raise Rejection(f"step {run.step + 1} of sequence {run.sequence_id} was never taken up: `journal sequence follow` first, then abandon it if it cannot be done")
         skipped = "; ".join(f"{run.step + i + 1}. {text}" for i, text in enumerate(run.skipped))
@@ -75,7 +75,7 @@ class SequenceCommand(Command):
         print(line)
         return 0
 
-    def in_hand(self, caller: Caller) -> SequenceRun:
+    def current_run(self, caller: Caller) -> SequenceRun:
         run = self.running.current(caller.session, self.scope.id)
         if run is None:
             raise Rejection("no sequence is running")

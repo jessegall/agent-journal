@@ -5,7 +5,7 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.tasks.states.ready import Ready
 
-DISPATCHES = ("journal worker dispatch", "journal worker say")
+DISPATCHES = ("journal worker dispatch", "journal worker assign")
 
 
 @dataclass(frozen=True)

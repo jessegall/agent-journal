@@ -23,8 +23,7 @@ is refused when the project's plain-name rules ban it or when it already stands 
 Any number of renames go in one call or one list: all are planned against one reading of the code and written
 together, and two that reach the same spot are refused. docs/the-rules.md follows a renamed Class.method.
 After writing, every attribute use of an old name that no class defines any more is listed as left behind,
-to rename by hand. `--dry-run` reports every place without writing. A rename writes only on a clean working tree, so it can always
-be undone by going back to the last commit. `--root=DIR` works on another checkout. Needs mypy.
+to rename by hand. `--dry-run` reports every place without writing; commit before a rename so it can be undone by going back. `--root=DIR` works on another checkout. Needs mypy.
 """
 import ast
 import collections
@@ -46,6 +45,7 @@ from mypy.server.subexpr import get_subexpressions
 from mypy.types import CallableType, Instance, TypeType, UnionType, get_proper_type
 
 RULES = ".commandments/custom"
+LIBRARY_OWNERS = {"args", "datetime", "date", "time", "json", "os", "re", "sys", "Path", "subprocess", "threading", "shutil", "socket", "sqlite3", "uuid", "random", "math"}
 SELECTS = {"class": "type-declaration", "method": "function", "member": "identifier", "module": "identifier", "local": "identifier", "parameter": "parameter"}
 
 
@@ -451,7 +451,7 @@ def leftovers(plans: list[Plan], root: str) -> list[str]:
     found = []
     for path in files:
         toks = list(tokenize.generate_tokens(io.StringIO(open(path, encoding="utf-8").read()).readline))
-        found += [f"{path}:{tok.start[0]} {tok.string}" for i, tok in enumerate(toks) if tok.type == tokenize.NAME and tok.string in gone and i > 1 and toks[i - 1].string == "." and toks[i - 2].string != "args"]
+        found += [f"{path}:{tok.start[0]} {tok.string}" for i, tok in enumerate(toks) if tok.type == tokenize.NAME and tok.string in gone and i > 1 and toks[i - 1].string == "." and toks[i - 2].string not in LIBRARY_OWNERS]
     return found
 
 
@@ -560,9 +560,6 @@ def main(arguments: list[str]) -> int:
         return 1
     if dry:
         return 0
-    if subprocess.run(["git", "-C", root, "status", "--porcelain"], capture_output=True, text=True).stdout.strip():
-        print("nothing written: commit every change first, so a rename can always be undone by going back to it")
-        return 1
     print(f"{written(plans, root)} files changed")
     left = leftovers(plans, root)
     for spot in left:

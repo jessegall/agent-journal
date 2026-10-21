@@ -12,5 +12,5 @@ class PluginCard:
     key: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "PluginCard":
+    def parsed(cls, data: dict) -> "PluginCard":
         return cls(**{name: str(data[name]) for name in ("kind", "label", "tone", "detail", "key") if data.get(name) is not None})

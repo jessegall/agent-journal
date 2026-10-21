@@ -13,7 +13,7 @@ class CheckFinding:
     group: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "CheckFinding":
+    def parsed(cls, data: dict) -> "CheckFinding":
         text = {name: str(data[name]) for name in ("name", "file", "text", "group") if data.get(name) is not None}
         numbers = {name: int(data[name]) for name in ("line",) if data.get(name)}
         place = {"place": str(data["where"])} if data.get("where") is not None else {}

@@ -48,7 +48,7 @@ class PluginCommand(Command):
         return 0
 
     def install(self, args: Namespace, caller: Caller) -> int:
-        print(self.said(self.installing.preview(args.source)))
+        print(self.description(self.installing.preview(args.source)))
         if not args.yes:
             print(f"nothing installed yet: journal plugin install {args.source} --yes")
             return 0
@@ -58,7 +58,7 @@ class PluginCommand(Command):
 
     def propose(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.preview(args.source)
-        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=caller.actor, shows=CardKind.PLUGINS)
+        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.description(preview)}\n\nTo install it: journal plugin install {args.source} --yes", actor=caller.actor, shows=CardKind.PLUGINS)
         print(f"proposed {preview.name}: the user installs it if they want it")
         return 0
 
@@ -109,6 +109,6 @@ class PluginCommand(Command):
         return 0
 
     @staticmethod
-    def said(preview: PluginPreview) -> str:
+    def description(preview: PluginPreview) -> str:
         head = [f"{preview.name} {preview.version}" + (f": {preview.title}" if preview.title != preview.name else ""), f"from {preview.source}" + (f" at {preview.commit[:12]}" if preview.commit else " (linked: read where it lies)")]
         return "\n".join(head + [f"{STEP_DESCRIPTIONS[r.kind]} {r.label}: {r.command}".rstrip(": ") for r in preview.rows])

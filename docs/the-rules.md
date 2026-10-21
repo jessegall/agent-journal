@@ -36,7 +36,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | briefing | briefing.you_took_over | another agent worked this environment until {{at}}, and you took it over | BriefingConduct.on_stop_briefing |
 | briefing | briefing.waiting_for_you | waiting for you here: {{rows}} | BriefingConduct.on_stop_briefing |
 | briefing | briefing.brief_and_log_after_compaction | after the compaction, the work stands here: {{task}}, its last log {{last_log}}; uncommitted files: {{uncommitted}} | Working.on_session_started |
-| briefing | briefing.look_before_the_first_write | before your first write, run `journal environment here`: it lists the task in hand, the open tasks, the facts and the reminders | BriefingConduct.on_session_started_briefing, BriefingConduct.on_tool_starting_briefing |
+| briefing | briefing.look_before_the_first_write | before your first write, run `journal environment overview`: it lists the task in hand, the open tasks, the facts and the reminders | BriefingConduct.on_session_started_briefing, BriefingConduct.on_tool_starting_briefing |
 | briefing | briefing.stopped_unoriented | you stopped while the journal awaits a look at what is in flight here | BriefingConduct.on_stop_briefing |
 | checks | checks.check_failed | check {{n}}, {{title}}, failed | ChecksConduct.on_check_completed_checks |
 | checks | checks.check_still_failing | check {{n}}, {{title}}, is still failing | ChecksConduct.on_check_completed_checks |

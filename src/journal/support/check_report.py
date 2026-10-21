@@ -12,5 +12,5 @@ class CheckReport:
     findings: tuple[CheckFinding, ...] = ()
 
     @classmethod
-    def from_json(cls, data: dict) -> "CheckReport":
-        return cls(str(data.get("title", "")), str(data.get("summary", "")), tuple(CheckFinding.from_json(f) for f in data.get("findings", ())))
+    def parsed(cls, data: dict) -> "CheckReport":
+        return cls(str(data.get("title", "")), str(data.get("summary", "")), tuple(CheckFinding.parsed(f) for f in data.get("findings", ())))

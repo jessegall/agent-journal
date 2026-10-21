@@ -12,7 +12,7 @@ class PluginService:
     answers: bool = False
 
     @classmethod
-    def from_json(cls, data: dict) -> "PluginService":
+    def parsed(cls, data: dict) -> "PluginService":
         return cls(**{**data, "command": tuple(data["command"])})
 
     @property

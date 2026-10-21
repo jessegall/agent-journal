@@ -28,7 +28,7 @@ table of every state and every line and who says it.
                                                  ▼
                        facts on the row ─► the journal skill owed, the look owed
                        a write held by the guards until the journal skill is read
-                       a write held until `journal environment here` is run
+                       a write held until `journal environment overview` is run
                                                  ▼
                      ┌──────────────────────── WORK LOOP ─────────────────────────┐
                      │                                                             │
@@ -100,7 +100,7 @@ the user; the agent acts on it and says nothing about it in the chat.
 ```
    PreCompact ──► the skills read are forgotten; nothing is said
    SessionStart(compact) ──► the start block again, the look owed again: writes wait for
-                            `journal environment here`, which names the task in hand, open and parked
+                            `journal environment overview`, which names the task in hand, open and parked
                             tasks, unread and unanswered messages, questions, workers, background runs,
                             rules, facts and reminders
    a session that ended and starts again ──► idle, then the same start

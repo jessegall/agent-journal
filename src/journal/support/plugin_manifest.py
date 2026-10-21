@@ -30,10 +30,10 @@ class PluginManifest:
     dashboard: dict = field(default_factory=dict)
 
     @classmethod
-    def from_json(cls, data: dict) -> "PluginManifest":
-        return cls(**{**data, **{key: tuple(data[key]) for key in ("hears",) if key in data}, "holds": tuple(EventWindow.from_json(h) for h in data.get("holds", ())),
-                      "services": tuple(PluginService.from_json(s) for s in data.get("services", ())), "cards": tuple(CardKind.from_json(c) for c in data.get("cards", ())),
-                      "setup": tuple(SetupStep.from_json(s) for s in data.get("setup", ())), "requires": {program: Requirement.from_json(r) for program, r in data.get("requires", {}).items()}})
+    def parsed(cls, data: dict) -> "PluginManifest":
+        return cls(**{**data, **{key: tuple(data[key]) for key in ("hears",) if key in data}, "holds": tuple(EventWindow.parsed(h) for h in data.get("holds", ())),
+                      "services": tuple(PluginService.parsed(s) for s in data.get("services", ())), "cards": tuple(CardKind.parsed(c) for c in data.get("cards", ())),
+                      "setup": tuple(SetupStep.parsed(s) for s in data.get("setup", ())), "requires": {program: Requirement.parsed(r) for program, r in data.get("requires", {}).items()}})
 
     def has_window(self, key: str) -> bool:
         return any(window.event == key for window in self.holds)

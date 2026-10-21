@@ -108,7 +108,7 @@ class PhonePages:
         if given is None:
             return self.json(403, {"error": "refused"})
         if request.rest == ["pair"]:
-            return self.pair(PairRequest.from_payload(given))
+            return self.pair(PairRequest.parsed(given))
         phone = self.phone(request)
         if not isinstance(phone, Phone):
             return phone

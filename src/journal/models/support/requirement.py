@@ -9,5 +9,5 @@ class Requirement:
     hint: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "Requirement":
+    def parsed(cls, data: dict) -> "Requirement":
         return cls(**data)

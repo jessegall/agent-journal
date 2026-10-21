@@ -24,7 +24,7 @@ class Menu:
 
     def environments(self) -> list[EnvironmentRow]:
         try:
-            return [EnvironmentRow.from_json(row) for row in json.loads(self.journal("environment", "json") or "[]")]
+            return [EnvironmentRow.parsed(row) for row in json.loads(self.journal("environment", "json") or "[]")]
         except ValueError:
             return []
 

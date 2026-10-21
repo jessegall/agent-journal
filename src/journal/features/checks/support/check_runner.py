@@ -81,6 +81,6 @@ class CheckRunner:
         if not path.is_file():
             return None
         try:
-            return CheckReport.from_json(json.loads(path.read_text()))
+            return CheckReport.parsed(json.loads(path.read_text()))
         except ValueError:
             return None

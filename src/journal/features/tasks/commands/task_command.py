@@ -50,7 +50,7 @@ class TaskCommand(Command):
         log = self.verb(verbs, "log", "note where a task stands")
         log.add_argument("n", type=int)
         log.add_argument("line")
-        done = self.verb(verbs, "done", "finish a task")
+        done = self.verb(verbs, "complete", "finish a task")
         done.add_argument("n", type=int)
         done.add_argument("--how", default="")
         block = self.verb(verbs, "block", "a task waits on something outside your hands: blocked, with why, it is neither offered nor nudged")
@@ -58,7 +58,7 @@ class TaskCommand(Command):
         block.add_argument("why", nargs="?", default="")
         Waits.arguments(block, "task")
         self.verb(verbs, "unblock", "what it waited on came: the task is open again").add_argument("n", type=int)
-        park = self.verb(verbs, "park", "set a task aside for something else first, by choice; it stays open and stops being nudged")
+        park = self.verb(verbs, "suspend", "set a task aside for something else first, by choice; it stays open and stops being nudged")
         park.add_argument("n", type=int)
         park.add_argument("why")
         self.verb(verbs, "resume", "pick a parked task up again").add_argument("n", type=int)
@@ -74,7 +74,7 @@ class TaskCommand(Command):
         return 0
 
     def start(self, args: Namespace, caller: Caller) -> int:
-        return self.taken(args.n, caller, "started")
+        return self.claimed_task(args.n, caller, "started")
 
     def rename(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.save(self.tasks.find(args.n).with_(title=args.title), caller.actor)
@@ -88,41 +88,41 @@ class TaskCommand(Command):
 
     def log(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.find(args.n)
-        self.logs.save(TaskLog.build(task, args.line, self._now().timestamp()), caller.actor)
+        self.logs.save(TaskLog.build(task, args.line, self._time().timestamp()), caller.actor)
         current = self.taking.current(caller)
         if current and current.task_id == task.id:
             self.machine.move(caller.session, task.environment_id, current.logged(self.clock.time()))
         print(f"task {task.id} logged")
         return 0
 
-    def park(self, args: Namespace, caller: Caller) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).suspended(args.why, self._now()), caller.actor)
+    def suspend(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).suspended(args.why, self._time()), caller.actor)
         print(f"task {task.id} parked")
         return 0
 
     def resume(self, args: Namespace, caller: Caller) -> int:
-        return self.taken(args.n, caller, "resumed")
+        return self.claimed_task(args.n, caller, "resumed")
 
-    def taken(self, n: int, caller: Caller, how: str) -> int:
+    def claimed_task(self, n: int, caller: Caller, how: str) -> int:
         task = self.taking.start(self.tasks.find(n), caller)
         print("\n".join([f"task {task.id} {how}", *self.briefing.lines(task)]))
         return 0
 
     def block(self, args: Namespace, caller: Caller) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
-        task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._now()), caller.actor)
+        task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._time()), caller.actor)
         for ref in self.waits.created(args.on, args.until, args.every, f"task {task.id}", caller.actor):
             self.links.save(Link(source=Ref.build(task), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0
 
     def unblock(self, args: Namespace, caller: Caller) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).unblocked("the user opened it", self._now().timestamp()), caller.actor)
+        task = self.tasks.save(self.tasks.find(args.n).unblocked("the user opened it", self._time().timestamp()), caller.actor)
         print(f"task {task.id} open again")
         return 0
 
-    def done(self, args: Namespace, caller: Caller) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).finished(self._now(), args.how), caller.actor)
+    def complete(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.save(self.tasks.find(args.n).finished(self._time(), args.how), caller.actor)
         print(f"task {task.id} done")
         self._name_next(task)
         return 0
@@ -138,5 +138,5 @@ class TaskCommand(Command):
             print(next_open.line())
 
     @staticmethod
-    def _now() -> datetime:
+    def _time() -> datetime:
         return datetime.now(timezone.utc)

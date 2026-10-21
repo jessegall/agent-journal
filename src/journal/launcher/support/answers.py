@@ -9,5 +9,5 @@ class Answers:
     hooks_aside: bool = False
 
     @classmethod
-    def from_json(cls, data: dict) -> "Answers":
+    def parsed(cls, data: dict) -> "Answers":
         return cls(**data)

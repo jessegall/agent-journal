@@ -33,7 +33,7 @@ class ManifestReader:
         unknown = sorted(set(raw) - KEYS)
         if unknown:
             raise Rejection(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
-        manifest = PluginManifest.from_json(raw)
+        manifest = PluginManifest.parsed(raw)
         self.name_check(manifest)
         self.protocol_check(manifest)
         self.event_check(manifest)

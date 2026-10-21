@@ -29,7 +29,7 @@ def test_a_task_lives_through_the_cli(app: App):
     assert console.run(["task", "start", "1"], MAIN).code == 0
     assert console.run(["task", "log", "1", "half done"], MAIN).code == 0
     assert "started  write the notes" in console.run(["task", "list"], MAIN).out
-    assert console.run(["task", "done", "1", "--how", "published"], MAIN).code == 0
+    assert console.run(["task", "complete", "1", "--how", "published"], MAIN).code == 0
     tasks = app.container.get(Tasks)
     task = tasks.find(1)
     assert task.state == TaskState.FINISHED and task.outcome == "published" and task.started_at is not None
@@ -117,7 +117,7 @@ def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app: 
         agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", oriented=False), Actor.system())
         agents.save(Agent(session="claude-session", environment_id=development.id, provider="claude", oriented=False), Actor.system())
     caller = Caller.environment_caller({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "codex-session", "CODEX_CI": "1"})
-    assert app.console().run(["environment", "here"], caller).code == 0
+    assert app.console().run(["environment", "overview"], caller).code == 0
     with app.container.get(Scope).environment(development.id):
         assert agents.session_agent("codex-session").oriented
         assert not agents.session_agent("claude-session").oriented

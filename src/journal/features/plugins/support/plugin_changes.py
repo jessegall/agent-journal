@@ -18,7 +18,7 @@ class PluginChanges:
             if isinstance(after, (list, tuple)):
                 before, after = list(before or ()), list(after)
                 if key == "holds":
-                    before, after = [EventWindow.from_json(h).as_text() for h in before], [EventWindow.from_json(h).as_text() for h in after]
+                    before, after = [EventWindow.parsed(h).as_text() for h in before], [EventWindow.parsed(h).as_text() for h in after]
                 lines += [f"{key}: + {item}" for item in after if item not in before] + [f"{key}: - {item}" for item in before if item not in after]
             elif before != after:
                 lines.append(f"{key}: {before} -> {after}")

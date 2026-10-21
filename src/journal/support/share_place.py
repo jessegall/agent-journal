@@ -24,7 +24,7 @@ class SharePlace:
             data = json.loads(self.path.read_text())
         except ValueError:
             return SavedPlace()
-        return SavedPlace.from_json(data) if isinstance(data, dict) else SavedPlace()
+        return SavedPlace.parsed(data) if isinstance(data, dict) else SavedPlace()
 
     def store(self, **fields) -> None:
         self.config.home.mkdir(parents=True, exist_ok=True)

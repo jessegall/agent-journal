@@ -14,7 +14,7 @@ class LauncherMemory:
     def read(self) -> Answers:
         if not self.path.is_file():
             return Answers()
-        return Answers.from_json(json.loads(self.path.read_text() or "{}"))
+        return Answers.parsed(json.loads(self.path.read_text() or "{}"))
 
     def write(self, answers: Answers) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)

@@ -41,7 +41,7 @@ class ShellConduct(Conduct):
         ended = event.data.part(Shell).ended_untold
         if event.quiet_for < SILENCE_SECONDS or not ended:
             return self.none()
-        return self.none(Shell.OUTPUTS_ENDED.create(outputs=named(ended), n=ended[0].id))
+        return self.none(Shell.OUTPUTS_ENDED.create(outputs=outcome_text(ended), n=ended[0].id))
 
     def on_ticked_shell_background(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
@@ -51,7 +51,7 @@ class ShellConduct(Conduct):
         return self.none(Shell.BACKGROUND_CHECK.create(background_outputs=", ".join(str(n) for n in shell.background)))
 
 
-def named(ended: tuple[EndedOutput, ...]) -> str:
+def outcome_text(ended: tuple[EndedOutput, ...]) -> str:
     outcomes: dict[str, list[int]] = {}
     for output in ended:
         outcomes.setdefault(OutputFiles.ended(output.status), []).append(output.id)

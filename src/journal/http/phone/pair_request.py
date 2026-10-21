@@ -9,5 +9,5 @@ class PairRequest:
     device: str = ""
 
     @classmethod
-    def from_payload(cls, given: dict) -> "PairRequest":
+    def parsed(cls, given: dict) -> "PairRequest":
         return cls(str(given.get("code", "")), str(given.get("device", "")))

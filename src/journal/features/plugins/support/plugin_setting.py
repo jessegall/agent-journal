@@ -13,7 +13,7 @@ class PluginSetting:
     choices: tuple[str, ...] = ()
 
     @classmethod
-    def from_json(cls, data: dict) -> "PluginSetting":
+    def parsed(cls, data: dict) -> "PluginSetting":
         return cls(data["key"], data["kind"], data.get("title") or data["key"], data.get("help", ""), data.get("default"), tuple(data.get("choices", ())))
 
     @property

@@ -12,5 +12,5 @@ class CheckProgress:
     percent: float | None = None
 
     @classmethod
-    def from_json(cls, data: dict) -> "CheckProgress":
+    def parsed(cls, data: dict) -> "CheckProgress":
         return cls(**data)

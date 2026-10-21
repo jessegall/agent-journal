@@ -62,7 +62,7 @@ class SecretCommand(Command):
         login = self.verb(verbs, "login", "log in to a browser login's site, only where the user lets the agent log in on its own; --wait waits for the window to close")
         login.add_argument("n", type=int)
         login.add_argument("--wait", action="store_true")
-        self.verb(verbs, "where", "the file the values live in, outside the project")
+        self.verb(verbs, "folder", "the file the values live in, outside the project")
         self.verb(verbs, "delete", "a secret put away; its values are kept thirty days for a restore").add_argument("n", type=int)
         self.verb(verbs, "restore", "a deleted secret back, with its values").add_argument("n", type=int)
 
@@ -124,7 +124,7 @@ class SecretCommand(Command):
         return 0
 
     def run(self, args: Namespace, caller: Caller) -> int:
-        secret = self.named(args.secret)
+        secret = self.lookup(args.secret)
         if not secret.helpers and caller.session and self.workers.session_worker(caller.session):
             raise Rejection(f"secret {secret.id} is the main agent's alone: the user lets helpers have it on the Secrets page")
         code, output = self.runner.run(secret, [c for c in args.command if c != "--"], args.stdin, args.env)
@@ -162,13 +162,13 @@ class SecretCommand(Command):
         print(f"logged in to {done.title}" if done.session_at else f"no login to {done.title} is saved")
         return 0 if done.session_at else 1
 
-    def named(self, given: str) -> Secret:
+    def lookup(self, given: str) -> Secret:
         rows = [s for s in self.secrets.active() if str(s.id) == given or s.title.lower() == given.lower()]
         if not rows:
             raise Rejection(f"no secret is numbered or titled {given!r}: `journal secret list` names them")
         return rows[0]
 
-    def where(self, args: Namespace, caller: Caller) -> int:
+    def folder(self, args: Namespace, caller: Caller) -> int:
         print(self.values.path)
         return 0
 

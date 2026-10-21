@@ -15,7 +15,7 @@ class StackSeed(Migration):
 
     def apply(self, connection: Connection) -> None:
         for row in connection.all("SELECT id, state, data FROM agents"):
-            stored = StoredState.from_json(row["state"], json.loads(row["data"] or "{}"))
+            stored = StoredState.parsed(row["state"], json.loads(row["data"] or "{}"))
             connection.execute("UPDATE agents SET stack = ? WHERE id = ?", (json.dumps(self.stack(stored)), row["id"]))
 
     @staticmethod

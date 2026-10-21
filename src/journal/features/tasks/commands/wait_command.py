@@ -18,18 +18,18 @@ class WaitCommand(Command):
     """journal await "<what>": the agent waits for something outside its hands, with or without a task in hand, and names what ends it: a command's output, or a script polled until it passes. It ends by itself once that has, or when the agent works again."""
 
     noun = "await"
-    default_verb = "now"
+    default_verb = "begin"
 
     def __init__(self, events: CommandEvents, awaitables: WaitTargets) -> None:
         self.events, self.awaitables = events, awaitables
 
     def arguments(self, verbs) -> None:
-        time = self.verb(verbs, "now", "say what you wait for, and name what ends the wait")
+        time = self.verb(verbs, "begin", "say what you wait for, and name what ends the wait")
         time.add_argument("what", help="what you wait for, as its title: the test run, the build, Lady Lovelace's report")
         time.add_argument("--output", type=int, action="append", default=[], metavar="N", help="a command's output; the wait ends once the command is done; more than one waits for all")
         time.add_argument("--until", default="", metavar="SCRIPT", help="a shell script run every 30 seconds; the wait ends once it passes, such as ! kill -0 <pid> for a process")
 
-    def now(self, args: Namespace, caller: Caller) -> int:
+    def begin(self, args: Namespace, caller: Caller) -> int:
         if not args.output and not args.until:
             raise Rejection(MISSING_WAIT_TARGET)
         if USER_WAIT_PATTERN.search(args.what):

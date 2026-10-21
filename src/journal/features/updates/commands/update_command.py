@@ -9,19 +9,19 @@ class UpdateCommand(Command):
     """journal update: the newest release of this major version installed as Install update does, the journal restarted on it."""
 
     noun = "update"
-    default_verb = "now"
+    default_verb = "apply"
 
     def __init__(self, updating: Updater) -> None:
         self.updating = updating
 
     def arguments(self, verbs) -> None:
-        self.verb(verbs, "now", "install the newest release of this major version and restart the journal on it")
+        self.verb(verbs, "apply", "install the newest release of this major version and restart the journal on it")
         self.verb(verbs, "check", "say whether a newer release of this major version is out")
         follow = self.verb(verbs, "follow", "follow a branch: install its newest commit instead of the releases")
         follow.add_argument("branch", help="the branch's name")
         self.verb(verbs, "unfollow", "follow the releases of this major version again")
 
-    def now(self, args: Namespace, caller: Caller) -> int:
+    def apply(self, args: Namespace, caller: Caller) -> int:
         self.updating.read()
         target = self.updating.target()
         self.updating.update_immediately(caller.actor)

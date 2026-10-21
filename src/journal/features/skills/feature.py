@@ -36,16 +36,16 @@ moments you would otherwise get wrong. Every command is `journal <noun> <verb>`;
 lists the verbs.
 
 - **task**: what you are working on: `journal task start <n>` or `journal task create "<title>" --start`. Log where it stands with `journal task log <n> "<line>"`, finish
-  with `journal task done <n> --how "<outcome>"`.
+  with `journal task complete <n> --how "<outcome>"`.
 - **plan**: ordered tasks. `journal plan start <n>` follows it: finishing a task starts the next.
 - **message** and **question**: what you and the user say to each other. Answer unread messages first;
   `journal question ask "<text>" --options "a" "b"` waits for the user.
 - **fact**, **rule**, **reminder**: what must survive the context window. At a context mark, writes wait
-  until you record one or say `journal nothing survives "<why>"`.
+  until you record one or say `journal memory skip "<why>"`.
 - **sequence**, **worker**, **skill**: steps to follow, agents that write for you, and these files.
 - **shell**: a long command moves to the background; read any output by its number with `journal output read <n> --tail 20` (or --grep, --summary, --all);
   `journal reader add` keeps a reader that picks the lines worth seeing.
-- `journal environment here` after a compaction or a takeover lists what is in flight.
+- `journal environment overview` after a compaction or a takeover lists what is in flight.
 - `journal await "<what>" --output <n>` or `--until "<script>"` when you wait on something outside your hands, then end
   your turn: the wait ends by itself once that is done.
 - `journal search "<words>"` finds every task, plan, message, document, report and agent conversation here that holds

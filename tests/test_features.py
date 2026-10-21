@@ -105,7 +105,7 @@ def test_the_session_start_is_answered_with_the_briefing(app: App):
 
 def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     context(app, 30)
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={})
@@ -121,7 +121,7 @@ def test_crossing_a_context_mark_holds_writes_until_the_agent_decides(app: App):
     assert "hookSpecificOutput" not in hook(app, "PreToolUse", tool_name="Read", tool_input={})[1], "the mark asks once"
     context(app, 55)
     assert "context 50% full" in json.dumps(hook(app, "Stop")[1]) and agents.session_agent("s1").mark_owed == 50
-    app.console().run(["nothing", "survives", "all logged"], AGENT)
+    app.console().run(["memory", "skip", "all logged"], AGENT)
     assert agents.session_agent("s1").mark_owed == 0 and machine.current("s1").task_id == 1
 
 
@@ -133,7 +133,7 @@ def test_a_rule_binds_the_project_not_an_environment(app: App):
 def test_a_mark_owed_outlives_being_stuck_and_a_decision_pays_it(app: App):
     from journal.repositories.agents import Agents
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     context(app, 30)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
@@ -143,7 +143,7 @@ def test_a_mark_owed_outlives_being_stuck_and_a_decision_pays_it(app: App):
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
     assert isinstance(machine.current("s1"), Working), "the agent's own tool use lifts being stuck"
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 409, "the mark still holds a write"
-    app.console().run(["nothing", "survives", "fine"], AGENT)
+    app.console().run(["memory", "skip", "fine"], AGENT)
     assert agents.session_agent("s1").mark_owed == 0 and machine.current("s1").task_id == 1, "the decision pays the mark; the task stands"
 
 
@@ -166,12 +166,12 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app: App):
     console.run(["await", "the build", "--until", "false"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
     assert machine.current("s1").name == "awaiting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
-    out = console.run(["task", "done", "1"], AGENT).out
+    out = console.run(["task", "complete", "1"], AGENT).out
     beneath = app.container.get(Agents).session_agent("s1").stack[-2]
     assert "task 2, tag it is next" in out and machine.current("s1").name == "awaiting" and beneath["state"] == "following_plan" and beneath["data"]["task_id"] == 1, "the wait stands and the plan beneath has not heard: only the top of the stack hears"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert (machine.current("s1").name, machine.current("s1").task_id) == ("following_plan", 2), "the agent's own tool use lifts the wait, and the plan catches up to its started task on resume"
-    out = console.run(["task", "done", "2"], AGENT).out
+    out = console.run(["task", "complete", "2"], AGENT).out
     assert "task 2 done" in out and "is next" not in out, "the last task closed, nothing is next"
     assert [layer["state"] for layer in app.container.get(Agents).session_agent("s1").stack] == ["idle"], "done with the plan, the agent goes to rest"
     assert app.container.get(Plans).find(1).state == PlanState.FINISHED
@@ -184,22 +184,22 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app: App, monkeyp
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the parser", "--brief", "read src/parse.py first"], AGENT)
     out = console.run(["task", "start", "1"], AGENT).out
     assert "task 1 started" in out and "brief: read src/parse.py first" in out, "the brief comes with the start"
     for line in ("one", "two", "three", "four"):
         console.run(["task", "log", "1", line], AGENT)
-    console.run(["task", "park", "1", "later"], AGENT)
+    console.run(["task", "suspend", "1", "later"], AGENT)
     resumed = console.run(["task", "resume", "1"], AGENT).out
     assert "logged: two" in resumed and "logged: four" in resumed and "logged: one" not in resumed, "the latest three log lines"
-    console.run(["task", "done", "1"], AGENT)
+    console.run(["task", "complete", "1"], AGENT)
     console.run(["plan", "create", "release", "--brief", "ship"], USER)
     console.run(["plan", "add", "1", "write the notes", "--brief", "in NOTES.md"], USER)
     console.run(["plan", "add", "1", "tag it", "--brief", "git tag v4"], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
-    closed = console.run(["task", "done", "2"], AGENT).out
+    closed = console.run(["task", "complete", "2"], AGENT).out
     app.runtime().deferred.drain()
     assert "plan 1: task 3, tag it is next. brief: git tag v4" in closed, "the closing command prints the plan's next task with its brief"
     assert not any("tag it is next" in line for line in typed), "nothing is typed afterwards for a start the agent caused"
@@ -212,14 +212,14 @@ def test_the_plans_next_task_is_named_once_when_another_of_its_tasks_closes_besi
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "create", "release", "--brief", "ship"], USER)
     for title in ("write the notes", "tag it", "announce it", "check the docs"):
         console.run(["plan", "add", "1", title], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
-    first = console.run(["task", "done", "1"], AGENT).out
-    beside = console.run(["task", "done", "4"], AGENT).out
+    first = console.run(["task", "complete", "1"], AGENT).out
+    beside = console.run(["task", "complete", "4"], AGENT).out
     app.runtime().deferred.drain()
     assert "plan 1: task 2, tag it is next" in first and "is next" not in beside, "closing a task not in hand says nothing about where the plan went"
     assert not any("task 2, tag it is next" in line for line in typed), "the next task is the command's printed output, never typed afterwards"
@@ -235,7 +235,7 @@ def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "create", "release", "--brief", "ship"], USER)
     console.run(["plan", "add", "1", "write the notes"], USER)
     console.run(["plan", "add", "1", "tag it"], USER)
@@ -262,7 +262,7 @@ def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app: App):
     app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console = app.console()
     console.run(["task", "create", "side work", "--start"], AGENT)
-    console.run(["task", "park", "1", "the plan first"], AGENT)
+    console.run(["task", "suspend", "1", "the plan first"], AGENT)
     console.run(["plan", "create", "release", "--brief", "ship 4.0"], USER)
     console.run(["plan", "phase", "1", "notes", "--when", "written", "--checkpoint"], USER)
     console.run(["plan", "add", "1", "write the notes"], USER)
@@ -272,7 +272,7 @@ def test_a_plan_task_done_leaves_naming_what_is_next_to_the_plan(app: App):
     console.run(["plan", "todos", "1", "2", "3"], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
-    out = console.run(["task", "done", "2"], AGENT).out
+    out = console.run(["task", "complete", "2"], AGENT).out
     assert "side work" not in out and "parked" not in out, "a plan's task leaves the next to the plan"
 
 
@@ -287,7 +287,7 @@ def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     marker = app.config.root / "merged"
     console.run(["task", "create", "release after the merge"], AGENT)
     console.run(["task", "create", "deploy"], AGENT)
@@ -321,7 +321,7 @@ def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app: App, monkeypatch)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
     console.run(["task", "block", "2", "the user picks the moment"], AGENT)
-    out = console.run(["task", "done", "1"], AGENT).out
+    out = console.run(["task", "complete", "1"], AGENT).out
     app.runtime().deferred.drain()
     assert any("plan 1 is blocked: all its tasks left are blocked" in line for line in typed) and "plan 1 is done" not in out, "the agent is told why the plan waits"
     assert app.container.get(Plans).find(1).state == PlanState.BLOCKED, "with every task left blocked, the plan blocks itself and is not done"
@@ -362,7 +362,7 @@ def test_a_plan_does_not_hand_out_a_task_whose_wait_is_open(app: App):
     console.run(["task", "create", "dependency"], USER)
     app.container.get(Links).save(Link(source=Ref.build(tasks.find(1)), target=Ref.build(tasks.find(3)), kind=WAIT_LINK), Actor.system())
     assert plans.next_task(plans.find(1)).id == 2
-    console.run(["task", "done", "3"], AGENT)
+    console.run(["task", "complete", "3"], AGENT)
     assert plans.next_task(plans.find(1)).id == 1
 
 
@@ -393,7 +393,7 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app: App, monkeypatch):
     app.console().run(["message", "send", "first"], USER)
     app.console().run(["message", "send", "second"], USER)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     hook(app, "MessageDisplay", message="Good evening. At your service.\n\n[!reply:1]")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).scoped()
@@ -414,7 +414,7 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app: App):
     from journal.features.questions.states.waiting import Waiting
     console = app.console()
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["question", "ask", "Which name?", "--options", "alpha", "beta"], AGENT)
     machine = app.container.get(StateMachine)
@@ -433,7 +433,7 @@ def test_a_question_pauses_the_agent_and_the_answer_brings_it_back(app: App):
 def test_a_prompt_answers_a_question_in_other_words(app: App):
     from journal.features.questions.states.waiting import Waiting
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["question", "ask", "Which name?"], AGENT)
     hook(app, "UserPromptSubmit", prompt="call it beta")
     assert app.container.get(StateMachine).current("s1").name == "idle"
@@ -441,7 +441,7 @@ def test_a_prompt_answers_a_question_in_other_words(app: App):
 
 def test_an_agent_that_works_again_is_no_longer_waiting_on_a_question(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["question", "ask", "Which name?"], AGENT)
     assert app.container.get(StateMachine).current("s1").name == "waiting"
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "notes.md"})
@@ -453,7 +453,7 @@ def test_an_output_the_agent_waits_on_is_told_by_the_wait_alone(app: App):
     from journal.models.command_output import CommandOutput
     from journal.repositories.command_outputs import CommandOutputs
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     outputs = app.container.get(CommandOutputs)
     for chain in ("a", "b", "c"):
         outputs.save(CommandOutput(chain=chain, command="sleep 1", session="s1", folder=str(app.config.root / chain)).backgrounded(), Actor.system())
@@ -492,7 +492,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app: App):
     created = console.run(["sequence", "create", "release", "--steps", "bump the version | tag it with `git tag v1` | push"], USER).out
     release = created.split()[1].rstrip(":")
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     edit = lambda: hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py", "old_string": "a", "new_string": "b"})[1]
     assert "step 1: bump the version" in console.run(["sequence", "run", release], AGENT).out
@@ -520,7 +520,7 @@ def test_a_sequence_is_stepped_through_and_goes_back_where_it_began(app: App):
     app.container.get(SettingRows).set("sequences.stale_after", 2, Actor.user(1))
     edit(), edit()
     assert "2 writes since sequence" in json.dumps(edit()), "a step taken up and not moved on holds again after the set writes"
-    assert "parked at step 3" in console.run(["sequence", "park", "--why", "the user wants the docs first"], AGENT).out
+    assert "parked at step 3" in console.run(["sequence", "suspend", "--why", "the user wants the docs first"], AGENT).out
     assert "a write waits" not in json.dumps(edit()) and "step 3" not in json.dumps(hook(app, "Stop")[1]), "a parked run holds nothing"
     console.run(["sequence", "follow"], AGENT)
     assert "ran its last step" in console.run(["sequence", "next"], AGENT).out
@@ -541,7 +541,7 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app: App, monkeypatch):
     monkeypatch.setattr(SupervisorLink, "_send", sent)
     console = app.console()
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
@@ -590,13 +590,13 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
     for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
         subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast", "--worktree"], AGENT)
-    assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code != 0, "still out: its report comes first"
+    assert console.run(["worker", "assign", "1", "now the lexer"], AGENT).code != 0, "still out: its report comes first"
     console.run(["worker", "report", "1", "parser done"], Caller("main", "w1"))
-    assert console.run(["worker", "say", "1", "now the lexer"], AGENT).code != 0, "no session was captured, so there is nothing to resume"
+    assert console.run(["worker", "assign", "1", "now the lexer"], AGENT).code != 0, "no session was captured, so there is nothing to resume"
     workers = app.container.get(Workers)
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     console.run(["task", "create", "the lexer"], AGENT)
-    assert console.run(["worker", "say", "1", "now the lexer", "--task", "1"], AGENT).code == 0
+    assert console.run(["worker", "assign", "1", "now the lexer", "--task", "1"], AGENT).code == 0
     from journal.repositories.workers import Workers as WorkerRows
     assert 1 in app.container.get(WorkerRows).containing({1}), "a job said with --task holds that task, so a plan leaves it to the worker"
     told = workers.find(1)
@@ -704,8 +704,8 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
     assert status == 409 and "read the journal skill before anything else: .claude/skills/journal/SKILL.md. writes wait until you have" in body["error"] and "in flight" not in body["error"], "the guards hold the write while a skill is owed: the first hold wins"
     read_skill(app, "journal")
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
-    assert status == 409 and "before your first write, run `journal environment here`: it lists the task in hand, the open tasks, the facts and the reminders" in body["error"], "the skill read, the start's look at what is in flight is still owed"
-    app.console().run(["environment", "here"], AGENT)
+    assert status == 409 and "before your first write, run `journal environment overview`: it lists the task in hand, the open tasks, the facts and the reminders" in body["error"], "the skill read, the start's look at what is in flight is still owed"
+    app.console().run(["environment", "overview"], AGENT)
     assert machine.current("s1").name == "idle"
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", ""), "loaded once, not owed again"
 
@@ -716,7 +716,7 @@ def test_a_session_starting_in_a_state_requires_that_states_skill(skilled):
     app = skilled
     hook(app, "SessionStart")
     read_skill(app, "journal")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     requiring, agents = app.container.get(Requirements), app.container.get(Agents)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     assert requiring.obligation_names(agents.session_agent("s1")) == [], "entering a state owes nothing by itself"
@@ -733,7 +733,7 @@ def test_a_session_starting_in_a_state_requires_that_states_skill(skilled):
     assert status == 409 and "skill before anything else" in body["error"]
     read_skill(app, "journal")
     read_skill(app, "journal-tasks")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     assert requiring.obligation_names(agents.session_agent("s1")) == [] and hook(app, "PreToolUse", tool_name="Write", tool_input={})[0] == 200
 
 
@@ -749,7 +749,7 @@ def test_triggers_nudge_on_a_prompt_and_deny_a_tool_call(app: App):
     console.run(["trigger", "create", "deploy,release", "check the changelog first", "--do", "instruct"], USER)
     console.run(["trigger", "create", "rm -rf", "no recursive deletes here", "--do", "deny"], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     assert "do this now: check the changelog first" in hook(app, "UserPromptSubmit", prompt="let's deploy it")[1]["hookSpecificOutput"]["additionalContext"]
     status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "rm -rf build"})
     assert status == 409 and "no recursive deletes here" in body["error"]
@@ -974,7 +974,7 @@ def test_the_skill_tool_loads_a_skill_too(skilled):
     app = skilled
     hook(app, "SessionStart")
     hook(app, "PostToolUse", tool_name="Skill", tool_input={"skill": "journal"}, tool_response="")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     assert app.container.get(StateMachine).current("s1").name == "idle"
     assert "journal skill" not in hook(app, "SessionStart")[1].get("hookSpecificOutput", {}).get("additionalContext", "")
 
@@ -1077,7 +1077,7 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app: App, monkeypat
     typed = []
     catch_typed(app, monkeypatch, typed)
     console = app.console()
-    console.run(["voice", "me", "--title", "Sir", "--name", "Example"], USER)
+    console.run(["voice", "address", "--title", "Sir", "--name", "Example"], USER)
     text = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
     assert "Talk like a good butler" in text and 'Address me as "Sir Example"' in text
     console.run(["voice", "choose", "squire"], AGENT)
@@ -1103,7 +1103,7 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app: A
     app.console().run(["message", "send", "nobody is here yet"], USER)
     assert typed == [], "no live agent, nothing to type to"
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["message", "send", "are you there?"], USER)
     app.console().run(["message", "send", "hello?"], USER)
     assert typed == ["[journal] new message 2"], "a second line waits while the first is on its way, or it would pile up in the prompt box"
@@ -1132,7 +1132,7 @@ def test_a_reply_written_before_tool_calls_answers_its_message_at_once(app: App)
     messages = app.container.get(Messages)
     app.console().run(["message", "send", "did you adjust the plan?"], USER)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] chat etiquette: a line from the journal is an instruction, not a message")
     hook(app, "MessageDisplay", delta="[!reply:1]\n", turn_id="t1", message_id="m1", index=0, final=False)
     hook(app, "MessageDisplay", delta="Yes, fourteen tasks went into the plan.", turn_id="t1", message_id="m1", index=1, final=True)
@@ -1176,7 +1176,7 @@ def test_a_turn_that_only_answers_a_journal_line_is_an_acknowledgement(app: App,
     sent = []
     catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart", source="startup")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] the journal is ready on main")
     hook(app, "MessageDisplay", message="Noted.")
     app.runtime().deferred.drain()
@@ -1292,7 +1292,7 @@ def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_wai
 
 def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after_five_reminders(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["message", "send", "look at the footer"], USER)
     from journal.repositories.agents import Agents
     journal_said = lambda: json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list"})[1])
@@ -1310,7 +1310,7 @@ def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after
 def test_a_message_read_gets_an_answer_before_the_next_tool_call(app: App):
     app.container.get(SettingRows).set("messages.hold_after", 0, Actor.user(1))
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["message", "send", "can you look at the footer, the header and the menu before lunch?"], USER)
     app.console().run(["message", "read", "1"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
@@ -1330,14 +1330,14 @@ def test_a_message_read_gets_an_answer_before_the_next_tool_call(app: App):
 def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app: App):
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["message", "send", "hi"], USER)
     status, body = hook(app, "SessionStart", source="compact")
-    assert "before your first write, run `journal environment here`" in body["hookSpecificOutput"]["additionalContext"]
+    assert "before your first write, run `journal environment overview`" in body["hookSpecificOutput"]["additionalContext"]
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
-    assert status == 409 and "`journal environment here`" in body["error"]
-    shown = console.run(["environment", "here"], AGENT).out
+    assert status == 409 and "`journal environment overview`" in body["error"]
+    shown = console.run(["environment", "overview"], AGENT).out
     assert "task in hand: 1 t" in shown and "unread messages: 1" in shown
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
 
@@ -1346,7 +1346,7 @@ def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_bene
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
     console = app.console()
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["question", "ask", "Which name?"], AGENT)
     machine = app.container.get(StateMachine)
@@ -1359,7 +1359,7 @@ def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_bene
     app.runtime().deferred.drain()
     assert machine.current("s1").name == "working" and agents.session_agent("s1").oriented is False, "the answer released the wait; the look is still owed"
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 409, "a write before the look is held"
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     assert agents.session_agent("s1").oriented is True and hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "oriented again, the agent goes on with its work"
 
 
@@ -1373,7 +1373,7 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app: 
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     for n, title in ((1, "p"), (2, "q")):
         console.run(["plan", "create", title, "--brief", "b"], USER)
         console.run(["plan", "add", str(n), f"{title} first"], USER)
@@ -1386,21 +1386,21 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app: 
     settings = app.container.get(SettingRows)
     settings.save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console.run(["plan", "start", "1"], AGENT)
-    console.run(["task", "done", "1"], AGENT)
+    console.run(["task", "complete", "1"], AGENT)
     machine, plans = app.container.get(StateMachine), app.container.get(Plans)
     waiting = machine.current("s1")
     assert (waiting.name, waiting.plan_id, waiting.task_id, waiting.at_checkpoint) == (FollowingPlan.name, 1, 0, True) and plans.checkpoint_plans(plans.find(1)).phase.title == "one", "out of auto mode the plan waits at its checkpoint with no task in hand"
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "phase 1 is complete and a checkpoint" in body["reason"] and "wait for their word" in body["reason"], "the checkpoint waits for the user's look, said at the stop"
     assert console.run(["plan", "start", "1"], AGENT).code == 0 and (machine.current("s1").plan_id, machine.current("s1").task_id) == (1, 2), "plan start goes on past the checkpoint"
-    console.run(["task", "done", "2"], AGENT)
+    console.run(["task", "complete", "2"], AGENT)
     settings.save(Setting(environment_id=0, key="tasks.auto", value=True), Actor.system())
     console.run(["plan", "start", "2"], AGENT)
-    closed = console.run(["task", "done", "3"], AGENT).out
+    closed = console.run(["task", "complete", "3"], AGENT).out
     assert app.container.get(Tasks).find(4).state == "started" and (machine.current("s1").plan_id, machine.current("s1").task_id) == (2, 4), "in auto mode a checkpoint never stops the plan"
     app.runtime().deferred.drain()
     assert "plan 2: task 4, q second is next" in closed and not any("q second is next" in line for line in typed), "the closing command prints the next task; the state types nothing for a start the agent caused"
-    console.run(["plan", "park", "2"], AGENT)
+    console.run(["plan", "suspend", "2"], AGENT)
     assert machine.current("s1").name == "idle", "a parked plan is over for the agent following it"
 
 def test_a_line_typed_in_the_terminal_reaches_the_chat_and_a_face_answers_any_message(app: App, monkeypatch):
@@ -1408,7 +1408,7 @@ def test_a_line_typed_in_the_terminal_reaches_the_chat_and_a_face_answers_any_me
     typed = []
     catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     hook(app, "UserPromptSubmit", prompt="a face is a reply, whatever the length of the message")
     hook(app, "UserPromptSubmit", prompt="[journal] new message 1")
     app.runtime().deferred.drain()
@@ -1444,7 +1444,7 @@ def test_wispr_flow_is_among_the_suggested_mcp_services():
 
 def test_a_question_whose_options_say_i_or_you_is_refused(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     refused = app.console().run(["question", "ask", "Who upgrades it?", "--options", "I'll upgrade it myself", "You run the upgrade"], AGENT)
     assert refused.code == 1 and "never I, we or you" in refused.err and "I'll upgrade it myself; You run the upgrade" in refused.err
     lone = app.console().run(["question", "ask", "Who upgrades it?", "--options", "The user upgrades it, The agent upgrades it"], AGENT)
@@ -1455,7 +1455,7 @@ def test_a_question_whose_options_say_i_or_you_is_refused(app: App):
 
 def test_a_reply_sent_by_command_comes_back_with_the_hint_that_it_can_be_typed(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     body = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "journal message send 'on it' --reply-to 1"}, tool_response="message 2 sent")[1]
     assert "a reply needs no command. type it in your turn with [!reply:N]" in json.dumps(body), "the hint rides on the command's own result"
     other = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "journal task list"}, tool_response="")[1]
@@ -1472,7 +1472,7 @@ def test_journal_search_finds_rows_holding_every_word_and_marks_the_chat(app: Ap
     out = console.run(["search", "base", "REPOSITORY"], AGENT).out
     assert "task 1: Scope the reads" in out and "plan 1: release" in out, "every word, any case, in any text field"
     assert "fact" not in out and "message" not in out.split("Searched")[0], "a row missing a word is not found"
-    assert console.run(["search", "for", "100%"], AGENT).out == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
+    assert console.run(["search", "find", "100%"], AGENT).out == "nothing here holds all of: 100%\n", "a % is a letter, not a wildcard, and the verb may be named"
     marks = [m for m in app.container.get(Messages).scoped() if m.data.get("kind") == "search"]
     assert marks[0].text == 'Searched for "base REPOSITORY"' and "task 1: Scope the reads" in marks[0].data["detail"], "the mark opens what was found"
     console.run(["check", "create", "Lint the base repository", "--command", "true", "--every", "0"], AGENT)
@@ -1537,7 +1537,7 @@ def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_th
     messages = app.container.get(Messages)
     texts = [m.text for m in messages.scoped() if m.author == "agent"]
     assert "Starting up." in texts and "Long ago." not in texts, "the first look reads the turn in hand, the last line, and not the session's past"
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["message", "send", "are you there?"], USER)
     app.console().run(["message", "read", "2"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
@@ -1580,7 +1580,7 @@ def test_a_plan_is_done_when_its_last_task_closes_whoever_closes_it(app: App):
     console.run(["plan", "ready", "1"], USER)
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], USER)
-    console.run(["task", "done", "1"], USER)
+    console.run(["task", "complete", "1"], USER)
     assert app.container.get(Plans).find(1).state == "done", "the user closed the last task: the plan is done, no agent following it"
     from journal.features.plans.seeds.closed_plans import ClosedPlans
     plans = app.container.get(Plans)
@@ -1637,7 +1637,7 @@ def test_a_keyword_brings_a_fact_back_once_as_a_whisper_and_a_fresh_rule_is_ques
 
 def test_auto_mode_answers_a_stop_with_the_next_task(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "the footer"], USER)
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "task 1 next: the footer" in body["reason"]
@@ -1897,15 +1897,15 @@ def test_a_turns_parts_landing_out_of_order_are_put_back_before_the_turn_is_read
 def test_a_stop_with_a_parked_task_names_it_in_auto_mode_or_not(app: App):
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
     console.run(["task", "create", "the footer", "--start"], AGENT)
-    console.run(["task", "park", "1", "the header first"], AGENT)
+    console.run(["task", "suspend", "1", "the header first"], AGENT)
     status, body = hook(app, "Stop")
     assert body.get("decision") == "block" and "parked tasks, still open: task 1 (the footer), parked because: the header first" in body["reason"]
     assert hook(app, "Stop", stop_hook_active=True)[1].get("decision") == "block", "told at every stop, until the task is resumed or done"
     console.run(["task", "resume", "1"], AGENT)
-    console.run(["task", "done", "1", "--how", "shipped"], AGENT)
+    console.run(["task", "complete", "1", "--how", "shipped"], AGENT)
     console.run(["task", "create", "the menu"], USER)
     assert hook(app, "Stop")[1].get("decision") != "block", "open tasks are not pressed for outside auto mode"
 
@@ -1925,7 +1925,7 @@ def test_a_shell_line_that_writes_is_a_write_to_the_gates(app: App):
     from journal.support.writes import Writes
     assert [Writes.build(c) for c in ("sed -i '' s/a/b/ f.py", "cat f.py | head -3", "echo hi > /dev/null", "echo hi > out.txt", "git status; git log", "git checkout -- f.py", "`journal task create` x", "python3 - <<'EOF'\nfrom pathlib import Path\nPath('x').write_text('y')\nEOF", "python3 -c 'print(1)'", "grep -rn 'a > b' src | tee found.txt", 'echo "a > b"')] == [True, False, False, True, False, True, False, True, False, True, False]
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.runtime().deferred.drain()
     assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ f.py"})[0] == 200
@@ -2015,15 +2015,15 @@ def test_a_task_finished_while_a_skill_is_owed_leaves_the_debt_data_until_the_re
     app = skilled
     hook(app, "SessionStart")
     read_skill(app, "journal")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     hook(app, "PreCompact")
     hook(app, "SessionStart")
     read_skill(app, "journal")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     requiring, agents, machine = app.container.get(Requirements), app.container.get(Agents), app.container.get(StateMachine)
     assert requiring.obligation_names(agents.session_agent("s1")) == ["tasks"], "the tasks skill is owed at a start in work"
-    done = app.console().run(["task", "done", "1", "--how", "quick"], AGENT)
+    done = app.console().run(["task", "complete", "1", "--how", "quick"], AGENT)
     assert done.code == 0, done.err
     assert machine.current("s1").name == "idle" and requiring.obligation_names(agents.session_agent("s1")) == ["tasks"], "the task done, the agent is idle and still owes the read"
     read_skill(app, "journal-tasks")
@@ -2095,7 +2095,7 @@ def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app: A
     hook(app, "SessionStart", session_id="s2")
     refused = app.console().run(["task", "start", "2"], Caller("main", "s2"))
     assert refused.code == 1 and "task 1 is in hand" in refused.err, "another session cannot start a second"
-    app.console().run(["task", "park", "1", "later"], AGENT)
+    app.console().run(["task", "suspend", "1", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
 
 
@@ -2137,7 +2137,7 @@ def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app: App, m
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     listed = app.console().run(["sequence", "list"], AGENT).out
     assert "Building a plan (4 steps, starts on plan.created)" in listed, "the shipped sequence is seeded at boot"
     app.console().run(["plan", "create", "Behaviour tree", "--brief", "a flowchart"], AGENT)
@@ -2186,7 +2186,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     console = app.console()
     console.run(["plan", "create", "p", "--brief", "the goal"], AGENT)
     for _ in range(4):
@@ -2212,7 +2212,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
     app.runtime().deferred.drain()
     assert "the user approved plan 1" in sent[-1]
     assert "task 1," in console.run(["plan", "start", "1"], AGENT).out
-    console.run(["task", "done", "1"], AGENT)
+    console.run(["task", "complete", "1"], AGENT)
     app.runtime().deferred.drain()
     assert app.container.get(StateMachine).current("s1").task_id == 3, "the second task of phase 1 comes before the first of phase 2"
 
@@ -2220,7 +2220,7 @@ def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_
 def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved(app: App):
     from journal.repositories.plans import Plans
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     console = app.console()
     console.run(["plan", "create", "p", "--brief", "the goal"], AGENT)
     console.run(["plan", "phase", "1", "Lay the floor"], AGENT)
@@ -2245,7 +2245,7 @@ def test_a_plan_in_review_waits_for_its_reviewers_before_it_is_ready_or_approved
 
 def test_a_task_of_a_plan_not_yet_started_is_not_offered_at_a_stop(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     console = app.console()
     console.run(["plan", "create", "p", "--brief", "g"], USER)
     console.run(["plan", "add", "1", "planned work"], USER)
@@ -2267,7 +2267,7 @@ def test_the_shipped_templates_are_seeded_and_the_critique_ones_are_offered_to_t
 
 def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app: App, tmp_path):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["plan", "create", "p", "--brief", "g"], USER)
     body = tmp_path / "critique.md"
     body.write_text("What two readers found.\n\n## Phase 1\n\n- a gap\n\n## Phase 2\n\n- another\n")
@@ -2314,7 +2314,7 @@ def test_a_write_after_a_message_is_read_waits_for_the_answer(app: App):
     from journal.repositories.setting_rows import SettingRows
     app.container.get(SettingRows).set("messages.hold_after", 0, Actor.system())
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["message", "send", "could you rename it?"], USER)
     app.console().run(["message", "read", "1"], AGENT)
@@ -2369,7 +2369,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app: App
     catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     assert "sequence give me an update" in console.run(["trigger", "list"], AGENT).out, "the update words are a shipped trigger"
     console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER)
     console.run(["trigger", "create", "ship it", "release", "--do", "sequence"], USER)
@@ -2425,7 +2425,7 @@ def test_an_answer_names_the_command_that_shows_the_question_whole_and_that_read
     catch_typed(app, monkeypatch, typed)
     console = app.console()
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["question", "ask", "Which name?", "--options", "alpha", "beta"], AGENT)
     console.run(["question", "answer", "1", "beta"], USER)
     assert any("question 1 is answered" in line and "`journal question show 1`" in line for line in typed), "told like a message, with the command to read it"
@@ -2441,7 +2441,7 @@ def test_a_message_left_from_the_viewer_while_the_agent_sits_idle_is_named_to_it
     typed = []
     catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     hook(app, "Stop")
     data = json.dumps({"text": "are you there?", "idempotency": "v1"}).encode()
     request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/messages", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
@@ -2468,7 +2468,7 @@ def test_the_rules_doc_names_every_line_a_listener_says():
 def test_a_subagents_tool_use_does_not_lift_the_agents_own_wait(app: App):
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["await", "the readers", "--until", "false"], AGENT)
     machine = app.container.get(StateMachine)
     assert machine.current("s1").name == "awaiting"
@@ -2483,9 +2483,9 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
     catch_typed(app, monkeypatch, typed)
     console = app.console()
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     hook(app, "SessionStart", session_id="s2")
-    console.run(["environment", "here"], Caller("main", "s2"))
+    console.run(["environment", "overview"], Caller("main", "s2"))
     console.run(["task", "create", "t", "--start"], Caller("main", "s2"))
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], Caller("main", "s2"))
     console.run(["worker", "wait", "1"], Caller("main", "s2"))
@@ -2501,7 +2501,7 @@ def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app: Ap
     from journal.engine.nudger import Nudger
     from journal.features.messages.feature import Messages as MessagesFeature
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     agent, nudger = app.container.get(StateMachine).agent("s1", 1), app.container.get(Nudger)
     after_tool = lambda: hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
     for i in range(50):
@@ -2526,7 +2526,7 @@ def test_a_cancelled_plan_takes_its_own_open_tasks_with_it_and_leaves_shared_one
     console.run(["plan", "add", "1", "its own"], USER)
     console.run(["plan", "add", "1", "finished"], USER)
     console.run(["task", "start", "2"], AGENT)
-    console.run(["task", "done", "2", "--how", "done"], AGENT)
+    console.run(["task", "complete", "2", "--how", "done"], AGENT)
     console.run(["plan", "create", "new", "--brief", "b"], USER)
     console.run(["plan", "add", "2", "shared"], USER)
     console.run(["plan", "phase", "1", "p", "--when", "w"], USER)
@@ -2549,7 +2549,7 @@ def test_approving_a_started_plan_leaves_it_started(app: App):
     console.run(["plan", "ready", "1"], USER)
     console.run(["plan", "approve", "1"], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
     assert "plan 1 started" in console.run(["plan", "approve", "1"], USER).out
     assert app.container.get(Plans).find(1).state == PlanState.STARTED, "a second word from the page cannot set a running plan back to approved"
@@ -2607,7 +2607,7 @@ def test_a_refused_dispatch_leaves_no_running_subagent_behind(app: App):
     from journal.repositories.environments import Environments
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["message", "send", "a word first"], USER)
     console.run(["message", "read", "1"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "opus", "prompt": "read the plan", "subagent_type": "journal-researcher"})
@@ -2635,7 +2635,7 @@ def test_the_edits_since_the_log_are_read_from_the_record_the_task_named_the_log
         app.container.get(SettingRows).save(Setting(environment_id=0, key=key, value=value), Actor.system())
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     drain = lambda: app.runtime().deferred.drain()
     write = lambda name: hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": name})
     said = lambda body: json.dumps(body)
@@ -2666,7 +2666,7 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     assert row().oriented is False and requiring.obligation_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
     read_skill(app, "journal")
     assert requiring.obligation_names(row()) == [] and row().skills_loaded and "journal" in row().skills_loaded, "the read removes the owed link and keeps the hash"
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     assert row().oriented is True, "the look sets oriented and nothing is owed"
     hook(app, "UserPromptSubmit", prompt="make me a plan for the release")
     assert requiring.obligation_names(row()) == ["plans"], "a prompt naming plans: the plans skill owed"
@@ -2682,7 +2682,7 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     context(app, 55)
     hook(app, "Stop")
     assert row().mark_owed == 50
-    app.console().run(["nothing", "survives", "all logged"], AGENT)
+    app.console().run(["memory", "skip", "all logged"], AGENT)
     assert row().mark_owed == 0, "nothing survives clears it too"
     status, body = hook(app, "SessionStart", source="compact")
     assert row().oriented is False and row().mark_owed == 0, "a start after a compaction owes the look again; the start's own write touches oriented alone"
@@ -2694,7 +2694,7 @@ def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set
     first = App(Config(tmp_path, port=0))
     first.runtime().start()
     hook(first, "SessionStart")
-    first.console().run(["environment", "here"], AGENT)
+    first.console().run(["environment", "overview"], AGENT)
     first.console().run(["task", "create", "t", "--start"], AGENT)
     first.runtime().stop()
     db = sqlite3.connect(first.config.database)
@@ -2724,7 +2724,7 @@ def test_an_agent_in_the_old_running_sequence_state_is_unwrapped_at_boot_with_th
     first = App(Config(tmp_path, port=0))
     first.runtime().start()
     hook(first, "SessionStart")
-    first.console().run(["environment", "here"], AGENT)
+    first.console().run(["environment", "overview"], AGENT)
     first.console().run(["task", "create", "t", "--start"], AGENT)
     made = first.console().run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
     first.runtime().stop()
@@ -2752,7 +2752,7 @@ def test_an_agent_in_the_old_running_sequence_state_is_unwrapped_at_boot_with_th
 def test_a_run_goes_with_the_agent_to_its_next_session(app: App):
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     made = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
     console.run(["sequence", "run", made], AGENT)
     hook(app, "SessionEnd")
@@ -2768,10 +2768,10 @@ def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app: A
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Pitman", session="s2"), Actor.system())
     hook(app, "SessionStart", session_id="s2")
-    app.console().run(["environment", "here"], Caller("main", "s2"))
+    app.console().run(["environment", "overview"], Caller("main", "s2"))
     hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / ".claude/skills/journal-plans/SKILL.md")}, tool_response="", session_id="s2")
     app.console().run(["plan", "create", "Side work", "--brief", "b"], Caller("main", "s2"))
     app.runtime().deferred.drain()
@@ -2789,7 +2789,7 @@ def test_the_steps_hold_comes_after_the_look_the_mark_and_the_skill_and_each_is_
     console.run(["sequence", "run", made], AGENT)
     context(app, 30)
     hook(app, "PreToolUse", tool_name="Read", tool_input={})
-    for pay in (lambda: read_skill(app, "journal"), lambda: read_skill(app, "journal-sequences"), lambda: console.run(["environment", "here"], AGENT), lambda: console.run(["nothing", "survives", "all logged"], AGENT)):
+    for pay in (lambda: read_skill(app, "journal"), lambda: read_skill(app, "journal-sequences"), lambda: console.run(["environment", "overview"], AGENT), lambda: console.run(["memory", "skip", "all logged"], AGENT)):
         status, held = edit()
         assert status == 409 and "a write waits for sequence" not in json.dumps(held), "the debt holds the write, and the step stays out of it"
         assert "step 1" not in json.dumps(hook(app, "Stop")[1]), "while a debt is owed the step is not said at a stop"
@@ -2807,7 +2807,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app: A
     catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     made = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
     console.run(["sequence", "run", made], AGENT)
     assert "step 1: bump" in json.dumps(hook(app, "SessionStart", source="compact")[1]), "after a compaction the step is told"
@@ -2825,7 +2825,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app: A
     app.container.get(SettingRows).set("sequences.say_every", 0, Actor.user(1))
     tick()
     assert any("step 1: bump" in line for line in sent), "a step unheard for the set minutes is typed again to a quiet agent"
-    console.run(["sequence", "park", "--why", "docs first"], AGENT)
+    console.run(["sequence", "suspend", "--why", "docs first"], AGENT)
     sent.clear()
     tick()
     assert sent == [], "a parked run is not said at a pace"
@@ -2863,7 +2863,7 @@ def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_
     catch_typed(app, monkeypatch, sent)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     running = app.container.get(RunTracker)
     made = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
     console.run(["sequence", "run", made], AGENT)
@@ -2889,7 +2889,7 @@ def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_
 def test_runs_nest_never_in_themselves_and_only_the_users_words_start_one(app: App):
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     running = app.container.get(RunTracker)
     outer = console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER).out.split()[1].rstrip(":")
     inner = console.run(["sequence", "create", "check", "--steps", "lint"], USER).out.split()[1].rstrip(":")
@@ -2926,7 +2926,7 @@ def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(a
             return error.code, json.loads(error.read())
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     made = console.run(["sequence", "create", "release", "--steps", "bump | tag | push"], USER).out.split()[1].rstrip(":")
     console.run(["sequence", "run", made], AGENT)
     app.runtime().deferred.drain()
@@ -2948,7 +2948,7 @@ def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app: App):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "report", "1", "the parser is written"], Caller("main", "w1"))
     messages = app.container.get(Messages)
@@ -2963,7 +2963,7 @@ def test_a_workers_report_message_carries_the_report_kind_and_its_worker(app: Ap
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "report", "1", "the parser is written"], Caller("main", "w1"))
     report = next(m for m in app.container.get(Messages).all() if m.data.get("kind") == "report")
@@ -2992,7 +2992,7 @@ def test_the_card_for_a_question_the_user_answered_is_the_users(app: App):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     console.run(["question", "answer", "1", "red"], USER)
     card = [m for m in app.container.get(Messages).scoped() if m.author == "system"][-1]
@@ -3119,7 +3119,7 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app: App, 
     from journal.models.plugin import Plugin
     from journal.repositories.plugins import Plugins
     lint = made({"name": "lint", "skills": "skills"}, ("run.py", "skills/lint-rules/SKILL.md"))
-    app.container.get(Plugins).save(Plugin(name="lint", source=str(lint), linked=True, manifest=PluginManifest.from_json({**good, "name": "lint", "skills": "skills"})), Actor.user(1))
+    app.container.get(Plugins).save(Plugin(name="lint", source=str(lint), linked=True, manifest=PluginManifest.parsed({**good, "name": "lint", "skills": "skills"})), Actor.user(1))
     with pytest.raises(Rejection, match="skill lint-rules has the name of a skill of plugin lint"):
         reader.read(made({"skills": "skills"}, ("run.py", "skills/lint-rules/SKILL.md")))
 
@@ -3185,7 +3185,7 @@ def echo(app, name="echo", **manifest):
     from journal.repositories.plugins import Plugins
     folder = Path(__file__).parent / "plugins" / "echo"
     shutil.copytree(folder, app.config.home / "plugins" / name, dirs_exist_ok=True)
-    return app.container.get(Plugins).save(Plugin(name=name, source=str(folder), manifest=PluginManifest.from_json(json.loads((folder / "journal-plugin.json").read_text()) | manifest)), Actor.user(1))
+    return app.container.get(Plugins).save(Plugin(name=name, source=str(folder), manifest=PluginManifest.parsed(json.loads((folder / "journal-plugin.json").read_text()) | manifest)), Actor.user(1))
 
 
 def echo_heard(app, name="echo") -> list[str]:
@@ -3266,7 +3266,7 @@ def test_a_plugin_holds_a_stop_once_a_turn(app: App):
     from journal.repositories.entries import Entries
     echo(app, hears=["idle"], holds=["idle"])
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     status, body = hook(app, "Stop")
     assert status == 200 and body["decision"] == "block" and "[plugin echo] echo holds the stop" in body["reason"]
     status, body = hook(app, "Stop", stop_hook_active=True)
@@ -3351,7 +3351,7 @@ def test_only_the_user_installs_or_switches_on_a_plugin(app: App, tmp_path):
     console.run(["plugin", "disable", "echo"], AGENT)
     assert "only the user switches on" in console.run(["plugin", "enable", "echo"], AGENT).err and not plugins.lookup("echo").enabled
     console.run(["plugin", "enable", "echo"], USER)
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(app.config.home / "plugins" / "x" / "run.py"), "content": ""})
     assert status == 409 and "an installed plugin's files are the user's to change" in body["error"]
@@ -3427,7 +3427,7 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app: A
     shutil.copytree(echo_folder, newer)
     (newer / "run.py").write_text((newer / "run.py").read_text().replace("echo heard your prompt", "echo heard you"))
     shutil.copytree(echo_folder, app.config.home / "plugins" / "echo")
-    fetched = plugins.save(Plugin(name="echo", source=str(newer), manifest=PluginManifest.from_json(json.loads((echo_folder / "journal-plugin.json").read_text()))), Actor.user(1))
+    fetched = plugins.save(Plugin(name="echo", source=str(newer), manifest=PluginManifest.parsed(json.loads((echo_folder / "journal-plugin.json").read_text()))), Actor.user(1))
     shown = console.run(["plugin", "upgrade", "echo"], USER).out
     assert "the code:" in shown and '-        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard your prompt"})' in shown and '+        return json.dumps({"v": 1, "answer": "tell", "tell": "echo heard you"})' in shown, "the program's changed body is in the diff"
     told = console.run(["plugin", "upgrade", "echo"], AGENT).out
@@ -3596,13 +3596,13 @@ def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app
     records = Path(__file__).with_name("replays")
     held = lambda name: {s["name"]: s["answer"]["error"] for s in json.loads((records / f"{name}_codex.json").read_text())["steps"] if isinstance(s["answer"], dict) and "error" in s["answer"]}
     assert "read the journal skill before anything else" in held("loading_skill_rules")["a write before the skill is read"]
-    assert "`journal environment here`" in held("orienting_rules")["a write before the look"]
+    assert "`journal environment overview`" in held("orienting_rules")["a write before the look"]
     assert "decide what to keep from the context" in held("at_mark_rules")["a write at the mark"]
 
 def test_a_start_after_a_compaction_says_where_the_work_stands(app: App):
     console = app.console()
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "log", "1", "halfway through the footer"], AGENT)
     app.runtime().deferred.drain()
@@ -3733,7 +3733,7 @@ def test_the_agent_is_kept_out_of_the_secrets_and_the_mcp_keys(app: App, tmp_pat
     monkeypatch.setattr(Path, "home", lambda: tmp_path / "home")
     hook(app, "SessionStart")
     read_skill(app, "journal")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     values = app.container.get(SecretValues).path
     keys = tmp_path / "home" / ".journal" / "keys"
     refused = lambda tool, given: hook(app, "PreToolUse", tool_name=tool, tool_input=given)[0] == 409
@@ -3765,7 +3765,7 @@ def test_the_secret_commands_make_ask_for_change_list_show_and_delete_and_none_t
     shown = console.run(["secret", "show", "1"], AGENT).out
     assert "GITHUB_KEY" in shown and "waiting for the user, hidden" in shown and "proposed: curl" in shown
     assert console.run(["secret", "update", "1", "--title", "GitHub"], AGENT).code == 0 and "GitHub" in console.run(["secret", "list"], AGENT).out
-    assert console.run(["secret", "where"], AGENT).out.strip().endswith(".env")
+    assert console.run(["secret", "folder"], AGENT).out.strip().endswith(".env")
     made = tmp_path / "made.txt"
     made.write_text("  generated-password-value  \n")
     assert console.run(["secret", "store", "1", "key", str(made)], AGENT).code == 0 and not made.exists()
@@ -3899,7 +3899,7 @@ def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app: App
 
 def test_an_agents_wait_is_on_its_own_row_with_or_without_a_task(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["await", "the suite", "--until", "false"], AGENT)
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         row = json.loads(reply.read())["rows"][0]
@@ -3912,7 +3912,7 @@ def test_a_step_moved_on_is_never_written_back_by_a_change_read_before_it(app: A
     console = app.console()
     release = console.run(["sequence", "create", "release", "--steps", "one | two | three"], USER).out.split()[1].rstrip(":")
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["sequence", "run", release], AGENT)
     console.run(["sequence", "follow"], AGENT)
     running, machine = app.container.get(RunTracker), app.container.get(StateMachine)
@@ -3929,7 +3929,7 @@ def test_an_agent_waiting_in_auto_mode_is_pointed_to_the_next_task_after_a_quiet
     drive_the_clock(app, monkeypatch)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "create", "the header"], AGENT)
     console.run(["await", "the suite", "--until", "false"], AGENT)
@@ -3947,7 +3947,7 @@ def test_an_approved_plan_not_started_holds_the_stop_until_it_is(app: App):
     console.run(["plan", "ready", "1"], USER)
     console.run(["plan", "approve", "1"], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     assert "plan 1 is approved and not started" in hook(app, "Stop")[1]["reason"]
     console.run(["plan", "start", "1"], AGENT)
     assert "is approved and not started" not in json.dumps(hook(app, "Stop")[1]), "a started plan holds nothing"
@@ -4020,7 +4020,7 @@ def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app: Ap
     command = dict(tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})
     hook(app, "PostToolUse", **command)
     assert app.container.get(Tasks).find(1).state == "started", "the head was not made by this command"
-    for line in (["task", "park", "1", "first"], ["task", "start", "2"], ["task", "park", "2", "later"], ["task", "resume", "1"]):
+    for line in (["task", "suspend", "1", "first"], ["task", "start", "2"], ["task", "suspend", "2", "later"], ["task", "resume", "1"]):
         app.console().run(line, AGENT)
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "New\n\nJournal: tasks done 1 and 2 now"], cwd=root, check=True)
     hook(app, "PostToolUse", **command)
@@ -4138,26 +4138,26 @@ def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task
     console.run(["plan", "ready", "1"], USER)
     console.run(["plan", "approve", "1"], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "aside", "--start"], AGENT)
     refused = console.run(["plan", "start", "1"], AGENT)
     assert refused.code == 1 and "task 3 is in hand" in refused.err, "a plan's start obeys the one task in hand"
     assert app.container.get(Plans).find(1).state == "approved", "a refused start leaves the plan as it was"
-    assert console.run(["task", "park", "2", "x"], AGENT).code == 1, "a task never started is not parked"
-    console.run(["task", "park", "3", "the plan first"], AGENT)
+    assert console.run(["task", "suspend", "2", "x"], AGENT).code == 1, "a task never started is not parked"
+    console.run(["task", "suspend", "3", "the plan first"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
-    console.run(["plan", "park", "1"], AGENT)
+    console.run(["plan", "suspend", "1"], AGENT)
     tasks = app.container.get(Tasks)
     assert tasks.find(1).state == "parked" and tasks.current() is None, "a parked plan parks its task in hand"
     done = console.run(["task", "resume", "1"], AGENT)
     assert done.code == 0
-    console.run(["task", "done", "1", "--how", "h"], AGENT)
+    console.run(["task", "complete", "1", "--how", "h"], AGENT)
     app.runtime().deferred.drain()
     assert any("task 3 is still parked" in line for line in typed), "with nothing in hand, a close names a parked task"
     console.run(["task", "resume", "3"], AGENT)
-    console.run(["task", "done", "3", "--how", "h"], AGENT)
+    console.run(["task", "complete", "3", "--how", "h"], AGENT)
     console.run(["task", "start", "2"], AGENT)
-    console.run(["task", "done", "2", "--how", "h"], AGENT)
+    console.run(["task", "complete", "2", "--how", "h"], AGENT)
     assert app.container.get(Plans).find(1).state == "done", "a parked plan whose last task closes is done"
 
 
@@ -4172,10 +4172,10 @@ def test_a_plan_started_with_every_task_closed_is_done_and_one_with_no_task_is_n
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "approve", "2"], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
-    console.run(["plan", "park", "1"], AGENT)
+    console.run(["environment", "overview"], AGENT)
+    console.run(["plan", "suspend", "1"], AGENT)
     console.run(["task", "start", "1"], AGENT)
-    console.run(["task", "done", "1", "--how", "h"], AGENT)
+    console.run(["task", "complete", "1", "--how", "h"], AGENT)
     plans = app.container.get(Plans)
     assert plans.find(1).state == "done", "a parked plan whose last task closes is done"
     console.run(["plan", "start", "2"], AGENT)
@@ -4473,12 +4473,12 @@ def test_resuming_a_plans_parked_task_follows_the_plan_again_so_finishing_it_sta
     console.run(["plan", "todos", "1", "1", "1", "2"], USER)
     console.run(["plan", "approve", "1"], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
-    console.run(["task", "park", "1", "something first"], AGENT)
+    console.run(["task", "suspend", "1", "something first"], AGENT)
     console.run(["task", "resume", "1"], AGENT)
     assert app.container.get(StateMachine).current("s1").name == "following_plan", "a resumed plan task is followed again"
-    console.run(["task", "done", "1", "--how", "h"], AGENT)
+    console.run(["task", "complete", "1", "--how", "h"], AGENT)
     assert app.container.get(Tasks).find(2).state == "started", "so finishing it starts the next"
 
 
@@ -4495,14 +4495,14 @@ def test_a_plan_moves_on_whoever_closes_its_task_and_an_approved_plan_with_every
     for n in (1, 2):
         console.run(["plan", "approve", str(n)], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
-    console.run(["task", "done", "1", "--how", "the user closed it"], USER)
+    console.run(["task", "complete", "1", "--how", "the user closed it"], USER)
     following = app.container.get(StateMachine).current("s1")
     assert app.container.get(Tasks).find(2).state == "started" and (following.name, following.plan_id, following.task_id) == ("following_plan", 1, 2), "the user's close moves the agent's plan on"
-    console.run(["task", "done", "2", "--how", "h"], AGENT)
+    console.run(["task", "complete", "2", "--how", "h"], AGENT)
     console.run(["task", "start", "3"], USER)
-    console.run(["task", "done", "3", "--how", "h"], USER)
+    console.run(["task", "complete", "3", "--how", "h"], USER)
     assert app.container.get(Plans).find(2).state == "done", "an approved plan whose last task closes is done without a start"
 
 
@@ -4518,21 +4518,21 @@ def test_a_plan_parks_and_restarts_on_its_parked_task_only_once_approved_holds_i
     console.run(["plan", "phase", "1", "second", "--when", "w"], USER)
     console.run(["plan", "todos", "1", "1", "1", "2"], USER)
     console.run(["plan", "todos", "1", "2", "3"], USER)
-    assert console.run(["plan", "park", "1"], USER).code == 1, "a plan not yet approved is not parked, so it cannot be started by a restart"
+    assert console.run(["plan", "suspend", "1"], USER).code == 1, "a plan not yet approved is not parked, so it cannot be started by a restart"
     console.run(["plan", "approve", "1"], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
-    console.run(["plan", "park", "1"], AGENT)
+    console.run(["plan", "suspend", "1"], AGENT)
     assert "task 1," in console.run(["plan", "start", "1"], AGENT).out, "a restart resumes the parked task"
-    console.run(["task", "done", "1", "--how", "h"], AGENT)
-    console.run(["task", "done", "2", "--how", "h"], AGENT)
+    console.run(["task", "complete", "1", "--how", "h"], AGENT)
+    console.run(["task", "complete", "2", "--how", "h"], AGENT)
     console.run(["task", "block", "3", "a vendor"], AGENT)
     plans = app.container.get(Plans)
     assert plans.checkpoint_plans(plans.find(1)) is not None, "a blocked task after a checkpoint does not pass it"
     console.run(["task", "unblock", "3"], AGENT)
     console.run(["task", "start", "3"], AGENT)
-    console.run(["task", "done", "3", "--how", "h"], AGENT)
+    console.run(["task", "complete", "3", "--how", "h"], AGENT)
     assert plans.find(1).state == "done"
     tasks = app.container.get(Tasks)
     tasks.save(tasks.find(3).with_(state=TaskState.OPEN, finished_at=None, outcome=""), Actor.user(1))
@@ -4582,12 +4582,12 @@ def test_a_worker_report_not_acted_on_is_named_until_it_is(app: App):
     from journal.models.worker import Worker
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).environment(MAIN):
         worker = workers.save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet").reported(0.0, 0), Actor.system())
     assert "worker 1 (Lady Lovelace) reported and you have not acted on it yet" in json.dumps(hook(app, "Stop")[1])
-    app.console().run(["worker", "done", str(worker.id)], AGENT)
+    app.console().run(["worker", "complete", str(worker.id)], AGENT)
     assert "not acted on it yet" not in json.dumps(hook(app, "Stop")[1]), "once acted on it is named no more"
 
 
@@ -4619,20 +4619,20 @@ def test_a_job_on_files_a_worker_already_worked_on_goes_back_to_that_worker(app:
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "fix src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).environment(MAIN):
         workers.save(workers.find(1).with_(resume="abc").reported(0.0, 0), Actor.system())
     refused = console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    assert refused.code == 1 and "journal worker say 1" in refused.err, "related work goes back to the worker that knows it"
+    assert refused.code == 1 and "journal worker assign 1" in refused.err, "related work goes back to the worker that knows it"
     assert console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet", "--fresh"], AGENT).code == 0, "unless a fresh one is asked for"
     assert console.run(["worker", "dispatch", "Mr. Bell", "write docs/other.md", "--profile", "journal-medior", "--model", "sonnet"], AGENT).code == 0, "other files, another worker"
 
 
 def test_a_subagent_job_on_files_one_already_worked_on_goes_back_to_it_and_a_review_is_fresh(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     mapped = {"description": "map the chain", "prompt": "Read src/journal/features/shell/chain.py and map it.", "subagent_type": "journal-researcher", "model": "sonnet"}
     hook(app, "PreToolUse", tool_name="Agent", tool_input=mapped, tool_use_id="u1")
     hook(app, "PostToolUse", tool_name="Agent", tool_input=mapped, tool_use_id="u1", tool_response={"isAsync": True, "agentId": "r1"})
@@ -4719,7 +4719,7 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app: 
     from journal.repositories.plans import Plans
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "create", "p", "--brief", "b"], USER)
     console.run(["plan", "add", "1", "delegated"], USER)
     console.run(["plan", "add", "1", "mine"], USER)
@@ -4767,7 +4767,7 @@ def test_a_command_in_the_background_past_five_minutes_is_named_to_the_agent_at_
     catch_typed(app, monkeypatch, typed)
     drive_the_clock(app, monkeypatch)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     folder = app.config.root / "c1"
     folder.mkdir()
     outputs = app.container.get(CommandOutputs)
@@ -4915,11 +4915,11 @@ def test_the_agent_stays_out_of_a_workers_worktree_and_is_told_how_to_work_there
     for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
         subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
     inside = app.config.home / "worktrees" / "1-Lady-Lovelace" / "parser.py"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(inside), "content": "x"})
-    assert status == 409 and "worker 1's worktree" in body["error"] and "journal worker say 1" in body["error"], "the worker's worktree is the worker's"
+    assert status == 409 and "worker 1's worktree" in body["error"] and "journal worker assign 1" in body["error"], "the worker's worktree is the worker's"
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(inside), "content": "x"}, agent_id="a1")[0] == 200, "a subagent's own tool use is not the agent's"
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(root / "elsewhere.py"), "content": "x"})[0] == 200
 
@@ -4946,10 +4946,10 @@ def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_n
         assert "stays while it works" in app.container.get(WorkerBranch).dropped(workers.find(1)), "never while the worker runs in it"
         workers.save(workers.find(1).reported(0.0, 0), Actor.system())
     (tree / "notes.txt").write_text("half\n")
-    kept = app.console().run(["worker", "done", "1"], AGENT).out
+    kept = app.console().run(["worker", "complete", "1"], AGENT).out
     assert "stays, since 1 files in it are not committed: notes.txt" in kept and tree.is_dir(), "uncommitted work keeps it"
     (tree / "notes.txt").unlink()
-    gone = app.console().run(["worker", "done", "1"], AGENT).out
+    gone = app.console().run(["worker", "complete", "1"], AGENT).out
     assert "its worktree and branch are removed; its last commit is kept as refs/journal/worktrees/1-Lady-Lovelace" in gone and not tree.exists()
     assert git("log", "-1", "--format=%s", "refs/journal/worktrees/1-Lady-Lovelace").stdout.strip() == "the parser", "its last commit can still be taken in"
 
@@ -5043,7 +5043,7 @@ def test_a_commit_made_in_a_worktree_closes_its_task_when_a_merge_lands_it_and_n
 
 def test_a_link_in_a_commands_output_is_suggested_as_a_pin_and_again_only_after_fifty_tool_uses(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     made = lambda: hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "gh pr create"}, tool_response={"stdout": "https://github.com/acme/shop/pull/27"})[1]
     edited = hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": "a.py"}, tool_response={"originalFile": "see https://example.com/docs/one"})[1]
     assert "is not pinned" not in str(edited), "an edit's answer carries the file it changed, so its links are never suggested"
@@ -5089,7 +5089,7 @@ def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(a
     console.run(["plan", "add", "1", "pair it", "--brief", "a code pairs"], AGENT)
     console.run(["task", "start", "1"], AGENT)
     console.run(["task", "log", "1", "the code is hashed"], AGENT)
-    console.run(["task", "done", "1", "--how", "pairs by code"], AGENT)
+    console.run(["task", "complete", "1", "--how", "pairs by code"], AGENT)
     with app.container.get(Scope).environment(1):
         moments = app.container.get(PlanTimeline).build(app.container.get(Plans).find(1))
     assert [(m.kind, m.task, m.text) for m in moments] == [("started", 1, ""), ("log", 1, "the code is hashed"), ("done", 1, "pairs by code")], "each start, log line and end, oldest first"
@@ -5144,7 +5144,7 @@ def test_a_pairing_code_expires_and_is_voided_by_ten_wrong_tries(app: App):
     assert not tunnel.wanted, "and once it runs out, the clock closes the tunnel again"
     with pytest.raises(Rejection):
         pairing.pair(late.short, "iPhone", time + timedelta(minutes=11))
-    guessed = pairing.offer(1, Actor.user(1), time)
+    guessed = pairing.propose(1, Actor.user(1), time)
     for _ in range(10):
         with pytest.raises(Rejection):
             pairing.pair("WRONGCODE", "iPhone", time)
@@ -5253,7 +5253,7 @@ def test_a_message_gets_one_reply_unless_the_agent_confirms_a_second(app: App, m
     console = app.console()
     console.run(["message", "send", "is the idle agent left waiting?"], USER)
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] new message 1")
     sent = console.run(["message", "send", "Not quite: an agent with work is told the next task at each stop, and one at rest is checked in on after thirty quiet minutes.", "--reply-to", "1"], AGENT)
     assert sent.code == 0
@@ -5415,9 +5415,9 @@ def test_a_task_closed_by_a_commit_names_a_parked_task_at_once(app: App, monkeyp
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "Ship the footer\n\nJournal: tasks done 2"], cwd=root, check=True)
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the parser", "--start"], AGENT)
-    console.run(["task", "park", "1", "the footer comes first"], AGENT)
+    console.run(["task", "suspend", "1", "the footer comes first"], AGENT)
     console.run(["task", "create", "footer", "--start"], AGENT)
     reply = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})[1]
     told = reply["hookSpecificOutput"]["additionalContext"]
@@ -5591,7 +5591,7 @@ def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App
     from journal.repositories.command_outputs import CommandOutputs
     console = app.console()
     hook(app, "SessionStart")
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     bare = console.run(["await", "the build"], AGENT)
     assert bare.code == 1 and "a wait names what ends it" in bare.err, "a wait that names nothing to end it is refused"
     user = console.run(["await", "the user's answer", "--until", "false"], AGENT)
@@ -5683,7 +5683,7 @@ def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_
     sent = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: sent.append(fields["line"]))
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["message", "send", "are you there?"], USER)
     assert sent[-1] == "[journal] new message 1"
     app.console().run(["message", "read", "1"], AGENT)
@@ -5787,7 +5787,7 @@ def test_a_paused_agent_may_stop_with_a_message_unread_read_it_through_the_pause
     typed = []
     catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     agent_id = app.container.get(Agents).session_agent("s1").id
     assert viewer(app, f"agents/{agent_id}/pause")["state"] == "paused"
     app.console().run(["message", "send", "look at the footer"], USER)
@@ -5805,7 +5805,7 @@ def test_a_paused_agent_may_stop_with_a_message_unread_read_it_through_the_pause
 def test_a_tool_entry_records_the_calls_reading_beside_the_raw_input(app: App):
     from journal.repositories.entries import Entries
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "echo hi > notes.txt && grep -rn foo src"})
     hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "grep -rn foo src"})
     written, read = reversed(app.container.get(Entries).tool_starts("s1", 2))
@@ -5831,7 +5831,7 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     missed = app.container.get(Entries).matching(kind="plugin_unanswered")
     assert "no answer within 1000 ms" in missed[-1].data["reason"] and plugins.lookup("echo").faults_in_a_row == 0 and plugins.lookup("echo").enabled, "the miss is on the plugin's record, no fault counted, and the plugin stays on to be asked next time"
     from journal.support.plugin_manifest import PluginManifest
-    manifest = PluginManifest.from_json({"name": "x", "hears": ["tool_starting", "idle"], "holds": [{"event": "tool_starting", "window_ms": 5000}, "idle"]})
+    manifest = PluginManifest.parsed({"name": "x", "hears": ["tool_starting", "idle"], "holds": [{"event": "tool_starting", "window_ms": 5000}, "idle"]})
     assert manifest.window_ms("tool_starting", 50) == 50 and manifest.window_ms("idle", 50) == 50 and manifest.window_ms("tool_starting", 9000) == 5000, "a window is cut to the user's ceiling, and a hold named without one takes the ceiling"
 
 
@@ -5917,7 +5917,7 @@ def test_a_plugin_hears_file_edited_with_the_edit_precomputed_and_holds_it_only_
     from journal.support.listener_queue import ListenerQueue
     echo(app, hears=["file_edited"], holds=[])
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": str(app.config.root / "a.py"), "old_string": "x", "new_string": "y"})
     hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": str(app.config.root / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" a", "-x", "+y", " b"]}]})
     (app.config.root / "b.py").write_text("x = 1\ny = 2\n")
@@ -5954,7 +5954,7 @@ def test_every_hook_of_every_tool_arrives_is_recorded_and_answered_even_with_a_m
     transcript.write_text(j.dumps(crossed) + "\n")
     monkeypatch.setattr(Claude, "transcript", lambda self, project, session: transcript if session == "s1" else None)
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     calls = {"Read": {"file_path": str(app.config.root / "a.py")}, "Edit": {"file_path": str(app.config.root / "a.py"), "old_string": "x", "new_string": "y"}, "Write": {"file_path": str(app.config.root / "b.py"), "content": "x"}, "Bash": {"command": "ls"}, "SendMessage": {"to": "code-commandments-12", "message": "noted"}, "Agent": {"description": "look", "prompt": "read a.py", "subagent_type": "journal-researcher", "model": "sonnet"}}
     for tool, tool_input in calls.items():
         status, body = hook(app, "PreToolUse", tool_name=tool, tool_input=tool_input)
@@ -5975,7 +5975,7 @@ def test_a_read_message_holds_a_tool_only_after_a_grace_of_tool_uses_with_a_remi
     from journal.models.message import Message
     from journal.repositories.messages import Messages as MessageRows
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.container.get(MessageRows).save(Message(environment_id=1, author=Author.USER, text="how far is it?"), Actor.user(1))
     app.console().run(["message", "read", "1"], AGENT)
     answers = [hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / f"{n}.py")}) for n in range(1, 5)]
@@ -6009,7 +6009,7 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     assert card(1).text == "Worker 1, Lady Lovelace: reported" and card(1).data["tone"] == "good" and card(1).data["detail"] == "the footer is fixed"
     assert card(2).text == "Worker 2, Dr. Einstein: failed" and card(2).data["tone"] == "bad" and card(2).data["detail"].startswith("failed with code 3")
     assert card(3).text == "Worker 3, Mr. Babbage: stopped"
-    console.run(["worker", "done", "1"], AGENT)
+    console.run(["worker", "complete", "1"], AGENT)
     assert card(1).text == "Worker 1, Lady Lovelace: retired, its work taken in"
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
@@ -6123,7 +6123,7 @@ def test_a_fact_rule_or_reminder_is_handed_over_once_per_context_window_by_the_s
     app.runtime().deferred.drain()
     console.run(["reminder", "create", "the third", "--keywords", "third"], USER)
     assert not reminders.find(3).presence
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     assert reminders.find(3).presence, "the look hands every row over"
 
 

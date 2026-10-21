@@ -146,7 +146,7 @@ class SupervisorLink:
         text = path.read_text().strip() if path.is_file() else ""
         if not text:
             return None
-        return SupervisorAnnouncement.from_json(json.loads(text)) if text.startswith("{") else SupervisorAnnouncement(text, OldSupervisor.screen(self.config.home, path.name))
+        return SupervisorAnnouncement.parsed(json.loads(text)) if text.startswith("{") else SupervisorAnnouncement(text, OldSupervisor.screen(self.config.home, path.name))
 
     def _send(self, environment_id: int, verb: str, fields: dict) -> SupervisorReply:
         announced = self.announced(environment_id)

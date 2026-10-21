@@ -12,7 +12,7 @@ class ClaudeBlock:
     result: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "ClaudeBlock":
+    def parsed(cls, data: dict) -> "ClaudeBlock":
         content = data.get("content", "")
         result = content if isinstance(content, str) else "\n".join(str(b.get("text", "")) for b in content if isinstance(b, dict))
         return cls(str(data.get("type", "")), str(data.get("text", "")), str(data.get("thinking", "")), str(data.get("name", "")), result)

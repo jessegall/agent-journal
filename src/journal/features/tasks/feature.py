@@ -68,8 +68,8 @@ needs no task; file one for work that is an item of its own, that waits, or that
 - `journal task rename <n> "<title>"` says the title again when the first one was wrong.
 - `journal task start <n>` takes a task in hand. `journal task list` shows every task here.
 - `journal task log <n> "<where it stands>"` after each step that matters; before a compaction, always.
-- `journal task done <n> --how "<outcome>"` finishes it. The output names the next open task.
-- One task in hand at a time: a second start is refused until the first is done or parked. `journal task park <n> "<why>"`
+- `journal task complete <n> --how "<outcome>"` finishes it. The output names the next open task.
+- One task in hand at a time: a second start is refused until the first is done or parked. `journal task suspend <n> "<why>"`
   sets a started task aside for something else first; `journal task resume <n>` picks it up. Park for choice, never for being stuck.
 - A task that waits on something outside your hands, a decision, an answer, a dependency, is blocked:
   `journal task block <n> "<what it waits on>"`. Blocked is neither offered nor nudged, only listed with its reason;

@@ -48,7 +48,7 @@ outside the project, and never in the journal; the journal masks a value anywher
   variables while it runs.
 - A value you made yourself, such as a generated password, goes in with `journal secret store <n> <field> <file>`,
   which deletes the file.
-- `journal secret where` names the file the values live in; `journal secret delete <n>` puts one away.
+- `journal secret folder` names the file the values live in; `journal secret delete <n>` puts one away.
 - A deleted secret keeps its values thirty days for `journal secret restore <n>`, then they go.
 """, keywords=("secret", "secrets", "api key", "token", "password", "login"))
     listeners = (LeakAlarm, ExpiryQuestion, SecretPurge)

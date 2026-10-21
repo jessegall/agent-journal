@@ -74,7 +74,7 @@ class Column:
             return value
         loaded = json.loads(value)
         if is_dataclass(self.kind):
-            return self.kind.from_json(loaded)
+            return self.kind.parsed(loaded)
         return tuple(loaded) if self.kind is tuple else loaded
 
     @staticmethod

@@ -10,7 +10,7 @@ class SupervisorAnnouncement:
     protocol: int = 0
 
     @classmethod
-    def from_json(cls, data: dict) -> "SupervisorAnnouncement":
+    def parsed(cls, data: dict) -> "SupervisorAnnouncement":
         return cls(**{name: data[name] for name in ("socket", "screen", "protocol") if name in data})
 
     @property

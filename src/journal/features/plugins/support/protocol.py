@@ -54,7 +54,7 @@ class Protocol:
         unknown = sorted(set(raw) - {f.name for f in fields(PluginAnswer)})
         if unknown:
             raise PluginFault(f"its answer has keys the protocol does not know: {', '.join(unknown)}")
-        answer = PluginAnswer(**{**raw, "cards": tuple(PluginCard.from_json(card) for card in raw.get("cards", ())), "commands": tuple(raw.get("commands", ()))})
+        answer = PluginAnswer(**{**raw, "cards": tuple(PluginCard.parsed(card) for card in raw.get("cards", ())), "commands": tuple(raw.get("commands", ()))})
         if answer.answer not in ANSWERS:
             raise PluginFault(f"it answered {answer.answer!r}; an answer is allow, refuse or tell")
         if answer.v != self.VERSION:

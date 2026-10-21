@@ -42,7 +42,7 @@ def journal(tmp_path: Path, monkeypatch, request):
 def prompts_with_unread(app, replay: Replay, provider: str) -> None:
     """The steps: a session starts, messages arrive while the agent sits at its prompt, and it sends a prompt after one, after three and after four, twice."""
     hook_as(app, provider, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     replay.step("session starts")
     for n, text in ((1, "one"), (2, "two"), (3, "three"), (4, "four")):
         app.console().run(["message", "send", text], USER)
@@ -64,7 +64,7 @@ def tool_uses_with_the_inbox(app, replay: Replay, provider: str) -> None:
     """The steps: with a task in hand a message arrives; sixteen reads and a write go by unread; the message is read and a read, a journal command, a look at its files and a read after the reply follow."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     replay.step("a task in hand")
     console.run(["message", "send", "one"], USER)
@@ -86,7 +86,7 @@ def tool_uses_across_events(app, replay: Replay, provider: str) -> None:
     """The steps: a message arrives, two reads, a stop, a prompt, a third read that names the inbox since the count of uses survived the stop and the prompt, a session start, then three reads more, the sixth naming again."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["message", "send", "one"], USER)
     app.runtime().deferred.drain()
     replay.step("message 1 arrives")
@@ -106,7 +106,7 @@ def writes_over_the_log(app, replay: Replay, provider: str) -> None:
     """The steps: a task in hand, twenty-seven writes, a log line, then fifty-one writes more."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     replay.step("a task in hand")
     for i in range(1, 28):
@@ -121,7 +121,7 @@ def the_clock_ticks(app, replay: Replay, provider: str) -> None:
     """The steps: an idle agent in auto mode hears the clock at a minute, at half an hour and at half an hour again; then with a task parked, at a minute, twice; then awaiting something outside, at five minutes, twice, until its own tool use lifts the wait."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     tick = lambda quiet: tick_after(app, quiet)
     hook_as(app, provider, "Stop")
     replay.step("idle")
@@ -129,7 +129,7 @@ def the_clock_ticks(app, replay: Replay, provider: str) -> None:
         tick(quiet)
         replay.step(f"quiet for {name}")
     console.run(["task", "create", "the footer", "--start"], AGENT)
-    console.run(["task", "park", "1", "the header first"], AGENT)
+    console.run(["task", "suspend", "1", "the header first"], AGENT)
     hook_as(app, provider, "Stop")
     replay.step("a task parked")
     for name in ("a minute with a task parked", "a minute more"):
@@ -157,7 +157,7 @@ def a_worker_reports(app, replay: Replay, provider: str) -> None:
     """The steps: two workers dispatched and awaited; one reports, the other is stopped."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
@@ -176,7 +176,7 @@ def a_question_is_answered(app, replay: Replay, provider: str) -> None:
     """The steps: a question asked and waited on, then answered by the user."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     hook_as(app, provider, "Stop")
@@ -210,7 +210,7 @@ def stops_with_unread(app, replay: Replay, provider: str) -> None:
     """The steps: the agent stops with one message unread, then with four."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["message", "send", "one"], USER)
     replay.step("message 1 arrives")
     replay.step("a stop with one unread", hook_as(app, provider, "Stop")[1])
@@ -223,7 +223,7 @@ def stops_with_unread(app, replay: Replay, provider: str) -> None:
 def starts_with_unread(app, replay: Replay, provider: str) -> None:
     """The steps: two messages are left before any session, then a session starts."""
     console = app.console()
-    console.run(["environment", "here"], USER)
+    console.run(["environment", "overview"], USER)
     console.run(["message", "send", "one"], USER)
     console.run(["message", "send", "two"], USER)
     replay.step("two messages wait")
@@ -255,7 +255,7 @@ def tool_uses_with_changed_settings(app, replay: Replay, provider: str) -> None:
         settings.set(key, value, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["message", "send", "one"], USER)
     console.run(["message", "read", "1"], AGENT)
@@ -300,7 +300,7 @@ def test_tool_about_to_run_matches_its_record_on_the_log_cadence(journal, monkey
 def message_arrives(app, replay: Replay, provider: str) -> None:
     """The steps: a session starts, the user leaves a message while the agent sits at its prompt."""
     hook_as(app, provider, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     replay.step("session starts")
     app.console().run(["message", "send", "are you there?"], USER)
     replay.step("a message arrives")
@@ -318,7 +318,7 @@ def the_phone_talks(app, replay: Replay, provider: str) -> None:
     phone = Actor.phone(1)
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     replay.step("session starts")
     app.container.get(Messages).save(Message(author=Author.USER, text="from the train"), phone)
     replay.step("the phone leaves a message")
@@ -350,7 +350,7 @@ def working_rules(app, replay: Replay, provider: str) -> None:
     """The steps: a task in hand, then a stop, a session starting again and a quarter of an hour's quiet: what the Working state says of its own."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     replay.step("a task in hand")
     replay.step("a stop with the task in hand", hook_as(app, provider, "Stop")[1])
@@ -363,7 +363,7 @@ def expecting_rules(app, replay: Replay, provider: str) -> None:
     """The steps: a task in hand awaiting something outside, five quiet minutes twice, then a tool use that lifts the wait."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["await", "the deploy", "--until", "false"], AGENT)
     replay.step("awaiting the deploy")
@@ -377,7 +377,7 @@ def sequence_rules(app, replay: Replay, provider: str) -> None:
     """The steps: a sequence of two steps run; a write before the step is taken up, a stop after a tool use, the step followed and a write, then a stop at step two."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     made = console.run(["sequence", "create", "ship it", "--steps", "tag it | push"], USER).out.split()[1].rstrip(":")
     console.run(["sequence", "run", made], AGENT)
     replay.step("the sequence runs")
@@ -395,7 +395,7 @@ def plan_building(app, replay: Replay, provider: str) -> None:
     """The steps: the agent creates a plan and Building a plan carries it through the goal, the phases and the tasks to a ready plan, each step taken up by the command it names."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     shell = lambda line: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].shell, tool_input={"command": line})[1]
     console.run(["plan", "create", "Release", "--brief", "a release"], AGENT)
     app.runtime().deferred.drain()
@@ -421,7 +421,7 @@ def owed_pause_rules(app, replay: Replay, provider: str) -> None:
     """The steps: a stop before the agent has looked at what is in flight, then a context mark reached and a stop under it."""
     hook_as(app, provider, "SessionStart")
     replay.step("a stop before orienting", hook_as(app, provider, "Stop")[1])
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     context(app, 95)
     replay.step("a tool use at the mark", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
     replay.step("a stop under the mark", hook_as(app, provider, "Stop")[1])
@@ -431,7 +431,7 @@ def waiting_rules(app, replay: Replay, provider: str) -> None:
     """The steps: a question asked and waited on, then a prompt from the user's side while it waits."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["question", "ask", "which colour?", "--options", "red", "blue"], AGENT)
     replay.step("waiting on the question")
@@ -442,7 +442,7 @@ def stuck_rules(app, replay: Replay, provider: str) -> None:
     """The steps: a task in hand, the agent declares itself stuck, stops, then works again."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["stuck", "the build is broken"], AGENT)
     replay.step("stuck")
@@ -462,7 +462,7 @@ def loading_skill_rules(app, replay: Replay, provider: str) -> None:
     replay.step("a write before the skill is read", write())
     replay.step("the journal skill read", read_skill(app, provider, "journal"))
     replay.step("a write before the look", write())
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     replay.step("looked at what is in flight")
     app.console().run(["message", "send", "one"], USER)
     replay.step("message 1 arrives")
@@ -477,14 +477,14 @@ def orienting_rules(app, replay: Replay, provider: str) -> None:
     write = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1]
     replay.step("the session starts", hook_as(app, provider, "SessionStart")[1])
     replay.step("a write before the look", write())
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     replay.step("looked at what is in flight")
     replay.step("a write after the look", write())
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["message", "send", "hi"], USER)
     replay.step("the session starts again after a compaction", hook_as(app, provider, "SessionStart", source="compact")[1])
     replay.step("a write before the second look", write())
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     replay.step("looked again")
     replay.step("a write after the second look", write())
 
@@ -492,7 +492,7 @@ def orienting_rules(app, replay: Replay, provider: str) -> None:
 def at_mark_rules(app, replay: Replay, provider: str) -> None:
     """The steps: with a task in hand the context crosses the first mark, a read is told, a write is held, a fact recorded lets it through and the mark asks once; the context crosses the second mark at a stop, and nothing survives lets it through."""
     hook_as(app, provider, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     read = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1]
     write = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1]
@@ -507,7 +507,7 @@ def at_mark_rules(app, replay: Replay, provider: str) -> None:
     context(app, 55)
     replay.step("a stop past the second mark", hook_as(app, provider, "Stop")[1])
     replay.step("a write at the second mark", write())
-    app.console().run(["nothing", "survives", "all logged"], AGENT)
+    app.console().run(["memory", "skip", "all logged"], AGENT)
     replay.step("nothing survives")
     replay.step("a write after", write())
 
@@ -516,7 +516,7 @@ def plan_rules(app, replay: Replay, provider: str) -> None:
     """The steps: a plan of two phases, the first a checkpoint, approved and started; its first task done, a stop with auto off then on, the next phase started, a second session starting under the plan, the plan parked, then a second plan started and cancelled."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "create", "p", "--brief", "b"], USER)
     console.run(["plan", "add", "1", "first"], USER)
     console.run(["plan", "add", "1", "second"], USER)
@@ -528,7 +528,7 @@ def plan_rules(app, replay: Replay, provider: str) -> None:
     console.run(["plan", "approve", "1"], USER)
     console.run(["plan", "start", "1"], AGENT)
     replay.step("the plan is started")
-    console.run(["task", "done", "1"], AGENT)
+    console.run(["task", "complete", "1"], AGENT)
     app.runtime().deferred.drain()
     replay.step("the first task is done, the phase a checkpoint")
     app.container.get(SettingRows).save(Setting(environment_id=0, key="tasks.auto", value=False), Actor.system())
@@ -538,7 +538,7 @@ def plan_rules(app, replay: Replay, provider: str) -> None:
     console.run(["plan", "start", "1"], AGENT)
     replay.step("the next phase started")
     replay.step("a second session starts under the plan", hook_as(app, provider, "SessionStart", session="s2")[1])
-    console.run(["plan", "park", "1"], AGENT)
+    console.run(["plan", "suspend", "1"], AGENT)
     app.runtime().deferred.drain()
     replay.step("the plan is parked")
     console.run(["plan", "create", "q", "--brief", "b"], USER)
@@ -556,7 +556,7 @@ def awaiting_rules(app, replay: Replay, provider: str) -> None:
     """The steps: two workers dispatched and awaited; a stop while awaiting; the first reports and the agent still waits; the last reports and the agent is released; a stop after."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
@@ -575,7 +575,7 @@ def pause_exits(app, replay: Replay, provider: str) -> None:
     """The steps: with a task in hand, each remaining pause is entered and left by what ends it: awaiting something outside by the agent's own tool use, being stuck by its own tool use, waiting on a question by the answer, awaiting a worker by its report, running a sequence by its last step; a stop after each shows the way back."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     read = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1]
     console.run(["await", "the deploy", "--until", "false"], AGENT)
@@ -609,7 +609,7 @@ def ended_restarts(app, replay: Replay, provider: str) -> None:
     """The steps: a session with a task in hand ends, a write and a stop while ended, the same session starts again, the look, a write and a stop back at work."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     write = lambda: hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1]
     ended = hook_as(app, provider, "SessionEnd")[1]
@@ -618,7 +618,7 @@ def ended_restarts(app, replay: Replay, provider: str) -> None:
     replay.step("a write while ended", write())
     replay.step("a stop while ended", hook_as(app, provider, "Stop")[1])
     replay.step("the session starts again", hook_as(app, provider, "SessionStart")[1])
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     replay.step("looked at what is in flight")
     replay.step("a write back at work", write())
     replay.step("a stop back at work", hook_as(app, provider, "Stop")[1])
@@ -634,11 +634,11 @@ def session_starts(app, replay: Replay, provider: str) -> None:
     console.run(["message", "send", "one"], USER)
     settled = lambda answer: (app.runtime().deferred.drain(), answer)[1]
     replay.step("a fresh start with rows on record", settled(hook_as(app, provider, "SessionStart", source="startup")[1]))
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "start", "1"], AGENT)
     replay.step("a second session takes the environment over", settled(hook_as(app, provider, "SessionStart", session="s2", source="startup")[1]))
     replay.step("the first starts again after a compaction", settled(hook_as(app, provider, "SessionStart", source="compact")[1]))
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     replay.step("the first resumed", settled(hook_as(app, provider, "SessionStart", source="resume")[1]))
 
 
@@ -646,7 +646,7 @@ def silent_session_ends(app, replay: Replay, provider: str) -> None:
     """The steps: a session with a task in hand goes quiet; the clock at a quarter of an hour, then at an hour, which ends it; a stop and a write after; the same session starting again."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     replay.step("a task in hand")
     tick(app, 900.0)
@@ -674,7 +674,7 @@ def still_open_after_quiet(app, replay: Replay, provider: str) -> None:
     """The steps: a task in hand, the agent stops, and the clock finds it quiet for a quarter of an hour, then longer."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     hook_as(app, provider, "Stop")
     replay.step("stopped with a task in hand")
@@ -688,7 +688,7 @@ def blocked_after_an_hour(app, replay: Replay, provider: str) -> None:
     """The steps: a blocked task nothing opens by itself, the agent idle, the clock at most of an hour and past it."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "block", "1", "the designer's answer"], AGENT)
     hook_as(app, provider, "Stop")
@@ -703,7 +703,7 @@ def meanwhile_while_waiting(app, replay: Replay, provider: str) -> None:
     """The steps: in auto mode, an open task beside the one in hand, the agent waits on something outside and the clock ticks past a minute."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["task", "create", "the header"], AGENT)
     console.run(["await", "the build", "--until", "false"], AGENT)
@@ -718,7 +718,7 @@ def background_every_five_minutes(app, replay: Replay, provider: str) -> None:
     """The steps: a command moves to the background, the clock passes five and ten minutes of it, it ends, and the clock ticks again."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     folder = app.config.root / "c7"
     folder.mkdir()
     ShellVerbs(app).split("pytest -q", str(folder))
@@ -739,7 +739,7 @@ def log_ask_at_stop_and_start(app, replay: Replay, provider: str) -> None:
     """The steps: a task taken in hand, a stop at once, a stop and a start eleven minutes later, a log, and a stop just after it."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     replay.step("a stop just after the start", hook_as(app, provider, "Stop")[1])
     pass_time(app, 660.0)
@@ -754,7 +754,7 @@ def line_reminder(app, replay: Replay, provider: str) -> None:
     app.container.get(SettingRows).set("etiquette.remind_every", 3, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     for n in range(1, 5):
         console.run(["message", "send", f"note {n}"], USER)
         replay.step(f"message {n}", hook_as(app, provider, "PostToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py"})[1])
@@ -767,7 +767,7 @@ def hold_after_namings(app, replay: Replay, provider: str) -> None:
         settings.set(key, value, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["message", "send", "are you there?"], USER)
     for i in range(1, 5):
@@ -779,7 +779,7 @@ def a_subagents_tool_use(app, replay: Replay, provider: str) -> None:
     app.container.get(SettingRows).set("messages.remind_every", 1, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["message", "send", "are you there?"], USER)
     for i in range(1, 3):
@@ -802,10 +802,10 @@ def two_agents(app, replay: Replay, provider: str) -> None:
     """The steps: a second session starts in the environment of the first, which it ends, and awaits a worker; a message arrives, then the worker reports."""
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     hook_as(app, provider, "SessionStart", session="s2")
     second = Caller("main", "s2")
-    console.run(["environment", "here"], second)
+    console.run(["environment", "overview"], second)
     console.run(["task", "create", "the parser", "--start"], second)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], second)
     console.run(["worker", "wait", "1"], second)
@@ -825,7 +825,7 @@ def two_lines_on_one_write(app, replay: Replay, provider: str) -> None:
     app.container.get(SettingRows).set("messages.hold_after", 0, Actor.system())
     hook_as(app, provider, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     for i in (1, 2):
         replay.step(f"write {i}", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
@@ -887,7 +887,7 @@ def session_in_a_worktree(app, replay: Replay, provider: str) -> None:
     from journal.support.worktree import Worktree
     tree = Worktree(project_with_git(app), "main").created()
     replay.step("session starts in the worktree", hook_as(app, provider, "SessionStart")[1])
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "the page", "--start"], AGENT)
     replay.step("a write inside the worktree", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": str(tree / "page.py"), "content": "PAGE = 1"})[1])
     (tree / "page.py").write_text("PAGE = 1\n")
@@ -915,7 +915,7 @@ def worker_worktree_kept_out(app, replay: Replay, provider: str) -> None:
     """The steps: a worker is dispatched with a worktree, the agent tries to write in it, a subagent writes in a worktree of its own, and the agent writes in the project."""
     root = project_with_git(app)
     hook_as(app, provider, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "the parser", "--start"], AGENT)
     app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
     replay.step("the worker is out")

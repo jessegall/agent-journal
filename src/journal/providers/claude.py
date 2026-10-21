@@ -45,7 +45,7 @@ class Claude(Provider):
         return path if path.is_file() else None
 
     def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
-        return [turn for number, row in rows if (turn := self.turn(number, ClaudeRow.from_json(row)))]
+        return [turn for number, row in rows if (turn := self.turn(number, ClaudeRow.parsed(row)))]
 
     def turn(self, number: int, row: ClaudeRow) -> Turn | None:
         if row.type not in ("user", "assistant"):
@@ -69,7 +69,7 @@ class Claude(Provider):
             file.seek(start)
             lines = file.read().decode(errors="replace").splitlines()[1 if start else 0:]
         thoughts: list[str] = []
-        for row in (ClaudeRow.from_json(json.loads(line)) for line in lines if line.startswith("{")):
+        for row in (ClaudeRow.parsed(json.loads(line)) for line in lines if line.startswith("{")):
             if row.is_prompt:
                 thoughts = []
             elif row.type == "assistant":
@@ -77,11 +77,11 @@ class Claude(Provider):
         return thoughts
 
     def texts(self, line: dict) -> list[str]:
-        row = ClaudeRow.from_json(line)
+        row = ClaudeRow.parsed(line)
         return [block.text for block in row.type_match("text") if block.text.strip()] if row.type == "assistant" else []
 
     def peer_messages(self, line: dict) -> list[PeerMessage]:
-        row = ClaudeRow.from_json(line)
+        row = ClaudeRow.parsed(line)
         if not row.is_enqueued:
             return []
         crossed = CROSS_SESSION.match(row.queued.strip())

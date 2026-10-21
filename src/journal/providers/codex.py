@@ -62,7 +62,7 @@ class Codex(Provider):
             return ""
 
     def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
-        return [turn for number, row in rows if (turn := self.turn(number, CodexRow.from_json(row)))]
+        return [turn for number, row in rows if (turn := self.turn(number, CodexRow.parsed(row)))]
 
     def turn(self, number: int, row: CodexRow) -> Turn | None:
         if row.type != "response_item":
@@ -79,7 +79,7 @@ class Codex(Provider):
         return None
 
     def texts(self, line: dict) -> list[str]:
-        row = CodexRow.from_json(line)
+        row = CodexRow.parsed(line)
         return [row.text] if row.type == "response_item" and row.item == "message" and row.role == "assistant" and row.text.strip() else []
 
     def resume(self, session: str) -> tuple[str, ...]:

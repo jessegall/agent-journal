@@ -92,7 +92,7 @@ class DumpFiler:
 
     def reply(self, n: int, text: str, actor: Actor) -> Dump:
         if not text.strip():
-            raise Rejection('say the answer: journal dump say <n> "<text>"')
+            raise Rejection('say the answer: journal dump reply <n> "<text>"')
         if len(text.strip()) > ANSWER:
             raise Rejection(f"an answer in the dump is at most {ANSWER} characters; this one is {len(text.strip())}")
         return self.dumps.save(self.dumps.find(n).logged(self.entry(text, answer=True), DUMP_LOG_LENGTH), actor)

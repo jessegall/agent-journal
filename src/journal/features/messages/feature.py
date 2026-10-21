@@ -70,7 +70,7 @@ The user leaves messages; you answer them before anything else.
 - An unread inbox is named again every third tool use; after five reminders the next write waits until you read it. A message
   you read and leave unanswered holds your very next tool call that is not a journal command or a look at its files: a word
   first, then the work. A face on a message answers it too.
-- After a compaction, a fresh start or a takeover, `journal environment here` shows what is in flight, the latest
+- After a compaction, a fresh start or a takeover, `journal environment overview` shows what is in flight, the latest
   messages among it, and is owed before any other write; `journal message recent` shows the latest messages alone.
 - A picture in a message is named once you have looked: `journal message tag <n> <file> "<what it shows>"`.
 - A turn that only answers a journal line and changes nothing is kept out of the chat by itself; say in the chat only what

@@ -116,7 +116,7 @@ def write(app):
 
 def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "ship it", "--start"], AGENT)
     assert app.container.get(StateMachine).current("s1").task_id == 1
     assert write(app)[0] == 200
@@ -128,16 +128,16 @@ def test_task_start_moves_the_agent_to_working_and_every_stop_says_carry_on(app:
 
 def test_done_makes_the_agent_idle_again(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
-    app.console().run(["task", "done", "1"], AGENT)
+    app.console().run(["task", "complete", "1"], AGENT)
     assert isinstance(app.container.get(StateMachine).current("s1"), Ready)
     assert hook(app, "Stop")[1] == {}
 
 
 def test_stuck_pauses_and_the_next_tool_use_goes_back_to_where_it_was(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "stuck on the login"], AGENT)
     machine = app.container.get(StateMachine)
@@ -158,7 +158,7 @@ def test_the_session_end_ends_the_agent_and_a_new_start_of_the_same_session_revi
     hook(app, "SessionEnd")
     assert app.container.get(StateMachine).current("s1").name == "ended"
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     assert app.container.get(StateMachine).current("s1").name == "idle"
 
 
@@ -167,7 +167,7 @@ def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
     first.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     first.runtime().start()
     hook(first, "SessionStart")
-    first.console().run(["environment", "here"], AGENT)
+    first.console().run(["environment", "overview"], AGENT)
     first.console().run(["task", "create", "t", "--start"], AGENT)
     first.runtime().stop()
     second = App(Config(tmp_path, port=0))
@@ -182,20 +182,20 @@ def test_the_state_is_in_the_database_so_a_new_server_finds_it(tmp_path):
 def test_a_tick_reaches_the_machine_without_a_hook(app: App):
     from journal.engine.clock import Clock
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.container.get(Clock).tick()
     assert isinstance(app.container.get(StateMachine).current("s1"), Ready)
 
 
 def test_one_task_in_hand_park_resume_and_await(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     console = app.console()
     console.run(["task", "create", "first", "--start"], AGENT)
     console.run(["task", "create", "second"], AGENT)
     refused = console.run(["task", "start", "2"], AGENT)
     assert refused.code == 1 and "task 1 is in hand" in refused.err
-    console.run(["task", "park", "1", "waiting for the designer"], AGENT)
+    console.run(["task", "suspend", "1", "waiting for the designer"], AGENT)
     assert isinstance(app.container.get(StateMachine).current("s1"), Ready), "parked: nothing in hand"
     assert console.run(["task", "resume", "1"], AGENT).code == 0 and app.container.get(StateMachine).current("s1").task_id == 1
     assert console.run(["await", "the deploy to finish", "--until", "false"], AGENT).code == 0
@@ -211,7 +211,7 @@ def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(
     for key, value in (("tasks.first_nudge_after", 5), ("tasks.name_every", 10), ("tasks.log_after", 20)):
         app.container.get(SettingRows).save(Setting(environment_id=0, key=key, value=value), Actor.system())
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     answers = [write(app) for _ in range(21)]
     assert all(status == 200 for status, _ in answers[:20])
@@ -225,7 +225,7 @@ def test_edits_with_nothing_logged_are_asked_named_and_held_as_the_settings_say(
 
 def test_every_stop_with_a_task_in_hand_says_carry_on_and_stuck_is_the_way_out(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     answers = [hook(app, "Stop", stop_hook_active=i > 0) for i in range(4)]
     assert all(a[1].get("decision") == "block" and "task 1 is in hand, last logged just now: carry on" in a[1]["reason"] for a in answers), "there is no repeated-stop escape"
@@ -236,18 +236,18 @@ def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nu
     from journal.repositories.tasks import Tasks
     hook(app, "SessionStart")
     console = app.console()
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the tree", "--start"], AGENT)
     assert "waiting on: a talk with the user" in console.run(["task", "block", "1", "a talk with the user"], AGENT).out
     assert app.container.get(Tasks).find(1).state == TaskState.BLOCKED and app.container.get(StateMachine).current("s1").name == "idle"
     assert hook(app, "Stop")[1].get("decision") != "block", "a blocked task is not offered, in auto mode or not"
-    assert "blocked tasks: 1 the tree (waiting on: a talk with the user)" in console.run(["environment", "here"], AGENT).out
+    assert "blocked tasks: 1 the tree (waiting on: a talk with the user)" in console.run(["environment", "overview"], AGENT).out
     assert "open again" in console.run(["task", "unblock", "1"], AGENT).out and app.container.get(Tasks).find(1).state == TaskState.OPEN
 
 
 def test_a_write_needs_no_task(app: App):
     hook(app, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     assert write(app)[0] == 200, "a quick edit is the agent's own; a task is for work worth tracking"
 
 def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot_place_and_leaves_the_users_own(app: App, monkeypatch):
@@ -694,7 +694,7 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data(
         changed = Ready().respond(SettingChanged(environment_id=1, time=1.0, setting=Voices.VOICE_OPTIONS[0].key).with_data(data), settings)
         assert [n.key for n in changed.nudges] == ["voices.the_voice_changed"]
         assert Ready().respond(SettingChanged(environment_id=1, time=1.0, setting="shell.short_output").with_data(data), settings).nudges == ()
-        turn = Ready().respond(TurnDisplayed(text="the user should run journal task done 3, see https://a.test/new and https://a.test/said").with_data(data), settings)
+        turn = Ready().respond(TurnDisplayed(text="the user should run journal task complete 3, see https://a.test/new and https://a.test/said").with_data(data), settings)
         assert [n.key for n in turn.nudges] == ["etiquette.no_shop_talk", "etiquette.say_you_not_the_user", "pins.pin_the_link"]
         assert "https://a.test/new" in turn.nudges[2].rendered()
         assert Ready().respond(TurnDisplayed(text="see https://a.test/pinned", final=False).with_data(data), settings).nudges == ()
@@ -914,7 +914,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         decided = FeatureData({**looked.parts, "memory": MemoryData(mark_owed=0, context_mark=50, rows=parts["memory"].rows, stale=())})
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(decided), settings).refusal is None
         crossed = Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_data(decided), settings)
-        assert [n.rendered() for n in crossed.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal nothing survives \"<why>\"`"] or crossed.nudges[0].key == "memory.decide_at_the_mark"
+        assert [n.rendered() for n in crossed.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal memory skip \"<why>\"`"] or crossed.nudges[0].key == "memory.decide_at_the_mark"
         assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.6, session="s1").with_data(decided), settings).nudges == ()
         whispered = Ready().respond(ToolStarting(call=shell("lsof -i :port")).with_data(decided), settings)
         assert [n.rendered() for n in whispered.typed] == ["fact 3 is about this and not in your context: journal fact read 3"], "a whisper tells the agent to read the row, never its words"
@@ -1320,7 +1320,7 @@ def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_neve
     app.container.get(SettingRows).set("workers.mode", "orchestrator", Actor.user(1))
     hook(app, "SessionStart")
     console, agents, tasks = app.console(), app.container.get(Agents), app.container.get(Tasks)
-    console.run(["environment", "here"], AGENT)
+    console.run(["environment", "overview"], AGENT)
     console.run(["plan", "create", "go live", "--brief", "twenty tasks"], USER)
     console.run(["plan", "phase", "1", "release", "--when", "all twenty done"], USER)
     for n in range(1, 21):
@@ -1340,15 +1340,15 @@ def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_neve
         app.container.get(WorkerRunner).run(workers.find(n), ["sh", "-c", "echo the piece is done"], Actor.agent("s1"))
     assert stack() == ["orchestrating", "orchestrating_plan"], "the last report pops the wait and the orchestrator is back on its plan"
     for n in (1, 2, 3):
-        assert console.run(["worker", "done", str(n)], AGENT).code == 0
+        assert console.run(["worker", "complete", str(n)], AGENT).code == 0
     for n in (2, 3, 4):
-        assert console.run(["task", "done", str(n), "--how", "reviewed and merged"], AGENT).code == 0
-    assert console.run(["task", "done", "1", "--how", "done"], AGENT).code == 0
+        assert console.run(["task", "complete", str(n), "--how", "reviewed and merged"], AGENT).code == 0
+    assert console.run(["task", "complete", "1", "--how", "done"], AGENT).code == 0
     app.runtime().deferred.drain()
     assert tasks.find(5).state == "started" and stack()[-1] == "orchestrating_plan", "the plan goes on to the next open piece"
     for n in range(5, 21):
         assert stop().get("decision") == "block", f"a stop with piece {n} in hand and pieces open is refused, never allowed"
-        assert console.run(["task", "done", str(n), "--how", "done"], AGENT).code == 0
+        assert console.run(["task", "complete", str(n), "--how", "done"], AGENT).code == 0
         app.runtime().deferred.drain()
     assert app.container.get(Plans).find(1).state == "done" and stack() == ["orchestrating"], "the plan is done and the orchestrator is back in its mode state"
     assert stop().get("decision") != "block", "with nothing open the stop passes"

@@ -70,10 +70,8 @@ def test_each_kind_of_name_is_renamed_with_what_depends_on_it(tmp_path: Path, ca
     assert "product = " in user and "return product + CEILING" in user, "a local and a module constant are renamed where they are read"
 
 
-def test_a_banned_name_or_a_dirty_tree_writes_nothing(tmp_path: Path, capsys):
+def test_a_banned_name_or_a_doubled_spot_writes_nothing(tmp_path: Path, capsys):
     root = tree(tmp_path)
     assert tool().main([f"--root={root}", "Clock.now", "said"]) == 1 and "banned" in capsys.readouterr().out
-    (root / "src/journal/user.py").write_text((root / "src/journal/user.py").read_text() + "\n")
-    assert tool().main([f"--root={root}", "Clock.now", "time"]) == 1 and "commit every change first" in capsys.readouterr().out
     assert tool().main([f"--root={root}", "--dry-run", "Clock.now", "time", "Clock.now", "moment"]) == 1 and "same spot" in capsys.readouterr().out, "two renames of one spot in one list are refused"
     assert "def now" in (root / "src/journal/clock.py").read_text(), "nothing was written"

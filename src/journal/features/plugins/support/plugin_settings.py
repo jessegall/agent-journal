@@ -24,7 +24,7 @@ class PluginSettings:
 
     def schema(self, plugin: Plugin) -> list[PluginSetting]:
         path = plugin.manifest.settings
-        return [PluginSetting.from_json(setting) for setting in json.loads((self.folders.folder(plugin) / path).read_text())] if path else []
+        return [PluginSetting.parsed(setting) for setting in json.loads((self.folders.folder(plugin) / path).read_text())] if path else []
 
     def started(self, plugin: Plugin, actor: Actor) -> dict:
         settings = {}

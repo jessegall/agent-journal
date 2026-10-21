@@ -12,10 +12,10 @@ class StoredState:
     resume: "StoredState | None" = None
 
     @classmethod
-    def from_json(cls, name: str, data: dict) -> "StoredState":
+    def parsed(cls, name: str, data: dict) -> "StoredState":
         resume = data.get("resume")
         own = {key: value for key, value in data.items() if key != "resume"}
-        return cls(name, own, cls.from_json(resume.get("state", "idle"), resume.get("data") or {}) if resume else None)
+        return cls(name, own, cls.parsed(resume.get("state", "idle"), resume.get("data") or {}) if resume else None)
 
     def serialized(self) -> dict:
         return {**self.data, "resume": {"state": self.resume.name, "data": self.resume.serialized()}} if self.resume else self.data

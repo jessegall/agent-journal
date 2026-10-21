@@ -9,7 +9,7 @@ class EventWindow:
     window_ms: int = 0
 
     @classmethod
-    def from_json(cls, data) -> "EventWindow":
+    def parsed(cls, data) -> "EventWindow":
         if isinstance(data, str):
             return cls(event=data)
         return cls(event=str(data.get("event", "")), window_ms=int(data.get("window_ms", 0)))

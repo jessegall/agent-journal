@@ -26,7 +26,7 @@ class SortingDump(BaseState):
     dump_id: int = 0
     asking: bool = False
 
-    def awaiting(self) -> tuple[str, str]:
+    def wait_description(self) -> tuple[str, str]:
         return (f"your answer on dump {self.dump_id}", f"dump:{self.dump_id}") if self.asking else ("", "")
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
@@ -40,7 +40,7 @@ class SortingDump(BaseState):
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id or not event.waiting:
             return self.none()
-        return self.none().typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=items_in(event.waiting)))
+        return self.none().typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=item_count(event.waiting)))
 
     def on_dump_question(self, event: DumpQuestion, settings: Settings) -> Transition:
         return self.swap(replace(self, asking=True)) if event.dump_id == self.dump_id else self.none()
@@ -66,9 +66,9 @@ class SortingDump(BaseState):
         summed = () if event.stopped else (DumpsFeature.DUMP_SUMMARY_REQUEST.create(n=event.dump_id, outcome=event.outcome),)
         following = event.data.part(DumpsFeature)
         if following.in_hand and following.in_hand != self.dump_id:
-            return self.swap(replace(self, dump_id=following.in_hand, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVAL.create(n=following.in_hand, count=items_in(following.waiting)))
+            return self.swap(replace(self, dump_id=following.in_hand, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVAL.create(n=following.in_hand, count=item_count(following.waiting)))
         return self.pop().typing(*summed)
 
 
-def items_in(count: int) -> str:
+def item_count(count: int) -> str:
     return f"{count} item{'s' * (count != 1)}"

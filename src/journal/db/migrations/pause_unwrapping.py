@@ -18,7 +18,7 @@ class PauseUnwrapping(Migration):
     def apply(self, connection: Connection) -> None:
         time = datetime.now(timezone.utc).isoformat()
         for row in connection.all(f"SELECT id, state, data FROM agents WHERE state IN ({', '.join('?' for _ in OBLIGATION_STATES)})", OBLIGATION_STATES):
-            state, facts = StoredState.from_json(row["state"], json.loads(row["data"] or "{}")), ObligationFacts()
+            state, facts = StoredState.parsed(row["state"], json.loads(row["data"] or "{}")), ObligationFacts()
             while state.name in OBLIGATION_STATES:
                 facts = facts.obligation(state.name, int(state.data.get("mark", 0)), state.data.get("skill", ""))
                 state = state.resumed()

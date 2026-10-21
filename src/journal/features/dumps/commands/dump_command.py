@@ -31,11 +31,11 @@ class DumpCommand(Command):
         log.add_argument("--on", default="", help="the row being worked on, as doc:2")
         log.add_argument("--making", default="", help="what is being made")
         log.add_argument("--detail", default="", help="the sentence behind the status")
-        self.numbered(self.verb(verbs, "say", "answer what the user wrote in the dump, at most 600 characters"), "text")
+        self.numbered(self.verb(verbs, "reply", "answer what the user wrote in the dump, at most 600 characters"), "text")
         ask = self.verb(verbs, "ask", "ask the user in the dump window")
         self.numbered(ask, "question")
         ask.add_argument("--guesses", default="", help="up to four likely answers, apart by |")
-        offer = self.verb(verbs, "offer", "sum up what was filed and offer next steps as buttons")
+        offer = self.verb(verbs, "propose", "sum up what was filed and offer next steps as buttons")
         self.numbered(offer, "options")
         offer.add_argument("--summary", default="", help="what was filed and where")
         self.numbered(self.verb(verbs, "split", "split the pasted text into named parts, one item each"), "parts")
@@ -90,7 +90,7 @@ class DumpCommand(Command):
         self.filing.log(args.n, args.status, args.on, args.making, args.detail, caller.actor)
         return 0
 
-    def say(self, args: Namespace, caller: Caller) -> int:
+    def reply(self, args: Namespace, caller: Caller) -> int:
         self.filing.reply(args.n, args.text, caller.actor)
         return 0
 
@@ -99,7 +99,7 @@ class DumpCommand(Command):
         print(f"dump {args.n}: asked, the user answers in the dump window")
         return 0
 
-    def offer(self, args: Namespace, caller: Caller) -> int:
+    def propose(self, args: Namespace, caller: Caller) -> int:
         self.filing.propose(args.n, args.options, args.summary, caller.actor)
         return 0
 

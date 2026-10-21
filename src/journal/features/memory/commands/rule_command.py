@@ -22,7 +22,7 @@ class RuleCommand(MemoryCommand):
         super().__init__(machine, scope, agents, context)
         self.repository = rules
 
-    def carrying(self, row: Rule, caller: Caller) -> Rule:
+    def with_keywords(self, row: Rule, caller: Caller) -> Rule:
         return row.created(caller.actor.kind == ActorKind.AGENT)
 
     def new(self, args: Namespace) -> Rule:

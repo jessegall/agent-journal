@@ -260,11 +260,11 @@ def test_a_started_plans_phase_shown_advances_when_its_tasks_are_all_done(tmp_pa
         console.run(["plan", "approve", "1"], user)
         console.run(["plan", "start", "1"], agent)
         assert call(server, "GET", "/journal/plans/1")[1]["current_phase"] == 1
-        console.run(["task", "done", "1"], agent)
+        console.run(["task", "complete", "1"], agent)
         assert call(server, "GET", "/journal/plans/1")[1]["current_phase"] == 1, "a phase with a task still open is the one shown"
-        console.run(["task", "done", "2"], agent)
+        console.run(["task", "complete", "2"], agent)
         assert call(server, "GET", "/journal/plans/1")[1]["current_phase"] == 2, "every task of phase one done: phase two is shown"
-        console.run(["task", "done", "3"], agent)
+        console.run(["task", "complete", "3"], agent)
         assert call(server, "GET", "/journal/plans/1")[1]["current_phase"] == 2, "all done: the last phase"
     finally:
         app.runtime().stop()
@@ -311,7 +311,7 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         n = call(server, "POST", "/journal/messages", {"text": "hello", "idempotency": "k"})[1]["id"]
         app.console().run(["message", "read", str(n)], Caller("main", "s1"))
         app.console().run(["task", "create", "t", "--start"], Caller("main", "s1"))
-        app.console().run(["task", "done", "1", "--how", "shipped"], Caller("main", "s1"))
+        app.console().run(["task", "complete", "1", "--how", "shipped"], Caller("main", "s1"))
         entries = call(server, "GET", "/journal/entries?last=50")[1]
         assert any(e["kind"] == "updated" and e["data"]["table"] == "messages" and "read_at" in e["data"]["changed"] for e in entries)
         assert any(e["kind"] == "updated" and e["data"]["table"] == "tasks" and "finished_at" in e["data"]["changed"] for e in entries)
@@ -327,7 +327,7 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
         assert doc["body"].endswith("## Risks\n\nNone\n") and "## Goals" in doc["body"]
         assert call(server, "POST", f"/journal/docs/{doc['id']}", {"title": "Design v2"})[1]["title"] == "Design v2"
         app.console().run(["task", "create", "later", "--start"], Caller("main", "s1"))
-        app.console().run(["task", "park", "2", "waiting"], Caller("main", "s1"))
+        app.console().run(["task", "suspend", "2", "waiting"], Caller("main", "s1"))
         assert call(server, "GET", "/journal/tasks/2")[1]["state"] == "parked"
     finally:
         app.runtime().stop()

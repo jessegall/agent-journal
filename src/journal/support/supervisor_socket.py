@@ -15,4 +15,4 @@ class SupervisorSocket:
             link.settimeout(WAIT)
             link.connect(path)
             link.sendall((json.dumps(request) + "\n").encode())
-            return SupervisorReply.from_json(json.loads(link.makefile("rb").readline()))
+            return SupervisorReply.parsed(json.loads(link.makefile("rb").readline()))

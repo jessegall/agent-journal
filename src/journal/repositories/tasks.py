@@ -67,7 +67,7 @@ class Tasks(ScopedRepository[Task]):
     def refuse_second(self, task: Task) -> None:
         other = self.current()
         if task.state == TaskState.STARTED and other is not None and other.id != task.id:
-            raise Rejection(f"task {other.id} is in hand: finish it, or park it with `journal task park {other.id} \"<why>\"`, before task {task.id} is started")
+            raise Rejection(f"task {other.id} is in hand: finish it, or park it with `journal task suspend {other.id} \"<why>\"`, before task {task.id} is started")
 
     def unfinished_count(self) -> int:
         return self.count("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",

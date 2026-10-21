@@ -35,7 +35,7 @@ class ReportCommand(Command):
 
     def create(self, args: Namespace, caller: Caller) -> int:
         body = Path(args.file).read_text() if args.file else args.body
-        rows = self.rows_named(args.about)
+        rows = self.mentioned_rows(args.about)
         report = self.reports.save(Report(title=args.title, body=body), caller.actor)
         for row in rows:
             self.links.save(Link(source=Ref.build(report), target=row, kind=Messages.SUBJECT_LINK), caller.actor)
@@ -43,7 +43,7 @@ class ReportCommand(Command):
         return 0
 
     @staticmethod
-    def rows_named(given: list[str]) -> list[Ref]:
+    def mentioned_rows(given: list[str]) -> list[Ref]:
         named = [part.strip() for word in given for part in word.split(",") if part.strip()]
         wrong = [n for n in named if not ROW.match(n)]
         if wrong:

@@ -2,7 +2,7 @@ from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.rows.dump_arrived import DumpArrived
-from journal.features.dumps.states.sorting_dump import items_in
+from journal.features.dumps.states.sorting_dump import item_count
 
 
 class DumpsConduct(Conduct):
@@ -13,4 +13,4 @@ class DumpsConduct(Conduct):
         from journal.features.dumps.states.sorting_dump import SortingDump
         if not event.by_user:
             return self.none()
-        return self.push(SortingDump(dump_id=event.dump_id)).typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=items_in(event.waiting)))
+        return self.push(SortingDump(dump_id=event.dump_id)).typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=item_count(event.waiting)))

@@ -31,9 +31,9 @@ class Memory(Feature[MemoryData]):
 
     CONTEXT_THRESHOLDS = (25, 50, 80)
 
-    CONTEXT_DECISION = Nudge(name, "decide_at_the_mark", "context {{percent}}% full: decide what to keep from it", "`journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal nothing \"<why>\"`; writes wait until you do", repeat_after=0)
-    DECISION_EDIT_BLOCK = Nudge(name, "write_held_until_decided", "writes wait until you decide what to keep from the context", "`journal fact create`, `journal rule create`, or `journal nothing \"<why>\"`")
-    UNDECIDED_STOP = Nudge(name, "stopped_at_mark", "you stopped while the journal awaits a decision at the context mark, {{percent}}% full", "`journal fact create`, `journal rule create`, or `journal nothing \"<why>\"` first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
+    CONTEXT_DECISION = Nudge(name, "decide_at_the_mark", "context {{percent}}% full: decide what to keep from it", "`journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal memory skip \"<why>\"`; writes wait until you do", repeat_after=0)
+    DECISION_EDIT_BLOCK = Nudge(name, "write_held_until_decided", "writes wait until you decide what to keep from the context", "`journal fact create`, `journal rule create`, or `journal memory skip \"<why>\"`")
+    UNDECIDED_STOP = Nudge(name, "stopped_at_mark", "you stopped while the journal awaits a decision at the context mark, {{percent}}% full", "`journal fact create`, `journal rule create`, or `journal memory skip \"<why>\"` first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
     CHECK_STALE_MEMORY = Nudge(name, "check_stale_memory", "these are {{stale_after}} days old or more, check they still hold: {{stale}}", "strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest", repeat_after=86400)
     STALENESS_LIMIT = Option("memory.stale_after", "Ask about old facts after", "Days a fact, rule or reminder stands before the agent is asked at a session start whether it still holds", 7, unit="days")
     RULE_SCOPE_QUESTION = Nudge(name, "does_the_rule_apply_project_wide", "does rule {{n}} apply to the whole project?", "keep it only as Always or Never for every environment; otherwise delete it and record a fact or a reminder here")
@@ -51,7 +51,7 @@ At a mark of the context window, writes wait until you decide what must survive 
   Only the user makes one; right after, read it again as one.
 - A **reminder** is what to keep doing here: `journal reminder create "<do this>"`.
 - One that no longer holds: `journal <fact|rule|reminder> strike <n>`.
-- Nothing worth keeping: `journal nothing survives "<why>"`.
+- Nothing worth keeping: `journal memory skip "<why>"`.
 - `--keywords a,b` on any of them: when you write or run one of those words and the row is not in your context
   window, you are told to read it, `journal reminder read <n>`, `journal fact read <n>` or `journal rule read <n>`; the
   read puts it in your context, and so do the session's start block and the look, until the next compaction.

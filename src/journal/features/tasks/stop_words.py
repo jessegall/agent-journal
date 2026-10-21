@@ -1,4 +1,4 @@
-def ago(time: float, moment: float) -> str:
+def age_text(time: float, moment: float) -> str:
     minutes = int((moment - time) // 60)
     if minutes < 1:
         return "just now"
