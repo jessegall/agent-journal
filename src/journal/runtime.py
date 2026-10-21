@@ -1,3 +1,4 @@
+import gc
 import os
 import time
 from journal.engine.clock import Clock
@@ -83,6 +84,7 @@ class Runtime:
         self.jobs.start()
         self.server.start()
         self.container.get(ServiceStart).run()
+        gc.freeze()
 
     def register_jobs(self) -> None:
         self.jobs.register(self.clock)
@@ -111,3 +113,4 @@ class Runtime:
         self.share_server.stop()
         self.jobs.stop()
         self.deferred.stop()
+        gc.unfreeze()
