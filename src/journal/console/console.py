@@ -16,6 +16,8 @@ from journal.repositories.scope import Scope
 from journal.container import Container
 
 
+HELP_FLAGS = ("-h", "--help")
+
 
 class Console:
     """journal <noun> <verb> ...: finds the command and runs it, wherever the argv came from."""
@@ -54,7 +56,7 @@ class Console:
     def with_verb(self, argv: list[str]) -> list[str]:
         command = self.commands.get(argv[0]) if argv else None
         verb = getattr(command, "default_verb", "")
-        return [argv[0], verb, *argv[1:]] if verb and not (argv[1:] and argv[1] in self.verbs(command)) else argv
+        return [argv[0], verb, *argv[1:]] if verb and not (argv[1:] and argv[1] in {*self.verbs(command), *HELP_FLAGS}) else argv
 
     @staticmethod
     def switched(argv: list[str]) -> list[str]:

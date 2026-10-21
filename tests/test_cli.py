@@ -277,3 +277,8 @@ def test_a_hook_whose_launch_id_names_another_environments_launch_is_reported_an
         assert started("bound", "launch-main") == 200 and agents.session_agent("bound").environment_id == 1
     finally:
         app.runtime().stop()
+
+
+def test_the_help_of_a_noun_with_a_default_verb_lists_every_verb(app: App):
+    shown = app.console().run(["setup", "--help"], MAIN)
+    assert "restart" in shown.text + shown.error and "project" in shown.text + shown.error, "setup --help names every verb, its default among them"
