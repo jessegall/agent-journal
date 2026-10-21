@@ -19,7 +19,7 @@ from journal.repositories.workers import Workers
 
 
 class TaskController(Controller[Task]):
-    """Tasks with the plan each is in and the worker that holds it; started from the viewer, a task is taken up by the live agent."""
+    """Tasks with the plan each is in and the worker that holds it; started from the viewer, a task is taken up by the current agent."""
 
     def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, agents: Agents, machine: StateMachine, clock: Clock) -> None:
         self.repository, self.task_logs, self.workers, self.agents, self.machine, self.clock = tasks, logs, workers, agents, machine, clock
@@ -39,9 +39,9 @@ class TaskController(Controller[Task]):
 
     def start(self, request: Request) -> Response:
         task = self.repository.save(self.repository.find(request.number("id")).started(self.now()), request.actor)
-        live = self.agents.live()
-        if live:
-            self.machine.move(live.session, task.environment_id, Working(task_id=task.id, logged_at=self.clock.now()))
+        agent = self.agents.current()
+        if agent:
+            self.machine.move(agent.session, task.environment_id, Working(task_id=task.id, logged_at=self.clock.now()))
         return Response.json(self.shown(task))
 
     def finish(self, request: Request) -> Response:

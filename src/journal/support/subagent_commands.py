@@ -21,5 +21,5 @@ class SubagentCommands:
         if not thread:
             return False
         with self.scope.of(self.environments.named(environment).id):
-            live = self.agents.live()
-        return live is not None and live.provider == CODEX and live.session != thread
+            agent = self.agents.current()
+        return agent is not None and agent.provider == CODEX and agent.session != thread

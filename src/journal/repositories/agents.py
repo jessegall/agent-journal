@@ -8,7 +8,7 @@ from journal.repositories.scoped_repository import ScopedRepository
 class Agents(ScopedRepository[Agent]):
     model = Agent
 
-    def live(self) -> Agent | None:
+    def current(self) -> Agent | None:
         alive = [a for a in self.in_() if a.state != "ended"]
         return alive[-1] if alive else None
 

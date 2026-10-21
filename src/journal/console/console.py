@@ -31,7 +31,7 @@ class Console:
     def attributed(self, caller: Caller) -> Caller:
         if not caller.from_agent_shell or caller.session:
             return caller
-        live = self.agents.live()
+        live = self.agents.current()
         return caller.as_(live.session) if live else caller
 
     def parser(self) -> argparse.ArgumentParser:

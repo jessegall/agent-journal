@@ -97,7 +97,7 @@ class SlowRequests:
         worst = max(ms, earlier[0].data.get("worst", 0)) if earlier else ms
         data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "detail": f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms", "row": "", "count": count, "worst": worst}
         self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system(), CardKind.FAULTS)
-        agent = self.agents.live()
+        agent = self.agents.current()
         if earlier or agent is None:
             return
         line = self.nudger.say(agent, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))

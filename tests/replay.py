@@ -99,8 +99,8 @@ class Replay:
             entries = list(reversed(self.app.container.get(Entries).of_kind_in(1000)))
             nudges = [e.data["key"] for e in entries if e.kind == "nudge"]
             self.app.runtime().deferred.drain()
-            live = self.app.container.get(Agents).live()
-        stack = [layer["state"] for layer in live.stack] if live else []
+            agent = self.app.container.get(Agents).current()
+        stack = [layer["state"] for layer in agent.stack] if agent else []
         self.steps.append({"name": name, "answer": answer, "typed": typed, "nudges": nudges[self.seen:], "stack": stack})
         self.seen = len(nudges)
         del self.typed[:len(typed)]

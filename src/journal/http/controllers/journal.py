@@ -32,7 +32,7 @@ LOGGED_SHOWN = 100
 
 
 class JournalController:
-    """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the live agent is doing this moment."""
+    """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the current agent is doing this moment."""
 
     def __init__(self, config: Config, manifest: Manifest, environments: Environments, agents: Agents, activity: AgentActivity, current: CurrentWork,
                  entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, mark: UpdateCard, statistics: Statistics, timings: Timings) -> None:
@@ -74,18 +74,18 @@ class JournalController:
 
     def data(self, environment: Environment) -> EnvironmentData:
         with self.scope.of(environment.id):
-            live = self.agents.live()
-            agent = self.activity.page([live])[0] if live else None
-            held = self.current.of(live) if live else None
-            task = TaskBlock(held.task.id, held.task.title, held.awaiting) if held else None
-            silent = bool(agent) and agent["status"] in ("busy", "working") and timing.time() - agent["heard_at"].timestamp() > SILENCE_LIMIT_SECONDS
-            return EnvironmentData(environment, agent, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
+            agent = self.agents.current()
+            activity = self.activity.page([agent])[0] if agent else None
+            work = self.current.of(agent) if agent else None
+            task = TaskBlock(work.task.id, work.task.title, work.awaiting) if work else None
+            silent = bool(activity) and activity["status"] in ("busy", "working") and timing.time() - activity["heard_at"].timestamp() > SILENCE_LIMIT_SECONDS
+            return EnvironmentData(environment, activity, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
 
     def bar(self, request: Request) -> Response:
-        live = self.agents.live()
-        if not live:
+        agent = self.agents.current()
+        if not agent:
             return Response.json([])
-        recent = [e for e in reversed(self.entries.of_kind_in(60)) if e.actor and e.actor.id == live.session and BarRow.is_shown(e)]
+        recent = [e for e in reversed(self.entries.of_kind_in(60)) if e.actor and e.actor.id == agent.session and BarRow.is_shown(e)]
         queue, open_ = [], {}
         for row in map(BarRow.of, recent):
             if not row.ended:

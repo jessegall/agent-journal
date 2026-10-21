@@ -81,7 +81,7 @@ class PluginRelay:
 
     def live_session(self, environment_id: int) -> str:
         with self.scope.of(environment_id):
-            agent = self.agents.live()
+            agent = self.agents.current()
         return agent.session if agent else ""
 
     def waiting_for(self, session: str) -> list[str]:

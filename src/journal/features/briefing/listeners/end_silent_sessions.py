@@ -9,7 +9,7 @@ SILENCE_SECONDS = 3600.0
 
 
 class EndSilentSessions(AgentListener[Ticked]):
-    """A session that has sent nothing for an hour is ended, so a closed terminal does not stay the live agent for good; the live agent a supervisor still runs is only idle, and stays live."""
+    """A session that has sent nothing for an hour is ended, so a closed terminal does not stay the current agent for good; the current agent a supervisor still runs is only idle, and stays current."""
 
     def __init__(self, machine: StateMachine, agents: Agents, supervisor: SupervisorLink) -> None:
         self.machine, self.agents, self.supervisor = machine, agents, supervisor
@@ -20,5 +20,5 @@ class EndSilentSessions(AgentListener[Ticked]):
         self.machine.move(event.session, event.environment_id, Ended())
 
     def is_supervised(self, event: Ticked) -> bool:
-        live = self.agents.live()
-        return live is not None and live.session == event.session and self.supervisor.runs(event.environment_id)
+        agent = self.agents.current()
+        return agent is not None and agent.session == event.session and self.supervisor.runs(event.environment_id)

@@ -19,7 +19,7 @@ class DeliverMessage(Listener[Created]):
         message = event.model
         if not isinstance(message, Message) or message.author != Author.USER or message.read_at:
             return
-        agent = self.agents.live()
+        agent = self.agents.current()
         if agent is None:
             return
         line = self.nudger.say(agent, Messages.NEW_MESSAGE.create(n=message.id))

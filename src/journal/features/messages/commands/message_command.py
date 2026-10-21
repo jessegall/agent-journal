@@ -134,7 +134,7 @@ class MessageCommand(Command):
         print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")
 
     def _tool_use(self, caller: Caller) -> int:
-        agents = self.agents.across_environments(session=caller.session) if caller.session else [agent for agent in (self.agents.live(),) if agent]
+        agents = self.agents.across_environments(session=caller.session) if caller.session else [agent for agent in (self.agents.current(),) if agent]
         return agents[0].tool_uses if agents else 0
 
     def passage_place(self, ref: Ref, quote: str) -> str:

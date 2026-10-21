@@ -58,7 +58,7 @@ class ShellRecord:
         part = next((e.data["part"] for e in self.entries.of_kind(MOVED, 200) if e.data.get("chain") == chain), "")
         outcome = OutputFiles.ended(status)
         self.cards.show(self.scope.id, caller.session, f"{outcome.capitalize()} in the background: {ActivityLabel.of(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
-        agent = self.agents.live()
+        agent = self.agents.current()
         if agent:
             output, moment = self.outputs.of_chain(chain), datetime.now(timezone.utc).timestamp()
             finish = output.wait_end(status, moment) if self.wait_covers(output, agent) else output.ended_with(status, moment)

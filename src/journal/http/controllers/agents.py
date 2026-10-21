@@ -45,7 +45,7 @@ class AgentController(Controller[Agent]):
         rows = []
         for environment in self.environments.all():
             with self.scope.of(environment.id):
-                agent = self.repository.live()
+                agent = self.repository.current()
             if agent:
                 rows.append({"environment": environment.name, "agent": agent})
         return Response.json(rows)

@@ -134,7 +134,7 @@ class EnvironmentCommand(Command):
         if self.environments.matching(name=args.new):
             raise Rejection(f"an environment named {args.new} exists already")
         with self.scope.of(rows.id):
-            if self.agents.live() is not None:
+            if self.agents.current() is not None:
                 raise Rejection(f"an agent works in {rows.name}: stop it first, then rename")
         if Worktree(self.config.root, rows.name).path.is_dir():
             raise Rejection(f"{rows.name} has a worktree named after it: an environment with a worktree keeps its name")

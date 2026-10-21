@@ -12,7 +12,7 @@ class NudgeLog:
         self.nudger, self.agents, self.supervisor = nudger, agents, supervisor
 
     def type(self, nudge: Nudge) -> None:
-        agent = self.agents.live()
+        agent = self.agents.current()
         if agent is not None:
             self.type_to(agent, nudge)
 

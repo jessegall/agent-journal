@@ -88,5 +88,5 @@ class MessageController(Controller[Message]):
         return Response.json(self.shown(saved))
 
     def _tool_use(self) -> int:
-        agent = self.agents.live()
+        agent = self.agents.current()
         return agent.tool_uses if agent else 0
