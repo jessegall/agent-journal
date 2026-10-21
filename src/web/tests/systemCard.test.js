@@ -1,6 +1,6 @@
 import {createApp, h, nextTick} from "vue";
 import {expect, test} from "vitest";
-import {threadTurns} from "../src/domain/thread.js";
+import {SUBAGENT_COLOR, threadTurns} from "../src/domain/thread.js";
 
 globalThis.ResizeObserver ??= class {
     observe() {}
@@ -92,4 +92,10 @@ test("a plugin's plain message is a card of the plugin's, not a crash", () => {
     const {turns} = threadTurns([...messages, said], []);
     const turn = turns.find((t) => t.key === "messages:6");
     expect([turn.kind, turn.data.icon, turn.data.name, turn.data.label]).toEqual(["card", "plug", "echo", "heard message 4"]);
+});
+
+test("a worker's mark takes the subagent's colour unless it settled with a tone of its own", () => {
+    const worker = (id, tone) => message(id, id * 10, "system", `Worker ${id}, Morris: working`, card("card", {icon: "agents", tone, row: `workers:${id}`, shows: "workers"}));
+    const {turns} = threadTurns([worker(7, ""), worker(8, "good")], []);
+    expect(turns.map((t) => t.data.color)).toEqual([SUBAGENT_COLOR, ""]);
 });
