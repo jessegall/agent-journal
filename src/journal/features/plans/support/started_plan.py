@@ -12,3 +12,4 @@ class StartedPlan:
     tasks: tuple[int, ...]
     tasks_left: int
     at_checkpoint: bool
+    checkpoint_phase: int

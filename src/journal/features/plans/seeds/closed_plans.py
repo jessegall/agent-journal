@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from journal.features.environment_seed import EnvironmentSeed
 from journal.support.actor import Actor
 from journal.models.plan_state import PlanState
@@ -16,4 +17,4 @@ class ClosedPlans(EnvironmentSeed):
     def run_in(self) -> None:
         for plan in self.plans.all():
             if plan.state == PlanState.STARTED and self.plans.next_task(plan) is None and self.plans.tasks_of(plan):
-                self.plans.save(plan.done(), Actor.system())
+                self.plans.save(plan.done(datetime.now(timezone.utc).timestamp()), Actor.system())

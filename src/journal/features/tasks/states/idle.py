@@ -9,6 +9,8 @@ from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
+from journal.events.rows.plan_started import PlanStarted
+from journal.events.rows.task_started import TaskStarted
 
 ASK_ABOUT_PARKED_AFTER = 60.0
 ASK_ABOUT_BLOCKED_AFTER = 45 * 60.0
@@ -33,8 +35,21 @@ class Idle(AgentState):
         from journal.features.plans.states.following_plan import FollowingPlan
         started = event.snapshot.of(Plans).started
         if started:
-            return self.push(FollowingPlan(plan_id=started.plan_id, task_id=started.started_task))
+            return self.push(FollowingPlan(plan_id=started.plan_id, task_id=started.started_task, approved=True, logged_at=event.at))
         return self.changed(self.active(event.at))
+
+    def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
+        from journal.features.plans.feature import Plans
+        from journal.features.plans.states.following_plan import FollowingPlan
+        from journal.features.tasks.states.working import Working
+        started = event.snapshot.of(Plans).started
+        if started and event.task_id in started.tasks:
+            return self.push(FollowingPlan(plan_id=started.plan_id, task_id=event.task_id, approved=True, logged_at=event.at))
+        return self.push(Working(task_id=event.task_id, logged_at=event.at))
+
+    def on_plan_started(self, event: PlanStarted, settings: Settings) -> Transition:
+        from journal.features.plans.states.following_plan import FollowingPlan
+        return self.push(FollowingPlan(plan_id=event.plan_id, task_id=event.task_id, approved=True, logged_at=event.at))
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.changed(self.active(event.at))

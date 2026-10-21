@@ -50,8 +50,8 @@ class Task(Scoped):
     def closed(self, task: "Task", at: datetime, how: str) -> "Task":
         return task.with_event(TaskClosed(environment_id=self.environment_id, at=at.timestamp(), task_id=self.id, how=how)).with_event(RowSettled(environment_id=self.environment_id, at=at.timestamp(), ref=f"tasks:{self.id}"))
 
-    def blocked(self, why: str) -> "Task":
-        return self.with_(state=TaskState.BLOCKED, blocked_why=why)
+    def blocked(self, why: str, at: datetime) -> "Task":
+        return self.closed(self.with_(state=TaskState.BLOCKED, blocked_why=why), at, "blocked")
 
     def unblocked(self, on: str, at: float) -> "Task":
         return self.with_(state=TaskState.OPEN, blocked_why="").with_event(TaskReopened(environment_id=self.environment_id, at=at, task_id=self.id, on=on))

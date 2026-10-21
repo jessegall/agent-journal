@@ -11,6 +11,7 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_logged import TaskLogged
+from journal.events.rows.plan_started import PlanStarted
 from journal.events.rows.task_started import TaskStarted
 from journal.events.snapshot import Snapshot
 from journal.support.permission import Permission
@@ -109,7 +110,13 @@ class Working(AgentState):
         started = event.snapshot.of(Plans).started
         if self.follows_a_plan() or started is None or event.task_id != self.task_id or event.task_id not in started.tasks:
             return self.unchanged()
-        return self.changed(FollowingPlan(plan_id=started.plan_id, task_id=self.task_id, logged_at=self.logged_at))
+        return self.changed(FollowingPlan(plan_id=started.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at))
+
+    def on_plan_started(self, event: PlanStarted, settings: Settings) -> Transition:
+        from journal.features.plans.states.following_plan import FollowingPlan
+        if self.follows_a_plan() or event.task_id != self.task_id:
+            return self.unchanged()
+        return self.changed(FollowingPlan(plan_id=event.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at, edits=self.edits, active_at=self.active_at))
 
     def on_resume(self, snapshot: Snapshot, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.tasks.feature import Tasks

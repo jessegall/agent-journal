@@ -554,7 +554,7 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
     assert any(isinstance(listener, RowEventsToTheTop) for listener in bus.listeners(RowEvent))
     assert not any(isinstance(listener, (RowEventsToTheTop, StateMachine)) for listener in bus.listeners(Updated))
     bus.dispatch(PlanStarted(environment_id=1, at=1.0, plan_id=1, task_id=0))
-    assert [row["state"] for row in agents.for_session("s2").stack] == ["idle"]
+    assert [row["state"] for row in agents.for_session("s2").stack] == ["idle", "following_plan"], "the live agent of the environment follows the plan"
 
 
 def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_refuses_one_it_does_not_hold(app):
@@ -644,14 +644,14 @@ def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_fro
     from journal.events.rows.task_started import TaskStarted
     settings = SettingsValue({})
     from journal.features.plans.support.started_plan import StartedPlan
-    plans = PlansSnapshot(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), tasks_left=2, at_checkpoint=False))
+    plans = PlansSnapshot(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), tasks_left=2, at_checkpoint=False, checkpoint_phase=0))
     tasks = TasksSnapshot(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
     snapshot = Snapshot({"plans": plans, "tasks": tasks})
-    assert Idle().on(SessionStarted().with_snapshot(snapshot), settings).pushed == FollowingPlan(plan_id=5, task_id=7)
+    assert Idle().on(SessionStarted(at=4.0).with_snapshot(snapshot), settings).pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=4.0)
     assert Idle().on(SessionStarted().with_snapshot(Snapshot({"plans": PlansSnapshot((), None), "tasks": tasks})), settings).pushed is None
     started = TaskStarted(environment_id=1, at=1.0, task_id=7, title="t", plan_id=0).with_snapshot(snapshot)
-    assert Working(task_id=7, logged_at=2.0).on(started, settings).to == FollowingPlan(plan_id=5, task_id=7, logged_at=2.0)
-    assert FollowingPlan(plan_id=5, task_id=7).on(started, settings).to == FollowingPlan(plan_id=5, task_id=7)
+    assert Working(task_id=7, logged_at=2.0).on(started, settings).to == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=2.0)
+    assert FollowingPlan(plan_id=5, task_id=7).on(started, settings).to == FollowingPlan(plan_id=5, task_id=7, logged_at=1.0)
     BaseState.fold((PlansConduct,))
     try:
         approved = Idle().on(PlanApproved(environment_id=1, at=1.0, plan_id=5, by_user=True).with_snapshot(snapshot), settings)
@@ -1019,3 +1019,49 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     assert not working.on(TaskClosed(environment_id=1, at=2.0, task_id=8, how="done").with_snapshot(of()), settings).popped
     assert working.on_resume(of(in_hand=0), settings).popped, "its task closed while it waited"
     assert [n.key for n in working.on_resume(of(), settings)] == ["tasks.carry_on"]
+
+
+def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_when_the_plan_is_done():
+    from dataclasses import replace
+    from journal.features.plans.feature import Plans as PlansFeature
+    from journal.features.plans.states.following_plan import FollowingPlan
+    from journal.features.plans.support.plans_snapshot import PlansSnapshot
+    from journal.features.plans.support.started_plan import StartedPlan
+    from journal.features.tasks.feature import Tasks as TasksFeature
+    from journal.features.tasks.support.tasks_snapshot import TasksSnapshot
+    from journal.engine.support.held import Held
+    from journal.events.agent.idle import Idle as Stop
+    from journal.events.rows.plan_done import PlanDone
+    from journal.events.rows.plan_started import PlanStarted
+    from journal.events.rows.task_closed import TaskClosed
+    from journal.events.rows.task_started import TaskStarted
+    auto, manual = SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_AFTER.key: 50, TasksFeature.FIRST_AFTER.key: 25, TasksFeature.NAME_EVERY.key: 25}), SettingsValue({TasksFeature.AUTO.key: False})
+    tasks = TasksSnapshot(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
+    plan = StartedPlan(plan_id=5, next_task=8, started_task=0, started_task_briefing="", tasks=(7, 8), tasks_left=1, at_checkpoint=False, checkpoint_phase=0)
+    of = lambda started: Snapshot({"tasks": tasks, "plans": PlansSnapshot((), started)})
+    following = FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=10.0)
+    assert following.on_push(auto) == () and isinstance(FollowingPlan(plan_id=5).on_push(auto), Held), "an unapproved plan is refused"
+    closed = following.on(TaskClosed(environment_id=1, at=20.0, task_id=7, how="done").with_snapshot(of(plan)), auto)
+    assert closed.to == replace(following, task_id=0, moved_from=7) and not closed.popped
+    assert following.on(TaskClosed(environment_id=1, at=20.0, task_id=9, how="done").with_snapshot(of(plan)), auto).to == following
+    started = closed.to.on(TaskStarted(environment_id=1, at=30.0, task_id=8, title="next", plan_id=5).with_snapshot(of(replace(plan, started_task=8))), auto)
+    assert started.to == replace(following, task_id=8, moved_from=7, logged_at=30.0)
+    at_checkpoint = following.on(TaskClosed(environment_id=1, at=20.0, task_id=7, how="done").with_snapshot(of(replace(plan, at_checkpoint=True, checkpoint_phase=2))), auto)
+    assert at_checkpoint.to == replace(following, task_id=0, moved_from=7, at_checkpoint=True, phase=2)
+    stopped = at_checkpoint.to.on(Stop().with_snapshot(of(plan)), auto)
+    assert stopped.held.rendered().startswith("plan 5: phase 2 is complete, and in auto mode it does not stop you")
+    waits = at_checkpoint.to.on(Stop().with_snapshot(of(plan)), manual)
+    assert waits.held is None and waits.nudges[0].rendered().startswith("plan 5: phase 2 is complete and a checkpoint")
+    assert at_checkpoint.to.on(SessionStarted(at=40.0).with_snapshot(of(plan)), auto).nudges[0].key == "plans.phase_complete_at_a_checkpoint"
+    assert at_checkpoint.to.on(ToolStarting(tool="Edit", input={}, writes=True, at=41.0).with_snapshot(of(plan)), auto).to == at_checkpoint.to, "counts nothing at a checkpoint"
+    done = following.on(PlanDone(environment_id=1, at=50.0, plan_id=5).with_snapshot(of(None)), auto)
+    assert done.popped and [n.key for n in done.nudges] == ["plans.plan_done"]
+    assert not following.on(PlanDone(environment_id=1, at=50.0, plan_id=6).with_snapshot(of(plan)), auto).popped
+    pushed = Idle().on(PlanStarted(environment_id=1, at=1.0, plan_id=5, task_id=7).with_snapshot(of(plan)), auto)
+    assert pushed.pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=1.0)
+    own = Idle().on(TaskStarted(environment_id=1, at=2.0, task_id=3, title="t", plan_id=0).with_snapshot(of(None)), auto)
+    assert own.pushed == Working(task_id=3, logged_at=2.0)
+    planned = Idle().on(TaskStarted(environment_id=1, at=2.0, task_id=7, title="t", plan_id=0).with_snapshot(of(plan)), auto)
+    assert planned.pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=2.0)
+    became = Working(task_id=7, logged_at=1.0, edits=2).on(PlanStarted(environment_id=1, at=3.0, plan_id=5, task_id=7).with_snapshot(of(plan)), auto)
+    assert became.to == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=1.0, edits=2)

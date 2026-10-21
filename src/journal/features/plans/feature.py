@@ -44,8 +44,9 @@ class Plans(Feature):
     PLAN_BLOCKED = Nudge(name, "plan_blocked", "plan {{n}} is blocked: {{why}}", "it opens again by itself when what it waits on comes; `journal plan unblock {{n}}` opens it by hand", repeat_after=0)
     PLAN_REOPENED = Nudge(name, "plan_reopened", "plan {{n}} is open again: {{why}}", "`journal plan start {{n}}` goes on with it", repeat_after=0)
     ALL_BLOCKED = "all its tasks left are blocked"
+    PLAN_NOT_APPROVED = Nudge(name, "plan_not_approved", "plan {{n}} is not approved, so it cannot be followed", "only the user approves a plan, on the plan page or with `journal plan approve {{n}}`", repeat_after=0)
     APPROVED_UNSTARTED = Nudge(name, "approved_unstarted", "plan {{n}} is approved and not started", "`journal plan start {{n}}` begins its first task", repeat_after=0)
-    nudges = (APPROVED_UNSTARTED, NEXT_TASK_OF_THE_PLAN, PLAN_DONE, PLAN_WAITS_ON_ITS_TASKS, THE_USER_PARKED_THE_PLAN, THE_USER_APPROVED_THE_PLAN, PHASE_COMPLETE_AT_A_CHECKPOINT, PHASE_COMPLETE_GO_ON, PLAN_BLOCKED, PLAN_REOPENED)
+    nudges = (PLAN_NOT_APPROVED, APPROVED_UNSTARTED, NEXT_TASK_OF_THE_PLAN, PLAN_DONE, PLAN_WAITS_ON_ITS_TASKS, THE_USER_PARKED_THE_PLAN, THE_USER_APPROVED_THE_PLAN, PHASE_COMPLETE_AT_A_CHECKPOINT, PHASE_COMPLETE_GO_ON, PLAN_BLOCKED, PLAN_REOPENED)
 
     skill = Skill("plans", 'Build and follow a plan of ordered tasks; load it when the user asks for a plan or a roadmap', """
 # Plans

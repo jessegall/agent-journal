@@ -1228,3 +1228,9 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The nine working drawings are gone, the approved-plan drawing with them.
 - Standing is Snapshot everywhere (messages 10270, 10423): Snapshot, <Feature>Snapshot, <Feature>SnapshotReader, event.snapshot, SnapshotReaders. The look stays until its column migration (task 1101: oriented becomes overview_read, LookTaken becomes OverviewRead).
 - Names renamed on the way: task_in_hand_repeated, last_log_line, the *_summary fields, rules_numbered, facts_numbered, reminders_numbered, last_other_session_at; the rules ban held, hold, named, back and forth as well.
+
+## Plan 19, phase 2, task 985: FollowingPlan is the plan's (2026-10-21)
+
+- FollowingPlan extends Working with plan_id, approved, moved_from, at_checkpoint and phase. A push of an unapproved plan is refused (PLAN_NOT_APPROVED). At a checkpoint a stop is refused in auto mode with the phase complete and go on, else told the user looks first; a session start says the same; a tool use counts nothing. A task's close keeps the state with no task in hand, at the checkpoint when the snapshot says so; the next task's start, by the plan or by number, keeps the top as that task; PlanDone pops with the plan done line.
+- Only a state moves the agent: Idle pushes Working on TaskStarted and FollowingPlan on PlanStarted (or on a task of the started plan); Working becomes FollowingPlan when its task's plan starts; a blocked task carries its close like a done or parked one, so the state lets it go. InHand.start and the plan control's start only write rows; AdvancePlan only writes the next task, finding the follower by the stacks on the agent rows, and the plan's end is PlanDone carried by Plan.done(at).
+- The three following-plan drawings are gone. A plan parked or abandoned still moves the agent by the plan control until task 1061.

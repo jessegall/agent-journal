@@ -34,7 +34,7 @@ class PlanControl:
         if not plan.state.can_be_started():
             raise Refused(f"plan {plan.id} is {plan.state}, not approved: the user approves it first")
         if self.plans.finished(plan):
-            self.plans.save(plan.done(), by)
+            self.plans.save(plan.done(datetime.now(timezone.utc).timestamp()), by)
             return PlansFeature.PLAN_DONE.create(n=plan.id)
         task = self.plans.resumable(plan)
         if task is not None:
@@ -42,10 +42,8 @@ class PlanControl:
         now = datetime.now(timezone.utc).timestamp()
         plan = self.plans.save(plan.started_with_nothing_to_start(now) if task is None else plan.started(task, now), by)
         if task is None:
-            self.follow(session, plan, FollowingPlan(plan_id=plan.id))
             return self.waiting(plan)
-        started = self.tasks.save(task.started(datetime.now(timezone.utc)), by)
-        self.follow(session, plan, FollowingPlan(plan_id=plan.id, task_id=started.id))
+        started = self.tasks.save(task.started_by_plan(datetime.now(timezone.utc), plan.id), by)
         return PlansFeature.NEXT_TASK_OF_THE_PLAN.create(n=plan.id, task=started.id, title=started.title, briefing=self.briefing.said(started) or NOTHING_YET)
 
     def waiting(self, plan: Plan) -> Nudge:
@@ -64,10 +62,6 @@ class PlanControl:
         gone = self.plans.cancel(plan, by)
         self.let_go(session, plan)
         return gone
-
-    def follow(self, session: str, plan: Plan, state: FollowingPlan) -> None:
-        if session:
-            self.machine.move(session, plan.environment_id, state)
 
     def let_go(self, session: str, plan: Plan) -> None:
         if not session:

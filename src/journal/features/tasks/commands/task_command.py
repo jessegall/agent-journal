@@ -98,7 +98,6 @@ class TaskCommand(Command):
 
     def park(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).parked(args.why, self._now()), where.actor)
-        self.in_hand.let_go(task, where)
         print(f"task {task.id} parked")
         return 0
 
@@ -112,10 +111,9 @@ class TaskCommand(Command):
 
     def block(self, args: Namespace, where: Where) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
-        task = self.tasks.save(self.tasks.find(args.n).blocked(args.why), where.actor)
+        task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._now()), where.actor)
         for ref in self.waits.named(args.on, args.until, args.every, f"task {task.id}", where.actor):
             self.links.save(Link(source=Ref.to(task), target=ref, kind=WAITS_ON), where.actor)
-        self.in_hand.let_go(task, where)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0
 
@@ -126,7 +124,6 @@ class TaskCommand(Command):
 
     def done(self, args: Namespace, where: Where) -> int:
         task = self.tasks.save(self.tasks.find(args.n).finished(self._now(), args.how), where.actor)
-        self.in_hand.let_go(task, where)
         print(f"task {task.id} done")
         self._name_next(task)
         return 0

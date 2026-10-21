@@ -31,9 +31,6 @@ STATELESS = (
 )
 """The Always workflows the journal ships, one subject each, in the order they run at their event: the drawing's name, its title and the builder that draws it."""
 OWN = (
-    ("following_plan", "idle", "checkpoint_auto", "Hold the stop at a plan's checkpoint in auto mode", "checkpoint_in_auto_mode"),
-    ("following_plan", "idle", "checkpoint", "Wait for the user at a plan's checkpoint", "checkpoint_waits_for_the_user"),
-    ("following_plan", "session_started", "checkpoint", "Wait for the user at a plan's checkpoint", "checkpoint_waits_for_the_user"),
     ("waiting", "questions.updated", "question", "Send the agent back to its work when the question is answered", "waiting_at_question"),
     ("expecting", "ticked", "remind", "Remind the agent what it waits for after five minutes of quiet", "expecting_at_tick"),
     ("expecting", "ticked", "meanwhile", "Point to the next task once per wait, after a minute of it, in auto mode", "next_while_waiting"),
@@ -411,14 +408,6 @@ class ShippedChart(Seed):
     def ask_about_old_memory(self, chart: Chart, ends: list) -> list:
         """A fresh session start, not one going on after a compaction, with facts, rules or reminders snapshot long: the agent is asked whether they still hold, at most once a day."""
         return self.guarded(chart, ends, 720, 92, (Guard("after_compaction", passes=NO), Guard("memory_older_than", "memory.stale_after")), "say", STALE)
-
-    def checkpoint_in_auto_mode(self, chart: Chart, ends: list) -> list:
-        """A plan at a checkpoint in auto mode: the stop is held and the agent goes on; holding the stop ends the walk."""
-        return self.guarded(chart, ends, 240, 92, (Guard("plan_at_checkpoint"), Guard("auto_mode")), "block_stop", CHECKPOINT_PASSED)
-
-    def checkpoint_waits_for_the_user(self, chart: Chart, ends: list) -> list:
-        """A plan at a checkpoint with auto mode off: the agent is told the user looks first."""
-        return self.guarded(chart, ends, 240, 92, (Guard("plan_at_checkpoint"), Guard("auto_mode", passes=NO)), "say", CHECKPOINT)
 
     def nothing_own(self, chart: Chart, ends: list) -> list:
         """A state with nothing of its own yet: its workflow holds the trigger alone, so the state is on the page with something to open; the Always workflows carry the rest."""
