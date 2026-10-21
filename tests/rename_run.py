@@ -32,6 +32,12 @@ def reading(clock: Clock, steps: int) -> float:
     return total + LIMIT
 
 
+def doubled(steps: int) -> int:
+    def inner(steps: int) -> int:
+        return steps
+    return inner(steps=steps) * 2
+
+
 def caller() -> "Clock":
     print(reading(Clock(), steps=2))
     return Clock()
@@ -75,3 +81,12 @@ def test_a_banned_name_or_a_doubled_spot_writes_nothing(tmp_path: Path, capsys):
     assert tool().main([f"--root={root}", "Clock.now", "said"]) == 1 and "banned" in capsys.readouterr().out
     assert tool().main([f"--root={root}", "--dry-run", "Clock.now", "time", "Clock.now", "moment"]) == 1 and "same spot" in capsys.readouterr().out, "two renames of one spot in one list are refused"
     assert "def now" in (root / "src/journal/clock.py").read_text(), "nothing was written"
+
+
+def test_every_parameter_and_local_of_a_name_is_renamed_with_its_keywords(tmp_path: Path, capsys):
+    root = tree(tmp_path)
+    assert tool().main([f"--root={root}", "*steps", "amount", "*total", "product"]) == 0, capsys.readouterr().out
+    user = (root / "src/journal/user.py").read_text()
+    assert "def reading(clock: Clock, amount: int)" in user and "def doubled(amount: int)" in user and "def inner(amount: int)" in user
+    assert "return inner(amount=amount) * 2" in user and "reading(Clock(), amount=2)" in user, "every keyword of a call to a function that takes it"
+    assert "product = clock.now() * amount" in user, "a local is renamed in its function"

@@ -17,6 +17,8 @@ What the old name is decides what is renamed:
 - `module.name`: a function or constant at the top of a module, with every module that imports it.
 - `path.py:function.name` or `path.py:Class.method.name`: a parameter or local inside that one function, with
   the keyword arguments of the calls mypy resolves to it.
+- `*name`: every parameter and local variable of that name in every function, with the keyword arguments of the
+  calls to a function that takes it; fields, module names and attributes are left alone.
 
 A list line is `Old New`, or `Old New # why`; blank lines and lines starting with # are skipped. The new name
 is refused when the project's plain-name rules ban it or when it already stands where the old one does.
@@ -184,6 +186,8 @@ class Renamer:
         self.project, self.rules = project, rules
 
     def plan(self, old: str, new: str) -> Plan:
+        if old.startswith("*"):
+            return self.everywhere(old[1:], new)
         if ":" in old:
             return self.local(old, new)
         if "." in old and old.split(".")[0] == "journal":
@@ -338,6 +342,96 @@ class Renamer:
         word = receiver.name if isinstance(receiver, (NameExpr, MemberExpr)) else ""
         matches = [c.info for c in self.project.class_defs() if snake(c.name) == word]
         return matches[0] if len(matches) == 1 else None
+
+    def everywhere(self, old: str, new: str) -> Plan:
+        """Every parameter and local variable of that name in every function, with the keyword arguments of the calls to a function that takes it; fields, module names and attributes are left alone, and a function where the new name already stands is listed and left as it is."""
+        plan = Plan()
+        plan.refusals += [r for r in {self.rules.refusal("parameter", new), self.rules.refusal("local", new)} if r]
+        takers = set()
+        scopes = {}
+        for path in self.project.files:
+            tree = ast.parse(open(path, encoding="utf-8").read())
+            functions = [node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))]
+            for function in functions:
+                arguments = function.args.args + function.args.kwonlyargs + function.args.posonlyargs
+                if any(a.arg == old for a in arguments) and not isinstance(function, ast.Lambda):
+                    takers.add(function.name)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ClassDef) and any(isinstance(f, ast.FunctionDef) and f.name == "__init__" and any(a.arg == old for a in f.args.args) for f in node.body):
+                    takers.add(node.name)
+            scopes[path] = [f for f in functions if self.binds(f, old)]
+        for path, functions in scopes.items():
+            if not functions:
+                continue
+            toks = list(tokenize.generate_tokens(io.StringIO(open(path, encoding="utf-8").read()).readline))
+            outermost = [f for f in functions if not any(g is not f and g.lineno <= f.lineno and f.end_lineno <= g.end_lineno for g in functions)]
+            for function in outermost:
+                inside = [tok for tok in toks if function.lineno <= tok.start[0] <= function.end_lineno]
+                if any(tok.type == tokenize.NAME and tok.string == new for tok in inside):
+                    plan.loose.append(f"{path}:{function.lineno} already holds {new}")
+                    continue
+                plan.places += self.scoped_places(path, toks, function.lineno, function.end_lineno, old, new)
+        for path in self.project.files:
+            plan.places += self.taker_keywords(path, takers, old, new)
+        plan.places = sorted(set(plan.places), key=lambda p: (p.path, p.line, p.column))
+        return plan
+
+    @staticmethod
+    def binds(function, name: str) -> bool:
+        arguments = function.args.args + function.args.kwonlyargs + function.args.posonlyargs + [a for a in (function.args.vararg, function.args.kwarg) if a]
+        if any(a.arg == name for a in arguments):
+            return True
+        body = function.body if isinstance(function.body, list) else [function.body]
+        return any(isinstance(node, ast.Name) and node.id == name and isinstance(node.ctx, ast.Store) for statement in body for node in ast.walk(statement)) or any(isinstance(node, ast.ExceptHandler) and node.name == name for statement in body for node in ast.walk(statement))
+
+    @staticmethod
+    def scoped_places(path: str, toks, first: int, last: int, old: str, new: str) -> list[Place]:
+        places, depth = [], 0
+        for i, tok in enumerate(toks):
+            if not first <= tok.start[0] <= last:
+                continue
+            if tok.type == tokenize.OP and tok.string in "([{":
+                depth += 1
+            elif tok.type == tokenize.OP and tok.string in ")]}":
+                depth -= 1
+            elif tok.type == tokenize.NAME and tok.string == old and toks[i - 1].string != ".":
+                keyword = depth > 0 and toks[i + 1].string == "=" and toks[i - 1].string in ("(", ",")
+                if not keyword or toks[i - 2].type == tokenize.NAME and toks[i - 2].string in ("def", "lambda"):
+                    places.append(Place(path, tok.start[0], tok.start[1], old, new))
+                elif keyword and Renamer.signature(toks, i):
+                    places.append(Place(path, tok.start[0], tok.start[1], old, new))
+        return places
+
+    @staticmethod
+    def signature(toks, i: int) -> bool:
+        """Whether the name before = sits in a def's or a lambda's parameter list, where it is the parameter itself."""
+        depth = 0
+        for j in range(i - 1, -1, -1):
+            if toks[j].string in ")]}":
+                depth += 1
+            elif toks[j].string in "([{":
+                if depth == 0:
+                    return j >= 2 and toks[j - 2].string == "def"
+                depth -= 1
+            elif toks[j].string == "lambda" and depth == 0:
+                return True
+        return False
+
+    @staticmethod
+    def taker_keywords(path: str, takers: set[str], old: str, new: str) -> list[Place]:
+        """Each old= keyword in a call to a function of the project that takes a parameter of that name."""
+        places, stack = [], []
+        toks = list(tokenize.generate_tokens(io.StringIO(open(path, encoding="utf-8").read()).readline))
+        for i, tok in enumerate(toks):
+            if tok.type == tokenize.OP and tok.string in "([{":
+                callee = toks[i - 1].string if tok.string == "(" and i > 0 and toks[i - 1].type == tokenize.NAME else ""
+                stack.append(callee)
+            elif tok.type == tokenize.OP and tok.string in ")]}":
+                if stack:
+                    stack.pop()
+            elif tok.type == tokenize.NAME and tok.string == old and stack and stack[-1] in takers and toks[i + 1].string == "=" and toks[i - 1].string in ("(", ",") and toks[i - 3].string != "def":
+                places.append(Place(path, tok.start[0], tok.start[1], old, new))
+        return places
 
     def keyword_places(self, path: str, call: CallExpr, old: str, new: str) -> list[Place]:
         places = []
