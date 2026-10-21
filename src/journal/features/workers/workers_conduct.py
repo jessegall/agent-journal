@@ -97,7 +97,7 @@ def workers_feature():
 
 def knowing_workers(workers: WorkersData, brief: str) -> list[Worker]:
     named = PathMentions.build(brief)
-    return [w for w in reversed(workers.idle_workers) if named & set(w.touched_paths or ())]
+    return [w for w in reversed(workers.idle_workers) if w.overlaps(named)]
 
 
 def worktree_edits(workers: WorkersData, edited_paths: tuple[str, ...]):

@@ -76,6 +76,9 @@ class Worker(Scoped):
     def is_idle(self) -> bool:
         return self.state == WorkerState.REPORTED and not self.adopted
 
+    def overlaps(self, paths: set[str]) -> bool:
+        return any(file.endswith(path) or path.endswith(file) for file in self.touched_paths or () for path in paths)
+
     def files_line(self) -> str:
         if self.touched_paths is None:
             return "no files known"

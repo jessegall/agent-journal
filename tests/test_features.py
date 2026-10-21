@@ -6703,3 +6703,19 @@ def test_only_a_send_counts_a_reuse_and_only_a_retire_gives_its_reason(app: App,
     assert worker.reuse_count == 2 and worker.retire_reason == "the aqueduct needs a new design", "each send counts once, a report counts none; the reason is the stop's"
     console.run(["worker", "complete", "1", "--why", "the canal is done"], AGENT)
     assert workers.find(1).retire_reason == "the canal is done" and workers.find(1).reuse_count == 2
+
+
+def test_a_dispatch_names_the_idle_worker_whose_branch_touched_the_briefs_files_never_its_old_brief(app: App):
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    workers = app.container.get(Workers)
+    workers.save(Worker(name="Mr. Babbage", brief="the engine in src/engine.py", state=WorkerState.REPORTED, touched_paths=("src/journal/features/shell/chain.py", "docs/chain.md")), Actor.system())
+    workers.save(Worker(name="Mr. Brunel", brief="fix src/journal/features/shell/chain.py", state=WorkerState.REPORTED, touched_paths=None), Actor.system())
+    workers.save(Worker(name="Mr. Telford", brief="", state=WorkerState.REPORTED, adopted=True, touched_paths=("src/journal/features/shell/chain.py",)), Actor.system())
+    said = lambda brief: json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": f"journal worker dispatch 'Ada' '{brief}' --profile journal-medior"})[1])
+    refused = said("make shell/chain.py faster")
+    assert "1 idle workers" in refused and "worker 1, Mr. Babbage, last on src/journal/features/shell/chain.py, docs/chain.md: `journal worker send 1" in refused, "a path the brief names by its end matches the file the branch touched"
+    assert "Mr. Brunel" not in refused and "Mr. Telford" not in refused, "an old brief naming the file is no evidence, and a worker acted on is retired"
+    assert "idle workers" not in said("look at src/engine.py"), "the old brief's own files are not what it touched"
