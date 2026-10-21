@@ -26,11 +26,16 @@ class Nudger:
 
     def say(self, agent: Agent, nudge: Nudge) -> str | None:
         with self.scope.of(agent.environment_id):
-            return self._said(agent, nudge)
+            return self._said(agent, nudge, repeated=True)
 
-    def _said(self, agent: Agent, nudge: Nudge) -> str | None:
+    def hold(self, agent: Agent, nudge: Nudge) -> str | None:
+        """A hold's line: said and recorded as any line, but never dropped for having been said lately, since a hold stands as long as its reason does."""
+        with self.scope.of(agent.environment_id):
+            return self._said(agent, nudge, repeated=False)
+
+    def _said(self, agent: Agent, nudge: Nudge, repeated: bool) -> str | None:
         self.registry.named(nudge.key)
-        if self.features.silenced(nudge) or self._repeat(agent, nudge):
+        if self.features.silenced(nudge) or repeated and self._repeat(agent, nudge):
             return None
         line = nudge.rendered()
         self.entries.save(Entry(environment_id=agent.environment_id, kind=NUDGE, actor=Actor.system(), data={"key": nudge.key, "session": agent.session, "line": line, "at": self.clock.now()}), Actor.system())

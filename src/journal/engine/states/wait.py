@@ -14,6 +14,9 @@ class Wait(BaseState):
     def awaiting(self) -> tuple[str, str]:
         return "", ""
 
+    def is_waiting(self) -> bool:
+        return True
+
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.pop() if event.by_user else self.unchanged()
 

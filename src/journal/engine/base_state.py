@@ -70,6 +70,9 @@ class BaseState(Conduct):
     def on_pop(self, settings: Settings) -> tuple[Nudge, ...]:
         return ()
 
+    def is_waiting(self) -> bool:
+        return False
+
     def to_data(self) -> dict:
         return {field.name: getattr(self, field.name) for field in fields(self)}
 

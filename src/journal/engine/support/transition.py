@@ -17,6 +17,7 @@ class Transition:
     nudges: tuple[Nudge, ...] = ()
     typed: tuple[Nudge, ...] = ()
     held: Nudge | None = None
+    other_holds: tuple[Nudge, ...] = ()
     dropped: tuple[str, ...] = ()
 
     def typing(self, *typed: Nudge) -> "Transition":
@@ -39,5 +40,6 @@ class Transition:
             nudges=tuple(nudge for answer in answers for nudge in answer.nudges),
             typed=tuple(nudge for answer in answers for nudge in answer.typed),
             held=next((answer.held for answer in answers if answer.held), None),
+            other_holds=tuple(answer.held for answer in answers if answer.held)[1:],
             dropped=tuple(answer.move_named() for answer in moving[1:]),
         )

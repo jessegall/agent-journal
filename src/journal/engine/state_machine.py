@@ -73,10 +73,11 @@ class StateMachine(AgentListener[AgentEvent]):
         typed = [line for nudge in transition.typed if (line := self.nudger.say(agent, nudge))]
         for line in typed:
             self.supervisor.type(agent.environment_id, line, after=event.typed_after)
-        if transition.held and not self.nudger.is_silenced(transition.held):
-            return Decision.refuse(transition.held.rendered())
-        if hooked.held and not self.nudger.is_silenced(hooked.held.nudge):
-            return Decision.refuse(hooked.held.nudge.rendered())
+        reasons = [line for refusal in (transition.held, *transition.other_holds) if refusal and (line := self.nudger.hold(agent, refusal))]
+        if reasons:
+            return Decision.refuse("\n".join(reasons))
+        if hooked.held and (line := self.nudger.hold(agent, hooked.held.nudge)):
+            return Decision.refuse(line)
         return Decision.allowed_with("\n".join(lines))
 
     def move(self, session: str, environment_id: int, to: AgentState) -> Agent:
