@@ -6,16 +6,15 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a message arrives",
@@ -26,13 +25,9 @@
       "nudges": [
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     }
   ]
 }

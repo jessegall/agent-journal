@@ -892,7 +892,7 @@ def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monk
     typed = []
     catch_typed(app, monkeypatch, typed)
     hook(app, "SessionStart")
-    (app.config.root / "src" / "journal").mkdir(parents=True)
+    app.container.get(SettingRows).set("faults.report", True, Actor.user(1))
     slow = app.container.get(SlowRequests)
     monkeypatch.setattr("os.getloadavg", lambda: (0.0, 0.0, 0.0))
     with app.container.get(Scope).of(MAIN):
@@ -3392,7 +3392,7 @@ def test_an_upgrade_shows_the_code_and_a_linked_change_waits_for_the_user(app, t
     waiting = [m for m in messages.recent(10) if m.text.startswith("Plugin echo's manifest changed")]
     assert len(waiting) == 1 and "holds: + idle" in waiting[0].data["detail"] and "idle" not in plugins.named("echo").manifest.holds, "shown once, and the plugin runs as installed"
     console.run(["plugin", "upgrade", "echo", "--yes"], USER)
-    assert "idle" in plugins.named("echo").manifest.holds and plugins.named("echo").waiting == "", "the user's upgrade applies it"
+    assert "idle" in [h.event for h in plugins.named("echo").manifest.holds] and plugins.named("echo").waiting == "", "the user's upgrade applies it"
 
 
 def test_a_plugin_is_installed_only_once_its_requirements_and_setup_pass(app, tmp_path):
@@ -5792,3 +5792,31 @@ def test_a_hook_on_a_started_plan_reads_the_plans_tree_once(app, monkeypatch):
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
     selects = Counter(sql for sql in statements if sql.lstrip().upper().startswith("SELECT"))
     assert sum(selects.values()) < 90, f"a hook on a started plan of thirty tasks ran {sum(selects.values())} selects, the plan's tree is read once per event and not once per question; the most frequent: {selects.most_common(6)}"
+
+
+def test_a_plugins_queue_is_drained_at_every_hook_and_its_line_rides_on_the_answer(app):
+    """A plugin that judges on its own time writes what it found into its queue folder; the next hook carries the line to the agent, shows the card and runs the command, and the file is gone."""
+    from journal.features.plugins.support.plugin_folders import PluginFolders
+    from journal.repositories.entries import Entries
+    from journal.repositories.messages import Messages
+    from journal.repositories.tasks import Tasks
+    from journal.support.deferred import Deferred
+    plugin = echo(app, hears=["tool_finished"], holds=[])
+    hook(app, "SessionStart")
+    queue = app.container.get(PluginFolders).data(plugin) / "queue"
+    queue.mkdir(parents=True, exist_ok=True)
+    (queue / "1.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "two sins in a.py", "cards": [{"kind": "echoed", "key": "a.py", "label": "Sins in a.py"}], "commands": ["journal task create 'fix a.py'"]}))
+    (queue / "2.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "one sin in b.py"}))
+    (queue / "3.json.tmp").write_text("{")
+    (queue / "4.json").write_text("not json")
+    _, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "c.py"})
+    context = body["hookSpecificOutput"]["additionalContext"]
+    assert "[plugin echo] two sins in a.py" in context and "[plugin echo] one sin in b.py" in context, "every queued line rides on the next hook's answer, oldest first"
+    assert context.index("two sins") < context.index("one sin")
+    assert sorted(p.name for p in queue.iterdir()) == ["3.json.tmp"], "what was read is deleted, a file still being written is left, and one that does not parse is deleted as a fault"
+    app.container.get(Deferred).drain()
+    assert "Sins in a.py" in [m.text for m in app.container.get(Messages).recent(10)], "the queued card is shown"
+    assert any("fix a.py" == t.title for t in app.container.get(Tasks).in_()), "the queued command ran as the plugin"
+    assert any("4.json" in e.data["fault"] for e in app.container.get(Entries).where(kind="plugin_fault")), "the file that does not parse is a fault naming it"
+    _, again = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "d.py"})
+    assert "two sins" not in json.dumps(again), "a drained line is said once"

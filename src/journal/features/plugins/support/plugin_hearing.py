@@ -62,9 +62,12 @@ class PluginHearing:
             self.faults.failed(plugin, environment_id, event.key, str(fault))
             return PluginAnswer()
         self.faults.answered(plugin, environment_id)
+        self.applied(plugin, answer, environment, environment_id)
+        return answer
+
+    def applied(self, plugin: Plugin, answer: PluginAnswer, environment: str, environment_id: int) -> None:
         if answer.cards or answer.commands:
             self.deferred.add(lambda: self.answers.apply(plugin, answer, environment, environment_id))
-        return answer
 
     def later(self, plugin: Plugin, event: Event, environment_id: int) -> None:
         """Heard after the reply: a refusal here comes too late to hold anything and is recorded unanswered; a line waits for the agent's next hook."""
@@ -78,6 +81,11 @@ class PluginHearing:
         """Kept for the agent the event was of, or for a row's the environment's live agent; with no agent, said to nobody and only recorded."""
         session = event.session if isinstance(event, AgentEvent) else self.live_session(environment_id)
         self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": event.key, "line": self.words.said(plugin, words), "delivered": not session}), Actor.plugin(plugin.name))
+
+    def queued_line(self, plugin: Plugin, environment_id: int, key: str, words: str) -> None:
+        """A line from the plugin's queue for another environment: kept for that environment's live agent's next hook."""
+        session = self.live_session(environment_id)
+        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": key, "line": self.words.said(plugin, words), "delivered": not session}), Actor.plugin(plugin.name))
 
     def live_session(self, environment_id: int) -> str:
         with self.scope.of(environment_id):

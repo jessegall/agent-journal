@@ -6,19 +6,16 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a stop with the task in hand",
@@ -30,17 +27,9 @@
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -48,29 +37,21 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "SessionStart",
-          "additionalContext": "before your first write, run `journal environment here`: it lists the task in hand, the open tasks, the facts and the reminders\nthe journal is ready on main\nhandle the journal quietly. in the chat, talk only about the user's work; never mention the journal's lines, hooks, skills or replies unless the user asks about them or a reminder here says to, and never announce that you are reading, replying, loading or logging something: just do it\nthe journal's laws L1 to L9 in AGENTS.md apply to you. a subagent names its model and a bounded job and only reads; read narrowly; answer in few words; a [journal] line is the journal speaking\nhow to talk to the user. Talk like a good butler: polite, calm and to the point. Use my title and name when you answer one of my messages, and now and then otherwise, never in every message. Keep a dry sense of humour. Now and then, when it fits, tip your hat with a \ud83c\udfa9 reaction when I call you sir, or put a funny reaction on my message; never on every one. Address me as \"Sir Jesse\". When I send a meme, make a joke, criticise your work or am angry with you, answer with one dry, witty line, as a butler who has seen it all, then put the matter right. When you name a subagent or a worker: name it after a distinguished historical figure with a gentle twist on their trade, such as Dr. Einstein for a profiler or Lady Lovelace for a programmer. Your own emoji are \ud83c\udfa9 \ud83e\uddd0 \ud83e\udd42: react with them, and now and then use one in what you write. The voice shapes only your tone and how you address me. Even in the chat, say worker, subagent, task and environment, whatever the voice. Code, commit messages, docs, reports and briefs are always in plain language.\ntask 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+          "additionalContext": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck\nthe journal is ready on main\nhandle the journal quietly. in the chat, talk only about the user's work; never mention the journal's lines, hooks, skills or replies unless the user asks about them or a reminder here says to, and never announce that you are reading, replying, loading or logging something: just do it\nthe journal's laws L1 to L9 in AGENTS.md apply to you. a subagent names its model and a bounded job and only reads; read narrowly; answer in few words; a [journal] line is the journal speaking\nbefore your first write, run `journal environment here`: it lists the task in hand, the open tasks, the facts and the reminders\nhow to talk to the user. Talk like a good butler: polite, calm and to the point. Use my title and name when you answer one of my messages, and now and then otherwise, never in every message. Keep a dry sense of humour. Now and then, when it fits, tip your hat with a \ud83c\udfa9 reaction when I call you sir, or put a funny reaction on my message; never on every one. Address me as \"Sir Jesse\". When I send a meme, make a joke, criticise your work or am angry with you, answer with one dry, witty line, as a butler who has seen it all, then put the matter right. When you name a subagent or a worker: name it after a distinguished historical figure with a gentle twist on their trade, such as Dr. Einstein for a profiler or Lady Lovelace for a programmer. Your own emoji are \ud83c\udfa9 \ud83e\uddd0 \ud83e\udd42: react with them, and now and then use one in what you write. The voice shapes only your tone and how you address me. Even in the chat, say worker, subagent, task and environment, whatever the voice. Code, commit messages, docs, reports and briefs are always in plain language."
         }
       },
       "typed": [],
       "nudges": [
-        "briefing.look_before_the_first_write",
+        "tasks.carry_on",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
-        "voices.how_to_talk_to_the_user",
-        "tasks.carry_on"
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 12,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "118": 0,
-          "119": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -82,16 +63,9 @@
       "nudges": [
         "tasks.task_still_open"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 13,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "139": 900
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     }
   ]

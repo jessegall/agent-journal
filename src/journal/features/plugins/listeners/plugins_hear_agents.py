@@ -2,6 +2,7 @@ from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
 from journal.features.plugins.support.plugin_hearing import PluginHearing
+from journal.features.plugins.support.plugin_queue import PluginQueue
 from journal.features.plugins.support.plugin_words import PluginWords
 from journal.support.decision import Decision
 from journal.support.deferred import Deferred
@@ -22,14 +23,16 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     blocking = True
     asked_while_free = True
 
-    def __init__(self, hearing: PluginHearing, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords) -> None:
-        self.hearing, self.deferred, self.settings, self.floor, self.words = hearing, deferred, settings, floor, words
+    def __init__(self, hearing: PluginHearing, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords, queue: PluginQueue) -> None:
+        self.hearing, self.deferred, self.settings, self.floor, self.words, self.queue = hearing, deferred, settings, floor, words, queue
 
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
         hearers = self.hearing.heard_by(event, event.environment_id)
         ceiling_ms = int(self.settings.option(PluginsFeature.HOLD_WINDOW))
         waiting = self.hearing.waiting_for(event.session) if event.key in CARRIES else []
+        if event.key in CARRIES:
+            waiting += [line for plugin in self.hearing.plugins.enabled() for line in self.queue.lines(plugin, event)]
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
         for plugin in hearers:
             if decision.allowed and self.holds(plugin, event):

@@ -8,20 +8,16 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user",
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a stop with one unread",
@@ -33,13 +29,9 @@
       "nudges": [
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 7,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "three more arrive",
@@ -54,13 +46,9 @@
         "messages.new_message_to_answer",
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 10,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a stop with four unread",
@@ -72,13 +60,9 @@
       "nudges": [
         "messages.unread_messages_to_read"
       ],
-      "counts": {
-        "charts:31:said": 11,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     }
   ]
 }

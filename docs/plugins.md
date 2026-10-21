@@ -152,6 +152,24 @@ One line of JSON on its output, the last line counting; an empty output is `allo
 - An answer that does not parse is a fault: the event goes through and the fault is recorded. A fault is never a
   refusal.
 
+## The queue
+
+A plugin that works on its own time, a judge that runs after the tool finished, say, hands the journal what it found
+through its queue: the folder `queue` under `JOURNAL_PLUGIN_DATA`. Each message is one file holding one line out, the
+same JSON as an answer, with `env` naming the environment it is for (the plugin's `JOURNAL_ENV` at the event), written
+to a `.tmp` name and renamed to `.json` so the journal never reads half a file:
+
+```json
+{"v": 1, "env": "main", "tell": "two sins in a.py", "cards": [{"kind": "sin", "key": "a.py", "label": "A sin in a.py"}], "commands": []}
+```
+
+The journal drains every enabled plugin's queue at every hook, oldest file first, and deletes what it read. A `tell`
+for the environment of the hook rides on that hook's answer, so the agent reads it with its next tool use; one for
+another environment waits for that environment's live agent's next hook. The `cards` and `commands` apply after the
+reply as they do for an answer, so a card with a key updates the plugin's earlier card of that key. An `answer` of
+`refuse` in the queue is too late to hold anything and is recorded as `plugin_unanswered`. A file that does not parse
+is a fault, named with its file, and deleted.
+
 ## How it runs
 
 For each event the program is started in the plugin's folder, in a process group of its own, with the line on its

@@ -13,24 +13,16 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "briefing.look_before_the_first_write",
         "briefing.journal_ready",
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user",
         "messages.new_message_to_answer",
         "etiquette.a_line_is_an_instruction"
       ],
-      "counts": {
-        "charts:31:said": 0,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": [
-        {
-          "220": 6
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
@@ -42,16 +34,8 @@
       "nudges": [
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 1,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": [
-        {
-          "220": 1
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
@@ -63,16 +47,8 @@
       "nudges": [
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 2,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": [
-        {
-          "220": 2
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
@@ -84,16 +60,8 @@
       "nudges": [
         "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 3,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": [
-        {
-          "220": 3
-        }
+      "stack": [
+        "idle"
       ]
     }
   ]

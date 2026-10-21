@@ -956,6 +956,9 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
   by the plugin's service from what it already knows; judging and sins run on the plugin's own time and ride on the
   next hook. One past its window is cut, its answer dropped and the miss recorded as unanswered, never a fault, so it is asked again next time (messages 11346, 11408; doc 61). This replaced the one shared
   deadline of six seconds on 2026-10-21.
+- A plugin's queue (message 11346, task 1142): the folder `queue` under its data folder, one `.json` file per line out
+  with `env`, drained at every hook on the answer path, a line for the hook's environment riding on it; a plugin that
+  judges asynchronously writes there and never holds. One parser for a queued file and an answer: the protocol's.
 - A plugin is asked to hold only while nothing has held the event yet (`asked_while_free` on the listener). After that
   it hears the event after the reply, and a refusal then is recorded as `plugin_unanswered`.
 - A stop is held once a turn: Idle carries `held_before` from `stop_hook_active`. There is no count of four in a row.
