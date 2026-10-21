@@ -68,7 +68,8 @@ class Worker(Scoped):
         return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
 
     def finished(self, time: float, reason: str) -> "Worker":
-        return self.with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
+        retired = self.with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
+        return retired.stopped(time, reason) if self.is_running() else retired
 
     def is_running(self) -> bool:
         return self.state == WorkerState.DISPATCHED

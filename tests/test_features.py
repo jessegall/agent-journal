@@ -6759,3 +6759,26 @@ def test_retiring_an_idle_worker_asks_once_whether_it_could_be_reused_and_the_re
         assert status != 200 and "Are you sure worker 1, Mr. Idle, cannot be reused?" in json.dumps(body) and "--why" in json.dumps(body)
         assert run(f"{verb} 1 --why 'its branch is merged and the work is done'")[0] == 200, "the repeat with its reason pays the question"
     assert run("stop 2")[0] == 200, "a worker out is never asked"
+
+
+def test_retiring_a_worker_the_dispatcher_waits_on_stops_it_and_ends_the_wait(app: App):
+    import subprocess
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    console, workers, machine = app.console(), app.container.get(Workers), app.container.get(StateMachine)
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Fulton", "the steamboat", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Watt", "the engine", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    assert machine.current("s1").worker_ids() == (1, 2)
+    process = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    try:
+        workers.save(workers.find(1).running_as(process.pid, timing.time()), Actor.system())
+        console.run(["worker", "complete", "1", "--why", "the steamboat is dropped"], AGENT)
+        assert process.wait(5) is not None and workers.find(1).state == WorkerState.STOPPED, "a worker retired while out is stopped"
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait(5)
+    assert machine.current("s1").worker_ids() == (2,), "the wait shrinks to the workers still out"
+    console.run(["worker", "stop", "2", "--why", "the engine waits on the boiler"], AGENT)
+    assert machine.current("s1").name != "awaiting", "and ends with the last"

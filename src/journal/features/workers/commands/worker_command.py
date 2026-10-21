@@ -156,7 +156,9 @@ class WorkerCommand(Command):
         return 0
 
     def complete(self, args: Namespace, caller: Caller) -> int:
-        worker = self.workers.save(self.workers.find(args.n).finished(datetime.now(timezone.utc).timestamp(), args.why), caller.actor)
+        with self.runner.lock(args.n):
+            worker = self.workers.save(self.workers.find(args.n).finished(datetime.now(timezone.utc).timestamp(), args.why), caller.actor)
+            self.runner.stop(worker)
         dropped = self.branch.dropped(worker)
         print(f"worker {worker.id}'s report is acted on" + (f": {args.why}" if args.why else "") + (f"; {dropped}" if dropped else ""))
         return 0
