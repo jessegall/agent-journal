@@ -5,7 +5,7 @@ from journal.events.agent.agent_event import AgentEvent
 from journal.features.plugins.support.plugin_fault import PluginFault
 from journal.features.plugins.support.plugin_faults import PluginFaults
 from journal.features.plugins.support.plugin_folders import PluginFolders
-from journal.features.plugins.support.plugin_hearing import PluginHearing
+from journal.features.plugins.support.plugin_relay import PluginRelay
 from journal.features.plugins.support.protocol import Protocol
 from journal.models.plugin import Plugin
 from journal.repositories.environments import Environments
@@ -16,8 +16,8 @@ QUEUE = "queue"
 class PluginQueue:
     """The folder a plugin writes what it found on its own time into, one file per line out with the environment it is for; drained at every hook, oldest file first, each file deleted once read."""
 
-    def __init__(self, folders: PluginFolders, protocol: Protocol, faults: PluginFaults, hearing: PluginHearing, environments: Environments) -> None:
-        self.folders, self.protocol, self.faults, self.hearing, self.environments = folders, protocol, faults, hearing, environments
+    def __init__(self, folders: PluginFolders, protocol: Protocol, faults: PluginFaults, relay: PluginRelay, environments: Environments) -> None:
+        self.folders, self.protocol, self.faults, self.relay, self.environments = folders, protocol, faults, relay, environments
 
     def lines(self, plugin: Plugin, event: AgentEvent) -> list[str]:
         context = []
@@ -29,13 +29,13 @@ class PluginQueue:
             except PluginFault as fault:
                 self.faults.failed(plugin, event.environment_id, QUEUE, f"{file.name}: {fault}")
                 continue
-            self.hearing.applied(plugin, answer, self.environments.find(environment_id).name, environment_id)
+            self.relay.applied(plugin, answer, self.environments.find(environment_id).name, environment_id)
             if answer.answer == "refuse":
-                self.hearing.unanswered(plugin, event, environment_id, answer.reason)
+                self.relay.unanswered(plugin, event, environment_id, answer.reason)
             elif answer.tell and environment_id == event.environment_id:
-                context.append(self.hearing.words.said(plugin, answer.tell))
+                context.append(self.relay.words.said(plugin, answer.tell))
             elif answer.tell:
-                self.hearing.queued_line(plugin, environment_id, event.key, answer.tell)
+                self.relay.queued_line(plugin, environment_id, event.key, answer.tell)
         return context
 
     def files(self, plugin: Plugin) -> list[Path]:

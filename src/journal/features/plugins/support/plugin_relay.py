@@ -32,7 +32,7 @@ CUT = "plugin_cut"
 """The entry a row leaves that no plugin heard because plugin commands led to it more than a step deep."""
 
 
-class PluginHearing:
+class PluginRelay:
     """Which plugins hear an event, and one plugin asked about it: the line built where the event happened, and a fault recorded, never raised."""
 
     def __init__(self, plugins: Plugins, runner: PluginRunner, protocol: Protocol, faults: PluginFaults, environments: Environments, agents: Agents, entries: Entries, answers: PluginAnswers, steps: PluginSteps, deferred: Deferred, hashes: PluginHashes, linked: LinkedManifests, words: PluginWords, scope: Scope) -> None:

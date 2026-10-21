@@ -1,7 +1,7 @@
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
-from journal.features.plugins.support.plugin_hearing import PluginHearing
+from journal.features.plugins.support.plugin_relay import PluginRelay
 from journal.features.plugins.support.plugin_queue import PluginQueue
 from journal.features.plugins.support.plugin_words import PluginWords
 from journal.support.decision import Decision
@@ -23,23 +23,23 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     blocking = True
     asked_while_free = True
 
-    def __init__(self, hearing: PluginHearing, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords, queue: PluginQueue) -> None:
-        self.hearing, self.deferred, self.settings, self.floor, self.words, self.queue = hearing, deferred, settings, floor, words, queue
+    def __init__(self, relay: PluginRelay, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords, queue: PluginQueue) -> None:
+        self.relay, self.deferred, self.settings, self.floor, self.words, self.queue = relay, deferred, settings, floor, words, queue
 
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
-        hearers = self.hearing.heard_by(event, event.environment_id)
+        hearers = self.relay.heard_by(event, event.environment_id)
         ceiling_ms = int(self.settings.option(PluginsFeature.HOLD_WINDOW))
-        waiting = self.hearing.waiting_for(event.session) if event.key in CARRIES else []
+        waiting = self.relay.waiting_for(event.session) if event.key in CARRIES else []
         if event.key in CARRIES:
-            waiting += [line for plugin in self.hearing.plugins.enabled() for line in self.queue.lines(plugin, event)]
+            waiting += [line for plugin in self.relay.plugins.enabled() for line in self.queue.lines(plugin, event)]
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
         for plugin in hearers:
             if decision.allowed and self.holds(plugin, event):
                 window = plugin.manifest.window_ms(event.key, ceiling_ms) / 1000
-                decision = decision.merged(self.decided(plugin, event, self.hearing.ask(plugin, event, event.environment_id, window)))
+                decision = decision.merged(self.decided(plugin, event, self.relay.ask(plugin, event, event.environment_id, window)))
             else:
-                self.deferred.add_unless_behind(lambda plugin=plugin: self.hearing.later(plugin, event, event.environment_id), f"{plugin.name} hearing {event.key}")
+                self.deferred.add_unless_behind(lambda plugin=plugin: self.relay.later(plugin, event, event.environment_id), f"{plugin.name} relay {event.key}")
         return self.floor.under(event, decision)
 
     @staticmethod
@@ -48,13 +48,13 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
         if answer.answer == "refuse" and isinstance(event, Idle) and event.held_before:
-            self.hearing.unanswered(plugin, event, event.environment_id, answer.reason)
+            self.relay.unanswered(plugin, event, event.environment_id, answer.reason)
             return Decision()
         if answer.answer == "refuse" and event.key in REFUSABLE:
-            self.hearing.said(plugin, event, event.environment_id, "held", answer.reason)
+            self.relay.said(plugin, event, event.environment_id, "held", answer.reason)
             return Decision.refuse(self.words.said(plugin, answer.reason))
         words = answer.reason if answer.answer == "refuse" else answer.tell
         if not words:
             return Decision()
-        self.hearing.said(plugin, event, event.environment_id, "told", words)
+        self.relay.said(plugin, event, event.environment_id, "told", words)
         return Decision.allowed_with(self.words.said(plugin, words))

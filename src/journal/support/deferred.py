@@ -27,7 +27,7 @@ class Deferred:
         self._queue.put(lambda context=contextvars.copy_context(): context.run(work))
 
     def add_unless_behind(self, work: Callable[[], None], what: str) -> None:
-        """Work that may be left undone, such as a plugin hearing an event after the reply: past BEHIND pieces waiting it is skipped, and the server's log says so, at the first and every hundredth."""
+        """Work that may be left undone, such as a plugin told an event after the reply: past BEHIND pieces waiting it is skipped, and the server's log says so, at the first and every hundredth."""
         if self.depth() < self.BEHIND:
             self.add(work)
             return
