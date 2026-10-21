@@ -1889,8 +1889,10 @@ def test_the_files_a_shell_part_changed_show_in_the_edits_pane(app):
     hook(app, "SessionStart")
     (app.config.root / "notes.md").write_text("a\nb\nc\n")
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/a/b/ notes.md && touch same.md"}, tool_response="")
+    (app.config.root / "skill.md").write_text("one\ntwo\n")
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "skill.md")}, tool_response="")
     edits = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/agents/1/edits?env=main"), timeout=5))["edits"]
-    assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 0)] and edits[0]["command"].startswith("sed"), "a file the line wrote shows with its lines; a file it touched without a change does not"
+    assert [(e["path"], e["added"], e["removed"]) for e in edits] == [("notes.md", 3, 0)] and edits[0]["command"].startswith("sed"), "a file the line wrote shows with its lines; a file it touched without a change does not, and a file only read is no edit, whatever its path"
 
 
 def test_a_shell_line_that_writes_is_a_write_to_the_gates(app):

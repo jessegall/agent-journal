@@ -194,7 +194,7 @@ class Provider:
     def written_paths(self, tool: str, input: dict) -> list[str]:
         if tool == self.shell_tool:
             return Writes.targets(ToolInput.from_json(input).command)
-        return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)]
+        return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)] if tool in self.write_tools else []
 
     def skill_loaded(self, tool: str, input: dict) -> str:
         return ToolInput.from_json(input).skill if tool == "Skill" else ""
