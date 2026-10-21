@@ -46,15 +46,20 @@ class Noted(AgentListener[ToolStarting]):
         self.ran.set()
 
 
+@pytest.fixture(scope="module")
+def boot():
+    def booted(root: Path, patch: pytest.MonkeyPatch) -> App:
+        app = App(Config(root, port=0))
+        app.container.get(ListenerQueue).start()
+        app.server().start()
+        return app
+    return booted
+
+
 @pytest.fixture
-def app(journal_root: Path):
-    app = App(Config(journal_root, port=0))
-    app.container.get(ListenerQueue).start()
-    app.server().start()
+def app(app: App):
     with app.container.get(Scope).environment(MAIN):
         yield app
-    app.server().stop()
-    app.container.get(ListenerQueue).stop()
 
 
 def post_hook(app, body: dict, started_ms: int = 0):

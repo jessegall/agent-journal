@@ -16,7 +16,7 @@ def answer(line: dict) -> str:
     if mode == "slow":
         time.sleep(30)
     if mode == "late":
-        time.sleep(2)
+        time.sleep(0.5)
     if mode == "broken":
         return "not json"
     data = line.get("data", {})

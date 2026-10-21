@@ -62,7 +62,7 @@ class Repository(Generic[M]):
 
     def _linked(self, clause: str, params: tuple) -> dict[int, list[Ref]]:
         rows: dict[int, list[Ref]] = {}
-        for link in self.connection.all(f"SELECT source, target FROM links WHERE {clause}source >= ? AND source < ? ORDER BY id", (*params, f"{self.table}:", f"{self.table};")):
+        for link in self.connection.all(f"SELECT source, target FROM links WHERE {clause}source >= ? AND source < ? GROUP BY source, target ORDER BY MIN(id)", (*params, f"{self.table}:", f"{self.table};")):
             rows.setdefault(Ref.parse(link["source"]).id, []).append(Ref.parse(link["target"]))
         return rows
 

@@ -17,6 +17,7 @@ from journal.events.bus import Bus
 from journal.models.all_models import AllModels
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
+from tests.shared_journal import SharedJournal
 
 
 os.environ["AGENT_JOURNAL_SECRETS"] = tempfile.mkdtemp(prefix="journal-test-values-")
@@ -61,9 +62,29 @@ def template_journal(tmp_path_factory) -> Path:
 @pytest.fixture
 def journal_root(tmp_path: Path, template_journal: Path) -> Path:
     """The test's own journal folder, a copy of the booted template, with a project id of its own so no two tests share secret values."""
-    shutil.copytree(template_journal, tmp_path, dirs_exist_ok=True)
-    (tmp_path / ".journal" / "project-id").unlink(missing_ok=True)
-    return tmp_path
+    return copied(template_journal, tmp_path)
+
+
+@pytest.fixture(scope="module")
+def journal(tmp_path_factory, template_journal: Path, boot) -> SharedJournal:
+    """The journal a module's tests share, a copy of the booted template with a project id of its own, booted by the module's own boot fixture."""
+    with pytest.MonkeyPatch.context() as patch:
+        app = boot(copied(template_journal, tmp_path_factory.mktemp("module")), patch)
+        yield SharedJournal(app)
+        app.runtime().stop()
+
+
+@pytest.fixture
+def app(journal: SharedJournal):
+    """The module's journal, put back as it booted once the test is done."""
+    yield journal.app
+    journal.reset()
+
+
+def copied(template: Path, root: Path) -> Path:
+    shutil.copytree(template, root, dirs_exist_ok=True)
+    (root / ".journal" / "project-id").unlink(missing_ok=True)
+    return root
 
 
 @pytest.fixture

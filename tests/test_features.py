@@ -55,18 +55,26 @@ def viewer(app, path: str, body: dict | None = None) -> dict:
 
 
 @pytest.fixture
-def app(journal_root: Path, monkeypatch):
-    """A fresh journal on a free port; no worker process starts, since a dispatched worker would run its provider headless and file what it printed, or that it could not start, beside the test's own report."""
-    monkeypatch.setattr(Config, "status_home", property(lambda self: journal_root / "status"))
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
-    app = App(Config(journal_root, port=0))
+def app(app: App):
+    with app.container.get(Scope).environment(MAIN):
+        yield app
+
+
+@pytest.fixture(scope="module")
+def boot():
+    return booted
+
+
+def booted(root: Path, patch: pytest.MonkeyPatch) -> App:
+    """A journal started on a free port; no worker process starts, since a dispatched worker would run its provider headless and file what it printed, or that it could not start, beside the test's own report."""
+    patch.setattr(Config, "status_home", property(lambda self: root / "status"))
+    patch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    app = App(Config(root, port=0))
     app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
     app.container.get(SettingRows).save(Setting(environment_id=0, key="plugins.hold_window_ms", value=2000), Actor.system())
     app.runtime().start()
-    with app.container.get(Scope).environment(MAIN):
-        yield app
-    app.runtime().stop()
+    return app
 
 
 def made(output) -> int:
@@ -797,25 +805,32 @@ def test_the_documents_page_lists_the_projects_documents_their_search_and_the_at
     assert read("/journal/attachments?kind=other")["total"] == 0 and read("/journal/attachments?search=screenshot")["total"] == 1
 
 
-def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app: App):
+def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app: App, tmp_path, monkeypatch):
     import time as clock
+    from journal.features.checks.support import check_runner
     from journal.features.checks.support.check_runner import CheckRunner
+    monkeypatch.setattr(check_runner, "INTERVAL_SECONDS", 0)
     from journal.repositories.checks import Checks
     report = '{"title": "Sins", "summary": "1 sin", "findings": [{"name": "python-dict-bag", "file": "src/x.py", "line": 3, "group": "value objects"}]}'
-    app.console().run(["check", "create", "Counts", "--command", f"echo 1/3; sleep 1.5; echo 2/3; sleep 1.5; printf '%s' '{report}' > \"$JOURNAL_REPORT\"; exit 1"], USER)
+    step = tmp_path / "step"
+    os.mkfifo(step)
+    app.console().run(["check", "create", "Counts", "--command", f"echo 1/3; read _ < '{step}'; echo 2/3; read _ < '{step}'; printf '%s' '{report}' > \"$JOURNAL_REPORT\"; exit 1"], USER)
     checks = app.container.get(Checks)
     started = app.container.get(CheckRunner).start(checks.find(1), Actor.user(1))
     assert started.progress is not None, "a run started from the page answers at once, marked running"
-    viewed = []
-    for _ in range(60):
-        row = checks.find(1)
-        if row.progress is None:
-            break
-        viewed.append((row.progress.finished_count, row.progress.total))
-        clock.sleep(0.1)
-    row = checks.find(1)
-    assert (1, 3) in viewed or (2, 3) in viewed, f"the row says how far the run is while it runs: {viewed[-5:]}"
-    assert row.progress is None and row.last_passed is False and row.last_duration > 2, "the run's end clears its progress and keeps how long it took"
+
+    def shown(progress: tuple | None):
+        deadline = clock.monotonic() + 10
+        while (row := checks.find(1)).progress and (row.progress.finished_count, row.progress.total) != progress and clock.monotonic() < deadline:
+            clock.sleep(0.01)
+        return row
+
+    for finished in (1, 2):
+        row = shown((finished, 3))
+        assert row.progress and (row.progress.finished_count, row.progress.total) == (finished, 3), f"the row says how far the run is while it runs: {row.progress}"
+        step.write_text("\n")
+    row = shown(None)
+    assert row.progress is None and row.last_passed is False and row.last_duration > 0, "the run's end clears its progress and keeps how long it took"
     assert row.last_report.summary == "1 sin" and row.last_report.findings[0].line == 3, "the report the check wrote is kept with its run"
 
 
@@ -2483,9 +2498,10 @@ def test_a_report_is_written_from_a_file_and_linked_to_what_it_is_about(app: App
     body.write_text("What two readers found.\n\n## Phase 1\n\n- a gap\n\n## Phase 2\n\n- another\n")
     output = app.console().run(["report", "create", "Critique of plan 1", "--file", str(body), "--about", "plans:1"], AGENT).text
     assert output.startswith("report 1: Critique of plan 1, about plans:1")
+    app.runtime().deferred.drain()
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/reports/1", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
         report = json.loads(reply.read())
-    assert "## Phase 1" in report["body"] and "## Phase 2" in report["body"] and report["links"] == ["plans:1"], "a report names the rows it is about as the journal does"
+    assert "## Phase 1" in report["body"] and "## Phase 2" in report["body"] and report["links"] == ["plans:1"], "a report names each row it is about once, though its title mentions it too"
 
 
 def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(app: App):
@@ -3832,7 +3848,7 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app: App):
     plugins.save(row.with_(settings={}), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
     assert plugins.lookup("echo").fault_streak == 0 and "Plugin echo answers again" in [m.text for m in messages.recent(5)]
-    app.container.get(SettingRows).set(PluginsFeature.PLUGIN_ANSWER_WINDOW.key, 1000, Actor.user(1))
+    app.container.get(SettingRows).set(PluginsFeature.PLUGIN_ANSWER_WINDOW.key, 100, Actor.user(1))
     plugins.save(plugins.lookup("echo").with_(settings={"mode": "slow"}), Actor.user(1))
     plugins.save(echo(app, "echo-two").with_(settings={"mode": "slow"}), Actor.user(1))
     began = timing.monotonic()
@@ -4215,9 +4231,10 @@ def test_a_question_asked_without_a_session_or_from_a_workers_shell_is_refused(a
     assert app.console().run(["question", "ask", "Which?"], AGENT).code == 0
 
 
-def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app: App):
+def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app: App, tmp_path):
     import subprocess
     import time as timing
+    from journal.features.workers.jobs.worker_watch import WorkerWatch
     from journal.features.workers.seeds.workers_seed import WorkersSeed
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.models.worker import Worker
@@ -4230,12 +4247,17 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app: App):
         dropped = workers.save(Worker(name="Mr. Brunel", brief="the bridge", model="sonnet"), Actor.system())
     output, _ = runner.outputs(active)
     output.parent.mkdir(parents=True, exist_ok=True)
-    started = subprocess.run(["sh", "-c", f"(sleep 0.5; echo the parser is done) > '{output}' 2>&1 & echo $!"], capture_output=True, text=True, timeout=10)
-    workers.save(active.running_as(int(started.stdout.strip()), timing.time()), Actor.system())
+    done = tmp_path / "done"
+    os.mkfifo(done)
+    started = subprocess.run(["sh", "-c", f"(read _ < '{done}'; echo the parser is done) > '{output}' 2>&1 & echo $!"], capture_output=True, text=True, timeout=10)
+    pid = int(started.stdout.strip())
+    workers.save(active.running_as(pid, timing.time()), Actor.system())
     app.container.get(WorkersSeed).run()
-    end = timing.time() + 10
-    while timing.time() < end and any(w.is_running() for w in workers.global_matching()):
-        timing.sleep(0.1)
+    done.write_text("\n")
+    end = timing.monotonic() + 10
+    while runner.is_running(pid) and timing.monotonic() < end:
+        timing.sleep(0.01)
+    app.container.get(WorkerWatch).tick(timing.time())
     with scope.environment(1):
         texts = [m.text for m in app.container.get(Messages).scoped()]
     assert "Mr. Babbage reports: the parser is done" in "\n".join(texts), "a worker still running when the journal came back is watched until it ends, its report read from its file"
@@ -4251,7 +4273,7 @@ def test_a_worker_past_its_time_limit_is_stopped_and_reported(app: App):
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
     app.console().run(["worker", "dispatch", "Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    app.container.get(SettingRows).set(WorkersFeature.TIMEOUT.key, 0.02, USER.actor)
+    app.container.get(SettingRows).set(WorkersFeature.TIMEOUT.key, 0.005, USER.actor)
     worker = app.container.get(Workers).find(1)
     app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo half done; sleep 30"], A.agent("s1"))
     assert any("stopped after" in m.text and "half done" in m.text for m in app.container.get(Messages).scoped())
@@ -6202,7 +6224,7 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     from journal.repositories.plugins import Plugins
     from journal.repositories.entries import Entries
     plugins = app.container.get(Plugins)
-    plugins.save(echo(app, hears=["tool_starting", "tool_finished"], holds=[{"event": "tool_starting", "window_ms": 1000}]).with_(settings={"mode": "late"}), Actor.user(1))
+    plugins.save(echo(app, hears=["tool_starting", "tool_finished"], holds=[{"event": "tool_starting", "window_ms": 200}]).with_(settings={"mode": "late"}), Actor.user(1))
     hook(app, "SessionStart")
     started = timing.monotonic()
     assert hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, tool_response={})[0] == 200
@@ -6210,9 +6232,9 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     started = timing.monotonic()
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     waited = timing.monotonic() - started
-    assert status == 200 and 1.0 <= waited < 1.9, "the event it holds is asked on the answer path and cut at the window its manifest declares, the hook answered without it"
+    assert status == 200 and 0.2 <= waited < 1.1, "the event it holds is asked on the answer path and cut at the window its manifest declares, the hook answered without it"
     missed = app.container.get(Entries).matching(kind="plugin_unanswered")
-    assert "no answer within 1000 ms" in missed[-1].data["reason"] and plugins.lookup("echo").fault_streak == 0 and plugins.lookup("echo").enabled, "the miss is on the plugin's record, no fault counted, and the plugin stays on to be asked next time"
+    assert "no answer within 200 ms" in missed[-1].data["reason"] and plugins.lookup("echo").fault_streak == 0 and plugins.lookup("echo").enabled, "the miss is on the plugin's record, no fault counted, and the plugin stays on to be asked next time"
     from journal.models.support.plugin_manifest import PluginManifest
     manifest = PluginManifest.parsed({"name": "x", "hears": ["tool_starting", "idle"], "holds": [{"event": "tool_starting", "window_ms": 5000}, "idle"]})
     assert manifest.window_ms("tool_starting", 50) == 50 and manifest.window_ms("idle", 50) == 50 and manifest.window_ms("tool_starting", 9000) == 5000, "a window is cut to the user's ceiling, and a hold named without one takes the ceiling"
@@ -6671,13 +6693,16 @@ def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_disp
     hook(app, "SessionStart")
     console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
     console.run(["worker", "dispatch", "Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    printed = """echo '{"type": "system", "session_id": "worker-session"}'; sleep 1; echo '{"type": "result", "result": "hello said", "session_id": "worker-session"}'"""
+    said = tmp_path / "said"
+    os.mkfifo(said)
+    printed = f"""echo '{{"type": "system", "session_id": "worker-session"}}'; read _ < '{said}'; echo '{{"type": "result", "result": "hello said", "session_id": "worker-session"}}'"""
     running = threading.Thread(target=runner.run, args=(workers.find(1), ["sh", "-c", printed], Actor.agent("s1")))
     running.start()
-    end = timing.time() + 5
-    while timing.time() < end and workers.find(1).resume != "worker-session":
-        timing.sleep(0.05)
+    end = timing.monotonic() + 5
+    while timing.monotonic() < end and workers.find(1).resume != "worker-session":
+        timing.sleep(0.01)
     assert workers.find(1).resume == "worker-session" and workers.find(1).is_running(), "the session is kept the moment the worker prints it, while it still works"
+    said.write_text("\n")
     running.join(10)
     assert workers.find(1).state == WorkerState.REPORTED and workers.find(1).resume == "worker-session"
     console.run(["worker", "dispatch", "Mr. Babbage", "say nothing", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
