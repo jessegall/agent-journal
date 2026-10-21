@@ -5,7 +5,7 @@
         "select": "function",
         "where": [
             {
-                "nameMatches": "(?i)(^|_)(${poetic}|any|at|awaken|bare|began|behold|bless|chant|chose|conjure|craft|drew|enchant|fiddle|followed|follows|follows_a_plan|forge|forget|gaze|glance|grok|has_just|has_news|heed|is_due|kindle|knowing|later|leaves_by_itself|led|left_behind|massage|munge|off|out|over|peek|ponder|popped_through|pushed_through|ran_out|read_for|recite|saw|shipped|sing|speak|speaks|stands_in_for|stray|summon|taken_over|than|their|threw|through|tinker|turned|under|weave|wield|wonder|wrangle)(_|$)"
+                "nameMatches": "(?i)(^|_)(${poetic}|any|awaken|bare|began|behold|bless|chant|chose|conjure|craft|drew|enchant|fiddle|followed|follows|follows_a_plan|forge|forget|gaze|glance|grok|has_just|has_news|heed|is_due|kindle|knowing|later|leaves_by_itself|led|left_behind|massage|munge|off|out|over|peek|ponder|popped_through|pushed_through|ran_out|read_for|recite|saw|shipped|sing|speak|speaks|stands_in_for|stray|summon|taken_over|than|their|threw|through|tinker|turned|under|weave|wield|wonder|wrangle)(_|$)"
             }
         ]
     },
