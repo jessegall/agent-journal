@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- A menu in the agent's terminal is answered within a second: the watcher looks twice a second and answers at the next look that finds the same menu, where before it waited for the whole screen to stand still, which a running spinner never let it, and took three or four seconds.
 - A subagent dispatch that Claude Code could not run, a model not found, a refusal, a quota, settles its own chat mark as a red Dispatch failed with the tool's error, where before the mark stayed Dispatched; the journal now hears Claude Code's PostToolUseFailure hook as a tool-failed event.
 - A message the agent sends another session and that does not arrive, a stale socket or a peer gone, shows in the chat as a red Failed to send card with the tool's reason, so a retry to the new address is the one Sent to card and not a second one.
 - A background command's end reaches the agent once: an output the agent waits on is left to the wait, whose end names how it came out, and the quiet tick names only the ended outputs no wait held, where before both said `output N finished`.

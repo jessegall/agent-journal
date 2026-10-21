@@ -13,14 +13,14 @@ from journal.engine.support.launch_files import LaunchFiles
 from journal.engine.support.menu_answers import MenuAnswers
 from journal.support.chat_mark import ChatMark
 
-EVERY = 1.0
+EVERY = 0.5
 QUIET = 1.5
 CAUSED_WITHIN = 15.0
 YOURS_WITHIN = 3.0
 
 
 class MenuWatcher:
-    """A thread that reads each live agent's screen through the supervisor's mirror and keeps the agent from sitting at a menu: one the journal caused is confirmed, the trust question for the launched folder accepted, anything else declined or closed with Escape, and a card in the chat says what was done; a menu the user opened at the keyboard is left alone."""
+    """A thread that reads each live agent's screen through the supervisor's mirror and keeps the agent from sitting at a menu: one the journal caused is confirmed, the trust question for the launched folder accepted, anything else declined or closed with Escape, and a card in the chat says what was done; a menu the user opened at the keyboard is left alone. A menu is answered at the first look when the screen has stood still, otherwise at the next look that finds the same menu, whatever a spinner above it does."""
 
     def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: Cards, scope: Scope, states: StatesCatalogue, answers: MenuAnswers, launches: LaunchFiles) -> None:
         self.agents, self.supervisor, self.cards, self.scope, self.states = agents, supervisor, cards, scope, states
@@ -73,7 +73,7 @@ class MenuWatcher:
         return menu.asking_permission() and self.launches.skips_prompts(env)
 
     def still_drawing(self, env: int, moment: float) -> bool:
-        return moment - self._seen_at[env] < QUIET and moment - self.supervisor.screen_changed_at(env) < QUIET
+        return self._seen_at[env] == moment and moment - self.supervisor.screen_changed_at(env) < QUIET
 
     def decided(self, menu: Menu, caused: bool, agent: Agent) -> tuple[str, str] | None:
         if caused or menu.trusting() or menu.switching_model():
