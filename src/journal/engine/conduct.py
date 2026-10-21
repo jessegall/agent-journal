@@ -9,10 +9,10 @@ class Conduct:
 
     name: ClassVar[str]
 
-    def unchanged(self, *nudges: Nudge) -> Transition:
+    def none(self, *nudges: Nudge) -> Transition:
         return Transition(self, nudges=nudges)
 
-    def changed(self, next: "Conduct", *nudges: Nudge) -> Transition:
+    def swap(self, next: "Conduct", *nudges: Nudge) -> Transition:
         return Transition(next, nudges=nudges)
 
     def push(self, to: "Conduct", *nudges: Nudge) -> Transition:
@@ -21,8 +21,8 @@ class Conduct:
     def pop(self, *nudges: Nudge) -> Transition:
         return Transition(self, popped=True, nudges=nudges)
 
-    def pop_through(self, *nudges: Nudge) -> Transition:
+    def forward(self, *nudges: Nudge) -> Transition:
         return Transition(self, popped=True, nudges=nudges, handed_down=True)
 
-    def hold(self, why: Nudge) -> Transition:
-        return Transition(self, held=why)
+    def refuse(self, why: Nudge) -> Transition:
+        return Transition(self, refusal=why)

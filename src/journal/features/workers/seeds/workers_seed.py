@@ -19,5 +19,5 @@ class WorkersSeed(Seed):
             threading.Thread(target=self.watched, args=(worker,), name=f"worker-{worker.id}", daemon=True).start()
 
     def watched(self, worker) -> None:
-        with self.scope.of(worker.environment_id):
+        with self.scope.environment(worker.environment_id):
             self.runner.watch(worker, Actor.system())

@@ -32,5 +32,5 @@ class TaskMentionLinks(Listener[Created]):
                 task = self.tasks.find(n)
             except MissingRow:
                 continue
-            if Ref.to(task) not in self.links.targets(asked, Messages.SUBJECT_LINK):
-                self.links.save(Link(source=Ref.to(asked), target=Ref.to(task), kind=Messages.SUBJECT_LINK), event.actor)
+            if Ref.build(task) not in self.links.targets(asked, Messages.SUBJECT_LINK):
+                self.links.save(Link(source=Ref.build(asked), target=Ref.build(task), kind=Messages.SUBJECT_LINK), event.actor)

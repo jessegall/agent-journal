@@ -27,13 +27,13 @@ class CommentController(Controller[Message]):
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
         on = self.repository.linked(Messages.COMMENT_LINK)
-        return [{**ModelFields.of(m), "on": [str(ref) for ref in on.get(m.id, [])]} for m in rows]
+        return [{**ModelFields.build(m), "on": [str(ref) for ref in on.get(m.id, [])]} for m in rows]
 
     def store(self, request: Request) -> Response:
         target = self.row(str(request.body.get("on", "")))
         reply_to = request.body.get("reply_to")
         message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_to=int(reply_to) if reply_to else None).arrived(), request.actor)
-        self.links.save(Link(source=Ref.to(message), target=target, kind=Messages.COMMENT_LINK), request.actor)
+        self.links.save(Link(source=Ref.build(message), target=target, kind=Messages.COMMENT_LINK), request.actor)
         return Response.json(self.shown(message), 201)
 
     def row(self, named: str) -> Ref:

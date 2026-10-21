@@ -33,7 +33,7 @@ class Message(Scoped):
         return cls(author=Author.SYSTEM, text=text, read_at=time, data={"kind": cls.PEER, cls.PEER: sender, "session": session})
 
     @classmethod
-    def sent_to(cls, receiver: str, text: str, session: str, address: str = "") -> "Message":
+    def outgoing(cls, receiver: str, text: str, session: str, address: str = "") -> "Message":
         return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "session": session, "address": address or receiver})
 
     @classmethod
@@ -65,7 +65,7 @@ class Message(Scoped):
         return "\n".join(line.removeprefix(">").strip() for line in self.text.split("\n")[: self.quoted_lines])
 
     @property
-    def own_words(self) -> str:
+    def text_body(self) -> str:
         return "\n".join(self.text.split("\n")[self.quoted_lines:]).strip()
 
     @property
@@ -77,6 +77,6 @@ class Message(Scoped):
         return self.data.get("kind") == TERMINAL_LINE
 
     @property
-    def speaks_to_the_user(self) -> bool:
+    def is_user_facing(self) -> bool:
         return self.author == Author.AGENT and not self.acknowledgement and not self.is_thought
 

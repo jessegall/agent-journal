@@ -14,9 +14,9 @@ class NudgeLog:
     def type(self, nudge: Nudge) -> None:
         agent = self.agents.current()
         if agent is not None:
-            self.type_to(agent, nudge)
+            self.type_line(agent, nudge)
 
-    def type_to(self, agent: Agent, nudge: Nudge) -> None:
-        line = self.nudger.say(agent, nudge)
+    def type_line(self, agent: Agent, nudge: Nudge) -> None:
+        line = self.nudger.deliver(agent, nudge)
         if line:
             self.supervisor.type(agent.environment_id, line)

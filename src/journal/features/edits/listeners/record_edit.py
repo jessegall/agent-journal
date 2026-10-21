@@ -35,7 +35,7 @@ class RecordEdit(AgentListener[ToolFinished]):
         if not event.call.written_paths:
             return
         path = self.project_path(event.call.written_paths[0])
-        patch = PatchRows.of(event.response)
+        patch = PatchRows.build(event.response)
         if not patch.rows:
             self.changed(event, path)
             return

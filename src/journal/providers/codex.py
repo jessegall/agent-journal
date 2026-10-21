@@ -61,7 +61,7 @@ class Codex(Provider):
         except ValueError:
             return ""
 
-    def turns_in(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
+    def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
         return [turn for number, row in rows if (turn := self.turn(number, CodexRow.from_json(row)))]
 
     def turn(self, number: int, row: CodexRow) -> Turn | None:
@@ -78,7 +78,7 @@ class Codex(Provider):
             return Turn(number, "tool", "tool", time, row.output)
         return None
 
-    def texts_in(self, line: dict) -> list[str]:
+    def texts(self, line: dict) -> list[str]:
         row = CodexRow.from_json(line)
         return [row.text] if row.type == "response_item" and row.item == "message" and row.role == "assistant" and row.text.strip() else []
 

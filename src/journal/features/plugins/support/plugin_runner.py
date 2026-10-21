@@ -45,7 +45,7 @@ class PluginRunner:
                 raise PluginFault(f"its service did not answer on its socket: {failed}") from failed
 
     def program_run(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
-        folder = self.folders.of(plugin)
+        folder = self.folders.folder(plugin)
         process = subprocess.Popen([str(folder / plugin.manifest.program)], cwd=folder, env=self.environment(plugin, environment), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         try:
             out, err = process.communicate(line + "\n", timeout=within)
@@ -58,7 +58,7 @@ class PluginRunner:
         return self.protocol.parsed_answer(out)
 
     def shell(self, plugin: Plugin, environment: str, line: str, seconds: float) -> subprocess.CompletedProcess:
-        return subprocess.run(["sh", "-c", line], cwd=self.folders.of(plugin), env=self.environment(plugin, environment), capture_output=True, text=True, timeout=seconds)
+        return subprocess.run(["sh", "-c", line], cwd=self.folders.folder(plugin), env=self.environment(plugin, environment), capture_output=True, text=True, timeout=seconds)
 
     def environment(self, plugin: Plugin, environment: str) -> dict[str, str]:
         settings = self.folders.settings(plugin)
@@ -70,8 +70,8 @@ class PluginRunner:
             "JOURNAL_URL": f"http://127.0.0.1:{port}",
             "JOURNAL_ENV": environment,
             "JOURNAL_PLUGIN": plugin.name,
-            "JOURNAL_PLUGIN_TOKEN": self.tokens.of(plugin.name),
-            "JOURNAL_PLUGIN_DIR": str(self.folders.of(plugin)),
+            "JOURNAL_PLUGIN_TOKEN": self.tokens.build(plugin.name),
+            "JOURNAL_PLUGIN_DIR": str(self.folders.folder(plugin)),
             "JOURNAL_PLUGIN_DATA": str(self.folders.data(plugin)),
             "JOURNAL_SETTINGS": str(settings),
         } | self.settings.supplied(plugin)

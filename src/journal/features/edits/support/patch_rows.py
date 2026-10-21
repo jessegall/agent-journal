@@ -15,7 +15,7 @@ class PatchRows:
     rows: tuple[PatchRow, ...]
 
     @classmethod
-    def of(cls, response: dict) -> "PatchRows":
+    def build(cls, response: dict) -> "PatchRows":
         return cls(tuple(row for section in response.get("structuredPatch", []) for row in cls.section(section.get("oldStart", 1), section.get("newStart", 1), section.get("lines", []))))
 
     @classmethod

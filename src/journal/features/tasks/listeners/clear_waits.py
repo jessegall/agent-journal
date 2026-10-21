@@ -16,6 +16,6 @@ class ClearWaits(Listener[Updated]):
     def handle(self, event: Updated) -> None:
         if not WaitTargets.is_newly_resolved(event):
             return
-        for task in self.tasks.waiting_on(event.model):
+        for task in self.tasks.waiting_refs(event.model):
             if not self.tasks.open_waits(task):
-                self.tasks.save(task.unblocked(f"{Ref.to(event.model).type[:-1]} {Ref.to(event.model).id}", datetime.now(timezone.utc).timestamp()), Actor.system())
+                self.tasks.save(task.unblocked(f"{Ref.build(event.model).type[:-1]} {Ref.build(event.model).id}", datetime.now(timezone.utc).timestamp()), Actor.system())

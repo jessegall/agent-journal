@@ -23,19 +23,19 @@ class TranscriptController:
     def __init__(self, config: Config, providers: Providers, agents: Agents, workers: Workers, subagents: Subagents, runner: WorkerRunner, turns: TranscriptTurns) -> None:
         self.config, self.providers, self.agents, self.workers, self.subagents, self.runner, self.turns = config, providers, agents, workers, subagents, runner, turns
 
-    def of_agent(self, request: Request) -> Response:
+    def agent_transcript(self, request: Request) -> Response:
         agent = self.agents.find(request.number("id"))
         provider = self.providers.lookup(agent.provider or "claude")
         return self.answer(request, provider, provider.transcript(self.config.root, agent.session))
 
-    def of_subagent(self, request: Request) -> Response:
+    def subagent_transcript(self, request: Request) -> Response:
         agent, id = self.agents.find(request.number("id")), request.params["session"]
         if not any(row.session == id for row in self.subagents.rows(agent.session)):
             raise MissingRow("subagent sessions", id)
         provider = self.providers.lookup(agent.provider or "claude")
         return self.answer(request, provider, provider.subagent_transcript(self.config.root, agent.session, id))
 
-    def of_worker(self, request: Request) -> Response:
+    def worker_transcript(self, request: Request) -> Response:
         worker = self.workers.find(request.number("id"))
         provider = self.providers.lookup(worker.provider)
         place = self.runner.place(worker)
@@ -49,7 +49,7 @@ class TranscriptController:
         return session
 
     def answer(self, request: Request, provider: Provider, path: Path | None) -> Response:
-        page = TranscriptPage(self.turns.of(provider, path) if path else [])
+        page = TranscriptPage(self.turns.build(provider, path) if path else [])
         if "entry" in request.query:
             return Response.json(page.entry(int(request.query["entry"])))
         return Response.json(page.page(**{field: int(request.query[key]) for key, field in (("since", "since"), ("before", "before"), ("last", "size")) if request.query.get(key)}))

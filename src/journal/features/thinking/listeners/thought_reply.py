@@ -20,7 +20,7 @@ class ThoughtReply(AgentListener[ToolStarting]):
         unanswered = {m.id for m in self.messages.unanswered()}
         if not unanswered:
             return
-        for thought in self.providers.lookup(event.provider).thoughts_this_turn(self.config.root, event.session):
+        for thought in self.providers.lookup(event.provider).turn_thoughts(self.config.root, event.session):
             named = {int(n) for tag in REPLY_TAG.finditer(thought) for n in tag.group(1).split(",")}
             if named & unanswered:
                 turn = TurnDisplayed(text=thought, delta=thought, turn_id=f"{THOUGHT_PREFIX}{hash(thought)}", final=True)

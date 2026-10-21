@@ -10,7 +10,7 @@ class Version3Migration(Model):
 
     state: MigrationState = MigrationState.OFFERED
 
-    def put_off(self) -> "Version3Migration":
+    def postpone(self) -> "Version3Migration":
         return self.with_(state=MigrationState.LATER)
 
     def is_started(self) -> "Version3Migration":

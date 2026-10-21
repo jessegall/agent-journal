@@ -11,4 +11,4 @@ class EtiquetteDataReader:
 
     def read(self, agent: Agent) -> EtiquetteData:
         from journal.features.etiquette.feature import Etiquette
-        return EtiquetteData(lines_since_reminder=self.entries.said_since(agent.session, Etiquette.JOURNAL_LINE_RULE.key))
+        return EtiquetteData(lines_since_reminder=self.entries.recent_line_entries(agent.session, Etiquette.JOURNAL_LINE_RULE.key))

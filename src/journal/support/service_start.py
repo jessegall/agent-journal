@@ -17,13 +17,13 @@ class ServiceStart:
     def run(self) -> list[SupervisorReply]:
         host = self.link.hosting()
         if host is None:
-            self.off()
+            self.disabled()
             return []
         package = Path(__file__).resolve().parents[3]
         environ = {**os.environ, "PYTHONPATH": str(package)}
         return [self.link.start(host, service.name, [sys.executable, "-m", service.module], self.config.root, environ, self.config.home / "runtime" / f"{service.name}.log") for service in self.registry.services()]
 
-    def off(self) -> None:
+    def disabled(self) -> None:
         names = [service.name for service in self.registry.services()]
         if names:
             print(f"no supervisor hosts this journal, so these services are off: {', '.join(names)}", flush=True)

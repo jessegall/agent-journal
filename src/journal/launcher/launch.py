@@ -77,7 +77,7 @@ class Launch:
 
     def choice(self) -> Choice:
         menu = Menu(self.root, self.package / "journal.py")
-        named = self.env or self.worktree or self.resumed_in(menu)
+        named = self.env or self.worktree or self.resume_folder(menu)
         if not sys.stdin.isatty():
             return Choice(named or "main", "", self.aside, self.is_skipping())
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
@@ -89,7 +89,7 @@ class Launch:
     def is_skipping(self) -> bool:
         return self.skip or any(flag in self.args for flag in PROMPT_FLAGS[self.agent])
 
-    def resumed_in(self, menu: Menu) -> str:
+    def resume_folder(self, menu: Menu) -> str:
         resumed = next((self.args[i + 1] for i, arg in enumerate(self.args[:-1]) if arg in RESUMING), "")
         if not resumed:
             return ""
@@ -117,15 +117,15 @@ class Launch:
         try:
             ProjectCommand(self.root, self.package / "journal.sh").write()
             others = ForeignHooks(self.root, self.agent)
-            others.put_back()
+            others.restore()
             choice = self.choice()
             self.log(f"chosen: environment {choice.environment}, session {choice.resume or 'new'}, hooks aside {choice.hooks_aside}")
             if choice.hooks_aside:
-                others.set_aside()
+                others.stash()
             try:
                 code = self.supervise(choice)
             finally:
-                others.put_back()
+                others.restore()
             self.log(f"ended: the agent exited with {code}")
             return code
         except BaseException as failed:

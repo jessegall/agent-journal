@@ -26,12 +26,12 @@ class ClaudeRow:
     def is_enqueued(self) -> bool:
         return self.type == "queue-operation" and self.operation == "enqueue"
 
-    def of_type(self, kind: str) -> list[ClaudeBlock]:
+    def type_match(self, kind: str) -> list[ClaudeBlock]:
         return [b for b in self.blocks if b.type == kind]
 
     @property
     def is_prompt(self) -> bool:
-        return self.type == "user" and not self.of_type("tool_result")
+        return self.type == "user" and not self.type_match("tool_result")
 
     @property
     def kind(self) -> str:
@@ -39,6 +39,6 @@ class ClaudeRow:
             return "summary"
         if self.type == "assistant":
             return "agent"
-        if self.of_type("tool_result"):
+        if self.type_match("tool_result"):
             return "tool"
         return "injected" if self.meta else "human"

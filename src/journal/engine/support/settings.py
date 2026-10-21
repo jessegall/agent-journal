@@ -11,8 +11,8 @@ class Settings:
     values: dict[str, object]
 
     @classmethod
-    def taken(cls, rows: SettingRows, options: list[Option]) -> "Settings":
+    def applied(cls, rows: SettingRows, options: list[Option]) -> "Settings":
         return cls({option.key: rows.option(option) for option in options})
 
-    def of(self, option: Option) -> object:
+    def value(self, option: Option) -> object:
         return self.values[option.key]

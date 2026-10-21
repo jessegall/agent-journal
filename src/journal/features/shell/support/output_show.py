@@ -13,7 +13,7 @@ class OutputShow:
         self.folder, self.cap = folder, cap
         self.named = False
 
-    def of(self, i: int) -> str:
+    def build(self, i: int) -> str:
         return "".join(self.shown(i, name) for name in ("out", "err"))
 
     def shown(self, i: int, name: str) -> str:

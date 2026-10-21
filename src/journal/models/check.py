@@ -33,7 +33,7 @@ class Check(Model):
     def started(self, time: float) -> "Check":
         return self.with_(running=CheckProgress(time))
 
-    def ran(self, passed: bool, output: str, time: datetime, took: float, report: CheckReport | None, fault: str) -> "Check":
+    def completed(self, passed: bool, output: str, time: datetime, took: float, report: CheckReport | None, fault: str) -> "Check":
         ran = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.id, title=self.title, passed=passed, output=output, failed_before=self.last_passed is False, waited_on=self.waited_on)
         recorded = self.with_(last_passed=passed, last_output=output, last_ran_at=time, last_took=took, last_report=report, running=None, last_fault=fault).with_event(ran)
         if self.waited_on and passed and not self.is_resolved():

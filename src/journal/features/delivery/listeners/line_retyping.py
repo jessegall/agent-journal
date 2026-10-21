@@ -21,7 +21,7 @@ class LineRetyping(AgentListener[Ticked]):
         if event.quiet_for < WAIT_LIMIT_SECONDS:
             return
         agent = self.machine.agent(event.session, event.environment_id)
-        if not self.turn.over(agent):
+        if not self.turn.is_finished(agent):
             return
         for lost in self.typed.overdue(event.environment_id, event.time - WAIT_LIMIT_SECONDS):
             if event.time < lost.time + WAIT_LIMIT_SECONDS * 2 ** (lost.tries - 1):
@@ -31,5 +31,5 @@ class LineRetyping(AgentListener[Ticked]):
                 self.supervisor.release(event.environment_id)
                 self.cards.show(event.environment_id, event.session, f"A line did not reach the agent, typed {TRIES} times over five minutes", "terminal", "bad", lost.line, shows=CardKind.FAULTS)
             else:
-                again = self.typed.tried_again(lost, event.time)
-                self.supervisor.type_again(event.environment_id, again.line)
+                again = self.typed.retry(lost, event.time)
+                self.supervisor.retype(event.environment_id, again.line)

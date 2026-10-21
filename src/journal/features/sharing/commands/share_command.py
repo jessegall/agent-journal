@@ -43,7 +43,7 @@ class ShareCommand(Command):
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for share in self.shares.scoped():
-            print(f"{share.id:>4}  {self.targets.of(share) or 'gone'}  {self.data(share)}  {self.tunnel.share_link(share.token)}")
+            print(f"{share.id:>4}  {self.targets.targets(share) or 'gone'}  {self.data(share)}  {self.tunnel.share_link(share.token)}")
         return 0
 
     @staticmethod

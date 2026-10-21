@@ -115,8 +115,8 @@ class Routes:
         self.acts(router, "tasks", tasks, "start", "finish", "reopen", "delete", "log")
         router.get(f"{API}/tasks/{{id}}/logs", tasks.logs)
         self.resource(router, "plans", plans)
-        router.get(f"{API}/plans/{{id}}/tasks", plans.tasks_of)
-        router.get(f"{API}/plans/{{id}}/timeline", plans.timeline_of)
+        router.get(f"{API}/plans/{{id}}/tasks", plans.plan_tasks)
+        router.get(f"{API}/plans/{{id}}/timeline", plans.timeline)
         router.post(f"{API}/plans/{{id}}/tasks", plans.add_task)
         self.acts(router, "plans", plans, "approve", "start", "park", "finish", "abandon")
         self.listed(router, "questions", questions)
@@ -130,7 +130,7 @@ class Routes:
         self.resource(router, "triggers", triggers)
         self.listed(router, "templates", get(TemplateController))
         self.listed(router, "workers", get(WorkerController))
-        router.get(f"{API}/workers/{{id}}/transcript", get(TranscriptController).of_worker)
+        router.get(f"{API}/workers/{{id}}/transcript", get(TranscriptController).worker_transcript)
 
     def chat(self, router: Router) -> None:
         get = self.container.get
@@ -182,8 +182,8 @@ class Routes:
         router.get(f"{API}/agents/{{id}}/edits", agents.edits)
         router.get(f"{API}/agents/{{id}}/edits/file", agents.edited_file)
         router.get(f"{API}/agents/{{id}}/terminal", agents.terminal)
-        router.get(f"{API}/agents/{{id}}/transcript", transcripts.of_agent)
-        router.get(f"{API}/agents/{{id}}/subagents/{{session}}/transcript", transcripts.of_subagent)
+        router.get(f"{API}/agents/{{id}}/transcript", transcripts.agent_transcript)
+        router.get(f"{API}/agents/{{id}}/subagents/{{session}}/transcript", transcripts.subagent_transcript)
         self.acts(router, "agents", agents, "shell", "control", "pause", "resume")
         router.post(f"{API}/agents/{{id}}/skip-step", agents.skip_step)
         router.post(f"{API}/agents/{{id}}/end-sequence", agents.end_sequence)
@@ -233,7 +233,7 @@ class Routes:
         router.get(f"{API}/mcp", mcp.index)
         router.post(f"{API}/mcp/install", mcp.install)
         router.post(f"{API}/mcp/check", mcp.check)
-        for act, handler in (("key", mcp.key), ("remove", mcp.remove), ("sign-in", mcp.sign_in)):
+        for act, handler in (("key", mcp.key), ("remove", mcp.remove), ("sign-in", mcp.login)):
             router.post(f"{API}/mcp/{{name}}/{act}", handler)
 
     @staticmethod

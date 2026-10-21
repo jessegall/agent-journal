@@ -14,6 +14,6 @@ class TaskLog(Scoped):
     line: str = ""
 
     @classmethod
-    def of(cls, task: Task, line: str, time: float) -> "TaskLog":
+    def build(cls, task: Task, line: str, time: float) -> "TaskLog":
         return cls(environment_id=task.environment_id, task_id=task.id, line=line).with_event(TaskLogged(environment_id=task.environment_id, time=time, task_id=task.id))
 

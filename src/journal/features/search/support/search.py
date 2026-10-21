@@ -48,7 +48,7 @@ class Search:
         return self.rows(terms, wanted) + (self.conversation_hits(terms) if CONVERSATION in names else [])
 
     def rows(self, terms: list[str], kinds) -> list[SearchHit]:
-        return [SearchHit.of(row, terms) for kind in kinds for row in kind.search(terms)]
+        return [SearchHit.build(row, terms) for kind in kinds for row in kind.search(terms)]
 
     @staticmethod
     def lookup(kind: Repository) -> str:

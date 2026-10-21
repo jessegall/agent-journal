@@ -24,12 +24,12 @@ class Nudger:
     def is_silenced(self, nudge: Nudge) -> bool:
         return self.features.silenced(nudge)
 
-    def say(self, agent: Agent, nudge: Nudge) -> str | None:
-        with self.scope.of(agent.environment_id):
+    def deliver(self, agent: Agent, nudge: Nudge) -> str | None:
+        with self.scope.environment(agent.environment_id):
             return self._line_record(agent, nudge, repeated=True)
 
     def refuse_with(self, agent: Agent, nudge: Nudge) -> str | None:
-        with self.scope.of(agent.environment_id):
+        with self.scope.environment(agent.environment_id):
             return self._line_record(agent, nudge, repeated=False)
 
     def _line_record(self, agent: Agent, nudge: Nudge, repeated: bool) -> str | None:

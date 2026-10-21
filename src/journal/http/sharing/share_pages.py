@@ -48,7 +48,7 @@ class SharePages:
         if not rest:
             return self.page(share, address)
         if rest == ["data.json"]:
-            return ShareAnswer(200, json.dumps(self.data.of(share), cls=JsonOut).encode(), "application/json", APP_HEADERS)
+            return ShareAnswer(200, json.dumps(self.data.build(share), cls=JsonOut).encode(), "application/json", APP_HEADERS)
         if rest[0] == "assets" and len(rest) == 2:
             return self.asset(rest[1])
         return self.missing(404)
@@ -74,14 +74,14 @@ class SharePages:
         if len(parts) < 2 or parts[0] != "s":
             return self.missing(404)
         share = self.shares.token_match(parts[1])
-        if share is None or not share.approved or not self.sharing_on(share):
+        if share is None or not share.approved or not self.is_sharing(share):
             return self.missing(404)
         if not share.is_active(datetime.now(timezone.utc)):
             return self.missing(410)
         return self.locked(share, self.password(authorization), place)
 
-    def sharing_on(self, share: Share) -> bool:
-        with self.scope.of(share.environment_id):
+    def is_sharing(self, share: Share) -> bool:
+        with self.scope.environment(share.environment_id):
             return self.registry.is_enabled(Sharing)
 
     def locked(self, share: Share, given: str | None, place: str) -> ShareAnswer | None:

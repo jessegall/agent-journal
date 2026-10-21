@@ -33,7 +33,7 @@ class PluginQueue:
             if answer.answer == "refuse":
                 self.relay.unanswered(plugin, event, environment_id, answer.reason)
             elif answer.tell and environment_id == event.environment_id:
-                context.append(self.relay.text.said(plugin, answer.tell))
+                context.append(self.relay.text.line(plugin, answer.tell))
             elif answer.tell:
                 self.relay.queued_line(plugin, environment_id, event.key, answer.tell)
         return context

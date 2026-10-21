@@ -12,4 +12,4 @@ class TunnelSettlement(Listener[ClockTicked]):
         self.tunnel = tunnel
 
     def handle(self, event: ClockTicked) -> None:
-        self.tunnel.settle_when_changed(datetime.now(timezone.utc))
+        self.tunnel.reconcile_changes(datetime.now(timezone.utc))

@@ -18,7 +18,7 @@ class MigrationController:
         return Response.json({"kept": self.backup.is_stored(), "state": self.migrations.current().state.value})
 
     def postpone(self, request: Request) -> Response:
-        return Response.json({"kept": self.backup.is_stored(), "state": self.backup.put_off(request.actor).state.value})
+        return Response.json({"kept": self.backup.is_stored(), "state": self.backup.postpone(request.actor).state.value})
 
     def start(self, request: Request) -> Response:
         migration = self.migrator.begin(request.actor)

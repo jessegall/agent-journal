@@ -17,13 +17,13 @@ class TriggerWatch(AgentListener[A]):
     def __init__(self, triggers: Triggers, firing: TriggerFire) -> None:
         self.triggers, self.firing = triggers, firing
 
-    def text_of(self, event: A) -> str:
+    def text(self, event: A) -> str:
         raise NotImplementedError
 
     def is_users(self, event: A) -> bool:
         return False
 
     def handle(self, event: A) -> None:
-        matched = self.triggers.matches(self.text_of(event))
+        matched = self.triggers.matches(self.text(event))
         if matched:
             self.firing.fired(matched, event.session, event.environment_id, self.is_users(event))

@@ -44,53 +44,53 @@ class FollowingPlan(Working):
         if not self.at_checkpoint:
             return super().on_stop(event, settings)
         if event.held_before:
-            return self.unchanged()
-        if settings.of(Tasks.AUTO):
-            return self.hold(Plans.PHASE_END.create(n=self.plan_id, phase=self.phase))
-        return self.unchanged(Plans.CHECKPOINT_PHASE_END.create(n=self.plan_id, phase=self.phase))
+            return self.none()
+        if settings.value(Tasks.AUTO):
+            return self.refuse(Plans.PHASE_END.create(n=self.plan_id, phase=self.phase))
+        return self.none(Plans.CHECKPOINT_PHASE_END.create(n=self.plan_id, phase=self.phase))
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         if self.at_checkpoint:
-            return self.unchanged(Plans.CHECKPOINT_PHASE_END.create(n=self.plan_id, phase=self.phase))
+            return self.none(Plans.CHECKPOINT_PHASE_END.create(n=self.plan_id, phase=self.phase))
         return super().on_session_started(event, settings)
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return self.unchanged() if self.at_checkpoint else super().on_tool_starting(event, settings)
+        return self.none() if self.at_checkpoint else super().on_tool_starting(event, settings)
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
-        return self.changed(replace(self, task_id=event.task_id, at_checkpoint=False, phase=0, logged_at=event.time, edits=0))
+        return self.swap(replace(self, task_id=event.task_id, at_checkpoint=False, phase=0, logged_at=event.time, edits=0))
 
     def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         if event.task_id != self.task_id:
-            return self.unchanged()
-        started = event.data.of(Plans).started
+            return self.none()
+        started = event.data.part(Plans).started
         if started is not None and started.at_checkpoint:
-            return self.changed(replace(self, task_id=0, moved_from=event.task_id, at_checkpoint=True, phase=started.checkpoint_phase))
-        return self.changed(replace(self, task_id=0, moved_from=event.task_id))
+            return self.swap(replace(self, task_id=0, moved_from=event.task_id, at_checkpoint=True, phase=started.checkpoint_phase))
+        return self.swap(replace(self, task_id=0, moved_from=event.task_id))
 
     def on_plan_finished(self, event: PlanFinished, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        return self.pop(Plans.PLAN_FINISHED.create(n=event.plan_id)) if event.plan_id == self.plan_id else self.unchanged()
+        return self.pop(Plans.PLAN_FINISHED.create(n=event.plan_id)) if event.plan_id == self.plan_id else self.none()
 
     def on_plan_postponed(self, event: PlanPostponed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         if event.plan_id != self.plan_id:
-            return self.unchanged()
+            return self.none()
         return self.pop(Plans.PLAN_POSTPONED.create(n=event.plan_id)) if event.by_user else self.pop()
 
     def on_plan_abandoned(self, event: PlanAbandoned, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         if event.plan_id != self.plan_id:
-            return self.unchanged()
+            return self.none()
         return self.pop(Plans.PLAN_ABANDONED.create(n=event.plan_id)) if event.by_user else self.pop()
 
     def on_resume(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.plans.feature import Plans
-        started = data.of(Plans).started
+        started = data.part(Plans).started
         if started is None or started.plan_id != self.plan_id:
             return self.pop()
         if started.started_task and started.started_task != self.task_id:
-            return self.changed(replace(self, task_id=started.started_task, at_checkpoint=False, phase=0, edits=0))
+            return self.swap(replace(self, task_id=started.started_task, at_checkpoint=False, phase=0, edits=0))
         return super().on_resume(data, settings)

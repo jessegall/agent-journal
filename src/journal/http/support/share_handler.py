@@ -32,7 +32,7 @@ class ShareHandler(PooledHandler):
 
     def do_GET(self) -> None:
         if self.is_phone():
-            return self.send(self.phone.get(PhoneRequest.of(self.command, self.path, self.headers)))
+            return self.send(self.phone.get(PhoneRequest.build(self.command, self.path, self.headers)))
         self.send(self.pages.get(self.path, self.headers.get("Authorization"), self.place()))
 
     def is_phone(self) -> bool:
@@ -52,7 +52,7 @@ class ShareHandler(PooledHandler):
         size = int(length) if length.isdigit() else 0
         if size > BODY_LIMIT_BYTES:
             return ShareAnswer(413)
-        return self.phone.post(PhoneRequest.of(self.command, self.path, self.headers, self.rfile.read(size) if size else b""))
+        return self.phone.post(PhoneRequest.build(self.command, self.path, self.headers, self.rfile.read(size) if size else b""))
 
     def comment_sent(self) -> VisitorComment | None:
         length = self.headers.get("Content-Length", "")

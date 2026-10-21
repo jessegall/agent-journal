@@ -14,6 +14,6 @@ class CountPlanReviewers(AgentListener[AgentEvent]):
 
     def handle(self, event: AgentEvent) -> None:
         for plan in self.plans.reviewing():
-            out = sum(self.subagents.running_about(agent.session, f"plan {plan.id}") for agent in self.agents.scoped() if agent.state != "ended")
+            out = sum(self.subagents.running_mentioning(agent.session, f"plan {plan.id}") for agent in self.agents.scoped() if agent.state != "ended")
             if out != plan.reviewers:
                 self.plans.save(plan.with_(reviewers=out), Actor.system())

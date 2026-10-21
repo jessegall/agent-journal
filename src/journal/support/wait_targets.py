@@ -17,18 +17,18 @@ class WaitTargets:
         self.outputs, self.checks = outputs, checks
 
     def output(self, n: int) -> str:
-        return self.ref_of(self.outputs.find(n))
+        return self.ref(self.outputs.find(n))
 
-    def until(self, command: str, purpose: str, actor) -> str:
+    def polled_check(self, command: str, purpose: str, actor) -> str:
         check = self.checks.save(Check(title=f"the wait for {purpose} ends when this passes", command=command, every=POLL_INTERVAL_MINUTES, waited_on=True), actor)
-        return self.ref_of(check)
+        return self.ref(check)
 
     @staticmethod
-    def ref_of(row: CommandOutput | Check) -> str:
+    def ref(row: CommandOutput | Check) -> str:
         return f"{row.table()}:{row.id}"
 
     @staticmethod
-    def title_of(name: str) -> str:
+    def title(name: str) -> str:
         table, _, number = name.partition(":")
         return f"{'output' if table == CommandOutput.table() else 'check'} {number}"
 

@@ -73,7 +73,7 @@ class WorkerCommand(Command):
             self.workers.delete(worker, caller.actor)
             raise Rejection(f"worker {worker.name} was not dispatched: {failed}") from failed
         if args.task:
-            self.workers.put_on(worker, args.task, caller.actor)
+            self.workers.assign(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
         self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
@@ -90,8 +90,8 @@ class WorkerCommand(Command):
         return 0
 
     def knowing(self, brief: str) -> list[Worker]:
-        named = PathMentions.of(brief)
-        return [w for w in reversed(self.workers.scoped()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & PathMentions.of(w.brief)]
+        named = PathMentions.build(brief)
+        return [w for w in reversed(self.workers.scoped()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & PathMentions.build(w.brief)]
 
     def say(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
@@ -101,9 +101,9 @@ class WorkerCommand(Command):
             raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
         if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
             raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
-        worker = self.workers.save(worker.told(args.brief).with_(dispatched_by=caller.session), caller.actor)
+        worker = self.workers.save(worker.instructed(args.brief).with_(dispatched_by=caller.session), caller.actor)
         if args.task:
-            self.workers.put_on(worker, args.task, caller.actor)
+            self.workers.assign(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
         self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")

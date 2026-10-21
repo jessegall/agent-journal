@@ -42,12 +42,12 @@ class SuggestionSearch:
         return self.last_round + float(self.settings.option(SuggestionsFeature.INTERVAL)) * MINUTE
 
     def round(self) -> list[Suggestion]:
-        return [self.created(suggester) for suggester in self.suggesters if not self.suggestions.was_made(suggester.key) and suggester.applies()]
+        return [self.created(suggester) for suggester in self.suggesters if not self.suggestions.is_recorded(suggester.key) and suggester.applies()]
 
     def created(self, suggester: Suggester) -> Suggestion:
         row = self.suggestions.save(Suggestion(key=suggester.key, title=suggester.title()), Actor.system())
         environment_id = self.target_environment().id
-        with self.scope.of(environment_id):
+        with self.scope.environment(environment_id):
             self.shown(row, suggester, environment_id)
         return row
 
@@ -57,7 +57,7 @@ class SuggestionSearch:
         answered = self.suggestions.save(suggestion.answered(answer), actor)
         suggester = self.lookup(suggestion.key)
         environment_id = self.card_environment(answered)
-        with self.scope.of(environment_id):
+        with self.scope.environment(environment_id):
             self.shown(answered, suggester, environment_id)
         return suggester.target() if answer == SuggestionAnswer.ACCEPTED else ""
 

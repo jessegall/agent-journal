@@ -7,7 +7,7 @@ class DashboardRows(Repository[DashboardRow]):
 
     model = DashboardRow
 
-    def of(self, plugin: str) -> list[DashboardRow]:
+    def rows(self, plugin: str) -> list[DashboardRow]:
         return self.matching(plugin=plugin)
 
     def keyed(self, plugin: str, key: str) -> DashboardRow | None:

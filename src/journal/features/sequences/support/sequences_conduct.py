@@ -17,37 +17,37 @@ class SequencesConduct(Conduct):
 
     def on_tool_starting_sequences(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.sequences.feature import Sequences
-        runs = event.data.of(Sequences)
+        runs = event.data.part(Sequences)
         if event.subagent or not runs.has_run() or runs.parked_why or is_step_command(runs, event.call.parts):
-            return self.unchanged()
+            return self.none()
         if self.is_waiting() and runs.can_be_typed and not runs.question_open:
-            return self.unchanged().typing(step_line(runs))
+            return self.none().typing(step_line(runs))
         if not event.call.writes or runs.debts_owed:
-            return self.unchanged()
+            return self.none()
         if not runs.is_taken_up:
-            return self.hold(Sequences.STEP_EDIT_BLOCK.create(n=runs.sequence_id, step=runs.step, text=runs.step_text))
-        if runs.writes_since_taken_up >= int(settings.of(Sequences.STALENESS_LIMIT)):
-            return self.hold(Sequences.STALE_STEP.create(writes=runs.writes_since_taken_up, n=runs.sequence_id, step=runs.step, text=runs.step_text))
-        return self.unchanged()
+            return self.refuse(Sequences.STEP_EDIT_BLOCK.create(n=runs.sequence_id, step=runs.step, text=runs.step_text))
+        if runs.writes_since_taken_up >= int(settings.value(Sequences.STALENESS_LIMIT)):
+            return self.refuse(Sequences.STALE_STEP.create(writes=runs.writes_since_taken_up, n=runs.sequence_id, step=runs.step, text=runs.step_text))
+        return self.none()
 
     def on_stop_sequences(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.sequences.feature import Sequences
-        runs = event.data.of(Sequences)
+        runs = event.data.part(Sequences)
         if not runs.has_run() or runs.parked_why or runs.question_open or runs.debts_owed or runs.step_said_after_last_tool or self.is_waiting():
-            return self.unchanged()
-        return self.hold(Sequences.PENDING_STEP.create(n=runs.sequence_id, step=runs.step, text=runs.step_text))
+            return self.none()
+        return self.refuse(Sequences.PENDING_STEP.create(n=runs.sequence_id, step=runs.step, text=runs.step_text))
 
     def on_session_started_sequences(self, event: SessionStarted, settings: Settings) -> Transition:
-        runs = event.data.of(sequences_feature())
-        return self.unchanged(reminder_line(runs)) if runs.has_run() else self.unchanged()
+        runs = event.data.part(sequences_feature())
+        return self.none(reminder_line(runs)) if runs.has_run() else self.none()
 
     def on_ticked_sequences(self, event: Ticked, settings: Settings) -> Transition:
-        runs = event.data.of(sequences_feature())
+        runs = event.data.part(sequences_feature())
         if not runs.has_run() or runs.parked_why or runs.question_open or not runs.can_be_typed or event.quiet_for < SILENCE_SECONDS:
-            return self.unchanged()
-        if runs.step_unsaid_seconds < float(settings.of(sequences_feature().STEP_REPEAT_INTERVAL)) * 60:
-            return self.unchanged()
-        return self.unchanged().typing(reminder_line(runs))
+            return self.none()
+        if runs.step_unsaid_seconds < float(settings.value(sequences_feature().STEP_REPEAT_INTERVAL)) * 60:
+            return self.none()
+        return self.none().typing(reminder_line(runs))
 
 
 def is_step_command(runs: SequencesData, parts: tuple[CommandPart, ...]) -> bool:

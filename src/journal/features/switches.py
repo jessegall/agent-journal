@@ -16,7 +16,7 @@ class Switches(Listener[Event]):
         self.asked_while_free = getattr(inner, "asked_while_free", False)
 
     def handle(self, event: Event) -> object:
-        with self.scope.of(self.event_environment(event)):
+        with self.scope.environment(self.event_environment(event)):
             if not self.registry.is_enabled(self.feature):
                 return None
             return self.inner.handle(event)

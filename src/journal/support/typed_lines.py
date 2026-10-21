@@ -82,7 +82,7 @@ class TypedLines:
     def overdue(self, environment_id: int, before: float) -> list[TypedLine]:
         return [t for t in self._waiting if t.environment_id == environment_id and t.time <= before]
 
-    def tried_again(self, typed: TypedLine, time: float) -> TypedLine:
+    def retry(self, typed: TypedLine, time: float) -> TypedLine:
         again = TypedLine(typed.environment_id, typed.line, time, typed.tries + 1)
         self._waiting[self._waiting.index(typed)] = again
         self._recent = [t for t in self._recent if time - t.time < RECENT] + [again]

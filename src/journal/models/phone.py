@@ -42,7 +42,7 @@ class Phone(Scoped):
     def subscribed(self, endpoint: str, owed: list[str]) -> "Phone":
         return self.with_(push=endpoint, pushed=" ".join(owed))
 
-    def told(self, owed: list[str]) -> "Phone":
+    def notified(self, owed: list[str]) -> "Phone":
         return self.with_(pushed=" ".join(owed), push_failed_at=None)
 
     def push_failed(self, time: datetime) -> "Phone":

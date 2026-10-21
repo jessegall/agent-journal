@@ -21,7 +21,7 @@ class DumpController(Controller[Dump]):
 
     def shown_page(self, rows: list[Dump]) -> list[dict]:
         filed = self.repository.linked_rows()
-        return [{**ModelFields.of(d), "filed": list(dict.fromkeys(str(ref) for ref in filed.get(d.id, [])))} for d in rows]
+        return [{**ModelFields.build(d), "filed": list(dict.fromkeys(str(ref) for ref in filed.get(d.id, [])))} for d in rows]
 
     def store(self, request: Request) -> Response:
         return Response.json(self.shown(self.filing.create(str(request.body.get("brief", "")), request.actor)), 201)

@@ -26,23 +26,23 @@ class SharedComments:
         if not share.comments:
             raise Rejection("this link does not take comments")
         name, text = self.lookup(name), self.text(text)
-        with self.scope.of(share.environment_id):
+        with self.scope.environment(share.environment_id):
             row = next((ref for ref in self.targets.shown(share) if str(ref) == on), None)
             if row is None:
                 raise Rejection("that is not part of this link")
             if self.sent.locked(share.token):
                 raise Rejection("too many comments on this link just now; try again in a few minutes")
             self.sent.count(share.token)
-            return self.written(share, row, name, text)
+            return self.stored(share, row, name, text)
 
-    def written(self, share: Share, row: Ref, name: str, text: str) -> Message:
+    def stored(self, share: Share, row: Ref, name: str, text: str) -> Message:
         message = self.messages.save(Message(author=Author.SYSTEM, text=f"{name} commented on {row} through a shared link",
                                              data={"kind": "card", "icon": "chat", "tone": "", "detail": text, "row": str(row), VISITOR: name, "share": share.id}), Actor.system())
-        self.links.save(Link(source=Ref.to(message), target=row, kind=Messages.COMMENT_LINK), Actor.system())
+        self.links.save(Link(source=Ref.build(message), target=row, kind=Messages.COMMENT_LINK), Actor.system())
         return message
 
-    def of(self, share: Share) -> list[Message]:
-        with self.scope.of(share.environment_id):
+    def comments(self, share: Share) -> list[Message]:
+        with self.scope.environment(share.environment_id):
             return self.messages.visitor_messages(share.id)
 
     @staticmethod

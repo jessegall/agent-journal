@@ -49,7 +49,7 @@ class CheckRunner:
         ended = self.executed(check, report, actor)
         was_failing = check.last_passed is False
         took = timing.time() - check.running.time
-        ran = self.checks.save(self.checks.find(check.id).ran(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), took, self.report_of(report), ended.fault), actor)
+        ran = self.checks.save(self.checks.find(check.id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), took, self.report(report), ended.fault), actor)
         if ran.waited_on:
             return ran
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
@@ -77,7 +77,7 @@ class CheckRunner:
         return FinishedRun(code == 0, output, FAULTS.get(code, ""))
 
     @staticmethod
-    def report_of(path: Path) -> CheckReport | None:
+    def report(path: Path) -> CheckReport | None:
         if not path.is_file():
             return None
         try:

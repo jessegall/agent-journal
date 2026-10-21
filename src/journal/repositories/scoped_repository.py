@@ -26,9 +26,9 @@ class ScopedRepository(Repository[S]):
 
     def global_matching(self, **fields) -> list[S]:
         clause, params = self.clause(fields)
-        return self.selected_everywhere(f"{clause} ORDER BY id", params)
+        return self.selected_globally(f"{clause} ORDER BY id", params)
 
-    def selected_everywhere(self, clause: str, params: tuple = ()) -> list[S]:
+    def selected_globally(self, clause: str, params: tuple = ()) -> list[S]:
         return super().selected(clause, params)
 
     def aggregate(self, select: str, clause: str = "1", params: tuple = ()):
@@ -43,7 +43,7 @@ class ScopedRepository(Repository[S]):
     def scoped_rows(self) -> list[S]:
         return self.rows()
 
-    def page_in(self, limit: int, before: int | None = None) -> list[S]:
+    def scoped_page(self, limit: int, before: int | None = None) -> list[S]:
         return self.page(limit, before)
 
     def _insert(self, row: S, actor: Actor, time: datetime) -> S:

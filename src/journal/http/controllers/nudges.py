@@ -13,4 +13,4 @@ class NudgeController(Controller[Entry]):
         self.repository = entries
 
     def rows(self) -> list[Entry]:
-        return list(reversed(self.repository.of_kind(NUDGE, SHOWN)))
+        return list(reversed(self.repository.kind_entries(NUDGE, SHOWN)))

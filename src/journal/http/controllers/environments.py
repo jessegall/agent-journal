@@ -20,7 +20,7 @@ class EnvironmentController(Controller[Environment]):
         return self.repository.all() or [self.repository.named("main")]
 
     def shown_page(self, rows: list[Environment]) -> list[dict]:
-        return [{**ModelFields.of(row), "worktree": next(iter(Worktree(self.config.root, row.name).badges()), "")} for row in rows]
+        return [{**ModelFields.build(row), "worktree": next(iter(Worktree(self.config.root, row.name).badges()), "")} for row in rows]
 
     def store(self, request: Request) -> Response:
         return Response.json(self.repository.named(request.body.get("name", "main")), 201)

@@ -87,7 +87,7 @@ class SlowRequests:
 
     def reported(self, method: str, route: str, ms: int, budget: int) -> None:
         agent = self.agents.all_current()
-        with self.scope.of(agent.environment_id if agent else self.environments.all()[0].id):
+        with self.scope.environment(agent.environment_id if agent else self.environments.all()[0].id):
             self.flagged(method, route, ms, budget)
 
     def flagged(self, method: str, route: str, ms: int, budget: int) -> None:
@@ -100,6 +100,6 @@ class SlowRequests:
         agent = self.agents.current()
         if earlier or agent is None:
             return
-        line = self.nudger.say(agent, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))
+        line = self.nudger.deliver(agent, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))
         if line:
             self.supervisor.type(agent.environment_id, line)

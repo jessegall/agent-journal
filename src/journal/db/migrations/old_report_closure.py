@@ -9,5 +9,5 @@ class OldReportClosure(Migration):
 
     number: ClassVar[int] = 12
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         connection.execute("UPDATE workers SET taken_up = 1 WHERE state != 'dispatched'")

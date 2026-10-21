@@ -68,11 +68,11 @@ class Runtime:
         starting.parent.mkdir(parents=True, exist_ok=True)
         starting.touch()
         try:
-            self.started_up()
+            self.startup()
         finally:
             starting.unlink(missing_ok=True)
 
-    def started_up(self) -> None:
+    def startup(self) -> None:
         self.share_server.start()
         self.boot()
         from journal.support.skill_files import SkillFiles

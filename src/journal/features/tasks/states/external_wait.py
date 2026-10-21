@@ -38,34 +38,34 @@ class ExternalWait(Wait):
     def wait_description(self) -> tuple[str, str]:
         return self.what, self.ends_on
 
-    def waits_on(self) -> list[str]:
+    def targets(self) -> list[str]:
         return [ref for ref in self.ends_on.split(",") if ref]
 
     def worker_ids(self) -> tuple[int, ...]:
-        return tuple(int(ref.split(":")[1]) for ref in self.waits_on() if ref.startswith(f"{WORKERS}:"))
+        return tuple(int(ref.split(":")[1]) for ref in self.targets() if ref.startswith(f"{WORKERS}:"))
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         if event.subagent or event.call.is_journal or self.worker_ids():
-            return self.unchanged()
+            return self.none()
         return self.pop()
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        next_open = event.data.of(Tasks).next_open
-        if settings.of(Tasks.AUTO) and not self.next_task_named and event.time - self.start_time >= NEXT_TASK_DELAY_SECONDS and next_open is not None:
-            return self.changed(replace(self, next_task_named=True), Tasks.WAIT_NEXT_TASK.create(what=self.what, n=next_open.id, title=next_open.title))
+        next_open = event.data.part(Tasks).next_open
+        if settings.value(Tasks.AUTO) and not self.next_task_named and event.time - self.start_time >= NEXT_TASK_DELAY_SECONDS and next_open is not None:
+            return self.swap(replace(self, next_task_named=True), Tasks.WAIT_NEXT_TASK.create(what=self.what, n=next_open.id, title=next_open.title))
         if event.time - max(self.start_time, self.reminder_time) >= CHECK_REMINDER_INTERVAL_SECONDS:
-            return self.changed(replace(self, reminder_time=event.time), Tasks.WAIT_CHECK.create(what=self.what, minutes=int((event.time - self.start_time) // 60)))
-        return self.unchanged()
+            return self.swap(replace(self, reminder_time=event.time), Tasks.WAIT_CHECK.create(what=self.what, minutes=int((event.time - self.start_time) // 60)))
+        return self.none()
 
     def on_row_resolved(self, event: RowResolved, settings: Settings) -> Transition:
         return self.resolution(event.ref, event.outcome)
 
     def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
         if event.dispatched_by != event.session or event.worker_id in self.worker_ids():
-            return self.unchanged()
+            return self.none()
         widened = ExternalWait.on_workers((*self.worker_ids(), event.worker_id), self.start_time)
-        return self.changed(replace(self, what=widened.what, ends_on=",".join([*self.waits_on(), f"{WORKERS}:{event.worker_id}"])))
+        return self.swap(replace(self, what=widened.what, ends_on=",".join([*self.targets(), f"{WORKERS}:{event.worker_id}"])))
 
     def on_worker_reported_workers(self, event: WorkerReported, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
@@ -77,10 +77,10 @@ class ExternalWait(Wait):
 
     def resolution(self, ref: str, outcome: str, *lines: Nudge) -> Transition:
         from journal.features.tasks.feature import Tasks
-        if ref not in self.waits_on():
-            return self.unchanged()
-        left = [waited for waited in self.waits_on() if waited != ref]
+        if ref not in self.targets():
+            return self.none()
+        left = [waited for waited in self.targets() if waited != ref]
         outcomes = "; ".join(part for part in (self.outcomes, outcome) if part)
         if left:
-            return self.changed(replace(self, ends_on=",".join(left), outcomes=outcomes), *lines)
+            return self.swap(replace(self, ends_on=",".join(left), outcomes=outcomes), *lines)
         return self.pop(*lines, Tasks.WAIT_END.create(what=self.what, outcome=outcomes))

@@ -10,9 +10,9 @@ class ForegroundLimit:
     def __init__(self, settings: SettingRows, messages: Messages, announced: AnnouncedCommands) -> None:
         self.settings, self.messages, self.announced = settings, messages, announced
 
-    def of(self, line: str, environment: str) -> int:
+    def build(self, line: str, environment: str) -> int:
         from journal.features.shell.feature import Shell
-        if Chain.is_journal_line(line) or self.announced.is_announced(environment, tuple(Chain.own(line))):
+        if Chain.is_journal_line(line) or self.announced.is_announced(environment, tuple(Chain.self_parts(line))):
             return 0
         waiting = bool(self.messages.unread())
         return int(self.settings.option(Shell.MESSAGE_FOREGROUND_LIMIT if waiting else Shell.FOREGROUND))

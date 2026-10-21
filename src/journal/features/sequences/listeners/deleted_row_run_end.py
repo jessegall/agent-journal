@@ -11,4 +11,4 @@ class DeletedRowRunEnd(RunTermination):
         if not isinstance(row, Scoped):
             return
         ref = f"{row.table()}:{row.id}"
-        self.told(row.environment_id, lambda run: run.about == ref, f"{ref} was deleted")
+        self.notice(row.environment_id, lambda run: run.about == ref, f"{ref} was deleted")

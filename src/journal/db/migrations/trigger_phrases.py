@@ -9,7 +9,7 @@ class TriggerPhrases(Migration):
 
     number: ClassVar[int] = 21
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         columns = {row["name"] for row in connection.all("PRAGMA table_info(triggers)")}
         if "words" in columns and "phrases" in columns:
             connection.execute("UPDATE triggers SET phrases = words")

@@ -31,42 +31,42 @@ class SortingDump(BaseState):
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
-        return self.unchanged() if self.asking else self.hold(DumpsFeature.DUMP_OPEN_REMINDER.create(n=self.dump_id))
+        return self.none() if self.asking else self.refuse(DumpsFeature.DUMP_OPEN_REMINDER.create(n=self.dump_id))
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
-        return self.unchanged()
+        return self.none()
 
     def on_dump_arrived_dumps(self, event: DumpArrived, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id or not event.waiting:
-            return self.unchanged()
-        return self.unchanged().typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=items_in(event.waiting)))
+            return self.none()
+        return self.none().typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=items_in(event.waiting)))
 
     def on_dump_question(self, event: DumpQuestion, settings: Settings) -> Transition:
-        return self.changed(replace(self, asking=True)) if event.dump_id == self.dump_id else self.unchanged()
+        return self.swap(replace(self, asking=True)) if event.dump_id == self.dump_id else self.none()
 
     def on_dump_answered(self, event: DumpAnswered, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id:
-            return self.unchanged()
-        return self.changed(replace(self, asking=False)).typing(DumpsFeature.DUMP_ANSWER.create(n=event.dump_id, answer=event.answer, question=event.question))
+            return self.none()
+        return self.swap(replace(self, asking=False)).typing(DumpsFeature.DUMP_ANSWER.create(n=event.dump_id, answer=event.answer, question=event.question))
 
     def on_dump_choice(self, event: DumpChoice, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id or event.pick == USER_TEXT:
-            return self.unchanged()
+            return self.none()
         if event.pick == AGENT_HANDOVER:
-            return self.unchanged().typing(DumpsFeature.DUMP_HANDOVER.create(n=event.dump_id))
-        return self.unchanged().typing(DumpsFeature.DUMP_STEP_CHOICE.create(n=event.dump_id, label=event.label))
+            return self.none().typing(DumpsFeature.DUMP_HANDOVER.create(n=event.dump_id))
+        return self.none().typing(DumpsFeature.DUMP_STEP_CHOICE.create(n=event.dump_id, label=event.label))
 
     def on_dump_sorted(self, event: DumpSorted, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id:
-            return self.unchanged()
+            return self.none()
         summed = () if event.stopped else (DumpsFeature.DUMP_SUMMARY_REQUEST.create(n=event.dump_id, outcome=event.outcome),)
-        following = event.data.of(DumpsFeature)
+        following = event.data.part(DumpsFeature)
         if following.in_hand and following.in_hand != self.dump_id:
-            return self.changed(replace(self, dump_id=following.in_hand, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVAL.create(n=following.in_hand, count=items_in(following.waiting)))
+            return self.swap(replace(self, dump_id=following.in_hand, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVAL.create(n=following.in_hand, count=items_in(following.waiting)))
         return self.pop().typing(*summed)
 
 

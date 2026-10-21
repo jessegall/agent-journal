@@ -76,7 +76,7 @@ class SetupCommand(Command):
     def law(self) -> Path:
         path = self.config.root / "AGENTS.md"
         had = path.read_text() if path.is_file() else "# " + self.config.root.name + "\n"
-        written = LawText.written_into(had)
+        written = LawText.installed(had)
         if written != had:
             path.write_text(written)
         return path

@@ -16,12 +16,12 @@ class SharedData:
         self.timeline = timeline
         self.targets, self.docs, self.reports, self.plans, self.outline, self.scope, self.comments = targets, docs, reports, plans, outline, scope, comments
 
-    def of(self, share: Share) -> dict:
-        target = self.targets.of(share)
-        with self.scope.of(share.environment_id):
+    def build(self, share: Share) -> dict:
+        target = self.targets.targets(share)
+        with self.scope.environment(share.environment_id):
             opened = self.opened(target) if target else {}
         return {"share": {"target": str(target) if target else "", "expires_at": share.expires_at, "comments": share.comments},
-                **opened, "comments": self.comments.of(share) if share.comments else []}
+                **opened, "comments": self.comments.comments(share) if share.comments else []}
 
     def opened(self, target) -> dict:
         if target.type == "docs":
@@ -29,4 +29,4 @@ class SharedData:
         if target.type == "reports":
             return {"reports": [self.reports.find(target.id)]}
         plan = self.plans.find(target.id)
-        return {"plans": [self.outline.of(plan)], "tasks": self.plans.tasks_of(plan), "timeline": self.timeline.of(plan)}
+        return {"plans": [self.outline.build(plan)], "tasks": self.plans.plan_tasks(plan), "timeline": self.timeline.build(plan)}

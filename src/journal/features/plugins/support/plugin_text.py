@@ -11,7 +11,7 @@ class PluginText:
     def __init__(self, masks: Masks) -> None:
         self.masks = masks
 
-    def said(self, plugin: Plugin, text: str) -> str:
+    def line(self, plugin: Plugin, text: str) -> str:
         return f"[plugin {plugin.name}] {self.plain(text)}"
 
     def plain(self, text: str) -> str:

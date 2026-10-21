@@ -18,5 +18,5 @@ class Soloing(Ready):
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         if any(part.text.startswith(DISPATCHES) for part in event.call.parts):
-            return self.hold(Workers.SOLO_DISPATCH.create())
+            return self.refuse(Workers.SOLO_DISPATCH.create())
         return super().on_tool_starting(event, settings)

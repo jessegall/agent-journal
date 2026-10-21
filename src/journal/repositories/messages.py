@@ -33,7 +33,7 @@ class Messages(ScopedRepository[Message]):
         since = "" if spoken_at is None else " AND read_at > ?"
         params = (Author.USER.value,) + (() if spoken_at is None else (spoken_at,))
         read = self.selected(f"author = ? AND read_at IS NOT NULL{since} ORDER BY id", params)
-        return [m for m in read if not m.is_terminal_line and not self.answered(m) and not self.reacted_by_agent(m)]
+        return [m for m in read if not m.is_terminal_line and not self.answered(m) and not self.agent_reaction(m)]
 
     def last_message(self) -> str | None:
         row = self.aggregate("max(created_at) AS time", "author = ? AND acknowledgement = 0 AND coalesce(json_extract(data, '$.kind'), '') != ?", (Author.AGENT.value, Message.THOUGHT))
@@ -43,8 +43,8 @@ class Messages(ScopedRepository[Message]):
         replied = self.connection.one("SELECT id FROM messages WHERE reply_to = ? AND author = ? LIMIT 1", (message.id, Author.AGENT.value))
         return replied is not None or bool(self.links.sources(message, self.ANSWERS))
 
-    def reacted_by_agent(self, message: Message) -> bool:
-        return any(r.author == Author.AGENT for r in self.reactions.on(message))
+    def agent_reaction(self, message: Message) -> bool:
+        return any(r.author == Author.AGENT for r in self.reactions.reactions(message))
 
     def sent_with(self, key: str) -> list[Message]:
         return self.selected("idempotency = ? ORDER BY id LIMIT 1", (key,))
@@ -59,7 +59,7 @@ class Messages(ScopedRepository[Message]):
     def changes(self, time: datetime) -> list[Message]:
         return self.selected("updated_at > ? ORDER BY id LIMIT 500", (time.isoformat(),))
 
-    def unseen_by_user(self) -> int:
+    def unviewed(self) -> int:
         return self.count("author = ? AND read_at IS NULL", (Author.AGENT.value,))
 
     def visitor_messages(self, share_id: int) -> list[Message]:
@@ -72,7 +72,7 @@ class Messages(ScopedRepository[Message]):
         return self.selected("json_extract(data, '$.key') = ?", (key,))
 
     def keyed_all(self, key: str, actor: Actor) -> list[Message]:
-        return self.selected_everywhere("json_extract(data, '$.key') = ? AND created_by = ?", (key, actor.stamp))
+        return self.selected_globally("json_extract(data, '$.key') = ? AND created_by = ?", (key, actor.stamp))
 
     def first_reply(self, message: Message) -> Message | None:
         named = self.selected("reply_to = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
@@ -80,16 +80,16 @@ class Messages(ScopedRepository[Message]):
         replies = sorted([*named, *linked], key=lambda m: m.id)
         return replies[0] if replies else None
 
-    def replies_since(self, time: datetime) -> list[Message]:
+    def recent_replies(self, time: datetime) -> list[Message]:
         return self.selected("author = ? AND reply_to IS NOT NULL AND created_at >= ? ORDER BY id", (Author.AGENT.value, time.isoformat()))
 
-    def reply_saying(self, n: int, text: str) -> list[Message]:
+    def reply_text(self, n: int, text: str) -> list[Message]:
         return self.selected("reply_to = ? AND author = ? AND text = ?", (n, Author.AGENT.value, text.strip()))
 
     def recent(self, last: int) -> list[Message]:
         return self.window(last)
 
-    def thoughts_of(self, session: str, last: int = 60) -> list[Message]:
+    def thoughts(self, session: str, last: int = 60) -> list[Message]:
         rows = self.selected("created_by = ? AND json_extract(data, '$.kind') = ? ORDER BY id DESC LIMIT ?", (Actor.agent(session).stamp, Message.THOUGHT, last))
         return list(reversed(rows))
 

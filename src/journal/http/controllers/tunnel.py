@@ -43,7 +43,7 @@ class TunnelController:
         made = self.tunler.login(host, str(body.get("username", "")).strip(), str(body.get("password", "")), str(body.get("master_password", "")))
         if made.connected:
             self.settings.set(Sharing.HOST.key, host, request.actor)
-            self.tunnel.settle()
+            self.tunnel.reconcile()
         return Response.json({**asdict(made), **self.tunnel.data()})
 
     def logout(self, request: Request) -> Response:

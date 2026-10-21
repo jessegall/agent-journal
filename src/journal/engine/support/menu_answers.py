@@ -25,7 +25,7 @@ class MenuAnswers:
         self._asked: dict[str, Option | None] = {}
         self._running: set[str] = set()
 
-    def remembered(self, menu: Menu) -> Option | None:
+    def stored_answer(self, menu: Menu) -> Option | None:
         label = dict(self.settings.project(CHOICES, {})).get(self.key(menu))
         return next((o for o in menu.options if o.label == label), None)
 

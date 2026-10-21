@@ -30,7 +30,7 @@ class WorkerCards(Listener[ModelEvent]):
         card = self.messages.keyed(key, actor)
         if card and card[0].data.get("tone") == tone and card[0].data.get("detail") == detail and card[0].text.endswith(text):
             return
-        self.cards.show(worker.environment_id, worker.dispatched_by, f"Worker {worker.id}, {worker.name}: {text}", "agents", tone=tone, detail=detail, row=str(Ref.to(worker)), actor=actor, key=key, shows=CardKind.WORKERS)
+        self.cards.show(worker.environment_id, worker.dispatched_by, f"Worker {worker.id}, {worker.name}: {text}", "agents", tone=tone, detail=detail, row=str(Ref.build(worker)), actor=actor, key=key, shows=CardKind.WORKERS)
 
     def standing(self, worker: Worker, event: ModelEvent) -> tuple[str, str, str]:
         if worker.state == WorkerState.STOPPED:

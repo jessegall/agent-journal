@@ -18,7 +18,7 @@ class SequenceController(Controller[Sequence]):
         self.repository, self.triggers = sequences, triggers
 
     def shown_page(self, rows: list[Sequence]) -> list[dict]:
-        return [{**ModelFields.of(s), "trigger_ids": [t.id for t in self.triggers.starting(s.title)]} for s in rows]
+        return [{**ModelFields.build(s), "trigger_ids": [t.id for t in self.triggers.starting(s.title)]} for s in rows]
 
     def starts(self, request: Request) -> Response:
         sequence, value = self.repository.find(request.number("id")), str(request.body.get("starts_on", ""))

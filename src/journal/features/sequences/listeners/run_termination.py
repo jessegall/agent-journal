@@ -10,7 +10,7 @@ class RunTermination(Listener[Deleted]):
     def __init__(self, running: RunTracker, supervisor: SupervisorLink) -> None:
         self.running, self.supervisor = running, supervisor
 
-    def told(self, environment_id: int, gone, why: str) -> None:
+    def notice(self, environment_id: int, gone, why: str) -> None:
         for agent, line in self.running.finish_matching(environment_id, gone, why):
-            if self.running.typed_to(agent.session, environment_id):
+            if self.running.typed_agent(agent.session, environment_id):
                 self.supervisor.type(environment_id, line)

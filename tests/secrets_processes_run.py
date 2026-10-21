@@ -18,7 +18,7 @@ AGENT = Caller("main", "s1")
 def app(journal_root: Path):
     app = App(Config(journal_root, port=0))
     app.runtime().start()
-    with app.container.get(Scope).of(1):
+    with app.container.get(Scope).environment(1):
         yield app
     app.runtime().stop()
 

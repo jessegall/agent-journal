@@ -25,8 +25,8 @@ class ShareController(Controller[Share]):
         return [self.described(share) for share in rows]
 
     def described(self, share: Share) -> dict:
-        target = self.targets.of(share)
-        fields = {name: value for name, value in ModelFields.of(share).items() if name != "password"}
+        target = self.targets.targets(share)
+        fields = {name: value for name, value in ModelFields.build(share).items() if name != "password"}
         return {**fields, "locked": bool(share.password), "link": self.tunnel.share_link(share.token), "target": str(target) if target else "",
                 "opens": self.targets.opens(str(target)) if target else []}
 

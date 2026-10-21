@@ -17,11 +17,11 @@ class PinsConduct(Conduct):
 
     def on_turn_displayed_pins(self, event: TurnDisplayed, settings: Settings) -> Transition:
         from journal.features.pins.feature import Pins
-        return self.unchanged(*suggestions(event.content, event.data.of(Pins))) if event.final else self.unchanged()
+        return self.none(*suggestions(event.content, event.data.part(Pins))) if event.final else self.none()
 
     def on_tool_finished_pins(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.pins.feature import Pins
-        return self.unchanged() if event.subagent else self.unchanged(*suggestions(event.printed, event.data.of(Pins)))
+        return self.none() if event.subagent else self.none(*suggestions(event.output_text, event.data.part(Pins)))
 
 
 def suggestions(text: str, pins: PinsData) -> list[Nudge]:

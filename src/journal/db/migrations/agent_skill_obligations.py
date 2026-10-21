@@ -10,7 +10,7 @@ class AgentSkillObligations(Migration):
 
     number: ClassVar[int] = 7
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         owed: dict[str, list[str]] = {}
         for row in connection.all("SELECT source, kind FROM links WHERE target IS NULL AND kind LIKE 'owes:%' ORDER BY id"):
             owed.setdefault(row["source"], []).append(row["kind"].removeprefix("owes:"))

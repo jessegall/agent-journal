@@ -62,10 +62,10 @@ class McpInstalling:
             return server.unchecked(self.unchecked_state(server))
         return server.checked(known.state, known.text)
 
-    def sign_in(self, server: McpServer) -> bool:
+    def login(self, server: McpServer) -> bool:
         from journal.features.mcp.feature import Mcp
         for agent in self.running():
-            line = self.nudger.say(agent, Mcp.SERVER_LOGIN.create(name=server.name, title=server.title))
+            line = self.nudger.deliver(agent, Mcp.SERVER_LOGIN.create(name=server.name, title=server.title))
             if line:
                 self.supervisor.type(agent.environment_id, line)
                 return True
@@ -79,7 +79,7 @@ class McpInstalling:
         self.config_files.write()
         for agent in self.running():
             resume = self.providers.lookup(agent.provider or "claude").resume(agent.session)
-            if self.turn.over(agent):
+            if self.turn.is_finished(agent):
                 self.supervisor.restart_agent(agent.environment_id, resume)
             else:
                 self.pending.add(agent.session, agent.environment_id, resume)

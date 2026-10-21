@@ -18,4 +18,4 @@ class ReactionController(Controller[Reaction]):
 
     def shown_page(self, rows: list[Reaction]) -> list[dict]:
         on = self.repository.linked(REACTS)
-        return [{**ModelFields.of(r), "message_id": on[r.id][0].id if r.id in on else None} for r in rows]
+        return [{**ModelFields.build(r), "message_id": on[r.id][0].id if r.id in on else None} for r in rows]

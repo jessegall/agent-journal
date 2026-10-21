@@ -29,9 +29,9 @@ class CommandOutput(Scoped):
         return ended.with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"{self.table()}:{self.id}", outcome=ended.outcome()))
 
     def wait_end(self, status: int, time: float) -> "CommandOutput":
-        return self.ended_with(status, time).told_of()
+        return self.ended_with(status, time).announced()
 
-    def told_of(self) -> "CommandOutput":
+    def announced(self) -> "CommandOutput":
         return self.with_(told=True)
 
     def is_resolved(self) -> bool:

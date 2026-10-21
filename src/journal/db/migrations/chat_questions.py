@@ -10,7 +10,7 @@ class ChatQuestions(Migration):
 
     number: ClassVar[int] = 8
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         for q in connection.all("SELECT * FROM questions"):
             key = f"question:{q['id']}"
             if connection.one("SELECT id FROM messages WHERE json_extract(data, '$.key') = ?", (key,)):

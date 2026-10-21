@@ -26,14 +26,14 @@ class EntryController:
         since = int(request.queried("since"))
         if since > self.entries.last_id():
             since = 0
-        rows = self.entries.shown_since(since) if since else list(reversed(self.entries.shown_recent(int(request.queried("last", RECENT)))))
+        rows = self.entries.recent_shown(since) if since else list(reversed(self.entries.shown_recent(int(request.queried("last", RECENT)))))
         return Response.json([entry for entry in rows if entry.kind in AGENT_EVENT_KINDS])
 
     def stream(self, request: Request) -> StreamResponse:
         environment = self.scope.id
 
         def read(entries):
-            with self.scope.of(environment):
+            with self.scope.environment(environment):
                 return entries()
 
         def chunks() -> Iterator[bytes]:
@@ -42,7 +42,7 @@ class EntryController:
             while True:
                 time.sleep(0.5)
                 quiet += 0.5
-                for entry in read(lambda: self.entries.shown_since(last)):
+                for entry in read(lambda: self.entries.recent_shown(last)):
                     last = entry.id
                     if entry.kind in AGENT_EVENT_KINDS:
                         quiet = 0.0

@@ -12,7 +12,7 @@ class PluginFolders:
     def __init__(self, config: Config) -> None:
         self.config = config
 
-    def of(self, plugin: Plugin) -> Path:
+    def folder(self, plugin: Plugin) -> Path:
         return Path(plugin.source) if plugin.linked else self.config.home / "plugins" / plugin.name
 
     def data(self, plugin: Plugin) -> Path:

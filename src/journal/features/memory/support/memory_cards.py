@@ -24,4 +24,4 @@ class MemoryCards:
         noun, shows = MEMORY_KINDS[type(row)]
         environment = getattr(row, "environment_id", 0) or self.scope.id
         session = actor.id if actor.kind == ActorKind.AGENT else ""
-        self.cards.show(environment, session, f"{noun} {verb}", "rules", "", row.text, str(Ref.to(row)), actor=actor, shows=shows)
+        self.cards.show(environment, session, f"{noun} {verb}", "rules", "", row.text, str(Ref.build(row)), actor=actor, shows=shows)

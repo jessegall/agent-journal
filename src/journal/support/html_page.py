@@ -24,14 +24,14 @@ class HtmlPage:
     """A document or a report as one self-contained HTML page: its title, its abstract, its sections under their headings, and a footer."""
 
     @classmethod
-    def of(cls, title: str, abstract: str, body: str) -> str:
+    def build(cls, title: str, abstract: str, body: str) -> str:
         parts = [f"<h1>{html.escape(title)}</h1>"]
         if abstract:
             parts.append(f'<p class="abstract">{MarkdownHtml.inline(abstract)}</p>')
-        for section in Outline.of(body).sections:
+        for section in Outline.build(body).sections:
             if section.number:
                 parts.append(f"<h2>{MarkdownHtml.inline(section.heading)}</h2>")
-            parts.append(MarkdownHtml.of("\n".join(section.lines)))
+            parts.append(MarkdownHtml.build("\n".join(section.lines)))
         return cls.framed(title, "\n".join(parts))
 
     @staticmethod

@@ -74,16 +74,16 @@ def test_the_other_hooks_are_set_aside_and_put_back_with_later_edits_kept(tmp_pa
     from journal.launcher.support.foreign_hooks import ForeignHooks
     path = settings_with_other_hooks(tmp_path)
     hooks = ForeignHooks(tmp_path, "claude")
-    assert hooks.others() == [path]
-    hooks.set_aside()
+    assert hooks.foreign() == [path]
+    hooks.stash()
     left = json.loads(path.read_text())
     assert list(left["hooks"]) == ["PreToolUse"] and left["model"] == "opus"
     path.write_text(json.dumps({**left, "model": "sonnet"}))
-    hooks.put_back()
+    hooks.restore()
     back = json.loads(path.read_text())
     assert set(back["hooks"]) == {"Stop", "PreToolUse"}
-    assert back["model"] == "sonnet" and hooks.others() == [path]
-    assert hooks.put_back() == [], "putting back twice does nothing"
+    assert back["model"] == "sonnet" and hooks.foreign() == [path]
+    assert hooks.restore() == [], "putting back twice does nothing"
 
 
 def test_the_picker_moves_with_the_arrow_keys_and_jumps_by_number(tmp_path: Path):
@@ -123,7 +123,7 @@ def test_the_launch_puts_the_other_hooks_back_however_the_run_ends(tmp_path: Pat
         Launched.parse(["claude", "--env", "main", "--aside", "--yes"], tmp_path).run()
     except RuntimeError:
         pass
-    assert set(json.loads(path.read_text())["hooks"]) == {"Stop", "PreToolUse"} and ForeignHooks(tmp_path, "claude").put_back() == []
+    assert set(json.loads(path.read_text())["hooks"]) == {"Stop", "PreToolUse"} and ForeignHooks(tmp_path, "claude").restore() == []
 
 
 def test_the_launch_notices_the_journals_page_when_it_answers(tmp_path: Path, monkeypatch):
@@ -318,8 +318,8 @@ def test_a_conversation_resumed_runs_in_its_environment_and_that_environments_wo
     tree = Worktree(tmp_path, "calm-river").created()
     menu = menu_answering(tmp_path, monkeypatch, [])
     menu.environments = lambda: [EnvironmentRow("main", last_sessions={"claude": "abc"}), EnvironmentRow("calm-river", last_sessions={"claude": "def"})]
-    assert Launch.parse(["claude", "--resume", "def"], tmp_path).resumed_in(menu) == "calm-river", "a conversation is resumed in the environment it last ran in"
-    assert Launch.parse(["claude", "--resume", "zzz"], tmp_path).resumed_in(menu) == "" and Launch.parse(["claude"], tmp_path).resumed_in(menu) == ""
+    assert Launch.parse(["claude", "--resume", "def"], tmp_path).resume_folder(menu) == "calm-river", "a conversation is resumed in the environment it last ran in"
+    assert Launch.parse(["claude", "--resume", "zzz"], tmp_path).resume_folder(menu) == "" and Launch.parse(["claude"], tmp_path).resume_folder(menu) == ""
     status = StatusLine(tmp_path)
     plain = Launch.parse(["claude", "--resume", "def"], tmp_path)
     assert plain.launch_file(Choice("calm-river", "", False, False), status)["front"]["folder"] == str(tree), "an environment with a worktree runs its agent there, where its conversations are"

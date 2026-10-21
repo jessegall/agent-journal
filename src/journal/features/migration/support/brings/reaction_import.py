@@ -29,5 +29,5 @@ class ReactionImport(EnvironmentKind):
 
     def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Reaction:
         reaction = self.reactions.imported(Reaction(environment_id=into.id, face=row.data.get("face", ""), author=Author(row.author())), row.creation_time(), actor)
-        self.links.save(Link(source=Ref.to(reaction), target=self.message(row, into), kind=REACTS), actor)
+        self.links.save(Link(source=Ref.build(reaction), target=self.message(row, into), kind=REACTS), actor)
         return reaction

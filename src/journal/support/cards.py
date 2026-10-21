@@ -21,7 +21,7 @@ class Cards:
         return f"made:{row.noun()}:{row.id}"
 
     def creation_card(self, environment_id: int, row: Model, actor: Actor) -> Message:
-        data = {"kind": "made", "session": actor.id, "made_type": row.table(), "n": row.id, **RowCard.of(row).as_data()}
+        data = {"kind": "made", "session": actor.id, "made_type": row.table(), "n": row.id, **RowCard.build(row).as_data()}
         return self.keyed(environment_id, self.creation_key(row), row.title_words(), data, actor, CardKind.CREATED)
 
     def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind) -> Message:

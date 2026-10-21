@@ -9,8 +9,8 @@ class Reads:
     """The files a shell line prints, read from its text before it runs, as the editor's read tool names its file; a line that writes reads nothing."""
 
     @classmethod
-    def of(cls, line: str) -> tuple[str, ...]:
-        if Writes.of(line):
+    def build(cls, line: str) -> tuple[str, ...]:
+        if Writes.build(line):
             return ()
         return tuple(path for p in Chain.parts(line) if p.recorded for path in cls.part(p.text))
 

@@ -30,14 +30,14 @@ class BrowserLogins:
     def merged(self) -> Path:
         return self.values.path.with_suffix(".browser.json")
 
-    def saved_for(self, title: str) -> Path:
+    def stored_login(self, title: str) -> Path:
         return self.folder / f"{re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-') or 'login'}.json"
 
     def record(self, title: str, url: str) -> Path:
         if shutil.which(OPEN_BROWSER[0]) is None:
             raise Rejection("logging in needs npx, which comes with Node.js, on this machine")
         self.folder.mkdir(mode=0o700, parents=True, exist_ok=True)
-        saved = self.saved_for(title)
+        saved = self.stored_login(title)
         subprocess.run(INSTALL_BROWSER, check=False, capture_output=True, timeout=WINDOW)
         opened = subprocess.run([*OPEN_BROWSER, f"--save-storage={saved}", url], check=False, capture_output=True, text=True, timeout=WINDOW)
         if not saved.is_file():
@@ -47,7 +47,7 @@ class BrowserLogins:
         return saved
 
     def drop(self, title: str) -> None:
-        self.saved_for(title).unlink(missing_ok=True)
+        self.stored_login(title).unlink(missing_ok=True)
 
     def merge(self) -> Path | None:
         saved = sorted(self.folder.glob("*.json")) if self.folder.is_dir() else []

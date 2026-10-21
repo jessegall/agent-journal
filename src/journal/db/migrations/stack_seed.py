@@ -13,13 +13,13 @@ class StackSeed(Migration):
 
     number: ClassVar[int] = 18
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         for row in connection.all("SELECT id, state, data FROM agents"):
             stored = StoredState.from_json(row["state"], json.loads(row["data"] or "{}"))
-            connection.execute("UPDATE agents SET stack = ? WHERE id = ?", (json.dumps(self.stack_of(stored)), row["id"]))
+            connection.execute("UPDATE agents SET stack = ? WHERE id = ?", (json.dumps(self.stack(stored)), row["id"]))
 
     @staticmethod
-    def stack_of(stored: StoredState) -> list[dict]:
+    def stack(stored: StoredState) -> list[dict]:
         layers = [stored]
         while layers[-1].resume:
             layers.append(layers[-1].resume)

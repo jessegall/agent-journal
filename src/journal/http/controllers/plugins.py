@@ -22,7 +22,7 @@ class PluginController(Controller[Plugin]):
         self.scope, self.environments = scope, environments
 
     def shown_page(self, rows: list[Plugin]) -> list[dict]:
-        return [{**ModelFields.of(p), "status": self.status(p), "schema": self.settings.schema(p)} for p in rows]
+        return [{**ModelFields.build(p), "status": self.status(p), "schema": self.settings.schema(p)} for p in rows]
 
     @staticmethod
     def status(plugin: Plugin) -> str:
@@ -68,10 +68,10 @@ class PluginController(Controller[Plugin]):
         return Response.json({"log": "\n".join(line for log in logs for line in log.read_text(errors="replace").splitlines()[-lines:])})
 
     def recorded(self, request: Request) -> Response:
-        return Response.json(self.record.of(self.repository.find(request.number("id")).name))
+        return Response.json(self.record.build(self.repository.find(request.number("id")).name))
 
     def dashboard(self, request: Request) -> Response:
-        return Response.json(self.dashboards.of(self.repository.find(request.number("id"))).to_json())
+        return Response.json(self.dashboards.build(self.repository.find(request.number("id"))).serialized())
 
     def local(self) -> str:
         return self.environments.find(self.scope.id).name

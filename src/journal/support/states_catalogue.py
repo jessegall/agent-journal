@@ -24,16 +24,16 @@ class StatesCatalogue:
     def waits(self) -> list[str]:
         return sorted(name for name, state in self._states.items() if issubclass(state, Wait))
 
-    def title_of(self, name: str) -> str:
+    def title(self, name: str) -> str:
         return self._states[name].title if name in self._states else name
 
-    def parent_of(self, name: str) -> str:
+    def parent(self, name: str) -> str:
         state = self._states.get(name)
         return next((base.name for base in state.__mro__[1:] if base in self._states.values()), "") if state else ""
 
     def listed(self) -> list[dict]:
         names = ["idle"] + [name for name in self._states if name != "idle"]
-        return [{"key": name, "title": self.title_of(name), "parent": self.parent_of(name)} for name in names]
+        return [{"key": name, "title": self.title(name), "parent": self.parent(name)} for name in names]
 
     def restored(self, name: str, data: dict) -> BaseState:
         state = self._states.get(name) or self._states["idle"]
@@ -45,12 +45,12 @@ class StatesCatalogue:
     def is_bottom(self, state: BaseState) -> bool:
         return isinstance(state, type(self.first()))
 
-    def stack_of(self, agent: Agent) -> Stack:
+    def stack(self, agent: Agent) -> Stack:
         if not agent.stack:
-            return self.stack_under(self.restored(agent.state, agent.data))
+            return self.stack_base(self.restored(agent.state, agent.data))
         return Stack(tuple(self.restored(row["state"], row["data"]) for row in agent.stack))
 
-    def stack_under(self, state: BaseState) -> Stack:
+    def stack_base(self, state: BaseState) -> Stack:
         layers = [state]
         if not self.is_bottom(layers[-1]):
             layers.append(self.first())

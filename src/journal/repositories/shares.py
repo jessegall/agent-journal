@@ -11,6 +11,6 @@ class Shares(ScopedRepository[Share]):
         rows = self.global_matching(token=token) if token else []
         return rows[0] if rows else None
 
-    def open_anywhere(self) -> list[Share]:
+    def all_open(self) -> list[Share]:
         time = datetime.now(timezone.utc)
-        return [share for share in self.selected_everywhere("1 ORDER BY id") if share.opens(time)]
+        return [share for share in self.selected_globally("1 ORDER BY id") if share.opens(time)]

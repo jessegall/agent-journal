@@ -19,18 +19,18 @@ class AttachedFiles:
         self.messages, self.attachments = messages, attachments
 
     def page(self, asked: FileRequest) -> FileView:
-        every = sorted((f for m in self.messages.scoped() for f in self.of(m)), key=lambda f: -f.time)
+        every = sorted((f for m in self.messages.scoped() for f in self.build(m)), key=lambda f: -f.time)
         rows = [f for f in every if asked.contains(f)]
         shelves = {Message.table(): len(every)} if every else {}
         images = sum(f.image for f in every)
         return FileView(files=rows[asked.skip:asked.skip + asked.last], more=len(rows) > asked.skip + asked.last, total=len(rows),
                           counts={"all": len(every), "images": images, "other": len(every) - images, "shelves": shelves})
 
-    def of(self, message: Message) -> list[AttachedFile]:
+    def build(self, message: Message) -> list[AttachedFile]:
         files = []
         for name in message.files:
             path = self.attachments.path(Message.table(), message.id, name)
             if path.is_file():
-                files.append(AttachedFile(str(Ref.to(message)), message.text[:TITLE], name, message.captions.get(name, ""), path.stat().st_size, path.stat().st_mtime,
+                files.append(AttachedFile(str(Ref.build(message)), message.text[:TITLE], name, message.captions.get(name, ""), path.stat().st_size, path.stat().st_mtime,
                                           (mimetypes.guess_type(name)[0] or "").startswith("image/"), f"/journal/messages/{message.id}/files/{quote(name, safe='')}"))
         return files

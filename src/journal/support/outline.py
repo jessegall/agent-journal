@@ -12,7 +12,7 @@ class Outline:
     sections: tuple[Section, ...]
 
     @classmethod
-    def of(cls, text: str) -> "Outline":
+    def build(cls, text: str) -> "Outline":
         sections, heading, lines, fenced = [], "(before the first heading)", [], False
         for line in text.splitlines():
             fenced ^= line.lstrip().startswith("```")
@@ -30,7 +30,7 @@ class Outline:
         parser.add_argument("--bullets", action="store_true", help="with --section, only the section's bullets")
         parser.add_argument("--grep", help="the lines holding these words, each with its section")
 
-    def told(self, args: Namespace) -> list[str]:
+    def summary(self, args: Namespace) -> list[str]:
         if args.grep:
             return self.rows(args.grep)
         if args.section:

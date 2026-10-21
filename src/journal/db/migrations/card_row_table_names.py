@@ -13,7 +13,7 @@ class CardRowTableNames(Migration):
 
     number: ClassVar[int] = 14
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         for row in connection.all("SELECT id, data FROM messages WHERE json_extract(data, '$.row') LIKE '%:%' OR json_extract(data, '$.made_type') IS NOT NULL"):
             data = json.loads(row["data"])
             kind, _, id = str(data.get("row", "")).partition(":")

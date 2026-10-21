@@ -34,13 +34,13 @@ class ChainWorker:
         shell = subprocess.Popen([request.shell], cwd=request.cwd, env=request.environment, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=False)
         pump = threading.Thread(target=lambda: self.pump(shell, printed), name="shell-output", daemon=True)
         pump.start()
-        self.write_to(shell, SHELL_SETUP)
+        self.write_part(shell, SHELL_SETUP)
         code = 0
         for i, kind in enumerate(folder.kinds()):
             code = self.part(shell, folder, i, kind, code, direct, caller)
             if shell.poll() is not None or folder.part_text(i).startswith("exec "):
                 break
-        self.write_to(shell, "exit $__journal_code\n")
+        self.write_part(shell, "exit $__journal_code\n")
         code = self.ended(shell, code)
         pump.join(timeout=2)
         folder.finish(code)
@@ -58,11 +58,11 @@ class ChainWorker:
             self.record.started(folder.folder.name, text, caller)
         before = self.tree(shell, folder, i, "before") if writes else ""
         began = time.monotonic()
-        self.write_to(shell, self.script(folder, i, text, before_and, direct))
+        self.write_part(shell, self.script(folder, i, text, before_and, direct))
         status = self.status_once_ended(shell, folder, i)
         after = self.tree(shell, folder, i, "after") if writes else ""
         if recorded:
-            self.record.ran(folder.folder.name, text, status, round(time.monotonic() - began, 1), folder.printed(i), self.changed(before, after), caller)
+            self.record.finish_part(folder.folder.name, text, status, round(time.monotonic() - began, 1), folder.output_text(i), self.changed(before, after), caller)
         return status
 
     @staticmethod
@@ -79,7 +79,7 @@ class ChainWorker:
 
     def tree(self, shell: subprocess.Popen, folder: OutputFiles, i: int, moment: str) -> str:
         path = folder.folder / f"{i}.{moment}"
-        self.write_to(shell, f"__journal_tree > {str(path)!r} 2>/dev/null; : > {str(path)!r}.ready\n")
+        self.write_part(shell, f"__journal_tree > {str(path)!r} 2>/dev/null; : > {str(path)!r}.ready\n")
         ready = Path(f"{path}.ready")
         while not ready.is_file() and shell.poll() is None:
             time.sleep(POLL)
@@ -91,7 +91,7 @@ class ChainWorker:
             if shell.poll() is not None:
                 return shell.returncode
             time.sleep(POLL)
-        return folder.status_of(i)
+        return folder.status(i)
 
     @staticmethod
     def ended(shell: subprocess.Popen, code: int) -> int:
@@ -103,7 +103,7 @@ class ChainWorker:
         return returned if returned != 0 and code == 0 else code
 
     @staticmethod
-    def write_to(shell: subprocess.Popen, script: str) -> None:
+    def write_part(shell: subprocess.Popen, script: str) -> None:
         try:
             shell.stdin.write(script.encode())
             shell.stdin.flush()

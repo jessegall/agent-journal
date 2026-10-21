@@ -21,4 +21,4 @@ class TranscriptRead:
         if not whole:
             return self
         text = whole.decode(errors="replace")
-        return TranscriptRead(self.offset + len(whole), self.lines + len(text.splitlines()), self.turns + tuple(provider.turns_in(Provider.rows_of(text, self.lines))))
+        return TranscriptRead(self.offset + len(whole), self.lines + len(text.splitlines()), self.turns + tuple(provider.turn_rows(Provider.rows(text, self.lines))))

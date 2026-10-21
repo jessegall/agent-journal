@@ -23,7 +23,7 @@ class PluginServices:
                 if service.when and self.runner.shell(plugin, environment.name, service.when, CONDITION_TIMEOUT_SECONDS).returncode != 0:
                     continue
                 environ = self.runner.environment(plugin, environment.name) | {"JOURNAL_PLUGIN_SOCKET": str(self.folders.socket(plugin, environment.name))}
-                folder = self.folders.of(plugin)
+                folder = self.folders.folder(plugin)
                 command = [str(folder / service.program) if service.is_local else service.program, *service.command[1:]]
                 self.supervisor.start_clean(environment.id, self.lookup(plugin, service), command, folder, environ, self.folders.data(plugin) / f"{service.name}.log", service.restart != "never")
                 started.append(self.lookup(plugin, service))

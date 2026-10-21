@@ -12,5 +12,5 @@ class PlanBuildingEnd(Migration):
 
     number: ClassVar[int] = 4
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         connection.execute("UPDATE sequences SET finishes_in = ? WHERE title = 'Building a plan' AND (finishes_in IS NULL OR finishes_in = '[]')", (json.dumps(MATURE_PLAN_STATES),))

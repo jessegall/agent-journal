@@ -9,7 +9,7 @@ class LinkIndexes(Migration):
 
     number: ClassVar[int] = 10
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         connection.execute("CREATE INDEX IF NOT EXISTS links_by_source ON links (source)")
         connection.execute("CREATE INDEX IF NOT EXISTS links_by_target ON links (target)")
         connection.execute("CREATE INDEX IF NOT EXISTS links_by_kind ON links (kind, source)")

@@ -33,6 +33,6 @@ class NoticeCommand(Command):
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for notice in self.notices.open_in():
+        for notice in self.notices.open_scoped():
             print(f"{notice.id:>4}  {notice.title}: {notice.link}")
         return 0

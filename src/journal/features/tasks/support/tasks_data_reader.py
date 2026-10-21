@@ -45,7 +45,7 @@ class TasksDataReader:
         )
 
     def last_log(self, task: Task) -> str:
-        logs = self.logs.of(task)
+        logs = self.logs.logs(task)
         return f'"{logs[-1].line}"' if logs else "nothing logged yet"
 
     @staticmethod

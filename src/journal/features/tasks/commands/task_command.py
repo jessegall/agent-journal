@@ -67,7 +67,7 @@ class TaskCommand(Command):
     def create(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.save(Task(title=args.title, brief=args.brief), caller.actor)
         if args.message:
-            self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.SUBJECT_LINK), caller.actor)
+            self.links.save(Link(source=Ref.build(self.messages.find(args.message)), target=Ref.build(task), kind=Messages.SUBJECT_LINK), caller.actor)
         if args.start:
             task = self.taking.start(task, caller)
         print(f"task {task.id} {task.state}" + (f" (from message {args.message})" if args.message else ""))
@@ -88,7 +88,7 @@ class TaskCommand(Command):
 
     def log(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.find(args.n)
-        self.logs.save(TaskLog.of(task, args.line, self._now().timestamp()), caller.actor)
+        self.logs.save(TaskLog.build(task, args.line, self._now().timestamp()), caller.actor)
         current = self.taking.current(caller)
         if current and current.task_id == task.id:
             self.machine.move(caller.session, task.environment_id, current.logged(self.clock.time()))
@@ -96,7 +96,7 @@ class TaskCommand(Command):
         return 0
 
     def park(self, args: Namespace, caller: Caller) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).parked(args.why, self._now()), caller.actor)
+        task = self.tasks.save(self.tasks.find(args.n).suspended(args.why, self._now()), caller.actor)
         print(f"task {task.id} parked")
         return 0
 
@@ -112,7 +112,7 @@ class TaskCommand(Command):
         self.waits.refuse_unnamed(args.why, args.on, args.until)
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._now()), caller.actor)
         for ref in self.waits.created(args.on, args.until, args.every, f"task {task.id}", caller.actor):
-            self.links.save(Link(source=Ref.to(task), target=ref, kind=WAIT_LINK), caller.actor)
+            self.links.save(Link(source=Ref.build(task), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0
 

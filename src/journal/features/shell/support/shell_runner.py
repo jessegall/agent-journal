@@ -29,10 +29,10 @@ class ShellRunner:
         self.config, self.caps, self.limits, self.worker, self.record, self.scope = config, caps, limits, worker, record, scope
 
     def run(self, request: ShellRequest, caller: Caller, environment: int) -> Iterator[bytes]:
-        with self.scope.of(environment):
-            cap = self.caps.of(request.line)
+        with self.scope.environment(environment):
+            cap = self.caps.build(request.line)
             folder = OutputFiles(self.config.home / "runtime" / "outputs" / f"{int(time.time())}-{threading.get_ident()}")
-            folder.split_into(request.line, Chain.parts(request.line))
+            folder.split(request.line, Chain.parts(request.line))
             if not cap.is_whole() and not cap.is_direct():
                 folder.numbered(self.record.start(folder.folder.name, "\n".join(p.text for p in Chain.parts(request.line) if p.recorded), folder.folder, caller))
         printed: queue.Queue = queue.Queue()
@@ -40,7 +40,7 @@ class ShellRunner:
         thread = threading.Thread(target=lambda: self.worked(folder, request, caller, cap.is_direct(), printed, ended, environment), name="shell-chain", daemon=True)
         thread.start()
         last = b"\n"
-        with self.scope.of(environment):
+        with self.scope.environment(environment):
             for block in (self.direct(printed, thread) if cap.is_direct() else self.foreground(folder, request, caller, cap)):
                 last = block[-1:] or last
                 yield block
@@ -49,7 +49,7 @@ class ShellRunner:
             yield f"{'' if last == b'\n' else chr(10)}{EXIT} {ended[0] if ended else 0}\n".encode()
 
     def worked(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, printed: queue.Queue, ended: list[int], environment: int) -> None:
-        with self.scope.of(environment):
+        with self.scope.environment(environment):
             ended.append(self.worker.run(folder, request, caller, direct, printed.put))
         printed.put(None)
 
@@ -64,11 +64,11 @@ class ShellRunner:
 
     def foreground(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> Iterator[bytes]:
         show = OutputShow(folder, cap)
-        limit = self.limits.of(request.line, caller.environment)
+        limit = self.limits.build(request.line, caller.environment)
         shown, tick, began = 0, 0, time.monotonic()
         while True:
             while folder.has_ended(shown):
-                yield show.of(shown).encode()
+                yield show.build(shown).encode()
                 shown += 1
             if folder.is_finished():
                 return
@@ -81,7 +81,7 @@ class ShellRunner:
             time.sleep(TICK)
             tick += 1
             if tick % LIMIT_READ_INTERVAL == 0:
-                limit = self.limits.of(request.line, caller.environment)
+                limit = self.limits.build(request.line, caller.environment)
 
     def closed(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> None:
         if cap.is_direct() or cap.is_whole():

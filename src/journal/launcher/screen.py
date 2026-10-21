@@ -35,9 +35,9 @@ class Screen:
         self.out.flush()
 
     def pick(self, heading: str, notes: list[str], options: list[Option], default: int) -> int:
-        return self.pick_or(heading, notes, options, default, ())[0]
+        return self.choice(heading, notes, options, default, ())[0]
 
-    def pick_or(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
+    def choice(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
         self._clear_screen()
         if self.interactive:
             return self._pick_with_keys(heading, notes, options, default, actions)

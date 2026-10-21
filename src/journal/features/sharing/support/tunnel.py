@@ -80,22 +80,22 @@ class Tunnel:
             return [ADDRESS_CONFLICT]
         return []
 
-    def settle(self) -> None:
-        self.settle_at(datetime.now(timezone.utc))
+    def reconcile(self) -> None:
+        self.reconcile_time(datetime.now(timezone.utc))
 
-    def settle_at(self, time: datetime) -> None:
+    def reconcile_time(self, time: datetime) -> None:
         self.wanted = self.is_wanted(time)
         if self.wanted:
             self.start()
         else:
             self.stop()
 
-    def settle_when_changed(self, time: datetime) -> None:
+    def reconcile_changes(self, time: datetime) -> None:
         if self.is_wanted(time) != self.wanted:
-            self.settle_at(time)
+            self.reconcile_time(time)
 
     def is_wanted(self, time: datetime) -> bool:
-        return self.shares.open_anywhere() or bool(self.phones.active(time)) or bool(self.codes.open(time))
+        return self.shares.all_open() or bool(self.phones.active(time)) or bool(self.codes.open(time))
 
     def start(self) -> None:
         host, command, port = self.link.hosting(), self.tunler.command(), self.place.stored().port

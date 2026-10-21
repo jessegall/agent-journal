@@ -20,15 +20,15 @@ class UserPause(Wait):
     def wait_description(self) -> tuple[str, str]:
         return "you to resume it", ""
 
-    def refuses_every_tool(self) -> bool:
+    def blocks_tools(self) -> bool:
         return True
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.pausing.feature import PausingFeature
         if event.call.is_journal and MESSAGE_READS.search(event.call.command):
-            return self.unchanged()
-        return self.hold(PausingFeature.PAUSED.create())
+            return self.none()
+        return self.refuse(PausingFeature.PAUSED.create())
 
     def on_user_resumed(self, event: UserResumed, settings: Settings) -> Transition:
         from journal.features.pausing.feature import PausingFeature
-        return self.pop(PausingFeature.RESUMED.create()) if event.agent_session == event.session else self.unchanged()
+        return self.pop(PausingFeature.RESUMED.create()) if event.agent_session == event.session else self.none()

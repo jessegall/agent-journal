@@ -46,7 +46,7 @@ class Menu:
         resume = "" if new or not last else self._continuation(agent, chosen, last, asking)
         skip_prompts = skip or yes or self._prompts(agent)
         asking = asking and not resume
-        hooks_aside = aside or (self._hooks(ForeignHooks(self.root, agent).others(), before.hooks_aside) if asking else before.hooks_aside)
+        hooks_aside = aside or (self._hooks(ForeignHooks(self.root, agent).foreign(), before.hooks_aside) if asking else before.hooks_aside)
         self.remembered.write(Answers(skip_prompts, hooks_aside))
         choice = Choice(chosen, resume, hooks_aside, skip_prompts)
         if not yes:
@@ -56,7 +56,7 @@ class Menu:
 
     def _environment(self, agent: str, rows: list[EnvironmentRow]) -> str:
         options = [Option(row.name, (*row.badges(), *Worktree(self.root, row.name).badges())) for row in rows] + [Option("A new environment", apart=True)]
-        picked, key = self.screen.pick_or("Which environment", ["An environment is one line of work with a record of its own."], options, 0, ("x",))
+        picked, key = self.screen.choice("Which environment", ["An environment is one line of work with a record of its own."], options, 0, ("x",))
         if key == "x" and picked < len(rows):
             self._delete(rows[picked])
             return self._environment(agent, self.environments())

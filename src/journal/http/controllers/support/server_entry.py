@@ -17,5 +17,5 @@ class ServerEntry:
     has_key: bool = False
     last_error: str = ""
 
-    def runs_from(self, mark: str) -> bool:
+    def origin(self, mark: str) -> bool:
         return bool(mark) and mark in f"{self.command} {self.url}"

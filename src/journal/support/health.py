@@ -18,7 +18,7 @@ class Health:
         self.config = config
         self._report = CachedAnswer(lambda: self.probe(), HEALTH_VALIDITY_SECONDS, HealthReport())
 
-    def of_all(self) -> HealthReport:
+    def report(self) -> HealthReport:
         return self._report.time()
 
     def is_recent(self) -> HealthReport:

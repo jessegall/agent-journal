@@ -21,14 +21,14 @@ class Workers(ScopedRepository[Worker]):
         super().__init__(connection, bus, scope)
         self.links = links
 
-    def out(self) -> list[Worker]:
+    def active(self) -> list[Worker]:
         return self.matching(state=WorkerState.DISPATCHED)
 
-    def put_on(self, worker: Worker, task: int, actor: Actor) -> None:
+    def assign(self, worker: Worker, task: int, actor: Actor) -> None:
         target = Ref("tasks", task)
         if not self.links.is_row(target):
             raise MissingRow("tasks", task)
-        self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKER_LINK), actor)
+        self.links.save(Link(source=Ref.build(worker), target=target, kind=WORKER_LINK), actor)
 
     def containing(self, task_ids: set[int]) -> dict[int, Worker]:
         held = {}

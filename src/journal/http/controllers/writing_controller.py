@@ -26,10 +26,10 @@ class WritingController(Controller[W]):
 
     def shown_page(self, rows: list[W]) -> list[dict]:
         linked = self.repository.linked_rows()
-        return [{**ModelFields.of(row), "links": self.links(row, linked)} for row in rows]
+        return [{**ModelFields.build(row), "links": self.links(row, linked)} for row in rows]
 
     def summarised(self, row: W, linked: dict) -> dict:
-        return {**{name: value for name, value in ModelFields.of(row).items() if name != "body"}, "links": self.links(row, linked)}
+        return {**{name: value for name, value in ModelFields.build(row).items() if name != "body"}, "links": self.links(row, linked)}
 
     @staticmethod
     def links(row: W, linked: dict) -> list[str]:
@@ -37,7 +37,7 @@ class WritingController(Controller[W]):
 
     def export(self, request: Request) -> DownloadResponse:
         row = self.repository.find(request.number("id"))
-        exported = DocxExport.of(row.title, row.abstract, row.body, f"{row.noun()} {row.id}")
+        exported = DocxExport.build(row.title, row.abstract, row.body, f"{row.noun()} {row.id}")
         return DownloadResponse(exported.kind, exported.body, name=exported.name)
 
     def section(self, request: Request) -> Response:

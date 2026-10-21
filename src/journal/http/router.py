@@ -32,7 +32,7 @@ class Router:
         return next((route for route in self.routes if route.params(request.method, request.path) is not None), None)
 
     def dispatch(self, request: Request) -> Response:
-        self.seen.saw(request.headers)
+        self.seen.record(request.headers)
         route = self.matched(request)
         if route is None:
             return Response.absent(f"{request.method} {request.path}")

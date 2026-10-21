@@ -26,7 +26,7 @@ class BaseState(Conduct):
     allows: ClassVar[frozenset[Permission]] = frozenset()
     conducts: ClassVar[tuple[type[Conduct], ...]] = ()
 
-    def on(self, event: Event, settings: Settings) -> Transition:
+    def respond(self, event: Event, settings: Settings) -> Transition:
         answers: list[Transition] = []
         event.propagation.reset()
         for listener in self.event_listeners(type(event)):
@@ -81,7 +81,7 @@ class BaseState(Conduct):
     def is_waiting(self) -> bool:
         return False
 
-    def refuses_every_tool(self) -> bool:
+    def blocks_tools(self) -> bool:
         return False
 
     def on_enter(self, typist: Typist) -> None:
@@ -90,10 +90,10 @@ class BaseState(Conduct):
     def on_exit(self, typist: Typist) -> None:
         return None
 
-    def to_data(self) -> dict:
+    def serialized(self) -> dict:
         return {field.name: getattr(self, field.name) for field in fields(self)}
 
-    def printed(self) -> str:
+    def state_text(self) -> str:
         set_fields = [f"{field.name}={getattr(self, field.name)}" for field in fields(self) if getattr(self, field.name) != field.default and not isinstance(getattr(self, field.name), float)]
         return f"{self.name}({', '.join(set_fields)})" if set_fields else self.name
 

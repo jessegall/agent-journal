@@ -91,26 +91,26 @@ class Updater:
                               updating=held.to if held else "", step=held.step if held else "", problem=self.problem)
 
     def tick(self, time: float) -> None:
-        self.settle(time)
+        self.reconcile(time)
         if time - self._checked_at >= CHECK_INTERVAL_SECONDS:
             self._checked_at = time
             self.separate(self.checked)
 
-    def said(self) -> str:
+    def line(self) -> str:
         if self.problem:
             return self.problem
         if self.is_published():
             return f"{self.target().label} is out; {self.label()} is installed. journal update installs it"
         return f"{self.label()} is the newest commit of the branch" if self.branch() else f"{VERSION} is the newest release of version {self.running().major}"
 
-    def settle(self, time: float) -> None:
+    def reconcile(self, time: float) -> None:
         held = self.mark.paused()
         if held is None or (held.pid == os.getpid() and not held.is_stale(time)):
             return
         self.mark.clear()
         self.problem = "" if held.to == self.label() else f"The update to {held.to} did not finish: .journal/runtime/update.log says how it went"
 
-    def update_now(self, actor: Actor) -> None:
+    def update_immediately(self, actor: Actor) -> None:
         self.mark.claim(self.label(), self.target().label)
         if not self.separate(lambda: self.install_newest(actor)):
             raise Rejection("an update is under way already")

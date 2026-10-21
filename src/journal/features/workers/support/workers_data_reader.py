@@ -16,10 +16,10 @@ class WorkersDataReader:
     def read(self, agent: Agent) -> WorkersData:
         waiting = self.workers.reports_waiting()
         return WorkersData(
-            out=tuple(w.id for w in self.workers.out()),
+            out=tuple(w.id for w in self.workers.active()),
             reports_waiting=tuple(w.id for w in waiting),
             reports_summary=", ".join(f"worker {w.id} ({w.name})" for w in waiting),
-            subagents_running=self.subagents.running_before_the_newest(agent.session),
+            subagents_running=self.subagents.running_earlier(agent.session),
             dispatches=tuple(self.subagents.rows(agent.session)),
             worktrees_root=(self.config.home / "worktrees").resolve(),
             worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.id, w.name) for w in self.workers.scoped()),

@@ -12,7 +12,7 @@ class TimeKeys(Migration):
 
     number: ClassVar[int] = 20
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         columns = {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
         if "at" in columns and "time" in columns:
             connection.execute("UPDATE edits SET time = at")

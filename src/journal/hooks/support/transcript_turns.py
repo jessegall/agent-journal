@@ -26,13 +26,13 @@ class TranscriptTurns:
         if hook.kind == HookKind.MESSAGE_DISPLAY:
             return []
         with self._reading:
-            written = self.providers.lookup(hook.provider).texts_written(self.config.root, hook.session, self._read.get(hook.session, START_POSITION))
+            written = self.providers.lookup(hook.provider).authored_texts(self.config.root, hook.session, self._read.get(hook.session, START_POSITION))
             self._read[hook.session] = written.time
         turns = [TurnDisplayed(text=text, delta=text, turn_id=f"transcript:{hook.session}:{i}", final=True) for i, text in enumerate(written.texts)]
-        return [event.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.time(), hook.subagent) for event in [*written.crossed, *turns]]
+        return [event.placed(hook.session, environment.id, hook.provider, self.context.build(hook.session), self.clock.time(), hook.subagent) for event in [*written.crossed, *turns]]
 
     def missed(self, session: str, provider: str, until: float) -> FileWrites:
         with self._reading:
-            written = self.providers.lookup(provider).texts_written_before(self.config.root, session, self._read.get(session, START_POSITION), until)
+            written = self.providers.lookup(provider).earlier_texts(self.config.root, session, self._read.get(session, START_POSITION), until)
             self._read[session] = written.time
         return written

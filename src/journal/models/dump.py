@@ -50,21 +50,21 @@ class Dump(Scoped):
         return ((list(self.parts) or [TEXT]) if self.brief.strip() else []) + sorted(self.files)
 
     def item(self, name: str) -> DumpItem:
-        return DumpItem.of(self.items.get(name) or {})
+        return DumpItem.build(self.items.get(name) or {})
 
     def with_item(self, name: str, **values) -> "Dump":
-        return self.with_(items={**self.items, name: {**self.item(name).to_json(), **values}})
+        return self.with_(items={**self.items, name: {**self.item(name).serialized(), **values}})
 
     @property
     def is_complete(self) -> bool:
-        settled = [self.item(name).settled for name in self.item_names]
+        settled = [self.item(name).resolved for name in self.item_names]
         return bool(settled) and all(settled)
 
     def waiting(self) -> list[str]:
         return [name for name in self.item_names if not self.item(name).insight]
 
-    def unsettled(self) -> list[str]:
-        return [name for name in self.item_names if not self.item(name).settled]
+    def open_items(self) -> list[str]:
+        return [name for name in self.item_names if not self.item(name).resolved]
 
     def arrived(self, time: float, by_user: bool) -> "Dump":
         return self.with_event(DumpArrived(environment_id=self.environment_id, time=time, dump_id=self.id, waiting=len(self.waiting()), by_user=by_user))

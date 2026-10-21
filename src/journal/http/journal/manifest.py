@@ -18,7 +18,7 @@ class Manifest:
     def __init__(self, config: Config, registry: Registry) -> None:
         self.config, self.registry = config, registry
 
-    def of(self, environment: str) -> JournalFacts:
+    def assembled(self, environment: str) -> JournalFacts:
         return JournalFacts(self.config.root.name, environment, VERSION, self.build(), self.features(), self.groups())
 
     def features(self) -> list[dict]:

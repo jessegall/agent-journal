@@ -14,5 +14,5 @@ class DashboardView:
     def from_json(cls, raw: dict) -> "DashboardView":
         return cls(title=str(raw.get("title", "")), start=str(raw.get("start", "")), pages=dict(raw.get("pages", {})))
 
-    def to_json(self) -> dict:
+    def serialized(self) -> dict:
         return {"missing": self.missing} if self.missing else {"title": self.title, "start": self.start, "pages": self.pages}

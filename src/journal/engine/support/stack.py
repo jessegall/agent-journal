@@ -21,5 +21,5 @@ class Stack:
     def popped(self) -> "Stack":
         return self if len(self.states) == 1 else Stack(self.states[:-1])
 
-    def to_data(self) -> list[dict]:
-        return [{"state": state.name, "data": state.to_data()} for state in self.states]
+    def serialized(self) -> list[dict]:
+        return [{"state": state.name, "data": state.serialized()} for state in self.states]

@@ -28,7 +28,7 @@ class Scope:
         return outside if environment is None else environment()
 
     @contextmanager
-    def of(self, environment_id: int) -> Iterator[None]:
+    def environment(self, environment_id: int) -> Iterator[None]:
         with self._binding(lambda: environment_id):
             yield
 

@@ -24,8 +24,8 @@ class CurrentWork:
     def __init__(self, states: StatesCatalogue, tasks: Tasks) -> None:
         self.states, self.tasks = states, tasks
 
-    def of(self, agent: Agent) -> AgentWork | None:
-        working = next((layer for layer in reversed(self.states.stack_of(agent).states) if isinstance(layer, Working)), None)
+    def work(self, agent: Agent) -> AgentWork | None:
+        working = next((layer for layer in reversed(self.states.stack(agent).states) if isinstance(layer, Working)), None)
         if working is None:
             return None
         try:
@@ -34,5 +34,5 @@ class CurrentWork:
             return None
 
     def wait_text(self, agent: Agent) -> tuple[str, str]:
-        layers = self.states.stack_of(agent).states
+        layers = self.states.stack(agent).states
         return next((layer.wait_description() for layer in reversed(layers) if isinstance(layer, Wait) and layer.wait_description()[0]), ("", ""))

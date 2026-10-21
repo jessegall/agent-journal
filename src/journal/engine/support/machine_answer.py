@@ -11,5 +11,5 @@ class MachineAnswer:
 
     stack: Stack
     nudges: tuple[Nudge, ...] = ()
-    held: Block | None = None
+    refusal: Block | None = None
     refused: str = ""

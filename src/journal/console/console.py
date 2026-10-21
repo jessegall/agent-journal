@@ -47,22 +47,22 @@ class Console:
 
     def run(self, argv: list[str], caller: Caller) -> Outcome:
         out, err = io.StringIO(), io.StringIO()
-        with self.scope.of(self.environments.lookup(caller.environment).id):
+        with self.scope.environment(self.environments.lookup(caller.environment).id):
             return self.captured(argv, caller, out, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:
         command = self.commands.get(argv[0]) if argv else None
         verb = getattr(command, "default_verb", "")
-        return [argv[0], verb, *argv[1:]] if verb and not (argv[1:] and argv[1] in self.verbs_of(command)) else argv
+        return [argv[0], verb, *argv[1:]] if verb and not (argv[1:] and argv[1] in self.verbs(command)) else argv
 
     @staticmethod
-    def turned(argv: list[str]) -> list[str]:
+    def switched(argv: list[str]) -> list[str]:
         return [argv[0], argv[2], argv[1], *argv[3:]] if len(argv) > 2 and argv[1].isdigit() else argv
 
-    def verbs_of(self, command) -> set[str]:
+    def verbs(self, command) -> set[str]:
         verbs = argparse.ArgumentParser().add_subparsers()
         command.arguments(verbs)
-        return set(verbs.choices) | self.row_verbs.of(command.noun)
+        return set(verbs.choices) | self.row_verbs.build(command.noun)
 
     def perform(self, args: argparse.Namespace, caller: Caller) -> int:
         if self.row_verbs.has(args.noun, args.verb):
@@ -70,7 +70,7 @@ class Console:
         return self.commands[args.noun].perform(args, caller)
 
     def captured(self, argv: list[str], caller: Caller, out: io.StringIO, err: io.StringIO) -> Outcome:
-        argv = self.with_verb(self.turned(argv))
+        argv = self.with_verb(self.switched(argv))
         made = Creations.begin()
         with CapturedStream.capture(out, err):
             try:

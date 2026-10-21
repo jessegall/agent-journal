@@ -15,17 +15,17 @@ class BriefingConduct(Conduct):
 
     def on_session_started_briefing(self, event: SessionStarted, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.unchanged(*start_block(event.data.of(feature), event.source), feature.OVERVIEW_REQUEST.create())
+        return self.none(*start_block(event.data.part(feature), event.source), feature.OVERVIEW_REQUEST.create())
 
     def on_tool_starting_briefing(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = briefing_feature()
-        if event.subagent or not event.call.writes or event.data.of(feature).oriented:
-            return self.unchanged()
-        return self.hold(feature.OVERVIEW_REQUEST.create())
+        if event.subagent or not event.call.writes or event.data.part(feature).oriented:
+            return self.none()
+        return self.refuse(feature.OVERVIEW_REQUEST.create())
 
     def on_stop_briefing(self, event: Stop, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.unchanged() if event.data.of(feature).oriented else self.hold(feature.OVERVIEW_STOP.create())
+        return self.none() if event.data.part(feature).oriented else self.refuse(feature.OVERVIEW_STOP.create())
 
 
 def briefing_feature():

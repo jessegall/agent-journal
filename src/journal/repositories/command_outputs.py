@@ -10,8 +10,8 @@ from journal.repositories.scoped_repository import ScopedRepository
 class CommandOutputs(ScopedRepository[CommandOutput]):
     model = CommandOutput
 
-    def of_chain(self, chain: str) -> CommandOutput:
-        rows = self.selected_everywhere("chain = ? ORDER BY id", (chain,))
+    def chain_output(self, chain: str) -> CommandOutput:
+        rows = self.selected_globally("chain = ? ORDER BY id", (chain,))
         if not rows:
             raise MissingRow(self.table, chain)
         return rows[-1]
@@ -35,4 +35,4 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
         return True
 
     def surplus(self, kept: int) -> list[CommandOutput]:
-        return self.selected_everywhere("id NOT IN (SELECT id FROM command_outputs ORDER BY id DESC LIMIT ?) ORDER BY id", (kept,))
+        return self.selected_globally("id NOT IN (SELECT id FROM command_outputs ORDER BY id DESC LIMIT ?) ORDER BY id", (kept,))

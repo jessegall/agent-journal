@@ -10,5 +10,5 @@ class Author(StrEnum):
     SYSTEM = "system"
 
     @classmethod
-    def of(cls, actor: Actor) -> "Author":
+    def build(cls, actor: Actor) -> "Author":
         return {ActorKind.AGENT: cls.AGENT, ActorKind.USER: cls.USER, ActorKind.PHONE: cls.USER}.get(actor.kind, cls.SYSTEM)

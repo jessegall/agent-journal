@@ -25,14 +25,14 @@ class Orchestrating(Ready):
         return Delegating(**fields)
 
     def stop_answer(self, tasks: TasksData, settings: Settings) -> Transition:
-        return self.hold(orchestrate(tasks)) if tasks.open_ids else self.unchanged()
+        return self.refuse(orchestrate(tasks)) if tasks.open_ids else self.none()
 
-    def quiet_nudges(self, tasks: TasksData) -> tuple[Nudge, ...]:
+    def silent_nudges(self, tasks: TasksData) -> tuple[Nudge, ...]:
         return (orchestrate(tasks),) if tasks.open_ids else ()
 
     def on_worker_reported(self, event: WorkerReported, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        return self.unchanged(*self.quiet_nudges(event.data.of(Tasks)))
+        return self.none(*self.silent_nudges(event.data.part(Tasks)))
 
 
 def orchestrate(tasks: TasksData) -> Nudge:

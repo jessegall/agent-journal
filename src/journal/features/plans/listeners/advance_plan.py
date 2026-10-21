@@ -33,7 +33,7 @@ class AdvancePlan(Listener[Updated]):
         following = self.plans.next_task(plan)
         if plan.state != PlanState.STARTED or self.is_checkpoint_stop(plan) or following is None or self.tasks.current() is not None:
             return
-        self.tasks.save(following.started_by_plan(time, plan.id), event.actor)
+        self.tasks.save(following.plan_started(time, plan.id), event.actor)
 
     def is_checkpoint_stop(self, plan: Plan) -> bool:
         from journal.features.tasks.feature import Tasks as TasksFeature

@@ -48,7 +48,7 @@ class Hook:
 
     @property
     def output(self) -> str:
-        return self.printed(self.body.get("tool_response", ""))
+        return self.output_text(self.body.get("tool_response", ""))
 
     @property
     def error(self) -> str:
@@ -60,7 +60,7 @@ class Hook:
         return response if isinstance(response, dict) else {}
 
     @staticmethod
-    def printed(response) -> str:
+    def output_text(response) -> str:
         if isinstance(response, dict):
             return "\n".join(part for part in (response.get("stdout", ""), response.get("stderr", "")) if part) or str({k: v for k, v in response.items() if k not in ("stdout", "stderr")})
         return response if isinstance(response, str) else str(response)
@@ -86,7 +86,7 @@ class Hook:
         return self.body.get("source", "")
 
     @property
-    def stop_held_before(self) -> bool:
+    def stop_refused_earlier(self) -> bool:
         return bool(self.body.get("stop_hook_active"))
 
     @property

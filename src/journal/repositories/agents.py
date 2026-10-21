@@ -21,7 +21,7 @@ class Agents(ScopedRepository[Agent]):
     def current_scoped(self, environment_id: int) -> list[Agent]:
         return [a for a in self.global_matching(environment_id=environment_id) if a.state != "ended"]
 
-    def others_running(self, session: str, environment_id: int, provider: str) -> list[Agent]:
+    def running_peers(self, session: str, environment_id: int, provider: str) -> list[Agent]:
         return [a for a in self.global_matching(environment_id=environment_id) if a.session != session and (a.provider or "claude") == (provider or "claude") and a.state != "ended"]
 
     def all_current(self) -> Agent | None:
@@ -37,5 +37,5 @@ class Agents(ScopedRepository[Agent]):
             raise MissingRow(self.table, session)
         return rows[0]
 
-    def others_lately(self, session: str, since: datetime) -> list[Agent]:
+    def recent_peers(self, session: str, since: datetime) -> list[Agent]:
         return [a for a in self.scoped() if a.session != session and a.updated_at >= since and not (a.state == "ended" and a.updated_at - a.created_at < timedelta(minutes=1))]

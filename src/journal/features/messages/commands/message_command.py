@@ -45,7 +45,7 @@ class MessageCommand(Command):
         react.add_argument("face")
 
     def send(self, args: Namespace, caller: Caller) -> int:
-        author = Author.of(caller.actor)
+        author = Author.build(caller.actor)
         if args.reply_to and author == Author.AGENT:
             return self.reply(args, caller)
         draft = Message(author=author, text=args.text, reply_to=args.reply_to)
@@ -55,7 +55,7 @@ class MessageCommand(Command):
 
     def reply(self, args: Namespace, caller: Caller) -> int:
         answered = self.messages.find(args.reply_to)
-        if self.messages.reply_saying(answered.id, args.text):
+        if self.messages.reply_text(answered.id, args.text):
             print(f"message {answered.id} already has this reply in the chat: not sent again")
             return 0
         earlier = self.messages.first_reply(answered)
@@ -70,7 +70,7 @@ class MessageCommand(Command):
     def list(self, args: Namespace, caller: Caller) -> int:
         for message in self.messages.scoped():
             mark = " " if message.read_at else "*"
-            print(f"{mark}{message.id:>4}  {message.author:<5} {message.own_words}")
+            print(f"{mark}{message.id:>4}  {message.author:<5} {message.text_body}")
         return 0
 
     def read(self, args: Namespace, caller: Caller) -> int:
@@ -87,14 +87,14 @@ class MessageCommand(Command):
 
     def recent(self, args: Namespace, caller: Caller) -> int:
         for message in self.messages.recent(RECENT):
-            print(f"{message.id:>4}  {message.author:<5} {message.own_words}")
+            print(f"{message.id:>4}  {message.author:<5} {message.text_body}")
         return 0
 
     def react(self, args: Namespace, caller: Caller) -> int:
         if args.face not in Faces.ALL:
             print(f"a reaction is one of {' '.join(Faces.ALL)}")
             return 1
-        author = Author.of(caller.actor)
+        author = Author.build(caller.actor)
         message = self.messages.find(args.n)
         reaction = self.reactions.toggle(message, args.face, author, caller.actor)
         if reaction and author == Author.AGENT:
@@ -118,15 +118,15 @@ class MessageCommand(Command):
         return ", on the passage quoted below it" if message.quoted_lines else ""
 
     def show(self, message: Message) -> None:
-        print(f"message {message.id} from {message.sender}{self.answering(message)}: {message.own_words}")
+        print(f"message {message.id} from {message.sender}{self.answering(message)}: {message.text_body}")
         for line in message.quote.split("\n") if message.is_passage_comment else ():
             print(f"  > {line}")
         for name in message.files:
             path = self.config.files / "message" / str(message.id) / name
             seen = message.captions.get(name)
             print(f"  file {path}" + (f": {seen}" if seen else f" (open it, then `journal message tag {message.id} \"{name}\" \"<what it shows>\"`)"))
-        for link in self.links.of(message):
-            other = link.target if link.source == Ref.to(message) else link.source
+        for link in self.links.link_rows(message):
+            other = link.target if link.source == Ref.build(message) else link.source
             print(f"  {link.kind} {other}")
             if link.kind == Messages.COMMENT_LINK and message.is_passage_comment:
                 print(self.passage_place(other, message.quote))

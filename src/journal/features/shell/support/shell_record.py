@@ -40,32 +40,32 @@ class ShellRecord:
         return self.log.start(chain, command, folder, caller.session, caller.actor).id
 
     def started(self, chain: str, part: str, caller: Caller) -> None:
-        self.record(caller, PART_START, {"chain": chain, "part": part, "doing": ActivityLabel.of(part)})
+        self.record(caller, PART_START, {"chain": chain, "part": part, "doing": ActivityLabel.build(part)})
 
-    def ran(self, chain: str, part: str, status: int, seconds: float, output: str, changed: list[ChangedFile], caller: Caller) -> None:
-        self.record(caller, PART_END, {"chain": chain, "part": part, "doing": ActivityLabel.of(part), "status": status, "seconds": seconds, "output": output[-TAIL:], "changed": [asdict(c) for c in changed]})
+    def finish_part(self, chain: str, part: str, status: int, seconds: float, output: str, changed: list[ChangedFile], caller: Caller) -> None:
+        self.record(caller, PART_END, {"chain": chain, "part": part, "doing": ActivityLabel.build(part), "status": status, "seconds": seconds, "output": output[-TAIL:], "changed": [asdict(c) for c in changed]})
 
     def moved(self, chain: str, part: str, folder: Path, caller: Caller) -> int:
-        self.record(caller, MOVED, {"chain": chain, "part": part, "doing": ActivityLabel.of(part), "file": str(folder)})
-        output = self.outputs.save(self.outputs.of_chain(chain).backgrounded(), caller.actor)
+        self.record(caller, MOVED, {"chain": chain, "part": part, "doing": ActivityLabel.build(part), "file": str(folder)})
+        output = self.outputs.save(self.outputs.chain_output(chain).backgrounded(), caller.actor)
         if caller.session:
             self.events.moved(output, caller.session)
-        self.cards.show(self.scope.id, caller.session, f"Moved to the background: {ActivityLabel.of(part)}", "terminal", key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
+        self.cards.show(self.scope.id, caller.session, f"Moved to the background: {ActivityLabel.build(part)}", "terminal", key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
         return output.id
 
     def ended(self, chain: str, status: int, folder: Path, last: str, caller: Caller) -> None:
         self.record(caller, ENDED, {"chain": chain, "status": status, "file": str(folder), "last": last})
-        part = next((e.data["part"] for e in self.entries.of_kind(MOVED, 200) if e.data.get("chain") == chain), "")
+        part = next((e.data["part"] for e in self.entries.kind_entries(MOVED, 200) if e.data.get("chain") == chain), "")
         outcome = OutputFiles.ended(status)
-        self.cards.show(self.scope.id, caller.session, f"{outcome.capitalize()} in the background: {ActivityLabel.of(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
+        self.cards.show(self.scope.id, caller.session, f"{outcome.capitalize()} in the background: {ActivityLabel.build(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
         agent = self.agents.current()
         if agent:
-            output, moment = self.outputs.of_chain(chain), datetime.now(timezone.utc).timestamp()
+            output, moment = self.outputs.chain_output(chain), datetime.now(timezone.utc).timestamp()
             finish = output.wait_end(status, moment) if self.wait_covers(output, agent) else output.ended_with(status, moment)
             self.events.ended(self.outputs.save(finish, caller.actor), agent)
 
     def wait_covers(self, output: CommandOutput, agent: Agent) -> bool:
-        top = self.states.stack_of(agent).top() if agent.session == output.session else None
+        top = self.states.stack(agent).top() if agent.session == output.session else None
         return isinstance(top, Wait) and f"{output.table()}:{output.id}" in top.wait_description()[1].split(",")
 
     def is_stored(self, chain: str, line: str, size: int, cut: bool) -> bool:
@@ -73,7 +73,7 @@ class ShellRecord:
         return size >= int(self.settings.option(Shell.SHORT)) or bool(PIPED.search(line)) or cut
 
     def delete_output(self, chain: str, caller: Caller) -> None:
-        output = self.outputs.of_chain(chain)
+        output = self.outputs.chain_output(chain)
         self.outputs.delete(output, caller.actor)
         shutil.rmtree(output.folder, ignore_errors=True)
 

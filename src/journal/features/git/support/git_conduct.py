@@ -10,8 +10,8 @@ class GitConduct(Conduct):
     def on_commit_detected_git(self, event: CommitDetected, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         if not event.closed:
-            return self.unchanged()
+            return self.none()
         closed = Tasks.COMMIT_CLOSURE.create(sha=event.sha[:8], tasks=", ".join(f"task {n}" for n in event.closed))
         if event.next_open is None:
-            return self.unchanged(closed)
-        return self.unchanged(closed, Tasks.NEXT_TASK.create(n=event.next_open.id, title=event.next_open.title))
+            return self.none(closed)
+        return self.none(closed, Tasks.NEXT_TASK.create(n=event.next_open.id, title=event.next_open.title))

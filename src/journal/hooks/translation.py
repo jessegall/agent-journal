@@ -31,7 +31,7 @@ class Translation:
         HookKind.POST_TOOL_USE: lambda hook, provider: ToolFinished(call=provider.call(hook.tool, hook.input), output=hook.output, response=hook.response),
         HookKind.POST_TOOL_USE_FAILURE: lambda hook, provider: ToolFailed(call=provider.call(hook.tool, hook.input), error=hook.error),
         HookKind.PRE_COMPACT: lambda hook, provider: Compacting(),
-        HookKind.STOP: lambda hook, provider: Stop(held_before=hook.stop_held_before),
+        HookKind.STOP: lambda hook, provider: Stop(held_before=hook.stop_refused_earlier),
         HookKind.SUBAGENT_START: lambda hook, provider: SubagentStarted(subagent=hook.subagent),
         HookKind.SUBAGENT_STOP: lambda hook, provider: SubagentEnded(subagent=hook.subagent),
         HookKind.MESSAGE_DISPLAY: lambda hook, provider: TurnDisplayed(text=hook.text, delta=hook.text, turn_id=hook.turn_id, index=hook.index, final=hook.final),
@@ -44,4 +44,4 @@ class Translation:
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
         bare = self.EVENTS[hook.kind](hook, self.providers.lookup(hook.provider))
-        return self.turns.fold(self.uses.counted(bare.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.time(), hook.subagent)))
+        return self.turns.fold(self.uses.counted(bare.placed(hook.session, environment.id, hook.provider, self.context.build(hook.session), self.clock.time(), hook.subagent)))

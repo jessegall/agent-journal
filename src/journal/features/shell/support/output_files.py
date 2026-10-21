@@ -25,7 +25,7 @@ class OutputFiles:
     def last(self, n: int) -> list[str]:
         rows: list[str] = []
         for path in reversed(self.parts()):
-            rows = self.tail_of(path, n - len(rows)) + rows
+            rows = self.tail(path, n - len(rows)) + rows
             if len(rows) >= n:
                 break
         return rows[-n:]
@@ -34,7 +34,7 @@ class OutputFiles:
         return [path for i in self.recorded() for name in (f"{i}.out", f"{i}.err") if (path := self.folder / name).is_file()]
 
     @staticmethod
-    def tail_of(path: Path, n: int) -> list[str]:
+    def tail(path: Path, n: int) -> list[str]:
         size, block = path.stat().st_size, BLOCK
         with path.open("rb") as file:
             while True:
@@ -45,21 +45,21 @@ class OutputFiles:
                     return lines[-n:] if n > 0 else []
                 block *= 4
 
-    def ran(self) -> list[int]:
+    def statuses(self) -> list[int]:
         return [int(path.read_text()) for i in self.recorded() if (path := self.folder / f"{i}.status").is_file()]
 
     def is_running(self) -> bool:
-        return not (self.folder / "done").is_file() and len(self.ran()) < len(self.recorded())
+        return not (self.folder / "done").is_file() and len(self.statuses()) < len(self.recorded())
 
     def outcome(self) -> str:
-        ran = self.ran()
+        ran = self.statuses()
         return "still running" if self.is_running() or not ran else self.ended(ran[-1])
 
     @staticmethod
     def ended(status: int) -> str:
         return "finished" if status == 0 else f"failed with code {status}"
 
-    def split_into(self, line: str, parts: list[Part]) -> None:
+    def split(self, line: str, parts: list[Part]) -> None:
         self.folder.mkdir(parents=True, exist_ok=True)
         (self.folder / "line").write_text(line)
         for i, part in enumerate(parts):
@@ -88,13 +88,13 @@ class OutputFiles:
     def has_ended(self, i: int) -> bool:
         return (self.folder / f"{i}.status").is_file()
 
-    def status_of(self, i: int) -> int:
+    def status(self, i: int) -> int:
         return int((self.folder / f"{i}.status").read_text())
 
     def ended_with(self, i: int, status: int) -> None:
         (self.folder / f"{i}.status").write_text(str(status))
 
-    def printed(self, i: int) -> str:
+    def output_text(self, i: int) -> str:
         return "".join(path.read_text(errors="replace") for name in (f"{i}.out", f"{i}.err") if (path := self.folder / name).is_file())
 
     def is_finished(self) -> bool:

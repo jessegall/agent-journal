@@ -34,12 +34,12 @@ class Task(Scoped):
         return self.is_closed()
 
     def started(self, time: datetime) -> "Task":
-        return self.started_by_plan(time, 0)
+        return self.plan_started(time, 0)
 
-    def started_by_plan(self, time: datetime, plan_id: int) -> "Task":
+    def plan_started(self, time: datetime, plan_id: int) -> "Task":
         return self.with_(state=TaskState.STARTED, started_at=time, parked_why="", blocked_why="").with_event(TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.id, title=self.title, plan_id=plan_id))
 
-    def parked(self, why: str, time: datetime) -> "Task":
+    def suspended(self, why: str, time: datetime) -> "Task":
         if self.state != TaskState.STARTED:
             raise Rejection(f"task {self.id} is {self.state}: only a started task is parked")
         return self.closed(self.with_(state=TaskState.SUSPENDED, parked_why=why), time, "parked")

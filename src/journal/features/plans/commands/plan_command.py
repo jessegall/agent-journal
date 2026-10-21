@@ -76,9 +76,9 @@ class PlanCommand(Command):
 
     def add(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        before = self.plans.tasks_of(plan) if args.first else []
+        before = self.plans.plan_tasks(plan) if args.first else []
         task = self.tasks.save(Task(environment_id=plan.environment_id, title=args.title, brief=args.brief), caller.actor)
-        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), caller.actor)
+        self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), caller.actor)
         for other in before:
             self.relink(other, plan, caller)
         print(f"task {task.id} added to plan {plan.id}{' first' if args.first else ''}")
@@ -87,11 +87,11 @@ class PlanCommand(Command):
     def relink(self, task: Task, plan: Plan, caller: Caller) -> None:
         for link in self.links.connecting(task, plan):
             self.links.delete(link, caller.actor)
-        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), caller.actor)
+        self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), caller.actor)
 
     def rephase(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        phase = self.plans.phases_of(plan)[args.phase - 1]
+        phase = self.plans.plan_phases(plan)[args.phase - 1]
         changed = phase.with_(title=args.title or phase.title, complete_when=args.when or phase.complete_when)
         self.phases.save(changed, caller.actor)
         print(f"phase {args.phase} of plan {plan.id} is now: {changed.title}")
@@ -100,35 +100,35 @@ class PlanCommand(Command):
     def phase(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
         phase = self.phases.save(Phase(environment_id=plan.environment_id, title=args.title, complete_when=args.when, checkpoint=args.checkpoint), caller.actor)
-        self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_TASK_LINK), caller.actor)
-        print(f"phase {len(self.plans.phases_of(plan))} of plan {plan.id}")
+        self.links.save(Link(source=Ref.build(phase), target=Ref.build(plan), kind=PHASE_TASK_LINK), caller.actor)
+        print(f"phase {len(self.plans.plan_phases(plan))} of plan {plan.id}")
         return 0
 
     def todos(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        phases = self.plans.phases_of(plan)
+        phases = self.plans.plan_phases(plan)
         if not 1 <= args.phase <= len(phases):
             raise Rejection(f"plan {plan.id} has {len(phases)} phases: name one by its number from 1")
         phase = phases[args.phase - 1]
         for n in args.tasks:
             task = self.tasks.find(n)
             if not self.links.connecting(task, plan):
-                self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), caller.actor)
+                self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), caller.actor)
             for link in [link for other in phases for link in self.links.connecting(task, other)]:
                 self.links.delete(link, caller.actor)
-            self.links.save(Link(source=Ref.to(task), target=Ref.to(phase), kind=PHASE_LINK), caller.actor)
+            self.links.save(Link(source=Ref.build(task), target=Ref.build(phase), kind=PHASE_LINK), caller.actor)
         print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}")
         return 0
 
     def ready(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        phases = self.plans.phases_of(plan)
+        phases = self.plans.plan_phases(plan)
         if not phases:
             raise Rejection(f"plan {plan.id} has no phase yet: journal plan phase {plan.id} \"<title>\" --when \"<complete when>\"")
-        empty = [i for i, phase in enumerate(phases, 1) if not self.plans.tasks_in(phase)]
+        empty = [i for i, phase in enumerate(phases, 1) if not self.plans.phase_tasks(phase)]
         if empty:
             raise Rejection(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
-        out = self.subagents.running_about(caller.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and caller.session else 0
+        out = self.subagents.running_mentioning(caller.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and caller.session else 0
         if out:
             raise Rejection(f"plan {plan.id} is in review and {out} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
         if plan.state == PlanState.REVIEWING:
@@ -165,7 +165,7 @@ class PlanCommand(Command):
         self.waits.refuse_unnamed(args.why, args.on, args.until)
         plan = self.plans.save(self.plans.find(args.n).blocked(args.why, datetime.now(timezone.utc).timestamp()), caller.actor)
         for ref in self.waits.created(args.on, args.until, args.every, f"plan {plan.id}", caller.actor):
-            self.links.save(Link(source=Ref.to(plan), target=ref, kind=WAIT_LINK), caller.actor)
+            self.links.save(Link(source=Ref.build(plan), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"plan {plan.id} blocked, waiting on: {self.tasks.reason(plan)}")
         return 0
 
@@ -194,12 +194,12 @@ class PlanCommand(Command):
         plan = self.plans.find(args.n)
         print(f"plan {plan.id} {plan.state}: {plan.title}")
         phased = set()
-        for i, phase in enumerate(self.plans.phases_of(plan), 1):
+        for i, phase in enumerate(self.plans.plan_phases(plan), 1):
             print(f"phase {i}: {phase.title}" + (f" (complete when {phase.complete_when})" if phase.complete_when else "") + (" [checkpoint]" if phase.checkpoint else ""))
-            for task in self.plans.tasks_in(phase):
+            for task in self.plans.phase_tasks(phase):
                 phased.add(task.id)
                 print(f"{task.id:>4}  {task.state:<8} {task.title}")
-        loose = [t for t in self.plans.tasks_of(plan) if t.id not in phased]
+        loose = [t for t in self.plans.plan_tasks(plan) if t.id not in phased]
         if loose:
             print("under no phase yet:")
         for task in loose:

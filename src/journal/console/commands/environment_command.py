@@ -53,7 +53,7 @@ class EnvironmentCommand(Command):
     def rows(self) -> list[EnvironmentRow]:
         rows = []
         for environment in self.environments.all() or [self.environments.lookup("main")]:
-            with self.scope.of(environment.id):
+            with self.scope.environment(environment.id):
                 agents = self.agents.scoped()
             last = max(agents, key=lambda a: a.updated_at) if agents else None
             resumable = [a for a in agents if a.session and self.providers.lookup(a.provider or "claude").transcript(self.config.root, a.session)]
@@ -69,7 +69,7 @@ class EnvironmentCommand(Command):
 
     def current_work(self, session: str) -> list[str]:
         since = datetime.now(timezone.utc) - TAKEOVER_WINDOW
-        others = self.agents.others_lately(session, since)
+        others = self.agents.recent_peers(session, since)
         held = self.tasks.with_state(TaskState.STARTED)
         lines = [
             f"taken over from another agent, last seen {others[-1].updated_at.astimezone().strftime('%H:%M')}" if others else "",
@@ -80,7 +80,7 @@ class EnvironmentCommand(Command):
             self.named("unread messages", [str(m.id) for m in self.messages.unread()]),
             self.named("messages read and unanswered", [str(m.id) for m in self.messages.unanswered()]),
             self.named("questions waiting for the user", [f"{q.id} {q.text}" for q in self.questions.open()]),
-            self.named("workers out", [f"{w.id} {w.name}" for w in self.workers.out()]),
+            self.named("workers out", [f"{w.id} {w.name}" for w in self.workers.active()]),
             self.named("running in the background", self.background()),
             self.named("rules in force", [f"{r.id} {r.text}" for r in self.rules.all()]),
             self.named("facts about this environment", [f"{f.id} {f.text}" for f in self.facts.scoped()]),
@@ -89,8 +89,8 @@ class EnvironmentCommand(Command):
         return [line for line in lines if line]
 
     def background(self) -> list[str]:
-        ended = {e.data["chain"] for e in self.entries.of_kind(ENDED, 50)}
-        moved = [e for e in reversed(self.entries.of_kind(MOVED, 50)) if e.data["chain"] not in ended]
+        ended = {e.data["chain"] for e in self.entries.kind_entries(ENDED, 50)}
+        moved = [e for e in reversed(self.entries.kind_entries(MOVED, 50)) if e.data["chain"] not in ended]
         return [f"{e.data['part']} (output in {e.data['file']})" for e in moved if Path(e.data["file"]).is_dir() and not (Path(e.data["file"]) / "done").is_file()]
 
     @staticmethod
@@ -133,7 +133,7 @@ class EnvironmentCommand(Command):
         rows = self.environments.existing(args.name)
         if self.environments.matching(name=args.new):
             raise Rejection(f"an environment named {args.new} exists already")
-        with self.scope.of(rows.id):
+        with self.scope.environment(rows.id):
             if self.agents.current() is not None:
                 raise Rejection(f"an agent works in {rows.name}: stop it first, then rename")
         if Worktree(self.config.root, rows.name).path.is_dir():

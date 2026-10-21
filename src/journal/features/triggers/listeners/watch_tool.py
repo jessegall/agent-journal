@@ -3,5 +3,5 @@ from journal.features.triggers.listeners.trigger_watch import TriggerWatch
 
 
 class WatchTool(TriggerWatch[ToolStarting]):
-    def text_of(self, event: ToolStarting) -> str:
+    def text(self, event: ToolStarting) -> str:
         return event.call.input_text

@@ -19,4 +19,4 @@ class WorkerController(Controller[Worker]):
         return row.state != WorkerState.STOPPED
 
     def shown_page(self, rows: list[Worker]) -> list[dict]:
-        return [{**ModelFields.of(w), "report": self.reports.last(w)} for w in rows]
+        return [{**ModelFields.build(w), "report": self.reports.last(w)} for w in rows]

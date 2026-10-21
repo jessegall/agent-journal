@@ -14,7 +14,7 @@ class InstanceGuard:
         self.config = config
 
     def other_address(self) -> str:
-        for port in self.config.remembered_port():
+        for port in self.config.stored_port():
             address = f"http://127.0.0.1:{port}"
             try:
                 with urlopen(f"{address}/journal/identity", timeout=QUERY_TIMEOUT_SECONDS) as answer:

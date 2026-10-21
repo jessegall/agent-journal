@@ -45,7 +45,7 @@ class DocCommand(Command):
 
     def show(self, args: Namespace, caller: Caller) -> int:
         doc = self.docs.find(args.n)
-        print("\n".join([*filter(None, (f"doc {doc.id}: {doc.title}", doc.abstract)), *Outline.of(doc.body).told(args)]))
+        print("\n".join([*filter(None, (f"doc {doc.id}: {doc.title}", doc.abstract)), *Outline.build(doc.body).summary(args)]))
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:

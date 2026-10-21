@@ -36,7 +36,7 @@ class Receiver:
 
     def receive(self, hook: Hook) -> Decision:
         environment = self.environments.lookup(hook.environment)
-        with self.scope.of(environment.id):
+        with self.scope.environment(environment.id):
             for written in self.transcript.events(hook, environment):
                 self._immediate(written)
             event = self.translation.event(hook, environment)

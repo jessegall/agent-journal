@@ -19,11 +19,11 @@ class SkillController:
         return Response.json([{"name": skill.name, "description": skill.description, "loaded": skill.name in loaded} for skill in self.registry.skills()])
 
     def show(self, request: Request) -> Response:
-        skill = self.registry.skill_named(request.params["name"])
+        skill = self.registry.skill(request.params["name"])
         return Response.json({"name": skill.name, "description": skill.description, "text": skill.body}) if skill else Response.absent("no such skill")
 
     def load(self, request: Request) -> Response:
-        skill = self.registry.skill_named(request.params["name"])
+        skill = self.registry.skill(request.params["name"])
         if skill is None:
             return Response.absent("no such skill")
         self.supervisor.type(self.scope.id, f"read the {skill.name} skill now: {self.skill_files.path(skill)}")

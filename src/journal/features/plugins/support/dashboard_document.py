@@ -12,12 +12,12 @@ class DashboardDocument:
     def __init__(self, rows: DashboardRows, folders: PluginFolders) -> None:
         self.rows, self.folders = rows, folders
 
-    def of(self, plugin: Plugin) -> DashboardView:
+    def build(self, plugin: Plugin) -> DashboardView:
         board = plugin.manifest.dashboard
         written = self.folders.data(plugin) / "dashboards" / f"{board.get('name', '')}.json"
         if board.get("name") and written.is_file():
             return DashboardView.from_json(json.loads(written.read_text()))
-        lines = self.rows.of(plugin.name)
+        lines = self.rows.rows(plugin.name)
         if not lines:
             return DashboardView(missing=f"{plugin.name} has written nothing on its dashboard yet.")
         headed: dict[str, list] = {}

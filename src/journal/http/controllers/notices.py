@@ -21,7 +21,7 @@ class NoticeController(Controller[Notice]):
         return row.closed_at is None
 
     def counts(self, rows: list[Notice]) -> Counts:
-        return Counts(all=self.repository.count(), open=self.repository.open_count(), unread=self.repository.unseen_by_user())
+        return Counts(all=self.repository.count(), open=self.repository.open_count(), unread=self.repository.unviewed())
 
     def close(self, request: Request) -> Response:
         notice = self.repository.find(request.number("id"))

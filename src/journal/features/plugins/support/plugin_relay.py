@@ -38,7 +38,7 @@ class PluginRelay:
 
     def listeners(self, event: Event, environment_id: int) -> list[Plugin]:
         hearers = [p for p in self.plugins.enabled() if Protocol.published_name(event) in p.manifest.hears and getattr(event, "actor", None) != Actor.plugin(p.name)]
-        if hearers and self.steps.too_deep():
+        if hearers and self.steps.is_nested_deep():
             self.entries.save(Entry(environment_id=environment_id, kind=CUT, actor=Actor.system(), data={"event": Protocol.published_name(event), "by": getattr(event, "actor", Actor.system()).stamp, "plugins": [p.name for p in hearers]}), Actor.system())
             return []
         return hearers
@@ -49,7 +49,7 @@ class PluginRelay:
         self.linked.notice(plugin, environment_id)
         environment = self.environments.find(environment_id).name if environment_id else ""
         try:
-            answer = self.runner.ask(plugin, environment, self.protocol.event_line(event, environment, self.state_of(event)), within)
+            answer = self.runner.ask(plugin, environment, self.protocol.event_line(event, environment, self.agent_state(event)), within)
         except WindowMissed as missed:
             self.unanswered(plugin, event, environment_id, str(missed))
             return PluginAnswer()
@@ -73,30 +73,30 @@ class PluginRelay:
 
     def waiting(self, plugin: Plugin, event: Event, environment_id: int, text: str) -> None:
         session = event.session if isinstance(event, AgentEvent) else self.current_session(environment_id)
-        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": Protocol.published_name(event), "line": self.text.said(plugin, text), "delivered": not session}), Actor.plugin(plugin.name))
+        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": Protocol.published_name(event), "line": self.text.line(plugin, text), "delivered": not session}), Actor.plugin(plugin.name))
 
     def queued_line(self, plugin: Plugin, environment_id: int, key: str, text: str) -> None:
         session = self.current_session(environment_id)
-        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": key, "line": self.text.said(plugin, text), "delivered": not session}), Actor.plugin(plugin.name))
+        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": key, "line": self.text.line(plugin, text), "delivered": not session}), Actor.plugin(plugin.name))
 
     def current_session(self, environment_id: int) -> str:
-        with self.scope.of(environment_id):
+        with self.scope.environment(environment_id):
             agent = self.agents.current()
         return agent.session if agent else ""
 
-    def waiting_for(self, session: str) -> list[str]:
-        waiting = [e for e in self.entries.of_kind(WAITING, 200) if e.data.get("session") == session and not e.data.get("delivered")]
+    def waiting_lines(self, session: str) -> list[str]:
+        waiting = [e for e in self.entries.kind_entries(WAITING, 200) if e.data.get("session") == session and not e.data.get("delivered")]
         for entry in waiting:
             self.entries.save(entry.with_(data={**entry.data, "delivered": True}), Actor.system())
         return [e.data["line"] for e in reversed(waiting)]
 
-    def said(self, plugin: Plugin, event: Event, environment_id: int, how: str, text: str) -> None:
+    def line(self, plugin: Plugin, event: Event, environment_id: int, how: str, text: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=PLUGIN_LINE_KIND, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": Protocol.published_name(event), "how": how, "words": text}), Actor.plugin(plugin.name))
 
     def unanswered(self, plugin: Plugin, event: Event, environment_id: int, reason: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=UNANSWERED, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": Protocol.published_name(event), "reason": reason}), Actor.system())
 
-    def state_of(self, event: Event) -> str:
+    def agent_state(self, event: Event) -> str:
         if not isinstance(event, AgentEvent):
             return ""
         agents = self.agents.matching(session=event.session)

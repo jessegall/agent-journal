@@ -54,8 +54,8 @@ class QuestionCommand(Command):
         choices = f"  [{' / '.join(question.options)}]" if question.options else ""
         print(f"question {question.id}: {question.text}{choices}")
         print(f"  answer: {question.answer}" if question.answer is not None else "  not answered yet")
-        for link in self.links.of(question):
-            other = link.target if link.source == Ref.to(question) else link.source
+        for link in self.links.link_rows(question):
+            other = link.target if link.source == Ref.build(question) else link.source
             if other.type == "messages":
                 message = self.messages.find(other.id)
                 print(f"  {link.kind} message {message.id} from the {message.author}: {message.text}")

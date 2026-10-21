@@ -23,7 +23,7 @@ class WorkerReports:
 
     def file(self, worker: Worker, text: str, actor: Actor, session: str = "") -> Message:
         message = self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=f"{self.lead(worker)}{text}", data={"kind": Message.REPORT, "worker": worker.name, "worker_id": worker.id}), actor)
-        self.links.save(Link(source=Ref.to(worker), target=Ref.to(message), kind=REPORTED), actor)
+        self.links.save(Link(source=Ref.build(worker), target=Ref.build(message), kind=REPORTED), actor)
         self.workers.save(worker.with_(session=session).reported(datetime.now(timezone.utc).timestamp(), message.id), actor)
         return message
 

@@ -35,7 +35,7 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
         from journal.features.plugins.feature import PluginsFeature
         hearers = self.relay.listeners(event, event.environment_id)
         ceiling_ms = int(self.settings.option(PluginsFeature.PLUGIN_ANSWER_WINDOW))
-        waiting = self.relay.waiting_for(event.session) if Protocol.published_name(event) in LINE_EVENT_KEYS else []
+        waiting = self.relay.waiting_lines(event.session) if Protocol.published_name(event) in LINE_EVENT_KEYS else []
         if Protocol.published_name(event) in LINE_EVENT_KEYS:
             waiting += [line for plugin in self.relay.plugins.enabled() for line in self.queue.lines(plugin, event)]
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
@@ -49,7 +49,7 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
     def edited(self, event: AgentEvent) -> list[FileEdited]:
         if not isinstance(event, ToolFinished):
             return []
-        return [FileEdited.recorded(edit, event.environment_id) for edit in self.edits.of_tool_use(event.session, event.tool_use)]
+        return [FileEdited.recorded(edit, event.environment_id) for edit in self.edits.tool_use_edits(event.session, event.tool_use)]
 
     def request(self, hearers: list[Plugin], event: AgentEvent, ceiling_ms: int, decision: Decision) -> Decision:
         for plugin in hearers:
@@ -76,10 +76,10 @@ class PluginAgentRelay(AgentListener[AgentEvent]):
             self.relay.unanswered(plugin, event, event.environment_id, answer.reason)
             return Decision()
         if answer.answer == "refuse" and Protocol.published_name(event) in REFUSABLE:
-            self.relay.said(plugin, event, event.environment_id, "held", answer.reason)
-            return Decision.refuse(self.text.said(plugin, answer.reason))
+            self.relay.line(plugin, event, event.environment_id, "held", answer.reason)
+            return Decision.refuse(self.text.line(plugin, answer.reason))
         text = answer.reason if answer.answer == "refuse" else answer.tell
         if not text:
             return Decision()
-        self.relay.said(plugin, event, event.environment_id, "told", text)
-        return Decision.allowed_with(self.text.said(plugin, text))
+        self.relay.line(plugin, event, event.environment_id, "told", text)
+        return Decision.allowed_with(self.text.line(plugin, text))

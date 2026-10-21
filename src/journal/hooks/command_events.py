@@ -24,10 +24,10 @@ class CommandEvents:
         self.bus.dispatch(CommandEnded(output=output.id, status=output.status).placed(agent.session, self.scope.id, agent.provider, None, self.clock.time()))
 
     def wait_declared(self, what: str, ends_on: str, caller: Caller) -> None:
-        self.bus.dispatch(WaitRequest(what=what, ends_on=ends_on).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.time()))
+        self.bus.dispatch(WaitRequest(what=what, ends_on=ends_on).placed(caller.session, self.scope.id, self.provider(caller), None, self.clock.time()))
 
     def help_needed(self, why: str, caller: Caller) -> None:
-        self.bus.dispatch(ImpasseReport(why=why).placed(caller.session, self.scope.id, self.provider_of(caller), None, self.clock.time()))
+        self.bus.dispatch(ImpasseReport(why=why).placed(caller.session, self.scope.id, self.provider(caller), None, self.clock.time()))
 
-    def provider_of(self, caller: Caller) -> str:
+    def provider(self, caller: Caller) -> str:
         return self.agents.session_agent(caller.session).provider

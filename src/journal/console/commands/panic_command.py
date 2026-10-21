@@ -29,7 +29,7 @@ class PanicCommand(Command):
     def now(self, args: Namespace, caller: Caller) -> int:
         text = " ".join(["journal panic", args.state, *args.values])
         agent = self.changed(args, caller, text)
-        print(f"the stack, bottom to top: {', '.join(state.printed() for state in self.machine.states.stack_of(agent).states)}")
+        print(f"the stack, bottom to top: {', '.join(state.state_text() for state in self.machine.states.stack(agent).states)}")
         return 0
 
     def changed(self, args: Namespace, caller: Caller, text: str):

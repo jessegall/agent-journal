@@ -22,5 +22,5 @@ class Version3Backup:
     def is_waiting(self) -> bool:
         return self.is_stored() and self.migrations.current().state.is_open()
 
-    def put_off(self, actor: Actor) -> Version3Migration:
-        return self.migrations.save(self.migrations.current().put_off(), actor)
+    def postpone(self, actor: Actor) -> Version3Migration:
+        return self.migrations.save(self.migrations.current().postpone(), actor)

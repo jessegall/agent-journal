@@ -17,8 +17,8 @@ class PlanReviews(ScopedRepository[PlanReview]):
         super().__init__(connection, bus, scope)
         self.links = links
 
-    def of(self, plan: Plan) -> list[PlanReview]:
+    def reviews(self, plan: Plan) -> list[PlanReview]:
         return list(reversed(self.numbered(ref.id for ref in self.links.sources(plan, REVIEWS))))
 
-    def open_of(self, plan: Plan) -> list[PlanReview]:
-        return [review for review in self.of(plan) if review.is_open()]
+    def open_review(self, plan: Plan) -> list[PlanReview]:
+        return [review for review in self.reviews(plan) if review.is_open()]

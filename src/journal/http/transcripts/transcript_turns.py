@@ -15,7 +15,7 @@ class TranscriptTurns:
         self.reads: dict[Path, TranscriptRead] = {}
         self._lock = threading.Lock()
 
-    def of(self, provider: Provider, path: Path) -> list[Turn]:
+    def build(self, provider: Provider, path: Path) -> list[Turn]:
         with self._lock:
             had = self.reads.pop(path, TranscriptRead())
         read = (TranscriptRead() if path.stat().st_size < had.offset else had).more(provider, path)

@@ -91,7 +91,7 @@ class DumpCommand(Command):
         return 0
 
     def say(self, args: Namespace, caller: Caller) -> int:
-        self.filing.say(args.n, args.text, caller.actor)
+        self.filing.reply(args.n, args.text, caller.actor)
         return 0
 
     def ask(self, args: Namespace, caller: Caller) -> int:
@@ -100,7 +100,7 @@ class DumpCommand(Command):
         return 0
 
     def offer(self, args: Namespace, caller: Caller) -> int:
-        self.filing.offer(args.n, args.options, args.summary, caller.actor)
+        self.filing.propose(args.n, args.options, args.summary, caller.actor)
         return 0
 
     def split(self, args: Namespace, caller: Caller) -> int:

@@ -17,7 +17,7 @@ class SequenceRun:
     finishes_in: tuple[str, ...] = ()
 
     @classmethod
-    def of(cls, raw: dict) -> "SequenceRun":
+    def build(cls, raw: dict) -> "SequenceRun":
         known = {f.name for f in fields(cls)}
         return cls(**{**{k: v for k, v in raw.items() if k in known}, "steps": tuple(raw.get("steps", ())), "finishes_in": tuple(raw.get("finishes_in", ()))})
 
@@ -35,13 +35,13 @@ class SequenceRun:
     def advanced(self) -> "SequenceRun":
         return replace(self, step=self.step + 1, taken_up_at="", said_at="", parked_why="")
 
-    def taken_up(self, time: str) -> "SequenceRun":
+    def adopted(self, time: str) -> "SequenceRun":
         return replace(self, taken_up_at=time)
 
-    def said(self, time: str) -> "SequenceRun":
+    def announced(self, time: str) -> "SequenceRun":
         return replace(self, said_at=time)
 
-    def parked(self, why: str) -> "SequenceRun":
+    def suspended(self, why: str) -> "SequenceRun":
         return replace(self, parked_why=why)
 
     @property

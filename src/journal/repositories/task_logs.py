@@ -6,5 +6,5 @@ from journal.repositories.scoped_repository import ScopedRepository
 class TaskLogs(ScopedRepository[TaskLog]):
     model = TaskLog
 
-    def of(self, task: Task) -> list[TaskLog]:
+    def logs(self, task: Task) -> list[TaskLog]:
         return self.global_matching(task_id=task.id)

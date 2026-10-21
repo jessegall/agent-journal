@@ -63,26 +63,26 @@ class Working(BaseState):
         from journal.features.tasks.feature import Tasks
         active = replace(self, active_at=event.time)
         if not event.call.writes or event.subagent:
-            return self.changed(active)
-        if self.edits >= int(settings.of(Tasks.LOG_LIMIT)):
-            return self.hold(Tasks.LOG_EDIT_BLOCK.create(edits=self.edits, name=self.label(), log=self.log_command()))
+            return self.swap(active)
+        if self.edits >= int(settings.value(Tasks.LOG_LIMIT)):
+            return self.refuse(Tasks.LOG_EDIT_BLOCK.create(edits=self.edits, name=self.label(), log=self.log_command()))
         counted = replace(active, edits=self.edits + 1)
         lines = []
-        if self.edits == int(settings.of(Tasks.FIRST_DELAY)):
+        if self.edits == int(settings.value(Tasks.FIRST_DELAY)):
             lines.append(Tasks.LOG_REQUEST.create(edits=self.edits, name=self.label(), log=self.log_command()))
-        if self.edits and self.edits % int(settings.of(Tasks.TASK_REMINDER_INTERVAL)) == 0:
+        if self.edits and self.edits % int(settings.value(Tasks.TASK_REMINDER_INTERVAL)) == 0:
             lines.append(Tasks.CURRENT_TASK_REMINDER.create(name=self.label(), edits=self.edits))
-        return self.changed(counted, *lines)
+        return self.swap(counted, *lines)
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
-        approved = event.data.of(Plans).approved
+        approved = event.data.part(Plans).approved
         if approved:
-            return self.hold(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
-        if event.time - self.logged_at >= int(settings.of(Tasks.LOG_AGE_LIMIT)) * 60:
-            return self.hold(Tasks.STOP_LOG_REQUEST.create(name=self.label(), logged=self.logged_words(event.time), log_command=self.log_command()))
-        return self.hold(self.continue_nudge(event.time))
+            return self.refuse(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
+        if event.time - self.logged_at >= int(settings.value(Tasks.LOG_AGE_LIMIT)) * 60:
+            return self.refuse(Tasks.STOP_LOG_REQUEST.create(name=self.label(), logged=self.logged_words(event.time), log_command=self.log_command()))
+        return self.refuse(self.continue_nudge(event.time))
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.briefing.feature import Briefing
@@ -90,40 +90,40 @@ class Working(BaseState):
         from journal.features.tasks.feature import Tasks
         nudges = [self.continue_nudge(event.time)]
         if event.source == COMPACT:
-            nudges.append(Briefing.COMPACTION_SUMMARY.create(task=self.label(), last_log=event.data.of(Tasks).last_log_line, uncommitted=event.data.of(Git).uncommitted))
-        return self.changed(replace(self, active_at=event.time), *nudges)
+            nudges.append(Briefing.COMPACTION_SUMMARY.create(task=self.label(), last_log=event.data.part(Tasks).last_log_line, uncommitted=event.data.part(Git).uncommitted))
+        return self.swap(replace(self, active_at=event.time), *nudges)
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
-        return self.changed(replace(self, active_at=event.time))
+        return self.swap(replace(self, active_at=event.time))
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         if event.quiet_for >= OPEN_TASK_LIMIT_SECONDS:
-            return self.unchanged(Tasks.OPEN_TASK.create(name=self.label()))
-        return self.unchanged()
+            return self.none(Tasks.OPEN_TASK.create(name=self.label()))
+        return self.none()
 
     def on_task_logged(self, event: TaskLogged, settings: Settings) -> Transition:
-        return self.changed(self.logged(event.time)) if event.task_id == self.task_id else self.unchanged()
+        return self.swap(self.logged(event.time)) if event.task_id == self.task_id else self.none()
 
     def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:
-        return self.pop() if event.task_id == self.task_id else self.unchanged()
+        return self.pop() if event.task_id == self.task_id else self.none()
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.plans.states.following_plan import FollowingPlan
-        started = event.data.of(Plans).started
+        started = event.data.part(Plans).started
         if self.is_plan_work() or started is None or event.task_id != self.task_id or event.task_id not in started.tasks:
-            return self.unchanged()
-        return self.changed(self.plan_state(plan_id=started.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at))
+            return self.none()
+        return self.swap(self.plan_state(plan_id=started.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at))
 
     def on_plan_started(self, event: PlanStarted, settings: Settings) -> Transition:
         from journal.features.plans.states.following_plan import FollowingPlan
         if self.is_plan_work() or event.task_id != self.task_id:
-            return self.unchanged()
-        return self.changed(self.plan_state(plan_id=event.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at, edits=self.edits, active_at=self.active_at))
+            return self.none()
+        return self.swap(self.plan_state(plan_id=event.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at, edits=self.edits, active_at=self.active_at))
 
     def on_resume(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.tasks.feature import Tasks
-        if self.task_id and data.of(Tasks).in_hand != self.task_id:
+        if self.task_id and data.part(Tasks).in_hand != self.task_id:
             return self.pop()
         return ()

@@ -22,5 +22,5 @@ class OrchestratingPlan(FollowingPlan):
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         answer = super().on_stop(event, settings)
-        tasks = event.data.of(Tasks)
+        tasks = event.data.part(Tasks)
         return replace(answer, nudges=(*answer.nudges, orchestrate(tasks))) if tasks.open_ids else answer

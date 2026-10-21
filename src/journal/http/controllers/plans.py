@@ -27,18 +27,18 @@ class PlanController(Controller[Plan]):
         return not row.state.is_closed()
 
     def shown_page(self, rows: list[Plan]) -> list[dict]:
-        return [self.outline.of(plan) for plan in rows]
+        return [self.outline.build(plan) for plan in rows]
 
-    def timeline_of(self, request: Request) -> Response:
+    def timeline(self, request: Request) -> Response:
         return Response.json(self.timeline.of(self.repository.find(request.number("id"))))
 
-    def tasks_of(self, request: Request) -> Response:
-        return Response.json(self.repository.tasks_of(self.repository.find(request.number("id"))))
+    def plan_tasks(self, request: Request) -> Response:
+        return Response.json(self.repository.plan_tasks(self.repository.find(request.number("id"))))
 
     def add_task(self, request: Request) -> Response:
         plan = self.repository.find(request.number("id"))
         task = self.tasks.save(Task(environment_id=plan.environment_id, title=request.body.get("title", ""), brief=request.body.get("brief", "")), request.actor)
-        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), request.actor)
+        self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), request.actor)
         return Response.json(task, 201)
 
     def approve(self, request: Request) -> Response:
@@ -47,7 +47,7 @@ class PlanController(Controller[Plan]):
     def start(self, request: Request) -> Response:
         return Response.json(self.shown(self.repository.start(self.repository.find(request.number("id")), request.actor)))
 
-    def park(self, request: Request) -> Response:
+    def suspend(self, request: Request) -> Response:
         return Response.json(self.shown(self.repository.postpone(self.repository.find(request.number("id")), request.actor)))
 
     def finish(self, request: Request) -> Response:

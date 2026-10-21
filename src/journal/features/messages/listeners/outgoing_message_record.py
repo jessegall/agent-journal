@@ -23,4 +23,4 @@ class OutgoingMessageRecord(AgentListener[ToolFinished]):
         if answer.get("success") is False:
             self.messages.save(Message.send_failed(self.names.resolve(receiver), text, event.session, receiver, str(answer.get("message", "the send failed"))), Actor.agent(event.session))
             return
-        self.messages.save(Message.sent_to(self.names.resolve(receiver), text, event.session, receiver), Actor.agent(event.session))
+        self.messages.save(Message.outgoing(self.names.resolve(receiver), text, event.session, receiver), Actor.agent(event.session))

@@ -14,7 +14,7 @@ class ClosedPlans(EnvironmentSeed):
         super().__init__(environments, scope)
         self.plans = plans
 
-    def run_in(self) -> None:
+    def run_scoped(self) -> None:
         for plan in self.plans.all():
-            if plan.state == PlanState.STARTED and self.plans.next_task(plan) is None and self.plans.tasks_of(plan):
+            if plan.state == PlanState.STARTED and self.plans.next_task(plan) is None and self.plans.plan_tasks(plan):
                 self.plans.save(plan.finished(datetime.now(timezone.utc).timestamp()), Actor.system())

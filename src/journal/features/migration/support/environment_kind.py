@@ -26,7 +26,7 @@ class EnvironmentKind:
         count, skipped = 0, []
         for environment in [e for e in rows.environments() if self.ledger.is_imported(f"project/environment/{e.n}")]:
             into = self.environments.existing(environment.title)
-            for row in rows.of(environment.title, self.kind):
+            for row in rows.rows(environment.title, self.kind):
                 source = self.source(environment.title, row)
                 why = self.skipped(row, into)
                 if why:

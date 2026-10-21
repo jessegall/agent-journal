@@ -25,7 +25,7 @@ class Dispatch:
     def answered(self, session: str) -> "Dispatch":
         return replace(self, session=session)
 
-    def settled(self, status: str, time: float) -> "Dispatch":
+    def finished(self, status: str, time: float) -> "Dispatch":
         return replace(self, status=status, running=False, ended=time)
 
     def failed(self, reason: str, time: float) -> "Dispatch":

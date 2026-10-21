@@ -26,9 +26,9 @@ class SecretPurge(AgentListener[Ticked]):
         self._looked_at = time.time()
         cutoff = datetime.now(timezone.utc) - RETENTION
         for secret in [s for s in self.secrets.retired() if s.deleted_at < cutoff]:
-            self.values.drop([SecretField.of(raw).variable for raw in secret.fields])
+            self.values.drop([SecretField.build(raw).variable for raw in secret.fields])
             self.logins.drop(secret.title)
             self.secrets.delete(secret, Actor.system())
-        retired = self.values.retired_before(cutoff.timestamp())
+        retired = self.values.retired_earlier(cutoff.timestamp())
         if retired:
             self.values.drop(retired)

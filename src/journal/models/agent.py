@@ -25,10 +25,10 @@ class Agent(Scoped):
     tool_uses: int = 0
     inbox_mark: int = 0
 
-    def paused_by_user(self, time: float) -> "Agent":
+    def user_paused(self, time: float) -> "Agent":
         return self.with_event(UserPaused(environment_id=self.environment_id, time=time, agent_session=self.session))
 
-    def resumed_by_user(self, time: float) -> "Agent":
+    def user_resumed(self, time: float) -> "Agent":
         return self.with_event(UserResumed(environment_id=self.environment_id, time=time, agent_session=self.session))
 
     def overview_read(self, time: float) -> "Agent":

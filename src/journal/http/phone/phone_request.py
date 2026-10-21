@@ -14,7 +14,7 @@ class PhoneRequest:
     body: bytes = b""
 
     @classmethod
-    def of(cls, method: str, path: str, headers, body: bytes = b"") -> "PhoneRequest":
+    def build(cls, method: str, path: str, headers, body: bytes = b"") -> "PhoneRequest":
         return cls(method, path, headers.get("Cookie", ""), headers.get("Origin", ""), headers.get("X-Phone", ""), headers.get("Content-Type", ""), body)
 
     @property

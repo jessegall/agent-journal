@@ -14,5 +14,5 @@ class SupervisorAnnouncement:
         return cls(**{name: data[name] for name in ("socket", "screen", "protocol") if name in data})
 
     @property
-    def speaks_the_protocol(self) -> bool:
+    def is_compatible(self) -> bool:
         return self.protocol > 0

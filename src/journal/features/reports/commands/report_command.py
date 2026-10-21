@@ -38,7 +38,7 @@ class ReportCommand(Command):
         rows = self.rows_named(args.about)
         report = self.reports.save(Report(title=args.title, body=body), caller.actor)
         for row in rows:
-            self.links.save(Link(source=Ref.to(report), target=row, kind=Messages.SUBJECT_LINK), caller.actor)
+            self.links.save(Link(source=Ref.build(report), target=row, kind=Messages.SUBJECT_LINK), caller.actor)
         print(f"report {report.id}: {report.title}" + (f", about {', '.join(map(str, rows))}" if rows else ""))
         return 0
 
@@ -52,7 +52,7 @@ class ReportCommand(Command):
 
     def show(self, args: Namespace, caller: Caller) -> int:
         report = self.reports.find(args.n)
-        print("\n".join([*filter(None, (f"report {report.id}: {report.title}", report.abstract)), *Outline.of(report.body).told(args)]))
+        print("\n".join([*filter(None, (f"report {report.id}: {report.title}", report.abstract)), *Outline.build(report.body).summary(args)]))
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:

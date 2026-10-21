@@ -21,22 +21,22 @@ class SequencesDataReader:
     def read(self, agent: Agent) -> SequencesData:
         if not agent.sequence_runs:
             return SequencesData(0, 0, "", "", False, 0, False, DISTANT_SECONDS, False, False, False)
-        run = SequenceRun.of(agent.sequence_runs[-1])
+        run = SequenceRun.build(agent.sequence_runs[-1])
         uses = self.entries.tool_starts(agent.session, last=1)
-        last_line = self.entries.said_last(agent.session, STEP_KEYS)
+        last_line = self.entries.last_line_entry(agent.session, STEP_KEYS)
         started = datetime.fromisoformat(run.started_at).timestamp() if run.started_at else 0.0
         typed_time = last_line.created_at.timestamp() if last_line and last_line.created_at.timestamp() >= started else 0.0
         line_time = max(typed_time, datetime.fromisoformat(run.said_at).timestamp() if run.said_at else 0.0)
         return SequencesData(
             sequence_id=run.sequence_id, step=run.step + 1, step_text=run.text, parked_why=run.parked_why, is_taken_up=bool(run.taken_up_at),
-            writes_since_taken_up=self.writes_since(agent, run),
+            writes_since_taken_up=self.edit_count(agent, run),
             step_said_after_last_tool=line_time > (uses[0].created_at.timestamp() if uses else 0.0),
             step_unsaid_seconds=datetime.now(timezone.utc).timestamp() - line_time if line_time else DISTANT_SECONDS,
             can_be_typed=not any(agent.session in (w.session, w.resume) for w in self.workers.global_matching(environment_id=agent.environment_id)),
             question_open=bool(self.questions.open()),
             debts_owed=not agent.oriented or bool(agent.mark_owed) or bool(agent.skills_owed))
 
-    def writes_since(self, agent: Agent, run: SequenceRun) -> int:
+    def edit_count(self, agent: Agent, run: SequenceRun) -> int:
         if not run.taken_up_at:
             return 0
         since = datetime.fromisoformat(run.taken_up_at)

@@ -10,7 +10,7 @@ class ViewerPresence:
     def __init__(self) -> None:
         self.time = 0.0
 
-    def saw(self, headers: dict) -> None:
+    def record(self, headers: dict) -> None:
         if headers.get(VIEWER):
             self.time = timing.time()
 

@@ -14,7 +14,7 @@ class CheckOutput:
     """What a running check has printed, read for how far it is: a count such as 120/983, test dots against the items collected, or a percent."""
 
     @staticmethod
-    def told(output: str) -> str:
+    def summary(output: str) -> str:
         text = " ".join(output.split())
         return text if len(text) <= TAIL_CHARACTERS else f"... {text[-TAIL_CHARACTERS:]}"
 

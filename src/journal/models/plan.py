@@ -93,7 +93,7 @@ class Plan(Scoped):
     def next_open_task(self, in_order: list[Task], cannot_start: set[int]) -> Task | None:
         return next((task for task in in_order if task.state == TaskState.OPEN and task.id not in cannot_start), None)
 
-    def task_to_resume(self, in_order: list[Task], cannot_start: set[int]) -> Task | None:
+    def resumable_task(self, in_order: list[Task], cannot_start: set[int]) -> Task | None:
         return next((task for task in in_order if task.state == TaskState.SUSPENDED), None) or self.next_open_task(in_order, cannot_start)
 
     def current_phase(self, phases: list[PhaseTasks]) -> int:

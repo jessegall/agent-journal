@@ -18,7 +18,7 @@ class ChartDrop(Migration):
 
     number: ClassVar[int] = 19
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         tables = {row["name"] for row in connection.all("SELECT name FROM sqlite_master WHERE type = 'table'")}
         if "charts" in tables and "nodes" in tables:
             for chart in connection.all(USER_WORKFLOWS):

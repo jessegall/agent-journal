@@ -17,6 +17,6 @@ class Migrator:
         ran = self.pending()
         for migration in ran:
             with self.connection.transaction() as db:
-                migration.up(db)
+                migration.apply(db)
                 db.execute("INSERT INTO migrations (number, ran_at) VALUES (?, ?)", (migration.number, datetime.now(timezone.utc).isoformat()))
         return ran

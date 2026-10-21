@@ -18,7 +18,7 @@ class Wait(BaseState):
         return True
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
-        return self.pop() if event.is_users else self.unchanged()
+        return self.pop() if event.is_users else self.none()
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return self.unchanged() if event.subagent or event.call.is_journal else self.pop()
+        return self.none() if event.subagent or event.call.is_journal else self.pop()

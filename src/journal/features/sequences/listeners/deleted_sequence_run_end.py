@@ -11,4 +11,4 @@ class DeletedSequenceRunEnd(RunTermination):
         if not isinstance(sequence, Sequence):
             return
         for environment_id in self.running.environments_running(sequence.id):
-            self.told(environment_id, lambda run: run.sequence_id == sequence.id, f"sequence {sequence.id} was deleted")
+            self.notice(environment_id, lambda run: run.sequence_id == sequence.id, f"sequence {sequence.id} was deleted")

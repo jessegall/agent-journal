@@ -21,7 +21,7 @@ class ReleaseSource:
             raise OSError(f"could not read the branch {branch} of {address}: {listed.stderr.strip()[-200:] or 'no such branch'}")
         return listed.stdout.split()[0]
 
-    def tags_of(self, address: str) -> list[str]:
+    def release_tags(self, address: str) -> list[str]:
         listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", address], capture_output=True, text=True, timeout=LIST_SECONDS)
         if listed.returncode != 0:
             raise OSError(f"could not list the releases of {address}: {listed.stderr.strip()[-200:]}")

@@ -30,14 +30,14 @@ class AgentActivity:
         self.entries, self.states, self.context, self.files, self.messages, self.current = entries, states, context, files, messages, current
 
     def page(self, agents: list[Agent]) -> list[dict]:
-        recent = list(reversed(self.entries.of_kind_in(ENTRY_COUNT))) if any(a.state != ENDED for a in agents) else []
-        return [self.of(a, [] if a.state == ENDED else [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in agents]
+        recent = list(reversed(self.entries.kind_entries_scoped(ENTRY_COUNT))) if any(a.state != ENDED for a in agents) else []
+        return [self.row(a, [] if a.state == ENDED else [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in agents]
 
     @staticmethod
-    def work_of(entry) -> str:
+    def work(entry) -> str:
         return entry.recorded_call().get("work", "")
 
-    def of(self, agent: Agent, entries) -> dict:
+    def row(self, agent: Agent, entries) -> dict:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted")]
         moves = [e for e in hooks if e.kind in STATUS]
         last = moves[-1] if moves else None
@@ -45,32 +45,32 @@ class AgentActivity:
         state = self.states.restored(agent.state, agent.data)
         awaiting, on = self.current.wait_text(agent)
         return {
-            **ModelFields.of(agent),
-            "status": "stopped" if agent.state == ENDED else self.status_of(agent.state, STATUS.get(kind, "idle")),
+            **ModelFields.build(agent),
+            "status": "stopped" if agent.state == ENDED else self.status(agent.state, STATUS.get(kind, "idle")),
             "heard_at": last.created_at if last else agent.updated_at,
             "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "",
-            "tool_work": self.work_of(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
+            "tool_work": self.work(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
             "tool_running": kind == "ToolStarting",
             "awaiting": awaiting, "awaiting_on": on, "awaiting_since": agent.updated_at if awaiting else None,
             "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),
-            "branch": self.files.branch(), "context": round((self.context.of(agent.session) or 0) * 100),
+            "branch": self.files.branch(), "context": round((self.context.build(agent.session) or 0) * 100),
             "question_id": agent.data.get("question_id", 0) if agent.state == "waiting" else 0,
             "doing": self.activity(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", PART_START, PART_END)]),
             "thinking": self.thinking(agent.session, hooks) if agent.state != ENDED else "",
             "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnDisplayed"), ""),
             "stuck": agent.data.get("why", "") if agent.state == "stuck" else "",
-            "sequence": self.sequence_of(agent),
-            "stack": self.stack_of(agent),
+            "sequence": self.sequence(agent),
+            "stack": self.stack(agent),
             "trail": [self.trail_entry(e) for e in [e for e in entries if e.kind == StackHistory.KIND][-HISTORY:]],
             "sequence_history": [{"time": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
         }
 
     @staticmethod
-    def status_of(state: str, reported: str) -> str:
+    def status(state: str, reported: str) -> str:
         return "working" if state in WORKING and reported == "busy" else reported
 
     def thinking(self, session: str, hooks) -> str:
-        thoughts = self.messages.thoughts_of(session, 1)
+        thoughts = self.messages.thoughts(session, 1)
         if not thoughts:
             return ""
         written = [e.created_at for e in hooks if e.kind == "TurnDisplayed"]
@@ -78,8 +78,8 @@ class AgentActivity:
         return "" if any(time > thoughts[-1].created_at for time in later) else thoughts[-1].text
 
     @staticmethod
-    def sequence_of(agent: Agent) -> CurrentSequence | None:
-        runs = [SequenceRun.of(raw) for raw in agent.sequence_runs or ()]
+    def sequence(agent: Agent) -> CurrentSequence | None:
+        runs = [SequenceRun.build(raw) for raw in agent.sequence_runs or ()]
         if not runs:
             return None
         run = runs[-1]
@@ -98,11 +98,11 @@ class AgentActivity:
             return state.wait_description()[0]
         return state.what if isinstance(state, Working) else ""
 
-    def stack_of(self, agent: Agent) -> list[dict]:
+    def stack(self, agent: Agent) -> list[dict]:
         shown = []
-        for state in reversed(self.states.stack_of(agent).states):
+        for state in reversed(self.states.stack(agent).states):
             awaits = state.wait_description()[0] if isinstance(state, Wait) else ""
-            shown.append({"name": state.name, "title": self.states.title_of(state.name), "values": state.to_data(), "awaits": awaits})
+            shown.append({"name": state.name, "title": self.states.title(state.name), "values": state.serialized(), "awaits": awaits})
         return shown
 
     @staticmethod

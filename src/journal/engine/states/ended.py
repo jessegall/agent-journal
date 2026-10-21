@@ -26,4 +26,4 @@ class Ended(BaseState):
         return self.pop()
 
     def on_session_ended(self, event: SessionEnded, settings: Settings) -> Transition:
-        return self.unchanged()
+        return self.none()

@@ -20,11 +20,11 @@ class StartLines:
         self.agents, self.rules, self.facts, self.reminders = agents, rules, facts, reminders
         self.tasks, self.messages, self.questions = tasks, messages, questions
 
-    def taken_over_at(self, event: SessionStarted) -> str:
+    def takeover_time(self, event: SessionStarted) -> str:
         return "" if event.source == "compact" else self.other_session_time(event.session)
 
     def other_session_time(self, session: str) -> str:
-        others = self.agents.others_lately(session, datetime.now(timezone.utc) - TAKEOVER_WINDOW)
+        others = self.agents.recent_peers(session, datetime.now(timezone.utc) - TAKEOVER_WINDOW)
         return others[-1].updated_at.astimezone().strftime("%H:%M") if others else ""
 
     def rules_numbered(self) -> str:

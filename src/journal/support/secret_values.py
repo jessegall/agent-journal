@@ -66,7 +66,7 @@ class SecretValues:
         PrivateFolder.created(self.shown_path.parent)
         self.shown_path.write_text("".join(f"{name}\n" for name in sorted(names)))
 
-    def retired_before(self, time: float) -> list[str]:
+    def retired_earlier(self, time: float) -> list[str]:
         return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(EMAIL_SIGN_TOKEN, 1)[1]) < time]
 
     def drop(self, variables: list[str]) -> None:

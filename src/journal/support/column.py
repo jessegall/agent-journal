@@ -19,7 +19,7 @@ class Column:
     kind: type
 
     @classmethod
-    def of(cls, name: str, annotation) -> "Column":
+    def build(cls, name: str, annotation) -> "Column":
         return cls(name, cls._plain_type(annotation))
 
     @property
@@ -38,7 +38,7 @@ class Column:
     def is_json(self) -> bool:
         return self.kind not in self.PLAIN and not self.is_enum
 
-    def to_sql(self, value):
+    def sql(self, value):
         if value is None:
             return None
         if self.is_json:

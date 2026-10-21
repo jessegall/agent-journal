@@ -15,14 +15,14 @@ class Schema:
         self.connection, self.models = connection, models
 
     def create(self) -> None:
-        self.vacuum_on_its_own()
+        self.vacuum_alone()
         with self.connection.transaction() as db:
             db.execute("CREATE TABLE IF NOT EXISTS migrations (number INTEGER PRIMARY KEY, ran_at TEXT NOT NULL)")
             for model in self.models:
                 db.execute(self.statement(model))
                 self.add_new_columns(db, model)
 
-    def vacuum_on_its_own(self) -> None:
+    def vacuum_alone(self) -> None:
         if self.connection.one("PRAGMA auto_vacuum")[0] == FULL:
             return
         self.connection.execute(f"PRAGMA auto_vacuum = {FULL}")
@@ -41,7 +41,7 @@ class Schema:
     @staticmethod
     def columns(model: type[Model]) -> tuple[Column, ...]:
         hints = get_type_hints(model)
-        return tuple(Column.of(field.name, hints[field.name]) for field in fields(model) if field.metadata.get("column", True))
+        return tuple(Column.build(field.name, hints[field.name]) for field in fields(model) if field.metadata.get("column", True))
 
     def version(self) -> int:
         row = self.connection.one("SELECT MAX(number) AS number FROM migrations")

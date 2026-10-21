@@ -36,9 +36,9 @@ class Config:
     def ports(self) -> tuple[int, ...]:
         if self.port == 0:
             return (0,)
-        return tuple(dict.fromkeys((*self.remembered_port(), *range(self.port, self.port + self.span))))
+        return tuple(dict.fromkeys((*self.stored_port(), *range(self.port, self.port + self.span))))
 
-    def remembered_port(self) -> tuple[int, ...]:
+    def stored_port(self) -> tuple[int, ...]:
         if not self.port_file.is_file():
             return ()
         text = self.port_file.read_text().strip()

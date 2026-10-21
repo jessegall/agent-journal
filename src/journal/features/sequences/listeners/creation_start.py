@@ -21,6 +21,6 @@ class CreationStart(Listener[Created]):
         for sequence in self.sequences.all():
             if sequence.starts_on == moment:
                 line = self.running.start(sequence, event.actor.id, row.environment_id, about=f"{row.table()}:{row.id}")
-                if line and self.running.typed_to(event.actor.id, row.environment_id):
+                if line and self.running.typed_agent(event.actor.id, row.environment_id):
                     self.supervisor.type(row.environment_id, line)
                 return

@@ -44,7 +44,7 @@ class AgentController(Controller[Agent]):
     def current(self, request: Request) -> Response:
         rows = []
         for environment in self.environments.all():
-            with self.scope.of(environment.id):
+            with self.scope.environment(environment.id):
                 agent = self.repository.current()
             if agent:
                 rows.append({"environment": environment.name, "agent": agent})
@@ -77,7 +77,7 @@ class AgentController(Controller[Agent]):
 
     def edits(self, request: Request) -> Response:
         agent = self.repository.find(request.number("id"))
-        return Response.json({"cursor": timing.time(), "edits": self.file_edits.of_agent(agent.session, request.queried("since"), EDITS_SHOWN)})
+        return Response.json({"cursor": timing.time(), "edits": self.file_edits.agent_edits(agent.session, request.queried("since"), EDITS_SHOWN)})
 
     def edited_file(self, request: Request) -> Response:
         path = request.query.get("path", "")
@@ -89,7 +89,7 @@ class AgentController(Controller[Agent]):
     def terminal(self, request: Request) -> Response:
         agent = self.repository.find(request.number("id"))
         after = request.queried("after")
-        ran = [e for e in reversed(self.entries.of_kind(PART_END, 400)) if e.actor and e.actor.id == agent.session and e.data["time"] > after]
+        ran = [e for e in reversed(self.entries.kind_entries(PART_END, 400)) if e.actor and e.actor.id == agent.session and e.data["time"] > after]
         return Response.json([self.line(agent.id, e) for e in ran][-LINES_SHOWN:])
 
     @staticmethod
@@ -106,12 +106,12 @@ class AgentController(Controller[Agent]):
 
     def skip_step(self, request: Request) -> Response:
         agent = self.running_agent(request.number("id"))
-        self.told(agent, self.running.skip(agent.session, agent.environment_id))
+        self.notice(agent, self.running.skip(agent.session, agent.environment_id))
         return Response.json(self.shown(self.repository.find(agent.id)))
 
     def end_sequence(self, request: Request) -> Response:
         agent = self.running_agent(request.number("id"))
-        self.told(agent, self.running.end(agent.session, agent.environment_id))
+        self.notice(agent, self.running.end(agent.session, agent.environment_id))
         return Response.json(self.shown(self.repository.find(agent.id)))
 
     def running_agent(self, id: int) -> Agent:
@@ -120,6 +120,6 @@ class AgentController(Controller[Agent]):
             raise Rejection(f"agent {id} runs no sequence")
         return agent
 
-    def told(self, agent: Agent, line: str) -> None:
-        if self.running.typed_to(agent.session, agent.environment_id):
+    def notice(self, agent: Agent, line: str) -> None:
+        if self.running.typed_agent(agent.session, agent.environment_id):
             self.supervisor.type(agent.environment_id, line)

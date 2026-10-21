@@ -16,8 +16,8 @@ class Transition:
     popped: bool = False
     nudges: tuple[Nudge, ...] = ()
     typed: tuple[Nudge, ...] = ()
-    held: Nudge | None = None
-    other_holds: tuple[Nudge, ...] = ()
+    refusal: Nudge | None = None
+    extra_refusals: tuple[Nudge, ...] = ()
     dropped: tuple[str, ...] = ()
     handed_down: bool = False
 
@@ -40,8 +40,8 @@ class Transition:
             popped=move.popped,
             nudges=tuple(nudge for answer in answers for nudge in answer.nudges),
             typed=tuple(nudge for answer in answers for nudge in answer.typed),
-            held=next((answer.held for answer in answers if answer.held), None),
-            other_holds=tuple(answer.held for answer in answers if answer.held)[1:],
+            refusal=next((answer.refusal for answer in answers if answer.refusal), None),
+            extra_refusals=tuple(answer.refusal for answer in answers if answer.refusal)[1:],
             dropped=tuple(answer.move_name() for answer in moving[1:]),
             handed_down=move.handed_down,
         )

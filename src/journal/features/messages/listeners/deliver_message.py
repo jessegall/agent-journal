@@ -22,6 +22,6 @@ class DeliverMessage(Listener[Created]):
         agent = self.agents.current()
         if agent is None:
             return
-        line = self.nudger.say(agent, Messages.NEW_MESSAGE.create(n=message.id))
+        line = self.nudger.deliver(agent, Messages.NEW_MESSAGE.create(n=message.id))
         if line:
             self.supervisor.type(message.environment_id, line)

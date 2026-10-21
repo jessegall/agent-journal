@@ -17,8 +17,8 @@ class ClearPlanWaits(Listener[Updated]):
     def handle(self, event: Updated) -> None:
         if not WaitTargets.is_newly_resolved(event):
             return
-        ref = Ref.to(event.model)
-        for plan in self.plans.waiting_on(event.model):
+        ref = Ref.build(event.model)
+        for plan in self.plans.waiting_plans(event.model):
             if self.tasks.open_waits(plan):
                 continue
             self.plans.save(plan.unblocked(f"{ref.type[:-1]} {ref.id} came", datetime.now(timezone.utc).timestamp()), Actor.system())

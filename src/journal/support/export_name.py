@@ -10,7 +10,7 @@ class ExportName:
     """The file a row is downloaded as: its title with the characters a file name cannot hold removed, .docx where textutil can make one, else .html."""
 
     @classmethod
-    def of(cls, title: str, fallback: str) -> str:
+    def build(cls, title: str, fallback: str) -> str:
         return f"{cls.stem(title) or fallback}.{cls.extension()}"
 
     @staticmethod

@@ -11,7 +11,7 @@ class Ref:
     id: int
 
     @classmethod
-    def to(cls, model: Model) -> "Ref":
+    def build(cls, model: Model) -> "Ref":
         return cls(model.table(), model.id)
 
     @classmethod

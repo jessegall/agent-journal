@@ -24,7 +24,7 @@ class Compacting(BaseState):
         typist.enable()
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return self.hold(Engine.COMPACTION_PAUSE.create())
+        return self.refuse(Engine.COMPACTION_PAUSE.create())
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
-        return self.pop_through()
+        return self.forward()

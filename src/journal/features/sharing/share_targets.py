@@ -26,23 +26,23 @@ class ShareTargets:
         return ref
 
     def link(self, share: Share, target: Ref, actor) -> None:
-        self.links.save(Link(source=Ref.to(share), target=target, kind=SHARES), actor)
+        self.links.save(Link(source=Ref.build(share), target=target, kind=SHARES), actor)
 
-    def of(self, share: Share) -> Ref | None:
+    def targets(self, share: Share) -> Ref | None:
         targets = self.links.targets(share, SHARES)
         return targets[0] if targets else None
 
     def shown(self, share: Share) -> list[Ref]:
-        target = self.of(share)
+        target = self.targets(share)
         if target is None:
             return []
-        tasks = self.plans.tasks_of(self.plans.find(target.id)) if target.type == "plans" else []
-        return [target, *(Ref.to(task) for task in tasks)]
+        tasks = self.plans.plan_tasks(self.plans.find(target.id)) if target.type == "plans" else []
+        return [target, *(Ref.build(task) for task in tasks)]
 
     def opens(self, named: str) -> list[str]:
         ref = self.lookup(named)
         row = self.repositories[ref.type].find(ref.id)
         lines = [f"{row.title} ({ref})"]
         if ref.type == "plans":
-            lines += [f"{task.title} ({Ref.to(task)})" for task in self.plans.tasks_of(row)]
+            lines += [f"{task.title} ({Ref.build(task)})" for task in self.plans.plan_tasks(row)]
         return lines

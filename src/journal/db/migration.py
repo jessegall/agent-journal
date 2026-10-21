@@ -9,6 +9,6 @@ class Migration:
     number: ClassVar[int]
     statements: ClassVar[tuple[str, ...]] = ()
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         for statement in self.statements:
             connection.execute(statement)

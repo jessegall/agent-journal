@@ -9,7 +9,7 @@ class DashboardSections(Migration):
 
     number: ClassVar[int] = 22
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         columns = {row["name"] for row in connection.all("PRAGMA table_info(dashboard_rows)")}
         if "heading" in columns and "section" in columns:
             connection.execute("UPDATE dashboard_rows SET section = heading")

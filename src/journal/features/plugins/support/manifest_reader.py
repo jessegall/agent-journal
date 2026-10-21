@@ -35,7 +35,7 @@ class ManifestReader:
             raise Rejection(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
         manifest = PluginManifest.from_json(raw)
         self.name_check(manifest)
-        self.spoken(manifest)
+        self.protocol_check(manifest)
         self.event_check(manifest)
         self.folder_check(folder, manifest)
         self.skills_free(folder, manifest)
@@ -50,7 +50,7 @@ class ManifestReader:
         taken = {skill.folder: "the journal" for skill in self.registry.skills()}
         for plugin in self.plugins.all():
             if plugin.name != manifest.name:
-                taken |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.of(plugin), plugin.manifest)}
+                taken |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.folder(plugin), plugin.manifest)}
         for name in self.skill_names(folder, manifest):
             if name in taken:
                 raise Rejection(f"{manifest.name}'s skill {name} has the name of a skill of {taken[name]}")
@@ -62,7 +62,7 @@ class ManifestReader:
             raise Rejection(f"{manifest.name} is the name of one of the journal's own features")
 
     @staticmethod
-    def spoken(manifest: PluginManifest) -> None:
+    def protocol_check(manifest: PluginManifest) -> None:
         if manifest.protocol not in PROTOCOLS:
             raise Rejection(f"{manifest.name} speaks protocol {manifest.protocol}; this journal speaks {', '.join(map(str, PROTOCOLS))}")
 

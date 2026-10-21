@@ -24,14 +24,14 @@ class UpdateCommand(Command):
     def now(self, args: Namespace, caller: Caller) -> int:
         self.updating.read()
         target = self.updating.target()
-        self.updating.update_now(caller.actor)
+        self.updating.update_immediately(caller.actor)
         print(f"updating from {self.updating.label()} to {target.label}: the journal restarts on it once the install is done, within a few minutes")
         return 0
 
     def follow(self, args: Namespace, caller: Caller) -> int:
         self.updating.follow(args.branch, caller.actor)
         self.updating.read()
-        print(f"following the branch {args.branch}: {self.updating.said()}")
+        print(f"following the branch {args.branch}: {self.updating.line()}")
         return 0
 
     def unfollow(self, args: Namespace, caller: Caller) -> int:
@@ -41,5 +41,5 @@ class UpdateCommand(Command):
 
     def check(self, args: Namespace, caller: Caller) -> int:
         self.updating.read()
-        print(self.updating.said())
+        print(self.updating.line())
         return 0

@@ -9,4 +9,4 @@ class MigrationConduct(Conduct):
 
     def on_session_started_migration(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.migration.feature import MigrationFeature
-        return self.unchanged(MigrationFeature.PENDING_MIGRATION.create()) if event.data.of(MigrationFeature).version_3_waiting else self.unchanged()
+        return self.none(MigrationFeature.PENDING_MIGRATION.create()) if event.data.part(MigrationFeature).version_3_waiting else self.none()

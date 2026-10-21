@@ -92,17 +92,17 @@ class Repository(Generic[M]):
         return " AND ".join(each for _ in terms), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
 
     def clause(self, fields: dict) -> tuple[str, tuple]:
-        return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).to_sql(value) for name, value in fields.items())
+        return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).sql(value) for name, value in fields.items())
 
     def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
         clauses = [f"{name} = ?" for name in fields]
-        params = [self._column(name).to_sql(value) for name, value in fields.items()]
+        params = [self._column(name).sql(value) for name, value in fields.items()]
         if before is not None:
             clauses.append("id < ?")
             params.append(before)
         return self.selected(f"{' AND '.join(clauses) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
 
-    def page_in(self, limit: int, before: int | None = None) -> list[M]:
+    def scoped_page(self, limit: int, before: int | None = None) -> list[M]:
         return self.page(limit, before)
 
     def save(self, row: M, actor: Actor) -> M:
@@ -124,9 +124,9 @@ class Repository(Generic[M]):
             was = self.find(row.id)
             stamped = was.with_(**fields, updated_at=self._time(), updated_by=actor)
             names = [*fields, "updated_at", "updated_by"]
-            values = tuple(self._column(name).to_sql(getattr(stamped, name)) for name in names)
+            values = tuple(self._column(name).sql(getattr(stamped, name)) for name in names)
             self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
-            self.written()
+            self.stored()
             self.bus.dispatch(Updated(model=stamped, actor=actor, was=was))
             return stamped
 
@@ -146,7 +146,7 @@ class Repository(Generic[M]):
         with self.connection.transaction():
             self.bus.dispatch(Deleting(model=row, actor=actor))
             self.connection.execute(f"DELETE FROM {self.table} WHERE id = ?", (row.id,))
-            self.written()
+            self.stored()
             self.bus.dispatch(Deleted(model=row, actor=actor))
             self.dispatched(row, actor)
 
@@ -155,10 +155,10 @@ class Repository(Generic[M]):
         stamped = row.with_(created_at=time, created_by=actor, updated_at=time, updated_by=actor)
         self.bus.dispatch(Creating(model=stamped, actor=actor))
         names = [column.name for column in self.columns if column.name != "id"]
-        values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
+        values = tuple(column.sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         cursor = self.connection.execute(f"INSERT INTO {self.table} ({', '.join(names)}) VALUES ({', '.join('?' for _ in names)})", values)
         created = stamped.with_(id=cursor.lastrowid)
-        self.written()
+        self.stored()
         self.bus.dispatch(Created(model=created, actor=actor))
         return created
 
@@ -168,18 +168,18 @@ class Repository(Generic[M]):
         Title.check_target(row, was)
         self.bus.dispatch(Updating(model=stamped, actor=actor))
         names = [column.name for column in self.columns if column.name != "id"]
-        values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
+        values = tuple(column.sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
         self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
-        self.written()
+        self.stored()
         self.bus.dispatch(Updated(model=stamped, actor=actor, was=was))
         return stamped
 
     def dispatched(self, row: M, actor: Actor) -> M:
         for event in row.events:
-            self.bus.dispatch(event.placed_by(getattr(row, "environment_id", 0), row.created_at.timestamp(), row.id, actor.stamp) if isinstance(event, RowEvent) else event)
+            self.bus.dispatch(event.placed(getattr(row, "environment_id", 0), row.created_at.timestamp(), row.id, actor.stamp) if isinstance(event, RowEvent) else event)
         return row.without_events()
 
-    def written(self) -> None:
+    def stored(self) -> None:
         ...
 
     def _load(self, row) -> M:

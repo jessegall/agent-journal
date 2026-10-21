@@ -645,7 +645,7 @@ def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_r
                 break
             time.sleep(0.1)
         assert call(server, "GET", "/journal/migration")[1]["state"] == "done"
-        with app.container.get(Scope).of(1):
+        with app.container.get(Scope).environment(1):
             assert [r.title for r in app.container.get(Reports).all()] == ["The version 3 journal brought across"], "what came across is said in a report"
     finally:
         server.stop()
@@ -879,7 +879,7 @@ def test_an_output_is_read_by_its_id(tmp_path: Path):
         (folder / "0.err").write_text("oops\n")
         (folder / "0.status").write_text("2\n")
         (folder / "done").write_text("1")
-        with app.container.get(Scope).of(1):
+        with app.container.get(Scope).environment(1):
             kept = app.container.get(CommandOutputs).save(CommandOutput(chain="run", command="make test", folder=str(folder)), Actor.system())
         status, read = call(server, "GET", f"/journal/outputs/{kept.id}")
         assert status == 200 and (read["id"], read["command"], read["outcome"], read["lines"]) == (kept.id, "make test", "failed with code 2", ["one", "two", "oops"])
@@ -1057,8 +1057,8 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
         assert run("printf one && false && printf never; printf two") == "onetwo\n__journal_exit 0\n", "a part after && is skipped while the one before it failed, a part after ; runs whatever came before"
         assert run("cat a.py; echo ====") == "print(1)\n====\n__journal_exit 0\n", "a read of the project's code streams straight through, nothing kept"
         assert run("journal task list") == "__journal_exit 0\n" or "__journal_exit" in run("journal task list")
-        with app.container.get(Scope).of(1):
-            ran = [e for e in app.container.get(Entries).of_kind("ran", 50)]
+        with app.container.get(Scope).environment(1):
+            ran = [e for e in app.container.get(Entries).kind_entries("ran", 50)]
         assert any(e.data["part"] == "printf hi" and e.data["status"] == 0 for e in ran) and any(e.data["part"] == "cat a.py" and e.data["output"] == "" for e in ran), "every part of the agent's own is recorded with its status; a direct part's output is not kept"
         assert not list((tmp_path / ".journal" / "runtime" / "outputs").glob("*/direct")), "a direct chain's folder is removed when it ends"
     finally:
@@ -1075,7 +1075,7 @@ def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: 
     server.start()
     try:
         call(server, "POST", "/journal/tasks", {"title": "ship it", "brief": "b"})
-        with app.container.get(Scope).of(1):
+        with app.container.get(Scope).environment(1):
             message = app.container.get(Docking).dock("task", 1, Actor.user(1))
         assert message.data["docked"] is True
         status, undocked = call(server, "POST", f"/journal/messages/{message.id}/undock")
@@ -1087,11 +1087,11 @@ def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: 
 def test_a_doc_or_a_report_downloads_as_a_word_file_made_from_its_html_page(server):
     from journal.support.html_page import HtmlPage
     from journal.support.export_name import ExportName
-    page = HtmlPage.of("Deploys", "How a deploy goes", "Before anything.\n\n## Why\n\nBecause `it` is **safe**.\n\n- one\n- two\n")
+    page = HtmlPage.build("Deploys", "How a deploy goes", "Before anything.\n\n## Why\n\nBecause `it` is **safe**.\n\n- one\n- two\n")
     assert page.startswith("<!doctype html>") and "<h1>Deploys</h1>" in page and '<p class="abstract">How a deploy goes</p>' in page
     assert "<p>Before anything.</p>" in page and "<h2>Why</h2>" in page and "<p>Because <code>it</code> is <strong>safe</strong>.</p>" in page and "<ul><li>one</li><li>two</li></ul>" in page
     assert "<footer>Written in the agent journal</footer>" in page and "<style>" in page, "the page stands on its own"
-    assert ExportName.stem("What: the check/found?") == "What the checkfound" and ExportName.of("", "report 3").startswith("report 3.")
+    assert ExportName.stem("What: the check/found?") == "What the checkfound" and ExportName.build("", "report 3").startswith("report 3.")
     call(server, "POST", "/journal/reports", {"title": "What the check found", "body": "## Found\n\nThree faults.\n"})
     with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/journal/reports/1/export", headers={"X-Journal-Env": "main"}), timeout=10) as reply:
         kind, disposition, body = reply.headers["Content-Type"], reply.headers["Content-Disposition"], reply.read()
@@ -1128,7 +1128,7 @@ def test_a_tunler_still_running_for_the_journals_address_is_ended_before_the_tun
     other = subprocess.Popen([str(fake), "59404", "--domain=ghijkl", "--inspect=4041"])
     try:
         time.sleep(0.2)
-        assert stale.pid in Tunler.running_for("abcdef") and other.pid not in Tunler.running_for("abcdef"), "a tunler is known by the subdomain in its arguments"
+        assert stale.pid in Tunler.running_subdomain("abcdef") and other.pid not in Tunler.running_subdomain("abcdef"), "a tunler is known by the subdomain in its arguments"
         ended = Tunler().stop_subdomain("abcdef")
         assert stale.pid in ended and other.pid not in ended, "the one for this address is ended, the other left"
         assert stale.wait(5) is not None and other.poll() is None, "it is gone, and the tunnel of another address runs on"

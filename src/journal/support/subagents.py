@@ -16,10 +16,10 @@ class Subagents:
     def running(self, session: str) -> int:
         return sum(1 for row in self.rows(session) if row.running)
 
-    def running_before_the_newest(self, session: str) -> int:
+    def running_earlier(self, session: str) -> int:
         return sum(1 for row in self.rows(session)[:-1] if row.running)
 
-    def running_about(self, session: str, subject: str) -> int:
+    def running_mentioning(self, session: str, subject: str) -> int:
         return sum(1 for row in self.mentioning(session, subject) if row.running)
 
     def dispatches_mentioning(self, session: str, subject: str, since: float) -> list[Dispatch]:
@@ -47,7 +47,7 @@ class Subagents:
             if e.kind == "SubagentEnded":
                 i = background.pop(e.data.get("agent_id", ""), None)
                 if i is not None:
-                    rows[i] = rows[i].settled("done", time)
+                    rows[i] = rows[i].finished("done", time)
                 continue
             if e.data.get("tool_name") == "SendMessage":
                 Subagents.resumed(rows, background, e.data.get("tool_input", {}).get("to", ""), e.kind)
@@ -68,7 +68,7 @@ class Subagents:
                 if answer.get("isAsync") and rows[i].session:
                     background[rows[i].session] = i
                 else:
-                    rows[i] = rows[i].settled("done", time)
+                    rows[i] = rows[i].finished("done", time)
         return rows
 
     @staticmethod
@@ -82,7 +82,7 @@ class Subagents:
     @staticmethod
     def stopped(rows: list[Dispatch], running: dict[str, int], time: float) -> None:
         for i in running.values():
-            rows[i] = rows[i].settled("stopped", time)
+            rows[i] = rows[i].finished("stopped", time)
         running.clear()
 
     @staticmethod

@@ -95,8 +95,8 @@ class Replay:
     def step(self, name: str, answer=None) -> None:
         """Closes a step: the hook's answer when the step was a hook, the lines typed since the last step, the nudges said since, the environment's counts as they stand once the worker has settled, so a count raised after the reply is in, and what the count checks of the walks since read."""
         typed = list(self.typed)
-        with self.app.container.get(Scope).of(self.app.container.get(Environments).lookup("main").id):
-            entries = list(reversed(self.app.container.get(Entries).of_kind_in(1000)))
+        with self.app.container.get(Scope).environment(self.app.container.get(Environments).lookup("main").id):
+            entries = list(reversed(self.app.container.get(Entries).kind_entries_scoped(1000)))
             nudges = [e.data["key"] for e in entries if e.kind == "nudge"]
             self.app.runtime().deferred.drain()
             agent = self.app.container.get(Agents).current()

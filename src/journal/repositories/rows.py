@@ -12,7 +12,7 @@ class Rows:
     def __init__(self, connection: Connection) -> None:
         self.connection = connection
 
-    def state_of(self, ref: Ref) -> str:
+    def row_state(self, ref: Ref) -> str:
         if not TABLE.match(ref.type):
             return ""
         row = self.connection.one(f"SELECT state FROM {ref.type} WHERE id = ?", (ref.id,))

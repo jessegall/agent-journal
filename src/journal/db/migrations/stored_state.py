@@ -17,8 +17,8 @@ class StoredState:
         own = {key: value for key, value in data.items() if key != "resume"}
         return cls(name, own, cls.from_json(resume.get("state", "idle"), resume.get("data") or {}) if resume else None)
 
-    def to_json(self) -> dict:
-        return {**self.data, "resume": {"state": self.resume.name, "data": self.resume.to_json()}} if self.resume else self.data
+    def serialized(self) -> dict:
+        return {**self.data, "resume": {"state": self.resume.name, "data": self.resume.serialized()}} if self.resume else self.data
 
     def resumed(self) -> "StoredState":
         return self.resume or StoredState("idle", {})

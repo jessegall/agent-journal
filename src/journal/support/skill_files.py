@@ -52,7 +52,7 @@ class SkillFiles:
     def digest(self, skill: Skill) -> str:
         return hashlib.sha1(skill.text().encode()).hexdigest()[:12]
 
-    def skill_in_folder(self, folder: str) -> Skill | None:
+    def folder_skill(self, folder: str) -> Skill | None:
         return next((skill for skill in self.registry.skills() if skill.folder == folder), None)
 
     def skill_read(self, path: str) -> Skill | None:

@@ -18,7 +18,7 @@ class TypedLine:
     tries: int = 1
 
     @classmethod
-    def pieces(cls, line: str, prefix: str) -> list[str]:
+    def split(cls, line: str, prefix: str) -> list[str]:
         pieces, remainder = [], line
         while len(remainder) > cls.LONGEST:
             split_index = remainder.rfind(" ", len(prefix) + 1, cls.LONGEST)

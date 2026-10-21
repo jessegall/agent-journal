@@ -37,7 +37,7 @@ class SupervisorLink:
         self.type_whole(environment_id, marked, after)
 
     def type_whole(self, environment_id: int, marked: str, after: float) -> None:
-        for piece in TypedLine.pieces(marked, JOURNAL_PREFIX):
+        for piece in TypedLine.split(marked, JOURNAL_PREFIX):
             self.typed.typed(environment_id, piece)
             self._send(environment_id, "type", {"name": AGENT, "line": piece, "after": after})
 
@@ -70,7 +70,7 @@ class SupervisorLink:
     def batch_seconds(self) -> float:
         return float(self.settings.project("delivery.batch_seconds", BATCH_SECONDS))
 
-    def type_again(self, environment_id: int, marked: str) -> None:
+    def retype(self, environment_id: int, marked: str) -> None:
         self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": 0.0})
 
     def type_raw(self, environment_id: int, line: str) -> None:
@@ -94,7 +94,7 @@ class SupervisorLink:
         path = self.mirrored(environment_id, "out")
         return path.read_bytes().decode(errors="replace") if path else ""
 
-    def screen_changed_at(self, environment_id: int) -> float:
+    def screen_change_time(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "out")
         return path.stat().st_mtime if path else 0.0
 
@@ -134,7 +134,7 @@ class SupervisorLink:
         announced = self.announced(environment_id)
         if announced is None:
             return False
-        if not announced.speaks_the_protocol:
+        if not announced.is_compatible:
             return Path(announced.socket).is_socket()
         try:
             return self._send(environment_id, "hello", {}).ok
@@ -152,7 +152,7 @@ class SupervisorLink:
         announced = self.announced(environment_id)
         if announced is None:
             return SupervisorReply(False, "no supervisor runs here")
-        if announced.speaks_the_protocol:
+        if announced.is_compatible:
             return SupervisorSocket.ask(announced.socket, {"verb": verb, **fields})
         if not OldSupervisor.takes(verb):
             return SupervisorReply(False, f"the supervisor running predates the protocol and takes no {verb}")

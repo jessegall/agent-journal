@@ -37,15 +37,15 @@ class WorkerRunner:
 
     def start(self, worker: Worker, actor: Actor) -> None:
         command = self.providers.lookup(worker.provider).worker_command(self.instructed(worker), worker.model, worker.resume)
-        threading.Thread(target=self.run_in_scope, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
+        threading.Thread(target=self.run_scoped, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
 
     def instructed(self, worker: Worker) -> str:
         if worker.resume or worker.profile is None:
             return worker.brief
         return f"{self.profiles.read(worker.profile)['body']}\n\n{worker.brief}"
 
-    def run_in_scope(self, worker: Worker, command: list[str], actor: Actor) -> None:
-        with self.scope.of(worker.environment_id):
+    def run_scoped(self, worker: Worker, command: list[str], actor: Actor) -> None:
+        with self.scope.environment(worker.environment_id):
             self.run(worker, command, actor)
 
     def run(self, worker: Worker, command: list[str], actor: Actor) -> None:

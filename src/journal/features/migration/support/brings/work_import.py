@@ -21,13 +21,13 @@ class WorkImport(EnvironmentKind):
         self.logs = logs
 
     def skipped(self, row: Version3Row, into: Environment) -> str:
-        return super().skipped(row, into) or ("" if self.task_of(row, into) else "its to-do did not come across")
+        return super().skipped(row, into) or ("" if self.task(row, into) else "its to-do did not come across")
 
-    def task_of(self, row: Version3Row, into: Environment) -> int | None:
+    def task(self, row: Version3Row, into: Environment) -> int | None:
         rows = self.ledger.referred(into.name, f"todo:{row.data.get('todo')}")
         return None if rows is None else rows.id
 
     def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> TaskLog:
-        task = self.task_of(row, into)
+        task = self.task(row, into)
         lines = [body for _, body in row.sections if body] or [row.brief]
         return [self.logs.imported(TaskLog(environment_id=into.id, task_id=task, line=line), row.creation_time(), actor) for line in lines][-1]

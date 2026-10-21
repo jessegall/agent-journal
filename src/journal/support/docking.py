@@ -52,7 +52,7 @@ class Docking:
         return self.pin(self.card(row) or self.new_card(row, actor), row, actor)
 
     def pin(self, message: Message, row: Model, actor: Actor) -> Message:
-        return self.saved_with(message, {**RowCard.of(row).as_data(), DOCKED: True}, actor)
+        return self.saved_with(message, {**RowCard.build(row).as_data(), DOCKED: True}, actor)
 
     def release(self, message: Message, actor: Actor) -> Message:
         return self.saved_with(message, {DOCKED: False}, actor)
@@ -65,4 +65,4 @@ class Docking:
         return cards[0] if cards else None
 
     def new_card(self, row: Model, actor: Actor) -> Message:
-        return self.cards.keyed(self.scope.id, self.cards.creation_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, actor, CardKind.CREATED)
+        return self.cards.keyed(self.scope.id, self.cards.creation_key(row), row.heading(), {"kind": DOCKED, **RowCard.build(row).as_data()}, actor, CardKind.CREATED)

@@ -22,15 +22,15 @@ class BarRow:
         return entry.kind in (PART_START, PART_END) or (entry.kind in TOOLS and entry.data.get("tool_name") != "Bash")
 
     @classmethod
-    def of(cls, entry: Entry) -> "BarRow":
-        return cls.of_part(entry) if entry.kind in (PART_START, PART_END) else cls.of_tool(entry)
+    def build(cls, entry: Entry) -> "BarRow":
+        return cls.part_row(entry) if entry.kind in (PART_START, PART_END) else cls.tool_row(entry)
 
     @classmethod
-    def of_part(cls, entry: Entry) -> "BarRow":
+    def part_row(cls, entry: Entry) -> "BarRow":
         return cls(f"{entry.data['chain']} {entry.data['part']}", entry.data["doing"], entry.data["part"], entry.data["time"], entry.kind == PART_END)
 
     @classmethod
-    def of_tool(cls, entry: Entry) -> "BarRow":
+    def tool_row(cls, entry: Entry) -> "BarRow":
         tool, paths = entry.data.get("tool_name", ""), entry.recorded_call().get("written_paths") or entry.recorded_call().get("read_paths") or [""]
         path = paths[0]
         return cls(f"{tool} {path}".strip(), tool.lower() or "working", path, entry.created_at.timestamp(), entry.kind == "ToolFinished")

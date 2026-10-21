@@ -56,13 +56,13 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | laws | laws.name_a_profile | the dispatch names no profile of this project: {{asked}} | LawsConduct.on_tool_starting_laws |
 | laws | laws.bind_the_job | the dispatch binds the agent to no concrete job | LawsConduct.on_tool_starting_laws |
 | laws | laws.cap_the_output | that result was {{lines}} lines, and every line stays in the context | LawsConduct.on_tool_finished_laws |
-| mcp | mcp.sign_in_to_the_server | sign in to {{title}} | McpInstalling.sign_in |
-| memory | memory.decide_at_the_mark | context {{percent}}% full: decide what to keep from it | MemoryConduct.on_anything_memory_mark |
+| mcp | mcp.sign_in_to_the_server | sign in to {{title}} | McpInstalling.login |
+| memory | memory.decide_at_the_mark | context {{percent}}% full: decide what to keep from it | MemoryConduct.on_anything_memory_threshold |
 | memory | memory.write_held_until_decided | writes wait until you decide what to keep from the context | MemoryConduct.on_tool_starting_memory |
 | memory | memory.stopped_at_mark | you stopped while the journal awaits a decision at the context mark, {{percent}}% full | MemoryConduct.on_stop_memory |
 | memory | memory.check_stale_memory | these are {{stale_after}} days old or more, check they still hold: {{stale}} | MemoryConduct.on_session_started_memory |
 | memory | memory.does_the_rule_apply_project_wide | does rule {{n}} apply to the whole project? | MemoryConduct.on_rule_created_memory |
-| memory | memory.memory_whispered_back | {{noun}} {{n}}: {{text}} | MemoryConduct.on_anything_memory_whisper, MemoryDataReader.read, MemoryRow.line, MemoryHintCard.handle |
+| memory | memory.memory_whispered_back | {{noun}} {{n}}: {{text}} | MemoryConduct.on_anything_memory_hint, MemoryDataReader.read, MemoryRow.line, MemoryHintCard.handle |
 | messages | messages.new_message_to_answer | new message {{n}} | DeliverMessage.handle |
 | messages | messages.new_messages_to_answer | new messages {{ns}} | nothing yet |
 | messages | messages.unread_messages_to_read | {{count}} messages unread: `journal message unread` | nothing yet |
@@ -72,8 +72,8 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | messages | messages.answer_before_anything_else | you have not answered message {{messages}} yet | MessagesConduct.on_tool_starting_messages_unanswered |
 | messages | messages.tools_held_until_answered | answer or react to message {{messages}} first | MessagesConduct.on_tool_starting_messages_unanswered |
 | messages | messages.read_the_words_whole | read the user's words whole: no pipe after `journal message read` or `journal question show` | MessagesConduct.on_tool_starting_messages_read_whole |
-| messages | messages.reply_kept_out_as_replied_already | message {{n}} already has your reply {{reply}}, so this one was kept out of the chat | RecordTurn.unanswered_of |
-| messages | messages.closing_words_kept_out_as_repeated | your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat | RecordTurn.repeats_a_reply |
+| messages | messages.reply_kept_out_as_replied_already | message {{n}} already has your reply {{reply}}, so this one was kept out of the chat | RecordTurn.unanswered |
+| messages | messages.closing_words_kept_out_as_repeated | your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat | RecordTurn.is_repeat_reply |
 | messages | messages.reply_by_tag | a reply needs no command | MessagesConduct.on_tool_finished_messages |
 | pins | pins.pin_the_link | {{url}} is not pinned; if the user will come back to it, pin it | PinsDataReader.read, PinsConduct.on_tool_finished_pins |
 | plans | plans.next_task_of_the_plan | plan {{n}}: task {{task}}, {{title}} is next. {{briefing}} | PlansConduct.on_task_started_plans |
@@ -143,7 +143,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | voices | voices.say_you_are_back | you are back in a conversation that went on before: say so to the user in a line, in your voice | VoicesConduct.on_session_started_voices_introduce |
 | workers | workers.worker_reported | worker {{n}}, {{name}}, reported in the chat | WorkersConduct.on_worker_reported_workers, ExternalWait.on_worker_reported_workers |
 | workers | workers.worker_stopped_unreported | worker {{n}}, {{name}}, stopped before it reported | ExternalWait.on_worker_stopped_workers |
-| workers | workers.too_many_subagents | {{running}} subagents are running, the most at once | WorkersConduct.on_tool_starting_workers_most |
+| workers | workers.too_many_subagents | {{running}} subagents are running, the most at once | WorkersConduct.on_tool_starting_workers_limit |
 | workers | workers.too_many_workers | {{out}} workers are out, the most at once | WorkerCommand.dispatch |
 | workers | workers.file_is_the_workers | that file is in worker {{n}}'s worktree | WorkersConduct.on_tool_starting_workers_worktrees |
 | workers | workers.act_on_the_reports | {{reports_waiting}} reported and you have not acted on it yet | WorkersConduct.on_worker_reported_workers |

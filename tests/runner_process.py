@@ -55,17 +55,17 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
         assert run.stdout.startswith("1\n2\n") and run.stdout.rstrip().endswith("3000") and "cut from the middle" in run.stdout, "a read is cut to its two ends"
         run = subprocess.run([runner, wrapped("echo fast && sleep 3 && echo slow", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert "fast" in run.stdout and "moved to the background as output" in run.stdout and "sleep 3" not in run.stdout and run.returncode == 0, run.stderr
-        with app.container.get(Scope).of(1):
+        with app.container.get(Scope).environment(1):
             entries = app.container.get(Entries)
             for _ in range(100):
-                if entries.of_kind("ended", 5):
+                if entries.kind_entries("ended", 5):
                     break
                 time.sleep(0.1)
-            ended = entries.of_kind("ended", 5)[0]
+            ended = entries.kind_entries("ended", 5)[0]
             assert ended.data["status"] == 0 and "slow" in ended.data["last"], ended.data
-            assert [e.data["part"] for e in reversed(entries.of_kind("ran", 20))][-3:] == ["echo fast", "sleep 3", "echo slow"]
+            assert [e.data["part"] for e in reversed(entries.kind_entries("ran", 20))][-3:] == ["echo fast", "sleep 3", "echo slow"]
             run = subprocess.run([runner, wrapped("printf 'a\\nb\\n' > made.txt && echo untouched", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
-            changed = [e.data["changed"] for e in reversed(entries.of_kind("ran", 20))][-2:]
+            changed = [e.data["changed"] for e in reversed(entries.kind_entries("ran", 20))][-2:]
             assert changed == [[{"added": 2, "removed": 0, "path": "made.txt"}], []], changed
         assert cwd.read_text().strip() == str(tmp_path.resolve())
         run = subprocess.run([runner, wrapped("sleep 0.7 && sleep 0.7 && sleep 0.7", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)

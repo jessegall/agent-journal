@@ -31,7 +31,7 @@ class Menu:
         return ANSI.sub("", raw.replace("\r\n", "\n").replace("\r", "\n"))
 
     @classmethod
-    def on(cls, screen: str) -> "Menu | None":
+    def parsed(cls, screen: str) -> "Menu | None":
         text = cls.plain(screen)
         footers = list(FOOTER.finditer(text))
         above = text[:footers[-1].start()] if footers else text

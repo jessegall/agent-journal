@@ -10,7 +10,7 @@ class PluginSteps:
 
     LIMIT = 1
 
-    def too_deep(self) -> bool:
+    def is_nested_deep(self) -> bool:
         return _steps.get() > self.LIMIT
 
     @contextmanager

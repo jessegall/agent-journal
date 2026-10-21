@@ -10,5 +10,5 @@ class SecretField:
     variable: str
 
     @classmethod
-    def of(cls, raw: dict) -> "SecretField":
+    def build(cls, raw: dict) -> "SecretField":
         return cls(raw["name"], bool(raw.get("hidden", True)), raw["variable"])

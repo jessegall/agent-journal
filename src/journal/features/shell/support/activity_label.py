@@ -11,7 +11,7 @@ class ActivityLabel:
     """What one command is doing, in a word or two, as the bar and the chat say it: git commit is committing, pytest is testing."""
 
     @classmethod
-    def of(cls, part: str) -> str:
+    def build(cls, part: str) -> str:
         text = [w for w in TOKEN_PATTERN.findall(part.split("<<", 1)[0]) if not w.startswith("-") and "=" not in w]
         text = text[1:] if text and text[0] in RUNNERS and len(text) > 1 else text
         if not text:

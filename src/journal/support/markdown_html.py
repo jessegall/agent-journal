@@ -14,7 +14,7 @@ class MarkdownHtml:
     """A markdown text as HTML: paragraphs, headings, lists, quotes, fenced code, tables, and the spans inside a line."""
 
     @classmethod
-    def of(cls, text: str) -> str:
+    def build(cls, text: str) -> str:
         lines = text.replace("\r", "").split("\n")
         blocks, index = [], 0
         while index < len(lines):

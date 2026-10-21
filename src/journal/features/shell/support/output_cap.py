@@ -10,7 +10,7 @@ class OutputCap:
     def __init__(self, settings: SettingRows) -> None:
         self.settings = settings
 
-    def of(self, line: str) -> Cap:
+    def build(self, line: str) -> Cap:
         from journal.features.shell.feature import Shell
         if Chain.is_reading_code_line(line) or Writes.is_code_write_line(line):
             return Cap(DIRECT, 0)

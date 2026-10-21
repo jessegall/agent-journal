@@ -41,7 +41,7 @@ class Plans(ScopedRepository[Plan]):
     def cancel(self, plan: Plan, actor: Actor) -> list[Task]:
         self.save(plan.cancelled(datetime.now(timezone.utc).timestamp(), actor.is_user()), actor)
         cancelled = []
-        for task in self.tasks_of(plan):
+        for task in self.plan_tasks(plan):
             if task.is_closed() or self.is_shared(task, plan):
                 continue
             cancelled.append(self.tasks.save(task.cancelled(datetime.now(timezone.utc)), actor))
@@ -56,29 +56,29 @@ class Plans(ScopedRepository[Plan]):
     def containing(self, task: Task) -> list[Plan]:
         return [plan for ref in self.links.targets(task, PLAN_LINK) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.SUSPENDED, PlanState.BLOCKED)]
 
-    def waiting_on(self, model) -> list[Plan]:
+    def waiting_plans(self, model) -> list[Plan]:
         return [plan for ref in self.links.sources(model, WAIT_LINK) if ref.type == Plan.table() and (plan := self.find(ref.id)).is_blocked()]
 
     def is_stalled(self, plan: Plan) -> bool:
-        return plan.is_stalled(self.tasks_of(plan))
+        return plan.is_stalled(self.plan_tasks(plan))
 
-    def tasks_of(self, plan: Plan) -> list[Task]:
+    def plan_tasks(self, plan: Plan) -> list[Task]:
         return self.tasks.numbered(ref.id for ref in self.links.sources(plan, PLAN_LINK))
 
-    def phases_of(self, plan: Plan) -> list[Phase]:
+    def plan_phases(self, plan: Plan) -> list[Phase]:
         return self.phases.numbered(ref.id for ref in self.links.sources(plan, PHASE_TASK_LINK))
 
-    def tasks_in(self, phase: Phase) -> list[Task]:
+    def phase_tasks(self, phase: Phase) -> list[Task]:
         return self.tasks.numbered(ref.id for ref in self.links.sources(phase, PHASE_LINK))
 
     def phased(self, plan: Plan) -> list[PhaseTasks]:
-        phases = self.phases_of(plan)
+        phases = self.plan_phases(plan)
         links = self.links.linked("target", phases, PHASE_LINK)
         tasks = {task.id: task for task in self.tasks.numbered(link.source.id for link in links)}
         return [PhaseTasks(number, phase, tuple(tasks[link.source.id] for link in links if link.target.id == phase.id and link.source.id in tasks)) for number, phase in enumerate(phases, 1)]
 
     def tree(self, plan: Plan) -> PlanTree:
-        return PlanTree(plan, tuple(self.tasks_of(plan)), tuple(self.phased(plan)))
+        return PlanTree(plan, tuple(self.plan_tasks(plan)), tuple(self.phased(plan)))
 
     def ordered(self, plan: Plan) -> list[Task]:
         return self.tree(plan).ordered
@@ -102,7 +102,7 @@ class Plans(ScopedRepository[Plan]):
         return [t for t in open_tasks if t.id not in planned]
 
     def finished(self, plan: Plan) -> bool:
-        return plan.is_finished(self.tasks_of(plan))
+        return plan.is_finished(self.plan_tasks(plan))
 
     def cannot_start(self, plan: Plan) -> set[int]:
         return self.unstartable(self.tree(plan))
@@ -114,10 +114,10 @@ class Plans(ScopedRepository[Plan]):
         return self.resumable_task(self.tree(plan))
 
     def resumable_task(self, tree: PlanTree) -> Task | None:
-        return tree.plan.task_to_resume(tree.ordered, self.unstartable(tree))
+        return tree.plan.resumable_task(tree.ordered, self.unstartable(tree))
 
     def started_task(self, plan: Plan) -> Task | None:
-        return next((task for task in self.tasks_of(plan) if task.state == TaskState.STARTED), None)
+        return next((task for task in self.plan_tasks(plan) if task.state == TaskState.STARTED), None)
 
     def next_task(self, plan: Plan) -> Task | None:
         return self.open_task(self.tree(plan))
@@ -138,11 +138,11 @@ class Plans(ScopedRepository[Plan]):
             return self.save(plan.started_without_task(time.timestamp()), actor)
         self.tasks.refuse_second(task.started(time))
         started = self.save(plan.started(task, time.timestamp()), actor)
-        self.tasks.save(task.started_by_plan(time, plan.id), actor)
+        self.tasks.save(task.plan_started(time, plan.id), actor)
         return started
 
     def postpone(self, plan: Plan, actor: Actor) -> Plan:
         time = datetime.now(timezone.utc)
-        for task in [t for t in self.tasks_of(plan) if t.state == TaskState.STARTED]:
-            self.tasks.save(task.parked(f"plan {plan.id} was parked", time), actor)
+        for task in [t for t in self.plan_tasks(plan) if t.state == TaskState.STARTED]:
+            self.tasks.save(task.suspended(f"plan {plan.id} was parked", time), actor)
         return self.save(plan.postponed(time.timestamp(), actor.is_user()), actor)

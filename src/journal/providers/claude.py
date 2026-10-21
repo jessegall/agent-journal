@@ -44,23 +44,23 @@ class Claude(Provider):
         path = Path.home() / ".claude" / "projects" / self.folder_name(project) / parent / "subagents" / f"agent-{agent_id}.jsonl"
         return path if path.is_file() else None
 
-    def turns_in(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
+    def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
         return [turn for number, row in rows if (turn := self.turn(number, ClaudeRow.from_json(row)))]
 
     def turn(self, number: int, row: ClaudeRow) -> Turn | None:
         if row.type not in ("user", "assistant"):
             return None
-        text = "\n".join(b.text for b in row.of_type("text"))
-        results = row.of_type("tool_result")
+        text = "\n".join(b.text for b in row.type_match("text"))
+        results = row.type_match("tool_result")
         if results and not text.strip():
             text = "\n".join(b.result for b in results)
-        tools = [b.name for b in row.of_type("tool_use")]
+        tools = [b.name for b in row.type_match("tool_use")]
         if not text.strip() and not tools:
             return None
         kind = row.kind
         return Turn(number, "user" if kind in ("human", "injected") else kind, kind, self.seconds(row.timestamp), text, tools)
 
-    def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
+    def turn_thoughts(self, project: Path, session: str) -> list[str]:
         path = self.transcript(project, session)
         if path is None:
             return []
@@ -73,12 +73,12 @@ class Claude(Provider):
             if row.is_prompt:
                 thoughts = []
             elif row.type == "assistant":
-                thoughts += [b.thinking for b in row.of_type("thinking")]
+                thoughts += [b.thinking for b in row.type_match("thinking")]
         return thoughts
 
-    def texts_in(self, line: dict) -> list[str]:
+    def texts(self, line: dict) -> list[str]:
         row = ClaudeRow.from_json(line)
-        return [block.text for block in row.of_type("text") if block.text.strip()] if row.type == "assistant" else []
+        return [block.text for block in row.type_match("text") if block.text.strip()] if row.type == "assistant" else []
 
     def peer_messages(self, line: dict) -> list[PeerMessage]:
         row = ClaudeRow.from_json(line)

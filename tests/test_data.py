@@ -79,7 +79,7 @@ def test_a_refusing_listener_stops_the_write(connection, bus, scope):
     tasks = tasks_of(connection, bus, scope)
     with pytest.raises(Rejection):
         tasks.save(Task(environment_id=1, title="t"), actor=USER)
-    with scope.of(1):
+    with scope.environment(1):
         assert tasks.all() == []
 
 
@@ -88,21 +88,21 @@ def test_links_join_any_two_rows_and_leave_with_a_deleted_row(connection, bus, s
     bus.listen(Deleted, UnlinkDeleted(links))
     a = tasks.save(Task(environment_id=1, title="a"), actor=USER)
     b = tasks.save(Task(environment_id=1, title="b"), actor=USER)
-    links.save(Link(source=Ref.to(a), target=Ref.to(b), kind="blocks"), actor=AGENT)
-    assert links.targets(a, "blocks") == [Ref.to(b)]
-    assert links.all_sources(b) == [Ref.to(a)]
+    links.save(Link(source=Ref.build(a), target=Ref.build(b), kind="blocks"), actor=AGENT)
+    assert links.targets(a, "blocks") == [Ref.build(b)]
+    assert links.all_sources(b) == [Ref.build(a)]
     assert len(links.connecting(a, b)) == 1
     tasks.delete(b, actor=USER)
-    assert links.of(a) == []
+    assert links.link_rows(a) == []
 
 
 def test_where_reads_typed_values_back(connection, bus, scope):
     tasks = tasks_of(connection, bus, scope)
     tasks.save(Task(environment_id=1, title="open"), actor=USER)
     started = tasks.save(Task(environment_id=1, title="started", state=TaskState.STARTED), actor=USER)
-    with scope.of(1):
+    with scope.environment(1):
         assert tasks.with_state(TaskState.STARTED) == [started]
-    with scope.of(2):
+    with scope.environment(2):
         assert tasks.scoped() == [] and tasks.matching(title="open") == [] and tasks.search(["open"]) == [] and tasks.count() == 0, "every read is the scope's, whatever it asks"
     with pytest.raises(ScopeMissing):
         tasks.matching(title="open")
@@ -120,7 +120,7 @@ def test_writes_from_many_threads_all_land(connection, bus, scope):
         t.start()
     for t in threads:
         t.join()
-    with scope.of(1):
+    with scope.environment(1):
         assert len(tasks.all()) == 20
 
 
@@ -199,8 +199,8 @@ def test_a_row_answers_its_heading_its_summary_and_its_dock_card():
     assert task.docked() == DockCard.plain() and [b.label for b in DockCard.plain().buttons] == ["Open", "Close"]
     assert [(b.label, b.act) for b in Plan(id=1).docked().buttons] == [("Open plan", "open"), ("Approve", "approve"), ("Close", "close")]
     from journal.support.export_name import ExportName
-    assert RowCard.of(report).as_data() == {"row": "reports:33", "heading": "Report 33: What the dock showed", "summary": "One line about it", "dock": {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}, "file": f"What the dock showed.{ExportName.extension()}"}
-    assert RowCard.of(task).file == "", "a task is not downloaded as a document"
+    assert RowCard.build(report).as_data() == {"row": "reports:33", "heading": "Report 33: What the dock showed", "summary": "One line about it", "dock": {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}, "file": f"What the dock showed.{ExportName.extension()}"}
+    assert RowCard.build(task).file == "", "a task is not downloaded as a document"
 
 
 def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(connection):
@@ -212,7 +212,7 @@ def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(co
     connection.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, created_by) VALUES (1, 'ran', 'system', ?, '2026-10-21', 'system')", (json.dumps({"command": "ls"}),))
     connection.execute("INSERT INTO checks (title, running, created_at, created_by) VALUES ('c', ?, '2026-10-21', 'system')", (json.dumps({"at": 7.0, "output": ""}),))
     connection.execute("INSERT INTO dumps (environment_id, question, answers, chosen, taken, created_at, created_by) VALUES (1, ?, ?, '{}', '{}', '2026-10-21', 'system')", (json.dumps({"at": 1.0, "text": "q"}), json.dumps([{"question": "q", "answer": "a", "at": 2.0}])))
-    TimeKeys().up(connection)
+    TimeKeys().apply(connection)
     assert "time" in {row["name"] for row in connection.all("PRAGMA table_info(edits)")} and "at" not in {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
     nudge, ran = [json.loads(row["data"]) for row in connection.all("SELECT data FROM entries ORDER BY id")]
     assert nudge == {"key": "k", "time": 5.0} and ran == {"command": "ls"}, "the key moves where it is, and a row without it is untouched"
@@ -221,7 +221,7 @@ def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(co
     assert json.loads(dump["question"]) == {"time": 1.0, "text": "q"} and json.loads(dump["answers"]) == [{"question": "q", "answer": "a", "time": 2.0}]
     connection.execute("ALTER TABLE edits ADD COLUMN at REAL DEFAULT 0")
     connection.execute("INSERT INTO edits (environment_id, session, path, at, time, created_at, created_by) VALUES (1, 's', 'a.py', 9.0, 0, '2026-10-21', 'system')")
-    TimeKeys().up(connection)
+    TimeKeys().apply(connection)
     names = {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
     assert "at" not in names and connection.one("SELECT time FROM edits")["time"] == 9.0, "where the schema already added the time column, the old at column's values move into it and the column goes"
 
@@ -231,11 +231,11 @@ def test_the_trigger_phrases_migration_renames_the_words_column(connection):
     from journal.db.migrations.trigger_phrases import TriggerPhrases
     connection.execute("ALTER TABLE triggers ADD COLUMN words TEXT DEFAULT '[]'")
     connection.execute("INSERT INTO triggers (phrases, words, action, text, created_at, created_by) VALUES ('[]', '[\"deploy\"]', 'deny', 'no', '2026-10-21', 'system')")
-    TriggerPhrases().up(connection)
+    TriggerPhrases().apply(connection)
     names = {row["name"] for row in connection.all("PRAGMA table_info(triggers)")}
     assert "words" not in names and connection.one("SELECT phrases FROM triggers")["phrases"] == '["deploy"]'
     connection.execute("ALTER TABLE triggers RENAME COLUMN phrases TO words")
-    TriggerPhrases().up(connection)
+    TriggerPhrases().apply(connection)
     assert "phrases" in {row["name"] for row in connection.all("PRAGMA table_info(triggers)")}, "a record from before, with words alone, has the column renamed"
 
 
@@ -265,7 +265,7 @@ def test_the_dashboard_sections_migration_renames_the_heading_column(connection)
     from journal.db.migrations.dashboard_sections import DashboardSections
     connection.execute("ALTER TABLE dashboard_rows ADD COLUMN heading TEXT DEFAULT ''")
     connection.execute("INSERT INTO dashboard_rows (plugin, key, label, heading, section, created_at, created_by) VALUES ('p', 'k', 'l', 'Totals', '', '2026-10-21', 'system')")
-    DashboardSections().up(connection)
+    DashboardSections().apply(connection)
     names = {row["name"] for row in connection.all("PRAGMA table_info(dashboard_rows)")}
     assert "heading" not in names and connection.one("SELECT section FROM dashboard_rows")["section"] == "Totals"
 
@@ -280,7 +280,7 @@ def test_the_chart_drop_keeps_only_workflows_a_user_or_an_agent_wrote_as_documen
         rows = [("Hold the stop while a task is parked", 5, 1, "system"), ("Remind to commit after twenty writes", 2, 1, "user:1"), ("Ask about an open question after ten quiet minutes", 0, 0, "agent:s1")]
         for title, revision, shipped, updated_by in rows:
             db.execute("INSERT INTO charts (created_at, created_by, updated_at, updated_by, title, revision, shipped, event, state, places, drawing, drawn_version, locked) VALUES ('t', 'system', 't', ?, ?, ?, ?, 'idle', 'idle', '', '', 30, 0)", (updated_by, title, revision, shipped))
-    ChartDrop().up(connection)
+    ChartDrop().apply(connection)
     titles = [row["title"] for row in connection.all("SELECT title FROM docs WHERE title LIKE 'Workflow: %' ORDER BY id")]
     assert titles == ["Workflow: Remind to commit after twenty writes", "Workflow: Ask about an open question after ten quiet minutes"], "a shipped workflow re-drawn by an upgrade is the journal's, however many revisions it counts; one a user or an agent last wrote is kept"
     assert connection.one("SELECT name FROM sqlite_master WHERE name = 'charts'") is None, "the chart's tables are gone"

@@ -17,6 +17,6 @@ class SessionExclusivity(AgentListener[SessionStarted]):
     def handle(self, event: SessionStarted) -> Decision | None:
         if event.subagent:
             return None
-        for other in self.agents.others_running(event.session, event.environment_id, event.provider):
+        for other in self.agents.running_peers(event.session, event.environment_id, event.provider):
             self.machine.move(other.session, other.environment_id, Ended())
         return None

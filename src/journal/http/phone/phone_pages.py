@@ -58,7 +58,7 @@ class PhonePages:
         if rest == ["waiting"]:
             return self.waiting(request)
         if rest[0] == "journal":
-            return self.through(request)
+            return self.pass_along(request)
         if rest[0] == "assets" and len(rest) == 2:
             return SharePages.asset(rest[1])
         if rest[0] in PUBLIC:
@@ -156,7 +156,7 @@ class PhonePages:
             return self.json(410, {"error": "this phone was disconnected" if phone.ended_at else "this phone's connection has run out"})
         return self.phones.save(phone.seen(time), Actor.phone(phone.id)) if phone.is_presence_due(time) else phone
 
-    def through(self, request: PhoneRequest) -> ShareAnswer:
+    def pass_along(self, request: PhoneRequest) -> ShareAnswer:
         phone = self.phone(request)
         return self.forward(request, phone, {}) if isinstance(phone, Phone) else phone
 

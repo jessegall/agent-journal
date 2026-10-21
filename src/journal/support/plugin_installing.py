@@ -45,24 +45,24 @@ class PluginInstalling:
             return PluginPreview(manifest.name, manifest.title or manifest.name, manifest.version, manifest.description, source, commit, self.rows(manifest, folder), linked=Path(source).is_dir())
 
     def install(self, source: str, environment: str, actor: Actor) -> Plugin:
-        self.only_the_user(actor, "installs")
+        self.require_user(actor, "installs")
         with self.staged(source) as (folder, commit):
             manifest = self.reader.read(folder)
             self.free(manifest.name)
             linked = Path(source).is_dir()
-            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, release="" if linked else self.tag_at(folder), linked=linked, manifest=manifest)
+            plugin = Plugin(name=manifest.name, source=str(folder) if linked else source, commit_sha=commit, release="" if linked else self.tag(folder), linked=linked, manifest=manifest)
             had_data = (self.config.home / "plugin-data" / plugin.name).is_dir()
             if not linked:
-                shutil.copytree(folder, self.folders.of(plugin), ignore=shutil.ignore_patterns(".git"))
+                shutil.copytree(folder, self.folders.folder(plugin), ignore=shutil.ignore_patterns(".git"))
             try:
                 self.required(plugin, environment)
-                self.set_up(plugin, environment)
+                self.prepare(plugin, environment)
                 filled = self.question(plugin, environment)
             except Rejection:
                 self.undone(plugin, had_data)
                 raise
             settings = self.settings.started(plugin, actor)
-            hashes = self.hashes.of(self.folders.of(plugin), plugin.manifest)
+            hashes = self.hashes.digest(self.folders.folder(plugin), plugin.manifest)
             saved = self.plugins.save(plugin.with_(settings={**settings, **{k: v for k, v in filled.items() if k in settings and not isinstance(settings[k], dict)}}, hashes=hashes), actor)
             self.folders.data(saved)
             self.skills.publish(saved)
@@ -75,7 +75,7 @@ class PluginInstalling:
             if self.runner.shell(plugin, environment, check, STEP_SECONDS).returncode != 0:
                 raise Rejection(f"{plugin.name} needs {program}, which is not here" + (f": {need.hint}" if need.hint else ""))
 
-    def set_up(self, plugin: Plugin, environment: str) -> None:
+    def prepare(self, plugin: Plugin, environment: str) -> None:
         for step in plugin.manifest.setup:
             ran = self.runner.shell(plugin, environment, step.run, STEP_SECONDS)
             if ran.returncode != 0:
@@ -96,7 +96,7 @@ class PluginInstalling:
 
     def undone(self, plugin: Plugin, had_data: bool) -> None:
         if not plugin.linked:
-            shutil.rmtree(self.folders.of(plugin), ignore_errors=True)
+            shutil.rmtree(self.folders.folder(plugin), ignore_errors=True)
         if not had_data:
             shutil.rmtree(self.config.home / "plugin-data" / plugin.name, ignore_errors=True)
 
@@ -105,18 +105,18 @@ class PluginInstalling:
         with self.staged(plugin.source, ref) as (folder, commit):
             manifest = self.same(plugin, self.reader.read(folder))
             changes = PluginChanges.manifest(asdict(plugin.manifest), asdict(manifest))
-            code = [] if plugin.linked else PluginChanges.code(self.folders.of(plugin), folder)
+            code = [] if plugin.linked else PluginChanges.code(self.folders.folder(plugin), folder)
             return PluginPreview(name, manifest.title or name, manifest.version, manifest.description, plugin.source, commit, self.rows(manifest, folder), was=plugin.commit_sha,
                                  changes=tuple(changes), code=tuple(code), current=not changes and not code)
 
     def upgrade(self, name: str, ref: str | None, environment: str, actor: Actor) -> Plugin:
         plugin = self.plugins.lookup(name)
         with self.staged(plugin.source, ref) as (folder, commit):
-            upgraded = plugin.with_(manifest=self.same(plugin, self.reader.read(folder)), commit_sha=commit, release="" if plugin.linked else self.tag_at(folder), waiting="")
+            upgraded = plugin.with_(manifest=self.same(plugin, self.reader.read(folder)), commit_sha=commit, release="" if plugin.linked else self.tag(folder), waiting="")
             self.services.stop(plugin)
             if not plugin.linked:
                 self.replaced(plugin, upgraded, folder, environment)
-            saved = self.plugins.save(upgraded.with_(hashes=self.hashes.of(self.folders.of(upgraded), upgraded.manifest)), actor)
+            saved = self.plugins.save(upgraded.with_(hashes=self.hashes.digest(self.folders.folder(upgraded), upgraded.manifest)), actor)
             self.skills.withdraw(saved)
             if saved.enabled:
                 self.skills.publish(saved)
@@ -124,14 +124,14 @@ class PluginInstalling:
             return saved
 
     def replaced(self, plugin: Plugin, upgraded: Plugin, folder: Path, environment: str) -> None:
-        target = self.folders.of(plugin)
+        target = self.folders.folder(plugin)
         kept = target.with_name(f"{target.name}.before-upgrade")
         shutil.rmtree(kept, ignore_errors=True)
         target.rename(kept)
         shutil.copytree(folder, target, ignore=shutil.ignore_patterns(".git"))
         try:
             self.required(upgraded, environment)
-            self.set_up(upgraded, environment)
+            self.prepare(upgraded, environment)
         except Rejection:
             shutil.rmtree(target)
             kept.rename(target)
@@ -141,11 +141,11 @@ class PluginInstalling:
         shutil.rmtree(kept)
 
     def enable(self, name: str, actor: Actor) -> Plugin:
-        self.only_the_user(actor, "switches on")
+        self.require_user(actor, "switches on")
         plugin = self.plugins.lookup(name)
         self.skills.publish(plugin)
         self.services.start(plugin)
-        return self.plugins.save(plugin.with_(enabled=True, hashes=self.hashes.of(self.folders.of(plugin), plugin.manifest)), actor)
+        return self.plugins.save(plugin.with_(enabled=True, hashes=self.hashes.digest(self.folders.folder(plugin), plugin.manifest)), actor)
 
     def disable(self, name: str, actor: Actor) -> Plugin:
         plugin = self.plugins.lookup(name)
@@ -158,14 +158,14 @@ class PluginInstalling:
         self.skills.withdraw(plugin)
         self.services.stop(plugin)
         if not plugin.linked:
-            shutil.rmtree(self.folders.of(plugin), ignore_errors=True)
+            shutil.rmtree(self.folders.folder(plugin), ignore_errors=True)
         self.plugins.delete(plugin, actor)
 
     def purge(self, name: str, actor: Actor) -> None:
         data = self.folders.data(self.plugins.lookup(name))
         self.remove(name, actor)
         shutil.rmtree(data, ignore_errors=True)
-        for line in self.dashboard.of(name):
+        for line in self.dashboard.rows(name):
             self.dashboard.delete(line, actor)
 
     @staticmethod
@@ -175,7 +175,7 @@ class PluginInstalling:
                 shutil.rmtree(stale, ignore_errors=True)
 
     @staticmethod
-    def tag_at(folder: Path) -> str:
+    def tag(folder: Path) -> str:
         described = subprocess.run(["git", "-C", str(folder), "describe", "--tags", "--exact-match", "HEAD"], capture_output=True, text=True, timeout=DOWNLOAD_SECONDS)
         return described.stdout.strip() if described.returncode == 0 else ""
 
@@ -186,7 +186,7 @@ class PluginInstalling:
         return manifest
 
     @staticmethod
-    def only_the_user(actor: Actor, does: str) -> None:
+    def require_user(actor: Actor, does: str) -> None:
         if actor.kind != ActorKind.USER:
             raise Rejection(f"only the user {does} a plugin: journal plugin propose <folder or git address> shows them a card to install it themselves")
 

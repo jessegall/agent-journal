@@ -18,7 +18,7 @@ class Entries(ScopedRepository[Entry]):
         rows = self.selected("kind = 'PromptSubmitted' AND actor = ? ORDER BY id DESC LIMIT 1", (Actor.agent(session).stamp,))
         return rows[0].created_at if rows else None
 
-    def said_to(self, session: str) -> int:
+    def agent_lines(self, session: str) -> int:
         return self.count("kind = 'nudge' AND json_extract(data, '$.session') = ?", (session,))
 
     def last_line(self, session: str, key: str, line: str) -> float:
@@ -32,7 +32,7 @@ class Entries(ScopedRepository[Entry]):
     def tool_starts(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected("kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
 
-    def said_last(self, session: str, keys: tuple[str, ...]) -> Entry | None:
+    def last_line_entry(self, session: str, keys: tuple[str, ...]) -> Entry | None:
         marks = ", ".join("?" for _ in keys)
         rows = self.selected(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({marks}) ORDER BY id DESC LIMIT 1", (session, *keys))
         return rows[0] if rows else None
@@ -51,18 +51,18 @@ class Entries(ScopedRepository[Entry]):
         row = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = ? AND actor = ?", (kind, f"agent:{session}"))
         return int(row["id"])
 
-    def said_since(self, session: str, key: str) -> int:
+    def recent_line_entries(self, session: str, key: str) -> int:
         newest = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
         return self.count("kind = 'nudge' AND json_extract(data, '$.session') = ? AND id > ?", (session, int(newest["id"])))
 
-    def of_kind(self, kind: str, last: int = 50) -> list[Entry]:
+    def kind_entries(self, kind: str, last: int = 50) -> list[Entry]:
         return self.selected("kind = ? ORDER BY id DESC LIMIT ?", (kind, last))
 
-    def of_kind_in(self, last: int = 400) -> list[Entry]:
+    def kind_entries_scoped(self, last: int = 400) -> list[Entry]:
         return self.selected("1 ORDER BY id DESC LIMIT ?", (last,))
 
-    def of_actor(self, stamp: str, last: int = 200) -> list[Entry]:
-        return self.selected_everywhere("actor = ? ORDER BY id DESC LIMIT ?", (stamp, last))
+    def actor_entries(self, stamp: str, last: int = 200) -> list[Entry]:
+        return self.selected_globally("actor = ? ORDER BY id DESC LIMIT ?", (stamp, last))
 
     def last_session_entry(self, session: str) -> Entry | None:
         rows = self.selected("actor = ? AND kind != 'nudge' ORDER BY id DESC LIMIT 1", (f"agent:{session}",))
@@ -77,13 +77,13 @@ class Entries(ScopedRepository[Entry]):
     def agent_calls(self, last: int = 500) -> list[Entry]:
         return self.selected(f"{DISPATCHES} AND kind = 'ToolStarting' ORDER BY id DESC LIMIT ?", (last,))
 
-    def shown_since(self, id: int) -> list[Entry]:
+    def recent_shown(self, id: int) -> list[Entry]:
         return self.with_project("id > ? ORDER BY id", (id,))
 
     def shown_recent(self, last: int) -> list[Entry]:
         return self.with_project("1 ORDER BY id DESC LIMIT ?", (last,))
 
-    def since(self, id: int) -> list[Entry]:
+    def recent(self, id: int) -> list[Entry]:
         return self.selected("id > ? ORDER BY id", (id,))
 
     def _placed(self, row: Entry) -> Entry:

@@ -15,13 +15,13 @@ class SequenceUnwrapping(Migration):
 
     number: ClassVar[int] = 3
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         time = datetime.now(timezone.utc).isoformat()
         sequences = {row["id"]: row for row in connection.all("SELECT id, title, steps FROM sequences")}
         for row in connection.all("SELECT id, state, data, sequence_runs FROM agents WHERE state = ? OR data LIKE ?", (SEQUENCE_FACT, f'%"{SEQUENCE_FACT}"%')):
             unwrapped = StoredState.from_json(row["state"], json.loads(row["data"] or "{}")).without(SEQUENCE_FACT)
             runs = [*json.loads(row["sequence_runs"] or "[]"), *(self.run(layer.data.get("sequence_id", 0), int(layer.data.get("step", 0)), layer.data.get("text", ""), sequences, time).as_dict() for layer in unwrapped.taken)]
-            connection.execute("UPDATE agents SET state = ?, data = ?, sequence_runs = ?, updated_at = ?, updated_by = ? WHERE id = ?", (unwrapped.state.name, json.dumps(unwrapped.state.to_json()), json.dumps(runs), time, "system", row["id"]))
+            connection.execute("UPDATE agents SET state = ?, data = ?, sequence_runs = ?, updated_at = ?, updated_by = ? WHERE id = ?", (unwrapped.state.name, json.dumps(unwrapped.state.serialized()), json.dumps(runs), time, "system", row["id"]))
 
     @staticmethod
     def run(sequence_id: int, step: int, text: str, sequences: dict, time: str) -> SequenceRun:

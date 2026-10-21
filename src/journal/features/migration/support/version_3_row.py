@@ -49,7 +49,7 @@ class Version3Row:
     def close_time(self) -> datetime | None:
         return datetime.fromtimestamp(self.completed, timezone.utc) if self.completed else None
 
-    def read_at(self) -> datetime | None:
+    def read_time(self) -> datetime | None:
         if self.completed:
             return self.close_time()
         return datetime.fromtimestamp(self.updated, timezone.utc) if len(self.seen) > 1 else None

@@ -18,13 +18,13 @@ class Writes:
     """Whether a shell line changes files, read from its text before it runs, as the editor's own tools are known to: the write gates apply to a script as much as to an edit. A line is a write of the project's code when its writing parts write code files, folders or dotfiles under the project and its other parts read, check or move into the project."""
 
     @classmethod
-    def of(cls, line: str) -> bool:
+    def build(cls, line: str) -> bool:
         return any(cls.part(p.text) for p in Chain.parts(line) if p.recorded)
 
     @classmethod
     def part(cls, text: str) -> bool:
         part = Part(text)
-        tokens = cls.tokens_of(part)
+        tokens = cls.tokens(part)
         if not tokens or tokens[0].endswith("journal"):
             return False
         if REDIRECT.search(part.unquoted()):
@@ -45,17 +45,17 @@ class Writes:
         return any(cls.part(piped) for piped in part.unquoted().split("|")[1:])
 
     @staticmethod
-    def tokens_of(part: Part) -> list[str]:
+    def tokens(part: Part) -> list[str]:
         return [w for w in part.tokens() if "=" not in w or w.startswith("-")]
 
     @classmethod
     def is_code_write_line(cls, line: str) -> bool:
         own = [p for p in Chain.parts(line) if p.recorded]
         writing = [p for p in own if cls.part(p.text)]
-        return bool(writing) and all(cls.writes_code_inside(p.text) if cls.part(p.text) else p.is_read() or p.is_harmless() or p.is_project_cd() for p in own)
+        return bool(writing) and all(cls.writes_code(p.text) if cls.part(p.text) else p.is_read() or p.is_harmless() or p.is_project_cd() for p in own)
 
     @classmethod
-    def writes_code_inside(cls, text: str) -> bool:
+    def writes_code(cls, text: str) -> bool:
         targets = cls.part_targets(text)
         return bool(targets) and all(cls.is_code_target(t) for t in targets)
 
@@ -72,12 +72,12 @@ class Writes:
     def part_targets(cls, text: str) -> list[str]:
         part = Part(text)
         plain = part.unquoted()
-        tokens = cls.tokens_of(Part(plain))
+        tokens = cls.tokens(Part(plain))
         if not tokens or tokens[0].endswith("journal"):
             return []
         name = tokens[0].rsplit("/", 1)[-1]
         named = cls.target_names(name, tokens, text)
-        script = cls.script_of(text)
+        script = cls.script(text)
         if name in INTERPRETERS and MARKERS.search(script):
             named += QUOTED_PATH.findall(script) + [w for w in script.split() if "/" in w] + [w for w in Part(plain.split("\n")[0]).tokens()[1:] if "/" in w or CODE.search(w)]
         piped = [t for segment in plain.split("|")[1:] for t in cls.part_targets(segment)]
@@ -98,7 +98,7 @@ class Writes:
         return []
 
     @staticmethod
-    def script_of(text: str) -> str:
+    def script(text: str) -> str:
         opening = HEREDOC.search(text)
         if not opening:
             return text

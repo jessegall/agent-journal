@@ -32,7 +32,7 @@ class Secret(Model):
     deleted_at: datetime | None = None
 
     def field(self, name: str) -> SecretField:
-        rows = next((SecretField.of(raw) for raw in self.fields if raw["name"] == name), None)
+        rows = next((SecretField.build(raw) for raw in self.fields if raw["name"] == name), None)
         if rows is None:
             raise Rejection(f"secret {self.id} has no field {name!r}; its fields are {', '.join(raw['name'] for raw in self.fields) or 'none yet'}")
         return rows

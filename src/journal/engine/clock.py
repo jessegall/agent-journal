@@ -34,7 +34,7 @@ class Clock:
         for agent in self.agents.all_agents():
             if isinstance(self.states.restored(agent.state, agent.data), Ended):
                 continue
-            with self.scope.of(agent.environment_id):
+            with self.scope.environment(agent.environment_id):
                 self._tick(agent, time)
 
     def _tick(self, agent: Agent, time: float) -> None:

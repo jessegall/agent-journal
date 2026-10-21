@@ -13,6 +13,6 @@ class MemoryData:
     rows: tuple[MemoryRow, ...]
     stale: tuple[str, ...]
 
-    def whispered_by(self, text: str) -> list[MemoryRow]:
+    def hinted(self, text: str) -> list[MemoryRow]:
         terms = set(re.findall(r"[a-z][a-z0-9_-]*", text.lower()))
         return [row for row in self.rows if terms & set(row.keywords) and not row.presence]

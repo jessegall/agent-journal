@@ -37,7 +37,7 @@ class Worker(Scoped):
     def running_as(self, pid: int, began: float) -> "Worker":
         return self.with_(pid=pid, began=began, found_session="")
 
-    def told(self, brief: str) -> "Worker":
+    def instructed(self, brief: str) -> "Worker":
         return self.with_(brief=brief, state=WorkerState.DISPATCHED)
 
     def stopped(self, time: float) -> "Worker":

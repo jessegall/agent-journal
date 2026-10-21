@@ -44,7 +44,7 @@ class Tunler:
         return Path.home() / ".local" / "bin" / "tunler"
 
     @staticmethod
-    def running_for(subdomain: str) -> list[int]:
+    def running_subdomain(subdomain: str) -> list[int]:
         listed = subprocess.run(["ps", "-axo", "pid=,command="], capture_output=True, text=True, timeout=10)
         pids = []
         for line in listed.stdout.splitlines():
@@ -55,7 +55,7 @@ class Tunler:
         return pids
 
     def stop_subdomain(self, subdomain: str) -> list[int]:
-        pids = self.running_for(subdomain)
+        pids = self.running_subdomain(subdomain)
         for pid in pids:
             try:
                 os.kill(pid, signal.SIGTERM)
@@ -75,7 +75,7 @@ class Tunler:
         command = self.command()
         if not command:
             return TunlerStatus(installed=False)
-        done = self.ran([command, "status", "--json"], STATUS_SECONDS)
+        done = self.run_result([command, "status", "--json"], STATUS_SECONDS)
         try:
             fields = json.loads(done.stdout) if done else None
         except ValueError:
@@ -90,7 +90,7 @@ class Tunler:
         hidden = {"TUNLER_PASSWORD": password}
         if master:
             hidden["TUNLER_MASTER_PASSWORD"] = master
-        ok, output = self.told("login", username, f"--host={host}", hidden=hidden)
+        ok, output = self.reported("login", username, f"--host={host}", hidden=hidden)
         self.drop()
         if ok:
             return TunlerLogin(connected=True)
@@ -99,7 +99,7 @@ class Tunler:
         return TunlerLogin(connected=False, needs_master=needs, error=lines[0] if needs else lines[-1])
 
     def logout(self) -> None:
-        ok, output = self.told("logout")
+        ok, output = self.reported("logout")
         self.drop()
         if not ok:
             raise Rejection(output or "tunler did not log out")
@@ -108,7 +108,7 @@ class Tunler:
         return self._versions.setdefault(host, CachedAnswer(lambda: self.version_list(host), LIST_CACHE_SECONDS, TunlerVersion("", "", False))).supplied()
 
     def version_list(self, host: str) -> TunlerVersion:
-        ok, output = self.told("update", "--check", "--json", f"--host={host}")
+        ok, output = self.reported("update", "--check", "--json", f"--host={host}")
         try:
             reported = json.loads(output) if ok else {}
         except ValueError:
@@ -119,7 +119,7 @@ class Tunler:
         return TunlerVersion(current, newest, bool(current and newest and current != newest))
 
     def installed_version(self) -> str:
-        ok, output = self.told("version")
+        ok, output = self.reported("version")
         return output.split()[-1] if ok and output else ""
 
     @staticmethod
@@ -131,7 +131,7 @@ class Tunler:
             return ""
 
     def update(self) -> str:
-        ok, output = self.told("update")
+        ok, output = self.reported("update")
         self.drop()
         if not ok:
             raise Rejection(output or "tunler did not update")
@@ -141,11 +141,11 @@ class Tunler:
         return self._domains.supplied()
 
     def domain_list(self) -> list[str]:
-        ok, output = self.told("domains")
+        ok, output = self.reported("domains")
         return [line.strip() for line in output.splitlines() if line.strip()] if ok else []
 
     def release(self, domain: str, host: str) -> str:
-        ok, output = self.told("release", domain.removesuffix(f".{host}"))
+        ok, output = self.reported("release", domain.removesuffix(f".{host}"))
         self.drop()
         return "" if ok else output or f"tunler did not release {domain}"
 
@@ -170,32 +170,32 @@ class Tunler:
                 part.unlink(missing_ok=True)
                 raise Rejection(f"tunler could not be downloaded from {host}: {error}") from error
         curl = shutil.which("curl")
-        done = self.ran([curl, "-fsSL", "-o", str(part), url], DOWNLOAD_SECONDS) if curl else None
+        done = self.run_result([curl, "-fsSL", "-o", str(part), url], DOWNLOAD_SECONDS) if curl else None
         if not done or done.returncode:
             part.unlink(missing_ok=True)
             raise Rejection(CERTIFICATES)
 
     def verified(self, binary: Path) -> str:
-        done = self.ran([str(binary), "version"], STATUS_SECONDS)
+        done = self.run_result([str(binary), "version"], STATUS_SECONDS)
         if done and done.returncode == KILLED and platform.system() == "Darwin":
-            self.ran(["codesign", "--force", "--sign", "-", str(binary)], STATUS_SECONDS)
-            done = self.ran([str(binary), "version"], STATUS_SECONDS)
+            self.run_result(["codesign", "--force", "--sign", "-", str(binary)], STATUS_SECONDS)
+            done = self.run_result([str(binary), "version"], STATUS_SECONDS)
         if done and done.returncode == 0 and done.stdout.startswith("tunler "):
             return done.stdout.split()[-1]
         binary.unlink(missing_ok=True)
         raise Rejection(BLOCKED if done and done.returncode == KILLED else BROKEN_TUNLER)
 
-    def told(self, *text: str, hidden: dict | None = None) -> tuple[bool, str]:
+    def reported(self, *text: str, hidden: dict | None = None) -> tuple[bool, str]:
         command = self.command()
         if not command:
             return False, "tunler isn't installed on this machine"
-        done = self.ran([command, *text], COMMAND_SECONDS, hidden)
+        done = self.run_result([command, *text], COMMAND_SECONDS, hidden)
         if done is None:
             return False, f"tunler {text[0]} did not finish"
         return done.returncode == 0, (done.stdout if done.returncode == 0 else done.stderr or done.stdout).strip()
 
     @staticmethod
-    def ran(command: list[str], seconds: float, hidden: dict | None = None) -> subprocess.CompletedProcess | None:
+    def run_result(command: list[str], seconds: float, hidden: dict | None = None) -> subprocess.CompletedProcess | None:
         try:
             return subprocess.run(command, capture_output=True, text=True, timeout=seconds, stdin=subprocess.DEVNULL, env={**os.environ, **(hidden or {})})
         except (OSError, subprocess.TimeoutExpired):

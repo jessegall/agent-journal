@@ -22,7 +22,7 @@ class JsonOut(json.JSONEncoder):
         if isinstance(value, Enum):
             return value.value
         if isinstance(value, Model):
-            return ModelFields.of(value)
+            return ModelFields.build(value)
         if is_dataclass(value):
             return {field.name: getattr(value, field.name) for field in fields(value)}
         return super().default(value)

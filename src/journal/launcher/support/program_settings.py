@@ -16,7 +16,7 @@ class ProgramSettings:
         hooks = data.get("hooks")
         return cls({key: value for key, value in data.items() if key != "hooks"}, hooks if isinstance(hooks, dict) else None)
 
-    def to_json(self) -> dict:
+    def serialized(self) -> dict:
         if self.hooks is None:
             return self.rest
         return {**self.rest, "hooks": self.hooks}
@@ -27,7 +27,7 @@ class ProgramSettings:
         ours = {event: [block for block in blocks if self.is_journals(block)] for event, blocks in self.hooks.items()}
         return replace(self, hooks={event: blocks for event, blocks in ours.items() if blocks})
 
-    def with_hooks_of(self, other: "ProgramSettings") -> "ProgramSettings":
+    def with_hook_settings(self, other: "ProgramSettings") -> "ProgramSettings":
         return replace(self, hooks=other.hooks or {})
 
     @staticmethod

@@ -9,4 +9,4 @@ class PausingConduct(Conduct):
 
     def on_user_paused_pausing(self, event: UserPaused, settings: Settings) -> Transition:
         from journal.features.pausing.states.user_pause import UserPause
-        return self.push(UserPause()) if event.agent_session == event.session else self.unchanged()
+        return self.push(UserPause()) if event.agent_session == event.session else self.none()

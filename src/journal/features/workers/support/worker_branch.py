@@ -34,7 +34,7 @@ class WorkerBranch:
         done = self.git("status", "--short", cwd=folder)
         return [line[3:] for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
 
-    def take_in(self, worker: Worker) -> str:
+    def merge(self, worker: Worker) -> str:
         commits = self.commit_count(worker)
         if not commits:
             return ""
@@ -94,7 +94,7 @@ class WorkerBranch:
     def summary(self, worker: Worker) -> str:
         if not worker.worktree:
             return ""
-        parts = [part for part in (self.take_in(worker), self.leftover(worker)) if part]
+        parts = [part for part in (self.merge(worker), self.leftover(worker)) if part]
         return ". ".join(parts)
 
     def leftover(self, worker: Worker) -> str:

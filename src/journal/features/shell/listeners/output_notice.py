@@ -15,4 +15,4 @@ class OutputNotice(AgentListener[Ticked]):
         if event.quiet_for < SILENCE_SECONDS:
             return
         for output in self.outputs.unannounced(event.session):
-            self.outputs.save(output.told_of(), Actor.system())
+            self.outputs.save(output.announced(), Actor.system())

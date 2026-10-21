@@ -9,7 +9,7 @@ class ObligationFacts:
     mark_owed: int = 0
     skills: tuple[str, ...] = ()
 
-    def owing(self, state: str, mark: int, skill: str) -> "ObligationFacts":
+    def obligation(self, state: str, mark: int, skill: str) -> "ObligationFacts":
         if state == "orienting":
             return replace(self, oriented=False)
         if state == "at_mark":

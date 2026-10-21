@@ -27,7 +27,7 @@ class MessageController(Controller[Message]):
 
     def listed(self, listing: Listing) -> RowList:
         page = listing.listed(self.question_list(listing), lambda m: True, timeline=True)
-        unread = self.repository.unseen_by_user()
+        unread = self.repository.unviewed()
         counts = Counts(all=self.repository.count(), open=len(self.open_ids()) + unread, unread=unread)
         return RowList(rows=self.shown_page(page["rows"]), more=page["more"], counts=counts)
 
@@ -43,7 +43,7 @@ class MessageController(Controller[Message]):
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
         filed, commented, unanswered = self.repository.linked(Messages.SUBJECT_LINK), self.repository.linked(Messages.COMMENT_LINK), {m.id for m in self.repository.unanswered()}
-        return [{**ModelFields.of(m), "answered": m.id not in unanswered, "filed": [ref.id for ref in filed.get(m.id, [])],
+        return [{**ModelFields.build(m), "answered": m.id not in unanswered, "filed": [ref.id for ref in filed.get(m.id, [])],
                  "comments_on": [str(ref) for ref in commented.get(m.id, [])], "mentions": [str(ref) for ref in Mentions.found(m.text)]} for m in rows]
 
     def store(self, request: Request) -> Response:

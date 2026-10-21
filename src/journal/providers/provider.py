@@ -53,17 +53,17 @@ class Provider:
         return None
 
     def turns(self, path: Path) -> list[Turn]:
-        return self.turns_in(self.json_lines(path))
+        return self.turn_rows(self.json_lines(path))
 
-    def turns_in(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]: ...
+    def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]: ...
 
     @staticmethod
     def json_lines(path: Path) -> Iterator[tuple[int, dict]]:
         text = path.read_text(errors="replace")
-        return Provider.rows_of(text[: text.rfind("\n") + 1], 0)
+        return Provider.rows(text[: text.rfind("\n") + 1], 0)
 
     @staticmethod
-    def rows_of(text: str, before: int) -> Iterator[tuple[int, dict]]:
+    def rows(text: str, before: int) -> Iterator[tuple[int, dict]]:
         for number, line in enumerate(text.splitlines(), before + 1):
             if line.startswith("{"):
                 yield number, json.loads(line)
@@ -72,10 +72,10 @@ class Provider:
     def seconds(stamp: str) -> float:
         return datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() if stamp else 0.0
 
-    def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
+    def turn_thoughts(self, project: Path, session: str) -> list[str]:
         return []
 
-    def texts_written_before(self, project: Path, session: str, read: int, until: float) -> FileWrites:
+    def earlier_texts(self, project: Path, session: str, read: int, until: float) -> FileWrites:
         path = self.transcript(project, session)
         if path is None or read < 0:
             return FileWrites([], [], read)
@@ -89,9 +89,9 @@ class Provider:
                 break
             rows.append(row)
             time += len(line)
-        return self.written_in(rows, time)
+        return self.edited_files(rows, time)
 
-    def texts_written(self, project: Path, session: str, read: int) -> FileWrites:
+    def authored_texts(self, project: Path, session: str, read: int) -> FileWrites:
         path = self.transcript(project, session)
         if path is None:
             return FileWrites([], [], read)
@@ -105,12 +105,12 @@ class Provider:
             raw = file.read()
         whole = raw.rfind(b"\n") + 1
         lines = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
-        return self.written_in(lines, read + whole)
+        return self.edited_files(lines, read + whole)
 
-    def written_in(self, rows: list[dict], time: int) -> FileWrites:
-        return FileWrites([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.peer_messages(row)], time)
+    def edited_files(self, rows: list[dict], time: int) -> FileWrites:
+        return FileWrites([text for row in rows for text in self.texts(row)], [crossed for row in rows for crossed in self.peer_messages(row)], time)
 
-    def texts_in(self, line: dict) -> list[str]:
+    def texts(self, line: dict) -> list[str]:
         return []
 
     def peer_messages(self, line: dict) -> list[PeerMessage]:
@@ -153,7 +153,7 @@ class Provider:
             self.unwired(project / self.home / other)
         path = project / self.home / self.settings_file
         settings = json.loads(path.read_text()) if path.is_file() else {}
-        hooks = {kind: [b for b in blocks if not self.ours(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
+        hooks = {kind: [b for b in blocks if not self.journal_paths(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
         for kind, blocks in self.hook_block(command).items():
             hooks[kind] = [*hooks.get(kind, []), *blocks]
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -164,14 +164,14 @@ class Provider:
         if not path.is_file():
             return
         settings = json.loads(path.read_text())
-        hooks = {kind: [b for b in blocks if not self.ours(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
+        hooks = {kind: [b for b in blocks if not self.journal_paths(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
         if hooks == settings.get("hooks", {}):
             return
         settings["hooks"] = {k: v for k, v in hooks.items() if v}
         path.write_text(json.dumps({k: v for k, v in settings.items() if v or k != "hooks"}, indent=2) + "\n")
 
     @staticmethod
-    def ours(block: dict) -> bool:
+    def journal_paths(block: dict) -> bool:
         text = json.dumps(block)
         return "journal/hooks/hook.sh" in text or any(old in text for old in VERSION_3_HOOKS)
 
@@ -181,15 +181,15 @@ class Provider:
     def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
         if tool == self.read_tool:
             return tuple(p for p in (ToolInput.from_json(input).file,) if p)
-        return Reads.of(ToolInput.from_json(input).command) if tool == self.shell_tool else ()
+        return Reads.build(ToolInput.from_json(input).command) if tool == self.shell_tool else ()
 
     def file_lines(self, tool: str, input: dict) -> int:
         given = ToolInput.from_json(input)
         if tool != self.read_tool or not given.file or given.limit or given.offset:
             return 0
-        return FileLines.of(Path(given.file).expanduser())
+        return FileLines.build(Path(given.file).expanduser())
 
-    def written_paths(self, tool: str, input: dict) -> list[str]:
+    def edited_paths(self, tool: str, input: dict) -> list[str]:
         if tool == self.shell_tool:
             return Writes.targets(ToolInput.from_json(input).command)
         return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)] if tool in self.write_tools else []
@@ -198,15 +198,15 @@ class Provider:
         return ToolInput.from_json(input).skill if tool == "Skill" else ""
 
     def writes(self, tool: str, input: dict) -> bool:
-        return tool in self.write_tools or (tool == self.shell_tool and Writes.of(ToolInput.from_json(input).command))
+        return tool in self.write_tools or (tool == self.shell_tool and Writes.build(ToolInput.from_json(input).command))
 
     def call(self, tool: str, input: dict) -> ToolCall:
         command = ToolInput.from_json(input).command if tool == self.shell_tool else ""
-        return ToolCall(tool=tool, input=input, command=command, parts=tuple(self.parts_of(command)), is_journal=bool(command) and Chain.is_journal_line(command), writes=self.writes(tool, input),
-                        written_paths=tuple(self.written_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input), work=Chain.work_of(command) if command else "")
+        return ToolCall(tool=tool, input=input, command=command, parts=tuple(self.parts(command)), is_journal=bool(command) and Chain.is_journal_line(command), writes=self.writes(tool, input),
+                        written_paths=tuple(self.edited_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input), work=Chain.work(command) if command else "")
 
     @staticmethod
-    def parts_of(command: str) -> list[CommandPart]:
+    def parts(command: str) -> list[CommandPart]:
         recorded = [part for part in Chain.parts(command) if part.recorded] if command else []
         return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text), writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text)), reads_output=OutputReads.is_one(part.text), read_shape=OutputReads.shape(part.text) if OutputReads.is_one(part.text) else part.text) for part in recorded]
 

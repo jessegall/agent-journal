@@ -29,7 +29,7 @@ class Waits:
     def created(self, on: list[str], until: str, every: int, about: str, actor: Actor) -> list[Ref]:
         refs = [self.wait_targets(text) for text in on]
         if until:
-            refs.append(Ref.to(self.checks.save(Check(title=f"{about} waits until this passes", command=until, every=every, waited_on=True), actor)))
+            refs.append(Ref.build(self.checks.save(Check(title=f"{about} waits until this passes", command=until, every=every, waited_on=True), actor)))
         return refs
 
     def wait_targets(self, text: str) -> Ref:

@@ -31,11 +31,11 @@ class TaskController(Controller[Task]):
         return not row.is_closed()
 
     def counts(self, rows: list[Task]) -> Counts:
-        return Counts(all=self.repository.count(), open=self.repository.unfinished_count(), unread=self.repository.unseen_by_user())
+        return Counts(all=self.repository.count(), open=self.repository.unfinished_count(), unread=self.repository.unviewed())
 
     def shown_page(self, rows: list[Task]) -> list[dict]:
         plans, holders = self.repository.linked(PLAN_LINK), self.workers.containing({t.id for t in rows})
-        return [{**ModelFields.of(t), "plan_id": plans[t.id][0].id if t.id in plans else None, "worker_id": holders[t.id].id if t.id in holders else None} for t in rows]
+        return [{**ModelFields.build(t), "plan_id": plans[t.id][0].id if t.id in plans else None, "worker_id": holders[t.id].id if t.id in holders else None} for t in rows]
 
     def start(self, request: Request) -> Response:
         task = self.repository.save(self.repository.find(request.number("id")).started(self.time()), request.actor)
@@ -53,11 +53,11 @@ class TaskController(Controller[Task]):
         return Response.json(self.shown(self.repository.save(task.with_(state=TaskState.OPEN, finished_at=None, outcome=""), request.actor)))
 
     def logs(self, request: Request) -> Response:
-        return Response.json(self.task_logs.of(self.repository.find(request.number("id"))))
+        return Response.json(self.task_logs.logs(self.repository.find(request.number("id"))))
 
     def log(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
-        return Response.json(self.task_logs.save(TaskLog.of(task, request.body.get("line", ""), self.time().timestamp()), request.actor), 201)
+        return Response.json(self.task_logs.save(TaskLog.build(task, request.body.get("line", ""), self.time().timestamp()), request.actor), 201)
 
     @staticmethod
     def time() -> datetime:

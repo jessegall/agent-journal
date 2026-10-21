@@ -12,8 +12,8 @@ class PluginRecord:
     def __init__(self, entries: Entries) -> None:
         self.entries = entries
 
-    def of(self, name: str) -> list[RecordLine]:
-        return [line for line in map(self.line, self.entries.of_actor(f"plugin:{name}")) if line]
+    def build(self, name: str) -> list[RecordLine]:
+        return [line for line in map(self.line, self.entries.actor_entries(f"plugin:{name}")) if line]
 
     def line(self, entry: Entry) -> RecordLine | None:
         data, time = entry.data or {}, entry.created_at

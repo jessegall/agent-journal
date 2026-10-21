@@ -25,5 +25,5 @@ class UpdateController:
         return Response.json({"changelog": page.text, "shown": page.shown, "more": page.more})
 
     def update(self, request: Request) -> Response:
-        self.updating.update_now(request.actor)
+        self.updating.update_immediately(request.actor)
         return Response.json(self.updating.data(), 202)

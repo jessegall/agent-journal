@@ -9,4 +9,4 @@ class TunnelSeed(Seed):
         self.tunnel = tunnel
 
     def run(self) -> None:
-        self.tunnel.settle()
+        self.tunnel.reconcile()

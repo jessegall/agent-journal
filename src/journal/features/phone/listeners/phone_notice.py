@@ -24,13 +24,13 @@ class PhoneNotice(Listener[ClockTicked]):
             if phone.is_push_due(owed, time):
                 self.pushed(phone, owed, time)
             elif not phone.has_updates(owed) and owed != phone.pushed_refs():
-                self.phones.save(phone.told(owed), Actor.system())
+                self.phones.save(phone.notified(owed), Actor.system())
 
     def pushed(self, phone: Phone, owed: list[str], time: datetime) -> None:
         status = self.push.send(phone.push)
         if status in MISSING_STATUSES:
             self.phones.save(phone.unsubscribed(), Actor.system())
         elif 200 <= status < 300:
-            self.phones.save(phone.told(owed), Actor.system())
+            self.phones.save(phone.notified(owed), Actor.system())
         else:
             self.phones.save(phone.push_failed(time), Actor.system())

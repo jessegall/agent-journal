@@ -31,7 +31,7 @@ def journals(tmp_path: Path, monkeypatch):
         app = App(Config(tmp_path / name, port=0))
         app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
         apps.append(app)
-    with apps[0].container.get(Scope).of(MAIN):
+    with apps[0].container.get(Scope).environment(MAIN):
         yield apps
     for app in apps:
         app.runtime().stop()

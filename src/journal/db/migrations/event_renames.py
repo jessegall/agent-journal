@@ -11,6 +11,6 @@ class EventRenames(Migration):
 
     number: ClassVar[int] = 23
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         for old, new in RENAMED.items():
             connection.execute("UPDATE entries SET kind = ? WHERE kind = ?", (new, old))

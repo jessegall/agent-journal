@@ -22,7 +22,7 @@ class Chain:
     def parts(cls, line: str) -> list[Part]:
         chained = [(s, p, True) for s, p in cls.chained(line)]
         if any(WRAPPED.match(p) for _, p, _ in chained):
-            chained = [inner for s, p, _ in chained for inner in cls.of(s, p)]
+            chained = [inner for s, p, _ in chained for inner in cls.build(s, p)]
         following = [s for s, _, _ in chained[1:]] + [""]
         return [Part(p, recorded=r, always=s != "&&", guarded=f == "&&") for (s, p, r), f in zip(chained, following)]
 
@@ -32,11 +32,11 @@ class Chain:
         return len([p for p in own if cls.is_journal(p.text)]), len(own)
 
     @classmethod
-    def own(cls, line: str) -> list[str]:
+    def self_parts(cls, line: str) -> list[str]:
         return [part.text for part in cls.parts(line) if part.recorded]
 
     @classmethod
-    def work_of(cls, line: str) -> str:
+    def work(cls, line: str) -> str:
         own = [part for part in cls.parts(line) if part.recorded]
         if not own or not all(part.is_read() for part in own):
             return "running"
@@ -63,7 +63,7 @@ class Chain:
         return bool(text) and text[0].rsplit("/", 1)[-1] in ("journal", "journal.sh", "journal.py")
 
     @classmethod
-    def of(cls, separator: str, part: str) -> list[tuple[str, str, bool]]:
+    def build(cls, separator: str, part: str) -> list[tuple[str, str, bool]]:
         wrapped = WRAPPED.match(part)
         if not wrapped:
             return [(separator, part, False)]
@@ -137,7 +137,7 @@ class Chain:
                     current, separator, i = "", "&", i + 1
                     start = i
                     continue
-                next_separator = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i) or Chain.newline_index(line, i, current)
+                next_separator = "&&" if line.startswith("&&", i) else Chain.semicolon_index(line, i) or Chain.newline_index(line, i, current)
                 if next_separator:
                     parts.append((separator, Chain.continued(current), start, i))
                     current, separator, i = "", next_separator, i + len(next_separator)
@@ -174,7 +174,7 @@ class Chain:
         return line[i:i + 1] == "&" and line[i + 1:i + 2] not in ("&", ">") and line[i - 1:i] not in ("&", "|", ">", "<", ";", "")
 
     @staticmethod
-    def semicolon_at(line: str, i: int) -> str:
+    def semicolon_index(line: str, i: int) -> str:
         alone = line[i:i + 1] == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";"
         return ";" if alone else ""
 

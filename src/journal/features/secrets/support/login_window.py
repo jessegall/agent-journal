@@ -30,15 +30,15 @@ class LoginWindow:
         if secret.logging_in_at:
             return secret
         opening = self.secrets.save(secret.with_(logging_in_at=datetime.now(timezone.utc)), actor)
-        threading.Thread(target=self.taken, args=(opening, environment_id), daemon=True).start()
+        threading.Thread(target=self.claimed, args=(opening, environment_id), daemon=True).start()
         return opening
 
-    def taken(self, secret: Secret, environment_id: int) -> None:
+    def claimed(self, secret: Secret, environment_id: int) -> None:
         try:
             saved = self.logins.record(secret.title, secret.url)
         except (Rejection, OSError, subprocess.TimeoutExpired) as failed:
             self.secrets.save(self.secrets.find(secret.id).with_(logging_in_at=None), Actor.system())
-            with self.scope.of(environment_id):
+            with self.scope.environment(environment_id):
                 self.messages.save(Message(author=Author.AGENT, text=f"The login to {secret.title} was not saved: {failed}"), Actor.system())
             return
         self.secrets.save(self.secrets.find(secret.id).with_(logging_in_at=None, session_at=datetime.now(timezone.utc), session_expires=self.logins.expires(saved, secret.url)), Actor.system())

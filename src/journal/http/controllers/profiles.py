@@ -12,7 +12,7 @@ class ProfileController:
         self.files, self.statistics = files, statistics
 
     def index(self, request: Request) -> Response:
-        counted = self.statistics.under("profiles.")
+        counted = self.statistics.lower("profiles.")
         return Response.json({"profiles": [{**profile, "uses": counted.get(f"profiles.{profile['name']}.uses", 0), "last_used": counted.get(f"profiles.{profile['name']}.last_used", 0)} for profile in self.files.read_all()]})
 
     def one(self, request: Request) -> Response:

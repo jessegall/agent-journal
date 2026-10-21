@@ -8,7 +8,7 @@ class PluginTokens:
     def __init__(self) -> None:
         self._issued: dict[str, str] = {}
 
-    def of(self, name: str) -> str:
+    def build(self, name: str) -> str:
         return self._issued.setdefault(name, secrets.token_hex(24))
 
     def matches(self, name: str, token: str) -> bool:

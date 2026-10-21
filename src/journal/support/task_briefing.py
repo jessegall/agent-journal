@@ -11,8 +11,8 @@ class TaskBriefing:
         self.logs = logs
 
     def lines(self, task: Task) -> list[str]:
-        logged = [log.line for log in self.logs.of(task)][-LAST:]
+        logged = [log.line for log in self.logs.logs(task)][-LAST:]
         return ([f"brief: {task.brief}"] if task.brief else []) + [f"logged: {line}" for line in logged]
 
-    def said(self, task: Task) -> str:
+    def text(self, task: Task) -> str:
         return "; ".join(self.lines(task))

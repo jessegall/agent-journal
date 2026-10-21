@@ -25,12 +25,12 @@ class CommentImport(EnvironmentKind):
         self.messages, self.links = messages, links
 
     def skipped(self, row: Version3Row, into: Environment) -> str:
-        return super().skipped(row, into) or ("" if self.under(row, into) else "the row it was written under did not come across")
+        return super().skipped(row, into) or ("" if self.parent(row, into) else "the row it was written under did not come across")
 
-    def under(self, row: Version3Row, into: Environment) -> Ref | None:
+    def parent(self, row: Version3Row, into: Environment) -> Ref | None:
         return next((rows for ref in row.refs if (rows := self.ledger.referred(into.name, ref))), None)
 
     def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
-        comment = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, read_at=row.read_at()), row.creation_time(), actor)
-        self.links.save(Link(source=Ref.to(comment), target=self.under(row, into), kind=Messages.COMMENT_LINK), actor)
+        comment = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, read_at=row.read_time()), row.creation_time(), actor)
+        self.links.save(Link(source=Ref.build(comment), target=self.parent(row, into), kind=Messages.COMMENT_LINK), actor)
         return comment

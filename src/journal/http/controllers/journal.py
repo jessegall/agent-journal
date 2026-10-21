@@ -41,7 +41,7 @@ class JournalController:
         self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, mark
 
     def manifest(self, request: Request) -> Response:
-        return Response.json(self.boot.of(self.first().name))
+        return Response.json(self.boot.assembled(self.first().name))
 
     def identity(self, request: Request) -> Response:
         return Response.json({"project": self.config.root.name, "color": COLOR, "root": str(self.config.home), "version": VERSION, "pid": os.getpid(),
@@ -54,7 +54,7 @@ class JournalController:
         return Response.json([{"port": self.config.port, "project": self.config.root.name, "version": VERSION, "root": str(self.config.home), "current": True}])
 
     def developer(self, request: Request) -> Response:
-        numbers = self.statistics.under("developer.")
+        numbers = self.statistics.lower("developer.")
         kinds = sorted({key.split(".")[2] for key in numbers if key.startswith("developer.hooks.") and key.count(".") == 3})
         times = {"hooks": AnswerTime.read(numbers, "developer.hooks"), "requests": AnswerTime.read(numbers, "developer.requests")}
         by_kind = {kind: AnswerTime.read(numbers, f"developer.hooks.{kind}").as_data() for kind in kinds}
@@ -73,10 +73,10 @@ class JournalController:
                               "environments": [self.data(e) for e in (self.environments.all() or [self.environments.lookup("main")])]})
 
     def data(self, environment: Environment) -> EnvironmentData:
-        with self.scope.of(environment.id):
+        with self.scope.environment(environment.id):
             agent = self.agents.current()
             activity = self.activity.page([agent])[0] if agent else None
-            work = self.current.of(agent) if agent else None
+            work = self.current.work(agent) if agent else None
             task = TaskBlock(work.task.id, work.task.title, work.awaiting) if work else None
             silent = bool(activity) and activity["status"] in ("busy", "working") and timing.time() - activity["heard_at"].timestamp() > SILENCE_LIMIT_SECONDS
             return EnvironmentData(environment, activity, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
@@ -85,9 +85,9 @@ class JournalController:
         agent = self.agents.current()
         if not agent:
             return Response.json([])
-        recent = [e for e in reversed(self.entries.of_kind_in(60)) if e.actor and e.actor.id == agent.session and BarRow.is_shown(e)]
+        recent = [e for e in reversed(self.entries.kind_entries_scoped(60)) if e.actor and e.actor.id == agent.session and BarRow.is_shown(e)]
         queue, open_ = [], {}
-        for row in map(BarRow.of, recent):
+        for row in map(BarRow.build, recent):
             if not row.ended:
                 open_[row.key] = row.item()
                 queue.append(open_[row.key])

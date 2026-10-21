@@ -16,8 +16,8 @@ class DocxExport:
     """A document or a report as a Word file: its HTML page converted by textutil, or the page itself where textutil is missing."""
 
     @classmethod
-    def of(cls, title: str, abstract: str, body: str, fallback: str) -> ExportedFile:
-        page, name = HtmlPage.of(title, abstract, body), ExportName.of(title, fallback)
+    def build(cls, title: str, abstract: str, body: str, fallback: str) -> ExportedFile:
+        page, name = HtmlPage.build(title, abstract, body), ExportName.build(title, fallback)
         converter = shutil.which(CONVERTER)
         if converter is None:
             return ExportedFile(name, PAGE, page.encode())

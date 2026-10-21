@@ -11,6 +11,6 @@ class PendingRestart(AgentListener[Stop]):
         self.pending, self.supervisor = pending, supervisor
 
     def handle(self, event: Stop) -> None:
-        owed = self.pending.take(event.session)
+        owed = self.pending.claim(event.session)
         if owed:
             self.supervisor.restart_agent(owed[0], owed[1])

@@ -26,7 +26,7 @@ class MessageImport(EnvironmentKind):
     def created(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
         replied = self.message(row, into)
         files = tuple(sorted(path.name for path in attached.iterdir())) if attached.is_dir() else ()
-        message = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, reply_to=replied.id if replied else None, read_at=row.read_at(),
+        message = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, reply_to=replied.id if replied else None, read_at=row.read_time(),
                                                  idempotency=row.data.get("idempotency", ""), files=files), row.creation_time(), actor)
         kept = self.config.files / "message" / str(message.id)
         for name in files:

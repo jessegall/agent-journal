@@ -11,5 +11,5 @@ class FeatureData:
 
     parts: dict[str, Any]
 
-    def of[D](self, feature: type[Feature[D]]) -> D:
+    def part[D](self, feature: type[Feature[D]]) -> D:
         return self.parts[feature.name]

@@ -7,5 +7,5 @@ class Suggestions(Repository[Suggestion]):
 
     model = Suggestion
 
-    def was_made(self, key: str) -> bool:
+    def is_recorded(self, key: str) -> bool:
         return bool(self.matching(key=key))

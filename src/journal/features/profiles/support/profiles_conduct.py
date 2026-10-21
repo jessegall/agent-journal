@@ -11,6 +11,6 @@ class ProfilesConduct(Conduct):
     def on_tool_starting_profiles(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.profiles.feature import Profiles
         name = event.call.input.get("subagent_type", "")
-        if event.call.tool not in DISPATCH_TOOLS or name not in event.data.of(Profiles).workers:
-            return self.unchanged()
-        return self.hold(Profiles.WORKER_PROFILE_MISUSE.create(name=name))
+        if event.call.tool not in DISPATCH_TOOLS or name not in event.data.part(Profiles).workers:
+            return self.none()
+        return self.refuse(Profiles.WORKER_PROFILE_MISUSE.create(name=name))

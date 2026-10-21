@@ -12,14 +12,14 @@ class DumpItem:
     added: tuple[str, ...] = ()
 
     @classmethod
-    def of(cls, raw: dict) -> "DumpItem":
+    def build(cls, raw: dict) -> "DumpItem":
         return cls(raw.get("insight", ""), raw.get("outcome", ""), raw.get("failed", ""), tuple(raw.get("refs") or ()), tuple(raw.get("added") or ()))
 
-    def to_json(self) -> dict:
+    def serialized(self) -> dict:
         return {"insight": self.insight, "outcome": self.outcome, "failed": self.failed, "refs": list(self.refs), "added": list(self.added)}
 
     @property
-    def settled(self) -> bool:
+    def resolved(self) -> bool:
         return bool(self.outcome or self.failed)
 
     @property

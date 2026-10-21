@@ -26,7 +26,7 @@ class ShareActions:
 
     def create(self, named: str, expires: str, password: str, comments: bool, actor: Actor) -> Share:
         target = self.targets.lookup(named)
-        share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.until(expires), approved=actor.is_user(),
+        share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.expiry(expires), approved=actor.is_user(),
                                        password=SharePassword.hashed(password) if password else "", comments=comments), actor)
         self.targets.link(share, target, actor)
         if share.approved:
@@ -49,11 +49,11 @@ class ShareActions:
 
     def stop(self, share: Share, actor: Actor) -> Share:
         stopped = self.shares.save(share.stopped(datetime.now(timezone.utc)), actor)
-        self.tunnel.settle()
+        self.tunnel.reconcile()
         return stopped
 
     @staticmethod
-    def until(expires: str) -> datetime | None:
+    def expiry(expires: str) -> datetime | None:
         given = expires.strip().lower()
         if given in DISABLED_VALUES:
             return None

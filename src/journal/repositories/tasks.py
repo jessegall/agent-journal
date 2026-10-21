@@ -49,9 +49,9 @@ class Tasks(ScopedRepository[Task]):
         return [task for task in self.with_state(TaskState.BLOCKED) if not self.open_waits(task)]
 
     def broken_waits(self) -> list[tuple[Task, Check]]:
-        return [(task, check) for check in self.checks.broken_waits() for task in self.waiting_on(check)]
+        return [(task, check) for check in self.checks.broken_waits() for task in self.waiting_refs(check)]
 
-    def waiting_on(self, model) -> list[Task]:
+    def waiting_refs(self, model) -> list[Task]:
         return [task for ref in self.links.sources(model, WAIT_LINK) if ref.type == Task.table() and (task := self.find(ref.id)).state == TaskState.BLOCKED]
 
     def reason(self, row: Task | Plan) -> str:
@@ -73,7 +73,7 @@ class Tasks(ScopedRepository[Task]):
         return self.count("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
                                (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
-    def unseen_by_user(self) -> int:
+    def unviewed(self) -> int:
         return self.count("state NOT IN (?, ?) AND (created_by IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def shown(self) -> list[Task]:

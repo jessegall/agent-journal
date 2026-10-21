@@ -18,18 +18,18 @@ class EtiquetteConduct(Conduct):
     def on_turn_displayed_etiquette(self, event: TurnDisplayed, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette
         if not event.final:
-            return self.unchanged()
+            return self.none()
         rows = [nudge.create() for pattern, nudge in ((SHOP_TALK, Etiquette.SHOP_TALK_WARNING), (THIRD_PERSON, Etiquette.SECOND_PERSON), (EM_DASHES, Etiquette.EM_DASH_WARNING)) if pattern.search(event.content)]
         if runs_together(event.content):
             rows.append(Etiquette.PARAGRAPH_SPACING.create())
-        return self.unchanged(*rows)
+        return self.none(*rows)
 
     def on_tool_finished_etiquette(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette
-        every = int(settings.of(Etiquette.REMINDER_INTERVAL))
-        if event.subagent or every <= 0 or event.data.of(Etiquette).lines_since_reminder < every:
-            return self.unchanged()
-        return self.unchanged(Etiquette.JOURNAL_LINE_RULE.create())
+        every = int(settings.value(Etiquette.REMINDER_INTERVAL))
+        if event.subagent or every <= 0 or event.data.part(Etiquette).lines_since_reminder < every:
+            return self.none()
+        return self.none(Etiquette.JOURNAL_LINE_RULE.create())
 
 
 def runs_together(text: str) -> bool:

@@ -17,11 +17,11 @@ class PluginHashes:
         self.folders, self.plugins, self.cards = folders, plugins, cards
         self.checked: dict[Path, tuple[int, int, str]] = {}
 
-    def of(self, folder: Path, manifest: PluginManifest) -> dict[str, str]:
+    def digest(self, folder: Path, manifest: PluginManifest) -> dict[str, str]:
         return {path: self.hashed(folder / path) for path in manifest.programs}
 
     def intact(self, plugin: Plugin, environment_id: int) -> bool:
-        changed = [path for path, was in plugin.hashes.items() if self.hashed(self.folders.of(plugin) / path) != was]
+        changed = [path for path, was in plugin.hashes.items() if self.hashed(self.folders.folder(plugin) / path) != was]
         if not changed:
             return True
         self.plugins.save(self.plugins.lookup(plugin.name).with_(enabled=False), Actor.system())

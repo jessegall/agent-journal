@@ -13,7 +13,7 @@ class ToolFinished(AgentEvent):
     response: dict = field(default_factory=dict)
 
     @property
-    def printed(self) -> str:
+    def output_text(self) -> str:
         return self.output if self.call.tool == "Bash" else ""
 
     def recorded(self) -> dict:

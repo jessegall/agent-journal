@@ -26,4 +26,4 @@ class MigratedRows(Repository[MigratedRow]):
             self.record(source, made(), actor)
 
     def record(self, source: str, row: Model, actor: Actor) -> None:
-        self.save(MigratedRow(source=source, target=str(Ref.to(row))), actor)
+        self.save(MigratedRow(source=source, target=str(Ref.build(row))), actor)

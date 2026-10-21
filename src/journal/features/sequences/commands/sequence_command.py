@@ -59,7 +59,7 @@ class SequenceCommand(Command):
 
     def park(self, args: Namespace, caller: Caller) -> int:
         self.in_hand(caller)
-        run = self.running.park(caller.session, self.scope.id, args.why)
+        run = self.running.suspend(caller.session, self.scope.id, args.why)
         print(f"sequence {run.sequence_id} parked at step {run.step + 1}: {args.why}. `journal sequence follow` resumes it")
         return 0
 

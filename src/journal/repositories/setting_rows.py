@@ -20,14 +20,14 @@ class SettingRows(ScopedRepository[Setting]):
         return self.merged().get(key, default)
 
     def project(self, key: str, default: object = None) -> object:
-        return self.of_project().get(key, default)
+        return self.project_values().get(key, default)
 
     def option(self, option: Option) -> object:
         return self.project(option.key, option.default)
 
     def set(self, key: str, value: object, actor) -> Setting:
         rows = [s for s in self.project_rows() if s.key == key]
-        return self.save((rows[0] if rows else Setting(environment_id=PROJECT, key=key)).set_to(value, self._time().timestamp()), actor)
+        return self.save((rows[0] if rows else Setting(environment_id=PROJECT, key=key)).with_value(value, self._time().timestamp()), actor)
 
     def unset(self, key: str, actor) -> None:
         for row in [s for s in self.project_rows() if s.key == key]:
@@ -37,7 +37,7 @@ class SettingRows(ScopedRepository[Setting]):
         return self.nested(self.merged())
 
     def project_tree(self) -> dict:
-        return self.nested(self.of_project())
+        return self.nested(self.project_values())
 
     @staticmethod
     def nested(values: dict) -> dict:
@@ -48,20 +48,20 @@ class SettingRows(ScopedRepository[Setting]):
         return tree
 
     def merged(self) -> dict:
-        return {**{s.key: s.value for s in self.rows_of(self.scope.id)}, **self.of_project()}
+        return {**{s.key: s.value for s in self.rows(self.scope.id)}, **self.project_values()}
 
-    def of_project(self) -> dict:
+    def project_values(self) -> dict:
         return {s.key: s.value for s in self.project_rows()}
 
     def project_rows(self) -> list[Setting]:
-        return self.rows_of(PROJECT)
+        return self.rows(PROJECT)
 
-    def rows_of(self, environment_id: int) -> list[Setting]:
+    def rows(self, environment_id: int) -> list[Setting]:
         if environment_id not in self._kept:
             self._kept[environment_id] = self.global_matching(environment_id=environment_id)
         return self._kept[environment_id]
 
-    def written(self) -> None:
+    def stored(self) -> None:
         self._kept.clear()
         self.connection.commit_callback(self._kept.clear)
 

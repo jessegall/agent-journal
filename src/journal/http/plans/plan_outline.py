@@ -13,12 +13,12 @@ class PlanOutline:
     def __init__(self, plans: Plans, workers: Workers, reviews: PlanReviews, rounds: ReviewRounds) -> None:
         self.plans, self.workers, self.reviews, self.rounds = plans, workers, reviews, rounds
 
-    def of(self, plan: Plan) -> dict:
-        tasks = self.plans.tasks_of(plan)
+    def build(self, plan: Plan) -> dict:
+        tasks = self.plans.plan_tasks(plan)
         phased = self.plans.phased(plan)
-        phases = [{**ModelFields.of(phase.phase), "task_ids": [t.id for t in phase.tasks]} for phase in phased]
+        phases = [{**ModelFields.build(phase.phase), "task_ids": [t.id for t in phase.tasks]} for phase in phased]
         under_a_phase = {id for phase in phases for id in phase["task_ids"]}
-        return {**ModelFields.of(plan), "task_ids": [t.id for t in tasks], "phases": phases, "unphased_task_ids": [t.id for t in tasks if t.id not in under_a_phase],
+        return {**ModelFields.build(plan), "task_ids": [t.id for t in tasks], "phases": phases, "unphased_task_ids": [t.id for t in tasks if t.id not in under_a_phase],
                 "current_phase": plan.current_phase(phased), "held": plan.state == PlanState.STARTED and plan.checkpoint_phase(phased) is not None,
                 "delegated": bool(self.workers.containing({t.id for t in tasks})),
-                "reviews": [{**ModelFields.of(review), "report_ids": self.rounds.report_ids(review)} for review in self.reviews.of(plan)]}
+                "reviews": [{**ModelFields.build(review), "report_ids": self.rounds.report_ids(review)} for review in self.reviews.reviews(plan)]}

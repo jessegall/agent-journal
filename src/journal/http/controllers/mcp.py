@@ -17,7 +17,7 @@ class McpController:
         self.servers, self.catalogue, self.keys, self.installing, self.health, self.pending = servers, catalogue, keys, installing, health, pending
 
     def index(self, request: Request) -> Response:
-        report = self.health.of_all()
+        report = self.health.report()
         own = [self.row(self.installing.checked_one(s, report)) for s in self.servers.all()]
         elsewhere = [self.known_row(k) for name, k in report.servers.items() if name not in {s.name for s in own}]
         present = [*own, *elsewhere]
@@ -32,7 +32,7 @@ class McpController:
     @staticmethod
     def present(suggestion, servers: list[ServerEntry]) -> bool:
         marks = {suggestion.url} | {a for a in suggestion.args if a.startswith("@")}
-        return any(s.name == suggestion.name or any(s.runs_from(m) for m in marks) for s in servers)
+        return any(s.name == suggestion.name or any(s.origin(m) for m in marks) for s in servers)
 
     def row(self, server) -> ServerEntry:
         return ServerEntry(server.name, server.title, server.transport, server.state, True, command=" ".join([server.command, *server.args]).strip(), url=server.url,
@@ -71,12 +71,12 @@ class McpController:
         self.installing.remove(server, request.actor)
         return Response.json({"removed": server.name})
 
-    def sign_in(self, request: Request) -> Response:
+    def login(self, request: Request) -> Response:
         try:
             server = self.servers.lookup(request.params["name"])
         except MissingRow as missing:
             return Response.missing(missing)
-        if not self.installing.sign_in(server):
+        if not self.installing.login(server):
             return Response.refused("no agent is running to sign in: start one first")
         return Response.json({"asked": server.name})
 

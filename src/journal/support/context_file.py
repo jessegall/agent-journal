@@ -9,7 +9,7 @@ class ContextFile:
         self.home = home
         self._whole: dict[str, dict] = {}
 
-    def of(self, session: str) -> float | None:
+    def build(self, session: str) -> float | None:
         used = self.status(session).get("context_window", {}).get("used_percentage")
         return used / 100 if used is not None else None
 

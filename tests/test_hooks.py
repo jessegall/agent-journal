@@ -43,7 +43,7 @@ def app(journal_root: Path):
     app = App(Config(journal_root, port=0))
     app.container.get(ListenerQueue).start()
     app.server().start()
-    with app.container.get(Scope).of(MAIN):
+    with app.container.get(Scope).environment(MAIN):
         yield app
     app.server().stop()
     app.container.get(ListenerQueue).stop()
@@ -107,11 +107,11 @@ def test_a_status_file_caught_half_written_keeps_the_last_whole_reading(tmp_path
     from journal.support.context_file import ContextFile
     context = ContextFile(tmp_path)
     (tmp_path / "s1.json").write_text(json.dumps({"context_window": {"used_percentage": 40}}))
-    assert context.of("s1") == 0.4
+    assert context.build("s1") == 0.4
     (tmp_path / "s1.json").write_text('{"context_window": {"used_percentage": 5')
-    assert context.of("s1") == 0.4, "the statusline is still writing: the last whole reading stands"
+    assert context.build("s1") == 0.4, "the statusline is still writing: the last whole reading stands"
     (tmp_path / "s1.json").write_text(json.dumps({"context_window": {"used_percentage": 55}}))
-    assert context.of("s1") == 0.55
+    assert context.build("s1") == 0.55
 
 
 class Raising(AgentListener[ToolStarting]):
@@ -187,7 +187,7 @@ def test_the_developer_numbers_average_every_stamped_hook_after_the_reply(app: A
     settled = threading.Event()
     app.container.get(ListenerQueue).add(settled.set)
     assert settled.wait(5), "the deferred work ran"
-    kept = app.container.get(Statistics).under("developer.hooks")
+    kept = app.container.get(Statistics).lower("developer.hooks")
     assert kept["developer.hooks.count"] == 2 and kept["developer.hooks.total_ms"] >= 400 and kept["developer.hooks.slowest_ms"] >= 300, kept
     assert kept["developer.hooks.PreToolUse.count"] == 2, "a hook's time also counts under its kind"
     request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/developer", headers={"X-Journal-Env": "main"})

@@ -290,7 +290,7 @@ def test_the_menu_watcher_confirms_what_the_journal_caused_closes_what_it_cannot
     settled()
     assert (said or watcher.check(agent)) == "\x1b", "a menu even the asked agent cannot place is closed with Escape"
     from journal.support.scope import Scope
-    with app.container.get(Scope).of(1):
+    with app.container.get(Scope).environment(1):
         assert any("closed it with Escape" in m.text for m in app.container.get(Messages).scoped()), "and a card says so"
     permission = "Bash command\r\nrm -f build/*.log\r\n\r\nDo you want to proceed?\r\n❯ 1. Yes\r\n  2. Yes, and don't ask again for rm commands in build\r\n  3. No, and tell Claude what to do differently (esc)\r\n"
     launches = app.config.home / "runtime" / "launches"
@@ -347,10 +347,10 @@ class Listening(BaseState):
     name = "listening"
 
     def on_tool_starting(self, event: ToolStarting, settings: SettingsValue) -> Transition:
-        return self.unchanged(LINE)
+        return self.none(LINE)
 
     def on_anything(self, event: AgentEvent, settings: SettingsValue) -> Transition:
-        return self.unchanged(OTHER)
+        return self.none(OTHER)
 
     def on_push(self, settings):
         return ()
@@ -362,42 +362,42 @@ class Listening(BaseState):
 def test_the_stack_keeps_its_bottom_changes_only_its_top_and_comes_back_from_its_data():
     stack = Stack((Ready(), Working(task_id=3)))
     assert stack.top() == Working(task_id=3)
-    assert stack.pushed(Ended()).to_data()[-1] == {"state": "ended", "data": {}}
-    assert stack.popped().to_data() == [{"state": "idle", "data": {"quiet_since": 0.0, "parked_asked": False}}]
+    assert stack.pushed(Ended()).serialized()[-1] == {"state": "ended", "data": {}}
+    assert stack.popped().serialized() == [{"state": "idle", "data": {"quiet_since": 0.0, "parked_asked": False}}]
     assert stack.popped().popped() == stack.popped()
     assert stack.with_top(Working(task_id=4)).top().task_id == 4
     catalogue = StatesCatalogue(ServerCatalogue())
-    assert catalogue.stack_of(Agent(stack=tuple(stack.to_data()))) == stack
-    assert catalogue.stack_of(Agent(state="working", data={"task_id": 3})) == stack
-    assert catalogue.stack_of(Agent(stack=({"state": "gone", "data": {}},))).top() == Ready()
+    assert catalogue.stack(Agent(stack=tuple(stack.serialized()))) == stack
+    assert catalogue.stack(Agent(state="working", data={"task_id": 3})) == stack
+    assert catalogue.stack(Agent(stack=({"state": "gone", "data": {}},))).top() == Ready()
 
 
 def test_merged_answers_say_every_nudge_in_order_hold_on_the_first_and_move_once():
     idle = Ready()
-    answers = [idle.unchanged(LINE), idle.push(Working(task_id=1), OTHER), idle.hold(WHY), idle.pop(), idle.hold(OTHER)]
+    answers = [idle.none(LINE), idle.push(Working(task_id=1), OTHER), idle.refuse(WHY), idle.pop(), idle.refuse(OTHER)]
     merged = Transition.merged(idle, answers)
     assert merged.nudges == (LINE, OTHER)
     assert merged.pushed == Working(task_id=1) and not merged.popped
-    assert merged.held is WHY
+    assert merged.refusal is WHY
     assert merged.dropped == ("pop",)
     assert merged.to is idle
-    assert Transition.merged(idle, [idle.changed(Working(task_id=2))]).to == Working(task_id=2)
+    assert Transition.merged(idle, [idle.swap(Working(task_id=2))]).to == Working(task_id=2)
     assert Transition.merged(idle, []).to is idle
 
 
 def test_every_listener_whose_event_matches_runs_the_most_specific_first_and_the_base_hears_compaction_and_the_end():
     settings, state = SettingsValue({}), Listening()
-    assert state.on(ToolStarting(call=ToolCall(tool="Write", input={})), settings).nudges == (LINE, OTHER)
-    assert state.on(SessionEnded(), settings).nudges == (OTHER,)
-    assert state.on(Event(), settings) == state.unchanged()
-    assert state.on(Compacting(), settings).pushed == CompactingState()
-    assert state.on(SessionEnded(), settings).pushed == Ended()
+    assert state.respond(ToolStarting(call=ToolCall(tool="Write", input={})), settings).nudges == (LINE, OTHER)
+    assert state.respond(SessionEnded(), settings).nudges == (OTHER,)
+    assert state.respond(Event(), settings) == state.none()
+    assert state.respond(Compacting(), settings).pushed == CompactingState()
+    assert state.respond(SessionEnded(), settings).pushed == Ended()
     assert [method.__name__ for _, method in Listening.listeners()] == ["on_tool_starting", "on_anything", "on_compaction", "on_session_ended"]
 
 
 def test_settings_is_a_frozen_value_of_the_options_read_by_option():
     option = Option("tasks.log_after", "Log after", "", 50)
-    assert SettingsValue.taken(Rows(), [option]).of(option) == 7
+    assert SettingsValue.applied(Rows(), [option]).value(option) == 7
 
 
 def test_every_agent_event_carries_the_time_it_was_placed_and_a_tick_carries_its_own():
@@ -408,8 +408,8 @@ def test_every_agent_event_carries_the_time_it_was_placed_and_a_tick_carries_its
 
 def test_a_renamed_state_answers_as_before_through_its_on_listeners_and_a_plain_method_is_none():
     settings = SettingsValue({})
-    assert Ended().on(ToolStarting(call=ToolCall(tool="Write", input={})), settings).popped
-    assert Ended().on(SessionEnded(), settings) == Ended().unchanged()
+    assert Ended().respond(ToolStarting(call=ToolCall(tool="Write", input={})), settings).popped
+    assert Ended().respond(SessionEnded(), settings) == Ended().none()
     names = [method.__name__ for _, method in Ended.listeners()]
     assert set(names[:4]) == {"on_session_started", "on_prompt_submitted", "on_tool_starting", "on_session_ended"} and names[4:] == ["on_compaction"]
 
@@ -418,7 +418,7 @@ def test_the_stack_is_seeded_from_the_state_and_its_pause_chain_unwound_with_idl
     agents = Agents(connection, bus, scope)
     stuck = agents.save(Agent(environment_id=1, session="s9", state="stuck", data={"resume": {"state": "working", "data": {"task_id": 3, "resume": {"state": "idle", "data": {}}}}}), Actor.system())
     gone = agents.save(Agent(environment_id=1, session="s8", state="gone", data={}), Actor.system())
-    StackSeed().up(connection)
+    StackSeed().apply(connection)
     assert agents.find(stuck.id).stack == ({"state": "idle", "data": {}}, {"state": "working", "data": {"task_id": 3}}, {"state": "stuck", "data": {}})
     assert agents.find(gone.id).stack == ({"state": "idle", "data": {}}, {"state": "gone", "data": {}})
 
@@ -474,11 +474,11 @@ def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catc
     hook(app, "SessionStart")
     machine, settings = app.container.get(StateMachine), SettingsValue({WorkersFeature.MODE.key: "builder"})
     data = Stack((Ready(), Catching()))
-    pushed = machine.through_hooks(data, data.pushed(Noting()), settings, FeatureData({}))
-    assert pushed.stack == data.pushed(Noting()) and pushed.nudges == (LINE.create(),) and pushed.held is None
-    refused = machine.through_hooks(data, data.pushed(Refusing()), settings, FeatureData({}))
-    assert refused.stack == data and refused.held == Block(WHY.create())
-    popped = machine.through_hooks(data.pushed(Noting()), data, settings, FeatureData({}))
+    pushed = machine.hook_machine(data, data.pushed(Noting()), settings, FeatureData({}))
+    assert pushed.stack == data.pushed(Noting()) and pushed.nudges == (LINE.create(),) and pushed.refusal is None
+    refused = machine.hook_machine(data, data.pushed(Refusing()), settings, FeatureData({}))
+    assert refused.stack == data and refused.refusal == Block(WHY.create())
+    popped = machine.hook_machine(data.pushed(Noting()), data, settings, FeatureData({}))
     assert popped.stack == Stack((Ready(),)) and popped.nudges == ()
     assert CALLS == ["suspend catching", "push noting", "suspend catching", "pop noting", "resume catching"]
     with pytest.raises(Rejection):
@@ -490,13 +490,13 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "lost"], AGENT)
-    with app.container.get(Scope).of(1):
+    with app.container.get(Scope).environment(1):
         row = next(a for a in app.container.get(AgentActivity).page(app.container.get(Agents).scoped()) if a["session"] == "s1")
     assert [s["name"] for s in row["stack"]] == ["stuck", "working", "idle"] and row["stack"][0]["awaits"]
     assert [(t["before"], t["after"]) for t in row["trail"]] == [([], ["idle"]), (["idle"], ["idle", "working"]), (["idle", "working"], ["idle", "working", "stuck"])]
     write(app)
-    with app.container.get(Scope).of(1):
-        trail = [e.data for e in app.container.get(Entries).of_kind(StackHistory.KIND) if e.data["session"] == "s1"]
+    with app.container.get(Scope).environment(1):
+        trail = [e.data for e in app.container.get(Entries).kind_entries(StackHistory.KIND) if e.data["session"] == "s1"]
     popped = next(e for e in trail if [row["state"] for row in e["before"]] == ["idle", "working", "stuck"])
     assert popped["after"][-1]["state"] == "working" and popped["cause"]
 
@@ -510,8 +510,8 @@ def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_n
     assert console.run(["panic", "nowhere"], AGENT).code != 0
     assert console.run(["panic", "idle"], AGENT).out.strip() == "the stack, bottom to top: idle"
     assert [row["state"] for row in agents.session_agent("s1").stack] == ["idle"]
-    with app.container.get(Scope).of(1):
-        newest = app.container.get(Entries).of_kind(StackHistory.KIND)[0]
+    with app.container.get(Scope).environment(1):
+        newest = app.container.get(Entries).kind_entries(StackHistory.KIND)[0]
     assert newest.data["cause"] == "journal panic idle" and newest.actor == AGENT.actor
 
 
@@ -527,7 +527,7 @@ def test_a_saved_started_plan_sends_plan_started_once_and_a_plain_edit_sends_non
     hearing = Hearing()
     app.container.get(Bus).listen(PlanStarted, hearing)
     plans, tasks = app.container.get(Plans), app.container.get(Tasks)
-    with app.container.get(Scope).of(1):
+    with app.container.get(Scope).environment(1):
         task = tasks.save(Task(environment_id=1, title="first"), Actor.system())
         plan = plans.save(Plan(environment_id=1, title="p", state=PlanState.APPROVED), Actor.system())
         started = plans.save(plan.started(task, 5.0), Actor.system())
@@ -540,9 +540,9 @@ def test_the_models_carry_the_events_their_changes_mean():
     time = datetime(2026, 10, 20, 23, 0, tzinfo=timezone.utc)
     task = Task(id=7, environment_id=1, title="t", state=TaskState.STARTED)
     assert [type(e) for e in task.finished(time, "x").events] == [TaskClosed, RowResolved] and task.finished(time, "x").events[1].ref == "tasks:7"
-    assert task.parked("later", time).events[0] == TaskClosed(environment_id=1, time=time.timestamp(), task_id=7, how="parked")
+    assert task.suspended("later", time).events[0] == TaskClosed(environment_id=1, time=time.timestamp(), task_id=7, how="parked")
     assert Task(id=8, environment_id=1, title="u").started(time).events == (TaskStarted(environment_id=1, time=time.timestamp(), task_id=8, title="u", plan_id=0),)
-    assert TaskLog.of(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, time=3.0, task_id=7),)
+    assert TaskLog.build(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, time=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
     assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowResolved] and question.posed(1.0).events[0].question_id == 4
     assert Worker(id=9, environment_id=1, name="w").reported(5.0, 4).events == (WorkerReported(environment_id=1, time=5.0, worker_id=9, name="w", report=4, dispatched_by=""),)
@@ -570,19 +570,19 @@ def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_re
     hook(app, "SessionStart")
     agent = app.container.get(Agents).session_agent("s1")
     with pytest.raises(Rejection):
-        app.container.get(Nudger).say(agent, OTHER.create())
-    assert app.container.get(Nudger).say(agent, own.create()) == "a line of the test"
+        app.container.get(Nudger).deliver(agent, OTHER.create())
+    assert app.container.get(Nudger).deliver(agent, own.create()) == "a line of the test"
 
 
 def test_the_engines_own_states_wait_compacting_and_ended_answer_hand_built_events():
     settings, own, subagents = SettingsValue({}), ToolStarting(call=ToolCall(tool="Write", input={})), ToolStarting(call=ToolCall(tool="Write", input={}), subagent="a1")
-    assert Wait().on(PromptSubmitted(prompt="go on"), settings).popped
-    assert not Wait().on(PromptSubmitted(prompt="[journal] a line"), settings).popped
-    assert Wait().on(own, settings).popped and not Wait().on(subagents, settings).popped
+    assert Wait().respond(PromptSubmitted(prompt="go on"), settings).popped
+    assert not Wait().respond(PromptSubmitted(prompt="[journal] a line"), settings).popped
+    assert Wait().respond(own, settings).popped and not Wait().respond(subagents, settings).popped
     assert Wait().wait_description() == ("", "")
-    assert CompactingState().on(own, settings).held == Engine.COMPACTION_PAUSE.create()
-    assert CompactingState().on(SessionStarted(), settings).popped
-    assert all(Ended().on(event, settings).popped for event in (SessionStarted(), PromptSubmitted(prompt="hi"), own))
+    assert CompactingState().respond(own, settings).refusal == Engine.COMPACTION_PAUSE.create()
+    assert CompactingState().respond(SessionStarted(), settings).popped
+    assert all(Ended().respond(event, settings).popped for event in (SessionStarted(), PromptSubmitted(prompt="hi"), own))
 
 
 def test_a_nudge_is_one_class_whose_create_fills_its_blanks_and_rendered_says_the_line():
@@ -598,23 +598,23 @@ def test_the_data_is_read_per_feature_and_travels_on_the_event_the_machine_asks(
     console.run(["task", "create", "the feature data", "--start"], AGENT)
     console.run(["message", "send", "a word from the user"], USER)
     agent = app.container.get(Agents).session_agent("s1")
-    with app.container.get(Scope).of(1):
+    with app.container.get(Scope).environment(1):
         data = app.container.get(DataReaders).agent_data(agent)
-    assert data.of(TasksFeature).in_hand == 1 and data.of(TasksFeature).parked == ()
-    assert len(data.of(MessagesFeature).unread) == 1 and data.of(BriefingFeature).oriented is False
-    assert data.of(ShellFeature).background == () and data.of(WorkersFeature).reports_waiting == ()
+    assert data.part(TasksFeature).in_hand == 1 and data.part(TasksFeature).parked == ()
+    assert len(data.part(MessagesFeature).unread) == 1 and data.part(BriefingFeature).oriented is False
+    assert data.part(ShellFeature).background == () and data.part(WorkersFeature).reports_waiting == ()
     event = ToolStarting(call=ToolCall(tool="Write", input={})).with_data(data)
-    assert event.data.of(TasksFeature).in_hand == 1 and ToolStarting(call=ToolCall(tool="Write", input={})).data.parts == {}
+    assert event.data.part(TasksFeature).in_hand == 1 and ToolStarting(call=ToolCall(tool="Write", input={})).data.parts == {}
 
 
 class InboxConduct(Conduct):
     def on_tool_starting_inbox(self, event: ToolStarting, settings: SettingsValue) -> Transition:
-        return self.unchanged(OTHER)
+        return self.none(OTHER)
 
 
 class LawsConduct(Conduct):
     def on_tool_starting_laws(self, event: ToolStarting, settings: SettingsValue) -> Transition:
-        return self.hold(WHY)
+        return self.refuse(WHY)
 
     def on_anything_laws(self, event: AgentEvent, settings: SettingsValue) -> Transition:
         return self.pop()
@@ -627,12 +627,12 @@ def test_the_features_conduct_is_folded_into_the_base_state_and_every_matching_l
     BaseState.fold((InboxConduct, LawsConduct))
     try:
         settings, event = SettingsValue({}), ToolStarting(call=ToolCall(tool="Write", input={}))
-        answered = Listening().on(event, settings)
-        assert answered.nudges == (LINE, OTHER, OTHER) and answered.held is WHY and answered.popped and answered.dropped == ()
-        pushing = Catching().on(event, settings)
+        answered = Listening().respond(event, settings)
+        assert answered.nudges == (LINE, OTHER, OTHER) and answered.refusal is WHY and answered.popped and answered.dropped == ()
+        pushing = Catching().respond(event, settings)
         assert [method.__name__ for _, method in Catching.listeners()][-3:] == ["on_tool_starting_inbox", "on_tool_starting_laws", "on_anything_laws"]
         assert pushing.popped
-        assert Ended().on(event, settings).popped and Ended().on(event, settings).dropped == ("pop",)
+        assert Ended().respond(event, settings).popped and Ended().respond(event, settings).dropped == ("pop",)
     finally:
         BaseState.fold(())
     assert all("laws" not in method.__name__ for _, method in Ended.listeners())
@@ -650,18 +650,18 @@ def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_fro
     plans = PlansData(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), tasks_left=2, at_checkpoint=False, checkpoint_phase=0))
     tasks = TasksData(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
     data = FeatureData({"plans": plans, "tasks": tasks})
-    assert Ready().on(SessionStarted(time=4.0).with_data(data), settings).pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=4.0)
-    assert Ready().on(SessionStarted().with_data(FeatureData({"plans": PlansData((), None), "tasks": tasks})), settings).pushed is None
+    assert Ready().respond(SessionStarted(time=4.0).with_data(data), settings).pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=4.0)
+    assert Ready().respond(SessionStarted().with_data(FeatureData({"plans": PlansData((), None), "tasks": tasks})), settings).pushed is None
     started = TaskStarted(environment_id=1, time=1.0, task_id=7, title="t", plan_id=0).with_data(data)
-    assert Working(task_id=7, logged_at=2.0).on(started, settings).to == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=2.0)
-    assert FollowingPlan(plan_id=5, task_id=7).on(started, settings).to == FollowingPlan(plan_id=5, task_id=7, logged_at=1.0)
+    assert Working(task_id=7, logged_at=2.0).respond(started, settings).to == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=2.0)
+    assert FollowingPlan(plan_id=5, task_id=7).respond(started, settings).to == FollowingPlan(plan_id=5, task_id=7, logged_at=1.0)
     BaseState.fold((PlansConduct,))
     try:
-        approved = Ready().on(PlanApproved(environment_id=1, time=1.0, plan_id=5, by_user=True).with_data(data), settings)
+        approved = Ready().respond(PlanApproved(environment_id=1, time=1.0, plan_id=5, by_user=True).with_data(data), settings)
         assert [nudge.key for nudge in approved.nudges] == ["plans.the_user_approved_the_plan"]
-        by_agent = Ready().on(PlanApproved(environment_id=1, time=1.0, plan_id=5, by_user=False).with_data(data), settings)
+        by_agent = Ready().respond(PlanApproved(environment_id=1, time=1.0, plan_id=5, by_user=False).with_data(data), settings)
         assert by_agent.nudges == ()
-        next_task = Ready().on(TaskStarted(environment_id=1, time=1.0, task_id=8, title="the next", plan_id=5).with_data(data), settings)
+        next_task = Ready().respond(TaskStarted(environment_id=1, time=1.0, task_id=8, title="the next", plan_id=5).with_data(data), settings)
         assert next_task.nudges[0].rendered() == "plan 5: task 8, the next is next. it has no brief and nothing logged yet"
     finally:
         BaseState.fold(())
@@ -687,22 +687,22 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data(
     data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=()), "voices": VoicesData(instruction="as a butler"), "etiquette": EtiquetteData(lines_since_reminder=50), "pins": PinsData(pinned=("https://a.test/pinned",), suggested_lately=("https://a.test/said",)), "migration": MigrationData(version_3_waiting=True)})
     BaseState.fold((VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
     try:
-        started = Ready().on(SessionStarted().with_data(data), settings)
+        started = Ready().respond(SessionStarted().with_data(data), settings)
         assert [nudge.key for nudge in started.nudges] == ["voices.how_to_talk_to_the_user", "migration.version_3_not_brought_across"]
         assert "as a butler" in started.nudges[0].rendered()
-        assert [n.key for n in Ready().on(SessionStarted(source="resume").with_data(data), settings).typed] == ["voices.say_you_are_back"]
-        changed = Ready().on(SettingChanged(environment_id=1, time=1.0, setting=Voices.VOICE_OPTIONS[0].key).with_data(data), settings)
+        assert [n.key for n in Ready().respond(SessionStarted(source="resume").with_data(data), settings).typed] == ["voices.say_you_are_back"]
+        changed = Ready().respond(SettingChanged(environment_id=1, time=1.0, setting=Voices.VOICE_OPTIONS[0].key).with_data(data), settings)
         assert [n.key for n in changed.nudges] == ["voices.the_voice_changed"]
-        assert Ready().on(SettingChanged(environment_id=1, time=1.0, setting="shell.short_output").with_data(data), settings).nudges == ()
-        turn = Ready().on(TurnDisplayed(text="the user should run journal task done 3, see https://a.test/new and https://a.test/said").with_data(data), settings)
+        assert Ready().respond(SettingChanged(environment_id=1, time=1.0, setting="shell.short_output").with_data(data), settings).nudges == ()
+        turn = Ready().respond(TurnDisplayed(text="the user should run journal task done 3, see https://a.test/new and https://a.test/said").with_data(data), settings)
         assert [n.key for n in turn.nudges] == ["etiquette.no_shop_talk", "etiquette.say_you_not_the_user", "pins.pin_the_link"]
         assert "https://a.test/new" in turn.nudges[2].rendered()
-        assert Ready().on(TurnDisplayed(text="see https://a.test/pinned", final=False).with_data(data), settings).nudges == ()
-        finished = Ready().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="opened https://a.test/pr/1").with_data(data), settings)
+        assert Ready().respond(TurnDisplayed(text="see https://a.test/pinned", final=False).with_data(data), settings).nudges == ()
+        finished = Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="opened https://a.test/pr/1").with_data(data), settings)
         assert [n.key for n in finished.nudges] == ["etiquette.a_line_is_an_instruction", "pins.pin_the_link"]
         quiet = FeatureData({**data.parts, "etiquette": EtiquetteData(lines_since_reminder=3)})
-        assert Ready().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing", subagent="s1").with_data(data), settings).nudges == ()
-        assert Ready().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing").with_data(quiet), settings).nudges == ()
+        assert Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing", subagent="s1").with_data(data), settings).nudges == ()
+        assert Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing").with_data(quiet), settings).nudges == ()
     finally:
         BaseState.fold(())
 
@@ -730,23 +730,23 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
     data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=()), "triggers": TriggersData(triggers=triggers), "plugins": PluginsData(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
     BaseState.fold((GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
     try:
-        assert Ready().on(CommitDetected(sha="abcdef0123").with_data(data), settings).nudges == ()
-        closed = Ready().on(CommitDetected(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next", "", 0)).with_data(data), settings)
+        assert Ready().respond(CommitDetected(sha="abcdef0123").with_data(data), settings).nudges == ()
+        closed = Ready().respond(CommitDetected(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next", "", 0)).with_data(data), settings)
         assert [n.rendered() for n in closed.nudges] == ["commit abcdef01 closed task 4, task 5", "tasks are open, and auto mode is on: task 6 next: the next. sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck"]
-        failed = Ready().on(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="a\nb c", failed_before=False, waited_on=False).with_data(data), settings)
+        failed = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="a\nb c", failed_before=False, waited_on=False).with_data(data), settings)
         assert [n.key for n in failed.nudges] == ["checks.check_failed"] and "b c" in failed.nudges[0].rendered()
-        again = Ready().on(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=False).with_data(data), settings)
+        again = Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=False).with_data(data), settings)
         assert [n.key for n in again.nudges] == ["checks.check_still_failing"]
-        assert Ready().on(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=True).with_data(data), settings).nudges == ()
-        prompt = Ready().on(PromptSubmitted(prompt="release it and plan the rest").with_data(data), settings)
+        assert Ready().respond(CheckCompleted(environment_id=0, time=1.0, check_id=2, title="lint", passed=False, output="", failed_before=True, waited_on=True).with_data(data), settings).nudges == ()
+        prompt = Ready().respond(PromptSubmitted(prompt="release it and plan the rest").with_data(data), settings)
         assert [n.rendered() for n in prompt.nudges] == ["do this now: bump the version"]
-        arrived = Ready().on(MessageArrived(environment_id=1, time=1.0, text="deploy now").with_data(data), settings)
+        arrived = Ready().respond(MessageArrived(environment_id=1, time=1.0, text="deploy now").with_data(data), settings)
         assert [n.rendered() for n in arrived.nudges] == ["no deploys tonight"]
-        denied = Ready().on(ToolStarting(call=shell("deploy prod")).with_data(data), settings)
-        assert denied.held is not None and denied.held.rendered() == "a trigger denies this: no deploys tonight"
-        held = Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": plugin_file}, writes=True, written_paths=(plugin_file,))).with_data(data), settings)
-        assert held.held is not None and held.held.key == "plugins.plugin_files_are_the_users"
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "src/a.py"}, writes=True, written_paths=("src/a.py",))).with_data(data), settings).held is None
+        denied = Ready().respond(ToolStarting(call=shell("deploy prod")).with_data(data), settings)
+        assert denied.refusal is not None and denied.refusal.rendered() == "a trigger denies this: no deploys tonight"
+        held = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": plugin_file}, writes=True, written_paths=(plugin_file,))).with_data(data), settings)
+        assert held.refusal is not None and held.refusal.key == "plugins.plugin_files_are_the_users"
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "src/a.py"}, writes=True, written_paths=("src/a.py",))).with_data(data), settings).refusal is None
     finally:
         BaseState.fold(())
 
@@ -793,60 +793,60 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     data = FeatureData(parts)
     BaseState.fold((MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))
     try:
-        prompt = Ready().on(PromptSubmitted(prompt="go on").with_data(data), settings)
+        prompt = Ready().respond(PromptSubmitted(prompt="go on").with_data(data), settings)
         assert [n.rendered() for n in prompt.nudges] == ["new messages 7, 8"]
-        stop = Ready().on(Stop().with_data(data), settings)
+        stop = Ready().respond(Stop().with_data(data), settings)
         assert [n.key for n in stop.nudges] == ["messages.new_messages_to_answer", "workers.act_on_the_reports"]
-        piped = Ready().on(ToolStarting(call=shell("journal message read 7 | head -3")).with_data(data), settings)
-        assert piped.held is not None and piped.held.key == "messages.read_the_words_whole"
-        read = Ready().on(ToolStarting(call=shell("ls")).with_data(data), settings)
-        assert read.held is None and [n.key for n in read.nudges] == ["messages.answer_before_anything_else", "messages.new_messages_to_answer"], "asked for the answer after three uses, and the inbox named every third use"
-        their_file = Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": f"{tmp_path}/files/message/5/a.png"}, read_paths=(f"{tmp_path}/files/message/5/a.png",))).with_data(data), settings)
+        piped = Ready().respond(ToolStarting(call=shell("journal message read 7 | head -3")).with_data(data), settings)
+        assert piped.refusal is not None and piped.refusal.key == "messages.read_the_words_whole"
+        read = Ready().respond(ToolStarting(call=shell("ls")).with_data(data), settings)
+        assert read.refusal is None and [n.key for n in read.nudges] == ["messages.answer_before_anything_else", "messages.new_messages_to_answer"], "asked for the answer after three uses, and the inbox named every third use"
+        their_file = Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": f"{tmp_path}/files/message/5/a.png"}, read_paths=(f"{tmp_path}/files/message/5/a.png",))).with_data(data), settings)
         assert "messages.answer_before_anything_else" not in [n.key for n in their_file.nudges]
         held_unanswered = FeatureData({**parts, "messages": MessagesData(unread=(), unanswered=(5,), unanswered_files=(), uses_since_newest=0, times_named=0, uses_unanswered=10)})
-        assert Ready().on(ToolStarting(call=shell("ls")).with_data(held_unanswered), settings).held.key == "messages.tools_held_until_answered"
-        assert Ready().on(ToolStarting(call=shell("journal task list")).with_data(held_unanswered), settings).held is None
+        assert Ready().respond(ToolStarting(call=shell("ls")).with_data(held_unanswered), settings).refusal.key == "messages.tools_held_until_answered"
+        assert Ready().respond(ToolStarting(call=shell("journal task list")).with_data(held_unanswered), settings).refusal is None
         held_unread = FeatureData({**parts, "messages": MessagesData(unread=(7,), unanswered=(), unanswered_files=(), uses_since_newest=1, times_named=5, uses_unanswered=0)})
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(held_unread), settings).held.key == "messages.write_held_until_read"
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(held_unread), settings).held is None
-        sent = Ready().on(ToolFinished(call=shell("journal message send hi --reply-to 7"), output="sent").with_data(data), settings)
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(held_unread), settings).refusal.key == "messages.write_held_until_read"
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(held_unread), settings).refusal is None
+        sent = Ready().respond(ToolFinished(call=shell("journal message send hi --reply-to 7"), output="sent").with_data(data), settings)
         assert [n.key for n in sent.nudges] == ["messages.reply_by_tag"]
-        face = Ready().on(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, by_user=True).with_data(data), settings)
+        face = Ready().respond(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, by_user=True).with_data(data), settings)
         assert [n.rendered() for n in face.nudges][0].startswith("the user put 👍 on message 7")
-        assert Ready().on(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, by_user=False).with_data(data), settings).nudges == ()
-        dispatch = lambda **given: Ready().on(ToolStarting(call=ToolCall(tool="Agent", input=given)).with_data(data), settings)
-        assert dispatch(subagent_type="journal-researcher", description="d", prompt="p").held.key == "laws.name_the_model"
-        assert dispatch(model="sonnet", subagent_type="general-purpose", description="d", prompt="p").held.key == "laws.name_a_profile"
-        assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d").held.key == "laws.bind_the_job"
-        assert dispatch(model="sonnet", subagent_type="journal-medior", description="d", prompt="p").held.key == "profiles.worker_profile_is_not_a_subagent"
-        assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d", prompt="p").held.key == "workers.too_many_subagents"
+        assert Ready().respond(ReactionAdded(environment_id=1, time=1.0, face="👍", message_id=7, by_user=False).with_data(data), settings).nudges == ()
+        dispatch = lambda **given: Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input=given)).with_data(data), settings)
+        assert dispatch(subagent_type="journal-researcher", description="d", prompt="p").refusal.key == "laws.name_the_model"
+        assert dispatch(model="sonnet", subagent_type="general-purpose", description="d", prompt="p").refusal.key == "laws.name_a_profile"
+        assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d").refusal.key == "laws.bind_the_job"
+        assert dispatch(model="sonnet", subagent_type="journal-medior", description="d", prompt="p").refusal.key == "profiles.worker_profile_is_not_a_subagent"
+        assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d", prompt="p").refusal.key == "workers.too_many_subagents"
         fewer = FeatureData({**parts, "workers": WorkersData(**{**parts["workers"].__dict__, "subagents_running": 1})})
-        known = Ready().on(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/a.py again"})).with_data(fewer), settings)
-        assert known.held.key == "workers.send_the_job_to_the_subagent" and "sub-1" in known.held.rendered()
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/b.py"})).with_data(fewer), settings).held is None
-        big = Ready().on(ToolFinished(call=shell("ls"), output="\n" * 400).with_data(data), settings)
+        known = Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/a.py again"})).with_data(fewer), settings)
+        assert known.refusal.key == "workers.send_the_job_to_the_subagent" and "sub-1" in known.refusal.rendered()
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/b.py"})).with_data(fewer), settings).refusal is None
+        big = Ready().respond(ToolFinished(call=shell("ls"), output="\n" * 400).with_data(data), settings)
         assert [n.key for n in big.nudges] == ["laws.cap_the_output"]
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}, file_lines=201)).with_data(data), settings).held.key == "shell.read_the_file_in_parts"
-        assert Ready().on(ToolStarting(call=shell("journal task list && ls")).with_data(data), settings).held.key == "shell.journal_command_runs_alone"
-        reader = Ready().on(ToolStarting(call=shell("journal output read 9 --grep FAILED")).with_data(data), settings)
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}, file_lines=201)).with_data(data), settings).refusal.key == "shell.read_the_file_in_parts"
+        assert Ready().respond(ToolStarting(call=shell("journal task list && ls")).with_data(data), settings).refusal.key == "shell.journal_command_runs_alone"
+        reader = Ready().respond(ToolStarting(call=shell("journal output read 9 --grep FAILED")).with_data(data), settings)
         shell_lines = lambda answered: [n.key for n in answered.nudges if n.key.startswith("shell.")]
         assert shell_lines(reader) == ["shell.use_the_reader"]
-        again = Ready().on(ToolStarting(call=shell("journal output read 9 --grep x")).with_data(data), settings)
+        again = Ready().respond(ToolStarting(call=shell("journal output read 9 --grep x")).with_data(data), settings)
         assert shell_lines(again) == ["shell.add_a_reader"]
         tipped = FeatureData({**parts, "shell": ShellData(**{**parts["shell"].__dict__, "tipped": (Shell.READER_SUGGESTION.create(command="journal output read <output> --grep x").rendered(),)})})
-        assert shell_lines(Ready().on(ToolStarting(call=shell("journal output read 9 --grep x")).with_data(tipped), settings)) == []
-        tick = Ready().on(Ticked(quiet_for=6.0, time=500.0).with_data(data), settings)
+        assert shell_lines(Ready().respond(ToolStarting(call=shell("journal output read 9 --grep x")).with_data(tipped), settings)) == []
+        tick = Ready().respond(Ticked(quiet_for=6.0, time=500.0).with_data(data), settings)
         by_key = {n.key: n.rendered() for n in tick.nudges}
         assert by_key["shell.outputs_ended"].startswith("output 3 finished; output 4 failed with code 1") and by_key["shell.check_the_background"].startswith("output 12 still running")
         assert sorted(by_key) == ["shell.check_the_background", "shell.outputs_ended", "workers.act_on_the_reports"]
-        assert [n.key for n in Ready().on(Ticked(quiet_for=1.0, time=200.0).with_data(data), settings).nudges] == ["workers.act_on_the_reports"]
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": str(private / "keys.json")})).with_data(data), settings).held.key == "secrets.secrets_out_of_reach"
-        allowed = Ready().on(SecretAllowed(environment_id=0, time=1.0, secret_id=2, title="GitHub", programs=("gh",)).with_data(data), settings)
+        assert [n.key for n in Ready().respond(Ticked(quiet_for=1.0, time=200.0).with_data(data), settings).nudges] == ["workers.act_on_the_reports"]
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": str(private / "keys.json")})).with_data(data), settings).refusal.key == "secrets.secrets_out_of_reach"
+        allowed = Ready().respond(SecretAllowed(environment_id=0, time=1.0, secret_id=2, title="GitHub", programs=("gh",)).with_data(data), settings)
         assert [n.rendered() for n in allowed.nudges][0].startswith("the user let secret 2, GitHub, go to gh")
-        assert Ready().on(ToolStarting(call=ToolCall(tool="AskUserQuestion", input={})).with_data(data), settings).held.key == "questions.ask_through_the_journal"
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="AskUserQuestion", input={})).with_data(data), settings).refusal.key == "questions.ask_through_the_journal"
         worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": worktree_file}, writes=True, written_paths=(worktree_file,))).with_data(data), settings).held.key == "workers.file_is_the_workers"
-        back = Ready().on(WorkerReported(environment_id=1, time=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatched_by="").with_data(data), settings)
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": worktree_file}, writes=True, written_paths=(worktree_file,))).with_data(data), settings).refusal.key == "workers.file_is_the_workers"
+        back = Ready().respond(WorkerReported(environment_id=1, time=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatched_by="").with_data(data), settings)
         assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in the chat"]
     finally:
         BaseState.fold(())
@@ -855,12 +855,12 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
 def test_a_state_that_defines_a_conduct_listeners_name_answers_in_its_place():
     class Quiet(Listening):
         def on_tool_starting_inbox(self, event: ToolStarting, settings: SettingsValue) -> Transition:
-            return self.unchanged()
+            return self.none()
 
     BaseState.fold((InboxConduct,))
     try:
-        assert Listening().on(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({})).nudges == (LINE, OTHER, OTHER)
-        assert Quiet().on(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({})).nudges == (LINE, OTHER), "the state's own answer stands where the conduct's would have"
+        assert Listening().respond(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({})).nudges == (LINE, OTHER, OTHER)
+        assert Quiet().respond(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({})).nudges == (LINE, OTHER), "the state's own answer stands where the conduct's would have"
     finally:
         BaseState.fold(())
 
@@ -890,39 +890,39 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     data = FeatureData(parts)
     BaseState.fold((SkillsConduct, BriefingConduct, MemoryConduct))
     try:
-        started = Ready().on(SessionStarted(source="startup").with_data(data), settings)
+        started = Ready().respond(SessionStarted(source="startup").with_data(data), settings)
         keys = [n.key for n in started.nudges]
         assert keys[:4] == ["skills.read_the_skill_first", "briefing.journal_ready", "briefing.handle_the_journal_quietly", "briefing.the_laws_apply"]
         assert "briefing.you_took_over" in keys and "briefing.rules_in_force" in keys and "briefing.facts_here" not in keys and "briefing.reminders_here" in keys and "briefing.waiting_for_you" in keys and keys[-1] == "briefing.look_before_the_first_write"
         assert ".claude/skills/journal/SKILL.md" in started.nudges[0].rendered()
-        compacted = Ready().on(SessionStarted(source="compact").with_data(data), settings)
+        compacted = Ready().respond(SessionStarted(source="compact").with_data(data), settings)
         assert "briefing.you_took_over" not in [n.key for n in compacted.nudges]
-        prompt = Ready().on(PromptSubmitted(prompt="draw me a roadmap").with_data(data), settings)
+        prompt = Ready().respond(PromptSubmitted(prompt="draw me a roadmap").with_data(data), settings)
         assert [n.key for n in prompt.nudges] == [], "the plans skill is read already, by its hash"
         unread = FeatureData({**parts, "skills": SkillsData(owed=(), loaded={}, skills=cards)})
-        assert [n.rendered() for n in Ready().on(PromptSubmitted(prompt="draw me a roadmap").with_data(unread), settings).nudges][0].startswith("read the plans skill before anything else")
-        held = Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(data), settings)
-        assert held.held is not None and held.held.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(data), settings).held is None
-        stop = Ready().on(Stop().with_data(data), settings)
-        assert stop.held is not None and stop.held.key == "skills.stopped_owing"
+        assert [n.rendered() for n in Ready().respond(PromptSubmitted(prompt="draw me a roadmap").with_data(unread), settings).nudges][0].startswith("read the plans skill before anything else")
+        held = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(data), settings)
+        assert held.refusal is not None and held.refusal.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_data(data), settings).refusal is None
+        stop = Ready().respond(Stop().with_data(data), settings)
+        assert stop.refusal is not None and stop.refusal.key == "skills.stopped_owing"
         paid = FeatureData({**parts, "skills": SkillsData(owed=(), loaded={}, skills=cards)})
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(paid), settings).held.key == "briefing.look_before_the_first_write"
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(paid), settings).refusal.key == "briefing.look_before_the_first_write"
         looked = FeatureData({**paid.parts, "briefing": BriefingData(**{**parts["briefing"].__dict__, "oriented": True})})
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(looked), settings).held.key == "memory.write_held_until_decided"
-        assert Ready().on(Stop().with_data(looked), settings).held.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(looked), settings).refusal.key == "memory.write_held_until_decided"
+        assert Ready().respond(Stop().with_data(looked), settings).refusal.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
         decided = FeatureData({**looked.parts, "memory": MemoryData(mark_owed=0, context_mark=50, rows=parts["memory"].rows, stale=())})
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(decided), settings).held is None
-        crossed = Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_data(decided), settings)
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_data(decided), settings).refusal is None
+        crossed = Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_data(decided), settings)
         assert [n.rendered() for n in crossed.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal nothing survives \"<why>\"`"] or crossed.nudges[0].key == "memory.decide_at_the_mark"
-        assert Ready().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.6, session="s1").with_data(decided), settings).nudges == ()
-        whispered = Ready().on(ToolStarting(call=shell("lsof -i :port")).with_data(decided), settings)
+        assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.6, session="s1").with_data(decided), settings).nudges == ()
+        whispered = Ready().respond(ToolStarting(call=shell("lsof -i :port")).with_data(decided), settings)
         assert [n.rendered() for n in whispered.typed] == ["fact 3 is about this and not in your context: journal fact read 3"], "a whisper tells the agent to read the row, never its words"
         already = FeatureData({**decided.parts, "memory": MemoryData(mark_owed=0, context_mark=50, rows=tuple(replace(row, presence=True) for row in parts["memory"].rows), stale=())})
-        assert Ready().on(ToolStarting(call=shell("lsof -i :port")).with_data(already), settings).typed == (), "a row in the context window is not whispered"
-        rule = Ready().on(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=True).with_data(decided), settings)
+        assert Ready().respond(ToolStarting(call=shell("lsof -i :port")).with_data(already), settings).typed == (), "a row in the context window is not whispered"
+        rule = Ready().respond(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=True).with_data(decided), settings)
         assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
-        assert Ready().on(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=False).with_data(decided), settings).nudges == ()
+        assert Ready().respond(RuleCreated(environment_id=0, time=1.0, row_id=7, agent_origin=False).with_data(decided), settings).nudges == ()
     finally:
         BaseState.fold(())
 
@@ -933,24 +933,24 @@ def test_awaiting_tells_each_workers_return_and_pops_on_the_last():
     from journal.events.rows.worker_stopped import WorkerStopped
     settings = SettingsValue({})
     waiting = ExternalWait.on_workers((3, 4), 0.0)
-    first = waiting.on(WorkerReported(environment_id=1, time=1.0, worker_id=3, name="Lady Lovelace", report=9, dispatched_by="s1"), settings)
-    assert first.to.waits_on() == ["workers:4"] and not first.popped and [n.key for n in first.nudges] == ["workers.worker_reported"]
-    other = waiting.on(WorkerReported(environment_id=1, time=1.0, worker_id=8, name="x", report=9, dispatched_by="s1"), settings)
+    first = waiting.respond(WorkerReported(environment_id=1, time=1.0, worker_id=3, name="Lady Lovelace", report=9, dispatched_by="s1"), settings)
+    assert first.to.targets() == ["workers:4"] and not first.popped and [n.key for n in first.nudges] == ["workers.worker_reported"]
+    other = waiting.respond(WorkerReported(environment_id=1, time=1.0, worker_id=8, name="x", report=9, dispatched_by="s1"), settings)
     assert other.to is waiting and other.nudges == (), "a worker it does not wait on is not its business"
-    last = first.to.on(WorkerStopped(environment_id=1, time=2.0, worker_id=4, name="Herr Turing"), settings)
+    last = first.to.respond(WorkerStopped(environment_id=1, time=2.0, worker_id=4, name="Herr Turing"), settings)
     assert last.popped and [n.key for n in last.nudges] == ["workers.worker_stopped_unreported", "tasks.wait_over"] and last.nudges[-1].rendered().startswith("the wait for workers 3, 4 is over: worker 3, Lady Lovelace, reported; worker 4, Herr Turing, stopped before it reported")
     from journal.events.rows.worker_dispatched import WorkerDispatched
     from journal.features.workers.support.workers_conduct import WorkersConduct
     BaseState.fold((WorkersConduct,))
     try:
-        own = Working(task_id=7).on(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", dispatched_by="s1").reaching("s1"), settings)
+        own = Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", dispatched_by="s1").reaching("s1"), settings)
         assert own.pushed == ExternalWait.on_workers((5,), 3.0), "a worker this agent dispatches pushes the wait on its work"
-        assert Working(task_id=7).on(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", dispatched_by="s2").reaching("s1"), settings).pushed is None, "another session's worker is not waited on here"
-        widened = ExternalWait.on_workers((5,), 3.0).on(WorkerDispatched(environment_id=1, time=4.0, worker_id=6, name="Dr. Einstein", dispatched_by="s1").reaching("s1"), settings)
+        assert Working(task_id=7).respond(WorkerDispatched(environment_id=1, time=3.0, worker_id=5, name="Lady Lovelace", dispatched_by="s2").reaching("s1"), settings).pushed is None, "another session's worker is not waited on here"
+        widened = ExternalWait.on_workers((5,), 3.0).respond(WorkerDispatched(environment_id=1, time=4.0, worker_id=6, name="Dr. Einstein", dispatched_by="s1").reaching("s1"), settings)
         assert widened.to == ExternalWait.on_workers((5, 6), 3.0) and widened.pushed is None, "a second dispatch widens the wait instead of stacking another"
     finally:
         BaseState.fold(())
-    assert ExternalWait.on_workers((5,), 3.0).on(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True)), settings).to == ExternalWait.on_workers((5,), 3.0), "the agent works on while its workers run"
+    assert ExternalWait.on_workers((5,), 3.0).respond(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True)), settings).to == ExternalWait.on_workers((5,), 3.0), "the agent works on while its workers run"
 
 
 def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_data():
@@ -968,19 +968,19 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_data
     broken = replace(open_next, broken_waits=(3,), broken_waits_summary="task 3 waits on check 1, lint, which cannot run")
     blocked = replace(nothing, blocked_without_wait=(5,), blocked_without_wait_summary="task 5 (the key)")
     of = lambda tasks, approved=(): FeatureData({"tasks": tasks, "plans": PlansData(approved, None)})
-    stop = lambda data, settings=auto, held_before=False: Ready(quiet_since=100.0).on(Stop(held_before=held_before).with_data(data), settings)
-    assert stop(of(parked)).held.rendered().startswith("parked tasks, still open: task 2 (the parser)")
-    assert stop(of(broken)).held.rendered().startswith("task 3 waits on check 1, lint, which cannot run")
-    assert stop(of(open_next, approved=(9,))).held.rendered().startswith("plan 9 is approved and not started")
-    assert stop(of(open_next)).held.rendered().startswith("tasks are open, and auto mode is on: task 4 next: the footer")
-    assert stop(of(open_next), manual).held is None, "off auto mode an open task is no reason to go on"
-    assert stop(of(open_next), auto, held_before=True).held is None, "a stop held once this turn passes"
-    assert stop(of(parked), auto, held_before=True).held is not None, "a parked task is named at every stop: parked is still open"
-    assert stop(of(nothing)).held is None
+    stop = lambda data, settings=auto, held_before=False: Ready(quiet_since=100.0).respond(Stop(held_before=held_before).with_data(data), settings)
+    assert stop(of(parked)).refusal.rendered().startswith("parked tasks, still open: task 2 (the parser)")
+    assert stop(of(broken)).refusal.rendered().startswith("task 3 waits on check 1, lint, which cannot run")
+    assert stop(of(open_next, approved=(9,))).refusal.rendered().startswith("plan 9 is approved and not started")
+    assert stop(of(open_next)).refusal.rendered().startswith("tasks are open, and auto mode is on: task 4 next: the footer")
+    assert stop(of(open_next), manual).refusal is None, "off auto mode an open task is no reason to go on"
+    assert stop(of(open_next), auto, held_before=True).refusal is None, "a stop held once this turn passes"
+    assert stop(of(parked), auto, held_before=True).refusal is not None, "a parked task is named at every stop: parked is still open"
+    assert stop(of(nothing)).refusal is None
     idle = Ready(quiet_since=0.0)
-    active = idle.on(ToolStarting(call=ToolCall(tool="Read", input={}), time=50.0).with_data(of(nothing)), auto)
+    active = idle.respond(ToolStarting(call=ToolCall(tool="Read", input={}), time=50.0).with_data(of(nothing)), auto)
     assert active.to == Ready(quiet_since=50.0, parked_asked=False)
-    assert idle.on(PromptSubmitted(prompt="hi", time=70.0).with_data(of(nothing)), auto).to.quiet_since == 70.0
+    assert idle.respond(PromptSubmitted(prompt="hi", time=70.0).with_data(of(nothing)), auto).to.quiet_since == 70.0
     tick = lambda data, time, state=idle, settings=auto: state.on(Ticked(quiet_for=0.0, time=time).with_data(data), settings)
     asked = tick(of(parked), 61.0)
     assert asked.to == Ready(quiet_since=0.0, parked_asked=True) and asked.nudges[0].rendered().startswith("task 2 is still parked: can you continue it now?")
@@ -988,7 +988,7 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_data
     assert [n.key for n in tick(of(blocked), 45 * 60.0).nudges] == ["tasks.blocked_task_asked_about"] and tick(of(blocked), 20 * 60.0).nudges == ()
     assert [n.key for n in tick(of(nothing), 30 * 60.0).nudges] == ["tasks.check_in_after_quiet"] and tick(of(nothing), 30 * 60.0, idle, manual).nudges == ()
     assert tick(of(nothing), 61.0).nudges == ()
-    assert idle.on(SessionStarted(time=5.0).with_data(of(nothing)), auto).to == Ready(quiet_since=5.0)
+    assert idle.respond(SessionStarted(time=5.0).with_data(of(nothing)), auto).to == Ready(quiet_since=5.0)
 
 
 def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_task_closes():
@@ -1015,25 +1015,25 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     fourth = write(third.to)
     assert fourth.to.edits == 4 and [n.key for n in fourth.nudges] == ["tasks.task_in_hand_repeated"]
     held = write(fourth.to)
-    assert held.held is not None and held.held.rendered().startswith("4 edits since you logged task 7")
+    assert held.refusal is not None and held.refusal.rendered().startswith("4 edits since you logged task 7")
     read = fourth.to.on(ToolStarting(call=ToolCall(tool="Read", input={}), time=1002.0).with_data(of()), settings)
-    assert read.to.edits == 4 and read.held is None and read.to.active_at == 1002.0
+    assert read.to.edits == 4 and read.refusal is None and read.to.active_at == 1002.0
     logged = fourth.to.on(TaskLogged(environment_id=1, time=1500.0, task_id=7).with_data(of()), settings)
     assert logged.to == Working(task_id=7, logged_at=1500.0, edits=0, active_at=1001.0)
     assert fourth.to.on(TaskLogged(environment_id=1, time=1500.0, task_id=8).with_data(of()), settings).to == fourth.to
     stop = lambda state, time, approved=(), held_before=False: state.on(Stop(held_before=held_before, time=time).with_data(of(approved=approved)), settings)
-    assert stop(working, 1100.0).held.rendered().startswith("task 7 is in hand, last logged 1 min ago: carry on")
-    assert stop(working, 1700.0).held.rendered().startswith("task 7, last logged 11 min ago: log where it stands first")
-    assert stop(working, 1100.0, approved=(9,)).held.rendered().startswith("plan 9 is approved and not started")
-    assert stop(working, 1100.0, held_before=True).held is not None, "with a task in hand there is no escape by stopping twice"
-    started = working.on(SessionStarted(source="compact", time=1100.0).with_data(of()), settings)
+    assert stop(working, 1100.0).refusal.rendered().startswith("task 7 is in hand, last logged 1 min ago: carry on")
+    assert stop(working, 1700.0).refusal.rendered().startswith("task 7, last logged 11 min ago: log where it stands first")
+    assert stop(working, 1100.0, approved=(9,)).refusal.rendered().startswith("plan 9 is approved and not started")
+    assert stop(working, 1100.0, held_before=True).refusal is not None, "with a task in hand there is no escape by stopping twice"
+    started = working.respond(SessionStarted(source="compact", time=1100.0).with_data(of()), settings)
     assert [n.key for n in started.nudges] == ["tasks.carry_on", "briefing.brief_and_log_after_compaction"] and 'last log "the parser reads"; uncommitted files: a.py, b.py' in started.nudges[1].rendered()
-    assert [n.key for n in working.on(SessionStarted(source="startup", time=1100.0).with_data(of()), settings).nudges] == ["tasks.carry_on"]
-    assert [n.key for n in Working(task_id=7, active_at=0.0).on(Ticked(quiet_for=900.0, time=900.0).with_data(of()), settings).nudges] == ["tasks.task_still_open"], "a quarter of an hour of quiet, counted from the agent's last activity, names the open task"
-    assert Working(task_id=7, active_at=0.0).on(Ticked(quiet_for=60.0, time=900.0).with_data(of()), settings).nudges == (), "an agent active a minute ago is not nagged, however old its task"
-    assert Working(task_id=7, active_at=100.0).on(Ticked(quiet_for=0.0, time=900.0).with_data(of()), settings).nudges == ()
-    assert working.on(TaskClosed(environment_id=1, time=2.0, task_id=7, how="done").with_data(of()), settings).popped
-    assert not working.on(TaskClosed(environment_id=1, time=2.0, task_id=8, how="done").with_data(of()), settings).popped
+    assert [n.key for n in working.respond(SessionStarted(source="startup", time=1100.0).with_data(of()), settings).nudges] == ["tasks.carry_on"]
+    assert [n.key for n in Working(task_id=7, active_at=0.0).respond(Ticked(quiet_for=900.0, time=900.0).with_data(of()), settings).nudges] == ["tasks.task_still_open"], "a quarter of an hour of quiet, counted from the agent's last activity, names the open task"
+    assert Working(task_id=7, active_at=0.0).respond(Ticked(quiet_for=60.0, time=900.0).with_data(of()), settings).nudges == (), "an agent active a minute ago is not nagged, however old its task"
+    assert Working(task_id=7, active_at=100.0).respond(Ticked(quiet_for=0.0, time=900.0).with_data(of()), settings).nudges == ()
+    assert working.respond(TaskClosed(environment_id=1, time=2.0, task_id=7, how="done").with_data(of()), settings).popped
+    assert not working.respond(TaskClosed(environment_id=1, time=2.0, task_id=8, how="done").with_data(of()), settings).popped
     assert working.on_resume(of(in_hand=0), settings).popped, "its task closed while it waited"
     assert working.on_resume(of(), settings) == (), "its task still in hand, the work goes on in silence: the wait that popped said what came"
 
@@ -1058,29 +1058,29 @@ def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_wh
     of = lambda started: FeatureData({"tasks": tasks, "plans": PlansData((), started)})
     following = FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=10.0)
     assert following.on_push(auto) == () and isinstance(FollowingPlan(plan_id=5).on_push(auto), Block), "an unapproved plan is refused"
-    closed = following.on(TaskClosed(environment_id=1, time=20.0, task_id=7, how="done").with_data(of(plan)), auto)
+    closed = following.respond(TaskClosed(environment_id=1, time=20.0, task_id=7, how="done").with_data(of(plan)), auto)
     assert closed.to == replace(following, task_id=0, moved_from=7) and not closed.popped
-    assert following.on(TaskClosed(environment_id=1, time=20.0, task_id=9, how="done").with_data(of(plan)), auto).to == following
-    started = closed.to.on(TaskStarted(environment_id=1, time=30.0, task_id=8, title="next", plan_id=5).with_data(of(replace(plan, started_task=8))), auto)
+    assert following.respond(TaskClosed(environment_id=1, time=20.0, task_id=9, how="done").with_data(of(plan)), auto).to == following
+    started = closed.to.respond(TaskStarted(environment_id=1, time=30.0, task_id=8, title="next", plan_id=5).with_data(of(replace(plan, started_task=8))), auto)
     assert started.to == replace(following, task_id=8, moved_from=7, logged_at=30.0)
-    at_checkpoint = following.on(TaskClosed(environment_id=1, time=20.0, task_id=7, how="done").with_data(of(replace(plan, at_checkpoint=True, checkpoint_phase=2))), auto)
+    at_checkpoint = following.respond(TaskClosed(environment_id=1, time=20.0, task_id=7, how="done").with_data(of(replace(plan, at_checkpoint=True, checkpoint_phase=2))), auto)
     assert at_checkpoint.to == replace(following, task_id=0, moved_from=7, at_checkpoint=True, phase=2)
-    stopped = at_checkpoint.to.on(Stop().with_data(of(plan)), auto)
-    assert stopped.held.rendered().startswith("plan 5: phase 2 is complete, and in auto mode it does not stop you")
-    waits = at_checkpoint.to.on(Stop().with_data(of(plan)), manual)
-    assert waits.held is None and waits.nudges[0].rendered().startswith("plan 5: phase 2 is complete and a checkpoint")
-    assert at_checkpoint.to.on(SessionStarted(time=40.0).with_data(of(plan)), auto).nudges[0].key == "plans.phase_complete_at_a_checkpoint"
-    assert at_checkpoint.to.on(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True), time=41.0).with_data(of(plan)), auto).to == at_checkpoint.to, "counts nothing at a checkpoint"
-    done = following.on(PlanFinished(environment_id=1, time=50.0, plan_id=5).with_data(of(None)), auto)
+    stopped = at_checkpoint.to.respond(Stop().with_data(of(plan)), auto)
+    assert stopped.refusal.rendered().startswith("plan 5: phase 2 is complete, and in auto mode it does not stop you")
+    waits = at_checkpoint.to.respond(Stop().with_data(of(plan)), manual)
+    assert waits.refusal is None and waits.nudges[0].rendered().startswith("plan 5: phase 2 is complete and a checkpoint")
+    assert at_checkpoint.to.respond(SessionStarted(time=40.0).with_data(of(plan)), auto).nudges[0].key == "plans.phase_complete_at_a_checkpoint"
+    assert at_checkpoint.to.respond(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True), time=41.0).with_data(of(plan)), auto).to == at_checkpoint.to, "counts nothing at a checkpoint"
+    done = following.respond(PlanFinished(environment_id=1, time=50.0, plan_id=5).with_data(of(None)), auto)
     assert done.popped and [n.key for n in done.nudges] == ["plans.plan_done"]
-    assert not following.on(PlanFinished(environment_id=1, time=50.0, plan_id=6).with_data(of(plan)), auto).popped
-    pushed = Ready().on(PlanStarted(environment_id=1, time=1.0, plan_id=5, task_id=7).with_data(of(plan)), auto)
+    assert not following.respond(PlanFinished(environment_id=1, time=50.0, plan_id=6).with_data(of(plan)), auto).popped
+    pushed = Ready().respond(PlanStarted(environment_id=1, time=1.0, plan_id=5, task_id=7).with_data(of(plan)), auto)
     assert pushed.pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=1.0)
-    own = Ready().on(TaskStarted(environment_id=1, time=2.0, task_id=3, title="t", plan_id=0).with_data(of(None)), auto)
+    own = Ready().respond(TaskStarted(environment_id=1, time=2.0, task_id=3, title="t", plan_id=0).with_data(of(None)), auto)
     assert own.pushed == Working(task_id=3, logged_at=2.0)
-    planned = Ready().on(TaskStarted(environment_id=1, time=2.0, task_id=7, title="t", plan_id=0).with_data(of(plan)), auto)
+    planned = Ready().respond(TaskStarted(environment_id=1, time=2.0, task_id=7, title="t", plan_id=0).with_data(of(plan)), auto)
     assert planned.pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=2.0)
-    became = Working(task_id=7, logged_at=1.0, edits=2).on(PlanStarted(environment_id=1, time=3.0, plan_id=5, task_id=7).with_data(of(plan)), auto)
+    became = Working(task_id=7, logged_at=1.0, edits=2).respond(PlanStarted(environment_id=1, time=3.0, plan_id=5, task_id=7).with_data(of(plan)), auto)
     assert became.to == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=1.0, edits=2)
 
 
@@ -1097,12 +1097,12 @@ def test_following_plan_pops_when_the_plan_is_postponed_or_abandoned_and_on_resu
     plan = StartedPlan(plan_id=5, next_task=8, started_task=7, started_task_briefing="", tasks=(7, 8), tasks_left=2, at_checkpoint=False, checkpoint_phase=0)
     of = lambda started: FeatureData({"tasks": tasks, "plans": PlansData((), started)})
     following = FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=10.0)
-    by_user = following.on(PlanPostponed(environment_id=1, time=20.0, plan_id=5, by_user=True).with_data(of(None)), settings)
+    by_user = following.respond(PlanPostponed(environment_id=1, time=20.0, plan_id=5, by_user=True).with_data(of(None)), settings)
     assert by_user.popped and [n.rendered() for n in by_user.nudges] == ["the user postponed plan 5"]
-    by_agent = following.on(PlanPostponed(environment_id=1, time=20.0, plan_id=5, by_user=False).with_data(of(None)), settings)
+    by_agent = following.respond(PlanPostponed(environment_id=1, time=20.0, plan_id=5, by_user=False).with_data(of(None)), settings)
     assert by_agent.popped and by_agent.nudges == (), "the agent's own command needs no line"
-    assert not following.on(PlanPostponed(environment_id=1, time=20.0, plan_id=6, by_user=True).with_data(of(plan)), settings).popped
-    abandoned = following.on(PlanAbandoned(environment_id=1, time=20.0, plan_id=5, by_user=True).with_data(of(None)), settings)
+    assert not following.respond(PlanPostponed(environment_id=1, time=20.0, plan_id=6, by_user=True).with_data(of(plan)), settings).popped
+    abandoned = following.respond(PlanAbandoned(environment_id=1, time=20.0, plan_id=5, by_user=True).with_data(of(None)), settings)
     assert abandoned.popped and [n.rendered() for n in abandoned.nudges] == ["the user abandoned plan 5"]
     assert following.on_resume(of(None), settings).popped, "beneath a wait, a plan postponed meanwhile is over on resume"
     assert following.on_resume(of(replace(plan, plan_id=6)), settings).popped, "another plan started meanwhile: this one is over"
@@ -1121,16 +1121,16 @@ def test_a_question_asked_pushes_waiting_and_its_answer_pops_it_on_top_or_on_res
     of = lambda *open: FeatureData({"questions": QuestionsData(open=open)})
     BaseState.fold((QuestionsConduct,))
     try:
-        asked = Working(task_id=7, logged_at=1.0).on(QuestionPosed(environment_id=1, time=2.0, question_id=4).with_data(of(4)), settings)
+        asked = Working(task_id=7, logged_at=1.0).respond(QuestionPosed(environment_id=1, time=2.0, question_id=4).with_data(of(4)), settings)
         assert asked.pushed == Waiting(question_id=4), "a question asked pushes the wait on the work in hand"
         waiting = Waiting(question_id=4)
-        answered = waiting.on(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings)
+        answered = waiting.respond(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings)
         assert answered.popped and [n.rendered() for n in answered.nudges][0].startswith("question 4 is answered")
-        assert not waiting.on(QuestionAnswered(environment_id=1, time=3.0, question_id=5).with_data(of(4)), settings).popped, "another question's answer is not this one's"
-        assert waiting.on(SessionStarted(time=4.0).with_data(of(4)), settings).popped is False and waiting.on(Stop().with_data(of(4)), settings).held is None, "a stop while waiting is fine"
+        assert not waiting.respond(QuestionAnswered(environment_id=1, time=3.0, question_id=5).with_data(of(4)), settings).popped, "another question's answer is not this one's"
+        assert waiting.respond(SessionStarted(time=4.0).with_data(of(4)), settings).popped is False and waiting.respond(Stop().with_data(of(4)), settings).refusal is None, "a stop while waiting is fine"
         assert waiting.on_resume(of(4), settings) == (), "beneath a compaction the wait stands while the question is open"
         assert waiting.on_resume(of(), settings).popped, "answered meanwhile, it pops on resume with the line"
-        assert not Compacting().on(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings).popped, "the answer under a compaction waits for the resume"
+        assert not Compacting().respond(QuestionAnswered(environment_id=1, time=3.0, question_id=4).with_data(of()), settings).popped, "the answer under a compaction waits for the resume"
     finally:
         BaseState.fold(())
 
@@ -1153,34 +1153,34 @@ def test_a_declared_wait_pushes_expecting_which_asks_on_the_ticks_and_pops_when_
     of = lambda: FeatureData({"tasks": tasks})
     BaseState.fold((TasksConduct,))
     try:
-        pushed = Working(task_id=7).on(WaitRequest(what="the build", ends_on="command_outputs:4,checks:2", time=100.0), auto)
+        pushed = Working(task_id=7).respond(WaitRequest(what="the build", ends_on="command_outputs:4,checks:2", time=100.0), auto)
         assert pushed.pushed == ExternalWait(what="the build", ends_on="command_outputs:4,checks:2", start_time=100.0), "journal await pushes the wait on the work"
-        assert Working(task_id=7).on(ImpasseReport(why="the login", time=1.0), auto).pushed == Impasse(why="the login"), "journal stuck pushes Stuck"
+        assert Working(task_id=7).respond(ImpasseReport(why="the login", time=1.0), auto).pushed == Impasse(why="the login"), "journal stuck pushes Stuck"
     finally:
         BaseState.fold(())
     waiting = pushed.pushed
-    assert waiting.on(Stop(time=130.0).with_data(of()), auto).held is None and waiting.on(Ticked(quiet_for=10.0, time=130.0).with_data(of()), auto).nudges == (), "quiet at a stop and on an early tick"
-    meanwhile = waiting.on(Ticked(quiet_for=70.0, time=170.0).with_data(of()), auto)
+    assert waiting.respond(Stop(time=130.0).with_data(of()), auto).refusal is None and waiting.respond(Ticked(quiet_for=10.0, time=130.0).with_data(of()), auto).nudges == (), "quiet at a stop and on an early tick"
+    meanwhile = waiting.respond(Ticked(quiet_for=70.0, time=170.0).with_data(of()), auto)
     assert meanwhile.to == replace(waiting, next_task_named=True) and meanwhile.nudges[0].rendered().startswith("while you wait for the build, task 9, the next one is next"), "in auto mode the next task is named once after a minute"
-    assert waiting.on(Ticked(quiet_for=70.0, time=170.0).with_data(of()), manual).nudges == (), "out of auto mode it is not"
-    looked = meanwhile.to.on(Ticked(quiet_for=310.0, time=410.0).with_data(of()), auto)
+    assert waiting.respond(Ticked(quiet_for=70.0, time=170.0).with_data(of()), manual).nudges == (), "out of auto mode it is not"
+    looked = meanwhile.to.respond(Ticked(quiet_for=310.0, time=410.0).with_data(of()), auto)
     assert looked.to == replace(meanwhile.to, reminder_time=410.0) and looked.nudges[0].rendered().startswith("check the build now: you have waited 5 min"), "every five quiet minutes the agent is asked to look"
-    assert looked.to.on(Ticked(quiet_for=400.0, time=500.0).with_data(of()), auto).nudges == (), "and not again before five more"
-    first = waiting.on(RowResolved(environment_id=1, time=200.0, ref="command_outputs:4", outcome="output 4 finished"), auto)
+    assert looked.to.respond(Ticked(quiet_for=400.0, time=500.0).with_data(of()), auto).nudges == (), "and not again before five more"
+    first = waiting.respond(RowResolved(environment_id=1, time=200.0, ref="command_outputs:4", outcome="output 4 finished"), auto)
     assert first.to == replace(waiting, ends_on="checks:2", outcomes="output 4 finished") and not first.popped, "one row settled, one still to come"
-    assert waiting.on(RowResolved(environment_id=1, time=200.0, ref="tasks:3"), auto).to == waiting, "a row it does not wait on is not its business"
-    last = first.to.on(RowResolved(environment_id=1, time=300.0, ref="checks:2", outcome="check 2 passed"), auto)
+    assert waiting.respond(RowResolved(environment_id=1, time=200.0, ref="tasks:3"), auto).to == waiting, "a row it does not wait on is not its business"
+    last = first.to.respond(RowResolved(environment_id=1, time=300.0, ref="checks:2", outcome="check 2 passed"), auto)
     assert last.popped and last.nudges[0].rendered().startswith("the wait for the build is over: output 4 finished; check 2 passed"), "the last row settled pops the wait with what each came to"
-    assert Impasse(why="the login").on(Stop(time=1.0).with_data(of()), auto).held is None and Impasse(why="the login").on(Ticked(quiet_for=900.0, time=901.0).with_data(of()), auto).nudges == (), "stuck is quiet"
-    assert Impasse(why="the login").on(ToolStarting(call=ToolCall(tool="Read", input={})), auto).popped, "its own tool use pops it"
+    assert Impasse(why="the login").respond(Stop(time=1.0).with_data(of()), auto).refusal is None and Impasse(why="the login").respond(Ticked(quiet_for=900.0, time=901.0).with_data(of()), auto).nudges == (), "stuck is quiet"
+    assert Impasse(why="the login").respond(ToolStarting(call=ToolCall(tool="Read", input={})), auto).popped, "its own tool use pops it"
 
 
 def test_a_journal_command_is_no_tool_use_to_a_wait():
     from journal.features.questions.states.waiting import Waiting
     settings = SettingsValue({})
     waiting = Waiting(question_id=4)
-    assert waiting.on(ToolStarting(call=shell("journal task list")), settings).popped is False, "a journal command lifts no wait"
-    assert waiting.on(ToolStarting(call=shell("ls src")), settings).popped, "the agent's own tool use does"
+    assert waiting.respond(ToolStarting(call=shell("journal task list")), settings).popped is False, "a journal command lifts no wait"
+    assert waiting.respond(ToolStarting(call=shell("ls src")), settings).popped, "the agent's own tool use does"
 
 
 def test_a_part_knows_whether_it_reads_an_output_and_the_shape_of_that_read():
@@ -1213,10 +1213,10 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
 
     class Talkative(Conduct):
         def on_ticked_talkative(self, event: Ticked, settings: SettingsValue) -> Transition:
-            return self.unchanged(LINE)
+            return self.none(LINE)
 
         def on_message_arrived_talkative(self, event: MessageArrived, settings: SettingsValue) -> Transition:
-            return self.unchanged(OTHER)
+            return self.none(OTHER)
 
     @dataclass(frozen=True)
     class Plain(BaseState):
@@ -1228,19 +1228,19 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
 
         def on_ticked(self, event: Ticked, settings: SettingsValue) -> Transition:
             event.stop_propagation()
-            return self.unchanged()
+            return self.none()
 
     settings = SettingsValue({})
     BaseState.fold((Talkative,))
     try:
         tick = Ticked(quiet_for=1.0).with_data(FeatureData({}))
         arrived = MessageArrived(environment_id=1, time=2.0, text="hi").with_data(FeatureData({}))
-        assert Plain().on(tick, settings).nudges == (LINE,) and Plain().on(arrived, settings).nudges == (OTHER,), "in any other state the conduct speaks"
-        assert Stopping().on(tick, settings).nudges == (), "a listener that stops the event's propagation is the last to hear it, so the conduct is silent"
-        assert Plain().on(tick, settings).nudges == (LINE,), "the next walk of the same event starts again"
-        assert CompactingState().on(arrived, settings).nudges == (OTHER,), "compacting stops nothing itself: what the conduct says queues at the typist"
-        assert CompactingState().on(ToolStarting(call=shell("ls")).with_data(FeatureData({})), settings).held == Engine.COMPACTION_PAUSE.create(), "the hold on every tool stands"
-        assert CompactingState().on(SessionStarted(source="compact").with_data(FeatureData({})), settings).popped, "and the session's start still pops it"
+        assert Plain().respond(tick, settings).nudges == (LINE,) and Plain().respond(arrived, settings).nudges == (OTHER,), "in any other state the conduct speaks"
+        assert Stopping().respond(tick, settings).nudges == (), "a listener that stops the event's propagation is the last to hear it, so the conduct is silent"
+        assert Plain().respond(tick, settings).nudges == (LINE,), "the next walk of the same event starts again"
+        assert CompactingState().respond(arrived, settings).nudges == (OTHER,), "compacting stops nothing itself: what the conduct says queues at the typist"
+        assert CompactingState().respond(ToolStarting(call=shell("ls")).with_data(FeatureData({})), settings).refusal == Engine.COMPACTION_PAUSE.create(), "the hold on every tool stands"
+        assert CompactingState().respond(SessionStarted(source="compact").with_data(FeatureData({})), settings).popped, "and the session's start still pops it"
     finally:
         BaseState.fold(())
     sent = []
@@ -1273,7 +1273,7 @@ def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_a
     settings = SettingsValue({})
     following = FollowingPlan(plan_id=19, approved=True)
     assert following.label() == "plan 19, with no task in hand"
-    started = following.on(TaskStarted(environment_id=1, time=5.0, task_id=1141, title="the developer tab", plan_id=0).with_data(FeatureData({})), settings)
+    started = following.respond(TaskStarted(environment_id=1, time=5.0, task_id=1141, title="the developer tab", plan_id=0).with_data(FeatureData({})), settings)
     assert started.to.task_id == 1141 and started.to.label() == "task 1141" and started.to.logged_at == 5.0, "one task is in hand at a time, so the task started is the plan state's task whether the plan holds it or not"
 
 
@@ -1293,22 +1293,22 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
     tasks = TasksData(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=OpenTask(3, "the footer", "", 0), last_commands=(), open_ids=(3, 4), open_summary="task 3 (the footer), task 4 (the margin)")
     started = StartedPlan(plan_id=2, next_task=3, started_task=0, started_task_briefing="", tasks=(3, 4), tasks_left=2, at_checkpoint=False, checkpoint_phase=0)
     of = lambda plan: FeatureData({"plans": PlansData((), plan), "tasks": tasks})
-    begun = Ready().on(SessionStarted(time=1.0).with_data(of(None)), settings("orchestrator"))
+    begun = Ready().respond(SessionStarted(time=1.0).with_data(of(None)), settings("orchestrator"))
     assert isinstance(begun.to, Orchestrating) and begun.pushed is None, "at a session start the bottom state becomes the mode's"
-    planned = Ready().on(SessionStarted(time=1.0).with_data(of(started)), settings("orchestrator"))
+    planned = Ready().respond(SessionStarted(time=1.0).with_data(of(started)), settings("orchestrator"))
     assert isinstance(planned.to, Orchestrating) and isinstance(planned.pushed, OrchestratingPlan) and planned.pushed.plan_id == 2, "a started plan is pushed over the new mode staor as the orchestrator's plan state"
-    assert type(Ready().on(SessionStarted(time=1.0).with_data(of(None)), settings("builder")).to) is Ready, "the builder's mode state is Idle"
-    stop = Orchestrating().on(Stop().with_data(of(None)), settings("orchestrator"))
-    assert stop.held is not None and "task 3 (the footer), task 4 (the margin)" in stop.held.rendered() and "dispatch a worker" in stop.held.rendered(), "the orchestrator's stop is held with the tasks to dispatch"
-    assert "task 3" in Ready().on(Stop().with_data(of(None)), settings("builder")).held.rendered() and "dispatch" not in Ready().on(Stop().with_data(of(None)), settings("builder")).held.rendered(), "the builder's stop names the next task to do"
-    assert isinstance(Orchestrating().on(TaskStarted(environment_id=1, time=2.0, task_id=7, title="x", plan_id=0).with_data(of(None)), settings("orchestrator")).pushed, Delegating), "a task started in the orchestrator's mode is delegating, not working"
-    delegating = Delegating(task_id=7, logged_at=1.0).on(Stop(time=2.0).with_data(of(None)), settings("orchestrator"))
-    assert delegating.held is not None and "hand it to a worker" in delegating.held.rendered(), "the delegating task says hand it over where working says carry on"
-    changed = Orchestrating().on(SettingChanged(environment_id=1, time=3.0, setting=Workers.MODE.key).with_data(of(None)), settings("builder"))
+    assert type(Ready().respond(SessionStarted(time=1.0).with_data(of(None)), settings("builder")).to) is Ready, "the builder's mode state is Idle"
+    stop = Orchestrating().respond(Stop().with_data(of(None)), settings("orchestrator"))
+    assert stop.refusal is not None and "task 3 (the footer), task 4 (the margin)" in stop.refusal.rendered() and "dispatch a worker" in stop.refusal.rendered(), "the orchestrator's stop is held with the tasks to dispatch"
+    assert "task 3" in Ready().respond(Stop().with_data(of(None)), settings("builder")).refusal.rendered() and "dispatch" not in Ready().respond(Stop().with_data(of(None)), settings("builder")).refusal.rendered(), "the builder's stop names the next task to do"
+    assert isinstance(Orchestrating().respond(TaskStarted(environment_id=1, time=2.0, task_id=7, title="x", plan_id=0).with_data(of(None)), settings("orchestrator")).pushed, Delegating), "a task started in the orchestrator's mode is delegating, not working"
+    delegating = Delegating(task_id=7, logged_at=1.0).respond(Stop(time=2.0).with_data(of(None)), settings("orchestrator"))
+    assert delegating.refusal is not None and "hand it to a worker" in delegating.refusal.rendered(), "the delegating task says hand it over where working says carry on"
+    changed = Orchestrating().respond(SettingChanged(environment_id=1, time=3.0, setting=Workers.MODE.key).with_data(of(None)), settings("builder"))
     assert type(changed.to) is Ready, "the mode setting's change swaps the bottom state"
     assert isinstance(Ready().on_resume(of(None), settings("solo")).to, Soloing), "and so does a resume to the bottom state"
-    assert Soloing().on(ToolStarting(call=shell("journal worker dispatch 'Mr. Smith' 'the job' --profile journal-medior")).with_data(of(None)), settings("solo")).held == Workers.SOLO_DISPATCH.create(), "solo keeps workers out"
-    assert Soloing().on(ToolStarting(call=shell("ls")).with_data(of(None)), settings("solo")).held is None
+    assert Soloing().respond(ToolStarting(call=shell("journal worker dispatch 'Mr. Smith' 'the job' --profile journal-medior")).with_data(of(None)), settings("solo")).refusal == Workers.SOLO_DISPATCH.create(), "solo keeps workers out"
+    assert Soloing().respond(ToolStarting(call=shell("ls")).with_data(of(None)), settings("solo")).refusal is None
 
 
 def test_an_orchestrator_driven_through_a_plan_of_twenty_tasks_with_workers_never_stalls(app: App, monkeypatch):
@@ -1361,9 +1361,9 @@ def test_a_stop_with_the_tasks_log_older_than_the_set_minutes_asks_for_the_log_l
     data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(in_hand=7, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())})
     settings = lambda minutes: SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_AGE_LIMIT.key: minutes, WorkersFeature.MODE.key: "builder"})
     working = Working(task_id=7, logged_at=0.0)
-    assert working.on(Stop(time=5 * 60.0).with_data(data), settings(10)).held.key == "tasks.carry_on", "within the minutes a stop is told to carry on"
-    assert working.on(Stop(time=11 * 60.0).with_data(data), settings(10)).held.key == "tasks.log_first_at_stop", "past them the log line comes first"
-    assert working.on(Stop(time=2 * 60.0).with_data(data), settings(1)).held.key == "tasks.log_first_at_stop", "the minutes are the user's to set"
+    assert working.respond(Stop(time=5 * 60.0).with_data(data), settings(10)).refusal.key == "tasks.carry_on", "within the minutes a stop is told to carry on"
+    assert working.respond(Stop(time=11 * 60.0).with_data(data), settings(10)).refusal.key == "tasks.log_first_at_stop", "past them the log line comes first"
+    assert working.respond(Stop(time=2 * 60.0).with_data(data), settings(1)).refusal.key == "tasks.log_first_at_stop", "the minutes are the user's to set"
 
 
 def test_a_long_journal_line_reaches_the_agent_whole_in_several_marked_pieces(app: App, monkeypatch):

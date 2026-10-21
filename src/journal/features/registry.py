@@ -21,7 +21,7 @@ class Registry:
     def is_enabled(self, feature: type[Feature]) -> bool:
         return feature.fixed or bool(self.settings.get(f"features.{feature.name}", feature.default))
 
-    def skill_required_in(self, state: str) -> Skill | None:
+    def required_skill(self, state: str) -> Skill | None:
         return next((skill for skill in self.skills() if state in skill.required_in), None)
 
     def options(self) -> list:
@@ -39,14 +39,14 @@ class Registry:
     def skills(self) -> list[Skill]:
         return [feature.skill for feature in self.features if feature.skill]
 
-    def skill_named(self, name: str) -> Skill | None:
+    def skill(self, name: str) -> Skill | None:
         return next((skill for skill in self.skills() if skill.name == name), None)
 
     def nudge_keyed(self, key: str) -> Nudge | None:
         return next((nudge for feature in self.features for nudge in feature.nudges if nudge.key == key), None)
 
-    def owner_of(self, nudge: Nudge) -> type[Feature]:
+    def owner(self, nudge: Nudge) -> type[Feature]:
         return self._by_name[nudge.feature]
 
     def silenced(self, nudge: Nudge) -> bool:
-        return nudge.feature in self._by_name and not self.is_enabled(self.owner_of(nudge))
+        return nudge.feature in self._by_name and not self.is_enabled(self.owner(nudge))
