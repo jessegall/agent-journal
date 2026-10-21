@@ -11,6 +11,8 @@ from urllib.request import Request as HttpRequest, urlopen
 
 import pytest
 
+from journal.support.tool_call import ToolCall
+
 from journal.app import App
 from journal.config import Config
 from journal.features.workers.support.worker_runner import WorkerRunner
@@ -3151,8 +3153,9 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     from journal.features.plugins.support.protocol import Protocol
     from journal.models.task import Task
     protocol = app.container.get(Protocol)
-    tool = json.loads(protocol.line_of(ToolStarting(tool="Bash", input={"command": "ls"}).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
-    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0}), "an agent event: its name, where it happened and its own fields"
+    from journal.providers.claude import Claude
+    tool = json.loads(protocol.line_of(ToolStarting(call=Claude().call("Bash", {"command": "ls"})).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
+    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool": "Bash", "input": {"command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": []}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": ""}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
     row = json.loads(protocol.line_of(Created(model=Task(id=7, environment_id=1, title="t"), by=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.answer_of("").answer == "allow", "an empty answer lets the event through"
@@ -3266,7 +3269,7 @@ def test_a_subagents_event_reaches_a_plugin_and_is_held_only_at_a_tool(app):
     from journal.events.agent.tool_starting import ToolStarting
     from journal.features.plugins.listeners.plugins_hear_agents import PluginsHearAgents
     plugin = echo(app)
-    assert PluginsHearAgents.holds(plugin, ToolStarting(tool="Read", input={}, subagent="a1")), "a subagent's tool is held like the agent's"
+    assert PluginsHearAgents.holds(plugin, ToolStarting(call=ToolCall(tool="Read", input={}), subagent="a1")), "a subagent's tool is held like the agent's"
     assert not PluginsHearAgents.holds(plugin, PromptSubmitted(prompt="x", subagent="a1")) and PluginsHearAgents.holds(plugin, PromptSubmitted(prompt="x")), "a subagent's other events are heard, never held"
 
 
@@ -3633,13 +3636,13 @@ def test_the_content_checks_read_the_tool_the_prompt_the_context_and_the_clock_f
     hook(app, "SessionStart")
     checks = app.container.get(Checks)
     at = lambda event, provider="claude": Context(event=event, session="s1", environment_id=1, provider=provider)
-    write = at(ToolStarting(tool="Write", input={"file_path": "src/deploy.sh"}, session="s1", environment_id=1))
-    shell = at(ToolStarting(tool="shell", input={"command": ["bash", "-lc", "git push origin main"]}, session="s1", environment_id=1, provider="codex"), "codex")
+    write = at(ToolStarting(call=ToolCall(tool="Write", input={"file_path": "src/deploy.sh"}), session="s1", environment_id=1))
+    shell = at(ToolStarting(call=ToolCall(tool="shell", input={"command": ["bash", "-lc", "git push origin main"]}), session="s1", environment_id=1, provider="codex"), "codex")
     assert checks.answer("tool_named", write, "Write, Edit") and not checks.answer("tool_named", write, "Bash") and checks.answer("tool_named", shell, "shell"), "the tool's name, as the provider names it"
     assert checks.answer("tool_input_has", write, "deploy") and checks.answer("tool_input_has", shell, "git push") and not checks.answer("tool_input_has", write, "push"), "the words anywhere in the input, Codex's command list included"
     prompt = at(PromptSubmitted(prompt="Deploy it to production now", session="s1", environment_id=1))
     assert checks.answer("prompt_has", prompt, "deploy") and not checks.answer("prompt_has", prompt, "rollback") and not checks.answer("prompt_has", write, "deploy")
-    full = at(ToolStarting(tool="Read", input={}, session="s1", environment_id=1, context=0.62))
+    full = at(ToolStarting(call=ToolCall(tool="Read", input={}), session="s1", environment_id=1, context=0.62))
     assert checks.answer("context_over", full, "60") and not checks.answer("context_over", full, "70") and not checks.answer("context_over", write, "0"), "the context as the event reports it"
     night = time.mktime((2026, 10, 17, 23, 30, 0, 0, 0, -1))
     noon = time.mktime((2026, 10, 17, 12, 0, 0, 0, 0, -1))

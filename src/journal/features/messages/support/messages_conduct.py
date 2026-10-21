@@ -26,12 +26,12 @@ class MessagesConduct(Conduct):
         return self.unchanged(*inbox_named(event.snapshot.of(messages_feature()).unread))
 
     def on_tool_starting_messages_read_whole(self, event: ToolStarting, settings: Settings) -> Transition:
-        return self.hold(messages_feature().READ_THE_WORDS_WHOLE.create()) if TRUNCATED.search(event.words) else self.unchanged()
+        return self.hold(messages_feature().READ_THE_WORDS_WHOLE.create()) if TRUNCATED.search(event.call.command) else self.unchanged()
 
     def on_tool_starting_messages_unanswered(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = messages_feature()
         messages = event.snapshot.of(feature)
-        if event.subagent or not messages.unanswered or Chain.is_journal_line(event.words) or reads_their_files(event, messages.unanswered_files):
+        if event.subagent or not messages.unanswered or event.call.is_journal or reads_their_files(event, messages.unanswered_files):
             return self.unchanged()
         owed = ", ".join(str(n) for n in messages.unanswered)
         if messages.uses_unanswered >= int(settings.of(feature.HOLD_AFTER)):
@@ -45,7 +45,7 @@ class MessagesConduct(Conduct):
         messages = event.snapshot.of(feature)
         if event.subagent or not messages.unread:
             return self.unchanged()
-        if event.writes and messages.times_named >= int(settings.of(feature.HOLD_AFTER_REMINDERS)):
+        if event.call.writes and messages.times_named >= int(settings.of(feature.HOLD_AFTER_REMINDERS)):
             return self.hold(feature.WRITE_HELD_UNTIL_READ.create(count=len(messages.unread)))
         every = int(settings.of(feature.REMIND_EVERY))
         if every > 0 and messages.uses_since_newest > 0 and messages.uses_since_newest % every == 0:
@@ -53,7 +53,7 @@ class MessagesConduct(Conduct):
         return self.unchanged()
 
     def on_tool_finished_messages(self, event: ToolFinished, settings: Settings) -> Transition:
-        command = event.input.get("command", "") if event.tool == "Bash" else ""
+        command = event.call.command
         return self.unchanged(messages_feature().REPLY_BY_TAG.create()) if SENT in command else self.unchanged()
 
     def on_reaction_given_messages(self, event: ReactionGiven, settings: Settings) -> Transition:
@@ -70,4 +70,4 @@ def inbox_named(unread: tuple[int, ...]) -> list[Nudge]:
 
 
 def reads_their_files(event: ToolStarting, folders: tuple[str, ...]) -> bool:
-    return any(path.startswith(folder) for path in event.read_paths for folder in folders)
+    return any(path.startswith(folder) for path in event.call.read_paths for folder in folders)

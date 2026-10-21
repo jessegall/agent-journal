@@ -20,7 +20,7 @@ class SkillsConduct(Conduct):
 
     def on_tool_starting_skills(self, event: ToolStarting, settings: Settings) -> Transition:
         owed = event.snapshot.of(skills_feature()).owed_cards()
-        if event.subagent or not event.writes or not owed:
+        if event.subagent or not event.call.writes or not owed:
             return self.unchanged()
         return self.hold(read_first(owed)[0])
 

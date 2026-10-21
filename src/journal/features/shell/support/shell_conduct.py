@@ -20,20 +20,20 @@ class ShellConduct(Conduct):
     def on_tool_starting_shell_read_in_parts(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
         cap = int(settings.of(Shell.SHOWN))
-        return self.hold(Shell.READ_THE_FILE_IN_PARTS.create(lines=event.file_lines, cap=cap)) if event.file_lines > 2 * cap else self.unchanged()
+        return self.hold(Shell.READ_THE_FILE_IN_PARTS.create(lines=event.call.file_lines, cap=cap)) if event.call.file_lines > 2 * cap else self.unchanged()
 
     def on_tool_starting_shell_journal_alone(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
-        journal, parts = Chain.journal_parts(event.words)
+        journal, parts = event.call.journal_parts()
         return self.hold(Shell.JOURNAL_COMMAND_RUNS_ALONE.create()) if 0 < journal < parts else self.unchanged()
 
     def on_tool_starting_shell_readers(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
-        if not OutputReads.is_one(event.words):
+        if not OutputReads.is_one(event.call.command):
             return self.unchanged()
         shell = event.snapshot.of(Shell)
-        tips = [Shell.USE_THE_READER.create(reader=r.name, about=r.about) for r in shell.readers if r.matches(event.words)]
-        shape = OutputReads.shape(event.words)
+        tips = [Shell.USE_THE_READER.create(reader=r.name, about=r.about) for r in shell.readers if r.matches(event.call.command)]
+        shape = OutputReads.shape(event.call.command)
         if shell.output_reads.count(shape) >= 2:
             tips.append(Shell.ADD_A_READER.create(command=shape))
         fresh = [tip for tip in tips if tip.rendered() not in shell.tipped]

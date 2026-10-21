@@ -19,7 +19,7 @@ class MemoryConduct(Conduct):
 
     def on_tool_starting_memory(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = memory_feature()
-        if event.subagent or not event.writes or not event.snapshot.of(feature).mark_owed:
+        if event.subagent or not event.call.writes or not event.snapshot.of(feature).mark_owed:
             return self.unchanged()
         return self.hold(feature.WRITE_HELD_UNTIL_DECIDED.create())
 

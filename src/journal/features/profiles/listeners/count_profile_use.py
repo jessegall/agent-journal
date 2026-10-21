@@ -13,7 +13,7 @@ class CountProfileUse(AgentListener[ToolStarting]):
         self.statistics = statistics
 
     def handle(self, event: ToolStarting) -> None:
-        name = event.input.get("subagent_type", "") if event.tool in ("Agent", "Task") else ""
+        name = event.call.input.get("subagent_type", "") if event.call.tool in ("Agent", "Task") else ""
         if not name:
             return
         by = Actor.agent(event.session)

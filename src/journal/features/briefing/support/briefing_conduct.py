@@ -19,7 +19,7 @@ class BriefingConduct(Conduct):
 
     def on_tool_starting_briefing(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = briefing_feature()
-        if event.subagent or not event.writes or event.snapshot.of(feature).oriented:
+        if event.subagent or not event.call.writes or event.snapshot.of(feature).oriented:
             return self.unchanged()
         return self.hold(feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
 

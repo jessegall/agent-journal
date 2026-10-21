@@ -10,7 +10,7 @@ class ProfilesConduct(Conduct):
 
     def on_tool_starting_profiles(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.profiles.feature import Profiles
-        name = event.input.get("subagent_type", "")
-        if event.tool not in DISPATCH_TOOLS or name not in event.snapshot.of(Profiles).workers:
+        name = event.call.input.get("subagent_type", "")
+        if event.call.tool not in DISPATCH_TOOLS or name not in event.snapshot.of(Profiles).workers:
             return self.unchanged()
         return self.hold(Profiles.WORKER_PROFILE_IS_NOT_A_SUBAGENT.create(name=name))

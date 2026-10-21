@@ -14,15 +14,15 @@ class LawsConduct(Conduct):
     def on_tool_starting_laws(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.laws.feature import Laws
         from journal.features.profiles.feature import Profiles
-        if event.tool not in DISPATCH_TOOLS:
+        if event.call.tool not in DISPATCH_TOOLS:
             return self.unchanged()
-        if not event.input.get("model"):
+        if not event.call.input.get("model"):
             return self.hold(Laws.NAME_THE_MODEL.create())
         profiles = event.snapshot.of(Profiles)
-        asked = event.input.get("subagent_type", "")
+        asked = event.call.input.get("subagent_type", "")
         if asked not in profiles.names:
             return self.hold(Laws.NAME_A_PROFILE.create(asked=asked or "none", profiles=", ".join(profiles.subagents)))
-        if not event.input.get("description") or not event.input.get("prompt"):
+        if not event.call.input.get("description") or not event.call.input.get("prompt"):
             return self.hold(Laws.BIND_THE_JOB.create())
         return self.unchanged()
 

@@ -4,7 +4,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import ClassVar, Iterator
 
+from journal.support.chain import Chain
+from journal.support.command_part import CommandPart
 from journal.support.reads import Reads
+from journal.support.tool_call import ToolCall
 from journal.support.writes import Writes
 from journal.support.decision import Decision
 from journal.support.hook import Hook
@@ -201,6 +204,16 @@ class Provider:
 
     def writes(self, tool: str, input: dict) -> bool:
         return tool in self.write_tools or (tool == self.shell_tool and Writes.of(ToolInput.from_json(input).command))
+
+    def call(self, tool: str, input: dict) -> ToolCall:
+        command = ToolInput.from_json(input).command if tool == self.shell_tool else ""
+        return ToolCall(tool=tool, input=input, command=command, parts=tuple(self.parts_of(command)), is_journal=bool(command) and Chain.is_journal_line(command), writes=self.writes(tool, input),
+                        written_paths=tuple(self.written_paths(tool, input)), read_paths=self.read_paths(tool, input), file_lines=self.file_lines(tool, input), skill_loaded=self.skill_loaded(tool, input))
+
+    @staticmethod
+    def parts_of(command: str) -> list[CommandPart]:
+        own = [part for part in Chain.parts(command) if part.recorded] if command else []
+        return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text), writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text))) for part in own]
 
     @staticmethod
     def folder_name(project: Path) -> str:

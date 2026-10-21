@@ -15,6 +15,6 @@ class RecordSentMessage(AgentListener[ToolFinished]):
         self.messages = messages
 
     def handle(self, event: ToolFinished) -> None:
-        if event.tool != SENDS or event.subagent or not str(event.input.get("message", "")).strip():
+        if event.call.tool != SENDS or event.subagent or not str(event.call.input.get("message", "")).strip():
             return
-        self.messages.save(Message.sent_to(str(event.input.get("to", "")), str(event.input["message"]).strip(), event.session), Actor.agent(event.session))
+        self.messages.save(Message.sent_to(str(event.call.input.get("to", "")), str(event.call.input["message"]).strip(), event.session), Actor.agent(event.session))

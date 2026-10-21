@@ -16,4 +16,4 @@ class QuestionsConduct(Conduct):
 
     def on_tool_starting_questions(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.questions.feature import Questions
-        return self.hold(Questions.ASK_THROUGH_THE_JOURNAL.create()) if event.tool in QUESTION_TOOLS else self.unchanged()
+        return self.hold(Questions.ASK_THROUGH_THE_JOURNAL.create()) if event.call.tool in QUESTION_TOOLS else self.unchanged()

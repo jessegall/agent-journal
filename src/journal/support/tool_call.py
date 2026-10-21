@@ -1,0 +1,26 @@
+from dataclasses import dataclass
+
+from journal.support.command_part import CommandPart
+
+
+@dataclass(frozen=True)
+class ToolCall:
+    """The one reading of a tool call, made where the hook is translated and carried on both tool events: the tool and its input as they came, the shell line and its parts, whether the call writes and which files it writes or reads, and the skill it loads."""
+
+    tool: str
+    input: dict
+    command: str = ""
+    parts: tuple[CommandPart, ...] = ()
+    is_journal: bool = False
+    writes: bool = False
+    written_paths: tuple[str, ...] = ()
+    read_paths: tuple[str, ...] = ()
+    file_lines: int = 0
+    skill_loaded: str = ""
+
+    @property
+    def input_text(self) -> str:
+        return " ".join(str(value) for value in self.input.values())
+
+    def journal_parts(self) -> tuple[int, int]:
+        return sum(1 for part in self.parts if part.is_journal), len(self.parts)

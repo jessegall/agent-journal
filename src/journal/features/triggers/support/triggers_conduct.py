@@ -22,7 +22,7 @@ class TriggersConduct(Conduct):
 
     def on_tool_starting_triggers(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.triggers.feature import Triggers
-        found = triggers_met(event.snapshot.of(Triggers).triggers, event.input_text)
+        found = triggers_met(event.snapshot.of(Triggers).triggers, event.call.input_text)
         denied = [t for t in found if t.action == TriggerAction.DENY]
         if denied:
             return self.hold(Triggers.DENIED.create(title=denied[0].text))

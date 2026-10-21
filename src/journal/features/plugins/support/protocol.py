@@ -1,9 +1,10 @@
 import json
-from dataclasses import fields
+from dataclasses import asdict, fields
 from datetime import datetime, timezone
 
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.event import Event
+from journal.support.tool_call import ToolCall
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.updated import Updated
 from journal.features.plugins.support.plugin_fault import PluginFault
@@ -33,7 +34,10 @@ class Protocol:
         if isinstance(event, ModelEvent):
             row = {"table": event.model.table(), "id": event.model.id, "by": event.by.stamp}
             return row | {"changed": list(event.changed())} if isinstance(event, Updated) else row
-        return {f.name: getattr(event, f.name) for f in fields(event) if f.name not in PLACED}
+        data = {}
+        for name, value in ((f.name, getattr(event, f.name)) for f in fields(event) if f.name not in PLACED):
+            data |= asdict(value) if isinstance(value, ToolCall) else {name: value}
+        return data
 
     def answer_of(self, text: str) -> PluginAnswer:
         """The plugin's answer; an empty one is allow, one that does not parse is a fault."""

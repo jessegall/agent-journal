@@ -7,6 +7,11 @@ from urllib.request import Request as HttpRequest, urlopen
 
 import pytest
 
+from journal.providers.claude import Claude
+from journal.support.tool_call import ToolCall
+
+shell = lambda line: Claude().call("Bash", {"command": line})
+
 from journal.app import App
 from journal.config import Config
 from journal.support.where import Where
@@ -384,7 +389,7 @@ def test_merged_answers_say_every_nudge_in_order_hold_on_the_first_and_move_once
 
 def test_every_listener_whose_event_matches_runs_the_most_specific_first_and_the_base_hears_compaction_and_the_end():
     settings, state = SettingsValue({}), Listening()
-    assert state.on(ToolStarting(tool="Write", input={}), settings).nudges == (LINE, OTHER)
+    assert state.on(ToolStarting(call=ToolCall(tool="Write", input={})), settings).nudges == (LINE, OTHER)
     assert state.on(SessionEnded(), settings).nudges == (OTHER,)
     assert state.on(Event(), settings) == state.unchanged()
     assert state.on(Compacting(), settings).pushed == CompactingState()
@@ -398,14 +403,14 @@ def test_settings_is_a_frozen_value_of_the_options_read_by_option():
 
 
 def test_every_agent_event_carries_the_time_it_was_placed_and_a_tick_carries_its_own():
-    placed = ToolStarting(tool="Write", input={}).placed("s1", 1, "claude", None, 12.5)
+    placed = ToolStarting(call=ToolCall(tool="Write", input={})).placed("s1", 1, "claude", None, 12.5)
     assert placed.at == 12.5 and placed.session == "s1"
     assert Ticked(session="s1", environment_id=1, at=3.0, quiet_for=0.0).at == 3.0
 
 
 def test_a_renamed_state_answers_as_before_through_its_on_listeners_and_a_plain_method_is_none():
     settings = SettingsValue({})
-    assert Ended().on(ToolStarting(tool="Write", input={}), settings).popped
+    assert Ended().on(ToolStarting(call=ToolCall(tool="Write", input={})), settings).popped
     assert Ended().on(SessionEnded(), settings) == Ended().unchanged()
     names = [method.__name__ for _, method in Ended.listeners()]
     assert set(names[:4]) == {"on_session_started", "on_prompt_submitted", "on_tool_starting", "on_session_ended"} and names[4:] == ["on_compaction"]
@@ -572,7 +577,7 @@ def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_re
 
 
 def test_the_engines_own_states_wait_compacting_and_ended_answer_hand_built_events():
-    settings, own, subagents = SettingsValue({}), ToolStarting(tool="Write", input={}), ToolStarting(tool="Write", input={}, subagent="a1")
+    settings, own, subagents = SettingsValue({}), ToolStarting(call=ToolCall(tool="Write", input={})), ToolStarting(call=ToolCall(tool="Write", input={}), subagent="a1")
     assert Wait().on(PromptSubmitted(prompt="go on"), settings).popped
     assert not Wait().on(PromptSubmitted(prompt="[journal] a line"), settings).popped
     assert Wait().on(own, settings).popped and not Wait().on(subagents, settings).popped
@@ -600,8 +605,8 @@ def test_the_snapshot_is_read_per_feature_and_travels_on_the_event_the_machine_a
     assert snapshot.of(TasksFeature).in_hand == 1 and snapshot.of(TasksFeature).parked == ()
     assert len(snapshot.of(MessagesFeature).unread) == 1 and snapshot.of(BriefingFeature).oriented is False
     assert snapshot.of(ShellFeature).background == () and snapshot.of(WorkersFeature).reports_waiting == ()
-    event = ToolStarting(tool="Write", input={}).with_snapshot(snapshot)
-    assert event.snapshot.of(TasksFeature).in_hand == 1 and ToolStarting(tool="Write", input={}).snapshot.readings == {}
+    event = ToolStarting(call=ToolCall(tool="Write", input={})).with_snapshot(snapshot)
+    assert event.snapshot.of(TasksFeature).in_hand == 1 and ToolStarting(call=ToolCall(tool="Write", input={})).snapshot.readings == {}
 
 
 class InboxConduct(Conduct):
@@ -623,7 +628,7 @@ class LawsConduct(Conduct):
 def test_the_features_conduct_is_folded_into_the_base_state_and_every_matching_listener_runs_the_states_own_first():
     BaseState.fold((InboxConduct, LawsConduct))
     try:
-        settings, event = SettingsValue({}), ToolStarting(tool="Write", input={})
+        settings, event = SettingsValue({}), ToolStarting(call=ToolCall(tool="Write", input={}))
         answered = Listening().on(event, settings)
         assert answered.nudges == (LINE, OTHER, OTHER) and answered.held is WHY and answered.popped and answered.dropped == ()
         pushing = Catching().on(event, settings)
@@ -695,11 +700,11 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_snaps
         assert [n.key for n in turn.nudges] == ["etiquette.no_shop_talk", "etiquette.say_you_not_the_user", "pins.pin_the_link"]
         assert "https://a.test/new" in turn.nudges[2].rendered()
         assert Idle().on(TurnWritten(text="see https://a.test/pinned", final=False).with_snapshot(snapshot), settings).nudges == ()
-        finished = Idle().on(ToolFinished(tool="Bash", input={}, output="opened https://a.test/pr/1").with_snapshot(snapshot), settings)
+        finished = Idle().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="opened https://a.test/pr/1").with_snapshot(snapshot), settings)
         assert [n.key for n in finished.nudges] == ["etiquette.a_line_is_an_instruction", "pins.pin_the_link"]
         quiet = Snapshot({**snapshot.readings, "etiquette": EtiquetteSnapshot(lines_since_reminder=3)})
-        assert Idle().on(ToolFinished(tool="Bash", input={}, output="nothing", subagent="s1").with_snapshot(snapshot), settings).nudges == ()
-        assert Idle().on(ToolFinished(tool="Bash", input={}, output="nothing").with_snapshot(quiet), settings).nudges == ()
+        assert Idle().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing", subagent="s1").with_snapshot(snapshot), settings).nudges == ()
+        assert Idle().on(ToolFinished(call=ToolCall(tool="Bash", input={}), output="nothing").with_snapshot(quiet), settings).nudges == ()
     finally:
         BaseState.fold(())
 
@@ -739,11 +744,11 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
         assert [n.rendered() for n in prompt.nudges] == ["do this now: bump the version"]
         arrived = Idle().on(MessageArrived(environment_id=1, at=1.0, text="deploy now").with_snapshot(snapshot), settings)
         assert [n.rendered() for n in arrived.nudges] == ["no deploys tonight"]
-        denied = Idle().on(ToolStarting(tool="Bash", input={"command": "deploy prod"}).with_snapshot(snapshot), settings)
+        denied = Idle().on(ToolStarting(call=shell("deploy prod")).with_snapshot(snapshot), settings)
         assert denied.held is not None and denied.held.rendered() == "a trigger denies this: no deploys tonight"
-        held = Idle().on(ToolStarting(tool="Edit", input={"file_path": plugin_file}, writes=True, written_paths=(plugin_file,)).with_snapshot(snapshot), settings)
+        held = Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": plugin_file}, writes=True, written_paths=(plugin_file,))).with_snapshot(snapshot), settings)
         assert held.held is not None and held.held.key == "plugins.plugin_files_are_the_users"
-        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "src/a.py"}, writes=True, written_paths=("src/a.py",)).with_snapshot(snapshot), settings).held is None
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "src/a.py"}, writes=True, written_paths=("src/a.py",))).with_snapshot(snapshot), settings).held is None
     finally:
         BaseState.fold(())
 
@@ -794,55 +799,55 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         assert [n.rendered() for n in prompt.nudges] == ["new messages 7, 8"]
         stop = Idle().on(IdleEvent().with_snapshot(snapshot), settings)
         assert [n.key for n in stop.nudges] == ["messages.new_messages_to_answer", "workers.act_on_the_reports"]
-        piped = Idle().on(ToolStarting(tool="Bash", input={"command": "journal message read 7 | head -3"}).with_snapshot(snapshot), settings)
+        piped = Idle().on(ToolStarting(call=shell("journal message read 7 | head -3")).with_snapshot(snapshot), settings)
         assert piped.held is not None and piped.held.key == "messages.read_the_words_whole"
-        read = Idle().on(ToolStarting(tool="Bash", input={"command": "ls"}).with_snapshot(snapshot), settings)
+        read = Idle().on(ToolStarting(call=shell("ls")).with_snapshot(snapshot), settings)
         assert read.held is None and [n.key for n in read.nudges] == ["messages.answer_before_anything_else", "messages.new_messages_to_answer"], "asked for the answer after three uses, and the inbox named every third use"
-        their_file = Idle().on(ToolStarting(tool="Read", input={"file_path": f"{tmp_path}/files/message/5/a.png"}, read_paths=(f"{tmp_path}/files/message/5/a.png",)).with_snapshot(snapshot), settings)
+        their_file = Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": f"{tmp_path}/files/message/5/a.png"}, read_paths=(f"{tmp_path}/files/message/5/a.png",))).with_snapshot(snapshot), settings)
         assert "messages.answer_before_anything_else" not in [n.key for n in their_file.nudges]
         held_unanswered = Snapshot({**readings, "messages": MessagesSnapshot(unread=(), unanswered=(5,), unanswered_files=(), uses_since_newest=0, times_named=0, uses_unanswered=10)})
-        assert Idle().on(ToolStarting(tool="Bash", input={"command": "ls"}).with_snapshot(held_unanswered), settings).held.key == "messages.tools_held_until_answered"
-        assert Idle().on(ToolStarting(tool="Bash", input={"command": "journal task list"}).with_snapshot(held_unanswered), settings).held is None
+        assert Idle().on(ToolStarting(call=shell("ls")).with_snapshot(held_unanswered), settings).held.key == "messages.tools_held_until_answered"
+        assert Idle().on(ToolStarting(call=shell("journal task list")).with_snapshot(held_unanswered), settings).held is None
         held_unread = Snapshot({**readings, "messages": MessagesSnapshot(unread=(7,), unanswered=(), unanswered_files=(), uses_since_newest=1, times_named=5, uses_unanswered=0)})
-        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_snapshot(held_unread), settings).held.key == "messages.write_held_until_read"
-        assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}).with_snapshot(held_unread), settings).held is None
-        sent = Idle().on(ToolFinished(tool="Bash", input={"command": "journal message send hi --reply-to 7"}, output="sent").with_snapshot(snapshot), settings)
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_snapshot(held_unread), settings).held.key == "messages.write_held_until_read"
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_snapshot(held_unread), settings).held is None
+        sent = Idle().on(ToolFinished(call=shell("journal message send hi --reply-to 7"), output="sent").with_snapshot(snapshot), settings)
         assert [n.key for n in sent.nudges] == ["messages.reply_by_tag"]
         face = Idle().on(ReactionGiven(environment_id=1, at=1.0, face="👍", message_id=7, by_user=True).with_snapshot(snapshot), settings)
         assert [n.rendered() for n in face.nudges][0].startswith("the user put 👍 on message 7")
         assert Idle().on(ReactionGiven(environment_id=1, at=1.0, face="👍", message_id=7, by_user=False).with_snapshot(snapshot), settings).nudges == ()
-        dispatch = lambda **given: Idle().on(ToolStarting(tool="Agent", input=given).with_snapshot(snapshot), settings)
+        dispatch = lambda **given: Idle().on(ToolStarting(call=ToolCall(tool="Agent", input=given)).with_snapshot(snapshot), settings)
         assert dispatch(subagent_type="journal-researcher", description="d", prompt="p").held.key == "laws.name_the_model"
         assert dispatch(model="sonnet", subagent_type="general-purpose", description="d", prompt="p").held.key == "laws.name_a_profile"
         assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d").held.key == "laws.bind_the_job"
         assert dispatch(model="sonnet", subagent_type="journal-medior", description="d", prompt="p").held.key == "profiles.worker_profile_is_not_a_subagent"
         assert dispatch(model="sonnet", subagent_type="journal-researcher", description="d", prompt="p").held.key == "workers.too_many_subagents"
         fewer = Snapshot({**readings, "workers": WorkersSnapshot(**{**readings["workers"].__dict__, "subagents_running": 1})})
-        known = Idle().on(ToolStarting(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/a.py again"}).with_snapshot(fewer), settings)
+        known = Idle().on(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/a.py again"})).with_snapshot(fewer), settings)
         assert known.held.key == "workers.send_the_job_to_the_subagent" and "sub-1" in known.held.rendered()
-        assert Idle().on(ToolStarting(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/b.py"}).with_snapshot(fewer), settings).held is None
-        big = Idle().on(ToolFinished(tool="Bash", input={"command": "ls"}, output="\n" * 400).with_snapshot(snapshot), settings)
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Agent", input={"model": "sonnet", "subagent_type": "journal-researcher", "description": "d", "prompt": "read src/b.py"})).with_snapshot(fewer), settings).held is None
+        big = Idle().on(ToolFinished(call=shell("ls"), output="\n" * 400).with_snapshot(snapshot), settings)
         assert [n.key for n in big.nudges] == ["laws.cap_the_output"]
-        assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}, file_lines=201).with_snapshot(snapshot), settings).held.key == "shell.read_the_file_in_parts"
-        assert Idle().on(ToolStarting(tool="Bash", input={"command": "journal task list && ls"}).with_snapshot(snapshot), settings).held.key == "shell.journal_command_runs_alone"
-        reader = Idle().on(ToolStarting(tool="Bash", input={"command": "journal output read 9 --grep FAILED"}).with_snapshot(snapshot), settings)
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}, file_lines=201)).with_snapshot(snapshot), settings).held.key == "shell.read_the_file_in_parts"
+        assert Idle().on(ToolStarting(call=shell("journal task list && ls")).with_snapshot(snapshot), settings).held.key == "shell.journal_command_runs_alone"
+        reader = Idle().on(ToolStarting(call=shell("journal output read 9 --grep FAILED")).with_snapshot(snapshot), settings)
         shell_lines = lambda answered: [n.key for n in answered.nudges if n.key.startswith("shell.")]
         assert shell_lines(reader) == ["shell.use_the_reader"]
-        again = Idle().on(ToolStarting(tool="Bash", input={"command": "journal output read 9 --grep x"}).with_snapshot(snapshot), settings)
+        again = Idle().on(ToolStarting(call=shell("journal output read 9 --grep x")).with_snapshot(snapshot), settings)
         assert shell_lines(again) == ["shell.add_a_reader"]
         tipped = Snapshot({**readings, "shell": ShellSnapshot(**{**readings["shell"].__dict__, "tipped": (Shell.ADD_A_READER.create(command="journal output read <output> --grep x").rendered(),)})})
-        assert shell_lines(Idle().on(ToolStarting(tool="Bash", input={"command": "journal output read 9 --grep x"}).with_snapshot(tipped), settings)) == []
+        assert shell_lines(Idle().on(ToolStarting(call=shell("journal output read 9 --grep x")).with_snapshot(tipped), settings)) == []
         tick = Idle().on(Ticked(quiet_for=6.0, at=500.0).with_snapshot(snapshot), settings)
         by_key = {n.key: n.rendered() for n in tick.nudges}
         assert by_key["shell.outputs_ended"].startswith("output 3 finished; output 4 failed with code 1") and by_key["shell.check_the_background"].startswith("output 12 still running")
         assert sorted(by_key) == ["shell.check_the_background", "shell.outputs_ended", "workers.act_on_the_reports"]
         assert [n.key for n in Idle().on(Ticked(quiet_for=1.0, at=200.0).with_snapshot(snapshot), settings).nudges] == ["workers.act_on_the_reports"]
-        assert Idle().on(ToolStarting(tool="Read", input={"file_path": str(private / "keys.json")}).with_snapshot(snapshot), settings).held.key == "secrets.secrets_out_of_reach"
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": str(private / "keys.json")})).with_snapshot(snapshot), settings).held.key == "secrets.secrets_out_of_reach"
         allowed = Idle().on(SecretAllowed(environment_id=0, at=1.0, secret_id=2, title="GitHub", programs=("gh",)).with_snapshot(snapshot), settings)
         assert [n.rendered() for n in allowed.nudges][0].startswith("the user let secret 2, GitHub, go to gh")
-        assert Idle().on(ToolStarting(tool="AskUserQuestion", input={}).with_snapshot(snapshot), settings).held.key == "questions.ask_through_the_journal"
+        assert Idle().on(ToolStarting(call=ToolCall(tool="AskUserQuestion", input={})).with_snapshot(snapshot), settings).held.key == "questions.ask_through_the_journal"
         worktree_file = str(tmp_path / "worktrees" / "3-Lady-Lovelace" / "a.py")
-        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": worktree_file}, writes=True, written_paths=(worktree_file,)).with_snapshot(snapshot), settings).held.key == "workers.file_is_the_workers"
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": worktree_file}, writes=True, written_paths=(worktree_file,))).with_snapshot(snapshot), settings).held.key == "workers.file_is_the_workers"
         back = Idle().on(WorkerBack(environment_id=1, at=1.0, worker_id=2, name="Lady Lovelace", report=40, dispatched_by="").with_snapshot(snapshot), settings)
         assert [n.rendered() for n in back.nudges] == ["worker 2, Lady Lovelace, reported in the chat"]
     finally:
@@ -856,8 +861,8 @@ def test_a_state_that_defines_a_conduct_listeners_name_answers_in_its_place():
 
     BaseState.fold((InboxConduct,))
     try:
-        assert Listening().on(ToolStarting(tool="Write", input={}), SettingsValue({})).nudges == (LINE, OTHER, OTHER)
-        assert Quiet().on(ToolStarting(tool="Write", input={}), SettingsValue({})).nudges == (LINE, OTHER), "the state's own answer stands where the conduct's would have"
+        assert Listening().on(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({})).nudges == (LINE, OTHER, OTHER)
+        assert Quiet().on(ToolStarting(call=ToolCall(tool="Write", input={})), SettingsValue({})).nudges == (LINE, OTHER), "the state's own answer stands where the conduct's would have"
     finally:
         BaseState.fold(())
 
@@ -898,25 +903,25 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
         assert [n.key for n in prompt.nudges] == [], "the plans skill is read already, by its hash"
         unread = Snapshot({**readings, "skills": SkillsSnapshot(owed=(), loaded={}, skills=cards)})
         assert [n.rendered() for n in Idle().on(PromptSubmitted(prompt="draw me a roadmap").with_snapshot(unread), settings).nudges][0].startswith("read the plans skill before anything else")
-        held = Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_snapshot(snapshot), settings)
+        held = Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_snapshot(snapshot), settings)
         assert held.held is not None and held.held.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
-        assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}).with_snapshot(snapshot), settings).held is None
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"})).with_snapshot(snapshot), settings).held is None
         stop = Idle().on(IdleEvent().with_snapshot(snapshot), settings)
         assert stop.held is not None and stop.held.key == "skills.stopped_owing"
         paid = Snapshot({**readings, "skills": SkillsSnapshot(owed=(), loaded={}, skills=cards)})
-        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_snapshot(paid), settings).held.key == "briefing.look_before_the_first_write"
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_snapshot(paid), settings).held.key == "briefing.look_before_the_first_write"
         looked = Snapshot({**paid.readings, "briefing": BriefingSnapshot(**{**readings["briefing"].__dict__, "oriented": True})})
-        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_snapshot(looked), settings).held.key == "memory.write_held_until_decided"
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_snapshot(looked), settings).held.key == "memory.write_held_until_decided"
         assert Idle().on(IdleEvent().with_snapshot(looked), settings).held.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
         decided = Snapshot({**looked.readings, "memory": MemorySnapshot(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=())})
-        assert Idle().on(ToolStarting(tool="Edit", input={"file_path": "a.py"}, writes=True).with_snapshot(decided), settings).held is None
-        crossed = Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}, context=0.81, session="s1").with_snapshot(decided), settings)
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, writes=True)).with_snapshot(decided), settings).held is None
+        crossed = Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.81, session="s1").with_snapshot(decided), settings)
         assert [n.rendered() for n in crossed.nudges] == ["context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<the ruling>\"`, `journal reminder create \"<do this>\"`, or `journal nothing survives \"<why>\"`"] or crossed.nudges[0].key == "memory.decide_at_the_mark"
-        assert Idle().on(ToolStarting(tool="Read", input={"file_path": "a.py"}, context=0.6, session="s1").with_snapshot(decided), settings).nudges == ()
-        whispered = Idle().on(ToolStarting(tool="Bash", input={"command": "lsof -i :port"}).with_snapshot(decided), settings)
+        assert Idle().on(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}), context=0.6, session="s1").with_snapshot(decided), settings).nudges == ()
+        whispered = Idle().on(ToolStarting(call=shell("lsof -i :port")).with_snapshot(decided), settings)
         assert [n.rendered() for n in whispered.typed] == ["fact 3: the port is 8420"]
         already = Snapshot({**decided.readings, "memory": MemorySnapshot(mark_owed=0, context_mark=50, rows=readings["memory"].rows, lines_in_window=("fact 3: the port is 8420",))})
-        assert Idle().on(ToolStarting(tool="Bash", input={"command": "lsof -i :port"}).with_snapshot(already), settings).typed == (), "whispered once per context window"
+        assert Idle().on(ToolStarting(call=shell("lsof -i :port")).with_snapshot(already), settings).typed == (), "whispered once per context window"
         rule = Idle().on(RuleMade(environment_id=0, at=1.0, row_id=7, by_agent=True).with_snapshot(decided), settings)
         assert [n.key for n in rule.nudges] == ["memory.does_the_rule_apply_project_wide"] and "rule 7" in rule.nudges[0].rendered()
         assert Idle().on(RuleMade(environment_id=0, at=1.0, row_id=7, by_agent=False).with_snapshot(decided), settings).nudges == ()
@@ -962,7 +967,7 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_snap
     assert stop(of(parked), auto, held_before=True).held is None, "a stop held once this turn passes"
     assert stop(of(nothing)).held is None
     idle = Idle(quiet_since=0.0)
-    active = idle.on(ToolStarting(tool="Read", input={}, at=50.0).with_snapshot(of(nothing)), auto)
+    active = idle.on(ToolStarting(call=ToolCall(tool="Read", input={}), at=50.0).with_snapshot(of(nothing)), auto)
     assert active.to == Idle(quiet_since=50.0, parked_asked=False)
     assert idle.on(PromptSubmitted(prompt="hi", at=70.0).with_snapshot(of(nothing)), auto).to.quiet_since == 70.0
     tick = lambda snapshot, at, state=idle, settings=auto: state.on(Ticked(quiet_for=0.0, at=at).with_snapshot(snapshot), settings)
@@ -989,7 +994,7 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     tasks = TasksSnapshot(in_hand=7, last_log_line='"the parser reads"', parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=())
     of = lambda in_hand=7, approved=(): Snapshot({"tasks": replace(tasks, in_hand=in_hand), "plans": PlansSnapshot(approved, None), "git": GitSnapshot(uncommitted="a.py, b.py")})
     working = Working(task_id=7, logged_at=1000.0)
-    write = lambda state, at=1001.0: state.on(ToolStarting(tool="Edit", input={}, writes=True, at=at).with_snapshot(of()), settings)
+    write = lambda state, at=1001.0: state.on(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True), at=at).with_snapshot(of()), settings)
     first = write(working)
     assert first.to == Working(task_id=7, logged_at=1000.0, edits=1, active_at=1001.0) and first.nudges == ()
     second = write(first.to)
@@ -1000,7 +1005,7 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     assert fourth.to.edits == 4 and [n.key for n in fourth.nudges] == ["tasks.task_in_hand_repeated"]
     held = write(fourth.to)
     assert held.held is not None and held.held.rendered().startswith("4 edits since you logged task 7")
-    read = fourth.to.on(ToolStarting(tool="Read", input={}, at=1002.0).with_snapshot(of()), settings)
+    read = fourth.to.on(ToolStarting(call=ToolCall(tool="Read", input={}), at=1002.0).with_snapshot(of()), settings)
     assert read.to.edits == 4 and read.held is None and read.to.active_at == 1002.0
     logged = fourth.to.on(TaskLogged(environment_id=1, at=1500.0, task_id=7).with_snapshot(of()), settings)
     assert logged.to == Working(task_id=7, logged_at=1500.0, edits=0, active_at=1001.0)
@@ -1053,7 +1058,7 @@ def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_wh
     waits = at_checkpoint.to.on(Stop().with_snapshot(of(plan)), manual)
     assert waits.held is None and waits.nudges[0].rendered().startswith("plan 5: phase 2 is complete and a checkpoint")
     assert at_checkpoint.to.on(SessionStarted(at=40.0).with_snapshot(of(plan)), auto).nudges[0].key == "plans.phase_complete_at_a_checkpoint"
-    assert at_checkpoint.to.on(ToolStarting(tool="Edit", input={}, writes=True, at=41.0).with_snapshot(of(plan)), auto).to == at_checkpoint.to, "counts nothing at a checkpoint"
+    assert at_checkpoint.to.on(ToolStarting(call=ToolCall(tool="Edit", input={}, writes=True), at=41.0).with_snapshot(of(plan)), auto).to == at_checkpoint.to, "counts nothing at a checkpoint"
     done = following.on(PlanDone(environment_id=1, at=50.0, plan_id=5).with_snapshot(of(None)), auto)
     assert done.popped and [n.key for n in done.nudges] == ["plans.plan_done"]
     assert not following.on(PlanDone(environment_id=1, at=50.0, plan_id=6).with_snapshot(of(plan)), auto).popped

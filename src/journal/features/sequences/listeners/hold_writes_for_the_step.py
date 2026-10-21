@@ -28,11 +28,11 @@ class HoldWritesForTheStep(AgentListener[ToolStarting]):
         if run is None or run.parked_why:
             return None
         provider = self.providers.named(event.provider or "claude")
-        if event.tool == provider.shell_tool and self.running.names(run, event.input.get("command", "")):
+        if self.running.names(run, event.call.command):
             if not run.taken_up_at:
                 self.running.follow(event.session, event.environment_id)
             return None
-        if not provider.writes(event.tool, event.input) or self.requiring.owes_anything(self.machine.agent(event.session, event.environment_id)):
+        if not event.call.writes or self.requiring.owes_anything(self.machine.agent(event.session, event.environment_id)):
             return None
         from journal.features.sequences.feature import Sequences
         values = {"n": run.sequence_id, "step": run.step + 1, "text": run.text}

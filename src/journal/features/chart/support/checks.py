@@ -214,13 +214,13 @@ class Checks:
     def tool_named(self, ctx: Context, names: str) -> bool:
         """The tool about to run is one of the names in the text, as the provider names it, in any case."""
         wanted = {n.strip().lower() for n in names.replace(",", " ").split() if n.strip()}
-        return isinstance(ctx.event, ToolStarting) and ctx.event.tool.lower() in wanted
+        return isinstance(ctx.event, ToolStarting) and ctx.event.call.tool.lower() in wanted
 
     def tool_input_has(self, ctx: Context, words: str) -> bool:
         """The tool's input, any of its text, holds the words, in any case: a file path, a command, a prompt to a subagent."""
         if not isinstance(ctx.event, ToolStarting) or not words:
             return False
-        return words.lower() in " ".join(self.texts_in(ctx.event.input)).lower()
+        return words.lower() in " ".join(self.texts_in(ctx.event.call.input)).lower()
 
     @classmethod
     def texts_in(cls, value) -> list[str]:
@@ -365,7 +365,7 @@ class Checks:
         if not isinstance(ctx.event, ToolStarting):
             return False
         folders = [str(self.config.files / "message" / str(m.id)) + "/" for m in self.messages.unanswered()]
-        return any(path.startswith(folder) for path in ctx.provider_in(self.providers).read_paths(ctx.event.tool, ctx.event.input) for folder in folders)
+        return any(path.startswith(folder) for path in ctx.provider_in(self.providers).read_paths(ctx.event.call.tool, ctx.event.call.input) for folder in folders)
 
     def unread_messages(self, ctx: Context) -> bool:
         return bool(self.messages.unread())
@@ -448,13 +448,13 @@ class Checks:
 
     def tool_writes(self, ctx: Context) -> bool:
         event = ctx.event
-        return isinstance(event, ToolStarting) and ctx.provider_in(self.providers).writes(event.tool, event.input)
+        return isinstance(event, ToolStarting) and ctx.provider_in(self.providers).writes(event.call.tool, event.call.input)
 
     def journal_command(self, ctx: Context) -> bool:
         event = ctx.event
-        if not isinstance(event, ToolStarting) or event.tool != ctx.provider_in(self.providers).shell_tool:
+        if not isinstance(event, ToolStarting) or event.call.tool != ctx.provider_in(self.providers).shell_tool:
             return False
-        return Chain.is_journal_line(event.input.get("command", ""))
+        return event.call.is_journal
 
     def state(self, ctx: Context):
         """The agent's state as the walk read it once."""

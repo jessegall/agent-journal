@@ -59,7 +59,7 @@ class Working(AgentState):
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         active = replace(self, active_at=event.at)
-        if not event.writes or event.subagent:
+        if not event.call.writes or event.subagent:
             return self.changed(active)
         if self.edits >= int(settings.of(Tasks.LOG_AFTER)):
             return self.hold(Tasks.WRITE_HELD_UNTIL_LOGGED.create(edits=self.edits, name=self.named(), log=self.log_command()))

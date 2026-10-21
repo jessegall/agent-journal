@@ -13,7 +13,7 @@ class TasksConduct(Conduct):
 
     def on_tool_starting_tasks(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        command = event.input.get("command", "") if event.tool == "Bash" else ""
+        command = event.call.command
         last = event.snapshot.of(Tasks).last_commands
         if not command or len(last) < SAME or any(earlier != command for earlier in last):
             return self.unchanged()

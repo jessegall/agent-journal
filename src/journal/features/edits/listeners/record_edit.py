@@ -23,11 +23,11 @@ class RecordEdit(AgentListener[ToolFinished]):
         self.config, self.edits, self.snapshots = config, edits, snapshots
 
     def handle(self, event: ToolFinished) -> None:
-        path = event.input.get("file_path", "")
-        if event.tool not in EDITING or not path:
+        path = event.call.input.get("file_path", "")
+        if event.call.tool not in EDITING or not path:
             return
-        patch = PatchRows.of(event.response, event.input, event.tool)
-        edit = Edit(session=event.session, path=self.inside(path), kind="create" if event.tool == "Write" else "edit", at=time.time(),
+        patch = PatchRows.of(event.response, event.call.input, event.call.tool)
+        edit = Edit(session=event.session, path=self.inside(path), kind="create" if event.call.tool == "Write" else "edit", at=time.time(),
                     added=patch.counted("add"), removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:200]))
         self.edits.record(edit, Actor.agent(event.session))
         text = self.snapshots.now(edit.path)

@@ -21,21 +21,21 @@ class WorkersConduct(Conduct):
 
     def on_tool_starting_workers_most(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        if event.tool not in DISPATCH_TOOLS or event.subagent:
+        if event.call.tool not in DISPATCH_TOOLS or event.subagent:
             return self.unchanged()
         most, running = int(settings.of(Workers.MOST_SUBAGENTS)), event.snapshot.of(Workers).subagents_running
         return self.hold(Workers.TOO_MANY_SUBAGENTS.create(running=running)) if most and running >= most else self.unchanged()
 
     def on_tool_starting_workers_worktrees(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        if event.subagent or not event.writes:
+        if event.subagent or not event.call.writes:
             return self.unchanged()
-        owner = worktree_written(event.snapshot.of(Workers), event.written_paths)
+        owner = worktree_written(event.snapshot.of(Workers), event.call.written_paths)
         return self.hold(Workers.FILE_IS_THE_WORKERS.create(n=owner.worker_id, name=owner.worker_name)) if owner else self.unchanged()
 
     def on_tool_starting_workers_known(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        given = event.input if event.tool in DISPATCH_TOOLS else {}
+        given = event.call.input if event.call.tool in DISPATCH_TOOLS else {}
         kind = given.get("subagent_type", "")
         named = NamedPaths.of(f"{given.get('description', '')} {given.get('prompt', '')}")
         if not named or kind in FRESH:

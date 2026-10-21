@@ -9,6 +9,7 @@ from journal.events.agent.subagent_started import SubagentStarted
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
+from journal.support.tool_call import ToolCall
 from journal.events.agent.turn_written import TurnWritten
 from journal.events.models.created import Created
 from journal.events.models.updated import Updated
@@ -37,8 +38,8 @@ from journal.repositories.workers import Workers
 EVENTS = {
     "session_started": lambda s, e: SessionStarted(session=s, environment_id=e, source="startup"),
     "prompt_submitted": lambda s, e: PromptSubmitted(session=s, environment_id=e, prompt="a prompt"),
-    "tool_starting": lambda s, e: ToolStarting(session=s, environment_id=e, tool="Edit", input={"file_path": "a file"}),
-    "tool_finished": lambda s, e: ToolFinished(session=s, environment_id=e, tool="Edit", input={"file_path": "a file"}, output="the file edited"),
+    "tool_starting": lambda s, e: ToolStarting(session=s, environment_id=e, call=ToolCall(tool="Edit", input={"file_path": "a file"})),
+    "tool_finished": lambda s, e: ToolFinished(session=s, environment_id=e, call=ToolCall(tool="Edit", input={"file_path": "a file"}), output="the file edited"),
     "idle": lambda s, e: Idle(session=s, environment_id=e),
     "turn_written": lambda s, e: TurnWritten(session=s, environment_id=e, text="a turn", final=True),
     "subagent_started": lambda s, e: SubagentStarted(session=s, environment_id=e, subagent="a subagent"),

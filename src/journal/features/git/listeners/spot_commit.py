@@ -39,7 +39,7 @@ class SpotCommit(AgentListener[ToolFinished]):
         self.after = after
 
     def handle(self, event: ToolFinished) -> Decision | None:
-        command = event.input.get("command", "") if event.tool == "Bash" else ""
+        command = event.call.command
         if "git merge" in command:
             return self.merged(event)
         if "git commit" not in command:

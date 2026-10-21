@@ -18,7 +18,7 @@ class MarkLoaded(AgentListener[ToolFinished]):
         self.agents, self.files, self.cards, self.clock = agents, files, cards, clock
 
     def handle(self, event: ToolFinished) -> None:
-        read = [self.files.skill_read(path) for path in event.read_paths] + [self.files.skill_in_folder(event.skill_loaded) if event.skill_loaded else None]
+        read = [self.files.skill_read(path) for path in event.call.read_paths] + [self.files.skill_in_folder(event.call.skill_loaded) if event.call.skill_loaded else None]
         for skill in [s for s in read if s is not None]:
             self.loaded(event, skill)
 
