@@ -173,17 +173,6 @@ class Provider(ABC):
     def output_session(self, output: str, err: str) -> str:
         return ""
 
-    @staticmethod
-    def output_rows(output: str) -> list[dict]:
-        return [row for line in output.splitlines() if isinstance(row := Provider.output_row(line), dict)]
-
-    @staticmethod
-    def output_row(line: str) -> object:
-        try:
-            return json.loads(line)
-        except ValueError:
-            return None
-
     def answer(self, hook: Hook, decision: Decision) -> Response:
         kind = hook.kind
         if kind == HookKind.STOP and (not decision.allowed or decision.context):

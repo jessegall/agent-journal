@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 from journal.support.chain import Chain
 from journal.support.command_part import CommandPart
@@ -34,6 +35,9 @@ class ToolCall:
 
     def as_data(self) -> dict:
         return {"command": self.command, "parts": [asdict(part) for part in self.parts], "writes": self.writes, "written_paths": list(self.edited_paths), "read_paths": list(self.read_paths), "work": self.work, "operation": self.operation.as_data()}
+
+    def is_folder_write(self, root: Path, folder: Path) -> bool:
+        return self.writes and any((root / Path(path).expanduser()).resolve().is_relative_to(folder) for path in self.edited_paths)
 
     def is_script(self) -> bool:
         from journal.support.writes import Writes

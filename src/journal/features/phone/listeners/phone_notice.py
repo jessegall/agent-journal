@@ -22,11 +22,11 @@ class PhoneNotice(Listener[ClockTicked]):
         for phone in [p for p in self.phones.active(time) if p.subscription]:
             obligations = self.waits.refs(phone)
             if phone.is_push_due(obligations, time):
-                self.pushed(phone, obligations, time)
+                self.web_push(phone, obligations, time)
             elif not phone.has_updates(obligations) and obligations != phone.pushed_refs():
                 self.phones.save(phone.notified(obligations), Actor.system())
 
-    def pushed(self, phone: Phone, obligations: list[str], time: datetime) -> None:
+    def web_push(self, phone: Phone, obligations: list[str], time: datetime) -> None:
         status = self.notifications.send(phone.subscription)
         if status in MISSING_STATUSES:
             self.phones.save(phone.unsubscribed(), Actor.system())

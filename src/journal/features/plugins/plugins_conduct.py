@@ -9,6 +9,7 @@ class PluginsConduct(Conduct):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.plugins.feature import PluginsFeature
-        if not event.data.part(PluginsFeature).is_plugin_write(event.call):
+        plugins = event.data.part(PluginsFeature)
+        if not event.call.is_folder_write(plugins.root, plugins.plugins_folder):
             return self.none()
         return self.refuse(PluginsFeature.PLUGIN_FILE_OWNERSHIP.create())

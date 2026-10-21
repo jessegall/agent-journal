@@ -1,6 +1,7 @@
 import json
 import socket
 from pathlib import Path
+from journal.providers.support.session_registration import SessionRegistration
 
 from journal.support.rejection import Rejection
 
@@ -15,10 +16,10 @@ class SessionInbox:
         return Path.home() / ".claude" / "sessions"
 
     def deliver(self, pid: int, session: str, sender: str, text: str) -> None:
-        record = self.record(pid)
-        if session and record.get("sessionId") != session:
-            raise Rejection(f"process {pid} runs session {record.get('sessionId')}, not {session}, so the message was not sent")
-        address = record.get("messagingSocketPath", "")
+        registration = self.registration(pid)
+        if session and registration.session != session:
+            raise Rejection(f"process {pid} runs session {registration.session}, not {session}, so the message was not sent")
+        address = registration.socket_path
         if not address:
             raise Rejection(f"the Claude Code session of process {pid} has no inbox, so it takes no message while it runs")
         lines = [*self.auth(pid), {"type": "user", "message": {"role": "user", "content": self.envelope(sender, text)}}]
@@ -35,11 +36,11 @@ class SessionInbox:
         name, body = sender.translate({ord(c): None for c in '"<>'}), text.replace(f"</{ENVELOPE}", f"<\\/{ENVELOPE}")
         return f'<{ENVELOPE} from-name="{name}" from-mode="bypass">\n{body}\n</{ENVELOPE}>'
 
-    def record(self, pid: int) -> dict:
+    def registration(self, pid: int) -> SessionRegistration:
         path = self.registry() / f"{pid}.json"
         if not path.is_file():
             raise Rejection(f"no Claude Code session is registered for process {pid}, so it takes no message")
-        return json.loads(path.read_text())
+        return SessionRegistration.read(path)
 
     def auth(self, pid: int) -> list[dict]:
         key = next(self.registry().glob(f"{pid}.*.key"), None)

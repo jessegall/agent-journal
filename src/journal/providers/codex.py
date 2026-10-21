@@ -24,6 +24,7 @@ from journal.support.file_write import FileWrite
 from journal.support.shell_line import ShellLine
 from journal.support.subagent_dispatch import SubagentDispatch
 from journal.support.user_question import UserQuestion
+from journal.providers.support.codex_event import CodexEvent
 from journal.providers.support.worker_outcome import WorkerOutcome
 from journal.support.choice import Choice
 from journal.providers.support.status_line import StatusLine
@@ -183,13 +184,13 @@ class Codex(Provider):
         return ["codex", "exec", *resumed, "--json", *self.prompt_flags, *selection, brief]
 
     def worker_outcome(self, output: str, err: str) -> WorkerOutcome:
-        events = self.output_rows(output)
-        replies = [event["item"].get("text", "") for event in events if event.get("type") == "item.completed" and event.get("item", {}).get("type") == "agent_message"]
-        errors = [self.error_text(event.get("error", {}).get("message", "")) for event in events if event.get("type") == "turn.failed"]
+        events = CodexEvent.lines(output)
+        replies = [event.reply for event in events if event.is_reply() and event.reply is not None]
+        errors = [self.error_text(event.error) for event in events if event.is_failure() and event.error is not None]
         return WorkerOutcome(replies[-1].strip() if replies else err.strip(), self.output_session(output, err), errors[-1] if errors else "")
 
     def output_session(self, output: str, err: str) -> str:
-        return next((str(event.get("thread_id", "")) for event in self.output_rows(output) if event.get("type") == "thread.started"), "")
+        return next((event.thread for event in CodexEvent.lines(output) if event.is_thread_start() and event.thread), "")
 
     @staticmethod
     def error_text(message: str) -> str:
