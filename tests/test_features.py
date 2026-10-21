@@ -861,26 +861,32 @@ def test_shop_talk_and_the_third_person_are_named(app: App, monkeypatch):
     assert any("talks about the journal's commands" in t for t in keystrokes) and any("say you, never the user" in t for t in keystrokes)
 
 
-def test_each_subagent_is_one_message_in_the_chat_settled_in_place(app: App):
+def test_a_subagents_dispatch_and_its_end_are_two_marks_in_the_chat(app: App):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
     app.runtime().deferred.drain()
-    thresholds = lambda: [m.data for m in app.container.get(Messages).all() if m.data.get("kind") == "subagent"]
-    assert [(d["detail"], d["state"]) for d in thresholds()] == [("cut off", "running")], "a dispatch is a message as it starts"
+    marks = lambda: [(m.data["detail"], m.data["state"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "subagent"]
+    assert marks() == [("cut off", "running")], "a dispatch is a mark as it goes out"
     hook(app, "Stop")
     app.runtime().deferred.drain()
-    assert [(d["detail"], d["state"], d["agent"]) for d in thresholds()] == [("cut off", "stopped", 1)], "and the same message settles when its turn ends"
+    assert marks() == [("cut off", "running"), ("cut off", "stopped")], "its end is a mark of its own after it, and the dispatch stays as it was"
+    hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "say a colour", "prompt": "say amber", "model": "haiku", "run_in_background": True}, tool_use_id="t-a")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "say a colour", "prompt": "say amber", "model": "haiku", "run_in_background": True}, tool_response={"agentId": "ag1"}, tool_use_id="t-a")
+    hook(app, "SubagentStart", agent_id="ag1", agent_type="journal-researcher")
+    hook(app, "SubagentStop", agent_id="ag1", agent_type="journal-researcher", last_assistant_message="amber")
+    app.runtime().deferred.drain()
+    assert marks()[2:] == [("say a colour", "running"), ("amber", "done")], "a subagent that reported ends with a mark carrying the last thing it said"
 
 
-def test_a_dispatch_that_failed_is_a_mark_with_the_tools_error(app: App):
+def test_a_dispatch_that_failed_ends_with_a_mark_carrying_the_tools_error(app: App):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "look", "prompt": "read", "model": "haiku"}, tool_use_id="t-f")
     hook(app, "PostToolUseFailure", tool_name="Agent", tool_input={}, error="Model 'haiku-9' not found", tool_use_id="t-f")
     app.runtime().deferred.drain()
-    [threshold] = [m.data for m in app.container.get(Messages).all() if m.data.get("kind") == "subagent"]
-    assert (threshold["detail"], threshold["state"], threshold["reason"]) == ("look", "failed", "Model 'haiku-9' not found"), "the dispatch's own mark settles as failed with the tool's error, no second mark"
+    marks = [(m.data["detail"], m.data["state"], m.data["reason"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "subagent"]
+    assert marks == [("look", "running", ""), ("look", "failed", "Model 'haiku-9' not found")], "the dispatch's mark stays, and its end says it failed with the tool's error"
 
 
 def test_a_document_the_agent_writes_is_a_message_in_its_chat(app: App, tmp_path):
