@@ -6503,3 +6503,30 @@ def test_a_revived_worker_goes_on_in_its_own_worktree_and_branch_and_keeps_its_w
     monkeypatch.setattr(Claude, "transcript", lambda self, project, session: None)
     refused = console.run(["worker", "send", "1", "now the docs"], AGENT)
     assert refused.code == 1 and "the conversation of its session sess-1 is gone" in refused.error
+
+
+def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_worktree(app: App, monkeypatch):
+    import subprocess
+    from journal.providers.claude import Claude
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    started = []
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker))
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    root = app.config.root
+    git = lambda *argv: subprocess.run(["git", *argv], cwd=root, capture_output=True, text=True, timeout=30)
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        git(*argv)
+    hook(app, "SessionStart")
+    console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
+    console.run(["worker", "dispatch", "Mr. Watt", "the governor", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    console.run(["worker", "stop", "1"], AGENT)
+    assert "left no session to resume: dispatch the job again" in console.run(["worker", "send", "1", "the boiler"], AGENT).error
+    workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
+    assert console.run(["worker", "send", "1", "the boiler"], AGENT).code == 0
+    revived = started[-1]
+    command = Claude().worker_command(runner.instructed(revived), revived.model, revived.resume)
+    assert revived.is_running() and command[2] == "the boiler" and command[-2:] == ["--resume", "sess-1"], "the new job is the first turn of its last session"
+    runner.run(revived, ["sh", "-c", "pwd -P"], Actor.agent("s1"))
+    report = next(m.text for m in reversed(app.container.get(Messages).scoped()) if m.text.startswith("Mr. Watt reports: "))
+    assert str(runner.place(revived).resolve()) in report, "it runs again in the same worktree"

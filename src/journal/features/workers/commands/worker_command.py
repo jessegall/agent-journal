@@ -49,7 +49,7 @@ class WorkerCommand(Command):
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
-        line = self.verb(verbs, "send", "give a worker that reported its next job, with its memory of the last")
+        line = self.verb(verbs, "send", "give a worker that reported or was stopped its next job, in its last session with its memory of the last")
         line.add_argument("n", type=int)
         line.add_argument("brief")
         line.add_argument("--task", type=int, help="the task this job works on, which its plan then leaves to it")
@@ -116,9 +116,9 @@ class WorkerCommand(Command):
         if worker.state == WorkerState.DISPATCHED:
             raise Rejection(f"worker {worker.id}, {worker.name}, is still out: tell it with `journal worker notify {worker.id} \"<text>\"`, or wait for its report and send it the job then")
         if not worker.resume:
-            raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch it again")
+            raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch the job again")
         if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
-            raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch it again")
+            raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch the job again")
         try:
             self.runner.renewed(worker)
         except WorktreeFailure as failed:
