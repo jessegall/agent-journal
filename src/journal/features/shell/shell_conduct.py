@@ -2,6 +2,7 @@ from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.ticked import Ticked
+from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.shell.support.ended_output import EndedOutput
 from journal.features.shell.support.output_files import OutputFiles
@@ -12,7 +13,7 @@ BACKGROUND_CHECK_DELAY_SECONDS = 300.0
 
 
 class ShellConduct(Conduct):
-    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone, a read of an output by hand is pointed at a reader or asked to become one, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, and one running five minutes is looked at."""
+    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone, a read of an output by hand is pointed at a reader or asked to become one, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends."""
 
     def partial_read_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
@@ -38,6 +39,15 @@ class ShellConduct(Conduct):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return Transition.merged(self, [ShellConduct.journal_alone_check(self, event, settings), ShellConduct.partial_read_check(self, event, settings), ShellConduct.readers_check(self, event, settings)])
+
+    def on_tool_finished(self, event: ToolFinished, settings: Settings) -> Transition:
+        from journal.features.shell.feature import Shell
+        watch = event.data.part(Shell).watch
+        if not watch.is_watching():
+            return self.none()
+        if watch.ending:
+            return self.none(Shell.WATCH_ENDED.create(n=watch.output, ending=watch.ending, lines=watch.text()))
+        return self.none(Shell.WATCH_VIEW.create(n=watch.output, lines=watch.text()))
 
     def ended_check(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell

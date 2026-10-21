@@ -55,6 +55,14 @@ function markClick(data) {
         <template #card>
             <div :class="['thread-turn', 'card', {mine: data.side === 'user'}]" :data-ref="turn.key">
                 <ChatMark :mark="cardMark" v-on="markClick(data)" />
+                <template v-if="data.figure">
+                    <div class="mark-progress" :title="data.figure">
+                        <div class="mark-progress-bar">
+                            <div class="mark-progress-fill" :style="{width: `${Math.round(data.fraction * 100)}%`}"></div>
+                        </div>
+                        <span class="mark-progress-figure">{{ data.figure }}</span>
+                    </div>
+                </template>
                 <template v-if="opened && lines.length">
                     <ul class="mark-lines">
                         <template v-for="line in lines" :key="line">
@@ -122,6 +130,33 @@ function markClick(data) {
     line-height: 1.4;
     list-style: none;
     overflow-wrap: anywhere;
+}
+
+.mark-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 0 22px;
+    color: var(--text-3);
+    font-size: 11px;
+}
+
+.mark-progress-bar {
+    width: 160px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    overflow: hidden;
+}
+
+.mark-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+}
+
+.mark-progress-figure {
+    font-variant-numeric: tabular-nums;
 }
 
 .thread-turn.card.mine {

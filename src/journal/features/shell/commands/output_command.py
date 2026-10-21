@@ -4,6 +4,7 @@ from pathlib import Path
 from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.shell.support.output_files import OutputFiles
+from journal.features.shell.support.output_views import OutputViews
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
 from journal.models.command_output import CommandOutput
@@ -14,12 +15,12 @@ END_LINES = 10
 
 
 class OutputCommand(Command):
-    """The outputs the runner kept, by number: read one whole or in part, say how one stands, or list the newest."""
+    """The outputs the runner kept, by number: read one whole or in part, say how one stands, list the newest, or watch a running one."""
 
     noun = "output"
 
-    def __init__(self, outputs: CommandOutputs, readers: Readers) -> None:
-        self.outputs, self.readers = outputs, readers
+    def __init__(self, outputs: CommandOutputs, readers: Readers, views: OutputViews) -> None:
+        self.outputs, self.readers, self.views = outputs, readers, views
 
     def arguments(self, verbs) -> None:
         read = self.verb(verbs, "read", "the part of an output a flag names; one flag is needed, so reading it whole is a choice: --summary for how it ended with its ends, --all for every line")
@@ -35,6 +36,10 @@ class OutputCommand(Command):
         status.add_argument("n", type=int, nargs="?")
         listed = self.verb(verbs, "list", "the newest outputs, one a line: number, how it ended, command")
         listed.add_argument("--last", type=int, default=20)
+        watch = self.verb(verbs, "watch", "bind a running output to you: after every tool use you see its reader's lines, or its last lines, and a card in the chat shows them, until its command ends")
+        watch.add_argument("n", type=int)
+        watch.add_argument("--reader", default="", help="the reader whose lines are shown, by its name")
+        self.verb(verbs, "unwatch", "end the watch on your output")
 
     def read(self, args: Namespace, caller: Caller) -> int:
         output = self.outputs.find(args.n)
@@ -93,4 +98,21 @@ class OutputCommand(Command):
             files = OutputFiles(Path(output.folder))
             outcome = files.outcome() if files.is_stored() else "files gone"
             print(f"{output.id:>5}  {outcome:<22}  {output.headline()[:100]}")
+        return 0
+
+    def watch(self, args: Namespace, caller: Caller) -> int:
+        output = self.outputs.find(args.n)
+        if output.ended:
+            raise Rejection(f"output {output.id} {output.ending()}; read it with journal output read {output.id} --summary")
+        if args.reader:
+            self.readers.lookup(args.reader)
+        self.unwatch(args, caller)
+        self.views.card(self.outputs.save(output.watched(args.reader), caller.actor))
+        print(f"watching output {output.id}: you see its view after every tool use until its command ends")
+        return 0
+
+    def unwatch(self, args: Namespace, caller: Caller) -> int:
+        for output in self.outputs.watched(caller.session):
+            self.outputs.save(output.unwatched(), caller.actor)
+            print(f"output {output.id} is no longer watched")
         return 0

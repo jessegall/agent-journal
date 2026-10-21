@@ -2,6 +2,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from journal.features.shell.support.progress import Progress
 from journal.support.rejection import Rejection
 
 TIMEOUT_SECONDS = 30
@@ -31,3 +32,6 @@ class ScriptReader:
         if completed.returncode != 0:
             raise Rejection(f"reader {self.name} failed with code {completed.returncode}: {completed.stderr.strip()[-300:]}")
         return completed.stdout.splitlines()
+
+    def progress(self, lines: list[str]) -> Progress:
+        return Progress.empty()

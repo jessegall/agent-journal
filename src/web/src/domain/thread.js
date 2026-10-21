@@ -36,7 +36,7 @@ const SYSTEM_TURNS = {
     }),
     card: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon, tone: card.tone, color: card.shows === "workers" && !card.tone ? SUBAGENT_COLOR : "", label, detail: card.detail, lines: card.lines || [], command: card.command, title: card.detail || card.command, row: card.row, visitor: card.visitor},
+        data: {icon: card.icon, tone: card.tone, color: card.shows === "workers" && !card.tone ? SUBAGENT_COLOR : "", label, detail: card.detail, lines: card.lines || [], figure: card.figure || "", fraction: card.fraction || 0, command: card.command, title: card.detail || card.command, row: card.row, visitor: card.visitor},
     }),
     peer: (card) => ({kind: "message", data: {peer: card.peer, sent_to: card.sent_to, failure: card.failure || ""}}),
     suggestion: (card, label) => ({

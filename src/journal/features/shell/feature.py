@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.shell.listeners.output_notice import OutputNotice
+from journal.features.shell.listeners.watch_update import WatchUpdate
 from journal.features.shell.shell_conduct import ShellConduct
 from journal.features.shell.support.shell_data_reader import ShellDataReader
 from journal.features.shell.support.shell_data import ShellData
@@ -23,7 +24,7 @@ class Shell(Feature[ShellData]):
     help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."
     commands = (OutputCommand, ReaderCommand)
     options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, OUTPUT_COUNT)
-    listeners = (OutputNotice,)
+    listeners = (OutputNotice, WatchUpdate)
     data = (ShellDataReader,)
     conduct = (ShellConduct,)
 
@@ -34,7 +35,9 @@ class Shell(Feature[ShellData]):
     PARTIAL_FILE_READ = Nudge(name, "read_the_file_in_parts", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_interval=0)
     JOURNAL_COMMAND_ISOLATION = Nudge(name, "journal_command_runs_alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_interval=0)
     BACKGROUND_CHECK = Nudge(name, "check_the_background", "output {{background_outputs}} still running", "look at it; hung or stuck: stop it and say why", repeat_interval=300, blocks_regardless=True)
-    nudges = (BACKGROUND_MOVE, OUTPUTS_ENDED, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
+    WATCH_VIEW = Nudge(name, "watched_output", "output {{n}}, which you watch:\n{{lines}}", "`journal output unwatch` ends the watch", repeat_interval=0)
+    WATCH_ENDED = Nudge(name, "watched_output_ended", "output {{n}}, which you watched, {{ending}}:\n{{lines}}", "the watch on it has ended; `journal output read {{n}} --summary` says more", repeat_interval=0)
+    nudges = (WATCH_VIEW, WATCH_ENDED, BACKGROUND_MOVE, OUTPUTS_ENDED, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands
@@ -55,6 +58,12 @@ Every shell command you run goes through the journal's runner.
   --about "<what it picks>"`, or `--script <file>` for a shell script handed the output on its input. Use it with
   `journal output read N --reader <name>`; `journal reader list` names the project's readers. The second time you
   read the same shape of output by hand, add a reader for it and say so in the chat.
+- `journal output watch N [--reader <name>]` binds a running output to you: after every tool use you are shown the lines
+  its reader picks, or its last ten lines with no reader, and a card in the chat shows the same, updated in place. The
+  watch ends by itself when the command ends, and you are told once how it ended; `journal output unwatch` ends it
+  sooner. One output is watched at a time. A reader written for a watch picks few lines that read well in the card, and
+  may show how far the command has come: `--progress <regex>` takes the last match, its groups a percentage such as
+  `\[(\d+)%\]` or a count of a total such as `(\d+)/(\d+)`, drawn as a bar in the card, and `--label "<words>"` names it.
 - A test run, a build or any other command's output is shown whole up to 400 characters; past that you see only a
   line naming the output to read by its number, with its lines, its characters and the part of the line it came from. A command that reads (cat, grep, sed, git diff) is shown up to 8,000
   characters, past that by its two ends. A line of journal commands is shown whole and kept as no output.

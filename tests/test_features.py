@@ -6246,3 +6246,35 @@ def test_a_scripts_file_edits_are_found_from_the_files_whose_time_moved(app: App
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": command}, tool_response="")
     with app.container.get(Scope).environment(MAIN):
         assert [e.path for e in app.container.get(Edits).rows()] == ["built.txt"], "the file the script wrote under a built name is an edit; the file it left alone is not"
+
+
+def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_end_once(app: App):
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.messages import Messages
+    from journal.support.listener_queue import ListenerQueue
+    hook(app, "SessionStart")
+    console, outputs, deferred = app.console(), app.container.get(CommandOutputs), app.container.get(ListenerQueue)
+    folder = app.config.root / "w"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.out").write_text("collecting\n[ 12%] test_a\nFAILED test_b\n[ 40%] test_c\n")
+    app.container.get(OutputLog).start("w", "pytest", folder, Caller("main", "s1"))
+    outputs.save(outputs.find(1).backgrounded(), Actor.system())
+    console.run(["reader", "add", "failures", "--pattern", "FAILED", "--about", "the failed tests", "--progress", r"\[ *(\d+)%\]", "--label", "Tests"], AGENT)
+    assert console.run(["output", "watch", "1", "--reader", "failures"], AGENT).code == 0
+    seen = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
+    assert "output 1, which you watch" in seen and "FAILED test_b" in seen and "Tests 40%" in seen and "test_a" not in seen, "the reader's lines and its progress come with the next tool use"
+    with app.container.get(Scope).environment(MAIN):
+        card = app.container.get(Messages).with_key("watch:1")[0]
+    assert card.data["figure"] == "Tests 40%" and card.data["fraction"] == 0.4, "the chat card carries the bar"
+    (folder / "0.out").write_text("collecting\nFAILED test_b\n[100%] test_d\n")
+    outputs.save(outputs.find(1).ended_with(0, 0.0), Actor.system())
+    deferred.drain()
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")
+    deferred.drain()
+    ended = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
+    assert "which you watched, finished" in ended and "Tests 100%" in ended, "the end is said once, with the last view"
+    deferred.drain()
+    after = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
+    assert "output 1" not in after and not outputs.find(1).is_watched, "the watch ends with its command"

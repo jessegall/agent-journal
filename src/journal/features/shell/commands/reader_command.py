@@ -26,6 +26,8 @@ class ReaderCommand(Command):
         source.add_argument("--pattern")
         source.add_argument("--script", type=Path, help="a shell script given the output on its input")
         addition.add_argument("--about", required=True, help="what it picks, in a few words")
+        addition.add_argument("--progress", default="", help="a pattern whose last match says how far the command has come: one group for a percentage, two for a count of a total")
+        addition.add_argument("--label", default="", help="the words shown in front of the progress")
         self.verb(verbs, "list", "the project's readers, each with what it picks")
 
     def add(self, args: Namespace, caller: Caller) -> int:
@@ -35,7 +37,8 @@ class ReaderCommand(Command):
             self.readers.add_script(args.name, args.about, args.script)
         else:
             re.compile(args.pattern)
-            self.readers.add(Reader(args.name, args.about, args.pattern))
+            re.compile(args.progress)
+            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, args.label))
         print(f"reader {args.name} added: journal output read N --reader {args.name}")
         return 0
 
