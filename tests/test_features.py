@@ -6530,3 +6530,29 @@ def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_wor
     runner.run(revived, ["sh", "-c", "pwd -P"], Actor.agent("s1"))
     report = next(m.text for m in reversed(app.container.get(Messages).scoped()) if m.text.startswith("Mr. Watt reports: "))
     assert str(runner.place(revived).resolve()) in report, "it runs again in the same worktree"
+
+
+def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: App, monkeypatch):
+    from journal.features.workers.feature import Workers as WorkersFeature
+    from journal.providers.claude import Claude
+    from journal.providers.codex import Codex
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    from journal.support.profile_files import ProfileFiles
+    started = []
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker))
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    app.container.get(ProfileFiles).write_all()
+    hook(app, "SessionStart")
+    console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
+    console.run(["worker", "dispatch", "Mr. Harrison", "the clock", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    profile = app.container.get(ProfileFiles).read("journal-medior")["body"]
+    assert runner.instructed(started[-1]).startswith(profile), "a fresh worker is told its profile first"
+    console.run(["worker", "report", "1", "the clock runs"], Caller("main", "w1"))
+    workers.save(workers.find(1).with_(resume="sess-1", began=timing.time() - 3600, pid=99999), USER.actor)
+    console.run(["worker", "send", "1", "the escapement"], AGENT)
+    resumed = workers.find(1)
+    assert (resumed.began, resumed.pid) == (0.0, 0) and runner.instructed(resumed) == "the escapement", "the old run's clock and process go with it, and the resumed prompt is the job alone"
+    app.container.get(SettingRows).set(WorkersFeature.TIMEOUT.key, 0.05, USER.actor)
+    runner.run(resumed, ["sh", "-c", "echo the escapement ticks"], Actor.agent("s1"))
+    assert any(m.text == "Mr. Harrison reports: the escapement ticks" for m in app.container.get(Messages).scoped()), "the time limit counts from the new run, not the first"
