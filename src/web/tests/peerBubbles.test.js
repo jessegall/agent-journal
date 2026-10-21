@@ -16,7 +16,11 @@ globalThis.ResizeObserver = class {
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
 const card = (id, seconds, data, text) => ({table: "messages", id, created_at: at(seconds), author: "system", text, files: [], data, comments_on: [], idempotency: "", reply_to: null});
-const messages = [card(1, 10, {kind: "peer", peer: "Coco"}, "the report is ready"), card(2, 20, {kind: "peer", sent_to: "Coco"}, "thanks, merging now")];
+const messages = [
+    card(1, 10, {kind: "peer", peer: "Coco"}, "the report is ready"),
+    card(2, 20, {kind: "peer", sent_to: "Coco"}, "thanks, merging now"),
+    card(3, 30, {kind: "peer", sent_to: "Coco", failure: "the socket is stale"}, "thanks, merging now"),
+];
 const scope = {env: "", api: {}, rows: () => messages, loaded: () => true, holding: () => {}, earlier: () => {}};
 
 async function drawn(turn) {
@@ -35,6 +39,7 @@ async function drawn(turn) {
         mine: host.querySelector(".thread-turn").classList.contains("mine"),
         head: host.querySelector(".thread-bubble").textContent,
         fold: host.querySelector(".fold")?.textContent,
+        red: Boolean(host.querySelector(".bubble-header.danger")),
     };
     app.unmount();
     host.remove();
@@ -46,6 +51,14 @@ test("what the agent sends to another agent sits on the agent's side and names w
     const shown = await drawn(sent);
     expect(shown.mine).toBe(false);
     expect(shown.head).toContain("Sent to Coco");
+});
+
+test("a send that failed says so in red with the tool's reason, never as sent", async () => {
+    const [, sent, failed] = threadTurns(messages, []).turns;
+    const shown = await drawn(failed);
+    expect(shown.head).toContain("Failed to send to Coco: the socket is stale");
+    expect(shown.red).toBe(true);
+    expect((await drawn(sent)).red).toBe(false);
 });
 
 test("what the agent receives from another agent or from the main agent sits on the incoming side and names who sent it", async () => {

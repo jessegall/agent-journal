@@ -72,4 +72,8 @@ const emit = defineEmits(["click"]);
 .bubble-header.blocking {
     color: var(--blocking);
 }
+
+.bubble-header.danger {
+    color: var(--danger);
+}
 </style>

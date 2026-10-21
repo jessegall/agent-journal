@@ -5549,8 +5549,11 @@ def test_messages_between_sessions_reach_the_chat_both_ways_named_by_their_agent
     import os
     hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": f"uds:/tmp/cc-socks/{os.getpid()}.sock", "message": "the fix is in"}, tool_response={})
     hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "uds:/tmp/cc-socks/999999.sock", "message": "anyone there?"}, tool_response={})
+    hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "uds:/tmp/cc-socks/65859.sock", "message": "the fix is in"}, tool_response={"success": False, "message": "Failed to send to uds:/tmp/cc-socks/65859.sock: ENOENT, the socket is stale"})
     app.runtime().deferred.drain()
     sent = [m for m in app.container.get(MessageRows).all() if m.data.get("sent_to")]
+    failed = sent.pop()
+    assert failed.data["failure"].startswith("Failed to send to") and failed.data["sent_to"] == "uds:/tmp/cc-socks/65859.sock", "a send the tool answered as failed is kept as failed with its reason, never as sent"
     assert [(m.text, m.data["sent_to"]) for m in sent] == [("thank you", "code-commandments-12"), ("the fix is in", "agent-journal"), ("anyone there?", "uds:/tmp/cc-socks/999999.sock")], "a message the agent sent is kept as sent to that agent, a socket named by the project folder of the process behind it and left as the path when no process answers; a bare idle subscription is not"
     assert sent[1].data["address"] == f"uds:/tmp/cc-socks/{os.getpid()}.sock", "the socket stays on the row beside the name"
 
