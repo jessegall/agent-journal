@@ -1,11 +1,15 @@
 import queue
 import threading
 import time
-from pathlib import Path
+from dataclasses import replace
 from typing import Iterator
-from journal.features.shell.support.watch_suggestions import WatchSuggestions
 
 from journal.config import Config
+from journal.features.aliases.support.alias_lines import AliasLines
+from journal.features.shell.support.output_views import OutputViews
+from journal.features.shell.support.watch_suggestions import WatchSuggestions
+from journal.models.alias import Alias
+from journal.repositories.command_outputs import CommandOutputs
 from journal.features.shell.support.cap import Cap
 from journal.features.shell.support.chain_worker import ChainWorker
 from journal.features.shell.support.foreground_limit import ForegroundLimit
@@ -26,13 +30,15 @@ LIMIT_READ_TICKS = 10
 class ShellRunner:
     """Runs one shell line for the shim and streams back what the agent sees: the line is split into its parts, run in the user's shell by the worker, each part shown as its status lands and the cap says, the chain moved to the background past the foreground limit with a line naming its output, and an ended output kept under its number or forgotten. A read or write of the project's code streams straight through, nothing kept. The stream is read after the request has left its scope, so the environment comes along and is named again for every read and write; the exit line starts on a line of its own."""
 
-    def __init__(self, config: Config, caps: OutputCap, limits: ForegroundLimit, worker: ChainWorker, record: ShellRecord, scope: Scope, suggestions: WatchSuggestions) -> None:
+    def __init__(self, config: Config, caps: OutputCap, limits: ForegroundLimit, worker: ChainWorker, record: ShellRecord, scope: Scope, suggestions: WatchSuggestions, aliases: AliasLines, outputs: CommandOutputs, views: OutputViews) -> None:
         self.config, self.caps, self.limits, self.worker, self.record, self.scope, self.suggestions = config, caps, limits, worker, record, scope, suggestions
+        self.aliases, self.outputs, self.views = aliases, outputs, views
 
-    def run(self, request: ShellRequest, caller: Caller, environment: int) -> Iterator[bytes]:
+    def run(self, posted: ShellRequest, caller: Caller, environment: int) -> Iterator[bytes]:
+        request = replace(posted, line=self.aliases.expanded(posted.line))
         with self.scope.environment(environment):
             cap = self.caps.build(request.line)
-            folder = OutputFiles(self.config.home / "runtime" / "outputs" / f"{int(time.time())}-{threading.get_ident()}")
+            folder = OutputFiles(self.config.home / "runtime" / "outputs" / f"{time.time_ns()}-{threading.get_ident()}")
             folder.split(request.line, Chain.parts(request.line))
             if not cap.is_whole() and not cap.is_direct():
                 folder.numbered(self.record.start(folder.folder.name, "\n".join(p.text for p in Chain.parts(request.line) if p.recorded), folder.folder, caller))
@@ -75,15 +81,22 @@ class ShellRunner:
                 return
             if limit > 0 and time.monotonic() - began >= limit:
                 folder.moved()
-                number = self.record.moved(folder.folder.name, folder.part_text(shown), folder.folder, caller)
+                part = folder.part_text(shown)
+                number = self.record.moved(folder.folder.name, part, folder.folder, caller)
+                alias = self.aliases.running(part)
                 from journal.features.shell.feature import Shell
-                moved = [Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered(), *self.suggestions.lines(number, folder.part_text(shown))]
+                moved = [Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered(), *(self.watched(number, alias, caller) if alias else self.suggestions.lines(number, part))]
                 yield ("\n".join(moved) + f"\n{EXIT} 0\n").encode()
                 return
             time.sleep(TICK_SECONDS)
             tick += 1
             if tick % LIMIT_READ_TICKS == 0:
                 limit = self.limits.build(request.line, caller.environment)
+
+    def watched(self, number: int, alias: Alias, caller: Caller) -> list[str]:
+        from journal.features.shell.feature import Shell
+        self.views.card(self.outputs.watch(self.outputs.find(number), alias.reader, caller.actor))
+        return [Shell.ALIAS_WATCH.create(n=number, name=alias.name, reader=f" through the reader {alias.reader}" if alias.reader else "").rendered()]
 
     def closed(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> None:
         if cap.is_direct() or cap.is_whole():

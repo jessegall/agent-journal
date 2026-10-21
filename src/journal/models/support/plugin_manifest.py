@@ -1,6 +1,7 @@
 from dataclasses import fields, dataclass, field
 
 from journal.models.support.card_kind import CardKind
+from journal.models.support.plugin_alias import PluginAlias
 from journal.support.event_window import EventWindow
 from journal.support.plugin_service import PluginService
 from journal.models.support.requirement import Requirement
@@ -12,7 +13,7 @@ PUBLISHED = {"hears": "events", "holds": "blocks"}
 
 @dataclass(frozen=True)
 class PluginManifest:
-    """What a plugin's journal-plugin.json says it is, runs, hears and holds, as read and checked; its hears and holds keys are read into events and blocks."""
+    """What a plugin's journal-plugin.json says it is, runs, hears and holds, and the aliases it ships, as read and checked; its hears and holds keys are read into events and blocks."""
 
     name: str = ""
     version: str = ""
@@ -31,17 +32,21 @@ class PluginManifest:
     setup: tuple[SetupStep, ...] = ()
     installed: str = ""
     dashboard: dict = field(default_factory=dict)
+    aliases: tuple[PluginAlias, ...] = ()
 
     @classmethod
     def parsed(cls, data: dict) -> "PluginManifest":
         field_values = {key: value for key, value in data.items() if key not in PUBLISHED}
         return cls(**{**field_values, "events": tuple(data.get("hears", ())), "blocks": tuple(EventWindow.parsed(h) for h in data.get("holds", ())),
                       "services": tuple(PluginService.parsed(s) for s in data.get("services", ())), "cards": tuple(CardKind.parsed(c) for c in data.get("cards", ())),
-                      "setup": tuple(SetupStep.parsed(s) for s in data.get("setup", ())), "requires": {program: Requirement.parsed(r) for program, r in data.get("requires", {}).items()}})
+                      "setup": tuple(SetupStep.parsed(s) for s in data.get("setup", ())), "aliases": tuple(PluginAlias.parsed(alias) for alias in data.get("aliases", ())), "requires": {program: Requirement.parsed(r) for program, r in data.get("requires", {}).items()}})
 
     def published(self) -> dict:
         names = {field: key for key, field in PUBLISHED.items()}
         return {names.get(field.name, field.name): getattr(self, field.name) for field in fields(self)} | {"services": [service.published() for service in self.services]}
+
+    def alias_names(self) -> set[str]:
+        return {alias.name for alias in self.aliases}
 
     def has_window(self, key: str) -> bool:
         return any(window.event == key for window in self.blocks)

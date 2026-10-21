@@ -27,6 +27,12 @@ class Chain:
         return [Part(p, recorded=r, unconditional=s != "&&", guarded=f == "&&") for (s, p, r), f in zip(chained, following)]
 
     @classmethod
+    def replaced(cls, line: str, part: str, text: str) -> str:
+        if any(WRAPPED.match(p) for p in cls.split(line)):
+            part, text = part.replace("'", QUOTE), text.replace("'", QUOTE)
+        return line.replace(part, text, 1)
+
+    @classmethod
     def journal_parts(cls, line: str) -> tuple[int, int]:
         owned = [p for p in cls.parts(line) if p.recorded]
         return len([p for p in owned if cls.is_journal(p.text)]), len(owned)

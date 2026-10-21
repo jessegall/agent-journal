@@ -89,6 +89,7 @@ class ManifestReader:
         matched += [(f"service {s.name}", s.program) for s in manifest.services if s.is_local]
         matched += [(f"setup step {step.name}", word) for step in manifest.setup for word in step.run.split()[:2] if "/" in word]
         matched += [("installed command", word) for word in manifest.installed.split()[:1] if "/" in word]
+        matched += [(f"alias {alias.name}", alias.program) for alias in manifest.aliases]
         for key, path in matched:
             if Path(path).is_absolute() or not (root / path).resolve().is_relative_to(root):
                 raise Rejection(f"{manifest.name}'s {key} {path} leads outside its folder")

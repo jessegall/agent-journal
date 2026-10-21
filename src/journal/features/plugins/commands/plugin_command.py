@@ -4,20 +4,21 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.chat.cards import Cards
 from journal.features.plugins.support.plugin_preview import PluginPreview
+from journal.features.plugins.support.plugin_aliases import PluginAliases
 from journal.features.plugins.support.plugin_installing import PluginInstalling
 from journal.features.plugins.support.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
 from journal.repositories.scope import Scope
 from journal.support.card_kind import CardKind
 
-STEP_DESCRIPTIONS = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill"}
+STEP_DESCRIPTIONS = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill", "alias": "brings the alias"}
 
 
 class PluginCommand(Command):
     noun = "plugin"
 
-    def __init__(self, plugins: Plugins, installing: PluginInstalling, cards: Cards, scope: Scope, settings: PluginSettings) -> None:
-        self.plugins, self.installing, self.cards, self.scope, self.schemas = plugins, installing, cards, scope, settings
+    def __init__(self, plugins: Plugins, installing: PluginInstalling, cards: Cards, scope: Scope, settings: PluginSettings, aliases: PluginAliases) -> None:
+        self.plugins, self.installing, self.cards, self.scope, self.schemas, self.aliases = plugins, installing, cards, scope, settings, aliases
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "list", "the plugins installed here, each on or off and how it last failed")
@@ -54,6 +55,8 @@ class PluginCommand(Command):
             return 0
         plugin = self.installing.install(args.source, caller.environment, caller.actor)
         print(f"installed {plugin.name}, on")
+        for name in sorted(self.aliases.skipped(plugin)):
+            print(f"skipped its alias {name}: the name is taken")
         return 0
 
     def propose(self, args: Namespace, caller: Caller) -> int:

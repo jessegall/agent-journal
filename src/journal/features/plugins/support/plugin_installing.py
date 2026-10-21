@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Iterator
 
 from journal.config import Config
+from journal.features.plugins.support.plugin_aliases import PluginAliases
 from journal.features.plugins.support.plugin_preview import PluginPreview
 from journal.features.plugins.support.preview_row import PreviewRow
 from journal.features.plugins.support.manifest_reader import ManifestReader
@@ -32,11 +33,11 @@ STEP_SECONDS = 300
 
 
 class PluginInstalling:
-    """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row and data folder."""
+    """A plugin taken in: a folder linked where it lies, or a git address fetched into the journal's plugins folder; its manifest read and checked, a preview of all it will run, and only then its row, its data folder, its skills and its aliases."""
 
-    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills, runner: PluginRunner, services: PluginServices, dashboard: DashboardRows) -> None:
+    def __init__(self, config: Config, reader: ManifestReader, plugins: Plugins, folders: PluginFolders, hashes: PluginHashes, settings: PluginSettings, skills: PluginSkills, runner: PluginRunner, services: PluginServices, dashboard: DashboardRows, aliases: PluginAliases) -> None:
         self.config, self.reader, self.plugins, self.folders, self.hashes, self.settings, self.skills, self.runner = config, reader, plugins, folders, hashes, settings, skills, runner
-        self.services, self.dashboard = services, dashboard
+        self.services, self.dashboard, self.aliases = services, dashboard, aliases
 
     def preview(self, source: str) -> PluginPreview:
         with self.staged(source) as (folder, commit):
@@ -65,6 +66,7 @@ class PluginInstalling:
             saved = self.plugins.save(plugin.with_(settings={**settings, **{k: v for k, v in filled.items() if k in settings and not isinstance(settings[k], dict)}}, hashes=hashes), actor)
             self.folders.data(saved)
             self.skills.publish(saved)
+            self.aliases.publish(saved, actor)
             self.services.start(saved)
             return saved
 
@@ -116,6 +118,8 @@ class PluginInstalling:
             if not plugin.linked:
                 self.replaced(plugin, upgraded, folder, environment)
             saved = self.plugins.save(upgraded.with_(hashes=self.hashes.digest(self.folders.folder(upgraded), upgraded.manifest)), actor)
+            self.aliases.withdraw(plugin, actor)
+            self.aliases.publish(saved, actor)
             self.skills.withdraw(saved)
             if saved.enabled:
                 self.skills.publish(saved)
@@ -155,6 +159,7 @@ class PluginInstalling:
     def remove(self, name: str, actor: Actor) -> None:
         plugin = self.plugins.lookup(name)
         self.skills.withdraw(plugin)
+        self.aliases.withdraw(plugin, actor)
         self.services.stop(plugin)
         if not plugin.linked:
             shutil.rmtree(self.folders.folder(plugin), ignore_errors=True)
@@ -226,6 +231,7 @@ class PluginInstalling:
                 *(PreviewRow("service", s.name, " ".join(s.command) + (f"  (where {s.condition})" if s.condition else "")) for s in manifest.services),
                 PreviewRow("hears", "events", ", ".join(manifest.events) or "nothing"),
                 PreviewRow("holds", "before the agent continues", ", ".join(window.as_text() for window in manifest.blocks) or "nothing"),
-                *(PreviewRow("skill", name) for name in ManifestReader.skill_names(folder, manifest)))
+                *(PreviewRow("skill", name) for name in ManifestReader.skill_names(folder, manifest)),
+                *(PreviewRow("alias", alias.name, alias.line) for alias in manifest.aliases))
         return tuple(row for row in rows if row.kind != "installed" or row.command)
 

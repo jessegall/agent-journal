@@ -69,6 +69,12 @@ class Repository(Generic[M]):
     def matching(self, **fields) -> list[M]:
         return self.newest(*self.clause(fields))
 
+    def single(self, **fields) -> M:
+        rows = self.matching(**fields)
+        if not rows:
+            raise MissingRow(self.table, ", ".join(map(str, fields.values())))
+        return rows[0]
+
     def all_matching(self, **fields) -> list[M]:
         clause, params = self.clause(fields)
         return self.selected(f"{clause} ORDER BY id", params)
