@@ -3136,6 +3136,9 @@ def test_a_plugin_is_a_row_and_writes_as_itself(app: App):
     plugins = app.container.get(Plugins)
     plugins.save(Plugin(name="lint", source="/tmp/lint", manifest=PluginManifest(name="lint")), Actor.user(1))
     assert plugins.lookup("lint").enabled and [p.name for p in plugins.enabled()] == ["lint"]
+    served = PluginManifest.parsed({"name": "served", "services": [{"name": "watch", "command": ["./watch"], "when": "test -d .git"}]})
+    plugins.save(Plugin(name="served", source="/tmp/served", manifest=served), Actor.user(1))
+    assert plugins.lookup("served").manifest.services[0].condition == "test -d .git" and served.published()["services"][0]["when"] == "test -d .git", "a service's when key is stored and read back as plugins write it"
     task = app.container.get(Tasks).save(Task(environment_id=1, title="written by a plugin"), Actor.plugin("lint"))
     assert task.creator == Actor(ActorKind.PLUGIN, "lint") and task.creator.stamp == "plugin:lint" and Actor.parse("plugin:lint") == task.creator
 

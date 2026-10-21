@@ -42,7 +42,7 @@ class PluginManifest:
     def published(self) -> dict:
         """The manifest in the shape journal-plugin.json writes it, events and blocks under hears and holds."""
         names = {field: key for key, field in PUBLISHED.items()}
-        return {names.get(field.name, field.name): getattr(self, field.name) for field in fields(self)}
+        return {names.get(field.name, field.name): getattr(self, field.name) for field in fields(self)} | {"services": [service.published() for service in self.services]}
 
     def has_window(self, key: str) -> bool:
         return any(window.event == key for window in self.blocks)
