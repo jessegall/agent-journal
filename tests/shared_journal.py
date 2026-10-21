@@ -1,6 +1,7 @@
 import os
 import shutil
 import sqlite3
+import threading
 import types
 from enum import Enum
 from pathlib import Path
@@ -14,8 +15,8 @@ from journal.http.share_server import ShareServer
 from journal.support.listener_queue import ListenerQueue
 from journal.support.secret_values import SecretValues
 
-THREADED = (Container, Connection, Server, ShareServer, ListenerQueue, JobRunner)
-"""What runs the journal rather than remembers for it: its threads, sockets and pool are left as they are between tests."""
+THREADED = (Container, Connection, Server, ShareServer, ListenerQueue, JobRunner, threading.local)
+"""What runs the journal rather than remembers for it: its threads, sockets and pool, and what each thread keeps for itself, are left as they are between tests."""
 
 PLAIN = (type, types.FunctionType, types.MethodType, types.ModuleType, Enum)
 """What has a __dict__ but keeps no state of a journal's."""
