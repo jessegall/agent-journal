@@ -7,18 +7,14 @@ from journal.providers.providers import Providers
 from journal.repositories.setting_rows import SettingRows
 
 PREFIX = "journal-"
-"""Every profile the journal ships is named with it, so none is ever taken for a profile of the project's own."""
 UNPREFIXED = ("researcher", "planner", "debugger", "senior", "medior")
-"""The names the journal's profiles had before they were prefixed: a copy still the journal's own is removed."""
 REPORTS = ("You only read: change no file, run no tests and write nothing to the journal; the agent that started you does the writing. "
            "Read narrowly: search for the line, read the range you need, never a whole large file. Answer in a short report written to "
            "the agent that started you, with the files and lines that show each point and what you could not check.")
-"""What every shipped subagent is told about reading only and reporting back."""
 WRITES = ("You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than "
           "write a second way. Write the test that proves your change and name it in your report; do not run the suite, the agent that sent you runs it. "
           "Commit nothing unless the brief says so. Report to the agent that sent you, never to the user: what you changed, file by file, with the lines "
           "that answer each point of the brief, and what you could not do.")
-"""What every shipped worker is told about writing and reporting back."""
 
 
 class ProfileFiles:
@@ -46,15 +42,12 @@ class ProfileFiles:
         return self.config.root / self.providers.named("claude").home / "agents"
 
     def read_all(self) -> list[ProfileShown]:
-        """Every profile in Claude's agents folder, by name, each with its front matter and its instructions, and whether the journal ships it."""
         return sorted((self.read(path.stem) for path in self.folder().glob("*.md")), key=lambda p: p["name"])
 
     def names(self) -> list[str]:
-        """The profiles in Claude's agents folder, by name, without reading them."""
         return sorted(path.stem for path in self.folder().glob("*.md"))
 
     def subagents(self) -> list[str]:
-        """The profiles in Claude's agents folder a subagent may be dispatched as, by name: every one but the workers'."""
         return [p["name"] for p in self.read_all() if p["kind"] != "worker"]
 
     def read(self, name: str) -> ProfileShown:
@@ -66,7 +59,6 @@ class ProfileFiles:
                             codex_model=fields.get("codex-model", ""), body=body.strip("\n"), shipped=name in {profile.name for profile in self.PROFILES}, path=str(path.relative_to(self.config.root)))
 
     def kind_of(self, name: str) -> str:
-        """Whether the profile of this name is a worker or a subagent; empty when there is none."""
         return self.read(name)["kind"] if (self.folder() / f"{name}.md").is_file() else ""
 
     def save(self, profile: Profile, model: str, codex_model: str) -> ProfileShown:
@@ -74,14 +66,12 @@ class ProfileFiles:
         return self.read(profile.name)
 
     def write_all(self) -> list[Path]:
-        """Every profile of the journal's removed, then the newest written: one it no longer ships never lingers, and none is left as an old version."""
         from journal.features.profiles.feature import Profiles
         self.clear()
         model, codex_model = str(self.settings.option(Profiles.CLAUDE_MODEL)), str(self.settings.option(Profiles.CODEX_MODEL))
         return [path for profile in self.PROFILES for path in self.write(profile, profile.model_or(model), codex_model)]
 
     def clear(self) -> None:
-        """The journal's profiles taken out of every agents folder: each journal-* one, and an unprefixed copy of an old name still as the journal wrote it."""
         bodies = [profile.body for profile in self.PROFILES]
         for folder in self.agent_folders():
             for path in [*folder.glob(f"{PREFIX}*.md"), *folder.glob(f"{PREFIX}*.toml")]:
@@ -94,7 +84,6 @@ class ProfileFiles:
         return [folder for folder in (self.config.root / provider.home / "agents" for provider in self.providers.all()) if folder.is_dir()]
 
     def write(self, profile: Profile, model: str, codex_model: str) -> list[Path]:
-        """The profile in Claude's agents folder and, where Codex has a folder here, in Codex's, each on its own model."""
         texts = {"claude": (f"{profile.name}.md", profile.claude_text(model, codex_model)), "codex": (f"{profile.name}.toml", profile.codex_text(codex_model))}
         written = []
         for provider in self.providers.all():

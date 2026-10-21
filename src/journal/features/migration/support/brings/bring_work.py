@@ -28,7 +28,6 @@ class BringWork(EnvironmentKind):
         return None if found is None else found.id
 
     def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> TaskLog:
-        """Each entry a line of the task's log, in order; the last one stands for the work log in the ledger."""
         task = self.task_of(row, into)
         lines = [body for _, body in row.sections if body] or [row.brief]
         return [self.logs.imported(TaskLog(environment_id=into.id, task_id=task, line=line), row.made_at(), actor) for line in lines][-1]

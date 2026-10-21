@@ -9,9 +9,7 @@ class ClaudeBlock:
     text: str = ""
     thinking: str = ""
     name: str = ""
-    """The tool a tool_use block names."""
     result: str = ""
-    """What a tool_result block carries, as text."""
 
     @classmethod
     def from_json(cls, data: dict) -> "ClaudeBlock":

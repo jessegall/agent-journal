@@ -17,7 +17,6 @@ class Voice:
     humour: str
     naming: str
     address: str | None = None
-    """The words the user is called by, for a voice that calls them in its own words."""
     emoji: str | None = None
 
     def instruction(self, title: str, first_name: str) -> str:

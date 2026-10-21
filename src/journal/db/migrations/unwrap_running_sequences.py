@@ -25,7 +25,6 @@ class UnwrapRunningSequences(Migration):
 
     @staticmethod
     def run(sequence_id: int, step: int, text: str, sequences: dict, now: str) -> SequenceRun:
-        """The run a running sequence layer was, its steps read from its sequence, or its own line when the sequence is gone."""
         sequence = sequences.get(sequence_id)
         if sequence is None:
             return SequenceRun(sequence_id, f"sequence {sequence_id}", (text,), started_at=now, said_at=now)

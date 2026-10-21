@@ -9,7 +9,6 @@ from journal.repositories.phones import Phones
 from journal.support.actor import Actor
 
 GONE = (404, 410)
-"""The push service's answers for an address it no longer knows."""
 
 
 class TellThePhone(Listener[ClockTicked]):
@@ -28,7 +27,6 @@ class TellThePhone(Listener[ClockTicked]):
                 self.phones.save(phone.told(owed), Actor.system())
 
     def pushed(self, phone: Phone, owed: list[str], now: datetime) -> None:
-        """Told when the service took the push; tried again a minute later when it did not; forgotten when the service says the address is gone."""
         status = self.push.send(phone.push)
         if status in GONE:
             self.phones.save(phone.unsubscribed(), Actor.system())

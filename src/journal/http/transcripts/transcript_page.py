@@ -7,7 +7,6 @@ from journal.support.not_found import NotFound
 SPOKEN = ("human", "agent")
 LARGEST = 1000
 PAGE = 300
-"""How many turns a page holds when the viewer names no number."""
 
 
 class TranscriptPage:

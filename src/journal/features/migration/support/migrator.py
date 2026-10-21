@@ -48,7 +48,6 @@ class Migrator:
         return self.migrations.save(migration.done(), actor)
 
     def brought(self, kind, actor: Actor) -> Brought:
-        """One kind brought across; a kind that cannot be read at all is named in the report, and the run goes on with the next."""
         try:
             return kind.bring(self.backup.folder, actor)
         except Exception as fault:

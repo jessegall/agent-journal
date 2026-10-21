@@ -12,7 +12,6 @@ from journal.repositories.scoped_repository import ScopedRepository
 
 
 WORKS_ON = "works_on"
-"""The link from a worker to the task it was dispatched on, so the plan holding the task leaves it to the worker and the viewer shows who holds it."""
 
 
 class Workers(ScopedRepository[Worker]):
@@ -26,14 +25,12 @@ class Workers(ScopedRepository[Worker]):
         return self.where(state=WorkerState.DISPATCHED)
 
     def put_on(self, worker: Worker, task: int, actor: Actor) -> None:
-        """The worker recorded as working on the task, which must be there."""
         target = Ref("tasks", task)
         if not self.links.is_row(target):
             raise NotFound("tasks", task)
         self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKS_ON), actor)
 
     def holding(self, task_ids: set[int]) -> dict[int, Worker]:
-        """By task number, the worker still out on each of these tasks."""
         held = {}
         for worker in self.across_environments(state=WorkerState.DISPATCHED):
             for ref in self.links.targets(worker, WORKS_ON):
@@ -42,12 +39,10 @@ class Workers(ScopedRepository[Worker]):
         return held
 
     def reports_waiting(self) -> list[Worker]:
-        """The workers here whose last report the agent has not acted on yet."""
         return [worker for worker in self.in_state_reported() if worker.has_report_waiting()]
 
     def in_state_reported(self) -> list[Worker]:
         return self.where(state=WorkerState.REPORTED)
 
     def by_session(self, session: str) -> list[Worker]:
-        """The workers whose own session this is: a command run from a worker's shell."""
         return [w for w in self.in_() if session and session in (w.session, w.resume)]

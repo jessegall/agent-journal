@@ -8,9 +8,7 @@ from journal.features.shell.support.output_files import OutputFiles
 from journal.support.chain import Chain
 
 QUIET_FOR = 5.0
-"""Seconds the agent has sent no hook before the commands that ended meanwhile are named, all in one line."""
 LOOK_AFTER = 300.0
-"""Seconds a command has run in the background before the agent is asked to look at it."""
 
 
 class ShellConduct(Conduct):

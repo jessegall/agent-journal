@@ -35,18 +35,15 @@ class Screen:
         self.out.flush()
 
     def pick(self, heading: str, notes: list[str], options: list[Option], default: int) -> int:
-        """The index of the option picked; the one at `default` is where the cursor starts."""
         return self.pick_or(heading, notes, options, default, ())[0]
 
     def pick_or(self, heading: str, notes: list[str], options: list[Option], default: int, actions: tuple[str, ...]) -> tuple[int, str]:
-        """The index under the cursor and the key that ended the question: empty for Enter, or one of `actions`, such as x. Typed, an action is the letter before the number: x2."""
         self._fresh()
         if self.interactive:
             return self._pick_with_keys(heading, notes, options, default, actions)
         return self._pick_by_number(heading, notes, options, default, actions)
 
     def ask(self, prompt: str) -> str:
-        """A free-text answer, such as the name of a new environment."""
         self.out.write(f"\n  {self.paint(ACCENT, '›')} {prompt} ")
         self.out.flush()
         try:
@@ -63,7 +60,6 @@ class Screen:
         self.out.flush()
 
     def _fresh(self) -> None:
-        """Clears the space under the banner, so each question has the screen to itself."""
         self.out.write(BACK_TO_SAVED if self.interactive else "\n")
 
     def _lines(self, heading: str, notes: list[str], options: list[Option], at: int, actions: tuple[str, ...]) -> list[str]:

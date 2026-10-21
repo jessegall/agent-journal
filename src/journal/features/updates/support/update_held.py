@@ -1,7 +1,6 @@
 from dataclasses import dataclass, replace
 
 LASTS = 900.0
-"""Seconds an update may hold its mark before it is taken for one that died: the install's own limit and the restart after it."""
 
 
 @dataclass(frozen=True)

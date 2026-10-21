@@ -8,7 +8,6 @@ class DashboardView:
     title: str = ""
     start: str = ""
     pages: dict = field(default_factory=dict)
-    """Each page by its id, its title and the view drawn in it."""
     missing: str = ""
 
     @classmethod

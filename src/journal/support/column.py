@@ -36,7 +36,6 @@ class Column:
 
     @property
     def is_json(self) -> bool:
-        """A column whose kind is not one SQL holds as is, such as a dict, a tuple or an untyped value: it always holds JSON, whatever the value is."""
         return self.kind not in self.PLAIN and not self.is_enum
 
     def to_sql(self, value):
@@ -80,7 +79,6 @@ class Column:
 
     @staticmethod
     def _bare(annotation) -> type:
-        """The type behind an Optional, a union with None, or a generic such as tuple[str, ...]."""
         origin = get_origin(annotation)
         if origin in (Union, UnionType):
             return Column._bare(next(arg for arg in get_args(annotation) if arg is not type(None)))

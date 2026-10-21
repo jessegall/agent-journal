@@ -17,7 +17,6 @@ class Controller(Generic[S]):
 
     repository: Repository[S]
     timeline = False
-    """A chat or a feed: its list pages strictly by id."""
 
     def index(self, request: Request) -> Response:
         return Response.json(self.listed(Listing.from_query(request.query)))
@@ -28,22 +27,18 @@ class Controller(Generic[S]):
         return Listed(rows=self.shown_page(page["rows"]), more=page["more"], counts=self.counts(rows))
 
     def rows(self) -> list[S]:
-        """The rows a list is taken from: the newest page of them."""
         return self.repository.all()
 
     def is_open(self, row: S) -> bool:
-        """Whether the row still asks for something; a resource whose rows never close keeps every one open."""
         return True
 
     def counts(self, rows: list[S]) -> Counts:
         return Counts(all=len(rows), open=len([row for row in rows if self.is_open(row)]), unread=0)
 
     def shown(self, row: S) -> object:
-        """The row as the API answers it: its own fields, unless the resource names more beside them."""
         return self.shown_page([row])[0]
 
     def shown_page(self, rows: list[S]) -> list:
-        """A page of rows as the API answers them; a resource that names more beside their fields reads it once for the page."""
         return list(rows)
 
     def show(self, request: Request) -> Response:
@@ -62,6 +57,5 @@ class Controller(Generic[S]):
         return Response.json({})
 
     def fields_of(self, body: dict) -> dict:
-        """Only the model's own fields, never its id, its stamps or its state, which moves only by its own actions."""
         own = {f.name for f in fields(self.repository.model)} - {"id", "environment_id", "created_at", "created_by", "updated_at", "updated_by", "state"}
         return {name: value for name, value in body.items() if name in own}

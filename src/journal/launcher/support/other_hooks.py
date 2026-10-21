@@ -19,7 +19,6 @@ class OtherHooks:
         return [self.root / name if not name.startswith("~") else Path(name).expanduser() for name in FILES[self.agent]]
 
     def others(self) -> list[Path]:
-        """The files holding a hook that is not the journal's."""
         return [path for path in self.files() if path.is_file() and ProgramSettings.read(path).kept() != ProgramSettings.read(path)]
 
     def set_aside(self) -> list[Path]:
@@ -35,7 +34,6 @@ class OtherHooks:
         return [Path(m["from"]) for m in moved]
 
     def put_back(self) -> list[Path]:
-        """Restores the hooks of every file set aside, from the copies; safe to call when nothing was."""
         moved = json.loads(self.listing.read_text()) if self.listing.is_file() else []
         for m in moved:
             copy, home = Path(m["to"]), Path(m["from"])

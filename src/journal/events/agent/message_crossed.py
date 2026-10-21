@@ -13,5 +13,4 @@ class MessageCrossed(AgentEvent):
     text: str
 
     def message(self, at: datetime) -> Message:
-        """The message as the chat keeps it, read as it came."""
         return Message.from_agent(self.sender, self.text, self.session, at)

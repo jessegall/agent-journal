@@ -16,14 +16,11 @@ class PluginPreview:
     rows: tuple[PreviewRow, ...]
     linked: bool = False
     was: str = ""
-    """The commit an upgrade starts from."""
     changes: tuple[str, ...] = ()
     code: tuple[str, ...] = ()
     current: bool = False
-    """True for an upgrade that changes nothing."""
 
     def files_changed(self) -> list[str]:
-        """Each file the code changes, with its lines added and taken out, read from the diff."""
         counts: dict[str, list[int]] = {}
         name = ""
         for line in self.code:

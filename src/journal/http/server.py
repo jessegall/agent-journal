@@ -15,7 +15,6 @@ class Server:
     def __init__(self, config: Config, router: Router, identity: Identity, static: StaticFiles, database: Connection) -> None:
         self.config, self.router, self.identity, self.static, self.database = config, router, identity, static, database
         self._bound: list[ThreadingHTTPServer] = []
-        """The port is taken at start, never at build: a journal built to stand by must hold no port."""
         self._thread = threading.Thread(target=lambda: self._bound[0].serve_forever(poll_interval=0.05), name="http", daemon=True)
 
     @property
@@ -23,14 +22,12 @@ class Server:
         return self._bound[0].server_address[1]
 
     def start(self) -> None:
-        """Takes its port and serves on a thread of its own until stop()."""
         self._bound.append(self._build())
         self.config.home.mkdir(parents=True, exist_ok=True)
         self.config.port_file.write_text(str(self.port))
         self._thread.start()
 
     def serve(self) -> None:
-        """Blocks until stop() is called."""
         self.start()
         self._thread.join()
 
@@ -49,7 +46,6 @@ class Server:
         return server
 
     def _bind(self, handler: type[Handler]) -> ThreadingHTTPServer:
-        """Takes the first free port of the ones the config names; a taken one is left to whoever has it."""
         ports = self.config.ports()
         for port in ports[:-1]:
             try:

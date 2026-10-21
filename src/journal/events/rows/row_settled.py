@@ -9,4 +9,3 @@ class RowSettled(RowEvent):
 
     ref: str
     outcome: str = ""
-    """What the row came to, in the words a wait on it is told: output 7 finished, check 3 passed."""

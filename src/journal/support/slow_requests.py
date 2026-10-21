@@ -19,11 +19,8 @@ from journal.support.scope import Scope
 from journal.support.chat_mark import ChatMark
 
 SETTLING_SECONDS = 60.0
-"""After the journal starts, which an update is too, nothing is judged: a cold start is always slow."""
 STARTING = "journal.starting"
-"""The mark the journal keeps in its runtime folder while it starts, so nothing is measured until it has."""
 TESTS_RUNNING = "tests.running"
-"""The start of the name of the mark each test run keeps in the journal's runtime folder while it runs, ended by its own process number: runs side by side each keep their own, and their servers crowd the machine."""
 
 
 HOOK = "HOOK"
@@ -38,7 +35,6 @@ class SlowRequests:
         self.started = time.monotonic()
 
     def measured(self, method: str, path: str, ms: float) -> None:
-        """A request's time, by the path it asked for with its numbers folded, so /journal/plans and /journal/messages are each their own and every message's page is one; every measurement feeds the developer's averages once the reply is out."""
         self.deferred.add(lambda: self.counted(method, path, round(ms)))
         if not self.judging():
             return
@@ -54,7 +50,6 @@ class SlowRequests:
             self.statistics.measured(f"developer.hooks.{path.rsplit('/', 1)[-1]}", ms, Actor.system())
 
     def budget(self, method: str) -> int:
-        """The budget a request of this method has, in milliseconds: a write is given more than a read."""
         return int(self.settings.option(Faults.WRITE if method == "POST" else Faults.REQUEST))
 
     def judging(self) -> bool:
@@ -67,7 +62,6 @@ class SlowRequests:
         return bool(self.settings.option(Faults.REPORT)) and settled and not busy and not self.is_testing()
 
     def is_testing(self) -> bool:
-        """A test run is on: one of the marks the runs leave, each named by its own process, names a process still running; a mark left by a run that died is stale."""
         return any(self.is_running(mark) for mark in (self.config.home / "runtime").glob(f"{TESTS_RUNNING}.*"))
 
     @staticmethod
@@ -82,7 +76,6 @@ class SlowRequests:
         return True
 
     def reported(self, method: str, route: str, ms: int, budget: int) -> None:
-        """Marked in the live agent's environment, else the first: a request need not name one, and the report is the journal's own."""
         agent = self.agents.live_anywhere()
         with self.scope.of(agent.environment_id if agent else self.environments.all()[0].id):
             self.marked(method, route, ms, budget)

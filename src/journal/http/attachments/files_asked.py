@@ -20,6 +20,5 @@ class FilesAsked:
         return cls(**words, **numbers)
 
     def holds(self, file: AttachedFile) -> bool:
-        """Whether the file is of the kind asked, attached to the row kind asked, and holds every word searched."""
         kind = self.kind == "all" or file.image is (self.kind == "images")
         return kind and (not self.shelf or file.row.startswith(f"{self.shelf}:")) and file.matches(self.search.lower().split())

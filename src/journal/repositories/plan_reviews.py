@@ -18,7 +18,6 @@ class PlanReviews(ScopedRepository[PlanReview]):
         self.links = links
 
     def of(self, plan: Plan) -> list[PlanReview]:
-        """The plan's review rounds, newest first."""
         return list(reversed(self.numbered(ref.id for ref in self.links.sources(plan, REVIEWS))))
 
     def open_of(self, plan: Plan) -> list[PlanReview]:

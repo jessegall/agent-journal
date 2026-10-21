@@ -21,7 +21,6 @@ __journal_status() {
 }
 __journal_code=0
 """
-"""What the shell is told first: the open-files limit raised, since a child of the server inherits its small one; the working tree as git sees it, one line a changed file; the status the part before left, replayed except under set -e; and the code so far."""
 POLL = 0.02
 
 

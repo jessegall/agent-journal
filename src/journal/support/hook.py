@@ -8,7 +8,6 @@ class Hook:
     """What the agent's hook script posts, as the agent sent it, with the millisecond the script started at when it stamped its request; stored, a tool's response is cut to KEPT characters a text, so a long read or a command's whole output is not kept once more for every call."""
 
     KEPT = 4000
-    """Characters of each text in a tool's response the stored record keeps: what is read back from it later, an agent id or a short answer, fits well inside."""
 
     kind: HookKind
     session: str
@@ -58,7 +57,6 @@ class Hook:
 
     @staticmethod
     def printed(response) -> str:
-        """What a tool call printed: Claude hands a shell's output as a dict of stdout and stderr, other tools as text."""
         if isinstance(response, dict):
             return "\n".join(part for part in (response.get("stdout", ""), response.get("stderr", "")) if part) or str({k: v for k, v in response.items() if k not in ("stdout", "stderr")})
         return response if isinstance(response, str) else str(response)

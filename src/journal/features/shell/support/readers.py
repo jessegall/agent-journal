@@ -6,7 +6,6 @@ from journal.features.shell.support.script_reader import ScriptReader
 from journal.support.refused import Refused
 
 KINDS = {".pattern": Reader.from_file, ".sh": ScriptReader.from_file}
-"""Each kind of reader by its file's suffix: a pattern, or a script the output is handed to."""
 
 
 class Readers:
@@ -31,6 +30,5 @@ class Readers:
         (self.config.readers / f"{reader.name}.pattern").write_text(reader.text())
 
     def add_script(self, name: str, about: str, script: Path) -> None:
-        """The script copied in under the reader's name, what it prints said in its first line."""
         self.config.readers.mkdir(parents=True, exist_ok=True)
         (self.config.readers / f"{name}.sh").write_text(f"# {about}\n{script.read_text()}")

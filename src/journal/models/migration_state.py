@@ -10,5 +10,4 @@ class MigrationState(StrEnum):
     DONE = "done"
 
     def is_open(self) -> bool:
-        """The user has still to bring it across."""
         return self in (MigrationState.OFFERED, MigrationState.LATER)

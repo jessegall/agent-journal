@@ -17,7 +17,6 @@ class SettingController:
         return Response.json(self.tree())
 
     def store(self, request: Request) -> Response:
-        """A change names only the keys it sets, null for one that goes back to its default; the keys it leaves out stay. The page keeps the answer as its whole settings tree, so a change answers with all of it."""
         for top, inner in request.body.items():
             if isinstance(inner, dict):
                 self.saved(top, inner, request.actor)

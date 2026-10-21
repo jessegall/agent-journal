@@ -5,7 +5,6 @@ from journal.models.scoped import Scoped
 from journal.supervisor_link import SupervisorLink
 
 CANCELLED = "cancelled"
-"""The state of a cancelled task or plan: a run about it can never reach its end."""
 
 
 class EndRunsOfACancelledRow(Listener[Updated]):

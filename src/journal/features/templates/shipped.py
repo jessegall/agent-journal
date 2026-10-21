@@ -33,4 +33,3 @@ CHALLENGE = Template(
     brief="Question the plan's approach as a whole: is there a simpler way to reach the same goal, something that already exists and could be reused, a risk the plan takes without saying so. Give the alternative and what it would cost.",
 )
 SHIPPED = (FUNCTIONAL, FIND_MISTAKES, FIND_GAPS, CHALLENGE)
-"""Written at boot when a template of that title is not there yet, so a project may edit its copy."""

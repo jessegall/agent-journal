@@ -7,9 +7,7 @@ from journal.repositories.checks import Checks
 from journal.repositories.command_outputs import CommandOutputs
 
 AWAITABLE = (CommandOutput, Task, Question, Check)
-"""The models a wait or a block may wait on, whose write may end it."""
 UNTIL_EVERY = 0.5
-"""Minutes between two runs of a wait's polling script."""
 
 
 class Awaitables:

@@ -22,7 +22,6 @@ class Switched(Listener[Event]):
             return self.inner.handle(event)
 
     def environment_of(self, event: Event) -> int:
-        """A scoped row's own environment, else the event's; an event about a row of no environment, such as a link, happened where it was fired, or in the project outside every scope."""
         model = getattr(event, "model", None)
         if isinstance(model, Scoped):
             return model.environment_id

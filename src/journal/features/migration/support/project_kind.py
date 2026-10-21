@@ -13,9 +13,7 @@ class ProjectKind:
     """A version 3 kind kept for the whole project, brought across row by row: a row already brought is passed over, and one left behind is named with why."""
 
     kind: ClassVar[str]
-    """The kind's name in version 3, as its folder is named."""
     title: ClassVar[str]
-    """What the report calls the rows."""
 
     def __init__(self, ledger: MigratedRows) -> None:
         self.ledger = ledger
@@ -42,7 +40,6 @@ class ProjectKind:
         return rows.project(self.kind)
 
     def left_behind(self, row: Version3Row) -> str:
-        """Why the row stays in the backup; empty when it comes across."""
         return "deleted" if row.is_deleted() else ""
 
     def made(self, row: Version3Row, actor: Actor) -> Model:

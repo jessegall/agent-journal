@@ -16,9 +16,7 @@ class EnvironmentKind:
     """A version 3 kind kept per environment, brought across row by row for each environment that came: a row already brought is passed over, and one left behind is named with why."""
 
     kind: ClassVar[str]
-    """The kind's name in version 3, as its folder is named."""
     title: ClassVar[str]
-    """What the report calls the rows."""
 
     def __init__(self, environments: Environments, ledger: MigratedRows) -> None:
         self.environments, self.ledger = environments, ledger
@@ -45,17 +43,13 @@ class EnvironmentKind:
         return Brought(self.title, count, tuple(skipped))
 
     def source(self, environment: str, row: Version3Row) -> str:
-        """Where the row lay in the backup, as the ledger keeps it."""
         return f"environments/{environment}/{self.kind}/{row.n}"
 
     def left_behind(self, row: Version3Row, into: Environment) -> str:
-        """Why the row stays in the backup; empty when it comes across."""
         return "deleted" if row.is_deleted() else ""
 
     def message_of(self, row: Version3Row, into: Environment) -> Ref | None:
-        """The message the row refers to, as it came across; none when it refers to none that came."""
         return next((found for ref in row.refs if ref.startswith("message:") and (found := self.ledger.referred(into.name, ref))), None)
 
     def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Model:
-        """The row it becomes here; attached is the folder of its files, when it has one."""
         raise NotImplementedError

@@ -7,7 +7,6 @@ from journal.repositories.migrated_rows import MigratedRows
 from journal.repositories.triggers import Triggers
 
 ACTIONS = {"nudge": TriggerAction.NUDGE, "instruct": TriggerAction.INSTRUCT, "deny": TriggerAction.DENY, "start": TriggerAction.SEQUENCE}
-"""What each version 3 trigger does, as the action here; one doing anything else has no home here."""
 
 
 class BringTriggers(ShippedKind):

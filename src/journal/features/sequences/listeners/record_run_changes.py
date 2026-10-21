@@ -10,7 +10,6 @@ from journal.repositories.entries import Entries
 from journal.support.chat_mark import ChatMark
 
 RUN = "sequence_run"
-"""The entry kind of a change to an agent's runs: started, moved on, parked, followed again, finished or ended early."""
 
 
 class RecordRunChanges(Listener[Updated]):

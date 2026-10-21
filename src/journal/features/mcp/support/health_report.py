@@ -9,4 +9,3 @@ class HealthReport:
 
     servers: dict[str, Known] = field(default_factory=dict)
     failure: str | None = None
-    """Why the program could not be asked; None when it answered."""

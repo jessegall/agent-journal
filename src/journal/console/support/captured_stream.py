@@ -23,7 +23,6 @@ class CapturedStream(io.TextIOBase):
     @staticmethod
     @contextmanager
     def into(out: io.StringIO, err: io.StringIO) -> Iterator[None]:
-        """Within the block, this context's printing goes to out and err; the streams are wrapped again whenever something replaced them since."""
         if not isinstance(sys.stdout, CapturedStream):
             sys.stdout = CapturedStream(sys.stdout, OUT)
         if not isinstance(sys.stderr, CapturedStream):

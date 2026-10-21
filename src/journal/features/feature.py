@@ -19,7 +19,6 @@ class Feature:
     title: ClassVar[str] = ""
     help: ClassVar[str] = ""
     fixed: ClassVar[bool] = False
-    """Always on: the settings page shows it with no switch, since turning it off would only break what it does."""
     states: ClassVar[tuple[type[AgentState], ...]] = ()
     nudges: ClassVar[tuple[Nudge, ...]] = ()
     options: ClassVar[tuple[Option, ...]] = ()
@@ -34,5 +33,4 @@ class Feature:
 
     @classmethod
     def applies_in(cls, root: Path) -> bool:
-        """Whether the feature means anything in the project at this root; the settings page shows only those that do."""
         return True

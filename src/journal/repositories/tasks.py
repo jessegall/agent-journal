@@ -28,7 +28,6 @@ class Tasks(ScopedRepository[Task]):
         return [ref for ref in self.links.targets(row, WAITS_ON) if not self.awaited(ref).is_settled()]
 
     def waits_reach(self, start: Ref, goal: Ref) -> bool:
-        """Whether following the wait links from start ever comes to goal."""
         seen, todo = set(), [start]
         while todo:
             ref = todo.pop()
@@ -53,7 +52,6 @@ class Tasks(ScopedRepository[Task]):
         return [(task, check) for check in self.checks.broken_waits() for task in self.waiting_on(check)]
 
     def waiting_on(self, model) -> list[Task]:
-        """The tasks blocked on this row by a wait link."""
         return [task for ref in self.links.sources(model, WAITS_ON) if ref.type == Task.table() and (task := self.find(ref.id)).state == TaskState.BLOCKED]
 
     def reason(self, row: Task | Plan) -> str:
@@ -64,26 +62,21 @@ class Tasks(ScopedRepository[Task]):
         return self.where(state=state)
 
     def in_hand(self) -> Task | None:
-        """The one task started here, when one is."""
         return next(iter(self.in_state(TaskState.STARTED)), None)
 
     def refuse_second(self, task: Task) -> None:
-        """One task in hand at a time: a task is started only while no other is."""
         other = self.in_hand()
         if task.state == TaskState.STARTED and other is not None and other.id != task.id:
             raise Refused(f"task {other.id} is in hand: finish it, or park it with `journal task park {other.id} \"<why>\"`, before task {task.id} is started")
 
     def unfinished_count(self) -> int:
-        """How many tasks under no plan are not yet done or cancelled, counted by the database: a plan's tasks are counted on the plan."""
         return self.counted_in("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
                                (TaskState.DONE.value, TaskState.CANCELLED.value))
 
     def unseen_by_user(self) -> int:
-        """How many unfinished tasks the user did not make, so has not yet seen."""
         return self.counted_in("state NOT IN (?, ?) AND (created_by IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.DONE.value, TaskState.CANCELLED.value))
 
     def shown(self) -> list[Task]:
-        """What a list of tasks shows: every one not yet finished, however old, and the newest page of the finished ones, by number."""
         finished = (TaskState.DONE.value, TaskState.CANCELLED.value)
         unfinished = self.selected("state NOT IN (?, ?) ORDER BY id", (*finished,))
         return sorted([*unfinished, *self.newest("state IN (?, ?)", (*finished,))], key=lambda t: t.id)

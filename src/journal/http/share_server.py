@@ -20,11 +20,9 @@ class ShareServer:
 
     @property
     def port(self) -> int:
-        """The port it listens on, as it kept it when it started."""
         return self.place.kept().port
 
     def start(self) -> None:
-        """Listens on the port it had before, or any free one when that is taken, and keeps the one it got."""
         self._server = self._bind(self.place.kept().port)
         self._server.daemon_threads = True
         self.place.keep(port=self._server.server_address[1])

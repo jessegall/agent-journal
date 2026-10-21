@@ -48,7 +48,6 @@ from journal.http.controllers.workers import WorkerController
 from journal.http.router import Router
 
 API = "/journal"
-"""The journal's API: the viewer, the phone's page and a plugin's program all speak it; the hook and the shim post to the root."""
 
 
 class Routes:
@@ -250,6 +249,5 @@ class Routes:
 
     @staticmethod
     def acts(router: Router, name: str, controller, *acts: str) -> None:
-        """Each act on a row, a POST to its own path named as the controller's method."""
         for act in acts:
             router.post(f"{API}/{name}/{{id}}/{act}", getattr(controller, act))

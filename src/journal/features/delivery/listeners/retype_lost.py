@@ -8,9 +8,7 @@ from journal.supervisor_link import SupervisorLink
 from journal.support.chat_mark import ChatMark
 
 PATIENCE = 10.0
-"""Seconds a typed line may go unconfirmed while the agent sits between turns before it is typed again; each try waits twice as long as the one before."""
 TRIES = 6
-"""Six tries span five minutes: a program loading a long conversation at its start drops what is typed for a minute or more."""
 
 
 class RetypeLost(AgentListener[Ticked]):

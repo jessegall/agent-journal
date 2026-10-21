@@ -11,20 +11,14 @@ class Plugin(Model):
 
     name: str = ""
     source: str = ""
-    """The git address or the folder it was installed from."""
     commit_sha: str = ""
-    """The commit it was installed at, for one installed from git."""
     release: str = ""
-    """The release tag it was installed or upgraded at, when that commit carries one; a release is compared with a release, never with the manifest's own version."""
     linked: bool = False
-    """Read where it lies rather than copied into the journal's plugins folder."""
     enabled: bool = True
     manifest: PluginManifest = field(default_factory=PluginManifest)
     settings: dict = field(default_factory=dict)
     hashes: dict = field(default_factory=dict)
-    """Each file it runs, by path, with its hash at install, checked before each run."""
     waiting: str = ""
-    """The hash of a linked folder's changed manifest already shown to the user, waiting for their upgrade."""
     last_fault: str = ""
     faults_in_a_row: int = 0
     failing_since: datetime | None = None

@@ -18,7 +18,6 @@ from journal.support.scope import Scope
 from journal.support.where import Where
 
 EXIT = "__journal_exit"
-"""The stream's last line: the chain's exit code, which the shim ends with."""
 TICK = 0.2
 LIMIT_READ_EVERY = 10
 

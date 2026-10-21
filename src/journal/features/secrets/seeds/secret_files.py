@@ -25,7 +25,6 @@ class SecretFiles(Seed):
                 known.add(secret.title.lower())
 
     def read(self, path: Path) -> Secret | None:
-        """The row a secret file holds: a JSON head between two --- lines, how it is used after them; a file not shaped so is none."""
         parts = path.read_text().split("---\n", 2)
         if len(parts) < 3:
             return None

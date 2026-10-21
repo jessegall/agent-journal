@@ -10,7 +10,6 @@ from journal.support.private_folder import PrivateFolder
 
 RETIRED = "RETIRED_"
 AT = "_AT_"
-"""A replaced value's name: RETIRED_<variable>_AT_<when it was replaced>."""
 HEADER = """# The values of this project's secrets, written by agent-journal.
 # One line per field: NAME="value". The journal never copies this file anywhere.
 """
@@ -27,7 +26,6 @@ class SecretValues:
         return PrivateFolder(self.config.root).secrets() / f"{self.project_id()}.env"
 
     def project_id(self) -> str:
-        """The project's id, made the first time it is needed and kept in the project's journal folder, so a folder moved on disk keeps its values."""
         path = self.config.home / "project-id"
         if not path.is_file():
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -41,13 +39,11 @@ class SecretValues:
         return dict(found for found in map(self.parsed, path.read_text().splitlines()) if found)
 
     def put(self, variable: str, value: str) -> None:
-        """The value set; one it replaces is kept under a retired name for thirty days, so it is still masked wherever it was printed."""
         current = self.values()
         retired = {f"{RETIRED}{variable}{AT}{int(time.time())}": current[variable]} if current.get(variable) and current[variable] != value else {}
         self.write({**current, **retired, variable: value})
 
     def retired_before(self, at: float) -> list[str]:
-        """The retired names older than the moment given."""
         return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(AT, 1)[1]) < at]
 
     def drop(self, variables: list[str]) -> None:
@@ -64,7 +60,6 @@ class SecretValues:
 
     @staticmethod
     def parsed(line: str) -> tuple[str, str] | None:
-        """A NAME="value" line as its name and value; a comment or a blank line is none."""
         name, equals, rest = line.strip().partition("=")
         if not equals or name.startswith("#"):
             return None

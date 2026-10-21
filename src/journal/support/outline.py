@@ -31,7 +31,6 @@ class Outline:
         parser.add_argument("--grep", help="the lines holding these words, each with its section")
 
     def told(self, args: Namespace) -> list[str]:
-        """What a read asks for: a section, its bullets, the lines a search finds, or the outline."""
         if args.grep:
             return self.found(args.grep)
         if args.section:

@@ -18,5 +18,4 @@ class ToolInput:
 
     @property
     def file(self) -> str:
-        """The file the call names, by whichever key its tool uses."""
         return self.file_path or self.path

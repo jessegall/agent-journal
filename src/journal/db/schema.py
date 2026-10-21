@@ -6,7 +6,6 @@ from journal.db.connection import Connection
 from journal.models.model import Model
 
 FULL = 1
-"""SQLite's auto_vacuum mode that frees deleted rows' pages at every commit."""
 
 
 class Schema:

@@ -29,14 +29,12 @@ class Console:
         self._parser = None
 
     def attributed(self, where: Where) -> Where:
-        """A command from an agent's shell that names no session is the environment's live agent's, wherever the argv came from; with no agent live there, as in a shell outside the journal, it is the user's own."""
         if not where.from_agent_shell or where.session:
             return where
         live = self.agents.live()
         return where.as_(live.session) if live else where
 
     def parser(self) -> argparse.ArgumentParser:
-        """Built whole before it is kept, so a command on another thread never parses with one half made."""
         if self._parser is None:
             parser = argparse.ArgumentParser(prog="journal", exit_on_error=False)
             nouns = parser.add_subparsers(dest="noun", required=True)
@@ -48,13 +46,11 @@ class Console:
         return self._parser
 
     def run(self, argv: list[str], where: Where) -> Outcome:
-        """Runs one command with its output captured, in the environment it names, so the same call serves the terminal and the server; commands on several threads run side by side."""
         out, err = io.StringIO(), io.StringIO()
         with self.scope.of(self.environments.named(where.environment).id):
             return self.captured(argv, where, out, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:
-        """A noun with a default verb takes it when the line names none."""
         command = self.commands.get(argv[0]) if argv else None
         verb = getattr(command, "default_verb", "")
         return [argv[0], verb, *argv[1:]] if verb and not (argv[1:] and argv[1] in self.verbs_of(command)) else argv

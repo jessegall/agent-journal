@@ -20,7 +20,6 @@ class TunnelController:
         return Response.json(self.tunnel.snapshot())
 
     def services(self, request: Request) -> Response:
-        """The tunnel while something keeps it open, a link, a paired phone or a code to pair one; nothing while none does, so the top bar says nothing is shared."""
         return Response.json([self.tunnel.service()] if self.tunnel.is_wanted(datetime.now(timezone.utc)) else [])
 
     def check(self, request: Request) -> Response:

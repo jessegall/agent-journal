@@ -13,17 +13,14 @@ class PairingCode(Scoped):
     code: str = ""
     short: str = ""
     days: int = 7
-    """How long the phone it pairs stays paired."""
     until: datetime | None = None
     tries: int = 0
     closed_at: datetime | None = None
-    """When it was used, replaced or voided; it opens nothing after."""
 
     def is_open(self, now: datetime) -> bool:
         return self.closed_at is None and self.until is not None and self.until > now
 
     def tried(self, at: datetime) -> "PairingCode":
-        """One wrong try more; the last allowed closes it."""
         tries = self.tries + 1
         return self.with_(tries=tries, closed_at=at if tries >= self.MOST_TRIES else self.closed_at)
 

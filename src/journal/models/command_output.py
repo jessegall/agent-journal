@@ -16,10 +16,8 @@ class CommandOutput(Scoped):
     ended: bool = False
     status: int = 0
     told: bool = False
-    """The agent was told it ended."""
 
     def headline(self) -> str:
-        """The command's first line, and how many more it has: a heredoc is never printed whole."""
         first, *rest = self.command.splitlines() or [""]
         return f"{first} (and {len(rest)} more lines)" if rest else first
 
@@ -34,7 +32,6 @@ class CommandOutput(Scoped):
         return self.with_(told=True)
 
     def is_settled(self) -> bool:
-        """Nothing waiting on it waits any longer: the command ended."""
         return self.ended
 
     def came_to(self) -> str:

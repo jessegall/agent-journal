@@ -3,7 +3,6 @@ from journal.support.output_mask import OutputMask
 from journal.models.plugin import Plugin
 
 NEUTRAL = {"[journal]": "(journal)", "[!reply:": "(!reply:"}
-"""Marks only the journal and the agent may write, made plain text inside a plugin's words."""
 
 
 class PluginWords:

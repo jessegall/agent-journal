@@ -16,7 +16,6 @@ INDEXES = (
     ("agents_by_session", "agents (session)"),
     ("statistics_by_key", "statistics (key)"),
 )
-"""Each read that walked its table for want of an index, as the review of every repository's reads found them."""
 
 
 class IndexTheFrequentReads(Migration):

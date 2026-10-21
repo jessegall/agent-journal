@@ -31,7 +31,6 @@ class MarkSubagents(AgentListener[AgentEvent]):
 
     @staticmethod
     def moves(event: AgentEvent) -> bool:
-        """An Agent tool's call or answer, a subagent's own stop, or the end of the turn or session that settles what never answered."""
         return type(event).__name__ in SETTLING or (isinstance(event, (ToolStarting, ToolFinished)) and event.call.tool in DISPATCHING)
 
     def marked(self, event: AgentEvent, row: Dispatch, agent: int, actor: Actor) -> None:

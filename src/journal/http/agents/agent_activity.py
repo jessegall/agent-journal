@@ -17,10 +17,8 @@ from journal.repositories.messages import Messages
 
 STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan"})
-"""The states in which the agent has declared its work: only then is it working; an agent merely running is busy."""
 KEPT = 400
 HISTORY = 5
-"""How many of an agent's latest sequence changes its panel shows."""
 TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
 ENDED = "ended"
 

@@ -5,9 +5,7 @@ from journal.models.doc import Doc
 from journal.repositories.docs import Docs
 
 WEIGHTS = {"title": 8, "number": 8, "abstract": 3, "text": 1}
-"""How much a word found in each part of a document counts."""
 AROUND = 70
-"""How many characters of the passage are shown on each side of the first word found."""
 SPACES = re.compile(r"\s+")
 MARKS = re.compile(r"[*`#]+")
 
@@ -35,7 +33,6 @@ class DocSearch:
 
     @staticmethod
     def passage(body: str, asked: list[str]) -> str:
-        """The text around the first word found in the body, on one line."""
         flat = SPACES.sub(" ", MARKS.sub("", body))
         at = min((i for i in (flat.lower().find(word) for word in asked) if i >= 0), default=-1)
         if at < 0:

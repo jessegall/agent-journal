@@ -5,9 +5,7 @@ from pathlib import Path
 from journal.config import Config
 
 KEPT = 200
-"""How many files' last versions are kept, the ones changed last."""
 LARGEST = 1_000_000
-"""The largest file, in bytes, whose versions are kept and compared; a larger one's change is counted, not drawn."""
 GIT_SECONDS = 5
 
 
@@ -26,7 +24,6 @@ class FileSnapshots:
         return self.committed(path)
 
     def now(self, path: str) -> str | None:
-        """The file as it is, or none when it is gone or too large to compare."""
         file = self.root / path
         if not file.is_file() or file.stat().st_size > LARGEST:
             return None
@@ -40,7 +37,6 @@ class FileSnapshots:
                 del self._kept[stale]
 
     def committed(self, path: str) -> str:
-        """The file as the last commit has it; empty for a file git does not know."""
         try:
             shown = subprocess.run(["git", "show", f"HEAD:{path}"], cwd=self.root, capture_output=True, text=True, errors="replace", timeout=GIT_SECONDS)
         except (OSError, subprocess.TimeoutExpired):

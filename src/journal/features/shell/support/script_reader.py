@@ -5,7 +5,6 @@ from pathlib import Path
 from journal.support.refused import Refused
 
 TIMEOUT = 30
-"""Seconds a reader script may take over one output."""
 
 
 @dataclass(frozen=True)
@@ -18,16 +17,13 @@ class ScriptReader:
 
     @classmethod
     def from_file(cls, path: Path) -> "ScriptReader":
-        """A script reader's file: its first comment line, after any #!, says what it prints."""
         about = next((line.removeprefix("#").strip() for line in path.read_text().splitlines() if line.startswith("#") and not line.startswith("#!")), "")
         return cls(path.stem, about, path)
 
     def matches(self, command: str) -> bool:
-        """A script's work cannot be told from a command line."""
         return False
 
     def read(self, lines: list[str]) -> list[str]:
-        """The script's own lines; it runs freely, since the agent wrote it for this project."""
         try:
             ran = subprocess.run(["sh", str(self.path)], input="\n".join(lines) + "\n", capture_output=True, text=True, timeout=TIMEOUT)
         except subprocess.TimeoutExpired as late:

@@ -35,15 +35,12 @@ class ScopedRepository(Repository[S]):
         return self.connection.one(f"SELECT {select} FROM {self.table} WHERE environment_id = ? AND {clause}", (self.scope.id, *params))
 
     def in_(self) -> list[S]:
-        """The newest page of the scope's rows, oldest first."""
         return self.all()
 
     def counted_in(self, clause: str = "1", params: tuple = ()) -> int:
-        """How many of the scope's rows a WHERE clause picks, counted by the database."""
         return self.aggregate("count(*) AS n", clause, params)["n"]
 
     def every_in(self) -> list[S]:
-        """Every row of the scope, for the rare read that must see them all."""
         return self.every()
 
     def page_in(self, limit: int, before: int | None = None) -> list[S]:

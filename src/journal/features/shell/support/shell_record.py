@@ -21,11 +21,8 @@ from journal.support.where import Where
 
 TAIL = 2000
 PIPED = re.compile(r"(?<!\|)\|(?!\|)")
-"""A pipe anywhere in the line, into head, tail, grep or any filter: its output is cut or shaped, so the whole is kept as a numbered output."""
 RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
-"""The entries a chain leaves: each part as it starts and as it ends, the move to the background, and the end of a moved chain."""
 WORDS_IN = re.compile(r"[A-Za-z]{3,}")
-"""A word of three letters or more: a line holding one says something."""
 
 
 class ShellRecord:

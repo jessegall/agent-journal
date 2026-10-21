@@ -155,7 +155,6 @@ class SecretCommand(Command):
         return 0
 
     def waited(self, secret: Secret) -> int:
-        """Until the login window closes, then whether a login was saved."""
         began = time.time()
         while self.secrets.find(secret.id).logging_in_at and time.time() - began < WINDOW:
             time.sleep(1)
@@ -164,7 +163,6 @@ class SecretCommand(Command):
         return 0 if done.session_at else 1
 
     def named(self, given: str) -> Secret:
-        """A live secret by its number or its title."""
         found = [s for s in self.secrets.live() if str(s.id) == given or s.title.lower() == given.lower()]
         if not found:
             raise Refused(f"no secret is numbered or titled {given!r}: `journal secret list` names them")

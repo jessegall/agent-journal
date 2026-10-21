@@ -7,7 +7,6 @@ from journal.events.agent_listener import AgentListener
 from journal.support.chat_mark import ChatMark
 
 QUIET = 600.0
-"""At most one alarm in ten minutes, however many writes carried a value."""
 
 
 class AlarmOnLeak(AgentListener[Ticked]):

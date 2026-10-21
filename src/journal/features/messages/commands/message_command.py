@@ -51,7 +51,6 @@ class MessageCommand(Command):
         return 0
 
     def reply(self, args: Namespace, where: Where) -> int:
-        """The agent's reply, one a message: a second is sent only when confirmed, and marks the message read."""
         answered = self.messages.find(args.reply_to)
         if self.messages.reply_saying(answered.id, args.text):
             print(f"message {answered.id} already has this reply in the chat: not sent again")
@@ -72,7 +71,6 @@ class MessageCommand(Command):
         return 0
 
     def read(self, args: Namespace, where: Where) -> int:
-        """The words reach the agent here, once it opens the message, with how to answer it."""
         self.show(self.messages.mark_read(self.messages.find(args.n), where.actor, self._tool_use(where)))
         return 0
 
@@ -112,13 +110,11 @@ class MessageCommand(Command):
 
     @staticmethod
     def answering(message: Message) -> str:
-        """What the message answers, by number: the quote above it is not repeated."""
         if message.reply_to:
             return f", a reply to message {message.reply_to}"
         return ", on the passage quoted below it" if message.quoted_lines else ""
 
     def show(self, message: Message) -> None:
-        """The message, the passage it comments on, its files with where to open them and what they show, and the rows it is linked to."""
         print(f"message {message.id} from {message.sender}{self.answering(message)}: {message.own_words}")
         for line in message.quote.split("\n") if message.is_on_a_passage else ():
             print(f"  > {line}")

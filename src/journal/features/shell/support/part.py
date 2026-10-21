@@ -6,28 +6,17 @@ from pathlib import Path
 from dataclasses import dataclass, replace
 
 TRAILING_CUT = re.compile(r"\s*\|\s*(?:tail|head)(?:\s+(?:-[nc]\s*\+?\d+|-\d+))?\s*$")
-"""A pipe into tail or head that ends a command, cutting what it printed: the command runs whole, the whole is kept, and the cut is applied to it before the agent sees it."""
 READERS = {"cat", "sed", "grep", "egrep", "fgrep", "rg", "ag", "head", "tail", "less", "more", "bat", "awk", "jq", "wc", "ls", "find", "tree", "diff", "stat", "file", "nl", "sqlite3"}
-"""Commands run to read on purpose, whose output the agent asked to see."""
 SEARCHERS = {"grep", "egrep", "fgrep", "rg", "ag", "find", "ls", "tree"}
-"""The reading commands that search the folder they are given, or the one they run in when given none."""
 GIT_READS = {"show", "diff", "log", "status", "blame", "grep", "ls-files"}
-"""The git subcommands that only read."""
 GIT_OPTIONS = {"--no-pager", "-c", "-C", "--git-dir", "--work-tree", "-p", "-P"}
-"""Git's own options before the verb, two of which take a value."""
 CODE = re.compile(r"\.(py|pyi|vue|js|mjs|cjs|jsx|ts|tsx|cs|go|rs|swift|kt|kts|java|scala|php|rb|ex|exs|erl|hs|ml|clj|c|h|cc|cpp|hpp|m|mm|lua|dart|r|jl|sh|bash|zsh|fish|ps1|sql|css|scss|sass|less|html|htm|svelte|astro|json|jsonl|yaml|yml|toml|ini|cfg|xml|gradle|tf|proto|graphql|md|txt)\b")
-"""A file the agent reads as code or as the project's own text: reading it is the work itself, so it is run as written in the shell, pipes and all, nothing captured or kept."""
 WRITING = re.compile(r">>?(?!\s*/dev/null|&[0-9])|\btee\b")
-"""A reading command that writes after all: a redirect into a file or a tee; a redirect to /dev/null or to another stream writes nothing."""
 IN_PLACE = {"sed", "perl"}
-"""The readers whose -i flag edits the file in place, -i.bak and -pi among its spellings."""
 NOT_CODE = {"node_modules", "dist", "build", ".venv", "venv", "__pycache__", ".git", ".journal"}
-"""The folders under a project that are not its code: what is built, installed, cached or the journal's own record; a worktree under the record is a checkout of its own."""
 LOCKS = {"package-lock.json", "yarn.lock", "pnpm-lock.yaml", "poetry.lock", "Cargo.lock", "uv.lock", "Pipfile.lock", "composer.lock"}
 HARMLESS = {"echo", "printf", "test", "[", "[[", "true", ":", "pwd", "set"}
-"""Commands that neither read nor write a file: a separator, a check, a no-op."""
 PREFIXES = {"sudo", "env", "nohup", "time", "nice", "command", "exec"}
-"""Words that run the command after them as it is."""
 
 
 @dataclass(frozen=True)

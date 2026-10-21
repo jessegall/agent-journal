@@ -27,7 +27,6 @@ class BringWaits(EnvironmentKind):
         self.dropped: list[str] = []
 
     def bring(self, folder: Path, actor: Actor) -> Brought:
-        """The waits brought, and each one dropped for closing a loop named beside what stayed behind."""
         self.dropped = []
         brought = super().bring(folder, actor)
         return Brought(brought.kind, brought.count, (*brought.skipped, *self.dropped))

@@ -27,15 +27,10 @@ RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda sessi
 SKIP = {provider.name: list(provider.skip_prompts) for provider in (Claude, Codex)}
 STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
 LOCAL = {"claude": [], "codex": ["--no-daemon"]}
-"""A shared Codex daemon keeps the environment of its first launch, so each journal runs its own process."""
 REACH = {"claude": [], "codex": ["-c", "sandbox_workspace_write.network_access=true"]}
-"""What a sandboxed agent needs to reach its journal's server on this machine."""
 FLAGS = {"--env": 1, "--new": 0, "--aside": 0, "--skip": 0, "--yes": 0, "--no-open": 0, "--no-journal": 0}
 WORKTREE = ("--worktree", "-w")
 RESUMING = ("--resume", "-r")
-"""A conversation named on the command line, run where it last ran: its environment, and that environment's worktree."""
-"""The worktree flag, its name optional: bare, the worktree takes the chosen environment's name."""
-"""A flag's field when it is not the flag's own name."""
 
 
 @dataclass(frozen=True)
@@ -52,9 +47,7 @@ class Launch:
     yes: bool = False
     no_open: bool = False
     no_journal: bool = False
-    """Started by a journal already running: no server of its own."""
     worktree: str = ""
-    """The worktree the agent works in, the journal's to make and keep; Claude Code never sees the flag, since it removes a worktree it made when it exits."""
     in_worktree: bool = False
 
     @classmethod
@@ -103,7 +96,6 @@ class Launch:
         return next((row.name for row in menu.environments() if resumed in row.last_sessions.values()), "")
 
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
-        """The agent's command without the arguments that resume a conversation, which the launch file carries apart so a restart can replace them."""
         skip = [flag for flag in SKIP[self.agent] if choice.skip_prompts and flag not in self.args]
         reach = [] if choice.skip_prompts else REACH[self.agent]
         return [self.agent, *LOCAL[self.agent], *skip, *reach, *STATUS[self.agent](status), *self.args]
@@ -117,12 +109,10 @@ class Launch:
         return {**os.environ, **self.keys(), "PATH": path, "JOURNAL_ROOT": str(self.root), "JOURNAL_ENV": choice.environment, "AGENT_JOURNAL_ACTIVE": "1", "CLAUDE_CODE_SHELL_PREFIX": str(runner)}
 
     def keys(self) -> dict[str, str]:
-        """The keys the project's MCP servers sign in with, kept by the journal in the home folder and handed to the agent as environment variables."""
         path = PrivateFolder(self.root).keys_file()
         return {k: str(v) for k, v in json.loads(path.read_text()).items()} if path.is_file() else {}
 
     def run(self) -> int:
-        """Asks, sets the other hooks aside when so chosen, runs the agent under the supervisor, and puts the hooks back however it ends. What happened is written to .journal/runtime/supervisor.log, so a launch that ends at once can be read back."""
         self.log(f"launch: {' '.join([self.agent, *self.args])}")
         try:
             ProjectCommand(self.root, self.package / "journal.sh").write()
@@ -149,7 +139,6 @@ class Launch:
             out.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {line}\n")
 
     def supervise(self, choice: Choice) -> int:
-        """The supervisor run as a process of its own from the launch file, this process waiting on it and watching for the journal's page meanwhile; the file holds the agent's keys, so only its user reads it, and it goes when the supervisor ends."""
         status = StatusLine(self.root)
         launch = self.launch_file(choice, status)
         path = self.runtime / "launches" / f"{choice.environment}.json"
@@ -164,7 +153,6 @@ class Launch:
             path.unlink(missing_ok=True)
 
     def launch_file(self, choice: Choice, status: StatusLine) -> dict:
-        """What the supervisor starts: the agent in front, the journal beside it unless one runs already, its socket, announce file and mirror, and the band's words."""
         environ = self.environ(choice)
         worktree = Worktree(self.root, self.worktree or choice.environment)
         folder = worktree.made() if self.in_worktree or worktree.path.is_dir() else self.root
@@ -179,7 +167,6 @@ class Launch:
         }
 
     def socket(self, environment: str) -> Path:
-        """The supervisor's socket, in a folder of its user's under /tmp, named by the project and the environment so two never meet."""
         key = hashlib.sha1(str(self.root.resolve()).encode()).hexdigest()[:12]
         slug = re.sub(r"[^A-Za-z0-9_-]", "-", environment)[:24]
         return Path("/tmp") / f"journal-{os.getuid()}" / f"{key}-{slug}.sock"

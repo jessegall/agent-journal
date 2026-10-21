@@ -29,7 +29,6 @@ from journal.http.share_server import ShareServer
 
 
 STANDBY_EVERY = 2.0
-"""Seconds between two looks at whether the other journal of the project still answers."""
 
 
 class Runtime:

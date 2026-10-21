@@ -48,7 +48,6 @@ class ShareHandler(PooledHandler):
         self.send(ShareAnswer(400) if given is None else self.pages.post(self.path, given, self.headers.get("Authorization"), self.place()))
 
     def phone_post(self) -> ShareAnswer:
-        """A write from the phone app, a few kilobytes of JSON at most; a bigger one is refused unread."""
         length = self.headers.get("Content-Length", "")
         size = int(length) if length.isdigit() else 0
         if size > MOST_BYTES:
@@ -56,7 +55,6 @@ class ShareHandler(PooledHandler):
         return self.phone.post(PhoneRequest.of(self.command, self.path, self.headers, self.rfile.read(size) if size else b""))
 
     def comment_sent(self) -> VisitorComment | None:
-        """A comment as the share page alone sends it: with its own header, which a form on another site cannot set, and a JSON body of a few kilobytes; none otherwise."""
         length = self.headers.get("Content-Length", "")
         size = int(length) if length.isdigit() else 0
         if self.headers.get("X-Shared-Comment") != "1" or not 0 < size <= MOST_BYTES:
@@ -73,7 +71,6 @@ class ShareHandler(PooledHandler):
     do_PUT = do_PATCH = do_DELETE = do_OPTIONS = refused
 
     def place(self) -> str:
-        """Where a visitor comes from: the address the tunnel forwarded for, else the peer's, an IPv6 one by its /64 network."""
         forwarded = self.headers.get("X-Forwarded-For", "").rsplit(",", 1)[-1].strip()
         try:
             address = ip_address(forwarded or self.client_address[0])

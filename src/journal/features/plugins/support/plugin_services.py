@@ -15,7 +15,6 @@ class PluginServices:
         self.supervisor, self.runner, self.folders, self.environments = supervisor, runner, folders, environments
 
     def start(self, plugin: Plugin) -> list[str]:
-        """Started in every environment whose supervisor runs; the names of those started."""
         started = []
         for environment in self.environments.all():
             if not self.supervisor.runs(environment.id):

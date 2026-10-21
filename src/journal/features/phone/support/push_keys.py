@@ -11,7 +11,6 @@ from journal.features.phone.support.p256 import G, N, P256
 from journal.support.private_folder import PrivateFolder
 
 VALID_FOR = 12 * 3600
-"""Seconds a push service may take a token for."""
 
 
 @dataclass(frozen=True)
@@ -45,7 +44,6 @@ class PushKeys:
                 return r.to_bytes(32, "big") + s.to_bytes(32, "big")
 
     def token(self, endpoint: str, contact: str, now: float) -> str:
-        """The signed JWT a push carries for the service the endpoint is on."""
         parts = urlsplit(endpoint)
         head = self.unpadded(json.dumps({"typ": "JWT", "alg": "ES256"}).encode())
         claims = self.unpadded(json.dumps({"aud": f"{parts.scheme}://{parts.netloc}", "exp": int(now + VALID_FOR), "sub": contact}).encode())

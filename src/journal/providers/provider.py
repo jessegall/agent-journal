@@ -25,12 +25,9 @@ CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL
 
 
 TAIL = 400_000
-"""How far from its end a transcript is read for its last turn."""
 PATH_KEYS = ("file_path", "path", "notebook_path")
-"""The keys an editing tool names its file by."""
 
 VERSION_3_HOOKS = ("/.journal/src/hook.sh", "/.journal/hook.py", "/.journal/journal hook")
-"""Where version 3 wired its hook; an upgrade takes them out, or they fail on every tool call."""
 
 class Provider:
     """One agent program, Claude or Codex: the few things the journal has to know about it and nothing else."""

@@ -54,7 +54,6 @@ class SharePages:
         return self.gone(404)
 
     def post(self, path: str, comment: VisitorComment, authorization: str | None, place: str) -> ShareAnswer:
-        """A visitor's comment, the one thing a link takes."""
         parts = self.parts(path)
         shut = self.shut(parts, authorization, place)
         if shut:
@@ -72,7 +71,6 @@ class SharePages:
         return [unquote(part) for part in path.split("?", 1)[0].split("/") if part]
 
     def shut(self, parts: list[str], authorization: str | None, place: str) -> ShareAnswer | None:
-        """What keeps a link from opening: unknown, waiting, switched off, stopped or ended, or locked by its password; nothing when it opens."""
         if len(parts) < 2 or parts[0] != "s":
             return self.gone(404)
         share = self.shares.by_token(parts[1])
@@ -87,7 +85,6 @@ class SharePages:
             return self.registry.is_on(Sharing)
 
     def locked(self, share: Share, given: str | None, place: str) -> ShareAnswer | None:
-        """The answer that keeps a password-locked link shut: asked for its password, or held a while after too many wrong ones."""
         if not share.password:
             return None
         if self.wrong.locked(place):
@@ -99,7 +96,6 @@ class SharePages:
         return ShareAnswer(401, headers={"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
 
     def unlocks(self, share: Share, given: str) -> bool:
-        """Whether the password opens the link; one that did is remembered, so the page's every file is not hashed again."""
         if self._unlocked.get(share.id) == given:
             return True
         if not SharePassword.matches(given, share.password):
@@ -109,7 +105,6 @@ class SharePages:
 
     @staticmethod
     def password(authorization: str | None) -> str | None:
-        """The password a browser sends after asking the visitor; none when it sent none, or nothing readable."""
         if authorization is None or not authorization.startswith("Basic "):
             return None
         try:
@@ -118,7 +113,6 @@ class SharePages:
             return None
 
     def page(self, share: Share, address: str) -> ShareAnswer:
-        """The share app, counted as a view; its address ends in a slash, so the page's files are found beside it."""
         if not address.endswith("/"):
             return ShareAnswer(301, headers={"Location": f"/s/{share.token}/"})
         app = APP / APP_PAGE

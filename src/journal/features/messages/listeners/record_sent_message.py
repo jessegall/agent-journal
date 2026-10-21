@@ -5,7 +5,6 @@ from journal.models.message import Message
 from journal.repositories.messages import Messages
 
 SENDS = "SendMessage"
-"""Claude Code's tool for a message to another agent: a subagent it runs, or another Claude session."""
 
 
 class RecordSentMessage(AgentListener[ToolFinished]):

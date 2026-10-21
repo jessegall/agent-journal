@@ -30,7 +30,6 @@ from journal.repositories.plugins import Plugins
 
 FETCH_SECONDS = 120
 STEP_SECONDS = 300
-"""The longest a requirement's check, a setup step or the installed command may run."""
 
 
 class PluginInstalling:
@@ -41,13 +40,11 @@ class PluginInstalling:
         self.services, self.dashboard = services, dashboard
 
     def preview(self, source: str) -> PluginPreview:
-        """What the plugin is and, row by row, everything it would run, hear and hold."""
         with self.staged(source) as (folder, commit):
             manifest = self.reader.read(folder)
             return PluginPreview(manifest.name, manifest.title or manifest.name, manifest.version, manifest.description, source, commit, self.rows(manifest, folder), linked=Path(source).is_dir())
 
     def install(self, source: str, environment: str, actor: Actor) -> Plugin:
-        """Its requirements checked, its setup steps run in order and its installed command asked, all before its row is made; a failure leaves nothing."""
         self.only_the_user(actor, "installs")
         with self.staged(source) as (folder, commit):
             manifest = self.reader.read(folder)
@@ -85,7 +82,6 @@ class PluginInstalling:
                 raise Refused(f"{plugin.name}'s setup step {step.called!r} failed, so nothing is installed: {(ran.stderr or ran.stdout).strip()[-300:]}")
 
     def asked(self, plugin: Plugin, environment: str) -> dict:
-        """The settings its installed command answers with, as a JSON object."""
         command = plugin.manifest.installed
         if not command:
             return {}
@@ -105,7 +101,6 @@ class PluginInstalling:
             shutil.rmtree(self.config.home / "plugin-data" / plugin.name, ignore_errors=True)
 
     def upgrade_preview(self, name: str, ref: str | None) -> PluginPreview:
-        """The preview of the plugin at the commit asked for, with what changes in its manifest and its code."""
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             manifest = self.same(plugin, self.reader.read(folder))
@@ -115,7 +110,6 @@ class PluginInstalling:
                                  changes=tuple(changes), code=tuple(code), current=not changes and not code)
 
     def upgrade(self, name: str, ref: str | None, environment: str, actor: Actor) -> Plugin:
-        """A fetched plugin's folder replaced and its setup run again, its old folder put back if the setup fails; a linked one read where it lies."""
         plugin = self.plugins.named(name)
         with self.staged(plugin.source, ref) as (folder, commit):
             upgraded = plugin.with_(manifest=self.same(plugin, self.reader.read(folder)), commit_sha=commit, release="" if plugin.linked else self.tag_at(folder), waiting="")
@@ -147,7 +141,6 @@ class PluginInstalling:
         shutil.rmtree(kept)
 
     def enable(self, name: str, actor: Actor) -> Plugin:
-        """On, with its files' hashes taken anew: switching it on is the user's word that its code is read."""
         self.only_the_user(actor, "switches on")
         plugin = self.plugins.named(name)
         self.skills.publish(plugin)
@@ -161,7 +154,6 @@ class PluginInstalling:
         return self.plugins.save(plugin.with_(enabled=False), actor)
 
     def remove(self, name: str, actor: Actor) -> None:
-        """Its row and its fetched copy go; its data folder stays."""
         plugin = self.plugins.named(name)
         self.skills.withdraw(plugin)
         self.services.stop(plugin)
@@ -170,7 +162,6 @@ class PluginInstalling:
         self.plugins.delete(plugin, actor)
 
     def purge(self, name: str, actor: Actor) -> None:
-        """Removed, and its data folder and its dashboard's lines with it."""
         data = self.folders.data(self.plugins.named(name))
         self.remove(name, actor)
         shutil.rmtree(data, ignore_errors=True)
@@ -179,14 +170,12 @@ class PluginInstalling:
 
     @staticmethod
     def clear_stale_fetches(home: Path) -> None:
-        """A fetch folder in the plugins folder, older than any fetch may take, was left there by a killed fetch before fetches moved outside the project: it goes."""
         for stale in home.glob(".fetching-*"):
             if time.time() - stale.stat().st_mtime > 2 * FETCH_SECONDS:
                 shutil.rmtree(stale, ignore_errors=True)
 
     @staticmethod
     def tag_at(folder: Path) -> str:
-        """The release tag the fetched commit carries, or none."""
         described = subprocess.run(["git", "-C", str(folder), "describe", "--tags", "--exact-match", "HEAD"], capture_output=True, text=True, timeout=FETCH_SECONDS)
         return described.stdout.strip() if described.returncode == 0 else ""
 
@@ -210,7 +199,6 @@ class PluginInstalling:
 
     @contextmanager
     def staged(self, source: str, ref: str | None = None) -> Iterator[tuple[Path, str]]:
-        """A folder is read where it lies; a git address is fetched at the commit asked for, or its newest, into a folder of the system's outside the project, so the agent's program never sees a whole repository appear in the tree it watches, and gone once read."""
         if Path(source).is_dir():
             yield Path(source).resolve(), ""
             return
@@ -232,7 +220,6 @@ class PluginInstalling:
 
     @staticmethod
     def rows(manifest: PluginManifest, folder: Path) -> tuple[PreviewRow, ...]:
-        """Each thing it runs, hears, holds, needs and brings, as a kind, a label and the command or names; an installed command it has none of is no row."""
         rows = (*(PreviewRow("needs", program, need.hint) for program, need in manifest.requires.items()),
                 *(PreviewRow("setup", step.name, step.run) for step in manifest.setup),
                 PreviewRow("installed", "fills its settings", manifest.installed),

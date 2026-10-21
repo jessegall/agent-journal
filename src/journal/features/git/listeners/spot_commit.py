@@ -24,9 +24,7 @@ from journal.support.decision import Decision
 
 COMMIT = "commit"
 JUST_MADE = 60
-"""Seconds a commit counts as made by the command that just ran: an older head is another's, and its trailer closes nothing."""
 TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)?)+)\s*(.*)$", re.MULTILINE)
-"""The line, on its own and at column zero, that closes tasks when the commit lands: the numbers, then what was done."""
 
 
 class SpotCommit(AgentListener[ToolFinished]):

@@ -90,12 +90,10 @@ class WorkerCommand(Command):
         return 0
 
     def knowing(self, brief: str) -> list[Worker]:
-        """The workers back from a job that named the same files as this one, the latest first."""
         named = NamedPaths.of(brief)
         return [w for w in reversed(self.workers.in_()) if named and w.state != WorkerState.DISPATCHED and w.resume and named & NamedPaths.of(w.brief)]
 
     def say(self, args: Namespace, where: Where) -> int:
-        """The same worker sent on its next job: related work goes back to the one that knows it, never to a fresh dispatch."""
         worker = self.workers.find(args.n)
         if worker.state == WorkerState.DISPATCHED:
             raise Refused(f"worker {worker.id}, {worker.name}, is still out: wait for its report, then say")

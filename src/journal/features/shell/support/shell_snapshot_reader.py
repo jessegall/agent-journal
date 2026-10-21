@@ -7,7 +7,6 @@ from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.entries import Entries
 
 KEPT = 26
-"""The reads of outputs remembered per session, the one starting now among them."""
 
 
 class ShellSnapshotReader:

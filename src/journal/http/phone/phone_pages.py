@@ -33,15 +33,11 @@ PAGE = "phone.html"
 WORKER = "phone-sw.js"
 ICONS = {"icon-180.png": 180, "icon-192.png": 192, "icon-512.png": 512}
 PAGE_HEADERS = {"Content-Security-Policy": APP_HEADERS["Content-Security-Policy"].replace("script-src 'self'", "script-src 'self' 'wasm-unsafe-eval'") + "; manifest-src 'self'; worker-src 'self' blob:"}
-"""The share page's policy, with what the viewer the phone runs needs besides: its figure's WebAssembly, its timer worker, the manifest."""
 BACKGROUND = "#131416"
 PUBLIC = ("voices", "announcements")
-"""The folders of files the build carries beside its pages, which the phone's page fetches under /p/."""
 COOKIE = "__Host-phone"
 HEADER = "X-Phone"
-"""The header only the phone app sends, which a form on another site cannot set."""
 FILE_HEADERS = {"Content-Security-Policy": "sandbox", "X-Content-Type-Options": "nosniff"}
-"""A file of the journal's opened on the phone runs no script and has no origin of its own, so an attached page cannot act as the phone; a picture still shows."""
 
 
 class PhonePages:
@@ -77,7 +73,6 @@ class PhonePages:
 
     @staticmethod
     def page(address: str) -> ShareAnswer:
-        """The phone app; its address ends in a slash, so its files are found beside it."""
         if not address.endswith("/"):
             return ShareAnswer(301, headers={"Location": "/p/"})
         page = APP / PAGE
@@ -87,7 +82,6 @@ class PhonePages:
 
     @staticmethod
     def public(rest: list[str]) -> ShareAnswer:
-        """A file the build carries in one of its public folders, never a path outside them."""
         root = (APP / rest[0]).resolve()
         found = (APP / "/".join(rest)).resolve()
         if root not in found.parents or not found.is_file():
@@ -97,7 +91,6 @@ class PhonePages:
 
     @staticmethod
     def worker() -> ShareAnswer:
-        """The service worker, allowed to serve all of /p/ though it is fetched from inside it, and never kept stale."""
         found = APP / WORKER
         if not found.is_file():
             return SharePages.gone(404)
@@ -111,7 +104,6 @@ class PhonePages:
         return ShareAnswer(200, json.dumps(body).encode(), "application/manifest+json", {"Cache-Control": "no-store"})
 
     def post(self, request: PhoneRequest) -> ShareAnswer:
-        """A write from the phone app: only from the tunnel's own address with the app's header and a JSON body, the pairing first of all."""
         given = self.given(request)
         if given is None:
             return self.json(403, {"error": "refused"})
@@ -130,7 +122,6 @@ class PhonePages:
         return self.json(404, {"error": "no such action"})
 
     def given(self, request: PhoneRequest) -> dict | None:
-        """The body of a write the phone app sent, as version 3 trusted one: from https at the tunnel's address, with the app's header, as JSON; none otherwise."""
         if not self.is_trusted(request.origin) or request.app_header != "1" or not request.content_type.startswith("application/json"):
             return None
         try:
@@ -140,7 +131,6 @@ class PhonePages:
         return loaded if isinstance(loaded, dict) else None
 
     def is_trusted(self, origin: str) -> bool:
-        """The phone app's own origin: the tunnel's https address, or, as version 3 allowed, the listener's own address on this machine, which nothing outside it can reach."""
         port = self.place.kept().port
         return origin in (f"https://{self.tunnel.address()}", f"http://127.0.0.1:{port}", f"http://localhost:{port}")
 
@@ -155,7 +145,6 @@ class PhonePages:
         return self.json(200, asdict(self.snapshot(paired.phone)), {"Set-Cookie": cookie})
 
     def phone(self, request: PhoneRequest) -> Phone | ShareAnswer:
-        """The phone the request's cookie names, before anything else is read: none is a 401, a key this journal does not know a 401 that asks it to pair again, as a phone paired under version 3 is, and one that ended or ran out a 410."""
         kept = SimpleCookie(request.cookies).get(COOKIE)
         if not (kept and kept.value):
             return self.json(401, {"error": "this phone is not connected"})
@@ -172,7 +161,6 @@ class PhonePages:
         return self.forward(request, phone, {}) if isinstance(phone, Phone) else phone
 
     def forward(self, request: PhoneRequest, phone: Phone, body: dict) -> ShareAnswer:
-        """A call of the journal's own API, made as the phone in the environment it was paired in, if the allow list names it: version 4's controllers answer it, as the viewer's would."""
         url = urlsplit(request.path.removeprefix("/p"))
         query = {name: values[-1] for name, values in parse_qs(url.query).items()}
         environment = self.environments.find(phone.environment_id).name
@@ -186,7 +174,6 @@ class PhonePages:
         return ShareAnswer(answer.status, answer.encoded(), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})
 
     def waiting(self, request: PhoneRequest) -> ShareAnswer:
-        """What waits for the user, by reference, for the service worker to count after a push; what each is stays inside the app."""
         phone = self.phone(request)
         return self.json(200, {"waiting": [{"ref": ref} for ref in self.waits.refs(phone)]}) if isinstance(phone, Phone) else phone
 

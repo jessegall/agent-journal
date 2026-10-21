@@ -23,7 +23,6 @@ class Container:
         return self._instances[kind]
 
     def call(self, fn: Callable[..., T]) -> T:
-        """Calls with every parameter resolved by its annotation; a parameter with a default and no resolvable type keeps the default."""
         target = fn.__init__ if inspect.isclass(fn) else fn
         hints = get_type_hints(target)
         kwargs = {}

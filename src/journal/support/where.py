@@ -5,7 +5,6 @@ from journal.support.actor import Actor
 LOCAL_USER = 1
 
 AGENT_SHELL = "JOURNAL_AGENT_SHELL"
-"""Set by the journal in a worker's environment, so its journal commands are an agent's, never the user's."""
 
 
 @dataclass(frozen=True)
@@ -15,7 +14,6 @@ class Where:
     environment: str = "main"
     session: str = ""
     from_agent_shell: bool = False
-    """True inside an agent's own shell with no session named: the command is the environment's live agent's."""
     plugin: str = ""
 
     @property

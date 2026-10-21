@@ -8,7 +8,6 @@ class ContextFile:
     def __init__(self, home: Path) -> None:
         self.home = home
         self._whole: dict[str, dict] = {}
-        """The last whole reading per session: the statusline writes its file while this reads it, so a read may catch it half written."""
 
     def of(self, session: str) -> float | None:
         used = self.status(session).get("context_window", {}).get("used_percentage")
@@ -31,7 +30,6 @@ class ContextFile:
         return self.status(session).get("effort", {}).get("level", "")
 
     def usage(self, session: str) -> list[dict]:
-        """Claude's plan windows as the statusline reports them: how much is used and when each resets."""
         limits = self.status(session).get("rate_limits", {})
         return [{"key": key, "label": label, "used": limits[key].get("used_percentage", 0), "resets": limits[key].get("resets_at", 0)}
                 for key, label in (("five_hour", "5h"), ("seven_day", "7d")) if isinstance(limits.get(key), dict)]

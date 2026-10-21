@@ -17,9 +17,7 @@ from journal.support.chat_mark import ChatMark
 
 CODE_MINUTES = 10
 DAYS = (1, 7, 30)
-"""How long a phone may stay paired, as the user picks it."""
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-"""The letters of the short code: none that read as another, so it can be typed from a screen."""
 SHORT_LENGTH = 8
 DEVICE_LONGEST = 60
 
@@ -31,7 +29,6 @@ class Pairing:
         self.phones, self.codes, self.tunnel, self.cards = phones, codes, tunnel, cards
 
     def offer(self, days: int, actor: Actor, now: datetime) -> PairingOffer:
-        """A code for one phone, made only by the user, through the tunnel's address."""
         if actor.kind != ActorKind.USER:
             raise Refused("only the user pairs a phone, from the viewer's Connect your phone dialog")
         if days not in DAYS:
@@ -48,7 +45,6 @@ class Pairing:
         return PairingOffer(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, until=pairing.until)
 
     def pair(self, given: str, device: str, now: datetime) -> PairedPhone:
-        """The phone that hands back an open code is paired and given its key; a code no open one matches counts a wrong try against every open code."""
         hashes = {self.hashed(given), self.hashed(self.typed(given))}
         found = next((code for code in self.codes.open(now) if hashes & {code.code, code.short}), None)
         if found is None:
@@ -64,7 +60,6 @@ class Pairing:
         return PairedPhone(phone, key)
 
     def disconnect(self, phone: Phone, actor: Actor, now: datetime) -> Phone:
-        """The phone stops being paired at once, from the desk; only the user disconnects it."""
         if not actor.is_the_user():
             raise Refused("only the user disconnects a phone")
         ended = self.phones.save(phone.ended(now), actor)
@@ -86,5 +81,4 @@ class Pairing:
 
     @staticmethod
     def typed(code: str) -> str:
-        """A short code as the user typed it, in any case and with any dash or space, reduced to its letters."""
         return "".join(letter for letter in code.upper() if letter in SHORT_LETTERS)

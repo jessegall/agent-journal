@@ -13,7 +13,6 @@ class AgentLauncher:
         self.config = config
 
     def start(self, environment: str, agent: str) -> int:
-        """The process id of the supervisor started."""
         package = Path(__file__).resolve().parents[2]
         log = self.config.home / "runtime" / f"agent-{environment}.log"
         log.parent.mkdir(parents=True, exist_ok=True)

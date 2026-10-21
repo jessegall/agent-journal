@@ -33,7 +33,6 @@ class SequenceRun:
         return self.step >= len(self.steps) - 1
 
     def moved_on(self) -> "SequenceRun":
-        """The next step in hand, not yet taken up, said or parked."""
         return replace(self, step=self.step + 1, taken_up_at="", said_at="", parked_why="")
 
     def taken_up(self, at: str) -> "SequenceRun":
@@ -47,12 +46,10 @@ class SequenceRun:
 
     @property
     def skipped(self) -> tuple[str, ...]:
-        """The step in hand and the ones after it, what giving the run up leaves undone."""
         return self.steps[self.step:]
 
     @property
     def holds(self) -> str:
-        """What the run holds, in the words of the agent's panel."""
         if self.parked_why:
             return f"Parked: {self.parked_why}"
         return "Taken up" if self.taken_up_at else "Not taken up yet: the agent's writes wait until it takes this step up"

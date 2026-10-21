@@ -13,7 +13,6 @@ class Listener(Generic[E]):
 
     @classmethod
     def kind(cls) -> type[Event]:
-        """The event this listener names in its base, so the registry can put it on the bus without being told twice."""
         for klass in cls.__mro__:
             for base in getattr(klass, "__orig_bases__", ()):
                 args = get_args(base)

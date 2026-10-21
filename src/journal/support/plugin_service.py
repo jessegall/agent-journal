@@ -21,5 +21,4 @@ class PluginService:
 
     @property
     def is_in_its_folder(self) -> bool:
-        """A command named by a path runs from the plugin's folder; a bare name is found on the path."""
         return "/" in self.program

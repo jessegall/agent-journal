@@ -24,12 +24,10 @@ class WorkerBranch:
         return subprocess.run(["git", *argv], cwd=cwd or self.config.root, capture_output=True, text=True, timeout=GIT_TIMEOUT)
 
     def ahead(self, worker: Worker) -> list[str]:
-        """The worker's commits not yet in the branch the project is on, oldest first, by short hash and subject."""
         done = self.git("log", "--reverse", "--format=%h %s", f"HEAD..{self.name(worker)}")
         return [line for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
 
     def left(self, worker: Worker) -> list[str]:
-        """The files the worker changed in its worktree and never committed."""
         folder = self.folder(worker)
         if not folder.is_dir():
             return []
@@ -37,7 +35,6 @@ class WorkerBranch:
         return [line[3:] for line in done.stdout.splitlines() if line.strip()] if done.returncode == 0 else []
 
     def take_in(self, worker: Worker) -> str:
-        """The worker's commits rebased onto the branch the project is on and taken in, in words; what stands in the way, the user's own uncommitted work above all, is named instead and nothing is touched."""
         commits = self.ahead(worker)
         if not commits:
             return ""
@@ -95,7 +92,6 @@ class WorkerBranch:
         return f"its worktree and branch are removed; its last commit is kept as {KEPT}/{folder.name}"
 
     def summary(self, worker: Worker) -> str:
-        """What the worker's branch and worktree hold once it ended, for its report; empty for a worker with no worktree."""
         if not worker.worktree:
             return ""
         parts = [part for part in (self.take_in(worker), self.leftover(worker)) if part]

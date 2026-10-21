@@ -20,7 +20,6 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
         return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if self.is_running(Path(o.folder))]
 
     def ended_untold(self, session: str) -> list[CommandOutput]:
-        """The session's commands that ended in the background and the agent was not told of yet, oldest first."""
         return self.selected("session = ? AND moved = 1 AND ended = 1 AND told = 0 ORDER BY id", (session,))
 
     @staticmethod
@@ -36,5 +35,4 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
         return True
 
     def beyond(self, kept: int) -> list[CommandOutput]:
-        """The rows older than the newest so many, across every environment: the rolling log keeps no more."""
         return self.selected_everywhere("id NOT IN (SELECT id FROM command_outputs ORDER BY id DESC LIMIT ?) ORDER BY id", (kept,))

@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from journal.models.model import Model
 
 AROUND = 160
-"""The most characters of a find shown, around the first word looked for."""
 
 
 @dataclass(frozen=True)

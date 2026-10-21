@@ -13,10 +13,8 @@ from journal.repositories.setting_rows import SettingRows
 from journal.support.actor import Actor
 
 CHOICES = "menu_choices"
-"""The option taken at each menu an asked agent answered, by the menu's options, so it is answered alike the next time."""
 ASK_SECONDS = 120
 ASKING_MODEL = {"claude": "haiku"}
-"""The cheap model a provider asks with; a provider not named asks with its own default."""
 
 
 class MenuAnswers:

@@ -6,7 +6,6 @@ from journal.repositories.scoped_repository import ScopedRepository
 
 
 DISPATCHES = "(kind IN ('SubagentEnded', 'Idle', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task')))"
-"""The entries that start, answer or close a subagent's dispatch."""
 
 
 class Entries(ScopedRepository[Entry]):

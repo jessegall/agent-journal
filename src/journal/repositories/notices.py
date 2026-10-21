@@ -6,7 +6,6 @@ class Notices(ScopedRepository[Notice]):
     model = Notice
 
     def unseen_by_user(self) -> int:
-        """How many notices are open and were not made by the user."""
         return self.counted_in("closed_at IS NULL AND (created_by IS NULL OR created_by NOT LIKE 'user:%')")
 
     def open_count(self) -> int:

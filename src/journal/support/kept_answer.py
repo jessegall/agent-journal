@@ -19,23 +19,19 @@ class KeptAnswer(Generic[T]):
         return self.value
 
     def given(self) -> T:
-        """Waited for the first time, kept after."""
         return self.now() if self.asked_on else self.fresh()
 
     def fresh(self) -> T:
-        """Asked anew, waiting for the answer: what an explicit check wants."""
         self.value, self.asked_at, self.asked_on = self.ask(), time.monotonic(), time.time()
         return self.value
 
     def forget(self) -> None:
-        """The next reader starts a new ask."""
         self.asked_at = 0.0
 
     def is_asking(self) -> bool:
         return self._asking.locked()
 
     def drop(self) -> None:
-        """The answer kept is no longer true: the next reader waits for a new one."""
         self.asked_at = self.asked_on = 0.0
 
     def asked_again(self) -> None:

@@ -9,7 +9,6 @@ class ProgramSettings:
 
     rest: dict
     hooks: dict | None = None
-    """None for a file that names no hooks, so writing it back adds none."""
 
     @classmethod
     def read(cls, path: Path) -> "ProgramSettings":
@@ -23,7 +22,6 @@ class ProgramSettings:
         return {**self.rest, "hooks": self.hooks}
 
     def kept(self) -> "ProgramSettings":
-        """The same settings with only the journal's own hooks."""
         if self.hooks is None:
             return self
         ours = {event: [block for block in blocks if self.is_ours(block)] for event, blocks in self.hooks.items()}
@@ -34,5 +32,4 @@ class ProgramSettings:
 
     @staticmethod
     def is_ours(block: dict) -> bool:
-        """The journal's own hook, by the one path only this package's script has; a hook.sh of another package is somebody else's."""
         return "journal/hooks/hook.sh" in json.dumps(block)

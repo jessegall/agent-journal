@@ -3,18 +3,12 @@ import re
 from journal.features.shell.support.part import Part
 
 WRAPPED = re.compile(r"^eval '(.*)'(?: < /dev/null)?$", re.S)
-"""Claude Code runs the agent's command as eval '<command>' < /dev/null between its own set-up and a pwd, without the < /dev/null when the command has a heredoc: the command inside is what the agent wrote."""
 QUOTE = "'\"'\"'"
 OPENS = {"for": "done", "while": "done", "until": "done", "select": "done", "repeat": "done", "if": "fi", "case": "esac", "foreach": "end"}
-"""A compound command runs from its opening word to its closing one, whatever separators lie between."""
 BODIES = {"do", "then", "{"}
-"""The word that opens a compound command's body in the long form; without it zsh takes the next command, with its && chain, as the body."""
 SHORT = {"for", "select", "repeat"}
-"""The openers zsh allows in that short form; an if, a while or an until reads on to its then or do."""
 BODY = {"for": "do", "while": "do", "until": "do", "select": "do", "repeat": "do", "if": "then", "case": "in"}
-"""The word each opener's body follows; its closer after that word closes it on the same line."""
 LEADS = {"do", "then", "else", "time", "!"}
-"""Words that may stand before a command's own first word, so a loop opened right after do or then, or timed, is still seen opening."""
 
 
 COMPOUND = {"if", "elif", "else", "then", "for", "while", "until", "do", "case", "select", "{", "("}
@@ -26,7 +20,6 @@ class Chain:
 
     @classmethod
     def parts(cls, line: str) -> list[Part]:
-        """The chain's commands in order: the agent's own recorded, the shell's wrapping around them silent."""
         chained = [(s, p, True) for s, p in cls.chained(line)]
         if any(WRAPPED.match(p) for _, p, _ in chained):
             chained = [inner for s, p, _ in chained for inner in cls.of(s, p)]
@@ -35,18 +28,15 @@ class Chain:
 
     @classmethod
     def journal_parts(cls, line: str) -> tuple[int, int]:
-        """How many of the agent's own parts are journal commands, and how many parts there are."""
         own = [p for p in cls.parts(line) if p.recorded]
         return len([p for p in own if cls.is_journal(p.text)]), len(own)
 
     @classmethod
     def own(cls, line: str) -> list[str]:
-        """The agent's own commands of the line, the shell's wrapping left out: the same for the line the runner is handed as for the one the tool was called with."""
         return [part.text for part in cls.parts(line) if part.recorded]
 
     @classmethod
     def work_of(cls, line: str) -> str:
-        """What a shell line does, as the figure shows it: searching when all its own commands read and one searches, reading when they all read, else running."""
         own = [part for part in cls.parts(line) if part.recorded]
         if not own or not all(part.is_read() for part in own):
             return "running"
@@ -54,13 +44,11 @@ class Chain:
 
     @classmethod
     def is_journal_line(cls, line: str) -> bool:
-        """A line of journal commands alone: its answer reaches the agent whole, at once, and is no output of its own."""
         journal, parts = cls.journal_parts(line)
         return parts > 0 and journal == parts
 
     @classmethod
     def is_read_line(cls, line: str) -> bool:
-        """A line whose own commands all read on purpose."""
         own = [p for p in cls.parts(line) if p.recorded]
         return bool(own) and all(p.is_read() for p in own)
 
@@ -76,7 +64,6 @@ class Chain:
 
     @classmethod
     def of(cls, separator: str, part: str) -> list[tuple[str, str, bool]]:
-        """A wrapped part becomes the agent's own commands inside it; any other stays the shell's, in silence."""
         wrapped = WRAPPED.match(part)
         if not wrapped:
             return [(separator, part, False)]
@@ -89,12 +76,10 @@ class Chain:
 
     @classmethod
     def chained(cls, line: str) -> list[tuple[str, str]]:
-        """Each command with the separator before it: nothing for the first, && or ; after that."""
         return cls.compound(cls.simple(line))
 
     @staticmethod
     def simple(line: str) -> list[tuple[str, str]]:
-        """Each command with the separator before it, split only at the top level: quotes, substitutions, subshells, groups, brackets and comments nest on a stack, and a heredoc takes the rest of the line whole."""
         parts, current, stack, separator, i = [], "", [], "", 0
         while i < len(line):
             c, inner = line[i], stack[-1] if stack else ""
@@ -174,20 +159,17 @@ class Chain:
 
     @staticmethod
     def semicolon_at(line: str, i: int) -> str:
-        """A lone ; at the position, which ends a command; ;; ;& and ;| belong to a case."""
         alone = line[i:i + 1] == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";"
         return ";" if alone else ""
 
     @staticmethod
     def newline_at(line: str, i: int, current: str) -> str:
-        """A newline that ends a command: not one after a pipe or an ||, which carries the command on, nor one that ends a comment line, kept with the command below it."""
         held = current.strip()
         ends = line[i:i + 1] == "\n" and held and not held.endswith(("|", "||", "|&")) and not held.startswith("#")
         return "\n" if ends else ""
 
     @staticmethod
     def segments(part: str) -> list[list[str]]:
-        """The part's commands as words, split where a pipe, an || or a lone & starts the next, each from its own first word."""
         found: list[list[str]] = [[]]
         for word in Chain.uncommented(part).split():
             if word in ("|", "||", "|&", "&"):
@@ -202,7 +184,6 @@ class Chain:
 
     @staticmethod
     def is_opening(words: list[str]) -> bool:
-        """The command opens a loop, an if or a case that it does not also close."""
         if not words or words[0] not in OPENS:
             return False
         closer, body = OPENS[words[0]], BODY.get(words[0])
@@ -212,13 +193,11 @@ class Chain:
 
     @staticmethod
     def openings(segments: list[list[str]]) -> list[list[str]]:
-        """The part's first and last commands that open a loop, an if or a case: one before an ||, or one after a pipe."""
         ends = [segments[0]] if len(segments) == 1 else [segments[0], segments[-1]]
         return [words for words in ends if Chain.is_opening(words)]
 
     @staticmethod
     def closes(part: str, segments: list[list[str]], closer: str) -> bool:
-        """The part ends what is open: its first or last command is the closing word, or an esac follows a case arm's ;;."""
         words = part.split()
         after_arm = closer == "esac" and any(w == "esac" and words[i - 1].endswith((";;", ";&", ";|")) for i, w in enumerate(words) if i)
         return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or after_arm
@@ -229,13 +208,11 @@ class Chain:
 
     @staticmethod
     def led(words: list[str]) -> list[str]:
-        """The words from the command's own first word, past a do, then, else, time or ! before it."""
         start = next((i for i, w in enumerate(words) if w not in LEADS), len(words))
         return words[start:]
 
     @staticmethod
     def compound(parts: list[tuple[str, str]]) -> list[tuple[str, str]]:
-        """A loop, an if or a case is one command from its opening word to its closing one, or in zsh's short form to the end of the next command's && chain; the separators inside are put back."""
         joined, closers, short = [], [], False
         for separator, part in parts:
             segments, words = Chain.segments(part), part.split()

@@ -7,7 +7,6 @@ class OutputMask:
     """A secret's values hidden in what a program printed, in every form a program prints a value in: as it is, in base64, URL-quoted, JSON-escaped and in hex."""
 
     def __init__(self, masks: dict[str, str]) -> None:
-        """masks: each value with the name it is shown as."""
         self.masks = sorted(((form, f"[secret {name}]".encode()) for value, name in masks.items() for form in self.forms(value)), key=lambda pair: len(pair[0]), reverse=True)
 
     @staticmethod

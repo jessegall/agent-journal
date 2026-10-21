@@ -24,7 +24,6 @@ class SharedData:
                 **opened, "comments": self.comments.of(share) if share.comments else []}
 
     def opened(self, target) -> dict:
-        """The row the link opens under its kind, and for a plan its tasks beside it."""
         if target.type == "docs":
             return {"docs": [self.docs.find(target.id)]}
         if target.type == "reports":

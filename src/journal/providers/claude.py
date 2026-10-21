@@ -10,7 +10,6 @@ from journal.providers.provider import TAIL, Provider
 from journal.providers.support.turn import Turn
 
 CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
-"""A message another Claude session sent this one, as Claude Code wraps it: its attributes, then its words."""
 FROM_NAME, FROM_ADDRESS = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
 
 
@@ -62,7 +61,6 @@ class Claude(Provider):
         return Turn(number, "user" if kind in ("human", "injected") else kind, kind, self.seconds(row.timestamp), text, tools)
 
     def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
-        """The thinking blocks after the last prompt, read from the transcript's tail."""
         path = self.transcript(project, session)
         if path is None:
             return []
@@ -83,7 +81,6 @@ class Claude(Provider):
         return [block.text for block in row.of_type("text") if block.text.strip()] if row.type == "assistant" else []
 
     def crossed_in(self, line: dict) -> list[MessageCrossed]:
-        """A message another Claude session sent, as Claude Code queues it: once, at its enqueue, whether it then came as a prompt or mid-turn."""
         row = ClaudeRow.from_json(line)
         if not row.is_enqueued:
             return []
@@ -101,7 +98,6 @@ class Claude(Provider):
         return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "json", *resumed]
 
     def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
-        """Claude's JSON answer: the result is the report and the session id is what a next job resumes; anything else is the report as printed."""
         try:
             answer = json.loads(out)
         except ValueError:

@@ -14,7 +14,6 @@ class TranscriptRead:
     turns: tuple[Turn, ...] = ()
 
     def further(self, provider: Provider, path: Path) -> "TranscriptRead":
-        """The read carried on over the whole lines written since; a last line still being written is left for the next."""
         with path.open("rb") as file:
             file.seek(self.offset)
             written = file.read()

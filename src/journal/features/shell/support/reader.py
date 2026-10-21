@@ -15,7 +15,6 @@ class Reader:
 
     @classmethod
     def from_file(cls, path: Path) -> "Reader":
-        """A pattern reader's file: its first line says what it picks, after a #, and its second is the pattern."""
         lines = path.read_text().splitlines()
         if len(lines) < 2:
             raise Refused(f"reader {path.stem} needs two lines: '# what it picks', then its pattern")
@@ -25,7 +24,6 @@ class Reader:
         return f"# {self.about}\n{self.pattern}\n"
 
     def matches(self, command: str) -> bool:
-        """The command does this reader's work by hand: it searches for the same pattern."""
         return self.pattern in command
 
     def read(self, lines: list[str]) -> list[str]:

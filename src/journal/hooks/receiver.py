@@ -24,7 +24,6 @@ from journal.support.chat_mark import ChatMark
 
 
 GUARD_FAILED = "guard_failed"
-"""The entry a blocking listener leaves when it raises: the event, the listener and the fault, so the page can show it."""
 
 
 class Receiver:

@@ -3,7 +3,6 @@ import time
 from journal.support.secret_values import AT, RETIRED, SecretValues
 
 SHORTEST = 8
-"""A value shorter than this is too likely to stand in ordinary text to be masked."""
 
 
 class Masks:
@@ -24,7 +23,6 @@ class Masks:
         return text
 
     def current(self) -> dict[str, str]:
-        """Each value long enough to mask, by its text, with its variable; read again only when the file changed."""
         path = self.values.path
         changed = path.stat().st_mtime if path.is_file() else 0.0
         if changed != self._read_at:

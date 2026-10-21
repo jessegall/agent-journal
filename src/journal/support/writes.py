@@ -5,20 +5,13 @@ from journal.features.shell.support.part import CODE, IN_PLACE, Part
 from journal.support.chain import Chain
 
 COMMANDS = {"tee", "cp", "mv", "rm", "mkdir", "touch", "rsync", "ln", "chmod", "chown", "truncate", "dd", "patch", "install", "rmdir"}
-"""Commands that change files."""
 GIT = {"checkout", "restore", "apply", "merge", "rebase", "pull", "stash", "reset", "clean", "switch", "cherry-pick", "revert", "mv", "rm"}
-"""Git verbs that move the working tree."""
 INTERPRETERS = {"python", "python3", "node", "ruby", "perl", "php", "bash", "sh", "zsh"}
 MARKERS = re.compile(r"write_text|write_bytes|open\([^)]*[\"'][wax]|\.write\(|unlink|os\.remove|shutil\.|os\.rename|\.rename\(|mkdir|writeFileSync|writeFile\(|fs\.write|File\.(write|open|delete)|rm_rf|\.truncate\(")
-"""What a script says when it writes."""
 REDIRECT = re.compile(r"(?<![<>&\d])(?:\d?>>?)\s*(?!&|/dev/null)\S")
-"""A redirection into a file, not into a descriptor or the void."""
 REDIRECTED = re.compile(r"(?<![<>&\d])\d?>>?\s*(?!&|/dev/null)([^\s;&|]+)")
-"""The file a redirection writes to."""
 QUOTED_PATH = re.compile(r"['\"]([^'\"\s]*/[^'\"\s]*)['\"]")
-"""A path a script names in quotes."""
 HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?")
-"""A heredoc's start, with the word that ends it."""
 
 
 class Writes:

@@ -12,7 +12,6 @@ class LaunchFiles:
         self.config, self.environments, self.providers = config, environments, providers
 
     def skips_prompts(self, environment_id: int) -> bool:
-        """Whether the agent of the environment was started with its permission prompts skipped, so a permission question it asks anyway is the journal's to answer with yes."""
         path = self.config.home / "runtime" / "launches" / f"{self.environments.find(environment_id).name}.json"
         if not path.is_file():
             return False

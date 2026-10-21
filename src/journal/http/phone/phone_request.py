@@ -19,5 +19,4 @@ class PhoneRequest:
 
     @property
     def rest(self) -> list[str]:
-        """The path's parts after /p/."""
         return [part for part in self.path.split("?", 1)[0].split("/")[2:] if part]

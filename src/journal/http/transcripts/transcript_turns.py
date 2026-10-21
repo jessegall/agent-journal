@@ -6,7 +6,6 @@ from journal.providers.provider import Provider
 from journal.providers.support.turn import Turn
 
 KEPT = 8
-"""How many transcripts' turns are kept between polls, the ones polled last."""
 
 
 class TranscriptTurns:

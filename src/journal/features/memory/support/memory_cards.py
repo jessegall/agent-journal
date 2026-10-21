@@ -10,7 +10,6 @@ from journal.support.ref import Ref
 from journal.support.scope import Scope
 
 MARKED = {Fact: ("Fact", ChatMark.FACTS), Rule: ("Rule", ChatMark.RULES), Reminder: ("Reminder", ChatMark.REMINDERS)}
-"""The memory rows a card marks, by their noun and the chat's switch for them."""
 
 
 class MemoryCards:

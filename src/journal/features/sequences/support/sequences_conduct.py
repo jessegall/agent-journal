@@ -10,7 +10,6 @@ from journal.support.command_part import CommandPart
 from journal.features.sequences.support.sequences_snapshot import SequencesSnapshot
 
 QUIET_FOR = 60.0
-"""Seconds the agent must have been quiet before a step is typed to it, so a line never lands mid-turn."""
 
 
 class SequencesConduct(Conduct):

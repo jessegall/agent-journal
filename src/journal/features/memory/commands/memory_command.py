@@ -55,7 +55,6 @@ class MemoryCommand(Command):
         return tuple(word.strip().lower() for word in args.keywords.split(",") if word.strip())
 
     def decided(self, where: Where) -> None:
-        """An agent held at a mark has decided: the mark owed is paid."""
         if not where.session:
             return
         agent = self.machine.agent(where.session, self.scope.id)

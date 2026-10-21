@@ -14,13 +14,9 @@ from journal.engine.support.menu_answers import MenuAnswers
 from journal.support.chat_mark import ChatMark
 
 EVERY = 1.0
-"""How often the watcher looks at each agent's screen."""
 QUIET = 1.5
-"""A menu is answered only once it has stood the same this long, so one still being drawn is not; the rest of the screen, a spinner counting its seconds while the agent works, may change all the while."""
 CAUSED_WITHIN = 15.0
-"""A menu that came up this soon after the journal typed a command for the user was caused by it, and is confirmed."""
 YOURS_WITHIN = 3.0
-"""A menu that came up this soon after keys at the keyboard is the user's own, and is left to the user."""
 
 
 class MenuWatcher:
@@ -48,7 +44,6 @@ class MenuWatcher:
                         self.look(agent)
 
     def look(self, agent: Agent) -> str:
-        """One look at the agent's screen: what was pressed, or nothing."""
         env, now = agent.environment_id, time.time()
         menu = Menu.on(self.supervisor.screen(env)[-8192:])
         if menu is None or not (menu.foreign() or self.answers_permission(menu, env)):
@@ -75,15 +70,12 @@ class MenuWatcher:
         return keys
 
     def answers_permission(self, menu: Menu, env: int) -> bool:
-        """Whether a permission question of the agent's own tool is the journal's to answer: only when the launch skips the prompts, so the question should not have come up at all."""
         return menu.asking_permission() and self.launches.skips_prompts(env)
 
     def still_drawing(self, env: int, now: float) -> bool:
-        """The menu came up a moment ago and the screen is still moving: a screen still for a moment, or a menu that stood the same while a spinner counted above it, is drawn."""
         return now - self._seen_at[env] < QUIET and now - self.supervisor.screen_changed_at(env) < QUIET
 
     def decided(self, menu: Menu, caused: bool, agent: Agent) -> tuple[str, str] | None:
-        """What to press and the words for it: confirm what you or the journal asked for, the trust question, or the switch of model that only a model change brings; else the answer remembered, a decline, or an asked agent's pick; none while that agent works it out; else close."""
         if caused or menu.trusting() or menu.switching_model():
             taken = menu.accepting()
             return menu.keys_for(taken), f'chose "{taken.label}", since it confirms what was asked for' if caused else f'chose "{taken.label}"'

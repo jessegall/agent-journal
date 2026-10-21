@@ -36,11 +36,9 @@ class Version3Row:
                    head.get("outcome", ""), head.get("data", {}), brief.strip(), tuple((title.strip(), body.strip()) for title, body in sections))
 
     def markdown(self) -> str:
-        """Its brief and its sections as one markdown text, each section under its ## heading."""
         return "\n\n".join([self.brief, *(f"## {title}\n\n{body}" for title, body in self.sections)]).strip()
 
     def listed(self, key: str) -> list:
-        """A list the row's data holds, such as a plan's phases or a question's options; a row written without one has none."""
         if key not in self.data:
             return []
         return list(self.data[key])
@@ -49,17 +47,14 @@ class Version3Row:
         return datetime.fromtimestamp(self.created, timezone.utc)
 
     def closed_at(self) -> datetime | None:
-        """When it was completed: read, answered, done or struck; none while it is open."""
         return datetime.fromtimestamp(self.completed, timezone.utc) if self.completed else None
 
     def read_at(self) -> datetime | None:
-        """When the other side read it: its completion, or, for a row seen by more than its author, its last change."""
         if self.completed:
             return self.closed_at()
         return datetime.fromtimestamp(self.updated, timezone.utc) if len(self.seen) > 1 else None
 
     def author(self) -> str:
-        """Who made it: user, agent or system."""
         return self.seen[0]
 
     def is_open(self) -> bool:

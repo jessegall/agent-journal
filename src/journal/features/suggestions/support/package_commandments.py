@@ -40,7 +40,6 @@ class PackageCommandments(Suggester):
         return f"plugins?install={quote(SOURCE, safe='')}"
 
     def version(self) -> str | None:
-        """The package's version as the project's composer.lock pins it; none when composer does not install it."""
         lock = self.config.root / "composer.lock"
         if not lock.is_file():
             return None
@@ -49,7 +48,6 @@ class PackageCommandments(Suggester):
         return found[0] if found else None
 
     def wires_hooks(self) -> bool:
-        """Whether the agent's settings hold a hook the package wired, stamped as its own."""
         return any(STAMP in self.read(self.config.root / name) for name in SETTINGS)
 
     @staticmethod

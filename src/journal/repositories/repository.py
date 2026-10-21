@@ -25,9 +25,7 @@ M = TypeVar("M", bound=Model)
 
 
 PAGE = 500
-"""The most rows a read returns unless it asks for every one by name."""
 FOUND = 40
-"""The most rows a search returns of one kind."""
 
 
 class Repository(Generic[M]):

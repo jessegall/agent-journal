@@ -9,16 +9,12 @@ from journal.support.refused import Refused
 from journal.repositories.plugins import Plugins
 
 MANIFEST = "journal-plugin.json"
-"""The file in a plugin's folder that says what it is."""
 NAME = re.compile(r"^[a-z0-9][a-z0-9-]{1,31}$")
 PROTOCOLS = (1,)
-"""The protocol versions this journal speaks; a later one adds fields and never changes one."""
 AGENT_EVENTS = ("tool_starting", "command_starting", "tool_finished", "file_edited", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked", "plugin.updated")
 HOLDABLE = ("tool_starting", "command_starting", "file_edited", "idle", "prompt_submitted", "session_started")
-"""The events a plugin may answer before the agent goes on; at a prompt and a start it may only tell, never refuse."""
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")
 NEVER_TABLES = ("secrets", "mcp_servers", "users")
-"""Rows no plugin is sent, whatever it asks."""
 KEYS = {f for f in PluginManifest.__dataclass_fields__}
 PATHS = ("program", "settings", "skills")
 
@@ -47,7 +43,6 @@ class ManifestReader:
 
     @staticmethod
     def skill_names(folder: Path, manifest: PluginManifest) -> list[str]:
-        """The skills it brings: each folder under its skills folder with a SKILL.md, published under that folder's name."""
         skills = folder / manifest.skills
         return sorted(d.name for d in skills.iterdir() if (d / "SKILL.md").is_file()) if manifest.skills and skills.is_dir() else []
 

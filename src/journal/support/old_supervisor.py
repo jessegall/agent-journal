@@ -5,7 +5,6 @@ OLD = {
     "keys": lambda request: {"type": "Keys", "keys": request["keys"]},
     "restart": lambda request: {"type": "RestartAgent", "resume": request.get("resume", [])} if request["name"] == "agent" else {"type": "RestartJournal"},
 }
-"""Each verb as the datagram a datagram supervisor takes."""
 
 
 class OldSupervisor:
@@ -13,7 +12,6 @@ class OldSupervisor:
 
     @staticmethod
     def screen(home: Path, environment: str) -> str:
-        """Where a datagram supervisor mirrors its agent's screen, which it does not announce."""
         return str(home / "runtime" / "screens" / f"{environment}.out")
 
     @staticmethod

@@ -14,7 +14,6 @@ class Standby:
         self.config = config
 
     def another(self) -> str:
-        """The address of the other journal of this project, or empty: a port another project holds, or a dead port, is no other journal."""
         for port in self.config.remembered_port():
             address = f"http://127.0.0.1:{port}"
             try:

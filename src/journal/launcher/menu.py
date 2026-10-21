@@ -29,7 +29,6 @@ class Menu:
             return []
 
     def journal(self, *argv: str) -> str:
-        """Runs a command of the package and returns what it printed."""
         try:
             return subprocess.run([sys.executable, str(self.journal_py), *argv], cwd=self.root, capture_output=True, text=True, timeout=30, env={"JOURNAL_ROOT": str(self.root), "PATH": "/usr/bin:/bin:/usr/local/bin"}).stdout
         except (OSError, subprocess.TimeoutExpired):
@@ -47,7 +46,6 @@ class Menu:
         resume = "" if new or not last else self._carry_on(agent, chosen, last, asking)
         skip_prompts = skip or yes or self._prompts(agent)
         asking = asking and not resume
-        """Carrying on takes last time's answer to the hooks question, as the banner promised; the prompts are asked every time."""
         hooks_aside = aside or (self._hooks(OtherHooks(self.root, agent).others(), before.hooks_aside) if asking else before.hooks_aside)
         self.remembered.write(Answers(skip_prompts, hooks_aside))
         choice = Choice(chosen, resume, hooks_aside, skip_prompts)
@@ -57,7 +55,6 @@ class Menu:
         return choice
 
     def _environment(self, agent: str, rows: list[EnvironmentRow]) -> str:
-        """Enter picks the environment under the cursor; x deletes it after a confirmation, and the list is asked again."""
         options = [Option(row.name, (*row.badges(), *Worktree(self.root, row.name).badges())) for row in rows] + [Option("A new environment", apart=True)]
         picked, key = self.screen.pick_or("Which environment", ["An environment is one line of work with a record of its own."], options, 0, ("x",))
         if key == "x" and picked < len(rows):
@@ -94,7 +91,6 @@ class Menu:
         return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if aside_before else 1) == 0
 
     def _hooks_to_trust(self, agent: str) -> None:
-        """A program that asks before it runs the journal's hooks is named before it starts, so the user knows to trust them when it asks."""
         if Providers().named(agent).hooks_trusted(self.root):
             return
         notes = [f"{agent.capitalize()} asks once to trust the hooks the journal wrote into this project. Choose Trust all and continue", f"when {agent.capitalize()} asks, or the journal cannot follow what {agent.capitalize()} does."]

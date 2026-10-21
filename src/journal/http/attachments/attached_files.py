@@ -10,7 +10,6 @@ from journal.support.ref import Ref
 from journal.repositories.messages import Messages
 
 TITLE = 80
-"""How much of a message's text titles a file attached to it."""
 
 
 class AttachedFiles:

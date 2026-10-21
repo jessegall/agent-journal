@@ -11,7 +11,6 @@ class Deferred:
 
     STOP = None
     BEHIND = 500
-    """Pieces waiting past which work that may be left undone is no longer added, so a slow plugin never grows the queue without end."""
     TOLD_EVERY = 100
 
     def __init__(self) -> None:
@@ -27,7 +26,6 @@ class Deferred:
         self._queue.put(lambda context=contextvars.copy_context(): context.run(work))
 
     def add_unless_behind(self, work: Callable[[], None], what: str) -> None:
-        """Work that may be left undone, such as a plugin told an event after the reply: past BEHIND pieces waiting it is skipped, and the server's log says so, at the first and every hundredth."""
         if self.depth() < self.BEHIND:
             self.add(work)
             return
@@ -36,7 +34,6 @@ class Deferred:
         self.skipped += 1
 
     def depth(self) -> int:
-        """The pieces waiting to run."""
         return self._queue.qsize()
 
     def stop(self) -> None:
@@ -46,11 +43,9 @@ class Deferred:
             self._thread = None
 
     def drain(self) -> None:
-        """Blocks until everything added so far has run."""
         self._queue.join()
 
     def _work(self) -> None:
-        """A piece of work that fails is written to the server's log and the next one runs: the worker never dies with the queue behind it."""
         while (work := self._queue.get()) is not self.STOP:
             try:
                 work()

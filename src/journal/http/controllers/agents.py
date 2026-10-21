@@ -42,7 +42,6 @@ class AgentController(Controller[Agent]):
         return self.activity.page(rows)
 
     def live(self, request: Request) -> Response:
-        """The live agent of every environment, each with the environment it is in."""
         found = []
         for environment in self.environments.all():
             with self.scope.of(environment.id):
@@ -56,20 +55,17 @@ class AgentController(Controller[Agent]):
         return Response.json({})
 
     def shell(self, request: Request) -> Response:
-        """A command typed in the terminal pane goes to the agent's own terminal, as the user would type it."""
         agent, command = self.repository.find(request.number("id")), request.body.get("command", "").strip()
         if command:
             self.supervisor.type_raw(agent.environment_id, command)
         return Response.json({"queued": bool(command)})
 
     def controls(self, request: Request) -> Response:
-        """The pickers of the agent bar for a provider, the current choices marked."""
         provider = self.providers.named(request.params["provider"])
         current = {"model": request.query.get("model", ""), "effort": request.query.get("effort", "")}
         return Response.json({"groups": [{**group, "current": current.get(group["key"], "")} for group in provider.controls["groups"]], "note": provider.controls["note"]})
 
     def control(self, request: Request) -> Response:
-        """A pick in the agent bar is the provider's own command, typed into the agent as the user would."""
         agent = self.repository.find(request.number("id"))
         provider = self.providers.named(agent.provider or "claude")
         action, value = request.body.get("action", ""), request.body.get("value", "")
@@ -80,7 +76,6 @@ class AgentController(Controller[Agent]):
         return Response.json({"queued": True})
 
     def edits(self, request: Request) -> Response:
-        """The files the agent wrote or edited, newest last, with the lines each change added and removed."""
         agent = self.repository.find(request.number("id"))
         return Response.json({"cursor": time.time(), "edits": self.file_edits.of_agent(agent.session, request.queried("since"), EDITS_SHOWN)})
 
@@ -92,7 +87,6 @@ class AgentController(Controller[Agent]):
         return Response.json({"path": path, "text": file.read_text(errors="replace")[:200000]})
 
     def terminal(self, request: Request) -> Response:
-        """The shell commands the agent ran, part by part, with what each printed and how long it took."""
         agent = self.repository.find(request.number("id"))
         after = request.queried("after")
         ran = [e for e in reversed(self.entries.of_kind(RAN, 400)) if e.actor and e.actor.id == agent.session and e.data["at"] > after]

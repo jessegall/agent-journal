@@ -10,5 +10,4 @@ class Triggers(Repository[Trigger]):
         return [trigger for trigger in self.all() if trigger.met_by(text)]
 
     def starting(self, title: str) -> list[Trigger]:
-        """The triggers that start the sequence of this title."""
         return [trigger for trigger in self.all() if trigger.action == TriggerAction.SEQUENCE and trigger.text == title]

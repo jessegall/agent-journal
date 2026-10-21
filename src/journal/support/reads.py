@@ -3,7 +3,6 @@ from journal.support.chain import Chain
 from journal.support.writes import Writes
 
 READERS = {"cat", "head", "tail", "sed", "less", "more", "bat"}
-"""Commands that print the files they name."""
 
 
 class Reads:
@@ -17,7 +16,6 @@ class Reads:
 
     @staticmethod
     def part(text: str) -> list[str]:
-        """The tokens after a reading command that are not flags: a sed script or a line count among them names no file and matches none."""
         tokens = Part(text.split("|")[0]).unquoted().split()
         if not tokens or tokens[0].rsplit("/", 1)[-1] not in READERS:
             return []

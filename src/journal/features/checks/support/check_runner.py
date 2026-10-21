@@ -22,11 +22,8 @@ from journal.support.chat_mark import ChatMark
 TIMEOUT = 600
 TAIL = 20
 FAULTS = {126: "the command cannot be run", 127: "the command is not there"}
-"""Exit codes the shell gives when it could not run the command at all."""
 KEPT = 4000
-"""How much of the end of a run's output its row keeps."""
 EVERY = 1.0
-"""Seconds between two saves of a run's progress."""
 
 
 class CheckRunner:

@@ -50,7 +50,6 @@ A guard that raises lets the event through and says so in the chat: a hold is ne
 
     @classmethod
     def written_into(cls, text: str) -> str:
-        """The file's text with our block replacing any earlier one of ours, or added at the end."""
         begin, end = text.find("<!-- BEGIN: agent-journal"), text.find("<!-- END: agent-journal")
         block = f"{cls.BEGIN}\n{cls.BLOCK.strip()}\n{cls.END}\n"
         if begin >= 0 and end >= 0:

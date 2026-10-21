@@ -49,7 +49,6 @@ class EnvironmentCommand(Command):
         rename.add_argument("new")
 
     def rows(self) -> list[EnvironmentRow]:
-        """Each environment for the boot menu: for each agent program, its newest session whose conversation it can still find, so a carry-on never names one it has lost nor one of another program."""
         rows = []
         for environment in self.environments.all() or [self.environments.named("main")]:
             with self.scope.of(environment.id):
@@ -66,7 +65,6 @@ class EnvironmentCommand(Command):
         return 0
 
     def in_flight(self, session: str) -> list[str]:
-        """What an agent must know here, one line a kind; nothing in flight says so."""
         since = datetime.now(timezone.utc) - TAKEN_OVER_WITHIN
         others = self.agents.others_lately(session, since)
         held = self.tasks.in_state(TaskState.STARTED)
@@ -88,7 +86,6 @@ class EnvironmentCommand(Command):
         return [line for line in lines if line]
 
     def background(self) -> list[str]:
-        """The chains moved to the background that have not ended: not reported as ended, and their folder still there without a done mark."""
         ended = {e.data["chain"] for e in self.entries.of_kind(ENDED, 50)}
         moved = [e for e in reversed(self.entries.of_kind(MOVED, 50)) if e.data["chain"] not in ended]
         return [f"{e.data['part']} (output in {e.data['file']})" for e in moved if Path(e.data["file"]).is_dir() and not (Path(e.data["file"]) / "done").is_file()]
@@ -98,7 +95,6 @@ class EnvironmentCommand(Command):
         return f"{what}: " + "; ".join(rows) if rows else ""
 
     def oriented(self, where: Where) -> None:
-        """An agent that read this has its bearings: the look it owed since its start is paid."""
         if not where.session:
             return
         try:
@@ -131,7 +127,6 @@ class EnvironmentCommand(Command):
         return 0
 
     def rename(self, args: Namespace, where: Where) -> int:
-        """Refused while an agent works in it, since its running journal, its terminal and its typed lines are named after it, and when it has a worktree, whose folder and branch carry its name."""
         found = self.environments.existing(args.name)
         if self.environments.where(name=args.new):
             raise Refused(f"an environment named {args.new} exists already")

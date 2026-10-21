@@ -4,7 +4,6 @@ from pathlib import Path
 from journal.support.event_window import EventWindow
 
 COMPARED = ("version", "program", "hears", "holds", "services", "settings", "skills")
-"""What an upgrade shows changing in a manifest: what the plugin runs, hears and holds."""
 MOST_LINES = 400
 
 
@@ -27,7 +26,6 @@ class PluginChanges:
 
     @staticmethod
     def code(old: Path, new: Path) -> list[str]:
-        """A unified diff of every text file that differs, .git left out, cut at MOST_LINES."""
         files = sorted({p.relative_to(root) for root in (old, new) for p in root.rglob("*") if p.is_file() and ".git" not in p.relative_to(root).parts})
         lines = []
         for file in files:

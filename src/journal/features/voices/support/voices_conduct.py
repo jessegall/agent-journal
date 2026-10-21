@@ -6,7 +6,6 @@ from journal.events.rows.setting_changed import SettingChanged
 
 RESUME = "resume"
 STARTS = ("startup", "resume")
-"""The sources of a session start that are a start of the journal's: a cleared or compacted conversation goes on with the same agent."""
 
 
 class VoicesConduct(Conduct):

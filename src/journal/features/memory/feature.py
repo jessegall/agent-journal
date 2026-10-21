@@ -16,7 +16,6 @@ from journal.support.skill import Skill
 
 
 ONCE = 365 * 86400.0
-"""A whisper is said once per row per agent; in practice, not within a year."""
 
 
 class Memory(Feature):

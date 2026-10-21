@@ -41,11 +41,9 @@ class Actor:
 
     @property
     def named(self) -> str:
-        """The actor as a label names it: the journal, the agent, you, the plugin or the external agent by its name."""
         return {ActorKind.SYSTEM: "the journal", ActorKind.AGENT: "the agent", ActorKind.USER: "you", ActorKind.PHONE: "you, from your phone", ActorKind.EXTERNAL: self.id}.get(self.kind, f"plugin {self.id}")
 
     def is_the_user(self) -> bool:
-        """The user, at the desk or from the paired phone, which acts for them."""
         return self.kind in (ActorKind.USER, ActorKind.PHONE)
 
     @property

@@ -16,7 +16,6 @@ from journal.support.secret_values import SecretValues
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 THROWAWAY = ("HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "GH_CONFIG_DIR", "DOCKER_CONFIG")
-"""Where a program keeps its own files, pointed at a home made for the run inside the secrets folder and removed after it."""
 LONGEST = 120
 
 
@@ -50,7 +49,6 @@ class SecretRun:
             shutil.rmtree(home, ignore_errors=True)
 
     def program(self, secret: Secret, command: list[str]) -> str:
-        """The program's own path: named bare, allowed by the secret, never one that runs or echoes what it is given, found outside the project."""
         if not command:
             raise Refused("name the program after --, such as `journal secret run github -- gh api user`")
         name = command[0]
@@ -66,7 +64,6 @@ class SecretRun:
         return found
 
     def search_path(self) -> str:
-        """The journal's search path without a folder inside the project, where a program of the agent's making could stand in for the real one."""
         root = self.config.root.resolve()
         kept = [p for p in os.environ.get("PATH", "/usr/bin:/bin").split(os.pathsep) if p and not Path(p).resolve().is_relative_to(root)]
         return os.pathsep.join(kept)

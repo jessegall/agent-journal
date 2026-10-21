@@ -12,7 +12,6 @@ from journal.models.environment import Environment
 from journal.providers.providers import Providers
 
 FIRST_LOOK = -1
-"""Where a session's transcript is read from before it was ever read: its end."""
 
 
 class TranscriptTurns:
@@ -24,7 +23,6 @@ class TranscriptTurns:
         self._reading = threading.Lock()
 
     def events(self, hook: Hook, environment: Environment) -> list[AgentEvent]:
-        """Each text block written since, as a whole turn, and each message another session sent, as it came."""
         if hook.kind == HookKind.MESSAGE_DISPLAY:
             return []
         with self._reading:
@@ -34,7 +32,6 @@ class TranscriptTurns:
         return [event.placed(hook.session, environment.id, hook.provider, self.context.of(hook.session), self.clock.now(), hook.subagent) for event in [*written.crossed, *turns]]
 
     def missed(self, session: str, provider: str, until: float) -> Written:
-        """What no hook has read yet that was written before a moment, read on from where the hooks left off, so neither reads one twice."""
         with self._reading:
             written = self.providers.named(provider).texts_written_before(self.config.root, session, self._read.get(session, FIRST_LOOK), until)
             self._read[session] = written.at

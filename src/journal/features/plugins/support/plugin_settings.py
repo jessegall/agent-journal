@@ -27,7 +27,6 @@ class PluginSettings:
         return [PluginSetting.from_json(setting) for setting in json.loads((self.folders.of(plugin) / path).read_text())] if path else []
 
     def started(self, plugin: Plugin, actor: Actor) -> dict:
-        """Its settings at their defaults, and a secret asked for each secret setting, proposed for the plugin."""
         settings = {}
         for setting in self.schema(plugin):
             if setting.is_secret:
@@ -67,7 +66,6 @@ class PluginSettings:
         return value
 
     def given(self, plugin: Plugin) -> dict[str, str]:
-        """The values of its secret settings that the user filled and let the plugin have, by their variables."""
         values = self.values.values()
         given = {}
         for setting in plugin.settings.values():
@@ -80,5 +78,4 @@ class PluginSettings:
 
     @staticmethod
     def program(plugin: Plugin) -> str:
-        """The name a secret is allowed to the plugin under, as the Secrets page lists programs."""
         return f"plugin:{plugin.name}"

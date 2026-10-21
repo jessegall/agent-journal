@@ -9,10 +9,7 @@ class TunlerStatus:
     command: str = ""
     logged_in: bool = False
     rejected: bool = False
-    """Logged in, but the server no longer accepts the login."""
     outdated: bool = False
-    """Too old to say whether its login still works."""
     account: str = ""
     host: str = ""
     unreadable: bool = False
-    """It answered, but not with a status the journal can read."""

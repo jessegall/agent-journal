@@ -20,7 +20,6 @@ class Version3Backup:
         return self.folder.is_dir()
 
     def is_waiting(self) -> bool:
-        """Kept, and the user has not yet brought it across."""
         return self.is_kept() and self.migrations.current().state.is_open()
 
     def put_off(self, actor: Actor) -> Version3Migration:

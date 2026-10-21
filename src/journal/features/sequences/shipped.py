@@ -37,12 +37,8 @@ FILING_A_WRITTEN_DOCUMENT = Sequence(
 )
 UPDATE_WORDS = ("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up", "what happened since",
                 "geef me een update", "update graag", "nog updates", "statusupdate", "stand van zaken", "praat me bij", "bijpraten", "wat is er gebeurd")
-"""The words that start Writing an update, as a shipped trigger."""
 CHECKING_WORDS = ("check the instruction files", "check agents.md", "check claude.md", "contradictions in the instructions",
                   "controleer de instructiebestanden", "controleer agents.md", "tegenstrijdigheden in de instructies")
-"""The words that start Checking the instruction files, as a shipped trigger."""
 WORDS = {WRITING_AN_UPDATE.title: UPDATE_WORDS, CHECKING_THE_INSTRUCTION_FILES.title: CHECKING_WORDS}
-"""The words each shipped sequence starts on, written as a trigger with the sequence and never again, so a project may take them off."""
 RETIRED = ("Sort dumped files",)
 SHIPPED = (BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FILING_A_WRITTEN_DOCUMENT)
-"""The sequences the journal ships: written at boot when a sequence of that title is not there yet, and brought up to date while nobody but the journal has changed it, so a project may edit its copy."""

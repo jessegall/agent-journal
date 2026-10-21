@@ -31,11 +31,9 @@ class SharePlace:
         self.path.write_text(json.dumps(asdict(replace(self.kept(), **fields))))
 
     def subdomain(self) -> str:
-        """The journal's name on the tunler server, made once and kept."""
         return self.kept().subdomain or self.new_subdomain()
 
     def new_subdomain(self) -> str:
-        """A fresh name: the project's, then random letters no one can guess."""
         prefix = re.sub(r"[^a-z0-9]+", "-", self.config.root.name.lower()).strip("-")[:PREFIX_LETTERS].strip("-") or "journal"
         name = f"{prefix}-{secrets.token_hex(NAME_BYTES)}"
         self.keep(subdomain=name)

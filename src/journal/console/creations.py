@@ -30,7 +30,6 @@ class Creations(Listener[Created]):
 
     @classmethod
     def line(cls, made: list[Model], said: str) -> str:
-        """The rows made that the command's own output did not name, so nothing is said twice; empty when it named them all."""
         unnamed = [name for m in made if (name := cls.named(m)) not in said]
         return "created: " + ", ".join(unnamed) if unnamed else ""
 

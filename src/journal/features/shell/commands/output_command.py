@@ -11,7 +11,6 @@ from journal.support.refused import Refused
 from journal.repositories.command_outputs import CommandOutputs
 
 ENDS = 10
-"""The lines shown at each end of an output read whole."""
 
 
 class OutputCommand(Command):

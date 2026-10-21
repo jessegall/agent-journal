@@ -17,7 +17,6 @@ from journal.repositories.plans import IN_PHASE, IN_PLAN, PHASE_OF, Plans
 
 STATES = {"building": PlanState.DRAFT, "draft": PlanState.DRAFT, "ready": PlanState.READY, "reviewing": PlanState.READY, "approved": PlanState.APPROVED,
           "active": PlanState.STARTED, "waiting": PlanState.STARTED, "parked": PlanState.PARKED, "done": PlanState.DONE, "abandoned": PlanState.CANCELLED}
-"""Each version 3 plan status as the state it has here: an approval stays an approval."""
 
 
 class BringPlans(EnvironmentKind):

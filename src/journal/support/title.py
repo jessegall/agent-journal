@@ -15,7 +15,6 @@ class Title:
 
     @classmethod
     def check_on(cls, row, was=None) -> None:
-        """A new or changed title is checked; a row saved again with the title it had is left alone."""
         title = getattr(row, "title", None)
         if isinstance(title, str) and (was is None or title != getattr(was, "title", None)):
             cls.check(title)

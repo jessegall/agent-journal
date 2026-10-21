@@ -11,9 +11,7 @@ from journal.support.worktree_not_made import WorktreeNotMade
 GIT_SECONDS = 60
 JOURNAL = ".journal"
 SKILL_FOLDERS = (".claude/skills", ".agents/skills")
-"""Each skill in them is shared when the project does not track it."""
 IF_IGNORED = (".claude/settings.json", ".claude/settings.local.json", ".codex/hooks.json", ".codex/agents", ".claude/agents", "AGENTS.md", "CLAUDE.md")
-"""Shared when the project's git ignores them; a tracked one comes with the checkout."""
 
 
 class Worktree:

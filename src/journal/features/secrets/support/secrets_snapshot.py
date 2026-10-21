@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 MARKERS = ("agent-journal/secrets", ".journal/keys")
-"""Words that name the private folders whatever the path around them."""
 PATH_KEYS = ("file_path", "path", "notebook_path")
 
 

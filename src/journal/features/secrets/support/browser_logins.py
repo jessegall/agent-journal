@@ -14,7 +14,6 @@ PLAYWRIGHT = "playwright@1.63.0"
 OPEN_BROWSER = ("npx", "-y", PLAYWRIGHT, "open")
 INSTALL_BROWSER = ("npx", "-y", PLAYWRIGHT, "install", "chromium")
 WINDOW = 900
-"""The longest a login window stays open: fifteen minutes to log in and close it."""
 
 
 class BrowserLogins:
@@ -35,7 +34,6 @@ class BrowserLogins:
         return self.folder / f"{re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-') or 'login'}.json"
 
     def record(self, title: str, url: str) -> Path:
-        """The browser opened on the site; what the user's login left behind is saved when they close it. Refused when npx is missing or nothing was saved."""
         if shutil.which(OPEN_BROWSER[0]) is None:
             raise Refused("logging in needs npx, which comes with Node.js, on this machine")
         self.folder.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -52,7 +50,6 @@ class BrowserLogins:
         self.saved_for(title).unlink(missing_ok=True)
 
     def merge(self) -> Path | None:
-        """Every saved login in one storage file, 0600; none when no login is saved."""
         saved = sorted(self.folder.glob("*.json")) if self.folder.is_dir() else []
         if not saved:
             self.merged.unlink(missing_ok=True)
@@ -68,7 +65,6 @@ class BrowserLogins:
         return self.merged
 
     def expires(self, saved: Path, url: str) -> datetime | None:
-        """When the login runs out: the earliest expiry among the site's own cookies, not a passing cookie of another domain."""
         host = urlparse(url).hostname or ""
         ends = [c["expires"] for c in json.loads(saved.read_text()).get("cookies", []) if c.get("expires", -1) > 0 and host.endswith(c.get("domain", "").lstrip("."))]
         return datetime.fromtimestamp(min(ends), timezone.utc) if ends else None

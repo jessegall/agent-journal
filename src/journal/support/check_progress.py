@@ -10,7 +10,6 @@ class CheckProgress:
     done: int = 0
     total: int = 0
     percent: float | None = None
-    """How far, out of a hundred; None while the check has said nothing that measures it."""
 
     @classmethod
     def from_json(cls, data: dict) -> "CheckProgress":

@@ -9,7 +9,6 @@ from journal.config import Config
 from journal.support.refused import Refused
 
 GITHUB = re.compile(r"^(?:https://github\.com/|git@github\.com:)(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$")
-"""A GitHub address, whose install.sh is read raw at a ref."""
 FETCH_SECONDS = 30
 INSTALL_SECONDS = 600
 
@@ -22,7 +21,6 @@ class ReleaseInstaller:
         self.log = config.home / "runtime" / "update.log"
 
     def run(self, ref: str, repository: str) -> None:
-        """The install.sh of the repository at the ref, a release's tag or a branch, run from the project root; what it prints is written to the update log, kept until the next update, so an update that did not take can be read back after the restart."""
         self.log.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix="journal-install-") as folder, self.log.open("w") as log:
             script = Path(folder) / "install.sh"
@@ -41,7 +39,6 @@ class ReleaseInstaller:
 
     @staticmethod
     def script_at(repository: str, ref: str) -> str:
-        """Where the repository's install.sh is read raw at the ref: GitHub serves it under raw.githubusercontent.com; any other address is refused, since the installer is fetched before git is asked."""
         found = GITHUB.match(repository)
         if found is None:
             raise Refused(f"the journal installs from GitHub only: {repository} is no GitHub address")

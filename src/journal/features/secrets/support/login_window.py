@@ -16,7 +16,6 @@ from journal.repositories.secrets import Secrets
 
 STORAGE = "--storage-state"
 BROWSER = "playwright"
-"""The MCP server whose browser the agent drives, which is given the saved logins."""
 
 
 class LoginWindow:
@@ -46,14 +45,12 @@ class LoginWindow:
         self.given()
 
     def forgotten(self, secret: Secret, actor: Actor) -> Secret:
-        """A login taken back: its saved session deleted, the agent's browser given what remains, and the agents restarted without it."""
         self.logins.forget(secret.title)
         cleared = self.secrets.save(secret.with_(session_at=None, session_expires=None), actor)
         self.given()
         return cleared
 
     def given(self) -> None:
-        """The agent's browser started with every saved login, isolated from any other profile, or with none; the agents restarted to use it."""
         merged = self.logins.merge()
         browser = next((s for s in self.servers.all() if s.name == BROWSER), None)
         if browser is None:

@@ -17,7 +17,6 @@ class UpdateController:
         return Response.json({**asdict(self.updating.snapshot()), "changelog": page.text, "shown": page.shown, "more": page.more})
 
     def fresh(self, request: Request) -> Response:
-        """The releases read from GitHub now, for the About page as it opens, never the hourly list alone."""
         self.updating.read()
         return self.index(request)
 

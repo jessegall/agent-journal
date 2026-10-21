@@ -5,7 +5,6 @@ from journal.features.workers.support.dispatch import Dispatch
 from journal.repositories.entries import Entries
 
 ENDS = frozenset({"Idle", "SessionStarted", "SessionEnded"})
-"""The entries no Agent call of their session outlives: the turn that made it, or the session, is over."""
 
 
 class Subagents:
@@ -18,11 +17,9 @@ class Subagents:
         return sum(1 for row in self.rows(session) if row.running)
 
     def running_before_the_newest(self, session: str) -> int:
-        """The subagents running besides the newest dispatch, which is the one a blocking listener is judging: its start is recorded before it is judged."""
         return sum(1 for row in self.rows(session)[:-1] if row.running)
 
     def running_about(self, session: str, subject: str) -> int:
-        """The subagents still out whose brief names the subject, such as plan 9: the reviewers of that plan and no others."""
         return sum(1 for row in self.named_in_brief(session, subject) if row.running)
 
     def dispatched_about(self, session: str, subject: str, since: float) -> list[Dispatch]:
@@ -37,7 +34,6 @@ class Subagents:
 
     @staticmethod
     def paired(dispatches) -> list[Dispatch]:
-        """Each dispatch of a subagent, its finish paired to its start by the tool use's id, by order only when a hook carries none, so a start that never finished leaves the others alone: it starts with the Agent tool's call and ends with the tool's answer, or, for one launched in the background, with its own stop hook; a call the journal refused never ran and is no dispatch. A call with no answer when its turn ends was cut off, and a subagent in the background with no stop when its session ends went with it."""
         rows: list[Dispatch] = []
         open_: dict[str, int] = {}
         background: dict[str, int] = {}
@@ -71,14 +67,12 @@ class Subagents:
 
     @staticmethod
     def stopped(rows: list[Dispatch], running: dict[str, int], at: float) -> None:
-        """Each row still running ended at this moment, without the answer or the stop that would have closed it."""
         for i in running.values():
             rows[i] = rows[i].settled("stopped", at)
         running.clear()
 
     @staticmethod
     def answered(response) -> dict:
-        """The Agent tool's answer as a mapping: its agentId names the subagent's transcript, and isAsync says it was launched in the background; empty when the answer is plain text."""
         if isinstance(response, str):
             try:
                 response = json.loads(response)

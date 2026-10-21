@@ -12,7 +12,6 @@ class Release:
 
     @classmethod
     def named(cls, tags: list[str]) -> list["Release"]:
-        """The tags that are plain releases, oldest first; a pre-release or any other tag is left out."""
         return sorted((cls(tag) for tag in tags if TAG.match(tag)), key=lambda release: release.numbers)
 
     @property
@@ -28,7 +27,6 @@ class Release:
         return self.numbers[0]
 
     def upgrades(self, installed: "Release") -> bool:
-        """Newer than the installed release and of the same major version: an update never crosses a major."""
         return self.major == installed.major and self.is_newer_than(installed)
 
     def is_newer_than(self, other: "Release") -> bool:

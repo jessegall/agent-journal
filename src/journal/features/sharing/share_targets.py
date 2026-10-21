@@ -18,7 +18,6 @@ class ShareTargets:
         self.repositories = {"docs": docs, "reports": reports, "plans": plans}
 
     def named(self, named: str) -> Ref:
-        """The row a name points at, which must be there; anything else cannot be shared."""
         kind, _, number = named.strip().partition(":")
         if kind not in self.repositories or not number.isdigit():
             raise Refused(f"only a document, a report or a plan can be shared: name it as docs:12, reports:4 or plans:2, not {named!r}")
@@ -30,12 +29,10 @@ class ShareTargets:
         self.links.save(Link(source=Ref.to(share), target=target, kind=SHARES), actor)
 
     def of(self, share: Share) -> Ref | None:
-        """The row the share opens; none when it was deleted with its links."""
         targets = self.links.targets(share, SHARES)
         return targets[0] if targets else None
 
     def shown(self, share: Share) -> list[Ref]:
-        """The rows the link's page shows: the row, and for a plan its tasks."""
         target = self.of(share)
         if target is None:
             return []
@@ -43,7 +40,6 @@ class ShareTargets:
         return [target, *(Ref.to(task) for task in tasks)]
 
     def opens(self, named: str) -> list[str]:
-        """What a link to the row opens, one line each, as the share dialog lists it: the row, and for a plan its tasks."""
         ref = self.named(named)
         row = self.repositories[ref.type].find(ref.id)
         lines = [f"{row.title} ({ref})"]

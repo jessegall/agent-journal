@@ -17,9 +17,7 @@ from journal.repositories.edits import Edits
 from journal.repositories.setting_rows import SettingRows
 
 CARRIES = ("tool_starting", "tool_finished", "prompt_submitted", "session_started")
-"""The hooks whose answer can carry a line to the agent without holding it, where a plugin's waiting lines are handed over."""
 REFUSABLE = ("tool_starting", "command_starting", "file_edited", "idle")
-"""The held events a plugin may refuse; at a prompt and a start its refusal is only said, and a stop it holds once a turn, never again after the agent went on because a stop was held."""
 
 
 class PluginsHearAgents(AgentListener[AgentEvent]):
@@ -28,7 +26,6 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     blocking = True
     asked_while_free = True
     asked_last = True
-    """Runs after the other blocking listeners, so a file's edit is on its row when the plugins holding file_edited are asked."""
 
     def __init__(self, relay: PluginRelay, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords, queue: PluginQueue, edits: Edits) -> None:
         self.relay, self.deferred, self.settings, self.floor, self.words, self.queue, self.edits = relay, deferred, settings, floor, words, queue, edits
@@ -49,7 +46,6 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         return self.floor.under(event, decision)
 
     def edited(self, event: AgentEvent) -> list[FileEdited]:
-        """One event per file the tool that ended changed, for the plugins that hold file_edited; the rest hear the edit row after the reply."""
         if not isinstance(event, ToolFinished):
             return []
         return [FileEdited.recorded(edit, event.environment_id) for edit in self.edits.of_tool_use(event.session, event.tool_use)]
@@ -65,7 +61,6 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
 
     @staticmethod
     def commands(event: AgentEvent) -> list[CommandStarting]:
-        """One event per command of the chain a tool is about to run, journal commands left out."""
         if not isinstance(event, ToolStarting):
             return []
         parts = [part for part in event.call.parts if not part.is_journal]

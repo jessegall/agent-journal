@@ -27,7 +27,6 @@ class Codex(Provider):
         return Path.home() / ".codex" / "sessions"
 
     def hooks_trusted(self, project: Path) -> bool:
-        """Codex runs a project's hooks only once the user trusted them, which it notes in its own settings by the hooks file."""
         settings = Path.home() / ".codex" / "config.toml"
         hooks = project.resolve() / self.home / self.settings_file
         return settings.is_file() and f'[hooks.state."{hooks}:session_start' in settings.read_text()

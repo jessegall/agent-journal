@@ -8,7 +8,6 @@ from journal.db.migrations.owed_facts import OwedFacts
 from journal.db.migrations.stored_state import StoredState
 
 OWED = ("orienting", "at_mark", "loading_skill")
-"""The pause states that became facts on the agent's row in plan 7's phase two."""
 
 
 class UnwrapOwedPauses(Migration):

@@ -13,9 +13,7 @@ from journal.features.plugins.support.plugin_card import PluginCard
 
 ANSWERS = ("allow", "refuse", "tell")
 MOST_COMMANDS = 20
-"""The most journal commands one answer may run."""
 PLACED = ("session", "environment_id", "provider", "context", "subagent", "at", "snapshot")
-"""An agent event's fields that say where it happened, sent beside its own fields rather than among them."""
 
 
 class Protocol:
@@ -40,7 +38,6 @@ class Protocol:
         return data
 
     def answer_of(self, text: str) -> PluginAnswer:
-        """The plugin's answer; an empty one is allow, one that does not parse is a fault."""
         if not text.strip():
             return PluginAnswer()
         try:

@@ -15,7 +15,6 @@ from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
 
 KEPT = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
-"""The only variables of the journal's own that a plugin's program is given; nothing else of the shell, so no key the user holds reaches it."""
 
 
 class PluginRunner:
@@ -25,7 +24,6 @@ class PluginRunner:
         self.config, self.folders, self.tokens, self.protocol, self.settings = config, folders, tokens, protocol, settings
 
     def ask(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
-        """Its answering service on its socket when one listens, else its program."""
         listening = self.folders.socket(plugin, environment)
         if any(s.answers for s in plugin.manifest.services) and listening.is_socket():
             try:
@@ -35,7 +33,6 @@ class PluginRunner:
         return self.asked_program(plugin, environment, line, within)
 
     def asked_service(self, listening, line: str, within: float) -> PluginAnswer:
-        """One line to the service and one back; a socket nobody listens on any more is left to the caller, which asks the program."""
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as link:
             link.settimeout(within)
             link.connect(str(listening))
@@ -61,7 +58,6 @@ class PluginRunner:
         return self.protocol.answer_of(out)
 
     def shell(self, plugin: Plugin, environment: str, line: str, seconds: float) -> subprocess.CompletedProcess:
-        """A shell line of the plugin's own, a setup step or a check, run in its folder with its environment."""
         return subprocess.run(["sh", "-c", line], cwd=self.folders.of(plugin), env=self.environment(plugin, environment), capture_output=True, text=True, timeout=seconds)
 
     def environment(self, plugin: Plugin, environment: str) -> dict[str, str]:

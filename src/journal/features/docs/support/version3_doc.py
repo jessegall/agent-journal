@@ -11,7 +11,6 @@ class Version3Doc:
 
     @staticmethod
     def read(folder: Path) -> Doc | None:
-        """The document the folder holds; none for a folder with no doc.md, one that holds no row, as version 3 left some empty, or one it had deleted."""
         file = folder / "doc.md"
         text = file.read_text(errors="replace") if file.is_file() else ""
         if not text.startswith(f"{FENCE}\n"):

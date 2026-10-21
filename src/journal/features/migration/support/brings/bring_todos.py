@@ -31,7 +31,6 @@ class BringTodos(EnvironmentKind):
 
     @staticmethod
     def task(row: Version3Row, task: Task) -> Task:
-        """The task in the state the to-do stood in."""
         if row.completed:
             return task.with_(state=TaskState.DONE, finished_at=row.closed_at(), outcome=row.outcome)
         if row.data.get("blocked"):

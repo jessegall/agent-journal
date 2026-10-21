@@ -10,11 +10,9 @@ class Option:
     abstract: str
     default: object
     kind: str = "number"
-    """number, switch, text, choice or model."""
     unit: str = ""
     choices: tuple[str, ...] = ()
     provider: str = ""
-    """The provider whose models a model option lists."""
 
     @property
     def feature(self) -> str:

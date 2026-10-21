@@ -12,7 +12,6 @@ class AgentListener(Listener[A]):
 
     blocking: ClassVar[bool] = False
     asked_while_free: ClassVar[bool] = False
-    """A blocking listener asked only while nothing has held the event; once it is held, it hears the event after the reply."""
 
     def handle(self, event: A) -> Decision | None:
         return None

@@ -12,6 +12,5 @@ class KeptPlace:
 
     @classmethod
     def from_json(cls, data: dict) -> "KeptPlace":
-        """Read from the file, keeping the fields it knows; a list read back is the tuple it was written as."""
         known = {f.name for f in fields(cls)}
         return cls(**{name: tuple(value) if isinstance(value, list) else value for name, value in data.items() if name in known})

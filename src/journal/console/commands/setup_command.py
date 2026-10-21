@@ -58,7 +58,6 @@ class SetupCommand(Command):
         return 0
 
     def restarted(self) -> list[str]:
-        """Every environment with an agent running is told to restart its journal, so an install is live at once."""
         names = [e.name for e in self.environments.all() if self.supervisor.runs(e.id)]
         for environment in self.environments.all():
             if environment.name in names:
@@ -66,7 +65,6 @@ class SetupCommand(Command):
         return names
 
     def hooks(self, args: Namespace, where: Where) -> int:
-        """The hooks of every agent present: Claude always, another where the project has its folder or its program is installed. Each hook first tests that its script is still there, so a package moved away fails silent instead of in the chat."""
         script = self.package / "hooks" / "hook.sh"
         for provider in self.providers.all():
             if provider.name != "claude" and not (self.config.root / provider.home).is_dir() and not shutil.which(provider.name):
@@ -91,7 +89,6 @@ class SetupCommand(Command):
         return path
 
     def ignored(self) -> Path:
-        """The project's .gitignore keeps the journal's own folder out of the repository."""
         path = self.config.root / ".gitignore"
         had = path.read_text() if path.is_file() else ""
         if "/.journal" not in had.splitlines() and ".journal" not in had.splitlines() and ".journal/" not in had.splitlines():
@@ -99,7 +96,6 @@ class SetupCommand(Command):
         return path
 
     def shim(self) -> Path:
-        """The command, written inside the project at .journal/bin/journal and nowhere else."""
         return ProjectCommand(self.config.root, self.package.parent / "journal.sh").write()
 
     @property

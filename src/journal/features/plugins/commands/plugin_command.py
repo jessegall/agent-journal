@@ -11,7 +11,6 @@ from journal.support.scope import Scope
 from journal.support.chat_mark import ChatMark
 
 SAID = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill"}
-"""Each kind of preview row as the command line says it."""
 
 
 class PluginCommand(Command):

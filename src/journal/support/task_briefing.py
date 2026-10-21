@@ -2,7 +2,6 @@ from journal.models.task import Task
 from journal.repositories.task_logs import TaskLogs
 
 LAST = 3
-"""How many of the task's latest log lines are told with it."""
 
 
 class TaskBriefing:

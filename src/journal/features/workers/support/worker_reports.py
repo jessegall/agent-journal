@@ -13,7 +13,6 @@ from journal.repositories.workers import Workers
 
 
 REPORTED = "reported"
-"""The kind of the link from a worker to the message that holds its report."""
 
 
 class WorkerReports:

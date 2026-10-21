@@ -14,7 +14,6 @@ from journal.features.workers.support.workers_snapshot import WorkersSnapshot
 from journal.support.dispatch_tools import DISPATCH_TOOLS
 
 FRESH = ("auditor", "reviewer", "plan-reviewer", "critic")
-"""Kinds whose job is a fresh look, never handed to one that already formed a view."""
 
 
 class WorkersConduct(Conduct):

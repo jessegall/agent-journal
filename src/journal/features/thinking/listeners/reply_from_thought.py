@@ -8,7 +8,6 @@ from journal.providers.providers import Providers
 from journal.repositories.messages import Messages
 
 FROM_THOUGHT = "thought:"
-"""The turn id of a reply lifted out of thinking, so the turn is not taken for a visible one."""
 
 
 class ReplyFromThought(AgentListener[ToolStarting]):

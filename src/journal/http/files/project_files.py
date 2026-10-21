@@ -18,7 +18,6 @@ class ProjectFiles:
         self._branch = ("", 0.0)
 
     def branch(self) -> str:
-        """The checked-out branch, asked of git at most every few seconds since every agent row carries it."""
         name, at = self._branch
         if time.time() - at > 5:
             done = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=self.root, capture_output=True, text=True, timeout=5)
@@ -26,7 +25,6 @@ class ProjectFiles:
         return self._branch[0]
 
     def folder(self, given: str) -> list[ProjectEntry]:
-        """A folder's entries, the project's own when none is named."""
         path = self.inside(given) if given.strip("/") else self.root
         if path is None or not path.is_dir():
             return []
@@ -51,7 +49,6 @@ class ProjectFiles:
         return subprocess.run(["git", "diff", "--", str(path)], cwd=self.root, capture_output=True, text=True, timeout=30).stdout
 
     def find(self, query: str) -> list[ProjectEntry]:
-        """Files whose name holds every word asked for, a page at most."""
         words = query.lower().split()
         if not words:
             return []
@@ -59,7 +56,6 @@ class ProjectFiles:
         return found[:PAGE]
 
     def inside(self, given: str) -> Path | None:
-        """The path a relative name points at, or None when it is empty, leaves the project or lies in a hidden folder, as .env and .journal do."""
         path = (self.root / given.strip("/")).resolve()
         if not given.strip("/") or not path.is_relative_to(self.root):
             return None

@@ -17,7 +17,6 @@ class UpdateMark:
         self.path = config.home / "runtime" / "updating.json"
 
     def claim(self, before: str, to: str) -> None:
-        """The mark taken for an update from one version to another; refused while another update holds it."""
         held = self.held()
         if held is not None and not held.is_stale(time.time()):
             raise Refused(f"an update to {held.to} is under way since {time.strftime('%H:%M', time.localtime(held.at))}")
@@ -35,7 +34,6 @@ class UpdateMark:
         self.path.unlink(missing_ok=True)
 
     def write(self, held: UpdateHeld) -> None:
-        """Written whole to a file beside it and moved into place, so a reader never sees half a mark."""
         self.path.parent.mkdir(parents=True, exist_ok=True)
         written = self.path.with_suffix(".tmp")
         written.write_text(json.dumps(asdict(held)))

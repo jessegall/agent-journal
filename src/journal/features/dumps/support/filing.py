@@ -23,7 +23,6 @@ ANSWER = 600
 OFFERED = 4
 OWN_WORDS = -2
 FILED = "dump_filed"
-"""The kind of the link from a dump to a row the agent filed from it."""
 TABLES = {"doc": "docs", "report": "reports", "todo": "tasks", "task": "tasks", "plan": "plans", "fact": "facts", "rule": "rules", "reminder": "reminders"}
 
 

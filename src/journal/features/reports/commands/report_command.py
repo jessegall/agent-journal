@@ -14,7 +14,6 @@ from journal.repositories.messages import Messages
 from journal.repositories.reports import Reports
 
 ROW = re.compile(r"^[a-z_]+:\d+$")
-"""A row as a report names it: its table and its number."""
 
 
 class ReportCommand(Command):
@@ -45,7 +44,6 @@ class ReportCommand(Command):
 
     @staticmethod
     def rows_named(given: list[str]) -> list[Ref]:
-        """The rows a report is about, given apart by spaces or commas; one not written as kind:number is refused by name."""
         named = [part.strip() for word in given for part in word.split(",") if part.strip()]
         wrong = [n for n in named if not ROW.match(n)]
         if wrong:

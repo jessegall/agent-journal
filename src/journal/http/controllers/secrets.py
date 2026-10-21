@@ -54,16 +54,13 @@ class SecretController(Controller[Secret]):
         return Response.json(self.window.open(self.repository.find(request.number("id")), self.scope.id, request.actor))
 
     def allow_login(self, request: Request) -> Response:
-        """The agent may log in to this site on its own from now on, and a login is taken now."""
         secret = self.repository.save(self.repository.find(request.number("id")).with_(auto_login=True), request.actor)
         return Response.json(self.window.open(secret, self.scope.id, request.actor))
 
     def revoke_login(self, request: Request) -> Response:
-        """The agent asks with a Log in button again; the saved login stays."""
         return Response.json(self.repository.save(self.repository.find(request.number("id")).with_(auto_login=False), request.actor))
 
     def forget_login(self, request: Request) -> Response:
-        """The saved login deleted and taken from the agent's browser."""
         return Response.json(self.window.forgotten(self.repository.find(request.number("id")), request.actor))
 
     def where(self, request: Request) -> Response:
@@ -71,7 +68,6 @@ class SecretController(Controller[Secret]):
 
     @staticmethod
     def allowed(programs) -> tuple[str, ...]:
-        """The programs a secret may go to, by name; one never given is refused."""
         refused = [p for p in programs if Programs.never_given(p)]
         if refused:
             raise Refused(f"a secret is never given to {', '.join(refused)}: allow the program that uses it directly, such as curl or gh")

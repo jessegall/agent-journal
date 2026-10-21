@@ -42,5 +42,4 @@ class ShareController(Controller[Share]):
         return Response.json(self.shown(self.actions.stop(self.repository.find(request.number("id")), request.actor)))
 
     def opens(self, request: Request) -> Response:
-        """What a link to a row would open, before it is made."""
         return Response.json(self.targets.opens(request.query.get("target", "")))

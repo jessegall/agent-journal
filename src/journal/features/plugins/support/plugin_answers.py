@@ -14,7 +14,6 @@ from journal.repositories.entries import Entries
 from journal.support.chat_mark import ChatMark
 
 COMMAND = "plugin_command"
-"""The entry each command a plugin ran leaves: the line, its exit code and what it printed on error."""
 
 
 class PluginAnswers:

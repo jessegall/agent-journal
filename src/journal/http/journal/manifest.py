@@ -9,9 +9,7 @@ from journal.version import VERSION
 
 DIST = Path(__file__).resolve().parents[3] / "web" / "dist" / "index.html"
 PLACED = {"sharing": ("Sharing", "sharing"), "updates": ("Project", "system"), "record": ("Project", "system"), "faults": ("Developer", "developer")}
-"""Features the settings page shows in a tab of their own, by name: the section and the tab."""
 SYSTEM_GROUPS = [{"key": "project", "title": "Project", "line": "Settings for the whole project, in every environment", "section": "Project", "tab": "system", "lead": ""}]
-"""The System tab's groups, filled by the viewer's own settings: the project's colour and what the viewer shows."""
 
 
 class Manifest:
@@ -24,7 +22,6 @@ class Manifest:
         return JournalFacts(self.config.root.name, environment, VERSION, self.build(), self.features(), self.groups())
 
     def features(self) -> list[dict]:
-        """Every feature as the settings page reads one: its switch, its words and its options."""
         return [{"name": f.name, "title": f.title, "help": f.help, "default": f.default, "fixed": f.fixed,
                  "options": [{"key": o.key, "name": o.name, "title": o.title, "abstract": o.abstract, "kind": o.kind, "default": o.default, "unit": o.unit, "choices": list(o.choices),
                               "provider": o.provider} for o in f.options]}
@@ -35,7 +32,6 @@ class Manifest:
         return [f for f in self.registry.features if f.applies_in(self.config.root)]
 
     def groups(self) -> list[dict]:
-        """One group per feature, led by it: those that speak to the agent in the Agent tab, sharing in its own, the rest under Features; then the System tab's."""
         return [{"key": f.name, "title": f.title, "line": f.help, "section": self.placed(f)[0], "tab": self.placed(f)[1], "lead": f.name} for f in self.applying()] + SYSTEM_GROUPS
 
     @staticmethod
@@ -46,6 +42,5 @@ class Manifest:
 
     @staticmethod
     def build() -> str:
-        """The viewer's own script file, which the page compares with the one it loaded to know whether a newer viewer is being served."""
         found = re.search(r'src="[^"]*?([^"/]+\.js)"', DIST.read_text()) if DIST.is_file() else None
         return found.group(1) if found else "journal-4"

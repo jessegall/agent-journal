@@ -24,6 +24,5 @@ class PluginFolders:
         return self.data(plugin) / "settings.json"
 
     def socket(self, plugin: Plugin, environment: str) -> Path:
-        """Where a plugin's answering service listens in an environment: a short path, since a socket's path is limited to about a hundred characters."""
         mark = hashlib.sha1(f"{self.config.root}|{environment}|{plugin.name}".encode()).hexdigest()[:12]
         return Path(f"/tmp/journal-{os.getuid()}") / f"plugin-{mark}.sock"

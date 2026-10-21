@@ -37,7 +37,6 @@ class P256:
 
     @staticmethod
     def is_on_curve(public: bytes) -> bool:
-        """An uncompressed public key that is a point of the curve."""
         if len(public) != 65 or public[0] != 4:
             return False
         x, y = int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big")
@@ -45,7 +44,6 @@ class P256:
 
     @staticmethod
     def is_signed(public: bytes, message: bytes, signature: bytes) -> bool:
-        """The signature, r then s, is the public key's over the message."""
         r, s = int.from_bytes(signature[:32], "big"), int.from_bytes(signature[32:], "big")
         if not P256.is_on_curve(public) or len(signature) != 64 or not (0 < r < N and 0 < s < N):
             return False

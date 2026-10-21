@@ -46,7 +46,6 @@ class Tunnel:
         self.log = config.home / "runtime" / f"{SERVICE}.log"
         self._answer = KeptAnswer(lambda: self.reaches_address(), ANSWER_KEPT, False)
         self.wanted = False
-        """Whether the tunnel was wanted when it was last settled."""
 
     def saved_host(self) -> str:
         from journal.features.sharing.feature import Sharing
@@ -63,7 +62,6 @@ class Tunnel:
         return f"https://{self.address()}/s/{token}"
 
     def snapshot(self) -> dict:
-        """What the viewer shows of the tunnel: tunler's status, the server, the address and what keeps links from reaching the journal."""
         status = self.tunler.status()
         return {**asdict(status), "server": self.host() or DEFAULT_SERVER, "address": self.address(), "problems": self.problems(status)}
 
@@ -86,7 +84,6 @@ class Tunnel:
         self.settle_at(datetime.now(timezone.utc))
 
     def settle_at(self, now: datetime) -> None:
-        """Running while a link opens, a phone is paired or a code to pair one is live; stopped while none is."""
         self.wanted = self.is_wanted(now)
         if self.wanted:
             self.start()
@@ -94,7 +91,6 @@ class Tunnel:
             self.stop()
 
     def settle_when_changed(self, now: datetime) -> None:
-        """Settled again only when what keeps it open changed since it last was, as when a code or a phone runs out."""
         if self.is_wanted(now) != self.wanted:
             self.settle_at(now)
 
@@ -102,7 +98,6 @@ class Tunnel:
         return self.shares.open_anywhere() or bool(self.phones.live(now)) or bool(self.codes.open(now))
 
     def start(self) -> None:
-        """Started for the share server's port and the journal's name; one running for another port or name is stopped first, and one running for these is left as it is."""
         host, command, port = self.link.hosting(), self.tunler.command(), self.place.kept().port
         if host is None or not command or not port:
             return
@@ -127,7 +122,6 @@ class Tunnel:
         self.start()
 
     def readdress(self) -> str:
-        """A new name for the journal, the tunnel moved to it, and the old name given back to the server when the account held it."""
         host, old = self.host(), self.place.kept().subdomain
         name = self.place.new_subdomain()
         self.log.parent.mkdir(parents=True, exist_ok=True)
@@ -148,11 +142,9 @@ class Tunnel:
         return self.tunler.domains()
 
     def answering(self) -> bool:
-        """Whether the journal's address answers as its share server, asked now."""
         return self._answer.fresh()
 
     def answered(self) -> bool:
-        """The last answer, at once: asking the tunnel's address takes a round trip, so the viewer's poll never waits on it."""
         return self._answer.now()
 
     def reaches_address(self) -> bool:
@@ -166,7 +158,6 @@ class Tunnel:
             return False
 
     def service(self) -> TunnelService:
-        """The tunnel as the viewer lists a service: ready while its address answers, starting while it should and does not yet."""
         if self.link.hosting() is None:
             state, why = "stopped", NO_SUPERVISOR
         else:
@@ -187,7 +178,6 @@ class Tunnel:
         return TunnelCause("waiting", f"The tunnel is running, but {address} does not answer yet. The last lines it wrote:", self.last_lines())
 
     def last_lines(self) -> list[str]:
-        """The tunnel's last lines since the journal last moved it."""
         if not self.log.is_file():
             return []
         return self.log.read_text(errors="ignore").split(MOVED)[-1].splitlines()[-LAST_LINES:]
@@ -197,7 +187,6 @@ class Tunnel:
 
     @staticmethod
     def reached(url: str) -> bool:
-        """Whether anything answers at the address, even with an error."""
         try:
             with urlopen(url, timeout=REACH_SECONDS):
                 return True

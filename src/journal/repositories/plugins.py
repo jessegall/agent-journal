@@ -16,7 +16,6 @@ class Plugins(Repository[Plugin]):
         self.live: list[Plugin] | None = None
 
     def save(self, row: Plugin, actor: Actor) -> Plugin:
-        """The kept rows are dropped after the write, since a listener of the row's events may read them while the write is on."""
         saved = super().save(row, actor)
         self.live = None
         return saved

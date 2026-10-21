@@ -21,13 +21,10 @@ from journal.support.worktree_not_made import WorktreeNotMade
 
 TAIL = 4000
 WATCH_EVERY = 2.0
-"""Seconds between two looks at a worker found running at boot."""
 TIMED_OUT = -1
 ENDED_UNSEEN = -2
-"""How a run ended that the journal did not see end, as a worker found running at boot."""
 ENDINGS = {TIMED_OUT: "stopped after {minutes:g} minutes without ending: {report}", ENDED_UNSEEN: "{report}"}
 NOT_HANDED = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "CLAUDE_CODE_SHELL_PREFIX")
-"""What of the journal's environment a worker is not handed: its hooks stay silent, it is no session of the journal's, and its shell runs without the journal's runner, since a worker is never told a command it moved to the background ended."""
 
 
 class WorkerRunner:
@@ -43,13 +40,11 @@ class WorkerRunner:
         threading.Thread(target=self.run_in_scope, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
 
     def instructed(self, worker: Worker) -> str:
-        """The job as the worker is given it: on its first run, after the instructions of its profile, which a resumed worker remembers."""
         if worker.resume or worker.profile is None:
             return worker.brief
         return f"{self.profiles.read(worker.profile)['body']}\n\n{worker.brief}"
 
     def run_in_scope(self, worker: Worker, command: list[str], actor: Actor) -> None:
-        """The thread starts in no scope: the worker's report is filed in the worker's environment."""
         with self.scope.of(worker.environment_id):
             self.run(worker, command, actor)
 
@@ -127,11 +122,9 @@ class WorkerRunner:
             process.terminate()
 
     def place(self, worker: Worker) -> Path:
-        """Where the worker works: the project root, or its own worktree."""
         return self.branch.folder(worker) if worker.worktree else self.config.root
 
     def workplace(self, worker: Worker) -> Path:
-        """Where the worker works, its worktree cut from the working tip on a branch named for it the first time."""
         folder = self.place(worker)
         if worker.worktree and not folder.is_dir():
             self.cut(worker, folder)

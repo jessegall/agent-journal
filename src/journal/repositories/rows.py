@@ -13,7 +13,6 @@ class Rows:
         self.connection = connection
 
     def state_of(self, ref: Ref) -> str:
-        """The row's state, empty when the row is gone."""
         if not TABLE.match(ref.type):
             return ""
         row = self.connection.one(f"SELECT state FROM {ref.type} WHERE id = ?", (ref.id,))

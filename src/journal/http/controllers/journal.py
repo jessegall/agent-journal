@@ -26,7 +26,6 @@ from journal.version import VERSION
 COLOR = "#5e64c9"
 STARTED = time.time()
 SILENT_AFTER = 900.0
-"""Seconds a busy agent may send nothing before the viewer says it is not responding."""
 BAR_SHOWN = 8
 
 
@@ -64,7 +63,6 @@ class JournalController:
         return self.developer(request)
 
     def summary(self, request: Request) -> Response:
-        """How each environment stands: its live agent and the task it holds, what waits for the user, and whether a busy agent went quiet; and an update under way, with its step, which keeps the viewer's cover up through the restart."""
         held = self.mark.held()
         return Response.json({"project": self.config.root.name, "root": str(self.config.home), "version": VERSION, "started": STARTED, "color": COLOR,
                               "updating": held.to if held else "", "step": held.step if held else "",
@@ -80,7 +78,6 @@ class JournalController:
             return EnvironmentSnapshot(environment, agent, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
 
     def bar(self, request: Request) -> Response:
-        """The status bar's queue: each tool call and each shell part the live agent ran, as it opened and as it closed."""
         live = self.agents.live()
         if not live:
             return Response.json([])

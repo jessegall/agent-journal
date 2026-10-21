@@ -63,7 +63,6 @@ class PluginController(Controller[Plugin]):
         return Response.json({})
 
     def log(self, request: Request) -> Response:
-        """The last lines its services wrote, every log in its data folder."""
         plugin, lines = self.repository.find(request.number("id")), int(request.query.get("lines", "200"))
         logs = sorted(self.folders.data(plugin).glob("*.log"))
         return Response.json({"log": "\n".join(line for log in logs for line in log.read_text(errors="replace").splitlines()[-lines:])})

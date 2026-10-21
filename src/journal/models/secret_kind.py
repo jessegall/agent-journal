@@ -17,7 +17,6 @@ class SecretKind(StrEnum):
             raise Refused(f"a secret is one of {', '.join(kind.value for kind in cls)}, not {given!r}") from unknown
 
     def first_fields(self, title: str) -> tuple[dict, ...]:
-        """The fields a secret of this kind starts with, each named in an environment variable from the secret's title: a key, or a username and a password."""
         stem = "_".join("".join(c if c.isalnum() else " " for c in title).upper().split())
         names = {SecretKind.API_KEY: (("key", True),), SecretKind.LOGIN: (("username", False), ("password", True))}.get(self, ())
         return tuple({"name": name, "hidden": hidden, "variable": f"{stem}_{name.upper()}"} for name, hidden in names)

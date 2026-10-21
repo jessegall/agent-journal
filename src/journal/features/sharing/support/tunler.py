@@ -17,7 +17,6 @@ ELSEWHERE = (Path("/opt/homebrew/bin/tunler"), Path("/usr/local/bin/tunler"))
 STATUS_SECONDS = 5
 STATUS_KEPT = 60
 LISTS_KEPT = 3600
-"""Seconds tunler's version and domains are kept before they are asked again: they change only by a login, an update or a release, which ask again at once."""
 COMMAND_SECONDS = 30
 DOWNLOAD_SECONDS = 60
 KILLED = -9
@@ -41,15 +40,12 @@ class Tunler:
 
     @staticmethod
     def local() -> Path:
-        """Where the journal installs tunler: in the user's own bin folder."""
         return Path.home() / ".local" / "bin" / "tunler"
 
     def status(self) -> TunlerStatus:
-        """Tunler's status, asked once while the journal waits and kept after: a later one past its time is asked again on a thread of its own."""
         return self._status.given()
 
     def forget(self) -> None:
-        """Tunler is asked again now, after a change such as a login: its status at once, its domains and versions when next read."""
         self._status.fresh()
         self._domains.drop()
         self._versions.clear()
@@ -128,13 +124,11 @@ class Tunler:
         return [line.strip() for line in output.splitlines() if line.strip()] if ok else []
 
     def release(self, domain: str, host: str) -> str:
-        """Why the domain was not given back to the server; empty when it was."""
         ok, output = self.told("release", domain.removesuffix(f".{host}"))
         self.forget()
         return "" if ok else output or f"tunler did not release {domain}"
 
     def install(self, host: str) -> str:
-        """Downloads tunler for this machine from the server into ~/.local/bin; a download that does not run as tunler replaces nothing."""
         arch = platform.machine().lower()
         part = self.local().with_name("tunler.part")
         part.parent.mkdir(parents=True, exist_ok=True)
@@ -161,7 +155,6 @@ class Tunler:
             raise Refused(CERTIFICATES)
 
     def verified(self, binary: Path) -> str:
-        """The version a downloaded tunler reports; on macOS one the system kills is signed on this machine and tried once more."""
         done = self.ran([str(binary), "version"], STATUS_SECONDS)
         if done and done.returncode == KILLED and platform.system() == "Darwin":
             self.ran(["codesign", "--force", "--sign", "-", str(binary)], STATUS_SECONDS)
@@ -172,7 +165,6 @@ class Tunler:
         raise Refused(BLOCKED if done and done.returncode == KILLED else NOT_WORKING)
 
     def told(self, *words: str, hidden: dict | None = None) -> tuple[bool, str]:
-        """Whether a tunler command went through, and what it said: its output, or its error when it failed."""
         command = self.command()
         if not command:
             return False, "tunler isn't installed on this machine"
@@ -183,7 +175,6 @@ class Tunler:
 
     @staticmethod
     def ran(command: list[str], seconds: float, hidden: dict | None = None) -> subprocess.CompletedProcess | None:
-        """The finished program, or none when it could not start or ran past its time."""
         try:
             return subprocess.run(command, capture_output=True, text=True, timeout=seconds, stdin=subprocess.DEVNULL, env={**os.environ, **(hidden or {})})
         except (OSError, subprocess.TimeoutExpired):

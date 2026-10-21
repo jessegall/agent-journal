@@ -27,7 +27,6 @@ class DumpController(Controller[Dump]):
         return Response.json(self.shown(self.filing.create(str(request.body.get("brief", "")), request.actor)), 201)
 
     def attach(self, request: Request) -> Response:
-        """The files a request carried, stored beside the dump and named on it."""
         dump = self.repository.find(request.number("id"))
         for name, data in request.files.items():
             self.filing.attach(dump.id, self.attachments.store(Dump.table(), dump.id, name, data), request.actor)

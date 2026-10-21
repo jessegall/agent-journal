@@ -12,7 +12,6 @@ class ProfileController:
         self.files, self.statistics = files, statistics
 
     def index(self, request: Request) -> Response:
-        """Every profile with how often and when last it was dispatched, as counted when it was."""
         counted = self.statistics.under("profiles.")
         return Response.json({"profiles": [{**profile, "uses": counted.get(f"profiles.{profile['name']}.uses", 0), "last_used": counted.get(f"profiles.{profile['name']}.last_used", 0)} for profile in self.files.read_all()]})
 

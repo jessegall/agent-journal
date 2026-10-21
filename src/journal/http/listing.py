@@ -16,9 +16,7 @@ class Listing:
     closed: bool = False
     before: int = 0
     after: int = 0
-    """The last id the viewer has seen: a poll carries only the rows above it."""
     since: float = 0.0
-    """Seconds since the epoch: a catch-up carries only the rows changed after it."""
     ids: tuple[int, ...] = ()
 
     @classmethod
@@ -28,7 +26,6 @@ class Listing:
         return cls(**numbers, closed=str(query.get("closed", "")).lower() in ("1", "true", "yes"), ids=ids)
 
     def listed(self, rows: list[Model], is_open: Callable[[Model], bool], timeline: bool = False) -> ListedPage:
-        """{rows, more}, in order of id. A timeline, such as the chat, pages strictly by id: an open row older than the page waits for a scroll up like any other."""
         rows = sorted(rows, key=lambda r: r.id)
         if self.ids:
             return ListedPage(rows=[r for r in rows if r.id in self.ids], more=False)

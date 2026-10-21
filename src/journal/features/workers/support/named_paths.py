@@ -1,7 +1,6 @@
 import re
 
 PATH = re.compile(r"(?:[\w.-]+/)+[\w.-]+\.\w+")
-"""A file path a job names, such as src/journal/features/shell/chain.py."""
 
 
 class NamedPaths:

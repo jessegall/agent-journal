@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from journal.support.refused import Refused
 
 ENVIRONMENT_END = b"\0\0"
-"""The shim posts the environment as env -0 prints it, each pair ended by a NUL, then a double NUL, then the line: the line starts after the last NUL."""
 
 
 @dataclass(frozen=True)

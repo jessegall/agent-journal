@@ -22,13 +22,10 @@ from journal.support.not_found import NotFound
 from journal.supervisor_link import SupervisorLink
 
 REPLY_TAG = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!reply:(\d+(?:,\d+)*)\](?:\*\*)?[ \t]*", re.MULTILINE)
-"""The reply tag opens a line of the turn, as every tag does; one anywhere else is text."""
 STRAY_TAG = re.compile(r"\[!reply:(\d+)\]")
 JOURNAL_LINE = "[journal] "
 SHORT = 240
-"""An acknowledgement is a few words; a turn longer than this says something."""
 REPEATS = 0.6
-"""The share of closing words a reply sent in the same turn already holds, past which they say it again."""
 
 
 class RecordTurn(AgentListener[TurnWritten]):
@@ -67,7 +64,6 @@ class RecordTurn(AgentListener[TurnWritten]):
             self.supervisor.type(event.environment_id, f"the [!reply:{n}] tag must open a line of your turn; message {n} is still unanswered")
 
     def unanswered_of(self, tagged: list[int], event: TurnWritten) -> list[int]:
-        """The tagged messages the agent has not replied to yet; a tag on one already answered is refused once, so a reply goes out once."""
         from journal.features.messages.feature import Messages as MessagesFeature
         fresh = [n for n in tagged if self.earlier_reply(n) is None]
         if tagged and not fresh:
@@ -82,7 +78,6 @@ class RecordTurn(AgentListener[TurnWritten]):
             return None
 
     def repeats_a_reply(self, text: str, tagged: list[int], event: TurnWritten) -> bool:
-        """Untagged closing words that say again what a reply sent in this same turn said: kept out, and the agent told."""
         from journal.features.messages.feature import Messages as MessagesFeature
         prompt = self.turn_prompt(event)
         if tagged or not text or prompt is None:
@@ -93,12 +88,10 @@ class RecordTurn(AgentListener[TurnWritten]):
         return bool(repeated)
 
     def turn_prompt(self, event: TurnWritten) -> Entry | None:
-        """The prompt that started the session's turn: its newest."""
         prompts = [e for e in self.entries.of_kind("PromptSubmitted") if e.actor and e.actor.id == event.session]
         return prompts[0] if prompts else None
 
     def stray_owed(self, whole: str) -> list[int]:
-        """The messages a tag inside a line names that are still owed an answer; a tag quoted about another message, or one already answered, is only text."""
         strays = [int(n) for n in STRAY_TAG.findall(Tags.visible(whole))]
         if not strays:
             return []
@@ -106,13 +99,11 @@ class RecordTurn(AgentListener[TurnWritten]):
         return [n for n in strays if n in owed]
 
     def already_recorded(self, part: str) -> bool:
-        """A block reaches the journal twice when it is the turn's last, once from the transcript and once from the display hook: the second is the same words and is not a second message."""
         text = Tags.visible(part)
         return any(m.author == Author.AGENT and m.text == text for m in self.messages.recent(30))
 
     @staticmethod
     def sections(whole: str) -> list[tuple[list[int], str]]:
-        """One part per reply tag, the text after the tag up to the next one; what comes before the first tag belongs to the first part. A turn with one tag or none is one part."""
         tags = list(REPLY_TAG.finditer(whole))
         numbers = lambda tag: [int(n) for n in tag.group(1).split(",")]
         if len(tags) <= 1:
@@ -126,7 +117,6 @@ class RecordTurn(AgentListener[TurnWritten]):
         return parts
 
     def _answers_a_journal_line(self, event: TurnWritten) -> bool:
-        """The turn's prompt was a line the journal typed whose answer is not for the user, and no file changed since: nothing in it is news."""
         entry = self.turn_prompt(event)
         prompt = entry.data.get("prompt", "") if entry else ""
         if not prompt.startswith(JOURNAL_LINE) or self._answered_in_chat(event, prompt[len(JOURNAL_LINE):]):
@@ -136,13 +126,11 @@ class RecordTurn(AgentListener[TurnWritten]):
         return not any(e.kind == "ToolStarting" and e.is_write() for e in since)
 
     def _answered_in_chat(self, event: TurnWritten, line: str) -> bool:
-        """The nudge the typed line came from, when it is one whose answer belongs in the chat."""
         said = [e for e in self.entries.of_kind("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
         nudge = self.registry.nudge_keyed(said[-1].data["key"]) if said else None
         return bool(nudge and nudge.answered_in_chat)
 
     def _also_answers(self, reply: Message, n: int, actor: Actor) -> None:
-        """A reply naming several messages answers each: the first is what it replies to, the rest are linked."""
         try:
             self.links.save(Link(source=Ref.to(reply), target=Ref.to(self.messages.find(n)), kind=Messages.ANSWERS), actor)
         except NotFound:

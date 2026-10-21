@@ -30,7 +30,6 @@ class Handler(PooledHandler):
         self._answer(self._dispatched(self._request()))
 
     def _dispatched(self, request: Request):
-        """The router's answer, or a 500 naming the fault: a handler that raises still answers, and the fault is in the log with its trace."""
         try:
             return self.router.dispatch(request)
         except Exception as fault:

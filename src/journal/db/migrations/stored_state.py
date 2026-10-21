@@ -21,11 +21,9 @@ class StoredState:
         return {**self.data, "resume": {"state": self.resume.name, "data": self.resume.to_json()}} if self.resume else self.data
 
     def resumed(self) -> "StoredState":
-        """The state this one went back to; idle when it named none."""
         return self.resume or StoredState("idle", {})
 
     def without(self, name: str) -> Unwrapped:
-        """This state with every layer of the named state taken out of its chain, and those layers, the innermost first."""
         inner = self.resume.without(name) if self.resume else Unwrapped(StoredState("idle", {}), ())
         if self.name == name:
             return Unwrapped(inner.state, (*inner.taken, self))

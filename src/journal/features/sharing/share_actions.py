@@ -25,7 +25,6 @@ class ShareActions:
         self.shares, self.targets, self.tunnel, self.messages = shares, targets, tunnel, messages
 
     def create(self, named: str, expires: str, password: str, comments: bool, actor: Actor) -> Share:
-        """A link the user made opens at once; one the agent made waits for the user's Accept on the card it puts in the chat."""
         target = self.targets.named(named)
         share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.until(expires), approved=actor.is_the_user(),
                                        password=SharePassword.hashed(password) if password else "", comments=comments), actor)
@@ -37,7 +36,6 @@ class ShareActions:
         return share
 
     def ask(self, share: Share, target: Ref, actor: Actor) -> None:
-        """The card that asks the user to open a link the agent made: what it opens, and Accept or Deny."""
         opens = "\n".join(f"- {line}" for line in self.targets.opens(str(target)))
         comments = "\n\nVisitors can leave comments, which come to the chat." if share.comments else ""
         text = f"The agent wants to share {target}\n\nNothing opens until you accept it. Whoever has the link will be able to view:\n{opens}{comments}\n\n{self.tunnel.link_of(share.token)}"
@@ -56,7 +54,6 @@ class ShareActions:
 
     @staticmethod
     def until(expires: str) -> datetime | None:
-        """When a link given as 12h, 7d or never ends."""
         given = expires.strip().lower()
         if given in NEVER:
             return None

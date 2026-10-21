@@ -43,7 +43,6 @@ class PluginSkills:
 
     @staticmethod
     def stamped(text: str, name: str) -> str:
-        """The skill with the plugin named in its front matter, which is made when it has none."""
         if text.startswith("---\n"):
             return f"---\n{STAMP}{name}\n" + text[4:]
         return f"---\n{STAMP}{name}\n---\n\n{text}"

@@ -6,7 +6,6 @@ from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 KEEP = 500
-"""How many edits an environment keeps: the older ones go as new ones come."""
 
 
 class Edits(ScopedRepository[Edit]):
@@ -16,7 +15,6 @@ class Edits(ScopedRepository[Edit]):
         super().__init__(connection, bus, scope)
 
     def record(self, edit: Edit, actor: Actor) -> Edit:
-        """An edit kept, and the oldest beyond the last five hundred let go."""
         kept = self.save(edit, actor)
         for old in self.selected("1 ORDER BY id DESC LIMIT -1 OFFSET ?", (KEEP,)):
             self.delete(old, actor)
@@ -26,5 +24,4 @@ class Edits(ScopedRepository[Edit]):
         return self.selected("session = ? AND tool_use = ? ORDER BY id", (session, tool_use))
 
     def of_agent(self, session: str, since: float, last: int) -> list[Edit]:
-        """An agent's newest edits after the moment given, at most so many, oldest first."""
         return list(reversed(self.selected("session = ? AND at > ? ORDER BY id DESC LIMIT ?", (session, since, last))))

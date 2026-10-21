@@ -42,7 +42,6 @@ class Suggesting:
         return self.last_round + float(self.settings.option(SuggestionsFeature.EVERY)) * MINUTE
 
     def round(self) -> list[Suggestion]:
-        """Each suggestion that applies now and was never made, made and shown."""
         return [self.made(suggester) for suggester in self.suggesters if not self.suggestions.was_made(suggester.key) and suggester.applies()]
 
     def made(self, suggester: Suggester) -> Suggestion:
@@ -53,7 +52,6 @@ class Suggesting:
         return row
 
     def answer(self, suggestion: Suggestion, answer: SuggestionAnswer, actor: Actor) -> str:
-        """The user's answer kept, the card settled in place; an accepted one names where the viewer goes to finish it."""
         if suggestion.is_answered():
             raise Refused(f"suggestion {suggestion.id} was answered already: {suggestion.answer}")
         answered = self.suggestions.save(suggestion.answered(answer), actor)
@@ -68,7 +66,6 @@ class Suggesting:
         self.cards.keyed(environment_id, self.card_key(suggestion), suggestion.title, data, Actor.system(), ChatMark.SUGGESTIONS)
 
     def card_environment(self, suggestion: Suggestion) -> int:
-        """The environment the suggestion's card stands in."""
         return self.messages.keyed_anywhere(self.card_key(suggestion), Actor.system())[0].environment_id
 
     def named(self, key: str) -> Suggester:
@@ -78,7 +75,6 @@ class Suggesting:
         return found[0]
 
     def where_shown(self) -> Environment:
-        """The environment of the agent most lately at work, else the first: a suggestion is the project's, shown once."""
         live = self.agents.live_anywhere()
         return self.environments.find(live.environment_id) if live else self.environments.all()[0]
 

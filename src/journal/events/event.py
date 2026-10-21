@@ -8,5 +8,4 @@ class Event:
 
     @property
     def key(self) -> str:
-        """The event by its name as the catalogue and plugins spell it: Idle as idle, ToolStarting as tool_starting."""
         return re.sub(r"(?<!^)(?=[A-Z])", "_", type(self).__name__).lower()

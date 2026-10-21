@@ -9,5 +9,4 @@ class Secrets(Repository[Secret]):
         return [s for s in self.all() if s.deleted_at is None]
 
     def gone(self) -> list[Secret]:
-        """The deleted ones, kept for a restore until they are purged."""
         return [s for s in self.all() if s.deleted_at is not None]

@@ -4,9 +4,7 @@ from journal.support.held_line import HeldLine
 from journal.engine.support.typed_line import TypedLine
 
 RECENT = 60.0
-"""How long a line the journal typed is known as its own, so a piece of one the terminal split is never taken for the user's words."""
 BATCH_SECONDS = 5.0
-"""The default of delivery.batch_seconds: lines typed within this many seconds of the last go as one, once the window is up."""
 MARK = "[journal]"
 
 
@@ -20,18 +18,15 @@ class TypedLines:
         self._sent_at: dict[int, float] = {}
 
     def is_within_window(self, environment_id: int, seconds: float) -> bool:
-        """Whether a line went to the environment's agent in the last so many seconds: the next waits for the window."""
         return time.time() - self._sent_at.get(environment_id, 0.0) < seconds
 
     def is_waiting(self, environment_id: int) -> bool:
-        """Whether a line typed to the environment's agent is not yet seen back."""
         return any(t.environment_id == environment_id for t in self._waiting)
 
     def hold(self, line: HeldLine) -> None:
         self._held.append(line)
 
     def held_as_one(self, environment_id: int) -> HeldLine | None:
-        """Every line held for the environment, taken from the hold and joined as one marked line, the journal's instructions in the order they came; none when nothing waits."""
         held = [h for h in self._held if h.environment_id == environment_id]
         if not held:
             return None
@@ -46,11 +41,9 @@ class TypedLines:
         self._recent = [t for t in self._recent if now - t.at < RECENT] + [TypedLine(environment_id, line, now)]
 
     def carries(self, environment_id: int, prompt: str) -> bool:
-        """Whether the prompt is a line the journal typed lately, or a piece of one, the terminal's line breaks aside."""
         return any(t.environment_id == environment_id and t.holds(prompt) for t in self._recent if time.time() - t.at < RECENT)
 
     def confirm(self, environment_id: int, prompt: str) -> bool:
-        """The oldest waiting line the prompt is, or a piece of, is confirmed: a piece arrived means the line did, and typing it again would only bring another piece; False when none was waiting."""
         for typed in self._waiting:
             if typed.environment_id == environment_id and typed.holds(prompt):
                 self._waiting.remove(typed)
@@ -58,7 +51,6 @@ class TypedLines:
         return False
 
     def confirm_naming(self, environment_id: int, message_id: int) -> bool:
-        """A waiting line that names the message, a new-message line, is confirmed by the message being read: the agent acted on it, whatever the prompt hook saw; False when none named it."""
         named = [t for t in self._waiting if t.environment_id == environment_id and message_id in t.messages_named()]
         for typed in named:
             self._waiting.remove(typed)
@@ -68,7 +60,6 @@ class TypedLines:
         return [t for t in self._waiting if t.environment_id == environment_id and t.at <= before]
 
     def tried_again(self, typed: TypedLine, at: float) -> TypedLine:
-        """The line typed once more, known again as the journal's own from now, so a piece of it the terminal split later is never the user's."""
         again = TypedLine(typed.environment_id, typed.line, at, typed.tries + 1)
         self._waiting[self._waiting.index(typed)] = again
         self._recent = [t for t in self._recent if at - t.at < RECENT] + [again]

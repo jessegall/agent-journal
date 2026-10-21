@@ -12,7 +12,6 @@ from journal.support.scope import Scope
 
 TOLD = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "Compacting", "Idle", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnWritten",
                   "nudge", "created", "updated", "deleted"})
-"""The entries the viewer is told of: the agents' hooks, the lines typed to them, and every row made, changed or deleted."""
 RECENT = 100
 BEAT = 15.0
 
@@ -24,7 +23,6 @@ class EntryController:
         self.entries, self.scope = entries, scope
 
     def index(self, request: Request) -> Response:
-        """The entries after ?since=<id>; one ahead of the record remembers a journal that was reset, and is given the newest page so it falls back in step."""
         since = int(request.queried("since"))
         if since > self.entries.last_id():
             since = 0
@@ -35,7 +33,6 @@ class EntryController:
         environment = self.scope.id
 
         def read(entries):
-            """The stream is read after the request has left its scope: each read names the environment again."""
             with self.scope.of(environment):
                 return entries()
 

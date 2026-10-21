@@ -23,7 +23,6 @@ class Waits:
 
     @staticmethod
     def refuse_unnamed(why: str, on: list[str], until: str) -> None:
-        """A block says what it waits on: in words, by a row, or by a command."""
         if not why and not on and not until:
             raise Refused("say what it waits on: --on question:N or --on task:N, --until \"<command>\", or a reason in words")
 

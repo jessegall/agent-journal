@@ -24,9 +24,7 @@ from journal.repositories.triggers import Triggers
 from journal.repositories.workers import Workers
 
 CONVERSATIONS = 5
-"""The latest agents of the environment whose conversations are searched, when conversations are asked for."""
 CONVERSATION = "conversation"
-"""The name that adds the agents' conversations to a search; no other search reads them."""
 
 
 class Search:

@@ -10,7 +10,6 @@ from journal.hooks.command_events import CommandEvents
 WAITING_ON_THE_USER = re.compile(r"\b(?:the user|you|sir|user's|your)\b[^.]{0,40}\b(?:answer|answers|reply|replies|response|word|instruction|instructions|message|decision|go-ahead|say|says|to say|to answer|to reply|to decide)"
                                  r"|\b(?:waiting|wait|waits)\s+(?:for|on)\s+(?:the\s+)?(?:user|you|sir|him|them)\b"
                                  r"|\b(?:what|which|whether)\s+(?:the\s+user|you)\b", re.IGNORECASE)
-"""A wait in words that is for the user: that is no wait, since nothing outside will end it on its own."""
 UNNAMED = ("a wait names what ends it: --output N, a command's output, ends it once the command is done; --until \"<script>\" is run every 30 seconds and ends it once it passes")
 FOR_THE_USER = "waiting for the user is no wait: nothing outside ends it. Ask with journal question ask, or end your turn"
 

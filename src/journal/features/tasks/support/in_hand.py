@@ -25,7 +25,6 @@ class InHand:
         return current if isinstance(current, Working) else None
 
     def start(self, task: Task, where: Where) -> Task:
-        """One task in progress at a time, by the tasks themselves and not the agent's state, so a restart cannot leave two: a second start is refused until the first is done or parked. The agent moves to Working before the row is written, so the row's walk reads the agent as working. Work declared without a task gives way to a task taken up."""
         started = task.started(datetime.now(timezone.utc))
         self.tasks.refuse_second(started)
         return self.tasks.save(started, where.actor)

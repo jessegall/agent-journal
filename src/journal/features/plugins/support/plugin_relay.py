@@ -22,14 +22,10 @@ from journal.support.scope import Scope
 from journal.support.deferred import Deferred
 
 LATER = 10
-"""Seconds a plugin has to answer an event it hears after the reply."""
 UNANSWERED = "plugin_unanswered"
 WAITING = "plugin_line_waiting"
-"""A line a plugin said after the reply, kept until the agent's next hook that can carry it."""
 SAID = "plugin_said"
-"""The entry a plugin's hold or line to the agent leaves: the event, held or told, and the words."""
 CUT = "plugin_cut"
-"""The entry a row leaves that no plugin heard because plugin commands led to it more than a step deep."""
 
 
 class PluginRelay:
@@ -41,7 +37,6 @@ class PluginRelay:
         self.words, self.scope = words, scope
 
     def heard_by(self, event: Event, environment_id: int) -> list[Plugin]:
-        """The enabled plugins that hear it, in the order they were installed; never the plugin that wrote the row, and none past a step of plugin commands, the cut recorded."""
         hearers = [p for p in self.plugins.enabled() if event.key in p.manifest.hears and getattr(event, "actor", None) != Actor.plugin(p.name)]
         if hearers and self.steps.too_deep():
             self.entries.save(Entry(environment_id=environment_id, kind=CUT, actor=Actor.system(), data={"event": event.key, "by": getattr(event, "actor", Actor.system()).stamp, "plugins": [p.name for p in hearers]}), Actor.system())
@@ -70,7 +65,6 @@ class PluginRelay:
             self.deferred.add(lambda: self.answers.apply(plugin, answer, environment, environment_id))
 
     def later(self, plugin: Plugin, event: Event, environment_id: int) -> None:
-        """Heard after the reply: a refusal here comes too late to hold anything and is recorded unanswered; a line waits for the agent's next hook."""
         answer = self.ask(plugin, event, environment_id, LATER)
         if answer.answer == "refuse":
             self.unanswered(plugin, event, environment_id, answer.reason)
@@ -78,12 +72,10 @@ class PluginRelay:
             self.waiting(plugin, event, environment_id, answer.tell)
 
     def waiting(self, plugin: Plugin, event: Event, environment_id: int, words: str) -> None:
-        """Kept for the agent the event was of, or for a row's the environment's live agent; with no agent, said to nobody and only recorded."""
         session = event.session if isinstance(event, AgentEvent) else self.live_session(environment_id)
         self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": event.key, "line": self.words.said(plugin, words), "delivered": not session}), Actor.plugin(plugin.name))
 
     def queued_line(self, plugin: Plugin, environment_id: int, key: str, words: str) -> None:
-        """A line from the plugin's queue for another environment: kept for that environment's live agent's next hook."""
         session = self.live_session(environment_id)
         self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": key, "line": self.words.said(plugin, words), "delivered": not session}), Actor.plugin(plugin.name))
 
@@ -93,7 +85,6 @@ class PluginRelay:
         return agent.session if agent else ""
 
     def waiting_for(self, session: str) -> list[str]:
-        """The lines plugins left for this agent since its last hook, each handed over once."""
         waiting = [e for e in self.entries.of_kind(WAITING, 200) if e.data.get("session") == session and not e.data.get("delivered")]
         for entry in waiting:
             self.entries.save(entry.with_(data={**entry.data, "delivered": True}), Actor.system())

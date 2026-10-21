@@ -11,7 +11,6 @@ class Report(Scoped):
 
     title: str = ""
     abstract: str = ""
-    """A line that says what the report is."""
     body: str = ""
 
     def title_words(self) -> str:

@@ -11,7 +11,6 @@ from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 
 COMMENTED = ("tasks", "plans", "docs", "reports", "facts", "rules", "reminders", "questions")
-"""The rows the viewer writes comments under."""
 
 
 class CommentController(Controller[Message]):
@@ -23,7 +22,6 @@ class CommentController(Controller[Message]):
         self.repository, self.links = messages, links
 
     def rows(self) -> list[Message]:
-        """The messages written under a row, found by their links in one read: the user's comments, and the replies under them from either side."""
         on = self.repository.linked(Messages.COMMENTS_ON)
         return [m for m in self.repository.numbered(tuple(on)) if m.author == Author.USER or m.reply_to] if on else []
 
@@ -32,7 +30,6 @@ class CommentController(Controller[Message]):
         return [{**ModelFields.of(m), "on": [str(ref) for ref in on.get(m.id, [])]} for m in rows]
 
     def store(self, request: Request) -> Response:
-        """A comment under a row, or with reply_to a reply under another comment of the row's thread, which takes its rows from the comment it answers."""
         on = self.row(str(request.body.get("on", "")))
         reply_to = request.body.get("reply_to")
         message = self.repository.save(Message(author=Author.USER, text=request.body.get("text", ""), reply_to=int(reply_to) if reply_to else None).arrived(), request.actor)
@@ -41,7 +38,6 @@ class CommentController(Controller[Message]):
         return Response.json(self.shown(message), 201)
 
     def row(self, named: str) -> Ref:
-        """The row a comment is written under, named as tasks:12, which must be there."""
         kind, _, id = named.partition(":")
         if kind not in COMMENTED or not id.isdigit() or not self.links.is_row(Ref(kind, int(id))):
             raise Refused(f"a comment is written under a task, a plan, a document, a report, a fact, a rule, a reminder or a question that is there, named as tasks:12, not {named!r}")

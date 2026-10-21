@@ -26,7 +26,6 @@ class EnvironmentController(Controller[Environment]):
         return Response.json(self.repository.named(request.body.get("name", "main")), 201)
 
     def launch(self, request: Request) -> Response:
-        """An agent started from the viewer runs detached under its own supervisor; the viewer sees it once its start hook arrives."""
         environment = self.repository.find(request.number("id"))
         self.launcher.start(environment.name, request.body.get("agent", "claude"))
         return Response.json(environment)

@@ -9,7 +9,6 @@ from journal.support.ref import Ref
 from journal.repositories.links import Links
 
 MENTIONS = "mentions"
-"""The link from a row to a row its text names, so each row's trail shows where it was spoken of."""
 
 
 class LinkMentions(Listener[Saved]):

@@ -34,7 +34,6 @@ class SettingRows(ScopedRepository[Setting]):
             self.delete(row, actor)
 
     def tree(self) -> dict:
-        """Every setting as the environment sees it, nested on the first dot: tasks.log_after is tree["tasks"]["log_after"]."""
         return self.nested(self.merged())
 
     def project_tree(self) -> dict:

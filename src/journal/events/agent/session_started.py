@@ -11,5 +11,4 @@ class SessionStarted(AgentEvent):
     typed_after: ClassVar[float] = 4.0
 
     source: str = ""
-    """startup, resume, compact or clear, as Claude reports it."""
 

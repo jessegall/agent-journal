@@ -7,7 +7,6 @@ from pathlib import Path
 class Config:
     root: Path
     port: int = 8420
-    """The first port to try; the server takes the first free one of `span` from it, so journals of many projects run side by side."""
     span: int = 20
 
     @property
@@ -20,17 +19,14 @@ class Config:
 
     @property
     def status_home(self) -> Path:
-        """Where the statusline script keeps each session's context figure."""
         return Path.home() / ".journal" / "status"
 
     @property
     def files(self) -> Path:
-        """Where the files attached to rows are kept, a folder per table and row."""
         return self.home / "files"
 
     @property
     def readers(self) -> Path:
-        """The project's output readers, kept in its journal so they travel with it."""
         return self.home / "readers"
 
     @property
@@ -38,7 +34,6 @@ class Config:
         return self.home / "port"
 
     def ports(self) -> tuple[int, ...]:
-        """The ports to try in order: the one this project had last, then the range; 0 means any free port."""
         if self.port == 0:
             return (0,)
         return tuple(dict.fromkeys((*self.remembered_port(), *range(self.port, self.port + self.span))))
@@ -51,7 +46,6 @@ class Config:
 
     @classmethod
     def at(cls, root: Path) -> "Config":
-        """JOURNAL_PORT names one exact port; without it the range from 8420 is tried, and 0 takes any free one."""
         if "JOURNAL_PORT" in os.environ:
             return cls(root.resolve(), int(os.environ["JOURNAL_PORT"]), span=1)
         return cls(root.resolve())

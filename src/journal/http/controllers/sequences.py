@@ -21,7 +21,6 @@ class SequenceController(Controller[Sequence]):
         return [{**ModelFields.of(s), "trigger_ids": [t.id for t in self.triggers.starting(s.title)]} for s in rows]
 
     def starts(self, request: Request) -> Response:
-        """What starts a sequence: nothing but a hand, a row of a kind being created, written <table>.created, or a trigger, written trigger:<id>, which then starts it and nothing else; a start by hand or by a row takes the sequence off its triggers."""
         sequence, value = self.repository.find(request.number("id")), str(request.body.get("starts_on", ""))
         if value.startswith(TRIGGER):
             self.triggers.save(self.triggers.find(int(value.removeprefix(TRIGGER))).with_(action=TriggerAction.SEQUENCE, text=sequence.title), request.actor)

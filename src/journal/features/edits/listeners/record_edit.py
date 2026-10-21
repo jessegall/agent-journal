@@ -55,7 +55,6 @@ class RecordEdit(AgentListener[ToolFinished]):
                        added=patch.counted("add"), removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), event)
 
     def deleted(self, event: ToolFinished, path: str, last_text: str) -> None:
-        """A file gone that the journal had seen: every line of it removed, so a plugin judging the change has the lines it lost."""
         if not last_text:
             return
         patch = PatchRows.from_versions(last_text, "")

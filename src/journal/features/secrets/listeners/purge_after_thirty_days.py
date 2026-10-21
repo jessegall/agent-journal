@@ -11,7 +11,6 @@ from journal.support.secret_values import SecretValues
 
 KEPT = timedelta(days=30)
 EVERY = 3600.0
-"""The purge looks once an hour."""
 
 
 class PurgeAfterThirtyDays(AgentListener[Ticked]):

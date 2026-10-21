@@ -10,10 +10,8 @@ from journal.models.support.dump_item import DumpItem
 from journal.models.scoped import Scoped
 
 TEXT = "text"
-"""The name of a dump's pasted text as an item, unless it was split into parts."""
 
 OWN_WORDS = -2
-"""The user said what to do next in their own words, no offered step."""
 
 
 @dataclass(frozen=True)

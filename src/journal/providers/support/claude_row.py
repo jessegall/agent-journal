@@ -24,7 +24,6 @@ class ClaudeRow:
 
     @property
     def is_enqueued(self) -> bool:
-        """A line of Claude Code's queue that put something in it, once for each thing queued."""
         return self.type == "queue-operation" and self.operation == "enqueue"
 
     def of_type(self, kind: str) -> list[ClaudeBlock]:
@@ -32,12 +31,10 @@ class ClaudeRow:
 
     @property
     def is_prompt(self) -> bool:
-        """A row of the user's that is no tool's result: a new turn starts here."""
         return self.type == "user" and not self.of_type("tool_result")
 
     @property
     def kind(self) -> str:
-        """What the row is in the chat: a compaction's summary, the agent's, a tool's result, an injected line or the human's."""
         if self.summary:
             return "summary"
         if self.type == "assistant":

@@ -1,9 +1,7 @@
 import re
 
 OUTPUT = re.compile(r"outputs/[\w.-]+|(?<=journal output read )\d+")
-"""Where a command names one output: its folder or its number."""
 WHOLE = re.compile(r"\s*journal output read \d+\s*")
-"""A plain read of an output's summary, which no reader could do better."""
 
 
 class OutputReads:

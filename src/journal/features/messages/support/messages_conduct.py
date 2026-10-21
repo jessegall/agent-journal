@@ -13,7 +13,6 @@ from journal.events.rows.reaction_given import ReactionGiven
 from journal.support.chain import Chain
 
 TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread|recent)|question\s+(?:show|list))\b[^|;&\"']*\|")
-"""A read of the user's words, a message or a question, as a command and not as words quoted inside another, piped into anything: head, tail, grep, cut. The whole of it is the point."""
 SEND_COMMAND = "journal message send"
 
 

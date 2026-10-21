@@ -11,7 +11,6 @@ from journal.repositories.rules import Rules
 from journal.repositories.tasks import Tasks
 
 TAKEN_OVER_WITHIN = timedelta(days=1)
-"""Another session that worked here this recently makes a start a takeover."""
 
 
 class StartLines:

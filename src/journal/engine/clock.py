@@ -26,7 +26,6 @@ class Clock:
         self._thread.start()
 
     def now(self) -> float:
-        """The engine's time in seconds: every tick and every noted time reads it, so a test that drives the clock drives them all."""
         return time.time()
 
     def tick(self) -> None:

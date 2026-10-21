@@ -17,7 +17,6 @@ class McpController:
         self.servers, self.catalogue, self.keys, self.installing, self.health, self.pending = servers, catalogue, keys, installing, health, pending
 
     def index(self, request: Request) -> Response:
-        """The journal's own servers and, after them, the ones the program has from elsewhere, each as the last check found it; the first read starts the check."""
         report = self.health.of_all()
         own = [self.row(self.installing.checked_one(s, report)) for s in self.servers.all()]
         elsewhere = [self.known_row(k) for name, k in report.servers.items() if name not in {s.name for s in own}]
@@ -32,7 +31,6 @@ class McpController:
 
     @staticmethod
     def present(suggestion, servers: list[ListedServer]) -> bool:
-        """A suggestion is already there by its name, or by the url or package the program runs it from."""
         marks = {suggestion.url} | {a for a in suggestion.args if a.startswith("@")}
         return any(s.name == suggestion.name or any(s.runs_from(m) for m in marks) for s in servers)
 

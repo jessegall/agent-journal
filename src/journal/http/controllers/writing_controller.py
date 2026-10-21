@@ -29,7 +29,6 @@ class WritingController(Controller[W]):
         return [{**ModelFields.of(row), "links": self.links(row, linked)} for row in rows]
 
     def summarised(self, row: W, linked: dict) -> dict:
-        """The row without its body, which a list leaves out."""
         return {**{name: value for name, value in ModelFields.of(row).items() if name != "body"}, "links": self.links(row, linked)}
 
     @staticmethod

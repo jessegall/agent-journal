@@ -6,7 +6,6 @@ from journal.repositories.agents import Agents
 from journal.supervisor_link import SupervisorLink
 
 QUIET_FOR = 3600.0
-"""Seconds without a hook before a session is taken for gone: an agent closed without its end hook never says so itself."""
 
 
 class EndSilentSessions(AgentListener[Ticked]):

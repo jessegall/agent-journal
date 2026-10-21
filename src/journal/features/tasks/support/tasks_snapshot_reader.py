@@ -11,7 +11,6 @@ from journal.repositories.tasks import Tasks
 
 LOOKED_BACK = 6
 POLLED = 3
-"""The same shell command this many times in a row, the one starting now among them, is polling."""
 
 
 class TasksSnapshotReader:

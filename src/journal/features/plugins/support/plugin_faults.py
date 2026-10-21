@@ -10,7 +10,6 @@ from journal.support.chat_mark import ChatMark
 
 FAULT = "plugin_fault"
 FAILING_AFTER = 5
-"""Faults in a row before a plugin is marked failing and a card says so."""
 
 
 class PluginFaults:

@@ -7,7 +7,6 @@ from journal.repositories.environments import Environments
 from journal.support.unscoped import Unscoped
 
 PROJECT = 0
-"""The environment number of a row kept for the whole project, seen in every scope."""
 _current: ContextVar[Callable[[], int]] = ContextVar("environment")
 
 
@@ -25,7 +24,6 @@ class Scope:
         return environment()
 
     def id_or(self, outside: int) -> int:
-        """The environment, or the given one outside every scope."""
         environment = _current.get(None)
         return outside if environment is None else environment()
 
@@ -36,7 +34,6 @@ class Scope:
 
     @contextmanager
     def requested(self, name: Callable[[], str]) -> Iterator[None]:
-        """The environment a request names, looked up the first time a read needs it: a request that reads nothing scoped is never refused for naming none, and a read never makes one."""
         with self._holding(cache(lambda: self.environments.existing(name()).id)):
             yield
 

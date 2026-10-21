@@ -29,7 +29,6 @@ class McpInstalling:
         return saved
 
     def keyed(self, server: McpServer, value: str, actor: Actor) -> McpServer:
-        """The key kept outside the project; nothing restarts, since a running agent keeps the environment it was launched with: the key applies from its next launch."""
         if not value.strip():
             raise Refused(f"the key for {server.title} is blank")
         self.keys.set(server.key_var, value.strip())
@@ -43,14 +42,12 @@ class McpInstalling:
         self.health.recheck()
 
     def remove_known(self, name: str) -> bool:
-        """A server set up in the program itself, taken out there; the agents restart as after any change."""
         if not self.health.remove(name):
             return False
         self.applied()
         return True
 
     def unchecked_state(self, server: McpServer) -> str:
-        """How a server the program has not reported on stands: waiting for its key, or installed."""
         return "needs_key" if server.needs_key and not self.keys.has(server.key_var) else "installed"
 
     def checked(self, actor: Actor) -> list[McpServer]:
@@ -58,7 +55,6 @@ class McpInstalling:
         return [self.servers.save(self.checked_one(server, report), actor) for server in self.servers.all()]
 
     def checked_one(self, server: McpServer, report: HealthReport) -> McpServer:
-        """How the server stands by the program's check: failed with the check itself, as the program saw it, or, unseen, by whether its key is there."""
         if report.failure is not None:
             return server.checked("failed", report.failure)
         known = report.servers.get(server.name)
@@ -67,7 +63,6 @@ class McpInstalling:
         return server.checked(known.state, known.words)
 
     def sign_in(self, server: McpServer) -> bool:
-        """The first running agent is asked to sign in to the server through its own authenticate tool: the browser opens from its terminal."""
         from journal.features.mcp.feature import Mcp
         for agent in self.running():
             line = self.nudger.say(agent, Mcp.SIGN_IN_TO_THE_SERVER.create(name=server.name, title=server.title))
@@ -77,12 +72,10 @@ class McpInstalling:
         return False
 
     def running(self) -> list[Agent]:
-        """The agent each supervisor runs: its environment's session most lately at work and not ended, never an older one whose row has not ended yet, which a restart would bring back in place of the conversation on screen."""
         newest = {agent.environment_id: agent for agent in sorted(self.agents.everywhere(), key=lambda a: a.updated_at) if agent.state != "ended"}
         return [agent for environment_id, agent in newest.items() if self.supervisor.runs(environment_id)]
 
     def applied(self) -> None:
-        """The configuration written and every running agent restarted on its own conversation: at once when it sits idle, else the moment its turn ends."""
         self.config_files.write()
         for agent in self.running():
             resume = self.providers.named(agent.provider or "claude").resume(agent.session)

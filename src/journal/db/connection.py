@@ -20,7 +20,6 @@ class Connection:
         self._free: list[sqlite3.Connection] = []
 
     def release(self) -> None:
-        """Returns this thread's connection to the pool; the next thread takes it instead of opening another."""
         local = getattr(self._threads, "connection", None)
         if local is None:
             return
@@ -33,7 +32,6 @@ class Connection:
             self._free.append(local)
 
     def execute(self, sql: str, params: tuple = ()) -> sqlite3.Cursor:
-        """Every text it is given masked first, so no secret value is ever written."""
         return self._local().execute(sql, tuple(self.masks.masked(p) if isinstance(p, str) else p for p in params))
 
     def one(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
@@ -44,7 +42,6 @@ class Connection:
 
     @contextmanager
     def transaction(self) -> Iterator["Connection"]:
-        """Holds the write lock for the block; committed at the end, rolled back on an exception. Nested blocks join the outer one."""
         with self._writing:
             local = self._local()
             if local.in_transaction:
@@ -63,7 +60,6 @@ class Connection:
             work()
 
     def after_commit(self, work: Callable[[], None]) -> None:
-        """Runs once the open write commits, and never if it rolls back; at once when no write is open."""
         if self._local().in_transaction:
             self._threads.committed.append(work)
             return
