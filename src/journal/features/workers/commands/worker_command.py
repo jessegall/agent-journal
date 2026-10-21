@@ -123,11 +123,11 @@ class WorkerCommand(Command):
             self.runner.renewed(worker)
         except WorktreeFailure as failed:
             raise Rejection(f"worker {worker.name} was not sent the job: {failed}") from failed
-        worker = self.workers.save(worker.instructed(args.brief).with_(dispatcher=caller.session), caller.actor)
+        worker = self.workers.save(worker.with_(dispatcher=caller.session).instructed(args.brief, datetime.now(timezone.utc).timestamp()), caller.actor)
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
-        return self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
+        return worker
 
     def notify(self, args: Namespace, caller: Caller) -> int:
         with self.runner.lock(args.n):

@@ -6579,3 +6579,21 @@ def test_a_reused_worker_keeps_every_report_and_is_out_again_until_it_reports(ap
     listed = console.run(["worker", "list"], AGENT).text.splitlines()[0]
     assert listed.split()[1] == "dispatched" and listed.endswith("Mr. Stephenson: the rails"), "a revived stopped worker is listed as out"
     assert len(links.targets(workers.find(1), REPORTED)) == 2, "each report keeps its own link, the first kept as history"
+
+
+def test_a_job_sent_to_a_worker_that_reported_puts_the_dispatcher_back_in_its_wait_on_it(app: App, monkeypatch):
+    from journal.providers.claude import Claude
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(Claude, "transcript", lambda self, project, session: app.config.root)
+    hook(app, "SessionStart")
+    console, workers, machine = app.console(), app.container.get(Workers), app.container.get(StateMachine)
+    console.run(["task", "create", "t", "--start"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Arkwright", "the frame", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "report", "1", "the frame spins"], Caller("main", "w1"))
+    assert machine.current("s1").name != "awaiting"
+    workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
+    console.run(["worker", "send", "1", "the mill"], AGENT)
+    waiting = machine.current("s1")
+    assert waiting.name == "awaiting" and waiting.worker_ids() == (1,), "the dispatcher waits on the worker it sent out again"
+    console.run(["worker", "report", "1", "the mill turns"], Caller("main", "w1"))
+    assert machine.current("s1").name != "awaiting", "until it reports again"
