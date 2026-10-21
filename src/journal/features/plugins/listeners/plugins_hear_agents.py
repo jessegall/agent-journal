@@ -1,4 +1,6 @@
 from journal.events.agent.agent_event import AgentEvent
+from journal.events.agent.command_starting import CommandStarting
+from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
 from journal.features.plugins.support.plugin_relay import PluginRelay
@@ -13,7 +15,7 @@ from journal.repositories.setting_rows import SettingRows
 
 CARRIES = ("tool_starting", "tool_finished", "prompt_submitted", "session_started")
 """The hooks whose answer can carry a line to the agent without holding it, where a plugin's waiting lines are handed over."""
-REFUSABLE = ("tool_starting", "idle")
+REFUSABLE = ("tool_starting", "command_starting", "idle")
 """The held events a plugin may refuse; at a prompt and a start its refusal is only said, and a stop it holds once a turn, never again after the agent went on because a stop was held."""
 
 
@@ -34,17 +36,31 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
         if event.key in CARRIES:
             waiting += [line for plugin in self.relay.plugins.enabled() for line in self.queue.lines(plugin, event)]
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
+        decision = self.asked(hearers, event, ceiling_ms, decision)
+        for command in self.commands(event):
+            decision = self.asked(self.relay.heard_by(command, event.environment_id), command, ceiling_ms, decision)
+        return self.floor.under(event, decision)
+
+    def asked(self, hearers: list[Plugin], event: AgentEvent, ceiling_ms: int, decision: Decision) -> Decision:
         for plugin in hearers:
             if decision.allowed and self.holds(plugin, event):
                 window = plugin.manifest.window_ms(event.key, ceiling_ms) / 1000
                 decision = decision.merged(self.decided(plugin, event, self.relay.ask(plugin, event, event.environment_id, window)))
             else:
                 self.deferred.add_unless_behind(lambda plugin=plugin: self.relay.later(plugin, event, event.environment_id), f"{plugin.name} relay {event.key}")
-        return self.floor.under(event, decision)
+        return decision
+
+    @staticmethod
+    def commands(event: AgentEvent) -> list[CommandStarting]:
+        """One event per command of the chain a tool is about to run, journal commands left out."""
+        if not isinstance(event, ToolStarting):
+            return []
+        parts = [part for part in event.call.parts if not part.is_journal]
+        return [CommandStarting(text=part.text, writes=part.writes, files=part.files, position=position, parts=len(parts), tool_use=event.tool_use).placed(event.session, event.environment_id, event.provider, event.context, event.at, event.subagent) for position, part in enumerate(parts, 1)]
 
     @staticmethod
     def holds(plugin: Plugin, event: AgentEvent) -> bool:
-        return plugin.manifest.has_window(event.key) and (not event.subagent or event.key == "tool_starting")
+        return plugin.manifest.has_window(event.key) and (not event.subagent or event.key in ("tool_starting", "command_starting"))
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
         if answer.answer == "refuse" and isinstance(event, Idle) and event.held_before:

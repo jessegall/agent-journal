@@ -20,6 +20,8 @@ def answer(line: dict) -> str:
     if mode == "broken":
         return "not json"
     data = line.get("data", {})
+    if line["event"] == "command_starting" and "forbidden" in data.get("text", ""):
+        return json.dumps({"v": 1, "answer": "refuse", "reason": f"echo refuses command {data.get('position')} of {data.get('parts')}: {data.get('text')}"})
     if line["event"] == "tool_starting" and "forbidden" in json.dumps(data.get("input", {})):
         return json.dumps({"v": 1, "answer": "refuse", "reason": f"echo refuses a forbidden tool{os.environ.get('ECHO_VIA', '')}"})
     if line["event"] == "tool_finished" and "notice" in json.dumps(data.get("input", {})):

@@ -5820,3 +5820,23 @@ def test_a_plugins_queue_is_drained_at_every_hook_and_its_line_rides_on_the_answ
     assert any("4.json" in e.data["fault"] for e in app.container.get(Entries).where(kind="plugin_fault")), "the file that does not parse is a fault naming it"
     _, again = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "d.py"})
     assert "two sins" not in json.dumps(again), "a drained line is said once"
+
+
+def test_a_plugin_hears_each_command_of_a_chain_and_may_hold_one_inside_its_window(app):
+    """command_starting is one event per command of a shell line as the journal cut it, journal commands left out; a plugin holding it refuses the tool naming the part, and one not holding it hears every part after the reply."""
+    from journal.support.deferred import Deferred
+    echo(app, hears=["command_starting"], holds=[{"event": "command_starting", "window_ms": 1500}])
+    hook(app, "SessionStart")
+    status, body = hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "ls -la && cat forbidden.txt; echo done"})
+    assert status == 409 and "echo refuses command 2 of 3: cat forbidden.txt" in body["error"], "the part the plugin refuses holds the whole tool, named by its place in the chain"
+    app.container.get(Deferred).drain()
+    heard = [json.loads(line) for line in (app.config.home / "plugin-data" / "echo" / "heard.jsonl").read_text().splitlines()]
+    assert [(h["data"]["text"], h["data"]["position"], h["data"]["parts"], h["data"]["files"]) for h in heard] == [("ls -la", 1, 3, []), ("cat forbidden.txt", 2, 3, ["forbidden.txt"]), ("echo done", 3, 3, [])], "asked part by part on the answer path until one is refused; the part after it is heard after the reply"
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list forbidden"})[0] == 200, "a journal command is never a command event"
+    app.container.get(Deferred).drain()
+    assert len((app.config.home / "plugin-data" / "echo" / "heard.jsonl").read_text().splitlines()) == 3, "nothing more was heard"
+    echo(app, "echo-two", hears=["command_starting"], holds=[])
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cat a.txt | wc -l"})
+    app.container.get(Deferred).drain()
+    heard = [json.loads(line) for line in (app.config.home / "plugin-data" / "echo-two" / "heard.jsonl").read_text().splitlines()]
+    assert [h["data"]["text"] for h in heard] == ["cat a.txt | wc -l"], "a plugin that does not hold it hears each command after the reply"

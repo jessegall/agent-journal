@@ -57,7 +57,7 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   `tasks`, `plans`, `messages`, `secrets` or `plugins`); install names the clash when there is one.
 - `protocol`: the version of the protocol it speaks; this journal speaks 1.
 - `program`: a path inside the folder, run for each event: an executable file, its first line naming its interpreter.
-- `hears`: agent events by name (`tool_starting`, `tool_finished`, `idle`, `prompt_submitted`, `session_started`,
+- `hears`: agent events by name (`tool_starting`, `command_starting`, `tool_finished`, `idle`, `prompt_submitted`, `session_started`,
   `session_ended`, `compacting`, `subagent_started`, `subagent_ended`, `ticked`), `plugin.updated` when someone
   else changed its own settings, its `data` then being `{"settings": ...}`, and rows as `<table>.created`, `.updated`
   or `.deleted`. The secrets, users and MCP server rows are
@@ -65,8 +65,8 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   `tool_starting`.
 - `holds`: the events it hears that it answers before the agent goes on, each with the window in milliseconds it
   answers in: `[{"event": "tool_starting", "window_ms": 5}]`; a bare name takes the journal's ceiling, the setting
-  `plugins.hold_window_ms` (50), and a window above the ceiling is cut to it. `tool_starting` and `idle` may be refused,
-  `prompt_submitted` and `session_started` only told. A hold inside a few milliseconds cannot start a process: a plugin
+  `plugins.hold_window_ms` (50), and a window above the ceiling is cut to it. `tool_starting`, `command_starting` and `idle` may be refused,
+  `prompt_submitted` and `session_started` only told; a refused command holds the whole tool. A hold inside a few milliseconds cannot start a process: a plugin
   that holds runs a service with `answers` and decides from what it already knows, never from a judge. A line told at an event it hears but does not hold reaches the
   agent at its next tool use or prompt; hold the event for the line to come with it.
 - `settings`: a path to its settings file, described under Settings.
@@ -113,8 +113,10 @@ One line of JSON, ending in a newline:
 - `event`: the event's name as the manifest's `hears` spells it. `state`: the agent's state at an agent event, one
   word such as `working`, `idle` or `awaiting`, empty at a row event.
 - `session`, `provider`, `subagent`: whose event it was, sent with agent events only.
-- `data`, by event: `tool_starting` the `tool`, its `input` and whether it `writes`; `tool_finished` the same with its
-  `output` and `response`; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
+- `data`, by event: `tool_starting` the `tool`, its `input` and whether it `writes`; `command_starting`, one per
+  command of a shell line as the journal cut the chain, the command's `text`, whether it `writes`, the `files` it
+  touches, its `position` in the chain and the chain's `parts`, a journal command never among them; `tool_finished`
+  the same as `tool_starting` with its `output` and `response`; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
   was `held_before`; `ticked` the time `at` and the seconds the agent was `quiet_for`; `subagent_started` and
   `subagent_ended` the `subagent`; `plugin.updated` its `settings`. A row event's `data` is the row's `table`, `id`,
   who wrote it (`by`) and, when updated, the fields that `changed`; tables go by their plural names (`tasks`,
