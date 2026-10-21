@@ -67,8 +67,9 @@ class WorkerCommand(Command):
         if maximum and len(output) >= maximum:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
         provider = args.provider or self.provider_default(caller)
+        moment = datetime.now(timezone.utc).timestamp()
         worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
-        worker = self.workers.save(worker, caller.actor)
+        worker = self.workers.save(worker.contacted(moment), caller.actor)
         try:
             self.runner.workplace(worker)
         except WorktreeFailure as failed:
@@ -77,7 +78,7 @@ class WorkerCommand(Command):
         if args.task:
             self.workers.assign(worker, args.task, caller.actor)
         self.runner.start(worker, caller.actor)
-        self.workers.save(worker.dispatched(datetime.now(timezone.utc).timestamp()), caller.actor)
+        self.workers.save(self.workers.find(worker.id).dispatched(moment), caller.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
 
