@@ -10,7 +10,7 @@ class Edit(Scoped):
     session: str = ""
     path: str = ""
     kind: str = "edit"
-    """create for a file written whole, edit for a change inside one."""
+    """create for a file written whole, edit for a change inside one, delete for a file gone."""
     at: float = 0.0
     added: int = 0
     removed: int = 0

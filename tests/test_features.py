@@ -5840,3 +5840,27 @@ def test_a_plugin_hears_each_command_of_a_chain_and_may_hold_one_inside_its_wind
     app.container.get(Deferred).drain()
     heard = [json.loads(line) for line in (app.config.home / "plugin-data" / "echo-two" / "heard.jsonl").read_text().splitlines()]
     assert [h["data"]["text"] for h in heard] == ["cat a.txt | wc -l"], "a plugin that does not hold it hears each command after the reply"
+
+
+def test_a_plugin_hears_file_edited_with_the_edit_precomputed_and_never_holds_it(app):
+    """file_edited is one event per file a tool changed, after the reply, carrying the path, the kind, the counts and the changed lines as the edit row records them; a created and a deleted file carry every line; it cannot be held."""
+    from journal.features.plugins.support.manifest_reader import ManifestReader
+    from journal.support.plugin_manifest import PluginManifest
+    from journal.support.refused import Refused
+    from journal.support.deferred import Deferred
+    echo(app, hears=["file_edited"], holds=[])
+    hook(app, "SessionStart")
+    hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": str(app.config.root / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" a", "-x", "+y", " b"]}]})
+    (app.config.root / "b.py").write_text("x = 1\ny = 2\n")
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/x/y/ b.py"}, tool_response="")
+    (app.config.root / "b.py").unlink()
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "rm b.py"}, tool_response="")
+    app.container.get(Deferred).drain()
+    heard = [json.loads(line) for line in (app.config.home / "plugin-data" / "echo" / "heard.jsonl").read_text().splitlines()]
+    assert [h["event"] for h in heard] == ["file_edited"] * 3 and [h["session"] for h in heard] == ["s1"] * 3
+    edited, created, deleted = (h["data"] for h in heard)
+    assert (edited["path"], edited["kind"], edited["added"], edited["removed"], edited["first_line"], [l["kind"] for l in edited["lines"]]) == ("a.py", "edit", 1, 1, 7, ["ctx", "del", "add", "ctx"]), "an editor's change carries its patch"
+    assert (created["path"], created["kind"], created["added"], [l["text"] for l in created["lines"]], created["command"]) == ("b.py", "create", 2, ["x = 1", "y = 2"], "sed -i '' s/x/y/ b.py"), "a file the journal first sees carries every line as added"
+    assert (deleted["path"], deleted["kind"], deleted["removed"], [l["kind"] for l in deleted["lines"]], deleted["command"]) == ("b.py", "delete", 2, ["del", "del"], "rm b.py"), "a file gone carries every line it lost"
+    with pytest.raises(Refused, match="file_edited, which no plugin may hold"):
+        app.container.get(ManifestReader).heard(PluginManifest.from_json({"name": "x", "hears": ["file_edited"], "holds": ["file_edited"]}))

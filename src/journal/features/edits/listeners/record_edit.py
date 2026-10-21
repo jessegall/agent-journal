@@ -44,14 +44,23 @@ class RecordEdit(AgentListener[ToolFinished]):
 
     def changed(self, event: ToolFinished, path: str) -> None:
         text = self.snapshots.now(path)
-        if text is None:
-            return
         last_text = self.snapshots.before(path)
+        if text is None:
+            self.deleted(event, path, last_text)
+            return
         patch = PatchRows.from_versions(last_text, text)
         if not patch.rows:
             return
         self.recorded(Edit(session=event.session, path=path, kind="create" if not last_text else "edit", at=time.time(), command=event.call.command,
                        added=patch.counted("add"), removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), event)
+
+    def deleted(self, event: ToolFinished, path: str, last_text: str) -> None:
+        """A file gone that the journal had seen: every line of it removed, so a plugin judging the change has the lines it lost."""
+        if not last_text:
+            return
+        patch = PatchRows.from_versions(last_text, "")
+        self.edits.record(Edit(session=event.session, path=path, kind="delete", at=time.time(), command=event.call.command, added=0, removed=patch.counted("del"), first_line=patch.first_line, last_line=patch.last_line, rows=tuple(asdict(r) for r in patch.rows[:ROWS_LIMIT])), Actor.agent(event.session))
+        self.snapshots.keep(path, "")
 
     def recorded(self, edit: Edit, event: ToolFinished) -> None:
         self.edits.record(edit, Actor.agent(event.session))

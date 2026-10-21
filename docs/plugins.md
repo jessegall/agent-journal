@@ -57,7 +57,7 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   `tasks`, `plans`, `messages`, `secrets` or `plugins`); install names the clash when there is one.
 - `protocol`: the version of the protocol it speaks; this journal speaks 1.
 - `program`: a path inside the folder, run for each event: an executable file, its first line naming its interpreter.
-- `hears`: agent events by name (`tool_starting`, `command_starting`, `tool_finished`, `idle`, `prompt_submitted`, `session_started`,
+- `hears`: agent events by name (`tool_starting`, `command_starting`, `tool_finished`, `file_edited`, `idle`, `prompt_submitted`, `session_started`,
   `session_ended`, `compacting`, `subagent_started`, `subagent_ended`, `ticked`), `plugin.updated` when someone
   else changed its own settings, its `data` then being `{"settings": ...}`, and rows as `<table>.created`, `.updated`
   or `.deleted`. The secrets, users and MCP server rows are
@@ -116,7 +116,12 @@ One line of JSON, ending in a newline:
 - `data`, by event: `tool_starting` the `tool`, its `input` and whether it `writes`; `command_starting`, one per
   command of a shell line as the journal cut the chain, the command's `text`, whether it `writes`, the `files` it
   touches, its `position` in the chain and the chain's `parts`, a journal command never among them; `tool_finished`
-  the same as `tool_starting` with its `output` and `response`; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
+  the same as `tool_starting` with its `output` and `response`; `file_edited`, one per file a tool changed, once
+  the journal has recorded the edit and after the reply: the `path` inside the project, the `kind` (`create` for a file
+  written whole, `edit` for a change inside one, `delete` for a file gone), the lines `added` and `removed`, the span
+  `first_line` to `last_line`, the changed `lines` as `{kind: add|del|ctx, line, text}` up to two hundred, every
+  line of a created or deleted file among them, and the shell `command` when one made the change; a file outside the
+  project is never sent; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
   was `held_before`; `ticked` the time `at` and the seconds the agent was `quiet_for`; `subagent_started` and
   `subagent_ended` the `subagent`; `plugin.updated` its `settings`. A row event's `data` is the row's `table`, `id`,
   who wrote it (`by`) and, when updated, the fields that `changed`; tables go by their plural names (`tasks`,
