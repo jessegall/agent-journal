@@ -922,7 +922,7 @@ Who owns what, decided at the start of the plan (task 443) on the rulings of mes
 - Workers stay outside the protocol: the journal runs them itself.
 - Nothing but the agent's own end, or a stop asked for, ends a supervisor (message 6316): a fault in a verb is answered with why, a fault in a turn of the loop is skipped, and each is written to runtime/supervisor.log. A service's group is signalled only while its leader runs, never the group of a process reaped long before.
 - send stays in the protocol: it is the message bus of message 1613; its first user comes with a later service.
-- "Never another restart" covers new processes and the protocol growing by versioned verbs. A fix to the supervisor itself reaches a user at their next launch: the supervisor imports every module at start, so an upgrade that overwrites its files leaves a running one untouched (task 438, a test), and it stays small so such a fix is rare.
+- "Never another restart" covers new processes and the protocol growing by versioned verbs. The supervisor imports every module at start, so an upgrade that overwrites its files leaves a running one untouched (task 438, a test); since task 1169 a fix to it lands at the end of the agent's next turn, through the launcher's loop (see The launcher's loop below).
 - The menu watcher stays a thread in the journal server (question 6, the user's answer): it reads every environment's mirror and shares what it chose with SupervisorLink in memory. Phase 3 proves services through the protocol with the next real one, or a fake one in its test.
 
 The protocol, first version (tasks 436, 437, 439):
@@ -934,6 +934,16 @@ The protocol, first version (tasks 436, 437, 439):
 - send carries text to a named process's input: a service's, or the agent's terminal. The agent is the only terminal process; one started beside it, with its own mirror under runtime/screens, waits for its first user.
 - The agent in front owns the terminal: the keyboard, the resize and the band; a restart of it through the protocol fits it again. When it ends, or the journal stops it, the supervisor ends and takes its services, its inbox and its mirror with it, so no stale screen is read. Stopping the agent is the viewer's Stop, a deliberate act; nothing guards it further.
 - Features declare the services they need (Service, a name and a module of the package); at boot the journal asks the supervisor hosting it, the environment the launch names in JOURNAL_ENV, to start each. An upgrade restarts the journal, so a new service starts with it and the supervisor runs on. A journal no supervisor hosts, under plain claude or a worker's, starts none and its log says which are off. Workers stay outside the protocol: the journal runs them itself.
+
+## The launcher's loop (task 1169, 2026-10-21)
+
+On messages 11891 and 11894:
+
+- The launcher is `src/supervisor/launcher.sh`, a shell loop of a few lines that never changes and loads no code. It runs `python -m supervisor <launch file>`, starts it again whenever it exits, after a second, and exits when the supervisor exits 0. The journal's Python launch (`Launch.supervise`) runs the loop and waits, then puts the other hooks back and removes the launch file, as before.
+- The supervisor's exit codes: 0 (ENDED) when its agent is done: the agent quit, died three times in two minutes, or was stopped, a SIGTERM or a hang-up; also a launch file it cannot read, which would fail again. 75 (RESTART) for its own restart. Any other code, a crash, starts it again too. The agent's own exit code is no longer passed up.
+- `restart` with the name `supervisor` (and `resume`, else the conversation running) is the supervisor's own restart: it writes the conversation to resume into the launch file's `front.resume`, stops the agent and every service, and exits 75. The next supervisor starts from the launch file: the agent resumed on its conversation, the journal as a service, and the journal at boot asks again for the services the features declare. A restart of the agent alone writes its resume into the launch file too, so a supervisor started again after a crash resumes the newest conversation.
+- `hello` answers `outdated`: whether the supervisor's code on disk (a hash of its `*.py`, `SourceHash`) differs from the code it started with. The supervisor hashes itself, so the journal imports nothing of the supervisor package.
+- When it is restarted: the updates feature's `SupervisorUpgrade` hears every Stop and restarts an outdated supervisor at the end of its agent's turn, never in the middle of one. `journal setup restart` and an update restart the journal at once as before; the supervisor follows at the agent's next turn end, so its code changes land without a new launch. A supervisor from before task 1169 answers no `outdated` and is left as it is until the next launch.
 
 ## A reply the transcript never kept (2026-10-17)
 
@@ -1308,7 +1318,7 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   funnel is `MemoryContext`.
 - A secret's field shown while typing is no secret: its value is kept for the programs and named in the shown
   file beside the values, and only a hidden field's value becomes a mask.
-- Still open: the launcher as an unchanging shell loop with the supervisor restartable under it (task 1169); the
+- Still open: the
   plugins upgraded by a `journal.updated` event (task 1167); the remote journal two people share (task 1164); the
   rest of the name sweep (task 1052) and the custom name detectors' noise on every `on_` listener.
 

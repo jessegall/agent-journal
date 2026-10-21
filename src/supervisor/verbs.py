@@ -33,7 +33,7 @@ class Verbs:
             return Reply.refused(f"{request.verb} failed in the supervisor, which carries on: {fault}")
 
     def hello(self, request: Request) -> Reply:
-        return Reply.success(protocol=PROTOCOL, verbs=list(VERBS))
+        return Reply.success(protocol=PROTOCOL, verbs=list(VERBS), outdated=self.supervisor.is_outdated())
 
     def start(self, request: Request) -> Reply:
         request.needs("name", "command")

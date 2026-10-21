@@ -125,7 +125,7 @@ class Launch:
                 code = self.supervise(choice)
             finally:
                 peers.restore()
-            self.log(f"ended: the agent exited with {code}")
+            self.log(f"ended: the supervisor's loop exited with {code}")
             return code
         except BaseException as failed:
             self.log(f"failed: {traceback.format_exc() if not isinstance(failed, KeyboardInterrupt) else 'interrupted'}")
@@ -147,7 +147,7 @@ class Launch:
         path.write_text(json.dumps(launch))
         PageWait(self.runtime.parent / "port", launch["socket"], (launch["band"]["left"], launch["band"]["middle"]), "" if self.browser_off else f"?env={choice.environment}", self.log).start()
         try:
-            return subprocess.run([sys.executable, "-m", "supervisor", str(path)], cwd=self.root, env={**os.environ, "PYTHONPATH": str(self.package)}).returncode
+            return subprocess.run(["sh", str(self.package / "supervisor" / "launcher.sh"), sys.executable, str(path)], cwd=self.root).returncode
         finally:
             path.unlink(missing_ok=True)
 

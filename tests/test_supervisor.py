@@ -192,9 +192,31 @@ def test_the_launch_writes_what_the_supervisor_starts_and_a_bad_launch_file_is_r
     assert [s["name"] for s in with_journal["services"]] == ["journal"]
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"front": {"command": ["claude"]}}))
-    assert main([str(bad)]) == 2
+    assert main([str(bad)]) == 0, "a launch file that cannot be started from ends the launcher's loop rather than being tried again every second"
     assert "has no socket, announce, front's folder, front's env" in capsys.readouterr().err
-    assert main([str(tmp_path / "missing.json")]) == 2 and "cannot be read" in capsys.readouterr().err
+    assert main([str(tmp_path / "missing.json")]) == 0 and "cannot be read" in capsys.readouterr().err
+
+
+def test_the_supervisor_restarts_itself_by_exiting_to_its_launcher_with_the_conversation_to_resume_in_the_launch_file(tmp_path: Path):
+    from supervisor.request import Request
+    from supervisor.services import Services
+    from supervisor.supervisor import ENDED, RESTART, Supervisor
+    from supervisor.terminal import Terminal
+    path = tmp_path / "spike.json"
+    path.write_text(json.dumps(Launch.parse(["claude", "--env", "spike", "--no-journal"], tmp_path).launch_file(Choice("spike", "s1"), StatusLine(tmp_path))))
+    started = json.loads(path.read_text())
+    supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}, ("--resume", "s1")), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(), stdin=None, launch=path)
+    assert supervisor.verbs.handle(Request.parsed({"verb": "hello"})).answer["outdated"] is False
+    supervisor.source = "older"
+    assert supervisor.verbs.handle(Request.parsed({"verb": "hello"})).answer["outdated"] is True, "hello says when the code on disk is not the code it started with, so the journal knows to restart it"
+    assert supervisor.verbs.handle(Request.parsed({"verb": "restart", "name": "supervisor", "resume": ["--resume", "s2"]})).is_success
+    assert supervisor._code == RESTART, "the restart is an exit with the code that has the launcher start it again"
+    assert json.loads(path.read_text()) == {**started, "front": {**started["front"], "resume": ["--resume", "s2"]}}, "the launch file keeps everything but the conversation to resume"
+    again = Supervisor(Terminal(["true"], str(tmp_path), {}, ("--resume", "s2")), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(), stdin=None, launch=path)
+    again.restart("supervisor", ())
+    assert json.loads(path.read_text())["front"]["resume"] == ["--resume", "s2"], "a restart that names no conversation keeps the one running"
+    again.stop()
+    assert again._code == ENDED, "a stop ends the launcher's loop"
 
 
 def test_the_supervisor_imports_nothing_but_the_standard_library_and_itself():

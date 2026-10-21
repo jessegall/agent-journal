@@ -862,6 +862,22 @@ def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_st
     assert not any("check 2" in line for line in keystrokes)
 
 
+def test_a_supervisor_running_other_code_than_the_package_is_restarted_at_the_end_of_its_agents_turn(app: App, monkeypatch):
+    from journal.supervisor_link import SupervisorLink
+    from journal.support.supervisor_reply import SupervisorReply
+    asked, outdated = [], {"now": True}
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: asked.append({"verb": verb, **fields}) or SupervisorReply(True, outdated=outdated["now"]))
+    hook(app, "SessionStart")
+    hook(app, "Stop")
+    app.runtime().deferred.drain()
+    assert {"verb": "restart", "name": "supervisor", "resume": ["--resume", "s1"]} in asked, "the agent is resumed on its conversation by the supervisor started again"
+    asked.clear()
+    outdated["now"] = False
+    hook(app, "Stop")
+    app.runtime().deferred.drain()
+    assert not [a for a in asked if a["verb"] == "restart"], "a supervisor running the code on disk is left as it is"
+
+
 def test_a_due_check_runs_on_the_clock(app: App):
     from journal.engine.clock import Clock
     from journal.repositories.checks import Checks

@@ -98,7 +98,7 @@ def test_the_inbox_answers_each_request_and_a_stop_ends_the_supervisor_and_takes
     try:
         assert json.loads(inbox.announced_at.read_text()) == {"socket": str(inbox.path), "protocol": 1}
         assert stat.S_IMODE(inbox.path.stat().st_mode) == 0o600 and stat.S_IMODE(inbox.path.parent.stat().st_mode) == 0o700, "only its user can reach the socket"
-        assert ask(supervisor, verb="hello") == {"ok": True, "protocol": 1, "verbs": ["hello", "start", "stop", "restart", "list", "keys", "type", "send", "band"]}
+        assert ask(supervisor, verb="hello") == {"ok": True, "protocol": 1, "verbs": ["hello", "start", "stop", "restart", "list", "keys", "type", "send", "band"], "outdated": False}
         assert ask(supervisor, verb="band", left="agent-journal", middle="p · main", right="http://127.0.0.1:8420/") == {"ok": True}, "a supervisor with no band takes new words and shows none"
         sleeper = {"verb": "start", "name": "sleeper", "command": ["sh", "-c", "sleep 30"], "folder": str(tmp_path), "log": str(tmp_path / "sleeper.log")}
         assert ask(supervisor, **sleeper) == {"ok": True, "started": True}
@@ -248,3 +248,15 @@ def test_an_agent_that_dies_is_started_again_and_one_that_quits_ends_the_supervi
         assert quits._code == 0, "a clean exit ends the supervisor"
     finally:
         quits.inbox.close()
+
+
+def test_the_launcher_starts_the_supervisor_again_whenever_it_exits_and_exits_when_it_exits_0(tmp_path: Path):
+    import subprocess
+    runs = tmp_path / "runs"
+    python = tmp_path / "python"
+    python.write_text(f'#!/bin/sh\necho "$3" >> "{runs}"\ncount=$(wc -l < "{runs}")\n[ "$count" -eq 1 ] && exit 75\n[ "$count" -eq 2 ] && exit 1\nexit 0\n')
+    python.chmod(0o755)
+    script = Path(__file__).parent.parent / "src" / "supervisor" / "launcher.sh"
+    finished = subprocess.run(["sh", str(script), str(python), "launch.json"], cwd=tmp_path, timeout=10)
+    assert finished.returncode == 0 and runs.read_text().split() == ["launch.json"] * 3, "a restart and a fault each start it again; its exit with 0 ends the loop"
+    assert len(script.read_text().splitlines()) <= 10

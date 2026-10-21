@@ -16,7 +16,7 @@ from journal.support.supervisor_socket import SupervisorSocket
 from journal.repositories.environments import Environments
 
 JOURNAL_PREFIX = "[journal]"
-AGENT, JOURNAL = "agent", "journal"
+AGENT, JOURNAL, SUPERVISOR = "agent", "journal", "supervisor"
 
 
 class SupervisorLink:
@@ -122,6 +122,15 @@ class SupervisorLink:
 
     def restart_journal(self, environment_id: int) -> None:
         self._send(environment_id, "restart", {"name": JOURNAL})
+
+    def restart_supervisor(self, environment_id: int, resume: tuple[str, ...]) -> None:
+        self._send(environment_id, "restart", {"name": SUPERVISOR, "resume": list(resume)})
+
+    def is_outdated(self, environment_id: int) -> bool:
+        try:
+            return self._send(environment_id, "hello", {}).outdated
+        except OSError:
+            return False
 
     def stop(self, environment_id: int) -> None:
         self._send(environment_id, "stop", {"name": AGENT})

@@ -18,8 +18,8 @@ PROCESS = ("command", "folder", "env")
 class LaunchFile:
     """What a supervisor starts from, as the journal wrote it: the agent in front, the services beside it, where its socket, announce file and mirror go, and the band's words."""
 
-    def __init__(self, data: dict) -> None:
-        self.data = data
+    def __init__(self, data: dict, path: Path) -> None:
+        self.data, self.path = data, path
 
     @classmethod
     def read(cls, path: Path) -> "LaunchFile":
@@ -32,11 +32,11 @@ class LaunchFile:
         missing += [f"{service.get('name', 'a service')}'s {key}" for service in data.get("services", []) for key in ("name", "log", *PROCESS) if key not in service]
         if missing:
             raise BadLaunchFile(f"the launch file {path} has no {', '.join(missing)}")
-        return cls(data)
+        return cls(data, path)
 
     def supervisor(self) -> Supervisor:
         front = self.data["front"]
         services = Services(*(Service(s["name"], s["command"], Path(s["folder"]), s["env"], Path(s["log"]), s.get("keep", True)) for s in self.data.get("services", [])))
         band = Band(BandLabels(**self.data["band"])) if self.data.get("band") and os.isatty(1) else None
         screen_copy = ScreenCopy(Path(self.data["screen"])) if self.data.get("screen") else None
-        return Supervisor(Terminal(front["command"], front["folder"], front["env"], tuple(front.get("resume", ()))), Inbox(Path(self.data["socket"]), Path(self.data["announce"])), services, stdin=0 if os.isatty(0) else None, band=band, screen_copy=screen_copy, faults=Path(self.data["announce"]).parents[1] / "supervisor.log")
+        return Supervisor(Terminal(front["command"], front["folder"], front["env"], tuple(front.get("resume", ()))), Inbox(Path(self.data["socket"]), Path(self.data["announce"])), services, stdin=0 if os.isatty(0) else None, band=band, screen_copy=screen_copy, faults=Path(self.data["announce"]).parents[1] / "supervisor.log", launch=self.path)

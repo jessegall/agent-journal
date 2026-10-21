@@ -11,23 +11,29 @@ from pathlib import Path
 from supervisor.band import Band
 from supervisor.band_labels import BandLabels
 from supervisor.inbox import Inbox
+from supervisor.launch_resume import LaunchResume
 from supervisor.screen_copy import ScreenCopy
 from supervisor.services import Services
+from supervisor.source_hash import SourceHash
 from supervisor.terminal import Terminal
 from supervisor.verbs import Verbs
 
 LONGEST_BYTES = 65536
 FRONT = "agent"
+SUPERVISOR = "supervisor"
+ENDED = 0
+RESTART = 75
 REVIVE_WINDOW_SECONDS = 120.0
 REVIVE_DEATHS = 3
 FAULT_PAUSE = 0.5
 
 
 class Supervisor:
-    """One loop: stdin to the agent, the agent to stdout under the band, the inbox's requests answered, the services kept running; a fault in a turn is written to the faults log and never ends it."""
+    """One loop: stdin to the agent, the agent to stdout under the band, the inbox's requests answered, the services kept running; a fault in a turn is written to the faults log and never ends it. It exits ENDED when its agent is done, which ends the launcher's loop, and RESTART, or any other code, to be started again."""
 
-    def __init__(self, terminal: Terminal, inbox: Inbox, services: Services, stdin: int | None = 0, stdout: int = 1, band: Band | None = None, screen_copy: ScreenCopy | None = None, faults: Path = Path(os.devnull)) -> None:
-        self.terminal, self.inbox, self.services, self.stdin, self.stdout, self.faults = terminal, inbox, services, stdin, stdout, faults
+    def __init__(self, terminal: Terminal, inbox: Inbox, services: Services, stdin: int | None = 0, stdout: int = 1, band: Band | None = None, screen_copy: ScreenCopy | None = None, faults: Path = Path(os.devnull), launch: Path = Path(os.devnull)) -> None:
+        self.terminal, self.inbox, self.services, self.stdin, self.stdout, self.faults, self.launch = terminal, inbox, services, stdin, stdout, faults, launch
+        self.source = SourceHash.current()
         self.screen_copy = screen_copy
         """The agent's newest output written where the journal reads it; none in a supervisor with nobody to read it."""
         """stdin is None for a supervisor started by the journal, with nobody at a keyboard."""
@@ -124,13 +130,25 @@ class Supervisor:
         self.services.service(name).send(data)
 
     def restart(self, name: str, resume: tuple[str, ...]) -> None:
+        if name == SUPERVISOR:
+            self.restart_supervisor(resume or self.terminal.resume)
+            return
         if name != FRONT:
             self.services.service(name).restart()
             return
+        LaunchResume.record(self.launch, resume)
         self._stopping = True
         self.terminal.restart(resume)
         self._stopping = False
         self.fit()
+
+    def restart_supervisor(self, resume: tuple[str, ...]) -> None:
+        LaunchResume.record(self.launch, resume)
+        self.stop()
+        self._code = RESTART
+
+    def is_outdated(self) -> bool:
+        return SourceHash.current() != self.source
 
     def display_band(self, labels: BandLabels) -> None:
         if self.band:
@@ -148,7 +166,8 @@ class Supervisor:
 
     def stop(self) -> None:
         self._stopping = True
-        self._code = self.terminal.stop(3.0)
+        self.terminal.stop(3.0)
+        self._code = ENDED
         if self.band:
             self.band.end()
 
@@ -166,7 +185,7 @@ class Supervisor:
         moment = time.time()
         self._deaths = [death for death in self._deaths if moment - death < REVIVE_WINDOW_SECONDS]
         if code == 0 or len(self._deaths) >= REVIVE_DEATHS:
-            self._code = code
+            self._code = ENDED
             return
         self._deaths.append(moment)
         self._revivals += 1
