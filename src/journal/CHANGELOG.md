@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- Code pasted into a chat message without fences is shown as one code block from its first line: a decorator, a def, a class or any line that opens a block and stands right above an indented body belongs to the block, so the head of a snippet is never shown as prose above its body.
 - A journal line reaches the agent whole: a line longer than a terminal takes is typed in several whole pieces, each marked as the journal's, where before it was cut at six hundred characters with three dots; lines held for the batch window go the same way when they are released.
 - A face on a message is drawn inside that message's bubble, an empty message's too, never as a bubble of its own above the message's name.
 - A message the agent sends to another session is headed by that session's name or, when its address is a socket, by the project folder of the process behind it, read from the process list; the socket's path shows only when no process answers to it, and stays on the row beside the name.
