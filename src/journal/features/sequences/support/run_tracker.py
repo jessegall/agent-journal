@@ -98,7 +98,7 @@ class RunTracker:
         return notified
 
     def environments_running(self, sequence_id: int) -> set[int]:
-        return {item.environment_id for item in self.agents.all_agents() if any(run.sequence_id == sequence_id for run in self.runs(item))}
+        return {item.environment_id for item in self.agents.main_agents() if any(run.sequence_id == sequence_id for run in self.runs(item))}
 
     def follow(self, session: str, environment_id: int) -> SequenceRun:
         return self.changed(session, environment_id, lambda run: run.adopted(self.timestamp()).announced(self.timestamp()).suspended(""))

@@ -6,6 +6,7 @@ from journal.events.rows.session_retired import SessionRetired
 from journal.events.rows.overview_read import OverviewRead
 from journal.events.rows.context_decided import ContextDecided
 from journal.events.rows.skill_read import SkillRead
+from journal.models.agent_role import AgentRole
 from journal.models.scoped import Scoped
 
 
@@ -25,6 +26,7 @@ class Agent(Scoped):
     sequence_runs: tuple = ()
     tool_uses: int = 0
     inbox_position: int = 0
+    role: AgentRole = AgentRole.MAIN
 
     def user_paused(self, time: float) -> "Agent":
         return self.with_event(UserPaused(environment_id=self.environment_id, time=time, agent_session=self.session))

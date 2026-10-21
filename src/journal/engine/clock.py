@@ -26,7 +26,7 @@ class Clock(Job):
 
     def tick(self, time: float) -> None:
         self.bus.dispatch(ClockTicked(time=time))
-        for agent in self.agents.all_agents():
+        for agent in self.agents.main_agents():
             if isinstance(self.states.restored(agent.state, agent.data), Ended):
                 continue
             with self.scope.environment(agent.environment_id):

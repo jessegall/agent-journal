@@ -31,7 +31,7 @@ class MenuWatcher(Job):
         self._answered: dict[int, tuple] = {}
 
     def tick(self, time: float) -> None:
-        for agent in self.agents.all_agents():
+        for agent in self.agents.main_agents():
             if not isinstance(self.states.restored(agent.state, agent.data), Ended):
                 with self.scope.environment(agent.environment_id):
                     self.check(agent)

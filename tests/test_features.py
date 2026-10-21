@@ -6557,6 +6557,27 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
 
+def test_a_workers_agent_row_is_never_the_main_agent_and_ends_with_its_process(app: App):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.agent import Agent
+    from journal.models.agent_role import AgentRole
+    from journal.models.worker import Worker
+    from journal.repositories.agents import Agents
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    agents = app.container.get(Agents)
+    for session in ("w-1", "w-2"):
+        agents.save(Agent(environment_id=1, session=session, provider="claude", role=AgentRole.WORKER), Actor.system())
+    with app.container.get(Scope).environment(MAIN):
+        assert agents.current().session == "s1", "the newest worker row never becomes the current agent"
+        main = agents.session_agent("s1")
+        assert agents.running_peers(agents.session_agent("w-2")) == [] and [a.session for a in agents.running_peers(main)] == [], "sessions end each other only among main agents"
+        assert [a.session for a in agents.main_scoped(1)] == ["s1"], "the main agent's walks leave workers out"
+        worker = app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Babbage", brief="b", session="w-1"), Actor.system())
+        app.container.get(WorkerRunner).session_ended(worker)
+        assert agents.session_agent("w-1").state == "ended" and agents.session_agent("w-2").state != "ended", "a worker's row ends with its process, and no other"
+
+
 def test_every_caller_names_its_kind_and_a_subagent_is_told_by_its_agents_session(app: App):
     from journal.support.announced_commands import AnnouncedCommands
     from journal.support.caller_kind import CallerKind

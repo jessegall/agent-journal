@@ -17,6 +17,7 @@ from journal.providers.providers import Providers
 from journal.features.profiles.support.profile_files import ProfileFiles
 from journal.repositories.scope import Scope
 from journal.repositories.setting_rows import SettingRows
+from journal.repositories.agents import Agents
 from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
 from journal.support.worktree_failure import WorktreeFailure
@@ -34,9 +35,9 @@ EXCLUDED_VARIABLES = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "JOURNAL_LAUNCH
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles) -> None:
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
-        self.environments, self.profiles = environments, profiles
+        self.environments, self.profiles, self.agents = environments, profiles, agents
         self._locks: dict[int, threading.Lock] = {}
         self._locks_lock = threading.Lock()
 
@@ -117,6 +118,7 @@ class WorkerRunner:
         return self.workers.find(worker.row_id)
 
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
+        self.session_ended(worker)
         output, err = self.outputs(worker)
         provider = self.providers.lookup(worker.provider)
         ended = provider.worker_outcome(self.read(output), self.read(err))
@@ -132,6 +134,11 @@ class WorkerRunner:
         current = current.with_(touched_paths=self.branch.touched(current))
         branch = self.branch.summary(current)
         self.reports.file(current, f"{outcome}\n\n{branch}" if branch else outcome, actor)
+
+    def session_ended(self, worker: Worker) -> None:
+        unended = [agent for agent in self.agents.global_matching(session=worker.session) if worker.session and agent.state != "ended"]
+        for agent in unended:
+            self.agents.save(agent.retired(time.time()), Actor.system())
 
     @staticmethod
     def shortened_report(text: str) -> str:
