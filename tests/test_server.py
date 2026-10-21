@@ -186,11 +186,23 @@ def test_a_path_outside_the_api_is_the_viewer(server):
         assert reply.status == 200 and b"<div id=\"app\">" in reply.read()
 
 
-def test_a_taken_port_sends_the_next_journal_to_the_next_one(tmp_path: Path):
+def free_pair() -> int:
+    """A port free on this machine with the one after it free too, so a test of the next port is not taken by another process."""
     import socket
-    with socket.socket() as probe:
-        probe.bind(("127.0.0.1", 0))
-        first = probe.getsockname()[1]
+    for _ in range(50):
+        with socket.socket() as probe, socket.socket() as after:
+            probe.bind(("127.0.0.1", 0))
+            first = probe.getsockname()[1]
+            try:
+                after.bind(("127.0.0.1", first + 1))
+            except OSError:
+                continue
+            return first
+    raise RuntimeError("no two free ports in a row")
+
+
+def test_a_taken_port_sends_the_next_journal_to_the_next_one(tmp_path: Path):
+    first = free_pair()
     single = App(Config(tmp_path / "one", port=first, span=3))
     two = App(Config(tmp_path / "two", port=first, span=3))
     single.server().start()

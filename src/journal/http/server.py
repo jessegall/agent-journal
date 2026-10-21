@@ -8,6 +8,8 @@ from journal.http.support.identity import Identity
 from journal.http.router import Router
 from journal.http.static_files import StaticFiles
 
+POLL_SECONDS = 0.05
+
 
 class Server:
     """One process, one port; every request is answered on a thread of its own. The port it got is written where the hook script reads it."""
@@ -15,7 +17,7 @@ class Server:
     def __init__(self, config: Config, router: Router, identity: Identity, static: StaticFiles, database: Connection) -> None:
         self.config, self.router, self.identity, self.static, self.database = config, router, identity, static, database
         self._bound: list[ThreadingHTTPServer] = []
-        self._thread = threading.Thread(target=lambda: self._bound[0].serve_forever(poll_interval=0.05), name="http", daemon=True)
+        self._thread = threading.Thread(target=lambda: self._bound[0].serve_forever(poll_interval=POLL_SECONDS), name="http", daemon=True)
 
     @property
     def port(self) -> int:
