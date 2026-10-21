@@ -465,13 +465,14 @@ def written(plans: list[Plan], root: str) -> int:
 
 
 def located(lines: list[str], place: Place) -> Place:
-    """The place with its column in characters: mypy counts a line's columns in UTF-8 bytes, so a line with a character beyond ASCII before the name is counted again; a place that holds no old name stops the run before any file is written."""
+    """The place at the name itself: mypy's columns drift on a line with a character beyond ASCII, so the name's occurrence on the line nearest the reported column is taken; a line that holds no such name stops the run before any file is written."""
     text = lines[place.line - 1]
     if text[place.column:place.column + len(place.old)] == place.old:
         return place
-    column = len(text.encode("utf-8")[:place.column].decode("utf-8", errors="ignore"))
-    if text[column:column + len(place.old)] != place.old:
+    starts = [match.start() for match in re.finditer(rf"(?<![\w]){re.escape(place.old)}(?!\w)", text)]
+    if not starts:
         raise SystemExit(f"nothing written: {place.path}:{place.line}:{place.column} holds no {place.old}: {text.strip()}")
+    column = min(starts, key=lambda start: abs(start - place.column))
     return Place(place.path, place.line, column, place.old, place.new, place.quoted)
 
 
