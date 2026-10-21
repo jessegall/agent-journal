@@ -1181,3 +1181,10 @@ def test_a_journal_command_is_no_tool_use_to_a_wait():
     waiting = Waiting(question_id=4)
     assert waiting.on(ToolStarting(call=shell("journal task list")), settings).popped is False, "a journal command lifts no wait"
     assert waiting.on(ToolStarting(call=shell("ls src")), settings).popped, "the agent's own tool use does"
+
+
+def test_a_part_knows_whether_it_reads_an_output_and_the_shape_of_that_read():
+    parts = shell("journal output read 12 --grep FAILED && ls src").parts
+    assert (parts[0].reads_output, parts[0].read_shape) == (True, "journal output read <output> --grep FAILED"), "the number taken out, the read keeps its shape"
+    assert not parts[1].reads_output and parts[1].read_shape == "ls src", "a part that reads no output has its own text as its shape"
+    assert not shell("journal output read 3").parts[0].reads_output, "a plain read of a summary is no read by hand"

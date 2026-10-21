@@ -9,6 +9,7 @@ from journal.support.command_part import CommandPart
 from journal.support.reads import Reads
 from journal.support.tool_call import ToolCall
 from journal.support.writes import Writes
+from journal.features.shell.support.output_reads import OutputReads
 from journal.support.decision import Decision
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
@@ -212,8 +213,8 @@ class Provider:
 
     @staticmethod
     def parts_of(command: str) -> list[CommandPart]:
-        own = [part for part in Chain.parts(command) if part.recorded] if command else []
-        return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text), writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text))) for part in own]
+        recorded = [part for part in Chain.parts(command) if part.recorded] if command else []
+        return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text), writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text)), reads_output=OutputReads.is_one(part.text), read_shape=OutputReads.shape(part.text) if OutputReads.is_one(part.text) else part.text) for part in recorded]
 
     @staticmethod
     def folder_name(project: Path) -> str:

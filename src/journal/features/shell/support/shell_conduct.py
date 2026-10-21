@@ -5,7 +5,6 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.shell.support.ended_output import EndedOutput
 from journal.features.shell.support.output_files import OutputFiles
-from journal.features.shell.support.output_reads import OutputReads
 from journal.support.chain import Chain
 
 QUIET_FOR = 5.0
@@ -29,15 +28,15 @@ class ShellConduct(Conduct):
 
     def on_tool_starting_shell_readers(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
-        if not OutputReads.is_one(event.call.command):
+        reads = [part for part in event.call.parts if part.reads_output]
+        if not reads:
             return self.unchanged()
         shell = event.snapshot.of(Shell)
-        tips = [Shell.USE_THE_READER.create(reader=r.name, about=r.about) for r in shell.readers if r.matches(event.call.command)]
-        shape = OutputReads.shape(event.call.command)
-        if shell.output_reads.count(shape) >= 2:
-            tips.append(Shell.ADD_A_READER.create(command=shape))
-        fresh = [tip for tip in tips if tip.rendered() not in shell.tipped]
-        return self.unchanged(fresh[0]) if fresh else self.unchanged()
+        tips = [Shell.USE_THE_READER.create(reader=r.name, about=r.about) for r in shell.readers if r.matches(reads[0].text)]
+        if shell.output_reads.count(reads[0].read_shape) >= 2:
+            tips.append(Shell.ADD_A_READER.create(command=reads[0].read_shape))
+        untold = [tip for tip in tips if tip.rendered() not in shell.tipped]
+        return self.unchanged(untold[0]) if untold else self.unchanged()
 
     def on_ticked_shell_ended(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
