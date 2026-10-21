@@ -21,8 +21,8 @@ from journal.support.caller import Caller
 
 TAIL = 2000
 PIPED = re.compile(r"(?<!\|)\|(?!\|)")
-RUNNING, RAN, MOVED, ENDED = "running", "ran", "background", "ended"
-WORDS_IN = re.compile(r"[A-Za-z]{3,}")
+PART_START, PART_END, MOVED, ENDED = "running", "ran", "background", "ended"
+LETTER_RUN_PATTERN = re.compile(r"[A-Za-z]{3,}")
 
 
 class ShellRecord:
@@ -36,10 +36,10 @@ class ShellRecord:
         return self.log.began(chain, command, folder, caller.session, caller.actor).id
 
     def started(self, chain: str, part: str, caller: Caller) -> None:
-        self.record(caller, RUNNING, {"chain": chain, "part": part, "doing": Doing.of(part)})
+        self.record(caller, PART_START, {"chain": chain, "part": part, "doing": Doing.of(part)})
 
     def ran(self, chain: str, part: str, status: int, seconds: float, output: str, changed: list[ChangedFile], caller: Caller) -> None:
-        self.record(caller, RAN, {"chain": chain, "part": part, "doing": Doing.of(part), "status": status, "seconds": seconds, "output": output[-TAIL:], "changed": [asdict(c) for c in changed]})
+        self.record(caller, PART_END, {"chain": chain, "part": part, "doing": Doing.of(part), "status": status, "seconds": seconds, "output": output[-TAIL:], "changed": [asdict(c) for c in changed]})
 
     def moved(self, chain: str, part: str, folder: Path, caller: Caller) -> int:
         self.record(caller, MOVED, {"chain": chain, "part": part, "doing": Doing.of(part), "file": str(folder)})
@@ -70,7 +70,7 @@ class ShellRecord:
     @staticmethod
     def last_sentence(last: str) -> str:
         line = next((l.strip() for l in reversed(last.splitlines()) if l.strip()), "")
-        return line if WORDS_IN.search(line) else ""
+        return line if LETTER_RUN_PATTERN.search(line) else ""
 
     def record(self, caller: Caller, kind: str, data: dict) -> None:
         self.entries.save(Entry(environment_id=self.scope.id, kind=kind, actor=caller.actor, data={**data, "session": caller.session, "time": datetime.now(timezone.utc).timestamp()}), caller.actor)

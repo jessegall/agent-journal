@@ -1,7 +1,7 @@
 import threading
 from collections import deque
 
-KEPT = 50
+COMMAND_COUNT = 50
 
 
 class AnnouncedCommands:
@@ -13,7 +13,7 @@ class AnnouncedCommands:
 
     def note(self, environment: str, parts: tuple[str, ...]) -> None:
         with self.lock:
-            self.announced.setdefault(environment, deque(maxlen=KEPT)).append(parts)
+            self.announced.setdefault(environment, deque(maxlen=COMMAND_COUNT)).append(parts)
 
     def claim(self, environment: str, argv: list[str]) -> bool:
         with self.lock:
@@ -30,4 +30,4 @@ class AnnouncedCommands:
     def withdraw(self, environment: str, parts: tuple[str, ...]) -> None:
         with self.lock:
             remaining = [announced for announced in self.announced.get(environment, ()) if announced != parts]
-            self.announced[environment] = deque(remaining, maxlen=KEPT)
+            self.announced[environment] = deque(remaining, maxlen=COMMAND_COUNT)

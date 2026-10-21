@@ -5,7 +5,7 @@ from journal.models.plugin import Plugin
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
 
-WHEN_SECONDS = 30
+CONDITION_TIMEOUT_SECONDS = 30
 
 
 class PluginServices:
@@ -20,7 +20,7 @@ class PluginServices:
             if not self.supervisor.runs(environment.id):
                 continue
             for service in plugin.manifest.services:
-                if service.when and self.runner.shell(plugin, environment.name, service.when, WHEN_SECONDS).returncode != 0:
+                if service.when and self.runner.shell(plugin, environment.name, service.when, CONDITION_TIMEOUT_SECONDS).returncode != 0:
                     continue
                 environ = self.runner.environment(plugin, environment.name) | {"JOURNAL_PLUGIN_SOCKET": str(self.folders.socket(plugin, environment.name))}
                 folder = self.folders.of(plugin)

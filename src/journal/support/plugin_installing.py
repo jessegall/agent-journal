@@ -28,7 +28,7 @@ from journal.repositories.dashboard_rows import DashboardRows
 from journal.support.not_found import NotFound
 from journal.repositories.plugins import Plugins
 
-FETCH_SECONDS = 120
+DOWNLOAD_SECONDS = 120
 STEP_SECONDS = 300
 
 
@@ -171,12 +171,12 @@ class PluginInstalling:
     @staticmethod
     def clear_stale_fetches(home: Path) -> None:
         for stale in home.glob(".fetching-*"):
-            if time.time() - stale.stat().st_mtime > 2 * FETCH_SECONDS:
+            if time.time() - stale.stat().st_mtime > 2 * DOWNLOAD_SECONDS:
                 shutil.rmtree(stale, ignore_errors=True)
 
     @staticmethod
     def tag_at(folder: Path) -> str:
-        described = subprocess.run(["git", "-C", str(folder), "describe", "--tags", "--exact-match", "HEAD"], capture_output=True, text=True, timeout=FETCH_SECONDS)
+        described = subprocess.run(["git", "-C", str(folder), "describe", "--tags", "--exact-match", "HEAD"], capture_output=True, text=True, timeout=DOWNLOAD_SECONDS)
         return described.stdout.strip() if described.returncode == 0 else ""
 
     @staticmethod
@@ -208,12 +208,12 @@ class PluginInstalling:
         temporary = Path(tempfile.mkdtemp(prefix="journal-plugin-fetch-"))
         try:
             shallow = [] if ref is not None else ["--depth", "1"]
-            fetched = subprocess.run(["git", "clone", "--quiet", *shallow, source, str(temporary / "plugin")], capture_output=True, text=True, timeout=FETCH_SECONDS)
+            fetched = subprocess.run(["git", "clone", "--quiet", *shallow, source, str(temporary / "plugin")], capture_output=True, text=True, timeout=DOWNLOAD_SECONDS)
             if fetched.returncode == 0 and ref is not None:
-                fetched = subprocess.run(["git", "-C", str(temporary / "plugin"), "checkout", "--quiet", ref], capture_output=True, text=True, timeout=FETCH_SECONDS)
+                fetched = subprocess.run(["git", "-C", str(temporary / "plugin"), "checkout", "--quiet", ref], capture_output=True, text=True, timeout=DOWNLOAD_SECONDS)
             if fetched.returncode != 0:
                 raise Refused(f"could not fetch {source}{' at ' + ref if ref is not None else ''}: {fetched.stderr.strip()[-300:]}")
-            commit = subprocess.run(["git", "-C", str(temporary / "plugin"), "rev-parse", "HEAD"], capture_output=True, text=True, timeout=FETCH_SECONDS).stdout.strip()
+            commit = subprocess.run(["git", "-C", str(temporary / "plugin"), "rev-parse", "HEAD"], capture_output=True, text=True, timeout=DOWNLOAD_SECONDS).stdout.strip()
             yield temporary / "plugin", commit
         finally:
             shutil.rmtree(temporary, ignore_errors=True)

@@ -1,6 +1,6 @@
 import time as timing
 
-OPEN_WITHIN = 15.0
+VIEWER_WINDOW_SECONDS = 15.0
 VIEWER = "x-journal-viewer"
 
 
@@ -15,4 +15,4 @@ class ViewerSeen:
             self.time = timing.time()
 
     def open(self) -> bool:
-        return timing.time() - self.time < OPEN_WITHIN
+        return timing.time() - self.time < VIEWER_WINDOW_SECONDS

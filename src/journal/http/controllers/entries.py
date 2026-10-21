@@ -10,10 +10,10 @@ from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 from journal.support.scope import Scope
 
-TOLD = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "ToolFailed", "Compacting", "Idle", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnWritten",
+AGENT_EVENT_KINDS = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "ToolFailed", "Compacting", "Idle", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnWritten",
                   "nudge", "created", "updated", "deleted"})
 RECENT = 100
-BEAT = 15.0
+HEARTBEAT_SECONDS = 15.0
 
 
 class EntryController:
@@ -27,7 +27,7 @@ class EntryController:
         if since > self.entries.last_id():
             since = 0
         rows = self.entries.shown_since(since) if since else list(reversed(self.entries.shown_recent(int(request.queried("last", RECENT)))))
-        return Response.json([entry for entry in rows if entry.kind in TOLD])
+        return Response.json([entry for entry in rows if entry.kind in AGENT_EVENT_KINDS])
 
     def stream(self, request: Request) -> StreamResponse:
         environment = self.scope.id
@@ -44,10 +44,10 @@ class EntryController:
                 quiet += 0.5
                 for entry in read(lambda: self.entries.shown_since(last)):
                     last = entry.id
-                    if entry.kind in TOLD:
+                    if entry.kind in AGENT_EVENT_KINDS:
                         quiet = 0.0
                         yield self.event(entry)
-                if quiet >= BEAT:
+                if quiet >= HEARTBEAT_SECONDS:
                     quiet = 0.0
                     yield b"event: beat\ndata: keep\n\n"
         return StreamResponse("text/event-stream", chunks())

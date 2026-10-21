@@ -16,13 +16,13 @@ class DumpsFeature(Feature):
     data = (DumpsDataReader,)
     conduct = (DumpsConduct,)
 
-    DUMP_ARRIVED_FILE_IT = Nudge(name, "dump_arrived_file_it", "dump {{n}} has {{count}} to file - journal dump items {{n}}", "load journal-dumps if it is not loaded, then file it step by step. Tell the user what you do with journal dump log; ask only in the dump window, never in the chat.", repeat_after=300)
-    DUMP_STILL_OPEN_CARRY_ON = Nudge(name, "dump_still_open_carry_on", "dump {{n}} is not filed yet: carry on filing it", "journal dump items {{n}} shows what is left; ask only what you cannot tell, with journal dump ask. The dump is done once every item is filed or failed.", repeat_after=0)
-    THE_USER_ANSWERED_ON_THE_DUMP = Nudge(name, "the_user_answered_on_the_dump", "the user answered your question on dump {{n}} - {{answer}}", "carry on filing with that answer. The question was: {{question}}", repeat_after=0)
-    DUMP_FILED_SUM_IT_UP = Nudge(name, "dump_filed_sum_it_up", "dump {{n}} is filed ({{outcome}}) - sum it up for the user", """sum up what you filed and where in two or three lines, with any next step worth taking as a button on the dump: journal dump offer {{n}} '[{"ask": "Want me to plan the mobile layout?", "label": "Plan it"}]' --summary "<what you filed and where>", or '[]' for none. Start nothing yourself.""", repeat_after=0)
-    THE_USER_CHOSE_A_STEP = Nudge(name, "the_user_chose_a_step", "the user chose {{label}} for dump {{n}}", "carry that step out, and log it on the dump.", repeat_after=0)
-    DUMP_LEFT_TO_YOU_FINISH_IT = Nudge(name, "dump_left_to_you_finish_it", "the user left dump {{n}} to you - finish it", "take the next step you think best and file anything still open yourself, logging each step on the dump. Nothing waits for the user.", repeat_after=0)
-    nudges = (DUMP_ARRIVED_FILE_IT, DUMP_STILL_OPEN_CARRY_ON, THE_USER_ANSWERED_ON_THE_DUMP, DUMP_FILED_SUM_IT_UP, THE_USER_CHOSE_A_STEP, DUMP_LEFT_TO_YOU_FINISH_IT)
+    DUMP_ARRIVAL = Nudge(name, "dump_arrived_file_it", "dump {{n}} has {{count}} to file - journal dump items {{n}}", "load journal-dumps if it is not loaded, then file it step by step. Tell the user what you do with journal dump log; ask only in the dump window, never in the chat.", repeat_after=300)
+    DUMP_OPEN_REMINDER = Nudge(name, "dump_still_open_carry_on", "dump {{n}} is not filed yet: carry on filing it", "journal dump items {{n}} shows what is left; ask only what you cannot tell, with journal dump ask. The dump is done once every item is filed or failed.", repeat_after=0)
+    DUMP_ANSWER = Nudge(name, "the_user_answered_on_the_dump", "the user answered your question on dump {{n}} - {{answer}}", "carry on filing with that answer. The question was: {{question}}", repeat_after=0)
+    DUMP_SUMMARY_REQUEST = Nudge(name, "dump_filed_sum_it_up", "dump {{n}} is filed ({{outcome}}) - sum it up for the user", """sum up what you filed and where in two or three lines, with any next step worth taking as a button on the dump: journal dump offer {{n}} '[{"ask": "Want me to plan the mobile layout?", "label": "Plan it"}]' --summary "<what you filed and where>", or '[]' for none. Start nothing yourself.""", repeat_after=0)
+    DUMP_STEP_CHOICE = Nudge(name, "the_user_chose_a_step", "the user chose {{label}} for dump {{n}}", "carry that step out, and log it on the dump.", repeat_after=0)
+    DUMP_HANDOVER = Nudge(name, "dump_left_to_you_finish_it", "the user left dump {{n}} to you - finish it", "take the next step you think best and file anything still open yourself, logging each step on the dump. Nothing waits for the user.", repeat_after=0)
+    nudges = (DUMP_ARRIVAL, DUMP_OPEN_REMINDER, DUMP_ANSWER, DUMP_SUMMARY_REQUEST, DUMP_STEP_CHOICE, DUMP_HANDOVER)
 
     skill = Skill("dumps", "File what the user dropped in a dump: sort the pile by subject into rows of their own; load it when a dump arrives", """
 # Dumps

@@ -14,10 +14,10 @@ from journal.features.sharing.support.tunler_status import TunlerStatus
 from journal.features.sharing.support.tunler_version import TunlerVersion
 from journal.support.refused import Refused
 
-ELSEWHERE = (Path("/opt/homebrew/bin/tunler"), Path("/usr/local/bin/tunler"))
+TUNLER_PATHS = (Path("/opt/homebrew/bin/tunler"), Path("/usr/local/bin/tunler"))
 STATUS_SECONDS = 5
-STATUS_KEPT = 60
-LISTS_KEPT = 3600
+STATUS_CACHE_SECONDS = 60
+LIST_CACHE_SECONDS = 3600
 COMMAND_SECONDS = 30
 DOWNLOAD_SECONDS = 60
 KILLED = -9
@@ -25,19 +25,19 @@ ARCHES = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm
 CERTIFICATES = ("Python on this machine has no root certificates, so it cannot check the tunler server, and curl could not download tunler either. "
                 "On macOS, open the Python folder under Applications and run Install Certificates.command, then try again.")
 BLOCKED = "macOS stopped the downloaded tunler from running, even after signing it on this machine. The tunler already here, if any, is kept."
-NOT_WORKING = "what the server sent is not a working tunler, so nothing was replaced: the tunler already here, if any, is kept"
+BROKEN_TUNLER = "what the server sent is not a working tunler, so nothing was replaced: the tunler already here, if any, is kept"
 
 
 class Tunler:
     """The tunler program on this machine, which gives the journal its web address: its status, its version and the domains its account holds, each asked at most once a minute, and its login."""
 
     def __init__(self) -> None:
-        self._status = KeptAnswer(lambda: self.asked(), STATUS_KEPT, TunlerStatus(installed=False))
-        self._domains: KeptAnswer[list[str]] = KeptAnswer(lambda: self.asked_domains(), LISTS_KEPT, [])
+        self._status = KeptAnswer(lambda: self.asked(), STATUS_CACHE_SECONDS, TunlerStatus(installed=False))
+        self._domains: KeptAnswer[list[str]] = KeptAnswer(lambda: self.asked_domains(), LIST_CACHE_SECONDS, [])
         self._versions: dict[str, KeptAnswer[TunlerVersion]] = {}
 
     def command(self) -> str:
-        return shutil.which("tunler") or next((str(path) for path in (self.local(), Path.home() / "go" / "bin" / "tunler", *ELSEWHERE) if path.is_file()), "")
+        return shutil.which("tunler") or next((str(path) for path in (self.local(), Path.home() / "go" / "bin" / "tunler", *TUNLER_PATHS) if path.is_file()), "")
 
     @staticmethod
     def local() -> Path:
@@ -105,7 +105,7 @@ class Tunler:
             raise Refused(output or "tunler did not log out")
 
     def versions(self, host: str) -> TunlerVersion:
-        return self._versions.setdefault(host, KeptAnswer(lambda: self.asked_versions(host), LISTS_KEPT, TunlerVersion("", "", False))).given()
+        return self._versions.setdefault(host, KeptAnswer(lambda: self.asked_versions(host), LIST_CACHE_SECONDS, TunlerVersion("", "", False))).given()
 
     def asked_versions(self, host: str) -> TunlerVersion:
         ok, output = self.told("update", "--check", "--json", f"--host={host}")
@@ -183,7 +183,7 @@ class Tunler:
         if done and done.returncode == 0 and done.stdout.startswith("tunler "):
             return done.stdout.split()[-1]
         binary.unlink(missing_ok=True)
-        raise Refused(BLOCKED if done and done.returncode == KILLED else NOT_WORKING)
+        raise Refused(BLOCKED if done and done.returncode == KILLED else BROKEN_TUNLER)
 
     def told(self, *text: str, hidden: dict | None = None) -> tuple[bool, str]:
         command = self.command()

@@ -12,14 +12,14 @@ from journal.repositories.links import Links
 from journal.repositories.phases import Phases
 from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
-from journal.repositories.tasks import WAITS_ON, Tasks
+from journal.repositories.tasks import WAIT_LINK, Tasks
 from journal.repositories.workers import Workers
 from journal.models.phase_tasks import PhaseTasks
 from journal.models.plan_tree import PlanTree
 
-IN_PLAN = "in_plan"
-PHASE_OF = "phase_of"
-IN_PHASE = "in_phase"
+PLAN_LINK = "in_plan"
+PHASE_TASK_LINK = "phase_of"
+PHASE_LINK = "in_phase"
 
 
 class Plans(ScopedRepository[Plan]):
@@ -34,7 +34,7 @@ class Plans(ScopedRepository[Plan]):
     def approve(self, plan: Plan, actor: Actor) -> Plan:
         if plan.state == PlanState.REVIEWING:
             raise Refused(f"plan {plan.id} is in review: it can be approved once its reviewers are back and their findings are in it")
-        if plan.state in (PlanState.STARTED, PlanState.DONE, PlanState.CANCELLED):
+        if plan.state in (PlanState.STARTED, PlanState.FINISHED, PlanState.CANCELLED):
             return plan
         return self.save(plan.approved(self._now().timestamp(), actor.is_the_user()), actor)
 
@@ -48,32 +48,32 @@ class Plans(ScopedRepository[Plan]):
         return cancelled
 
     def is_in_another_plan(self, task: Task, plan: Plan) -> bool:
-        return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, IN_PLAN))
+        return any(ref.id != plan.id and self.find(ref.id).state != PlanState.CANCELLED for ref in self.links.targets(task, PLAN_LINK))
 
     def plan_states(self, task: Task) -> set[PlanState]:
         return {plan.state for plan in self.holding(task)}
 
     def holding(self, task: Task) -> list[Plan]:
-        return [plan for ref in self.links.targets(task, IN_PLAN) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.PARKED, PlanState.BLOCKED)]
+        return [plan for ref in self.links.targets(task, PLAN_LINK) if (plan := self.find(ref.id)).state in (PlanState.APPROVED, PlanState.STARTED, PlanState.SUSPENDED, PlanState.BLOCKED)]
 
     def waiting_on(self, model) -> list[Plan]:
-        return [plan for ref in self.links.sources(model, WAITS_ON) if ref.type == Plan.table() and (plan := self.find(ref.id)).is_blocked()]
+        return [plan for ref in self.links.sources(model, WAIT_LINK) if ref.type == Plan.table() and (plan := self.find(ref.id)).is_blocked()]
 
     def all_left_blocked(self, plan: Plan) -> bool:
         return plan.is_all_left_blocked(self.tasks_of(plan))
 
     def tasks_of(self, plan: Plan) -> list[Task]:
-        return self.tasks.numbered(ref.id for ref in self.links.sources(plan, IN_PLAN))
+        return self.tasks.numbered(ref.id for ref in self.links.sources(plan, PLAN_LINK))
 
     def phases_of(self, plan: Plan) -> list[Phase]:
-        return self.phases.numbered(ref.id for ref in self.links.sources(plan, PHASE_OF))
+        return self.phases.numbered(ref.id for ref in self.links.sources(plan, PHASE_TASK_LINK))
 
     def tasks_in(self, phase: Phase) -> list[Task]:
-        return self.tasks.numbered(ref.id for ref in self.links.sources(phase, IN_PHASE))
+        return self.tasks.numbered(ref.id for ref in self.links.sources(phase, PHASE_LINK))
 
     def phased(self, plan: Plan) -> list[PhaseTasks]:
         phases = self.phases_of(plan)
-        links = self.links.linked("target", phases, IN_PHASE)
+        links = self.links.linked("target", phases, PHASE_LINK)
         tasks = {task.id: task for task in self.tasks.numbered(link.source.id for link in links)}
         return [PhaseTasks(number, phase, tuple(tasks[link.source.id] for link in links if link.target.id == phase.id and link.source.id in tasks)) for number, phase in enumerate(phases, 1)]
 
@@ -98,7 +98,7 @@ class Plans(ScopedRepository[Plan]):
 
     def free(self) -> list[Task]:
         open_tasks = self.tasks.in_state(TaskState.OPEN)
-        planned = {link.source.id for link in self.links.linked("source", open_tasks, IN_PLAN)}
+        planned = {link.source.id for link in self.links.linked("source", open_tasks, PLAN_LINK)}
         return [t for t in open_tasks if t.id not in planned]
 
     def finished(self, plan: Plan) -> bool:

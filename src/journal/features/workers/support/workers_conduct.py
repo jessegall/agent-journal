@@ -13,7 +13,7 @@ from journal.features.workers.support.named_paths import NamedPaths
 from journal.features.workers.support.workers_data import WorkersData
 from journal.support.dispatch_tools import DISPATCH_TOOLS
 
-FRESH = ("auditor", "reviewer", "plan-reviewer", "critic")
+INDEPENDENT_ROLES = ("auditor", "reviewer", "plan-reviewer", "critic")
 
 
 class WorkersConduct(Conduct):
@@ -23,25 +23,25 @@ class WorkersConduct(Conduct):
         from journal.features.workers.feature import Workers
         if event.call.tool not in DISPATCH_TOOLS or event.subagent:
             return self.unchanged()
-        most, running = int(settings.of(Workers.MOST_SUBAGENTS)), event.data.of(Workers).subagents_running
-        return self.hold(Workers.TOO_MANY_SUBAGENTS.create(running=running)) if most and running >= most else self.unchanged()
+        most, running = int(settings.of(Workers.SUBAGENT_LIMIT)), event.data.of(Workers).subagents_running
+        return self.hold(Workers.SUBAGENT_OVERFLOW.create(running=running)) if most and running >= most else self.unchanged()
 
     def on_tool_starting_workers_worktrees(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         if event.subagent or not event.call.writes:
             return self.unchanged()
         owner = worktree_written(event.data.of(Workers), event.call.written_paths)
-        return self.hold(Workers.FILE_IS_THE_WORKERS.create(n=owner.worker_id, name=owner.worker_name)) if owner else self.unchanged()
+        return self.hold(Workers.WORKER_FILE.create(n=owner.worker_id, name=owner.worker_name)) if owner else self.unchanged()
 
     def on_tool_starting_workers_known(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         given = event.call.input if event.call.tool in DISPATCH_TOOLS else {}
         kind = given.get("subagent_type", "")
         named = NamedPaths.of(f"{given.get('description', '')} {given.get('prompt', '')}")
-        if not named or kind in FRESH:
+        if not named or kind in INDEPENDENT_ROLES:
             return self.unchanged()
         known = next((d for d in reversed(event.data.of(Workers).dispatches) if not d.running and d.session and d.type == kind and named & NamedPaths.of(d.brief)), None)
-        return self.hold(Workers.SEND_THE_JOB_TO_THE_SUBAGENT.create(session=known.session, task=known.task)) if known else self.unchanged()
+        return self.hold(Workers.SUBAGENT_REUSE.create(session=known.session, task=known.task)) if known else self.unchanged()
 
     def on_idle_workers(self, event: Idle, settings: Settings) -> Transition:
         return self.unchanged(*reports_named(event.data.of(workers_feature())))
@@ -60,7 +60,7 @@ class WorkersConduct(Conduct):
 
 
 def reports_named(workers: WorkersData) -> list[Nudge]:
-    return [workers_feature().ACT_ON_THE_REPORTS.create(reports_waiting=workers.reports_summary)] if workers.reports_waiting else []
+    return [workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=workers.reports_summary)] if workers.reports_waiting else []
 
 
 def workers_feature():

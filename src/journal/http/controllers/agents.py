@@ -3,7 +3,7 @@ import time as timing
 from journal.config import Config
 from journal.features.pausing.agent_pause import AgentPause
 from journal.support.running import Running
-from journal.features.shell.support.shell_record import RAN
+from journal.features.shell.support.shell_record import PART_END
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.terminal_line import TerminalLine
 from journal.http.controllers.controller import Controller
@@ -89,7 +89,7 @@ class AgentController(Controller[Agent]):
     def terminal(self, request: Request) -> Response:
         agent = self.repository.find(request.number("id"))
         after = request.queried("after")
-        ran = [e for e in reversed(self.entries.of_kind(RAN, 400)) if e.actor and e.actor.id == agent.session and e.data["time"] > after]
+        ran = [e for e in reversed(self.entries.of_kind(PART_END, 400)) if e.actor and e.actor.id == agent.session and e.data["time"] > after]
         return Response.json([self.line(agent.id, e) for e in ran][-LINES_SHOWN:])
 
     @staticmethod

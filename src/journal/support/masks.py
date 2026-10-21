@@ -1,6 +1,6 @@
 import time
 
-from journal.support.secret_values import AT, RETIRED, SecretValues
+from journal.support.secret_values import EMAIL_SIGN_TOKEN, RETIRED, SecretValues
 
 SHORTEST = 8
 
@@ -28,5 +28,5 @@ class Masks:
         if changed != self._read_at:
             self._read_at = changed
             plain = self.values.shown()
-            self._masks = {value: variable.removeprefix(RETIRED).rsplit(AT, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST and variable not in plain}
+            self._masks = {value: variable.removeprefix(RETIRED).rsplit(EMAIL_SIGN_TOKEN, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST and variable not in plain}
         return self._masks

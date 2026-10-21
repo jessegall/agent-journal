@@ -20,8 +20,8 @@ from journal.repositories.setting_rows import SettingRows
 from journal.version import VERSION
 
 PLUGIN = "code-commandments"
-CHECK_EVERY = 3600
-FIRST_CHECK_AFTER = 60
+CHECK_INTERVAL_SECONDS = 3600
+FIRST_CHECK_DELAY_SECONDS = 60
 
 
 class Updating:
@@ -33,7 +33,7 @@ class Updating:
         self.releases: list[Release] = []
         self.head = ""
         self.problem = ""
-        self._checked_at = timing.time() - CHECK_EVERY + FIRST_CHECK_AFTER
+        self._checked_at = timing.time() - CHECK_INTERVAL_SECONDS + FIRST_CHECK_DELAY_SECONDS
         self._working = threading.Lock()
 
     def running(self) -> Release:
@@ -92,7 +92,7 @@ class Updating:
 
     def tick(self, time: float) -> None:
         self.settle(time)
-        if time - self._checked_at >= CHECK_EVERY:
+        if time - self._checked_at >= CHECK_INTERVAL_SECONDS:
             self._checked_at = time
             self.apart(self.checked)
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from journal.support.event_window import EventWindow
 
 COMPARED = ("version", "program", "hears", "holds", "services", "settings", "skills")
-MOST_LINES = 400
+LINE_LIMIT = 400
 
 
 class PluginChanges:
@@ -31,7 +31,7 @@ class PluginChanges:
         for file in files:
             before, after = PluginChanges.text(old / file), PluginChanges.text(new / file)
             lines += difflib.unified_diff(before, after, f"a/{file}", f"b/{file}", lineterm="")
-        return lines[:MOST_LINES] + ([f"... {len(lines) - MOST_LINES} more lines"] if len(lines) > MOST_LINES else [])
+        return lines[:LINE_LIMIT] + ([f"... {len(lines) - LINE_LIMIT} more lines"] if len(lines) > LINE_LIMIT else [])
 
     @staticmethod
     def text(path: Path) -> list[str]:

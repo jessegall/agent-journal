@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 from journal.features.phone.support.p256 import G, N, P256
 from journal.support.private_folder import PrivateFolder
 
-VALID_FOR = 12 * 3600
+KEY_LIFETIME_SECONDS = 12 * 3600
 
 
 @dataclass(frozen=True)
@@ -46,7 +46,7 @@ class PushKeys:
     def token(self, endpoint: str, contact: str, time: float) -> str:
         parts = urlsplit(endpoint)
         head = self.unpadded(json.dumps({"typ": "JWT", "alg": "ES256"}).encode())
-        claims = self.unpadded(json.dumps({"aud": f"{parts.scheme}://{parts.netloc}", "exp": int(time + VALID_FOR), "sub": contact}).encode())
+        claims = self.unpadded(json.dumps({"aud": f"{parts.scheme}://{parts.netloc}", "exp": int(time + KEY_LIFETIME_SECONDS), "sub": contact}).encode())
         signed = f"{head}.{claims}"
         return f"{signed}.{self.unpadded(self.signed(signed.encode()))}"
 

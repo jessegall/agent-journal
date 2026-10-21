@@ -6,8 +6,8 @@ from journal.models.task import Task
 from journal.repositories.checks import Checks
 from journal.repositories.command_outputs import CommandOutputs
 
-AWAITABLE = (CommandOutput, Task, Question, Check)
-UNTIL_EVERY = 0.5
+WAIT_TARGETS = (CommandOutput, Task, Question, Check)
+POLL_INTERVAL_MINUTES = 0.5
 
 
 class Awaitables:
@@ -20,7 +20,7 @@ class Awaitables:
         return self.ref_of(self.outputs.save(self.outputs.find(n).waited(), actor))
 
     def until(self, command: str, purpose: str, actor) -> str:
-        check = self.checks.save(Check(title=f"the wait for {purpose} ends when this passes", command=command, every=UNTIL_EVERY, waited_on=True), actor)
+        check = self.checks.save(Check(title=f"the wait for {purpose} ends when this passes", command=command, every=POLL_INTERVAL_MINUTES, waited_on=True), actor)
         return self.ref_of(check)
 
     @staticmethod
@@ -35,4 +35,4 @@ class Awaitables:
     @staticmethod
     def just_settled(event: Updated) -> bool:
         model, was = event.model, event.was
-        return isinstance(model, AWAITABLE) and model.is_settled() and (was is None or not was.is_settled())
+        return isinstance(model, WAIT_TARGETS) and model.is_settled() and (was is None or not was.is_settled())

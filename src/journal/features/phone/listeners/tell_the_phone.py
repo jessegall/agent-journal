@@ -8,7 +8,7 @@ from journal.models.phone import Phone
 from journal.repositories.phones import Phones
 from journal.support.actor import Actor
 
-GONE = (404, 410)
+MISSING_STATUSES = (404, 410)
 
 
 class TellThePhone(Listener[ClockTicked]):
@@ -28,7 +28,7 @@ class TellThePhone(Listener[ClockTicked]):
 
     def pushed(self, phone: Phone, owed: list[str], time: datetime) -> None:
         status = self.push.send(phone.push)
-        if status in GONE:
+        if status in MISSING_STATUSES:
             self.phones.save(phone.unsubscribed(), Actor.system())
         elif 200 <= status < 300:
             self.phones.save(phone.told(owed), Actor.system())

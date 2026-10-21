@@ -25,7 +25,7 @@ APP = Path(__file__).resolve().parents[3] / "web" / "dist"
 APP_PAGE = "share.html"
 APP_HEADERS = {"Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
                                           "font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}
-GONE = ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'><title>Not shared</title>"
+MISSING_PAGE = ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'><title>Not shared</title>"
         "<p style='font:15px system-ui;margin:20vh auto;max-width:28em;text-align:center'>This link doesn't open anything. It may have ended, or the address is not complete.</p>")
 
 
@@ -131,4 +131,4 @@ class SharePages:
 
     @staticmethod
     def gone(status: int) -> ShareAnswer:
-        return ShareAnswer(status, GONE.encode())
+        return ShareAnswer(status, MISSING_PAGE.encode())

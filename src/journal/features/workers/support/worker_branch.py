@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from journal.support.kept_tips import KEPT
+from journal.support.kept_tips import TIPS_REF
 from journal.config import Config
 from journal.models.worker import Worker
 
@@ -86,10 +86,10 @@ class WorkerBranch:
         left = self.left(worker)
         if left:
             return f"its worktree {folder} stays, since {len(left)} files in it are not committed: {', '.join(left[:10])}"
-        self.git("update-ref", f"{KEPT}/{folder.name}", self.git("rev-parse", self.name(worker)).stdout.strip())
+        self.git("update-ref", f"{TIPS_REF}/{folder.name}", self.git("rev-parse", self.name(worker)).stdout.strip())
         self.git("worktree", "remove", str(folder))
         self.git("branch", "-D", self.name(worker))
-        return f"its worktree and branch are removed; its last commit is kept as {KEPT}/{folder.name}"
+        return f"its worktree and branch are removed; its last commit is kept as {TIPS_REF}/{folder.name}"
 
     def summary(self, worker: Worker) -> str:
         if not worker.worktree:

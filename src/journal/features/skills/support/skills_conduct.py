@@ -26,7 +26,7 @@ class SkillsConduct(Conduct):
 
     def on_idle_skills(self, event: Idle, settings: Settings) -> Transition:
         owed = event.data.of(skills_feature()).owed
-        return self.hold(skills_feature().STOPPED_OWING.create(skills=" and ".join(owed))) if owed else self.unchanged()
+        return self.hold(skills_feature().UNREAD_SKILL_STOP.create(skills=" and ".join(owed))) if owed else self.unchanged()
 
 
 def skills_feature():
@@ -35,4 +35,4 @@ def skills_feature():
 
 
 def read_first(cards: list[SkillCard]) -> list[Nudge]:
-    return [skills_feature().READ_THE_SKILL_FIRST.create(skill=card.name, path=card.path) for card in cards]
+    return [skills_feature().SKILL_READ_REQUEST.create(skill=card.name, path=card.path) for card in cards]

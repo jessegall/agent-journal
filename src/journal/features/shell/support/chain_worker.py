@@ -10,7 +10,7 @@ from journal.features.shell.support.shell_record import ShellRecord
 from journal.features.shell.support.shell_request import ShellRequest
 from journal.support.caller import Caller
 
-PRELUDE = """
+SHELL_SETUP = """
 ulimit -n 65536 2>/dev/null || ulimit -n 10240 2>/dev/null || ulimit -n "$(ulimit -Hn)" 2>/dev/null
 __journal_tree() {
     git diff --numstat HEAD 2>/dev/null | grep -v "	\\.journal/"
@@ -34,7 +34,7 @@ class ChainWorker:
         shell = subprocess.Popen([request.shell], cwd=request.cwd, env=request.environment, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=False)
         pump = threading.Thread(target=lambda: self.pump(shell, printed), name="shell-output", daemon=True)
         pump.start()
-        self.write_to(shell, PRELUDE)
+        self.write_to(shell, SHELL_SETUP)
         code = 0
         for i, kind in enumerate(folder.kinds()):
             code = self.part(shell, folder, i, kind, code, direct, caller)

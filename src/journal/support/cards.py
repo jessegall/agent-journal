@@ -22,7 +22,7 @@ class Cards:
 
     def made_mark(self, environment_id: int, row: Model, actor: Actor) -> Message:
         data = {"kind": "made", "session": actor.id, "made_type": row.table(), "n": row.id, **RowCard.of(row).as_data()}
-        return self.keyed(environment_id, self.made_key(row), row.title_words(), data, actor, ChatMark.MADE)
+        return self.keyed(environment_id, self.made_key(row), row.title_words(), data, actor, ChatMark.CREATED)
 
     def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: ChatMark) -> Message:
         data = {"session": "", "row": "", **data, "key": key, "shows": str(shows)}

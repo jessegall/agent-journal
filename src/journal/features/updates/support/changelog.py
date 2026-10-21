@@ -4,7 +4,7 @@ from pathlib import Path
 from journal.features.updates.support.changelog_page import ChangelogPage
 
 RELEASE = re.compile(r"^## ", re.M)
-RELEASES_PER_PAGE = 10
+PAGE_RELEASES = 10
 
 
 class Changelog:
@@ -17,7 +17,7 @@ class Changelog:
         text = self.path.read_text() if self.path.is_file() else ""
         starts = [rows.start() for rows in RELEASE.finditer(text)]
         ends = [*starts[1:], len(text)]
-        stop = min(skip + RELEASES_PER_PAGE, len(starts))
+        stop = min(skip + PAGE_RELEASES, len(starts))
         first = starts[0] if starts else len(text)
         heading = text[:first] if skip == 0 else ""
         return ChangelogPage(heading + (text[starts[skip]:ends[stop - 1]] if skip < stop else ""), stop, stop < len(starts))

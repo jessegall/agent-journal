@@ -20,11 +20,11 @@ from journal.repositories.environments import Environments
 from journal.support.worktree_not_made import WorktreeNotMade
 
 TAIL = 4000
-WATCH_EVERY = 2.0
-TIMED_OUT = -1
-ENDED_UNSEEN = -2
-ENDINGS = {TIMED_OUT: "stopped after {minutes:g} minutes without ending: {report}", ENDED_UNSEEN: "{report}"}
-NOT_HANDED = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "CLAUDE_CODE_SHELL_PREFIX")
+WATCH_INTERVAL_SECONDS = 2.0
+TIMEOUT_STATUS = -1
+END_UNWATCHED = -2
+ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}"}
+EXCLUDED_VARIABLES = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "CLAUDE_CODE_SHELL_PREFIX")
 
 
 class WorkerRunner:
@@ -49,7 +49,7 @@ class WorkerRunner:
             self.run(worker, command, actor)
 
     def run(self, worker: Worker, command: list[str], actor: Actor) -> None:
-        environ = {**{k: v for k, v in os.environ.items() if k not in NOT_HANDED}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
+        environ = {**{k: v for k, v in os.environ.items() if k not in EXCLUDED_VARIABLES}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": self.environments.find(worker.environment_id).name}
         out, err = self.outputs(worker)
         out.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -65,7 +65,7 @@ class WorkerRunner:
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGKILL)
             process.wait()
-            code = TIMED_OUT
+            code = TIMEOUT_STATUS
         self._running.pop(worker.id, None)
         self.finish(worker, code, actor)
 
@@ -73,10 +73,10 @@ class WorkerRunner:
         while self.alive(worker.pid):
             if self.limit_left(worker) == 0:
                 os.killpg(worker.pid, signal.SIGKILL)
-                self.finish(worker, TIMED_OUT, actor)
+                self.finish(worker, TIMEOUT_STATUS, actor)
                 return
-            time.sleep(WATCH_EVERY)
-        self.finish(worker, ENDED_UNSEEN, actor)
+            time.sleep(WATCH_INTERVAL_SECONDS)
+        self.finish(worker, END_UNWATCHED, actor)
 
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         out, err = self.outputs(worker)

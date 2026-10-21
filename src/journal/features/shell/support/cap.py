@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-DIRECT, WHOLE, ENDS, HINT = "direct", "whole", "ends", "hint"
+DIRECT, FULL, ENDS, HINT = "direct", "whole", "ends", "hint"
 
 
 @dataclass(frozen=True)
@@ -14,7 +14,7 @@ class Cap:
         return self.show == DIRECT
 
     def is_whole(self) -> bool:
-        return self.show == WHOLE
+        return self.show == FULL
 
     def is_ends(self) -> bool:
         return self.show == ENDS

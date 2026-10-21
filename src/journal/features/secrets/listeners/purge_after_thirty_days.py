@@ -9,8 +9,8 @@ from journal.support.secret_field import SecretField
 from journal.repositories.secrets import Secrets
 from journal.support.secret_values import SecretValues
 
-KEPT = timedelta(days=30)
-EVERY = 3600.0
+RETENTION = timedelta(days=30)
+INTERVAL = 3600.0
 
 
 class PurgeAfterThirtyDays(AgentListener[Ticked]):
@@ -21,10 +21,10 @@ class PurgeAfterThirtyDays(AgentListener[Ticked]):
         self._looked_at = 0.0
 
     def handle(self, event: Ticked) -> None:
-        if time.time() - self._looked_at < EVERY:
+        if time.time() - self._looked_at < INTERVAL:
             return
         self._looked_at = time.time()
-        cutoff = datetime.now(timezone.utc) - KEPT
+        cutoff = datetime.now(timezone.utc) - RETENTION
         for secret in [s for s in self.secrets.gone() if s.deleted_at < cutoff]:
             self.values.drop([SecretField.of(raw).variable for raw in secret.fields])
             self.logins.forget(secret.title)

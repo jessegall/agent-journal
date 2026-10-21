@@ -6,8 +6,8 @@ class MigrationState(StrEnum):
 
     OFFERED = "offered"
     LATER = "later"
-    RUNNING = "running"
-    DONE = "done"
+    BUSY = "running"
+    FINISHED = "done"
 
     def is_open(self) -> bool:
         return self in (MigrationState.OFFERED, MigrationState.LATER)

@@ -15,4 +15,4 @@ class TrimTheRecord(Listener[Saved]):
         from journal.features.record.feature import Record
         if not isinstance(event.model, Entry):
             return
-        self.entries.trim(event.model.id, int(self.settings.option(Record.KEPT)))
+        self.entries.trim(event.model.id, int(self.settings.option(Record.RECORD_LENGTH)))

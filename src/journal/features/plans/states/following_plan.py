@@ -36,7 +36,7 @@ class FollowingPlan(Working):
 
     def on_push(self, settings: Settings) -> tuple[Nudge, ...] | Held:
         from journal.features.plans.feature import Plans
-        return () if self.approved else Held(Plans.PLAN_NOT_APPROVED.create(n=self.plan_id))
+        return () if self.approved else Held(Plans.UNAPPROVED_PLAN.create(n=self.plan_id))
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
@@ -46,13 +46,13 @@ class FollowingPlan(Working):
         if event.held_before:
             return self.unchanged()
         if settings.of(Tasks.AUTO):
-            return self.hold(Plans.PHASE_COMPLETE_GO_ON.create(n=self.plan_id, phase=self.phase))
-        return self.unchanged(Plans.PHASE_COMPLETE_AT_A_CHECKPOINT.create(n=self.plan_id, phase=self.phase))
+            return self.hold(Plans.PHASE_END.create(n=self.plan_id, phase=self.phase))
+        return self.unchanged(Plans.CHECKPOINT_PHASE_END.create(n=self.plan_id, phase=self.phase))
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         if self.at_checkpoint:
-            return self.unchanged(Plans.PHASE_COMPLETE_AT_A_CHECKPOINT.create(n=self.plan_id, phase=self.phase))
+            return self.unchanged(Plans.CHECKPOINT_PHASE_END.create(n=self.plan_id, phase=self.phase))
         return super().on_session_started(event, settings)
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
@@ -72,19 +72,19 @@ class FollowingPlan(Working):
 
     def on_plan_done(self, event: PlanDone, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        return self.pop(Plans.PLAN_DONE.create(n=event.plan_id)) if event.plan_id == self.plan_id else self.unchanged()
+        return self.pop(Plans.PLAN_FINISHED.create(n=event.plan_id)) if event.plan_id == self.plan_id else self.unchanged()
 
     def on_plan_postponed(self, event: PlanPostponed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         if event.plan_id != self.plan_id:
             return self.unchanged()
-        return self.pop(Plans.THE_USER_POSTPONED_THE_PLAN.create(n=event.plan_id)) if event.by_user else self.pop()
+        return self.pop(Plans.PLAN_POSTPONED.create(n=event.plan_id)) if event.by_user else self.pop()
 
     def on_plan_abandoned(self, event: PlanAbandoned, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         if event.plan_id != self.plan_id:
             return self.unchanged()
-        return self.pop(Plans.THE_USER_ABANDONED_THE_PLAN.create(n=event.plan_id)) if event.by_user else self.pop()
+        return self.pop(Plans.PLAN_ABANDONED.create(n=event.plan_id)) if event.by_user else self.pop()
 
     def on_resume(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.plans.feature import Plans

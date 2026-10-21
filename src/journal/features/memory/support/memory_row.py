@@ -16,4 +16,4 @@ class MemoryRow:
 
     def line(self) -> str:
         from journal.features.memory.feature import Memory
-        return Memory.MEMORY_WHISPERED_BACK.create(noun=self.noun, n=self.id).rendered()
+        return Memory.MEMORY_READ_REQUEST.create(noun=self.noun, n=self.id).rendered()

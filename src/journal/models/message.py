@@ -5,7 +5,7 @@ from typing import ClassVar
 from journal.events.rows.message_arrived import MessageArrived
 from journal.models.author import Author
 from journal.models.scoped import Scoped
-TYPED = "typed"
+TERMINAL_LINE = "typed"
 
 
 @dataclass(frozen=True)
@@ -15,7 +15,7 @@ class Message(Scoped):
     THOUGHT = "thought"
     REPORT = "report"
     PEER = "peer"
-    SENT_TO = "sent_to"
+    RECIPIENT_KEY = "sent_to"
 
     author: Author = Author.USER
     text: str = ""
@@ -34,11 +34,11 @@ class Message(Scoped):
 
     @classmethod
     def sent_to(cls, receiver: str, text: str, session: str, address: str = "") -> "Message":
-        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.SENT_TO: receiver, "session": session, "address": address or receiver})
+        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "session": session, "address": address or receiver})
 
     @classmethod
     def send_failed(cls, receiver: str, text: str, session: str, address: str, reason: str) -> "Message":
-        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.SENT_TO: receiver, "session": session, "address": address or receiver, "failure": reason})
+        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "session": session, "address": address or receiver, "failure": reason})
 
     def arrived(self) -> "Message":
         return self.with_event(MessageArrived(text=self.text))
@@ -74,7 +74,7 @@ class Message(Scoped):
 
     @property
     def is_typed_in_terminal(self) -> bool:
-        return self.data.get("kind") == TYPED
+        return self.data.get("kind") == TERMINAL_LINE
 
     @property
     def speaks_to_the_user(self) -> bool:

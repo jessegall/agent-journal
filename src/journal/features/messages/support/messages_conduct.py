@@ -13,7 +13,7 @@ from journal.events.rows.reaction_given import ReactionGiven
 from journal.support.chain import Chain
 
 TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread|recent)|question\s+(?:show|list))\b[^|;&\"']*\|")
-SEND_COMMAND = "journal message send"
+MESSAGE_COMMAND = "journal message send"
 
 
 class MessagesConduct(Conduct):
@@ -33,7 +33,7 @@ class MessagesConduct(Conduct):
         return self.unchanged(*inbox_named(event.data.of(messages_feature()).unread))
 
     def on_tool_starting_messages_read_whole(self, event: ToolStarting, settings: Settings) -> Transition:
-        return self.hold(messages_feature().READ_THE_WORDS_WHOLE.create()) if TRUNCATED.search(event.call.command) else self.unchanged()
+        return self.hold(messages_feature().FULL_MESSAGE_READ.create()) if TRUNCATED.search(event.call.command) else self.unchanged()
 
     def on_tool_starting_messages_unanswered(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = messages_feature()
@@ -41,10 +41,10 @@ class MessagesConduct(Conduct):
         if event.subagent or not messages.unanswered or event.call.is_journal or reads_their_files(event, messages.unanswered_files):
             return self.unchanged()
         owed = ", ".join(str(n) for n in messages.unanswered)
-        if messages.uses_unanswered >= int(settings.of(feature.HOLD_AFTER)):
-            return self.hold(feature.TOOLS_HELD_UNTIL_ANSWERED.create(messages=owed))
-        if messages.uses_unanswered >= int(settings.of(feature.NUDGE_AFTER)):
-            return self.unchanged(feature.ANSWER_BEFORE_ANYTHING_ELSE.create(messages=owed))
+        if messages.uses_unanswered >= int(settings.of(feature.TOOL_BLOCK_LIMIT)):
+            return self.hold(feature.UNANSWERED_TOOL_BLOCK.create(messages=owed))
+        if messages.uses_unanswered >= int(settings.of(feature.ANSWER_REQUEST_LIMIT)):
+            return self.unchanged(feature.UNANSWERED_MESSAGES.create(messages=owed))
         return self.unchanged()
 
     def on_tool_starting_messages_unread(self, event: ToolStarting, settings: Settings) -> Transition:
@@ -52,19 +52,19 @@ class MessagesConduct(Conduct):
         messages = event.data.of(feature)
         if event.subagent or event.call.is_journal or not messages.unread:
             return self.unchanged()
-        if event.call.writes and messages.times_named >= int(settings.of(feature.HOLD_AFTER_REMINDERS)):
-            return self.hold(feature.WRITE_HELD_UNTIL_READ.create(count=len(messages.unread)))
-        every = int(settings.of(feature.REMIND_EVERY))
+        if event.call.writes and messages.times_named >= int(settings.of(feature.EDIT_BLOCK_LIMIT)):
+            return self.hold(feature.INBOX_EDIT_BLOCK.create(count=len(messages.unread)))
+        every = int(settings.of(feature.REMINDER_INTERVAL))
         if every > 0 and messages.uses_since_newest > 0 and messages.uses_since_newest % every == 0:
             return self.unchanged(feature.inbox(messages.unread))
         return self.unchanged()
 
     def on_tool_finished_messages(self, event: ToolFinished, settings: Settings) -> Transition:
         command = event.call.command
-        return self.unchanged(messages_feature().REPLY_BY_TAG.create()) if SEND_COMMAND in command else self.unchanged()
+        return self.unchanged(messages_feature().TAG_REPLY.create()) if MESSAGE_COMMAND in command else self.unchanged()
 
     def on_reaction_given_messages(self, event: ReactionGiven, settings: Settings) -> Transition:
-        return self.unchanged(messages_feature().THE_USER_REACTED.create(face=event.face, n=event.message_id)) if event.by_user else self.unchanged()
+        return self.unchanged(messages_feature().USER_REACTION.create(face=event.face, n=event.message_id)) if event.by_user else self.unchanged()
 
 
 def messages_feature():

@@ -25,7 +25,7 @@ M = TypeVar("M", bound=Model)
 
 
 PAGE = 500
-FOUND = 40
+MATCH_LIMIT = 40
 
 
 class Repository(Generic[M]):
@@ -84,7 +84,7 @@ class Repository(Generic[M]):
 
     def search(self, terms: list[str]) -> list[M]:
         clause, params = self.matching_words(terms)
-        return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, FOUND))
+        return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, MATCH_LIMIT))
 
     def matching_words(self, terms: list[str]) -> tuple[str, tuple]:
         each = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"

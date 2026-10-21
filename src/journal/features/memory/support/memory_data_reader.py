@@ -19,7 +19,7 @@ class MemoryDataReader:
     def read(self, agent: Agent) -> MemoryData:
         rows = [*(MemoryRow("fact", f.id, f.text, tuple(f.keywords), ChatMark.FACTS, f.presence) for f in self.facts.in_()), *(MemoryRow("rule", r.id, r.text, tuple(r.keywords), ChatMark.RULES, r.presence) for r in self.rules.all()), *(MemoryRow("reminder", r.id, r.text, tuple(r.keywords), ChatMark.REMINDERS, r.presence) for r in self.reminders.in_())]
         from journal.features.memory.feature import Memory
-        return MemoryData(mark_owed=agent.mark_owed, context_mark=agent.context_mark, rows=tuple(rows), stale=self.stale(int(self.settings.option(Memory.STALE_AFTER))))
+        return MemoryData(mark_owed=agent.mark_owed, context_mark=agent.context_mark, rows=tuple(rows), stale=self.stale(int(self.settings.option(Memory.STALENESS_LIMIT))))
 
     def stale(self, days: int) -> tuple[str, ...]:
         moment = datetime.now(timezone.utc)

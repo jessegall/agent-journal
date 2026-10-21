@@ -17,6 +17,6 @@ class PinsDataReader:
 
     def read(self, agent: Agent) -> PinsData:
         from journal.features.pins.feature import Pins
-        every = int(self.settings.option(Pins.SUGGEST_EVERY))
-        suggested = tuple(url.rstrip("/") for line in self.entries.lines_said_since_use(agent.session, Pins.PIN_THE_LINK.key, agent.tool_uses - every) for url in LINK.findall(line))
+        every = int(self.settings.option(Pins.PIN_SUGGESTION_INTERVAL))
+        suggested = tuple(url.rstrip("/") for line in self.entries.lines_said_since_use(agent.session, Pins.LINK_PIN_REQUEST.key, agent.tool_uses - every) for url in LINK.findall(line))
         return PinsData(pinned=tuple(n.link.rstrip("/") for n in self.notices.open_in()), suggested_lately=suggested)

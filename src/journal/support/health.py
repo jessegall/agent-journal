@@ -8,7 +8,7 @@ from journal.features.mcp.support.known import Known
 
 LINE = re.compile(r"^(?P<name>.+?): (?P<how>.+?) - (?P<mark>[✔✘!]) (?P<words>.*)$")
 STATES = {"✔": "connected", "✘": "failed", "!": "needs_auth"}
-FRESH_FOR = 3600.0
+HEALTH_VALIDITY_SECONDS = 3600.0
 
 
 class Health:
@@ -16,7 +16,7 @@ class Health:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self._report = KeptAnswer(lambda: self.asked(), FRESH_FOR, HealthReport())
+        self._report = KeptAnswer(lambda: self.asked(), HEALTH_VALIDITY_SECONDS, HealthReport())
 
     def of_all(self) -> HealthReport:
         return self._report.now()

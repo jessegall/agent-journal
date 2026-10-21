@@ -8,7 +8,7 @@ from journal.launcher.support.keys import Keys
 from journal.launcher.support.option import Option
 
 BOLD, DIM, ACCENT, GOOD, BADGE, RESET = "\x1b[1m", "\x1b[2m", "\x1b[38;5;111m", "\x1b[38;5;114m", "\x1b[38;5;176m", "\x1b[0m"
-SAVE_CURSOR, BACK_TO_SAVED, HIDE_CURSOR, SHOW_CURSOR = "\x1b7", "\x1b8\x1b[J", "\x1b[?25l", "\x1b[?25h"
+STORE_CURSOR, RESTORE_CURSOR, HIDE_CURSOR, VISIBLE_CURSOR = "\x1b7", "\x1b8\x1b[J", "\x1b[?25l", "\x1b[?25h"
 HINT = "↑ ↓ to move · Enter to pick · a number to jump · Esc to leave"
 ACTION_HINTS = {"x": "x to delete"}
 
@@ -31,7 +31,7 @@ class Screen:
         rule = "─" * width
         body = "\n".join(f"│ {line:<{width - 2}} │" for line in lines)
         clear = "\x1b[2J\x1b[H" if self.interactive else ""
-        self.out.write(f"{clear}{self.paint(ACCENT, '┌' + rule + '┐')}\n{body}\n{self.paint(ACCENT, '└' + rule + '┘')}\n{SAVE_CURSOR if self.interactive else ''}")
+        self.out.write(f"{clear}{self.paint(ACCENT, '┌' + rule + '┐')}\n{body}\n{self.paint(ACCENT, '└' + rule + '┘')}\n{STORE_CURSOR if self.interactive else ''}")
         self.out.flush()
 
     def pick(self, heading: str, notes: list[str], options: list[Option], default: int) -> int:
@@ -60,7 +60,7 @@ class Screen:
         self.out.flush()
 
     def _fresh(self) -> None:
-        self.out.write(BACK_TO_SAVED if self.interactive else "\n")
+        self.out.write(RESTORE_CURSOR if self.interactive else "\n")
 
     def _lines(self, heading: str, notes: list[str], options: list[Option], time: int, actions: tuple[str, ...]) -> list[str]:
         width = max(len(option.label) for option in options)
@@ -96,12 +96,12 @@ class Screen:
                     time = self._moved(time, key, len(options))
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, saved)
-            self.out.write(SHOW_CURSOR)
+            self.out.write(VISIBLE_CURSOR)
             self.out.flush()
 
     @staticmethod
     def _moved(time: int, key: str, count: int) -> int:
-        if key in Keys.UP:
+        if key in Keys.UPWARD:
             return (time - 1) % count
         if key in Keys.DOWN:
             return (time + 1) % count

@@ -20,7 +20,7 @@ class VoiceController:
         title, name, chosen = self.chosen.title(), self.chosen.first_name(), self.chosen.voice().name
         voices = [{"name": v.name, "text": v.text, "calling": v.calling.value, "sample": v.sample.replace("{you}", v.calling.called(title, name, v.address) or "you"),
                    "humour": v.humour, "naming": v.naming, "address": v.address, "emoji": v.emoji, "chosen": v.name == chosen} for v in Shipped.ALL]
-        callings = {c.value: c.called(title, name) for c in Calling if c is not Calling.OWN}
+        callings = {c.value: c.called(title, name) for c in Calling if c is not Calling.AGENT_CHOICE}
         return Response.json({"voices": voices, "callings": callings, "namings": [{"label": label, "text": text} for label, text in NAMINGS]})
 
     def choose(self, request: Request) -> Response:

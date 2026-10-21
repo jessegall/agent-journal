@@ -15,7 +15,7 @@ from journal.repositories.messages import Messages
 from journal.repositories.shares import Shares
 
 SPANS = {"h": timedelta(hours=1), "d": timedelta(days=1)}
-NEVER = ("", "0", "never")
+DISABLED_VALUES = ("", "0", "never")
 
 
 class ShareActions:
@@ -55,7 +55,7 @@ class ShareActions:
     @staticmethod
     def until(expires: str) -> datetime | None:
         given = expires.strip().lower()
-        if given in NEVER:
+        if given in DISABLED_VALUES:
             return None
         if not re.fullmatch(r"\d+[hd]", given):
             raise Refused("expires is a number of hours or days, like 12h or 7d, or never")

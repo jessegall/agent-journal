@@ -5,8 +5,8 @@ from journal.db.connection import Connection
 from journal.db.migration import Migration
 
 USER_WORKFLOWS = "SELECT id, title, event, state, shipped, revision FROM charts WHERE shipped = 0 OR updated_by NOT LIKE 'system%'"
-NODES_OF = "SELECT nodes.id, nodes.kind, nodes.key, nodes.text FROM nodes JOIN links ON links.source = 'nodes:' || nodes.id WHERE links.kind = 'node_of' AND links.target = ? ORDER BY nodes.id"
-LINES_OF = "SELECT source, target, kind FROM links WHERE kind IN ('yes', 'no', 'then') AND source IN ({refs}) ORDER BY id"
+NODE_QUERY = "SELECT nodes.id, nodes.kind, nodes.key, nodes.text FROM nodes JOIN links ON links.source = 'nodes:' || nodes.id WHERE links.kind = 'node_of' AND links.target = ? ORDER BY nodes.id"
+LINE_QUERY = "SELECT source, target, kind FROM links WHERE kind IN ('yes', 'no', 'then') AND source IN ({refs}) ORDER BY id"
 LINK_KINDS = ("node_of", "yes", "no", "then")
 SETTING_KEYS = ("listeners.off", "chart.drawings_version", "features.chart")
 ENTRY_KINDS = ("walk", "walk_failed")
@@ -41,12 +41,12 @@ class ChartDrop(Migration):
 
     @staticmethod
     def body(connection: Connection, chart_id: int) -> str:
-        nodes = connection.all(NODES_OF, (f"charts:{chart_id}",))
+        nodes = connection.all(NODE_QUERY, (f"charts:{chart_id}",))
         names = {f"nodes:{node['id']}": f"{node['kind']} {node['key']}" for node in nodes}
         text = ["## Nodes", *(f"- {node['kind']} {node['key']}" + (f": {node['text']}" if node["text"] else "") for node in nodes), "", "## Lines"]
         if nodes:
             refs = ", ".join("?" for _ in nodes)
-            for link in connection.all(LINES_OF.format(refs=refs), tuple(names)):
+            for link in connection.all(LINE_QUERY.format(refs=refs), tuple(names)):
                 port = f" ({link['kind']})" if link["kind"] in ("yes", "no") else ""
                 text.append(f"- {names.get(link['source'], link['source'])} to {names.get(link['target'], link['target'])}{port}")
         return "\n".join(text)

@@ -23,7 +23,7 @@ class Awaiting(Wait):
 
     name = "awaiting"
     title = "Waiting"
-    allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
+    allows = frozenset({Permission.FILE_EDITS, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     what: str = ""
     ends_on: str = ""
     start_time: float = 0.0
@@ -53,9 +53,9 @@ class Awaiting(Wait):
         from journal.features.tasks.feature import Tasks
         next_open = event.data.of(Tasks).next_open
         if settings.of(Tasks.AUTO) and not self.next_task_named and event.time - self.start_time >= NEXT_TASK_DELAY_SECONDS and next_open is not None:
-            return self.changed(replace(self, next_task_named=True), Tasks.NEXT_TASK_WHILE_WAITING.create(what=self.what, n=next_open.id, title=next_open.title))
+            return self.changed(replace(self, next_task_named=True), Tasks.WAIT_NEXT_TASK.create(what=self.what, n=next_open.id, title=next_open.title))
         if event.time - max(self.start_time, self.reminder_time) >= CHECK_REMINDER_INTERVAL_SECONDS:
-            return self.changed(replace(self, reminder_time=event.time), Tasks.CHECK_THE_WAIT.create(what=self.what, minutes=int((event.time - self.start_time) // 60)))
+            return self.changed(replace(self, reminder_time=event.time), Tasks.WAIT_CHECK.create(what=self.what, minutes=int((event.time - self.start_time) // 60)))
         return self.unchanged()
 
     def on_row_settled(self, event: RowSettled, settings: Settings) -> Transition:
@@ -83,4 +83,4 @@ class Awaiting(Wait):
         outcomes = "; ".join(part for part in (self.outcomes, outcome) if part)
         if left:
             return self.changed(replace(self, ends_on=",".join(left), outcomes=outcomes), *lines)
-        return self.pop(*lines, Tasks.WAIT_OVER.create(what=self.what, outcome=outcomes))
+        return self.pop(*lines, Tasks.WAIT_END.create(what=self.what, outcome=outcomes))

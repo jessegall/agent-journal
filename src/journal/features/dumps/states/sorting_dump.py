@@ -12,8 +12,8 @@ from journal.events.rows.dump_chosen import DumpChosen
 from journal.events.rows.dump_filed import DumpFiled
 from journal.support.permission import Permission
 
-OWN_WORDS = -2
-LEFT_TO_THE_AGENT = -1
+USER_TEXT = -2
+AGENT_HANDOVER = -1
 
 
 @dataclass(frozen=True)
@@ -22,7 +22,7 @@ class SortingDump(BaseState):
 
     name = "sorting_dump"
     title = "Sorting a dump"
-    allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
+    allows = frozenset({Permission.FILE_EDITS, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     dump_id: int = 0
     asking: bool = False
 
@@ -31,7 +31,7 @@ class SortingDump(BaseState):
 
     def on_idle(self, event: Idle, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
-        return self.unchanged() if self.asking else self.hold(DumpsFeature.DUMP_STILL_OPEN_CARRY_ON.create(n=self.dump_id))
+        return self.unchanged() if self.asking else self.hold(DumpsFeature.DUMP_OPEN_REMINDER.create(n=self.dump_id))
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.unchanged()
@@ -40,7 +40,7 @@ class SortingDump(BaseState):
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id or not event.waiting:
             return self.unchanged()
-        return self.unchanged().typing(DumpsFeature.DUMP_ARRIVED_FILE_IT.create(n=event.dump_id, count=items_in(event.waiting)))
+        return self.unchanged().typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=items_in(event.waiting)))
 
     def on_dump_asked(self, event: DumpAsked, settings: Settings) -> Transition:
         return self.changed(replace(self, asking=True)) if event.dump_id == self.dump_id else self.unchanged()
@@ -49,24 +49,24 @@ class SortingDump(BaseState):
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id:
             return self.unchanged()
-        return self.changed(replace(self, asking=False)).typing(DumpsFeature.THE_USER_ANSWERED_ON_THE_DUMP.create(n=event.dump_id, answer=event.answer, question=event.question))
+        return self.changed(replace(self, asking=False)).typing(DumpsFeature.DUMP_ANSWER.create(n=event.dump_id, answer=event.answer, question=event.question))
 
     def on_dump_chosen(self, event: DumpChosen, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
-        if event.dump_id != self.dump_id or event.pick == OWN_WORDS:
+        if event.dump_id != self.dump_id or event.pick == USER_TEXT:
             return self.unchanged()
-        if event.pick == LEFT_TO_THE_AGENT:
-            return self.unchanged().typing(DumpsFeature.DUMP_LEFT_TO_YOU_FINISH_IT.create(n=event.dump_id))
-        return self.unchanged().typing(DumpsFeature.THE_USER_CHOSE_A_STEP.create(n=event.dump_id, label=event.label))
+        if event.pick == AGENT_HANDOVER:
+            return self.unchanged().typing(DumpsFeature.DUMP_HANDOVER.create(n=event.dump_id))
+        return self.unchanged().typing(DumpsFeature.DUMP_STEP_CHOICE.create(n=event.dump_id, label=event.label))
 
     def on_dump_filed(self, event: DumpFiled, settings: Settings) -> Transition:
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id:
             return self.unchanged()
-        summed = () if event.stopped else (DumpsFeature.DUMP_FILED_SUM_IT_UP.create(n=event.dump_id, outcome=event.outcome),)
+        summed = () if event.stopped else (DumpsFeature.DUMP_SUMMARY_REQUEST.create(n=event.dump_id, outcome=event.outcome),)
         following = event.data.of(DumpsFeature)
         if following.in_hand and following.in_hand != self.dump_id:
-            return self.changed(replace(self, dump_id=following.in_hand, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVED_FILE_IT.create(n=following.in_hand, count=items_in(following.waiting)))
+            return self.changed(replace(self, dump_id=following.in_hand, asking=False)).typing(*summed, DumpsFeature.DUMP_ARRIVAL.create(n=following.in_hand, count=items_in(following.waiting)))
         return self.pop().typing(*summed)
 
 

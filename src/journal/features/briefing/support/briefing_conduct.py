@@ -15,17 +15,17 @@ class BriefingConduct(Conduct):
 
     def on_session_started_briefing(self, event: SessionStarted, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.unchanged(*start_block(event.data.of(feature), event.source), feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
+        return self.unchanged(*start_block(event.data.of(feature), event.source), feature.OVERVIEW_REQUEST.create())
 
     def on_tool_starting_briefing(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = briefing_feature()
         if event.subagent or not event.call.writes or event.data.of(feature).oriented:
             return self.unchanged()
-        return self.hold(feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
+        return self.hold(feature.OVERVIEW_REQUEST.create())
 
     def on_idle_briefing(self, event: Idle, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.unchanged() if event.data.of(feature).oriented else self.hold(feature.STOPPED_UNORIENTED.create())
+        return self.unchanged() if event.data.of(feature).oriented else self.hold(feature.OVERVIEW_STOP.create())
 
 
 def briefing_feature():
@@ -37,10 +37,10 @@ def start_block(briefing: BriefingData, source: str) -> list[Nudge]:
     feature = briefing_feature()
     taken_over_at = "" if source == COMPACT else briefing.last_other_session_at
     optional = (
-        (taken_over_at, lambda: feature.YOU_TOOK_OVER.create(time=taken_over_at)),
-        (briefing.rules, lambda: feature.RULES_IN_FORCE.create(count=briefing.rules_count, rows=briefing.rules)),
-        (briefing.facts, lambda: feature.FACTS_HERE.create(rows=briefing.facts)),
-        (briefing.reminders, lambda: feature.REMINDERS_HERE.create(rows=briefing.reminders)),
-        (briefing.waiting, lambda: feature.WAITING_FOR_YOU.create(rows=briefing.waiting)),
+        (taken_over_at, lambda: feature.TAKEOVER.create(time=taken_over_at)),
+        (briefing.rules, lambda: feature.ACTIVE_RULES.create(count=briefing.rules_count, rows=briefing.rules)),
+        (briefing.facts, lambda: feature.ENVIRONMENT_FACTS.create(rows=briefing.facts)),
+        (briefing.reminders, lambda: feature.ENVIRONMENT_REMINDERS.create(rows=briefing.reminders)),
+        (briefing.waiting, lambda: feature.PENDING_ITEMS.create(rows=briefing.waiting)),
     )
-    return [feature.JOURNAL_READY.create(env=briefing.environment), feature.HANDLE_THE_JOURNAL_QUIETLY.create(), feature.THE_LAWS_APPLY.create(), *(line() for named, line in optional if named)]
+    return [feature.JOURNAL_READY.create(env=briefing.environment), feature.JOURNAL_DISCRETION.create(), feature.JOURNAL_LAWS.create(), *(line() for named, line in optional if named)]

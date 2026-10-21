@@ -15,8 +15,8 @@ class Checks(Feature):
     conduct = (ChecksConduct,)
 
     CHECK_FAILED = Nudge(name, "check_failed", "check {{n}}, {{title}}, failed", "{{tail}}", repeat_after=0)
-    CHECK_STILL_FAILING = Nudge(name, "check_still_failing", "check {{n}}, {{title}}, is still failing", "{{tail}}", repeat_after=900)
-    nudges = (CHECK_FAILED, CHECK_STILL_FAILING)
+    CHECK_FAILURE_REPEAT = Nudge(name, "check_still_failing", "check {{n}}, {{title}}, is still failing", "{{tail}}", repeat_after=900)
+    nudges = (CHECK_FAILED, CHECK_FAILURE_REPEAT)
 
     skill = Skill("checks", "Scripts that pass or fail about the project; load it when a check is created, run or fails", """
 # Checks

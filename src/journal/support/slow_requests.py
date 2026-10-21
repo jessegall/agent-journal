@@ -20,9 +20,9 @@ from journal.supervisor_link import SupervisorLink
 from journal.support.scope import Scope
 from journal.support.chat_mark import ChatMark
 
-SETTLING_SECONDS = 60.0
+STARTUP_GRACE_SECONDS = 60.0
 STARTING = "journal.starting"
-TESTS_RUNNING = "tests.running"
+TEST_RUN_KEY = "tests.running"
 
 
 HOOK = "HOOK"
@@ -60,19 +60,19 @@ class SlowRequests:
         return route.startswith(OUTWARD_COMMANDS) or route in OUTWARD_ROUTES
 
     def budget(self, method: str) -> int:
-        return int(self.settings.option(Faults.WRITE if method == "POST" else Faults.REQUEST))
+        return int(self.settings.option(Faults.EDIT_BUDGET if method == "POST" else Faults.REQUEST))
 
     def judging(self) -> bool:
         starting = self.config.home / "runtime" / STARTING
         if starting.is_file():
             self.started = time.monotonic()
             return False
-        settled = time.monotonic() - self.started > SETTLING_SECONDS
+        settled = time.monotonic() - self.started > STARTUP_GRACE_SECONDS
         busy = os.getloadavg()[0] > (os.cpu_count() or 1)
         return bool(self.settings.option(Faults.REPORT)) and settled and not busy and not self.is_testing()
 
     def is_testing(self) -> bool:
-        return any(self.is_running(mark) for mark in (self.config.home / "runtime").glob(f"{TESTS_RUNNING}.*"))
+        return any(self.is_running(mark) for mark in (self.config.home / "runtime").glob(f"{TEST_RUN_KEY}.*"))
 
     @staticmethod
     def is_running(mark: Path) -> bool:
@@ -100,6 +100,6 @@ class SlowRequests:
         agent = self.agents.live()
         if earlier or agent is None:
             return
-        line = self.nudger.say(agent, Faults.SLOW_REQUEST_TO_FIX.create(method=method, route=route, ms=ms, budget=budget))
+        line = self.nudger.say(agent, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))
         if line:
             self.supervisor.type(agent.environment_id, line)

@@ -50,10 +50,10 @@ class Requiring:
 
     def require(self, agent: Agent, skills: list[Skill]) -> list[str]:
         from journal.features.skills.feature import Skills
-        if self.registry.silenced(Skills.READ_THE_SKILL_FIRST):
+        if self.registry.silenced(Skills.SKILL_READ_REQUEST):
             return []
         self.owe(agent, skills)
-        return [line for skill in skills if (line := self.nudger.say(agent, Skills.READ_THE_SKILL_FIRST.create(skill=skill.name, path=self.path_of(skill))))]
+        return [line for skill in skills if (line := self.nudger.say(agent, Skills.SKILL_READ_REQUEST.create(skill=skill.name, path=self.path_of(skill))))]
 
     def path_of(self, skill: Skill):
         return self.files.path(skill).relative_to(self.files.config.root)

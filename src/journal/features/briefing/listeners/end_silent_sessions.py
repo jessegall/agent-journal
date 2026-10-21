@@ -5,7 +5,7 @@ from journal.events.agent_listener import AgentListener
 from journal.repositories.agents import Agents
 from journal.supervisor_link import SupervisorLink
 
-QUIET_FOR = 3600.0
+SILENCE_SECONDS = 3600.0
 
 
 class EndSilentSessions(AgentListener[Ticked]):
@@ -15,7 +15,7 @@ class EndSilentSessions(AgentListener[Ticked]):
         self.machine, self.agents, self.supervisor = machine, agents, supervisor
 
     def handle(self, event: Ticked) -> None:
-        if event.quiet_for < QUIET_FOR or self.is_supervised(event):
+        if event.quiet_for < SILENCE_SECONDS or self.is_supervised(event):
             return
         self.machine.move(event.session, event.environment_id, Ended())
 

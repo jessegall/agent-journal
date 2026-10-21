@@ -10,7 +10,7 @@ from journal.repositories.environments import Environments
 from journal.repositories.migrated_rows import MigratedRows
 from journal.repositories.tasks import Tasks
 
-IN_PROGRESS = "it was in progress in version 3 when the journal was brought across"
+MIGRATED_PROGRESS_NOTE = "it was in progress in version 3 when the journal was brought across"
 
 
 class BringTodos(EnvironmentKind):
@@ -32,9 +32,9 @@ class BringTodos(EnvironmentKind):
     @staticmethod
     def task(row: Version3Row, task: Task) -> Task:
         if row.completed:
-            return task.with_(state=TaskState.DONE, finished_at=row.closed_at(), outcome=row.outcome)
+            return task.with_(state=TaskState.FINISHED, finished_at=row.closed_at(), outcome=row.outcome)
         if row.data.get("blocked"):
             return task.with_(state=TaskState.BLOCKED, blocked_why=row.data["blocked"])
         if row.data.get("status") == "started":
-            return task.with_(state=TaskState.PARKED, parked_why=IN_PROGRESS)
+            return task.with_(state=TaskState.SUSPENDED, parked_why=MIGRATED_PROGRESS_NOTE)
         return task

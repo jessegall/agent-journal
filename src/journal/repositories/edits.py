@@ -5,7 +5,7 @@ from journal.models.edit import Edit
 from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
-KEEP = 500
+EDIT_LIMIT = 500
 
 
 class Edits(ScopedRepository[Edit]):
@@ -16,7 +16,7 @@ class Edits(ScopedRepository[Edit]):
 
     def record(self, edit: Edit, actor: Actor) -> Edit:
         kept = self.save(edit, actor)
-        for old in self.selected("1 ORDER BY id DESC LIMIT -1 OFFSET ?", (KEEP,)):
+        for old in self.selected("1 ORDER BY id DESC LIMIT -1 OFFSET ?", (EDIT_LIMIT,)):
             self.delete(old, actor)
         return kept
 

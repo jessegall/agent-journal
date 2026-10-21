@@ -40,7 +40,7 @@ class RecordTurn(AgentListener[TurnWritten]):
         if not event.final or not event.text.strip():
             return
         if Faces.only_face(event.text):
-            self.supervisor.type(event.environment_id, MessagesFeature.REPLY_WAS_ONLY_A_FACE.create(face=event.text.strip()).rendered())
+            self.supervisor.type(event.environment_id, MessagesFeature.FACE_REPLY.create(face=event.text.strip()).rendered())
             return
         with self.recording:
             self._record(event)
@@ -67,7 +67,7 @@ class RecordTurn(AgentListener[TurnWritten]):
         from journal.features.messages.feature import Messages as MessagesFeature
         fresh = [n for n in tagged if self.earlier_reply(n) is None]
         if tagged and not fresh:
-            said = MessagesFeature.REPLY_KEPT_OUT_AS_REPLIED_ALREADY.create(n=tagged[0], reply=self.earlier_reply(tagged[0]).id)
+            said = MessagesFeature.DUPLICATE_REPLY.create(n=tagged[0], reply=self.earlier_reply(tagged[0]).id)
             self.supervisor.type(event.environment_id, said.rendered())
         return fresh
 
@@ -84,7 +84,7 @@ class RecordTurn(AgentListener[TurnWritten]):
             return False
         repeated = [r for r in self.messages.replies_since(prompt.created_at) if WordOverlap.share(text, r.text) >= REPEATS]
         if repeated:
-            self.supervisor.type(event.environment_id, MessagesFeature.CLOSING_WORDS_KEPT_OUT_AS_REPEATED.create(reply=repeated[0].id, n=repeated[0].reply_to).rendered())
+            self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_CLOSING_TEXT.create(reply=repeated[0].id, n=repeated[0].reply_to).rendered())
         return bool(repeated)
 
     def turn_prompt(self, event: TurnWritten) -> Entry | None:

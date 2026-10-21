@@ -9,7 +9,7 @@ from journal.events.agent.turn_written import TurnWritten
 SHOP_TALK = re.compile(r"\bjournal (task|plan|message|question|fact|rule|reminder|sequence|worker|check|skill|stuck|nothing) [a-z]+\b|\[journal\]", re.I)
 THIRD_PERSON = re.compile(r"\bthe user\b", re.I)
 EM_DASHES = re.compile(r"—.*—", re.S)
-RUN_ON, SENTENCES = 400, 3
+LONG_PARAGRAPH_CHARACTERS, SENTENCES = 400, 3
 
 
 class EtiquetteConduct(Conduct):
@@ -19,19 +19,19 @@ class EtiquetteConduct(Conduct):
         from journal.features.etiquette.feature import Etiquette
         if not event.final:
             return self.unchanged()
-        rows = [nudge.create() for pattern, nudge in ((SHOP_TALK, Etiquette.NO_SHOP_TALK), (THIRD_PERSON, Etiquette.SAY_YOU_NOT_THE_USER), (EM_DASHES, Etiquette.NO_EM_DASHES)) if pattern.search(event.content)]
+        rows = [nudge.create() for pattern, nudge in ((SHOP_TALK, Etiquette.SHOP_TALK_WARNING), (THIRD_PERSON, Etiquette.SECOND_PERSON), (EM_DASHES, Etiquette.EM_DASH_WARNING)) if pattern.search(event.content)]
         if runs_together(event.content):
-            rows.append(Etiquette.BLANK_LINES_BETWEEN_PARAGRAPHS.create())
+            rows.append(Etiquette.PARAGRAPH_SPACING.create())
         return self.unchanged(*rows)
 
     def on_tool_finished_etiquette(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette
-        every = int(settings.of(Etiquette.REMIND_EVERY))
+        every = int(settings.of(Etiquette.REMINDER_INTERVAL))
         if event.subagent or every <= 0 or event.data.of(Etiquette).lines_since_reminder < every:
             return self.unchanged()
-        return self.unchanged(Etiquette.A_LINE_IS_AN_INSTRUCTION.create())
+        return self.unchanged(Etiquette.JOURNAL_LINE_RULE.create())
 
 
 def runs_together(text: str) -> bool:
     text = text.strip()
-    return len(text) >= RUN_ON and "\n\n" not in text and text.count(". ") >= SENTENCES
+    return len(text) >= LONG_PARAGRAPH_CHARACTERS and "\n\n" not in text and text.count(". ") >= SENTENCES

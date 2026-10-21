@@ -13,10 +13,10 @@ from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.migrated_rows import MigratedRows
 from journal.repositories.phases import Phases
-from journal.repositories.plans import IN_PHASE, IN_PLAN, PHASE_OF, Plans
+from journal.repositories.plans import PHASE_LINK, PLAN_LINK, PHASE_TASK_LINK, Plans
 
 STATES = {"building": PlanState.DRAFT, "draft": PlanState.DRAFT, "ready": PlanState.READY, "reviewing": PlanState.READY, "approved": PlanState.APPROVED,
-          "active": PlanState.STARTED, "waiting": PlanState.STARTED, "parked": PlanState.PARKED, "done": PlanState.DONE, "abandoned": PlanState.CANCELLED}
+          "active": PlanState.STARTED, "waiting": PlanState.STARTED, "parked": PlanState.SUSPENDED, "done": PlanState.FINISHED, "abandoned": PlanState.CANCELLED}
 
 
 class BringPlans(EnvironmentKind):
@@ -33,8 +33,8 @@ class BringPlans(EnvironmentKind):
         plan = self.plans.imported(Plan(environment_id=into.id, title=row.title, brief=row.brief, state=STATES.get(row.data.get("status", ""), PlanState.DRAFT)), row.made_at(), actor)
         for given in row.listed("phases"):
             phase = self.phases.imported(Phase(environment_id=into.id, title=given.get("title", ""), complete_when=given.get("when", ""), checkpoint=bool(given.get("checkpoint"))), row.made_at(), actor)
-            self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_OF), actor)
+            self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_TASK_LINK), actor)
             for task in [rows for n in given.get("todos", []) if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
-                self.links.save(Link(source=task, target=Ref.to(plan), kind=IN_PLAN), actor)
-                self.links.save(Link(source=task, target=Ref.to(phase), kind=IN_PHASE), actor)
+                self.links.save(Link(source=task, target=Ref.to(plan), kind=PLAN_LINK), actor)
+                self.links.save(Link(source=task, target=Ref.to(phase), kind=PHASE_LINK), actor)
         return plan

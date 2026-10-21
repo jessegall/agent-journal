@@ -8,7 +8,7 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.support.masks import Masks
-from journal.support.slow_requests import TESTS_RUNNING
+from journal.support.slow_requests import TEST_RUN_KEY
 from journal.support.secret_values import SecretValues
 
 from journal.db.connection import Connection
@@ -22,7 +22,7 @@ from journal.support.scope import Scope
 os.environ["AGENT_JOURNAL_SECRETS"] = tempfile.mkdtemp(prefix="journal-test-values-")
 """Every test, and every journal a test boots, keeps its secret values in a scratch folder, never the user's own."""
 
-TESTS_MARK = Path(__file__).resolve().parent.parent / ".journal" / "runtime" / f"{TESTS_RUNNING}.{os.getpid()}"
+TESTS_MARK = Path(__file__).resolve().parent.parent / ".journal" / "runtime" / f"{TEST_RUN_KEY}.{os.getpid()}"
 
 
 def pytest_sessionstart(session) -> None:

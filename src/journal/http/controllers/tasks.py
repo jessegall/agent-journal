@@ -12,7 +12,7 @@ from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
-from journal.repositories.plans import IN_PLAN
+from journal.repositories.plans import PLAN_LINK
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
@@ -34,7 +34,7 @@ class TaskController(Controller[Task]):
         return Counts(all=self.repository.counted_in(), open=self.repository.unfinished_count(), unread=self.repository.unseen_by_user())
 
     def shown_page(self, rows: list[Task]) -> list[dict]:
-        plans, holders = self.repository.linked(IN_PLAN), self.workers.holding({t.id for t in rows})
+        plans, holders = self.repository.linked(PLAN_LINK), self.workers.holding({t.id for t in rows})
         return [{**ModelFields.of(t), "plan_id": plans[t.id][0].id if t.id in plans else None, "worker_id": holders[t.id].id if t.id in holders else None} for t in rows]
 
     def start(self, request: Request) -> Response:

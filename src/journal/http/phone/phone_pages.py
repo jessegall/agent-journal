@@ -20,7 +20,7 @@ from journal.http.phone.phone_data import PhoneData
 from journal.http.sharing.share_pages import APP, APP_HEADERS, SharePages
 from journal.http.router import Router
 from journal.http.support.file_response import FileResponse
-from journal.http.support.request import ENV_HEADER, Request
+from journal.http.support.request import ENVIRONMENT_HEADER, Request
 from journal.http.support.share_answer import ShareAnswer
 from journal.repositories.environments import Environments
 from journal.models.phone import Phone
@@ -164,7 +164,7 @@ class PhonePages:
         url = urlsplit(request.path.removeprefix("/p"))
         query = {name: values[-1] for name, values in parse_qs(url.query).items()}
         environment = self.environments.find(phone.environment_id).name
-        asked = Request(request.method, url.path, query, body, {}, {ENV_HEADER.lower(): environment}, Actor.phone(phone.id))
+        asked = Request(request.method, url.path, query, body, {}, {ENVIRONMENT_HEADER.lower(): environment}, Actor.phone(phone.id))
         route = self.router.matched(asked)
         if route is None or not self.allow.allows(route) or query.get("env", environment) != environment:
             return self.json(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})

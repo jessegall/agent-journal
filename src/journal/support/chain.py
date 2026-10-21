@@ -8,7 +8,7 @@ OPENS = {"for": "done", "while": "done", "until": "done", "select": "done", "rep
 BODIES = {"do", "then", "{"}
 SHORT = {"for", "select", "repeat"}
 BODY = {"for": "do", "while": "do", "until": "do", "select": "do", "repeat": "do", "if": "then", "case": "in"}
-LEADS = {"do", "then", "else", "time", "!"}
+CONTROL_KEYWORDS = {"do", "then", "else", "time", "!"}
 
 
 COMPOUND = {"if", "elif", "else", "then", "for", "while", "until", "do", "case", "select", "{", "("}
@@ -220,7 +220,7 @@ class Chain:
 
     @staticmethod
     def led(text: list[str]) -> list[str]:
-        start = next((i for i, w in enumerate(text) if w not in LEADS), len(text))
+        start = next((i for i, w in enumerate(text) if w not in CONTROL_KEYWORDS), len(text))
         return text[start:]
 
     @staticmethod

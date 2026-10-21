@@ -22,6 +22,6 @@ class StuckCommand(Command):
 
     def now(self, args: Namespace, caller: Caller) -> int:
         self.events.help_needed(args.why, caller)
-        self.cards.show(self.scope.id, caller.session, "Agent stuck", "warn", "bad", args.why, shows=ChatMark.STUCK)
+        self.cards.show(self.scope.id, caller.session, "Agent stuck", "warn", "bad", args.why, shows=ChatMark.IMPASSE)
         print("stuck; your next tool use or prompt lifts it")
         return 0

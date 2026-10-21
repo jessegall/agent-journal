@@ -5,9 +5,9 @@ from journal.models.doc import Doc
 from journal.repositories.docs import Docs
 
 WEIGHTS = {"title": 8, "number": 8, "abstract": 3, "text": 1}
-AROUND = 70
+SNIPPET_RADIUS = 70
 SPACES = re.compile(r"\s+")
-MARKS = re.compile(r"[*`#]+")
+MARKDOWN_SYMBOLS = re.compile(r"[*`#]+")
 
 
 class DocSearch:
@@ -33,8 +33,8 @@ class DocSearch:
 
     @staticmethod
     def passage(body: str, asked: list[str]) -> str:
-        flat = SPACES.sub(" ", MARKS.sub("", body))
+        flat = SPACES.sub(" ", MARKDOWN_SYMBOLS.sub("", body))
         time = min((i for i in (flat.lower().find(word) for word in asked) if i >= 0), default=-1)
         if time < 0:
             return ""
-        return flat[max(0, time - AROUND):time + AROUND].strip()
+        return flat[max(0, time - SNIPPET_RADIUS):time + SNIPPET_RADIUS].strip()

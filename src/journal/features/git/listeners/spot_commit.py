@@ -24,7 +24,7 @@ from journal.features.tasks.support.next_open_task import NextOpenTask
 from journal.support.decision import Decision
 
 COMMIT = "commit"
-JUST_MADE = 60
+COMMIT_WINDOW_SECONDS = 60
 LAST_STARTS = 3
 TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)?)+)\s*(.*)$", re.MULTILINE)
 
@@ -56,7 +56,7 @@ class SpotCommit(AgentListener[ToolFinished]):
         return self.commit(event, head.sha, closed)
 
     def is_own(self, event: ToolFinished, head: HeadCommit) -> bool:
-        if timing.time() - head.committed <= JUST_MADE:
+        if timing.time() - head.committed <= COMMIT_WINDOW_SECONDS:
             return True
         starts = self.entries.tool_starts(event.session, last=LAST_STARTS)
         return any(part["text"].startswith("git commit") for start in starts for part in start.data.get("call", {}).get("parts", []))

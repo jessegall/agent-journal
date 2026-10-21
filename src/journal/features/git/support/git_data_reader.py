@@ -6,7 +6,7 @@ from journal.features.git.support.git_data import GitData
 from journal.models.agent import Agent
 
 SHOWN = 20
-FRESH_SECONDS = 15.0
+RECENCY_SECONDS = 15.0
 
 
 class GitDataReader:
@@ -21,7 +21,7 @@ class GitDataReader:
         return GitData(uncommitted=self.uncommitted())
 
     def uncommitted(self) -> str:
-        if time.monotonic() - self.read_at < FRESH_SECONDS:
+        if time.monotonic() - self.read_at < RECENCY_SECONDS:
             return self.last_uncommitted
         self.last_uncommitted, self.read_at = self.status_files(), time.monotonic()
         return self.last_uncommitted

@@ -10,7 +10,7 @@ from journal.repositories.messages import Messages
 from journal.support.not_found import NotFound
 from journal.repositories.tasks import Tasks
 
-NAMED = re.compile(r"\btask (\d+)\b", re.IGNORECASE)
+TASK_PATTERN = re.compile(r"\btask (\d+)\b", re.IGNORECASE)
 
 
 class LinkNamedTasks(Listener[Created]):
@@ -27,10 +27,10 @@ class LinkNamedTasks(Listener[Created]):
             asked = self.messages.find(reply.reply_to)
         except NotFound:
             return
-        for n in {int(n) for n in NAMED.findall(reply.text)}:
+        for n in {int(n) for n in TASK_PATTERN.findall(reply.text)}:
             try:
                 task = self.tasks.find(n)
             except NotFound:
                 continue
-            if Ref.to(task) not in self.links.targets(asked, Messages.ABOUT):
-                self.links.save(Link(source=Ref.to(asked), target=Ref.to(task), kind=Messages.ABOUT), event.actor)
+            if Ref.to(task) not in self.links.targets(asked, Messages.SUBJECT_LINK):
+                self.links.save(Link(source=Ref.to(asked), target=Ref.to(task), kind=Messages.SUBJECT_LINK), event.actor)

@@ -42,7 +42,7 @@ class MessageController(Controller[Message]):
         return {m.id for m in self.repository.unanswered()} | {m.id for m in self.repository.unread()}
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
-        filed, commented, unanswered = self.repository.linked(Messages.ABOUT), self.repository.linked(Messages.COMMENTS_ON), {m.id for m in self.repository.unanswered()}
+        filed, commented, unanswered = self.repository.linked(Messages.SUBJECT_LINK), self.repository.linked(Messages.COMMENT_LINK), {m.id for m in self.repository.unanswered()}
         return [{**ModelFields.of(m), "answered": m.id not in unanswered, "filed": [ref.id for ref in filed.get(m.id, [])],
                  "comments_on": [str(ref) for ref in commented.get(m.id, [])], "mentions": [str(ref) for ref in Mentions.in_(m.text)]} for m in rows]
 

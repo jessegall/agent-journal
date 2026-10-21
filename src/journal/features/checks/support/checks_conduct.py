@@ -12,5 +12,5 @@ class ChecksConduct(Conduct):
         from journal.features.checks.feature import Checks
         if event.passed or event.waited_on:
             return self.unchanged()
-        failure = Checks.CHECK_STILL_FAILING if event.failed_before else Checks.CHECK_FAILED
+        failure = Checks.CHECK_FAILURE_REPEAT if event.failed_before else Checks.CHECK_FAILED
         return self.unchanged(failure.create(n=event.check_id, title=event.title, tail=CheckOutput.told(event.output)))

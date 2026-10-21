@@ -16,7 +16,7 @@ class SweepTranscripts(Listener[ClockTicked]):
 
     def handle(self, event: ClockTicked) -> None:
         from journal.features.messages.feature import Messages
-        until = event.time - float(self.settings.option(Messages.SWEEP_AFTER))
+        until = event.time - float(self.settings.option(Messages.TRANSCRIPT_SCAN_DELAY))
         for agent in [agent for agent in self.agents.everywhere() if agent.has_program() and agent.state != "ended"]:
             with self.scope.of(agent.environment_id):
                 written = self.turns.missed(agent.session, agent.provider, until)

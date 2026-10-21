@@ -13,4 +13,4 @@ class ProfilesConduct(Conduct):
         name = event.call.input.get("subagent_type", "")
         if event.call.tool not in DISPATCH_TOOLS or name not in event.data.of(Profiles).workers:
             return self.unchanged()
-        return self.hold(Profiles.WORKER_PROFILE_IS_NOT_A_SUBAGENT.create(name=name))
+        return self.hold(Profiles.WORKER_PROFILE_MISUSE.create(name=name))

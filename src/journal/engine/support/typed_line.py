@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from typing import ClassVar
 
-NAMED = re.compile(r"\bmessages? (\d+(?:, \d+)*)")
+MESSAGES_PATTERN = re.compile(r"\bmessages? (\d+(?:, \d+)*)")
 
 
 @dataclass(frozen=True)
@@ -10,7 +10,7 @@ class TypedLine:
     """A line typed into an agent's terminal, waiting for the prompt hook that proves it arrived. A line longer than a terminal takes is typed in several whole pieces, each marked, never cut short."""
 
     LONGEST: ClassVar[int] = 600
-    PIECE: ClassVar[int] = 40
+    SPLIT_MARGIN: ClassVar[int] = 40
 
     environment_id: int
     line: str
@@ -28,8 +28,8 @@ class TypedLine:
         return [*pieces, remainder]
 
     def messages_named(self) -> set[int]:
-        return {int(n) for rows in NAMED.findall(self.line) for n in rows.split(", ")}
+        return {int(n) for rows in MESSAGES_PATTERN.findall(self.line) for n in rows.split(", ")}
 
     def holds(self, prompt: str) -> bool:
         text = " ".join(prompt.split())
-        return text == self.line or (len(text) >= self.PIECE and text in self.line)
+        return text == self.line or (len(text) >= self.SPLIT_MARGIN and text in self.line)

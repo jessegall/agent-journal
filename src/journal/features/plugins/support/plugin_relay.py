@@ -24,7 +24,7 @@ from journal.support.deferred import Deferred
 LATER = 10
 UNANSWERED = "plugin_unanswered"
 WAITING = "plugin_line_waiting"
-SAID = "plugin_said"
+PLUGIN_LINE_KIND = "plugin_said"
 CUT = "plugin_cut"
 
 
@@ -91,7 +91,7 @@ class PluginRelay:
         return [e.data["line"] for e in reversed(waiting)]
 
     def said(self, plugin: Plugin, event: Event, environment_id: int, how: str, text: str) -> None:
-        self.entries.save(Entry(environment_id=environment_id, kind=SAID, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "how": how, "words": text}), Actor.plugin(plugin.name))
+        self.entries.save(Entry(environment_id=environment_id, kind=PLUGIN_LINE_KIND, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "how": how, "words": text}), Actor.plugin(plugin.name))
 
     def unanswered(self, plugin: Plugin, event: Event, environment_id: int, reason: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=UNANSWERED, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "reason": reason}), Actor.system())

@@ -16,9 +16,9 @@ from journal.events.rows.task_started import TaskStarted
 from journal.features.tasks.support.tasks_data import TasksData
 from journal.engine.nudge import Nudge
 
-ASK_ABOUT_PARKED_AFTER = 60.0
-ASK_ABOUT_BLOCKED_AFTER = 45 * 60.0
-CHECK_IN_AFTER = 30 * 60.0
+SUSPENDED_REMINDER_DELAY_SECONDS = 60.0
+BLOCKED_REMINDER_DELAY_SECONDS = 45 * 60.0
+IDLE_CHECK_DELAY_SECONDS = 30 * 60.0
 
 
 @dataclass(frozen=True)
@@ -86,11 +86,11 @@ class Idle(BaseState):
         from journal.features.tasks.feature import Tasks
         tasks, plans = event.data.of(Tasks), event.data.of(Plans)
         if tasks.parked:
-            return self.hold(Tasks.PARKED_TASKS_STILL_OPEN.create(tasks=tasks.parked_summary))
+            return self.hold(Tasks.SUSPENDED_TASKS.create(tasks=tasks.parked_summary))
         if event.held_before:
             return self.unchanged()
         if tasks.broken_waits:
-            return self.hold(Tasks.FIX_THE_BROKEN_WAIT.create(waits=tasks.broken_waits_summary))
+            return self.hold(Tasks.BROKEN_WAIT.create(waits=tasks.broken_waits_summary))
         if plans.approved:
             return self.hold(Plans.APPROVED_UNSTARTED.create(n=plans.approved[0]))
         return self.stop_answer(tasks, settings) if settings.of(Tasks.AUTO) else self.unchanged()
@@ -98,21 +98,21 @@ class Idle(BaseState):
     def stop_answer(self, tasks: TasksData, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         if tasks.next_open:
-            return self.hold(Tasks.NEXT_TASK_HOLDS_THE_STOP.create(n=tasks.next_open.id, title=tasks.next_open.title))
+            return self.hold(Tasks.NEXT_TASK.create(n=tasks.next_open.id, title=tasks.next_open.title))
         return self.unchanged()
 
     def quiet_nudges(self, tasks: TasksData) -> tuple[Nudge, ...]:
         from journal.features.tasks.feature import Tasks
-        return (Tasks.CHECK_IN_AFTER_QUIET.create(),)
+        return (Tasks.IDLE_CHECK.create(),)
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         quiet = event.time - self.quiet_since
         tasks = event.data.of(Tasks)
-        if tasks.parked and quiet >= ASK_ABOUT_PARKED_AFTER and not self.parked_asked:
-            return self.changed(replace(self, parked_asked=True), Tasks.PARKED_TASK_ASKED_ABOUT.create(n=tasks.parked[0], why=tasks.first_parked_why))
-        if tasks.blocked_without_wait and quiet >= ASK_ABOUT_BLOCKED_AFTER:
-            return self.unchanged(Tasks.BLOCKED_TASK_ASKED_ABOUT.create(tasks=tasks.blocked_without_wait_summary))
-        if settings.of(Tasks.AUTO) and quiet >= CHECK_IN_AFTER:
+        if tasks.parked and quiet >= SUSPENDED_REMINDER_DELAY_SECONDS and not self.parked_asked:
+            return self.changed(replace(self, parked_asked=True), Tasks.SUSPENDED_TASK_REMINDER.create(n=tasks.parked[0], why=tasks.first_parked_why))
+        if tasks.blocked_without_wait and quiet >= BLOCKED_REMINDER_DELAY_SECONDS:
+            return self.unchanged(Tasks.BLOCKED_TASK_REMINDER.create(tasks=tasks.blocked_without_wait_summary))
+        if settings.of(Tasks.AUTO) and quiet >= IDLE_CHECK_DELAY_SECONDS:
             return self.unchanged(*self.quiet_nudges(tasks))
         return self.unchanged()

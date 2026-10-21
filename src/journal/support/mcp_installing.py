@@ -65,7 +65,7 @@ class McpInstalling:
     def sign_in(self, server: McpServer) -> bool:
         from journal.features.mcp.feature import Mcp
         for agent in self.running():
-            line = self.nudger.say(agent, Mcp.SIGN_IN_TO_THE_SERVER.create(name=server.name, title=server.title))
+            line = self.nudger.say(agent, Mcp.SERVER_LOGIN.create(name=server.name, title=server.title))
             if line:
                 self.supervisor.type(agent.environment_id, line)
                 return True

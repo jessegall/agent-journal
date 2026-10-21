@@ -13,10 +13,10 @@ from journal.engine.support.launch_files import LaunchFiles
 from journal.engine.support.menu_answers import MenuAnswers
 from journal.support.chat_mark import ChatMark
 
-EVERY = 0.5
-QUIET = 1.5
-CAUSED_WITHIN = 15.0
-YOURS_WITHIN = 3.0
+INTERVAL = 0.5
+STILLNESS_SECONDS = 1.5
+CAUSE_WINDOW_SECONDS = 15.0
+USER_KEY_WINDOW_SECONDS = 3.0
 
 
 class MenuWatcher:
@@ -37,7 +37,7 @@ class MenuWatcher:
         self._stopping.set()
 
     def _run(self) -> None:
-        while not self._stopping.wait(EVERY):
+        while not self._stopping.wait(INTERVAL):
             for agent in self.agents.everywhere():
                 if not isinstance(self.states.named(agent.state, agent.data), Ended):
                     with self.scope.of(agent.environment_id):
@@ -54,10 +54,10 @@ class MenuWatcher:
             self._seen[env], self._seen_at[env] = menu.signature(), moment
         if self._answered.get(env) == menu.signature() or self.still_drawing(env, moment):
             return ""
-        yours = self.supervisor.keyed_at(env) > self._seen_at[env] - YOURS_WITHIN
+        yours = self.supervisor.keyed_at(env) > self._seen_at[env] - USER_KEY_WINDOW_SECONDS
         if yours and not menu.confirming():
             return ""
-        caused = yours or self.supervisor.chosen_at(env) > self._seen_at[env] - CAUSED_WITHIN
+        caused = yours or self.supervisor.chosen_at(env) > self._seen_at[env] - CAUSE_WINDOW_SECONDS
         decided = self.decided(menu, caused, agent)
         if decided is None:
             return ""
@@ -73,7 +73,7 @@ class MenuWatcher:
         return menu.asking_permission() and self.launches.skips_prompts(env)
 
     def still_drawing(self, env: int, moment: float) -> bool:
-        return self._seen_at[env] == moment and moment - self.supervisor.screen_changed_at(env) < QUIET
+        return self._seen_at[env] == moment and moment - self.supervisor.screen_changed_at(env) < STILLNESS_SECONDS
 
     def decided(self, menu: Menu, caused: bool, agent: Agent) -> tuple[str, str] | None:
         if caused or menu.trusting() or menu.switching_model():

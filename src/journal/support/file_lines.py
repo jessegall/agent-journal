@@ -1,6 +1,6 @@
 from pathlib import Path
 
-NOT_TEXT = (".png", ".jpg", ".jpeg", ".gif", ".pdf", ".ipynb")
+BINARY_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".pdf", ".ipynb")
 
 
 class FileLines:
@@ -8,7 +8,7 @@ class FileLines:
 
     @staticmethod
     def of(path: Path) -> int:
-        if not path.is_file() or path.suffix.lower() in NOT_TEXT:
+        if not path.is_file() or path.suffix.lower() in BINARY_SUFFIXES:
             return 0
         with path.open("rb") as file:
             return sum(1 for _ in file)

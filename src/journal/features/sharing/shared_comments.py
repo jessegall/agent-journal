@@ -38,7 +38,7 @@ class SharedComments:
     def written(self, share: Share, row: Ref, name: str, text: str) -> Message:
         message = self.messages.save(Message(author=Author.SYSTEM, text=f"{name} commented on {row} through a shared link",
                                              data={"kind": "card", "icon": "chat", "tone": "", "detail": text, "row": str(row), VISITOR: name, "share": share.id}), Actor.system())
-        self.links.save(Link(source=Ref.to(message), target=row, kind=Messages.COMMENTS_ON), Actor.system())
+        self.links.save(Link(source=Ref.to(message), target=row, kind=Messages.COMMENT_LINK), Actor.system())
         return message
 
     def of(self, share: Share) -> list[Message]:

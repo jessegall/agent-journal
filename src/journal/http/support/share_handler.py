@@ -8,7 +8,7 @@ from journal.http.support.share_answer import ShareAnswer
 from journal.http.sharing.share_pages import SharePages
 from journal.http.sharing.visitor_comment import VisitorComment
 
-MOST_BYTES = 16 * 1024
+BODY_LIMIT_BYTES = 16 * 1024
 HEADERS = {
     "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
     "Referrer-Policy": "no-referrer",
@@ -50,14 +50,14 @@ class ShareHandler(PooledHandler):
     def phone_post(self) -> ShareAnswer:
         length = self.headers.get("Content-Length", "")
         size = int(length) if length.isdigit() else 0
-        if size > MOST_BYTES:
+        if size > BODY_LIMIT_BYTES:
             return ShareAnswer(413)
         return self.phone.post(PhoneRequest.of(self.command, self.path, self.headers, self.rfile.read(size) if size else b""))
 
     def comment_sent(self) -> VisitorComment | None:
         length = self.headers.get("Content-Length", "")
         size = int(length) if length.isdigit() else 0
-        if self.headers.get("X-Shared-Comment") != "1" or not 0 < size <= MOST_BYTES:
+        if self.headers.get("X-Shared-Comment") != "1" or not 0 < size <= BODY_LIMIT_BYTES:
             return None
         try:
             given = json.loads(self.rfile.read(size))

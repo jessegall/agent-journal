@@ -7,7 +7,7 @@ from journal.events.agent_listener import AgentListener
 from journal.supervisor_link import SupervisorLink
 from journal.support.chat_mark import ChatMark
 
-PATIENCE = 10.0
+WAIT_LIMIT_SECONDS = 10.0
 TRIES = 6
 
 
@@ -18,13 +18,13 @@ class RetypeLost(AgentListener[Ticked]):
         self.typed, self.turn, self.machine, self.supervisor, self.cards = typed, turn, machine, supervisor, cards
 
     def handle(self, event: Ticked) -> None:
-        if event.quiet_for < PATIENCE:
+        if event.quiet_for < WAIT_LIMIT_SECONDS:
             return
         agent = self.machine.agent(event.session, event.environment_id)
         if not self.turn.over(agent):
             return
-        for lost in self.typed.overdue(event.environment_id, event.time - PATIENCE):
-            if event.time < lost.time + PATIENCE * 2 ** (lost.tries - 1):
+        for lost in self.typed.overdue(event.environment_id, event.time - WAIT_LIMIT_SECONDS):
+            if event.time < lost.time + WAIT_LIMIT_SECONDS * 2 ** (lost.tries - 1):
                 continue
             if lost.tries >= TRIES:
                 self.typed.given_up(lost)

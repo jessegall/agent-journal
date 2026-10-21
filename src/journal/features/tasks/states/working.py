@@ -16,7 +16,7 @@ from journal.events.rows.task_started import TaskStarted
 from journal.events.feature_data import FeatureData
 from journal.support.permission import Permission
 
-STILL_OPEN_AFTER = 900.0
+OPEN_TASK_LIMIT_SECONDS = 900.0
 COMPACT = "compact"
 
 
@@ -26,7 +26,7 @@ class Working(BaseState):
 
     name = "working"
     title = "Working"
-    allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
+    allows = frozenset({Permission.FILE_EDITS, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     task_id: int = 0
     what: str = ""
     logged_at: float = 0.0
@@ -57,21 +57,21 @@ class Working(BaseState):
 
     def continue_nudge(self, time: float) -> Nudge:
         from journal.features.tasks.feature import Tasks
-        return Tasks.CARRY_ON.create(name=self.named(), logged=self.logged_words(time))
+        return Tasks.TASK_CONTINUATION.create(name=self.named(), logged=self.logged_words(time))
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         active = replace(self, active_at=event.time)
         if not event.call.writes or event.subagent:
             return self.changed(active)
-        if self.edits >= int(settings.of(Tasks.LOG_AFTER)):
-            return self.hold(Tasks.WRITE_HELD_UNTIL_LOGGED.create(edits=self.edits, name=self.named(), log=self.log_command()))
+        if self.edits >= int(settings.of(Tasks.LOG_LIMIT)):
+            return self.hold(Tasks.LOG_EDIT_BLOCK.create(edits=self.edits, name=self.named(), log=self.log_command()))
         counted = replace(active, edits=self.edits + 1)
         lines = []
-        if self.edits == int(settings.of(Tasks.FIRST_AFTER)):
-            lines.append(Tasks.LOG_WHERE_IT_STANDS.create(edits=self.edits, name=self.named(), log=self.log_command()))
-        if self.edits and self.edits % int(settings.of(Tasks.NAME_EVERY)) == 0:
-            lines.append(Tasks.TASK_IN_HAND_REPEATED.create(name=self.named(), edits=self.edits))
+        if self.edits == int(settings.of(Tasks.FIRST_DELAY)):
+            lines.append(Tasks.LOG_REQUEST.create(edits=self.edits, name=self.named(), log=self.log_command()))
+        if self.edits and self.edits % int(settings.of(Tasks.TASK_REMINDER_INTERVAL)) == 0:
+            lines.append(Tasks.CURRENT_TASK_REMINDER.create(name=self.named(), edits=self.edits))
         return self.changed(counted, *lines)
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
@@ -80,8 +80,8 @@ class Working(BaseState):
         approved = event.data.of(Plans).approved
         if approved:
             return self.hold(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
-        if event.time - self.logged_at >= int(settings.of(Tasks.LOG_OLD_AFTER)) * 60:
-            return self.hold(Tasks.LOG_FIRST_AT_STOP.create(name=self.named(), logged=self.logged_words(event.time), log_command=self.log_command()))
+        if event.time - self.logged_at >= int(settings.of(Tasks.LOG_AGE_LIMIT)) * 60:
+            return self.hold(Tasks.STOP_LOG_REQUEST.create(name=self.named(), logged=self.logged_words(event.time), log_command=self.log_command()))
         return self.hold(self.continue_nudge(event.time))
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
@@ -90,7 +90,7 @@ class Working(BaseState):
         from journal.features.tasks.feature import Tasks
         nudges = [self.continue_nudge(event.time)]
         if event.source == COMPACT:
-            nudges.append(Briefing.BRIEF_AND_LOG_AFTER_COMPACTION.create(task=self.named(), last_log=event.data.of(Tasks).last_log_line, uncommitted=event.data.of(Git).uncommitted))
+            nudges.append(Briefing.COMPACTION_SUMMARY.create(task=self.named(), last_log=event.data.of(Tasks).last_log_line, uncommitted=event.data.of(Git).uncommitted))
         return self.changed(replace(self, active_at=event.time), *nudges)
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
@@ -98,8 +98,8 @@ class Working(BaseState):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
-        if event.quiet_for >= STILL_OPEN_AFTER:
-            return self.unchanged(Tasks.TASK_STILL_OPEN.create(name=self.named()))
+        if event.quiet_for >= OPEN_TASK_LIMIT_SECONDS:
+            return self.unchanged(Tasks.OPEN_TASK.create(name=self.named()))
         return self.unchanged()
 
     def on_task_logged(self, event: TaskLogged, settings: Settings) -> Transition:

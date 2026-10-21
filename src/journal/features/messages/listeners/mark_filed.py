@@ -17,9 +17,9 @@ class MarkFiled(Listener[Created]):
 
     def handle(self, event: Created) -> None:
         link = event.model
-        if not isinstance(link, Link) or link.kind != Messages.ABOUT or link.source.type != Message.table():
+        if not isinstance(link, Link) or link.kind != Messages.SUBJECT_LINK or link.source.type != Message.table():
             return
         message = self.messages.find(link.source.id)
-        filed = ", ".join(f"{ref.type.rstrip('s')} {ref.id}" for ref in self.links.targets(message, Messages.ABOUT))
+        filed = ", ".join(f"{ref.type.rstrip('s')} {ref.id}" for ref in self.links.targets(message, Messages.SUBJECT_LINK))
         key = f"filed:{message.id}"
         self.cards.keyed(message.environment_id, key, f"Filed {filed} from your message", {"kind": "card", "session": "", "icon": "inbox", "row": f"messages:{message.id}"}, Actor.system(), ChatMark.FILED)

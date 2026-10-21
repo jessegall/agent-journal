@@ -14,7 +14,7 @@ from journal.repositories.messages import Messages
 from journal.support.chat_mark import ChatMark
 
 DISPATCHING = ("Agent", "Task")
-SETTLING = ENDS | {"SubagentEnded"}
+SUBAGENT_END_KINDS = ENDS | {"SubagentEnded"}
 
 
 class MarkSubagents(AgentListener[AgentEvent]):
@@ -32,7 +32,7 @@ class MarkSubagents(AgentListener[AgentEvent]):
 
     @staticmethod
     def moves(event: AgentEvent) -> bool:
-        return type(event).__name__ in SETTLING or (isinstance(event, (ToolStarting, ToolFinished, ToolFailed)) and event.call.tool in DISPATCHING)
+        return type(event).__name__ in SUBAGENT_END_KINDS or (isinstance(event, (ToolStarting, ToolFinished, ToolFailed)) and event.call.tool in DISPATCHING)
 
     def marked(self, event: AgentEvent, row: Dispatch, agent: int, actor: Actor) -> None:
         key = f"subagent:{row.id}"

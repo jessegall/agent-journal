@@ -12,7 +12,7 @@ from journal.support.refused import Refused
 from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.migrated_rows import MigratedRows
-from journal.repositories.tasks import WAITS_ON, Tasks
+from journal.repositories.tasks import WAIT_LINK, Tasks
 
 
 class BringWaits(EnvironmentKind):
@@ -43,7 +43,7 @@ class BringWaits(EnvironmentKind):
         task = self.tasks.find(self.ledger.referred(into.name, f"todo:{row.n}").id)
         for before in [rows for n in row.listed("after") if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
             try:
-                self.links.save(Link(source=Ref.to(task), target=before, kind=WAITS_ON), actor)
+                self.links.save(Link(source=Ref.to(task), target=before, kind=WAIT_LINK), actor)
             except Refused as loop:
                 self.dropped.append(f"task {task.id}: {loop}")
         return task

@@ -19,8 +19,8 @@ class Questions(Feature):
     data = (QuestionsDataReader,)
 
     QUESTION_ANSWERED = Nudge(name, "question_answered", "question {{n}} is answered", "`journal question show {{n}}` reads it whole, with the messages linked to it; act on the answer", repeat_after=0)
-    ASK_THROUGH_THE_JOURNAL = Nudge(name, "ask_through_the_journal", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options \"a\" \"b\"`; the user answers in the viewer and the answer reaches you", repeat_after=0)
-    nudges = (QUESTION_ANSWERED, ASK_THROUGH_THE_JOURNAL)
+    JOURNAL_QUESTION_TOOL = Nudge(name, "ask_through_the_journal", "a question goes through the journal, not your own question tool", "`journal question ask \"<one line>\" --options \"a\" \"b\"`; the user answers in the viewer and the answer reaches you", repeat_after=0)
+    nudges = (QUESTION_ANSWERED, JOURNAL_QUESTION_TOOL)
 
     skill = Skill("questions", 'Ask the user a question and wait for the answer; load it before offering the user choices', """
 # Questions

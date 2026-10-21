@@ -15,7 +15,7 @@ from journal.support.supervisor_reply import SupervisorReply
 from journal.support.supervisor_socket import SupervisorSocket
 from journal.repositories.environments import Environments
 
-MARK = "[journal]"
+JOURNAL_PREFIX = "[journal]"
 AGENT, JOURNAL = "agent", "journal"
 
 
@@ -30,14 +30,14 @@ class SupervisorLink:
     def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
         if self.typed.is_disabled(environment_id):
             return
-        marked = f"{MARK} {' '.join(line.split())}"
+        marked = f"{JOURNAL_PREFIX} {' '.join(line.split())}"
         if self.is_busy(environment_id):
             self.typed.hold(HeldLine(environment_id, marked, after))
             return
         self.type_whole(environment_id, marked, after)
 
     def type_whole(self, environment_id: int, marked: str, after: float) -> None:
-        for piece in TypedLine.pieces(marked, MARK):
+        for piece in TypedLine.pieces(marked, JOURNAL_PREFIX):
             self.typed.typed(environment_id, piece)
             self._send(environment_id, "type", {"name": AGENT, "line": piece, "after": after})
 

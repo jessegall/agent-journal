@@ -497,9 +497,9 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
         assert next(f for f in manifest["features"] if f["name"] == "pausing")["fixed"], "pausing is no setting: the pause button is always there"
         assert {g["key"] for g in manifest["groups"]} == {*named, "project"}, "one group per feature, and the System tab's own"
         status, tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": 60}})
-        assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(SettingRows).option(Tasks.LOG_AFTER) == 60, "saved where the code reads it"
+        assert status == 200 and tree["tasks"]["log_after"] == 60 and app.container.get(SettingRows).option(Tasks.LOG_LIMIT) == 60, "saved where the code reads it"
         tree = call(server, "POST", "/journal/settings", {"tasks": {"log_after": None}})[1]
-        assert "tasks" not in tree and app.container.get(SettingRows).option(Tasks.LOG_AFTER) == 50, "sent as null, back to its default"
+        assert "tasks" not in tree and app.container.get(SettingRows).option(Tasks.LOG_LIMIT) == 50, "sent as null, back to its default"
         call(server, "POST", "/journal/settings", {"viewer": {"tour_seen": True}})
         tree = call(server, "POST", "/journal/settings", {"viewer": {"scheme": "dark"}})[1]
         assert tree["viewer"] == {"tour_seen": True, "scheme": "dark"}, "a save names only what it sets: the other keys under the heading stay, so the tour is not replayed by a layout save"
@@ -972,7 +972,7 @@ def test_the_plan_bars_work_mode_and_the_top_bars_pause_are_version_fours_own(se
 def test_the_about_page_reads_the_installed_version_and_the_changelog_a_page_of_releases_at_a_time(server, monkeypatch):
     from journal.features.updates.support import changelog
     from journal.version import VERSION
-    monkeypatch.setattr(changelog, "RELEASES_PER_PAGE", 2)
+    monkeypatch.setattr(changelog, "PAGE_RELEASES", 2)
     status, about = call(server, "GET", "/journal/updates")
     assert status == 200 and about["installed"] == VERSION and about["changelog"].startswith("# Changelog") and about["changelog"].count("\n## ") == 2 and about["more"], "the heading and the newest releases first"
     status, older = call(server, "GET", f"/journal/updates/changelog?skip={about['shown']}")

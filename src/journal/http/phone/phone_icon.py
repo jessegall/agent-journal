@@ -1,7 +1,7 @@
 import struct
 import zlib
 
-DARKER = 90
+DIM_PERCENT = 90
 DISC = 0.22
 WHITE = b"\xff\xff\xff"
 
@@ -25,7 +25,7 @@ class PhoneIcon:
         return b"\x89PNG\r\n\x1a\n" + self.chunk(b"IHDR", header) + self.chunk(b"IDAT", zlib.compress(pixels, 9)) + self.chunk(b"IEND", b"")
 
     def shades(self, height: int) -> list[bytes]:
-        bottom = tuple(max(0, value - DARKER) for value in self.top)
+        bottom = tuple(max(0, value - DIM_PERCENT) for value in self.top)
         return [bytes(round(a + (b - a) * y / height) for a, b in zip(self.top, bottom)) for y in range(height)]
 
     @staticmethod

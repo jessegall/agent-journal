@@ -10,7 +10,7 @@ from journal.repositories.plugins import Plugins
 from journal.support.scope import Scope
 from journal.support.chat_mark import ChatMark
 
-SAID = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill"}
+STEP_DESCRIPTIONS = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill"}
 
 
 class PluginCommand(Command):
@@ -111,4 +111,4 @@ class PluginCommand(Command):
     @staticmethod
     def said(preview: PluginPreview) -> str:
         head = [f"{preview.name} {preview.version}" + (f": {preview.title}" if preview.title != preview.name else ""), f"from {preview.source}" + (f" at {preview.commit[:12]}" if preview.commit else " (linked: read where it lies)")]
-        return "\n".join(head + [f"{SAID[r.kind]} {r.label}: {r.command}".rstrip(": ") for r in preview.rows])
+        return "\n".join(head + [f"{STEP_DESCRIPTIONS[r.kind]} {r.label}: {r.command}".rstrip(": ") for r in preview.rows])

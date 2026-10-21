@@ -10,10 +10,10 @@ from journal.support.features_known import FeaturesKnown
 class StatesCatalogue:
     """Every state by name: the engine's own and those of every feature. A row's state column becomes the class that holds its behaviour; a name no feature holds any more resolves to the first state, Idle."""
 
-    OWN = (Compacting, Ended)
+    ENGINE_STATES = (Compacting, Ended)
 
     def __init__(self, features: FeaturesKnown) -> None:
-        self._states = {state.name: state for state in features.states()} | {state.name: state for state in self.OWN}
+        self._states = {state.name: state for state in features.states()} | {state.name: state for state in self.ENGINE_STATES}
 
     def known(self, name: str) -> bool:
         return name in self._states

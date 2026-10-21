@@ -12,8 +12,8 @@ GIT_READS = {"show", "diff", "log", "status", "blame", "grep", "ls-files"}
 GIT_OPTIONS = {"--no-pager", "-c", "-C", "--git-dir", "--work-tree", "-p", "-P"}
 CODE = re.compile(r"\.(py|pyi|vue|js|mjs|cjs|jsx|ts|tsx|cs|go|rs|swift|kt|kts|java|scala|php|rb|ex|exs|erl|hs|ml|clj|c|h|cc|cpp|hpp|m|mm|lua|dart|r|jl|sh|bash|zsh|fish|ps1|sql|css|scss|sass|less|html|htm|svelte|astro|json|jsonl|yaml|yml|toml|ini|cfg|xml|gradle|tf|proto|graphql|md|txt)\b")
 WRITING = re.compile(r">>?(?!\s*/dev/null|&[0-9])|\btee\b")
-IN_PLACE = {"sed", "perl"}
-NOT_CODE = {"node_modules", "dist", "build", ".venv", "venv", "__pycache__", ".git", ".journal"}
+INPLACE_EDITORS = {"sed", "perl"}
+VENDOR_FOLDERS = {"node_modules", "dist", "build", ".venv", "venv", "__pycache__", ".git", ".journal"}
 LOCKS = {"package-lock.json", "yarn.lock", "pnpm-lock.yaml", "poetry.lock", "Cargo.lock", "uv.lock", "Pipfile.lock", "composer.lock"}
 HARMLESS = {"echo", "printf", "test", "[", "[[", "true", ":", "pwd", "set"}
 PREFIXES = {"sudo", "env", "nohup", "time", "nice", "command", "exec"}
@@ -75,7 +75,7 @@ class Part:
         return self.program() in SEARCHERS or self.program() == "git" and self.tokens()[1:2] == ["grep"]
 
     def edits_in_place(self) -> bool:
-        return self.program() in IN_PLACE and any(w.startswith(("-i", "-pi")) for w in self.tokens()[1:])
+        return self.program() in INPLACE_EDITORS and any(w.startswith(("-i", "-pi")) for w in self.tokens()[1:])
 
     def is_reading_code(self) -> bool:
         tokens = self.tokens()
@@ -113,7 +113,7 @@ class Part:
             parts = path.parts
         if parts[:2] == (".journal", "worktrees"):
             parts = parts[3:]
-        return not any(part in NOT_CODE for part in parts) and not (parts and parts[-1] in LOCKS)
+        return not any(part in VENDOR_FOLDERS for part in parts) and not (parts and parts[-1] in LOCKS)
 
     def cut(self) -> str:
         trailing = TRAILING_CUT.search(self.text)

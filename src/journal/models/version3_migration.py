@@ -14,7 +14,7 @@ class Version3Migration(Model):
         return self.with_(state=MigrationState.LATER)
 
     def begun(self) -> "Version3Migration":
-        return self.with_(state=MigrationState.RUNNING)
+        return self.with_(state=MigrationState.BUSY)
 
     def done(self) -> "Version3Migration":
-        return self.with_(state=MigrationState.DONE)
+        return self.with_(state=MigrationState.FINISHED)

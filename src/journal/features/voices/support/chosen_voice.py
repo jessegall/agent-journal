@@ -7,7 +7,7 @@ from journal.features.voices.support.voice import Voice
 from journal.repositories.setting_rows import SettingRows
 
 
-FRESH_SECONDS = 60.0
+RECENCY_SECONDS = 60.0
 
 
 class ChosenVoice:
@@ -34,7 +34,7 @@ class ChosenVoice:
         return self.voice().instruction(self.title(), self.first_name())
 
     def git_name(self) -> str:
-        if time.monotonic() - self.git_name_read_at < FRESH_SECONDS:
+        if time.monotonic() - self.git_name_read_at < RECENCY_SECONDS:
             return self.last_git_name
         self.last_git_name, self.git_name_read_at = self.git_user_first_name(), time.monotonic()
         return self.last_git_name

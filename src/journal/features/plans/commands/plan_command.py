@@ -16,8 +16,8 @@ from journal.models.task import Task
 from journal.repositories.links import Links
 from journal.support.refused import Refused
 from journal.repositories.phases import Phases
-from journal.repositories.plans import IN_PHASE, IN_PLAN, PHASE_OF, Plans
-from journal.repositories.tasks import Tasks, WAITS_ON
+from journal.repositories.plans import PHASE_LINK, PLAN_LINK, PHASE_TASK_LINK, Plans
+from journal.repositories.tasks import Tasks, WAIT_LINK
 
 
 class PlanCommand(Command):
@@ -78,7 +78,7 @@ class PlanCommand(Command):
         plan = self.plans.find(args.n)
         before = self.plans.tasks_of(plan) if args.first else []
         task = self.tasks.save(Task(environment_id=plan.environment_id, title=args.title, brief=args.brief), caller.actor)
-        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), caller.actor)
+        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), caller.actor)
         for other in before:
             self.relink(other, plan, caller)
         print(f"task {task.id} added to plan {plan.id}{' first' if args.first else ''}")
@@ -87,7 +87,7 @@ class PlanCommand(Command):
     def relink(self, task: Task, plan: Plan, caller: Caller) -> None:
         for link in self.links.between(task, plan):
             self.links.delete(link, caller.actor)
-        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), caller.actor)
+        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), caller.actor)
 
     def rephase(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
@@ -100,7 +100,7 @@ class PlanCommand(Command):
     def phase(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
         phase = self.phases.save(Phase(environment_id=plan.environment_id, title=args.title, complete_when=args.when, checkpoint=args.checkpoint), caller.actor)
-        self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_OF), caller.actor)
+        self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_TASK_LINK), caller.actor)
         print(f"phase {len(self.plans.phases_of(plan))} of plan {plan.id}")
         return 0
 
@@ -113,10 +113,10 @@ class PlanCommand(Command):
         for n in args.tasks:
             task = self.tasks.find(n)
             if not self.links.between(task, plan):
-                self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), caller.actor)
+                self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), caller.actor)
             for link in [link for other in phases for link in self.links.between(task, other)]:
                 self.links.delete(link, caller.actor)
-            self.links.save(Link(source=Ref.to(task), target=Ref.to(phase), kind=IN_PHASE), caller.actor)
+            self.links.save(Link(source=Ref.to(task), target=Ref.to(phase), kind=PHASE_LINK), caller.actor)
         print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}")
         return 0
 
@@ -165,7 +165,7 @@ class PlanCommand(Command):
         self.waits.refuse_unnamed(args.why, args.on, args.until)
         plan = self.plans.save(self.plans.find(args.n).blocked(args.why, datetime.now(timezone.utc).timestamp()), caller.actor)
         for ref in self.waits.named(args.on, args.until, args.every, f"plan {plan.id}", caller.actor):
-            self.links.save(Link(source=Ref.to(plan), target=ref, kind=WAITS_ON), caller.actor)
+            self.links.save(Link(source=Ref.to(plan), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"plan {plan.id} blocked, waiting on: {self.tasks.reason(plan)}")
         return 0
 

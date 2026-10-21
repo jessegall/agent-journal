@@ -14,7 +14,7 @@ from journal.features.plugins.support.protocol import Protocol
 from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
 
-KEPT = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
+PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 
 
 class PluginRunner:
@@ -64,7 +64,7 @@ class PluginRunner:
         settings = self.folders.settings(plugin)
         settings.write_text(json.dumps(plugin.settings))
         port = self.config.port_file.read_text().strip() if self.config.port_file.is_file() else str(self.config.port)
-        return {key: os.environ[key] for key in KEPT if key in os.environ} | {
+        return {key: os.environ[key] for key in PASSED_VARIABLES if key in os.environ} | {
             "PATH": os.pathsep.join([str(self.config.home / "bin"), "/usr/local/bin", "/opt/homebrew/bin", "/usr/bin", "/bin"]),
             "JOURNAL_ROOT": str(self.config.root),
             "JOURNAL_URL": f"http://127.0.0.1:{port}",

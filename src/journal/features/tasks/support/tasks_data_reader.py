@@ -9,7 +9,7 @@ from journal.repositories.plans import Plans
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 
-LOOKED_BACK = 6
+COMMAND_HISTORY_LENGTH = 6
 POLLED = 3
 
 
@@ -21,10 +21,10 @@ class TasksDataReader:
 
     def read(self, agent: Agent) -> TasksData:
         in_hand = self.tasks.in_hand()
-        parked = [task for task in self.tasks.in_state(TaskState.PARKED) if PlanState.PARKED not in self.plans.plan_states(task)]
+        parked = [task for task in self.tasks.in_state(TaskState.SUSPENDED) if PlanState.SUSPENDED not in self.plans.plan_states(task)]
         blocked_without_wait = self.tasks.blocked_without_wait()
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
-        commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session, LOOKED_BACK) if e.data.get("tool_name") == "Bash"]
+        commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session, COMMAND_HISTORY_LENGTH) if e.data.get("tool_name") == "Bash"]
         free = self.plans.free()
         open_tasks = self.tasks.in_state(TaskState.OPEN)
         return TasksData(

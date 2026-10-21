@@ -23,7 +23,7 @@ from journal.support.not_found import NotFound
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
-from journal.repositories.tasks import Tasks, WAITS_ON
+from journal.repositories.tasks import Tasks, WAIT_LINK
 from journal.features.tasks.support.next_open_task import NextOpenTask
 
 
@@ -67,7 +67,7 @@ class TaskCommand(Command):
     def create(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.save(Task(title=args.title, brief=args.brief), caller.actor)
         if args.message:
-            self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.ABOUT), caller.actor)
+            self.links.save(Link(source=Ref.to(self.messages.find(args.message)), target=Ref.to(task), kind=Messages.SUBJECT_LINK), caller.actor)
         if args.start:
             task = self.taking.start(task, caller)
         print(f"task {task.id} {task.state}" + (f" (from message {args.message})" if args.message else ""))
@@ -112,7 +112,7 @@ class TaskCommand(Command):
         self.waits.refuse_unnamed(args.why, args.on, args.until)
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._now()), caller.actor)
         for ref in self.waits.named(args.on, args.until, args.every, f"task {task.id}", caller.actor):
-            self.links.save(Link(source=Ref.to(task), target=ref, kind=WAITS_ON), caller.actor)
+            self.links.save(Link(source=Ref.to(task), target=ref, kind=WAIT_LINK), caller.actor)
         print(f"task {task.id} blocked, waiting on: {self.tasks.reason(task)}")
         return 0
 

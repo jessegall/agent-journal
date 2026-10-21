@@ -13,7 +13,7 @@ from journal.repositories.setting_rows import SettingRows
 from journal.support.actor import Actor
 
 CHOICES = "menu_choices"
-ASK_SECONDS = 120
+QUERY_TIMEOUT_SECONDS = 120
 ASKING_MODEL = {"claude": "haiku"}
 
 
@@ -46,7 +46,7 @@ class MenuAnswers:
         argv = program.worker_command(self.question(menu), ASKING_MODEL.get(provider, ""), "")
         environ = {k: v for k, v in os.environ.items() if k not in ("AGENT_JOURNAL_ACTIVE", "JOURNAL_ENV", "JOURNAL_SESSION")}
         try:
-            done = subprocess.run(argv, capture_output=True, text=True, timeout=ASK_SECONDS, stdin=subprocess.DEVNULL, cwd=tempfile.gettempdir(), env=environ)
+            done = subprocess.run(argv, capture_output=True, text=True, timeout=QUERY_TIMEOUT_SECONDS, stdin=subprocess.DEVNULL, cwd=tempfile.gettempdir(), env=environ)
         except (OSError, subprocess.SubprocessError):
             self._asked[self.key(menu)] = None
             return

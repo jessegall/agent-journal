@@ -16,7 +16,7 @@ from journal.features.plugins.support.plugin_answer import PluginAnswer
 from journal.repositories.edits import Edits
 from journal.repositories.setting_rows import SettingRows
 
-CARRIES = ("tool_starting", "tool_finished", "prompt_submitted", "session_started")
+LINE_EVENT_KEYS = ("tool_starting", "tool_finished", "prompt_submitted", "session_started")
 REFUSABLE = ("tool_starting", "command_starting", "file_edited", "idle")
 
 
@@ -33,9 +33,9 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
         hearers = self.relay.heard_by(event, event.environment_id)
-        ceiling_ms = int(self.settings.option(PluginsFeature.HOLD_WINDOW))
-        waiting = self.relay.waiting_for(event.session) if event.key in CARRIES else []
-        if event.key in CARRIES:
+        ceiling_ms = int(self.settings.option(PluginsFeature.PLUGIN_ANSWER_WINDOW))
+        waiting = self.relay.waiting_for(event.session) if event.key in LINE_EVENT_KEYS else []
+        if event.key in LINE_EVENT_KEYS:
             waiting += [line for plugin in self.relay.plugins.enabled() for line in self.queue.lines(plugin, event)]
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
         decision = self.asked(hearers, event, ceiling_ms, decision)

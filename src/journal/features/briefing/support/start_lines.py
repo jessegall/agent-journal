@@ -10,7 +10,7 @@ from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
 from journal.repositories.tasks import Tasks
 
-TAKEN_OVER_WITHIN = timedelta(days=1)
+TAKEOVER_WINDOW = timedelta(days=1)
 
 
 class StartLines:
@@ -24,7 +24,7 @@ class StartLines:
         return "" if event.source == "compact" else self.last_other_session_at(event.session)
 
     def last_other_session_at(self, session: str) -> str:
-        others = self.agents.others_lately(session, datetime.now(timezone.utc) - TAKEN_OVER_WITHIN)
+        others = self.agents.others_lately(session, datetime.now(timezone.utc) - TAKEOVER_WINDOW)
         return others[-1].updated_at.astimezone().strftime("%H:%M") if others else ""
 
     def rules_numbered(self) -> str:

@@ -14,7 +14,7 @@ class PlansConduct(Conduct):
 
     def on_plan_approved_plans(self, event: PlanApproved, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
-        return self.unchanged(Plans.THE_USER_APPROVED_THE_PLAN.create(n=event.plan_id)) if event.by_user else self.unchanged()
+        return self.unchanged(Plans.PLAN_APPROVED.create(n=event.plan_id)) if event.by_user else self.unchanged()
 
     def on_plan_blocked_plans(self, event: PlanBlocked, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
@@ -29,18 +29,18 @@ class PlansConduct(Conduct):
         started = event.data.of(Plans).started
         if event.task_id or started is None or not started.tasks_left:
             return self.unchanged()
-        return self.unchanged(Plans.PLAN_WAITS_ON_ITS_TASKS.create(n=event.plan_id, left=started.tasks_left))
+        return self.unchanged(Plans.PLAN_STALLED.create(n=event.plan_id, left=started.tasks_left))
 
     def on_task_started_plans(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         if not event.plan_id or event.by_agent(event.session):
             return self.unchanged()
         started = event.data.of(Plans).started
-        return self.unchanged(Plans.NEXT_TASK_OF_THE_PLAN.create(n=event.plan_id, task=event.task_id, title=event.title, briefing=started.started_task_briefing if started else ""))
+        return self.unchanged(Plans.NEXT_PLAN_TASK.create(n=event.plan_id, task=event.task_id, title=event.title, briefing=started.started_task_briefing if started else ""))
 
     def on_task_closed_plans(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         started = event.data.of(Plans).started
         if started is None or event.task_id not in started.tasks or started.started_task or started.next_task or started.at_checkpoint or not started.tasks_left:
             return self.unchanged()
-        return self.unchanged(Plans.PLAN_WAITS_ON_ITS_TASKS.create(n=started.plan_id, left=started.tasks_left))
+        return self.unchanged(Plans.PLAN_STALLED.create(n=started.plan_id, left=started.tasks_left))

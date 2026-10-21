@@ -17,7 +17,7 @@ class NextOpenTask:
         started_plans = [plan for plan in self.plans.holding(closed) if plan.state == PlanState.STARTED]
         if started_plans:
             return self.plan_next(started_plans[0], closed)
-        if self.tasks.in_hand() is not None or self.tasks.in_state(TaskState.PARKED):
+        if self.tasks.in_hand() is not None or self.tasks.in_state(TaskState.SUSPENDED):
             return None
         free = self.plans.free()
         return OpenTask(free[0].id, free[0].title, free[0].brief, 0) if free else None

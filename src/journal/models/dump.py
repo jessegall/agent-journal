@@ -11,7 +11,7 @@ from journal.models.scoped import Scoped
 
 TEXT = "text"
 
-OWN_WORDS = -2
+USER_TEXT = -2
 
 
 @dataclass(frozen=True)
@@ -82,8 +82,8 @@ class Dump(Scoped):
         return self.with_(chosen=choice, taken=taken).with_event(DumpChosen(environment_id=self.environment_id, time=time, dump_id=self.id, pick=pick, label=label))
 
     def step_directed(self, label: str, time: float) -> "Dump":
-        choice = {"label": label, "pick": OWN_WORDS, "time": time}
-        return self.with_(chosen=choice, said=(*self.said, choice)).with_event(DumpChosen(environment_id=self.environment_id, time=time, dump_id=self.id, pick=OWN_WORDS, label=label))
+        choice = {"label": label, "pick": USER_TEXT, "time": time}
+        return self.with_(chosen=choice, said=(*self.said, choice)).with_event(DumpChosen(environment_id=self.environment_id, time=time, dump_id=self.id, pick=USER_TEXT, label=label))
 
     def filed(self, how: str, time: float) -> "Dump":
         return self.with_(completed_at=time, outcome=how).with_event(DumpFiled(environment_id=self.environment_id, time=time, dump_id=self.id, outcome=how, stopped=self.stopped))

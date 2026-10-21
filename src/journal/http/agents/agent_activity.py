@@ -2,7 +2,7 @@ from journal.engine.support.trail import Trail
 from journal.engine.states.wait import Wait
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
-from journal.features.shell.support.shell_record import RAN, RUNNING
+from journal.features.shell.support.shell_record import PART_END, PART_START
 from journal.features.tasks.states.working import Working
 from journal.support.chain import Chain
 from journal.support.context_file import ContextFile
@@ -17,7 +17,7 @@ from journal.repositories.messages import Messages
 
 STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "ToolFailed": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan", "delegating", "orchestrating_plan"})
-KEPT = 400
+ENTRY_COUNT = 400
 HISTORY = 5
 TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
 ENDED = "ended"
@@ -30,7 +30,7 @@ class AgentActivity:
         self.entries, self.states, self.context, self.files, self.messages, self.current = entries, states, context, files, messages, current
 
     def page(self, agents: list[Agent]) -> list[dict]:
-        recent = list(reversed(self.entries.of_kind_in(KEPT))) if any(a.state != ENDED for a in agents) else []
+        recent = list(reversed(self.entries.of_kind_in(ENTRY_COUNT))) if any(a.state != ENDED for a in agents) else []
         return [self.of(a, [] if a.state == ENDED else [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in agents]
 
     @staticmethod
@@ -55,7 +55,7 @@ class AgentActivity:
             "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),
             "branch": self.files.branch(), "context": round((self.context.of(agent.session) or 0) * 100),
             "question_id": agent.data.get("question_id", 0) if agent.state == "waiting" else 0,
-            "doing": self.doing(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]),
+            "doing": self.doing(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", PART_START, PART_END)]),
             "thinking": self.thinking(agent.session, hooks) if agent.state != ENDED else "",
             "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
             "stuck": agent.data.get("why", "") if agent.state == "stuck" else "",
@@ -87,7 +87,7 @@ class AgentActivity:
 
     def doing(self, state, hooks) -> str:
         last = hooks[-1] if hooks else None
-        if last and last.kind == RUNNING:
+        if last and last.kind == PART_START:
             return last.data["doing"]
         if last and last.kind == "ToolStarting":
             return TOOL_VERBS.get(last.data.get("tool_name", ""), "working")

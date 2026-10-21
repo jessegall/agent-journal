@@ -28,7 +28,7 @@ from journal.support.standby import Standby
 from journal.http.share_server import ShareServer
 
 
-STANDBY_EVERY = 2.0
+INSTANCE_CHECK_SECONDS = 2.0
 
 
 class Runtime:
@@ -40,7 +40,7 @@ class Runtime:
 
     def register_nudges(self) -> None:
         nudges = self.container.get(NudgeRegistry)
-        nudges.register(Engine.NOTHING_WHILE_COMPACTING)
+        nudges.register(Engine.COMPACTION_PAUSE)
         for feature in self.registry.features:
             for nudge in feature.nudges:
                 nudges.register(nudge)
@@ -91,7 +91,7 @@ class Runtime:
         if other:
             print(f"a journal of this project answers at {other}: waiting until it is gone", flush=True)
         while other and os.getppid() == parent:
-            time.sleep(STANDBY_EVERY)
+            time.sleep(INSTANCE_CHECK_SECONDS)
             other = self.standby.another()
         if os.getppid() != parent:
             return

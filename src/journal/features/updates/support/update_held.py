@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 
-LASTS = 900.0
+UPDATE_PAUSE_SECONDS = 900.0
 
 
 @dataclass(frozen=True)
@@ -17,4 +17,4 @@ class UpdateHeld:
         return replace(self, step=step)
 
     def is_stale(self, time: float) -> bool:
-        return time - self.time > LASTS
+        return time - self.time > UPDATE_PAUSE_SECONDS

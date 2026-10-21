@@ -8,7 +8,7 @@ from pathlib import Path
 
 from journal.support.supervisor_socket import SupervisorSocket
 
-PATIENCE = 600.0
+WAIT_LIMIT_SECONDS = 600.0
 TAB_WAIT = 8.0
 
 
@@ -23,13 +23,13 @@ class PageWait:
 
     def wait(self) -> None:
         began = time.time()
-        while time.time() - began < PATIENCE:
+        while time.time() - began < WAIT_LIMIT_SECONDS:
             url = self.answering()
             if url:
                 self.shown(url)
                 return
             time.sleep(0.5)
-        self.log(f"viewer: the journal's page did not answer within {int(PATIENCE)} seconds, so no tab was opened")
+        self.log(f"viewer: the journal's page did not answer within {int(WAIT_LIMIT_SECONDS)} seconds, so no tab was opened")
 
     def answering(self) -> str:
         url = f"http://127.0.0.1:{self.port_file.read_text().strip()}/" if self.port_file.is_file() else ""

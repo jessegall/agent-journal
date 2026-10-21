@@ -7,7 +7,7 @@ from journal.repositories.rules import Rules
 from journal.support.chat_mark import ChatMark
 from journal.support.ref import Ref
 
-MARKS = {"fact": ChatMark.FACTS, "rule": ChatMark.RULES, "reminder": ChatMark.REMINDERS}
+MEMORY_CHAT_KINDS = {"fact": ChatMark.FACTS, "rule": ChatMark.RULES, "reminder": ChatMark.REMINDERS}
 
 
 class MarkWhispered(AgentListener[LineSaid]):
@@ -19,8 +19,8 @@ class MarkWhispered(AgentListener[LineSaid]):
 
     def handle(self, event: LineSaid) -> None:
         from journal.features.memory.feature import Memory
-        if event.nudge != Memory.MEMORY_WHISPERED_BACK.key:
+        if event.nudge != Memory.MEMORY_READ_REQUEST.key:
             return
         noun, n = event.values["noun"], int(event.values["n"])
         row = self.repositories[noun].find(n)
-        self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {n}", "rules", "", "", str(Ref.to(row)), kind="whisper", shows=MARKS[noun])
+        self.cards.show(event.environment_id, event.session, f"Reminded the agent about {noun} {n}", "rules", "", "", str(Ref.to(row)), kind="whisper", shows=MEMORY_CHAT_KINDS[noun])

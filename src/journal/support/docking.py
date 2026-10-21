@@ -65,4 +65,4 @@ class Docking:
         return cards[0] if cards else None
 
     def new_card(self, row: Model, actor: Actor) -> Message:
-        return self.cards.keyed(self.scope.id, self.cards.made_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, actor, ChatMark.MADE)
+        return self.cards.keyed(self.scope.id, self.cards.made_key(row), row.heading(), {"kind": DOCKED, **RowCard.of(row).as_data()}, actor, ChatMark.CREATED)

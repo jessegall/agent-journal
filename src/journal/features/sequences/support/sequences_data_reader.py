@@ -9,7 +9,7 @@ from journal.repositories.workers import Workers
 from journal.support.sequence_run import SequenceRun
 
 STEP_KEYS = ("sequences.step_to_follow", "sequences.sequence_parked", "sequences.following_the_step")
-NEVER = 10.0 ** 9
+DISTANT_SECONDS = 10.0 ** 9
 
 
 class SequencesDataReader:
@@ -20,7 +20,7 @@ class SequencesDataReader:
 
     def read(self, agent: Agent) -> SequencesData:
         if not agent.sequence_runs:
-            return SequencesData(0, 0, "", "", False, 0, False, NEVER, False, False, False)
+            return SequencesData(0, 0, "", "", False, 0, False, DISTANT_SECONDS, False, False, False)
         run = SequenceRun.of(agent.sequence_runs[-1])
         uses = self.entries.tool_starts(agent.session, last=1)
         last_line = self.entries.said_last(agent.session, STEP_KEYS)
@@ -31,7 +31,7 @@ class SequencesDataReader:
             sequence_id=run.sequence_id, step=run.step + 1, step_text=run.text, parked_why=run.parked_why, is_taken_up=bool(run.taken_up_at),
             writes_since_taken_up=self.writes_since(agent, run),
             step_said_after_last_tool=line_time > (uses[0].created_at.timestamp() if uses else 0.0),
-            step_unsaid_seconds=datetime.now(timezone.utc).timestamp() - line_time if line_time else NEVER,
+            step_unsaid_seconds=datetime.now(timezone.utc).timestamp() - line_time if line_time else DISTANT_SECONDS,
             can_be_typed=not any(agent.session in (w.session, w.resume) for w in self.workers.across_environments(environment_id=agent.environment_id)),
             question_open=bool(self.questions.open()),
             debts_owed=not agent.oriented or bool(agent.mark_owed) or bool(agent.skills_owed))

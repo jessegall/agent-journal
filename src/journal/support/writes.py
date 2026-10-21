@@ -1,7 +1,7 @@
 import os
 import re
 
-from journal.features.shell.support.part import CODE, IN_PLACE, Part
+from journal.features.shell.support.part import CODE, INPLACE_EDITORS, Part
 from journal.support.chain import Chain
 
 COMMANDS = {"tee", "cp", "mv", "rm", "mkdir", "touch", "rsync", "ln", "chmod", "chown", "truncate", "dd", "patch", "install", "rmdir"}
@@ -30,7 +30,7 @@ class Writes:
         if REDIRECT.search(part.unquoted()):
             return True
         name = tokens[0].rsplit("/", 1)[-1]
-        if name in IN_PLACE:
+        if name in INPLACE_EDITORS:
             return part.edits_in_place() or bool(MARKERS.search(text))
         if name in COMMANDS:
             return True
@@ -87,7 +87,7 @@ class Writes:
 
     @classmethod
     def named_targets(cls, name: str, tokens: list[str], text: str) -> list[str]:
-        if (name in COMMANDS or name in IN_PLACE) and cls.part(text):
+        if (name in COMMANDS or name in INPLACE_EDITORS) and cls.part(text):
             return [w for w in tokens[1:] if not w.startswith("-")]
         if name == "git" and len(tokens) > 1 and tokens[1] in GIT:
             return [w for w in tokens[2:] if not w.startswith("-")]

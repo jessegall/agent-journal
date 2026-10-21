@@ -47,7 +47,7 @@ class SequenceCommand(Command):
         self.in_hand(caller)
         from journal.features.sequences.feature import Sequences
         run = self.running.follow(caller.session, self.scope.id)
-        print(Sequences.FOLLOWING_THE_STEP.create(n=run.sequence_id, step=run.step + 1, text=run.text).rendered())
+        print(Sequences.CURRENT_STEP.create(n=run.sequence_id, step=run.step + 1, text=run.text).rendered())
         return 0
 
     def next(self, args: Namespace, caller: Caller) -> int:

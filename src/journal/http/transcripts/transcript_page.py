@@ -4,7 +4,7 @@ from journal.http.transcripts.transcript_slice import TranscriptSlice
 from journal.providers.support.turn import Turn
 from journal.support.not_found import NotFound
 
-SPOKEN = ("human", "agent")
+SPEAKER_ROLES = ("human", "agent")
 LARGEST = 1000
 PAGE = 300
 
@@ -22,7 +22,7 @@ class TranscriptPage:
 
     @staticmethod
     def heading(turn: Turn) -> TranscriptHeading:
-        return TranscriptHeading(line=turn.line, who=turn.who, kind=turn.kind, time=turn.time, tools=turn.tools, text=turn.text if turn.kind in SPOKEN else "", has_text=bool(turn.text))
+        return TranscriptHeading(line=turn.line, who=turn.who, kind=turn.kind, time=turn.time, tools=turn.tools, text=turn.text if turn.kind in SPEAKER_ROLES else "", has_text=bool(turn.text))
 
     def entry(self, line: int) -> TranscriptEntry:
         turn = next((t for t in self.turns if t.line == line), None)

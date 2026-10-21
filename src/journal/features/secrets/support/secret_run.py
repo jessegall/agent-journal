@@ -15,7 +15,7 @@ from journal.repositories.mcp_servers import McpServers
 from journal.support.secret_values import SecretValues
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
-THROWAWAY = ("HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "GH_CONFIG_DIR", "DOCKER_CONFIG")
+TEMPORARY_HOME_VARIABLES = ("HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "GH_CONFIG_DIR", "DOCKER_CONFIG")
 LONGEST = 120
 
 
@@ -42,7 +42,7 @@ class SecretRun:
         runs.mkdir(mode=0o700, exist_ok=True)
         home = tempfile.mkdtemp(prefix="run-", dir=runs)
         try:
-            environ = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(THROWAWAY, home), **({f.variable: values[f.variable] for f in fields} if as_variables else {})}
+            environ = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(TEMPORARY_HOME_VARIABLES, home), **({f.variable: values[f.variable] for f in fields} if as_variables else {})}
             done = subprocess.run([program, *command[1:]], input=f"{given}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environ, cwd=self.config.root, timeout=LONGEST)
             return done.returncode, mask.masked(done.stdout)
         finally:

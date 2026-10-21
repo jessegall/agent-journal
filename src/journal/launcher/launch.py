@@ -24,7 +24,7 @@ from journal.providers.codex import Codex
 from journal.support.private_folder import PrivateFolder
 
 RESUME = {"claude": lambda session: ["--resume", session], "codex": lambda session: ["resume", session]}
-SKIP = {provider.name: list(provider.skip_prompts) for provider in (Claude, Codex)}
+PROMPT_FLAGS = {provider.name: list(provider.skip_prompts) for provider in (Claude, Codex)}
 STATUS = {"claude": lambda status: ["--settings", status.settings()], "codex": lambda status: []}
 LOCAL = {"claude": [], "codex": ["--no-daemon"]}
 REACH = {"claude": [], "codex": ["-c", "sandbox_workspace_write.network_access=true"]}
@@ -87,7 +87,7 @@ class Launch:
         return menu.choose(self.agent, named, self.new, self.aside, self.is_skipping(), self.yes)
 
     def is_skipping(self) -> bool:
-        return self.skip or any(flag in self.args for flag in SKIP[self.agent])
+        return self.skip or any(flag in self.args for flag in PROMPT_FLAGS[self.agent])
 
     def resumed_in(self, menu: Menu) -> str:
         resumed = next((self.args[i + 1] for i, arg in enumerate(self.args[:-1]) if arg in RESUMING), "")
@@ -96,7 +96,7 @@ class Launch:
         return next((row.name for row in menu.environments() if resumed in row.last_sessions.values()), "")
 
     def agent_command(self, choice: Choice, status: StatusLine) -> list[str]:
-        skip = [flag for flag in SKIP[self.agent] if choice.skip_prompts and flag not in self.args]
+        skip = [flag for flag in PROMPT_FLAGS[self.agent] if choice.skip_prompts and flag not in self.args]
         reach = [] if choice.skip_prompts else REACH[self.agent]
         return [self.agent, *LOCAL[self.agent], *skip, *reach, *STATUS[self.agent](status), *self.args]
 

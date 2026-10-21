@@ -4,7 +4,7 @@ from journal.support.actor import Actor
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound
 
-ENV_HEADER = "X-Journal-Env"
+ENVIRONMENT_HEADER = "X-Journal-Env"
 
 
 @dataclass(frozen=True)
@@ -38,7 +38,7 @@ class Request:
 
     @property
     def environment(self) -> str:
-        named = self.headers.get(ENV_HEADER.lower()) or self.query.get("env")
+        named = self.headers.get(ENVIRONMENT_HEADER.lower()) or self.query.get("env")
         if not named:
-            raise Refused(f"no environment: send it in the {ENV_HEADER} header")
+            raise Refused(f"no environment: send it in the {ENVIRONMENT_HEADER} header")
         return named

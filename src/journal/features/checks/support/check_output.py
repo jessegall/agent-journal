@@ -2,8 +2,8 @@ import re
 
 from journal.support.check_progress import CheckProgress
 
-SAID_LINES = 40
-TOLD = 300
+OUTPUT_LINE_LIMIT = 40
+TAIL_CHARACTERS = 300
 PERCENT = re.compile(r"(\d{1,3})%")
 COUNTED = re.compile(r"\b(\d+)\s*/\s*(\d+)\b")
 ITEMS = re.compile(r"\[(\d+) items?\]|collected (\d+) items?")
@@ -16,11 +16,11 @@ class CheckOutput:
     @staticmethod
     def told(output: str) -> str:
         text = " ".join(output.split())
-        return text if len(text) <= TOLD else f"... {text[-TOLD:]}"
+        return text if len(text) <= TAIL_CHARACTERS else f"... {text[-TAIL_CHARACTERS:]}"
 
     @staticmethod
     def tail(output: str) -> str:
-        return "\n".join(output.strip().splitlines()[-SAID_LINES:])
+        return "\n".join(output.strip().splitlines()[-OUTPUT_LINE_LIMIT:])
 
     @classmethod
     def progress(cls, output: str, time: float) -> CheckProgress:

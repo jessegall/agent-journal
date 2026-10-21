@@ -42,7 +42,7 @@ class Task(Scoped):
     def parked(self, why: str, time: datetime) -> "Task":
         if self.state != TaskState.STARTED:
             raise Refused(f"task {self.id} is {self.state}: only a started task is parked")
-        return self.closed(self.with_(state=TaskState.PARKED, parked_why=why), time, "parked")
+        return self.closed(self.with_(state=TaskState.SUSPENDED, parked_why=why), time, "parked")
 
     def cancelled(self, time: datetime) -> "Task":
         return self.closed(self.with_(state=TaskState.CANCELLED, finished_at=self.finished_at or time), time, "cancelled")
@@ -57,7 +57,7 @@ class Task(Scoped):
         return self.with_(state=TaskState.OPEN, blocked_why="").with_event(TaskReopened(environment_id=self.environment_id, time=time, task_id=self.id, on=on))
 
     def finished(self, time: datetime, outcome: str) -> "Task":
-        return self.closed(self.with_(state=TaskState.DONE, finished_at=time, outcome=outcome), time, "done")
+        return self.closed(self.with_(state=TaskState.FINISHED, finished_at=time, outcome=outcome), time, "done")
 
     def title_words(self) -> str:
         return self.title

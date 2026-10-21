@@ -4,7 +4,7 @@ from urllib.request import urlopen
 
 from journal.config import Config
 
-ASK_SECONDS = 1.0
+QUERY_TIMEOUT_SECONDS = 1.0
 
 
 class Standby:
@@ -17,7 +17,7 @@ class Standby:
         for port in self.config.remembered_port():
             address = f"http://127.0.0.1:{port}"
             try:
-                with urlopen(f"{address}/journal/identity", timeout=ASK_SECONDS) as answer:
+                with urlopen(f"{address}/journal/identity", timeout=QUERY_TIMEOUT_SECONDS) as answer:
                     identity = json.loads(answer.read())
             except (OSError, URLError, ValueError):
                 return ""

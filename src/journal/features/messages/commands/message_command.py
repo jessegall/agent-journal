@@ -128,7 +128,7 @@ class MessageCommand(Command):
         for link in self.links.of(message):
             other = link.target if link.source == Ref.to(message) else link.source
             print(f"  {link.kind} {other}")
-            if link.kind == Messages.COMMENTS_ON and message.is_on_a_passage:
+            if link.kind == Messages.COMMENT_LINK and message.is_on_a_passage:
                 print(self.passage_place(other, message.quote))
         print(f"  reply with [!reply:{message.id}] in your turn")
         print(f"  steering? take it as steering. something to do? file it: `journal task create \"<title>\" --from {message.id}`")

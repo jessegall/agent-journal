@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from journal.features.shell.support.shell_record import RAN, RUNNING
+from journal.features.shell.support.shell_record import PART_END, PART_START
 from journal.models.entry import Entry
 
-LINGERS = 10.0
+ACTIVITY_ROW_SECONDS = 10.0
 TOOLS = ("ToolStarting", "ToolFinished")
 
 
@@ -19,15 +19,15 @@ class BarRow:
 
     @staticmethod
     def is_shown(entry: Entry) -> bool:
-        return entry.kind in (RUNNING, RAN) or (entry.kind in TOOLS and entry.data.get("tool_name") != "Bash")
+        return entry.kind in (PART_START, PART_END) or (entry.kind in TOOLS and entry.data.get("tool_name") != "Bash")
 
     @classmethod
     def of(cls, entry: Entry) -> "BarRow":
-        return cls.of_part(entry) if entry.kind in (RUNNING, RAN) else cls.of_tool(entry)
+        return cls.of_part(entry) if entry.kind in (PART_START, PART_END) else cls.of_tool(entry)
 
     @classmethod
     def of_part(cls, entry: Entry) -> "BarRow":
-        return cls(f"{entry.data['chain']} {entry.data['part']}", entry.data["doing"], entry.data["part"], entry.data["time"], entry.kind == RAN)
+        return cls(f"{entry.data['chain']} {entry.data['part']}", entry.data["doing"], entry.data["part"], entry.data["time"], entry.kind == PART_END)
 
     @classmethod
     def of_tool(cls, entry: Entry) -> "BarRow":
@@ -37,4 +37,4 @@ class BarRow:
 
     def item(self) -> dict:
         detail = [{"value": self.detail[:80], "color": "muted"}] if self.detail else []
-        return {"id": self.time, "key": self.key, "parts": [{"value": self.verb, "color": "gray"}, *detail], "time": self.time, "done": False, "for": 0, "clock": True, "hold": 0.25, "lingers": LINGERS}
+        return {"id": self.time, "key": self.key, "parts": [{"value": self.verb, "color": "gray"}, *detail], "time": self.time, "done": False, "for": 0, "clock": True, "hold": 0.25, "lingers": ACTIVITY_ROW_SECONDS}

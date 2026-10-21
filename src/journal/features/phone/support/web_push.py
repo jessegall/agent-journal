@@ -10,7 +10,7 @@ from journal.support.private_folder import PrivateFolder
 
 SERVICES = ("web.push.apple.com", "fcm.googleapis.com", "updates.push.services.mozilla.com")
 WINDOWS = ".notify.windows.com"
-SEND_SECONDS = 10
+NOTIFICATION_TIMEOUT_SECONDS = 10
 
 
 class WebPush:
@@ -36,7 +36,7 @@ class WebPush:
         token = keys.token(endpoint, f"https://{address}", time.time())
         headers = {"Authorization": f"vapid t={token}, k={PushKeys.unpadded(keys.public)}", "TTL": "3600", "Urgency": "high", "Content-Length": "0"}
         try:
-            with urllib.request.urlopen(urllib.request.Request(endpoint, data=b"", headers=headers, method="POST"), timeout=SEND_SECONDS) as answer:
+            with urllib.request.urlopen(urllib.request.Request(endpoint, data=b"", headers=headers, method="POST"), timeout=NOTIFICATION_TIMEOUT_SECONDS) as answer:
                 return answer.status
         except urllib.error.HTTPError as refused:
             return refused.code

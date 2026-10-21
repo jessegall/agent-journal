@@ -10,7 +10,7 @@ from journal.models.plan import Plan
 from journal.support.ref import Ref
 from journal.models.task import Task
 from journal.repositories.links import Links
-from journal.repositories.plans import IN_PLAN, Plans
+from journal.repositories.plans import PLAN_LINK, Plans
 from journal.repositories.tasks import Tasks
 
 
@@ -38,7 +38,7 @@ class PlanController(Controller[Plan]):
     def add_task(self, request: Request) -> Response:
         plan = self.repository.find(request.number("id"))
         task = self.tasks.save(Task(environment_id=plan.environment_id, title=request.body.get("title", ""), brief=request.body.get("brief", "")), request.actor)
-        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), request.actor)
+        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=PLAN_LINK), request.actor)
         return Response.json(task, 201)
 
     def approve(self, request: Request) -> Response:

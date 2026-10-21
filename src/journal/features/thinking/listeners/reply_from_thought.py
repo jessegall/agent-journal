@@ -7,7 +7,7 @@ from journal.features.messages.listeners.record_turn import REPLY_TAG
 from journal.providers.providers import Providers
 from journal.repositories.messages import Messages
 
-FROM_THOUGHT = "thought:"
+THOUGHT_PREFIX = "thought:"
 
 
 class ReplyFromThought(AgentListener[ToolStarting]):
@@ -23,6 +23,6 @@ class ReplyFromThought(AgentListener[ToolStarting]):
         for thought in self.providers.named(event.provider).thoughts_this_turn(self.config.root, event.session):
             named = {int(n) for tag in REPLY_TAG.finditer(thought) for n in tag.group(1).split(",")}
             if named & unanswered:
-                turn = TurnWritten(text=thought, delta=thought, turn_id=f"{FROM_THOUGHT}{hash(thought)}", final=True)
+                turn = TurnWritten(text=thought, delta=thought, turn_id=f"{THOUGHT_PREFIX}{hash(thought)}", final=True)
                 self.bus.dispatch(turn.placed(event.session, event.environment_id, event.provider, event.context, event.time))
                 unanswered -= named

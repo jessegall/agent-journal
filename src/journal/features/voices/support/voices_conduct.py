@@ -13,16 +13,16 @@ class VoicesConduct(Conduct):
 
     def on_session_started_voices(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.voices.feature import Voices
-        return self.unchanged(Voices.HOW_TO_TALK_TO_THE_USER.create(voice=event.data.of(Voices).instruction))
+        return self.unchanged(Voices.VOICE_INSTRUCTION.create(voice=event.data.of(Voices).instruction))
 
     def on_session_started_voices_introduce(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.voices.feature import Voices
         if event.source not in STARTS:
             return self.unchanged()
-        return self.unchanged().typing((Voices.SAY_YOU_ARE_BACK if event.source == RESUME else Voices.INTRODUCE_YOURSELF).create())
+        return self.unchanged().typing((Voices.RETURN_GREETING if event.source == RESUME else Voices.INTRODUCE_YOURSELF).create())
 
     def on_setting_changed_voices(self, event: SettingChanged, settings: Settings) -> Transition:
         from journal.features.voices.feature import Voices
-        if event.setting not in {option.key for option in Voices.SPOKEN}:
+        if event.setting not in {option.key for option in Voices.VOICE_OPTIONS}:
             return self.unchanged()
-        return self.unchanged(Voices.THE_VOICE_CHANGED.create(voice=event.data.of(Voices).instruction))
+        return self.unchanged(Voices.VOICE_CHANGE.create(voice=event.data.of(Voices).instruction))

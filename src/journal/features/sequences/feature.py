@@ -25,21 +25,21 @@ class Sequences(Feature):
     conduct = (SequencesConduct,)
     seeds = (ShippedSequences,)
 
-    STEP_TO_FOLLOW = Nudge(name, "step_to_follow", "sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` to take it up, `journal sequence next` when it is done", repeat_after=0)
-    FOLLOWING_THE_STEP = Nudge(name, "following_the_step", "following sequence {{n}}, step {{step}}: {{text}}", "`journal sequence next` when it is done", repeat_after=0)
-    WRITE_HELD_FOR_THE_STEP = Nudge(name, "write_held_for_the_step", "a write waits for sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside", repeat_after=0)
-    STEP_STALE_MOVE_IT_ON = Nudge(name, "step_stale_move_it_on", "{{writes}} writes since sequence {{n}}, step {{step}} was taken up: {{text}}", "`journal sequence next` if it is done, `journal sequence follow` to carry on with it, or `journal sequence park --why \"<why>\"`", repeat_after=0)
-    SEQUENCE_PARKED = Nudge(name, "sequence_parked", "sequence {{n}} is parked at step {{step}}: {{why}}", "`journal sequence follow` resumes it", repeat_after=0)
+    PENDING_STEP = Nudge(name, "step_to_follow", "sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` to take it up, `journal sequence next` when it is done", repeat_after=0)
+    CURRENT_STEP = Nudge(name, "following_the_step", "following sequence {{n}}, step {{step}}: {{text}}", "`journal sequence next` when it is done", repeat_after=0)
+    STEP_EDIT_BLOCK = Nudge(name, "write_held_for_the_step", "a write waits for sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside", repeat_after=0)
+    STALE_STEP = Nudge(name, "step_stale_move_it_on", "{{writes}} writes since sequence {{n}}, step {{step}} was taken up: {{text}}", "`journal sequence next` if it is done, `journal sequence follow` to carry on with it, or `journal sequence park --why \"<why>\"`", repeat_after=0)
+    SEQUENCE_SUSPENDED = Nudge(name, "sequence_parked", "sequence {{n}} is parked at step {{step}}: {{why}}", "`journal sequence follow` resumes it", repeat_after=0)
     SEQUENCE_ENDED = Nudge(name, "sequence_ended", "sequence {{n}} ran its last step", repeat_after=0)
     SEQUENCE_ABANDONED = Nudge(name, "sequence_abandoned", "sequence {{n}} abandoned", repeat_after=0)
     SEQUENCE_CANNOT_FINISH = Nudge(name, "sequence_cannot_finish", "sequence {{n}} ended: {{why}}", repeat_after=0)
-    THE_USER_SKIPPED_A_STEP = Nudge(name, "the_user_skipped_a_step", "the user skipped step {{step}} of sequence {{n}}", repeat_after=0)
-    THE_USER_ENDED_THE_SEQUENCE = Nudge(name, "the_user_ended_the_sequence", "the user ended sequence {{n}}", repeat_after=0)
-    nudges = (STEP_TO_FOLLOW, FOLLOWING_THE_STEP, WRITE_HELD_FOR_THE_STEP, STEP_STALE_MOVE_IT_ON, SEQUENCE_PARKED, SEQUENCE_ENDED, SEQUENCE_ABANDONED, SEQUENCE_CANNOT_FINISH, THE_USER_SKIPPED_A_STEP, THE_USER_ENDED_THE_SEQUENCE)
+    STEP_OMISSION = Nudge(name, "the_user_skipped_a_step", "the user skipped step {{step}} of sequence {{n}}", repeat_after=0)
+    SEQUENCE_CANCELLED = Nudge(name, "the_user_ended_the_sequence", "the user ended sequence {{n}}", repeat_after=0)
+    nudges = (PENDING_STEP, CURRENT_STEP, STEP_EDIT_BLOCK, STALE_STEP, SEQUENCE_SUSPENDED, SEQUENCE_ENDED, SEQUENCE_ABANDONED, SEQUENCE_CANNOT_FINISH, STEP_OMISSION, SEQUENCE_CANCELLED)
 
-    STALE_AFTER = Option("sequences.stale_after", "Hold writes again after", "Writes since a step was taken up before the next write waits for the step to be moved on, followed again or parked", 25)
-    SAY_EVERY = Option("sequences.say_every", "Say the step again after", "Minutes a step stands unheard before it is said again to a quiet agent; three times as long while the agent waits", 10, unit="minutes")
-    options = (STALE_AFTER, SAY_EVERY)
+    STALENESS_LIMIT = Option("sequences.stale_after", "Hold writes again after", "Writes since a step was taken up before the next write waits for the step to be moved on, followed again or parked", 25)
+    STEP_REPEAT_INTERVAL = Option("sequences.say_every", "Say the step again after", "Minutes a step stands unheard before it is said again to a quiet agent; three times as long while the agent waits", 10, unit="minutes")
+    options = (STALENESS_LIMIT, STEP_REPEAT_INTERVAL)
 
     skill = Skill("sequences", 'Follow a sequence of steps one at a time; load it when a sequence is run or written', """
 # Sequences

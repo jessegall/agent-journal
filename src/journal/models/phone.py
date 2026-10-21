@@ -8,8 +8,8 @@ from journal.models.scoped import Scoped
 class Phone(Scoped):
     """A phone paired with the journal through the tunnel: the name its browser gave, its key's hash, and how long it stays paired."""
 
-    SEEN_EVERY = timedelta(minutes=1)
-    PUSH_RETRY_AFTER = timedelta(minutes=1)
+    PRESENCE_INTERVAL = timedelta(minutes=1)
+    NOTIFICATION_RETRY_DELAY = timedelta(minutes=1)
 
     name: str = ""
     key: str = ""
@@ -24,7 +24,7 @@ class Phone(Scoped):
         return self.ended_at is None and self.expires_at is not None and self.expires_at > time
 
     def is_due_a_sighting(self, time: datetime) -> bool:
-        return self.last_seen_at is None or time - self.last_seen_at >= self.SEEN_EVERY
+        return self.last_seen_at is None or time - self.last_seen_at >= self.PRESENCE_INTERVAL
 
     def seen(self, time: datetime) -> "Phone":
         return self.with_(last_seen_at=time)
@@ -36,7 +36,7 @@ class Phone(Scoped):
         return bool(set(owed) - set(self.pushed_refs()))
 
     def is_owed_a_push(self, owed: list[str], time: datetime) -> bool:
-        resting = self.push_failed_at is not None and time - self.push_failed_at < self.PUSH_RETRY_AFTER
+        resting = self.push_failed_at is not None and time - self.push_failed_at < self.NOTIFICATION_RETRY_DELAY
         return self.has_news(owed) and not resting
 
     def subscribed(self, endpoint: str, owed: list[str]) -> "Phone":

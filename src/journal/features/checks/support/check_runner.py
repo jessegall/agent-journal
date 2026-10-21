@@ -22,8 +22,8 @@ from journal.support.chat_mark import ChatMark
 TIMEOUT = 600
 TAIL = 20
 FAULTS = {126: "the command cannot be run", 127: "the command is not there"}
-KEPT = 4000
-EVERY = 1.0
+OUTPUT_CHARACTERS = 4000
+INTERVAL = 1.0
 
 
 class CheckRunner:
@@ -49,7 +49,7 @@ class CheckRunner:
         ended = self.executed(check, report, actor)
         was_failing = check.last_passed is False
         took = timing.time() - check.running.time
-        ran = self.checks.save(self.checks.find(check.id).ran(ended.passed, ended.output[-KEPT:], datetime.now(timezone.utc), took, self.report_of(report), ended.fault), actor)
+        ran = self.checks.save(self.checks.find(check.id).ran(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), took, self.report_of(report), ended.fault), actor)
         if ran.waited_on:
             return ran
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
@@ -66,7 +66,7 @@ class CheckRunner:
         printed, saved = [], timing.time()
         for line in process.stdout:
             printed.append(line)
-            if timing.time() - saved >= EVERY:
+            if timing.time() - saved >= INTERVAL:
                 self.checks.touch(check, actor, running=CheckOutput.progress("".join(printed), check.running.time))
                 saved = timing.time()
         code = process.wait()

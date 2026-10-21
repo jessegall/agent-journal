@@ -18,10 +18,10 @@ from journal.repositories.reports import Reports
 from journal.repositories.tasks import Tasks
 
 LABEL = 40
-LOG_KEPT = 20
+DUMP_LOG_LENGTH = 20
 ANSWER = 600
 OFFERED = 4
-OWN_WORDS = -2
+USER_TEXT = -2
 FILED = "dump_filed"
 TABLES = {"doc": "docs", "report": "reports", "todo": "tasks", "task": "tasks", "plan": "plans", "fact": "facts", "rule": "rules", "reminder": "reminders"}
 
@@ -88,14 +88,14 @@ class Filing:
             raise Refused(f"a status is a short title of at most {LABEL} characters, like Adding files; the sentence goes in --detail")
         if dump.is_completed and not dump.options and not dump.chosen:
             raise Refused(f"dump {n} is closed")
-        return self.dumps.save(dump.logged(self.entry(status, on=on, making=making, detail=detail), LOG_KEPT), actor)
+        return self.dumps.save(dump.logged(self.entry(status, on=on, making=making, detail=detail), DUMP_LOG_LENGTH), actor)
 
     def say(self, n: int, text: str, actor: Actor) -> Dump:
         if not text.strip():
             raise Refused('say the answer: journal dump say <n> "<text>"')
         if len(text.strip()) > ANSWER:
             raise Refused(f"an answer in the dump is at most {ANSWER} characters; this one is {len(text.strip())}")
-        return self.dumps.save(self.dumps.find(n).logged(self.entry(text, answer=True), LOG_KEPT), actor)
+        return self.dumps.save(self.dumps.find(n).logged(self.entry(text, answer=True), DUMP_LOG_LENGTH), actor)
 
     def ask(self, n: int, question: str, guesses: str, actor: Actor) -> Dump:
         if not question.strip():
@@ -163,7 +163,7 @@ class Filing:
             raise Refused('say what should happen next: journal dump direct <n> "<what to do>"')
         dump = self.dumps.find(n)
         message = self.messages.save(Message(author=Author.USER, text=how.strip()).arrived(), actor)
-        self.links.save(Link(source=Ref.to(message), target=Ref.to(dump), kind=Messages.COMMENTS_ON), actor)
+        self.links.save(Link(source=Ref.to(message), target=Ref.to(dump), kind=Messages.COMMENT_LINK), actor)
         return self.dumps.save(dump.step_directed(how.strip(), time.time()), actor)
 
     def stop(self, n: int, actor: Actor) -> Dump:

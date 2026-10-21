@@ -38,8 +38,8 @@ class Suggesting:
     def next_round(self) -> float:
         from journal.features.suggestions.feature import SuggestionsFeature
         if self.last_round is None:
-            return self.started_at + float(self.settings.option(SuggestionsFeature.FIRST_AFTER)) * MINUTE
-        return self.last_round + float(self.settings.option(SuggestionsFeature.EVERY)) * MINUTE
+            return self.started_at + float(self.settings.option(SuggestionsFeature.FIRST_DELAY)) * MINUTE
+        return self.last_round + float(self.settings.option(SuggestionsFeature.INTERVAL)) * MINUTE
 
     def round(self) -> list[Suggestion]:
         return [self.made(suggester) for suggester in self.suggesters if not self.suggestions.was_made(suggester.key) and suggester.applies()]

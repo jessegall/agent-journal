@@ -22,7 +22,7 @@ class Delegating(Working):
 
     def continue_nudge(self, time: float) -> Nudge:
         from journal.features.workers.feature import Workers
-        return Workers.DELEGATE_THE_TASK.create(name=self.named(), logged=self.logged_words(time))
+        return Workers.TASK_DELEGATION.create(name=self.named(), logged=self.logged_words(time))
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks

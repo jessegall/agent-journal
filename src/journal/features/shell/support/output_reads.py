@@ -1,7 +1,7 @@
 import re
 
 OUTPUT = re.compile(r"outputs/[\w.-]+|(?<=journal output read )\d+")
-WHOLE = re.compile(r"\s*journal output read \d+\s*")
+FULL_READ_PATTERN = re.compile(r"\s*journal output read \d+\s*")
 
 
 class OutputReads:
@@ -9,7 +9,7 @@ class OutputReads:
 
     @staticmethod
     def is_one(command: str) -> bool:
-        return bool(OUTPUT.search(command)) and "--reader" not in command and not WHOLE.fullmatch(command)
+        return bool(OUTPUT.search(command)) and "--reader" not in command and not FULL_READ_PATTERN.fullmatch(command)
 
     @staticmethod
     def shape(command: str) -> str:

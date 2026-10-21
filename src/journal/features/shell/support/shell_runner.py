@@ -19,7 +19,7 @@ from journal.support.caller import Caller
 
 EXIT = "__journal_exit"
 TICK = 0.2
-LIMIT_READ_EVERY = 10
+LIMIT_READ_INTERVAL = 10
 
 
 class ShellRunner:
@@ -76,11 +76,11 @@ class ShellRunner:
                 folder.moved()
                 number = self.record.moved(folder.folder.name, folder.part_text(shown), folder.folder, caller)
                 from journal.features.shell.feature import Shell
-                yield f"{Shell.MOVED_TO_THE_BACKGROUND.create(n=number, file=str(folder.folder)).rendered()}\n{EXIT} 0\n".encode()
+                yield f"{Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered()}\n{EXIT} 0\n".encode()
                 return
             time.sleep(TICK)
             tick += 1
-            if tick % LIMIT_READ_EVERY == 0:
+            if tick % LIMIT_READ_INTERVAL == 0:
                 limit = self.limits.of(request.line, caller.environment)
 
     def closed(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> None:

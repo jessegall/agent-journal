@@ -7,7 +7,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_reopened import TaskReopened
 
-SAME = 3
+POLL_REPEAT_LIMIT = 3
 
 
 class TasksConduct(Conduct):
@@ -25,9 +25,9 @@ class TasksConduct(Conduct):
         from journal.features.tasks.feature import Tasks
         command = event.call.command
         last = event.data.of(Tasks).last_commands
-        if not command or len(last) < SAME or any(earlier != command for earlier in last):
+        if not command or len(last) < POLL_REPEAT_LIMIT or any(earlier != command for earlier in last):
             return self.unchanged()
-        return self.unchanged(Tasks.STOP_POLLING.create(times=SAME, command=command))
+        return self.unchanged(Tasks.STOP_POLLING.create(times=POLL_REPEAT_LIMIT, command=command))
 
     def on_task_reopened_tasks(self, event: TaskReopened, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
@@ -39,4 +39,4 @@ class TasksConduct(Conduct):
         tasks, plans = event.data.of(Tasks), event.data.of(Plans)
         if event.how != "done" or tasks.in_hand or not tasks.parked or (plans.started is not None and plans.started.next_task):
             return self.unchanged()
-        return self.unchanged(Tasks.PARKED_TASK_NAMED_AT_CLOSE.create(n=tasks.parked[0], why=tasks.first_parked_why))
+        return self.unchanged(Tasks.SUSPENDED_TASK_CLOSURE_REMINDER.create(n=tasks.parked[0], why=tasks.first_parked_why))

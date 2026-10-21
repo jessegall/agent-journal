@@ -15,7 +15,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.rows import Rows
 from journal.repositories.workers import Workers
 
-NAMED = re.compile(r"`([^`<]+)")
+COMMAND_PATTERN = re.compile(r"`([^`<]+)")
 
 
 class Running:
@@ -63,7 +63,7 @@ class Running:
         agent = self.machine.agent(session, environment_id)
         runs = self.runs(agent)
         run = runs[-1]
-        skipped = Sequences.THE_USER_SKIPPED_A_STEP.create(n=run.sequence_id, step=run.step + 1).rendered()
+        skipped = Sequences.STEP_OMISSION.create(n=run.sequence_id, step=run.step + 1).rendered()
         if run.last:
             return self.ended(agent, runs, f"{skipped}\n{Sequences.SEQUENCE_ENDED.create(n=run.sequence_id).rendered()}")
         moved = self.changed(session, environment_id, lambda time: time.moved_on().said(self.now()))
@@ -73,7 +73,7 @@ class Running:
         from journal.features.sequences.feature import Sequences
         agent = self.machine.agent(session, environment_id)
         runs = self.runs(agent)
-        return self.ended(agent, runs, Sequences.THE_USER_ENDED_THE_SEQUENCE.create(n=runs[-1].sequence_id).rendered())
+        return self.ended(agent, runs, Sequences.SEQUENCE_CANCELLED.create(n=runs[-1].sequence_id).rendered())
 
     def refuse_an_unfinished_end(self, run: SequenceRun) -> None:
         state = self.rows.state_of(Ref.parse(run.about)) if run.last and run.about and run.finishes_in else ""
@@ -129,7 +129,7 @@ class Running:
 
     @staticmethod
     def names(run: SequenceRun, parts: tuple[CommandPart, ...]) -> bool:
-        step_commands = [command.strip() for command in NAMED.findall(run.text) if command.strip()]
+        step_commands = [command.strip() for command in COMMAND_PATTERN.findall(run.text) if command.strip()]
         return any(part.text.strip().startswith(command) for part in parts for command in step_commands)
 
     def typed_to(self, session: str, environment_id: int) -> bool:
@@ -138,12 +138,12 @@ class Running:
     @classmethod
     def reminder(cls, run: SequenceRun) -> Nudge:
         from journal.features.sequences.feature import Sequences
-        return Sequences.SEQUENCE_PARKED.create(n=run.sequence_id, step=run.step + 1, why=run.parked_why) if run.parked_why else cls.step(run)
+        return Sequences.SEQUENCE_SUSPENDED.create(n=run.sequence_id, step=run.step + 1, why=run.parked_why) if run.parked_why else cls.step(run)
 
     @staticmethod
     def step(run: SequenceRun) -> Nudge:
         from journal.features.sequences.feature import Sequences
-        return Sequences.STEP_TO_FOLLOW.create(n=run.sequence_id, step=run.step + 1, text=run.text)
+        return Sequences.PENDING_STEP.create(n=run.sequence_id, step=run.step + 1, text=run.text)
 
     def said(self, run: SequenceRun) -> str:
         return self.step(run).rendered()

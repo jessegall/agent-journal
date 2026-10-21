@@ -13,8 +13,8 @@ from journal.repositories.scoped_repository import ScopedRepository
 
 class Messages(ScopedRepository[Message]):
     ANSWERS = "answers"
-    ABOUT = "about"
-    COMMENTS_ON = "comments_on"
+    SUBJECT_LINK = "about"
+    COMMENT_LINK = "comments_on"
 
     model = Message
 

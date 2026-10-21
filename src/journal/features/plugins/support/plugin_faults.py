@@ -9,7 +9,7 @@ from journal.repositories.plugins import Plugins
 from journal.support.chat_mark import ChatMark
 
 FAULT = "plugin_fault"
-FAILING_AFTER = 5
+FAILURE_LIMIT = 5
 
 
 class PluginFaults:
@@ -21,10 +21,10 @@ class PluginFaults:
     def failed(self, plugin: Plugin, environment_id: int, event: str, text: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=FAULT, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event, "fault": text}), Actor.system())
         row = self.plugins.named(plugin.name)
-        failing = row.faults_in_a_row + 1 >= FAILING_AFTER and row.failing_since is None
+        failing = row.faults_in_a_row + 1 >= FAILURE_LIMIT and row.failing_since is None
         self.plugins.save(row.with_(last_fault=text, faults_in_a_row=row.faults_in_a_row + 1, failing_since=datetime.now(timezone.utc) if failing else row.failing_since), Actor.system())
         if failing:
-            self.cards.show(environment_id, "", f"Plugin {plugin.name} is failing: it faulted {FAILING_AFTER} times in a row, and events go through without it", "bolt", tone="bad", detail=text, shows=ChatMark.PLUGINS)
+            self.cards.show(environment_id, "", f"Plugin {plugin.name} is failing: it faulted {FAILURE_LIMIT} times in a row, and events go through without it", "bolt", tone="bad", detail=text, shows=ChatMark.PLUGINS)
 
     def answered(self, plugin: Plugin, environment_id: int) -> None:
         row = self.plugins.named(plugin.name)

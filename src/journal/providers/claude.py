@@ -10,7 +10,7 @@ from journal.providers.provider import TAIL, Provider
 from journal.providers.support.turn import Turn
 
 CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
-FROM_NAME, FROM_ADDRESS = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
+SENDER_NAME_PATTERN, SENDER_ADDRESS_PATTERN = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
 
 
 class Claude(Provider):
@@ -87,7 +87,7 @@ class Claude(Provider):
         crossed = CROSS_SESSION.match(row.queued.strip())
         if crossed is None:
             return []
-        named = FROM_NAME.search(crossed[1]) or FROM_ADDRESS.search(crossed[1])
+        named = SENDER_NAME_PATTERN.search(crossed[1]) or SENDER_ADDRESS_PATTERN.search(crossed[1])
         return [MessageCrossed(sender=named[1] if named else "another session", text=crossed[2].strip())]
 
     def resume(self, session: str) -> tuple[str, ...]:

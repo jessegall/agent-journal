@@ -4,13 +4,13 @@ from enum import StrEnum
 class Calling(StrEnum):
     """How a voice addresses the user."""
 
-    TITLE_AND_NAME = "title and name"
+    FULL_ADDRESS_FORM = "title and name"
     NAME = "name"
     NONE = "none"
-    OWN = "its own words"
+    AGENT_CHOICE = "its own words"
 
     def called(self, title: str, name: str, own: str | None = None) -> str:
-        parts = {Calling.TITLE_AND_NAME: (title, name), Calling.NAME: (name,), Calling.NONE: (), Calling.OWN: (own,)}[self]
+        parts = {Calling.FULL_ADDRESS_FORM: (title, name), Calling.NAME: (name,), Calling.NONE: (), Calling.AGENT_CHOICE: (own,)}[self]
         return " ".join(part for part in parts if part)
 
     def instruction(self, called: str) -> str:

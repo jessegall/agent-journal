@@ -26,8 +26,8 @@ from journal.version import VERSION
 
 COLOR = "#5e64c9"
 STARTED = timing.time()
-SILENT_AFTER = 900.0
-BAR_SHOWN = 8
+SILENCE_LIMIT_SECONDS = 900.0
+ACTIVITY_ROW_LENGTH = 8
 LOGGED_SHOWN = 100
 
 
@@ -78,7 +78,7 @@ class JournalController:
             agent = self.activity.page([live])[0] if live else None
             held = self.current.of(live) if live else None
             task = HeldTask(held.task.id, held.task.title, held.awaiting) if held else None
-            silent = bool(agent) and agent["status"] in ("busy", "working") and timing.time() - agent["heard_at"].timestamp() > SILENT_AFTER
+            silent = bool(agent) and agent["status"] in ("busy", "working") and timing.time() - agent["heard_at"].timestamp() > SILENCE_LIMIT_SECONDS
             return EnvironmentData(environment, agent, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
 
     def bar(self, request: Request) -> Response:
@@ -93,7 +93,7 @@ class JournalController:
                 queue.append(open_[row.key])
             elif row.key in open_:
                 open_[row.key].update(done=True, **{"for": max(0.0, row.time - open_[row.key]["time"])})
-        return Response.json(queue[-BAR_SHOWN:])
+        return Response.json(queue[-ACTIVITY_ROW_LENGTH:])
 
     def first(self) -> Environment:
         return (self.environments.all() or [self.environments.named("main")])[0]

@@ -9,7 +9,7 @@ from journal.config import Config
 from journal.support.refused import Refused
 
 GITHUB = re.compile(r"^(?:https://github\.com/|git@github\.com:)(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$")
-FETCH_SECONDS = 30
+DOWNLOAD_SECONDS = 30
 INSTALL_SECONDS = 600
 
 
@@ -27,7 +27,7 @@ class ReleaseInstaller:
             log.write(f"installing {ref} of {repository}\n")
             log.flush()
             try:
-                with urlopen(self.script_at(repository, ref), timeout=FETCH_SECONDS) as answer:
+                with urlopen(self.script_at(repository, ref), timeout=DOWNLOAD_SECONDS) as answer:
                     script.write_bytes(answer.read())
                 ran = subprocess.run(["sh", str(script)], cwd=self.config.root, env={**os.environ, "AGENT_JOURNAL_REPO": repository, "AGENT_JOURNAL_REF": ref, "AGENT_JOURNAL_YES": "1"},
                                      stdout=log, stderr=subprocess.STDOUT, timeout=INSTALL_SECONDS)

@@ -10,13 +10,13 @@ QUESTION = re.compile(r"\?\s*$")
 TRUSTED = re.compile(r"\btrust\b", re.I)
 SWITCHING_MODEL = re.compile(r"\bswitch model\b", re.I)
 PERMISSION = re.compile(r"do you want to (?:proceed|make this edit|create|run|allow|read)|allow .* to\b", re.I)
-OWN = re.compile(r"do you want to (?:proceed|make|create)|would you like to run|allow command|approve", re.I)
-PAST = re.compile(r"\(current\)|rewind|restore|resume|checkpoint", re.I)
+PERMISSION_PATTERN = re.compile(r"do you want to (?:proceed|make|create)|would you like to run|allow command|approve", re.I)
+HISTORY_PATTERN = re.compile(r"\(current\)|rewind|restore|resume|checkpoint", re.I)
 ACCEPT = re.compile(r"^(?:yes|trust|i am using|continue|ok)\b", re.I)
 DECLINE = re.compile(r"^(?:no\b|don't|do not|decline|deny|skip|not now|later|cancel|never|reject|disable)", re.I)
 QUESTION_LINES = 6
 RULE = re.compile(r"^[─━═\-_]{5,}$")
-UP, DOWN, ENTER, ESCAPE = "\x1b[A", "\x1b[B", "\r", "\x1b"
+UPWARD, DOWN, ENTER, ESCAPE = "\x1b[A", "\x1b[B", "\r", "\x1b"
 
 
 @dataclass(frozen=True)
@@ -57,7 +57,7 @@ class Menu:
         return lines[ruled[-1] + 1:][-QUESTION_LINES:] if ruled else lines[-QUESTION_LINES:]
 
     def foreign(self) -> bool:
-        return not (OWN.search(self.question) or PAST.search(" ".join((self.question, *(o.label for o in self.options)))))
+        return not (PERMISSION_PATTERN.search(self.question) or HISTORY_PATTERN.search(" ".join((self.question, *(o.label for o in self.options)))))
 
     def signature(self) -> tuple:
         return (self.question[-200:], *(o.label for o in self.options))
@@ -83,4 +83,4 @@ class Menu:
     def keys_for(self, taken: Option) -> str:
         time = next((i for i, o in enumerate(self.options) if o.cursor), 0)
         to = list(self.options).index(taken)
-        return (DOWN if to >= time else UP) * abs(to - time) + ENTER
+        return (DOWN if to >= time else UPWARD) * abs(to - time) + ENTER

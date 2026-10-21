@@ -9,7 +9,7 @@ from journal.events.agent.turn_written import TurnWritten
 from journal.features.pins.support.pins_data import PinsData
 
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
-OWN = re.compile(r"^https?://(?:localhost|127\.0\.0\.1)[:/]")
+LOCAL_ADDRESS_PATTERN = re.compile(r"^https?://(?:localhost|127\.0\.0\.1)[:/]")
 
 
 class PinsConduct(Conduct):
@@ -26,6 +26,6 @@ class PinsConduct(Conduct):
 
 def suggestions(text: str, pins: PinsData) -> list[Nudge]:
     from journal.features.pins.feature import Pins
-    loose = [url.rstrip(".,;:") for url in LINK.findall(text) if not OWN.match(url)]
+    loose = [url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS_PATTERN.match(url)]
     fresh = [url for url in dict.fromkeys(loose) if url.rstrip("/") not in pins.pinned and url.rstrip("/") not in pins.suggested_lately]
-    return [Pins.PIN_THE_LINK.create(url=url) for url in fresh]
+    return [Pins.LINK_PIN_REQUEST.create(url=url) for url in fresh]

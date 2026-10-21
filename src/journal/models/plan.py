@@ -56,7 +56,7 @@ class Plan(Scoped):
         return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.id, task_id=0))
 
     def postponed(self, time: float, by_user: bool) -> "Plan":
-        return self.moved(PlanState.PARKED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=by_user))
+        return self.moved(PlanState.SUSPENDED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=by_user))
 
     def blocked(self, why: str, time: float) -> "Plan":
         return self.moved(PlanState.BLOCKED).with_(blocked_why=why).with_event(PlanBlocked(environment_id=self.environment_id, time=time, plan_id=self.id, why=why))
@@ -68,7 +68,7 @@ class Plan(Scoped):
         return self.state == PlanState.BLOCKED
 
     def done(self, time: float) -> "Plan":
-        return self.moved(PlanState.DONE).with_event(PlanDone(environment_id=self.environment_id, time=time, plan_id=self.id))
+        return self.moved(PlanState.FINISHED).with_event(PlanDone(environment_id=self.environment_id, time=time, plan_id=self.id))
 
     def cancelled(self, time: float, by_user: bool) -> "Plan":
         return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.id, by_user=by_user))
@@ -94,7 +94,7 @@ class Plan(Scoped):
         return next((task for task in in_order if task.state == TaskState.OPEN and task.id not in cannot_start), None)
 
     def task_to_resume(self, in_order: list[Task], cannot_start: set[int]) -> Task | None:
-        return next((task for task in in_order if task.state == TaskState.PARKED), None) or self.next_open_task(in_order, cannot_start)
+        return next((task for task in in_order if task.state == TaskState.SUSPENDED), None) or self.next_open_task(in_order, cannot_start)
 
     def current_phase(self, phases: list[PhaseTasks]) -> int:
         return next((phase.number for phase in phases if phase.has_open_work()), len(phases) or 1)

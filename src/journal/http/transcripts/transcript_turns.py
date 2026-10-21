@@ -5,7 +5,7 @@ from journal.http.transcripts.transcript_read import TranscriptRead
 from journal.providers.provider import Provider
 from journal.providers.support.turn import Turn
 
-KEPT = 8
+TURN_COUNT = 8
 
 
 class TranscriptTurns:
@@ -21,6 +21,6 @@ class TranscriptTurns:
         read = (TranscriptRead() if path.stat().st_size < had.offset else had).further(provider, path)
         with self._lock:
             self.reads[path] = read
-            for stale in list(self.reads)[:-KEPT]:
+            for stale in list(self.reads)[:-TURN_COUNT]:
                 del self.reads[stale]
         return list(read.turns)

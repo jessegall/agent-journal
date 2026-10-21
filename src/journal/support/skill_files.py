@@ -7,7 +7,7 @@ from journal.features.registry import Registry
 from journal.support.skill import Skill
 
 HOMES = (".claude/skills", ".agents/skills")
-OURS = "journal"
+JOURNAL_SKILL_PREFIX = "journal"
 PLUGIN_STAMP = "\nplugin: "
 
 
@@ -31,7 +31,7 @@ class SkillFiles:
 
     def clear(self) -> None:
         for home in HOMES:
-            for folder in (self.config.root / home).glob(f"{OURS}*"):
+            for folder in (self.config.root / home).glob(f"{JOURNAL_SKILL_PREFIX}*"):
                 if not self.is_ours(folder):
                     continue
                 if folder.is_symlink():
@@ -41,7 +41,7 @@ class SkillFiles:
 
     @staticmethod
     def is_ours(folder: Path) -> bool:
-        if folder.name != OURS and not folder.name.startswith(f"{OURS}-"):
+        if folder.name != JOURNAL_SKILL_PREFIX and not folder.name.startswith(f"{JOURNAL_SKILL_PREFIX}-"):
             return False
         skill = folder / "SKILL.md"
         return not skill.is_file() or PLUGIN_STAMP not in skill.read_text().split("\n---\n")[0]

@@ -12,4 +12,4 @@ class PluginsConduct(Conduct):
         plugins = event.data.of(PluginsFeature)
         if not event.call.writes or not any(plugins.holds(path) for path in event.call.written_paths):
             return self.unchanged()
-        return self.hold(PluginsFeature.PLUGIN_FILES_ARE_THE_USERS.create())
+        return self.hold(PluginsFeature.PLUGIN_FILE_OWNERSHIP.create())

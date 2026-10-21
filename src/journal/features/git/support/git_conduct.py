@@ -11,7 +11,7 @@ class GitConduct(Conduct):
         from journal.features.tasks.feature import Tasks
         if not event.closed:
             return self.unchanged()
-        closed = Tasks.CLOSED_BY_COMMIT.create(sha=event.sha[:8], tasks=", ".join(f"task {n}" for n in event.closed))
+        closed = Tasks.COMMIT_CLOSURE.create(sha=event.sha[:8], tasks=", ".join(f"task {n}" for n in event.closed))
         if event.next_open is None:
             return self.unchanged(closed)
-        return self.unchanged(closed, Tasks.NEXT_TASK_HOLDS_THE_STOP.create(n=event.next_open.id, title=event.next_open.title))
+        return self.unchanged(closed, Tasks.NEXT_TASK.create(n=event.next_open.id, title=event.next_open.title))

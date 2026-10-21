@@ -5,7 +5,7 @@ from journal.engine.support.typed_line import TypedLine
 
 RECENT = 60.0
 BATCH_SECONDS = 5.0
-MARK = "[journal]"
+JOURNAL_PREFIX = "[journal]"
 
 
 class TypedLines:
@@ -54,8 +54,8 @@ class TypedLines:
         if not held:
             return None
         self._held = [h for h in self._held if h.environment_id != environment_id]
-        lines = [h.line.removeprefix(MARK).strip() for h in held]
-        return HeldLine(environment_id, f"{MARK} {' | '.join(lines)}", max(h.after for h in held))
+        lines = [h.line.removeprefix(JOURNAL_PREFIX).strip() for h in held]
+        return HeldLine(environment_id, f"{JOURNAL_PREFIX} {' | '.join(lines)}", max(h.after for h in held))
 
     def typed(self, environment_id: int, line: str) -> None:
         moment = timing.time()

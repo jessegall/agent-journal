@@ -6,7 +6,7 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 from journal.support.chat_mark import ChatMark
 
-QUIET = 600.0
+ALARM_INTERVAL_SECONDS = 600.0
 
 
 class AlarmOnLeak(AgentListener[Ticked]):
@@ -17,7 +17,7 @@ class AlarmOnLeak(AgentListener[Ticked]):
         self._said_at = 0.0
 
     def handle(self, event: Ticked) -> None:
-        if not self.masks.leaks or time.time() - self._said_at < QUIET:
+        if not self.masks.leaks or time.time() - self._said_at < ALARM_INTERVAL_SECONDS:
             return
         variables = sorted({variable for variable, _ in self.masks.leaks})
         self.masks.leaks.clear()

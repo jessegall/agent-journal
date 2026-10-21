@@ -11,7 +11,7 @@ from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 
-WORKS_ON = "works_on"
+WORKER_LINK = "works_on"
 
 
 class Workers(ScopedRepository[Worker]):
@@ -28,12 +28,12 @@ class Workers(ScopedRepository[Worker]):
         target = Ref("tasks", task)
         if not self.links.is_row(target):
             raise NotFound("tasks", task)
-        self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKS_ON), actor)
+        self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKER_LINK), actor)
 
     def holding(self, task_ids: set[int]) -> dict[int, Worker]:
         held = {}
         for worker in self.across_environments(state=WorkerState.DISPATCHED):
-            for ref in self.links.targets(worker, WORKS_ON):
+            for ref in self.links.targets(worker, WORKER_LINK):
                 if ref.id in task_ids:
                     held[ref.id] = worker
         return held

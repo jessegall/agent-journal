@@ -16,13 +16,13 @@ class PluginsFeature(Feature):
     name = "plugins"
     title = "Plugins"
     help = "Programs you install that hear the journal's events and answer them: refuse a tool, say a line to the agent, show a card or run journal commands, each as itself."
-    HOLD_WINDOW = Option("plugins.hold_window_ms", "A plugin's hold window at most", "Milliseconds a plugin holding an event may take to answer; a plugin's own window in its manifest is cut to this, and one past its window is skipped and its fault recorded", 50, unit="ms")
-    options = (HOLD_WINDOW,)
+    PLUGIN_ANSWER_WINDOW = Option("plugins.hold_window_ms", "A plugin's hold window at most", "Milliseconds a plugin holding an event may take to answer; a plugin's own window in its manifest is cut to this, and one past its window is skipped and its fault recorded", 50, unit="ms")
+    options = (PLUGIN_ANSWER_WINDOW,)
     listeners = (PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
     data = (PluginsDataReader,)
     conduct = (PluginsConduct,)
-    PLUGIN_FILES_ARE_THE_USERS = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_after=0)
-    nudges = (PLUGIN_FILES_ARE_THE_USERS,)
+    PLUGIN_FILE_OWNERSHIP = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_after=0)
+    nudges = (PLUGIN_FILE_OWNERSHIP,)
     commands = (PluginCommand, DashboardCommand)
     seeds = (PluginServicesAtBoot,)
     skill = Skill("plugins", "Plugins the user installs that hear the journal's events; load it when a plugin holds you, a plugin's card or line appears, or a plugin would help", """

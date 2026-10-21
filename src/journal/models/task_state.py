@@ -4,10 +4,10 @@ from enum import StrEnum
 class TaskState(StrEnum):
     OPEN = "open"
     STARTED = "started"
-    PARKED = "parked"
+    SUSPENDED = "parked"
     BLOCKED = "blocked"
-    DONE = "done"
+    FINISHED = "done"
     CANCELLED = "cancelled"
 
     def is_closed(self) -> bool:
-        return self in (TaskState.DONE, TaskState.CANCELLED)
+        return self in (TaskState.FINISHED, TaskState.CANCELLED)

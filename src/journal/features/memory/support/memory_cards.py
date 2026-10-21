@@ -9,7 +9,7 @@ from journal.support.chat_mark import ChatMark
 from journal.support.ref import Ref
 from journal.support.scope import Scope
 
-MARKED = {Fact: ("Fact", ChatMark.FACTS), Rule: ("Rule", ChatMark.RULES), Reminder: ("Reminder", ChatMark.REMINDERS)}
+MEMORY_KINDS = {Fact: ("Fact", ChatMark.FACTS), Rule: ("Rule", ChatMark.RULES), Reminder: ("Reminder", ChatMark.REMINDERS)}
 
 
 class MemoryCards:
@@ -19,9 +19,9 @@ class MemoryCards:
         self.cards, self.scope = cards, scope
 
     def show(self, row: Model, actor: Actor, verb: str) -> None:
-        if type(row) not in MARKED:
+        if type(row) not in MEMORY_KINDS:
             return
-        noun, shows = MARKED[type(row)]
+        noun, shows = MEMORY_KINDS[type(row)]
         environment = getattr(row, "environment_id", 0) or self.scope.id
         session = actor.id if actor.kind == ActorKind.AGENT else ""
         self.cards.show(environment, session, f"{noun} {verb}", "rules", "", row.text, str(Ref.to(row)), actor=actor, shows=shows)

@@ -17,16 +17,16 @@ class LawsConduct(Conduct):
         if event.call.tool not in DISPATCH_TOOLS:
             return self.unchanged()
         if not event.call.input.get("model"):
-            return self.hold(Laws.NAME_THE_MODEL.create())
+            return self.hold(Laws.MISSING_MODEL.create())
         profiles = event.data.of(Profiles)
         asked = event.call.input.get("subagent_type", "")
         if asked not in profiles.names:
-            return self.hold(Laws.NAME_A_PROFILE.create(asked=asked or "none", profiles=", ".join(profiles.subagents)))
+            return self.hold(Laws.MISSING_PROFILE.create(asked=asked or "none", profiles=", ".join(profiles.subagents)))
         if not event.call.input.get("description") or not event.call.input.get("prompt"):
-            return self.hold(Laws.BIND_THE_JOB.create())
+            return self.hold(Laws.UNBOUND_DISPATCH.create())
         return self.unchanged()
 
     def on_tool_finished_laws(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.laws.feature import Laws
         lines = event.output.count("\n") + 1
-        return self.unchanged(Laws.CAP_THE_OUTPUT.create(lines=lines)) if lines >= LARGE else self.unchanged()
+        return self.unchanged(Laws.LONG_OUTPUT.create(lines=lines)) if lines >= LARGE else self.unchanged()

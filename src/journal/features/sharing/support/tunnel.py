@@ -26,15 +26,15 @@ OWNED = "domain is owned by another user"
 MOVED = "the journal moved the tunnel to a new address:"
 LAST_LINES = 4
 REACH_SECONDS = 5
-ANSWER_KEPT = 20
-NOT_INSTALLED = "tunler is not installed on this machine, so share links cannot reach this journal."
-LOGGED_OUT = "This machine is not logged in to tunler, so share links cannot reach this journal."
+ANSWER_CACHE_SECONDS = 20
+TUNLER_MISSING = "tunler is not installed on this machine, so share links cannot reach this journal."
+TUNLER_LOGIN_MISSING = "This machine is not logged in to tunler, so share links cannot reach this journal."
 OUTDATED = "This tunler is too old for the journal: it cannot tell whether its login still works. Update tunler to go on."
 REJECTED = "tunler is logged in as {account}, but {host} does not accept that login. The server may be down, or the account was deleted after 30 days without use, together with its addresses. Log in again to make a new one."
 HOST_MISMATCH = "This journal uses the tunler server {saved}, but tunler is logged in to {host}. Log in to {saved} again, so share links reach this journal."
-ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
-NO_SUPERVISOR = "No supervisor runs this journal, so the tunnel cannot run. Start the journal with its launcher, then try again."
-OWN_ADDRESS = "{domain} is this journal's own address. Move the journal to a new address instead: the old one is released once the new one is in use."
+ADDRESS_CONFLICT = "This journal's address belongs to another tunler account. Choose a new address to reach it."
+SUPERVISOR_MISSING = "No supervisor runs this journal, so the tunnel cannot run. Start the journal with its launcher, then try again."
+CURRENT_ADDRESS = "{domain} is this journal's own address. Move the journal to a new address instead: the old one is released once the new one is in use."
 
 
 class Tunnel:
@@ -44,7 +44,7 @@ class Tunnel:
         self.tunler, self.place, self.settings, self.link, self.shares, self.config = tunler, place, settings, link, shares, config
         self.phones, self.codes = phones, codes
         self.log = config.home / "runtime" / f"{SERVICE}.log"
-        self._answer = KeptAnswer(lambda: self.reaches_address(), ANSWER_KEPT, False)
+        self._answer = KeptAnswer(lambda: self.reaches_address(), ANSWER_CACHE_SECONDS, False)
         self.wanted = False
 
     def saved_host(self) -> str:
@@ -67,17 +67,17 @@ class Tunnel:
 
     def problems(self, status: TunlerStatus) -> list[str]:
         if not status.installed:
-            return [NOT_INSTALLED]
+            return [TUNLER_MISSING]
         if status.outdated:
             return [OUTDATED]
         if status.rejected:
             return [REJECTED.format(account=status.account, host=status.host)]
         if not status.logged_in and not status.unreadable:
-            return [LOGGED_OUT]
+            return [TUNLER_LOGIN_MISSING]
         if status.host and self.saved_host() and self.saved_host() != status.host:
             return [HOST_MISMATCH.format(saved=self.saved_host(), host=status.host)]
         if self.refused():
-            return [ADDRESS_TAKEN]
+            return [ADDRESS_CONFLICT]
         return []
 
     def settle(self) -> None:
@@ -116,7 +116,7 @@ class Tunnel:
 
     def restart(self) -> None:
         if self.link.hosting() is None:
-            raise Refused(NO_SUPERVISOR)
+            raise Refused(SUPERVISOR_MISSING)
         self.place.keep(tunnel=())
         self.start()
 
@@ -134,7 +134,7 @@ class Tunnel:
 
     def release(self, domain: str) -> list[str]:
         if domain == self.address():
-            raise Refused(OWN_ADDRESS.format(domain=domain))
+            raise Refused(CURRENT_ADDRESS.format(domain=domain))
         failed = self.tunler.release(domain, self.host())
         if failed:
             raise Refused(failed)
@@ -158,7 +158,7 @@ class Tunnel:
 
     def service(self) -> TunnelService:
         if self.link.hosting() is None:
-            state, why = "stopped", NO_SUPERVISOR
+            state, why = "stopped", SUPERVISOR_MISSING
         else:
             state, why = ("ready", "") if self.answered() else ("starting", "")
         return TunnelService(SERVICE, state, why, f"http://127.0.0.1:{self.place.kept().inspector}")
@@ -168,7 +168,7 @@ class Tunnel:
         if host and not self.reached(f"https://{host}/"):
             return TunnelCause("host", f"The tunler server {host} does not answer, so the tunnel cannot open. Check the server in SettingRows, or try again once it is back.")
         if self.link.hosting() is None:
-            return TunnelCause("stopped", NO_SUPERVISOR)
+            return TunnelCause("stopped", SUPERVISOR_MISSING)
         version = self.tunler.versions(host)
         if version.update_available:
             return TunnelCause("old", f"tunler {version.current} is older than {version.latest} on the server. Updating it may fix the connection.")

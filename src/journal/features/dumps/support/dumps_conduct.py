@@ -13,4 +13,4 @@ class DumpsConduct(Conduct):
         from journal.features.dumps.states.sorting_dump import SortingDump
         if not event.by_user:
             return self.unchanged()
-        return self.push(SortingDump(dump_id=event.dump_id)).typing(DumpsFeature.DUMP_ARRIVED_FILE_IT.create(n=event.dump_id, count=items_in(event.waiting)))
+        return self.push(SortingDump(dump_id=event.dump_id)).typing(DumpsFeature.DUMP_ARRIVAL.create(n=event.dump_id, count=items_in(event.waiting)))

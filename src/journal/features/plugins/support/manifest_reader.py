@@ -14,7 +14,7 @@ PROTOCOLS = (1,)
 AGENT_EVENTS = ("tool_starting", "command_starting", "tool_finished", "file_edited", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked", "plugin.updated")
 HOLDABLE = ("tool_starting", "command_starting", "file_edited", "idle", "prompt_submitted", "session_started")
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")
-NEVER_TABLES = ("secrets", "mcp_servers", "users")
+PRIVATE_TABLES = ("secrets", "mcp_servers", "users")
 KEYS = {f for f in PluginManifest.__dataclass_fields__}
 PATHS = ("program", "settings", "skills")
 
@@ -72,7 +72,7 @@ class ManifestReader:
             row = ROW_EVENT.match(event)
             if event not in AGENT_EVENTS and not row:
                 raise Refused(f"{manifest.name} hears {event}, which is no event")
-            if row and row["table"] in NEVER_TABLES:
+            if row and row["table"] in PRIVATE_TABLES:
                 raise Refused(f"{manifest.name} hears {event}: the {row['table']} rows are never sent to a plugin")
         for window in manifest.holds:
             if window.event not in manifest.hears:

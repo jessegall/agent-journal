@@ -47,7 +47,7 @@ class ShellVerbs:
         from journal.features.shell.feature import Shell
         with self.scope.of(self.environment_id):
             number = self.record.moved(chain, part, Path(file), self.caller)
-        return Shell.MOVED_TO_THE_BACKGROUND.create(n=number, file=file).rendered()
+        return Shell.BACKGROUND_MOVE.create(n=number, file=file).rendered()
 
     def forget(self, chain: str, size: int) -> str:
         with self.scope.of(self.environment_id):

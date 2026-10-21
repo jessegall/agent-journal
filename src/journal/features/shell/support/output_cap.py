@@ -1,4 +1,4 @@
-from journal.features.shell.support.cap import Cap, DIRECT, ENDS, HINT, WHOLE
+from journal.features.shell.support.cap import Cap, DIRECT, ENDS, HINT, FULL
 from journal.repositories.setting_rows import SettingRows
 from journal.support.chain import Chain
 from journal.support.writes import Writes
@@ -15,7 +15,7 @@ class OutputCap:
         if Chain.is_reading_code_line(line) or Writes.is_code_write_line(line):
             return Cap(DIRECT, 0)
         if Chain.is_journal_line(line):
-            return Cap(WHOLE, 0)
+            return Cap(FULL, 0)
         if Chain.is_read_line(line):
             return Cap(ENDS, int(self.settings.option(Shell.READ_SHOWN)))
         return Cap(HINT, int(self.settings.option(Shell.COMMAND_SHOWN)))

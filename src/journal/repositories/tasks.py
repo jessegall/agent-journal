@@ -13,7 +13,7 @@ from journal.repositories.questions import Questions
 from journal.support.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
-WAITS_ON = "waits_on"
+WAIT_LINK = "waits_on"
 
 
 class Tasks(ScopedRepository[Task]):
@@ -25,7 +25,7 @@ class Tasks(ScopedRepository[Task]):
         self.awaitable = {Task.table(): self, Question.table(): questions, Check.table(): checks}
 
     def open_waits(self, row: Task | Plan) -> list[Ref]:
-        return [ref for ref in self.links.targets(row, WAITS_ON) if not self.awaited(ref).is_settled()]
+        return [ref for ref in self.links.targets(row, WAIT_LINK) if not self.awaited(ref).is_settled()]
 
     def waits_reach(self, start: Ref, goal: Ref) -> bool:
         seen, todo = set(), [start]
@@ -36,14 +36,14 @@ class Tasks(ScopedRepository[Task]):
             if ref in seen or ref.type != Task.table():
                 continue
             seen.add(ref)
-            todo += self.links.targets(self.find(ref.id), WAITS_ON)
+            todo += self.links.targets(self.find(ref.id), WAIT_LINK)
         return False
 
     def awaited(self, ref: Ref) -> Task | Question | Check:
         return self.awaitable[ref.type].find(ref.id)
 
     def waiting_ids(self, tasks: list[Task]) -> set[int]:
-        return {link.source.id for link in self.links.linked("source", tasks, WAITS_ON) if not self.awaited(link.target).is_settled()}
+        return {link.source.id for link in self.links.linked("source", tasks, WAIT_LINK) if not self.awaited(link.target).is_settled()}
 
     def blocked_without_wait(self) -> list[Task]:
         return [task for task in self.in_state(TaskState.BLOCKED) if not self.open_waits(task)]
@@ -52,10 +52,10 @@ class Tasks(ScopedRepository[Task]):
         return [(task, check) for check in self.checks.broken_waits() for task in self.waiting_on(check)]
 
     def waiting_on(self, model) -> list[Task]:
-        return [task for ref in self.links.sources(model, WAITS_ON) if ref.type == Task.table() and (task := self.find(ref.id)).state == TaskState.BLOCKED]
+        return [task for ref in self.links.sources(model, WAIT_LINK) if ref.type == Task.table() and (task := self.find(ref.id)).state == TaskState.BLOCKED]
 
     def reason(self, row: Task | Plan) -> str:
-        named = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAITS_ON)]
+        named = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAIT_LINK)]
         return ", ".join(part for part in (*named, row.blocked_why) if part)
 
     def in_state(self, state: TaskState) -> list[Task]:
@@ -71,12 +71,12 @@ class Tasks(ScopedRepository[Task]):
 
     def unfinished_count(self) -> int:
         return self.counted_in("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
-                               (TaskState.DONE.value, TaskState.CANCELLED.value))
+                               (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def unseen_by_user(self) -> int:
-        return self.counted_in("state NOT IN (?, ?) AND (created_by IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.DONE.value, TaskState.CANCELLED.value))
+        return self.counted_in("state NOT IN (?, ?) AND (created_by IS NULL OR created_by NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
 
     def shown(self) -> list[Task]:
-        finished = (TaskState.DONE.value, TaskState.CANCELLED.value)
+        finished = (TaskState.FINISHED.value, TaskState.CANCELLED.value)
         unfinished = self.selected("state NOT IN (?, ?) ORDER BY id", (*finished,))
         return sorted([*unfinished, *self.newest("state IN (?, ?)", (*finished,))], key=lambda t: t.id)

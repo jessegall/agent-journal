@@ -10,7 +10,7 @@ from journal.support.private_folder import PrivateFolder
 from journal.support.secret_field import SecretField
 
 RETIRED = "RETIRED_"
-AT = "_AT_"
+EMAIL_SIGN_TOKEN = "_AT_"
 HEADER = """# The values of this project's secrets, written by agent-journal.
 # One line per field: NAME="value". The journal never copies this file anywhere.
 """
@@ -47,7 +47,7 @@ class SecretValues:
 
     def put(self, variable: str, value: str) -> None:
         current = self.values()
-        retired = {f"{RETIRED}{variable}{AT}{int(timing.time())}": current[variable]} if current.get(variable) and current[variable] != value else {}
+        retired = {f"{RETIRED}{variable}{EMAIL_SIGN_TOKEN}{int(timing.time())}": current[variable]} if current.get(variable) and current[variable] != value else {}
         self.write({**current, **retired, variable: value})
         self.write_shown(self.shown() - {variable})
 
@@ -67,7 +67,7 @@ class SecretValues:
         self.shown_path.write_text("".join(f"{name}\n" for name in sorted(names)))
 
     def retired_before(self, time: float) -> list[str]:
-        return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(AT, 1)[1]) < time]
+        return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(EMAIL_SIGN_TOKEN, 1)[1]) < time]
 
     def drop(self, variables: list[str]) -> None:
         self.write({name: value for name, value in self.values().items() if name not in variables})

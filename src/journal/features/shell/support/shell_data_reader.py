@@ -6,7 +6,7 @@ from journal.models.agent import Agent
 from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.entries import Entries
 
-KEPT = 26
+READ_HISTORY_LENGTH = 26
 
 
 class ShellDataReader:
@@ -19,8 +19,8 @@ class ShellDataReader:
         from journal.features.shell.feature import Shell
         background = self.outputs.in_background(agent.session)
         commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session) if e.data.get("tool_name") == "Bash"]
-        reads = [OutputReads.shape(c) for c in commands if OutputReads.is_one(c)][:KEPT]
-        tipped = [*self.entries.lines_said_after(agent.session, Shell.USE_THE_READER.key, 0), *self.entries.lines_said_after(agent.session, Shell.ADD_A_READER.key, 0)]
+        reads = [OutputReads.shape(c) for c in commands if OutputReads.is_one(c)][:READ_HISTORY_LENGTH]
+        tipped = [*self.entries.lines_said_after(agent.session, Shell.READER_HINT.key, 0), *self.entries.lines_said_after(agent.session, Shell.READER_SUGGESTION.key, 0)]
         return ShellData(
             background=tuple(o.id for o in background),
             background_since=min((o.created_at.timestamp() for o in background), default=0.0),

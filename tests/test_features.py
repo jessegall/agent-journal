@@ -174,7 +174,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     out = console.run(["task", "done", "2"], AGENT).out
     assert "task 2 done" in out and "is next" not in out, "the last task closed, nothing is next"
     assert [layer["state"] for layer in app.container.get(Agents).for_session("s1").stack] == ["idle"], "done with the plan, the agent goes to rest"
-    assert app.container.get(Plans).find(1).state == PlanState.DONE
+    assert app.container.get(Plans).find(1).state == PlanState.FINISHED
 
 
 def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app, monkeypatch):
@@ -353,14 +353,14 @@ def test_a_plan_does_not_hand_out_a_task_whose_wait_is_open(app):
     from journal.support.actor import Actor
     from journal.repositories.links import Links
     from journal.repositories.plans import Plans
-    from journal.repositories.tasks import Tasks, WAITS_ON
+    from journal.repositories.tasks import Tasks, WAIT_LINK
     console = app.console()
     console.run(["plan", "create", "release", "--brief", "ship"], USER)
     console.run(["plan", "add", "1", "first"], USER)
     console.run(["plan", "add", "1", "second"], USER)
     tasks, plans = app.container.get(Tasks), app.container.get(Plans)
     console.run(["task", "create", "dependency"], USER)
-    app.container.get(Links).save(Link(source=Ref.to(tasks.find(1)), target=Ref.to(tasks.find(3)), kind=WAITS_ON), Actor.system())
+    app.container.get(Links).save(Link(source=Ref.to(tasks.find(1)), target=Ref.to(tasks.find(3)), kind=WAIT_LINK), Actor.system())
     assert plans.next_task(plans.find(1)).id == 2
     console.run(["task", "done", "3"], AGENT)
     assert plans.next_task(plans.find(1)).id == 1
@@ -920,7 +920,7 @@ def test_a_task_the_reply_names_is_linked_to_the_message_it_answers_however_old(
     console.run(["message", "send", "I won't: it is task 1, next.", "--reply-to", "1"], AGENT)
     app.runtime().deferred.drain()
     asked = app.container.get(Messages).find(1)
-    assert [ref.id for ref in app.container.get(Links).targets(asked, Messages.ABOUT)] == [1], "your message carries the task the reply names, whenever it was filed"
+    assert [ref.id for ref in app.container.get(Links).targets(asked, Messages.SUBJECT_LINK)] == [1], "your message carries the task the reply names, whenever it was filed"
 
 
 def test_a_request_over_its_budget_is_one_mark_per_route_and_told_once(app, monkeypatch):
@@ -1547,7 +1547,7 @@ def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_th
 
 def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_parts_change_is_one_too(app):
     from journal.models.edit import Edit
-    from journal.repositories.edits import KEEP, Edits
+    from journal.repositories.edits import EDIT_LIMIT, Edits
     hook(app, "SessionStart")
     hook(app, "PostToolUse", tool_name="Edit", tool_input={"file_path": str(app.config.root / "a.py"), "old_string": "x", "new_string": "y"}, tool_response={"structuredPatch": [{"oldStart": 7, "newStart": 7, "lines": [" before", "-x", "+y", " after"]}]})
     app.runtime().deferred.drain()
@@ -1558,10 +1558,10 @@ def test_an_edit_is_a_row_of_its_own_kept_to_the_last_five_hundred_and_a_shell_p
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/x/y/ b.py"}, tool_response="")
     kept = edits.of_agent("s1", 0, 50)
     assert [e.path for e in kept] == ["a.py", "b.py"] and kept[1].added == 2 and kept[1].removed == 0 and kept[1].command.startswith("sed") and [r["kind"] for r in kept[1].rows] == ["add", "add"], "a shell line's edit is read from the call's written paths when the call ends, against the file as the journal saw it last"
-    for i in range(KEEP):
+    for i in range(EDIT_LIMIT):
         edits.record(Edit(session="s1", path=f"f{i}.py", time=float(i + 10)), Actor.agent("s1"))
-    assert len(edits.in_()) == KEEP, "the oldest go as new ones come"
-    assert edits.in_()[0].path == "f0.py" and edits.in_()[-1].path == f"f{KEEP - 1}.py", "the two oldest went"
+    assert len(edits.in_()) == EDIT_LIMIT, "the oldest go as new ones come"
+    assert edits.in_()[0].path == "f0.py" and edits.in_()[-1].path == f"f{EDIT_LIMIT - 1}.py", "the two oldest went"
 
 def test_a_plan_is_done_when_its_last_task_closes_whoever_closes_it(app):
     from journal.repositories.plans import Plans
@@ -2497,13 +2497,13 @@ def test_the_etiquette_reminder_comes_after_fifty_lines_and_never_floods(app):
     agent, nudger = app.container.get(StateMachine).agent("s1", 1), app.container.get(Nudger)
     after_tool = lambda: hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
     for i in range(50):
-        nudger.say(agent, MessagesFeature.NEW_MESSAGE_TO_ANSWER.create(n=i))
+        nudger.say(agent, MessagesFeature.NEW_MESSAGE.create(n=i))
     app.runtime().deferred.drain()
     assert "chat etiquette" in after_tool(), "fifty lines since the last reminder, counted once the replies have gone, bring it at the next tool use"
     app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "said, the count starts again"
     for i in range(1000):
-        nudger.say(agent, MessagesFeature.NEW_MESSAGE_TO_ANSWER.create(n=1000 + i))
+        nudger.say(agent, MessagesFeature.NEW_MESSAGE.create(n=1000 + i))
     app.runtime().deferred.drain()
     assert "chat etiquette" not in after_tool(), "a thousand lines later but inside the reminder's own window, none again: no flood"
 
@@ -2527,7 +2527,7 @@ def test_a_cancelled_plan_takes_its_own_open_tasks_with_it_and_leaves_shared_one
     assert "plan 1 cancelled, with tasks 1" in out
     plans, tasks = app.container.get(Plans), app.container.get(Tasks)
     assert plans.find(1).state == PlanState.CANCELLED and tasks.find(1).state == TaskState.CANCELLED
-    assert tasks.find(2).state == TaskState.DONE and tasks.find(3).state == TaskState.OPEN, "a done task stays done; a task the new plan holds too stays open"
+    assert tasks.find(2).state == TaskState.FINISHED and tasks.find(3).state == TaskState.OPEN, "a done task stays done; a task the new plan holds too stays open"
     assert tasks.find(1).id not in [t.id for t in plans.free()], "a cancelled task is offered to nobody"
 
 def test_approving_a_started_plan_leaves_it_started(app):
@@ -2841,7 +2841,7 @@ def test_a_list_counts_a_type_in_sql_past_the_page(app):
     from journal.repositories.tasks import Tasks
     tasks = app.container.get(Tasks)
     for n in range(520):
-        tasks.save(Task(environment_id=1, title=f"t{n}", state=TaskState.DONE if n < 400 else TaskState.OPEN), Actor.user(1) if n % 2 else Actor.agent("s1"))
+        tasks.save(Task(environment_id=1, title=f"t{n}", state=TaskState.FINISHED if n < 400 else TaskState.OPEN), Actor.user(1) if n % 2 else Actor.agent("s1"))
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/tasks?limit=10&env=main"), timeout=5) as reply:
         counts = j.loads(reply.read())["counts"]
     assert counts == {"all": 520, "open": 120, "unread": 60}, "a count is of every row, not of the newest page"
@@ -3573,7 +3573,7 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     plugins.save(row.with_(settings={}), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
     assert plugins.named("echo").faults_in_a_row == 0 and "Plugin echo answers again" in [m.text for m in messages.recent(5)]
-    app.container.get(SettingRows).set(PluginsFeature.HOLD_WINDOW.key, 1000, Actor.user(1))
+    app.container.get(SettingRows).set(PluginsFeature.PLUGIN_ANSWER_WINDOW.key, 1000, Actor.user(1))
     plugins.save(plugins.named("echo").with_(settings={"mode": "slow"}), Actor.user(1))
     plugins.save(echo(app, "echo-two").with_(settings={"mode": "slow"}), Actor.user(1))
     began = timing.monotonic()
@@ -3875,13 +3875,13 @@ def test_a_secret_deleted_thirty_days_ago_goes_for_good_with_its_values(app, tmp
     from journal.models.secret import Secret
     from journal.models.secret_kind import SecretKind
     from journal.repositories.secrets import Secrets
-    from journal.support.secret_values import AT, RETIRED, SecretValues
+    from journal.support.secret_values import EMAIL_SIGN_TOKEN, RETIRED, SecretValues
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
     values, secrets = app.container.get(SecretValues), app.container.get(Secrets)
     long_ago = datetime.now(timezone.utc) - timedelta(days=31)
     old = secrets.save(Secret(title="Old", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Old"), deleted_at=long_ago), Actor.user("u"))
     recent = secrets.save(Secret(title="Recent", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Recent"), deleted_at=datetime.now(timezone.utc)), Actor.user("u"))
-    values.write({"OLD_KEY": "a", "RECENT_KEY": "b", f"{RETIRED}X{AT}{int(long_ago.timestamp())}": "c", "LIVE_KEY": "d"})
+    values.write({"OLD_KEY": "a", "RECENT_KEY": "b", f"{RETIRED}X{EMAIL_SIGN_TOKEN}{int(long_ago.timestamp())}": "c", "LIVE_KEY": "d"})
     hook(app, "SessionStart")
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, quiet_for=1.0))
     app.runtime().deferred.drain()
@@ -4295,7 +4295,7 @@ def test_version_3_comments_and_reactions_come_across_on_their_rows(app):
         shipped = next(m for m in messages.every() if m.text == "ship it")
         comment = next(m for m in messages.every() if m.text.endswith("not yet"))
         links = app.container.get(Links)
-        assert links.targets(comment, Messages.COMMENTS_ON) == [Ref.to(shipped)], "the comment sits under its message"
+        assert links.targets(comment, Messages.COMMENT_LINK) == [Ref.to(shipped)], "the comment sits under its message"
         reaction = app.container.get(Reactions).every()[-1]
         assert reaction.face == "🎉" and links.targets(reaction, "reacts") == [Ref.to(shipped)]
         assert not any(m.text == "on a task that stayed" for m in messages.every()), "a comment whose row stayed behind stays too"
@@ -5203,11 +5203,11 @@ def test_a_line_naming_a_list_that_changes_is_said_once_inside_its_window(app):
     from journal.features.tasks.feature import Tasks
     hook(app, "SessionStart")
     agent, nudger = app.container.get(StateMachine).agent("s1", 1), app.container.get(Nudger)
-    assert nudger.say(agent, Shell.CHECK_THE_BACKGROUND.create(background_outputs="12, 15")), "the first naming of the commands still running is said"
-    assert nudger.say(agent, Shell.CHECK_THE_BACKGROUND.create(background_outputs="12, 15, 18")) is None, "a command joining the list inside the window says nothing again: Redmar's flood"
-    assert nudger.say(agent, Tasks.BLOCKED_TASK_ASKED_ABOUT.create(tasks="task 4 on the deploy")), "the blocked ask is said once"
-    assert nudger.say(agent, Tasks.BLOCKED_TASK_ASKED_ABOUT.create(tasks="task 4 on the deploy")) is None, "and not again at the next tick five seconds later"
-    assert nudger.say(agent, Tasks.TASK_OPEN_WITH_NOTHING_LOGGED.create(n=3)) and nudger.say(agent, Tasks.TASK_OPEN_WITH_NOTHING_LOGGED.create(n=4)), "a line about one row is still held by its words: another task is named"
+    assert nudger.say(agent, Shell.BACKGROUND_CHECK.create(background_outputs="12, 15")), "the first naming of the commands still running is said"
+    assert nudger.say(agent, Shell.BACKGROUND_CHECK.create(background_outputs="12, 15, 18")) is None, "a command joining the list inside the window says nothing again: Redmar's flood"
+    assert nudger.say(agent, Tasks.BLOCKED_TASK_REMINDER.create(tasks="task 4 on the deploy")), "the blocked ask is said once"
+    assert nudger.say(agent, Tasks.BLOCKED_TASK_REMINDER.create(tasks="task 4 on the deploy")) is None, "and not again at the next tick five seconds later"
+    assert nudger.say(agent, Tasks.UNLOGGED_TASK.create(n=3)) and nudger.say(agent, Tasks.UNLOGGED_TASK.create(n=4)), "a line about one row is still held by its words: another task is named"
 
 
 def test_a_package_install_of_code_commandments_is_suggested_once_as_the_journal_plugin(app):
@@ -5290,11 +5290,11 @@ def test_a_thread_that_ends_without_releasing_gives_its_connection_back(app):
 def test_work_that_may_be_left_undone_is_skipped_once_the_deferred_work_is_far_behind():
     from journal.support.deferred import Deferred
     deferred, ran = Deferred(), []
-    for i in range(Deferred.BEHIND + 50):
+    for i in range(Deferred.QUEUE_WARNING_LENGTH + 50):
         deferred.add_unless_behind(lambda i=i: ran.append(i), f"plugin {i}")
-    assert deferred.depth() == Deferred.BEHIND and deferred.skipped == 50, "a plugin relay past the bound is skipped and counted, so a slow plugin never grows the queue without end"
+    assert deferred.depth() == Deferred.QUEUE_WARNING_LENGTH and deferred.skipped == 50, "a plugin relay past the bound is skipped and counted, so a slow plugin never grows the queue without end"
     deferred.add(lambda: ran.append("own"))
-    assert deferred.depth() == Deferred.BEHIND + 1, "the journal's own work is always added"
+    assert deferred.depth() == Deferred.QUEUE_WARNING_LENGTH + 1, "the journal's own work is always added"
 
 
 def test_a_long_tool_response_is_kept_cut_in_the_record(app):
@@ -5955,7 +5955,7 @@ def test_every_hook_of_every_tool_arrives_is_recorded_and_answered_even_with_a_m
         assert ("ToolStarting", tool) in recorded and ("ToolFinished", tool) in recorded, f"{tool} is recorded at its start and its end"
     assert any(m.data.get("peer") == "code-commandments-12" for m in app.container.get(MessageRows).all()), "the message crossed in the transcript reached the chat"
     app.runtime().deferred.drain()
-    assert any(m.data.get(Message.SENT_TO) == "code-commandments-12" for m in app.container.get(MessageRows).all()), "the message sent to the other session is a bubble of its own"
+    assert any(m.data.get(Message.RECIPIENT_KEY) == "code-commandments-12" for m in app.container.get(MessageRows).all()), "the message sent to the other session is a bubble of its own"
 
 
 def test_a_read_message_holds_a_tool_only_after_a_grace_of_tool_uses_with_a_reminder_first(app):

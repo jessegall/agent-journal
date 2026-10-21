@@ -32,5 +32,5 @@ class BringComments(EnvironmentKind):
 
     def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
         comment = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, read_at=row.read_at()), row.made_at(), actor)
-        self.links.save(Link(source=Ref.to(comment), target=self.under(row, into), kind=Messages.COMMENTS_ON), actor)
+        self.links.save(Link(source=Ref.to(comment), target=self.under(row, into), kind=Messages.COMMENT_LINK), actor)
         return comment
