@@ -15,7 +15,7 @@ from journal.features.workers.listeners.subagent_record import SubagentRecord
 from journal.features.workers.listeners.worker_cards import WorkerCards
 from journal.engine.support.modes import Modes
 from journal.features.plans.states.plans_ready import PlansReady
-from journal.features.workers.listeners.worker_marks import WorkerMarks
+from journal.features.workers.listeners.worker_moment_cards import WorkerMomentCards
 from journal.features.workers.listeners.dispatch_refusal_cards import DispatchRefusalCards
 from journal.features.workers.listeners.silent_worker_record import SilentWorkerRecord
 from journal.features.workers.states.delegating import Delegating
@@ -41,7 +41,7 @@ class Workers(Feature[WorkersData]):
     commands = (WorkerCommand, SubagentCommand)
     seeds = (WorkersSeed, SubagentsSeed)
     jobs = (WorkerWatch,)
-    listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMarks, DispatchRefusalCards, SilentWorkerRecord)
+    listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMomentCards, DispatchRefusalCards, SilentWorkerRecord)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
 

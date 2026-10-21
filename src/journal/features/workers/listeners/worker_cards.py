@@ -15,7 +15,7 @@ FAILURES = ("could not start", "failed with code", "stopped after")
 
 
 class WorkerCards(Listener[ModelEvent]):
-    """Each worker is one mark in the chat, keyed by its row, that shows where it stands: written when it is dispatched and settled in place when it reports, fails or is stopped; its later moments are marks of their own, WorkerMarks."""
+    """Each worker is one mark in the chat, keyed by its row, that shows where it stands: written when it is dispatched and settled in place when it reports, fails or is stopped; its later moments are marks of their own, WorkerMomentCards."""
 
     def __init__(self, cards: Cards, messages: Messages, reports: WorkerReports) -> None:
         self.cards, self.messages, self.reports = cards, messages, reports

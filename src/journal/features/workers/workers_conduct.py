@@ -52,7 +52,7 @@ class WorkersConduct(Conduct):
 
     def files_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        knowing = [w for line in worker_lines(event, "dispatch") if not line.fresh for w in overlapping_workers(event.data.part(Workers), line.brief)]
+        knowing = [w for line in worker_lines(event, "dispatch") if not line.is_new_worker for w in overlapping_workers(event.data.part(Workers), line.brief)]
         return self.refuse(Workers.WORKER_KNOWS_FILES.create(count=len(knowing), workers=idle_list(tuple(knowing)))) if knowing else self.none()
 
     def idle_cap_check(self, event: ToolStarting, settings: Settings) -> Transition:
@@ -68,7 +68,7 @@ class WorkersConduct(Conduct):
     def retire_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         idle = {w.id: w for w in event.data.part(Workers).idle_workers}
-        retirements = [line for line in worker_lines(event, "complete", "stop") if line.number in idle and not line.why]
+        retirements = [line for line in worker_lines(event, "complete", "stop") if line.number in idle and not line.reason]
         return self.refuse(Workers.REUSE_QUESTION.create(n=retirements[0].number, name=idle[retirements[0].number].name)) if retirements else self.none()
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:

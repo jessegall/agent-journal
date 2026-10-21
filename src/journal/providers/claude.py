@@ -161,14 +161,14 @@ class Claude(Provider):
         return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "stream-json", "--verbose", *resumed]
 
     def worker_outcome(self, output: str, err: str) -> WorkerOutcome:
-        answers = [row for row in self.printed_rows(output) if "result" in row]
+        answers = [row for row in self.output_rows(output) if "result" in row]
         if not answers:
-            return WorkerOutcome(output.strip() or err.strip(), self.printed_session(output, err))
+            return WorkerOutcome(output.strip() or err.strip(), self.output_session(output, err))
         report = str(answers[-1]["result"]).strip() or err.strip()
-        return WorkerOutcome(report, str(answers[-1].get("session_id", "")) or self.printed_session(output, err), report if answers[-1].get("is_error") else "")
+        return WorkerOutcome(report, str(answers[-1].get("session_id", "")) or self.output_session(output, err), report if answers[-1].get("is_error") else "")
 
-    def printed_session(self, output: str, err: str) -> str:
-        return next((str(row["session_id"]) for row in self.printed_rows(output) if row.get("session_id")), "")
+    def output_session(self, output: str, err: str) -> str:
+        return next((str(row["session_id"]) for row in self.output_rows(output) if row.get("session_id")), "")
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
         path = super().wire_hooks(project, script, command)

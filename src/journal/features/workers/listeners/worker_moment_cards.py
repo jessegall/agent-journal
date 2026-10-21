@@ -17,7 +17,7 @@ MOMENTS = {
 }
 
 
-class WorkerMarks(Listener[RowEvent]):
+class WorkerMomentCards(Listener[RowEvent]):
     """Each moment of a worker after its dispatch is one new mark in the chat with its own tone: reused, revived, told a message, retired."""
 
     def __init__(self, cards: Cards) -> None:

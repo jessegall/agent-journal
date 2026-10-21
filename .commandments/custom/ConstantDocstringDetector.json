@@ -5,8 +5,11 @@
         "select": "expression-statement",
         "where": [
             {
-                "descendant": {
-                    "is": "literal"
+                "count": {
+                    "child": {
+                        "is": "literal"
+                    },
+                    "atLeast": 1
                 }
             }
         ],

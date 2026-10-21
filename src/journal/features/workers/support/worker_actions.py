@@ -57,7 +57,7 @@ class WorkerActions:
     def sent(self, worker: Worker, brief: str, dispatcher: str, actor: Actor) -> Worker:
         revival = worker.state == WorkerState.STOPPED or self.runner.is_ended(worker)
         if self.runner.is_ended(worker):
-            worker = self.runner.settle(worker, actor)
+            worker = self.runner.recorded_end(worker, actor)
         self.resumable(worker)
         moved, time = worker.with_(dispatcher=dispatcher or worker.dispatcher), datetime.now(timezone.utc).timestamp()
         worker = self.workers.save(moved.resumed(brief, time, WorkerRevived if revival else WorkerReused), actor)

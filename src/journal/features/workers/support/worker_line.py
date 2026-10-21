@@ -22,10 +22,10 @@ class WorkerLine:
             return None
         if tokens[:2] != LEAD or len(tokens) < 3:
             return None
-        arguments, options, flags, rest = [], {}, set(), iter(tokens[3:])
-        for token in rest:
+        arguments, options, flags, option_tokens = [], {}, set(), iter(tokens[3:])
+        for token in option_tokens:
             if token in VALUED:
-                options[token] = next(rest, "")
+                options[token] = next(option_tokens, "")
             elif token.startswith("--"):
                 flags.add(token)
             else:
@@ -41,7 +41,7 @@ class WorkerLine:
         return self.options.get("--profile", "")
 
     @property
-    def fresh(self) -> bool:
+    def is_new_worker(self) -> bool:
         return "--fresh" in self.flags
 
     @property
@@ -49,5 +49,5 @@ class WorkerLine:
         return int(self.arguments[0]) if self.arguments and self.arguments[0].isdigit() else 0
 
     @property
-    def why(self) -> str:
+    def reason(self) -> str:
         return self.options.get("--why", "")

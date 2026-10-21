@@ -43,7 +43,7 @@ class TranscriptController:
         return self.answer(request, provider, provider.transcript(place, session) if session else None)
 
     def found_session(self, worker: Worker) -> str:
-        session = self.runner.own_session(worker)
+        session = self.runner.latest_session(worker)
         if session:
             self.workers.touch(worker, Actor.system(), recovered_session=session)
         return session

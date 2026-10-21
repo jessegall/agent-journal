@@ -170,15 +170,15 @@ class Provider(ABC):
     @abstractmethod
     def worker_outcome(self, output: str, err: str) -> WorkerOutcome: ...
 
-    def printed_session(self, output: str, err: str) -> str:
+    def output_session(self, output: str, err: str) -> str:
         return ""
 
     @staticmethod
-    def printed_rows(output: str) -> list[dict]:
-        return [row for line in output.splitlines() if isinstance(row := Provider.printed_row(line), dict)]
+    def output_rows(output: str) -> list[dict]:
+        return [row for line in output.splitlines() if isinstance(row := Provider.output_row(line), dict)]
 
     @staticmethod
-    def printed_row(line: str) -> object:
+    def output_row(line: str) -> object:
         try:
             return json.loads(line)
         except ValueError:

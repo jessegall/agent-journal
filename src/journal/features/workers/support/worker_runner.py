@@ -90,12 +90,12 @@ class WorkerRunner:
 
     def session_recorded(self, worker: Worker, actor: Actor) -> Worker:
         output, err = self.outputs(worker)
-        session = self.providers.lookup(worker.provider).printed_session(self.read(output), self.read(err))
+        session = self.providers.lookup(worker.provider).output_session(self.read(output), self.read(err))
         return self.workers.touch(worker, actor, resume=session) if session else worker
 
     def is_finished(self, worker: Worker, actor: Actor) -> bool:
         if not self.is_running(worker.pid):
-            self.settle(worker, actor)
+            self.recorded_end(worker, actor)
             return True
         if self.remaining_seconds(worker) == 0:
             os.killpg(worker.pid, signal.SIGKILL)
@@ -106,7 +106,7 @@ class WorkerRunner:
     def is_ended(self, worker: Worker) -> bool:
         return worker.is_running() and worker.pid > 0 and not self.is_running(worker.pid)
 
-    def settle(self, worker: Worker, actor: Actor) -> Worker:
+    def recorded_end(self, worker: Worker, actor: Actor) -> Worker:
         self.finish(worker, END_UNWATCHED, actor)
         return self.workers.find(worker.id)
 
@@ -114,7 +114,7 @@ class WorkerRunner:
         output, err = self.outputs(worker)
         provider = self.providers.lookup(worker.provider)
         ended = provider.worker_outcome(self.read(output), self.read(err))
-        resume = ended.session or self.own_session(worker)
+        resume = ended.session or self.latest_session(worker)
         report = (ended.error or ended.report)[-TAIL_CHARACTERS:] or "(nothing printed)"
         code = code or (ERROR_STATUS if ended.error else 0)
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
@@ -127,7 +127,7 @@ class WorkerRunner:
         branch = self.branch.summary(current)
         self.reports.file(current, f"{outcome}\n\n{branch}" if branch else outcome, actor)
 
-    def own_session(self, worker: Worker) -> str:
+    def latest_session(self, worker: Worker) -> str:
         return self.providers.lookup(worker.provider).latest_session(self.place(worker), worker.began) if worker.worktree and worker.began else ""
 
     def remaining_seconds(self, worker: Worker) -> float | None:

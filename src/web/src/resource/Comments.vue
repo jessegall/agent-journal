@@ -213,15 +213,17 @@ async function send(text) {
         <template v-if="!props.showThread">
             <QuickCommentBar :send="quick" :count="talk ? thread.length : 0" @show="talk.toggle()" />
         </template>
-        <div v-else class="comment-write">
-            <Compose
-                :placeholder="quote ? 'Say something about this passage…' : 'Write a comment…'"
-                submit="Comment"
-                :quote="quote"
-                :send="send"
-                @unquote="emit('sent')"
-            />
-        </div>
+        <template v-else>
+            <div class="comment-write">
+                <Compose
+                    :placeholder="quote ? 'Say something about this passage…' : 'Write a comment…'"
+                    submit="Comment"
+                    :quote="quote"
+                    :send="send"
+                    @unquote="emit('sent')"
+                />
+            </div>
+        </template>
     </template>
 </template>
 
