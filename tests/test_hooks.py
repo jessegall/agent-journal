@@ -284,23 +284,23 @@ def test_a_hold_answers_409_and_a_refused_stop_the_block_json_for_both_providers
 
 
 def test_a_claude_subagent_dispatch_is_paired_and_counted():
-    from journal.features.workers.support.subagents import Subagents
-    rows = Subagents.paired(dispatch_entries("claude", lambda body: body["hook_event_name"] in ("SessionStart", "Stop") or body.get("tool_name") == "Agent" or body["hook_event_name"].startswith("Subagent")))
-    assert [(row.type, row.status) for row in rows] == [("general-purpose", "done")], "dispatched, run in the background, settled when its subagent stopped"
+    from journal.features.workers.support.subagent_entries import SubagentEntries
+    rows = SubagentEntries.paired(dispatch_entries("claude", lambda body: body["hook_event_name"] in ("SessionStart", "Stop") or body.get("tool_name") == "Agent" or body["hook_event_name"].startswith("Subagent")))
+    assert [(row.agent_type, row.state) for row in rows] == [("general-purpose", "done")], "dispatched, run in the background, settled when its subagent stopped"
 
 
 def test_a_codex_subagent_dispatch_is_paired_and_counted_like_a_claude_one():
-    from journal.features.workers.support.subagents import Subagents
+    from journal.features.workers.support.subagent_entries import SubagentEntries
     spawn = lambda body: body["hook_event_name"] in ("SessionStart", "SubagentStart", "Stop", "SubagentStop") or body.get("tool_name") == "collaborationspawn_agent"
     bodies = [body for body in captured("codex") if spawn(body)][:6]
     assert [body["hook_event_name"] for body in bodies] == ["SessionStart", "PreToolUse", "PostToolUse", "SubagentStart", "Stop", "SubagentStop"], "the order a real Codex run sends them in"
-    running = [Subagents.paired(dispatch_entries("codex", lambda body: True, bodies[:n])) for n in range(2, 7)]
-    assert [sum(1 for row in rows if row.is_active) for rows in running] == [1, 1, 1, 1, 0], "the spawn counts against the limit from its start, through the agent's own stop, until its subagent stops"
-    assert running[-1][0].session == bodies[3]["agent_id"] and running[-1][0].status == "done" and running[-1][0].task == "say_teal"
+    running = [SubagentEntries.paired(dispatch_entries("codex", lambda body: True, bodies[:n])) for n in range(2, 7)]
+    assert [sum(1 for row in rows if row.is_running()) for rows in running] == [1, 1, 1, 1, 0], "the spawn counts against the limit from its start, through the agent's own stop, until its subagent stops"
+    assert running[-1][0].session == bodies[3]["agent_id"] and running[-1][0].state == "done" and running[-1][0].task == "say_teal"
 
 
 def dispatch_entries(provider: str, kept, bodies: list[dict] | None = None) -> list:
-    """The entries a provider's captured hooks would leave, as Subagents pairs them: each body with its event's kind and its call's reading."""
+    """The entries a provider's captured hooks would leave, as SubagentEntries pairs them: each body with its event's kind and its call's reading."""
     from datetime import datetime, timezone
     from journal.models.entry import Entry
     from journal.providers.providers import Providers

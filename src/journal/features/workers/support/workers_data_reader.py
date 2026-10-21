@@ -4,7 +4,7 @@ from journal.features.workers.support.worker_worktree import WorkerWorktree
 from journal.features.workers.support.workers_data import WorkersData
 from journal.models.agent import Agent
 from journal.repositories.workers import Workers
-from journal.features.workers.support.subagents import Subagents
+from journal.repositories.subagents import Subagents
 
 
 class WorkersDataReader:
@@ -14,12 +14,12 @@ class WorkersDataReader:
         self.workers, self.subagents, self.config, self.branch = workers, subagents, config, branch
 
     def read(self, agent: Agent) -> WorkersData:
-        rows = self.workers.scoped()
+        rows, subagents = self.workers.scoped(), self.subagents.session_subagents(agent.session)
         return WorkersData(
-            out_workers=tuple(w for w in rows if w.is_running()),
+            dispatched_workers=tuple(w for w in rows if w.is_running()),
             idle_workers=tuple(w for w in rows if w.is_idle()),
-            active_subagents=self.subagents.running_earlier(agent.session),
-            dispatches=tuple(self.subagents.rows(agent.session)),
+            active_subagents=sum(1 for s in subagents if s.is_running()),
+            subagents=tuple(subagents),
             worktrees_root=(self.config.home / "worktrees").resolve(),
             worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.id, w.name) for w in rows),
         )

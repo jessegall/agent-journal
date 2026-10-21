@@ -36,7 +36,7 @@ from journal.features.sequences.support.run_tracker import RunTracker
 from journal.features.updates.support.release import Release
 from journal.features.updates.support.updater import Updater
 from journal.features.tasks.states.working import Working
-from journal.features.workers.support.subagents import Subagents
+from journal.repositories.subagents import Subagents
 
 from tests.old_columns import old_columns
 from tests.replay import catch_typed, drive_the_clock, tick_after
@@ -908,22 +908,22 @@ def test_a_report_the_agent_writes_is_a_made_message_docked_above_the_chat(app: 
 
 def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_turn_or_session(app: App):
     transmit = lambda kind, **extra: hook(app, kind, session_id="s7", **extra)
-    rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s7")]
+    rows = lambda: [row for row in app.container.get(Subagents).session_subagents("s7")]
     transmit("SessionStart", source="startup")
     transmit("PreToolUse", tool_name="Agent", tool_input={"description": "no model named", "prompt": "read"}, tool_use_id="t-refused")
     transmit("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "cut off", "prompt": "read", "model": "haiku"}, tool_use_id="t-cut")
     transmit("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "in the background", "prompt": "read", "model": "haiku"}, tool_use_id="t-bg")
     transmit("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a7"}, tool_use_id="t-bg")
-    assert [r["task"] for r in rows()] == ["cut off", "in the background"], "a dispatch the journal refused never ran"
+    assert [r.task for r in rows()] == ["cut off", "in the background"], "a dispatch the journal refused never ran"
     transmit("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "no such model", "prompt": "read", "model": "haiku"}, tool_use_id="t-failed")
     transmit("PostToolUseFailure", tool_name="Agent", tool_input={}, error="Model 'haiku-9' not found", tool_use_id="t-failed")
-    assert [(r["is_active"], r["status"], r["reason"]) for r in rows()][-1] == (False, "failed", "Model 'haiku-9' not found"), "a dispatch the tool could not run is failed with the tool's error"
+    assert [(r.is_running(), r.state, r.reason) for r in rows()][-1] == (False, "failed", "Model 'haiku-9' not found"), "a dispatch the tool could not run is failed with the tool's error"
     transmit("Stop")
-    assert [(r["is_active"], r["status"]) for r in rows()] == [(False, "stopped"), (True, "running"), (False, "failed")], "a call with no answer ends with its turn; one in the background goes on"
+    assert [(r.is_running(), r.state) for r in rows()] == [(False, "stopped"), (True, "running"), (False, "failed")], "a call with no answer ends with its turn; one in the background goes on"
     transmit("SessionStart", source="compact")
-    assert rows()[1]["is_active"] is True, "a compaction ends no subagent"
+    assert rows()[1].is_running() is True, "a compaction ends no subagent"
     transmit("SessionEnd")
-    assert [r["is_active"] for r in rows()] == [False, False, False], "a subagent with no stop ends with its session"
+    assert [r.is_running() for r in rows()] == [False, False, False], "a subagent with no stop ends with its session"
 
 
 def test_a_task_the_reply_names_is_linked_to_the_message_it_answers_however_old(app: App):
@@ -2337,21 +2337,21 @@ def test_a_turn_with_several_reply_tags_answers_each_message_with_its_own_part(a
 
 def test_a_subagent_launched_in_the_background_runs_until_its_own_stop_hook(app: App):
     hook(app, "SessionStart")
-    rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s1")]
+    rows = lambda: [row for row in app.container.get(Subagents).session_subagents("s1")]
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "sonnet", "subagent_type": "journal-researcher", "prompt": "read"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a1"})
-    assert rows()[0]["is_active"] is True and rows()[0]["status"] == "running", "the tool's instant answer does not end a background subagent"
+    assert rows()[0].is_running() is True and rows()[0].state == "running", "the tool's instant answer does not end a background subagent"
     hook(app, "SubagentStop", agent_id="a1", agent_type="researcher")
     row = rows()[0]
-    assert row["is_active"] is False and row["status"] == "done" and row["ended"] >= row["time"]
+    assert row.is_running() is False and row.state == "done" and row.ended_at >= row.started_at
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "a quick one", "model": "haiku", "prompt": "x"})
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "a quick one"}, tool_response="the finished work")
-    assert rows()[1]["is_active"] is False, "a subagent that answered in the tool's own result is done at once"
+    assert rows()[1].is_running() is False, "a subagent that answered in the tool's own result is done at once"
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "never ran", "model": "haiku", "prompt": "x"}, tool_use_id="t-lost")
     hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Mr. Turing weighs", "model": "opus", "subagent_type": "journal-planner", "prompt": "x"}, tool_use_id="t-2")
     hook(app, "PostToolUse", tool_name="Agent", tool_input={"description": "Mr. Turing weighs"}, tool_response={"isAsync": True, "status": "async_launched", "agentId": "a2"}, tool_use_id="t-2")
     hook(app, "SubagentStop", agent_id="a2", agent_type="auditor")
-    assert [r["is_active"] for r in rows()[2:]] == [True, False], "a start that never finished keeps its own row; the finish and the stop close the row they belong to, by the tool use's id"
+    assert [r.is_running() for r in rows()[2:]] == [True, False], "a start that never finished keeps its own row; the finish and the stop close the row they belong to, by the tool use's id"
 
 
 def test_a_write_after_a_message_is_read_waits_for_the_answer(app: App):
@@ -2438,8 +2438,8 @@ def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app
     for _ in range(60):
         hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a", "limit": 1})
         hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a"}, tool_response="x")
-    rows = [asdict(row) for row in app.container.get(Subagents).rows("s1")]
-    assert [r["task"] for r in rows] == ["Herr Gropius draws"] and rows[0]["is_active"] is True
+    rows = [row for row in app.container.get(Subagents).session_subagents("s1")]
+    assert [r.task for r in rows] == ["Herr Gropius draws"] and rows[0].is_running() is True
 
 
 def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app: App, monkeypatch):
@@ -2656,7 +2656,7 @@ def test_a_refused_dispatch_leaves_no_running_subagent_behind(app: App):
     console.run(["message", "read", "1"], AGENT)
     status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "Lord Macaulay reads", "model": "opus", "prompt": "read the plan", "subagent_type": "journal-researcher"})
     assert status == 409 and "answer or react to message 1 first" in body["error"], "the dispatch is held until the message is answered"
-    rows = [asdict(row) for row in app.container.get(Subagents).rows("s1")]
+    rows = [row for row in app.container.get(Subagents).session_subagents("s1")]
     assert rows == [], "a dispatch the journal refused never ran and is no subagent"
 
 
@@ -6065,24 +6065,49 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
 
+def test_a_subagent_is_a_row_the_census_counts_retire_writes_and_one_from_before_the_rows_is_ended(app: App):
+    from journal.features.workers.seeds.subagents_seed import SubagentsSeed
+    subagents = app.container.get(Subagents)
+    dispatch = lambda what, use: hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": what, "prompt": "map", "subagent_type": "journal-researcher", "model": "haiku"}, tool_use_id=use)
+    hook(app, "SessionStart")
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
+    dispatch("map the hooks", "t-1")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a1"}, tool_use_id="t-1")
+    [row] = subagents.session_subagents("s1")
+    assert (row.id, row.state, row.task, row.session, row.creator) == (1, "running", "map the hooks", "a1", Actor.agent("s1")), "the dispatch is a row, written as the agent that made it"
+    assert dispatch("map the routes", "t-2")[0] == 409 and len(subagents.session_subagents("s1")) == 1, "the census counts the running row against the most at once, and the refused dispatch is no row"
+    assert app.console().run(["subagent", "retire", "1"], AGENT).code == 0
+    assert (subagents.find(1).state, subagents.find(1).updater) == ("retired", AGENT.actor), "retire writes through the repository as its caller"
+    assert dispatch("map the routes", "t-3")[0] == 200, "a retired subagent frees its place"
+    hook(app, "SubagentStop", agent_id="a1")
+    assert subagents.find(1).state == "retired", "it stays retired when it ends"
+    hook(app, "PreToolUse", tool_name="SendMessage", tool_input={"to": "a1", "message": "one more"}, tool_use_id="t-4")
+    assert subagents.find(1).state == "running", "until it is sent a message"
+    for stored in subagents.scoped():
+        subagents.delete(stored, Actor.system())
+    app.container.get(SubagentsSeed).run()
+    app.container.get(SubagentsSeed).run()
+    assert [(s.task, s.state) for s in subagents.session_subagents("s1")] == [("map the hooks", "ended"), ("map the routes", "ended")], "the subagents from before the rows are written once from the record, ended where it saw no end"
+
+
 def test_a_message_sent_to_a_subagent_runs_its_row_again_until_it_ends(app: App):
     """A subagent that ended and is given another job by a message to its id is running again in the rows the selector lists, and done once it ends; the hook outage of 2026-10-21 and the resumes showed 0 running while three were out."""
     from dataclasses import asdict
-    from journal.features.workers.support.subagents import Subagents
+    from journal.repositories.subagents import Subagents
     transmit = lambda kind, **extra: hook(app, kind, session_id="s9", **extra)
-    rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s9")]
+    rows = lambda: [row for row in app.container.get(Subagents).session_subagents("s9")]
     transmit("SessionStart", source="startup")
     transmit("PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "collect commands", "prompt": "read", "model": "sonnet"}, tool_use_id="t-1")
     transmit("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a9"}, tool_use_id="t-1")
     transmit("SubagentStop", agent_id="a9")
-    assert [(r["is_active"], r["status"]) for r in rows()] == [(False, "done")]
+    assert [(r.is_running(), r.state) for r in rows()] == [(False, "done")]
     transmit("PreToolUse", tool_name="SendMessage", tool_input={"to": "a9", "message": "judge three hundred by hand"}, tool_use_id="t-2")
     transmit("PostToolUse", tool_name="SendMessage", tool_input={"to": "a9", "message": "judge three hundred by hand"}, tool_response={}, tool_use_id="t-2")
-    assert [(r["is_active"], r["status"]) for r in rows()] == [(True, "running")], "the message to its id sends it out again, so the selector counts it running"
+    assert [(r.is_running(), r.state) for r in rows()] == [(True, "running")], "the message to its id sends it out again, so the selector counts it running"
     transmit("SubagentStop", agent_id="a9")
-    assert [(r["is_active"], r["status"]) for r in rows()] == [(False, "done")], "and it is done again once it ends"
+    assert [(r.is_running(), r.state) for r in rows()] == [(False, "done")], "and it is done again once it ends"
     transmit("PreToolUse", tool_name="SendMessage", tool_input={"to": "uds:/tmp/cc-socks/1.sock", "message": "hello"}, tool_use_id="t-3")
-    assert len(rows()) == 1 and rows()[0]["is_active"] is False, "a message to another session is no subagent's"
+    assert len(rows()) == 1 and rows()[0].is_running() is False, "a message to another session is no subagent's"
 
 
 def test_the_kept_output_line_says_the_lines_the_characters_and_the_part_of_the_chain_the_output_holds(app: App):
@@ -6728,7 +6753,7 @@ def test_a_dispatch_past_its_profiles_kept_workers_is_refused_naming_the_idle_on
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
-    app.container.get(SettingRows).set(WorkersFeature.IDLE_KEPT.key, 3, USER.actor)
+    app.container.get(SettingRows).set(WorkersFeature.PROFILE_LIMIT.key, 3, USER.actor)
     workers = app.container.get(Workers)
     for name, state, paths in (("Mr. Out", WorkerState.DISPATCHED, None), ("Mr. Idle", WorkerState.REPORTED, ("docs/a.md",)), ("Mr. Knows", WorkerState.REPORTED, ("src/lexer.py",))):
         workers.save(Worker(name=name, state=state, profile="journal-medior", touched_paths=paths), Actor.system())
@@ -6740,7 +6765,7 @@ def test_a_dispatch_past_its_profiles_kept_workers_is_refused_naming_the_idle_on
     assert text.index("worker 3, Mr. Knows") < text.index("worker 2, Mr. Idle") and "journal worker send 3" in text and "Mr. Out" not in text.split("idle:")[1], "the idle ones are named with their send lines, the one that knows the files first"
     assert said("journal-senior")[0] == 200, "another profile has places of its own"
     assert said("journal-plan-reviewer")[0] == 200, "a reviewer always starts fresh"
-    app.container.get(SettingRows).set(WorkersFeature.IDLE_KEPT.key, 0, USER.actor)
+    app.container.get(SettingRows).set(WorkersFeature.PROFILE_LIMIT.key, 0, USER.actor)
     assert said("journal-medior")[0] == 200, "0 is no limit"
     assert any(m.text == "Dispatch refused, 2 idle workers could take it" for m in app.container.get(Messages).scoped()), "the refusal is a mark in the chat"
 

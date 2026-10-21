@@ -8,14 +8,14 @@ from journal.repositories.plan_reviews import FILED, REVIEWS, PlanReviews
 from journal.repositories.reports import Reports
 from journal.support.actor import Actor
 from journal.models.support.ref import Ref
-from journal.features.workers.support.subagents import Subagents
+from journal.features.workers.support.subagent_entries import SubagentEntries
 from journal.support.caller import Caller
 
 
 class ReviewRounds:
     """A plan's review rounds: one opens when the plan goes into review and closes when it is made ready, naming the subagents dispatched about the plan meanwhile, what the round changed and the reports filed about the plan while it ran."""
 
-    def __init__(self, reviews: PlanReviews, links: Links, reports: Reports, subagents: Subagents) -> None:
+    def __init__(self, reviews: PlanReviews, links: Links, reports: Reports, subagents: SubagentEntries) -> None:
         self.reviews, self.links, self.reports, self.subagents = reviews, links, reports, subagents
 
     def open(self, plan: Plan, actor: Actor) -> None:

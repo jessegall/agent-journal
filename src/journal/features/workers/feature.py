@@ -2,19 +2,22 @@ from journal.features.feature import Feature
 from journal.features.workers.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_data_reader import WorkersDataReader
 from journal.features.workers.support.workers_data import WorkersData
+from journal.features.workers.seeds.subagents_seed import SubagentsSeed
 from journal.features.workers.seeds.workers_seed import WorkersSeed
 from journal.features.workers.jobs.worker_watch import WorkerWatch
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
+from journal.features.workers.commands.subagent_command import SubagentCommand
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.listeners.subagent_cards import SubagentCards
+from journal.features.workers.listeners.subagent_record import SubagentRecord
 from journal.features.workers.listeners.worker_cards import WorkerCards
 from journal.engine.support.modes import Modes
 from journal.features.plans.states.plans_ready import PlansReady
 from journal.features.workers.listeners.worker_marks import WorkerMarks
-from journal.features.workers.listeners.dispatch_refusal_marks import DispatchRefusalMarks
-from journal.features.workers.listeners.quiet_worker_record import QuietWorkerRecord
+from journal.features.workers.listeners.dispatch_refusal_cards import DispatchRefusalCards
+from journal.features.workers.listeners.silent_worker_record import SilentWorkerRecord
 from journal.features.workers.states.delegating import Delegating
 from journal.features.workers.states.orchestrating import Orchestrating
 from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
@@ -27,18 +30,18 @@ class Workers(Feature[WorkersData]):
     MODE = Option("workers.mode", "Work mode", "Builder: the agent builds it itself and sends workers when a job is better done beside it. Orchestrator: it plans, hands the work to workers, then reviews and merges it. Solo: it does everything itself, with no workers", "builder", kind="choice", choices=("builder", "orchestrator", "solo"))
     WORKER_LIMIT = Option("workers.most_out", "Workers out at once", "The most workers out at a time; a dispatch past it is refused until one reports. 0 is no limit", 3, unit="workers")
     SUBAGENT_LIMIT = Option("workers.most_subagents", "Subagents running at once", "The most subagents running at a time; one more is held until one finishes. 0 is no limit", 5, unit="subagents")
-    IDLE_KEPT = Option("workers.idle_kept", "Workers kept per profile", "The most workers of one profile kept out or idle for reuse; past it a dispatch of that profile is refused while one of them is idle, so the job goes to that one. Reviewers always start fresh. 0 is no limit", 8, unit="workers")
+    PROFILE_LIMIT = Option("workers.idle_kept", "Workers kept per profile", "The most workers of one profile kept out or idle for reuse; past it a dispatch of that profile is refused while one of them is idle, so the job goes to that one. Reviewers always start fresh. 0 is no limit", 8, unit="workers")
 
     name = "workers"
     title = "Workers"
     help = "Agents sent to write one bounded job; the agent waits for their reports."
     modes = Modes(MODE, {"builder": PlansReady, "orchestrator": Orchestrating, "solo": Soloing})
-    options = (TIMEOUT, MODE, WORKER_LIMIT, SUBAGENT_LIMIT, IDLE_KEPT)
+    options = (TIMEOUT, MODE, WORKER_LIMIT, SUBAGENT_LIMIT, PROFILE_LIMIT)
     states = (Orchestrating, Soloing, OrchestratingPlan, Delegating)
-    commands = (WorkerCommand,)
-    seeds = (WorkersSeed,)
+    commands = (WorkerCommand, SubagentCommand)
+    seeds = (WorkersSeed, SubagentsSeed)
     jobs = (WorkerWatch,)
-    listeners = (SubagentCards, WorkerCards, WorkerMarks, DispatchRefusalMarks, QuietWorkerRecord)
+    listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMarks, DispatchRefusalCards, SilentWorkerRecord)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
 
@@ -54,10 +57,9 @@ class Workers(Feature[WorkersData]):
     WORKER_KNOWS_FILES = Nudge(name, "send_it_to_the_worker_that_knows", "{{count}} idle workers already worked on files this job names:\n{{workers}}", "give the job to one of them with its send line, or add --fresh to the dispatch if it truly needs a new worker", repeat_interval=0)
     IDLE_CAP = Nudge(name, "send_it_to_an_idle_worker", "{{kept}} {{profile}} workers are kept, the most of one profile, and {{count}} of them are idle:\n{{workers}}", "give the job to one of them with its send line, or retire one with `journal worker complete <n> --why \"<reason>\"` to free a place", repeat_interval=0)
     REUSE_QUESTION = Nudge(name, "could_it_be_reused", "Are you sure worker {{n}}, {{name}}, cannot be reused?", "if it can, give it its next job with `journal worker send {{n}} \"<job>\"`; if not, repeat the command with --why \"<why it cannot>\"", repeat_interval=0)
-    QUIET_WORKER = Nudge(name, "worker_quiet", "worker {{n}}, {{name}}, has been quiet for {{minutes}} minutes", "look at its transcript on its worker page, tell it something with `journal worker notify {{n}} \"<text>\"`, or stop it", repeat_interval=0)
+    SILENT_WORKER = Nudge(name, "worker_quiet", "worker {{n}}, {{name}}, has been quiet for {{minutes}} minutes", "look at its transcript on its worker page, tell it something with `journal worker notify {{n}} \"<text>\"`, or stop it", repeat_interval=0)
     SUBAGENT_REUSE = Nudge(name, "send_the_job_to_the_subagent", "subagent {{session}} ({{task}}) already worked on the files this job names", "send it the job with SendMessage({to: \"{{session}}\", message: \"<job>\"}), so it goes on with what it knows", repeat_interval=0)
-    DISPATCH_REFUSALS = (WORKER_KNOWS_FILES.key, IDLE_CAP.key)
-    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, REUSE_QUESTION, QUIET_WORKER, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
+    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, REUSE_QUESTION, SILENT_WORKER, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
 
     skill = Skill("workers", 'Send a worker to write a bounded job and wait for its report; load it before dispatching one', """
 # Workers

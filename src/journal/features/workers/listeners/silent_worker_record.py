@@ -4,7 +4,7 @@ from journal.repositories.workers import Workers
 from journal.support.actor import Actor
 
 
-class QuietWorkerRecord(AgentListener[LineDelivered]):
+class SilentWorkerRecord(AgentListener[LineDelivered]):
     """A quiet worker named to the agent is marked named on its row, so its quiet span is told once; its next send, notify or report starts a new span."""
 
     def __init__(self, workers: Workers) -> None:
@@ -12,6 +12,6 @@ class QuietWorkerRecord(AgentListener[LineDelivered]):
 
     def handle(self, event: LineDelivered) -> None:
         from journal.features.workers.feature import Workers as Feature
-        if event.nudge != Feature.QUIET_WORKER.key:
+        if event.nudge != Feature.SILENT_WORKER.key:
             return
         self.workers.touch(self.workers.find(int(event.values["n"])), Actor.system(), quiet_named=True)

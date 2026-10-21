@@ -45,29 +45,29 @@ class WorkersConduct(Conduct):
         matched = PathMentions.build(f"{dispatch.title} {dispatch.brief or ''}")
         if not matched or dispatch.role in INDEPENDENT_ROLES:
             return self.none()
-        existing = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.is_active and d.session and d.type == dispatch.role and matched & PathMentions.build(d.brief)), None)
+        existing = next((s for s in reversed(event.data.part(Workers).subagents) if s.is_idle() and s.agent_type == dispatch.role and matched & PathMentions.build(s.brief)), None)
         return self.refuse(Workers.SUBAGENT_REUSE.create(session=existing.session, task=existing.task)) if existing else self.none()
 
     def files_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        knowing = [w for line in worker_lines(event, "dispatch") if not line.fresh for w in knowing_workers(event.data.part(Workers), line.brief)]
+        knowing = [w for line in worker_lines(event, "dispatch") if not line.fresh for w in overlapping_workers(event.data.part(Workers), line.brief)]
         return self.refuse(Workers.WORKER_KNOWS_FILES.create(count=len(knowing), workers=idle_list(tuple(knowing)))) if knowing else self.none()
 
     def idle_cap_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         lines = [line for line in worker_lines(event, "dispatch") if not is_reviewer(line.profile)]
-        cap, workers = int(settings.value(Workers.IDLE_KEPT)) if lines else 0, event.data.part(Workers)
+        cap, workers = int(settings.value(Workers.PROFILE_LIMIT)) if lines else 0, event.data.part(Workers)
         for line in lines if cap else []:
-            kept, idle = kept_workers(workers, line.profile), idle_offers(workers, line)
-            if len(kept) >= cap and idle:
-                return self.refuse(Workers.IDLE_CAP.create(kept=len(kept), profile=line.profile, count=len(idle), workers=idle_list(idle)))
+            members, offers = profile_workers(workers, line.profile), idle_offers(workers, line)
+            if len(members) >= cap and offers:
+                return self.refuse(Workers.IDLE_CAP.create(kept=len(members), profile=line.profile, count=len(offers), workers=idle_list(offers)))
         return self.none()
 
     def retire_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
         idle = {w.id: w for w in event.data.part(Workers).idle_workers}
-        asked = [line for line in worker_lines(event, "complete", "stop") if line.number in idle and not line.why]
-        return self.refuse(Workers.REUSE_QUESTION.create(n=asked[0].number, name=idle[asked[0].number].name)) if asked else self.none()
+        retirements = [line for line in worker_lines(event, "complete", "stop") if line.number in idle and not line.why]
+        return self.refuse(Workers.REUSE_QUESTION.create(n=retirements[0].number, name=idle[retirements[0].number].name)) if retirements else self.none()
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         checks = (WorkersConduct.known_check, WorkersConduct.limit_check, WorkersConduct.worktrees_check, WorkersConduct.files_check, WorkersConduct.idle_cap_check, WorkersConduct.retire_check)
@@ -78,8 +78,8 @@ class WorkersConduct(Conduct):
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         workers = event.data.part(workers_feature())
-        quiet = [workers_feature().QUIET_WORKER.create(n=w.id, name=w.name, minutes=int(w.quiet.amount // 60)) for w in workers.out_workers if w.dispatcher == event.session and w.is_quiet(event.time)]
-        return self.none(*report_mentions(event.data), *quiet)
+        silent = [workers_feature().SILENT_WORKER.create(n=w.id, name=w.name, minutes=int(w.quiet.amount // 60)) for w in workers.dispatched_workers if w.dispatcher == event.session and w.is_quiet(event.time)]
+        return self.none(*report_mentions(event.data), *silent)
 
     def on_worker_dispatched(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
@@ -114,22 +114,22 @@ def workers_feature():
     return Workers
 
 
-def kept_workers(workers: WorkersData, profile: str) -> list[Worker]:
-    return [w for w in (*workers.out_workers, *workers.idle_workers) if w.profile == profile]
+def profile_workers(workers: WorkersData, profile: str) -> list[Worker]:
+    return [w for w in (*workers.dispatched_workers, *workers.idle_workers) if w.profile == profile]
 
 
 def idle_offers(workers: WorkersData, line: WorkerLine) -> tuple[Worker, ...]:
-    named = PathMentions.build(line.brief)
-    return tuple(sorted((w for w in workers.idle_workers if w.profile == line.profile), key=lambda w: not w.overlaps(named)))
+    paths = PathMentions.build(line.brief)
+    return tuple(sorted((w for w in workers.idle_workers if w.profile == line.profile), key=lambda w: not w.overlaps(paths)))
 
 
 def is_reviewer(profile: str) -> bool:
     return any(role in profile for role in INDEPENDENT_ROLES)
 
 
-def knowing_workers(workers: WorkersData, brief: str) -> list[Worker]:
-    named = PathMentions.build(brief)
-    return [w for w in reversed(workers.idle_workers) if w.overlaps(named)]
+def overlapping_workers(workers: WorkersData, brief: str) -> list[Worker]:
+    paths = PathMentions.build(brief)
+    return [w for w in reversed(workers.idle_workers) if w.overlaps(paths)]
 
 
 def worktree_edits(workers: WorkersData, edited_paths: tuple[str, ...]):
