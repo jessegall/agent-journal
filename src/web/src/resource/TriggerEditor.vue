@@ -35,7 +35,7 @@ async function commit(patch) {
             <p class="sum-text">{{ sentence(values) }}</p>
         </div>
         <ResourceBlock heading="When these words appear">
-            <WatchedWords :words="values.words || []" @words="(words) => commit({words})" />
+            <WatchedWords :words="values.phrases || []" @words="(words) => commit({phrases: words})" />
         </ResourceBlock>
         <ResourceBlock heading="What happens next">
             <div class="then">

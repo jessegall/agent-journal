@@ -19,14 +19,14 @@ class SearchCommand(Command):
 
     def arguments(self, verbs) -> None:
         verbs_for = self.verb(verbs, "for", "find the rows and conversations here that hold every one of the words")
-        verbs_for.add_argument("words", nargs="+")
+        verbs_for.add_argument("terms", nargs="+")
         verbs_for.add_argument("--model", default="", help=f"only these models, by name and comma apart: {', '.join(self.search.models())}; {CONVERSATION} reads the agents' conversations too")
 
     def for_(self, args: Namespace, caller: Caller) -> int:
-        words = " ".join(args.words).split()
-        found = self.search.found_in(words, args.model.split(",")) if args.model else self.search.found(words)
+        terms = " ".join(args.terms).split()
+        found = self.search.found_in(terms, args.model.split(",")) if args.model else self.search.found(terms)
         lines = [one.line() for one in found]
-        said = "\n".join(lines) if lines else f"nothing here holds all of: {' '.join(words)}"
+        said = "\n".join(lines) if lines else f"nothing here holds all of: {' '.join(terms)}"
         print(said)
-        self.cards.show(self.scope.id, caller.session, f"Searched for \"{' '.join(words)}\"", "search", detail=said, kind="search", shows=ChatMark.SEARCHES)
+        self.cards.show(self.scope.id, caller.session, f"Searched for \"{' '.join(terms)}\"", "search", detail=said, kind="search", shows=ChatMark.SEARCHES)
         return 0

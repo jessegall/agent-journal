@@ -44,8 +44,8 @@ def prompts_with_unread(app, replay: Replay, provider: str) -> None:
     hook_as(app, provider, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     replay.step("session starts")
-    for n, words in ((1, "one"), (2, "two"), (3, "three"), (4, "four")):
-        app.console().run(["message", "send", words], USER)
+    for n, text in ((1, "one"), (2, "two"), (3, "three"), (4, "four")):
+        app.console().run(["message", "send", text], USER)
         replay.step(f"message {n} arrives")
         if n in (1, 3, 4):
             replay.step(f"a prompt after {n}", hook_as(app, provider, "UserPromptSubmit", prompt="working")[1])
@@ -214,8 +214,8 @@ def stops_with_unread(app, replay: Replay, provider: str) -> None:
     console.run(["message", "send", "one"], USER)
     replay.step("message 1 arrives")
     replay.step("a stop with one unread", hook_as(app, provider, "Stop")[1])
-    for words in ("two", "three", "four"):
-        console.run(["message", "send", words], USER)
+    for text in ("two", "three", "four"):
+        console.run(["message", "send", text], USER)
     replay.step("three more arrive")
     replay.step("a stop with four unread", hook_as(app, provider, "Stop")[1])
 

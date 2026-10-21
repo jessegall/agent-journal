@@ -11,10 +11,10 @@ class PluginWords:
     def __init__(self, masks: Masks) -> None:
         self.masks = masks
 
-    def said(self, plugin: Plugin, words: str) -> str:
-        return f"[plugin {plugin.name}] {self.plain(words)}"
+    def said(self, plugin: Plugin, text: str) -> str:
+        return f"[plugin {plugin.name}] {self.plain(text)}"
 
-    def plain(self, words: str) -> str:
+    def plain(self, text: str) -> str:
         for mark, plain in NEUTRAL.items():
-            words = words.replace(mark, plain)
-        return OutputMask(self.masks.current()).masked(words.encode()).decode()
+            text = text.replace(mark, plain)
+        return OutputMask(self.masks.current()).masked(text.encode()).decode()

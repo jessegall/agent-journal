@@ -40,26 +40,26 @@ class Search:
     def models(self) -> list[str]:
         return [self.named(kind) for kind in self.kinds]
 
-    def found(self, words: list[str]) -> list[Found]:
-        return self.rows(words, self.kinds)
+    def found(self, terms: list[str]) -> list[Found]:
+        return self.rows(terms, self.kinds)
 
-    def found_in(self, words: list[str], names: list[str]) -> list[Found]:
+    def found_in(self, terms: list[str], names: list[str]) -> list[Found]:
         wanted = [kind for kind in self.kinds if self.named(kind) in names]
-        return self.rows(words, wanted) + (self.said(words) if CONVERSATION in names else [])
+        return self.rows(terms, wanted) + (self.said(terms) if CONVERSATION in names else [])
 
-    def rows(self, words: list[str], kinds) -> list[Found]:
-        return [Found.of(row, words) for kind in kinds for row in kind.search(words)]
+    def rows(self, terms: list[str], kinds) -> list[Found]:
+        return [Found.of(row, terms) for kind in kinds for row in kind.search(terms)]
 
     @staticmethod
     def named(kind: Repository) -> str:
         return kind.model.table().removesuffix("s")
 
-    def said(self, words: list[str]) -> list[Found]:
+    def said(self, terms: list[str]) -> list[Found]:
         found = []
         for agent in reversed([agent for agent in self.agents.in_() if agent.has_program()][-CONVERSATIONS:]):
             path = self.providers.named(agent.provider).transcript(self.config.root, agent.session)
             if path is None:
                 continue
-            turns = [turn for turn in self.providers.named(agent.provider).turns(path) if all(word.lower() in turn.text.lower() for word in words)]
-            found += [Found(f"conversation {agent.session[:8]}, line {turn.line}", Found.around(turn.text, words)) for turn in reversed(turns)]
+            turns = [turn for turn in self.providers.named(agent.provider).turns(path) if all(word.lower() in turn.text.lower() for word in terms)]
+            found += [Found(f"conversation {agent.session[:8]}, line {turn.line}", Found.around(turn.text, terms)) for turn in reversed(turns)]
         return found

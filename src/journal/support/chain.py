@@ -59,8 +59,8 @@ class Chain:
 
     @staticmethod
     def is_journal(part: str) -> bool:
-        words = part.split()
-        return bool(words) and words[0].rsplit("/", 1)[-1] in ("journal", "journal.sh", "journal.py")
+        text = part.split()
+        return bool(text) and text[0].rsplit("/", 1)[-1] in ("journal", "journal.sh", "journal.py")
 
     @classmethod
     def of(cls, separator: str, part: str) -> list[tuple[str, str, bool]]:
@@ -176,30 +176,30 @@ class Chain:
                 found.append([])
                 continue
             found[-1].append(word)
-        return [Chain.led(words) for words in found]
+        return [Chain.led(text) for text in found]
 
     @staticmethod
     def uncommented(part: str) -> str:
         return Part(part).command_text()
 
     @staticmethod
-    def is_opening(words: list[str]) -> bool:
-        if not words or words[0] not in OPENS:
+    def is_opening(text: list[str]) -> bool:
+        if not text or text[0] not in OPENS:
             return False
-        closer, body = OPENS[words[0]], BODY.get(words[0])
+        closer, body = OPENS[text[0]], BODY.get(text[0])
         if body is None:
-            return closer not in words[1:]
-        return not (body in words and closer in [w.rstrip(");`") for w in words[words.index(body) + 1:]])
+            return closer not in text[1:]
+        return not (body in text and closer in [w.rstrip(");`") for w in text[text.index(body) + 1:]])
 
     @staticmethod
     def openings(segments: list[list[str]]) -> list[list[str]]:
         ends = [segments[0]] if len(segments) == 1 else [segments[0], segments[-1]]
-        return [words for words in ends if Chain.is_opening(words)]
+        return [text for text in ends if Chain.is_opening(text)]
 
     @staticmethod
     def closes(part: str, segments: list[list[str]], closer: str) -> bool:
-        words = part.split()
-        after_arm = closer == "esac" and any(w == "esac" and words[i - 1].endswith((";;", ";&", ";|")) for i, w in enumerate(words) if i)
+        text = part.split()
+        after_arm = closer == "esac" and any(w == "esac" and text[i - 1].endswith((";;", ";&", ";|")) for i, w in enumerate(text) if i)
         return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or after_arm
 
     @staticmethod
@@ -207,22 +207,22 @@ class Chain:
         return {";": f"{joined}; {part}", "\n": f"{joined}\n{part}"}.get(separator, f"{joined} {separator} {part}")
 
     @staticmethod
-    def led(words: list[str]) -> list[str]:
-        start = next((i for i, w in enumerate(words) if w not in LEADS), len(words))
-        return words[start:]
+    def led(text: list[str]) -> list[str]:
+        start = next((i for i, w in enumerate(text) if w not in LEADS), len(text))
+        return text[start:]
 
     @staticmethod
     def compound(parts: list[tuple[str, str]]) -> list[tuple[str, str]]:
         joined, closers, short = [], [], False
         for separator, part in parts:
-            segments, words = Chain.segments(part), part.split()
+            segments, text = Chain.segments(part), part.split()
             if short and separator != "&&":
                 closers.pop()
                 short = False
             if closers:
                 opener = joined[-1][1].split()[0]
                 joined[-1] = (joined[-1][0], Chain.rejoined(joined[-1][1], separator, part))
-                if len(closers) == 1 and not short and separator == ";" and opener in SHORT and words and words[0] not in BODIES | {closers[-1]} and not any(w in BODIES for w in joined[-1][1].split()):
+                if len(closers) == 1 and not short and separator == ";" and opener in SHORT and text and text[0] not in BODIES | {closers[-1]} and not any(w in BODIES for w in joined[-1][1].split()):
                     short = True
             else:
                 joined.append((separator, part))

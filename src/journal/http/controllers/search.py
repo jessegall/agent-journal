@@ -10,7 +10,7 @@ class SearchController:
         self.search = search
 
     def index(self, request: Request) -> Response:
-        words = str(request.query.get("words", "")).split()
+        text = str(request.query.get("words", "")).split()
         picked = [name for name in str(request.query.get("models", "")).split(",") if name] or self.search.models()
         asked = [*picked, CONVERSATION] if request.query.get("conversations") == "1" else picked
-        return Response.json({"found": self.search.found_in(words, asked) if words else [], "models": self.search.models()})
+        return Response.json({"found": self.search.found_in(text, asked) if text else [], "models": self.search.models()})

@@ -38,7 +38,7 @@ function pickMode(key) {
 
 const kindChoices = computed(() => kinds.value.map((t) => ({value: t.name, label: t.title, current: created.value === t.name})));
 const triggerChoices = computed(() =>
-    open("triggers").map((t) => ({value: `trigger:${t.id}`, label: wordsText(t.words) || `Trigger ${t.id}`, current: (props.resource.trigger_ids || []).includes(t.id)}))
+    open("triggers").map((t) => ({value: `trigger:${t.id}`, label: wordsText(t.phrases) || `Trigger ${t.id}`, current: (props.resource.trigger_ids || []).includes(t.id)}))
 );
 </script>
 

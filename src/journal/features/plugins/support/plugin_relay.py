@@ -31,10 +31,10 @@ CUT = "plugin_cut"
 class PluginRelay:
     """Which plugins hear an event, and one plugin asked about it: the line built where the event happened, and a fault recorded, never raised."""
 
-    def __init__(self, plugins: Plugins, runner: PluginRunner, protocol: Protocol, faults: PluginFaults, environments: Environments, agents: Agents, entries: Entries, answers: PluginAnswers, steps: PluginSteps, deferred: Deferred, hashes: PluginHashes, linked: LinkedManifests, words: PluginWords, scope: Scope) -> None:
+    def __init__(self, plugins: Plugins, runner: PluginRunner, protocol: Protocol, faults: PluginFaults, environments: Environments, agents: Agents, entries: Entries, answers: PluginAnswers, steps: PluginSteps, deferred: Deferred, hashes: PluginHashes, linked: LinkedManifests, text: PluginWords, scope: Scope) -> None:
         self.plugins, self.runner, self.protocol, self.faults, self.answers, self.steps = plugins, runner, protocol, faults, answers, steps
         self.environments, self.agents, self.entries, self.deferred, self.hashes, self.linked = environments, agents, entries, deferred, hashes, linked
-        self.words, self.scope = words, scope
+        self.text, self.scope = text, scope
 
     def heard_by(self, event: Event, environment_id: int) -> list[Plugin]:
         hearers = [p for p in self.plugins.enabled() if event.key in p.manifest.hears and getattr(event, "actor", None) != Actor.plugin(p.name)]
@@ -71,13 +71,13 @@ class PluginRelay:
         elif answer.tell:
             self.waiting(plugin, event, environment_id, answer.tell)
 
-    def waiting(self, plugin: Plugin, event: Event, environment_id: int, words: str) -> None:
+    def waiting(self, plugin: Plugin, event: Event, environment_id: int, text: str) -> None:
         session = event.session if isinstance(event, AgentEvent) else self.live_session(environment_id)
-        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": event.key, "line": self.words.said(plugin, words), "delivered": not session}), Actor.plugin(plugin.name))
+        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": event.key, "line": self.text.said(plugin, text), "delivered": not session}), Actor.plugin(plugin.name))
 
-    def queued_line(self, plugin: Plugin, environment_id: int, key: str, words: str) -> None:
+    def queued_line(self, plugin: Plugin, environment_id: int, key: str, text: str) -> None:
         session = self.live_session(environment_id)
-        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": key, "line": self.words.said(plugin, words), "delivered": not session}), Actor.plugin(plugin.name))
+        self.entries.save(Entry(environment_id=environment_id, kind=WAITING, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "session": session, "event": key, "line": self.text.said(plugin, text), "delivered": not session}), Actor.plugin(plugin.name))
 
     def live_session(self, environment_id: int) -> str:
         with self.scope.of(environment_id):
@@ -90,8 +90,8 @@ class PluginRelay:
             self.entries.save(entry.with_(data={**entry.data, "delivered": True}), Actor.system())
         return [e.data["line"] for e in reversed(waiting)]
 
-    def said(self, plugin: Plugin, event: Event, environment_id: int, how: str, words: str) -> None:
-        self.entries.save(Entry(environment_id=environment_id, kind=SAID, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "how": how, "words": words}), Actor.plugin(plugin.name))
+    def said(self, plugin: Plugin, event: Event, environment_id: int, how: str, text: str) -> None:
+        self.entries.save(Entry(environment_id=environment_id, kind=SAID, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "how": how, "words": text}), Actor.plugin(plugin.name))
 
     def unanswered(self, plugin: Plugin, event: Event, environment_id: int, reason: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=UNANSWERED, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event.key, "reason": reason}), Actor.system())

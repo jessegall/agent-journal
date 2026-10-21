@@ -15,7 +15,7 @@ class Firing:
 
     def fired(self, matched: list[Trigger], session: str, environment_id: int, by_user: bool) -> None:
         for trigger in matched:
-            self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.words), f"triggers:{trigger.id}", shows=ChatMark.TRIGGERS)
+            self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.text), f"triggers:{trigger.id}", shows=ChatMark.TRIGGERS)
             if trigger.action == TriggerAction.SEQUENCE and by_user:
                 self.started(trigger, session, environment_id)
 

@@ -15,9 +15,9 @@ class FilesAsked:
 
     @classmethod
     def from_query(cls, query: dict) -> "FilesAsked":
-        words = {name: query[name] for name in ("kind", "shelf", "search") if query.get(name)}
+        terms = {name: query[name] for name in ("kind", "shelf", "search") if query.get(name)}
         numbers = {name: int(query[name]) for name in ("last", "skip") if query.get(name)}
-        return cls(**words, **numbers)
+        return cls(**terms, **numbers)
 
     def holds(self, file: AttachedFile) -> bool:
         kind = self.kind == "all" or file.image is (self.kind == "images")

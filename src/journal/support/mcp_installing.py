@@ -60,7 +60,7 @@ class McpInstalling:
         known = report.servers.get(server.name)
         if known is None:
             return server.unchecked(self.unchecked_state(server))
-        return server.checked(known.state, known.words)
+        return server.checked(known.state, known.text)
 
     def sign_in(self, server: McpServer) -> bool:
         from journal.features.mcp.feature import Mcp

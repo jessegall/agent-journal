@@ -25,5 +25,5 @@ class TypedLine:
         return {int(n) for found in NAMED.findall(self.line) for n in found.split(", ")}
 
     def holds(self, prompt: str) -> bool:
-        words = " ".join(prompt.split())
-        return words == self.line or (len(words) >= self.PIECE and words in self.line)
+        text = " ".join(prompt.split())
+        return text == self.line or (len(text) >= self.PIECE and text in self.line)

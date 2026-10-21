@@ -44,6 +44,6 @@ class Outline:
                 return section
         raise Refused(f"no section {wanted}: the outline numbers them from 1")
 
-    def found(self, words: str) -> list[str]:
-        lowered = words.lower()
-        return [f"{section.number} {section.heading}: {line.strip()}" for section in self.sections for line in section.lines if lowered in line.lower()] or [f"no line holds {words}"]
+    def found(self, text: str) -> list[str]:
+        lowered = text.lower()
+        return [f"{section.number} {section.heading}: {line.strip()}" for section in self.sections for line in section.lines if lowered in line.lower()] or [f"no line holds {text}"]

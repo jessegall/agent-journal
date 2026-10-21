@@ -8,8 +8,8 @@ class Known:
     name: str
     how: str
     state: str
-    words: str
+    text: str
 
     @property
     def error(self) -> str:
-        return self.words if self.state == "failed" else ""
+        return self.text if self.state == "failed" else ""

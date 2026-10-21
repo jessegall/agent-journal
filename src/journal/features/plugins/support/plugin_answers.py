@@ -19,8 +19,8 @@ COMMAND = "plugin_command"
 class PluginAnswers:
     """What a plugin's answer asks beyond the hook's reply: its cards in the chat, one with a key replacing the earlier of that key, and its journal commands run as the plugin, a step deeper."""
 
-    def __init__(self, cards: Cards, console: Console, entries: Entries, steps: PluginSteps, words: PluginWords) -> None:
-        self.cards, self.console, self.entries, self.steps, self.words = cards, console, entries, steps, words
+    def __init__(self, cards: Cards, console: Console, entries: Entries, steps: PluginSteps, text: PluginWords) -> None:
+        self.cards, self.console, self.entries, self.steps, self.text = cards, console, entries, steps, text
 
     def apply(self, plugin: Plugin, answer: PluginAnswer, environment: str, environment_id: int) -> None:
         for card in answer.cards:
@@ -31,8 +31,8 @@ class PluginAnswers:
 
     def show(self, plugin: Plugin, card: PluginCard, environment_id: int) -> None:
         kind = plugin.manifest.card_kind(card.kind)
-        label = self.words.plain(card.label or kind.label)
-        data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "detail": self.words.plain(card.detail), "collapsed": kind.collapsed}
+        label = self.text.plain(card.label or kind.label)
+        data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "detail": self.text.plain(card.detail), "collapsed": kind.collapsed}
         self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name), ChatMark.PLUGINS)
 
     def run(self, plugin: Plugin, line: str, environment: str, environment_id: int) -> None:

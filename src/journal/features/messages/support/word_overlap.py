@@ -9,7 +9,7 @@ class WordOverlap:
 
     @classmethod
     def share(cls, text: str, other: str) -> float:
-        words = set(cls.WORD.findall(text.lower()))
-        if len(words) < cls.FEWEST:
+        terms = set(cls.WORD.findall(text.lower()))
+        if len(terms) < cls.FEWEST:
             return 0.0
-        return len(words & set(cls.WORD.findall(other.lower()))) / len(words)
+        return len(terms & set(cls.WORD.findall(other.lower()))) / len(terms)

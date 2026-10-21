@@ -82,14 +82,14 @@ class Repository(Generic[M]):
         found = {row.id: row for row in self.selected(f"id IN ({', '.join('?' for _ in ids)})", tuple(ids))}
         return [found[n] for n in ids if n in found]
 
-    def search(self, words: list[str]) -> list[M]:
-        clause, params = self.matching_words(words)
+    def search(self, terms: list[str]) -> list[M]:
+        clause, params = self.matching_words(terms)
         return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, FOUND))
 
-    def matching_words(self, words: list[str]) -> tuple[str, tuple]:
+    def matching_words(self, terms: list[str]) -> tuple[str, tuple]:
         each = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"
-        escaped = [word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") for word in words]
-        return " AND ".join(each for _ in words), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
+        escaped = [word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") for word in terms]
+        return " AND ".join(each for _ in terms), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
 
     def clause(self, fields: dict) -> tuple[str, tuple]:
         return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).to_sql(value) for name, value in fields.items())

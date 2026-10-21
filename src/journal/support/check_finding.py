@@ -14,7 +14,7 @@ class CheckFinding:
 
     @classmethod
     def from_json(cls, data: dict) -> "CheckFinding":
-        words = {name: str(data[name]) for name in ("name", "file", "text", "group") if data.get(name) is not None}
+        text = {name: str(data[name]) for name in ("name", "file", "text", "group") if data.get(name) is not None}
         numbers = {name: int(data[name]) for name in ("line",) if data.get(name)}
         place = {"place": str(data["where"])} if data.get("where") is not None else {}
-        return cls(**words, **numbers, **place)
+        return cls(**text, **numbers, **place)

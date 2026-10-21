@@ -47,9 +47,9 @@ class DumpCommand(Command):
             self.verb(verbs, verb, help).add_argument("n", type=int)
 
     @staticmethod
-    def numbered(parser, *words: str) -> None:
+    def numbered(parser, *text: str) -> None:
         parser.add_argument("n", type=int)
-        for word in words:
+        for word in text:
             parser.add_argument(word)
 
     def create(self, args: Namespace, caller: Caller) -> int:

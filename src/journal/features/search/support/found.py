@@ -13,13 +13,13 @@ class Found:
     passage: str
 
     @classmethod
-    def of(cls, row: Model, words: list[str]) -> "Found":
-        return cls(f"{row.noun()} {row.id}", cls.around(row.mentioning_text(), words))
+    def of(cls, row: Model, terms: list[str]) -> "Found":
+        return cls(f"{row.noun()} {row.id}", cls.around(row.mentioning_text(), terms))
 
     @staticmethod
-    def around(text: str, words: list[str]) -> str:
+    def around(text: str, terms: list[str]) -> str:
         flat = " ".join(text.split())
-        time = max(0, flat.lower().find(words[0].lower()) - AROUND // 4)
+        time = max(0, flat.lower().find(terms[0].lower()) - AROUND // 4)
         cut = flat[time:time + AROUND]
         return ("…" if time else "") + cut + ("…" if time + AROUND < len(flat) else "")
 

@@ -224,3 +224,16 @@ def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(co
     TimeKeys().up(connection)
     names = {row["name"] for row in connection.all("PRAGMA table_info(edits)")}
     assert "at" not in names and connection.one("SELECT time FROM edits")["time"] == 9.0, "where the schema already added the time column, the old at column's values move into it and the column goes"
+
+
+def test_the_trigger_phrases_migration_renames_the_words_column(connection):
+    """Migration 21: a trigger's words column becomes phrases, carried over when the schema already added phrases."""
+    from journal.db.migrations.trigger_phrases import TriggerPhrases
+    connection.execute("ALTER TABLE triggers ADD COLUMN words TEXT DEFAULT '[]'")
+    connection.execute("INSERT INTO triggers (phrases, words, action, text, created_at, created_by) VALUES ('[]', '[\"deploy\"]', 'deny', 'no', '2026-10-21', 'system')")
+    TriggerPhrases().up(connection)
+    names = {row["name"] for row in connection.all("PRAGMA table_info(triggers)")}
+    assert "words" not in names and connection.one("SELECT phrases FROM triggers")["phrases"] == '["deploy"]'
+    connection.execute("ALTER TABLE triggers RENAME COLUMN phrases TO words")
+    TriggerPhrases().up(connection)
+    assert "phrases" in {row["name"] for row in connection.all("PRAGMA table_info(triggers)")}, "a record from before, with words alone, has the column renamed"

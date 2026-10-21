@@ -727,7 +727,7 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
     from journal.models.trigger import Trigger
     from journal.models.trigger_action import TriggerAction
     settings = SettingsValue({})
-    triggers = (Trigger(id=1, words=("deploy",), action=TriggerAction.DENY, text="no deploys tonight"), Trigger(id=2, words=("release",), action=TriggerAction.INSTRUCT, text="bump the version"), Trigger(id=3, words=("plan",), action=TriggerAction.SEQUENCE, text="Building a plan"))
+    triggers = (Trigger(id=1, phrases=("deploy",), action=TriggerAction.DENY, text="no deploys tonight"), Trigger(id=2, phrases=("release",), action=TriggerAction.INSTRUCT, text="bump the version"), Trigger(id=3, phrases=("plan",), action=TriggerAction.SEQUENCE, text="Building a plan"))
     plugin_file = str(Path(".journal", "plugins", "x", "run.sh"))
     snapshot = Snapshot({"plans": PlansSnapshot((), None), "tasks": TasksSnapshot(in_hand=0, last_log_line="", parked=(), parked_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_parked_why="", next_open=None, last_commands=()), "triggers": TriggersSnapshot(triggers=triggers), "plugins": PluginsSnapshot(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
     BaseState.fold((GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))

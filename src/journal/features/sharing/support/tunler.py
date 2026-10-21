@@ -164,13 +164,13 @@ class Tunler:
         binary.unlink(missing_ok=True)
         raise Refused(BLOCKED if done and done.returncode == KILLED else NOT_WORKING)
 
-    def told(self, *words: str, hidden: dict | None = None) -> tuple[bool, str]:
+    def told(self, *text: str, hidden: dict | None = None) -> tuple[bool, str]:
         command = self.command()
         if not command:
             return False, "tunler isn't installed on this machine"
-        done = self.ran([command, *words], COMMAND_SECONDS, hidden)
+        done = self.ran([command, *text], COMMAND_SECONDS, hidden)
         if done is None:
-            return False, f"tunler {words[0]} did not finish"
+            return False, f"tunler {text[0]} did not finish"
         return done.returncode == 0, (done.stdout if done.returncode == 0 else done.stderr or done.stdout).strip()
 
     @staticmethod

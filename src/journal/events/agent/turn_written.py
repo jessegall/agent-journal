@@ -16,7 +16,7 @@ class TurnWritten(AgentEvent):
     final: bool = True
 
     @property
-    def words(self) -> str:
+    def text(self) -> str:
         return self.text if self.final else ""
 
     def with_text(self, whole: str) -> "TurnWritten":

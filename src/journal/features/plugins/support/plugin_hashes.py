@@ -15,6 +15,7 @@ class PluginHashes:
 
     def __init__(self, folders: PluginFolders, plugins: Plugins, cards: Cards) -> None:
         self.folders, self.plugins, self.cards = folders, plugins, cards
+        self.checked: dict[Path, tuple[int, int, str]] = {}
 
     def of(self, folder: Path, manifest: PluginManifest) -> dict[str, str]:
         return {path: self.hashed(folder / path) for path in manifest.programs}
@@ -27,6 +28,13 @@ class PluginHashes:
         self.cards.show(environment_id, "", f"Plugin {plugin.name} is off: {', '.join(changed)} changed since you installed it or switched it on. Read the change, then switch it on with journal plugin enable {plugin.name}", "bolt", tone="bad", shows=ChatMark.PLUGINS)
         return False
 
-    @staticmethod
-    def hashed(path: Path) -> str:
-        return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ""
+    def hashed(self, path: Path) -> str:
+        if not path.is_file():
+            return ""
+        stat = path.stat()
+        record = self.checked.get(path)
+        if record and record[0] == stat.st_mtime_ns and record[1] == stat.st_size:
+            return record[2]
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        self.checked[path] = (stat.st_mtime_ns, stat.st_size, digest)
+        return digest

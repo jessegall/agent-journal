@@ -38,9 +38,9 @@ export const DOES = [
 ];
 
 export const EXAMPLES = [
-    {name: "Block a command", words: ["push --force"], action: "deny", text: "Never force-push. Ask me first."},
-    {name: "Remind the agent when a word appears", words: ["CHANGELOG"], action: "nudge", text: "Add the change to src/CHANGELOG.md in plain words."},
-    {name: "Tell the agent to stop and ask", words: ["migration"], action: "instruct", text: "Stop and ask me before you touch the database."},
+    {name: "Block a command", phrases: ["push --force"], action: "deny", text: "Never force-push. Ask me first."},
+    {name: "Remind the agent when a word appears", phrases: ["CHANGELOG"], action: "nudge", text: "Add the change to src/CHANGELOG.md in plain words."},
+    {name: "Tell the agent to stop and ask", phrases: ["migration"], action: "instruct", text: "Stop and ask me before you touch the database."},
 ];
 
 export const doesOf = (value) => DOES.find((option) => option.value === value) || DOES[0];
@@ -67,14 +67,14 @@ const DOING = {
 
 // What a trigger does, as one sentence.
 export function sentence(trigger) {
-    if (!trigger.words.length) return "Add the words to watch for and choose what happens.";
-    return `When ${wordsText(trigger.words)} comes up, ${DOING[trigger.action](trigger.text ? quoted(trigger.text) : "(no text yet)")}.`;
+    if (!trigger.phrases.length) return "Add the words to watch for and choose what happens.";
+    return `When ${wordsText(trigger.phrases)} comes up, ${DOING[trigger.action](trigger.text ? quoted(trigger.text) : "(no text yet)")}.`;
 }
 
 // When a sequence starts by itself: by hand only, when a row of a table is created, or when a trigger matches.
 export function startWords(sequence) {
     const trigger = rows("triggers").find((t) => (sequence.trigger_ids || []).includes(t.id));
-    if (trigger) return `When the trigger on ${wordsText(trigger.words)} matches`;
+    if (trigger) return `When the trigger on ${wordsText(trigger.phrases)} matches`;
     if (!sequence.starts_on) return "Only when you or the agent start it";
     const table = sequence.starts_on.split(".")[0];
     return `When a ${(meta(table)?.title || table).toLowerCase()} is created`;

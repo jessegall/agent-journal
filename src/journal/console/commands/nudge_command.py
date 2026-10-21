@@ -18,7 +18,7 @@ class NudgeCommand(Command):
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for nudge in self.registry.all():
-            words = f"{nudge.title}. {nudge.brief}" if nudge.brief else nudge.title
-            print(f"{nudge.key}  [{nudge.feature or 'engine'}]  {words}")
+            text = f"{nudge.title}. {nudge.brief}" if nudge.brief else nudge.title
+            print(f"{nudge.key}  [{nudge.feature or 'engine'}]  {text}")
         print(f"{len(self.registry.all())} nudges")
         return 0

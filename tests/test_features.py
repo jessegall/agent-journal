@@ -2071,12 +2071,12 @@ def test_the_sequence_page_shows_and_sets_what_starts_a_sequence(app):
     update = next(s for s in app.container.get(Sequences).all() if s.title == "Writing an update")
     started_by = triggers.starting("Writing an update")[0]
     assert next(r for r in api("GET", "sequences")[1]["rows"] if r["id"] == update.id)["trigger_ids"] == [started_by.id], "the page is told the update starts on its words"
-    assert "tldr" in started_by.words and "check agents.md" in triggers.starting("Checking the instruction files")[0].words, "version 3's worded sequences start on their words"
+    assert "tldr" in started_by.text and "check agents.md" in triggers.starting("Checking the instruction files")[0].text, "version 3's worded sequences start on their words"
     api("POST", f"sequences/{update.id}/starts", {"starts_on": ""})
     assert triggers.starting("Writing an update") == [], "by hand, the trigger no longer starts it"
     from journal.models.trigger import Trigger
     from journal.models.trigger_action import TriggerAction
-    plan_words = triggers.save(Trigger(words=("plan it",), action=TriggerAction.NUDGE, text="say something"), Actor.user(1))
+    plan_words = triggers.save(Trigger(phrases=("plan it",), action=TriggerAction.NUDGE, text="say something"), Actor.user(1))
     api("POST", f"sequences/{building.id}/starts", {"starts_on": f"trigger:{plan_words.id}"})
     assert [t.id for t in triggers.starting("Building a plan")] == [plan_words.id] and app.container.get(Sequences).find(building.id).starts_on == "", "a trigger picked on the page starts the sequence"
 
@@ -3049,12 +3049,12 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_p
         "skill journal-tasks has the name of a skill of the journal": ({"skills": "skills"}, ("run.py", "skills/journal-tasks/SKILL.md")),
         "skills /tmp leads outside": {"skills": "/tmp"},
     }
-    for words, changes in refusals.items():
+    for text, changes in refusals.items():
         try:
             reader.read(made(*changes) if isinstance(changes, tuple) else made(changes))
             raise AssertionError(f"not refused: {changes}")
         except Refused as refused:
-            assert words in str(refused), f"{changes} refused as {refused}"
+            assert text in str(refused), f"{changes} refused as {refused}"
     outside = tmp_path / "elsewhere.py"
     outside.write_text("print()")
     linked = made({}, ())
@@ -3116,12 +3116,12 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app):
     assert protocol.answer_of("").answer == "allow", "an empty answer lets the event through"
     answer = protocol.answer_of(json.dumps({"v": 1, "answer": "refuse", "reason": "not on main", "cards": [{"kind": "sin", "label": "a sin"}], "commands": ["journal task list"]}))
     assert (answer.answer, answer.reason, answer.cards[0].kind, answer.commands) == ("refuse", "not on main", "sin", ("journal task list",))
-    for broken, words in (("{nope", "not JSON"), ('["a"]', "not a JSON object"), ('{"answer": "maybe"}', "allow, refuse or tell"), ('{"v": 2}', "protocol 2"), ('{"say": "x"}', "keys the protocol does not know: say"), (json.dumps({"commands": ["journal x"] * 21}), "at most 20")):
+    for broken, text in (("{nope", "not JSON"), ('["a"]', "not a JSON object"), ('{"answer": "maybe"}', "allow, refuse or tell"), ('{"v": 2}', "protocol 2"), ('{"say": "x"}', "keys the protocol does not know: say"), (json.dumps({"commands": ["journal x"] * 21}), "at most 20")):
         try:
             protocol.answer_of(broken)
             raise AssertionError(f"no fault for {broken}")
         except PluginFault as fault:
-            assert words in str(fault), f"{broken}: {fault}"
+            assert text in str(fault), f"{broken}: {fault}"
 
 def echo(app, name="echo", **manifest):
     """The echo plugin as a fetched copy in the journal's plugins folder, its row's manifest changed as given."""
@@ -4357,8 +4357,8 @@ def test_version_3_checks_triggers_sequences_templates_and_settings_come_across_
         migrator.run(migrator.begin(Actor.user(1)), Actor.user(1))
     check = next(c for c in app.container.get(Checks).every() if c.title == "tests")
     assert check.command == "pytest -q" and check.every == 30
-    assert [(t.words, t.action, t.text) for t in app.container.get(Triggers).every() if "deploy" in t.words] == [(("deploy",), "instruct", "read the deploy notes")]
-    assert not any("hold" in t.words for t in app.container.get(Triggers).every()), "a trigger version 4 cannot do stays behind"
+    assert [(t.phrases, t.action, t.text) for t in app.container.get(Triggers).every() if "deploy" in t.phrases] == [(("deploy",), "instruct", "read the deploy notes")]
+    assert not any("hold" in t.text for t in app.container.get(Triggers).every()), "a trigger version 4 cannot do stays behind"
     titles = {s.title: s for s in app.container.get(Sequences).every()}
     assert titles["Releasing"].steps == ("Tag it", "Push it: with the tags") and "Shipped one" not in titles, "version 3's shipped sequences stay behind"
     assert any(t.title == "Report" and t.purpose == "critique" for t in app.container.get(Templates).every())

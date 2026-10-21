@@ -12,11 +12,11 @@ class Doing:
 
     @classmethod
     def of(cls, part: str) -> str:
-        words = [w for w in WORDS.findall(part.split("<<", 1)[0]) if not w.startswith("-") and "=" not in w]
-        words = words[1:] if words and words[0] in RUNNERS and len(words) > 1 else words
-        if not words:
+        text = [w for w in WORDS.findall(part.split("<<", 1)[0]) if not w.startswith("-") and "=" not in w]
+        text = text[1:] if text and text[0] in RUNNERS and len(text) > 1 else text
+        if not text:
             return "running"
-        verb = VERBS.get(words[0].rsplit("/", 1)[-1])
+        verb = VERBS.get(text[0].rsplit("/", 1)[-1])
         if isinstance(verb, dict):
-            return verb.get(words[1] if len(words) > 1 else "", f"running {words[0]}")
-        return verb or f"running {words[0]}"
+            return verb.get(text[1] if len(text) > 1 else "", f"running {text[0]}")
+        return verb or f"running {text[0]}"

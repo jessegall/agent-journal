@@ -11,7 +11,7 @@ class ToolStarting(AgentEvent):
     call: ToolCall
 
     @property
-    def words(self) -> str:
+    def text(self) -> str:
         return self.call.command
 
     def recorded(self) -> dict:

@@ -14,6 +14,6 @@ class AttachedFile:
     image: bool
     url: str
 
-    def matches(self, words: list[str]) -> bool:
+    def matches(self, terms: list[str]) -> bool:
         text = f"{self.name} {self.description} {self.title} {self.row}".lower()
-        return all(word in text for word in words)
+        return all(word in text for word in terms)

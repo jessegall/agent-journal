@@ -27,8 +27,8 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     asked_while_free = True
     asked_last = True
 
-    def __init__(self, relay: PluginRelay, deferred: Deferred, settings: SettingRows, floor: Floor, words: PluginWords, queue: PluginQueue, edits: Edits) -> None:
-        self.relay, self.deferred, self.settings, self.floor, self.words, self.queue, self.edits = relay, deferred, settings, floor, words, queue, edits
+    def __init__(self, relay: PluginRelay, deferred: Deferred, settings: SettingRows, floor: Floor, text: PluginWords, queue: PluginQueue, edits: Edits) -> None:
+        self.relay, self.deferred, self.settings, self.floor, self.text, self.queue, self.edits = relay, deferred, settings, floor, text, queue, edits
 
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
@@ -76,9 +76,9 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
             return Decision()
         if answer.answer == "refuse" and event.key in REFUSABLE:
             self.relay.said(plugin, event, event.environment_id, "held", answer.reason)
-            return Decision.refuse(self.words.said(plugin, answer.reason))
-        words = answer.reason if answer.answer == "refuse" else answer.tell
-        if not words:
+            return Decision.refuse(self.text.said(plugin, answer.reason))
+        text = answer.reason if answer.answer == "refuse" else answer.tell
+        if not text:
             return Decision()
-        self.relay.said(plugin, event, event.environment_id, "told", words)
-        return Decision.allowed_with(self.words.said(plugin, words))
+        self.relay.said(plugin, event, event.environment_id, "told", text)
+        return Decision.allowed_with(self.text.said(plugin, text))

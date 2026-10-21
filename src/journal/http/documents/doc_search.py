@@ -16,8 +16,8 @@ class DocSearch:
     def __init__(self, docs: Docs) -> None:
         self.docs = docs
 
-    def located(self, words: str) -> list[DocHit]:
-        asked = words.lower().split()
+    def located(self, text: str) -> list[DocHit]:
+        asked = text.lower().split()
         if not asked:
             return []
         hits = [hit for hit in (self.hit(doc, asked) for doc in self.docs.all()) if hit["score"]]
@@ -28,7 +28,7 @@ class DocSearch:
         whole = " ".join(parts.values())
         if not all(word in whole for word in asked):
             return DocHit(id=doc.id, score=0, place="", text="")
-        found = [part for part, words in parts.items() if any(word in words for word in asked)]
+        found = [part for part, text in parts.items() if any(word in text for word in asked)]
         return DocHit(id=doc.id, score=sum(WEIGHTS[part] for part in found), place=found[0], text=self.passage(doc.body, asked))
 
     @staticmethod

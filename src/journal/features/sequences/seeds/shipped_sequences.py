@@ -27,6 +27,6 @@ class ShippedSequences(Seed):
             snapshot = present.get(title)
             if snapshot is not None and snapshot.updated_by == Actor.system():
                 self.sequences.delete(snapshot, Actor.system())
-        for title, words in WORDS.items():
+        for title, phrases in WORDS.items():
             if title not in present and not self.triggers.starting(title):
-                self.triggers.save(Trigger(words=words, action=TriggerAction.SEQUENCE, text=title), Actor.system())
+                self.triggers.save(Trigger(phrases=phrases, action=TriggerAction.SEQUENCE, text=title), Actor.system())

@@ -25,8 +25,8 @@ class McpServer(Model):
     def unchecked(self, state: str) -> "McpServer":
         return self.with_(state=state, last_error="")
 
-    def checked(self, state: str, words: str) -> "McpServer":
-        return self.with_(state=state, last_error=words if state == "failed" else "")
+    def checked(self, state: str, text: str) -> "McpServer":
+        return self.with_(state=state, last_error=text if state == "failed" else "")
 
     def shape(self) -> dict:
         return self.started_shape() if self.transport == "stdio" else self.reached_shape()

@@ -15,5 +15,5 @@ class MemorySnapshot:
     stale: tuple[str, ...]
 
     def whispered_by(self, text: str) -> list[MemoryRow]:
-        words = set(re.findall(r"[a-z][a-z0-9_-]*", text.lower()))
-        return [row for row in self.rows if words & set(row.keywords) and row.line() not in self.lines_in_window]
+        terms = set(re.findall(r"[a-z][a-z0-9_-]*", text.lower()))
+        return [row for row in self.rows if terms & set(row.keywords) and row.line() not in self.lines_in_window]

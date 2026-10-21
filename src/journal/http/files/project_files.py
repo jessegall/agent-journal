@@ -49,10 +49,10 @@ class ProjectFiles:
         return subprocess.run(["git", "diff", "--", str(path)], cwd=self.root, capture_output=True, text=True, timeout=30).stdout
 
     def find(self, query: str) -> list[ProjectEntry]:
-        words = query.lower().split()
-        if not words:
+        text = query.lower().split()
+        if not text:
             return []
-        found = [self.entry(p) for p in sorted(self.root.rglob("*")) if p.is_file() and not self.hidden(p) and all(w in p.name.lower() for w in words)]
+        found = [self.entry(p) for p in sorted(self.root.rglob("*")) if p.is_file() and not self.hidden(p) and all(w in p.name.lower() for w in text)]
         return found[:PAGE]
 
     def inside(self, given: str) -> Path | None:

@@ -87,21 +87,21 @@ class StateMachine(AgentListener[AgentEvent]):
             self.supervisor.type(environment_id, line)
         return settled
 
-    def push(self, session: str, environment_id: int, to: BaseState, actor: Actor, words: str) -> Agent:
+    def push(self, session: str, environment_id: int, to: BaseState, actor: Actor, text: str) -> Agent:
         agent = self.agent(session, environment_id)
-        return self.by_hand(agent, self.states.stack_of(agent).pushed(to), actor, words)
+        return self.by_hand(agent, self.states.stack_of(agent).pushed(to), actor, text)
 
-    def pop(self, session: str, environment_id: int, actor: Actor, words: str) -> Agent:
+    def pop(self, session: str, environment_id: int, actor: Actor, text: str) -> Agent:
         agent = self.agent(session, environment_id)
-        return self.by_hand(agent, self.states.stack_of(agent).popped(), actor, words)
+        return self.by_hand(agent, self.states.stack_of(agent).popped(), actor, text)
 
-    def reset(self, session: str, environment_id: int, actor: Actor, words: str) -> Agent:
+    def reset(self, session: str, environment_id: int, actor: Actor, text: str) -> Agent:
         agent = self.agent(session, environment_id)
-        return self.by_hand(agent, Stack((self.states.first(),)), actor, words)
+        return self.by_hand(agent, Stack((self.states.first(),)), actor, text)
 
-    def by_hand(self, agent: Agent, after: Stack, actor: Actor, words: str) -> Agent:
+    def by_hand(self, agent: Agent, after: Stack, actor: Actor, text: str) -> Agent:
         hooked = self.through_hooks(self.states.stack_of(agent), after, self.taken(), self.read_for(agent))
-        settled = self._settle(agent, hooked, words, actor)
+        settled = self._settle(agent, hooked, text, actor)
         if hooked.held:
             raise Refused(hooked.held.nudge.rendered())
         for line in [line for nudge in hooked.nudges if (line := self.nudger.say(settled, nudge))]:

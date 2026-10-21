@@ -45,8 +45,8 @@ class Requiring:
         return [skill] if skill else []
 
     def named_in(self, prompt: str) -> list[Skill]:
-        words = {w.lower() for w in re.findall(r"[a-z]+", prompt, re.I)}
-        return [skill for skill in self.registry.skills() if words & {k.lower() for k in skill.keywords}]
+        text = {w.lower() for w in re.findall(r"[a-z]+", prompt, re.I)}
+        return [skill for skill in self.registry.skills() if text & {k.lower() for k in skill.keywords}]
 
     def require(self, agent: Agent, skills: list[Skill]) -> list[str]:
         from journal.features.skills.feature import Skills

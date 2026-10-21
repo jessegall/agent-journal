@@ -18,8 +18,8 @@ class SkillsSnapshot:
         return self.unread([card for card in self.skills if card.name == JOURNAL] + [card for card in self.skills if state in card.required_in])
 
     def named_in(self, prompt: str) -> list[SkillCard]:
-        words = {w.lower() for w in re.findall(r"[a-z]+", prompt, re.I)}
-        return self.unread([card for card in self.skills if words & {k.lower() for k in card.keywords}])
+        text = {w.lower() for w in re.findall(r"[a-z]+", prompt, re.I)}
+        return self.unread([card for card in self.skills if text & {k.lower() for k in card.keywords}])
 
     def unread(self, cards: list[SkillCard]) -> list[SkillCard]:
         return [card for card in cards if self.loaded.get(card.name) != card.digest]
