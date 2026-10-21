@@ -14,11 +14,11 @@ const {words} = useTurnText(() => props.turn, env);
 <template>
     <div class="thread-turn thought" :data-ref="turn.key">
         <div class="thought-text">
-            <BubbleHeader icon="bulb" label="Agent thought" tone="muted" small />
+            <BubbleHeader icon="bot" label="Summarised" tone="muted" small />
             <TextDisplay :text="turn.text" />
         </div>
         <div class="thread-tools">
-            <ReplyTool title="Reply to this thought, quoting it" @reply="emit('reply', {text: words.text, ref: turn.key})" />
+            <ReplyTool title="Reply to this, quoting it" @reply="emit('reply', {text: words.text, ref: turn.key})" />
         </div>
     </div>
 </template>
@@ -33,9 +33,8 @@ const {words} = useTurnText(() => props.turn, env);
     border: 1px solid var(--border);
     border-radius: 9px;
     background: color-mix(in srgb, var(--raised) 50%, transparent);
-    color: var(--text-4);
-    font-size: 11.5px;
-    font-style: italic;
+    color: var(--text-2);
+    font-size: 12.5px;
     line-height: 1.5;
 }
 

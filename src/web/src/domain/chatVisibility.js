@@ -2,7 +2,7 @@ export const VISIBILITY_GROUPS = [
     {
         title: "Agent",
         kinds: [
-            {key: "thoughts", label: "Thoughts", icon: "bulb"},
+            {key: "thoughts", label: "Summaries of the agent's words", icon: "bot"},
             {key: "skills", label: "Skills the agent loads", icon: "book"},
             {key: "agents", label: "Agents talking to each other", icon: "agents"},
             {key: "subagents", label: "Subagents", icon: "agents"},
