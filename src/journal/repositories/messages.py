@@ -78,10 +78,13 @@ class Messages(ScopedRepository[Message]):
     def keyed_all(self, key: str, actor: Actor) -> list[Message]:
         return self.selected_globally("json_extract(data, '$.key') = ? AND creator = ?", (key, actor.stamp))
 
-    def first_reply(self, message: Message) -> Message | None:
-        matched = self.selected("reply_target = ? AND author = ? ORDER BY id LIMIT 1", (message.id, Author.AGENT.value))
+    def replies(self, message: Message) -> list[Message]:
+        matched = self.selected("reply_target = ? AND author = ? ORDER BY id", (message.id, Author.AGENT.value))
         linked = [self.find(ref.id) for ref in self.links.sources(message, self.ANSWERS)]
-        replies = sorted([*matched, *linked], key=lambda m: m.row_id)
+        return sorted([*matched, *linked], key=lambda m: m.row_id)
+
+    def first_reply(self, message: Message) -> Message | None:
+        replies = self.replies(message)
         return replies[0] if replies else None
 
     def recent_replies(self, time: datetime) -> list[Message]:

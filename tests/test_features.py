@@ -1994,6 +1994,11 @@ def test_reading_a_message_names_its_files_links_and_captions(app: App):
     from journal.repositories.messages import Messages
     filed = [m.text for m in app.container.get(Messages).all() if m.data.get("shows") == "filed"]
     assert filed == ["Filed task 1, task 2 from your message"], "what is filed from a message is one mark in the chat, naming each row"
+    console.run(["message", "send", "filed it as task 1, cropping next", "--reply-to", "1"], AGENT)
+    filed = [m.text for m in app.container.get(Messages).all() if m.data.get("shows") == "filed"]
+    assert filed == ["Filed task 2 from your message"], "a row the agent's reply names is left out of the mark"
+    console.run(["message", "send", "and task 2 crops it", "--reply-to", "1", "--confirm"], AGENT)
+    assert [m for m in app.container.get(Messages).all() if m.data.get("shows") == "filed"] == [], "once the replies name every row, the mark goes"
     assert console.run(["message", "tag", "1", "shot one.png", "the footer overlapping the form"], AGENT).code == 0
     assert "the footer overlapping the form" in console.run(["message", "read", "1"], AGENT).text
     console.run(["message", "react", "1", "👍"], USER)
