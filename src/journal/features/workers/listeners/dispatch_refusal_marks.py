@@ -1,7 +1,7 @@
 from journal.events.agent.line_delivered import LineDelivered
 from journal.events.agent_listener import AgentListener
 from journal.support.card_kind import CardKind
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 
 
 class DispatchRefusalMarks(AgentListener[LineDelivered]):

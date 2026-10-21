@@ -6,8 +6,8 @@ from journal.events.rows.worker_reused import WorkerReused
 from journal.events.rows.worker_revived import WorkerRevived
 from journal.support.actor import Actor
 from journal.support.card_kind import CardKind
-from journal.support.cards import Cards
-from journal.support.ref import Ref
+from journal.chat.cards import Cards
+from journal.models.support.ref import Ref
 
 MOMENTS = {
     WorkerReused: ("reused for its next job", "", "brief"),

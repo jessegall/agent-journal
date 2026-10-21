@@ -6355,19 +6355,19 @@ def test_a_notify_reaches_only_a_running_claude_worker_and_moves_no_wait(app: Ap
     home = tmp_path / "home"
     monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
     hook(app, "SessionStart")
-    console, workers, machine = app.console(), app.container.get(Workers), app.container.get(StateMachine)
+    console, workers, sessions = app.console(), app.container.get(Workers), app.container.get(SessionAgents)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     process = subprocess.Popen(["sleep", "30"])
     try:
         workers.save(workers.find(1).running_as(process.pid, timing.time()).with_(resume="w-1"), Actor.system())
         received = listening_session(home, process.pid, "w-1")
-        waiting, row = machine.current("s1"), workers.find(1)
+        waiting, row = sessions.top("s1"), workers.find(1)
         assert waiting.name == "awaiting"
         assert "journal worker notify 1" in console.run(["worker", "send", "1", "now the lexer"], AGENT).error, "a send to a running worker points at notify"
         assert console.run(["worker", "notify", "1", "the lexer too"], AGENT).code == 0
         assert arrived(received, 2)[-1]["message"]["content"] == '<cross-session-message from-name="the agent that dispatched you" from-mode="bypass">\nthe lexer too\n</cross-session-message>'
-        assert machine.current("s1") == waiting and workers.find(1).brief == row.brief, "a notify changes nothing the worker was sent and leaves the dispatcher's wait as it was"
+        assert sessions.top("s1") == waiting and workers.find(1).brief == row.brief, "a notify changes nothing the worker was sent and leaves the dispatcher's wait as it was"
         workers.save(workers.find(1).with_(provider="codex"), Actor.system())
         assert "runs Codex, which takes no message while it runs" in console.run(["worker", "notify", "1", "x"], AGENT).error
         workers.save(workers.find(1).with_(provider="claude"), Actor.system())
@@ -6545,7 +6545,7 @@ def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: Ap
     from journal.providers.codex import Codex
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
-    from journal.support.profile_files import ProfileFiles
+    from journal.features.profiles.support.profile_files import ProfileFiles
     started = []
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker))
     kept_conversation(app, monkeypatch)
@@ -6591,17 +6591,17 @@ def test_a_job_sent_to_a_worker_that_reported_puts_the_dispatcher_back_in_its_wa
     from journal.repositories.workers import Workers
     kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
-    console, workers, machine = app.console(), app.container.get(Workers), app.container.get(StateMachine)
+    console, workers, sessions = app.console(), app.container.get(Workers), app.container.get(SessionAgents)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Mr. Arkwright", "the frame", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     console.run(["worker", "report", "1", "the frame spins"], Caller("main", "w1"))
-    assert machine.current("s1").name != "awaiting"
+    assert sessions.top("s1").name != "awaiting"
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     console.run(["worker", "send", "1", "the mill"], AGENT)
-    waiting = machine.current("s1")
-    assert waiting.name == "awaiting" and waiting.worker_ids() == (1,), "the dispatcher waits on the worker it sent out again"
+    waiting = sessions.top("s1")
+    assert waiting.name == "awaiting" and waiting.targets() == ["workers:1"], "the dispatcher waits on the worker it sent out again"
     console.run(["worker", "report", "1", "the mill turns"], Caller("main", "w1"))
-    assert machine.current("s1").name != "awaiting", "until it reports again"
+    assert sessions.top("s1").name != "awaiting", "until it reports again"
 
 
 def test_each_worker_moment_after_its_dispatch_is_a_short_mark_of_its_own(app: App, tmp_path, monkeypatch):
@@ -6765,11 +6765,11 @@ def test_retiring_a_worker_the_dispatcher_waits_on_stops_it_and_ends_the_wait(ap
     import subprocess
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
-    console, workers, machine = app.console(), app.container.get(Workers), app.container.get(StateMachine)
+    console, workers, sessions = app.console(), app.container.get(Workers), app.container.get(SessionAgents)
     console.run(["task", "create", "t", "--start"], AGENT)
     console.run(["worker", "dispatch", "Mr. Fulton", "the steamboat", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     console.run(["worker", "dispatch", "Mr. Watt", "the engine", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    assert machine.current("s1").worker_ids() == (1, 2)
+    assert sessions.top("s1").targets() == ["workers:1", "workers:2"]
     process = subprocess.Popen(["sleep", "30"], start_new_session=True)
     try:
         workers.save(workers.find(1).running_as(process.pid, timing.time()), Actor.system())
@@ -6779,9 +6779,9 @@ def test_retiring_a_worker_the_dispatcher_waits_on_stops_it_and_ends_the_wait(ap
         if process.poll() is None:
             process.kill()
             process.wait(5)
-    assert machine.current("s1").worker_ids() == (2,), "the wait shrinks to the workers still out"
+    assert sessions.top("s1").targets() == ["workers:2"], "the wait shrinks to the workers still out"
     console.run(["worker", "stop", "2", "--why", "the engine waits on the boiler"], AGENT)
-    assert machine.current("s1").name != "awaiting", "and ends with the last"
+    assert sessions.top("s1").name != "awaiting", "and ends with the last"
 
 
 def test_a_worker_quiet_for_twenty_minutes_is_named_to_its_dispatcher_once(app: App, monkeypatch):
