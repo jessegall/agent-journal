@@ -1,5 +1,5 @@
 <script setup>
-import {stateAt, workerLine, workerName, workerReport, workerState, workerTag} from "../domain/workers.js";
+import {stateAt, workerLine, workerName, workerReport, workerReuses, workerState, workerTag} from "../domain/workers.js";
 import {nextTick, onMounted, ref} from "vue";
 import {ago} from "../format/time.js";
 import {seconds} from "../domain/row.js";
@@ -17,7 +17,7 @@ const report = () => workerReport(props.row);
 const state = () => workerState(props.row);
 const tag = () => workerTag(props.row);
 const stateLabel = () => (state() === "finished" ? `Closed ${ago(stateAt(props.row))}` : tag().word);
-const sentLine = () => `Sent ${ago(seconds(props.row.created_at))}`;
+const sentLine = () => [`Sent ${ago(seconds(props.row.created_at))}`, workerReuses(props.row)].filter(Boolean).join(" · ");
 
 onMounted(() =>
     nextTick(() => reportBox.value && (clipped.value = reportBox.value.$el.scrollHeight > reportBox.value.$el.clientHeight + 1))

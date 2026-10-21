@@ -152,13 +152,13 @@ class WorkerCommand(Command):
     def stop(self, args: Namespace, caller: Caller) -> int:
         with self.runner.lock(args.n):
             self.runner.stop(self.workers.save(self.workers.find(args.n).stopped(datetime.now(timezone.utc).timestamp(), args.why), caller.actor))
-        print(f"worker {args.n} stopped")
+        print(f"worker {args.n} stopped" + (f": {args.why}" if args.why else ""))
         return 0
 
     def complete(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.save(self.workers.find(args.n).finished(datetime.now(timezone.utc).timestamp(), args.why), caller.actor)
         dropped = self.branch.dropped(worker)
-        print(f"worker {worker.id}'s report is acted on" + (f"; {dropped}" if dropped else ""))
+        print(f"worker {worker.id}'s report is acted on" + (f": {args.why}" if args.why else "") + (f"; {dropped}" if dropped else ""))
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:

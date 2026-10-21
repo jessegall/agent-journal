@@ -20,6 +20,8 @@ export const isWorking = (row) => workerState(row) === "running";
 export const workerLine = (row) => [row.provider ? providerName(row.provider, row.provider) : "", row.model].filter(Boolean).join(" · ");
 
 export const workerName = (row) => row.name || `Worker ${row.id}`;
+
+export const workerReuses = (row) => (row.reuse_count ? `Reused ${row.reuse_count} ${row.reuse_count === 1 ? "time" : "times"}` : "");
 export const workerReport = (row) => row.report || "";
 
 const SECTION_OF = {running: "working", reported: "waiting", finished: "retired"};

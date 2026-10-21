@@ -6701,7 +6701,7 @@ def test_only_a_send_counts_a_reuse_and_only_a_retire_gives_its_reason(app: App,
     console.run(["worker", "report", "1", "locked"], Caller("main", "w1"))
     worker = workers.find(1)
     assert worker.reuse_count == 2 and worker.retire_reason == "the aqueduct needs a new design", "each send counts once, a report counts none; the reason is the stop's"
-    console.run(["worker", "complete", "1", "--why", "the canal is done"], AGENT)
+    assert "worker 1's report is acted on: the canal is done" in console.run(["worker", "complete", "1", "--why", "the canal is done"], AGENT).text, "the answer is read back as the reason"
     assert workers.find(1).retire_reason == "the canal is done" and workers.find(1).reuse_count == 2
 
 
