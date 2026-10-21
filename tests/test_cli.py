@@ -215,12 +215,13 @@ def test_any_row_docks_above_the_chat_by_noun_and_number_in_either_order(app: Ap
     assert "dock" in console.run(["report", "--help"], MAIN).text and "dock" not in console.run(["search", "--help"], MAIN).text, "every row noun has the verbs, a noun that is no row has not"
 
 
-def test_a_workers_environment_carries_no_providers_markers_and_no_launch(app: App, monkeypatch):
+def test_a_workers_environment_carries_no_providers_markers_no_session_and_no_launch(app: App, monkeypatch):
     from journal.features.workers.support.worker_runner import WorkerRunner
-    for name in (*Providers().inherited_markers(), "JOURNAL_LAUNCH", "JOURNAL_SESSION"):
+    parents = {*Providers().inherited_markers(), *Providers().session_variables(), "JOURNAL_LAUNCH", "JOURNAL_SESSION"}
+    for name in parents:
         monkeypatch.setenv(name, "parent")
     handed = app.container.get(WorkerRunner).environment_variables("main")
-    assert not {*Providers().inherited_markers(), "JOURNAL_LAUNCH", "JOURNAL_SESSION"} & set(handed), "a Claude worker under a Codex agent carries none of the parent's thread"
+    assert not parents & set(handed), "a worker carries none of the parent's thread, and never its session, which its report would take as its own"
     assert handed["JOURNAL_ACTOR"] == "worker-agent" and handed["JOURNAL_ENV"] == "main"
 
 

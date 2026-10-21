@@ -69,7 +69,7 @@ class WorkerRunner:
         self.finish(worker, self.waited(worker, process, actor), actor)
 
     def environment_variables(self, environment: str) -> dict[str, str]:
-        excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers())
+        excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers(), *self.providers.session_variables())
         return {**{k: v for k, v in os.environ.items() if k not in excluded}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": environment}
     def waited(self, worker: Worker, process: subprocess.Popen, actor: Actor) -> int:
         while True:
