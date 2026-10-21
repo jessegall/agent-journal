@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- A word typed in the chat is a chat message whatever it replies to and whatever is open beside it: a reply to a comment is linked to the comment and to no row, with no passage carried over, and only the comment box on a row's page files a comment, a reply in that column included.
 - The minutes since a task's last log line before a stop asks for the log first are a setting, Ask for a log at a stop after, ten by default where the number was fixed in code.
 - The Developer tab keeps a rolling log of the newest thousand requests, each with its kind, its route or command, its milliseconds and its moment, logged after the reply from the same funnel as the counts; the tab lists the newest hundred and switches to the slowest at a click, and Reset clears the log with the counts.
 - A comment on a document's or a report's passage, read by the agent, names the section and the lines the passage sits on, with the command to read that section, so the agent reads the row by number instead of searching its whole text.

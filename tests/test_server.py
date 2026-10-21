@@ -1016,7 +1016,7 @@ def test_a_comment_is_deleted_from_its_column(server):
     assert made["id"] not in [c["id"] for c in call(server, "GET", "/journal/comments")[1]["rows"]], "the comment is gone from the column"
 
 
-def test_a_reply_under_a_comment_is_part_of_the_rows_thread_from_either_side(tmp_path: Path):
+def test_a_reply_in_the_column_hangs_under_its_comment_and_a_reply_in_the_chat_is_talk(tmp_path: Path):
     from journal.support.caller import Caller
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
@@ -1029,11 +1029,10 @@ def test_a_reply_under_a_comment_is_part_of_the_rows_thread_from_either_side(tmp
         app.console().run(["message", "send", "Yes, both are fixed.", "--reply-to", str(comment["id"])], Caller("main", "s1"))
         app.runtime().deferred.drain()
         rows = call(server, "GET", "/journal/comments")[1]["rows"]
-        assert [(r["author"], r["reply_to"], r["on"]) for r in rows] == [("user", None, ["tasks:1"]), ("user", comment["id"], ["tasks:1"]), ("agent", comment["id"], ["tasks:1"])], "the agent's reply to the comment is in the thread too, linked to the row by its answer"
-        agents_reply = rows[-1]["id"]
-        call(server, "POST", "/journal/messages", {"text": "Good, then the menu next.", "reply_to": agents_reply})
-        rows = call(server, "GET", "/journal/comments")[1]["rows"]
-        assert len(rows) == 3, "the user's reply in the chat to the agent's answer is talk in the chat, not a comment on the row"
+        assert [(r["author"], r["reply_to"], r["on"]) for r in rows] == [("user", None, ["tasks:1"]), ("user", comment["id"], ["tasks:1"])], "the agent's reply in the chat is a plain reply, linked to the comment it answers and to no row"
+        answered = call(server, "POST", "/journal/messages", {"text": "Good, then the menu next.", "reply_to": comment["id"]})[1]
+        assert answered["reply_to"] == comment["id"] and answered["comments_on"] == [] and not answered["text"].startswith(">"), "a word typed in the chat is a chat message whatever it replies to: no comment on the row, no passage carried over"
+        assert len(call(server, "GET", "/journal/comments")[1]["rows"]) == 2, "only the comment box files a comment"
     finally:
         app.runtime().stop()
 
