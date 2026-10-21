@@ -13,15 +13,15 @@ MEMORY_KINDS = {Fact: ("Fact", CardKind.FACTS), Rule: ("Rule", CardKind.RULES), 
 
 
 class MemoryCards:
-    """A card in the chat for what happened to a fact, a rule or a reminder: its noun and the verb, its words, and the row it opens; a rule, which is the project's, is shown in the environment of the act."""
+    """A card in the chat for what happened to a fact, a rule or a reminder: its noun, number and the verb, and the row it opens; a rule, which is the project's, is shown in the environment of the act."""
 
     def __init__(self, cards: Cards, scope: Scope) -> None:
         self.cards, self.scope = cards, scope
 
-    def show(self, row: Model, actor: Actor, verb: str) -> None:
+    def show(self, row: Model, actor: Actor, verb: str, icon: str = "rules", tone: str = "") -> None:
         if type(row) not in MEMORY_KINDS:
             return
         noun, shows = MEMORY_KINDS[type(row)]
         environment = getattr(row, "environment_id", 0) or self.scope.id
         session = actor.id if actor.kind == ActorKind.AGENT else ""
-        self.cards.show(environment, session, f"{noun} {verb}", "rules", "", row.text, str(Ref.build(row)), actor=actor, shows=shows)
+        self.cards.show(environment, session, f"{noun} {row.id} {verb}", icon, tone, "", str(Ref.build(row)), actor=actor, shows=shows)

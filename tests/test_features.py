@@ -5713,12 +5713,12 @@ def test_a_fact_a_rule_or_a_reminder_recorded_or_struck_is_a_card_in_the_chat(ap
     console.run(["rule", "create", "Always run the suite before a commit", "--reason", "a red commit costs a day"], USER)
     console.run(["reminder", "strike", "1"], AGENT) if console.run(["reminder", "create", "check the log after the restart"], AGENT).code == 0 else None
     app.runtime().deferred.drain()
-    cards = [(m.text, m.data.get("row"), m.data.get("detail")) for m in app.container.get(Messages).scoped() if m.data.get("kind") == "card" and m.data.get("row", "").split(":")[0] in ("facts", "rules", "reminders")]
+    cards = [(m.text, m.data.get("row"), m.data.get("detail"), m.data.get("icon")) for m in app.container.get(Messages).scoped() if m.data.get("kind") == "card" and m.data.get("row", "").split(":")[0] in ("facts", "rules", "reminders")]
     assert cards == [
-        ("Fact recorded", "facts:1", "the tests run on port 8431"),
-        ("Rule recorded", "rules:1", "Always run the suite before a commit"),
-        ("Reminder recorded", "reminders:1", "check the log after the restart"),
-        ("Reminder struck", "reminders:1", "check the log after the restart"),
+        ("Fact 1 recorded", "facts:1", "", "check"),
+        ("Rule 1 recorded", "rules:1", "", "check"),
+        ("Reminder 1 recorded", "reminders:1", "", "check"),
+        ("Reminder 1 struck", "reminders:1", "", "rules"),
     ], "each memory row recorded or struck is a card opening the row"
 
 
