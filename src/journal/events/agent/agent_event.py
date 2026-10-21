@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, replace
 from typing import ClassVar
 
 from journal.events.event import Event
-from journal.events.standing import Standing
+from journal.events.snapshot import Snapshot
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -18,15 +18,15 @@ class AgentEvent(Event):
     provider: str = ""
     context: float | None = None
     at: float = 0.0
-    standing: Standing = field(default_factory=lambda: Standing({}), compare=False)
+    snapshot: Snapshot = field(default_factory=lambda: Snapshot({}), compare=False)
     subagent: str = ""
 
     @property
     def words(self) -> str:
         return ""
 
-    def with_standing(self, standing: Standing) -> "AgentEvent":
-        return replace(self, standing=standing)
+    def with_snapshot(self, snapshot: Snapshot) -> "AgentEvent":
+        return replace(self, snapshot=snapshot)
 
     def placed(self, session: str, environment_id: int, provider: str, context: float | None, at: float, subagent: str = "") -> "AgentEvent":
         return replace(self, session=session, environment_id=environment_id, provider=provider, context=context, at=at, subagent=subagent)

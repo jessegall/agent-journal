@@ -1,6 +1,6 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
-from journal.features.sequences.support.sequences_standing_reader import SequencesStandingReader
+from journal.features.sequences.support.sequences_snapshot_reader import SequencesSnapshotReader
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.models.node_kind import NodeKind
@@ -26,7 +26,7 @@ class Sequences(Feature):
     help = "Steps the agent follows one at a time."
     commands = (SequenceCommand,)
     listeners = (StartOnCreated, CarryRunsToTheNextSession, SayTheStepAtStart, SayTheStepAtAStop, HoldWritesForTheStep, SayTheStepWhenAWaitEnds, SayTheStepAtAPace, EndRunsOfADeletedSequence, EndRunsOfADeletedRow, EndRunsOfACancelledRow, RecordRunChanges)
-    standing = (SequencesStandingReader,)
+    snapshot = (SequencesSnapshotReader,)
     actions = (
         Entry(NodeKind.ACTION, 'start_sequence', 'Start a sequence', 'starts the sequence named in the text at its first step', takes_text=True),
     )

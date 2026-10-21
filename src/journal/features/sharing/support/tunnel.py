@@ -62,7 +62,7 @@ class Tunnel:
     def link_of(self, token: str) -> str:
         return f"https://{self.address()}/s/{token}"
 
-    def standing(self) -> dict:
+    def snapshot(self) -> dict:
         """What the viewer shows of the tunnel: tunler's status, the server, the address and what keeps links from reaching the journal."""
         status = self.tunler.status()
         return {**asdict(status), "server": self.host() or DEFAULT_SERVER, "address": self.address(), "problems": self.problems(status)}

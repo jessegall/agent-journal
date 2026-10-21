@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
 
 from journal.events.event import Event
-from journal.events.standing import Standing
+from journal.events.snapshot import Snapshot
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -12,10 +12,10 @@ class RowEvent(Event):
     at: float = 0.0
     row_id: int = 0
     session: str = ""
-    standing: Standing = field(default_factory=lambda: Standing({}), compare=False)
+    snapshot: Snapshot = field(default_factory=lambda: Snapshot({}), compare=False)
 
-    def with_standing(self, standing: Standing) -> "RowEvent":
-        return replace(self, standing=standing)
+    def with_snapshot(self, snapshot: Snapshot) -> "RowEvent":
+        return replace(self, snapshot=snapshot)
 
     def reaching(self, session: str) -> "RowEvent":
         return replace(self, session=session)

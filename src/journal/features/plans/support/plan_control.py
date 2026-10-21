@@ -9,7 +9,7 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.support.refused import Refused
 from journal.support.not_found import NotFound
-from journal.features.plans.support.plans_standing_reader import NOTHING_YET
+from journal.features.plans.support.plans_snapshot_reader import NOTHING_YET
 from journal.repositories.plans import Plans
 from journal.support.task_briefing import TaskBriefing
 from journal.repositories.setting_rows import SettingRows

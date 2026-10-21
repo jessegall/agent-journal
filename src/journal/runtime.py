@@ -90,7 +90,7 @@ class Runtime:
         parent = os.getppid()
         other = self.standby.another()
         if other:
-            print(f"a journal of this project answers at {other}: standing by until it is gone", flush=True)
+            print(f"a journal of this project answers at {other}: snapshot by until it is gone", flush=True)
         while other and os.getppid() == parent:
             time.sleep(STANDBY_EVERY)
             other = self.standby.another()

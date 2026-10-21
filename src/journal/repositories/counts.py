@@ -15,14 +15,14 @@ class Counts(WorkflowValueRows[Count]):
     def set(self, value: ValueName, to: int, by: Actor) -> Count:
         """The count at the number given; one kept at it already is left as it is, so a reset on every tool use writes nothing."""
         with self.connection.transaction():
-            standing = self.named(value)
-            return standing if standing.id is not None and standing.value == to else self.save(standing.with_(value=to), by)
+            snapshot = self.named(value)
+            return snapshot if snapshot.id is not None and snapshot.value == to else self.save(snapshot.with_(value=to), by)
 
     def begin(self, value: ValueName, by: Actor) -> Count:
         """The count at zero unless it is already kept."""
         with self.connection.transaction():
-            standing = self.named(value)
-            return standing if standing.id is not None else self.save(standing, by)
+            snapshot = self.named(value)
+            return snapshot if snapshot.id is not None else self.save(snapshot, by)
 
     def count_one(self, value: ValueName, by: Actor) -> Count:
         """One more, read and written in one transaction, so walks on other threads raising the same count lose no step."""

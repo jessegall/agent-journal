@@ -28,7 +28,7 @@ What each release of agent-journal version 4 brought, newest first.
 ## 4.4.9
 
 - A launch no longer starts a second journal server while this project's server answers: the journal it starts stands by, and takes over the moment the first is gone. Before, a second launch of the same project took the next port and overwrote the port file; when that launch ended, every hook and journal command of every agent in the project went to a dead port: nothing recorded, nothing typed, "no environment" on the commands, and the band stuck at "journal starting…".
-- A journal takes its port when it starts serving, never when it is built, so one standing by holds none.
+- A journal takes its port when it starts serving, never when it is built, so one snapshot by holds none.
 
 ## 4.4.8
 

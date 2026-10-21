@@ -226,8 +226,8 @@ class ChartCommand(Command):
 
     def order(self, args: Namespace, where: Where) -> int:
         """The event's workflows reordered as given, at the revisions they stand at."""
-        standing = {c.id: c for c in self.charts.for_event(args.event)}
-        faults = self.validation.order_faults(args.event, [WorkflowAt(n, standing[n].revision if n in standing else -1) for n in args.ids])
+        snapshot = {c.id: c for c in self.charts.for_event(args.event)}
+        faults = self.validation.order_faults(args.event, [WorkflowAt(n, snapshot[n].revision if n in snapshot else -1) for n in args.ids])
         if faults:
             raise Refused(str(faults[0]))
         placed = self.charts.reorder(args.event, args.ids, where.actor)

@@ -8,7 +8,7 @@ from journal.features.dumps.listeners.tell_arrival import TellArrival
 from journal.features.dumps.listeners.tell_choice import TellChoice
 from journal.features.dumps.listeners.tell_filed import TellFiled
 from journal.features.feature import Feature
-from journal.features.dumps.support.dumps_standing_reader import DumpsStandingReader
+from journal.features.dumps.support.dumps_snapshot_reader import DumpsSnapshotReader
 from journal.support.skill import Skill
 
 
@@ -19,7 +19,7 @@ class DumpsFeature(Feature):
     commands = (DumpCommand,)
     states = (SortingDump,)
     listeners = (StartSortingDump, FollowDump, TellArrival, TellAnswer, TellChoice, TellFiled)
-    standing = (DumpsStandingReader,)
+    snapshot = (DumpsSnapshotReader,)
 
     DUMP_ARRIVED_FILE_IT = Nudge(name, "dump_arrived_file_it", "dump {{n}} has {{count}} to file - journal dump items {{n}}", "load journal-dumps if it is not loaded, then file it step by step. Tell the user what you do with journal dump log; ask only in the dump window, never in the chat.", repeat_after=300)
     DUMP_STILL_OPEN_CARRY_ON = Nudge(name, "dump_still_open_carry_on", "dump {{n}} is not filed yet: carry on filing it", "journal dump items {{n}} shows what is left; ask only what you cannot tell, with journal dump ask. The dump is done once every item is filed or failed.", repeat_after=0)

@@ -1,0 +1,16 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class UpdateSnapshot:
+    """What the viewer shows of the updates: the version installed, the newer releases out, an update under way and the step it is on, or the last one's problem."""
+
+    installed: str
+    latest: str
+    newer: bool
+    branch: str
+    """The branch the journal follows; empty when it follows the releases."""
+    versions: list[str]
+    updating: str
+    step: str
+    problem: str

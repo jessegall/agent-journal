@@ -306,7 +306,7 @@ class Checks:
         return bool(self.old_memory(days))
 
     def old_memory(self, days: int) -> list[str]:
-        """The facts, rules and reminders standing at least so many days, each named by its kind, number and age."""
+        """The facts, rules and reminders snapshot at least so many days, each named by its kind, number and age."""
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
         rows = [("fact", r) for r in self.facts.in_()] + [("rule", r) for r in self.rules.all()] + [("reminder", r) for r in self.reminders.in_()]
         return [f"{kind} {row.id}, {(datetime.now(timezone.utc) - (row.updated_at or row.created_at)).days} days" for kind, row in rows if (row.updated_at or row.created_at) and (row.updated_at or row.created_at) <= cutoff]

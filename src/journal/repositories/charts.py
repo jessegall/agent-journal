@@ -48,11 +48,11 @@ class Charts(Repository[Chart]):
 
     def reorder(self, event: str, ids: list[int], by: Actor) -> list[Chart]:
         """The event's workflows in the order given, each that moved saved with its new place and one more revision, as the actor, all in one write."""
-        standing = {c.id: c for c in self.for_event(event)}
+        snapshot = {c.id: c for c in self.for_event(event)}
         placed = []
         with self.connection.transaction():
             for place, number in enumerate(ids):
-                chart = standing[number]
+                chart = snapshot[number]
                 placed.append(self.save(chart.placed(event, place).saved_again(), by) if chart.place_at(event) != place else chart)
         self._graphs.clear()
         return placed
@@ -95,19 +95,19 @@ class Charts(Repository[Chart]):
 
     def placed_by_triggers(self, chart: Chart, by: Actor) -> Chart:
         """The workflow placed at each event it holds a trigger for, and always at the event it was made for, so one turned off keeps its place in that list: a new trigger's event at the end of its list, another event whose trigger is gone no longer placed."""
-        standing = self.find(chart.id)
-        events = {n.key for n in self.nodes_of(standing) if n.kind == NodeKind.TRIGGER} | ({standing.event} if standing.event else set())
-        settled = standing
-        for event in sorted(events - set(standing.places)):
+        snapshot = self.find(chart.id)
+        events = {n.key for n in self.nodes_of(snapshot) if n.kind == NodeKind.TRIGGER} | ({snapshot.event} if snapshot.event else set())
+        settled = snapshot
+        for event in sorted(events - set(snapshot.places)):
             settled = settled.placed(event, self.next_place(event))
-        for event in set(standing.places) - events:
+        for event in set(snapshot.places) - events:
             settled = settled.unplaced(event)
-        return self.save(settled, by) if settled.places != standing.places else standing
+        return self.save(settled, by) if settled.places != snapshot.places else snapshot
 
     def connect(self, source: Node, target: Node, port: str, by: Actor) -> Link:
         """One line per port: a new line from a port that has one takes its place."""
-        for standing in [l for l in self.lines_of(self.chart_of(source)) if l.source == Ref.to(source) and l.kind == port]:
-            self.links.delete(standing, by)
+        for snapshot in [l for l in self.lines_of(self.chart_of(source)) if l.source == Ref.to(source) and l.kind == port]:
+            self.links.delete(snapshot, by)
         line = self.links.save(Link(source=Ref.to(source), target=Ref.to(target), kind=port), by)
         self._graphs.clear()
         return line

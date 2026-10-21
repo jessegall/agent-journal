@@ -11,13 +11,13 @@ from journal.repositories.setting_rows import SettingRows
 
 
 class TunnelController:
-    """The tunnel that carries links to the journal: its standing and what keeps it from answering, a restart, tunler's login, version and domains, and the journal's address."""
+    """The tunnel that carries links to the journal: its snapshot and what keeps it from answering, a restart, tunler's login, version and domains, and the journal's address."""
 
     def __init__(self, tunnel: Tunnel, tunler: Tunler, settings: SettingRows) -> None:
         self.tunnel, self.tunler, self.settings = tunnel, tunler, settings
 
     def show(self, request: Request) -> Response:
-        return Response.json(self.tunnel.standing())
+        return Response.json(self.tunnel.snapshot())
 
     def services(self, request: Request) -> Response:
         """The tunnel while something keeps it open, a link, a paired phone or a code to pair one; nothing while none does, so the top bar says nothing is shared."""
@@ -25,12 +25,12 @@ class TunnelController:
 
     def check(self, request: Request) -> Response:
         self.tunler.forget()
-        return Response.json(self.tunnel.standing())
+        return Response.json(self.tunnel.snapshot())
 
     def restart(self, request: Request) -> Response:
         self.tunler.forget()
         self.tunnel.restart()
-        return Response.json(self.tunnel.standing())
+        return Response.json(self.tunnel.snapshot())
 
     def cause(self, request: Request) -> Response:
         return Response.json(asdict(self.tunnel.cause()))
@@ -45,12 +45,12 @@ class TunnelController:
         if made.connected:
             self.settings.set(Sharing.HOST.key, host, request.actor)
             self.tunnel.settle()
-        return Response.json({**asdict(made), **self.tunnel.standing()})
+        return Response.json({**asdict(made), **self.tunnel.snapshot()})
 
     def logout(self, request: Request) -> Response:
         self.tunler.log_out()
         self.tunnel.stop()
-        return Response.json(self.tunnel.standing())
+        return Response.json(self.tunnel.snapshot())
 
     def version(self, request: Request) -> Response:
         return Response.json(asdict(self.tunler.versions(self.tunnel.host())))

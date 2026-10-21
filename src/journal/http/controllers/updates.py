@@ -14,7 +14,7 @@ class UpdateController:
 
     def index(self, request: Request) -> Response:
         page = self.changelog.page(0)
-        return Response.json({**asdict(self.updating.standing()), "changelog": page.text, "shown": page.shown, "more": page.more})
+        return Response.json({**asdict(self.updating.snapshot()), "changelog": page.text, "shown": page.shown, "more": page.more})
 
     def fresh(self, request: Request) -> Response:
         """The releases read from GitHub now, for the About page as it opens, never the hourly list alone."""
@@ -27,4 +27,4 @@ class UpdateController:
 
     def update(self, request: Request) -> Response:
         self.updating.update_now(request.actor)
-        return Response.json(self.updating.standing(), 202)
+        return Response.json(self.updating.snapshot(), 202)

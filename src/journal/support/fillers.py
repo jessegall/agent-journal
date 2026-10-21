@@ -100,15 +100,15 @@ class Fillers:
 
     def rules(self, ctx: Context) -> str:
         """The rules in force, numbered."""
-        return self.start.rules_said()
+        return self.start.rules_numbered()
 
     def facts(self, ctx: Context) -> str:
         """The facts about this environment, numbered."""
-        return self.start.facts_said()
+        return self.start.facts_numbered()
 
     def reminders(self, ctx: Context) -> str:
         """The reminders here, numbered."""
-        return self.start.reminders_said()
+        return self.start.reminders_numbered()
 
     def voice(self, ctx: Context) -> str:
         """How the agent talks to the user: the chosen voice's instruction, with the user's title and name."""
@@ -124,7 +124,7 @@ class Fillers:
         return str(approved[0].id) if approved else ""
 
     def plan_n(self, ctx: Context) -> str:
-        """The number of the started plan standing at a checkpoint."""
+        """The number of the started plan snapshot at a checkpoint."""
         plan = self.plan_at_checkpoint()
         return str(plan.id) if plan else ""
 

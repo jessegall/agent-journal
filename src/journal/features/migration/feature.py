@@ -2,7 +2,7 @@ from journal.engine.nudge import Nudge
 from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.migration.support.migration_conduct import MigrationConduct
-from journal.features.migration.support.migration_standing_reader import MigrationStandingReader
+from journal.features.migration.support.migration_snapshot_reader import MigrationSnapshotReader
 from journal.models.node_kind import NodeKind
 
 
@@ -14,7 +14,7 @@ class MigrationFeature(Feature):
 
     VERSION_3_NOT_BROUGHT_ACROSS = Nudge(name, "version_3_not_brought_across", "a version 3 journal is kept whole in .journal/version-3, not yet brought across", "the user brings it across from the viewer; never start it yourself", repeat_after=0)
     nudges = (VERSION_3_NOT_BROUGHT_ACROSS,)
-    standing = (MigrationStandingReader,)
+    snapshot = (MigrationSnapshotReader,)
     conduct = (MigrationConduct,)
 
     checks = (

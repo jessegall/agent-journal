@@ -5,7 +5,7 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.idle import Idle
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
-from journal.features.briefing.support.briefing_standing import BriefingStanding
+from journal.features.briefing.support.briefing_snapshot import BriefingSnapshot
 
 COMPACT = "compact"
 
@@ -15,17 +15,17 @@ class BriefingConduct(Conduct):
 
     def on_session_started_briefing(self, event: SessionStarted, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.unchanged(*start_block(event.standing.of(feature), event.source), feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
+        return self.unchanged(*start_block(event.snapshot.of(feature), event.source), feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
 
     def on_tool_starting_briefing(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = briefing_feature()
-        if event.subagent or not event.writes or event.standing.of(feature).oriented:
+        if event.subagent or not event.writes or event.snapshot.of(feature).oriented:
             return self.unchanged()
         return self.hold(feature.LOOK_BEFORE_THE_FIRST_WRITE.create())
 
     def on_idle_briefing(self, event: Idle, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.unchanged() if event.standing.of(feature).oriented else self.hold(feature.STOPPED_UNORIENTED.create())
+        return self.unchanged() if event.snapshot.of(feature).oriented else self.hold(feature.STOPPED_UNORIENTED.create())
 
 
 def briefing_feature():
@@ -33,9 +33,9 @@ def briefing_feature():
     return Briefing
 
 
-def start_block(briefing: BriefingStanding, source: str) -> list[Nudge]:
+def start_block(briefing: BriefingSnapshot, source: str) -> list[Nudge]:
     feature = briefing_feature()
-    taken_over_at = "" if source == COMPACT else briefing.others_lately_at
+    taken_over_at = "" if source == COMPACT else briefing.last_other_session_at
     optional = (
         (taken_over_at, lambda: feature.YOU_TOOK_OVER.create(at=taken_over_at)),
         (briefing.rules, lambda: feature.RULES_IN_FORCE.create(count=briefing.rules_count, rows=briefing.rules)),

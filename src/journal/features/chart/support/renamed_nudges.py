@@ -82,7 +82,7 @@ RENAMED_NUDGES = {
     "tasks.check_awaited": "tasks.check_what_you_awaited",
     "tasks.check_in": "tasks.check_in_after_quiet",
     "tasks.deferred": "tasks.deferred_work_is_a_task",
-    "tasks.in_hand": "tasks.task_in_hand_named_back",
+    "tasks.in_hand": "tasks.task_in_hand_repeated",
     "tasks.log_old": "tasks.log_first_at_stop",
     "tasks.log_overdue": "tasks.write_held_until_logged",
     "tasks.log_soon": "tasks.log_where_it_stands",

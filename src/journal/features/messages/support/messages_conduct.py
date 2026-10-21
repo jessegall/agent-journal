@@ -20,17 +20,17 @@ class MessagesConduct(Conduct):
     """The messages feature's conduct in every state: the inbox named at a prompt and a stop and every so many of the agent's own tool uses, a write held once the unread were named often enough, the tools held while a read message stays unanswered past so many uses and an answer asked for before that, a read of the user's words piped into a filter held, the reply tag hinted after a message sent by command, and the user's face on a message told."""
 
     def on_prompt_submitted_messages(self, event: PromptSubmitted, settings: Settings) -> Transition:
-        return self.unchanged(*inbox_named(event.standing.of(messages_feature()).unread))
+        return self.unchanged(*inbox_named(event.snapshot.of(messages_feature()).unread))
 
     def on_idle_messages(self, event: Idle, settings: Settings) -> Transition:
-        return self.unchanged(*inbox_named(event.standing.of(messages_feature()).unread))
+        return self.unchanged(*inbox_named(event.snapshot.of(messages_feature()).unread))
 
     def on_tool_starting_messages_read_whole(self, event: ToolStarting, settings: Settings) -> Transition:
         return self.hold(messages_feature().READ_THE_WORDS_WHOLE.create()) if TRUNCATED.search(event.words) else self.unchanged()
 
     def on_tool_starting_messages_unanswered(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = messages_feature()
-        messages = event.standing.of(feature)
+        messages = event.snapshot.of(feature)
         if event.subagent or not messages.unanswered or Chain.is_journal_line(event.words) or reads_their_files(event, messages.unanswered_files):
             return self.unchanged()
         owed = ", ".join(str(n) for n in messages.unanswered)
@@ -42,7 +42,7 @@ class MessagesConduct(Conduct):
 
     def on_tool_starting_messages_unread(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = messages_feature()
-        messages = event.standing.of(feature)
+        messages = event.snapshot.of(feature)
         if event.subagent or not messages.unread:
             return self.unchanged()
         if event.writes and messages.times_named >= int(settings.of(feature.HOLD_AFTER_REMINDERS)):

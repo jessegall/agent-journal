@@ -631,7 +631,7 @@
       "typed": [],
       "nudges": [
         "tasks.log_where_it_stands",
-        "tasks.task_in_hand_named_back"
+        "tasks.task_in_hand_repeated"
       ],
       "counts": {
         "charts:10:writes": 26,
@@ -1305,7 +1305,7 @@
       "typed": [],
       "nudges": [
         "tasks.log_where_it_stands",
-        "tasks.task_in_hand_named_back"
+        "tasks.task_in_hand_repeated"
       ],
       "counts": {
         "charts:10:writes": 26,
@@ -1909,7 +1909,7 @@
       },
       "typed": [],
       "nudges": [
-        "tasks.task_in_hand_named_back"
+        "tasks.task_in_hand_repeated"
       ],
       "counts": {
         "charts:10:writes": 50,

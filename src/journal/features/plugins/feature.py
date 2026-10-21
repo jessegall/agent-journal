@@ -8,7 +8,7 @@ from journal.features.plugins.listeners.plugins_hear_rows import PluginsHearRows
 from journal.features.plugins.listeners.tell_a_plugin_its_settings import TellAPluginItsSettings
 from journal.features.plugins.seeds.plugin_services_at_boot import PluginServicesAtBoot
 from journal.features.plugins.support.plugins_conduct import PluginsConduct
-from journal.features.plugins.support.plugins_standing_reader import PluginsStandingReader
+from journal.features.plugins.support.plugins_snapshot_reader import PluginsSnapshotReader
 from journal.engine.nudge import Nudge
 
 
@@ -19,7 +19,7 @@ class PluginsFeature(Feature):
     DEADLINE = Option("plugins.deadline", "Wait for plugins at most", "The time every plugin that holds one event shares, below the hook's own ten seconds; a plugin not reached in it is skipped and its fault recorded", 6, unit="seconds")
     options = (DEADLINE,)
     listeners = (PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
-    standing = (PluginsStandingReader,)
+    snapshot = (PluginsSnapshotReader,)
     conduct = (PluginsConduct,)
     PLUGIN_FILES_ARE_THE_USERS = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_after=0)
     nudges = (PLUGIN_FILES_ARE_THE_USERS,)

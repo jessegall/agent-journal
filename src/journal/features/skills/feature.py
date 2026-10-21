@@ -2,7 +2,7 @@ from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.skills.listeners.owe_skills import OweSkills
 from journal.features.skills.support.skills_conduct import SkillsConduct
-from journal.features.skills.support.skills_standing_reader import SkillsStandingReader
+from journal.features.skills.support.skills_snapshot_reader import SkillsSnapshotReader
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
@@ -19,7 +19,7 @@ class Skills(Feature):
     help = "The journal's skills are written for the agent and required by the workflows at the moments they matter: the journal's at a start, a state's at a start in it, the ones a prompt names; a write waits until the file is read."
     commands = (SkillCommand,)
     listeners = (OweSkills, MarkLoaded, ForgetAtCompaction)
-    standing = (SkillsStandingReader,)
+    snapshot = (SkillsSnapshotReader,)
     conduct = (SkillsConduct,)
     checks = (
         Entry(NodeKind.CHECK, 'prompt_names_skill', "Prompt names a skill's keyword?", "the prompt the user sent names a keyword of one of the journal's skills"),

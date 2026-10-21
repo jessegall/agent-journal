@@ -18,7 +18,7 @@ class LawsConduct(Conduct):
             return self.unchanged()
         if not event.input.get("model"):
             return self.hold(Laws.NAME_THE_MODEL.create())
-        profiles = event.standing.of(Profiles)
+        profiles = event.snapshot.of(Profiles)
         asked = event.input.get("subagent_type", "")
         if asked not in profiles.names:
             return self.hold(Laws.NAME_A_PROFILE.create(asked=asked or "none", profiles=", ".join(profiles.subagents)))

@@ -3,7 +3,7 @@ from dataclasses import asdict
 from journal.support.chart_catalogue import ChartCatalogue
 from journal.features.chart.seeds.shipped_chart import ShippedChart
 from journal.support.fillers import Fillers
-from journal.support.standing import Standing
+from journal.support.snapshot import Snapshot
 from journal.support.traces import Traces
 from journal.support.trial import Trial
 from journal.support.trial_asked import TrialAsked
@@ -32,9 +32,9 @@ NEW_TITLE = "New workflow"
 class ChartController:
     """The workflow page: every workflow by title, one read whole with its nodes and lines, saved whole as the user, made, taken out, the shipped one reset, and any event tried dry."""
 
-    def __init__(self, charts: Charts, catalogue: ChartCatalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments, traces: Traces, states: StatesCatalogue, standing: Standing) -> None:
+    def __init__(self, charts: Charts, catalogue: ChartCatalogue, validation: Validation, shipped: ShippedChart, trial: Trial, environments: Environments, traces: Traces, states: StatesCatalogue, snapshot: Snapshot) -> None:
         self.charts, self.catalogue, self.validation, self.shipped, self.trial, self.environments = charts, catalogue, validation, shipped, trial, environments
-        self.traces, self.states, self.standing = traces, states, standing
+        self.traces, self.states, self.snapshot = traces, states, snapshot
 
     def index(self, request: Request) -> Response:
         return Response.json({"workflows": [self.named(c) for c in self.charts.all()], "catalogue": self.entries(), "states": self.listed_states(), "fillers": Fillers.listed()})
@@ -89,7 +89,7 @@ class ChartController:
     def stands(self, request: Request) -> Response:
         """Where each live agent stands in the workflow: the node it last stopped at, its counts and the readings."""
         try:
-            return Response.json(self.standing.of(self.charts.find(request.number("id"))))
+            return Response.json(self.snapshot.of(self.charts.find(request.number("id"))))
         except NotFound as missing:
             return Response.missing(missing)
 

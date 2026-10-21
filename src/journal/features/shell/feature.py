@@ -2,7 +2,7 @@ from journal.support.entry import Entry
 from journal.features.feature import Feature
 from journal.features.shell.listeners.mark_outputs_told import MarkOutputsTold
 from journal.features.shell.support.shell_conduct import ShellConduct
-from journal.features.shell.support.shell_standing_reader import ShellStandingReader
+from journal.features.shell.support.shell_snapshot_reader import ShellSnapshotReader
 from journal.engine.nudge import Nudge
 from journal.models.node_kind import NodeKind
 from journal.support.option import Option
@@ -26,7 +26,7 @@ class Shell(Feature):
     KEPT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
     options = (FOREGROUND, WHILE_WAITING, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, KEPT)
     listeners = (MarkOutputsTold,)
-    standing = (ShellStandingReader,)
+    snapshot = (ShellSnapshotReader,)
     conduct = (ShellConduct,)
     checks = (
         Entry(NodeKind.CHECK, 'journal_command', 'Tool is a journal command?', 'the tool about to run is a journal command'),

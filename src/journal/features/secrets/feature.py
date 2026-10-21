@@ -3,7 +3,7 @@ from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.secrets.commands.secret_command import SecretCommand
 from journal.features.secrets.support.secrets_conduct import SecretsConduct
-from journal.features.secrets.support.secrets_standing_reader import SecretsStandingReader
+from journal.features.secrets.support.secrets_snapshot_reader import SecretsSnapshotReader
 from journal.features.secrets.listeners.alarm_on_leak import AlarmOnLeak
 from journal.features.secrets.listeners.ask_when_expired import AskWhenExpired
 from journal.features.secrets.listeners.purge_after_thirty_days import PurgeAfterThirtyDays
@@ -51,5 +51,5 @@ outside the project, and never in the journal; the journal masks a value anywher
 - A deleted secret keeps its values thirty days for `journal secret restore <n>`, then they go.
 """, keywords=("secret", "secrets", "api key", "token", "password", "login"))
     listeners = (AlarmOnLeak, AskWhenExpired, PurgeAfterThirtyDays)
-    standing = (SecretsStandingReader,)
+    snapshot = (SecretsSnapshotReader,)
     conduct = (SecretsConduct,)

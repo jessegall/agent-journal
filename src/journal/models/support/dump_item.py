@@ -23,7 +23,7 @@ class DumpItem:
         return bool(self.outcome or self.failed)
 
     @property
-    def standing(self) -> str:
+    def snapshot(self) -> str:
         if self.failed:
             return f"failed - {self.failed}"
         if self.outcome:

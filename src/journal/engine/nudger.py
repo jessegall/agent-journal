@@ -21,6 +21,9 @@ class Nudger:
         self.features, self.entries, self.scope, self.bus, self.deferred, self.clock = features, entries, scope, bus, deferred, clock
         self.registry = registry
 
+    def is_silenced(self, nudge: Nudge) -> bool:
+        return self.features.silenced(nudge)
+
     def say(self, agent: Agent, nudge: Nudge) -> str | None:
         with self.scope.of(agent.environment_id):
             return self._said(agent, nudge)

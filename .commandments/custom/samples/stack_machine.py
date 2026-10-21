@@ -62,7 +62,7 @@ class Righteous(BaseState):
         return Held(None)
 
     # @righteous HookThatMovesDetector
-    def on_resume(self, standing, settings):
+    def on_resume(self, snapshot, settings):
         return self.pop()
 
 

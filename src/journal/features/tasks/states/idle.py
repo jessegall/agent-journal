@@ -31,7 +31,7 @@ class Idle(AgentState):
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.plans.states.following_plan import FollowingPlan
-        started = event.standing.of(Plans).started
+        started = event.snapshot.of(Plans).started
         if started:
             return self.push(FollowingPlan(plan_id=started.plan_id, task_id=started.started_task))
         return self.changed(self.active(event.at))
@@ -47,11 +47,11 @@ class Idle(AgentState):
         from journal.features.tasks.feature import Tasks
         if event.held_before:
             return self.unchanged()
-        tasks, plans = event.standing.of(Tasks), event.standing.of(Plans)
+        tasks, plans = event.snapshot.of(Tasks), event.snapshot.of(Plans)
         if tasks.parked:
-            return self.hold(Tasks.PARKED_TASKS_STILL_OPEN.create(tasks=tasks.parked_named))
+            return self.hold(Tasks.PARKED_TASKS_STILL_OPEN.create(tasks=tasks.parked_summary))
         if tasks.broken_waits:
-            return self.hold(Tasks.FIX_THE_BROKEN_WAIT.create(waits=tasks.broken_waits_named))
+            return self.hold(Tasks.FIX_THE_BROKEN_WAIT.create(waits=tasks.broken_waits_summary))
         if plans.approved:
             return self.hold(Plans.APPROVED_UNSTARTED.create(n=plans.approved[0]))
         if settings.of(Tasks.AUTO) and tasks.next_open:
@@ -61,11 +61,11 @@ class Idle(AgentState):
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         quiet = event.at - self.quiet_since
-        tasks = event.standing.of(Tasks)
+        tasks = event.snapshot.of(Tasks)
         if tasks.parked and quiet >= ASK_ABOUT_PARKED_AFTER and not self.parked_asked:
             return self.changed(replace(self, parked_asked=True), Tasks.PARKED_TASK_ASKED_ABOUT.create(n=tasks.parked[0], why=tasks.first_parked_why))
         if tasks.blocked_without_wait and quiet >= ASK_ABOUT_BLOCKED_AFTER:
-            return self.unchanged(Tasks.BLOCKED_TASK_ASKED_ABOUT.create(tasks=tasks.blocked_without_wait_named))
+            return self.unchanged(Tasks.BLOCKED_TASK_ASKED_ABOUT.create(tasks=tasks.blocked_without_wait_summary))
         if settings.of(Tasks.AUTO) and quiet >= CHECK_IN_AFTER:
             return self.unchanged(Tasks.CHECK_IN_AFTER_QUIET.create())
         return self.unchanged()

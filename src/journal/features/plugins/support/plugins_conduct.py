@@ -9,7 +9,7 @@ class PluginsConduct(Conduct):
 
     def on_tool_starting_plugins(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.plugins.feature import PluginsFeature
-        plugins = event.standing.of(PluginsFeature)
+        plugins = event.snapshot.of(PluginsFeature)
         if not event.writes or not any(plugins.holds(path) for path in event.written_paths):
             return self.unchanged()
         return self.hold(PluginsFeature.PLUGIN_FILES_ARE_THE_USERS.create())

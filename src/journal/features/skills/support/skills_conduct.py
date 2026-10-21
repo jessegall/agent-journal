@@ -13,19 +13,19 @@ class SkillsConduct(Conduct):
     """The skills feature's conduct in every state: a session starts owing the journal skill and the state's own, a prompt that names a skill's keyword owes that skill, a write while a skill is owed is held until its file is read, and so is a stop."""
 
     def on_session_started_skills(self, event: SessionStarted, settings: Settings) -> Transition:
-        return self.unchanged(*read_first(event.standing.of(skills_feature()).due_at_start(self.name)))
+        return self.unchanged(*read_first(event.snapshot.of(skills_feature()).due_at_start(self.name)))
 
     def on_prompt_submitted_skills(self, event: PromptSubmitted, settings: Settings) -> Transition:
-        return self.unchanged(*read_first(event.standing.of(skills_feature()).named_in(event.prompt)))
+        return self.unchanged(*read_first(event.snapshot.of(skills_feature()).named_in(event.prompt)))
 
     def on_tool_starting_skills(self, event: ToolStarting, settings: Settings) -> Transition:
-        owed = event.standing.of(skills_feature()).owed_cards()
+        owed = event.snapshot.of(skills_feature()).owed_cards()
         if event.subagent or not event.writes or not owed:
             return self.unchanged()
         return self.hold(read_first(owed)[0])
 
     def on_idle_skills(self, event: Idle, settings: Settings) -> Transition:
-        owed = event.standing.of(skills_feature()).owed
+        owed = event.snapshot.of(skills_feature()).owed
         return self.hold(skills_feature().STOPPED_OWING.create(skills=" and ".join(owed))) if owed else self.unchanged()
 
 

@@ -49,16 +49,16 @@ class Validation:
 
     def order_faults(self, event: str, given: list[WorkflowAt]) -> list[Fault]:
         """An order names every workflow of the event once, each at the revision it was read, so a drag over a stale list is refused naming who saved first; the locked ones keep the head of the list."""
-        standing = {c.id: c for c in self.charts.for_event(event)}
-        if not standing:
+        snapshot = {c.id: c for c in self.charts.for_event(event)}
+        if not snapshot:
             return [Fault(f"no workflow answers {event}")]
         ids = [row.id for row in given]
-        if sorted(ids) != sorted(standing):
-            return [Fault(f"the order names {', '.join(str(i) for i in ids) or 'nothing'}, but the workflows of {event} are {', '.join(str(i) for i in standing)}: name each once")]
-        locked = [i for i, c in standing.items() if c.locked]
+        if sorted(ids) != sorted(snapshot):
+            return [Fault(f"the order names {', '.join(str(i) for i in ids) or 'nothing'}, but the workflows of {event} are {', '.join(str(i) for i in snapshot)}: name each once")]
+        locked = [i for i, c in snapshot.items() if c.locked]
         if ids[:len(locked)] != locked:
             return [Fault(f"workflow {locked[0]} is locked, {LOCK_WHY}: the locked ones run first and keep the head of the list")]
-        stale = [standing[row.id] for row in given if row.revision != standing[row.id].revision]
+        stale = [snapshot[row.id] for row in given if row.revision != snapshot[row.id].revision]
         if stale:
             who = stale[0].updated_by.stamp if stale[0].updated_by else "someone"
             return [Fault(f"workflow {stale[0].id} changed since you read it: {who} saved it first, read the list again")]
@@ -88,14 +88,14 @@ class Validation:
 
     def lock_faults(self, chart: Chart, nodes: list[DrawnNode], lines: list[DrawnLine]) -> list[Fault]:
         """A locked node stays as it is: present, its law words unchanged, and reached from the trigger through shipped or locked nodes only, so nothing the user adds decides whether it runs."""
-        standing = {n.id: n for n in self.charts.nodes_of(chart)}
-        locked = {i: n for i, n in standing.items() if n.locked}
+        snapshot = {n.id: n for n in self.charts.nodes_of(chart)}
+        locked = {i: n for i, n in snapshot.items() if n.locked}
         if not locked:
             return []
         given = {n.number: n for n in nodes if n.number}
         faults = [Fault(f"step {i} is locked, {LOCK_WHY}: {LOCK_RULE}", str(i)) for i in locked if i not in given]
         faults += [Fault(f"step {i} is locked, {LOCK_WHY}, and its words stay: {LOCK_RULE}", str(i)) for i, n in locked.items() if i in given and (given[i].key != n.key or law_words(given[i].text) != law_words(n.text))]
-        untouched = {str(i) for i, n in standing.items() if i in given and given[i].key == n.key and given[i].text == n.text and (n.shipped or n.locked)}
+        untouched = {str(i) for i, n in snapshot.items() if i in given and given[i].key == n.key and given[i].text == n.text and (n.shipped or n.locked)}
         before = self.before(lines, {str(i) for i in locked})
         for node in nodes:
             own = node.id

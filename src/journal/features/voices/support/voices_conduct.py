@@ -14,7 +14,7 @@ class VoicesConduct(Conduct):
 
     def on_session_started_voices(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.voices.feature import Voices
-        return self.unchanged(Voices.HOW_TO_TALK_TO_THE_USER.create(voice=event.standing.of(Voices).instruction))
+        return self.unchanged(Voices.HOW_TO_TALK_TO_THE_USER.create(voice=event.snapshot.of(Voices).instruction))
 
     def on_session_started_voices_introduce(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.voices.feature import Voices
@@ -26,4 +26,4 @@ class VoicesConduct(Conduct):
         from journal.features.voices.feature import Voices
         if event.setting not in {option.key for option in Voices.SPOKEN}:
             return self.unchanged()
-        return self.unchanged(Voices.THE_VOICE_CHANGED.create(voice=event.standing.of(Voices).instruction))
+        return self.unchanged(Voices.THE_VOICE_CHANGED.create(voice=event.snapshot.of(Voices).instruction))

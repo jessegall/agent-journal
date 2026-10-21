@@ -242,7 +242,7 @@ class Routes:
         router.get(f"{API}/chart/runs", chart.runs)
         router.post(f"{API}/chart/order", chart.order)
         router.get(f"{API}/chart/{{id}}", chart.one)
-        router.get(f"{API}/chart/{{id}}/standing", chart.stands)
+        router.get(f"{API}/chart/{{id}}/snapshot", chart.stands)
         router.post(f"{API}/chart/{{id}}", chart.save)
         for act, handler in (("reset", chart.reset), ("remove", chart.remove), ("off", chart.off), ("on", chart.on)):
             router.post(f"{API}/chart/{{id}}/{act}", handler)

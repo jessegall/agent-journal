@@ -38,8 +38,8 @@ class DocCommand(Command):
         return 0
 
     def update(self, args: Namespace, where: Where) -> int:
-        standing = self.docs.find(args.n)
-        doc = self.docs.save(standing.with_(body=Path(args.file).read_text(), abstract=standing.abstract if args.abstract is None else args.abstract), where.actor)
+        snapshot = self.docs.find(args.n)
+        doc = self.docs.save(snapshot.with_(body=Path(args.file).read_text(), abstract=snapshot.abstract if args.abstract is None else args.abstract), where.actor)
         print(f"doc {doc.id} written anew: {doc.title}")
         return 0
 

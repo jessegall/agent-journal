@@ -1,6 +1,6 @@
 from journal.support.entry import Entry
 from journal.features.feature import Feature
-from journal.features.tasks.support.tasks_standing_reader import TasksStandingReader
+from journal.features.tasks.support.tasks_snapshot_reader import TasksSnapshotReader
 from journal.features.tasks.commands.await_command import AwaitCommand
 from journal.features.tasks.commands.stuck_command import StuckCommand
 from journal.features.tasks.commands.task_command import TaskCommand
@@ -33,7 +33,7 @@ class Tasks(Feature):
     options = (AUTO, FIRST_AFTER, NAME_EVERY, LOG_AFTER)
     listeners = (ClearWaits, EndSettledWaits, OneTaskInHand, LetGoOfClosedTask, NoWaitCycles)
     conduct = (TasksConduct,)
-    standing = (TasksStandingReader,)
+    snapshot = (TasksSnapshotReader,)
     checks = (
         Entry(NodeKind.CHECK, 'open_tasks', 'Has open tasks?', 'the environment has open tasks the agent may take up, outside a plan not yet started'),
         Entry(NodeKind.CHECK, 'related_tasks', 'Has a task to take up meanwhile?', 'a started plan has a next task, or, with no plan started, a task is open outside a plan'),
@@ -54,13 +54,13 @@ class Tasks(Feature):
     LOG_FIRST_AT_STOP = Nudge(name, "log_first_at_stop", "{{name}}, {{logged}}: log where it stands first", "{{log_command}} \"<where it stands>\"", repeat_after=0)
     TASK_STILL_OPEN = Nudge(name, "task_still_open", "{{name}} is still open: log where it stands or finish it", repeat_after=900)
     TASK_OPEN_WITH_NOTHING_LOGGED = Nudge(name, "task_open_with_nothing_logged", "task {{n}} is open with nothing logged")
-    NEXT_TASK_HOLDS_THE_STOP = Nudge(name, "next_task_holds_the_stop", "tasks are open, and auto mode is on: task {{n}} is next", "sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
+    NEXT_TASK_HOLDS_THE_STOP = Nudge(name, "next_task_holds_the_stop", "tasks are open, and auto mode is on: task {{n}} next: {{title}}", "sure you want to stop? carry on with it, or `journal stuck \"<why>\"` if you are truly stuck", repeat_after=0)
     DEFERRED_WORK_IS_A_TASK = Nudge(name, "deferred_work_is_a_task", "work deferred in words, not filed: `journal task create` it")
     CLOSED_BY_COMMIT = Nudge(name, "closed_by_commit", "commit {{sha}} closed {{tasks}}")
     STOP_POLLING = Nudge(name, "stop_polling", "you ran the same check {{times}} times in a row: {{command}}", "wait for it instead of polling")
     LOG_WHERE_IT_STANDS = Nudge(name, "log_where_it_stands", "{{edits}} edits since you logged {{name}}: say where it stands", "{{log}} \"<where it stands>\"", repeat_after=0)
     WRITE_HELD_UNTIL_LOGGED = Nudge(name, "write_held_until_logged", "{{edits}} edits since you logged {{name}}", "{{log}} \"<what was decided or done, and why>\" before any other write", repeat_after=0)
-    TASK_IN_HAND_NAMED_BACK = Nudge(name, "task_in_hand_named_back", "{{name}} in hand, {{edits}} edits", "if this is not what you are doing, finish it or park it and start the work you are on", repeat_after=0)
+    TASK_IN_HAND_REPEATED = Nudge(name, "task_in_hand_repeated", "{{name}} in hand, {{edits}} edits", "if this is not what you are doing, finish it or park it and start the work you are on", repeat_after=0)
     PARKED_TASKS_STILL_OPEN = Nudge(name, "parked_tasks_still_open", "parked tasks, still open: {{tasks}}", "`journal task resume <n>` picks one up", repeat_after=0)
     PARKED_TASK_ASKED_ABOUT = Nudge(name, "parked_task_asked_about", "task {{n}} is still parked: can you continue it now?", "it was parked because: {{why}}. `journal task resume {{n}}` picks it up again", repeat_after=900)
     PARKED_TASK_NAMED_AT_CLOSE = Nudge(name, "parked_task_named_at_close", "task {{n}} is still parked: can you continue it now?", "it was parked because: {{why}}. `journal task resume {{n}}` picks it up again", repeat_after=0)
@@ -70,7 +70,7 @@ class Tasks(Feature):
     TASK_REOPENED = Nudge(name, "task_reopened", "task {{n}} is open again: {{on}} is answered or closed", "`journal task start {{n}}` takes it up", repeat_after=0)
     FIX_THE_BROKEN_WAIT = Nudge(name, "fix_the_broken_wait", "{{waits}}", "so it would wait forever: fix the command with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat_after=0)
     BLOCKED_TASK_ASKED_ABOUT = Nudge(name, "blocked_task_asked_about", "blocked, with nothing that opens it by itself: {{tasks}}", "has what it waits on come? `journal task unblock <n>` when it has", repeat_after=2700, held_whatever_its_values=True)
-    nudges = (CARRY_ON, LOG_FIRST_AT_STOP, TASK_STILL_OPEN, TASK_OPEN_WITH_NOTHING_LOGGED, NEXT_TASK_HOLDS_THE_STOP, PARKED_TASKS_STILL_OPEN, DEFERRED_WORK_IS_A_TASK, CLOSED_BY_COMMIT, STOP_POLLING, LOG_WHERE_IT_STANDS, WRITE_HELD_UNTIL_LOGGED, TASK_IN_HAND_NAMED_BACK, PARKED_TASK_ASKED_ABOUT, PARKED_TASK_NAMED_AT_CLOSE, CHECK_WHAT_YOU_AWAITED, CHECK_IN_AFTER_QUIET, WAIT_OVER, TASK_REOPENED, FIX_THE_BROKEN_WAIT, BLOCKED_TASK_ASKED_ABOUT)
+    nudges = (CARRY_ON, LOG_FIRST_AT_STOP, TASK_STILL_OPEN, TASK_OPEN_WITH_NOTHING_LOGGED, NEXT_TASK_HOLDS_THE_STOP, PARKED_TASKS_STILL_OPEN, DEFERRED_WORK_IS_A_TASK, CLOSED_BY_COMMIT, STOP_POLLING, LOG_WHERE_IT_STANDS, WRITE_HELD_UNTIL_LOGGED, TASK_IN_HAND_REPEATED, PARKED_TASK_ASKED_ABOUT, PARKED_TASK_NAMED_AT_CLOSE, CHECK_WHAT_YOU_AWAITED, CHECK_IN_AFTER_QUIET, WAIT_OVER, TASK_REOPENED, FIX_THE_BROKEN_WAIT, BLOCKED_TASK_ASKED_ABOUT)
 
     skill = Skill("tasks", 'Declare, log and finish the work in hand; load it when you start or are asked to', """
 # Tasks

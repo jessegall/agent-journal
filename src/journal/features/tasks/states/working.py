@@ -1,28 +1,39 @@
 from dataclasses import dataclass, replace
 
 from journal.engine.agent_state import AgentState
+from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
+from journal.events.agent.idle import Idle as Stop
+from journal.events.agent.prompt_submitted import PromptSubmitted
+from journal.events.agent.session_started import SessionStarted
+from journal.events.agent.ticked import Ticked
+from journal.events.agent.tool_starting import ToolStarting
+from journal.events.rows.task_closed import TaskClosed
+from journal.events.rows.task_logged import TaskLogged
 from journal.events.rows.task_started import TaskStarted
+from journal.events.snapshot import Snapshot
 from journal.support.permission import Permission
 
+LOG_OLD_AFTER = 600.0
+STILL_OPEN_AFTER = 900.0
+COMPACT = "compact"
 
 
 @dataclass(frozen=True)
 class Working(AgentState):
-    """On one task: writes are allowed, and what is said about them is the Working workflows' on the counts they keep; stopping with the task open is told to carry on."""
+    """On one task. Writes are counted since the last log line: after the first N the log is asked for, every M the task is named back, and past the limit the next write waits for the log line. A stop with the task in hand is told to carry on, with the log line first when it is old, and is held while an approved plan is not started; a session resumed with it is told where it stands; a quiet quarter hour is told it is still open. Pushed by journal task start, popped by done and park."""
 
     name = "working"
     title = "Working"
     allows = frozenset({Permission.WRITE_FILES, Permission.RUN_COMMANDS, Permission.DISPATCH_SUBAGENTS})
     task_id: int = 0
     what: str = ""
-    """Work declared without a task: what the agent said it is doing."""
     logged_at: float = 0.0
-    """When the work was last logged, or started."""
+    edits: int = 0
+    active_at: float = 0.0
 
     def follows_a_plan(self) -> bool:
-        """Whether the plan moves this agent on when its task closes."""
         return False
 
     def named(self) -> str:
@@ -31,12 +42,77 @@ class Working(AgentState):
         return f"task {self.task_id}" if self.task_id else f"the work in hand, {self.what}"
 
     def logged(self, at: float) -> "Working":
-        return replace(self, logged_at=at)
+        return replace(self, logged_at=at, edits=0)
+
+    def log_command(self) -> str:
+        return f"journal task log {self.task_id}" if self.task_id else "journal task log"
+
+    def logged_words(self, now: float) -> str:
+        minutes = int((now - self.logged_at) // 60)
+        return "last logged just now" if minutes < 1 else f"last logged {minutes} min ago"
+
+    def continue_nudge(self, at: float) -> Nudge:
+        from journal.features.tasks.feature import Tasks
+        return Tasks.CARRY_ON.create(name=self.named(), logged=self.logged_words(at))
+
+    def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
+        from journal.features.tasks.feature import Tasks
+        active = replace(self, active_at=event.at)
+        if not event.writes or event.subagent:
+            return self.changed(active)
+        if self.edits >= int(settings.of(Tasks.LOG_AFTER)):
+            return self.hold(Tasks.WRITE_HELD_UNTIL_LOGGED.create(edits=self.edits, name=self.named(), log=self.log_command()))
+        counted = replace(active, edits=self.edits + 1)
+        if self.edits == int(settings.of(Tasks.FIRST_AFTER)):
+            return self.changed(counted, Tasks.LOG_WHERE_IT_STANDS.create(edits=self.edits, name=self.named(), log=self.log_command()))
+        if self.edits and self.edits % int(settings.of(Tasks.NAME_EVERY)) == 0:
+            return self.changed(counted, Tasks.TASK_IN_HAND_REPEATED.create(name=self.named(), edits=self.edits))
+        return self.changed(counted)
+
+    def on_stop(self, event: Stop, settings: Settings) -> Transition:
+        from journal.features.plans.feature import Plans
+        from journal.features.tasks.feature import Tasks
+        approved = event.snapshot.of(Plans).approved
+        if approved:
+            return self.hold(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
+        if event.at - self.logged_at >= LOG_OLD_AFTER:
+            return self.hold(Tasks.LOG_FIRST_AT_STOP.create(name=self.named(), logged=self.logged_words(event.at), log_command=self.log_command()))
+        return self.hold(self.continue_nudge(event.at))
+
+    def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
+        from journal.features.briefing.feature import Briefing
+        from journal.features.git.feature import Git
+        from journal.features.tasks.feature import Tasks
+        nudges = [self.continue_nudge(event.at)]
+        if event.source == COMPACT:
+            nudges.append(Briefing.BRIEF_AND_LOG_AFTER_COMPACTION.create(task=self.named(), last_log=event.snapshot.of(Tasks).last_log_line, uncommitted=event.snapshot.of(Git).uncommitted))
+        return self.changed(replace(self, active_at=event.at), *nudges)
+
+    def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
+        return self.changed(replace(self, active_at=event.at))
+
+    def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
+        from journal.features.tasks.feature import Tasks
+        if event.at - self.active_at >= STILL_OPEN_AFTER:
+            return self.unchanged(Tasks.TASK_STILL_OPEN.create(name=self.named()))
+        return self.unchanged()
+
+    def on_task_logged(self, event: TaskLogged, settings: Settings) -> Transition:
+        return self.changed(self.logged(event.at)) if event.task_id == self.task_id else self.unchanged()
+
+    def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:
+        return self.pop() if event.task_id == self.task_id else self.unchanged()
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         from journal.features.plans.states.following_plan import FollowingPlan
-        started = event.standing.of(Plans).started
+        started = event.snapshot.of(Plans).started
         if self.follows_a_plan() or started is None or event.task_id != self.task_id or event.task_id not in started.tasks:
-            return self.stay()
-        return self.go(FollowingPlan(plan_id=started.plan_id, task_id=self.task_id, logged_at=self.logged_at))
+            return self.unchanged()
+        return self.changed(FollowingPlan(plan_id=started.plan_id, task_id=self.task_id, logged_at=self.logged_at))
+
+    def on_resume(self, snapshot: Snapshot, settings: Settings) -> tuple[Nudge, ...] | Transition:
+        from journal.features.tasks.feature import Tasks
+        if self.task_id and snapshot.of(Tasks).in_hand != self.task_id:
+            return self.pop()
+        return (self.continue_nudge(self.active_at),)
