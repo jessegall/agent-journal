@@ -448,6 +448,19 @@ def test_an_agent_that_works_again_is_no_longer_waiting_on_a_question(app):
     assert app.container.get(StateMachine).current("s1").name != "waiting", "an agent using a tool of its own is not waiting, whatever it asked"
 
 
+def test_an_output_the_agent_waits_on_is_told_by_the_wait_alone(app):
+    from journal.models.command_output import CommandOutput
+    from journal.repositories.command_outputs import CommandOutputs
+    hook(app, "SessionStart")
+    outputs = app.container.get(CommandOutputs)
+    for chain in ("a", "b"):
+        outputs.save(CommandOutput(chain=chain, command="sleep 1", session="s1", folder=str(app.config.root / chain)).moved_out(), Actor.system())
+    app.console().run(["await", "the build", "--output", "1"], AGENT)
+    for output in outputs.every():
+        outputs.save(output.ended_with(0, 1.0), Actor.system())
+    assert [o.id for o in outputs.ended_untold("s1")] == [2], "the output the wait names is left to the wait; the other is the quiet tick's to name"
+
+
 def test_a_check_edited_runs_its_new_command(app):
     from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks

@@ -12,7 +12,7 @@ LOOK_AFTER = 300.0
 
 
 class ShellConduct(Conduct):
-    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone, a read of an output by hand is pointed at a reader or asked to become one, the commands that ended in the background are named once the agent is quiet, and one running five minutes is looked at."""
+    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone, a read of an output by hand is pointed at a reader or asked to become one, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, and one running five minutes is looked at."""
 
     def on_tool_starting_shell_read_in_parts(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell

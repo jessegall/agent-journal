@@ -20,7 +20,7 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
         return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if self.is_running(Path(o.folder))]
 
     def ended_untold(self, session: str) -> list[CommandOutput]:
-        return self.selected("session = ? AND moved = 1 AND ended = 1 AND told = 0 ORDER BY id", (session,))
+        return self.selected("session = ? AND moved = 1 AND ended = 1 AND told = 0 AND wait = 0 ORDER BY id", (session,))
 
     @staticmethod
     def is_running(folder: Path) -> bool:

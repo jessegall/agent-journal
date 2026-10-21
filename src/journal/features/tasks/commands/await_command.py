@@ -34,7 +34,7 @@ class AwaitCommand(Command):
             raise Refused(UNNAMED)
         if WAITING_ON_THE_USER.search(args.what):
             raise Refused(FOR_THE_USER)
-        names = [self.awaitables.output(n) for n in args.output] + ([self.awaitables.until(args.until, args.what, caller.actor)] if args.until else [])
+        names = [self.awaitables.output(n, caller.actor) for n in args.output] + ([self.awaitables.until(args.until, args.what, caller.actor)] if args.until else [])
         self.events.wait_declared(args.what, ",".join(names), caller)
         print(f"waiting for {args.what}, on {', '.join(self.awaitables.title_of(name) for name in names)}; it ends by itself once all of it has settled, or when you work again")
         return 0
