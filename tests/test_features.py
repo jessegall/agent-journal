@@ -394,10 +394,10 @@ def test_a_reply_tag_counts_only_at_the_start_of_a_line(app: App, monkeypatch):
     from journal.repositories.messages import Messages
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
-    app.console().run(["message", "send", "first"], USER)
-    app.console().run(["message", "send", "second"], USER)
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
+    app.console().run(["message", "send", "first"], USER)
+    app.console().run(["message", "send", "second"], USER)
     hook(app, "MessageDisplay", message="Good evening. At your service.\n\n[!reply:1]")
     app.runtime().deferred.drain()
     messages = app.container.get(Messages).scoped()
@@ -1142,11 +1142,12 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app: A
     notified = hook(app, "UserPromptSubmit", prompt="[journal] new message 2")[1]["hookSpecificOutput"]["additionalContext"]
     app.runtime().deferred.drain()
     assert keystrokes == ["[journal] new message 2", "[journal] new message 3"], "the first seen back, the next goes in"
-    assert "new messages 1, 2, 3" in notified
+    assert "new messages 2, 3" in notified, "message 1 was shown by the overview, which reads the unread"
     app.console().run(["message", "send", "four"], USER)
+    app.console().run(["message", "send", "five"], USER)
     assert "4 messages unread: `journal message unread`" in hook(app, "Stop")[1]["reason"]
     shown = app.console().run(["message", "unread"], AGENT).text
-    assert shown.count("reply with [!reply:") == 4 and "are you there?" in shown and "four" in shown
+    assert shown.count("reply with [!reply:") == 4 and "are you there?" in shown and "five" in shown
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
 
 
