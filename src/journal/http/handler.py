@@ -65,6 +65,8 @@ class Handler(PooledHandler):
         self.send_header("Content-Type", file.kind)
         self.send_header("Content-Length", str(len(file.body)))
         self.send_header("Cache-Control", "no-cache")
+        for name, value in file.headers().items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(file.body)
 

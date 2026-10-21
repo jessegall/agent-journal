@@ -182,7 +182,7 @@ class PhonePages:
             return self.json(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})
         answer = self.router.dispatch(asked)
         if isinstance(answer, FileResponse):
-            return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS, **FILE_HEADERS})
+            return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS, **FILE_HEADERS, **answer.headers()})
         return ShareAnswer(answer.status, answer.encoded(), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})
 
     def waiting(self, request: PhoneRequest) -> ShareAnswer:

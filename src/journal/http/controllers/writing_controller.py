@@ -3,10 +3,12 @@ from typing import TypeVar
 from journal.http.controllers.controller import Controller
 from journal.http.listed import Listed
 from journal.http.listing import Listing
+from journal.http.support.download_response import DownloadResponse
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.models.model import Model
+from journal.support.docx_export import DocxExport
 
 W = TypeVar("W", bound=Model)
 
@@ -33,6 +35,11 @@ class WritingController(Controller[W]):
     @staticmethod
     def links(row: W, linked: dict) -> list[str]:
         return [str(ref) for ref in linked.get(row.id, [])]
+
+    def export(self, request: Request) -> DownloadResponse:
+        row = self.repository.find(request.number("id"))
+        exported = DocxExport.of(row.title, row.abstract, row.body, f"{row.noun()} {row.id}")
+        return DownloadResponse(exported.kind, exported.body, name=exported.name)
 
     def section(self, request: Request) -> Response:
         row = self.repository.find(request.number("id"))

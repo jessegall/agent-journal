@@ -1083,3 +1083,21 @@ def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: 
         assert status == 200 and undocked["data"]["docked"] is False and undocked["data"]["row"] == "tasks:1"
     finally:
         server.stop()
+
+
+def test_a_doc_or_a_report_downloads_as_a_word_file_made_from_its_html_page(server):
+    from journal.support.html_page import HtmlPage
+    from journal.support.export_name import ExportName
+    page = HtmlPage.of("Deploys", "How a deploy goes", "Before anything.\n\n## Why\n\nBecause `it` is **safe**.\n\n- one\n- two\n")
+    assert page.startswith("<!doctype html>") and "<h1>Deploys</h1>" in page and '<p class="abstract">How a deploy goes</p>' in page
+    assert "<p>Before anything.</p>" in page and "<h2>Why</h2>" in page and "<p>Because <code>it</code> is <strong>safe</strong>.</p>" in page and "<ul><li>one</li><li>two</li></ul>" in page
+    assert "<footer>Written in the agent journal</footer>" in page and "<style>" in page, "the page stands on its own"
+    assert ExportName.stem("What: the check/found?") == "What the checkfound" and ExportName.of("", "report 3").startswith("report 3.")
+    call(server, "POST", "/journal/reports", {"title": "What the check found", "body": "## Found\n\nThree faults.\n"})
+    with urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/journal/reports/1/export", headers={"X-Journal-Env": "main"}), timeout=10) as reply:
+        kind, disposition, body = reply.headers["Content-Type"], reply.headers["Content-Disposition"], reply.read()
+    assert disposition == f"attachment; filename*=UTF-8''What%20the%20check%20found.{ExportName.extension()}"
+    if ExportName.extension() == "docx":
+        assert kind == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" and body[:2] == b"PK", "a Word file from textutil"
+    else:
+        assert kind.startswith("text/html") and b"<h1>What the check found</h1>" in body, "the page itself where textutil is missing"
