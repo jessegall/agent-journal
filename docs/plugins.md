@@ -63,8 +63,11 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   or `.deleted`. The secrets, users and MCP server rows are
   never sent, nor a row the plugin wrote itself. A subagent's events come with `subagent` set and are held only at
   `tool_starting`.
-- `holds`: the events it hears that it answers before the agent goes on: `tool_starting` and `idle` may be refused,
-  `prompt_submitted` and `session_started` only told. A line told at an event it hears but does not hold reaches the
+- `holds`: the events it hears that it answers before the agent goes on, each with the window in milliseconds it
+  answers in: `[{"event": "tool_starting", "window_ms": 5}]`; a bare name takes the journal's ceiling, the setting
+  `plugins.hold_window_ms` (50), and a window above the ceiling is cut to it. `tool_starting` and `idle` may be refused,
+  `prompt_submitted` and `session_started` only told. A hold inside a few milliseconds cannot start a process: a plugin
+  that holds runs a service with `answers` and decides from what it already knows, never from a judge. A line told at an event it hears but does not hold reaches the
   agent at its next tool use or prompt; hold the event for the line to come with it.
 - `settings`: a path to its settings file, described under Settings.
 - `skills`: a folder holding one folder per skill with its `SKILL.md`, published under that folder's name, which no
@@ -167,7 +170,8 @@ input. It is given these variables and nothing else of the journal's environment
   `/usr/bin` and `/bin`. A program it needs from elsewhere belongs in `requires`.
 
 An event it holds is answered inside the hook: the plugins holding one event are asked in the order they were
-installed and share one deadline, the setting `plugins.deadline` (6 seconds), below the hook's own ten. A plugin is
+installed, each inside the window its manifest declares, cut to the ceiling `plugins.hold_window_ms` (50 ms). A plugin
+past its window is cut: the event goes through, and the miss is a fault naming the milliseconds. A plugin is
 asked only while the event is not yet held; once the journal or an earlier plugin holds it, the rest hear it after the
 reply, and a refusal then is recorded as `plugin_unanswered`. A journal command and the read of a skill always go
 through, the refusal's words told instead. Every other event, and every row, is heard after the reply, a row only once
@@ -235,8 +239,8 @@ Every key of a version 3 `plugin.json` and of its answers, and where it went.
   beyond that is a setting or a secret.
 - `on` (handlers per event pattern) and `hooks` (each hook sync or async): become `hears` and `holds`. One program
   answers every event it hears, and an event it holds is answered inside the hook.
-- `refuse`, `refuse_seconds`, `refuse_socket`: become holding `tool_starting`. One deadline, `plugins.deadline`, covers
-  every plugin, and the service's socket replaces the refusal socket.
+- `refuse`, `refuse_seconds`, `refuse_socket`: become holding `tool_starting` inside a declared window, cut to the
+  ceiling `plugins.hold_window_ms`, and the service's socket replaces the refusal socket.
 - `reads`: dropped. The line for `tool_starting` says whether the tool `writes`, and the plugin decides for itself.
 - `events` (a plugin's own kinds of card, each with a title and a tone): become `cards`.
 - `load` (skills the agent must load at an event): dropped. A plugin's skills are published with the journal's;

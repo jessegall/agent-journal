@@ -58,6 +58,7 @@ def app(journal_root: Path, monkeypatch):
     app = App(Config(journal_root, port=0))
     app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.container.get(SettingRows).save(Setting(environment_id=0, key="delivery.batch_seconds", value=0), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="plugins.hold_window_ms", value=2000), Actor.system())
     app.runtime().start()
     with app.container.get(Scope).of(MAIN):
         yield app
@@ -3031,7 +3032,7 @@ def test_a_plugin_manifest_is_read_and_each_wrong_one_refused_by_name(app, tmp_p
         (folder / "journal-plugin.json").write_text(json.dumps({**good, **changes}))
         return folder
     manifest = reader.read(made({}))
-    assert manifest.name == "echo" and manifest.holds == ("tool_starting",) and manifest.services[0].name == "serve"
+    assert manifest.name == "echo" and tuple(h.event for h in manifest.holds) == ("tool_starting",) and manifest.services[0].name == "serve"
     refusals = {
         "keys the journal does not know: hook": {"hook": "x"},
         "is not": {"name": "Echo!"},
@@ -3236,7 +3237,7 @@ def test_a_plugin_is_previewed_then_installed_from_a_folder(app, tmp_path):
     assert app.container.get(Plugins).all() == [], "a preview installs nothing"
     assert "installed echo, on" in console.run(["plugin", "install", str(folder), "--yes"], USER).out
     plugin = app.container.get(Plugins).named("echo")
-    assert plugin.linked and plugin.source == str(folder.resolve()) and plugin.manifest.holds == ("tool_starting", "prompt_submitted") and (app.config.home / "plugin-data" / "echo").is_dir()
+    assert plugin.linked and plugin.source == str(folder.resolve()) and tuple(h.event for h in plugin.manifest.holds) == ("tool_starting", "prompt_submitted") and (app.config.home / "plugin-data" / "echo").is_dir()
     assert "installed already" in console.run(["plugin", "install", str(folder), "--yes"], USER).err
     bad = tmp_path / "bad"
     bad.mkdir()
@@ -3444,7 +3445,7 @@ def test_the_plugins_page_previews_installs_lists_configures_and_removes(app):
     assert status == 201 and made["name"] == "echo"
     row = api("GET", "plugins")[1]["rows"][0]
     mode = next(s for s in row["schema"] if s["key"] == "mode")
-    assert (row["name"], row["status"], row["manifest"]["holds"], mode["kind"], "secret" in row["settings"]["token"]) == ("echo", "on", ["tool_starting", "prompt_submitted"], "choice", True)
+    assert (row["name"], row["status"], row["manifest"]["holds"], mode["kind"], "secret" in row["settings"]["token"]) == ("echo", "on", [{"event": "tool_starting", "window_ms": 0}, {"event": "prompt_submitted", "window_ms": 0}], "choice", True)
     assert api("POST", f"plugins/{made['id']}/configure", {"key": "repeat", "value": "4"})[0] == 200 and app.container.get(Plugins).named("echo").settings["repeat"] == 4
     assert api("POST", f"plugins/{made['id']}/disable", {})[0] == 200 and api("GET", "plugins")[1]["rows"][0]["status"] == "off"
     assert api("POST", f"plugins/{made['id']}/remove", {})[0] == 200 and app.container.get(Plugins).all() == []
@@ -3525,13 +3526,13 @@ def test_a_plugin_that_fails_lets_the_event_through_and_is_recorded(app):
     plugins.save(row.with_(settings={}), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[0] == 200
     assert plugins.named("echo").faults_in_a_row == 0 and "Plugin echo answers again" in [m.text for m in messages.recent(5)]
-    app.container.get(SettingRows).set(PluginsFeature.DEADLINE.key, 1, Actor.user(1))
+    app.container.get(SettingRows).set(PluginsFeature.HOLD_WINDOW.key, 1000, Actor.user(1))
     plugins.save(plugins.named("echo").with_(settings={"mode": "slow"}), Actor.user(1))
     plugins.save(echo(app, "echo-two").with_(settings={"mode": "slow"}), Actor.user(1))
     began = time.monotonic()
     status, _ = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
-    assert status == 200 and time.monotonic() - began < 3, "two slow plugins share one deadline and the event goes through"
-    assert "no answer within" in plugins.named("echo").last_fault and "used the event's whole deadline" in plugins.named("echo-two").last_fault, "each fault recorded"
+    assert status == 200 and time.monotonic() - began < 3, "two slow plugins are each cut at their window and the event goes through"
+    assert "no answer within" in plugins.named("echo").last_fault and "no answer within" in plugins.named("echo-two").last_fault, "each fault recorded"
 
 def test_the_three_holds_are_answered_under_codex_as_the_frozen_records_show(app):
     """The skill, the look and the mark hold a Codex write through its pre-tool hook, as the records frozen on today's conduct show; nothing here is Claude only."""
@@ -5746,8 +5747,7 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     import time
     from journal.repositories.plugins import Plugins
     plugins = app.container.get(Plugins)
-    plugins.save(echo(app, hears=["tool_starting", "tool_finished"], holds=["tool_starting"]).with_(settings={"mode": "late"}), Actor.user(1))
-    app.container.get(SettingRows).save(Setting(environment_id=0, key="plugins.deadline", value=1), Actor.system())
+    plugins.save(echo(app, hears=["tool_starting", "tool_finished"], holds=[{"event": "tool_starting", "window_ms": 1000}]).with_(settings={"mode": "late"}), Actor.user(1))
     hook(app, "SessionStart")
     started = time.monotonic()
     assert hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, tool_response={})[0] == 200
@@ -5755,5 +5755,8 @@ def test_a_plugin_heard_after_the_reply_never_delays_a_hook_and_a_holding_one_is
     started = time.monotonic()
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     waited = time.monotonic() - started
-    assert status == 200 and 1.0 <= waited < 1.9, "the event it holds is asked on the answer path and cut off at the deadline, the hook answered without it"
-    assert "no answer within" in plugins.named("echo").last_fault, "the plugin that overran is marked faulted"
+    assert status == 200 and 1.0 <= waited < 1.9, "the event it holds is asked on the answer path and cut at the window its manifest declares, the hook answered without it"
+    assert "no answer within 1000 ms" in plugins.named("echo").last_fault, "the plugin that overran is marked faulted"
+    from journal.support.plugin_manifest import PluginManifest
+    manifest = PluginManifest.from_json({"name": "x", "hears": ["tool_starting", "idle"], "holds": [{"event": "tool_starting", "window_ms": 5000}, "idle"]})
+    assert manifest.window_ms("tool_starting", 50) == 50 and manifest.window_ms("idle", 50) == 50 and manifest.window_ms("tool_starting", 9000) == 5000, "a window is cut to the user's ceiling, and a hold named without one takes the ceiling"

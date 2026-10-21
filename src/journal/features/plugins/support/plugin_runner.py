@@ -25,8 +25,6 @@ class PluginRunner:
 
     def ask(self, plugin: Plugin, environment: str, line: str, within: float) -> PluginAnswer:
         """Its answering service on its socket when one listens, else its program."""
-        if within <= 0:
-            raise PluginFault("not asked: the plugins before it used the event's whole deadline")
         listening = self.folders.socket(plugin, environment)
         if any(s.answers for s in plugin.manifest.services) and listening.is_socket():
             try:
@@ -54,7 +52,7 @@ class PluginRunner:
         except subprocess.TimeoutExpired as late:
             os.killpg(process.pid, signal.SIGKILL)
             process.communicate()
-            raise PluginFault(f"it gave no answer within {within:.1f} seconds") from late
+            raise PluginFault(f"it gave no answer within {within * 1000:.0f} ms, its hold window") from late
         if process.returncode != 0:
             raise PluginFault(f"it exited with {process.returncode}: {err.strip()[-300:]}")
         return self.protocol.answer_of(out)

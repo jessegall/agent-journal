@@ -951,8 +951,11 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
 
 - One listener per kind of event, on the bus from boot, reads the enabled plugins at each event. There is no
   Bus.unlisten, so switching a plugin off between two events neither drops nor doubles one.
-- One deadline, `plugins.deadline` (6 seconds), is shared by every plugin holding an event. It replaces the per-plugin
-  2 and 10 second budgets. A plugin not reached in time is not asked, and its fault is recorded.
+- A plugin holds an event only inside the window its manifest declares, `{"event": "tool_starting", "window_ms": 5}`,
+  cut to the ceiling `plugins.hold_window_ms` (50 ms); a bare event name takes the ceiling. A hold that fast is answered
+  by the plugin's service from what it already knows; judging and sins run on the plugin's own time and ride on the
+  next hook. One past its window is cut and its fault recorded (message 11346, doc 61). This replaced the one shared
+  deadline of six seconds on 2026-10-21.
 - A plugin is asked to hold only while nothing has held the event yet (`asked_while_free` on the listener). After that
   it hears the event after the reply, and a refusal then is recorded as `plugin_unanswered`.
 - A stop is held once a turn: Idle carries `held_before` from `stop_hook_active`. There is no count of four in a row.

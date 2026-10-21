@@ -239,7 +239,7 @@ class PluginInstalling:
                 PreviewRow("program", "for each event it hears, from its folder", manifest.program),
                 *(PreviewRow("service", s.name, " ".join(s.command) + (f"  (where {s.when})" if s.when else "")) for s in manifest.services),
                 PreviewRow("hears", "events", ", ".join(manifest.hears) or "nothing"),
-                PreviewRow("holds", "before the agent continues", ", ".join(manifest.holds) or "nothing"),
+                PreviewRow("holds", "before the agent continues", ", ".join(window.as_text() for window in manifest.holds) or "nothing"),
                 *(PreviewRow("skill", name) for name in ManifestReader.skill_names(folder, manifest)))
         return tuple(row for row in rows if row.kind != "installed" or row.command)
 

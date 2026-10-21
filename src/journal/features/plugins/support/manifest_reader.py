@@ -79,11 +79,13 @@ class ManifestReader:
                 raise Refused(f"{manifest.name} hears {event}, which is no event")
             if row and row["table"] in NEVER_TABLES:
                 raise Refused(f"{manifest.name} hears {event}: the {row['table']} rows are never sent to a plugin")
-        for event in manifest.holds:
-            if event not in manifest.hears:
-                raise Refused(f"{manifest.name} holds {event} but does not hear it")
-            if event not in HOLDABLE:
-                raise Refused(f"{manifest.name} holds {event}, which no plugin may hold; it may hold {', '.join(HOLDABLE)}")
+        for window in manifest.holds:
+            if window.event not in manifest.hears:
+                raise Refused(f"{manifest.name} holds {window.event} but does not hear it")
+            if window.event not in HOLDABLE:
+                raise Refused(f"{manifest.name} holds {window.event}, which no plugin may hold; it may hold {', '.join(HOLDABLE)}")
+            if window.window_ms < 0:
+                raise Refused(f"{manifest.name} holds {window.event} within {window.window_ms} ms: a window is 0 or more milliseconds")
 
     @staticmethod
     def inside(folder: Path, manifest: PluginManifest) -> None:

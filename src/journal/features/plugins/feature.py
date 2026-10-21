@@ -16,8 +16,8 @@ class PluginsFeature(Feature):
     name = "plugins"
     title = "Plugins"
     help = "Programs you install that hear the journal's events and answer them: refuse a tool, say a line to the agent, show a card or run journal commands, each as itself."
-    DEADLINE = Option("plugins.deadline", "Wait for plugins at most", "The time every plugin that holds one event shares, below the hook's own ten seconds; a plugin not reached in it is skipped and its fault recorded", 6, unit="seconds")
-    options = (DEADLINE,)
+    HOLD_WINDOW = Option("plugins.hold_window_ms", "A plugin's hold window at most", "Milliseconds a plugin holding an event may take to answer; a plugin's own window in its manifest is cut to this, and one past its window is skipped and its fault recorded", 50, unit="ms")
+    options = (HOLD_WINDOW,)
     listeners = (PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
     snapshot = (PluginsSnapshotReader,)
     conduct = (PluginsConduct,)

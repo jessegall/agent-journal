@@ -1,5 +1,3 @@
-from time import monotonic
-
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.idle import Idle
 from journal.events.agent_listener import AgentListener
@@ -19,7 +17,7 @@ REFUSABLE = ("tool_starting", "idle")
 
 
 class PluginsHearAgents(AgentListener[AgentEvent]):
-    """The plugins that hear an agent event: those that hold it are asked now, in the order they were installed, within one deadline for them all; the rest hear it after the reply, and so does every one once the event is held. It stays a listener on purpose: it is the one funnel through which a plugin's words and holds reach the agent, and what it says is each plugin's, never the journal's conduct."""
+    """The plugins that hear an agent event: those that hold it are asked now, in the order they were installed, each inside the window its manifest declares under the ceiling the user set; the rest hear it after the reply, and so does every one once the event is held. It stays a listener on purpose: it is the one funnel through which a plugin's words and holds reach the agent, and what it says is each plugin's, never the journal's conduct."""
 
     blocking = True
     asked_while_free = True
@@ -30,19 +28,20 @@ class PluginsHearAgents(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> Decision | None:
         from journal.features.plugins.feature import PluginsFeature
         hearers = self.hearing.heard_by(event, event.environment_id)
-        deadline = monotonic() + float(self.settings.option(PluginsFeature.DEADLINE))
+        ceiling_ms = int(self.settings.option(PluginsFeature.HOLD_WINDOW))
         waiting = self.hearing.waiting_for(event.session) if event.key in CARRIES else []
         decision = Decision.allowed_with("\n".join(waiting)) if waiting else Decision()
         for plugin in hearers:
             if decision.allowed and self.holds(plugin, event):
-                decision = decision.merged(self.decided(plugin, event, self.hearing.ask(plugin, event, event.environment_id, deadline - monotonic())))
+                window = plugin.manifest.window_ms(event.key, ceiling_ms) / 1000
+                decision = decision.merged(self.decided(plugin, event, self.hearing.ask(plugin, event, event.environment_id, window)))
             else:
                 self.deferred.add_unless_behind(lambda plugin=plugin: self.hearing.later(plugin, event, event.environment_id), f"{plugin.name} hearing {event.key}")
         return self.floor.under(event, decision)
 
     @staticmethod
     def holds(plugin: Plugin, event: AgentEvent) -> bool:
-        return event.key in plugin.manifest.holds and (not event.subagent or event.key == "tool_starting")
+        return plugin.manifest.has_window(event.key) and (not event.subagent or event.key == "tool_starting")
 
     def decided(self, plugin: Plugin, event: AgentEvent, answer: PluginAnswer) -> Decision:
         if answer.answer == "refuse" and isinstance(event, Idle) and event.held_before:

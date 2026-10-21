@@ -1,6 +1,8 @@
 import difflib
 from pathlib import Path
 
+from journal.support.event_window import EventWindow
+
 COMPARED = ("version", "program", "hears", "holds", "services", "settings", "skills")
 """What an upgrade shows changing in a manifest: what the plugin runs, hears and holds."""
 MOST_LINES = 400
@@ -16,6 +18,8 @@ class PluginChanges:
             before, after = was.get(key), now.get(key)
             if isinstance(after, (list, tuple)):
                 before, after = list(before or ()), list(after)
+                if key == "holds":
+                    before, after = [EventWindow.from_json(h).as_text() for h in before], [EventWindow.from_json(h).as_text() for h in after]
                 lines += [f"{key}: + {item}" for item in after if item not in before] + [f"{key}: - {item}" for item in before if item not in after]
             elif before != after:
                 lines.append(f"{key}: {before} -> {after}")
