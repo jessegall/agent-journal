@@ -4819,8 +4819,10 @@ def test_a_workers_merge_never_touches_the_users_work_and_says_what_stood_in_its
     (root / "parser.py").unlink()
     (root / "notes.txt").write_text("unrelated\n")
     commit("later.py", "L = 1\n")
+    (root / "later.py").write_text("L = 2, not committed yet\n")
     said = branch.take_in(worker)
     assert "were taken into this branch" in said and (root / "parser.py").is_file() and (root / "notes.txt").read_text() == "unrelated\n", "a branch behind the tip lands once rebased, and unrelated uncommitted work stays"
+    assert (root / "later.py").read_text() == "L = 2, not committed yet\n", "an uncommitted change to a tracked file the worker did not touch survives the take as it is"
     commit("shared.py", "A = 2\n", cwd=tree)
     commit("shared.py", "A = 3\n")
     said = branch.take_in(worker)
