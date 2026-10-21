@@ -6372,3 +6372,27 @@ def test_a_notify_reaches_only_a_running_claude_worker_and_moves_no_wait(app: Ap
     finally:
         process.kill()
         process.wait(5)
+
+
+def test_a_running_workers_session_takes_the_notify_after_its_key_and_only_as_the_session_it_runs(app: App, tmp_path, monkeypatch):
+    import subprocess
+    from journal.repositories.workers import Workers
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+    hook(app, "SessionStart")
+    console, workers = app.console(), app.container.get(Workers)
+    console.run(["worker", "dispatch", "Mr. Babbage", "the engine", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    process = subprocess.Popen(["sleep", "30"])
+    try:
+        workers.save(workers.find(1).running_as(process.pid, timing.time()).with_(resume="w-1"), Actor.system())
+        received = listening_session(home, process.pid, "w-1")
+        assert console.run(["worker", "notify", "1", "use the second column"], AGENT).code == 0
+        auth, line = arrived(received, 2)
+        assert auth == {"type": "auth", "token": "token-1"} and line["type"] == "user" and "\nuse the second column\n" in line["message"]["content"], "the key the registry publishes goes first, then the text"
+        workers.save(workers.find(1).with_(resume="w-2"), Actor.system())
+        assert "runs session w-1, not w-2" in console.run(["worker", "notify", "1", "x"], AGENT).error, "a process that runs another session is never told"
+        from journal.features.workers.feature import Workers as WorkersFeature
+        assert "journal worker notify" in WorkersFeature.skill.body
+    finally:
+        process.kill()
+        process.wait(5)

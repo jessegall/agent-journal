@@ -72,4 +72,6 @@ A subagent only reads. A worker writes: code in a worktree of its own, a documen
 - Related work goes back to the worker that knows it: `journal worker send <n> "<next job>"` sends a worker that
   reported out again with its memory of the last job, in the same worktree. Never dispatch a fresh worker for
   work one already out has done part of.
-""", keywords=('worker', 'workers', 'helper', 'dispatch', 'worktree', 'say'), required_states=('awaiting',))
+- A worker still running takes a word in its live session: `journal worker notify <n> "<text>"`. Only a Claude
+  worker has a session inbox; a Codex worker, and one that reported or was stopped, are refused with what to use instead.
+""", keywords=('worker', 'workers', 'helper', 'dispatch', 'worktree', 'send', 'notify'), required_states=('awaiting',))
