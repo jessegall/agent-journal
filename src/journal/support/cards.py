@@ -4,6 +4,7 @@ from journal.models.author import Author
 from journal.models.model import Model
 from journal.models.message import Message
 from journal.repositories.messages import Messages
+from journal.support.row_card import RowCard
 
 
 class Cards:
@@ -19,6 +20,10 @@ class Cards:
     @staticmethod
     def made_key(row: Model) -> str:
         return f"made:{row.noun()}:{row.id}"
+
+    def made_mark(self, environment_id: int, row: Model, by: Actor) -> Message:
+        data = {"kind": "made", "session": by.id, "made_type": row.table(), "n": row.id, **RowCard.of(row).as_data()}
+        return self.keyed(environment_id, self.made_key(row), row.title_words(), data, by, ChatMark.MADE)
 
     def keyed(self, environment_id: int, key: str, label: str, data: dict, by: Actor, shows: ChatMark) -> Message:
         """A card that stands for one thing, such as a file's findings: a later card of its key by the same writer settles it in place, where it already stands in the chat. With no key it is a card like any other."""

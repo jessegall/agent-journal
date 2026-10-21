@@ -846,6 +846,19 @@ def test_a_document_the_agent_writes_is_a_message_in_its_chat(app, tmp_path):
     made = [(m.text, m.data["summary"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "made"]
     assert made == [("Deploys", "How a deploy goes")], "the agent's document is marked in the chat; the user's own is not"
 
+def test_a_report_the_agent_writes_is_a_made_message_docked_above_the_chat(app):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    app.console().run(["report", "create", "What the check found", "--body", "## Found\nThree faults.\n"], AGENT)
+    app.console().run(["report", "create", "Yours", "--body", "the user's own"], USER)
+    app.runtime().deferred.drain()
+    [made] = [m for m in app.container.get(Messages).all() if m.data.get("kind") == "made"]
+    assert made.text == "What the check found" and made.data["made_type"] == "reports" and made.data["row"] == "reports:1", "the agent's report is marked in the chat; the user's own is not"
+    assert made.data["docked"] is True and made.data["heading"] == "Report 1: What the check found" and made.data["summary"] == "Three faults."
+    assert made.data["key"] == "made:report:1" and made.data["dock"]["buttons"][0] == {"label": "Open", "act": "open"}
+    assert app.console().run(["report", "1", "undock"], USER).code == 0 and app.container.get(Messages).find(made.id).data["docked"] is False
+
+
 def test_a_refused_subagent_is_not_shown_and_one_never_answered_ends_with_its_turn_or_session(app):
     send = lambda kind, **extra: hook(app, kind, session_id="s7", **extra)
     rows = lambda: [asdict(row) for row in app.container.get(Subagents).rows("s7")]

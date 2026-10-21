@@ -1,0 +1,21 @@
+from journal.events.listener import Listener
+from journal.events.models.created import Created
+from journal.models.report import Report
+from journal.support.actor_kind import ActorKind
+from journal.support.cards import Cards
+from journal.support.docking import Docking
+from journal.support.scope import Scope
+
+
+class ReportMadeCard(Listener[Created]):
+    """A report an agent writes is a mark in its environment's chat, docked above it until the user opens or closes it."""
+
+    def __init__(self, cards: Cards, docking: Docking, scope: Scope) -> None:
+        self.cards, self.docking, self.scope = cards, docking, scope
+
+    def handle(self, event: Created) -> None:
+        report = event.model
+        if not isinstance(report, Report) or event.by.kind != ActorKind.AGENT:
+            return
+        with self.scope.of(report.environment_id):
+            self.docking.pin(self.cards.made_mark(report.environment_id, report, event.by), report, event.by)

@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.reports.commands.report_command import ReportCommand
+from journal.features.reports.listeners.report_made_card import ReportMadeCard
 from journal.support.skill import Skill
 
 
@@ -8,6 +9,7 @@ class ReportsFeature(Feature):
     title = "Reports"
     help = "What was checked or researched now, written up and linked to what it is about."
     commands = (ReportCommand,)
+    listeners = (ReportMadeCard,)
 
     skill = Skill("reports", 'Put what was checked or researched now in a report linked to what it is about; load it when the user asks for a critique, a review, an update or a write-up', """
 # Reports
