@@ -76,11 +76,15 @@ class Chain:
 
     @classmethod
     def chained(cls, line: str) -> list[tuple[str, str]]:
-        return cls.compound(cls.simple(line))
+        return cls.compound(cls.spans(line), line)
 
     @staticmethod
     def simple(line: str) -> list[tuple[str, str]]:
-        parts, current, stack, separator, i = [], "", [], "", 0
+        return [(separator, part) for separator, part, _, _ in Chain.spans(line)]
+
+    @staticmethod
+    def spans(line: str) -> list[tuple[str, str, int, int]]:
+        parts, current, stack, separator, i, start = [], "", [], "", 0, 0
         while i < len(line):
             c, inner = line[i], stack[-1] if stack else ""
             if c == "\\" and inner != "'" and i + 1 < len(line):
@@ -111,9 +115,11 @@ class Chain:
                 stack.pop()
                 current, i = current + "]]", i + 2
                 continue
-            elif c == "(" or (c == "{" and (line[i + 1:i + 2] in (" ", "\t", "\n") or line[i - 1:i] == "$")):
+            elif c == "(" or (c == "{" and line[i + 1:i + 2] in (" ", "\t", "\n")):
                 stack.append(c)
-            elif c == ")" and inner == "(" or c == "}" and inner == "{":
+            elif c == "{" and line[i - 1:i] == "$":
+                stack.append("${")
+            elif c == ")" and inner == "(" or c == "}" and inner == "${" or c == "}" and inner == "{" and line[i - 1:i] in (" ", "\t", "\n", ";", "&", "|"):
                 stack.pop()
             elif not stack:
                 if c == "#" and (i == 0 or line[i - 1] in " \t\n;&|"):
@@ -123,17 +129,23 @@ class Chain:
                     continue
                 if line.startswith("<<", i) and not line.startswith("<<<", i) and line[i - 1:i] != "<":
                     end = Chain.heredoc_end(line, i, current)
-                    parts.append((separator, (current + line[i:end]).strip()))
-                    current, separator, i = "", "", end
+                    parts.append((separator, (current + line[i:end]).strip(), start, end))
+                    current, separator, i, start = "", "", end, end
+                    continue
+                if Chain.ampersand_at(line, i):
+                    parts.append((separator, f"{current.strip()} &", start, i + 1))
+                    current, separator, i = "", "&", i + 1
+                    start = i
                     continue
                 next_separator = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i) or Chain.newline_at(line, i, current)
                 if next_separator:
-                    parts.append((separator, Chain.continued(current)))
+                    parts.append((separator, Chain.continued(current), start, i))
                     current, separator, i = "", next_separator, i + len(next_separator)
+                    start = i
                     continue
             current, i = current + c, i + 1
-        parts.append((separator, Chain.continued(current)))
-        return [(s, p) for s, p in parts if p]
+        parts.append((separator, Chain.continued(current), start, len(line)))
+        return [(s, p, a, b) for s, p, a, b in parts if p]
 
     @staticmethod
     def heredoc_end(line: str, start: int, current: str) -> int:
@@ -156,6 +168,10 @@ class Chain:
         part = part.strip()
         trailing = len(part) - len(part.rstrip("\\"))
         return part[:-1].rstrip() if trailing % 2 else part
+
+    @staticmethod
+    def ampersand_at(line: str, i: int) -> bool:
+        return line[i:i + 1] == "&" and line[i + 1:i + 2] not in ("&", ">") and line[i - 1:i] not in ("&", "|", ">", "<", ";", "")
 
     @staticmethod
     def semicolon_at(line: str, i: int) -> str:
@@ -203,32 +219,28 @@ class Chain:
         return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or after_arm
 
     @staticmethod
-    def rejoined(joined: str, separator: str, part: str) -> str:
-        return {";": f"{joined}; {part}", "\n": f"{joined}\n{part}"}.get(separator, f"{joined} {separator} {part}")
-
-    @staticmethod
     def led(text: list[str]) -> list[str]:
         start = next((i for i, w in enumerate(text) if w not in LEADS), len(text))
         return text[start:]
 
     @staticmethod
-    def compound(parts: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    def compound(parts: list[tuple[str, str, int, int]], line: str) -> list[tuple[str, str]]:
         joined, closers, short = [], [], False
-        for separator, part in parts:
+        for separator, part, start, end in parts:
             segments, text = Chain.segments(part), part.split()
             if short and separator != "&&":
                 closers.pop()
                 short = False
             if closers:
                 opener = joined[-1][1].split()[0]
-                joined[-1] = (joined[-1][0], Chain.rejoined(joined[-1][1], separator, part))
+                joined[-1] = (joined[-1][0], line[joined[-1][2]:end].strip(), joined[-1][2])
                 if len(closers) == 1 and not short and separator == ";" and opener in SHORT and text and text[0] not in BODIES | {closers[-1]} and not any(w in BODIES for w in joined[-1][1].split()):
                     short = True
             else:
-                joined.append((separator, part))
+                joined.append((separator, part, start))
             if closers and not short and Chain.closes(part, segments, closers[-1]):
                 closers.pop()
             for opening in [] if short else Chain.openings(segments):
                 closers.append(OPENS[opening[0]])
                 short = opening[0] == "repeat" and len(opening) > 2 and opening[2] != "do"
-        return joined
+        return [(separator, part) for separator, part, _ in joined]

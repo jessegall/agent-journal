@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- The shell parser cuts after a lone ampersand, so a backgrounded command is one part and what follows it the next; a group in braces is one part to its closing brace, a brace in a word such as @{u} no longer closing it; and a for, while, if or case block keeps its text as written, its spaces before a semicolon and the indentation of its lines. The corpus takes the seven hand-judged lines that waited on this and two ampersand lines, and 116 of its lines are re-cut by the new rules.
 - A task started outside the plan is the task in hand of the plan state all the same, so the edits nudge names it instead of 'plan 19, with no task in hand'.
 - A commit whose own hook never came, lost to an install or a restart in the same line, is spotted at the next tool use by the head's log having moved: it gets its card, and its Journal: tasks done line closes the tasks when the commit is fresh or one of the session's last tool starts held the commit. Three commits tonight closed no task because the install in their line stopped the journal before the hook came.
 - The kept-output line says how many lines and characters the output has and, in a chain, which part of the line it came from; a later part past the cap is named too, and a read shown by its ends names the lines shown and the lines cut, so the agent can read a range without a blind read.
