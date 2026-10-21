@@ -92,6 +92,7 @@ class Connection:
             local = sqlite3.connect(self.path, autocommit=True, check_same_thread=False)
             local.row_factory = sqlite3.Row
             local.execute("PRAGMA journal_mode=WAL")
+            local.execute("PRAGMA synchronous=NORMAL")
             local.execute("PRAGMA foreign_keys=ON")
             local.execute("PRAGMA busy_timeout=5000")
             self._open.append(local)
