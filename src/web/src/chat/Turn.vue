@@ -26,13 +26,14 @@ const skillMark = computed(() => ({
     title: `Read the ${props.turn.title} skill`,
 }));
 const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation compacted", time: props.turn.time}));
-const folded = ref(Boolean(props.turn.data?.collapsed));
-const cardMark = computed(() => ({...data.value, detail: folded.value ? "" : data.value.detail, time: props.turn.time}));
+const opened = ref(false);
+const cardMark = computed(() => ({...data.value, detail: data.value.collapsed ? "" : data.value.detail, time: props.turn.time}));
+const lines = computed(() => String(data.value.detail || "").split("\n").filter(Boolean));
 
 function markClick(data) {
     if (data.go) return {click: () => go(data.go)};
     if (data.row) return {click: () => openRef(data.row)};
-    return data.collapsed ? {click: () => (folded.value = !folded.value)} : {};
+    return data.collapsed ? {click: () => (opened.value = !opened.value)} : {};
 }
 </script>
 
@@ -54,6 +55,13 @@ function markClick(data) {
         <template #card>
             <div :class="['thread-turn', 'card', {mine: data.side === 'user'}]" :data-ref="turn.key">
                 <ChatMark :mark="cardMark" v-on="markClick(data)" />
+                <template v-if="opened && data.collapsed">
+                    <ul class="mark-lines">
+                        <template v-for="line in lines" :key="line">
+                            <li class="mark-line">{{ line }}</li>
+                        </template>
+                    </ul>
+                </template>
             </div>
         </template>
         <template #group>
@@ -104,6 +112,16 @@ function markClick(data) {
 
 .thread-turn.compacted {
     align-items: center;
+}
+
+.mark-lines {
+    margin: 0;
+    padding: 0 0 0 22px;
+    color: var(--text-3);
+    font-size: 11px;
+    line-height: 1.4;
+    list-style: none;
+    overflow-wrap: anywhere;
 }
 
 .thread-turn.card.mine {
