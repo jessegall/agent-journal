@@ -192,6 +192,11 @@ export class ApiClient {
         return this.address(`/${table}/${id}/files/${encoded(name)}`);
     }
 
+    // a document or report as a file to download, named by the journal
+    exportUrl(table, id) {
+        return this.address(`/${table}/${id}/export`);
+    }
+
     // the bytes at a file's address, so the viewer can tell text from a file it must not print
     fileBytes(url) {
         return transport.bytes(url);

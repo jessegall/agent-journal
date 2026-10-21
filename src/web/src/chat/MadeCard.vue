@@ -1,13 +1,9 @@
 <script setup>
 import {meta} from "../domain/tables.js";
-import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {useScope} from "../composables/scope.js";
 import {peek} from "../route.js";
 
-const props = defineProps({made: {type: Object, required: true}});
-const scope = useScope();
-const exportUrl = () => scope.api.address(`/${props.made.table}/${props.made.id}/export`);
+defineProps({made: {type: Object, required: true}});
 </script>
 
 <template>
@@ -19,12 +15,6 @@ const exportUrl = () => scope.api.address(`/${props.made.table}/${props.made.id}
                 <TextDisplay inline class="thread-made-line" :text="made.line" />
             </template>
         </button>
-        <template v-if="made.file">
-            <a class="thread-made-download" :href="exportUrl()" :download="made.file" :title="`Download ${made.file}`">
-                <Icon name="download" :size="13" />
-                <span>Download {{ made.file }}</span>
-            </a>
-        </template>
     </div>
 </template>
 
@@ -70,21 +60,5 @@ const exportUrl = () => scope.api.address(`/${props.made.table}/${props.made.id}
 .thread-made-line {
     color: var(--text-2);
     font-size: 12.5px;
-}
-
-.thread-made-download {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 12px 9px;
-    color: var(--text-3);
-    font-size: 12px;
-    text-decoration: none;
-}
-
-.thread-made-download:hover {
-    color: var(--text);
-    text-decoration: underline;
-    text-underline-offset: 3px;
 }
 </style>

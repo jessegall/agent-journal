@@ -198,9 +198,7 @@ def test_a_row_answers_its_heading_its_summary_and_its_dock_card():
     assert Fact(id=2, text="Ports are fixed").heading() == "Fact 2" and Fact(id=2).summary_line() == ""
     assert task.docked() == DockCard.plain() and [b.label for b in DockCard.plain().buttons] == ["Open", "Close"]
     assert [(b.label, b.act) for b in Plan(id=1).docked().buttons] == [("Open plan", "open"), ("Approve", "approve"), ("Close", "close")]
-    from journal.support.export_name import ExportName
-    assert RowCard.build(report).as_data() == {"row": "reports:33", "heading": "Report 33: What the dock showed", "summary": "One line about it", "dock": {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}, "file": f"What the dock showed.{ExportName.extension()}"}
-    assert RowCard.build(task).file == "", "a task is not downloaded as a document"
+    assert RowCard.build(report).as_data() == {"row": "reports:33", "heading": "Report 33: What the dock showed", "summary": "One line about it", "dock": {"buttons": [{"label": "Open", "act": "open"}, {"label": "Close", "act": "close"}], "folds": True}}, "a card carries no file: a document is downloaded from where it is read"
 
 
 def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(connection):

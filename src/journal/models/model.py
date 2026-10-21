@@ -14,7 +14,6 @@ class Model:
 
     text_fields: ClassVar[tuple[str, ...]] = ()
     timeline_visible: ClassVar[bool] = True
-    exports: ClassVar[bool] = False
 
     id: int | None = None
     created_at: datetime | None = None

@@ -25,6 +25,7 @@ const kind = (title, icon, abstract, more = {}) => ({
     listed_as_cards: false,
     typed_as_title: false,
     start_as_count: false,
+    exports: false,
     labels: {},
     filters: [],
     ...more,
@@ -61,6 +62,7 @@ export const TABLES = {
         needs_attention: true,
         takes_comments: true,
         closed_first: true,
+        exports: true,
     }),
     docs: kind("Document", "file", "What stays true about the project, catalogued for every session", {
         view: "document",
@@ -70,6 +72,7 @@ export const TABLES = {
         needs_attention: true,
         takes_comments: true,
         created_in_viewer: true,
+        exports: true,
         start_as_count: true,
     }),
     facts: kind("Fact", "pin", "Something true about this environment that a later session would get wrong without", {

@@ -17,37 +17,24 @@ const row = computed(() => dockedRef(props.message));
 const kind = computed(() => meta(row.value.table));
 const buttons = computed(() => (card.value.dock?.buttons || []).filter((b) => b.act !== "close"));
 const folds = computed(() => props.folded && card.value.dock?.folds !== false);
-const exportUrl = computed(() => scope.api.address(`/${row.value.table}/${row.value.id}/export`));
 
 function undock() {
     scope.api.act("messages", props.message.id, "undock");
 }
 
-function open() {
-    peek(row.value.table, row.value.id);
-    undock();
-}
-
+const open = () => peek(row.value.table, row.value.id);
 const OWN = {open, close: undock};
-
-function press(button) {
-    (OWN[button.act] || (() => scope.api.act(row.value.table, row.value.id, button.act)))();
-    undock();
-}
+const press = (button) => (OWN[button.act] || (() => scope.api.act(row.value.table, row.value.id, button.act)))();
 </script>
 
 <template>
     <ChatDock :label="kind.title" :folded="folds">
         <template #head>
             <Icon :name="kind.icon" class="row-dock-icon" />
-            <button type="button" class="row-dock-heading" :title="`Open the ${kind.title.toLowerCase()}`" @click="open">{{ card.heading }}</button>
+            <button type="button" class="row-dock-heading" :title="`Open the ${kind.title.toLowerCase()}`" @click="open">
+                {{ card.heading }}
+            </button>
             <span class="row-dock-acts chat-dock-acts">
-                <template v-if="card.file">
-                    <a class="row-dock-download" :href="exportUrl" :download="card.file" :title="`Download ${card.file}`">
-                        <Icon name="download" :size="13" />
-                        <span>Download {{ card.file }}</span>
-                    </a>
-                </template>
                 <template v-for="button in buttons" :key="button.act">
                     <Btn small @click="press(button)">{{ button.label }}</Btn>
                 </template>
@@ -94,23 +81,6 @@ function press(button) {
     align-items: center;
     gap: 4px;
     margin-left: auto;
-}
-
-.row-dock-download {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 24px;
-    padding: 0 7px;
-    border-radius: 6px;
-    color: var(--text-3);
-    font-size: 12px;
-    text-decoration: none;
-}
-
-.row-dock-download:hover {
-    background: var(--hover);
-    color: var(--text);
 }
 
 .row-dock-summary {
