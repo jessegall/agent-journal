@@ -3,6 +3,8 @@ from journal.features.messages.support.messages_data import MessagesData
 from journal.models.agent import Agent
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
+from journal.features.messages.support.peer_question import PeerQuestion
+from journal.models.message import Message
 
 
 class MessagesDataReader:
@@ -23,4 +25,5 @@ class MessagesDataReader:
             inbox_tool_uses=agent.tool_uses - agent.inbox_position if newest else 0,
             mention_count=self.entries.nudge_count(agent.session, tuple(n.key for n in MessagesFeature.inbox_lines()), agent.inbox_position) if newest else 0,
             uses_unanswered=agent.tool_uses - min(read_positions) if read_positions else 0,
+            peer_questions=tuple(PeerQuestion(m.id, m.data[Message.PEER]) for m in self.messages.peer_questions()),
         )

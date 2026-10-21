@@ -46,6 +46,10 @@ class Messages(ScopedRepository[Message]):
     def agent_reaction(self, message: Message) -> bool:
         return any(r.author == Author.AGENT for r in self.reactions.reactions(message))
 
+    def peer_questions(self) -> list[Message]:
+        questions = self.selected("json_extract(data, '$.kind') = ? AND json_extract(data, '$.asks') = 1 ORDER BY id", (Message.PEER,))
+        return [question for question in questions if not self.selected("json_extract(data, '$.sent_to') = ? AND id > ? LIMIT 1", (question.data[Message.PEER], question.id))]
+
     def sent_with(self, key: str) -> list[Message]:
         return self.selected("idempotency = ? ORDER BY id LIMIT 1", (key,))
 

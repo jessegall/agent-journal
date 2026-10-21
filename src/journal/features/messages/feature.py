@@ -46,7 +46,8 @@ class Messages(Feature[MessagesData]):
     DUPLICATE_REPLY = Nudge(name, "reply_kept_out_as_replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_interval=0)
     REPEATED_CLOSING_TEXT = Nudge(name, "closing_words_kept_out_as_repeated", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_interval=0)
     TAG_REPLY = Nudge(name, "reply_by_tag", "a reply needs no command", "type it in your turn with [!reply:N] opening its line, and it reaches the chat as your reply", repeat_interval=0)
-    nudges = (NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, USER_REACTION, FACE_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT, TAG_REPLY)
+    PEER_QUESTION = Nudge(name, "answer_the_other_agent", "agent {{sender}} asked you a question in message {{n}}", "answer it with SendMessage to {{sender}}; a message from another agent that asks nothing needs no answer", repeat_interval=300)
+    nudges = (PEER_QUESTION, NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, USER_REACTION, FACE_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT, TAG_REPLY)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
 # Messages
@@ -79,6 +80,8 @@ The user leaves messages; you answer them before anything else.
   out of the chat; `[!end:N]` finishes task N with the turn as what landed; `[!fact="the claim"]`, `[!rule="the ruling"]`
   and `[!reminder="the note"]` record one with the turn as its reason. A tag that cannot run is typed back to you. `journal message send "<text>" --reply-to N` answers from a command, and always counts: a reply written just before a tool call is sometimes not saved in Claude Code's transcript, so the journal never sees it; `journal message list` shows the thread,
   unread ones marked with `*`.
+- A message from another session's agent reaches the chat as that agent's. Read it at once and act on it as steering;
+  answer it, with SendMessage to that agent, only when it asks a question, so two agents never answer each other without end.
 - Everything you write for the user reaches the chat as a message; keep it about the work, never about the
   journal's own commands.
 """, keywords=('message', 'messages', 'inbox', 'reply'))

@@ -16,6 +16,7 @@ class Message(Scoped):
     REPORT = "report"
     PEER = "peer"
     RECIPIENT_KEY = "sent_to"
+    ASKS_KEY = "asks"
 
     author: Author = Author.USER
     text: str = ""
@@ -29,8 +30,8 @@ class Message(Scoped):
     data: dict = field(default_factory=dict)
 
     @classmethod
-    def agent_message(cls, sender: str, text: str, session: str, time: datetime) -> "Message":
-        return cls(author=Author.SYSTEM, text=text, read_at=time, data={"kind": cls.PEER, cls.PEER: sender, "session": session})
+    def agent_message(cls, sender: str, text: str, session: str, time: datetime, asks: bool) -> "Message":
+        return cls(author=Author.SYSTEM, text=text, read_at=time, data={"kind": cls.PEER, cls.PEER: sender, "session": session, cls.ASKS_KEY: asks})
 
     @classmethod
     def outgoing(cls, receiver: str, text: str, session: str, address: str = "") -> "Message":

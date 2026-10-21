@@ -25,7 +25,8 @@ class MessagesConduct(Conduct):
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         if self.blocks_tools():
             return self.none()
-        return self.none(*inbox_line(event.data.part(messages_feature()).unread))
+        messages = event.data.part(messages_feature())
+        return self.none(*inbox_line(messages.unread), *[messages_feature().PEER_QUESTION.create(sender=q.sender, n=q.message) for q in messages.peer_questions])
 
     def on_user_resumed(self, event: UserResumed, settings: Settings) -> Transition:
         if event.agent_session != event.session:

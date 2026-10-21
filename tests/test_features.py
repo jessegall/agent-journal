@@ -5642,6 +5642,22 @@ def test_messages_between_sessions_reach_the_chat_both_ways_named_by_their_agent
     assert transmitted[1].data["address"] == f"uds:/tmp/cc-socks/{os.getpid()}.sock", "the socket stays on the row beside the name"
 
 
+def test_another_agents_question_is_owed_an_answer_until_the_agent_sends_it_one_and_a_plain_message_owes_none(app: App):
+    from journal.events.agent.peer_message import PeerMessage
+    from journal.events.bus import Bus
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    bus = app.container.get(Bus)
+    bus.dispatch(PeerMessage(sender="code-commandments-12", text="the fix is on main").placed("s1", 1, "claude", None, 0.0))
+    assert "asked you a question" not in json.dumps(hook(app, "Stop")[1]), "a message that asks nothing owes no answer"
+    bus.dispatch(PeerMessage(sender="code-commandments-12", text="the fix is on main.\nDoes your suite pass on it?").placed("s1", 1, "claude", None, 0.0))
+    owed = json.dumps(hook(app, "Stop")[1])
+    assert "agent code-commandments-12 asked you a question" in owed and "SendMessage to code-commandments-12" in owed, "a question is named at the stop"
+    hook(app, "PostToolUse", tool_name="SendMessage", tool_input={"to": "code-commandments-12", "message": "it passes"}, tool_response={})
+    app.runtime().deferred.drain()
+    assert "asked you a question" not in json.dumps(hook(app, "Stop")[1]), "a message sent back to that agent answers it"
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog
