@@ -7,6 +7,8 @@ import threading
 
 import pytest
 
+from journal.db.query import Query
+from journal.db.unknown_column import UnknownColumn
 from journal.events.models.created import Created
 from journal.events.models.creating import Creating
 from journal.events.models.deleted import Deleted
@@ -19,6 +21,7 @@ from journal.events.listener import Listener
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
 from journal.support.rejection import Rejection
 from journal.support.actor import Actor
+from journal.models.entry import Entry
 from journal.models.link import Link
 from journal.models.support.ref import Ref
 from journal.models.task import Task
@@ -247,10 +250,10 @@ def test_no_dataclass_field_shadows_a_property_or_method_of_its_class_or_a_paren
     import pkgutil
     import journal
     clashes = []
-    for found in pkgutil.walk_packages(journal.__path__, "journal."):
-        module = importlib.import_module(found.name)
+    for matched in pkgutil.walk_packages(journal.__path__, "journal."):
+        module = importlib.import_module(matched.name)
         for name, cls in inspect.getmembers(module, inspect.isclass):
-            if cls.__module__ != found.name or not dataclasses.is_dataclass(cls):
+            if cls.__module__ != matched.name or not dataclasses.is_dataclass(cls):
                 continue
             for field in dataclasses.fields(cls):
                 for owner in cls.__mro__:
@@ -314,3 +317,33 @@ def test_the_worker_reuse_counts_migration_reads_each_reuse_from_the_reports_bef
     WorkerReuseCounts().apply(connection)
     counts = [(row["name"], row["reuse_count"]) for row in connection.all("SELECT name, reuse_count FROM workers ORDER BY id")]
     assert counts == [("w1", 2), ("w2", 2), ("w3", 0)], "three reports and back is two sends; two reports and out again is two; out on its first job is none"
+
+
+def test_a_query_renders_every_read_shape_with_its_values_bound():
+    tasks, entries = Query.build(Task), Query.build(Entry)
+    assert tasks.filter(state=TaskState.OPEN, creator=None).order_descending("id").limit(5).select() == ("SELECT * FROM tasks WHERE state = ? AND creator IS NULL ORDER BY id DESC LIMIT ? OFFSET ?", ("open", 5, 0)), "a value is turned by its column, and None reads as null"
+    assert tasks.filter_listed("id", (1, 2)).filter_unlisted("state", (TaskState.FINISHED,)).filter_present("block_reason").select() == ("SELECT * FROM tasks WHERE id IN (?, ?) AND state NOT IN (?) AND block_reason IS NOT NULL", (1, 2, TaskState.FINISHED.value))
+    assert tasks.filter_greater("id", 1).filter_less("id", 9).filter_greater_equal("id", 2).filter_less_equal("id", 8).filter_unequal("title", "x").select()[0] == "SELECT * FROM tasks WHERE id > ? AND id < ? AND id >= ? AND id <= ? AND title IS NOT ?"
+    assert tasks.filter_prefix("title", "a").filter_lacking_prefix("creator", "user:").select() == ("SELECT * FROM tasks WHERE title >= ? AND title < ? AND (creator IS NULL OR creator < ? OR creator >= ?)", ("a", "a\uffff", "user:", "user:\uffff"))
+    assert tasks.filter_containing("title", "50%_off").order("state").order_descending("id").offset(3).select() == ("SELECT * FROM tasks WHERE title LIKE ? ESCAPE '\\' ORDER BY state, id DESC LIMIT ? OFFSET ?", ("%50\\%\\_off%", -1, 3))
+    assert entries.filter_json("data->session", "s").filter_listed("data->call->kind", ("a",)).maximum("data->time") == ("SELECT MAX(json_extract(data, '$.time')) AS value FROM entries WHERE json_extract(data, '$.session') = ? AND json_extract(data, '$.call.kind') IN (?)", ("s", "a"))
+    assert tasks.filter_alternatives(tasks.filter(title="a"), tasks.filter(title="b").filter_null("block_reason")).count() == ("SELECT count(*) AS value FROM tasks WHERE (title = ? OR (title = ? AND block_reason IS NULL))", ("a", "b"))
+    assert tasks.filter_absent(Query.build(Link).filter(kind="in_plan").filter_ref("source", tasks)).count() == ("SELECT count(*) AS value FROM tasks WHERE NOT EXISTS (SELECT 1 FROM links WHERE kind = ? AND links.source = ? || tasks.id)", ("in_plan", "tasks:"))
+
+
+def test_a_query_renders_its_writes_and_writes_a_condition_into_its_text():
+    tasks = Query.build(Task)
+    assert tasks.insert(title="a", state=TaskState.OPEN) == ("INSERT INTO tasks (title, state) VALUES (?, ?)", ("a", "open"))
+    assert tasks.filter(id=3).update(title="b", creator=USER) == ("UPDATE tasks SET title = ?, creator = ? WHERE id = ?", ("b", USER.stamp, 3))
+    assert tasks.filter(id=3).delete() == ("DELETE FROM tasks WHERE id = ?", (3,)) and tasks.delete() == ("DELETE FROM tasks", ())
+    inlined = tasks.filter_listed("title", ("it's", "b")).inlined().filter(id=1)
+    assert inlined.clause() == "title IN ('it''s', 'b') AND id = ?" and inlined.select()[1] == (1,), "an inlined condition holds its values in the text, as a partial index's terms must, and what follows is bound"
+
+
+def test_a_query_fails_on_a_column_its_table_does_not_have():
+    with pytest.raises(UnknownColumn):
+        Query.build(Task).filter(titel="a")
+    with pytest.raises(UnknownColumn):
+        Query.build(Task).order("nope")
+    with pytest.raises(UnknownColumn):
+        Query.build(Entry).filter_json("data->it's", 1)
