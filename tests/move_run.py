@@ -12,6 +12,7 @@ TREE = {
     "src/journal/user.py": "from journal.support.cards import Cards\nimport journal.support.cards\n",
     "tests/test_user.py": "from journal.support.cards import Cards\n",
     "NOTES.md": "Cards live in journal.support.cards.\n",
+    "scripts/refactoring/move.py": "# python3 move.py journal.support.cards journal.chat.cards\n",
 }
 
 
@@ -35,6 +36,7 @@ def test_a_module_moves_with_every_name_of_it_and_its_new_package_is_made(tmp_pa
     assert (root / "src/journal/chat/cards.py").is_file() and (root / "src/journal/chat/__init__.py").is_file() and not (root / "src/journal/support/cards.py").exists()
     assert (root / "src/journal/user.py").read_text() == "from journal.chat.cards import Cards\nimport journal.chat.cards\n"
     assert "journal.chat.cards" in (root / "tests/test_user.py").read_text() and "journal.chat.cards" in (root / "NOTES.md").read_text()
+    assert "journal.support.cards journal.chat.cards" in (root / "scripts/refactoring/move.py").read_text(), "the tool's own example is left as written"
 
 
 def test_a_missing_module_or_a_taken_place_writes_nothing(tmp_path: Path):
