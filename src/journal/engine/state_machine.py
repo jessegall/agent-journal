@@ -83,7 +83,7 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def move(self, session: str, environment_id: int, destination: BaseState) -> Agent:
         agent = self.sessions.agent(session, environment_id)
-        machine_answer = self.hook_machine(self.states.stack(agent), self.placed(self.states.stack(agent), destination), self.top_state(), self.agent_data(agent))
+        machine_answer = self.hook_machine(self.states.stack(agent), self.placed(self.states.stack(agent), destination), self.top_state(), self.readers.agent_data(agent))
         resolved = self._store(agent, machine_answer, MOVED, Actor.system())
         if machine_answer.refusal:
             raise Rejection(machine_answer.refusal.nudge.rendered())
@@ -104,7 +104,7 @@ class StateMachine(AgentListener[AgentEvent]):
         return self.manual(agent, Stack((self.states.first(),)), actor, text)
 
     def manual(self, agent: Agent, following: Stack, actor: Actor, text: str) -> Agent:
-        machine_answer = self.hook_machine(self.states.stack(agent), following, self.top_state(), self.agent_data(agent))
+        machine_answer = self.hook_machine(self.states.stack(agent), following, self.top_state(), self.readers.agent_data(agent))
         resolved = self._store(agent, machine_answer, text, actor)
         if machine_answer.refusal:
             raise Rejection(machine_answer.refusal.nudge.rendered())
@@ -115,9 +115,6 @@ class StateMachine(AgentListener[AgentEvent]):
     def top_state(self) -> Settings:
         return Settings.applied(self.settings, self.features.options())
 
-    def agent_data(self, agent: Agent) -> FeatureData:
-        with self.scope.environment(agent.environment_id):
-            return self.readers.agent_data(agent)
 
     def hook_machine(self, previous: Stack, following: Stack, settings: SettingRows, data: FeatureData) -> MachineAnswer:
         if following.states[:-1] == previous.states and len(following.states) == len(previous.states) + 1:

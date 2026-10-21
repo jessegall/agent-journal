@@ -1,5 +1,6 @@
 from journal.config import Config
 from journal.container import Container
+from journal.repositories.scope import Scope
 from journal.console.console import Console
 from journal.console.standard_commands import StandardCommands
 from journal.db.connection import Connection
@@ -39,7 +40,7 @@ class App:
         self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))
         self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(SettingRows)))
         self.container.bind(FeatureRegistry, lambda: self.container.get(Registry))
-        self.container.bind(DataReaders, lambda: DataReaders({getattr(reader, "source", feature).name: self.container.get(reader) for feature in Standard.FEATURES for reader in feature.data}))
+        self.container.bind(DataReaders, lambda: DataReaders({getattr(reader, "source", feature).name: self.container.get(reader) for feature in Standard.FEATURES for reader in feature.data}, self.container.get(Scope)))
 
     def connection(self) -> Connection:
         self.config.home.mkdir(parents=True, exist_ok=True)
