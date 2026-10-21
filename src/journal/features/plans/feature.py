@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.plans.support.plans_data_reader import PlansDataReader
+from journal.features.plans.support.task_succession_reader import TaskSuccessionReader
 from journal.features.plans.support.plans_data import PlansData
 from journal.features.plans.listeners.plan_blockade import PlanBlockade
 from journal.features.plans.listeners.clear_plan_waits import ClearPlanWaits
@@ -10,20 +11,23 @@ from journal.features.plans.commands.plan_command import PlanCommand
 from journal.features.plans.listeners.advance_plan import AdvancePlan
 from journal.features.plans.listeners.reopen_finished_plan import ReopenFinishedPlan
 from journal.features.plans.listeners.plan_reopening import PlanReopening
-from journal.features.plans.support.plans_conduct import PlansConduct
+from journal.features.plans.plans_conduct import PlansConduct
 from journal.features.plans.seeds.closed_plans import ClosedPlans
 from journal.features.plans.states.following_plan import FollowingPlan
+from journal.features.plans.states.plans_ready import PlansReady
+from journal.features.plans.states.plans_working import PlansWorking
 
 
 class Plans(Feature[PlansData]):
+    ALL_BLOCKED = "all its tasks left are blocked"
     name = "plans"
     title = "Plans"
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."
-    states = (FollowingPlan,)
+    states = (PlansReady, PlansWorking, FollowingPlan)
     commands = (PlanCommand,)
     listeners = (PlanBlockade, ClearPlanWaits, CountPlanReviewers, AdvancePlan, ReopenFinishedPlan, PlanReopening)
     conduct = (PlansConduct,)
-    data = (PlansDataReader,)
+    data = (PlansDataReader, TaskSuccessionReader)
     seeds = (ClosedPlans,)
 
     NEXT_PLAN_TASK = Nudge(name, "next_task_of_the_plan", "plan {{n}}: task {{task}}, {{title}} is next. {{briefing}}", repeat_interval=0)
@@ -36,7 +40,6 @@ class Plans(Feature[PlansData]):
     PHASE_END = Nudge(name, "phase_complete_go_on", "plan {{n}}: phase {{phase}} is complete, and in auto mode it does not stop you", "`journal plan start {{n}}` begins the next phase; carry on", repeat_interval=0)
     PLAN_BLOCKED = Nudge(name, "plan_blocked", "plan {{n}} is blocked: {{why}}", "it opens again by itself when what it waits on comes; `journal plan unblock {{n}}` opens it by hand", repeat_interval=0)
     PLAN_REOPENED = Nudge(name, "plan_reopened", "plan {{n}} is open again: {{why}}", "`journal plan start {{n}}` goes on with it", repeat_interval=0)
-    ALL_BLOCKED = "all its tasks left are blocked"
     UNAPPROVED_PLAN = Nudge(name, "plan_not_approved", "plan {{n}} is not approved, so it cannot be followed", "only the user approves a plan, on the plan page or with `journal plan approve {{n}}`", repeat_interval=0)
     APPROVED_UNSTARTED = Nudge(name, "approved_unstarted", "plan {{n}} is approved and not started", "`journal plan start {{n}}` begins its first task", repeat_interval=0)
     nudges = (UNAPPROVED_PLAN, APPROVED_UNSTARTED, NEXT_PLAN_TASK, PLAN_FINISHED, PLAN_STALLED, PLAN_POSTPONED, PLAN_ABANDONED, PLAN_APPROVED, CHECKPOINT_PHASE_END, PHASE_END, PLAN_BLOCKED, PLAN_REOPENED)

@@ -12,7 +12,7 @@ from journal.features.plugins.support.plugin_answer import PluginAnswer
 from journal.features.plugins.support.plugin_card import PluginCard
 
 ANSWERS = ("allow", "refuse", "tell")
-COMMAND_LIMIT = 20
+ANSWER_COMMANDS = 20
 PLACED = ("session", "environment_id", "provider", "context", "subagent", "time", "data", "propagation")
 EVENT_NAMES = {"stop": "idle"}
 ANSWER_FIELDS = {"tell": "message"}
@@ -62,6 +62,6 @@ class Protocol:
             raise PluginFault(f"it answered {answer.answer!r}; an answer is allow, refuse or tell")
         if answer.v != self.VERSION:
             raise PluginFault(f"it answered in protocol {answer.v}; this journal speaks {self.VERSION}")
-        if len(answer.commands) > COMMAND_LIMIT:
-            raise PluginFault(f"it asked for {len(answer.commands)} commands; one answer runs at most {COMMAND_LIMIT}")
+        if len(answer.commands) > ANSWER_COMMANDS:
+            raise PluginFault(f"it asked for {len(answer.commands)} commands; one answer runs at most {ANSWER_COMMANDS}")
         return answer

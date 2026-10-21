@@ -1,6 +1,6 @@
 from journal.features.profiles.support.profiles_data import ProfilesData
 from journal.models.agent import Agent
-from journal.support.profile_files import ProfileFiles
+from journal.features.profiles.support.profile_files import ProfileFiles
 
 
 class ProfilesDataReader:

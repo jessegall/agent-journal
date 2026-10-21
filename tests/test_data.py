@@ -20,7 +20,7 @@ from journal.features.listeners.unlink_deleted import UnlinkDeleted
 from journal.support.rejection import Rejection
 from journal.support.actor import Actor
 from journal.models.link import Link
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
@@ -127,7 +127,7 @@ def test_writes_from_many_threads_all_land(connection, bus, scope):
 def test_a_column_a_model_gained_is_added_to_a_table_made_before_it(tmp_path):
     from journal.db.connection import Connection
     from journal.db.schema import Schema
-    from journal.support.all_models import AllModels
+    from journal.models.all_models import AllModels
     old = Connection(tmp_path / "old.db", Masks(SecretValues(Config(tmp_path))))
     with old.transaction() as db:
         db.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, environment_id INTEGER)")
@@ -152,12 +152,12 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
     from journal.db.connection import Connection
     from journal.db.schema import Schema
     from journal.events.bus import Bus
-    from journal.support.all_models import AllModels
+    from journal.models.all_models import AllModels
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions
     from journal.repositories.links import Links
     from journal.repositories.environments import Environments
-    from journal.support.scope import Scope
+    from journal.repositories.scope import Scope
     old = Connection(tmp_path / "old.db", Masks(SecretValues(Config(tmp_path))))
     with old.transaction() as db:
         db.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, environment_id INTEGER, author TEXT, text TEXT, created_at TEXT, updated_at TEXT, creator TEXT, updater TEXT)")
@@ -189,7 +189,7 @@ def test_a_row_answers_its_heading_its_summary_and_its_dock_card():
     from journal.models.plan import Plan
     from journal.models.report import Report
     from journal.models.support.dock_card import DockCard
-    from journal.support.row_card import RowCard
+    from journal.models.support.row_card import RowCard
     report = Report(id=33, title="What the dock showed", abstract="One line about it", body="## First\n\ntext")
     assert report.heading() == "Report 33: What the dock showed" and report.summary_line() == "One line about it"
     assert Doc(id=3, title="Notes", body="# Notes\n\nThe first line.\nThe second.").summary_line() == "The first line."

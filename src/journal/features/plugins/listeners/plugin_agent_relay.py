@@ -11,7 +11,7 @@ from journal.features.plugins.support.plugin_queue import PluginQueue
 from journal.features.plugins.support.plugin_text import PluginText
 from journal.support.decision import Decision
 from journal.support.listener_queue import ListenerQueue
-from journal.support.plugin_refusal_exemption import PluginRefusalExemption
+from journal.features.plugins.support.plugin_refusal_exemption import PluginRefusalExemption
 from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
 from journal.repositories.edits import Edits

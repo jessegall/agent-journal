@@ -1,6 +1,6 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
-from journal.features.migration.support.migration_conduct import MigrationConduct
+from journal.features.migration.migration_conduct import MigrationConduct
 from journal.features.migration.support.migration_data_reader import MigrationDataReader
 from journal.features.migration.support.migration_data import MigrationData
 

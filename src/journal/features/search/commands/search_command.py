@@ -2,9 +2,9 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.features.search.support.search import CONVERSATION, Search
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.card_kind import CardKind
 
 

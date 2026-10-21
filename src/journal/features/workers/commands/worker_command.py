@@ -6,7 +6,7 @@ from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.support.worktree_failure import WorktreeFailure
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.support.profile_files import ProfileFiles
+from journal.features.profiles.support.profile_files import ProfileFiles
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.features.workers.support.path_mentions import PathMentions
 from journal.features.workers.support.worker_runner import WorkerRunner
@@ -16,7 +16,7 @@ from journal.repositories.agents import Agents
 from journal.support.rejection import Rejection
 from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.workers import Workers
 
 

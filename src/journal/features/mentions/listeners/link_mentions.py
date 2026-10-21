@@ -5,7 +5,7 @@ from journal.features.mentions.support.mention_match import MentionMatch
 from journal.support.actor import Actor
 from journal.models.link import Link
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.links import Links
 
 MENTIONS = "mentions"

@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 from journal.config import Config
-from journal.engine.support.typed_line import TypedLine
+from journal.support.typed_line import TypedLine
 from journal.support.queued_line import QueuedLine
 from journal.support.typed_lines import BATCH_SECONDS, TypedLines
 from journal.repositories.setting_rows import SettingRows
@@ -84,7 +84,7 @@ class SupervisorLink:
         self._chosen_at[environment_id] = time.time()
         self._send(environment_id, "type", {"name": AGENT, "line": command, "after": 0.0})
 
-    def selected_at(self, environment_id: int) -> float:
+    def last_selection(self, environment_id: int) -> float:
         return self._chosen_at.get(environment_id, 0.0)
 
     def confirmed(self, environment_id: int) -> None:
@@ -94,11 +94,11 @@ class SupervisorLink:
         path = self.mirrored(environment_id, "out")
         return path.read_bytes().decode(errors="replace") if path else ""
 
-    def screen_changed_at(self, environment_id: int) -> float:
+    def last_screen_change(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "out")
         return path.stat().st_mtime if path else 0.0
 
-    def keyed_at(self, environment_id: int) -> float:
+    def last_keystroke(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "keyed")
         keyboard_input = path.stat().st_mtime if path else 0.0
         return max(keyboard_input, self._viewer_keyed_at.get(environment_id, 0.0))

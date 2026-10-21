@@ -1,9 +1,9 @@
 import time as timing
 
 from journal.support.queued_line import QueuedLine
-from journal.engine.support.typed_line import TypedLine
+from journal.support.typed_line import TypedLine
 
-RECENT = 60.0
+RECENT_SECONDS = 60.0
 BATCH_SECONDS = 5.0
 JOURNAL_PREFIX = "[journal]"
 
@@ -61,10 +61,10 @@ class TypedLines:
         moment = timing.time()
         self._sent_at[environment_id] = moment
         self._waiting.append(TypedLine(environment_id, line, moment))
-        self._recent = [t for t in self._recent if moment - t.time < RECENT] + [TypedLine(environment_id, line, moment)]
+        self._recent = [t for t in self._recent if moment - t.time < RECENT_SECONDS] + [TypedLine(environment_id, line, moment)]
 
     def contains(self, environment_id: int, prompt: str) -> bool:
-        return any(t.environment_id == environment_id and t.contains(prompt) for t in self._recent if timing.time() - t.time < RECENT)
+        return any(t.environment_id == environment_id and t.contains(prompt) for t in self._recent if timing.time() - t.time < RECENT_SECONDS)
 
     def confirm(self, environment_id: int, prompt: str) -> bool:
         for keystrokes in self._waiting:
@@ -85,7 +85,7 @@ class TypedLines:
     def retry(self, keystrokes: TypedLine, time: float) -> TypedLine:
         repeat = TypedLine(keystrokes.environment_id, keystrokes.line, time, keystrokes.tries + 1)
         self._waiting[self._waiting.index(keystrokes)] = repeat
-        self._recent = [t for t in self._recent if time - t.time < RECENT] + [repeat]
+        self._recent = [t for t in self._recent if time - t.time < RECENT_SECONDS] + [repeat]
         return repeat
 
     def abandon(self, keystrokes: TypedLine) -> None:

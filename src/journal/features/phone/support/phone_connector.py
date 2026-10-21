@@ -11,15 +11,15 @@ from journal.repositories.phone_codes import PhoneCodes
 from journal.repositories.phones import Phones
 from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.support.rejection import Rejection
 from journal.support.card_kind import CardKind
 
 CODE_MINUTES = 10
 DAYS = (1, 7, 30)
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-SHORT_LENGTH = 8
-DEVICE_LONGEST = 60
+SHORT_CHARACTERS = 8
+DEVICE_CHARACTERS = 60
 
 
 class PhoneConnector:
@@ -39,7 +39,7 @@ class PhoneConnector:
         self.refuse_duplicate(time)
         for older in self.codes.open(time):
             self.codes.save(older.closed(time), actor)
-        code, short = secrets.token_urlsafe(24), "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
+        code, short = secrets.token_urlsafe(24), "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_CHARACTERS))
         pairing = self.codes.save(PhoneCode(code=self.hashed(code), short=self.hashed(short), days=days, expires_at=time + timedelta(minutes=CODE_MINUTES)), actor)
         self.tunnel.reconcile()
         return ConnectionProposal(link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", address=address, expires_at=pairing.expires_at)
@@ -53,7 +53,7 @@ class PhoneConnector:
         self.refuse_duplicate(time)
         key = secrets.token_urlsafe(32)
         self.codes.save(rows.closed(time), Actor.system())
-        name = " ".join(device.split())[:DEVICE_LONGEST] or "A phone"
+        name = " ".join(device.split())[:DEVICE_CHARACTERS] or "A phone"
         phone = self.phones.save(Phone(environment_id=rows.environment_id, name=name, key=self.hashed(key), expires_at=time + timedelta(days=rows.days), last_visited_at=time), Actor.system())
         self.cards.show(rows.environment_id, "", f"A phone paired: {name}", "phone", shows=CardKind.PHONES)
         self.tunnel.reconcile()

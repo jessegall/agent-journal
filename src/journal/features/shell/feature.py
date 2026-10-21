@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.shell.listeners.output_notice import OutputNotice
-from journal.features.shell.support.shell_conduct import ShellConduct
+from journal.features.shell.shell_conduct import ShellConduct
 from journal.features.shell.support.shell_data_reader import ShellDataReader
 from journal.features.shell.support.shell_data import ShellData
 from journal.engine.nudge import Nudge
@@ -11,10 +11,6 @@ from journal.support.skill import Skill
 
 
 class Shell(Feature[ShellData]):
-    name = "shell"
-    title = "Shell commands"
-    help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."
-    commands = (OutputCommand, ReaderCommand)
     FOREGROUND = Option("shell.foreground", "Run a command in the foreground for", "Seconds a part of a command may run before the rest of the chain moves to the background", 30, unit="seconds")
     MESSAGE_FOREGROUND_LIMIT = Option("shell.foreground_while_waiting", "In the foreground while a message waits", "The same limit while the user has an unread or unanswered message, so they are not kept waiting", 10, unit="seconds")
     SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")
@@ -22,6 +18,10 @@ class Shell(Feature[ShellData]):
     COMMAND_SHOWN = Option("shell.command_characters", "Show any other command's output up to", "Any other command's output, such as a test run or a build, is shown whole up to this; past it only a line naming the output, which the agent reads by its number", 400, unit="characters")
     SHORT = Option("shell.short_output", "Keep no output under", "A command whose whole output is under this many characters, with no pipe in its line, is shown as it is and kept as no numbered output; a longer one, or a line with a pipe into head, tail, grep or any filter, is kept", 400, unit="characters")
     OUTPUT_COUNT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
+    name = "shell"
+    title = "Shell commands"
+    help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."
+    commands = (OutputCommand, ReaderCommand)
     options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, OUTPUT_COUNT)
     listeners = (OutputNotice,)
     data = (ShellDataReader,)

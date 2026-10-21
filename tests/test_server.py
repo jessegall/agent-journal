@@ -12,6 +12,7 @@ import pytest
 from shell_verbs import ShellVerbs
 
 from journal.app import App
+from journal.engine.support.session_agents import SessionAgents
 from journal.config import Config
 from journal.support.caller import Caller
 
@@ -235,10 +236,10 @@ def test_the_viewers_start_takes_the_plans_first_task_in_hand_and_its_park_postp
         call(server, "POST", "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s1", "cwd": str(tmp_path)})
         started = call(server, "POST", "/journal/plans/1/start", {})[1]
         assert started["state"] == "started" and call(server, "GET", "/journal/tasks/1")[1]["state"] == "started", "the viewer's start takes the first task in hand, as the command does"
-        assert app.container.get(StateMachine).current("s1").name == "following_plan"
+        assert app.container.get(SessionAgents).top("s1").name == "following_plan"
         parked = call(server, "POST", "/journal/plans/1/suspend", {})[1]
         assert parked["state"] == "parked" and call(server, "GET", "/journal/tasks/1")[1]["state"] == "parked", "the plan's task in hand is postponed with it"
-        assert app.container.get(StateMachine).current("s1").name == "idle", "the agent following the plan is popped by the plan's own event"
+        assert app.container.get(SessionAgents).top("s1").name == "idle", "the agent following the plan is popped by the plan's own event"
     finally:
         app.runtime().stop()
 
@@ -441,7 +442,7 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
 
 
 def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_cards_by_number(tmp_path: Path):
-    from journal.support.cards import Cards
+    from journal.chat.cards import Cards
     from journal.support.card_kind import CardKind
     from journal.support.actor import Actor
     from journal.models.setting import Setting
@@ -628,7 +629,7 @@ def test_the_transcript_of_an_agent_and_of_its_subagent_are_read_from_the_provid
 def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_report(tmp_path: Path):
     import time
     from journal.repositories.reports import Reports
-    from journal.support.scope import Scope
+    from journal.repositories.scope import Scope
     app = App(Config(tmp_path, port=0))
     app.runtime().boot()
     server = app.server()
@@ -867,7 +868,7 @@ def test_an_output_is_read_by_its_id(tmp_path: Path):
     from journal.support.actor import Actor
     from journal.models.command_output import CommandOutput
     from journal.repositories.command_outputs import CommandOutputs
-    from journal.support.scope import Scope
+    from journal.repositories.scope import Scope
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()
@@ -1041,7 +1042,7 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
     """The one test with a real shell: a short line, so it stays fast."""
     import os
     from journal.repositories.entries import Entries
-    from journal.support.scope import Scope
+    from journal.repositories.scope import Scope
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()
@@ -1066,8 +1067,8 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
 
 
 def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: Path):
-    from journal.support.docking import Docking
-    from journal.support.scope import Scope
+    from journal.chat.docking import Docking
+    from journal.repositories.scope import Scope
     from journal.support.actor import Actor
     app = App(Config(journal_root, port=0))
     app.runtime().boot()

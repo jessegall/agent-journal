@@ -9,7 +9,7 @@ from journal.app import App
 from journal.config import Config
 from journal.support.caller import Caller
 from journal.support.actor import Actor
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 AGENT = Caller("main", "s1")
 

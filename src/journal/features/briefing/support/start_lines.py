@@ -20,7 +20,7 @@ class StartLines:
         self.agents, self.rules, self.facts, self.reminders = agents, rules, facts, reminders
         self.tasks, self.messages, self.questions = tasks, messages, questions
 
-    def takeover_at(self, event: SessionStarted) -> str:
+    def takeover_note(self, event: SessionStarted) -> str:
         return "" if event.source == "compact" else self.other_session_time(event.session)
 
     def other_session_time(self, session: str) -> str:

@@ -1,11 +1,11 @@
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.events.agent.line_delivered import LineDelivered
 from journal.events.agent_listener import AgentListener
 from journal.repositories.facts import Facts
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
 from journal.support.card_kind import CardKind
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 
 MEMORY_CHAT_KINDS = {"fact": CardKind.FACTS, "rule": CardKind.RULES, "reminder": CardKind.REMINDERS}
 

@@ -26,7 +26,7 @@ class Phone(Scoped):
     def is_presence_due(self, time: datetime) -> bool:
         return self.last_visited_at is None or time - self.last_visited_at >= self.PRESENCE_INTERVAL
 
-    def seen(self, time: datetime) -> "Phone":
+    def visit(self, time: datetime) -> "Phone":
         return self.with_(last_visited_at=time)
 
     def pushed_refs(self) -> list[str]:

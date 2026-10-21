@@ -1,4 +1,4 @@
-from journal.features.etiquette.support.etiquette_conduct import EtiquetteConduct
+from journal.features.etiquette.etiquette_conduct import EtiquetteConduct
 from journal.features.etiquette.support.etiquette_data_reader import EtiquetteDataReader
 from journal.features.etiquette.support.etiquette_data import EtiquetteData
 from journal.features.feature import Feature
@@ -7,6 +7,7 @@ from journal.support.option import Option
 
 
 class Etiquette(Feature[EtiquetteData]):
+    REMINDER_INTERVAL = Option("etiquette.remind_every", "Remind what a journal line is every", "Lines the journal says to the agent between reminders that a journal line is an instruction, not a message", 50, unit="lines")
     name = "etiquette"
     title = "Chat etiquette"
     help = "Shop talk and the third person in the chat are named."
@@ -19,5 +20,4 @@ class Etiquette(Feature[EtiquetteData]):
     PARAGRAPH_SPACING = Nudge(name, "blank_lines_between_paragraphs", "your last message had no blank lines between paragraphs", "a blank line between parts is what makes a message readable: one thought to a paragraph", repeat_interval=600)
     JOURNAL_LINE_RULE = Nudge(name, "a_line_is_an_instruction", "chat etiquette: a line from the journal is an instruction, not a message", "act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat", repeat_interval=1800)
     nudges = (SHOP_TALK_WARNING, SECOND_PERSON, EM_DASH_WARNING, PARAGRAPH_SPACING, JOURNAL_LINE_RULE)
-    REMINDER_INTERVAL = Option("etiquette.remind_every", "Remind what a journal line is every", "Lines the journal says to the agent between reminders that a journal line is an instruction, not a message", 50, unit="lines")
     options = (REMINDER_INTERVAL,)

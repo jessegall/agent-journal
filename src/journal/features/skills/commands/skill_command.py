@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.support.skill_files import SkillFiles
+from journal.features.skills.support.skill_files import SkillFiles
 
 
 class SkillCommand(Command):

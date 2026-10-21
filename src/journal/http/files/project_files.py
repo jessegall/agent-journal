@@ -6,7 +6,7 @@ from journal.config import Config
 from journal.http.files.project_entry import ProjectEntry
 from journal.http.files.project_file import ProjectFile
 
-PAGE = 50
+PAGE_FILES = 50
 HIDDEN = ("node_modules", "__pycache__")
 
 
@@ -53,7 +53,7 @@ class ProjectFiles:
         if not text:
             return []
         rows = [self.entry(p) for p in sorted(self.root.rglob("*")) if p.is_file() and not self.hidden(p) and all(w in p.name.lower() for w in text)]
-        return rows[:PAGE]
+        return rows[:PAGE_FILES]
 
     def contains(self, value: str) -> Path | None:
         path = (self.root / value.strip("/")).resolve()

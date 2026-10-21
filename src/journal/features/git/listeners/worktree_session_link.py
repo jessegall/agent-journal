@@ -2,7 +2,7 @@ from journal.config import Config
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent_listener import AgentListener
 from journal.repositories.environments import Environments
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.support.worktree import Worktree
 from journal.support.card_kind import CardKind
 

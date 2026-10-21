@@ -5,10 +5,10 @@ from typing import ClassVar
 from journal.console.command import Command
 from journal.features.memory.support.memory_context import MemoryContext
 from journal.support.caller import Caller
-from journal.engine.state_machine import StateMachine
+from journal.engine.support.session_agents import SessionAgents
 from journal.repositories.agents import Agents
 from journal.repositories.repository import Repository
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class MemoryCommand(Command):
@@ -17,8 +17,8 @@ class MemoryCommand(Command):
     scoped: ClassVar[bool] = True
     repository: Repository
 
-    def __init__(self, machine: StateMachine, scope: Scope, agents: Agents, context: MemoryContext) -> None:
-        self.machine, self.scope, self.agents, self.context = machine, scope, agents, context
+    def __init__(self, sessions: SessionAgents, scope: Scope, agents: Agents, context: MemoryContext) -> None:
+        self.sessions, self.scope, self.agents, self.context = sessions, scope, agents, context
 
     def arguments(self, verbs) -> None:
         creation = self.verb(verbs, "create", f"record a {self.noun}")
@@ -64,6 +64,6 @@ class MemoryCommand(Command):
     def decided(self, caller: Caller) -> None:
         if not caller.session:
             return
-        agent = self.machine.agent(caller.session, self.scope.id)
+        agent = self.sessions.agent(caller.session, self.scope.id)
         if agent.threshold_due:
             self.agents.save(agent.context_decided(datetime.now(timezone.utc).timestamp()), caller.actor)

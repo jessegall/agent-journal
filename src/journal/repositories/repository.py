@@ -2,7 +2,7 @@ from dataclasses import fields
 from datetime import datetime, timezone
 from typing import Callable, Generic, TypeVar
 
-from journal.support.column import Column
+from journal.models.support.column import Column
 from journal.db.connection import Connection
 from journal.db.schema import Schema
 from journal.events.models.created import Created
@@ -17,15 +17,15 @@ from journal.events.models.updating import Updating
 from journal.events.bus import Bus
 from journal.support.actor import Actor
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.support.title import Title
 from journal.support.missing_row import MissingRow
 
 M = TypeVar("M", bound=Model)
 
 
-PAGE = 500
-MATCH_LIMIT = 40
+PAGE_ROWS = 500
+MATCH_ROWS = 40
 
 
 class Repository(Generic[M]):
@@ -73,7 +73,7 @@ class Repository(Generic[M]):
         return self.selected(f"{clause} ORDER BY id", params)
 
     def newest(self, clause: str, params: tuple) -> list[M]:
-        return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE))))
+        return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE_ROWS))))
 
     def numbered(self, ids) -> list[M]:
         ids = list(ids)
@@ -84,7 +84,7 @@ class Repository(Generic[M]):
 
     def search(self, terms: list[str]) -> list[M]:
         clause, params = self.matching_words(terms)
-        return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, MATCH_LIMIT))
+        return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, MATCH_ROWS))
 
     def matching_words(self, terms: list[str]) -> tuple[str, tuple]:
         entry = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"

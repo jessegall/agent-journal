@@ -7,7 +7,7 @@ from journal.events.bus import Bus
 from journal.models.agent import Agent
 from journal.models.command_output import CommandOutput
 from journal.repositories.agents import Agents
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.caller import Caller
 
 

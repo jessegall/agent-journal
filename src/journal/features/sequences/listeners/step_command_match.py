@@ -1,6 +1,6 @@
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.listener import Listener
-from journal.support.run_tracker import RunTracker
+from journal.features.sequences.support.run_tracker import RunTracker
 
 
 class StepCommandMatch(Listener[ToolStarting]):

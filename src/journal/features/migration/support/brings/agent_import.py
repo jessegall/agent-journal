@@ -23,4 +23,4 @@ class AgentImport(EnvironmentKind):
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Agent:
         transcript = row.data.get("transcript", "")
         session = Path(transcript).stem if transcript else f"version-3-agent-{row.n}"
-        return self.agents.imported(Agent(environment_id=target.id, session=session, provider=row.data.get("provider", "claude"), state="ended"), row.created_at(), actor)
+        return self.agents.imported(Agent(environment_id=target.id, session=session, provider=row.data.get("provider", "claude"), state="ended"), row.creation_moment(), actor)

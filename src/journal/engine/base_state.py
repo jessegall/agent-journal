@@ -10,6 +10,7 @@ from journal.engine.support.typist import Typist
 from journal.events.feature_data import FeatureData
 from journal.events.agent.compacting import Compacting
 from journal.events.agent.session_ended import SessionEnded
+from journal.events.rows.session_retired import SessionRetired
 from journal.events.event import Event
 from journal.support.permission import Permission
 from journal.support.timeout import Timeout
@@ -46,7 +47,7 @@ class BaseState(Conduct):
     @cache
     def listeners(cls) -> tuple[tuple[type, Callable], ...]:
         owned = [(get_type_hints(method)["event"], method, method.__name__ not in cls.__dict__) for name, method in getmembers(cls, isfunction) if cls.is_listener(name, method)]
-        folded = [(get_type_hints(method)["event"], method, 2) for conduct in BaseState.conducts for name, method in getmembers(conduct, isfunction) if cls.is_listener(name, method) and not hasattr(cls, name)]
+        folded = [(get_type_hints(method)["event"], method, 2) for conduct in BaseState.conducts for name, method in getmembers(conduct, isfunction) if cls.is_listener(name, method)]
         ranked = sorted([*owned, *folded], key=lambda entry: (int(entry[2]), -len(entry[0].__mro__)))
         return tuple((event_kind, method) for event_kind, method, rank in ranked)
 
@@ -59,13 +60,17 @@ class BaseState(Conduct):
     def event_listeners(cls, event: type) -> tuple[Callable, ...]:
         return tuple(method for event_kind, method in cls.listeners() if issubclass(event, event_kind))
 
-    def on_compaction(self, event: Compacting, settings: Settings) -> Transition:
+    def on_compacting(self, event: Compacting, settings: Settings) -> Transition:
         from journal.engine.states.compacting import Compacting as CompactingState
         return self.push(CompactingState())
 
     def on_session_ended(self, event: SessionEnded, settings: Settings) -> Transition:
         from journal.engine.states.ended import Ended
         return self.push(Ended())
+
+    def on_session_retired(self, event: SessionRetired, settings: Settings) -> Transition:
+        from journal.engine.states.ended import Ended
+        return self.push(Ended()) if event.agent_session == event.session else self.none()
 
     def on_push(self, settings: Settings) -> tuple[Nudge, ...] | Block:
         return ()

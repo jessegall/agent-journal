@@ -1,6 +1,6 @@
 import re
 
-from journal.features.shell.support.part import Part
+from journal.support.part import Part
 
 WRAPPED = re.compile(r"^eval '(.*)'(?: < /dev/null)?$", re.S)
 QUOTE = "'\"'\"'"

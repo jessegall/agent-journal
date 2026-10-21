@@ -4,7 +4,7 @@ from journal.support.actor import Actor
 from journal.models.message import Message
 from journal.repositories.messages import Messages
 from journal.support.peer_name import PeerName
-from journal.support.subagents import Subagents
+from journal.features.workers.support.subagents import Subagents
 
 SENDS = "SendMessage"
 

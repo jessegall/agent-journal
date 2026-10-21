@@ -2,10 +2,10 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.support.cards import Cards
-from journal.support.run_tracker import RunTracker
+from journal.chat.cards import Cards
+from journal.features.sequences.support.run_tracker import RunTracker
 from journal.models.sequence import Sequence
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.sequence_run import SequenceRun
 from journal.support.rejection import Rejection
 from journal.repositories.sequences import Sequences

@@ -1,3 +1,4 @@
+from journal.engine.support.modes import Modes
 from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
 from journal.features.feature import Feature
@@ -32,6 +33,9 @@ class Registry:
 
     def states(self) -> list[type[BaseState]]:
         return [state for feature in self.features for state in feature.states]
+
+    def modes(self) -> list[Modes]:
+        return [feature.modes for feature in self.features if feature.modes]
 
     def services(self) -> list[Service]:
         return [service for feature in self.features for service in feature.services]

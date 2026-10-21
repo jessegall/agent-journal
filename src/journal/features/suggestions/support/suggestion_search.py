@@ -11,13 +11,13 @@ from journal.repositories.messages import Messages
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.suggestions import Suggestions
 from journal.support.actor import Actor
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.support.missing_row import MissingRow
 from journal.support.rejection import Rejection
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.card_kind import CardKind
 
-MINUTE = 60
+MINUTE_SECONDS = 60
 
 
 class SuggestionSearch:
@@ -38,8 +38,8 @@ class SuggestionSearch:
     def next_round(self) -> float:
         from journal.features.suggestions.feature import SuggestionsFeature
         if self.last_round is None:
-            return self.started_at + float(self.settings.option(SuggestionsFeature.FIRST_DELAY)) * MINUTE
-        return self.last_round + float(self.settings.option(SuggestionsFeature.INTERVAL)) * MINUTE
+            return self.started_at + float(self.settings.option(SuggestionsFeature.FIRST_DELAY)) * MINUTE_SECONDS
+        return self.last_round + float(self.settings.option(SuggestionsFeature.INTERVAL)) * MINUTE_SECONDS
 
     def round(self) -> list[Suggestion]:
         return [self.created(suggester) for suggester in self.suggesters if not self.suggestions.is_recorded(suggester.key) and suggester.applies()]

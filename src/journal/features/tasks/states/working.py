@@ -11,8 +11,6 @@ from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_logged import TaskLogged
-from journal.events.rows.plan_started import PlanStarted
-from journal.events.rows.task_started import TaskStarted
 from journal.events.feature_data import FeatureData
 from journal.support.permission import Permission
 from journal.support.timeout import Timeout
@@ -23,7 +21,7 @@ COMPACT = "compact"
 
 @dataclass(frozen=True)
 class Working(BaseState):
-    """On one task. Writes are counted since the last log line: after the first N the log is asked for, every M the task is named back, and past the limit the next write waits for the log line. A stop with the task in hand is told to carry on, with the log line first when it is old, and is held while an approved plan is not started; a session resumed with it is told where it stands; a quiet quarter hour is told it is still open. Pushed by journal task start, popped by done and park."""
+    """On one task. Writes are counted since the last log line: after the first N the log is asked for, every M the task is named back, and past the limit the next write waits for the log line. A stop with the task in hand is told to carry on, with the log line first when it is old, ; a session resumed with it is told where it stands; a quiet quarter hour is told it is still open. Pushed by journal task start, popped by done and park."""
 
     name = "working"
     title = "Working"
@@ -33,9 +31,6 @@ class Working(BaseState):
     logged_at: float = 0.0
     edits: int = 0
     active_at: float = 0.0
-
-    def is_plan_work(self) -> bool:
-        return False
 
     def label(self) -> str:
         if self.task_id and self.focus:
@@ -51,10 +46,6 @@ class Working(BaseState):
     def logged_words(self, time: float) -> str:
         minutes = int((time - self.logged_at) // 60)
         return "last logged just now" if minutes < 1 else f"last logged {minutes} min ago"
-
-    def plan_state(self, **fields) -> BaseState:
-        from journal.features.plans.states.following_plan import FollowingPlan
-        return FollowingPlan(**fields)
 
     def continue_nudge(self, time: float) -> Nudge:
         from journal.features.tasks.feature import Tasks
@@ -76,11 +67,7 @@ class Working(BaseState):
         return self.swap(counted, *lines)
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
-        from journal.features.plans.feature import Plans
         from journal.features.tasks.feature import Tasks
-        approved = event.data.part(Plans).approved
-        if approved:
-            return self.refuse(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
         if Timeout.minutes(int(settings.value(Tasks.LOG_AGE_LIMIT))).started(self.logged_at).is_elapsed(event.time):
             return self.refuse(Tasks.STOP_LOG_REQUEST.create(name=self.label(), logged=self.logged_words(event.time), log_command=self.log_command()))
         return self.refuse(self.continue_nudge(event.time))
@@ -108,20 +95,6 @@ class Working(BaseState):
 
     def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:
         return self.pop() if event.task_id == self.task_id else self.none()
-
-    def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
-        from journal.features.plans.feature import Plans
-        from journal.features.plans.states.following_plan import FollowingPlan
-        started = event.data.part(Plans).started
-        if self.is_plan_work() or started is None or event.task_id != self.task_id or event.task_id not in started.tasks:
-            return self.none()
-        return self.swap(self.plan_state(plan_id=started.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at))
-
-    def on_plan_started(self, event: PlanStarted, settings: Settings) -> Transition:
-        from journal.features.plans.states.following_plan import FollowingPlan
-        if self.is_plan_work() or event.task_id != self.task_id:
-            return self.none()
-        return self.swap(self.plan_state(plan_id=event.plan_id, task_id=self.task_id, approved=True, logged_at=self.logged_at, edits=self.edits, active_at=self.active_at))
 
     def on_resume(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...] | Transition:
         from journal.features.tasks.feature import Tasks

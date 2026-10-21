@@ -7,8 +7,8 @@ from journal.repositories.messages import Messages
 from journal.repositories.plan_reviews import FILED, REVIEWS, PlanReviews
 from journal.repositories.reports import Reports
 from journal.support.actor import Actor
-from journal.support.ref import Ref
-from journal.support.subagents import Subagents
+from journal.models.support.ref import Ref
+from journal.features.workers.support.subagents import Subagents
 from journal.support.caller import Caller
 
 

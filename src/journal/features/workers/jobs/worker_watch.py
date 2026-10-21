@@ -2,7 +2,7 @@ from journal.engine.job import Job
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker import Worker
 from journal.support.actor import Actor
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class WorkerWatch(Job):

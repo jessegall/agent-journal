@@ -1,4 +1,3 @@
-from journal.engine.state_machine import StateMachine
 from journal.engine.nudger import Nudger
 from journal.events.models.created import Created
 from journal.events.listener import Listener
@@ -11,8 +10,8 @@ from journal.supervisor_link import SupervisorLink
 class DeliverMessage(Listener[Created]):
     """A message the user leaves is typed into the live agent's terminal by number: the engine's own delivery, no state's to change."""
 
-    def __init__(self, agents: Agents, machine: StateMachine, nudger: Nudger, supervisor: SupervisorLink) -> None:
-        self.agents, self.machine, self.nudger, self.supervisor = agents, machine, nudger, supervisor
+    def __init__(self, agents: Agents, nudger: Nudger, supervisor: SupervisorLink) -> None:
+        self.agents, self.nudger, self.supervisor = agents, nudger, supervisor
 
     def handle(self, event: Created) -> None:
         from journal.features.messages.feature import Messages

@@ -12,7 +12,7 @@ from journal.models.author import Author
 from journal.models.entry import Entry
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
@@ -24,8 +24,8 @@ from journal.supervisor_link import SupervisorLink
 REPLY_TAG = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!reply:(\d+(?:,\d+)*)\](?:\*\*)?[ \t]*", re.MULTILINE)
 STRAY_TAG = re.compile(r"\[!reply:(\d+)\]")
 JOURNAL_LINE = "[journal] "
-SHORT = 240
-REPEATS = 0.6
+SHORT_CHARACTERS = 240
+REPEAT_OVERLAP_RATIO = 0.6
 
 
 class RecordTurn(AgentListener[TurnDisplayed]):
@@ -53,7 +53,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
             text = Tags.visible(part)
             answered = self.unanswered(tagged, event)
             silent = (Tags.hidden(part) and not answered) or self.is_repeat_reply(text, tagged, event)
-            acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._journal_answer(event)
+            acknowledgement = not answered and len(text) <= SHORT_CHARACTERS and "?" not in text and self._journal_answer(event)
             if text and not silent:
                 reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_target=answered[0] if answered else None, acknowledgement=acknowledgement), actor)
                 for n in answered[1:]:
@@ -82,7 +82,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
         prompt = self.turn_prompt(event)
         if tagged or not text or prompt is None:
             return False
-        repeated = [r for r in self.messages.recent_replies(prompt.created_at) if WordOverlap.share(text, r.text) >= REPEATS]
+        repeated = [r for r in self.messages.recent_replies(prompt.created_at) if WordOverlap.share(text, r.text) >= REPEAT_OVERLAP_RATIO]
         if repeated:
             self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_CLOSING_TEXT.create(reply=repeated[0].id, n=repeated[0].reply_target).rendered())
         return bool(repeated)

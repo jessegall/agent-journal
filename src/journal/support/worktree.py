@@ -5,7 +5,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from journal.support.kept_tips import TIPS_REF
+from journal.support.worktree_refs import TIPS_REF
 from journal.support.worktree_failure import WorktreeFailure
 
 GIT_SECONDS = 60

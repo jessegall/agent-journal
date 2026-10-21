@@ -4,7 +4,7 @@ from journal.features.workers.support.worker_worktree import WorkerWorktree
 from journal.features.workers.support.workers_data import WorkersData
 from journal.models.agent import Agent
 from journal.repositories.workers import Workers
-from journal.support.subagents import Subagents
+from journal.features.workers.support.subagents import Subagents
 
 
 class WorkersDataReader:

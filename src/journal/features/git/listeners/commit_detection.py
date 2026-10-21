@@ -6,7 +6,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.console.console import Console
 from journal.support.caller import Caller
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.events.agent.commit_detected import CommitDetected
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.bus import Bus
@@ -25,7 +25,7 @@ from journal.support.decision import Decision
 
 COMMIT = "commit"
 COMMIT_WINDOW_SECONDS = 60
-LAST_STARTS = 3
+RECENT_TOOL_STARTS = 3
 TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)?)+)\s*(.*)$", re.MULTILINE)
 
 
@@ -58,7 +58,7 @@ class CommitDetection(AgentListener[ToolFinished]):
     def is_agents(self, event: ToolFinished, head: HeadCommit) -> bool:
         if timing.time() - head.committed <= COMMIT_WINDOW_SECONDS:
             return True
-        starts = self.entries.tool_starts(event.session, last=LAST_STARTS)
+        starts = self.entries.tool_starts(event.session, last=RECENT_TOOL_STARTS)
         return any(part["text"].startswith("git commit") for start in starts for part in start.data.get("call", {}).get("parts", []))
 
     def head_moved(self, folder: Path) -> bool:

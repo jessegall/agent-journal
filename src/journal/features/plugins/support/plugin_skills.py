@@ -4,9 +4,9 @@ from pathlib import Path
 from journal.config import Config
 from journal.features.plugins.support.manifest_reader import ManifestReader
 from journal.features.plugins.support.plugin_folders import PluginFolders
-from journal.support.skill_files import HOMES
+from journal.features.skills.support.skill_files import HOMES
 from journal.models.plugin import Plugin
-from journal.support.plugin_manifest import PluginManifest
+from journal.models.support.plugin_manifest import PluginManifest
 
 STAMP = "plugin: "
 

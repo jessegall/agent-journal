@@ -1,10 +1,10 @@
 import shutil
 from pathlib import Path
 
-from journal.features.shell.support.part import Part
+from journal.support.part import Part
 from journal.support.writes import Writes
 
-BLOCK = 65536
+BLOCK_BYTES = 65536
 
 
 class OutputFiles:
@@ -35,7 +35,7 @@ class OutputFiles:
 
     @staticmethod
     def tail(path: Path, n: int) -> list[str]:
-        size, block = path.stat().st_size, BLOCK
+        size, block = path.stat().st_size, BLOCK_BYTES
         with path.open("rb") as file:
             while True:
                 start = max(0, size - block)

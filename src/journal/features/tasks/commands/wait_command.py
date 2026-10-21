@@ -3,7 +3,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.models.command_output import CommandOutput
-from journal.support.wait_targets import WaitTargets
+from journal.features.tasks.support.wait_targets import WaitTargets
 from journal.support.rejection import Rejection
 from journal.support.caller import Caller
 from journal.hooks.command_events import CommandEvents
@@ -42,8 +42,8 @@ class WaitCommand(Command):
 
     def running(self, numbers: list[int]) -> list[CommandOutput]:
         outputs = [self.awaitables.outputs.find(n) for n in numbers]
-        running = [output for output in outputs if not output.ended]
-        if outputs and not running:
-            ended = ", ".join(f"output {output.id} already {output.ending()}" for output in outputs)
-            raise Rejection(f"{ended}: read it with journal output read <n> --summary")
-        return running
+        active_outputs = [output for output in outputs if not output.ended]
+        if outputs and not active_outputs:
+            endings = ", ".join(f"output {output.id} already {output.ending()}" for output in outputs)
+            raise Rejection(f"{endings}: read it with journal output read <n> --summary")
+        return active_outputs

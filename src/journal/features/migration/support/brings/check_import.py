@@ -17,4 +17,4 @@ class CheckImport(ProjectKind):
         self.checks = checks
 
     def created(self, row: Version3Row, actor: Actor) -> Check:
-        return self.checks.imported(Check(title=row.title, brief=row.brief, command=row.data.get("command", ""), interval=int(row.data.get("every", 0))), row.created_at(), actor)
+        return self.checks.imported(Check(title=row.title, brief=row.brief, command=row.data.get("command", ""), interval=int(row.data.get("every", 0))), row.creation_moment(), actor)

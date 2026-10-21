@@ -23,4 +23,4 @@ class QuestionImport(EnvironmentKind):
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Question:
         text = "\n\n".join(part for part in (row.title, row.brief) if part)
         options = tuple(option.get("title", "") for option in row.listed("options"))
-        return self.questions.imported(Question(environment_id=target.id, text=text, options=options, answer=row.outcome if row.completed else None), row.created_at(), actor)
+        return self.questions.imported(Question(environment_id=target.id, text=text, options=options, answer=row.outcome if row.completed else None), row.creation_moment(), actor)

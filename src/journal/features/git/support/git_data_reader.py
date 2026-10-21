@@ -5,7 +5,7 @@ from journal.config import Config
 from journal.features.git.support.git_data import GitData
 from journal.models.agent import Agent
 
-SHOWN = 20
+SHOWN_FILES = 20
 RECENCY_SECONDS = 15.0
 
 
@@ -32,5 +32,5 @@ class GitDataReader:
         except (OSError, subprocess.SubprocessError):
             return "none"
         files = [line[3:] for line in finished.stdout.splitlines() if line.strip()] if finished.returncode == 0 else []
-        extra = f" and {len(files) - SHOWN} more" if len(files) > SHOWN else ""
-        return ", ".join(files[:SHOWN]) + extra if files else "none"
+        extra = f" and {len(files) - SHOWN_FILES} more" if len(files) > SHOWN_FILES else ""
+        return ", ".join(files[:SHOWN_FILES]) + extra if files else "none"

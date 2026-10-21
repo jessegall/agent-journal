@@ -20,15 +20,15 @@ from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
 from journal.repositories.statistics import Statistics
 from journal.repositories.timings import Timings
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.version import VERSION
 
 COLOR = "#5e64c9"
 STARTED = timing.time()
 SILENCE_LIMIT_SECONDS = 900.0
-ACTIVITY_ROW_LENGTH = 8
-LOGGED_SHOWN = 100
+ACTIVITY_ENTRIES = 8
+LOG_ENTRIES = 100
 
 
 class JournalController:
@@ -56,10 +56,10 @@ class JournalController:
     def developer(self, request: Request) -> Response:
         numbers = self.statistics.lower("developer.")
         kinds = sorted({key.split(".")[2] for key in numbers if key.startswith("developer.hooks.") and key.count(".") == 3})
-        times = {"hooks": AnswerTime.read(numbers, "developer.hooks"), "requests": AnswerTime.read(numbers, "developer.requests")}
+        latencies = {"hooks": AnswerTime.read(numbers, "developer.hooks"), "requests": AnswerTime.read(numbers, "developer.requests")}
         kind_index = {kind: AnswerTime.read(numbers, f"developer.hooks.{kind}").as_data() for kind in kinds}
         as_rows = lambda timings: [{"method": t.method, "route": t.route, "ms": t.ms, "time": t.time} for t in timings]
-        return Response.json({**{key: answer.as_data() for key, answer in times.items()}, "by_kind": kind_index, "recent": as_rows(self.timings.recent(LOGGED_SHOWN)), "slowest": as_rows(self.timings.slowest(LOGGED_SHOWN))})
+        return Response.json({**{key: answer.as_data() for key, answer in latencies.items()}, "by_kind": kind_index, "recent": as_rows(self.timings.recent(LOG_ENTRIES)), "slowest": as_rows(self.timings.slowest(LOG_ENTRIES))})
 
     def developer_reset(self, request: Request) -> Response:
         self.statistics.cleared("developer.", request.actor)
@@ -93,7 +93,7 @@ class JournalController:
                 queue.append(open_[row.key])
             elif row.key in open_:
                 open_[row.key].update(done=True, **{"for": max(0.0, row.time - open_[row.key]["time"])})
-        return Response.json(queue[-ACTIVITY_ROW_LENGTH:])
+        return Response.json(queue[-ACTIVITY_ENTRIES:])
 
     def first(self) -> Environment:
         return (self.environments.all() or [self.environments.lookup("main")])[0]

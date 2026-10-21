@@ -5,7 +5,7 @@
         "select": "type-declaration",
         "where": [
             {
-                "nameMatches": "[a-z](The|A|An|Of|On|At|When|Its|To|In|By|For|With|From|Into|Over|Under|After|Before|Still|Again)[A-Z]"
+                "nameMatches": "(^|[a-z])(The|A|An|Of|On|At|When|Its|To|In|By|For|With|From|Into|Over|Under|After|Before|Still|Again|Until|About|Without)([A-Z]|$)"
             }
         ]
     },

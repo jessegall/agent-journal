@@ -43,15 +43,15 @@ class Version3Row:
             return []
         return list(self.data[key])
 
-    def created_at(self) -> datetime:
+    def creation_moment(self) -> datetime:
         return datetime.fromtimestamp(self.created, timezone.utc)
 
-    def closed_at(self) -> datetime | None:
+    def closing_moment(self) -> datetime | None:
         return datetime.fromtimestamp(self.completed, timezone.utc) if self.completed else None
 
-    def read_at(self) -> datetime | None:
+    def reading_moment(self) -> datetime | None:
         if self.completed:
-            return self.closed_at()
+            return self.closing_moment()
         return datetime.fromtimestamp(self.updated, timezone.utc) if len(self.viewed) > 1 else None
 
     def author(self) -> str:

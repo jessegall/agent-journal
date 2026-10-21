@@ -5,7 +5,7 @@ from journal.engine.support.transition import Transition
 
 
 class Conduct:
-    """A feature's conduct toward the agent in every state: on_ listeners named for the feature, on_tool_starting_inbox, folded into the base state at boot. Every listener runs on the state and answers with the state's own answers, unchanged, changed, push, pop or hold, which the base state inherits from here."""
+    """A feature's conduct toward the agent in every state: on_ listeners named for their event alone, on_tool_starting, folded into the base state at boot. Every listener runs on the state, after the state's own, and answers with the state's own answers, none, swap, push, pop, forward or refuse, which the base state inherits from here."""
 
     name: ClassVar[str]
 

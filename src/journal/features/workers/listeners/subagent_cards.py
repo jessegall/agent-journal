@@ -1,13 +1,13 @@
 import time
 
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.tool_failed import ToolFailed
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent_listener import AgentListener
 from journal.features.workers.support.dispatch import Dispatch
-from journal.support.subagents import ENDS, Subagents
+from journal.features.workers.support.subagents import ENDS, Subagents
 from journal.support.actor import Actor
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages

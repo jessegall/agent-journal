@@ -5,7 +5,7 @@ from journal.support.response import Response
 from journal.models.author import Author
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.support.rejection import Rejection
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages

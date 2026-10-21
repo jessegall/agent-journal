@@ -1,7 +1,5 @@
-import json
 from dataclasses import dataclass
 
-from journal.http.support.json_out import JsonOut
 from journal.support.missing_row import MissingRow
 
 
@@ -26,5 +24,3 @@ class Response:
     def refused(cls, reason: str) -> "Response":
         return cls(409, {"error": reason})
 
-    def encoded(self) -> bytes:
-        return json.dumps(self.body, cls=JsonOut).encode()

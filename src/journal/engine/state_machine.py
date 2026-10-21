@@ -3,7 +3,7 @@ from journal.engine.support.typist import Typist
 from journal.engine.nudger import Nudger
 from journal.engine.support.settings import Settings
 from journal.repositories.setting_rows import SettingRows
-from journal.support.feature_registry import FeatureRegistry
+from journal.engine.support.feature_registry import FeatureRegistry
 from journal.engine.states.ended import Ended
 from journal.engine.support.machine_answer import MachineAnswer
 from journal.engine.support.block import Block
@@ -13,8 +13,8 @@ from journal.events.feature_data import FeatureData
 from journal.supervisor_link import SupervisorLink
 from journal.events.event import Event
 from journal.events.rows.row_event import RowEvent
-from journal.support.scope import Scope
-from journal.support.states_catalogue import StatesCatalogue
+from journal.repositories.scope import Scope
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.engine.support.transition import Transition
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.bus import Bus
@@ -26,7 +26,7 @@ from journal.support.rejection import Rejection
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.engine.support.stack_history import StackHistory
-from journal.support.missing_row import MissingRow
+from journal.engine.support.session_agents import SessionAgents
 
 
 MOVED = "a feature moved the agent"
@@ -37,12 +37,14 @@ class StateMachine(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeatureRegistry, scope: Scope, supervisor: SupervisorLink, entries: Entries, readers: DataReaders) -> None:
+    rank = 0
+
+    def __init__(self, agents: Agents, states: StatesCatalogue, nudger: Nudger, bus: Bus, settings: SettingRows, features: FeatureRegistry, scope: Scope, supervisor: SupervisorLink, entries: Entries, readers: DataReaders, sessions: SessionAgents) -> None:
         self.agents, self.states, self.nudger, self.bus = agents, states, nudger, bus
-        self.settings, self.features, self.scope, self.supervisor, self.entries, self.readers = settings, features, scope, supervisor, entries, readers
+        self.settings, self.features, self.scope, self.supervisor, self.entries, self.readers, self.sessions = settings, features, scope, supervisor, entries, readers, sessions
 
     def handle(self, event: AgentEvent) -> Decision:
-        decision = self.answer(self.agent(event.session, event.environment_id, event.provider), event)
+        decision = self.answer(self.sessions.agent(event.session, event.environment_id, event.provider), event)
         if decision.context and not (event.answers_hook and event.has_lines):
             self.type_lines(event.environment_id, decision.context, event.typing_delay)
         return decision
@@ -59,7 +61,8 @@ class StateMachine(AgentListener[AgentEvent]):
                 self.type_lines(agent.environment_id, answered.context, 0.0)
 
     def answer(self, agent: Agent, event: Event) -> Decision:
-        stack, settings = self.states.stack(agent), self.top_state()
+        settings = self.top_state()
+        stack = self.states.apply_mode(self.states.stack(agent), settings)
         event = event.with_data(self.readers.agent_data(agent))
         transition = stack.top().respond(event, settings)
         machine_answer = self.hook_machine(stack, self.moved(self.placed(stack, transition.target), transition), settings, event.data)
@@ -79,7 +82,7 @@ class StateMachine(AgentListener[AgentEvent]):
         return answered.merged(self.answer(agent, event)) if transition.handed_down and machine_answer.stack == stack.popped() else answered
 
     def move(self, session: str, environment_id: int, destination: BaseState) -> Agent:
-        agent = self.agent(session, environment_id)
+        agent = self.sessions.agent(session, environment_id)
         machine_answer = self.hook_machine(self.states.stack(agent), self.placed(self.states.stack(agent), destination), self.top_state(), self.agent_data(agent))
         resolved = self._store(agent, machine_answer, MOVED, Actor.system())
         if machine_answer.refusal:
@@ -89,15 +92,15 @@ class StateMachine(AgentListener[AgentEvent]):
         return resolved
 
     def push(self, session: str, environment_id: int, destination: BaseState, actor: Actor, text: str) -> Agent:
-        agent = self.agent(session, environment_id)
+        agent = self.sessions.agent(session, environment_id)
         return self.manual(agent, self.states.stack(agent).pushed(destination), actor, text)
 
     def pop(self, session: str, environment_id: int, actor: Actor, text: str) -> Agent:
-        agent = self.agent(session, environment_id)
+        agent = self.sessions.agent(session, environment_id)
         return self.manual(agent, self.states.stack(agent).popped(), actor, text)
 
     def reset(self, session: str, environment_id: int, actor: Actor, text: str) -> Agent:
-        agent = self.agent(session, environment_id)
+        agent = self.sessions.agent(session, environment_id)
         return self.manual(agent, Stack((self.states.first(),)), actor, text)
 
     def manual(self, agent: Agent, following: Stack, actor: Actor, text: str) -> Agent:
@@ -152,19 +155,6 @@ class StateMachine(AgentListener[AgentEvent]):
             return stack.with_top(destination)
         return self.states.stack_base(destination)
 
-    def current(self, session: str) -> BaseState:
-        agent = self.agents.session_agent(session)
-        return self.states.restored(agent.state, agent.data)
-
-    def agent(self, session: str, environment_id: int, provider: str = "") -> Agent:
-        if not session:
-            raise Rejection("no agent runs this, so there is no agent to move: only an agent's own session can")
-        try:
-            return self.agents.session_agent(session)
-        except MissingRow:
-            first = self.states.first()
-            return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.serialized()), Actor.system())
-
     def lifecycle(self, agent: Agent, following: Stack) -> None:
         previous = self.states.stack(agent)
         typist = Typist(self.supervisor, agent.environment_id)
@@ -180,9 +170,13 @@ class StateMachine(AgentListener[AgentEvent]):
         stack, destination = machine_answer.stack, machine_answer.stack.top()
         if machine_answer.refusal:
             self.entries.save(StackHistory.entry(agent, list(agent.stack), cause, actor, refused=machine_answer.refused, line=machine_answer.refusal.nudge.rendered()), actor)
-        if destination.name == agent.state and destination.serialized() == agent.data and stack.serialized() == list(agent.stack):
+        if self.is_unchanged(agent, destination, stack):
             return agent
         self.lifecycle(agent, stack)
         resolved = self.agents.save(agent.with_(state=destination.name, data=destination.serialized(), stack=tuple(stack.serialized())), actor)
         self.entries.save(StackHistory.entry(agent, stack.serialized(), cause, actor), actor)
         return resolved
+
+    @staticmethod
+    def is_unchanged(agent: Agent, destination: BaseState, stack: Stack) -> bool:
+        return destination.name == agent.state and destination.serialized() == agent.data and stack.serialized() == list(agent.stack)

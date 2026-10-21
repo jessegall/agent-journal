@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from journal.models.plan import Plan
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
 from journal.support.actor import Actor
@@ -21,5 +22,9 @@ class PlanBlockade(Listener[Updated]):
         for plan in self.plans.containing(task):
             if plan.state == PlanState.STARTED and self.plans.is_stalled(plan):
                 self.plans.save(plan.blocked(PlansFeature.ALL_BLOCKED, datetime.now(timezone.utc).timestamp()), Actor.system())
-            elif plan.is_blocked() and plan.block_reason == PlansFeature.ALL_BLOCKED and not self.plans.is_stalled(plan):
+            elif self.is_unblockable(plan):
                 self.plans.save(plan.unblocked(f"task {task.id} is open again", datetime.now(timezone.utc).timestamp()), Actor.system())
+
+    def is_unblockable(self, plan: Plan) -> bool:
+        from journal.features.plans.feature import Plans as PlansFeature
+        return plan.is_blocked() and plan.block_reason == PlansFeature.ALL_BLOCKED and not self.plans.is_stalled(plan)

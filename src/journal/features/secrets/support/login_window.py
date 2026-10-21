@@ -2,7 +2,7 @@ import subprocess
 import threading
 from datetime import datetime, timezone
 
-from journal.support.mcp_installing import McpInstalling
+from journal.features.mcp.support.mcp_installing import McpInstalling
 from journal.features.secrets.support.browser_logins import BrowserLogins
 from journal.support.actor import Actor
 from journal.models.author import Author
@@ -11,7 +11,7 @@ from journal.models.secret import Secret
 from journal.support.rejection import Rejection
 from journal.repositories.mcp_servers import McpServers
 from journal.repositories.messages import Messages
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.secrets import Secrets
 
 STORAGE = "--storage-state"

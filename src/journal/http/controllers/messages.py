@@ -14,7 +14,7 @@ from journal.models.message import Message
 from journal.repositories.agents import Agents
 from journal.repositories.messages import Messages
 from journal.repositories.reactions import Reactions
-from journal.support.docking import Docking
+from journal.chat.docking import Docking
 
 class MessageController(Controller[Message]):
     """The chat: the user's, the agent's and the journal's messages by id, read a page at a time from the database; the user's are sent from here, as the user."""

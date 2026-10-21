@@ -2,12 +2,12 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.features.plugins.support.plugin_preview import PluginPreview
-from journal.support.plugin_installing import PluginInstalling
+from journal.features.plugins.support.plugin_installing import PluginInstalling
 from journal.features.plugins.support.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.card_kind import CardKind
 
 STEP_DESCRIPTIONS = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill"}

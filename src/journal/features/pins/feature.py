@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.features.pins.commands.notice_command import NoticeCommand
-from journal.features.pins.support.pins_conduct import PinsConduct
+from journal.features.pins.pins_conduct import PinsConduct
 from journal.features.pins.support.pins_data_reader import PinsDataReader
 from journal.features.pins.support.pins_data import PinsData
 from journal.support.option import Option
@@ -9,11 +9,11 @@ from journal.support.skill import Skill
 
 
 class Pins(Feature[PinsData]):
+    PIN_SUGGESTION_INTERVAL = Option("pins.suggest_every", "Suggest an unpinned link again after", "The agent's tool uses before a link it has not pinned is suggested again", 50, unit="tool uses")
     name = "pins"
     title = "Pinned links"
     help = "A link the agent gives the user is pinned above the chat, so it is not lost as the chat scrolls; the user closes it when done."
     commands = (NoticeCommand,)
-    PIN_SUGGESTION_INTERVAL = Option("pins.suggest_every", "Suggest an unpinned link again after", "The agent's tool uses before a link it has not pinned is suggested again", 50, unit="tool uses")
     options = (PIN_SUGGESTION_INTERVAL,)
     data = (PinsDataReader,)
     conduct = (PinsConduct,)

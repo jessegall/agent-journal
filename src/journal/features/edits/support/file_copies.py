@@ -4,8 +4,8 @@ from pathlib import Path
 
 from journal.config import Config
 
-COPIES_LIMIT = 200
-LARGEST = 1_000_000
+COPY_COUNT = 200
+LARGEST_BYTES = 1_000_000
 GIT_SECONDS = 5
 
 
@@ -25,7 +25,7 @@ class FileCopies:
 
     def current_text(self, path: str) -> str | None:
         file = self.root / path
-        if not file.is_file() or file.stat().st_size > LARGEST:
+        if not file.is_file() or file.stat().st_size > LARGEST_BYTES:
             return None
         return file.read_text(errors="replace")
 
@@ -33,7 +33,7 @@ class FileCopies:
         with self._lock:
             self._copies.pop(path, None)
             self._copies[path] = text
-            for oldest in list(self._copies)[:-COPIES_LIMIT]:
+            for oldest in list(self._copies)[:-COPY_COUNT]:
                 del self._copies[oldest]
 
     def committed(self, path: str) -> str:

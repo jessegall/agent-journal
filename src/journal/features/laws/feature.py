@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.laws.support.laws_conduct import LawsConduct
+from journal.features.laws.laws_conduct import LawsConduct
 from journal.engine.nudge import Nudge
 
 

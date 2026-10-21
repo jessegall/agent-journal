@@ -13,14 +13,14 @@ from journal.support.actor import Actor
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.providers.providers import Providers
-from journal.support.profile_files import ProfileFiles
-from journal.support.scope import Scope
+from journal.features.profiles.support.profile_files import ProfileFiles
+from journal.repositories.scope import Scope
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
 from journal.support.worktree_failure import WorktreeFailure
 
-TAIL = 4000
+TAIL_CHARACTERS = 4000
 TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
 ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}"}
@@ -84,7 +84,7 @@ class WorkerRunner:
         provider = self.providers.lookup(worker.provider)
         output_text, resume = provider.worker_outcome(self.read(output), self.read(err))
         resume = resume or provider.latest_session(self.place(worker), worker.began)
-        report = output_text[-TAIL:] or "(nothing printed)"
+        report = output_text[-TAIL_CHARACTERS:] or "(nothing printed)"
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
         current = self.workers.find(worker.id).with_(resume=resume or worker.resume)
         if current.state == WorkerState.REPORTED:

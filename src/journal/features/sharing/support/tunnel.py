@@ -7,7 +7,7 @@ from urllib.request import urlopen
 
 from journal.config import Config
 from journal.support.cached_answer import CachedAnswer
-from journal.support.share_place import SharePlace
+from journal.features.sharing.support.share_place import SharePlace
 from journal.features.sharing.support.tunler import Tunler
 from journal.features.sharing.support.tunler_status import TunlerStatus
 from journal.features.sharing.support.tunnel_cause import TunnelCause
@@ -81,9 +81,9 @@ class Tunnel:
         return []
 
     def reconcile(self) -> None:
-        self.reconciled_at(datetime.now(timezone.utc))
+        self.reconcile_moment(datetime.now(timezone.utc))
 
-    def reconciled_at(self, time: datetime) -> None:
+    def reconcile_moment(self, time: datetime) -> None:
         self.wanted = self.is_wanted(time)
         if self.wanted:
             self.start()
@@ -92,7 +92,7 @@ class Tunnel:
 
     def reconcile_changes(self, time: datetime) -> None:
         if self.is_wanted(time) != self.wanted:
-            self.reconciled_at(time)
+            self.reconcile_moment(time)
 
     def is_wanted(self, time: datetime) -> bool:
         return self.shares.all_open() or bool(self.phones.active(time)) or bool(self.codes.open(time))

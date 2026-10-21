@@ -5,8 +5,8 @@ from journal.providers.support.turn import Turn
 from journal.support.missing_row import MissingRow
 
 SPEAKER_ROLES = ("human", "agent")
-LARGEST = 1000
-PAGE = 300
+LARGEST_TURNS = 1000
+PAGE_TURNS = 300
 
 
 class TranscriptPage:
@@ -15,9 +15,9 @@ class TranscriptPage:
     def __init__(self, turns: list[Turn]) -> None:
         self.turns = turns
 
-    def page(self, start: int = 0, previous: int = 0, size: int = PAGE) -> TranscriptSlice:
+    def page(self, start: int = 0, previous: int = 0, size: int = PAGE_TURNS) -> TranscriptSlice:
         stored = [t for t in self.turns if t.line > start and (not previous or t.line < previous)]
-        shown = stored[-max(1, min(size, LARGEST)):]
+        shown = stored[-max(1, min(size, LARGEST_TURNS)):]
         return TranscriptSlice(total=len(self.turns), first=self.turns[0].line if self.turns else 0, turns=[self.heading(t) for t in shown])
 
     @staticmethod

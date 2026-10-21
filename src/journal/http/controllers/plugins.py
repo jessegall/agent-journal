@@ -1,5 +1,5 @@
 from journal.features.plugins.support.dashboard_document import DashboardDocument
-from journal.support.plugin_installing import PluginInstalling
+from journal.features.plugins.support.plugin_installing import PluginInstalling
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.plugins.support.plugin_record import PluginRecord
 from journal.features.plugins.support.plugin_settings import PluginSettings
@@ -10,7 +10,7 @@ from journal.support.response import Response
 from journal.models.plugin import Plugin
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class PluginController(Controller[Plugin]):

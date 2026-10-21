@@ -2,7 +2,7 @@ import subprocess
 import time
 
 from journal.config import Config
-from journal.support.builtin_catalogue import BuiltinCatalogue
+from journal.features.voices.support.builtin_catalogue import BuiltinCatalogue
 from journal.features.voices.support.voice import Voice
 from journal.repositories.setting_rows import SettingRows
 

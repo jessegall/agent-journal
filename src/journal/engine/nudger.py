@@ -3,13 +3,13 @@ from journal.engine.nudge_registry import NudgeRegistry
 from journal.events.agent.line_delivered import LineDelivered
 from journal.events.bus import Bus
 from journal.support.listener_queue import ListenerQueue
-from journal.support.feature_registry import FeatureRegistry
+from journal.engine.support.feature_registry import FeatureRegistry
 from journal.engine.nudge import Nudge
 from journal.support.actor import Actor
 from journal.models.agent import Agent
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 NUDGE = "nudge"
 

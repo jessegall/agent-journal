@@ -3,7 +3,7 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.voices.support.voice_choice import VoiceChoice
-from journal.support.builtin_catalogue import BuiltinCatalogue
+from journal.features.voices.support.builtin_catalogue import BuiltinCatalogue
 from journal.repositories.setting_rows import SettingRows
 
 

@@ -23,7 +23,7 @@ from journal.repositories.templates import Templates
 from journal.repositories.triggers import Triggers
 from journal.repositories.workers import Workers
 
-CONVERSATIONS = 5
+CONVERSATION_COUNT = 5
 CONVERSATION = "conversation"
 
 
@@ -56,7 +56,7 @@ class Search:
 
     def conversation_hits(self, terms: list[str]) -> list[SearchHit]:
         rows = []
-        for agent in reversed([agent for agent in self.agents.scoped() if agent.has_program()][-CONVERSATIONS:]):
+        for agent in reversed([agent for agent in self.agents.scoped() if agent.has_program()][-CONVERSATION_COUNT:]):
             path = self.providers.lookup(agent.provider).transcript(self.config.root, agent.session)
             if path is None:
                 continue

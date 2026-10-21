@@ -10,8 +10,8 @@ class ListenerQueue:
     """Work the server does after it has replied: one worker thread, in order, never on a request's thread, each piece in the scope it was added in."""
 
     STOP = None
-    QUEUE_WARNING_LENGTH = 500
-    LOG_INTERVAL = 100
+    QUEUE_WARNING_ITEMS = 500
+    LOG_SKIPS = 100
 
     def __init__(self) -> None:
         self._queue: queue.Queue = queue.Queue()
@@ -26,10 +26,10 @@ class ListenerQueue:
         self._queue.put(lambda context=contextvars.copy_context(): context.run(work))
 
     def add_bounded(self, work: Callable[[], None], subject: str) -> None:
-        if self.depth() < self.QUEUE_WARNING_LENGTH:
+        if self.depth() < self.QUEUE_WARNING_ITEMS:
             self.add(work)
             return
-        if self.skipped % self.LOG_INTERVAL == 0:
+        if self.skipped % self.LOG_SKIPS == 0:
             sys.stderr.write(f"deferred work is {self.depth()} pieces behind: skipped {subject} ({self.skipped + 1} skipped so far)\n")
         self.skipped += 1
 

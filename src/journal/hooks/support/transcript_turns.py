@@ -20,19 +20,19 @@ class TranscriptTurns:
     def __init__(self, config: Config, providers: Providers, context: ContextFile, clock: Clock) -> None:
         self.config, self.providers, self.context, self.clock = config, providers, context, clock
         self._read: dict[str, int] = {}
-        self._reading = threading.Lock()
+        self._read_lock = threading.Lock()
 
     def events(self, hook: Hook, environment: Environment) -> list[AgentEvent]:
         if hook.kind == HookKind.MESSAGE_DISPLAY:
             return []
-        with self._reading:
+        with self._read_lock:
             saved = self.providers.lookup(hook.provider).authored_texts(self.config.root, hook.session, self._read.get(hook.session, START_POSITION))
             self._read[hook.session] = saved.time
         turns = [TurnDisplayed(text=text, delta=text, turn_id=f"transcript:{hook.session}:{i}", final=True) for i, text in enumerate(saved.texts)]
         return [event.placed(hook.session, environment.id, hook.provider, self.context.build(hook.session), self.clock.time(), hook.subagent) for event in [*saved.boundary_paths, *turns]]
 
     def missed(self, session: str, provider: str, deadline: float) -> FileWrites:
-        with self._reading:
+        with self._read_lock:
             saved = self.providers.lookup(provider).earlier_texts(self.config.root, session, self._read.get(session, START_POSITION), deadline)
             self._read[session] = saved.time
         return saved

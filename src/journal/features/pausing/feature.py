@@ -1,7 +1,7 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
 from journal.features.pausing.states.user_pause import UserPause
-from journal.features.pausing.support.pausing_conduct import PausingConduct
+from journal.features.pausing.pausing_conduct import PausingConduct
 
 
 class PausingFeature(Feature):

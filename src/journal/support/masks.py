@@ -2,7 +2,7 @@ import time
 
 from journal.support.secret_values import EMAIL_SIGN_TOKEN, RETIRED, SecretValues
 
-SHORTEST = 8
+SHORTEST_CHARACTERS = 8
 
 
 class Masks:
@@ -27,5 +27,5 @@ class Masks:
         if stamp != self._stamp:
             self._stamp = stamp
             plain = self.values.shown()
-            self._masks = {value: variable.removeprefix(RETIRED).rsplit(EMAIL_SIGN_TOKEN, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST and variable not in plain}
+            self._masks = {value: variable.removeprefix(RETIRED).rsplit(EMAIL_SIGN_TOKEN, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST_CHARACTERS and variable not in plain}
         return self._masks

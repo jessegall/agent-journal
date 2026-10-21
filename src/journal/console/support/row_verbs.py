@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from journal.support.docking import Docking
+from journal.chat.docking import Docking
 from journal.support.caller import Caller
 
 

@@ -3,7 +3,7 @@ from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand
 from journal.features.questions.listeners.question_card import QuestionCard
-from journal.features.questions.support.questions_conduct import QuestionsConduct
+from journal.features.questions.questions_conduct import QuestionsConduct
 from journal.features.questions.support.questions_data_reader import QuestionsDataReader
 from journal.features.questions.support.questions_data import QuestionsData
 from journal.features.questions.states.waiting import Waiting

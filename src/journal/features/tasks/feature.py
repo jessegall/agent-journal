@@ -5,10 +5,9 @@ from journal.features.tasks.commands.wait_command import WaitCommand
 from journal.features.tasks.commands.impasse_command import ImpasseCommand
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.features.tasks.listeners.clear_waits import ClearWaits
-from journal.features.tasks.listeners.closed_task_release import ClosedTaskRelease
-from journal.features.tasks.listeners.no_wait_cycles import NoWaitCycles
+from journal.features.tasks.listeners.wait_cycle_check import WaitCycleCheck
 from journal.features.tasks.listeners.single_task_rule import SingleTaskRule
-from journal.features.tasks.support.tasks_conduct import TasksConduct
+from journal.features.tasks.tasks_conduct import TasksConduct
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
 from journal.support.skill import Skill
@@ -19,18 +18,18 @@ from journal.features.tasks.states.working import Working
 
 
 class Tasks(Feature[TasksData]):
-    name = "tasks"
-    title = "Tasks"
-    help = "A task is one unit of work with a life; a stop with one in hand is told to carry on, and its log is asked for as the edits mount."
-    states = (Ready, Working, Impasse, ExternalWait)
-    commands = (TaskCommand, WaitCommand, ImpasseCommand)
     AUTO = Option("tasks.auto", "Work the list on its own", "At a stop with tasks open, the next one holds the stop until it is taken up; off, the agent stops and waits for you", True, kind="switch")
     FIRST_DELAY = Option("tasks.first_nudge_after", "Ask for a log after", "Edits without a log line before the agent is asked where its task stands", 25, unit="edits")
     TASK_REMINDER_INTERVAL = Option("tasks.name_every", "Name the task back every", "Edits between reminders of the task in hand, so drift is noticed", 25, unit="edits")
     LOG_LIMIT = Option("tasks.log_after", "Hold the next write after", "Edits without a log line before the agent's next write waits for one", 50, unit="edits")
     LOG_AGE_LIMIT = Option("tasks.log_old_after_minutes", "Ask for a log at a stop after", "Minutes since the task's last log line before a stop asks for one before carrying on", 10, unit="min")
+    name = "tasks"
+    title = "Tasks"
+    help = "A task is one unit of work with a life; a stop with one in hand is told to carry on, and its log is asked for as the edits mount."
+    states = (Ready, Working, Impasse, ExternalWait)
+    commands = (TaskCommand, WaitCommand, ImpasseCommand)
     options = (AUTO, FIRST_DELAY, TASK_REMINDER_INTERVAL, LOG_LIMIT, LOG_AGE_LIMIT)
-    listeners = (ClearWaits, SingleTaskRule, ClosedTaskRelease, NoWaitCycles)
+    listeners = (ClearWaits, SingleTaskRule, WaitCycleCheck)
     conduct = (TasksConduct,)
     data = (TasksDataReader,)
 

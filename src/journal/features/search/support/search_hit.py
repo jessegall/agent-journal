@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from journal.models.model import Model
 
-SNIPPET_RADIUS = 160
+SNIPPET_RADIUS_CHARACTERS = 160
 
 
 @dataclass(frozen=True)
@@ -19,9 +19,9 @@ class SearchHit:
     @staticmethod
     def excerpt(text: str, terms: list[str]) -> str:
         flat = " ".join(text.split())
-        time = max(0, flat.lower().find(terms[0].lower()) - SNIPPET_RADIUS // 4)
-        cut = flat[time:time + SNIPPET_RADIUS]
-        return ("…" if time else "") + cut + ("…" if time + SNIPPET_RADIUS < len(flat) else "")
+        time = max(0, flat.lower().find(terms[0].lower()) - SNIPPET_RADIUS_CHARACTERS // 4)
+        cut = flat[time:time + SNIPPET_RADIUS_CHARACTERS]
+        return ("…" if time else "") + cut + ("…" if time + SNIPPET_RADIUS_CHARACTERS < len(flat) else "")
 
     def line(self) -> str:
         return f"{self.ref}: {self.passage}"

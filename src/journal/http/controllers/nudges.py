@@ -3,7 +3,7 @@ from journal.models.entry import Entry
 from journal.repositories.entries import Entries
 
 NUDGE = "nudge"
-SHOWN = 200
+NUDGE_ENTRIES = 200
 
 
 class NudgeController(Controller[Entry]):
@@ -13,4 +13,4 @@ class NudgeController(Controller[Entry]):
         self.repository = entries
 
     def rows(self) -> list[Entry]:
-        return list(reversed(self.repository.kind_entries(NUDGE, SHOWN)))
+        return list(reversed(self.repository.kind_entries(NUDGE, NUDGE_ENTRIES)))

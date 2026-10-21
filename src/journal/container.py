@@ -30,6 +30,9 @@ class Container:
             if name == "self" or name not in hints:
                 continue
             kind = hints[name]
-            if kind in self._instances or kind in self._factories or inspect.isclass(kind) and parameter.default is inspect.Parameter.empty:
+            if self.is_buildable(kind, parameter):
                 kwargs[name] = self.get(kind)
         return fn(**kwargs)
+
+    def is_buildable(self, kind: object, parameter: inspect.Parameter) -> bool:
+        return kind in self._instances or kind in self._factories or inspect.isclass(kind) and parameter.default is inspect.Parameter.empty

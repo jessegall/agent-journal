@@ -7,9 +7,9 @@ from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.messages import Messages
 from journal.support.actor import Actor
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.support.card_kind import CardKind
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 
 FAILURES = ("could not start", "failed with code", "stopped after")
 
@@ -24,7 +24,7 @@ class WorkerCards(Listener[ModelEvent]):
         if not isinstance(event, (Created, Updated)) or not isinstance(event.model, Worker):
             return
         worker = event.model
-        text, tone, detail = self.standing(worker, event)
+        text, tone, detail = self.status(worker, event)
         key = f"worker:{worker.id}"
         actor = Actor.agent(worker.dispatcher) if worker.dispatcher else Actor.system()
         card = self.messages.keyed(key, actor)
@@ -32,7 +32,7 @@ class WorkerCards(Listener[ModelEvent]):
             return
         self.cards.show(worker.environment_id, worker.dispatcher, f"Worker {worker.id}, {worker.name}: {text}", "agents", tone=tone, detail=detail, row=str(Ref.build(worker)), actor=actor, key=key, shows=CardKind.WORKERS)
 
-    def standing(self, worker: Worker, event: ModelEvent) -> tuple[str, str, str]:
+    def status(self, worker: Worker, event: ModelEvent) -> tuple[str, str, str]:
         if worker.state == WorkerState.STOPPED:
             return "stopped", "", ""
         if worker.state == WorkerState.REPORTED and worker.adopted:

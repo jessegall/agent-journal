@@ -3,7 +3,7 @@ import time
 from journal.engine.clock import Clock
 from journal.engine.job_runner import JobRunner
 from journal.engine.menu_watcher import MenuWatcher
-from journal.support.service_start import ServiceStart
+from journal.features.plugins.support.service_start import ServiceStart
 from journal.engine.state_machine import StateMachine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges
@@ -23,7 +23,7 @@ from journal.features.switches import Switches
 from journal.support.listener_queue import ListenerQueue
 from journal.config import Config
 from journal.container import Container
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.http.server import Server
 from journal.support.instance_guard import InstanceGuard
 from journal.http.share_server import ShareServer
@@ -64,7 +64,7 @@ class Runtime:
             self.container.get(Environments).lookup("main")
 
     def start(self) -> None:
-        from journal.support.slow_requests import STARTING
+        from journal.features.faults.support.slow_requests import STARTING
         starting = self.container.get(Config).home / "runtime" / STARTING
         starting.parent.mkdir(parents=True, exist_ok=True)
         starting.touch()
@@ -76,8 +76,8 @@ class Runtime:
     def startup(self) -> None:
         self.share_server.start()
         self.boot()
-        from journal.support.skill_files import SkillFiles
-        from journal.support.profile_files import ProfileFiles
+        from journal.features.skills.support.skill_files import SkillFiles
+        from journal.features.profiles.support.profile_files import ProfileFiles
         self.container.get(SkillFiles).write_all()
         self.container.get(ProfileFiles).write_all()
         self.deferred.start()

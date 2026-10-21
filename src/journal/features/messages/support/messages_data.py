@@ -8,6 +8,6 @@ class MessagesData:
     unread: tuple[int, ...]
     unanswered: tuple[int, ...]
     unanswered_files: tuple[str, ...]
-    reminder_start: int
+    inbox_tool_uses: int
     mention_count: int
     uses_unanswered: int

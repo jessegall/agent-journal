@@ -6,7 +6,7 @@ from enum import Enum
 from journal.http.support.model_fields import ModelFields
 from journal.support.actor import Actor
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 
 
 class JsonOut(json.JSONEncoder):
@@ -28,3 +28,7 @@ class JsonOut(json.JSONEncoder):
         if is_dataclass(value):
             return {field.name: getattr(value, field.name) for field in fields(value)}
         return super().default(value)
+
+    @classmethod
+    def encoded(cls, body: object) -> bytes:
+        return json.dumps(body, cls=cls).encode()

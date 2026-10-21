@@ -7,6 +7,7 @@ import pytest
 from shell_verbs import ShellVerbs
 
 from journal.app import App
+from journal.engine.support.session_agents import SessionAgents
 from journal.config import Config
 from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
@@ -20,7 +21,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.setting_rows import SettingRows
 from tests.replay import PROVIDERS, TOOLS, Replay, hook_as, pass_time, played, tick_after
 from tests.test_features import AGENT, MAIN, USER, context
@@ -192,8 +193,8 @@ def test_worker_reports_matches_its_record(journal, monkeypatch):
     name_index = {s["name"]: s for s in replay.record()}
     assert name_index["worker 1 reports"]["typed"] == ["[journal] worker 1, Lady Lovelace, reported in the chat"]
     stopped = name_index["worker 2 is stopped"]["typed"]
-    assert stopped[0] == "[journal] worker 2, Dr. Einstein, stopped before it reported" and stopped[1].startswith("[journal] the wait for workers 1, 2 is over: worker 1, Lady Lovelace, reported; worker 2, Dr. Einstein, stopped before it reported") and len(stopped) == 2
-    assert app.container.get(StateMachine).current("s1").task_id == 1, "the last worker back popped the wait to the task"
+    assert stopped[0].startswith("[journal] the wait for worker 1, worker 2 is over: worker 1, Lady Lovelace, reported; worker 2, Dr. Einstein, stopped before it reported") and stopped[1] == "[journal] worker 2, Dr. Einstein, stopped before it reported" and len(stopped) == 2
+    assert app.container.get(SessionAgents).top("s1").task_id == 1, "the last worker back popped the wait to the task"
     assert rows == [], "the agent would have seen the same, and the record says the same"
 
 
@@ -202,7 +203,7 @@ def test_question_answered_matches_its_record(journal, monkeypatch):
     replay, rows = played(f"a_question_is_answered_{provider}", app, monkeypatch, a_question_is_answered, provider)
     keystrokes = replay.record()[-1]["typed"]
     assert keystrokes == ["[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"], "the answer is typed, and the work beneath goes on in silence"
-    assert app.container.get(StateMachine).current("s1").task_id == 1, "the wait popped back to the task"
+    assert app.container.get(SessionAgents).top("s1").task_id == 1, "the wait popped back to the task"
     assert rows == [], "the agent would have seen the same; the line is on record"
 
 
@@ -337,7 +338,7 @@ def test_the_phone_is_heard_as_the_user_is(journal, monkeypatch):
     name_index = {s["name"]: s for s in replay.record()}
     assert name_index["the phone leaves a message"]["typed"] == ["[journal] new message 1"], "a message from the phone is named as the user's is"
     assert "question 1 is answered" in str(name_index["the phone answers"]["typed"]), "and an answer from the phone releases the wait"
-    assert app.container.get(StateMachine).current("s1").task_id == 1, "the agent is working its task again"
+    assert app.container.get(SessionAgents).top("s1").task_id == 1, "the agent is working its task again"
     assert rows == [], "the agent would have seen the same, and the record says the same"
 
 
@@ -841,8 +842,8 @@ def test_a_second_session_in_one_environment_takes_the_first_ones_place_and_a_li
     name_index = {s["name"]: s for s in replay.record()}
     assert name_index["a message arrives"]["typed"] == ["[journal] new message 2"], "named once for the environment; message 1 is the worker's card"
     reported = name_index["the worker reports"]["typed"]
-    assert reported[0] == "[journal] worker 1, Lady Lovelace, reported in the chat" and reported[1].startswith("[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported") and len(reported) == 2, "the awaiting agent is told and released, once"
-    assert app.container.get(StateMachine).current("s2").task_id == 1 and app.container.get(StateMachine).current("s1").name == "ended", "an environment keeps one session: the second took the first one's place"
+    assert reported[0].startswith("[journal] the wait for worker 1 is over: worker 1, Lady Lovelace, reported") and reported[1] == "[journal] worker 1, Lady Lovelace, reported in the chat" and len(reported) == 2, "the awaiting agent is told and released, once"
+    assert app.container.get(SessionAgents).top("s2").task_id == 1 and app.container.get(SessionAgents).top("s1").name == "ended", "an environment keeps one session: the second took the first one's place"
     assert rows == [], "the agent would have seen the same, and the record says the same"
 
 
@@ -935,5 +936,5 @@ def test_a_workers_worktree_is_its_own_and_a_subagents_worktree_never_moves_the_
     assert "worker 1's worktree" in name_index["a write in the worker's worktree"]["answer"]["error"], "the worker's worktree is refused to the agent, with how to work there"
     assert "error" not in name_index["a subagent writes in its own worktree"]["answer"] and "error" not in name_index["a write in the project"]["answer"]
     stack = [layer["state"] for layer in app.container.get(Agents).session_agent("s1").stack]
-    assert stack == ["idle", "working", "awaiting"], "the worker's dispatch pushed the wait over the work; the subagent's worktree never moved the main conversation"
+    assert stack == ["idle", "working"], "the agent's own write lifted the wait on its worker; the subagent's worktree never moved the main conversation"
     assert rows == [], "the record says the same"

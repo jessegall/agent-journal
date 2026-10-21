@@ -1,5 +1,5 @@
 from journal.features.feature import Feature
-from journal.features.workers.support.workers_conduct import WorkersConduct
+from journal.features.workers.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_data_reader import WorkersDataReader
 from journal.features.workers.support.workers_data import WorkersData
 from journal.features.workers.seeds.workers_seed import WorkersSeed
@@ -10,7 +10,8 @@ from journal.support.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.listeners.subagent_cards import SubagentCards
 from journal.features.workers.listeners.worker_cards import WorkerCards
-from journal.features.tasks.states.ready import Ready
+from journal.engine.support.modes import Modes
+from journal.features.plans.states.plans_ready import PlansReady
 from journal.features.workers.states.delegating import Delegating
 from journal.features.workers.states.orchestrating import Orchestrating
 from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
@@ -19,15 +20,15 @@ from journal.features.workers.states.soloing import Soloing
 
 class Workers(Feature[WorkersData]):
     """A worker is an agent sent to write: code in a worktree of its own, a document, a change. A subagent only reads; a worker is the one that writes."""
-
-    MODE_STATES = {"builder": Ready, "orchestrator": Orchestrating, "solo": Soloing}
-    name = "workers"
-    title = "Workers"
-    help = "Agents sent to write one bounded job; the agent waits for their reports."
     TIMEOUT = Option("workers.timeout_minutes", "Time limit of a worker run", "Minutes a worker may run before it is stopped and its report says so; 0 sets no limit", 60, unit="min")
     MODE = Option("workers.mode", "Work mode", "Builder: the agent builds it itself and sends workers when a job is better done beside it. Orchestrator: it plans, hands the work to workers, then reviews and merges it. Solo: it does everything itself, with no workers", "builder", kind="choice", choices=("builder", "orchestrator", "solo"))
     WORKER_LIMIT = Option("workers.most_out", "Workers out at once", "The most workers out at a time; a dispatch past it is refused until one reports. 0 is no limit", 3, unit="workers")
     SUBAGENT_LIMIT = Option("workers.most_subagents", "Subagents running at once", "The most subagents running at a time; one more is held until one finishes. 0 is no limit", 5, unit="subagents")
+
+    name = "workers"
+    title = "Workers"
+    help = "Agents sent to write one bounded job; the agent waits for their reports."
+    modes = Modes(MODE, {"builder": PlansReady, "orchestrator": Orchestrating, "solo": Soloing})
     options = (TIMEOUT, MODE, WORKER_LIMIT, SUBAGENT_LIMIT)
     states = (Orchestrating, Soloing, OrchestratingPlan, Delegating)
     commands = (WorkerCommand,)

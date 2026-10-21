@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from journal.events.rows.user_paused import UserPaused
 from journal.events.rows.user_resumed import UserResumed
+from journal.events.rows.session_retired import SessionRetired
 from journal.events.rows.overview_read import OverviewRead
 from journal.events.rows.context_decided import ContextDecided
 from journal.events.rows.skill_read import SkillRead
@@ -30,6 +31,9 @@ class Agent(Scoped):
 
     def user_resumed(self, time: float) -> "Agent":
         return self.with_event(UserResumed(environment_id=self.environment_id, time=time, agent_session=self.session))
+
+    def retired(self, time: float) -> "Agent":
+        return self.with_event(SessionRetired(environment_id=self.environment_id, time=time, agent_session=self.session))
 
     def overview_read(self, time: float) -> "Agent":
         return self.with_(has_overview=True).with_event(OverviewRead(environment_id=self.environment_id, time=time))

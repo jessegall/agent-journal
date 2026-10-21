@@ -1,6 +1,6 @@
 from journal.events.models.deleted import Deleted
 from journal.events.listener import Listener
-from journal.support.run_tracker import RunTracker
+from journal.features.sequences.support.run_tracker import RunTracker
 from journal.supervisor_link import SupervisorLink
 
 

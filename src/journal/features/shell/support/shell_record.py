@@ -15,15 +15,15 @@ from journal.models.agent import Agent
 from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.entries import Entries
 from journal.repositories.setting_rows import SettingRows
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.support.card_kind import CardKind
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.caller import Caller
-from journal.support.states_catalogue import StatesCatalogue
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.engine.states.wait import Wait
 from journal.models.command_output import CommandOutput
 
-TAIL = 2000
+TAIL_CHARACTERS = 2000
 PIPED = re.compile(r"(?<!\|)\|(?!\|)")
 PART_START, PART_END, MOVED, ENDED = "running", "ran", "background", "ended"
 LETTER_RUN_PATTERN = re.compile(r"[A-Za-z]{3,}")
@@ -43,7 +43,7 @@ class ShellRecord:
         self.record(caller, PART_START, {"chain": chain, "part": part, "doing": ActivityLabel.build(part)})
 
     def finish_part(self, chain: str, part: str, status: int, seconds: float, output: str, changed: list[ChangedFile], caller: Caller) -> None:
-        self.record(caller, PART_END, {"chain": chain, "part": part, "doing": ActivityLabel.build(part), "status": status, "seconds": seconds, "output": output[-TAIL:], "changed": [asdict(c) for c in changed]})
+        self.record(caller, PART_END, {"chain": chain, "part": part, "doing": ActivityLabel.build(part), "status": status, "seconds": seconds, "output": output[-TAIL_CHARACTERS:], "changed": [asdict(c) for c in changed]})
 
     def moved(self, chain: str, part: str, folder: Path, caller: Caller) -> int:
         self.record(caller, MOVED, {"chain": chain, "part": part, "doing": ActivityLabel.build(part), "file": str(folder)})

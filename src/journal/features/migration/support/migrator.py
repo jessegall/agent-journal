@@ -23,13 +23,13 @@ from journal.features.migration.support.brings.wait_import import WaitImport
 from journal.features.migration.support.brings.todo_import import TodoImport
 from journal.features.migration.support.brings.work_import import WorkImport
 from journal.features.migration.support.import_tally import ImportTally
-from journal.support.version_3_backup import Version3Backup
+from journal.features.migration.support.version_3_backup import Version3Backup
 from journal.support.actor import Actor
 from journal.models.version3_migration import Version3Migration
 from journal.models.report import Report
 from journal.repositories.version3_migrations import Version3Migrations
 from journal.repositories.reports import Reports
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class Migrator:

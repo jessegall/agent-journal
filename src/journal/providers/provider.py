@@ -24,7 +24,7 @@ from journal.providers.support.file_writes import FileWrites
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
 
-TAIL = 400_000
+TAIL_BYTES = 400_000
 PATH_KEYS = ("file_path", "path", "notebook_path")
 
 VERSION_3_HOOKS = ("/.journal/src/hook.sh", "/.journal/hook.py", "/.journal/journal hook")
@@ -119,11 +119,11 @@ class Provider:
     @staticmethod
     def last_line_start(path: Path, size: int) -> int:
         with path.open("rb") as file:
-            file.seek(max(0, size - TAIL))
+            file.seek(max(0, size - TAIL_BYTES))
             tail = file.read()
         body = tail[:-1] if tail.endswith(b"\n") else tail
         cut = body.rfind(b"\n")
-        return max(0, size - TAIL) + cut + 1 if cut != -1 else max(0, size - TAIL)
+        return max(0, size - TAIL_BYTES) + cut + 1 if cut != -1 else max(0, size - TAIL_BYTES)
 
     def resume(self, session: str) -> tuple[str, ...]: ...
 

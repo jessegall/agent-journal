@@ -1,4 +1,4 @@
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.events.listener import Listener
 from journal.events.models.created import Created
 from journal.support.actor_kind import ActorKind

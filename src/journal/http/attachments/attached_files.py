@@ -6,10 +6,10 @@ from journal.http.attachments.attachments import Attachments
 from journal.http.attachments.file_request import FileRequest
 from journal.http.attachments.file_view import FileView
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.messages import Messages
 
-TITLE = 80
+TITLE_CHARACTERS = 80
 
 
 class AttachedFiles:
@@ -31,6 +31,6 @@ class AttachedFiles:
         for name in message.files:
             path = self.attachments.path(Message.table(), message.id, name)
             if path.is_file():
-                files.append(AttachedFile(str(Ref.build(message)), message.text[:TITLE], name, message.captions.get(name, ""), path.stat().st_size, path.stat().st_mtime,
+                files.append(AttachedFile(str(Ref.build(message)), message.text[:TITLE_CHARACTERS], name, message.captions.get(name, ""), path.stat().st_size, path.stat().st_mtime,
                                           (mimetypes.guess_type(name)[0] or "").startswith("image/"), f"/journal/messages/{message.id}/files/{quote(name, safe='')}"))
         return files

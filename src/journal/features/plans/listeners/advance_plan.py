@@ -10,7 +10,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.plans import Plans
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.tasks import Tasks
-from journal.support.states_catalogue import StatesCatalogue
+from journal.engine.states_catalogue import StatesCatalogue
 
 
 class AdvancePlan(Listener[Updated]):
@@ -31,7 +31,7 @@ class AdvancePlan(Listener[Updated]):
             return
         plan = self.plans.find(plan_id)
         following = self.plans.next_task(plan)
-        if plan.state != PlanState.STARTED or self.is_checkpoint_stop(plan) or following is None or self.tasks.current() is not None:
+        if not self.is_advancing(plan, following):
             return
         self.tasks.save(following.plan_started(time, plan.id), event.actor)
 
@@ -46,3 +46,6 @@ class AdvancePlan(Listener[Updated]):
                 if isinstance(state, FollowingPlan) and state.task_id == task.id:
                     return state.plan_id
         return 0
+
+    def is_advancing(self, plan: Plan, following: Task | None) -> bool:
+        return plan.state == PlanState.STARTED and not self.is_checkpoint_stop(plan) and following is not None and self.tasks.current() is None

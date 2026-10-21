@@ -8,15 +8,15 @@ import pytest
 from journal.app import App
 from journal.config import Config
 from journal.support.masks import Masks
-from journal.support.slow_requests import TEST_RUN_KEY
+from journal.features.faults.support.slow_requests import TEST_RUN_KEY
 from journal.support.secret_values import SecretValues
 
 from journal.db.connection import Connection
 from journal.db.schema import Schema
 from journal.events.bus import Bus
-from journal.support.all_models import AllModels
+from journal.models.all_models import AllModels
 from journal.repositories.environments import Environments
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 os.environ["AGENT_JOURNAL_SECRETS"] = tempfile.mkdtemp(prefix="journal-test-values-")

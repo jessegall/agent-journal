@@ -2,7 +2,7 @@ import re
 import shutil
 
 UNSAFE = re.compile(r"[^\w .,()-]+")
-LONGEST = 80
+LONGEST_CHARACTERS = 80
 CONVERTER = "textutil"
 
 
@@ -15,7 +15,7 @@ class ExportName:
 
     @staticmethod
     def stem(title: str) -> str:
-        return UNSAFE.sub("", title).strip()[:LONGEST]
+        return UNSAFE.sub("", title).strip()[:LONGEST_CHARACTERS]
 
     @staticmethod
     def extension() -> str:

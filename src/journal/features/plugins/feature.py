@@ -7,17 +7,17 @@ from journal.features.plugins.listeners.plugin_agent_relay import PluginAgentRel
 from journal.features.plugins.listeners.plugin_row_relay import PluginRowRelay
 from journal.features.plugins.listeners.plugin_settings_notice import PluginSettingsNotice
 from journal.features.plugins.seeds.plugin_services_seed import PluginServicesSeed
-from journal.features.plugins.support.plugins_conduct import PluginsConduct
+from journal.features.plugins.plugins_conduct import PluginsConduct
 from journal.features.plugins.support.plugins_data_reader import PluginsDataReader
 from journal.features.plugins.support.plugins_data import PluginsData
 from journal.engine.nudge import Nudge
 
 
 class PluginsFeature(Feature[PluginsData]):
+    PLUGIN_ANSWER_WINDOW = Option("plugins.hold_window_ms", "A plugin's hold window at most", "Milliseconds a plugin holding an event may take to answer; a plugin's own window in its manifest is cut to this, and one past its window is skipped and its fault recorded", 50, unit="ms")
     name = "plugins"
     title = "Plugins"
     help = "Programs you install that hear the journal's events and answer them: refuse a tool, say a line to the agent, show a card or run journal commands, each as itself."
-    PLUGIN_ANSWER_WINDOW = Option("plugins.hold_window_ms", "A plugin's hold window at most", "Milliseconds a plugin holding an event may take to answer; a plugin's own window in its manifest is cut to this, and one past its window is skipped and its fault recorded", 50, unit="ms")
     options = (PLUGIN_ANSWER_WINDOW,)
     listeners = (PluginAgentRelay, PluginRowRelay, PluginSettingsNotice)
     data = (PluginsDataReader,)

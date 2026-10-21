@@ -3,7 +3,7 @@ from typing import Callable
 from journal.support.actor import Actor
 from journal.models.migrated_row import MigratedRow
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.repository import Repository
 
 

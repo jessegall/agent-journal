@@ -43,12 +43,12 @@
       "name": "the worker reports",
       "answer": null,
       "typed": [
-        "[journal] worker 1, Lady Lovelace, reported in the chat",
-        "[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported. carry on with what you were doing"
+        "[journal] the wait for worker 1 is over: worker 1, Lady Lovelace, reported. carry on with what you were doing",
+        "[journal] worker 1, Lady Lovelace, reported in the chat"
       ],
       "nudges": [
-        "workers.worker_reported",
-        "tasks.wait_over"
+        "tasks.wait_over",
+        "workers.worker_reported"
       ],
       "stack": [
         "idle",

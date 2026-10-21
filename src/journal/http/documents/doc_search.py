@@ -5,7 +5,7 @@ from journal.models.doc import Doc
 from journal.repositories.docs import Docs
 
 WEIGHTS = {"title": 8, "number": 8, "abstract": 3, "text": 1}
-SNIPPET_RADIUS = 70
+SNIPPET_RADIUS_CHARACTERS = 70
 SPACES = re.compile(r"\s+")
 MARKDOWN_SYMBOLS = re.compile(r"[*`#]+")
 
@@ -37,4 +37,4 @@ class DocSearch:
         time = min((i for i in (flat.lower().find(word) for word in requested) if i >= 0), default=-1)
         if time < 0:
             return ""
-        return flat[max(0, time - SNIPPET_RADIUS):time + SNIPPET_RADIUS].strip()
+        return flat[max(0, time - SNIPPET_RADIUS_CHARACTERS):time + SNIPPET_RADIUS_CHARACTERS].strip()

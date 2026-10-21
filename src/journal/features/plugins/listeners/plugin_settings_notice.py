@@ -6,7 +6,7 @@ from journal.features.plugins.support.plugin_updated import PluginUpdated
 from journal.support.listener_queue import ListenerQueue
 from journal.support.actor import Actor
 from journal.models.plugin import Plugin
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class PluginSettingsNotice(Listener[Updated]):

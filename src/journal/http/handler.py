@@ -2,6 +2,7 @@ import json
 import traceback
 from urllib.parse import parse_qs, urlsplit
 
+from journal.http.support.json_out import JsonOut
 from journal.http.support.file_response import FileResponse
 from journal.http.support.identity import Identity
 from journal.http.support.multipart import Multipart
@@ -83,7 +84,7 @@ class Handler(PooledHandler):
             return
 
     def _reply(self, response: Response) -> None:
-        body = response.encoded()
+        body = JsonOut.encoded(response.body)
         self.send_response(response.status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))

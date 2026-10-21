@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.git.listeners.commit_detection import CommitDetection
 from journal.features.git.listeners.worktree_session_link import WorktreeSessionLink
-from journal.features.git.support.git_conduct import GitConduct
+from journal.features.git.git_conduct import GitConduct
 from journal.features.git.support.git_data_reader import GitDataReader
 from journal.features.git.support.git_data import GitData
 

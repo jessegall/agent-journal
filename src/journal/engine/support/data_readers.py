@@ -1,6 +1,6 @@
 from journal.events.feature_data import FeatureData
 from journal.models.agent import Agent
-from journal.support.data_reader import DataReader
+from journal.engine.support.data_reader import DataReader
 
 
 class DataReaders:

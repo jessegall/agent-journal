@@ -12,7 +12,7 @@ from journal.support.listener_queue import ListenerQueue
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.models.task import Task
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.tasks import Tasks
 from tests.replay import Replay, differences, hook_as, recorded

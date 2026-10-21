@@ -1,11 +1,11 @@
 import subprocess
 from pathlib import Path
 
-from journal.support.kept_tips import TIPS_REF
+from journal.support.worktree_refs import TIPS_REF
 from journal.config import Config
 from journal.models.worker import Worker
 
-GIT_TIMEOUT = 30
+GIT_TIMEOUT_SECONDS = 30
 
 
 class WorkerBranch:
@@ -21,7 +21,7 @@ class WorkerBranch:
         return self.config.home / "worktrees" / f"{worker.id}-{worker.name}".replace(" ", "-")
 
     def git(self, *argv: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
-        return subprocess.run(["git", *argv], cwd=cwd or self.config.root, capture_output=True, text=True, timeout=GIT_TIMEOUT)
+        return subprocess.run(["git", *argv], cwd=cwd or self.config.root, capture_output=True, text=True, timeout=GIT_TIMEOUT_SECONDS)
 
     def commit_count(self, worker: Worker) -> list[str]:
         finished = self.git("log", "--reverse", "--format=%h %s", f"HEAD..{self.name(worker)}")

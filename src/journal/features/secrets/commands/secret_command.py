@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.features.secrets.support.browser_logins import WINDOW
+from journal.features.secrets.support.browser_logins import WINDOW_SECONDS
 from journal.features.secrets.support.login_window import LoginWindow
 from journal.features.secrets.support.programs import Programs
 from journal.features.secrets.support.secret_run import SecretRun
@@ -16,7 +16,7 @@ from journal.models.secret_kind import SecretKind
 from journal.support.rejection import Rejection
 from journal.repositories.mcp_servers import McpServers
 from journal.repositories.messages import Messages
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.secrets import Secrets
 from journal.repositories.workers import Workers
 from journal.support.secret_values import SecretValues
@@ -156,7 +156,7 @@ class SecretCommand(Command):
 
     def waited(self, secret: Secret) -> int:
         began = time.time()
-        while self.secrets.find(secret.id).login_started_at and time.time() - began < WINDOW:
+        while self.secrets.find(secret.id).login_started_at and time.time() - began < WINDOW_SECONDS:
             time.sleep(1)
         finished = self.secrets.find(secret.id)
         print(f"logged in to {finished.title}" if finished.session_at else f"no login to {finished.title} is saved")

@@ -6,7 +6,7 @@ from typing import Iterator
 
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.claude_row import ClaudeRow
-from journal.providers.provider import TAIL, Provider
+from journal.providers.provider import TAIL_BYTES, Provider
 from journal.providers.support.turn import Turn
 
 CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
@@ -65,7 +65,7 @@ class Claude(Provider):
         if path is None:
             return []
         with path.open("rb") as file:
-            start = max(0, path.stat().st_size - TAIL)
+            start = max(0, path.stat().st_size - TAIL_BYTES)
             file.seek(start)
             lines = file.read().decode(errors="replace").splitlines()[1 if start else 0:]
         thoughts: list[str] = []

@@ -18,4 +18,4 @@ class TemplateImport(BuiltinKind):
 
     def created(self, row: Version3Row, actor: Actor) -> Template:
         parts = tuple(f"{title}: {body}" for title, body in row.sections)
-        return self.templates.imported(Template(title=row.title, targets=tuple(row.listed("applies_to")), purpose=row.data.get("purpose", ""), brief=row.brief, parts=parts), row.created_at(), actor)
+        return self.templates.imported(Template(title=row.title, targets=tuple(row.listed("applies_to")), purpose=row.data.get("purpose", ""), brief=row.brief, parts=parts), row.creation_moment(), actor)

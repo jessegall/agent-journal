@@ -12,7 +12,7 @@ from journal.config import Config
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.entries import Entries
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.setting_rows import SettingRows
 
 SRC = Path(__file__).resolve().parent.parent / "src"

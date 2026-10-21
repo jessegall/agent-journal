@@ -1,7 +1,7 @@
 from journal.events.listener import Listener
 from journal.events.slow_tick import SlowTick
 from journal.repositories.setting_rows import SettingRows
-from journal.support.nudge_log import NudgeLog
+from journal.engine.support.nudge_log import NudgeLog
 
 
 class SlowJobNotice(Listener[SlowTick]):

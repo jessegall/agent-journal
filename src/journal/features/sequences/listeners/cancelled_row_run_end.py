@@ -1,6 +1,6 @@
 from journal.events.models.updated import Updated
 from journal.events.listener import Listener
-from journal.support.run_tracker import RunTracker
+from journal.features.sequences.support.run_tracker import RunTracker
 from journal.models.scoped import Scoped
 from journal.supervisor_link import SupervisorLink
 

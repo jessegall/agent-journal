@@ -36,7 +36,8 @@ class SortingDump(BaseState):
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.none()
 
-    def on_dump_arrived_dumps(self, event: DumpArrived, settings: Settings) -> Transition:
+    def on_dump_arrived(self, event: DumpArrived, settings: Settings) -> Transition:
+        event.stop_propagation()
         from journal.features.dumps.feature import DumpsFeature
         if event.dump_id != self.dump_id or not event.waiting:
             return self.none()

@@ -2,7 +2,7 @@ from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.secrets.commands.secret_command import SecretCommand
-from journal.features.secrets.support.secrets_conduct import SecretsConduct
+from journal.features.secrets.secrets_conduct import SecretsConduct
 from journal.features.secrets.support.secrets_data_reader import SecretsDataReader
 from journal.features.secrets.support.secrets_data import SecretsData
 from journal.features.secrets.listeners.leak_alarm import LeakAlarm

@@ -7,7 +7,7 @@ from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.models.link import Link
 from journal.models.plan import Plan
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.repositories.links import Links
 from journal.repositories.plans import PLAN_LINK, Plans

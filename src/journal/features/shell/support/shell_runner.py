@@ -14,12 +14,12 @@ from journal.features.shell.support.output_show import OutputShow
 from journal.features.shell.support.shell_record import ShellRecord
 from journal.features.shell.support.shell_request import ShellRequest
 from journal.support.chain import Chain
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.caller import Caller
 
 EXIT = "__journal_exit"
-TICK = 0.2
-LIMIT_READ_INTERVAL = 10
+TICK_SECONDS = 0.2
+LIMIT_READ_TICKS = 10
 
 
 class ShellRunner:
@@ -78,9 +78,9 @@ class ShellRunner:
                 from journal.features.shell.feature import Shell
                 yield f"{Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered()}\n{EXIT} 0\n".encode()
                 return
-            time.sleep(TICK)
+            time.sleep(TICK_SECONDS)
             tick += 1
-            if tick % LIMIT_READ_INTERVAL == 0:
+            if tick % LIMIT_READ_TICKS == 0:
                 limit = self.limits.build(request.line, caller.environment)
 
     def closed(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> None:

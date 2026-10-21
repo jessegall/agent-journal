@@ -6,7 +6,7 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.support.outline import Outline
 from journal.models.link import Link
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.report import Report
 from journal.support.rejection import Rejection
 from journal.repositories.links import Links

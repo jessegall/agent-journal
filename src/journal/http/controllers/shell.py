@@ -2,7 +2,7 @@ from journal.features.shell.support.shell_request import ShellRequest
 from journal.features.shell.support.shell_runner import ShellRunner
 from journal.http.support.request import Request
 from journal.http.support.stream_response import StreamResponse
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.caller import Caller
 
 CWD_HEADER = "x-journal-cwd"

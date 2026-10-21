@@ -2,7 +2,7 @@ from journal.features.feature import Feature
 from journal.features.memory.listeners.start_memory import StartMemory
 from journal.features.memory.listeners.memory_hint_card import MemoryHintCard
 from journal.features.memory.listeners.context_threshold_check import ContextThresholdCheck
-from journal.features.memory.support.memory_conduct import MemoryConduct
+from journal.features.memory.memory_conduct import MemoryConduct
 from journal.features.memory.support.memory_data_reader import MemoryDataReader
 from journal.features.memory.support.memory_data import MemoryData
 from journal.features.memory.commands.fact_command import FactCommand
@@ -21,6 +21,8 @@ YEAR_SECONDS = 365 * 86400.0
 
 
 class Memory(Feature[MemoryData]):
+    CONTEXT_THRESHOLDS = (25, 50, 80)
+    STALENESS_LIMIT = Option("memory.stale_after", "Ask about old facts after", "Days a fact, rule or reminder stands before the agent is asked at a session start whether it still holds", 7, unit="days")
     name = "memory"
     title = "Memory"
     help = "At 25, 50 and 80 percent of the context window, writes wait until the agent records a fact, a rule or nothing."
@@ -29,13 +31,11 @@ class Memory(Feature[MemoryData]):
     data = (MemoryDataReader,)
     commands = (FactCommand, RuleCommand, ReminderCommand, MemorySkipCommand)
 
-    CONTEXT_THRESHOLDS = (25, 50, 80)
 
     CONTEXT_DECISION = Nudge(name, "decide_at_the_mark", "context {{percent}}% full: decide what to keep from it", "`journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal memory skip \"<why>\"`; writes wait until you do", repeat_interval=0)
     DECISION_EDIT_BLOCK = Nudge(name, "write_held_until_decided", "writes wait until you decide what to keep from the context", "`journal fact create`, `journal rule create`, or `journal memory skip \"<why>\"`")
     UNDECIDED_STOP = Nudge(name, "stopped_at_mark", "you stopped while the journal awaits a decision at the context mark, {{percent}}% full", "`journal fact create`, `journal rule create`, or `journal memory skip \"<why>\"` first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_interval=0)
     CHECK_STALE_MEMORY = Nudge(name, "check_stale_memory", "these are {{stale_after}} days old or more, check they still hold: {{stale}}", "strike what no longer holds (`journal fact strike <n>`), reword what drifted, and keep the rest", repeat_interval=86400)
-    STALENESS_LIMIT = Option("memory.stale_after", "Ask about old facts after", "Days a fact, rule or reminder stands before the agent is asked at a session start whether it still holds", 7, unit="days")
     RULE_SCOPE_QUESTION = Nudge(name, "does_the_rule_apply_project_wide", "does rule {{n}} apply to the whole project?", "keep it only as Always or Never for every environment; otherwise delete it and record a fact or a reminder here")
     MEMORY_READ_REQUEST = Nudge(name, "memory_whispered_back", "{{noun}} {{n}} is about this and not in your context: journal {{noun}} read {{n}}", repeat_interval=YEAR_SECONDS)
     nudges = (CONTEXT_DECISION, DECISION_EDIT_BLOCK, UNDECIDED_STOP, CHECK_STALE_MEMORY, RULE_SCOPE_QUESTION, MEMORY_READ_REQUEST)

@@ -2,7 +2,7 @@ from journal.models.phone import Phone
 from journal.models.plan_state import PlanState
 from journal.repositories.plans import Plans
 from journal.repositories.questions import Questions
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class PhoneWaits:

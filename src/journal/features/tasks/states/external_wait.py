@@ -6,21 +6,19 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
+from journal.events.rows.row_pending import RowPending
+from journal.events.agent.wait_request import WaitRequest
 from journal.events.rows.row_resolved import RowResolved
-from journal.events.rows.worker_reported import WorkerReported
-from journal.events.rows.worker_dispatched import WorkerDispatched
-from journal.events.rows.worker_stopped import WorkerStopped
 from journal.support.permission import Permission
 from journal.support.timeout import Timeout
 
 NEXT_TASK_DELAY = Timeout.minutes(1)
 CHECK_REMINDER = Timeout.minutes(5)
-WORKERS = "workers"
 
 
 @dataclass(frozen=True)
 class ExternalWait(Wait):
-    """The agent waits on something outside its hands, named in words and by the rows that end it, table:id each: workers, outputs, checks, tasks or questions. Each row settling is told and the last pops the wait with what each came to. A wait on workers stands through the agent's own tool use, since it works on meanwhile and is widened by each dispatch; any other wait is lifted when the agent works again. Stopping is fine; in auto mode the next task is named once after a minute, and every five quiet minutes the agent is asked to look."""
+    """The agent waits on something outside its hands, named in words and by the rows that end it, table:id each: outputs, checks, tasks or questions, and whatever a feature above tasks adds. Each row settling is told and the last pops the wait with what each came to. The wait is lifted when the agent uses any tool outside the journal. Stopping is fine; in auto mode the next task is named once after a minute, and every five quiet minutes the agent is asked to look."""
 
     name = "awaiting"
     title = "Waiting"
@@ -34,12 +32,16 @@ class ExternalWait(Wait):
     outcomes: str = ""
 
     @classmethod
-    def opened(cls, focus: str, end_refs: str, started_at: float) -> "ExternalWait":
-        return cls(focus=focus, end_refs=end_refs, started_at=started_at, next_task_delay=NEXT_TASK_DELAY.started(started_at), check_reminder=CHECK_REMINDER.started(started_at))
+    def requested(cls, event: WaitRequest) -> "ExternalWait":
+        return cls.opened(event.focus, event.end_refs, event.time)
 
     @classmethod
-    def on_workers(cls, ids: tuple[int, ...], started_at: float) -> "ExternalWait":
-        return cls.opened(f"{WORKERS} {', '.join(str(n) for n in ids)}", ",".join(f"{WORKERS}:{n}" for n in ids), started_at)
+    def pending(cls, event: RowPending) -> "ExternalWait":
+        return cls.opened(event.label, event.ref, event.time)
+
+    @classmethod
+    def opened(cls, focus: str, end_refs: str, started_at: float) -> "ExternalWait":
+        return cls(focus=focus, end_refs=end_refs, started_at=started_at, next_task_delay=NEXT_TASK_DELAY.started(started_at), check_reminder=CHECK_REMINDER.started(started_at))
 
     def wait_description(self) -> tuple[str, str]:
         return self.focus, self.end_refs
@@ -47,11 +49,8 @@ class ExternalWait(Wait):
     def targets(self) -> list[str]:
         return [ref for ref in self.end_refs.split(",") if ref]
 
-    def worker_ids(self) -> tuple[int, ...]:
-        return tuple(int(ref.split(":")[1]) for ref in self.targets() if ref.startswith(f"{WORKERS}:"))
-
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        if event.subagent or event.call.is_journal or self.worker_ids():
+        if event.subagent or event.call.is_journal:
             return self.none()
         return self.pop()
 
@@ -67,19 +66,13 @@ class ExternalWait(Wait):
     def on_row_resolved(self, event: RowResolved, settings: Settings) -> Transition:
         return self.resolution(event.ref, event.outcome)
 
-    def on_worker_dispatched_workers(self, event: WorkerDispatched, settings: Settings) -> Transition:
-        if event.dispatcher != event.session or event.worker_id in self.worker_ids():
+    def on_row_pending(self, event: RowPending, settings: Settings) -> Transition:
+        if event.awaiter != event.session:
             return self.none()
-        widened = ExternalWait.on_workers((*self.worker_ids(), event.worker_id), self.started_at)
-        return self.swap(replace(self, focus=widened.focus, end_refs=",".join([*self.targets(), f"{WORKERS}:{event.worker_id}"])))
-
-    def on_worker_reported_workers(self, event: WorkerReported, settings: Settings) -> Transition:
-        from journal.features.workers.feature import Workers
-        return self.resolution(f"{WORKERS}:{event.worker_id}", f"worker {event.worker_id}, {event.name}, reported", Workers.WORKER_REPORTED.create(n=event.worker_id, name=event.name))
-
-    def on_worker_stopped_workers(self, event: WorkerStopped, settings: Settings) -> Transition:
-        from journal.features.workers.feature import Workers
-        return self.resolution(f"{WORKERS}:{event.worker_id}", f"worker {event.worker_id}, {event.name}, stopped before it reported", Workers.WORKER_STOPPED_UNREPORTED.create(n=event.worker_id, name=event.name))
+        event.stop_propagation()
+        if event.ref in self.targets():
+            return self.none()
+        return self.swap(replace(self, focus=f"{self.focus}, {event.label}", end_refs=",".join([*self.targets(), event.ref])))
 
     def resolution(self, ref: str, outcome: str, *lines: Nudge) -> Transition:
         from journal.features.tasks.feature import Tasks

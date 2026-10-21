@@ -13,7 +13,7 @@ from journal.support.secret_values import SecretValues
 PLAYWRIGHT = "playwright@1.63.0"
 OPEN_BROWSER = ("npx", "-y", PLAYWRIGHT, "open")
 INSTALL_BROWSER = ("npx", "-y", PLAYWRIGHT, "install", "chromium")
-WINDOW = 900
+WINDOW_SECONDS = 900
 
 
 class BrowserLogins:
@@ -38,8 +38,8 @@ class BrowserLogins:
             raise Rejection("logging in needs npx, which comes with Node.js, on this machine")
         self.folder.mkdir(mode=0o700, parents=True, exist_ok=True)
         saved = self.stored_login(title)
-        subprocess.run(INSTALL_BROWSER, check=False, capture_output=True, timeout=WINDOW)
-        opened = subprocess.run([*OPEN_BROWSER, f"--save-storage={saved}", url], check=False, capture_output=True, text=True, timeout=WINDOW)
+        subprocess.run(INSTALL_BROWSER, check=False, capture_output=True, timeout=WINDOW_SECONDS)
+        opened = subprocess.run([*OPEN_BROWSER, f"--save-storage={saved}", url], check=False, capture_output=True, text=True, timeout=WINDOW_SECONDS)
         if not saved.is_file():
             errors = [line.strip() for line in opened.stderr.splitlines() if line.strip()]
             raise Rejection(f"no login was saved: {errors[0] if errors else 'log in in the browser that opens, then close its window'}")

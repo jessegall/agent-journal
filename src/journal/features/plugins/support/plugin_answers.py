@@ -2,7 +2,7 @@ import shlex
 
 from journal.console.console import Console
 from journal.support.caller import Caller
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.features.plugins.support.plugin_steps import PluginSteps
 from journal.features.plugins.support.plugin_text import PluginText
 from journal.support.actor import Actor

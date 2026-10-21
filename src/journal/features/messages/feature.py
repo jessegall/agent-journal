@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.features.messages.support.messages_data_reader import MessagesDataReader
 from journal.features.messages.support.messages_data import MessagesData
-from journal.features.messages.support.messages_conduct import MessagesConduct
+from journal.features.messages.messages_conduct import MessagesConduct
 from journal.features.messages.listeners.record_typed_prompt import RecordTypedPrompt
 from journal.features.messages.listeners.record_peer_message import RecordPeerMessage
 from journal.features.messages.listeners.outgoing_message_record import OutgoingMessageRecord
@@ -20,15 +20,15 @@ from journal.support.skill import Skill
 
 
 class Messages(Feature[MessagesData]):
-    name = "messages"
-    title = "Messages"
-    help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
-    commands = (MessageCommand,)
     ANSWER_REQUEST_LIMIT = Option("messages.nudge_after", "Ask for an answer after", "Tool uses the agent may make after reading a message before it is told the message is still unanswered", 5, unit="tool uses")
     TOOL_BLOCK_LIMIT = Option("messages.hold_after", "Hold every tool after", "Tool uses the agent may make after reading a message before its tools wait for the answer; 0 holds the first", 10, unit="tool uses")
     TRANSCRIPT_SCAN_DELAY = Option("messages.sweep_after", "Look for missed words older than", "Seconds the hooks have to bring the agent's words to the chat before the transcript is looked through for any they missed", 10, unit="seconds")
     REMINDER_INTERVAL = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between reminders of messages the agent has not read", 3, unit="tool uses")
     EDIT_BLOCK_LIMIT = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
+    name = "messages"
+    title = "Messages"
+    help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
+    commands = (MessageCommand,)
     options = (ANSWER_REQUEST_LIMIT, TOOL_BLOCK_LIMIT, REMINDER_INTERVAL, EDIT_BLOCK_LIMIT, TRANSCRIPT_SCAN_DELAY)
     listeners = (InboxArrivalCard, TranscriptScan, RecordTypedPrompt, RecordPeerMessage, OutgoingMessageRecord, RecordTurn, RunTags, TaskMentionLinks, DumpItemCard, DeliverMessage, StartInboxDelivery)
     data = (MessagesDataReader,)
@@ -46,7 +46,6 @@ class Messages(Feature[MessagesData]):
     DUPLICATE_REPLY = Nudge(name, "reply_kept_out_as_replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_interval=0)
     REPEATED_CLOSING_TEXT = Nudge(name, "closing_words_kept_out_as_repeated", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_interval=0)
     TAG_REPLY = Nudge(name, "reply_by_tag", "a reply needs no command", "type it in your turn with [!reply:N] opening its line, and it reaches the chat as your reply", repeat_interval=0)
-    INBOX_LINES = (NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES)
     nudges = (NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, USER_REACTION, FACE_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT, TAG_REPLY)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
@@ -91,3 +90,7 @@ The user leaves messages; you answer them before anything else.
         if len(unread) <= 3:
             return cls.NEW_MESSAGES.create(ns=", ".join(str(n) for n in unread))
         return cls.UNREAD_MESSAGES.create(count=len(unread))
+
+    @classmethod
+    def inbox_lines(cls) -> tuple[Nudge, ...]:
+        return (cls.NEW_MESSAGE, cls.NEW_MESSAGES, cls.UNREAD_MESSAGES)

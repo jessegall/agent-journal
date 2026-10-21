@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 from journal.events.listener import Listener
 from journal.events.models.updated import Updated
-from journal.support.wait_targets import WaitTargets
+from journal.features.tasks.support.wait_targets import WaitTargets
 from journal.support.actor import Actor
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.plans import Plans
 from journal.repositories.tasks import Tasks
 

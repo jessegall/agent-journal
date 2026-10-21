@@ -2,7 +2,7 @@ from journal.engine.nudge import Nudge
 from journal.features.dumps.commands.dump_command import DumpCommand
 from journal.features.dumps.states.sorting_dump import SortingDump
 from journal.features.feature import Feature
-from journal.features.dumps.support.dumps_conduct import DumpsConduct
+from journal.features.dumps.dumps_conduct import DumpsConduct
 from journal.features.dumps.support.dumps_data_reader import DumpsDataReader
 from journal.features.dumps.support.dumps_data import DumpsData
 from journal.support.skill import Skill

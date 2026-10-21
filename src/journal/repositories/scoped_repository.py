@@ -6,7 +6,7 @@ from journal.events.bus import Bus
 from journal.support.actor import Actor
 from journal.models.scoped import Scoped
 from journal.repositories.repository import Repository
-from journal.support.scope import PROJECT, Scope
+from journal.repositories.scope import PROJECT, Scope
 
 S = TypeVar("S", bound=Scoped)
 

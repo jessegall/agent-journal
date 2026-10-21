@@ -1,7 +1,7 @@
 import os
 import re
 
-from journal.features.shell.support.part import CODE, INPLACE_EDITORS, Part
+from journal.support.part import CODE, INPLACE_EDITORS, Part
 from journal.support.chain import Chain
 
 COMMANDS = {"tee", "cp", "mv", "rm", "mkdir", "touch", "rsync", "ln", "chmod", "chown", "truncate", "dd", "patch", "install", "rmdir"}

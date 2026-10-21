@@ -1,6 +1,6 @@
 import re
 
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 
 NOUNS = {"task": "tasks", "plan": "plans", "message": "messages", "doc": "docs", "document": "docs", "report": "reports", "question": "questions", "worker": "workers", "check": "checks", "sequence": "sequences"}
 MENTION = re.compile(r"\b(" + "|".join(NOUNS) + r")\s+(\d+)\b", re.I)

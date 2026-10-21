@@ -7,7 +7,7 @@ from journal.models.author import Author
 from journal.models.environment import Environment
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
@@ -31,6 +31,6 @@ class CommentImport(EnvironmentKind):
         return next((rows for ref in row.refs if (rows := self.ledger.referred(target.name, ref))), None)
 
     def created(self, row: Version3Row, receiver: Environment, attached: Path, actor: Actor) -> Message:
-        comment = self.messages.imported(Message(environment_id=receiver.id, author=Author(row.author()), text=row.brief, read_at=row.read_at()), row.created_at(), actor)
+        comment = self.messages.imported(Message(environment_id=receiver.id, author=Author(row.author()), text=row.brief, read_at=row.reading_moment()), row.creation_moment(), actor)
         self.links.save(Link(source=Ref.build(comment), target=self.parent(row, receiver), kind=Messages.COMMENT_LINK), actor)
         return comment

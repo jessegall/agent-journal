@@ -2,12 +2,12 @@ from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.support.actor import Actor
 from journal.models.link import Link
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.links import Links
 from journal.support.missing_row import MissingRow
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
 

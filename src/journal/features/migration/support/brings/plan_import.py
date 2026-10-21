@@ -8,7 +8,7 @@ from journal.models.link import Link
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.migrated_rows import MigratedRows
@@ -30,9 +30,9 @@ class PlanImport(EnvironmentKind):
         self.plans, self.phases, self.links = plans, phases, links
 
     def created(self, row: Version3Row, receiver: Environment, attached: Path, actor: Actor) -> Plan:
-        plan = self.plans.imported(Plan(environment_id=receiver.id, title=row.title, brief=row.brief, state=STATES.get(row.data.get("status", ""), PlanState.DRAFT)), row.created_at(), actor)
+        plan = self.plans.imported(Plan(environment_id=receiver.id, title=row.title, brief=row.brief, state=STATES.get(row.data.get("status", ""), PlanState.DRAFT)), row.creation_moment(), actor)
         for value in row.listed("phases"):
-            phase = self.phases.imported(Phase(environment_id=receiver.id, title=value.get("title", ""), completion_rule=value.get("when", ""), checkpoint=bool(value.get("checkpoint"))), row.created_at(), actor)
+            phase = self.phases.imported(Phase(environment_id=receiver.id, title=value.get("title", ""), completion_rule=value.get("when", ""), checkpoint=bool(value.get("checkpoint"))), row.creation_moment(), actor)
             self.links.save(Link(source=Ref.build(phase), target=Ref.build(plan), kind=PHASE_TASK_LINK), actor)
             for task in [rows for n in value.get("todos", []) if (rows := self.ledger.referred(receiver.name, f"todo:{n}"))]:
                 self.links.save(Link(source=task, target=Ref.build(plan), kind=PLAN_LINK), actor)

@@ -6,7 +6,7 @@ from journal.features.migration.support.version_3_row import Version3Row
 from journal.support.actor import Actor
 from journal.models.environment import Environment
 from journal.models.link import Link
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.support.rejection import Rejection
 from journal.repositories.environments import Environments

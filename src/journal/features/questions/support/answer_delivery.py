@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.support.actor import Actor
 from journal.models.question import Question
 from journal.repositories.questions import Questions

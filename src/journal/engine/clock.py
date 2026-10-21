@@ -2,14 +2,14 @@ import time as timing
 
 from journal.engine.job import Job
 from journal.engine.states.ended import Ended
-from journal.support.states_catalogue import StatesCatalogue
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.events.agent.ticked import Ticked
 from journal.events.clock_ticked import ClockTicked
 from journal.events.bus import Bus
 from journal.support.decision import Decision
 from journal.models.agent import Agent
 from journal.repositories.agents import Agents
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.supervisor_link import SupervisorLink
 
 

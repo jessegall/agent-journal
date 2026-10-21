@@ -1,13 +1,13 @@
 import time
 
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.engine.job import Job
 from journal.engine.states.ended import Ended
-from journal.support.states_catalogue import StatesCatalogue
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.agent import Agent
 from journal.providers.support.menu import ESCAPE, Menu
 from journal.repositories.agents import Agents
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.supervisor_link import SupervisorLink
 from journal.engine.support.launch_files import LaunchFiles
 from journal.engine.support.menu_answers import MenuAnswers
@@ -26,8 +26,8 @@ class MenuWatcher(Job):
     def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: Cards, scope: Scope, states: StatesCatalogue, answers: MenuAnswers, launches: LaunchFiles) -> None:
         self.agents, self.supervisor, self.cards, self.scope, self.states = agents, supervisor, cards, scope, states
         self.answers, self.launches = answers, launches
-        self._seen: dict[int, tuple] = {}
-        self._seen_at: dict[int, float] = {}
+        self._menu_signatures: dict[int, tuple] = {}
+        self._menu_changed_at: dict[int, float] = {}
         self._answered: dict[int, tuple] = {}
 
     def tick(self, time: float) -> None:
@@ -40,17 +40,17 @@ class MenuWatcher(Job):
         environment, moment = agent.environment_id, time.time()
         menu = Menu.parsed(self.supervisor.screen(environment)[-8192:])
         if menu is None or not (menu.foreign() or self.answers_permission(menu, environment)):
-            self._seen.pop(environment, None)
+            self._menu_signatures.pop(environment, None)
             self._answered.pop(environment, None)
             return ""
-        if self._seen.get(environment) != menu.signature():
-            self._seen[environment], self._seen_at[environment] = menu.signature(), moment
+        if self._menu_signatures.get(environment) != menu.signature():
+            self._menu_signatures[environment], self._menu_changed_at[environment] = menu.signature(), moment
         if self._answered.get(environment) == menu.signature() or self.is_drawing(environment, moment):
             return ""
-        user_owned = self.supervisor.keyed_at(environment) > self._seen_at[environment] - USER_KEY_WINDOW_SECONDS
+        user_owned = self.supervisor.last_keystroke(environment) > self._menu_changed_at[environment] - USER_KEY_WINDOW_SECONDS
         if user_owned and not menu.confirming():
             return ""
-        triggered = user_owned or self.supervisor.selected_at(environment) > self._seen_at[environment] - CAUSE_WINDOW_SECONDS
+        triggered = user_owned or self.supervisor.last_selection(environment) > self._menu_changed_at[environment] - CAUSE_WINDOW_SECONDS
         decided = self.decided(menu, triggered, agent)
         if decided is None:
             return ""
@@ -66,7 +66,7 @@ class MenuWatcher(Job):
         return menu.asking_permission() and self.launches.skips_prompts(environment)
 
     def is_drawing(self, environment: int, moment: float) -> bool:
-        return self._seen_at[environment] == moment and moment - self.supervisor.screen_changed_at(environment) < STILLNESS_SECONDS
+        return self._menu_changed_at[environment] == moment and moment - self.supervisor.last_screen_change(environment) < STILLNESS_SECONDS
 
     def decided(self, menu: Menu, triggered: bool, agent: Agent) -> tuple[str, str] | None:
         if triggered or menu.trusting() or menu.switching_model():

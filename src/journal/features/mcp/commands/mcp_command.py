@@ -2,8 +2,8 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.support.mcp_catalogue import McpCatalogue
-from journal.support.mcp_installing import McpInstalling
+from journal.features.mcp.support.mcp_catalogue import McpCatalogue
+from journal.features.mcp.support.mcp_installing import McpInstalling
 from journal.support.keys import Keys
 from journal.repositories.mcp_servers import McpServers
 

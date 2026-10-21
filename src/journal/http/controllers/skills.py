@@ -1,9 +1,9 @@
 from journal.features.registry import Registry
-from journal.support.skill_files import SkillFiles
+from journal.features.skills.support.skill_files import SkillFiles
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.repositories.agents import Agents
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.supervisor_link import SupervisorLink
 
 

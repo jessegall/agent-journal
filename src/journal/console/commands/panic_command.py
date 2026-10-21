@@ -3,8 +3,8 @@ from argparse import Namespace
 from journal.console.command import Command
 from journal.engine.state_machine import StateMachine
 from journal.support.rejection import Rejection
-from journal.support.scope import Scope
-from journal.support.states_catalogue import StatesCatalogue
+from journal.repositories.scope import Scope
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.support.caller import Caller
 
 POP = "pop"

@@ -13,11 +13,11 @@ from journal.events.rows.plan_postponed import PlanPostponed
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_started import TaskStarted
 from journal.events.feature_data import FeatureData
-from journal.features.tasks.states.working import Working
+from journal.features.plans.states.plans_working import PlansWorking
 
 
 @dataclass(frozen=True)
-class FollowingPlan(Working):
+class FollowingPlan(PlansWorking):
     """Working with a plan in hand, for the plan's whole life. A finished task starts the next: the plans feature writes it and the state keeps the top as that task; a task started outside the plan is the task in hand all the same, since one task is in hand at a time. At a checkpoint the state has no task in hand: the stop waits for the user, or in auto mode is refused and the agent told to go on. Popped when the plan is done, postponed or abandoned, and on resume when the plan is no longer the one started here."""
 
     name = "following_plan"

@@ -1,7 +1,7 @@
 from journal.console.console import Console
 from journal.support.caller import Caller
 from journal.support.plugin_tokens import PluginTokens
-from journal.support.subagent_commands import REFUSAL, SubagentCommands
+from journal.http.support.subagent_commands import REFUSAL, SubagentCommands
 from journal.console.support.outcome import Outcome
 from journal.http.support.request import Request
 from journal.support.response import Response

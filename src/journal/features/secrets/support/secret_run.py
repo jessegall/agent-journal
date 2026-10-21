@@ -16,7 +16,7 @@ from journal.support.secret_values import SecretValues
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 TEMPORARY_HOME_VARIABLES = ("HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "GH_CONFIG_DIR", "DOCKER_CONFIG")
-LONGEST = 120
+LONGEST_SECONDS = 120
 
 
 class SecretRun:
@@ -43,7 +43,7 @@ class SecretRun:
         home = tempfile.mkdtemp(prefix="run-", dir=runs)
         try:
             environ = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(TEMPORARY_HOME_VARIABLES, home), **({f.variable: values[f.variable] for f in fields} if as_variables else {})}
-            finished = subprocess.run([program, *command[1:]], input=f"{value}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environ, cwd=self.config.root, timeout=LONGEST)
+            finished = subprocess.run([program, *command[1:]], input=f"{value}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environ, cwd=self.config.root, timeout=LONGEST_SECONDS)
             return finished.returncode, mask.masked(finished.stdout)
         finally:
             shutil.rmtree(home, ignore_errors=True)

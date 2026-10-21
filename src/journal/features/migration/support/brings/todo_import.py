@@ -27,12 +27,12 @@ class TodoImport(EnvironmentKind):
         return super().skipped(row, target) or ("struck" if row.data.get("struck") else "")
 
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Task:
-        return self.tasks.imported(self.task(row, Task(environment_id=target.id, title=row.title, brief=row.brief)), row.created_at(), actor)
+        return self.tasks.imported(self.task(row, Task(environment_id=target.id, title=row.title, brief=row.brief)), row.creation_moment(), actor)
 
     @staticmethod
     def task(row: Version3Row, task: Task) -> Task:
         if row.completed:
-            return task.with_(state=TaskState.FINISHED, finished_at=row.closed_at(), outcome=row.outcome)
+            return task.with_(state=TaskState.FINISHED, finished_at=row.closing_moment(), outcome=row.outcome)
         if row.data.get("blocked"):
             return task.with_(state=TaskState.BLOCKED, block_reason=row.data["blocked"])
         if row.data.get("status") == "started":

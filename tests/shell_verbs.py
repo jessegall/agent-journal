@@ -8,7 +8,7 @@ from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.shell_record import ShellRecord
 from journal.repositories.command_outputs import CommandOutputs
 from journal.support.chain import Chain
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.caller import Caller
 
 

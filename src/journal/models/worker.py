@@ -28,11 +28,14 @@ class Worker(Scoped):
     began: float = 0.0
     recovered_session: str = ""
 
+    def worker_ref(self) -> str:
+        return f"{self.table()}:{self.id}"
+
     def dispatched(self, time: float) -> "Worker":
-        return self.with_(state=WorkerState.DISPATCHED).with_event(WorkerDispatched(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher))
+        return self.with_(state=WorkerState.DISPATCHED).with_event(WorkerDispatched(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, ref=self.worker_ref(), label=f"worker {self.id}", awaiter=self.dispatcher))
 
     def reported(self, time: float, report: int) -> "Worker":
-        return self.with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher))
+        return self.with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, report=report, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, reported"))
 
     def running_as(self, pid: int, began: float) -> "Worker":
         return self.with_(pid=pid, began=began, recovered_session="")
@@ -41,7 +44,7 @@ class Worker(Scoped):
         return self.with_(brief=brief, state=WorkerState.DISPATCHED)
 
     def stopped(self, time: float) -> "Worker":
-        return self.with_(state=WorkerState.STOPPED, adopted=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name))
+        return self.with_(state=WorkerState.STOPPED, adopted=True).with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker_id=self.id, name=self.name, dispatcher=self.dispatcher, ref=self.worker_ref(), outcome=f"worker {self.id}, {self.name}, stopped before it reported"))
 
     def finished(self) -> "Worker":
         return self.with_(adopted=True)

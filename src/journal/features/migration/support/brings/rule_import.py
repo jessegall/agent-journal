@@ -20,4 +20,4 @@ class RuleImport(ProjectKind):
         return super().skipped(row) or ("struck" if row.completed else "")
 
     def created(self, row: Version3Row, actor: Actor) -> Rule:
-        return self.rules.imported(Rule(text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.created_at(), actor)
+        return self.rules.imported(Rule(text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_moment(), actor)

@@ -1,6 +1,6 @@
 from journal.engine.support.stack_history import StackHistory
 from journal.engine.states.wait import Wait
-from journal.support.states_catalogue import StatesCatalogue
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
 from journal.features.shell.support.shell_record import PART_END, PART_START
 from journal.features.tasks.states.working import Working
@@ -18,7 +18,7 @@ from journal.repositories.messages import Messages
 STATUS = {"Stop": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "ToolFailed": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
 WORKING = frozenset({"working", "following_plan", "delegating", "orchestrating_plan"})
 ENTRY_COUNT = 400
-HISTORY = 5
+HISTORY_ENTRIES = 5
 TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
 ENDED = "ended"
 
@@ -61,8 +61,8 @@ class AgentActivity:
             "stuck": agent.data.get("why", "") if agent.state == "stuck" else "",
             "sequence": self.sequence(agent),
             "stack": self.stack(agent),
-            "trail": [self.trail_entry(e) for e in [e for e in entries if e.kind == StackHistory.KIND][-HISTORY:]],
-            "sequence_history": [{"time": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
+            "trail": [self.trail_entry(e) for e in [e for e in entries if e.kind == StackHistory.KIND][-HISTORY_ENTRIES:]],
+            "sequence_history": [{"time": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY_ENTRIES],
         }
 
     @staticmethod

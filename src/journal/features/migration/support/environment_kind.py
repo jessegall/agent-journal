@@ -7,7 +7,7 @@ from journal.features.migration.support.version_3_rows import Version3Rows
 from journal.support.actor import Actor
 from journal.models.environment import Environment
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.environments import Environments
 from journal.repositories.migrated_rows import MigratedRows
 

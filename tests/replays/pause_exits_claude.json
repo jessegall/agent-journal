@@ -111,12 +111,12 @@
         "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck\nworker 1 (Lady Lovelace) reported and you have not acted on it yet. read its report, then give it its next job, stop it, or mark it done once its work is merged or used"
       },
       "typed": [
-        "[journal] worker 1, Lady Lovelace, reported in the chat",
-        "[journal] the wait for workers 1 is over: worker 1, Lady Lovelace, reported. carry on with what you were doing"
+        "[journal] the wait for worker 1 is over: worker 1, Lady Lovelace, reported. carry on with what you were doing",
+        "[journal] worker 1, Lady Lovelace, reported in the chat"
       ],
       "nudges": [
-        "workers.worker_reported",
         "tasks.wait_over",
+        "workers.worker_reported",
         "workers.act_on_the_reports",
         "tasks.carry_on"
       ],

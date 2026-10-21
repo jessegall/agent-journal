@@ -8,11 +8,11 @@ from journal.support.response import Response
 from journal.http.support.stream_response import StreamResponse
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 AGENT_EVENT_KINDS = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "ToolFailed", "Compacting", "Stop", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnDisplayed",
                   "nudge", "created", "updated", "deleted"})
-RECENT = 100
+RECENT_ENTRIES = 100
 HEARTBEAT_SECONDS = 15.0
 
 
@@ -26,7 +26,7 @@ class EntryController:
         start = int(request.queried("since"))
         if start > self.entries.last_id():
             start = 0
-        rows = self.entries.recent_shown(start) if start else list(reversed(self.entries.shown_recent(int(request.queried("last", RECENT)))))
+        rows = self.entries.recent_shown(start) if start else list(reversed(self.entries.shown_recent(int(request.queried("last", RECENT_ENTRIES)))))
         return Response.json([entry for entry in rows if entry.kind in AGENT_EVENT_KINDS])
 
     def stream(self, request: Request) -> StreamResponse:

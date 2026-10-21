@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from journal.config import Config
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.features.checks.support.check_output import CheckOutput
 from journal.features.checks.support.finished_run import FinishedRun
 from journal.support.actor import Actor
@@ -19,11 +19,11 @@ from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
 from journal.support.card_kind import CardKind
 
-TIMEOUT = 600
-TAIL = 20
+TIMEOUT_SECONDS = 600
+TAIL_LINES = 20
 FAULTS = {126: "the command cannot be run", 127: "the command is not there"}
 OUTPUT_CHARACTERS = 4000
-INTERVAL = 1.0
+INTERVAL_SECONDS = 1.0
 
 
 class CheckRunner:
@@ -52,7 +52,7 @@ class CheckRunner:
         check_row = self.checks.save(self.checks.find(check.id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), elapsed, self.report(report), ended.fault), actor)
         if check_row.wait_target:
             return check_row
-        tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
+        tail = "\n".join(ended.output.strip().splitlines()[-TAIL_LINES:])
         for agent in self.agents.all_agents():
             if agent.state != Ended.name:
                 self.cards.show(agent.environment_id, agent.session, f"Check {check_row.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{check_row.id}", shows=CardKind.CHECKS)
@@ -61,19 +61,19 @@ class CheckRunner:
     def executed(self, check: Check, report: Path, actor: Actor) -> FinishedRun:
         process = subprocess.Popen(check.command, shell=True, cwd=self.config.root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace",
                                    env={**os.environ, "JOURNAL_REPORT": str(report)}, start_new_session=True)
-        late = threading.Timer(TIMEOUT, os.killpg, (process.pid, signal.SIGKILL))
+        late = threading.Timer(TIMEOUT_SECONDS, os.killpg, (process.pid, signal.SIGKILL))
         late.start()
         output_text, saved = [], timing.time()
         for line in process.stdout:
             output_text.append(line)
-            if timing.time() - saved >= INTERVAL:
+            if timing.time() - saved >= INTERVAL_SECONDS:
                 self.checks.touch(check, actor, progress=CheckOutput.progress("".join(output_text), check.progress.time))
                 saved = timing.time()
         code = process.wait()
         late.cancel()
         output = "".join(output_text)
         if code == -signal.SIGKILL:
-            return FinishedRun(False, f"{output}\ntimed out after {TIMEOUT}s", f"it timed out after {TIMEOUT}s")
+            return FinishedRun(False, f"{output}\ntimed out after {TIMEOUT_SECONDS}s", f"it timed out after {TIMEOUT_SECONDS}s")
         return FinishedRun(code == 0, output, FAULTS.get(code, ""))
 
     @staticmethod

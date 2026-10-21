@@ -45,20 +45,20 @@ a fact beside the stack on the same row, never a state over it. A state is a cla
 per moment: a method named `on_<moment>`, bound by the event type it annotates,
 `on_question_answered(self, event: QuestionAnswered, settings)`. Only `on_` methods are listeners.
 Every listener whose type matches the event runs, the state's own first, and their answers merge:
-nudges in order, the first hold wins, one push or pop per event and a second refused. A listener
-answers `unchanged`, `changed`, `push`, `pop` or `hold`, and nothing else moves the agent. No
+nudges in order, the first refusal wins, one push or pop per event and a second refused. A listener
+answers `none`, `swap`, `push`, `pop`, `forward` or `refuse`, and nothing else moves the agent. No
 `if state ==`, no `if event.kind ==`: dispatch is by class and by type. One `BaseState` is the
 parent of every state and every feature's state extends it directly. Only the top of the stack
 hears an event; a state beneath catches up in `on_resume(data, settings)`, which may pop it.
 The lifecycle hooks `on_push`, `on_suspend`, `on_resume` and `on_pop` answer nudges, and `on_push`
-may refuse the push with a hold. Every push and pop is an entry in the trail, shown under the
+may refuse the push. Every push and pop is an entry in the trail, shown under the
 figure on the Home page. Counts and times a state keeps are its fields and go with it when it is
 popped.
 
 **Features bring their states; the engine knows no feature.** A feature owns its states, its
 nudges, its options, its recording listeners and its commands. Its conduct toward the agent in
-every state is a mixin extending `Conduct`: `on_` methods named for the feature,
-`on_tool_starting_inbox`, and nothing else, folded into the base state at boot. The engine holds
+every state is a mixin extending `Conduct`: `on_` methods named for their event alone,
+`on_tool_starting`, and nothing else, folded into the base state at boot. The engine holds
 the state machine, the base state, `Wait`, `Compacting`, `Ended`, the nudger, the clock and the
 runtime, and imports nothing from `features/`. The state machine is reached by the engine alone
 and by `journal panic`, which pushes, pops or resets the stack from outside and is always allowed;
@@ -84,7 +84,7 @@ compacts, ending the session. Everything else the journal says to the agent or h
 it reminds, what it says, when it blocks a stop, is a listener on a state or on a feature's
 conduct, and the numbers it reads are the Settings page's. What the agent owes the journal before
 it may write or stop is set as a fact on its row by a feature's recording listener and held by the
-feature's conduct; the events `SkillRead`, `LookTaken` and `MarkDecided` pay the debt.
+feature's conduct; the events `SkillRead`, `OverviewRead` and `MarkDecided` pay the debt.
 
 **Hooks decide nothing; listeners are deferred unless they say otherwise.** The hook script
 posts and prints. The server records the entry, asks the state machine, which answers with the

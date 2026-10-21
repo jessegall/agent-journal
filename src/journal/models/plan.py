@@ -99,7 +99,7 @@ class Plan(Scoped):
     def current_phase(self, phases: list[PhaseTasks]) -> int:
         return next((phase.number for phase in phases if phase.has_open_work()), len(phases) or 1)
 
-    def checkpoint_at(self, phases: list[PhaseTasks]) -> PhaseTasks | None:
+    def checkpoint_phase(self, phases: list[PhaseTasks]) -> PhaseTasks | None:
         for previous, following in zip(phases, phases[1:]):
             if previous.phase.checkpoint and previous.is_finished() and following.tasks and not following.has_work_started():
                 return previous

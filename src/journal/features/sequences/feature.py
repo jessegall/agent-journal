@@ -12,11 +12,13 @@ from journal.features.sequences.listeners.deleted_sequence_run_end import Delete
 from journal.features.sequences.listeners.record_run_changes import RecordRunChanges
 from journal.features.sequences.listeners.step_command_match import StepCommandMatch
 from journal.features.sequences.listeners.creation_start import CreationStart
-from journal.features.sequences.support.sequences_conduct import SequencesConduct
+from journal.features.sequences.sequences_conduct import SequencesConduct
 from journal.features.sequences.seeds.builtin_sequences import BuiltinSequences
 
 
 class Sequences(Feature[SequencesData]):
+    STALENESS_LIMIT = Option("sequences.stale_after", "Hold writes again after", "Writes since a step was taken up before the next write waits for the step to be moved on, followed again or parked", 25)
+    STEP_REPEAT_INTERVAL = Option("sequences.say_every", "Say the step again after", "Minutes a step stands unheard before it is said again to a quiet agent; three times as long while the agent waits", 10, unit="minutes")
     name = "sequences"
     title = "Sequences"
     help = "Steps the agent follows one at a time."
@@ -38,8 +40,6 @@ class Sequences(Feature[SequencesData]):
     SEQUENCE_CANCELLED = Nudge(name, "the_user_ended_the_sequence", "the user ended sequence {{n}}", repeat_interval=0)
     nudges = (PENDING_STEP, CURRENT_STEP, STEP_EDIT_BLOCK, STALE_STEP, SEQUENCE_SUSPENDED, SEQUENCE_ENDED, SEQUENCE_ABANDONED, SEQUENCE_CANNOT_FINISH, STEP_OMISSION, SEQUENCE_CANCELLED)
 
-    STALENESS_LIMIT = Option("sequences.stale_after", "Hold writes again after", "Writes since a step was taken up before the next write waits for the step to be moved on, followed again or parked", 25)
-    STEP_REPEAT_INTERVAL = Option("sequences.say_every", "Say the step again after", "Minutes a step stands unheard before it is said again to a quiet agent; three times as long while the agent waits", 10, unit="minutes")
     options = (STALENESS_LIMIT, STEP_REPEAT_INTERVAL)
 
     skill = Skill("sequences", 'Follow a sequence of steps one at a time; load it when a sequence is run or written', """

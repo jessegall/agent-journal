@@ -21,7 +21,7 @@ __journal_status() {
 }
 __journal_code=0
 """
-POLL = 0.02
+POLL_SECONDS = 0.02
 
 
 class ChainWorker:
@@ -82,7 +82,7 @@ class ChainWorker:
         self.write_part(shell, f"__journal_tree > {str(path)!r} 2>/dev/null; : > {str(path)!r}.ready\n")
         ready = Path(f"{path}.ready")
         while not ready.is_file() and shell.poll() is None:
-            time.sleep(POLL)
+            time.sleep(POLL_SECONDS)
         return path.read_text(errors="replace") if path.is_file() else ""
 
     @staticmethod
@@ -90,7 +90,7 @@ class ChainWorker:
         while not folder.has_ended(i):
             if shell.poll() is not None:
                 return shell.returncode
-            time.sleep(POLL)
+            time.sleep(POLL_SECONDS)
         return folder.status(i)
 
     @staticmethod

@@ -4,7 +4,7 @@ from journal.models.plan import Plan
 from journal.models.plan_review import PlanReview
 from journal.repositories.links import Links
 from journal.repositories.scoped_repository import ScopedRepository
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 REVIEWS = "reviews"
 FILED = "filed"

@@ -1,7 +1,7 @@
 import time
 from urllib.parse import unquote
 
-from journal.support.slow_requests import SlowRequests
+from journal.features.faults.support.slow_requests import SlowRequests
 
 from journal.support.rejection import Rejection
 from journal.support.missing_row import MissingRow
@@ -9,7 +9,7 @@ from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.http.support.route import Handler, Route
 from journal.http.support.viewer_presence import ViewerPresence
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class Router:

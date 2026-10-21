@@ -5,7 +5,7 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.questions.support.answer_delivery import AnswerDelivery
 from journal.models.question import Question
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions

@@ -20,12 +20,7 @@ class MessagesDataReader:
             unread=tuple(m.id for m in unread),
             unanswered=tuple(m.id for m in unanswered),
             unanswered_files=tuple(f"{self.config.files / 'message' / str(m.id)}/" for m in unanswered),
-            reminder_start=self.reminder_start(agent, tuple(n.key for n in MessagesFeature.INBOX_LINES)) if newest else 0,
-            mention_count=self.entries.nudge_count(agent.session, tuple(n.key for n in MessagesFeature.INBOX_LINES), agent.inbox_position) if newest else 0,
+            inbox_tool_uses=agent.tool_uses - agent.inbox_position if newest else 0,
+            mention_count=self.entries.nudge_count(agent.session, tuple(n.key for n in MessagesFeature.inbox_lines()), agent.inbox_position) if newest else 0,
             uses_unanswered=agent.tool_uses - min(read_positions) if read_positions else 0,
         )
-
-    def reminder_start(self, agent: Agent, keys: tuple[str, ...]) -> int:
-        latest = self.entries.last_line_entry(agent.session, keys)
-        position = latest.data["tool_use"] if latest else agent.inbox_position
-        return position if agent.inbox_position <= position <= agent.tool_uses else agent.inbox_position

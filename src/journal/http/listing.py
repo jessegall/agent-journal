@@ -5,14 +5,14 @@ from typing import Callable
 from journal.http.row_list_page import RowListPage
 from journal.models.model import Model
 
-PAGE = 50
+PAGE_ROWS = 50
 
 
 @dataclass(frozen=True)
 class Listing:
     """What the viewer asks of a list: the newest `limit` rows and every open one besides, the closed ones alone when asked, older than `before`, newer than `after`, changed since `since`, or only the ids named."""
 
-    limit: int = PAGE
+    limit: int = PAGE_ROWS
     closed: bool = False
     upper_id: int = 0
     lower_id: int = 0

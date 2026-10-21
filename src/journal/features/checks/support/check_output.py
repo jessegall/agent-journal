@@ -2,7 +2,7 @@ import re
 
 from journal.support.check_progress import CheckProgress
 
-OUTPUT_LINE_LIMIT = 40
+OUTPUT_LINES = 40
 TAIL_CHARACTERS = 300
 PERCENT = re.compile(r"(\d{1,3})%")
 COUNTED = re.compile(r"\b(\d+)\s*/\s*(\d+)\b")
@@ -20,7 +20,7 @@ class CheckOutput:
 
     @staticmethod
     def tail(output: str) -> str:
-        return "\n".join(output.strip().splitlines()[-OUTPUT_LINE_LIMIT:])
+        return "\n".join(output.strip().splitlines()[-OUTPUT_LINES:])
 
     @classmethod
     def progress(cls, output: str, time: float) -> CheckProgress:

@@ -6,7 +6,7 @@ from journal.models.share import Share
 from journal.repositories.docs import Docs
 from journal.repositories.plans import Plans
 from journal.repositories.reports import Reports
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class SharedData:

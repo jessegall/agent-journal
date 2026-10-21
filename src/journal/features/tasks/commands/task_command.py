@@ -5,15 +5,13 @@ from datetime import datetime, timezone
 from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.engine.clock import Clock
-from journal.engine.state_machine import StateMachine
 from journal.support.rejection import Rejection
 from journal.features.tasks.states.ready import Ready
-from journal.features.tasks.support.active_task import ActiveTask
-from journal.support.task_briefing import TaskBriefing
-from journal.support.waits import Waits
-from journal.features.tasks.states.working import Working
+from journal.features.tasks.active_task import ActiveTask
+from journal.features.tasks.support.task_briefing import TaskBriefing
+from journal.features.tasks.support.waits import Waits
 from journal.models.link import Link
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
@@ -30,9 +28,9 @@ from journal.features.tasks.support.next_open_task import NextOpenTask
 class TaskCommand(Command):
     noun = "task"
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, machine: StateMachine, messages: Messages, links: Links, plans: Plans, taking: ActiveTask, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, next_task: NextOpenTask) -> None:
+    def __init__(self, tasks: Tasks, logs: TaskLogs, messages: Messages, links: Links, plans: Plans, taking: ActiveTask, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, next_task: NextOpenTask) -> None:
         self.clock, self.next_task = clock, next_task
-        self.tasks, self.logs, self.machine, self.messages, self.links, self.plans, self.taking, self.questions, self.waits, self.briefing = tasks, logs, machine, messages, links, plans, taking, questions, waits, briefing
+        self.tasks, self.logs, self.messages, self.links, self.plans, self.taking, self.questions, self.waits, self.briefing = tasks, logs, messages, links, plans, taking, questions, waits, briefing
 
     def arguments(self, verbs) -> None:
         creation = self.verb(verbs, "create", "file a task")
@@ -88,10 +86,7 @@ class TaskCommand(Command):
 
     def log(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.find(args.n)
-        self.logs.save(TaskLog.build(task, args.line, self._time().timestamp()), caller.actor)
-        current = self.taking.current(caller)
-        if current and current.task_id == task.id:
-            self.machine.move(caller.session, task.environment_id, current.logged(self.clock.time()))
+        self.logs.save(TaskLog.build(task, args.line, self.clock.time()), caller.actor)
         print(f"task {task.id} logged")
         return 0
 

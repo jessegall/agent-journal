@@ -9,7 +9,6 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.support.worktree import Worktree
 from journal.config import Config
-from journal.engine.state_machine import StateMachine
 from journal.features.shell.support.shell_record import ENDED, MOVED
 from journal.support.environment_row import EnvironmentRow
 from journal.models.task_state import TaskState
@@ -25,7 +24,7 @@ from journal.support.rejection import Rejection
 from journal.repositories.questions import Questions
 from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 
@@ -35,9 +34,9 @@ TAKEOVER_WINDOW = timedelta(hours=12)
 class EnvironmentCommand(Command):
     noun = "environment"
 
-    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, machine: StateMachine, providers: Providers, config: Config, scope: Scope, memory: MemoryContext) -> None:
+    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, providers: Providers, config: Config, scope: Scope, memory: MemoryContext) -> None:
         self.environments, self.agents, self.tasks, self.messages, self.questions, self.workers, self.entries = environments, agents, tasks, messages, questions, workers, entries
-        self.rules, self.facts, self.reminders, self.machine, self.providers, self.config, self.scope = rules, facts, reminders, machine, providers, config, scope
+        self.rules, self.facts, self.reminders, self.providers, self.config, self.scope = rules, facts, reminders, providers, config, scope
         self.memory = memory
 
     def arguments(self, verbs) -> None:

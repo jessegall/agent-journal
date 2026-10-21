@@ -1,7 +1,7 @@
 from journal.features.voices.support.address_form import AddressForm
 from journal.features.voices.support.voice_choice import VoiceChoice
 from journal.features.voices.feature import Voices
-from journal.support.builtin_catalogue import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, BuiltinCatalogue
+from journal.features.voices.support.builtin_catalogue import HISTORICAL, KNIGHTLY, PLAIN, SPORTING, STREET, BuiltinCatalogue
 from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.support.rejection import Rejection

@@ -3,7 +3,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.models.worker import Worker
 from journal.support.actor import Actor
-from journal.support.subagents import Subagents
+from journal.features.workers.support.subagents import Subagents
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.http.support.request import Request
 from journal.support.response import Response

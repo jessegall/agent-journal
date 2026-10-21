@@ -24,4 +24,4 @@ class ReminderImport(EnvironmentKind):
         return super().skipped(row, target) or ("retired" if row.completed else "")
 
     def created(self, row: Version3Row, target: Environment, attached: Path, actor: Actor) -> Reminder:
-        return self.reminders.imported(Reminder(environment_id=target.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.created_at(), actor)
+        return self.reminders.imported(Reminder(environment_id=target.id, text=row.brief or row.title, keywords=tuple(row.listed("keywords"))), row.creation_moment(), actor)

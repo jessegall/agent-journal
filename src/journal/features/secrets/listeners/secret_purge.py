@@ -10,7 +10,7 @@ from journal.repositories.secrets import Secrets
 from journal.support.secret_values import SecretValues
 
 RETENTION = timedelta(days=30)
-INTERVAL = 3600.0
+INTERVAL_SECONDS = 3600.0
 
 
 class SecretPurge(AgentListener[Ticked]):
@@ -21,7 +21,7 @@ class SecretPurge(AgentListener[Ticked]):
         self._looked_at = 0.0
 
     def handle(self, event: Ticked) -> None:
-        if time.time() - self._looked_at < INTERVAL:
+        if time.time() - self._looked_at < INTERVAL_SECONDS:
             return
         self._looked_at = time.time()
         cutoff = datetime.now(timezone.utc) - RETENTION

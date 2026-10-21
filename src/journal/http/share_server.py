@@ -2,9 +2,9 @@ import threading
 from http.server import ThreadingHTTPServer
 
 from journal.db.connection import Connection
-from journal.support.share_place import SharePlace
+from journal.features.sharing.support.share_place import SharePlace
 from journal.http.phone.phone_pages import PhonePages
-from journal.http.support.share_handler import ShareHandler
+from journal.http.share_handler import ShareHandler
 from journal.http.sharing.share_pages import SharePages
 
 READ_SECONDS = 15

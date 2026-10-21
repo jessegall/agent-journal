@@ -11,7 +11,7 @@ from journal.support.missing_row import MissingRow
 from journal.support.caller import Caller
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.container import Container
 
 

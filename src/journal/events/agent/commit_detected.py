@@ -14,3 +14,9 @@ class CommitDetected(AgentEvent):
     sha: str
     closed: tuple[int, ...] = ()
     next_open: OpenTask | None = None
+
+    def short_sha(self) -> str:
+        return self.sha[:8]
+
+    def closed_words(self) -> str:
+        return ", ".join(f"task {n}" for n in self.closed)

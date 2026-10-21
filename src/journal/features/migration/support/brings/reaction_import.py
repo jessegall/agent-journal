@@ -7,7 +7,7 @@ from journal.models.author import Author
 from journal.models.environment import Environment
 from journal.models.link import Link
 from journal.models.reaction import Reaction
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.migrated_rows import MigratedRows
@@ -28,6 +28,6 @@ class ReactionImport(EnvironmentKind):
         return super().skipped(row, target) or ("" if self.message(row, target) else "the message it sits on did not come across")
 
     def created(self, row: Version3Row, receiver: Environment, attached: Path, actor: Actor) -> Reaction:
-        reaction = self.reactions.imported(Reaction(environment_id=receiver.id, face=row.data.get("face", ""), author=Author(row.author())), row.created_at(), actor)
+        reaction = self.reactions.imported(Reaction(environment_id=receiver.id, face=row.data.get("face", ""), author=Author(row.author())), row.creation_moment(), actor)
         self.links.save(Link(source=Ref.build(reaction), target=self.message(row, receiver), kind=REACTS), actor)
         return reaction

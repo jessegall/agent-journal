@@ -1,6 +1,6 @@
 from journal.features.checks.commands.check_command import CheckCommand
 from journal.features.checks.listeners.run_due_checks import RunDueChecks
-from journal.features.checks.support.checks_conduct import ChecksConduct
+from journal.features.checks.checks_conduct import ChecksConduct
 from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.support.skill import Skill

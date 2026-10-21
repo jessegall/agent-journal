@@ -4,15 +4,15 @@ from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.share import Share
 from journal.support.rejection import Rejection
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
-NAME_LIMIT = 40
-TEXT_LIMIT = 2000
+NAME_CHARACTERS = 40
+TEXT_CHARACTERS = 2000
 VISITOR = "visitor"
 
 
@@ -48,13 +48,13 @@ class SharedComments:
     @staticmethod
     def lookup(value: str) -> str:
         name = " ".join("".join(ch for ch in str(value) if ch.isprintable() and ch != ":").split())
-        if not name or len(name) > NAME_LIMIT:
-            raise Rejection(f"a name is 1 to {NAME_LIMIT} characters")
+        if not name or len(name) > NAME_CHARACTERS:
+            raise Rejection(f"a name is 1 to {NAME_CHARACTERS} characters")
         return name
 
     @staticmethod
     def text(value: str) -> str:
         text = str(value).strip()
-        if not text or len(text) > TEXT_LIMIT:
-            raise Rejection(f"a comment is 1 to {TEXT_LIMIT} characters")
+        if not text or len(text) > TEXT_CHARACTERS:
+            raise Rejection(f"a comment is 1 to {TEXT_CHARACTERS} characters")
         return text

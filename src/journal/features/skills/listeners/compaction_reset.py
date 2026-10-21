@@ -1,4 +1,4 @@
-from journal.engine.state_machine import StateMachine
+from journal.engine.support.session_agents import SessionAgents
 from journal.events.agent.compacting import Compacting
 from journal.events.agent_listener import AgentListener
 from journal.support.actor import Actor
@@ -10,9 +10,9 @@ class CompactionReset(AgentListener[Compacting]):
 
     blocking = True
 
-    def __init__(self, machine: StateMachine, agents: Agents) -> None:
-        self.machine, self.agents = machine, agents
+    def __init__(self, sessions: SessionAgents, agents: Agents) -> None:
+        self.sessions, self.agents = sessions, agents
 
     def handle(self, event: Compacting) -> None:
-        agent = self.machine.agent(event.session, event.environment_id)
+        agent = self.sessions.agent(event.session, event.environment_id)
         self.agents.save(agent.with_(skills_loaded={}), Actor.system())

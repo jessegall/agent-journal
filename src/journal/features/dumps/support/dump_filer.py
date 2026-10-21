@@ -7,7 +7,7 @@ from journal.models.author import Author
 from journal.models.dump import Dump
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.support.rejection import Rejection
 from journal.repositories.docs import Docs
 from journal.repositories.dumps import Dumps
@@ -17,10 +17,10 @@ from journal.repositories.plans import Plans
 from journal.repositories.reports import Reports
 from journal.repositories.tasks import Tasks
 
-LABEL = 40
-DUMP_LOG_LENGTH = 20
-ANSWER = 600
-OFFERED = 4
+LABEL_CHARACTERS = 40
+DUMP_LOG_ENTRIES = 20
+ANSWER_CHARACTERS = 600
+GUESS_COUNT = 4
 USER_TEXT = -2
 FILED = "dump_filed"
 TABLES = {"doc": "docs", "report": "reports", "todo": "tasks", "task": "tasks", "plan": "plans", "fact": "facts", "rule": "rules", "reminder": "reminders"}
@@ -84,24 +84,24 @@ class DumpFiler:
         dump = self.dumps.find(n)
         if not status.strip():
             raise Rejection("say what you are doing")
-        if len(status.strip()) > LABEL:
-            raise Rejection(f"a status is a short title of at most {LABEL} characters, like Adding files; the sentence goes in --detail")
+        if len(status.strip()) > LABEL_CHARACTERS:
+            raise Rejection(f"a status is a short title of at most {LABEL_CHARACTERS} characters, like Adding files; the sentence goes in --detail")
         if dump.is_completed and not dump.options and not dump.choice:
             raise Rejection(f"dump {n} is closed")
-        return self.dumps.save(dump.logged(self.entry(status, enabled=enabled, making=making, detail=detail), DUMP_LOG_LENGTH), actor)
+        return self.dumps.save(dump.logged(self.entry(status, enabled=enabled, making=making, detail=detail), DUMP_LOG_ENTRIES), actor)
 
     def reply(self, n: int, text: str, actor: Actor) -> Dump:
         if not text.strip():
             raise Rejection('say the answer: journal dump reply <n> "<text>"')
-        if len(text.strip()) > ANSWER:
-            raise Rejection(f"an answer in the dump is at most {ANSWER} characters; this one is {len(text.strip())}")
-        return self.dumps.save(self.dumps.find(n).logged(self.entry(text, answer=True), DUMP_LOG_LENGTH), actor)
+        if len(text.strip()) > ANSWER_CHARACTERS:
+            raise Rejection(f"an answer in the dump is at most {ANSWER_CHARACTERS} characters; this one is {len(text.strip())}")
+        return self.dumps.save(self.dumps.find(n).logged(self.entry(text, answer=True), DUMP_LOG_ENTRIES), actor)
 
     def ask(self, n: int, question: str, guesses: str, actor: Actor) -> Dump:
         if not question.strip():
             raise Rejection("say what you need to know")
         dump = self.open(n, f"dump {n} is closed")
-        rows = [g.strip()[:LABEL] for g in guesses.split("|") if g.strip()][:OFFERED]
+        rows = [g.strip()[:LABEL_CHARACTERS] for g in guesses.split("|") if g.strip()][:GUESS_COUNT]
         return self.dumps.save(dump.posed_question(question.strip(), rows, time.time()), actor)
 
     def answer(self, n: int, text: str, actor: Actor) -> Dump:
@@ -117,7 +117,7 @@ class DumpFiler:
         dump = self.dumps.find(n)
         if not dump.brief.strip():
             raise Rejection(f"dump {n} has no pasted text to split")
-        rows = list(dict.fromkeys(part.strip()[:LABEL] for part in parts.split(",") if part.strip()))
+        rows = list(dict.fromkeys(part.strip()[:LABEL_CHARACTERS] for part in parts.split(",") if part.strip()))
         if not rows or set(rows) & set(dump.files):
             raise Rejection("name the parts of the pasted text, comma separated, none named like a dropped file")
         return self.dumps.save(dump.with_(parts=tuple(rows)), actor)
@@ -135,7 +135,7 @@ class DumpFiler:
             offered = json.loads(options or "[]")
         except ValueError as error:
             raise Rejection("options is a JSON list of {ask, label}") from error
-        steps = [{"label": str(o.get("label", "")).strip(), "ask": str(o.get("ask", "")).strip()} for o in (offered[:OFFERED] if isinstance(offered, list) else []) if isinstance(o, dict)]
+        steps = [{"label": str(o.get("label", "")).strip(), "ask": str(o.get("ask", "")).strip()} for o in (offered[:GUESS_COUNT] if isinstance(offered, list) else []) if isinstance(o, dict)]
         steps = [step for step in steps if step["label"]]
         if not steps and not summary.strip():
             raise Rejection("sum up what you filed with --summary, and offer a next step only where one is worth taking")

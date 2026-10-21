@@ -9,7 +9,7 @@ from pathlib import Path
 from journal.support.supervisor_socket import SupervisorSocket
 
 WAIT_LIMIT_SECONDS = 600.0
-TAB_WAIT = 8.0
+TAB_WAIT_SECONDS = 8.0
 
 
 class PageWait:
@@ -56,7 +56,7 @@ class PageWait:
 
     def tab_open(self, url: str) -> bool:
         began = time.time()
-        while time.time() - began < TAB_WAIT:
+        while time.time() - began < TAB_WAIT_SECONDS:
             try:
                 with urllib.request.urlopen(url + "journal/viewer", timeout=0.5) as reply:
                     if json.loads(reply.read()).get("open"):

@@ -26,7 +26,7 @@ class P256:
         return x, (slope * (single[0] - x) - single[1]) % P
 
     @staticmethod
-    def times(scalar: int, point: tuple) -> tuple | None:
+    def scalar_product(scalar: int, point: tuple) -> tuple | None:
         rows = None
         while scalar:
             if scalar & 1:
@@ -50,5 +50,5 @@ class P256:
         point = (int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big"))
         digest = int.from_bytes(hashlib.sha256(message).digest(), "big")
         inverse = pow(s, -1, N)
-        rows = P256.added(P256.times(digest * inverse % N, G), P256.times(r * inverse % N, point))
+        rows = P256.added(P256.scalar_product(digest * inverse % N, G), P256.scalar_product(r * inverse % N, point))
         return rows is not None and rows[0] % N == r

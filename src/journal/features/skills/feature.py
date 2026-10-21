@@ -1,6 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.skills.listeners.skill_obligation import SkillObligation
-from journal.features.skills.support.skills_conduct import SkillsConduct
+from journal.features.skills.skills_conduct import SkillsConduct
 from journal.features.skills.support.skills_data_reader import SkillsDataReader
 from journal.features.skills.support.skills_data import SkillsData
 from journal.engine.nudge import Nudge

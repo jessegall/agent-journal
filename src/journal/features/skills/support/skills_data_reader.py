@@ -2,7 +2,7 @@ from journal.features.registry import Registry
 from journal.features.skills.support.skill_card import SkillCard
 from journal.features.skills.support.skills_data import SkillsData
 from journal.models.agent import Agent
-from journal.support.skill_files import SkillFiles
+from journal.features.skills.support.skill_files import SkillFiles
 
 
 class SkillsDataReader:

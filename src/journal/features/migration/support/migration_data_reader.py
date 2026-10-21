@@ -1,6 +1,6 @@
 from journal.features.migration.support.migration_data import MigrationData
 from journal.models.agent import Agent
-from journal.support.version_3_backup import Version3Backup
+from journal.features.migration.support.version_3_backup import Version3Backup
 
 
 class MigrationDataReader:

@@ -29,8 +29,7 @@
       ],
       "stack": [
         "idle",
-        "working",
-        "awaiting"
+        "working"
       ]
     },
     {
@@ -40,8 +39,7 @@
       "nudges": [],
       "stack": [
         "idle",
-        "working",
-        "awaiting"
+        "working"
       ]
     },
     {
@@ -51,8 +49,7 @@
       "nudges": [],
       "stack": [
         "idle",
-        "working",
-        "awaiting"
+        "working"
       ]
     }
   ]

@@ -10,7 +10,7 @@ from journal.models.command_output import CommandOutput
 from journal.support.rejection import Rejection
 from journal.repositories.command_outputs import CommandOutputs
 
-ENDS = 10
+END_LINES = 10
 
 
 class OutputCommand(Command):
@@ -83,10 +83,10 @@ class OutputCommand(Command):
 
     def summary(self, output: CommandOutput, files: OutputFiles, lines: list[str]) -> str:
         head = [f"output {output.id}: {files.outcome()}, {len(lines):,} lines", f"command: {output.headline()}"]
-        if len(lines) <= ENDS * 2:
+        if len(lines) <= END_LINES * 2:
             return "\n".join([*head, *lines])
-        cut = f"... {len(lines) - ENDS * 2:,} lines; read them with --lines, --grep, --head or --tail ..."
-        return "\n".join([*head, *lines[:ENDS], cut, *lines[-ENDS:]])
+        cut = f"... {len(lines) - END_LINES * 2:,} lines; read them with --lines, --grep, --head or --tail ..."
+        return "\n".join([*head, *lines[:END_LINES], cut, *lines[-END_LINES:]])
 
     def list(self, args: Namespace, caller: Caller) -> int:
         for output in self.outputs.page(args.last):

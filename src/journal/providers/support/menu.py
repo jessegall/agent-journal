@@ -45,7 +45,9 @@ class Menu:
             block.insert(0, match)
         if len(block) < 2 or int(block[0]["number"]) != 1:
             return None
-        if not footers and upper[rows[-1].end():].strip() and not any(m["cursor"] for m in block):
+        trailing_text = bool(upper[rows[-1].end():].strip())
+        has_cursor = any(m["cursor"] for m in block)
+        if not footers and trailing_text and not has_cursor:
             return None
         requested = " ".join(cls.question_lines(upper[:block[0].start()]))
         return cls(requested, tuple(Option(int(m["number"]), m["label"], bool(m["cursor"])) for m in block))

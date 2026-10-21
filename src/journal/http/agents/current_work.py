@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from journal.engine.states.wait import Wait
-from journal.support.states_catalogue import StatesCatalogue
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.tasks.states.working import Working
 from journal.models.agent import Agent
 from journal.models.task import Task

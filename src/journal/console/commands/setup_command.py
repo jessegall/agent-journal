@@ -8,8 +8,8 @@ from journal.config import Config
 from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.support.law_text import LawText
-from journal.support.profile_files import ProfileFiles
-from journal.support.skill_files import SkillFiles
+from journal.features.profiles.support.profile_files import ProfileFiles
+from journal.features.skills.support.skill_files import SkillFiles
 from journal.providers.providers import Providers
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink

@@ -1,7 +1,6 @@
 import time
 
-from journal.support.cards import Cards
-from journal.engine.state_machine import StateMachine
+from journal.chat.cards import Cards
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.stop import Stop
 from journal.events.agent.session_ended import SessionEnded
@@ -18,8 +17,8 @@ from journal.models.entry import Entry
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
-from journal.support.scope import Scope
-from journal.support.slow_requests import HOOK, SlowRequests
+from journal.repositories.scope import Scope
+from journal.features.faults.support.slow_requests import HOOK, SlowRequests
 from journal.support.card_kind import CardKind
 
 
@@ -91,5 +90,5 @@ class Receiver:
 
     def _split(self, event: AgentEvent) -> tuple[list[AgentListener], list[Listener]]:
         listeners = self.bus.listeners(type(event))
-        blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: (not isinstance(l, StateMachine), getattr(l, "asked_last", False)))
+        blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: getattr(l, "rank", 1))
         return blocking, [l for l in listeners if not getattr(l, "blocking", False)]

@@ -2,9 +2,9 @@ from journal.events.listener import Listener
 from journal.events.models.created import Created
 from journal.models.report import Report
 from journal.support.actor_kind import ActorKind
-from journal.support.cards import Cards
-from journal.support.docking import Docking
-from journal.support.scope import Scope
+from journal.chat.cards import Cards
+from journal.chat.docking import Docking
+from journal.repositories.scope import Scope
 
 
 class ReportCard(Listener[Created]):

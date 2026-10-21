@@ -2,7 +2,7 @@ import struct
 import zlib
 
 DIM_PERCENT = 90
-DISC = 0.22
+DISC_RATIO = 0.22
 WHITE = b"\xff\xff\xff"
 
 
@@ -14,7 +14,7 @@ class PhoneIcon:
         self.top = tuple(int(code[i:i + 2], 16) for i in (0, 2, 4))
 
     def png(self, side: int) -> bytes:
-        middle, radius = side / 2, side * DISC
+        middle, radius = side / 2, side * DISC_RATIO
         rows = []
         for y, tint in enumerate(self.shades(side)):
             reach = radius ** 2 - (y + 0.5 - middle) ** 2

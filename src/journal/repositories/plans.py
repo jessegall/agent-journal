@@ -10,7 +10,7 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.links import Links
 from journal.repositories.phases import Phases
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 from journal.repositories.tasks import WAIT_LINK, Tasks
 from journal.repositories.workers import Workers
@@ -126,7 +126,7 @@ class Plans(ScopedRepository[Plan]):
         return tree.plan.next_open_task(tree.ordered, self.unstartable(tree))
 
     def checkpoint_plans(self, plan: Plan) -> PhaseTasks | None:
-        return plan.checkpoint_at(self.phased(plan))
+        return plan.checkpoint_phase(self.phased(plan))
 
     def start(self, plan: Plan, actor: Actor) -> Plan:
         time = datetime.now(timezone.utc)

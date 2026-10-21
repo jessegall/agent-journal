@@ -6,7 +6,7 @@ from journal.events.listener import Listener
 from journal.models.edit import Edit
 from journal.features.plugins.support.plugin_relay import PluginRelay
 from journal.support.listener_queue import ListenerQueue
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class PluginRowRelay(Listener[ModelEvent]):

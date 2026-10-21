@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from urllib.parse import parse_qs, urlsplit
 
+from journal.http.support.json_out import JsonOut
 from journal.config import Config
 from journal.features.phone.support.phone_connector import PhoneConnector
 from journal.features.phone.support.phone_allow_list import PhoneAllowList
@@ -25,7 +26,7 @@ from journal.http.support.share_answer import ShareAnswer
 from journal.repositories.environments import Environments
 from journal.models.phone import Phone
 from journal.repositories.phones import Phones
-from journal.support.share_place import SharePlace
+from journal.features.sharing.support.share_place import SharePlace
 from journal.support.actor import Actor
 from journal.support.rejection import Rejection
 
@@ -154,7 +155,7 @@ class PhonePages:
         time = datetime.now(timezone.utc)
         if not phone.is_active(time):
             return self.json(410, {"error": "this phone was disconnected" if phone.ended_at else "this phone's connection has run out"})
-        return self.phones.save(phone.seen(time), Actor.phone(phone.id)) if phone.is_presence_due(time) else phone
+        return self.phones.save(phone.visit(time), Actor.phone(phone.id)) if phone.is_presence_due(time) else phone
 
     def pass_along(self, request: PhoneRequest) -> ShareAnswer:
         phone = self.phone(request)
@@ -171,7 +172,7 @@ class PhonePages:
         answer = self.router.dispatch(requested)
         if isinstance(answer, FileResponse):
             return ShareAnswer(answer.status, answer.body, answer.kind, {"Cache-Control": "private, max-age=3600", **APP_HEADERS, **FILE_HEADERS, **answer.headers()})
-        return ShareAnswer(answer.status, answer.encoded(), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})
+        return ShareAnswer(answer.status, JsonOut.encoded(answer.body), "application/json", {"Cache-Control": "no-store", **APP_HEADERS})
 
     def waiting(self, request: PhoneRequest) -> ShareAnswer:
         phone = self.phone(request)

@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-if TYPE_CHECKING:
-    from journal.features.feature import Feature
+from journal.events.data_source import DataSource
 
 
 @dataclass(frozen=True)
@@ -11,5 +10,5 @@ class FeatureData:
 
     parts: dict[str, Any]
 
-    def part[D](self, feature: type[Feature[D]]) -> D:
-        return self.parts[feature.name]
+    def part[D](self, source: type[DataSource[D]]) -> D:
+        return self.parts[source.name] if source.name in self.parts else source.missing()

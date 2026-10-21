@@ -18,10 +18,10 @@ from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.repositories.plugins import Plugins
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.support.listener_queue import ListenerQueue
 
-LATER = 10
+LATER_SECONDS = 10
 UNANSWERED = "plugin_unanswered"
 WAITING = "plugin_line_waiting"
 PLUGIN_LINE_KIND = "plugin_said"
@@ -65,7 +65,7 @@ class PluginRelay:
             self.deferred.add(lambda: self.answers.apply(plugin, answer, environment, environment_id))
 
     def postponed(self, plugin: Plugin, event: Event, environment_id: int) -> None:
-        answer = self.ask(plugin, event, environment_id, LATER)
+        answer = self.ask(plugin, event, environment_id, LATER_SECONDS)
         if answer.answer == "refuse":
             self.unanswered(plugin, event, environment_id, answer.reason)
         elif answer.message:

@@ -37,12 +37,12 @@
       "name": "worker 2 is stopped",
       "answer": null,
       "typed": [
-        "[journal] worker 2, Dr. Einstein, stopped before it reported",
-        "[journal] the wait for workers 1, 2 is over: worker 1, Lady Lovelace, reported; worker 2, Dr. Einstein, stopped before it reported. carry on with what you were doing"
+        "[journal] the wait for worker 1, worker 2 is over: worker 1, Lady Lovelace, reported; worker 2, Dr. Einstein, stopped before it reported. carry on with what you were doing",
+        "[journal] worker 2, Dr. Einstein, stopped before it reported"
       ],
       "nudges": [
-        "workers.worker_stopped_unreported",
-        "tasks.wait_over"
+        "tasks.wait_over",
+        "workers.worker_stopped_unreported"
       ],
       "stack": [
         "idle",

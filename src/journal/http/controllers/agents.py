@@ -2,7 +2,7 @@ import time as timing
 
 from journal.config import Config
 from journal.features.pausing.agent_pause import AgentPause
-from journal.support.run_tracker import RunTracker
+from journal.features.sequences.support.run_tracker import RunTracker
 from journal.features.shell.support.shell_record import PART_END
 from journal.http.agents.agent_activity import AgentActivity
 from journal.http.agents.terminal_line import TerminalLine
@@ -17,7 +17,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.edits import Edits
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.supervisor_link import SupervisorLink
 
 EDITS_SHOWN = 50

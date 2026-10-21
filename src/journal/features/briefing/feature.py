@@ -2,7 +2,7 @@ from journal.features.briefing.listeners.session_exclusivity import SessionExclu
 from journal.features.briefing.listeners.end_silent_sessions import EndSilentSessions
 from journal.features.briefing.listeners.start_overview_obligation import StartOverviewObligation
 from journal.features.feature import Feature
-from journal.features.briefing.support.briefing_conduct import BriefingConduct
+from journal.features.briefing.briefing_conduct import BriefingConduct
 from journal.features.briefing.support.briefing_data_reader import BriefingDataReader
 from journal.features.briefing.support.briefing_data import BriefingData
 from journal.engine.nudge import Nudge

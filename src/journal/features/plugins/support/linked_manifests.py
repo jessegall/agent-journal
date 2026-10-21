@@ -1,7 +1,7 @@
 import hashlib
 import json
 
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.features.plugins.support.manifest_reader import MANIFEST, ManifestReader
 from journal.features.plugins.support.plugin_changes import PluginChanges
 from journal.features.plugins.support.plugin_folders import PluginFolders

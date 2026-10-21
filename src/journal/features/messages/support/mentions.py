@@ -1,6 +1,6 @@
 import re
 
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 
 MENTION_PATTERN = re.compile(r"\b(task|todo|plan|doc|document|report|message|template|sequence|trigger|check|question|fact|rule|reminder|worker|secret|phase)s?\s+#?(\d+)\b", re.IGNORECASE)
 TABLES = {"todo": "tasks", "document": "docs"}

@@ -5,7 +5,7 @@ import time as timing
 class RecentCounts:
     """How often something came from a key in the last stretch of time, so a visitor cannot repeat it without limit; a subclass names how many and how long."""
 
-    LIMIT = 0
+    MAXIMUM_COUNT = 0
     WINDOW_SECONDS = 0
 
     def __init__(self) -> None:
@@ -18,7 +18,7 @@ class RecentCounts:
 
     def locked(self, key: str) -> bool:
         with self.lock:
-            return len(self.recent(key)) >= self.LIMIT
+            return len(self.recent(key)) >= self.MAXIMUM_COUNT
 
     def count(self, key: str) -> None:
         with self.lock:

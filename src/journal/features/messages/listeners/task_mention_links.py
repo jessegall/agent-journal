@@ -4,7 +4,7 @@ from journal.events.listener import Listener
 from journal.models.author import Author
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.support.missing_row import MissingRow

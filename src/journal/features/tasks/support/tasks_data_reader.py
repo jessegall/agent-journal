@@ -9,8 +9,8 @@ from journal.repositories.plans import Plans
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 
-COMMAND_HISTORY_LENGTH = 6
-POLLED = 3
+HISTORY_TOOL_STARTS = 6
+POLL_COMMANDS = 3
 
 
 class TasksDataReader:
@@ -24,7 +24,7 @@ class TasksDataReader:
         suspended_tasks = [task for task in self.tasks.with_state(TaskState.SUSPENDED) if PlanState.SUSPENDED not in self.plans.plan_states(task)]
         blocked_without_wait = self.tasks.blocked_without_wait()
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
-        commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session, COMMAND_HISTORY_LENGTH) if e.data.get("tool_name") == "Bash"]
+        commands = [e.recorded_call().get("command", "") for e in self.entries.tool_starts(agent.session, HISTORY_TOOL_STARTS) if e.data.get("tool_name") == "Bash"]
         free = self.plans.free()
         open_tasks = self.tasks.with_state(TaskState.OPEN)
         return TasksData(
@@ -39,7 +39,7 @@ class TasksDataReader:
             broken_waits_summary="; ".join(f"task {task.id} waits on check {check.id}, {check.title}, which cannot run" for task, check in broken),
             first_suspension_reason=suspended_tasks[0].suspension_reason if suspended_tasks else "",
             next_open=OpenTask(free[0].id, free[0].title, free[0].brief, 0) if free else None,
-            last_commands=tuple(commands[:POLLED]),
+            last_commands=tuple(commands[:POLL_COMMANDS]),
             open_ids=tuple(t.id for t in open_tasks),
             open_summary=self.summary(open_tasks),
         )

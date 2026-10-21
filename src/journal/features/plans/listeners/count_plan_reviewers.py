@@ -3,7 +3,7 @@ from journal.events.agent_listener import AgentListener
 from journal.repositories.agents import Agents
 from journal.repositories.plans import Plans
 from journal.support.actor import Actor
-from journal.support.subagents import Subagents
+from journal.features.workers.support.subagents import Subagents
 
 
 class CountPlanReviewers(AgentListener[AgentEvent]):

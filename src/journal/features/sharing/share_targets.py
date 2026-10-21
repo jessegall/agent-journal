@@ -1,5 +1,5 @@
 from journal.models.link import Link
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.share import Share
 from journal.support.rejection import Rejection
 from journal.repositories.docs import Docs

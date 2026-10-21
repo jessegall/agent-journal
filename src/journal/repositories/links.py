@@ -1,6 +1,6 @@
 from journal.models.link import Link
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.repository import Repository
 
 

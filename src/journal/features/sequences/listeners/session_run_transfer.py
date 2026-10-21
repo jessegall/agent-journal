@@ -1,6 +1,6 @@
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent_listener import AgentListener
-from journal.support.run_tracker import RunTracker
+from journal.features.sequences.support.run_tracker import RunTracker
 
 
 class SessionRunTransfer(AgentListener[SessionStarted]):

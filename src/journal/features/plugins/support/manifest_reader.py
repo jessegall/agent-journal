@@ -4,7 +4,7 @@ from pathlib import Path
 
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.registry import Registry
-from journal.support.plugin_manifest import PUBLISHED, PluginManifest
+from journal.models.support.plugin_manifest import PUBLISHED, PluginManifest
 from journal.support.rejection import Rejection
 from journal.repositories.plugins import Plugins
 

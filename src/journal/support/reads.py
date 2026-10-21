@@ -1,4 +1,4 @@
-from journal.features.shell.support.part import Part
+from journal.support.part import Part
 from journal.support.chain import Chain
 from journal.support.writes import Writes
 

@@ -28,6 +28,7 @@
         "SentenceParameterNameDetector",
         "PoeticVariableNameDetector",
         "PoeticParameterNameDetector",
+        "UnitlessQuantityNameDetector",
         "DocstringInMethodDetector",
         "FieldDocstringDetector",
         "ConstantDocstringDetector",

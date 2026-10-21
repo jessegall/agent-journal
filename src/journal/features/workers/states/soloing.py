@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
-from journal.features.tasks.states.ready import Ready
+from journal.features.plans.states.plans_ready import PlansReady
 
 DISPATCHES = ("journal worker dispatch", "journal worker send")
 
 
 @dataclass(frozen=True)
-class Soloing(Ready):
+class Soloing(PlansReady):
     """The solo mode state: the agent does everything itself, and a worker's dispatch is refused."""
 
     name = "soloing"

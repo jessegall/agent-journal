@@ -5,7 +5,7 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.models.author import Author
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.config import Config
 from journal.features.messages.support.faces import Faces
 from journal.support.missing_row import MissingRow
@@ -16,7 +16,7 @@ from journal.repositories.messages import Messages
 from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions
 
-RECENT = 20
+RECENT_MESSAGES = 20
 
 
 class MessageCommand(Command):
@@ -86,7 +86,7 @@ class MessageCommand(Command):
         return 0
 
     def recent(self, args: Namespace, caller: Caller) -> int:
-        for message in self.messages.recent(RECENT):
+        for message in self.messages.recent(RECENT_MESSAGES):
             print(f"{message.id:>4}  {message.author:<5} {message.text_body}")
         return 0
 
