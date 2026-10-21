@@ -7,6 +7,10 @@ from typing import Callable, ClassVar, Iterator
 
 from journal.support.tool_call import ToolCall
 from journal.support.operation import Operation
+from journal.models.mcp_server import McpServer
+from journal.providers.support.agent_status import AgentStatus
+from journal.providers.support.hooks_ready import HooksReady
+from journal.providers.support.profile import Profile
 from journal.support.undecoded_tool import UndecodedTool
 from journal.support.chain import Chain
 from journal.support.command_part import CommandPart
@@ -50,6 +54,8 @@ class Provider(ABC):
     controls: ClassVar[dict] = {"groups": [], "note": ""}
     capabilities: ClassVar[frozenset[Capability]]
     decoders: ClassVar[dict[str, Callable[[dict], Operation]]]
+    profile_suffix: ClassVar[str]
+    default: ClassVar[bool]
 
     @abstractmethod
     def transcript(self, project: Path, session: str) -> Path | None: ...
@@ -144,6 +150,15 @@ class Provider(ABC):
     def resume(self, session: str) -> tuple[str, ...]: ...
 
     @abstractmethod
+    def status(self, session: str, home: Path) -> AgentStatus: ...
+
+    @abstractmethod
+    def write_mcp(self, project: Path, servers: list[McpServer]) -> Path: ...
+
+    @abstractmethod
+    def profile_text(self, profile: Profile, model: str, codex_model: str) -> str: ...
+
+    @abstractmethod
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]: ...
 
     @abstractmethod
@@ -192,7 +207,12 @@ class Provider(ABC):
         return "journal/hooks/hook.sh" in text or any(old in text for old in VERSION_3_HOOKS)
 
     @abstractmethod
-    def hooks_trusted(self, project: Path) -> bool: ...
+    def hooks_ready(self, project: Path) -> HooksReady: ...
+
+    def is_wired(self, project: Path) -> bool:
+        path = project / self.home / self.settings_file
+        hooks = (json.loads(path.read_text()).get("hooks") or {}) if path.is_file() else {}
+        return any(self.journal_paths(block) for blocks in hooks.values() for block in blocks)
 
     def operation(self, tool: str, input: dict) -> Operation:
         decoder = self.decoders.get(tool)

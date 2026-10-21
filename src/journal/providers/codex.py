@@ -1,5 +1,8 @@
 import json
+import os
+import re
 import shlex
+import tomllib
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Iterator
@@ -10,6 +13,11 @@ from journal.providers.provider import Provider
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
+from journal.providers.support.mcp_tables import McpTables
+from journal.models.mcp_server import McpServer
+from journal.providers.support.agent_status import AgentStatus
+from journal.providers.support.hooks_ready import HooksReady
+from journal.providers.support.profile import Profile
 from journal.providers.support.patch_paths import PatchPaths
 from journal.support.agent_message import AgentMessage
 from journal.support.file_edit import FileEdit
@@ -46,6 +54,8 @@ class Codex(Provider):
     }
     hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
     capabilities = frozenset()
+    profile_suffix = ".toml"
+    default = False
     session_variable = "CODEX_THREAD_ID"
     inherited_markers = ("CODEX_THREAD_ID", "CODEX_SANDBOX", "CODEX_CI")
     question_model = ""
@@ -57,12 +67,29 @@ class Codex(Provider):
 
     @property
     def sessions(self) -> Path:
-        return Path.home() / ".codex" / "sessions"
+        return self.config_folder() / "sessions"
 
-    def hooks_trusted(self, project: Path) -> bool:
-        settings = Path.home() / ".codex" / "config.toml"
-        hooks = project.resolve() / self.home / self.settings_file
-        return settings.is_file() and f'[hooks.state."{hooks}:session_start' in settings.read_text()
+    def hooks_ready(self, project: Path) -> HooksReady:
+        if not self.is_wired(project):
+            return HooksReady.UNWIRED
+        trusted = self.trusted_kinds(project.resolve() / self.home / self.settings_file)
+        if not trusted:
+            return HooksReady.UNTRUSTED
+        return HooksReady.READY if trusted >= {self.state_name(kind) for kind in self.hook_kinds} else HooksReady.TRUST_OUTDATED
+
+    @staticmethod
+    def config_folder() -> Path:
+        return Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
+
+    @staticmethod
+    def trusted_kinds(hooks: Path) -> set[str]:
+        settings = Codex.config_folder() / "config.toml"
+        states = tomllib.loads(settings.read_text()).get("hooks", {}).get("state", {}) if settings.is_file() else {}
+        return {key.rsplit(":", 3)[1] for key, state in states.items() if key.startswith(f"{hooks}:") and key.count(":") >= 3 and state.get("enabled", True)}
+
+    @staticmethod
+    def state_name(kind: HookKind) -> str:
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", kind.value).lower()
 
     @staticmethod
     def subagent(input: dict) -> SubagentDispatch:
@@ -146,6 +173,20 @@ class Codex(Provider):
 
     def resume(self, session: str) -> tuple[str, ...]:
         return ("resume", session)
+
+    def status(self, session: str, home: Path) -> AgentStatus:
+        return AgentStatus.unreported()
+
+    def profile_text(self, profile: Profile, model: str, codex_model: str) -> str:
+        sandbox = "read-only" if profile.kind == "subagent" else "workspace-write"
+        return (f"name = {json.dumps(profile.name)}\ndescription = {json.dumps(profile.description, ensure_ascii=False)}\nmodel = {json.dumps(codex_model)}\n"
+                f"sandbox_mode = \"{sandbox}\"\ndeveloper_instructions = {json.dumps(profile.body, ensure_ascii=False)}\n")
+
+    def write_mcp(self, project: Path, servers: list[McpServer]) -> Path:
+        path = project / self.home / "config.toml"
+        path.parent.mkdir(exist_ok=True)
+        path.write_text(McpTables.merged(path.read_text() if path.is_file() else "", servers))
+        return path
 
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["resume", resume] if resume else []

@@ -11,7 +11,7 @@ from journal.events.agent.tool_failed import ToolFailed
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_displayed import TurnDisplayed
-from journal.support.context_file import ContextFile
+from journal.config import Config
 from journal.support.hook import Hook
 from journal.hooks.support.turn_gatherer import TurnGatherer
 from journal.hooks.tool_uses import ToolUses
@@ -38,10 +38,11 @@ class Translation:
         HookKind.SESSION_END: lambda hook, provider: SessionEnded(),
     }
 
-    def __init__(self, context: ContextFile, providers: Providers, turns: TurnGatherer, entries: Entries, clock: Clock, uses: ToolUses) -> None:
-        self.context, self.providers, self.turns = context, providers, turns
+    def __init__(self, config: Config, providers: Providers, turns: TurnGatherer, entries: Entries, clock: Clock, uses: ToolUses) -> None:
+        self.config, self.providers, self.turns = config, providers, turns
         self.entries, self.clock, self.uses = entries, clock, uses
 
     def event(self, hook: Hook, environment: Environment) -> AgentEvent:
-        bare = self.EVENTS[hook.kind](hook, self.providers.lookup(hook.provider))
-        return self.turns.fold(self.uses.counted(bare.placed(hook.session, environment.id, hook.provider, self.context.build(hook.session), self.clock.time(), hook.subagent)))
+        provider = self.providers.lookup(hook.provider)
+        bare = self.EVENTS[hook.kind](hook, provider)
+        return self.turns.fold(self.uses.counted(bare.placed(hook.session, environment.id, hook.provider, provider.status(hook.session, self.config.status_home).context, self.clock.time(), hook.subagent)))

@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import shlex
 from pathlib import Path
@@ -9,6 +10,11 @@ from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.provider import TAIL_BYTES, Provider
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability
+from journal.models.mcp_server import McpServer
+from journal.providers.support.agent_status import AgentStatus
+from journal.providers.support.hooks_ready import HooksReady
+from journal.providers.support.context_file import ContextFile
+from journal.providers.support.profile import Profile
 from journal.support.agent_message import AgentMessage
 from journal.support.file_edit import FileEdit
 from journal.support.file_read import FileRead
@@ -37,6 +43,8 @@ class Claude(Provider):
     inherited_markers = ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX")
     question_model = "haiku"
     settings_files = (".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json")
+    profile_suffix = ".md"
+    default = True
     controls = {
         "groups": [
             {"key": "model", "label": "Model", "choices": [{"value": v, "label": l, "command": f"/model {v}"} for v, l in (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))]},
@@ -63,17 +71,21 @@ class Claude(Provider):
     def subagent(input: dict) -> SubagentDispatch:
         return SubagentDispatch(str(input.get("subagent_type", "")), str(input.get("model", "")), str(input.get("description", "")), str(input.get("prompt", "")))
 
+    @staticmethod
+    def config_folder() -> Path:
+        return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
+
     def transcript(self, project: Path, session: str) -> Path | None:
-        path = Path.home() / ".claude" / "projects" / self.folder_name(project) / f"{session}.jsonl"
+        path = self.config_folder() / "projects" / self.folder_name(project) / f"{session}.jsonl"
         return path if path.is_file() else None
 
     def latest_session(self, project: Path, start: float) -> str:
-        folder = Path.home() / ".claude" / "projects" / self.folder_name(project)
+        folder = self.config_folder() / "projects" / self.folder_name(project)
         saved = [path for path in folder.glob("*.jsonl") if path.stat().st_mtime >= start] if folder.is_dir() else []
         return max(saved, key=lambda path: path.stat().st_mtime).stem if saved else ""
 
     def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
-        path = Path.home() / ".claude" / "projects" / self.folder_name(project) / parent / "subagents" / f"agent-{agent_id}.jsonl"
+        path = self.config_folder() / "projects" / self.folder_name(project) / parent / "subagents" / f"agent-{agent_id}.jsonl"
         return path if path.is_file() else None
 
     def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]:
@@ -132,8 +144,23 @@ class Claude(Provider):
     def resume(self, session: str) -> tuple[str, ...]:
         return ("--resume", session)
 
-    def hooks_trusted(self, project: Path) -> bool:
-        return True
+    def __init__(self) -> None:
+        self._status_files: dict[Path, ContextFile] = {}
+
+    def status(self, session: str, home: Path) -> AgentStatus:
+        return self._status_files.setdefault(home, ContextFile(home)).reading(session)
+
+    def profile_text(self, profile: Profile, model: str, codex_model: str) -> str:
+        return f"---\nname: {profile.name}\ndescription: {profile.description}\ntools: {profile.tools}\nkind: {profile.kind}\nmodel: {model}\ncodex-model: {codex_model}\n---\n\n{profile.body}\n"
+
+    def write_mcp(self, project: Path, servers: list[McpServer]) -> Path:
+        path = project / ".mcp.json"
+        stored = json.loads(path.read_text()) if path.is_file() else {}
+        path.write_text(json.dumps({**stored, "mcpServers": {server.name: server.shape() for server in servers}}, indent=2) + "\n")
+        return path
+
+    def hooks_ready(self, project: Path) -> HooksReady:
+        return HooksReady.READY if self.is_wired(project) else HooksReady.UNWIRED
 
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["--resume", resume] if resume else []

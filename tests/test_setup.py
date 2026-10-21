@@ -74,15 +74,25 @@ def test_a_command_from_inside_an_agent_is_the_live_agents(app: App):
         app.runtime().stop()
 
 
-def test_codex_hooks_count_as_trusted_once_codex_notes_them(tmp_path, monkeypatch):
+def test_each_hooks_ready_state_is_read_from_the_projects_settings_and_codexs_trust(app: App, monkeypatch):
+    from journal.providers.claude import Claude
     from journal.providers.codex import Codex
-    monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    project = tmp_path / "proj"
-    project.mkdir()
-    assert not Codex().hooks_trusted(project), "no Codex settings: not trusted, and the launch says to trust them"
-    (tmp_path / ".codex").mkdir()
-    (tmp_path / ".codex" / "config.toml").write_text(f'[hooks.state."{project.resolve()}/.codex/hooks.json:session_start:0:0"]\ntrusted_hash = "x"\n')
-    assert Codex().hooks_trusted(project)
+    from journal.providers.support.hooks_ready import HooksReady
+    monkeypatch.delenv("CODEX_HOME", raising=False)
+    root = app.config.root
+    (root / ".codex").mkdir()
+    assert Codex().hooks_ready(root) == HooksReady.UNWIRED and Claude().hooks_ready(root) == HooksReady.UNWIRED, "no journal hook in the settings: not wired"
+    app.console().run(["setup"], Caller("main"))
+    assert Claude().hooks_ready(root) == HooksReady.READY, "Claude Code runs a project's hooks with no trust step of its own"
+    assert Codex().hooks_ready(root) == HooksReady.UNTRUSTED, "wired, but Codex was never asked to trust them"
+    hooks = root.resolve() / ".codex" / "hooks.json"
+    tables = lambda kinds: "".join(f'[hooks.state."{hooks}:{kind}:0:0"]\ntrusted_hash = "x"\n\n' for kind in kinds)
+    (root / "home" / ".codex").mkdir(parents=True)
+    (root / "home" / ".codex" / "config.toml").write_text(tables(["session_start", "stop"]))
+    assert Codex().hooks_ready(root) == HooksReady.TRUST_OUTDATED, "trusted before the journal wired the hooks it has now"
+    every = ["session_start", "user_prompt_submit", "pre_tool_use", "post_tool_use", "pre_compact", "stop", "subagent_start", "subagent_stop", "session_end"]
+    (root / "home" / ".codex" / "config.toml").write_text(tables(every))
+    assert Codex().hooks_ready(root) == HooksReady.READY
 
 
 def test_the_private_folder_keeps_keys_and_secrets_to_their_user_and_out_of_git(tmp_path, monkeypatch):
@@ -130,4 +140,45 @@ def test_a_provider_missing_an_answer_cannot_be_built_and_each_lists_what_the_vi
     with pytest.raises(TypeError, match="abstract"):
         Halfway()
     assert {provider.name: provider.capabilities for provider in Providers().all()} == {"claude": frozenset(Capability), "codex": frozenset()}, "a change to what a provider can offer is seen here"
-    assert Claude().hooks_trusted(Path("/nowhere"))
+
+
+def test_mcp_servers_written_into_codexs_config_keep_its_other_tables(app: App):
+    import tomllib
+    from journal.features.mcp.support.provider_config import ProviderConfig
+    from journal.models.mcp_server import McpServer
+    from journal.repositories.mcp_servers import McpServers
+    from journal.support.actor import Actor
+    root = app.config.root
+    (root / ".codex").mkdir()
+    (root / ".codex" / "config.toml").write_text('model = "gpt-6"\n\n[mcp_servers.mine]\ncommand = "my-server"\n\n[profiles.fast]\nmodel = "gpt-6-mini"\n')
+    servers = app.container.get(McpServers)
+    servers.save(McpServer(name="browser", transport="stdio", command="npx", args=("browser-mcp",)), Actor.system())
+    gone = servers.save(McpServer(name="search", transport="http", url="https://search.test/mcp"), Actor.system())
+    app.container.get(ProviderConfig).write()
+    written = tomllib.loads((root / ".codex" / "config.toml").read_text())
+    assert written["model"] == "gpt-6" and written["profiles"] == {"fast": {"model": "gpt-6-mini"}}, "the user's own settings stay"
+    assert set(written["mcp_servers"]) == {"mine", "browser", "search"} and written["mcp_servers"]["browser"]["command"] == "npx"
+    servers.delete(gone, Actor.system())
+    app.container.get(ProviderConfig).write()
+    assert set(tomllib.loads((root / ".codex" / "config.toml").read_text())["mcp_servers"]) == {"mine", "browser"}, "a server the journal took out goes, the user's own stays"
+    assert set(json.loads((root / ".mcp.json").read_text())["mcpServers"]) == {"browser"}
+
+
+def test_an_agents_row_offers_only_what_its_program_reports(app: App, monkeypatch):
+    from journal.config import Config
+    from journal.http.agents.agent_activity import AgentActivity
+    from journal.models.agent import Agent
+    from journal.repositories.agents import Agents
+    from journal.support.actor import Actor
+    from journal.support.scope import Scope
+    monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
+    (app.config.root / "status").mkdir()
+    (app.config.root / "status" / "claude-1.json").write_text(json.dumps({"context_window": {"used_percentage": 42}, "model": {"display_name": "Opus 5.5"}, "rate_limits": {"five_hour": {"used_percentage": 10, "resets_at": 99}}}))
+    agents = app.container.get(Agents)
+    with app.container.get(Scope).environment(1):
+        for session, provider in (("claude-1", "claude"), ("codex-1", "codex")):
+            agents.save(Agent(environment_id=1, session=session, provider=provider), Actor.system())
+        rows = {row["session"]: row for row in app.container.get(AgentActivity).page(agents.scoped())}
+    assert rows["claude-1"]["context"] == 42 and rows["claude-1"]["model"] == "Opus 5.5" and rows["claude-1"]["usage"] == [{"key": "five_hour", "label": "5h", "used": 10, "resets_at": 99}]
+    assert "context status" in rows["claude-1"]["capabilities"] and rows["codex-1"]["capabilities"] == []
+    assert rows["codex-1"]["context"] is None and rows["codex-1"]["model"] == "", "a context Codex never reported is unknown, never zero"

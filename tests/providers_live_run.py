@@ -18,6 +18,7 @@ from journal.models.setting import Setting
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.providers.providers import Providers
+from journal.providers.support.hooks_ready import HooksReady
 from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.setting_rows import SettingRows
@@ -59,7 +60,7 @@ def live(tmp_path: Path, monkeypatch, provider: str):
     assert port > 20000 and not 8420 <= port <= 8429, f"the scratch server took {port}"
     (tmp_path / ".journal" / "port").write_text(str(port))
     app.console().run(["setup"], Caller("main"))
-    if not Providers().lookup(provider).hooks_trusted(tmp_path):
+    if Providers().lookup(provider).hooks_ready(tmp_path) != HooksReady.READY:
         app.runtime().stop()
         pytest.skip(f"{provider}'s hooks are not trusted in this config folder, so no hook would reach the journal: inconclusive")
     try:
@@ -107,6 +108,30 @@ def session_of(app: App) -> str:
 
 def refused(app: App) -> list:
     return [entry for entry in entries(app, "ToolStarting") if entry.data.get("refused")]
+
+
+def test_untrusted_hooks_are_reported_not_ready_and_claim_no_hold(tmp_path: Path, monkeypatch, provider: str):
+    """Codex with its trust withheld in a fresh config folder, Claude Code with the project's settings left out: hooks_ready says so for Codex, and the journal records no hold for either."""
+    for name in (*Providers().inherited_markers(), *JOURNAL_VARIABLES):
+        monkeypatch.delenv(name, raising=False)
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True, timeout=10)
+    (tmp_path / ".journal").mkdir()
+    (tmp_path / ".journal" / "src").symlink_to(SRC)
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    try:
+        (tmp_path / ".journal" / "port").write_text(str(app.server().port))
+        app.console().run(["setup"], Caller("main"))
+        program = Providers().lookup(provider)
+        if provider == "codex":
+            monkeypatch.setenv("CODEX_HOME", str(tmp_path / "untrusted"))
+            assert program.hooks_ready(tmp_path) == HooksReady.UNTRUSTED
+        withheld = ["--setting-sources", "user"] if provider == "claude" else []
+        command = [*program.worker_command("Write the word one into first.txt.", CHEAP_MODEL[provider], ""), *withheld]
+        subprocess.run(command, cwd=tmp_path, env=launched(app, provider), stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=CASE_SECONDS)
+        assert not refused(app), "no hold is claimed by hooks that did not run"
+    finally:
+        app.runtime().stop()
 
 
 def test_a_launched_agent_starts_bound_to_its_environment(live: App, provider: str):

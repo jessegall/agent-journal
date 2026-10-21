@@ -658,7 +658,7 @@ def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app: 
     files = app.container.get(ProfileFiles)
     files.write_all()
     assert files.kind("journal-researcher") == "subagent" and files.kind("nobody") == ""
-    from journal.features.profiles.support.profile import Profile
+    from journal.providers.support.profile import Profile
     (files.config.root / ".codex").mkdir(exist_ok=True)
     saved = files.save(Profile("builder", "writes code", "Read, Edit", "You write.\nSay \"done\".", "worker"), "sonnet", "gpt-6")
     assert saved["kind"] == "worker" and saved["model"] == "sonnet" and saved["codex_model"] == "gpt-6"

@@ -1,9 +1,12 @@
 import json
 from pathlib import Path
 
+from journal.providers.support.agent_status import AgentStatus
+from journal.providers.support.rate_window import RateWindow
+
 
 class ContextFile:
-    """Claude reports its context, model and effort through its statusline script, not a hook: the script writes one file per session, and this reads the latest."""
+    """Claude Code reports its context, model, effort and plan windows through its statusline script, not a hook: the script writes one file per session, and this reads the latest whole one."""
 
     def __init__(self, home: Path) -> None:
         self.home = home
@@ -29,7 +32,9 @@ class ContextFile:
     def effort(self, session: str) -> str:
         return self.status(session).get("effort", {}).get("level", "")
 
-    def usage(self, session: str) -> list[dict]:
+    def windows(self, session: str) -> tuple[RateWindow, ...]:
         limits = self.status(session).get("rate_limits", {})
-        return [{"key": key, "label": label, "used": limits[key].get("used_percentage", 0), "resets": limits[key].get("resets_at", 0)}
-                for key, label in (("five_hour", "5h"), ("seven_day", "7d")) if isinstance(limits.get(key), dict)]
+        return tuple(RateWindow(key, label, limits[key].get("used_percentage", 0), limits[key].get("resets_at", 0)) for key, label in (("five_hour", "5h"), ("seven_day", "7d")) if isinstance(limits.get(key), dict))
+
+    def reading(self, session: str) -> AgentStatus:
+        return AgentStatus(self.model(session), self.effort(session), self.build(session), self.windows(session))

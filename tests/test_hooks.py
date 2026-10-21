@@ -112,7 +112,7 @@ def test_the_deferred_worker_survives_a_failing_piece_of_work(capsys):
 
 
 def test_a_status_file_caught_half_written_keeps_the_last_whole_reading(tmp_path: Path):
-    from journal.support.context_file import ContextFile
+    from journal.providers.support.context_file import ContextFile
     context = ContextFile(tmp_path)
     (tmp_path / "s1.json").write_text(json.dumps({"context_window": {"used_percentage": 40}}))
     assert context.build("s1") == 0.4
