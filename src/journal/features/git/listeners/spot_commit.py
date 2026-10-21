@@ -16,6 +16,7 @@ from journal.support.actor import Actor
 from journal.repositories.messages import Messages
 from journal.repositories.tasks import Tasks as TaskRows
 from journal.models.task_state import TaskState
+from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
 from journal.support.chat_mark import ChatMark
@@ -24,33 +25,58 @@ from journal.support.decision import Decision
 
 COMMIT = "commit"
 JUST_MADE = 60
+LAST_STARTS = 3
 TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)?)+)\s*(.*)$", re.MULTILINE)
 
 
 class SpotCommit(AgentListener[ToolFinished]):
-    """A shell command that committed is followed by a look at the head: the commit becomes a card in the chat, once, a Journal: tasks done line in its message finishes those tasks, and the bus is told a commit was made with what it closed; what the agent is told of it is the git conduct's, handed back with the command's own answer."""
+    """A shell command that committed is followed by a look at the head: the commit becomes a card in the chat, once, a Journal: tasks done line in its message finishes those tasks, and the bus is told a commit was made with what it closed; what the agent is told of it is the git conduct's, handed back with the command's own answer. A commit whose own hook never came, lost to an install or a restart in the same line, is spotted at the next tool use by the head's log having moved, and its tasks close when one of the session's last tool starts held the commit."""
 
     blocking = True
 
-    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, tasks: TaskRows, bus: Bus, next_task: NextOpenTask) -> None:
+    def __init__(self, config: Config, cards: Cards, messages: Messages, console: Console, environments: Environments, tasks: TaskRows, bus: Bus, next_task: NextOpenTask, entries: Entries) -> None:
         self.config, self.cards, self.messages, self.console, self.environments, self.tasks, self.bus = config, cards, messages, console, environments, tasks, bus
-        self.next_task = next_task
+        self.next_task, self.entries = next_task, entries
+        self._head_log_times: dict[Path, float] = {}
 
     def handle(self, event: ToolFinished) -> Decision | None:
         texts = [part.text for part in event.call.parts]
         if any(text.startswith("git merge") for text in texts):
             return self.merged(event)
-        if not any(text.startswith("git commit") for text in texts):
-            return None
         folder = self.folder(event)
+        if not any(text.startswith("git commit") for text in texts) and not self.head_moved(folder):
+            return None
         head = self.head(folder)
         actor = Actor.agent(event.session)
         if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", actor):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit", "detail": head.subject}, actor, ChatMark.COMMITS)
-        closed = self.close_named(event, head.sha, head.body) if folder == self.config.root and timing.time() - head.committed <= JUST_MADE else []
+        closed = self.close_named(event, head.sha, head.body) if folder == self.config.root and self.is_own(event, head) else []
         return self.commit(event, head.sha, closed)
+
+    def is_own(self, event: ToolFinished, head: HeadCommit) -> bool:
+        if timing.time() - head.committed <= JUST_MADE:
+            return True
+        starts = self.entries.tool_starts(event.session, last=LAST_STARTS)
+        return any(part["text"].startswith("git commit") for start in starts for part in start.data.get("call", {}).get("parts", []))
+
+    def head_moved(self, folder: Path) -> bool:
+        log = self.head_log(folder)
+        try:
+            moment = log.stat().st_mtime
+        except OSError:
+            return False
+        known = self._head_log_times.get(folder)
+        self._head_log_times[folder] = moment
+        return known is not None and moment != known
+
+    @staticmethod
+    def head_log(folder: Path) -> Path:
+        git = folder / ".git"
+        if git.is_file():
+            return Path(git.read_text().strip().removeprefix("gitdir:").strip()) / "logs" / "HEAD"
+        return git / "logs" / "HEAD"
 
     def commit(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
         next_open = self.next_task.after(self.tasks.find(closed[-1])) if closed else None

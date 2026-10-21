@@ -5997,3 +5997,28 @@ def test_the_kept_output_line_says_the_lines_the_characters_and_the_part_of_the_
     (read.folder / "0.out").write_text("".join(f"l{i:02d}\n" for i in range(1, 51)))
     shown = OutputShow(read, Cap(ENDS, 80)).of(0)
     assert shown.startswith("l01\n") and shown.endswith("l50\n") and f"[journal] output {read.number()}: 50 lines, 200 characters; lines 1-10 and 41-50 shown, 11-40 cut from the middle. journal output read {read.number()} --lines 11-40 or --grep reads them\n" in shown, "a read past the cap names the lines shown and the lines cut"
+
+
+def test_a_commit_whose_own_hook_was_lost_is_spotted_at_the_next_tool_use_and_closes_its_task(app, monkeypatch):
+    import subprocess
+    from journal.repositories.messages import Messages
+    from journal.repositories.tasks import Tasks
+    catch_typed(app, monkeypatch, [])
+    root = app.config.root
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    commit = lambda message, when: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", message], cwd=root, check=True, env={**os.environ, "GIT_COMMITTER_DATE": when, "GIT_AUTHOR_DATE": when})
+    commit("Old", "2020-01-01T00:00:00")
+    hook(app, "SessionStart")
+    looked = dict(tool_name="Bash", tool_input={"command": "ls"}, tool_response={"stdout": "", "stderr": ""})
+    hook(app, "PostToolUse", **looked)
+    cards = lambda: [m.text for m in app.container.get(Messages).in_() if m.text.startswith("Agent committed")]
+    assert cards() == [], "the head as first seen is no commit of this session's"
+    app.console().run(["task", "create", "footer", "--start"], AGENT)
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "git commit -qm 'the footer' && sh install.sh"})
+    from datetime import datetime, timezone
+    two_minutes_ago = datetime.fromtimestamp(timing.time() - 120, timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+    commit("The footer\n\nJournal: tasks done 1", two_minutes_ago)
+    hook(app, "PostToolUse", **looked)
+    assert len(cards()) == 1 and app.container.get(Tasks).find(1).state == "done", "the head moved since the last look and the session's own tool start held the commit, so it is carded and its task closed"
+    hook(app, "PostToolUse", **looked)
+    assert len(cards()) == 1, "once"
