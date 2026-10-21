@@ -55,8 +55,9 @@ class WorkersConduct(Conduct):
 
     def idle_cap_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
-        cap, workers = int(settings.value(Workers.IDLE_KEPT)), event.data.part(Workers)
-        for line in [line for line in worker_lines(event, "dispatch") if cap and not is_reviewer(line.profile)]:
+        lines = [line for line in worker_lines(event, "dispatch") if not is_reviewer(line.profile)]
+        cap, workers = int(settings.value(Workers.IDLE_KEPT)) if lines else 0, event.data.part(Workers)
+        for line in lines if cap else []:
             kept, idle = kept_workers(workers, line.profile), idle_offers(workers, line)
             if len(kept) >= cap and idle:
                 return self.refuse(Workers.IDLE_CAP.create(kept=len(kept), profile=line.profile, count=len(idle), workers=idle_list(idle)))
