@@ -5,6 +5,7 @@ from journal.models.trigger import Trigger
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.sequences import Sequences
 from journal.support.card_kind import CardKind
+from journal.models.support.ref import Ref
 
 
 class TriggerFire:
@@ -15,7 +16,7 @@ class TriggerFire:
 
     def fired(self, matched: list[Trigger], session: str, environment_id: int, user_origin: bool) -> None:
         for trigger in matched:
-            self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.text), f"triggers:{trigger.id}", shows=CardKind.TRIGGERS)
+            self.cards.show(environment_id, session, f"Trigger {trigger.text}", "bolt", "", ", ".join(trigger.text), Ref.build(trigger), shows=CardKind.TRIGGERS)
             if trigger.action == TriggerAction.SEQUENCE and user_origin:
                 self.started(trigger, session, environment_id)
 

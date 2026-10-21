@@ -29,4 +29,4 @@ class WorkerMomentCards(Listener[RowEvent]):
         text, tone, detail = MOMENTS[type(event)]
         actor = Actor.agent(event.dispatcher) if event.dispatcher else Actor.system()
         label = Cards.shortened(f"Worker {event.worker_id}, {event.name}: {text}")
-        self.cards.show(event.environment_id, event.dispatcher, label, "agents", tone=tone, detail=getattr(event, detail) if detail else "", row=str(Ref("workers", event.worker_id)), actor=actor, shows=CardKind.WORKERS)
+        self.cards.show(event.environment_id, event.dispatcher, label, "agents", tone=tone, detail=getattr(event, detail) if detail else "", row=Ref("workers", event.worker_id), actor=actor, shows=CardKind.WORKERS)

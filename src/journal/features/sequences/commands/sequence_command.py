@@ -1,4 +1,5 @@
 from argparse import Namespace
+from journal.models.support.ref import Ref
 
 from journal.console.command import Command
 from journal.support.caller import Caller
@@ -71,7 +72,7 @@ class SequenceCommand(Command):
         if not args.sure:
             raise Rejection(f"abandoning sequence {run.sequence_id}, {run.title}, leaves undone: {skipped}. again with --sure to go through")
         run, line = self.running.abandon(caller.session, self.scope.id)
-        self.cards.show(self.scope.id, caller.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", f"sequences:{run.sequence_id}", shows=CardKind.SEQUENCES)
+        self.cards.show(self.scope.id, caller.session, f"Sequence {run.sequence_id}, {run.title}, abandoned at step {run.step + 1}: {args.why}", "bolt", "bad", f"left undone: {skipped}", Ref("sequences", run.sequence_id), shows=CardKind.SEQUENCES)
         print(line)
         return 0
 

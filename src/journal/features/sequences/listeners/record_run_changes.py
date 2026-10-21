@@ -8,6 +8,7 @@ from journal.models.entry import Entry
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.support.card_kind import CardKind
+from journal.models.support.ref import Ref
 
 RUN = "sequence_run"
 
@@ -41,4 +42,4 @@ class RecordRunChanges(Listener[Updated]):
     def stored(self, agent: Agent, run: SequenceRun, subject: str, shows: CardKind) -> None:
         data = {"session": agent.session, "n": run.sequence_id, "title": run.title, "what": subject}
         self.entries.save(Entry(environment_id=agent.environment_id, kind=RUN, actor=Actor.system(), data=data), Actor.system())
-        self.cards.show(agent.environment_id, agent.session, f"Sequence {run.sequence_id}, {run.title}: {subject}", "list", "sequence", row=f"sequences:{run.sequence_id}", shows=shows)
+        self.cards.show(agent.environment_id, agent.session, f"Sequence {run.sequence_id}, {run.title}: {subject}", "list", "sequence", row=Ref("sequences", run.sequence_id), shows=shows)

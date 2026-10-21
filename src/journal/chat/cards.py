@@ -5,6 +5,7 @@ from journal.models.model import Model
 from journal.models.message import Message
 from journal.repositories.messages import Messages
 from journal.models.support.row_card import RowCard
+from journal.models.support.ref import Ref
 
 DETAIL_CHARACTERS = 80
 
@@ -15,8 +16,8 @@ class Cards:
     def __init__(self, messages: Messages) -> None:
         self.messages = messages
 
-    def show(self, environment_id: int, session: str, label: str, icon: str, tone: str = "", detail: str = "", row: str = "", kind: str = "card", actor: Actor = Actor.system(), key: str = "", command: str = "", *, shows: CardKind) -> Message:
-        return self.keyed(environment_id, key, label, {"kind": kind, "session": session, "icon": icon, "tone": tone, "row": row, "command": command}, actor, shows, detail)
+    def show(self, environment_id: int, session: str, label: str, icon: str, tone: str = "", detail: str = "", row: Ref | None = None, kind: str = "card", actor: Actor = Actor.system(), key: str = "", command: str = "", *, shows: CardKind) -> Message:
+        return self.keyed(environment_id, key, label, {"kind": kind, "session": session, "icon": icon, "tone": tone, "row": str(row) if row else "", "command": command}, actor, shows, detail)
 
     @staticmethod
     def creation_key(row: Model) -> str:

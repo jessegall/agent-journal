@@ -6,6 +6,7 @@ import threading
 import time as timing
 from datetime import datetime, timezone
 from pathlib import Path
+from journal.models.support.ref import Ref
 
 from journal.config import Config
 from journal.chat.cards import Cards
@@ -55,7 +56,7 @@ class CheckRunner:
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL_LINES:])
         for agent in self.agents.all_agents():
             if agent.state != Ended.name:
-                self.cards.show(agent.environment_id, agent.session, f"Check {check_row.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{check_row.id}", shows=CardKind.CHECKS)
+                self.cards.show(agent.environment_id, agent.session, f"Check {check_row.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, Ref.build(check_row), shows=CardKind.CHECKS)
         return check_row
 
     def executed(self, check: Check, report: Path, actor: Actor) -> FinishedRun:
