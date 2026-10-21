@@ -28,7 +28,7 @@ class SupervisorLink:
         self._viewer_keyed_at: dict[int, float] = {}
 
     def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
-        if self.typed.is_off(environment_id):
+        if self.typed.is_disabled(environment_id):
             return
         marked = TypedLine.cut(f"{MARK} {' '.join(line.split())}")
         if self.is_busy(environment_id):
@@ -38,13 +38,23 @@ class SupervisorLink:
         self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": after})
 
     def is_busy(self, environment_id: int) -> bool:
-        return self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds())
+        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_within_window(environment_id, self.batch_seconds())
 
-    def switch_off(self, environment_id: int) -> None:
-        self.typed.switch_off(environment_id)
+    def disable(self, environment_id: int) -> None:
+        self.typed.disable(environment_id)
 
-    def switch_on(self, environment_id: int) -> None:
-        self.typed.switch_on(environment_id)
+    def enable(self, environment_id: int) -> None:
+        self.typed.enable(environment_id)
+
+    def clear(self, environment_id: int) -> None:
+        self.typed.clear(environment_id)
+
+    def pause(self, environment_id: int) -> None:
+        self.typed.pause(environment_id)
+
+    def resume(self, environment_id: int) -> None:
+        self.typed.resume(environment_id)
+        self.release(environment_id)
 
     def release(self, environment_id: int) -> None:
         if self.is_busy(environment_id):

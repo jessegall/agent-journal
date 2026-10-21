@@ -43,7 +43,8 @@
         "StateHearsUpdatedDetector",
         "StateHearsModelEventDetector",
         "FeatureListenerSpeaksDetector",
-        "DispatchOutsideFunnelsDetector"
+        "DispatchOutsideFunnelsDetector",
+        "LifecycleHandlerNotFirstDetector"
     ],
     "parallel": 2,
     "configure": {

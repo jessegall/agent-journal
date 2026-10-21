@@ -9,23 +9,36 @@ MARK = "[journal]"
 
 
 class TypedLines:
-    """The lines typed to the agents and not yet seen back as a prompt: a line is confirmed by the prompt that carries its words, and until then it may have been lost. A line for an agent with one still unconfirmed is held, since a line typed while the agent holds another in its queue lands in its prompt box and its Enter only breaks the line. An environment switched off drops every line until it is switched on: what the agent missed, the look at its next start tells it."""
+    """The lines typed to the agents and not yet seen back as a prompt: a line is confirmed by the prompt that carries its words, and until then it may have been lost. A line for an agent with one still unconfirmed is held, since a line typed while the agent holds another in its queue lands in its prompt box and its Enter only breaks the line. An environment paused queues every line until it is resumed; one disabled drops every line until it is enabled; clear empties its queue: what the agent missed, the look at its next start tells it."""
 
     def __init__(self) -> None:
         self._waiting: list[TypedLine] = []
         self._held: list[HeldLine] = []
         self._recent: list[TypedLine] = []
         self._sent_at: dict[int, float] = {}
-        self._off_ids: set[int] = set()
+        self._disabled_ids: set[int] = set()
+        self._paused_ids: set[int] = set()
 
-    def switch_off(self, environment_id: int) -> None:
-        self._off_ids.add(environment_id)
+    def disable(self, environment_id: int) -> None:
+        self._disabled_ids.add(environment_id)
 
-    def switch_on(self, environment_id: int) -> None:
-        self._off_ids.discard(environment_id)
+    def enable(self, environment_id: int) -> None:
+        self._disabled_ids.discard(environment_id)
 
-    def is_off(self, environment_id: int) -> bool:
-        return environment_id in self._off_ids
+    def is_disabled(self, environment_id: int) -> bool:
+        return environment_id in self._disabled_ids
+
+    def pause(self, environment_id: int) -> None:
+        self._paused_ids.add(environment_id)
+
+    def resume(self, environment_id: int) -> None:
+        self._paused_ids.discard(environment_id)
+
+    def is_paused(self, environment_id: int) -> bool:
+        return environment_id in self._paused_ids
+
+    def clear(self, environment_id: int) -> None:
+        self._held = [h for h in self._held if h.environment_id != environment_id]
 
     def is_within_window(self, environment_id: int, seconds: float) -> bool:
         return timing.time() - self._sent_at.get(environment_id, 0.0) < seconds

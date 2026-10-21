@@ -1251,16 +1251,22 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
     write(app)
     agents, link = app.container.get(Agents), app.container.get(SupervisorLink)
     assert agents.for_session("s1").tool_uses == 2
+    link.type(1, "first")
+    link.type(1, "held behind the first")
+    assert sent == ["[journal] first"] and len(link.typed._held) == 1, "a line within the batch window queues"
     assert hook(app, "PreCompact")[0] == 200
     assert agents.for_session("s1").stack[-1]["state"] == "compacting" and agents.for_session("s1").tool_uses == 0, "the compaction pushes its state and sets the count back to zero"
     link.type(1, "a dump arrived")
     link.type(1, "the wait ended")
     link.release(1)
-    assert sent == [] and link.typed.held_as_one(1) is None, "the typist is off while compacting: a line is dropped, not queued, since the look after the compaction tells the agent what it missed"
+    assert sent == ["[journal] first"] and link.typed.held_as_one(1) is None, "the typist is disabled while compacting: its queue is emptied and a line is dropped, not queued, since the look after the compaction tells the agent what it missed"
     hook(app, "SessionStart", source="compact")
-    assert agents.for_session("s1").stack[-1]["state"] != "compacting" and sent == []
+    assert agents.for_session("s1").stack[-1]["state"] != "compacting" and sent == ["[journal] first"]
+    link.typed.typed(1, "")
+    link.typed._sent_at[1] = 0.0
+    link.typed._waiting.clear()
     link.type(1, "a wait ended")
-    assert sent == ["[journal] a wait ended"], "and on again once the state left"
+    assert sent == ["[journal] first", "[journal] a wait ended"], "and enabled again once the state left"
 
 
 def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_and_its_nudges_name_it():

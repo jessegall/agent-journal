@@ -1,0 +1,45 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "nameMatches": "^on_(enter|exit)$"
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "BaseState"
+                        }
+                    ]
+                }
+            },
+            {
+                "previous": {
+                    "is": "function"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "previous": {
+                    "nameMatches": "^on_enter$"
+                }
+            },
+            {
+                "file": ".commandments/custom/samples/**/righteous/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "lifecycle-handler-not-first",
+        "description": "A state's on_enter or on_exit sits below another method, so what the state does to the engine as it comes and goes is not read first.",
+        "rule": "Always put a state's lifecycle handlers, on_enter and on_exit, first in its class, before any other method.",
+        "skill": "stack-machine"
+    }
+}
