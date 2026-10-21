@@ -13,13 +13,13 @@ from journal.repositories.links import Links
 from journal.repositories.phases import Phases
 from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
-from journal.repositories.tasks import WAIT_LINK, Tasks
+from journal.repositories.tasks import PLAN_LINK, WAIT_LINK, Tasks
 from journal.repositories.workers import Workers
 from journal.models.phase_tasks import PhaseTasks
 from journal.models.plan_tree import PlanTree
 from journal.models.support.ref import Ref
 
-PLAN_LINK = "in_plan"
+
 PHASE_TASK_LINK = "phase_of"
 PHASE_LINK = "in_phase"
 

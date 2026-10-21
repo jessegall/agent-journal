@@ -12,11 +12,11 @@ class MigratedRows(Repository[MigratedRow]):
     model = MigratedRow
 
     def is_imported(self, source: str) -> bool:
-        return self.connection.one("SELECT 1 AS found FROM migrated_rows WHERE source = ?", (source,)) is not None
+        return bool(self.all_matching(source=source))
 
     def imported_ref(self, source: str) -> Ref | None:
-        rows = self.connection.one("SELECT target FROM migrated_rows WHERE source = ?", (source,))
-        return None if rows is None else Ref.parse(rows["target"])
+        rows = self.all_matching(source=source)
+        return Ref.parse(rows[0].target) if rows else None
 
     def referred(self, environment: str, ref: str) -> Ref | None:
         kind, _, n = ref.partition(":")

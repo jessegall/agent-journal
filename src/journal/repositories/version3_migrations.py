@@ -6,4 +6,4 @@ class Version3Migrations(Repository[Version3Migration]):
     model = Version3Migration
 
     def current(self) -> Version3Migration:
-        return next(iter(self.selected("1 ORDER BY id DESC LIMIT 1")), Version3Migration())
+        return next(iter(self.selected(self.query().order_descending("id").limit(1))), Version3Migration())

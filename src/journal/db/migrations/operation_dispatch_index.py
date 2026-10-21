@@ -12,4 +12,4 @@ class OperationDispatchIndex(Migration):
 
     def apply(self, connection: Connection) -> None:
         connection.execute("DROP INDEX IF EXISTS entries_dispatches")
-        connection.execute(f"CREATE INDEX entries_dispatches ON entries (environment_id, id) WHERE {DISPATCHES}")
+        connection.execute(f"CREATE INDEX entries_dispatches ON entries (environment_id, id) WHERE {DISPATCHES.clause()}")

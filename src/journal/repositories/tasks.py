@@ -18,6 +18,9 @@ from journal.repositories.scoped_repository import ScopedRepository
 
 WAIT_LINK = "waits_on"
 CURRENT_TASK_LINK = "in_hand"
+PLAN_LINK = "in_plan"
+USER_PREFIX = "user:"
+CLOSED = (TaskState.FINISHED, TaskState.CANCELLED)
 
 
 class Tasks(ScopedRepository[Task]):
@@ -107,13 +110,12 @@ class Tasks(ScopedRepository[Task]):
             self.links.save(Link(source=holder, target=task, kind=CURRENT_TASK_LINK), actor)
 
     def unfinished_count(self) -> int:
-        return self.count("state NOT IN (?, ?) AND NOT EXISTS (SELECT 1 FROM links WHERE links.kind = 'in_plan' AND links.source = 'tasks:' || tasks.id)",
-                               (TaskState.FINISHED.value, TaskState.CANCELLED.value))
+        planned = self.links.query().filter(kind=PLAN_LINK).filter_ref("source", self.query())
+        return self.counted(self.query().filter_unlisted("state", CLOSED).filter_absent(planned))
 
     def unviewed(self) -> int:
-        return self.count("state NOT IN (?, ?) AND (creator IS NULL OR creator NOT LIKE 'user:%')", (TaskState.FINISHED.value, TaskState.CANCELLED.value))
+        return self.counted(self.query().filter_unlisted("state", CLOSED).filter_lacking_prefix("creator", USER_PREFIX))
 
     def shown(self) -> list[Task]:
-        finished = (TaskState.FINISHED.value, TaskState.CANCELLED.value)
-        unfinished = self.selected("state NOT IN (?, ?) ORDER BY id", (*finished,))
-        return sorted([*unfinished, *self.newest("state IN (?, ?)", (*finished,))], key=lambda t: t.row_id)
+        unfinished = self.selected(self.query().filter_unlisted("state", CLOSED).order("id"))
+        return sorted([*unfinished, *self.newest(self.query().filter_listed("state", CLOSED))], key=lambda t: t.row_id)

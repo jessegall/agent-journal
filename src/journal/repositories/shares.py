@@ -13,4 +13,4 @@ class Shares(ScopedRepository[Share]):
 
     def all_open(self) -> list[Share]:
         time = datetime.now(timezone.utc)
-        return [share for share in self.selected_globally("1 ORDER BY id") if share.opens(time)]
+        return [share for share in self.selected_globally(self.query().order("id")) if share.opens(time)]

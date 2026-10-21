@@ -23,63 +23,59 @@ class Messages(ScopedRepository[Message]):
         self.reactions, self.links = reactions, links
 
     def unread(self) -> list[Message]:
-        return self.selected("author = ? AND read_at IS NULL ORDER BY id", (Author.USER.value,))
+        return self.selected(self.query().filter(author=Author.USER).filter_null("read_at").order("id"))
 
     def last_user_message(self) -> Message | None:
-        return next((m for m in self.selected("author = ? ORDER BY id DESC LIMIT 20", (Author.USER.value,)) if not m.is_terminal_line), None)
+        return next((m for m in self.selected(self.query().filter(author=Author.USER).order_descending("id").limit(20)) if not m.is_terminal_line), None)
 
     def unanswered(self) -> list[Message]:
         voiced_at = self.last_message()
-        start = "" if voiced_at is None else " AND read_at > ?"
-        params = (Author.USER.value,) + (() if voiced_at is None else (voiced_at,))
-        read = self.selected(f"author = ? AND read_at IS NOT NULL{start} ORDER BY id", params)
+        query = self.query().filter(author=Author.USER).filter_present("read_at")
+        read = self.selected((query if voiced_at is None else query.filter_greater("read_at", voiced_at)).order("id"))
         return [m for m in read if not m.is_terminal_line and not self.answered(m) and not self.agent_reaction(m)]
 
     def last_message(self) -> str | None:
-        row = self.aggregate("max(created_at) AS time", "author = ? AND acknowledgement = 0 AND coalesce(json_extract(data, '$.kind'), '') != ?", (Author.AGENT.value, Message.THOUGHT))
-        return row["time"] if row else None
+        return self.maximum(self.query().filter(author=Author.AGENT, acknowledgement=False).filter_unequal("data->kind", Message.THOUGHT), "created_at", None)
 
     def answered(self, message: Message) -> bool:
-        replied = self.connection.one("SELECT id FROM messages WHERE reply_target = ? AND author = ? LIMIT 1", (message.id, Author.AGENT.value))
-        return replied is not None or bool(self.links.sources(message, self.ANSWERS))
+        return bool(self.selected_globally(self.query().filter(reply_target=message.id, author=Author.AGENT).limit(1))) or bool(self.links.sources(message, self.ANSWERS))
 
     def agent_reaction(self, message: Message) -> bool:
         return any(r.author == Author.AGENT for r in self.reactions.reactions(message))
 
     def peer_questions(self) -> list[Message]:
-        questions = self.selected("json_extract(data, '$.kind') = ? AND json_extract(data, '$.asks') = 1 ORDER BY id", (Message.PEER,))
-        return [question for question in questions if not self.selected("json_extract(data, '$.sent_to') = ? AND id > ? LIMIT 1", (question.data[Message.PEER], question.id))]
+        questions = self.selected(self.query().filter_json("data->kind", Message.PEER).filter_json("data->asks", 1).order("id"))
+        return [question for question in questions if not self.selected(self.query().filter_json("data->sent_to", question.data[Message.PEER]).filter_greater("id", question.id).limit(1))]
 
     def sent_with(self, key: str) -> list[Message]:
-        return self.selected("idempotency = ? ORDER BY id LIMIT 1", (key,))
+        return self.selected(self.query().filter(idempotency=key).order("id").limit(1))
 
     def window(self, last: int, previous: int = 0, following: int = 0) -> list[Message]:
-        clause, params = ["id > ?"], [following]
+        query = self.query().filter_greater("id", following)
         if previous:
-            clause.append("id < ?")
-            params.append(previous)
-        return list(reversed(self.selected(f"{' AND '.join(clause)} ORDER BY id DESC LIMIT ?", (*params, last))))
+            query = query.filter_less("id", previous)
+        return list(reversed(self.selected(query.order_descending("id").limit(last))))
 
     def changes(self, time: datetime) -> list[Message]:
-        return self.selected("updated_at > ? ORDER BY id LIMIT 500", (time.isoformat(),))
+        return self.selected(self.query().filter_greater("updated_at", time).order("id").limit(500))
 
     def unviewed(self) -> int:
-        return self.count("author = ? AND read_at IS NULL", (Author.AGENT.value,))
+        return self.counted(self.query().filter(author=Author.AGENT).filter_null("read_at"))
 
     def visitor_messages(self, share_id: int) -> list[Message]:
-        return self.selected("json_extract(data, '$.share') = ? ORDER BY id", (share_id,))
+        return self.selected(self.query().filter_json("data->share", share_id).order("id"))
 
     def keyed(self, key: str, actor: Actor) -> list[Message]:
-        return self.selected("json_extract(data, '$.key') = ? AND creator = ?", (key, actor.stamp))
+        return self.selected(self.query().filter_json("data->key", key).filter(creator=actor))
 
     def with_key(self, key: str) -> list[Message]:
-        return self.selected("json_extract(data, '$.key') = ?", (key,))
+        return self.selected(self.query().filter_json("data->key", key))
 
     def keyed_all(self, key: str, actor: Actor) -> list[Message]:
-        return self.selected_globally("json_extract(data, '$.key') = ? AND creator = ?", (key, actor.stamp))
+        return self.selected_globally(self.query().filter_json("data->key", key).filter(creator=actor))
 
     def replies(self, message: Message) -> list[Message]:
-        matched = self.selected("reply_target = ? AND author = ? ORDER BY id", (message.id, Author.AGENT.value))
+        matched = self.selected(self.query().filter(reply_target=message.id, author=Author.AGENT).order("id"))
         linked = [self.find(ref.id) for ref in self.links.sources(message, self.ANSWERS)]
         return sorted([*matched, *linked], key=lambda m: m.row_id)
 
@@ -88,16 +84,16 @@ class Messages(ScopedRepository[Message]):
         return replies[0] if replies else None
 
     def recent_replies(self, time: datetime) -> list[Message]:
-        return self.selected("author = ? AND reply_target IS NOT NULL AND created_at >= ? ORDER BY id", (Author.AGENT.value, time.isoformat()))
+        return self.selected(self.query().filter(author=Author.AGENT).filter_present("reply_target").filter_greater_equal("created_at", time).order("id"))
 
     def reply_text(self, n: int, text: str) -> list[Message]:
-        return self.selected("reply_target = ? AND author = ? AND text = ?", (n, Author.AGENT.value, text.strip()))
+        return self.selected(self.query().filter(reply_target=n, author=Author.AGENT, text=text.strip()))
 
     def recent(self, last: int) -> list[Message]:
         return self.window(last)
 
     def thoughts(self, session: str, last: int = 60) -> list[Message]:
-        rows = self.selected("creator = ? AND json_extract(data, '$.kind') = ? ORDER BY id DESC LIMIT ?", (Actor.agent(session).stamp, Message.THOUGHT, last))
+        rows = self.selected(self.query().filter(creator=Actor.agent(session)).filter_json("data->kind", Message.THOUGHT).order_descending("id").limit(last))
         return list(reversed(rows))
 
     def read(self, message: Message, actor: Actor, tool_use: int) -> Message:

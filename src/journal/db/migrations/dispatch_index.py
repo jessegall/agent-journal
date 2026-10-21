@@ -11,4 +11,4 @@ class DispatchIndex(Migration):
     number: ClassVar[int] = 11
 
     def apply(self, connection: Connection) -> None:
-        connection.execute(f"CREATE INDEX IF NOT EXISTS entries_dispatches ON entries (environment_id, id) WHERE {DISPATCHES}")
+        connection.execute(f"CREATE INDEX IF NOT EXISTS entries_dispatches ON entries (environment_id, id) WHERE {DISPATCHES.clause()}")

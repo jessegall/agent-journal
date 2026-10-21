@@ -6,7 +6,7 @@ class Subagents(ScopedRepository[Subagent]):
     model = Subagent
 
     def session_subagents(self, session: str) -> list[Subagent]:
-        return self.selected("dispatcher = ? ORDER BY id", (session,))
+        return self.selected(self.query().filter(dispatcher=session).order("id"))
 
     def is_empty(self) -> bool:
-        return not self.selected_globally("1 LIMIT 1")
+        return not self.selected_globally(self.query().limit(1))

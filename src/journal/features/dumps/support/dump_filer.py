@@ -15,6 +15,7 @@ from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.repositories.plans import Plans
 from journal.repositories.reports import Reports
+from journal.repositories.rows import Rows
 from journal.repositories.tasks import Tasks
 
 LABEL_CHARACTERS = 40
@@ -29,8 +30,8 @@ TABLES = {"doc": "docs", "report": "reports", "todo": "tasks", "task": "tasks", 
 class DumpFiler:
     """What is done to a dump: the agent's notes on its items and the user's choices on it. The command and the viewer both come here."""
 
-    def __init__(self, dumps: Dumps, links: Links, messages: Messages, docs: Docs, reports: Reports, tasks: Tasks, plans: Plans) -> None:
-        self.dumps, self.links, self.messages = dumps, links, messages
+    def __init__(self, dumps: Dumps, links: Links, messages: Messages, docs: Docs, reports: Reports, tasks: Tasks, plans: Plans, rows: Rows) -> None:
+        self.dumps, self.links, self.messages, self.rows = dumps, links, messages, rows
         self.removable: dict[str, Docs | Reports | Tasks | Plans] = {"docs": docs, "reports": reports, "tasks": tasks, "plans": plans}
 
     def create(self, brief: str, actor: Actor) -> Dump:
@@ -55,7 +56,7 @@ class DumpFiler:
         if set(owned) - set(rows):
             raise Rejection("--added names rows you also list in refs")
         dump = self.dumps.find(n)
-        missing = [ref for ref in rows if not self.links.is_row(Ref.parse(ref))]
+        missing = [ref for ref in rows if not self.rows.is_row(Ref.parse(ref))]
         if missing:
             raise Rejection(f"not a row here: {', '.join(missing)}")
         for ref in rows:
@@ -189,7 +190,7 @@ class DumpFiler:
 
     def deleted(self, ref: Ref, dump: Dump, actor: Actor) -> bool:
         repository = self.removable.get(ref.type)
-        if repository is None or not self.links.is_row(ref):
+        if repository is None or not self.rows.is_row(ref):
             return False
         if repository.find(ref.id).creation_time < dump.creation_time:
             return False

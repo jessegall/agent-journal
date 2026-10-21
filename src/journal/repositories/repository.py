@@ -5,6 +5,7 @@ from typing import Callable, Generic, TypeVar
 from journal.models.support.column import Column
 from journal.repositories.load_tally import LoadTally
 from journal.db.connection import Connection
+from journal.db.query import Query
 from journal.db.schema import Schema
 from journal.events.models.created import Created
 from journal.events.models.creating import Creating
@@ -17,6 +18,7 @@ from journal.events.rows.row_event import RowEvent
 from journal.events.models.updating import Updating
 from journal.events.bus import Bus
 from journal.support.actor import Actor
+from journal.models.link import Link
 from journal.models.model import Model
 from journal.models.support.ref import Ref
 from journal.support.title import Title
@@ -38,36 +40,45 @@ class Repository(Generic[M]):
         self.connection, self.bus = connection, bus
         self.columns: tuple[Column, ...] = Schema.columns(self.model)
         self.table = self.model.table()
+        self.link_query = Query.build(Link)
+
+    def query(self) -> Query:
+        return Query(self.table, self.columns)
 
     def find(self, id: int) -> M:
-        row = self.connection.one(f"SELECT * FROM {self.table} WHERE id = ?", (id,))
-        if row is None:
+        rows = self._loaded(self.query().filter(id=id))
+        if not rows:
             raise MissingRow(self.table, id)
-        return self._load(row)
+        return rows[0]
 
     def all(self) -> list[M]:
-        return self.newest("1", ())
+        return self.newest(self.query())
 
     def rows(self) -> list[M]:
-        return self.selected("1 ORDER BY id")
+        return self.selected(self.query().order("id"))
 
-    def selected(self, clause: str, params: tuple = ()) -> list[M]:
-        return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE {clause}", params)]
+    def selected(self, query: Query) -> list[M]:
+        return self._loaded(query)
+
+    def purged(self, query: Query) -> None:
+        self.connection.execute(*query.delete())
 
     def linked(self, kind: str) -> dict[int, list[Ref]]:
-        return self._linked("kind = ? AND ", (kind,))
+        return self._linked(self.link_query.filter(kind=kind))
 
     def linked_rows(self) -> dict[int, list[Ref]]:
-        return self._linked("", ())
+        return self._linked(self.link_query)
 
-    def _linked(self, clause: str, params: tuple) -> dict[int, list[Ref]]:
+    def _linked(self, query: Query) -> dict[int, list[Ref]]:
         rows: dict[int, list[Ref]] = {}
-        for link in self.connection.all(f"SELECT source, target FROM links WHERE {clause}source >= ? AND source < ? GROUP BY source, target ORDER BY MIN(id)", (*params, f"{self.table}:", f"{self.table};")):
-            rows.setdefault(Ref.parse(link["source"]).id, []).append(Ref.parse(link["target"]))
+        for link in self.connection.all(*query.filter_prefix("source", f"{self.table}:").order("id").select()):
+            targets = rows.setdefault(Ref.parse(link["source"]).id, [])
+            if (target := Ref.parse(link["target"])) not in targets:
+                targets.append(target)
         return rows
 
     def matching(self, **fields) -> list[M]:
-        return self.newest(*self.clause(fields))
+        return self.newest(self.query().filter(**fields))
 
     def single(self, **fields) -> M:
         rows = self.matching(**fields)
@@ -76,38 +87,29 @@ class Repository(Generic[M]):
         return rows[0]
 
     def all_matching(self, **fields) -> list[M]:
-        clause, params = self.clause(fields)
-        return self.selected(f"{clause} ORDER BY id", params)
+        return self.selected(self.query().filter(**fields).order("id"))
 
-    def newest(self, clause: str, params: tuple) -> list[M]:
-        return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE_ROWS))))
+    def newest(self, query: Query) -> list[M]:
+        return list(reversed(self.selected(query.order_descending("id").limit(PAGE_ROWS))))
 
     def numbered(self, ids) -> list[M]:
         ids = list(ids)
         if not ids:
             return []
-        rows = {row.id: row for row in self.selected(f"id IN ({', '.join('?' for _ in ids)})", tuple(ids))}
+        rows = {row.id: row for row in self.selected(self.query().filter_listed("id", ids))}
         return [rows[n] for n in ids if n in rows]
 
     def search(self, terms: list[str]) -> list[M]:
-        clause, params = self.matching_words(terms)
-        return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, MATCH_ROWS))
-
-    def matching_words(self, terms: list[str]) -> tuple[str, tuple]:
-        entry = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"
-        escaped = [word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") for word in terms]
-        return " AND ".join(entry for _ in terms), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
-
-    def clause(self, fields: dict) -> tuple[str, tuple]:
-        return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).sql(value) for name, value in fields.items())
+        query = self.query()
+        for word in terms:
+            query = query.filter_alternatives(*(self.query().filter_containing(name, word) for name in self.model.text_fields))
+        return self.selected(query.order_descending("id").limit(MATCH_ROWS))
 
     def page(self, limit: int, previous: int | None = None, **fields) -> list[M]:
-        clauses = [f"{name} = ?" for name in fields]
-        params = [self._column(name).sql(value) for name, value in fields.items()]
+        query = self.query().filter(**fields)
         if previous is not None:
-            clauses.append("id < ?")
-            params.append(previous)
-        return self.selected(f"{' AND '.join(clauses) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
+            query = query.filter_less("id", previous)
+        return self.selected(query.order_descending("id").limit(limit))
 
     def scoped_page(self, limit: int, previous: int | None = None) -> list[M]:
         return self.page(limit, previous)
@@ -130,9 +132,7 @@ class Repository(Generic[M]):
         with self.connection.transaction():
             prior_row = self.find(row.row_id)
             stamped = prior_row.with_(**fields, updated_at=self._time(), updater=actor)
-            names = [*fields, "updated_at", "updater"]
-            values = tuple(self._column(name).sql(getattr(stamped, name)) for name in names)
-            self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
+            self.connection.execute(*self.query().filter(id=stamped.id).update(**{name: getattr(stamped, name) for name in (*fields, "updated_at", "updater")}))
             self.stored()
             self.bus.dispatch(Updated(model=stamped, actor=actor, previous=prior_row))
             return stamped
@@ -152,7 +152,7 @@ class Repository(Generic[M]):
     def delete(self, row: M, actor: Actor) -> None:
         with self.connection.transaction():
             self.bus.dispatch(Deleting(model=row, actor=actor))
-            self.connection.execute(f"DELETE FROM {self.table} WHERE id = ?", (row.id,))
+            self.purged(self.query().filter(id=row.id))
             self.stored()
             self.bus.dispatch(Deleted(model=row, actor=actor))
             self.dispatched(row, actor)
@@ -164,9 +164,7 @@ class Repository(Generic[M]):
         Title.check_target(row)
         stamped = row.with_(created_at=time, creator=actor, updated_at=time, updater=actor)
         self.bus.dispatch(Creating(model=stamped, actor=actor))
-        names = [column.name for column in self.columns if column.name != "id"]
-        values = tuple(column.sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
-        cursor = self.connection.execute(f"INSERT INTO {self.table} ({', '.join(names)}) VALUES ({', '.join('?' for _ in names)})", values)
+        cursor = self.connection.execute(*self.query().insert(**self._column_values(stamped)))
         created = stamped.with_(id=cursor.lastrowid)
         self.stored()
         self.bus.dispatch(Created(model=created, actor=actor))
@@ -177,9 +175,7 @@ class Repository(Generic[M]):
         prior_row = self.find(row.row_id)
         Title.check_target(row, prior_row)
         self.bus.dispatch(Updating(model=stamped, actor=actor))
-        names = [column.name for column in self.columns if column.name != "id"]
-        values = tuple(column.sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
-        self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
+        self.connection.execute(*self.query().filter(id=stamped.id).update(**self._column_values(stamped)))
         self.stored()
         self.bus.dispatch(Updated(model=stamped, actor=actor, previous=prior_row))
         return stamped
@@ -192,12 +188,15 @@ class Repository(Generic[M]):
     def stored(self) -> None:
         ...
 
+    def _loaded(self, query: Query) -> list[M]:
+        return [self._load(row) for row in self.connection.all(*query.select())]
+
+    def _column_values(self, row: M) -> dict:
+        return {column.name: getattr(row, column.name) for column in self.columns if column.name != "id"}
+
     def _load(self, row) -> M:
         LoadTally.counted(self.table)
         return self.model(**{column.name: value for column in self.columns if (value := column.parsed(row[column.name])) is not None})
-
-    def _column(self, name: str) -> Column:
-        return next(column for column in self.columns if column.name == name)
 
     @staticmethod
     def _time() -> datetime:

@@ -24,7 +24,7 @@ class Reactions(ScopedRepository[Reaction]):
         return [self.find(ref.id) for ref in self.links.sources(message, REACTS)]
 
     def authored(self, author: Author) -> int:
-        return self.count("author = ?", (author.value,))
+        return self.counted(self.query().filter(author=author))
 
     def toggle(self, message: Message, face: str, author: Author, actor: Actor) -> Reaction | None:
         for reaction in self.reactions(message):

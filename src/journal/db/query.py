@@ -110,8 +110,8 @@ class Query:
     def count(self) -> tuple[str, tuple]:
         return self._read("count(*) AS value")
 
-    def maximum(self, column: str) -> tuple[str, tuple]:
-        return self._read(f"MAX({self._expression(column)}) AS value")
+    def maximum(self, column: str, empty_value) -> tuple[str, tuple]:
+        return self._read(f"COALESCE(MAX({self._expression(column)}), {Condition.literal(empty_value)}) AS value")
 
     def insert(self, **values) -> tuple[str, tuple]:
         names = ", ".join(self._column(name).name for name in values)

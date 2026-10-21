@@ -9,6 +9,7 @@ from journal.models.support.ref import Ref
 from journal.support.rejection import Rejection
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
+from journal.repositories.rows import Rows
 
 COMMENTED = ("tasks", "plans", "docs", "reports", "facts", "rules", "reminders", "questions")
 
@@ -18,8 +19,8 @@ class CommentController(Controller[Message]):
 
     is_timeline = True
 
-    def __init__(self, messages: Messages, links: Links) -> None:
-        self.repository, self.links = messages, links
+    def __init__(self, messages: Messages, links: Links, rows: Rows) -> None:
+        self.repository, self.links, self.references = messages, links, rows
 
     def rows(self) -> list[Message]:
         enabled = self.repository.linked(Messages.COMMENT_LINK)
@@ -38,6 +39,6 @@ class CommentController(Controller[Message]):
 
     def row(self, matched: str) -> Ref:
         kind, _, id = matched.partition(":")
-        if kind not in COMMENTED or not id.isdigit() or not self.links.is_row(Ref(kind, int(id))):
+        if kind not in COMMENTED or not id.isdigit() or not self.references.is_row(Ref(kind, int(id))):
             raise Rejection(f"a comment is written under a task, a plan, a document, a report, a fact, a rule, a reminder or a question that is there, named as tasks:12, not {matched!r}")
         return Ref(kind, int(id))

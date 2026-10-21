@@ -1,3 +1,4 @@
+from journal.db.query import Query
 from journal.support.actor import Actor
 from journal.models.all_models import AllModels
 from journal.models.environment import Environment
@@ -21,5 +22,5 @@ class Environments(Repository[Environment]):
     def wipe(self, environment: Environment, actor: Actor) -> None:
         with self.connection.transaction():
             for model in AllModels.SCOPED:
-                self.connection.execute(f"DELETE FROM {model.table()} WHERE environment_id = ?", (environment.id,))
+                self.purged(Query.build(model).filter(environment_id=environment.id))
             self.delete(environment, actor)

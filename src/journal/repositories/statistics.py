@@ -7,7 +7,7 @@ class Statistics(Repository[Statistic]):
     model = Statistic
 
     def lower(self, prefix: str) -> dict[str, int]:
-        return {row.key: row.value for row in self.selected("key >= ? AND key < ? ORDER BY key", (prefix, prefix + "\uffff"))}
+        return {row.key: row.value for row in self.selected(self.query().filter_prefix("key", prefix).order("key"))}
 
     def counted(self, key: str, actor: Actor) -> Statistic:
         return self.added(key, 1, actor)
@@ -27,7 +27,7 @@ class Statistics(Repository[Statistic]):
 
     def cleared(self, prefix: str, actor: Actor) -> None:
         with self.connection.transaction():
-            for row in self.selected("key >= ? AND key < ?", (prefix, prefix + "\uffff")):
+            for row in self.selected(self.query().filter_prefix("key", prefix)):
                 self.delete(row, actor)
 
     def set(self, key: str, value: int, actor: Actor) -> Statistic:

@@ -16,12 +16,12 @@ class Edits(ScopedRepository[Edit]):
 
     def record(self, edit: Edit, actor: Actor) -> Edit:
         stored = self.save(edit, actor)
-        for old in self.selected("1 ORDER BY id DESC LIMIT -1 OFFSET ?", (EDIT_ROWS,)):
+        for old in self.selected(self.query().order_descending("id").offset(EDIT_ROWS)):
             self.delete(old, actor)
         return stored
 
     def tool_use_edits(self, session: str, tool_use: int) -> list[Edit]:
-        return self.selected("session = ? AND tool_use = ? ORDER BY id", (session, tool_use))
+        return self.selected(self.query().filter(session=session, tool_use=tool_use).order("id"))
 
     def agent_edits(self, session: str, start: float, last: int) -> list[Edit]:
-        return list(reversed(self.selected("session = ? AND time > ? ORDER BY id DESC LIMIT ?", (session, start, last))))
+        return list(reversed(self.selected(self.query().filter(session=session).filter_greater("time", start).order_descending("id").limit(last))))

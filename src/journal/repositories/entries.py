@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from journal.db.query import Query
 from journal.models.entry import Entry
 from journal.support.actor import Actor
 from journal.repositories.scoped_repository import ScopedRepository
@@ -7,102 +8,107 @@ from journal.support.agent_message import AgentMessage
 from journal.support.subagent_dispatch import SubagentDispatch
 
 
-DISPATCHES = f"(kind IN ('SubagentStarted', 'SubagentEnded', 'Stop', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished', 'ToolFailed') AND json_extract(data, '$.call.operation.kind') IN ('{SubagentDispatch.kind}', '{AgentMessage.kind}')))"
+ENTRIES = Query.build(Entry)
+DISPATCHES = ENTRIES.filter_alternatives(
+    ENTRIES.filter_listed("kind", ("SubagentStarted", "SubagentEnded", "Stop", "SessionStarted", "SessionEnded")),
+    ENTRIES.filter_listed("kind", ("ToolStarting", "ToolFinished", "ToolFailed")).filter_listed("data->call->operation->kind", (SubagentDispatch.kind, AgentMessage.kind)),
+).inlined()
+NUDGE = "nudge"
 
 
 class Entries(ScopedRepository[Entry]):
     model = Entry
 
-    def trim(self, newest: int, stored: int) -> int:
-        return self.connection.execute("DELETE FROM entries WHERE id <= ? AND kind != 'nudge'", (newest - stored,)).rowcount
+    def trim(self, newest: int, stored: int) -> None:
+        self.purged(self.query().filter_less_equal("id", newest - stored).filter_unequal("kind", NUDGE))
 
-    def trim_lines(self, stored: int) -> int:
-        return self.connection.execute("DELETE FROM entries WHERE kind = 'nudge' AND id <= (SELECT id FROM entries WHERE kind = 'nudge' ORDER BY id DESC LIMIT 1 OFFSET ?)", (stored,)).rowcount
+    def trim_lines(self, stored: int) -> None:
+        for boundary in self.selected_globally(self.query().filter(kind=NUDGE).order_descending("id").limit(1).offset(stored)):
+            self.purged(self.query().filter(kind=NUDGE).filter_less_equal("id", boundary.row_id))
 
     def last_prompt(self, session: str) -> datetime | None:
-        rows = self.selected("kind = 'PromptSubmitted' AND actor = ? ORDER BY id DESC LIMIT 1", (Actor.agent(session).stamp,))
+        rows = self.selected(self.query().filter(kind="PromptSubmitted", actor=Actor.agent(session)).order_descending("id").limit(1))
         return rows[0].created_at if rows else None
 
     def agent_lines(self, session: str) -> int:
-        return self.count("kind = 'nudge' AND json_extract(data, '$.session') = ?", (session,))
+        return self.counted(self.lines(session))
 
     def last_line(self, session: str, key: str, line: str) -> float:
-        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.time')), 0) AS time", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (session, key, line))
-        return float(row["time"])
+        return float(self.maximum(self.lines(session).filter_json("data->key", key).filter_json("data->line", line), "data->time", 0))
 
     def last_lines(self, session: str, key: str) -> float:
-        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.time')), 0) AS time", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
-        return float(row["time"])
+        return float(self.maximum(self.lines(session).filter_json("data->key", key), "data->time", 0))
 
     def tool_starts(self, session: str, last: int = 500) -> list[Entry]:
-        return self.selected("kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
+        return self.selected(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last))
 
     def output_tool_starts(self, session: str, last: int = 500) -> list[Entry]:
-        return self.selected("kind = 'ToolStarting' AND actor = ? AND (data LIKE '%outputs/%' OR data LIKE '%journal output read %') ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
+        mentions = self.query().filter_alternatives(self.query().filter_containing("data", "outputs/"), self.query().filter_containing("data", "journal output read "))
+        return self.selected(mentions.filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last))
 
     def repeated_commands(self, session: str, minimum: int, last: int = 200) -> list[str]:
         rows = self.connection.all("SELECT command FROM (SELECT json_extract(data, '$.call.command') AS command FROM entries WHERE environment_id = ? AND kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?) WHERE command != '' GROUP BY command HAVING COUNT(*) >= ?", (self.scope.id, Actor.agent(session).stamp, last, minimum))
         return [row["command"] for row in rows]
 
     def tool_ends(self, session: str, last: int = 500) -> list[Entry]:
-        return self.selected("kind IN ('ToolFinished', 'ToolFailed') AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
+        return self.selected(self.query().filter_listed("kind", ("ToolFinished", "ToolFailed")).filter(actor=Actor.agent(session)).order_descending("id").limit(last))
 
     def last_line_entry(self, session: str, keys: tuple[str, ...]) -> Entry | None:
-        thresholds = ", ".join("?" for _ in keys)
-        rows = self.selected(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({thresholds}) ORDER BY id DESC LIMIT 1", (session, *keys))
+        rows = self.selected(self.lines(session).filter_listed("data->key", keys).order_descending("id").limit(1))
         return rows[0] if rows else None
 
     def recent_lines(self, session: str, key: str, entry_id: int) -> list[str]:
-        return [e.data["line"] for e in self.selected("kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND id > ? ORDER BY id", (session, key, entry_id))]
+        return [e.data["line"] for e in self.selected(self.lines(session).filter_json("data->key", key).filter_greater("id", entry_id).order("id"))]
 
     def use_lines(self, session: str, key: str, tool_use: int) -> list[str]:
-        return [e.data["line"] for e in self.selected("kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.tool_use') > ? ORDER BY id", (session, key, tool_use))]
+        return [e.data["line"] for e in self.selected(self.lines(session).filter_json("data->key", key).filter_greater("data->tool_use", tool_use).order("id"))]
 
     def nudge_count(self, session: str, keys: tuple[str, ...], tool_use: int) -> int:
-        placeholders = ", ".join("?" for _ in keys)
-        return self.count(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({placeholders}) AND json_extract(data, '$.tool_use') >= ?", (session, *keys, tool_use))
+        return self.counted(self.lines(session).filter_listed("data->key", keys).filter_greater_equal("data->tool_use", tool_use))
 
     def last_kind_id(self, session: str, kind: str) -> int:
-        row = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = ? AND actor = ?", (kind, f"agent:{session}"))
-        return int(row["id"])
+        return self.maximum(self.query().filter(kind=kind, actor=Actor.agent(session)), "id", 0)
 
     def recent_line_entries(self, session: str, key: str) -> int:
-        newest = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
-        return self.count("kind = 'nudge' AND json_extract(data, '$.session') = ? AND id > ?", (session, int(newest["id"])))
+        newest = self.maximum(self.lines(session).filter_json("data->key", key), "id", 0)
+        return self.counted(self.lines(session).filter_greater("id", newest))
 
     def kind_entries(self, kind: str, last: int = 50) -> list[Entry]:
-        return self.selected("kind = ? ORDER BY id DESC LIMIT ?", (kind, last))
+        return self.selected(self.query().filter(kind=kind).order_descending("id").limit(last))
 
     def kind_entries_scoped(self, last: int = 400) -> list[Entry]:
-        return self.selected("1 ORDER BY id DESC LIMIT ?", (last,))
+        return self.selected(self.query().order_descending("id").limit(last))
 
     def actor_entries(self, stamp: str, last: int = 200) -> list[Entry]:
-        return self.selected_globally("actor = ? ORDER BY id DESC LIMIT ?", (stamp, last))
+        return self.selected_globally(self.query().filter(actor=stamp).order_descending("id").limit(last))
 
     def last_session_entry(self, session: str) -> Entry | None:
-        rows = self.selected("actor = ? AND kind != 'nudge' ORDER BY id DESC LIMIT 1", (f"agent:{session}",))
+        rows = self.selected(self.query().filter(actor=Actor.agent(session)).filter_unequal("kind", NUDGE).order_descending("id").limit(1))
         return rows[0] if rows else None
 
     def last_id(self) -> int:
-        return self.aggregate("MAX(id) AS id")["id"] or 0
+        return self.maximum(self.query(), "id", 0)
 
     def dispatches(self, session: str) -> list[Entry]:
-        return self.selected(f"json_extract(data, '$.session_id') = ? AND {DISPATCHES} ORDER BY id", (session,))
+        return self.selected(DISPATCHES.filter_json("data->session_id", session).order("id"))
 
     def global_dispatches(self) -> list[Entry]:
-        return self.selected_globally(f"{DISPATCHES} ORDER BY id")
+        return self.selected_globally(DISPATCHES.order("id"))
 
     def agent_calls(self, last: int = 500) -> list[Entry]:
-        return self.selected(f"{DISPATCHES} AND kind = 'ToolStarting' ORDER BY id DESC LIMIT ?", (last,))
+        return self.selected(DISPATCHES.filter(kind="ToolStarting").order_descending("id").limit(last))
 
     def recent_shown(self, id: int) -> list[Entry]:
-        return self.with_project("id > ? ORDER BY id", (id,))
+        return self.with_project(self.query().filter_greater("id", id).order("id"))
 
     def shown_recent(self, last: int) -> list[Entry]:
-        return self.with_project("1 ORDER BY id DESC LIMIT ?", (last,))
+        return self.with_project(self.query().order_descending("id").limit(last))
 
     def recent(self, id: int) -> list[Entry]:
-        return self.selected("id > ? ORDER BY id", (id,))
+        return self.selected(self.query().filter_greater("id", id).order("id"))
+
+    def lines(self, session: str) -> Query:
+        return self.query().filter(kind=NUDGE).filter_json("data->session", session)
 
     def _placed(self, row: Entry) -> Entry:
         return row
