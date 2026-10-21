@@ -626,7 +626,7 @@ def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: Ap
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
     app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller("main", "c1"))
     workers = app.container.get(Workers)
-    worker = workers.save(workers.find(1).running_as(1, timing.time() - 5), Actor.system())
+    worker = workers.save(workers.find(1).with_(worktree=True).running_as(1, timing.time() - 5), Actor.system())
     session = "01a15a25-535e-7cc2-993e-d38deedb6b40"
     rollout = tmp_path / "home" / ".codex" / "sessions" / date.today().strftime("%Y/%m/%d") / f"rollout-2026-10-20T18-29-18-{session}.jsonl"
     rollout.parent.mkdir(parents=True)
@@ -6278,3 +6278,26 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     deferred.drain()
     after = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
     assert "output 1" not in after and not outputs.find(1).is_watched, "the watch ends with its command"
+def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_dispatchers_transcript(app: App, tmp_path, monkeypatch):
+    import threading
+    from journal.providers.claude import Claude
+    from journal.repositories.workers import Workers
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+    dispatcher = home / ".claude" / "projects" / Claude.folder_name(app.config.root) / "dispatcher-session.jsonl"
+    dispatcher.parent.mkdir(parents=True)
+    hook(app, "SessionStart")
+    console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
+    console.run(["worker", "dispatch", "Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    printed = """echo '{"type": "system", "session_id": "worker-session"}'; sleep 1; echo '{"type": "result", "result": "hello said", "session_id": "worker-session"}'"""
+    running = threading.Thread(target=runner.run, args=(workers.find(1), ["sh", "-c", printed], Actor.agent("s1")))
+    running.start()
+    end = timing.time() + 5
+    while timing.time() < end and workers.find(1).resume != "worker-session":
+        timing.sleep(0.05)
+    assert workers.find(1).resume == "worker-session" and workers.find(1).is_running(), "the session is kept the moment the worker prints it, while it still works"
+    running.join(10)
+    assert workers.find(1).state == WorkerState.REPORTED and workers.find(1).resume == "worker-session"
+    console.run(["worker", "dispatch", "Mr. Babbage", "say nothing", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    runner.run(workers.find(2), ["sh", "-c", f"echo '{{}}' >> '{dispatcher}'; echo plain words"], Actor.agent("s1"))
+    assert workers.find(2).resume == "" and dispatcher.is_file(), "a worker in the project's own folder never takes the newest transcript there, which is the dispatcher's"

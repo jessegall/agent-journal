@@ -157,15 +157,17 @@ class Claude(Provider):
 
     def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
         resumed = ["--resume", resume] if resume else []
-        return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "json", *resumed]
+        return ["claude", "-p", brief, "--model", model, "--dangerously-skip-permissions", "--output-format", "stream-json", "--verbose", *resumed]
 
     def worker_outcome(self, output: str, err: str) -> WorkerOutcome:
-        try:
-            answer = json.loads(output)
-        except ValueError:
-            return WorkerOutcome(output.strip() or err.strip())
-        report = str(answer.get("result", "")).strip() or err.strip()
-        return WorkerOutcome(report, str(answer.get("session_id", "")), report if answer.get("is_error") else "")
+        answers = [row for row in self.printed_rows(output) if "result" in row]
+        if not answers:
+            return WorkerOutcome(output.strip() or err.strip(), self.printed_session(output, err))
+        report = str(answers[-1]["result"]).strip() or err.strip()
+        return WorkerOutcome(report, str(answers[-1].get("session_id", "")) or self.printed_session(output, err), report if answers[-1].get("is_error") else "")
+
+    def printed_session(self, output: str, err: str) -> str:
+        return next((str(row["session_id"]) for row in self.printed_rows(output) if row.get("session_id")), "")
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
         path = super().wire_hooks(project, script, command)

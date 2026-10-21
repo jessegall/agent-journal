@@ -182,11 +182,13 @@ class Codex(Provider):
         return ["codex", "exec", *resumed, "--json", *self.prompt_flags, *selection, brief]
 
     def worker_outcome(self, output: str, err: str) -> WorkerOutcome:
-        events = [json.loads(line) for line in output.splitlines() if line.startswith("{")]
-        session = next((str(event.get("thread_id", "")) for event in events if event.get("type") == "thread.started"), "")
+        events = self.printed_rows(output)
         replies = [event["item"].get("text", "") for event in events if event.get("type") == "item.completed" and event.get("item", {}).get("type") == "agent_message"]
         errors = [self.error_text(event.get("error", {}).get("message", "")) for event in events if event.get("type") == "turn.failed"]
-        return WorkerOutcome(replies[-1].strip() if replies else err.strip(), session, errors[-1] if errors else "")
+        return WorkerOutcome(replies[-1].strip() if replies else err.strip(), self.printed_session(output, err), errors[-1] if errors else "")
+
+    def printed_session(self, output: str, err: str) -> str:
+        return next((str(event.get("thread_id", "")) for event in self.printed_rows(output) if event.get("type") == "thread.started"), "")
 
     @staticmethod
     def error_text(message: str) -> str:

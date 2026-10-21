@@ -21,6 +21,7 @@ from journal.repositories.environments import Environments
 from journal.support.worktree_failure import WorktreeFailure
 
 TAIL_CHARACTERS = 4000
+SESSION_POLL_SECONDS = 0.5
 TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
 ERROR_STATUS = -3
@@ -61,24 +62,40 @@ class WorkerRunner:
             return
         worker = self.workers.save(worker.running_as(process.pid, time.time()), actor)
         self._running[worker.id] = process
-        try:
-            code = process.wait(timeout=self.remaining_minutes(worker))
-        except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
-            process.wait()
-            code = TIMEOUT_STATUS
+        code = self.waited(worker, process, actor)
         self._running.pop(worker.id, None)
         self.finish(worker, code, actor)
 
     def environment_variables(self, environment: str) -> dict[str, str]:
         excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers())
         return {**{k: v for k, v in os.environ.items() if k not in excluded}, AGENT_SHELL: "1", "JOURNAL_ACTOR": "worker-agent", "JOURNAL_ENV": environment}
+    def waited(self, worker: Worker, process: subprocess.Popen, actor: Actor) -> int:
+        while True:
+            try:
+                return process.wait(timeout=self.wait_step(worker))
+            except subprocess.TimeoutExpired:
+                if self.remaining_seconds(worker) == 0:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    process.wait()
+                    return TIMEOUT_STATUS
+                worker = self.session_recorded(worker, actor)
+
+    def wait_step(self, worker: Worker) -> float | None:
+        remaining = self.remaining_seconds(worker)
+        if worker.resume:
+            return remaining
+        return SESSION_POLL_SECONDS if remaining is None else min(remaining, SESSION_POLL_SECONDS)
+
+    def session_recorded(self, worker: Worker, actor: Actor) -> Worker:
+        output, err = self.outputs(worker)
+        session = self.providers.lookup(worker.provider).printed_session(self.read(output), self.read(err))
+        return self.workers.touch(worker, actor, resume=session) if session else worker
 
     def is_finished(self, worker: Worker, actor: Actor) -> bool:
         if not self.is_running(worker.pid):
             self.finish(worker, END_UNWATCHED, actor)
             return True
-        if self.remaining_minutes(worker) == 0:
+        if self.remaining_seconds(worker) == 0:
             os.killpg(worker.pid, signal.SIGKILL)
             self.finish(worker, TIMEOUT_STATUS, actor)
             return True
@@ -88,18 +105,22 @@ class WorkerRunner:
         output, err = self.outputs(worker)
         provider = self.providers.lookup(worker.provider)
         ended = provider.worker_outcome(self.read(output), self.read(err))
-        resume = ended.session or provider.latest_session(self.place(worker), worker.began)
+        resume = ended.session or self.own_session(worker)
         report = (ended.error or ended.report)[-TAIL_CHARACTERS:] or "(nothing printed)"
         code = code or (ERROR_STATUS if ended.error else 0)
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
-        current = self.workers.find(worker.id).with_(resume=resume or worker.resume)
+        current = self.workers.find(worker.id)
+        current = current.with_(resume=resume or current.resume)
         if current.state == WorkerState.REPORTED:
             self.workers.save(current, actor)
             return
         branch = self.branch.summary(current)
         self.reports.file(current, f"{outcome}\n\n{branch}" if branch else outcome, actor)
 
-    def remaining_minutes(self, worker: Worker) -> float | None:
+    def own_session(self, worker: Worker) -> str:
+        return self.providers.lookup(worker.provider).latest_session(self.place(worker), worker.began) if worker.worktree and worker.began else ""
+
+    def remaining_seconds(self, worker: Worker) -> float | None:
         limit = self.minutes() * 60
         return max(0.0, limit - (time.time() - worker.began)) if limit else None
 
