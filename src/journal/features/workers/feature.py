@@ -7,6 +7,7 @@ from journal.support.option import Option
 from journal.support.skill import Skill
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.listeners.mark_subagents import MarkSubagents
+from journal.features.workers.listeners.worker_cards import WorkerCards
 
 
 class Workers(Feature):
@@ -22,7 +23,7 @@ class Workers(Feature):
     options = (TIMEOUT, MODE, MOST_OUT, MOST_SUBAGENTS)
     commands = (WorkerCommand,)
     seeds = (WorkersAtBoot,)
-    listeners = (MarkSubagents,)
+    listeners = (MarkSubagents, WorkerCards)
     readings = (WorkersReadingsReader,)
     conduct = (WorkersConduct,)
 

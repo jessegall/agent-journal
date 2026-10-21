@@ -1260,6 +1260,7 @@ def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after
 
 
 def test_a_message_read_gets_an_answer_before_the_next_tool_call(app):
+    app.container.get(SettingRows).set("messages.hold_after", 0, Actor.user(1))
     hook(app, "SessionStart")
     app.console().run(["environment", "here"], AGENT)
     app.console().run(["message", "send", "can you look at the footer, the header and the menu before lunch?"], USER)
@@ -1475,6 +1476,7 @@ def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_
 
 
 def test_a_reply_written_before_a_tool_call_reaches_the_chat_at_that_call_and_the_display_hook_adds_no_second(app, monkeypatch, tmp_path):
+    app.container.get(SettingRows).set("messages.hold_after", 0, Actor.user(1))
     import json as j
     from journal.providers.claude import Claude
     from journal.repositories.messages import Messages
@@ -2549,6 +2551,7 @@ def test_the_rules_doc_rules_on_every_state_the_engine_knows(app):
     assert [n for n in names if f"| {n} |" not in table] == [], "every state the engine knows has a ruling in the rules doc"
 
 def test_a_refused_dispatch_leaves_no_running_subagent_behind(app):
+    app.container.get(SettingRows).set("messages.hold_after", 0, Actor.user(1))
     from journal.repositories.environments import Environments
     hook(app, "SessionStart")
     console = app.console()
@@ -5897,3 +5900,24 @@ def test_every_hook_of_every_tool_arrives_is_recorded_and_answered_even_with_a_m
     assert any(m.data.get("peer") == "code-commandments-12" for m in app.container.get(MessageRows).all()), "the message crossed in the transcript reached the chat"
     app.runtime().deferred.drain()
     assert any(m.data.get(Message.SENT_TO) == "code-commandments-12" for m in app.container.get(MessageRows).all()), "the message sent to the other session is a bubble of its own"
+
+
+def test_a_read_message_holds_a_tool_only_after_a_grace_of_tool_uses_with_a_reminder_first(app):
+    """A message read and not answered is said again at the fifth tool use since the read and holds the tenth; a reply starts the count over."""
+    from journal.models.author import Author
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages as MessageRows
+    hook(app, "SessionStart")
+    app.console().run(["environment", "here"], AGENT)
+    app.container.get(MessageRows).save(Message(environment_id=1, author=Author.USER, text="how far is it?"), Actor.user(1))
+    app.console().run(["message", "read", "1"], AGENT)
+    answers = [hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / f"{n}.py")}) for n in range(1, 5)]
+    assert all(status == 200 and "not answered" not in json.dumps(body) for status, body in answers), "four tool uses after the read pass in silence"
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "5.py")})
+    assert status == 200 and "you have not answered message 1 yet" in body["hookSpecificOutput"]["additionalContext"], "the fifth is told the message waits"
+    for n in range(6, 10):
+        assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / f"{n}.py")})[0] == 200
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "10.py")})
+    assert status == 409 and "answer or react to message 1 first" in body["error"], "the tenth waits for the answer"
+    app.console().run(["message", "send", "nearly there", "--reply-to", "1"], AGENT)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "11.py")})[0] == 200, "answered, the tools are free again"

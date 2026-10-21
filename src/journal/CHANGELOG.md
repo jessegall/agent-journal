@@ -4,6 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## Unreleased, on the development branch
 
+- A message the agent has read and not answered holds its tools only after a grace: at the fifth tool use since the read the journal says the message is still unanswered, at the tenth it refuses the tool until the agent answers or reacts, both numbers settings under Messages (messages.nudge_after 5, messages.hold_after 10, both 0 before), and a reply or a face starts the count over.
 - The shell corpus holds twelve thousand more commands agents actually ran, taken from the transcripts of three of the user's projects, scrubbed of secrets, private names and home paths, chains before single commands, and the parser is proved on every one in under a second.
 - The frozen facts a state reads are its Readings, no longer its Snapshot: the class, every feature's part and reader, their files, the event's field, the briefing and the rules document say readings; the edits feature's kept copies of files are FileCopies with last_text, current_text and store.
 - A rule-made event's agent_origin and a dashboard line's section (migration 22) no longer shadow a method of their parents, and two tests stand guard: every hook of every tool kind is recorded and answered while a message from another session sits in the transcript, and no dataclass field in the package shadows a property or a method of its class or a parent.

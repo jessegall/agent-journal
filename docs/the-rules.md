@@ -65,7 +65,7 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | messages | messages.the_user_reacted | the user put {{face}} on message {{n}} | MessagesConduct.on_reaction_given_messages |
 | messages | messages.reply_was_only_a_face | your reply was only {{face}}, so it was not posted | RecordTurn.handle |
 | messages | messages.write_held_until_read | you have {{count}} unread messages | MessagesConduct.on_tool_starting_messages_unread |
-| messages | messages.answer_before_anything_else | answer or react to message {{messages}} before you do anything else | MessagesConduct.on_tool_starting_messages_unanswered |
+| messages | messages.answer_before_anything_else | you have not answered message {{messages}} yet | MessagesConduct.on_tool_starting_messages_unanswered |
 | messages | messages.tools_held_until_answered | answer or react to message {{messages}} first | MessagesConduct.on_tool_starting_messages_unanswered |
 | messages | messages.read_the_words_whole | read the user's words whole: no pipe after `journal message read` or `journal question show` | MessagesConduct.on_tool_starting_messages_read_whole |
 | messages | messages.reply_kept_out_as_replied_already | message {{n}} already has your reply {{reply}}, so this one was kept out of the chat | RecordTurn.unanswered_of |

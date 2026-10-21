@@ -6,6 +6,7 @@ class ChatMark(StrEnum):
 
     SKILLS = "skills"
     SUBAGENTS = "subagents"
+    WORKERS = "workers"
     COMPACTIONS = "compactions"
     MADE = "made"
     STUCK = "stuck"

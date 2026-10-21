@@ -24,8 +24,8 @@ class Messages(Feature):
     title = "Messages"
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
     commands = (MessageCommand,)
-    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses the agent may make after reading a message before it is asked to answer it", 0, unit="tool uses")
-    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses the agent may make after reading a message before its tools wait for the answer; 0 holds the first", 0, unit="tool uses")
+    NUDGE_AFTER = Option("messages.nudge_after", "Ask for an answer after", "Tool uses the agent may make after reading a message before it is told the message is still unanswered", 5, unit="tool uses")
+    HOLD_AFTER = Option("messages.hold_after", "Hold every tool after", "Tool uses the agent may make after reading a message before its tools wait for the answer; 0 holds the first", 10, unit="tool uses")
     SWEEP_AFTER = Option("messages.sweep_after", "Look for missed words older than", "Seconds the hooks have to bring the agent's words to the chat before the transcript is looked through for any they missed", 10, unit="seconds")
     REMIND_EVERY = Option("messages.remind_every", "Name the unread inbox every", "Tool uses between reminders of messages the agent has not read", 3, unit="tool uses")
     HOLD_AFTER_REMINDERS = Option("messages.hold_after_reminders", "Hold the write after", "Reminders of unread messages before the agent's next write waits until it reads them", 5, unit="reminders")
@@ -40,7 +40,7 @@ class Messages(Feature):
     THE_USER_REACTED = Nudge(name, "the_user_reacted", "the user put {{face}} on message {{n}}", "act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it", repeat_after=0)
     REPLY_WAS_ONLY_A_FACE = Nudge(name, "reply_was_only_a_face", "your reply was only {{face}}, so it was not posted", "an emoji on its own is a reaction: `journal message react <n> \"{{face}}\"` puts it on the message it answers; write words when there is something to say", repeat_after=0)
     WRITE_HELD_UNTIL_READ = Nudge(name, "write_held_until_read", "you have {{count}} unread messages", "`journal message unread` before any other write", repeat_after=0)
-    ANSWER_BEFORE_ANYTHING_ELSE = Nudge(name, "answer_before_anything_else", "answer or react to message {{messages}} before you do anything else", "", repeat_after=300, answered_in_chat=True)
+    ANSWER_BEFORE_ANYTHING_ELSE = Nudge(name, "answer_before_anything_else", "you have not answered message {{messages}} yet", "answer or react to it before you go on; your tools wait once you have gone on long enough", repeat_after=300, answered_in_chat=True)
     TOOLS_HELD_UNTIL_ANSWERED = Nudge(name, "tools_held_until_answered", "answer or react to message {{messages}} first", "your tool calls wait until you do", repeat_after=0, answered_in_chat=True)
     READ_THE_WORDS_WHOLE = Nudge(name, "read_the_words_whole", "read the user's words whole: no pipe after `journal message read` or `journal question show`", "run it on its own; every word is for you", repeat_after=0)
     REPLY_KEPT_OUT_AS_REPLIED_ALREADY = Nudge(name, "reply_kept_out_as_replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_after=0)
