@@ -21,7 +21,7 @@ INDEPENDENT_ROLES = ("auditor", "reviewer", "plan-reviewer", "critic")
 
 
 class WorkersConduct(Conduct):
-    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, a dispatch whose brief names files an idle worker touched is held in favour of that worker, a dispatch past its profile's kept workers is held while one of them is idle, retiring an idle worker is held until the repeat says why it cannot be reused, the reports not acted on are named at a stop and on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
+    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, a dispatch whose brief names files an idle worker touched is held in favour of that worker, a dispatch past its profile's kept workers is held while one of them is idle, retiring an idle worker is held until the repeat says why it cannot be reused, the reports not acted on are named at a stop and on the tick, a worker of this agent's quiet for twenty minutes is named once on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
 
     def limit_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
@@ -77,7 +77,9 @@ class WorkersConduct(Conduct):
         return self.none(*report_mentions(event.data))
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
-        return self.none(*report_mentions(event.data))
+        workers = event.data.part(workers_feature())
+        quiet = [workers_feature().QUIET_WORKER.create(n=w.id, name=w.name, minutes=int(w.quiet.amount // 60)) for w in workers.out_workers if w.dispatcher == event.session and w.is_quiet(event.time)]
+        return self.none(*report_mentions(event.data), *quiet)
 
     def on_worker_dispatched(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait

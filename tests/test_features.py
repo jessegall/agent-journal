@@ -6782,3 +6782,24 @@ def test_retiring_a_worker_the_dispatcher_waits_on_stops_it_and_ends_the_wait(ap
     assert machine.current("s1").worker_ids() == (2,), "the wait shrinks to the workers still out"
     console.run(["worker", "stop", "2", "--why", "the engine waits on the boiler"], AGENT)
     assert machine.current("s1").name != "awaiting", "and ends with the last"
+
+
+def test_a_worker_quiet_for_twenty_minutes_is_named_to_its_dispatcher_once(app: App, monkeypatch):
+    from journal.repositories.workers import Workers
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    drive_the_clock(app, monkeypatch)
+    hook(app, "SessionStart")
+    console, workers = app.console(), app.container.get(Workers)
+    console.run(["environment", "overview"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Harrison", "the clock", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    quiet = lambda: [line for line in keystrokes if "has been quiet for 20 minutes" in line]
+    tick_after(app, 19 * 60)
+    app.runtime().deferred.drain()
+    assert quiet() == [], "nineteen minutes is not yet quiet"
+    tick_after(app, 21 * 60)
+    app.runtime().deferred.drain()
+    assert len(quiet()) == 1 and "worker 1, Mr. Harrison" in quiet()[0] and "journal worker notify 1" in quiet()[0]
+    tick_after(app, 25 * 60)
+    app.runtime().deferred.drain()
+    assert len(quiet()) == 1 and workers.find(1).quiet_named, "it is named once for each quiet span"
