@@ -1,9 +1,11 @@
 from datetime import datetime, timezone
 
+from journal.features.tasks.active_task import ActiveTask
 from journal.http.controllers.controller import Controller
 from journal.http.plans.plan_outline import PlanOutline
 from journal.http.plans.plan_timeline import PlanTimeline
 from journal.http.support.request import Request
+from journal.support.caller import Caller
 from journal.support.response import Response
 from journal.models.link import Link
 from journal.models.plan import Plan
@@ -19,8 +21,8 @@ class PlanController(Controller[Plan]):
 
     repository: Plans
 
-    def __init__(self, plans: Plans, tasks: Tasks, links: Links, outline: PlanOutline, timeline: PlanTimeline) -> None:
-        self.repository, self.tasks, self.links, self.outline, self.moments = plans, tasks, links, outline, timeline
+    def __init__(self, plans: Plans, tasks: Tasks, links: Links, outline: PlanOutline, timeline: PlanTimeline, taking: ActiveTask) -> None:
+        self.repository, self.tasks, self.links, self.outline, self.moments, self.taking = plans, tasks, links, outline, timeline, taking
 
     def rows(self) -> list[Plan]:
         return self.repository.scoped()
@@ -47,7 +49,7 @@ class PlanController(Controller[Plan]):
         return Response.json(self.shown(self.repository.approve(self.repository.find(request.number("id")), request.actor)))
 
     def start(self, request: Request) -> Response:
-        return Response.json(self.shown(self.repository.start(self.repository.find(request.number("id")), request.actor)))
+        return Response.json(self.shown(self.repository.start(self.repository.find(request.number("id")), self.taking.holder(Caller.user(request.environment)), request.actor)))
 
     def suspend(self, request: Request) -> Response:
         return Response.json(self.shown(self.repository.postpone(self.repository.find(request.number("id")), request.actor)))

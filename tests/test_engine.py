@@ -697,7 +697,7 @@ def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_fro
     settings = SettingsValue({WorkersFeature.MODE.key: "builder"})
     from journal.features.plans.support.started_plan import StartedPlan
     plans = PlansData(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), remaining_tasks=2, checkpoint_pause=False, checkpoint_phase=0))
-    tasks = TasksData(current_task=7, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=())
+    tasks = TasksData(current_task=7, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=(), agent_tasks=(7, 8))
     data = FeatureData({"plans": plans, "tasks": tasks})
     assert PlansReady().respond(SessionStarted(time=4.0).with_data(data), settings).pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=4.0)
     assert PlansReady().respond(SessionStarted().with_data(FeatureData({"plans": PlansData((), None), "tasks": tasks})), settings).pushed is None
@@ -1084,7 +1084,7 @@ def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_wh
     from journal.events.rows.task_closed import TaskClosed
     from journal.events.rows.task_started import TaskStarted
     auto, manual = SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_LIMIT.key: 50, TasksFeature.FIRST_DELAY.key: 25, TasksFeature.TASK_REMINDER_INTERVAL.key: 25}), SettingsValue({TasksFeature.AUTO.key: False})
-    tasks = TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=())
+    tasks = TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=(), agent_tasks=(3, 7, 8))
     plan = StartedPlan(plan_id=5, next_task=8, started_task=0, started_task_briefing="", tasks=(7, 8), remaining_tasks=1, checkpoint_pause=False, checkpoint_phase=0)
     of = lambda started: FeatureData({"tasks": tasks, "plans": PlansData((), started)})
     following = FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=10.0)
@@ -1284,10 +1284,12 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
 
 def test_a_task_started_outside_the_plan_is_the_task_in_hand_of_the_plan_state_and_its_nudges_name_it():
     from journal.features.plans.states.following_plan import FollowingPlan
+    from journal.features.tasks.support.tasks_data import TasksData
     settings = SettingsValue({})
     following = FollowingPlan(plan_id=19, approved=True)
     assert following.label() == "plan 19, with no task in hand"
-    started = following.respond(TaskStarted(environment_id=1, time=5.0, task_id=1141, title="the developer tab", plan_id=0).with_data(FeatureData({})), settings)
+    held = TasksData(current_task=1141, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=(), agent_tasks=(1141,))
+    started = following.respond(TaskStarted(environment_id=1, time=5.0, task_id=1141, title="the developer tab", plan_id=0).with_data(FeatureData({"tasks": held})), settings)
     assert started.target.task_id == 1141 and started.target.label() == "task 1141" and started.target.logged_at == 5.0, "one task is in hand at a time, so the task started is the plan state's task whether the plan holds it or not"
 
 
@@ -1303,7 +1305,7 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
     from journal.features.workers.states.soloing import Soloing
     from journal.models.open_task import OpenTask
     settings = lambda mode: SettingsValue({Workers.MODE.key: mode, TasksFeature.AUTO.key: True, TasksFeature.LOG_AGE_LIMIT.key: 10})
-    tasks = TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=OpenTask(3, "the footer", "", 0), last_commands=(), open_ids=(3, 4), open_summary="task 3 (the footer), task 4 (the margin)")
+    tasks = TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=OpenTask(3, "the footer", "", 0), last_commands=(), agent_tasks=(7,), open_ids=(3, 4), open_summary="task 3 (the footer), task 4 (the margin)")
     started = StartedPlan(plan_id=2, next_task=3, started_task=0, started_task_briefing="", tasks=(3, 4), remaining_tasks=2, checkpoint_pause=False, checkpoint_phase=0)
     of = lambda plan: FeatureData({"plans": PlansData((), plan), "tasks": tasks})
     from journal.engine.states_catalogue import StatesCatalogue

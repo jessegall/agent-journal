@@ -124,6 +124,21 @@ describe("the tasks dialog", () => {
         expect(inDialog(".task-row.selected").dataset.task).toBe("1");
     });
 
+    test("a started task names the agent that holds it in hand, and an open one names none", async () => {
+        store.rows.tasks = [task(1, "first", {plan_id: 31, state: "started", held_by: "worker 2, Lady Lovelace"}), task(4, "fourth")];
+        await opened();
+        inDialog('.task-row[data-task="1"]').click();
+        await flush();
+        const held = [...document.body.querySelectorAll(".task-inspector .fact")].find((f) => f.querySelector(".label").textContent === "Held by");
+        expect(held.querySelector(".value").textContent).toBe("worker 2, Lady Lovelace");
+        app.unmount();
+        store.rows.tasks = [task(4, "fourth")];
+        await opened();
+        inDialog('.task-row[data-task="4"]').click();
+        await flush();
+        expect([...document.body.querySelectorAll(".task-inspector .fact .label")].map((l) => l.textContent)).not.toContain("Held by");
+    });
+
     test("blocking a task offers no task that already waits on it and posts the one picked", async () => {
         await opened();
         inDialog('.task-row[data-task="1"]').click();

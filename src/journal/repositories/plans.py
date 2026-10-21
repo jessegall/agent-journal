@@ -16,6 +16,7 @@ from journal.repositories.tasks import WAIT_LINK, Tasks
 from journal.repositories.workers import Workers
 from journal.models.phase_tasks import PhaseTasks
 from journal.models.plan_tree import PlanTree
+from journal.models.support.ref import Ref
 
 PLAN_LINK = "in_plan"
 PHASE_TASK_LINK = "phase_of"
@@ -128,7 +129,7 @@ class Plans(ScopedRepository[Plan]):
     def checkpoint_plans(self, plan: Plan) -> PhaseTasks | None:
         return plan.checkpoint_phase(self.phased(plan))
 
-    def start(self, plan: Plan, actor: Actor) -> Plan:
+    def start(self, plan: Plan, holder: Ref | None, actor: Actor) -> Plan:
         time = datetime.now(timezone.utc)
         tree = self.tree(plan)
         if plan.startable().is_finished(list(tree.tasks)):
@@ -136,9 +137,10 @@ class Plans(ScopedRepository[Plan]):
         task = self.resumable_task(tree)
         if task is None:
             return self.save(plan.started_without_task(time.timestamp()), actor)
-        self.tasks.refuse_second(task.started(time))
+        following = task.plan_started(time, plan.row_id)
+        self.tasks.assign_holder(following, holder, actor)
         started = self.save(plan.started(task, time.timestamp()), actor)
-        self.tasks.save(task.plan_started(time, plan.row_id), actor)
+        self.tasks.save(following, actor)
         return started
 
     def postpone(self, plan: Plan, actor: Actor) -> Plan:

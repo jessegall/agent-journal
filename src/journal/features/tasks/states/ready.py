@@ -22,7 +22,7 @@ IDLE_CHECK_DELAY_SECONDS = 30 * 60.0
 
 @dataclass(frozen=True)
 class Ready(BaseState):
-    """Nothing in hand: the bottom of the stack, never popped. A stop here is held by what is still open: a parked task, a blocked task whose check cannot run, and in auto mode any open task. The quiet is measured from the agent's last doing. A feature above tasks extends it under the same name, and work modes are states that extend it in turn."""
+    """Nothing in hand: the bottom of the stack, never popped. A stop here is held by what is still open: a parked task, a blocked task whose check cannot run, and in auto mode any open task. A task this agent holds, once started, pushes Working; one another agent holds does not. The quiet is measured from the agent's last doing. A feature above tasks extends it under the same name, and work modes are states that extend it in turn."""
 
     name = "idle"
     title = "Idle"
@@ -41,6 +41,9 @@ class Ready(BaseState):
         return self.swap(self.active(event.time))
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
+        from journal.features.tasks.feature import Tasks
+        if event.task_id not in event.data.part(Tasks).agent_tasks:
+            return self.none()
         return self.push(self.working_state(task_id=event.task_id, logged_at=event.time))
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:

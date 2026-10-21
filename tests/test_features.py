@@ -2318,13 +2318,12 @@ def test_commands_run_at_the_same_moment_keep_their_own_output(app: App):
     assert all(outs[n] == ("hint 400" if n % 2 else "30") for n in range(20)), "each run's output is its own, though they run side by side"
 
 
-def test_only_one_task_is_in_progress_at_a_time_whatever_the_agents_state(app: App):
+def test_each_agent_has_one_task_in_progress_at_a_time(app: App):
     hook(app, "SessionStart")
     app.console().run(["task", "create", "first", "--start"], AGENT)
     app.console().run(["task", "create", "second"], AGENT)
-    hook(app, "SessionStart", session_id="s2")
-    refused = app.console().run(["task", "start", "2"], Caller.agent("main", "s2", "claude"))
-    assert refused.code == 1 and "task 1 is in hand" in refused.error, "another session cannot start a second"
+    refused = app.console().run(["task", "start", "2"], AGENT)
+    assert refused.code == 1 and "task 1 is in hand" in refused.error, "an agent cannot start a second while it holds one"
     app.console().run(["task", "suspend", "1", "later"], AGENT)
     assert app.console().run(["task", "start", "2"], AGENT).code == 0
 
@@ -4400,7 +4399,42 @@ def test_output_is_shown_whole_for_journal_commands_by_its_ends_for_a_read_and_i
         assert app.container.get(CommandOutputs).rows() == [] and not (folder / "number").exists(), "a line of journal commands is no output"
 
 
+def test_each_agent_holds_its_own_task_and_a_workers_task_never_moves_the_main_agent(app: App):
+    from journal.engine.support.session_agents import SessionAgents
+    from journal.http.controllers.tasks import TaskController
+    from journal.models.support.ref import Ref
+    from journal.models.worker import Worker
+    from journal.repositories.agents import Agents
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    console = app.console()
+    worker = Caller.worker("main", 1, "w9", "claude")
+    with app.container.get(Scope).environment(MAIN):
+        app.container.get(Workers).save(Worker(environment_id=MAIN, name="Lady Lovelace", brief="b", model="sonnet"), Actor.system())
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    assert console.run(["task", "create", "the footer", "--start"], AGENT).code == 0
+    assert console.run(["task", "create", "the parser", "--start"], worker).code == 0, "a worker starts its task while the main agent holds another"
+    sessions, tasks, agents = app.container.get(SessionAgents), app.container.get(Tasks), app.container.get(Agents)
+    with app.container.get(Scope).environment(MAIN):
+        assert [t.state for t in (tasks.find(1), tasks.find(2))] == ["started", "started"], "both stay started"
+        assert tasks.current(agents.session_agent("s1")).id == 1 and tasks.holder_task(Ref(Worker.table(), 1)).id == 2, "each holds its own"
+        assert not agents.matching(session="w9"), "a worker, whose hooks never reach the journal, holds its task as the worker and gets no agent row"
+        held = {row["id"]: row["held_by"] for row in app.container.get(TaskController).shown_page(tasks.all())}
+    assert sessions.top("s1").task_id == 1, "the worker's start pushes nothing on the main agent"
+    assert held == {1: "the claude agent, session s1", 2: "worker 1, Lady Lovelace"}, "the viewer names who holds each task"
+    body = hook(app, "Stop")[1]
+    assert body["decision"] == "block" and "task 1" in body["reason"] and "task 2" not in body["reason"], "the main agent's stop names only its own task"
+    assert console.run(["task", "complete", "1", "--how", "shipped"], AGENT).code == 0
+    assert sessions.top("s1").name != "working", "the main agent is back at rest though the worker's task is still started"
+    assert "decision" not in hook(app, "Stop")[1], "the main agent's stop is not held by the worker's task"
+    assert console.run(["task", "start", "2"], AGENT).code == 0 and sessions.top("s1").task_id == 2, "a task another started moves to the agent that takes it up"
+    with app.container.get(Scope).environment(MAIN):
+        assert tasks.holder_task(Ref(Worker.table(), 1)) is None, "and leaves the one that held it"
+
+
 def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app: App, monkeypatch):
+    from journal.models.task_state import TaskState
     from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
@@ -4426,7 +4460,7 @@ def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task
     console.run(["plan", "start", "1"], AGENT)
     console.run(["plan", "suspend", "1"], AGENT)
     tasks = app.container.get(Tasks)
-    assert tasks.find(1).state == "parked" and tasks.current() is None, "a parked plan parks its task in hand"
+    assert tasks.find(1).state == "parked" and tasks.with_state(TaskState.STARTED) == [], "a parked plan parks its task in hand"
     finished = console.run(["task", "resume", "1"], AGENT)
     assert finished.code == 0
     console.run(["task", "complete", "1", "--how", "h"], AGENT)

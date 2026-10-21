@@ -10,6 +10,7 @@ import {updatedAt} from "../domain/row.js";
 import {nextAct, otherActs, STATUS_WORDS, statusOf, waitOf} from "../domain/taskBoard.js";
 import {ago} from "../format/time.js";
 import TaskChain from "./TaskChain.vue";
+import TaskFact from "./TaskFact.vue";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
 
 const props = defineProps({
@@ -64,22 +65,18 @@ watch(
                 <div class="stamp">Task {{ task.id }} · updated {{ ago(updatedAt(task)) || "just now" }}</div>
                 <h3 class="title">{{ task.title }}</h3>
                 <div class="facts">
-                    <div class="fact">
-                        <span class="label">Status</span>
+                    <TaskFact label="Status">
                         <button type="button" class="status" title="Change the status (S)" @click="emit('status', $event.currentTarget)">
                             <TaskStatusIcon :status="status" />
                             {{ STATUS_WORDS[status] }}
                         </button>
-                    </div>
-                    <div class="fact">
-                        <span class="label">Plan</span>
-                        <span class="value">{{ plan ? `Plan ${plan.id}: ${plan.title}` : "Not in a plan" }}</span>
-                    </div>
+                    </TaskFact>
+                    <TaskFact label="Plan">{{ plan ? `Plan ${plan.id}: ${plan.title}` : "Not in a plan" }}</TaskFact>
+                    <template v-if="task.state === 'started' && task.held_by">
+                        <TaskFact label="Held by">{{ task.held_by }}</TaskFact>
+                    </template>
                     <template v-if="phases.length > 1 && phase">
-                        <div class="fact">
-                            <span class="label">Phase</span>
-                            <span class="value">{{ phase }} of {{ phases.length }}: {{ phases[phase - 1].title }}</span>
-                        </div>
+                        <TaskFact label="Phase">{{ phase }} of {{ phases.length }}: {{ phases[phase - 1].title }}</TaskFact>
                     </template>
                 </div>
                 <div class="acts">
@@ -194,22 +191,6 @@ watch(
     flex-wrap: wrap;
     gap: 8px 28px;
     margin-bottom: 16px;
-}
-
-.fact {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.label {
-    color: var(--text-4);
-    font-size: 11.5px;
-}
-
-.value {
-    font-size: 12.5px;
 }
 
 .status {

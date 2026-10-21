@@ -59,6 +59,9 @@ class FollowingPlan(PlansWorking):
         return self.none() if self.checkpoint_pause else super().on_tool_starting(event, settings)
 
     def on_task_started(self, event: TaskStarted, settings: Settings) -> Transition:
+        from journal.features.tasks.feature import Tasks
+        if event.task_id not in event.data.part(Tasks).agent_tasks:
+            return self.none()
         return self.swap(replace(self, task_id=event.task_id, checkpoint_pause=False, phase=0, logged_at=event.time, edits=0))
 
     def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:

@@ -1,10 +1,13 @@
 from datetime import datetime, timezone
 
+from journal.features.tasks.active_task import ActiveTask
+from journal.features.tasks.support.task_holders import TaskHolders
 from journal.features.tasks.support.waits import Waits
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
+from journal.support.caller import Caller
 from journal.support.response import Response
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
@@ -16,12 +19,12 @@ from journal.repositories.workers import Workers
 
 
 class TaskController(Controller[Task]):
-    """Tasks with the plan each is in, the worker that holds it and what it waits on; started from the viewer, a task is taken up by the current agent."""
+    """Tasks with the plan each is in, the worker it is assigned to, the agent that holds it in hand and what it waits on; started from the viewer, a task is taken up by the current agent."""
 
     repository: Tasks
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, waits: Waits) -> None:
-        self.repository, self.task_logs, self.workers, self.waits = tasks, logs, workers, waits
+    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, waits: Waits, taking: ActiveTask, task_holders: TaskHolders) -> None:
+        self.repository, self.task_logs, self.workers, self.waits, self.taking, self.task_holders = tasks, logs, workers, waits, taking, task_holders
 
     def rows(self) -> list[Task]:
         return self.repository.shown()
@@ -34,11 +37,12 @@ class TaskController(Controller[Task]):
 
     def shown_page(self, rows: list[Task]) -> list[dict]:
         plans, holders, waits = self.repository.linked(PLAN_LINK), self.workers.containing({t.row_id for t in rows}), self.repository.open_wait_refs(rows)
+        task_holders = self.repository.holders()
         return [{**ModelFields.build(t), "plan_id": plans[t.row_id][0].id if t.row_id in plans else None, "worker_id": holders[t.row_id].id if t.row_id in holders else None,
-                 "waits": [str(ref) for ref in waits.get(t.row_id, [])]} for t in rows]
+                 "waits": [str(ref) for ref in waits.get(t.row_id, [])], "held_by": self.task_holders.name(task_holders[t.row_id]) if t.row_id in task_holders else ""} for t in rows]
 
     def start(self, request: Request) -> Response:
-        task = self.repository.save(self.repository.find(request.number("id")).started(self.time()), request.actor)
+        task = self.repository.holder_started(self.repository.find(request.number("id")).started(self.time()), self.taking.holder(Caller.user(request.environment)), request.actor)
         return Response.json(self.shown(task))
 
     def finish(self, request: Request) -> Response:

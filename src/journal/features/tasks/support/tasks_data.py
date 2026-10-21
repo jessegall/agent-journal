@@ -5,7 +5,7 @@ from journal.models.open_task import OpenTask
 
 @dataclass(frozen=True)
 class TasksData:
-    """The tasks feature's reading for an agent: the task in hand, the parked, the blocked and the tasks whose wait is broken."""
+    """The tasks feature's reading for an agent: its own task in hand, the parked, the blocked, the tasks whose wait is broken, and the tasks it holds, started now or before."""
 
     current_task: int
     last_log_line: str
@@ -21,3 +21,4 @@ class TasksData:
     last_commands: tuple[str, ...]
     open_ids: tuple[int, ...] = ()
     open_summary: str = ""
+    agent_tasks: tuple[int, ...] = ()

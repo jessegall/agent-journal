@@ -1,6 +1,7 @@
 from journal.features.tasks.support.tasks_data import TasksData
 from journal.models.agent import Agent
 from journal.models.open_task import OpenTask
+from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState
@@ -20,7 +21,7 @@ class TasksDataReader:
         self.tasks, self.plans, self.entries, self.logs = tasks, plans, entries, logs
 
     def read(self, agent: Agent) -> TasksData:
-        current_task = self.tasks.current()
+        current_task = self.tasks.current(agent)
         suspended_tasks = [task for task in self.tasks.with_state(TaskState.SUSPENDED) if PlanState.SUSPENDED not in self.plans.plan_states(task)]
         blocked_without_wait = self.tasks.blocked_without_wait()
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
@@ -42,6 +43,7 @@ class TasksDataReader:
             last_commands=tuple(commands[:POLL_COMMANDS]),
             open_ids=tuple(t.row_id for t in open_tasks),
             open_summary=self.summary(open_tasks),
+            agent_tasks=self.tasks.holder_task_ids(Ref.build(agent)),
         )
 
     def last_log(self, task: Task) -> str:

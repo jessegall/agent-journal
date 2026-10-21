@@ -19,6 +19,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.features.memory.support.memory_context import MemoryContext
 from journal.features.briefing.support.overview_commands import OverviewCommands
+from journal.features.tasks.active_task import ActiveTask
 from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.support.missing_row import MissingRow
@@ -36,10 +37,10 @@ TAKEOVER_WINDOW = timedelta(hours=12)
 class EnvironmentCommand(Command):
     noun = "environment"
 
-    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, providers: Providers, config: Config, scope: Scope, memory: MemoryContext, overview_commands: OverviewCommands) -> None:
+    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, providers: Providers, config: Config, scope: Scope, memory: MemoryContext, overview_commands: OverviewCommands, taking: ActiveTask) -> None:
         self.environments, self.agents, self.tasks, self.messages, self.questions, self.workers, self.entries = environments, agents, tasks, messages, questions, workers, entries
         self.rules, self.facts, self.reminders, self.providers, self.config, self.scope = rules, facts, reminders, providers, config, scope
-        self.memory, self.overview_commands = memory, overview_commands
+        self.memory, self.overview_commands, self.taking = memory, overview_commands, taking
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "overview", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders, then each journal command the setting briefing.look_commands names, under its heading; owed at every session start")
@@ -62,22 +63,25 @@ class EnvironmentCommand(Command):
         return rows
 
     def overview(self, args: Namespace, caller: Caller) -> int:
-        for line in self.current_work(caller.session):
+        for line in self.current_work(caller):
             print(line)
         self.overview_record(caller)
         self.memory.admit_all(caller.actor)
         return 0
 
     def overview_chain(self, args: Namespace, caller: Caller) -> list[ChainedLine]:
-        return self.overview_commands.lines()
+        return self.overview_commands.lines(caller)
 
-    def current_work(self, session: str | None) -> list[str]:
+    def current_work(self, caller: Caller) -> list[str]:
         start = datetime.now(timezone.utc) - TAKEOVER_WINDOW
-        peers = self.agents.recent_peers(session, start)
-        blocked = self.tasks.with_state(TaskState.STARTED)
+        peers = self.agents.recent_peers(caller.session, start)
+        holder = self.taking.holder(caller)
+        current = None if holder is None else self.tasks.holder_task(holder)
+        peer_tasks = [t for t in self.tasks.with_state(TaskState.STARTED) if current is None or t.id != current.id]
         lines = [
             f"taken over from another agent, last seen {peers[-1].update_time.astimezone().strftime('%H:%M')}" if peers else "",
-            self.matching_rows("task in hand", [f"{t.id} {t.title}" for t in blocked]) or "no task in hand",
+            f"task in hand: {current.id} {current.title}" if current else "no task in hand",
+            self.matching_rows("started by other agents", [f"{t.id} {t.title}" for t in peer_tasks]),
             self.matching_rows("open tasks", [f"{t.id} {t.title}" for t in self.tasks.with_state(TaskState.OPEN)]),
             self.matching_rows("parked tasks", [f"{t.id} {t.title} ({t.suspension_reason})" for t in self.tasks.with_state(TaskState.SUSPENDED)]),
             self.matching_rows("blocked tasks", [f"{t.id} {t.title} (waiting on: {self.tasks.reason(t)})" for t in self.tasks.with_state(TaskState.BLOCKED)]),
