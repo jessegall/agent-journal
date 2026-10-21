@@ -37,6 +37,9 @@ class ScopedRepository(Repository[S]):
     def maximum(self, query: Query, column: str, empty_value):
         return self.connection.result(*self._scoped(query).maximum(column, empty_value))["value"]
 
+    def repeated(self, query: Query, column: str, minimum: int) -> list:
+        return [row["value"] for row in self.connection.all(*self._scoped(query).repeated(column, minimum))]
+
     def scoped(self) -> list[S]:
         return self.all()
 

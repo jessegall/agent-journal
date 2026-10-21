@@ -24,9 +24,15 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Relations are rows, never columns.** `Link` joins any two rows by `Ref` (type and id)
   with a `kind` that says what it means. Models declare no relations. `Links` checks both
   ends exist on save; `UnlinkDeleted` removes a deleted row's links.
-- **Repositories do the SQL.** `Repository[M]` for CRUD, `ScopedRepository[S]` adds `in_()`.
+- **Repositories own the queries.** `Repository[M]` for CRUD, `ScopedRepository[S]` adds `in_()`.
   A model's own repository adds only its own queries. No ActiveRecord, no global connection.
 - **One SQL funnel**: `db/connection.py`. Nothing else executes SQL.
+- **A query is composed, never written (2026-10-21, task 1136).** A repository builds each read and
+  write with `db/query.py`, `self.query().filter(state=...).order_descending("id").limit(n)`, and hands
+  it to `selected`, `counted`, `maximum`, `repeated` or `purged`; the builder renders the text and the
+  connection runs it. A column the table lacks raises `UnknownColumn` as it is named; `data->key` is a
+  JSON path. The methods are `filter_*`, not Laravel's `where_*`, because the naming rules ban `where`,
+  `in` and `by`. `SqlOutsideDatabaseLayerDetector` flags SQL text outside `src/journal/db/`.
 - **Dependency injection** through `container.py`: constructors name what they need by type.
   No globals, no service locators in bodies.
 - **Task, not to-do.** A task carries its own state, start, finish and log lines (`TaskLog`

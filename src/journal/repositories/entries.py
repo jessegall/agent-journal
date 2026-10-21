@@ -47,8 +47,7 @@ class Entries(ScopedRepository[Entry]):
         return self.selected(mentions.filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last))
 
     def repeated_commands(self, session: str, minimum: int, last: int = 200) -> list[str]:
-        rows = self.connection.all("SELECT command FROM (SELECT json_extract(data, '$.call.command') AS command FROM entries WHERE environment_id = ? AND kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?) WHERE command != '' GROUP BY command HAVING COUNT(*) >= ?", (self.scope.id, Actor.agent(session).stamp, last, minimum))
-        return [row["command"] for row in rows]
+        return self.repeated(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last), "data->call->command", minimum)
 
     def tool_ends(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected(self.query().filter_listed("kind", ("ToolFinished", "ToolFailed")).filter(actor=Actor.agent(session)).order_descending("id").limit(last))

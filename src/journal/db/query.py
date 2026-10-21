@@ -113,6 +113,10 @@ class Query:
     def maximum(self, column: str, empty_value) -> tuple[str, tuple]:
         return self._read(f"COALESCE(MAX({self._expression(column)}), {Condition.literal(empty_value)}) AS value")
 
+    def repeated(self, column: str, minimum: int) -> tuple[str, tuple]:
+        text, params = self._read(f"{self._expression(column)} AS value")
+        return f"SELECT value FROM ({text}) WHERE value != '' GROUP BY value HAVING COUNT(*) >= ?", (*params, minimum)
+
     def insert(self, **values) -> tuple[str, tuple]:
         names = ", ".join(self._column(name).name for name in values)
         return f"INSERT INTO {self.table} ({names}) VALUES ({', '.join('?' for _ in values)})", self._values(values)

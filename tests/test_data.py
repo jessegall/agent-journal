@@ -328,6 +328,7 @@ def test_a_query_renders_every_read_shape_with_its_values_bound():
     assert tasks.filter_containing("title", "50%_off").order("state").order_descending("id").offset(3).select() == ("SELECT * FROM tasks WHERE title LIKE ? ESCAPE '\\' ORDER BY state, id DESC LIMIT ? OFFSET ?", ("%50\\%\\_off%", -1, 3))
     assert entries.filter_json("data->session", "s").filter_listed("data->call->kind", ("a",)).maximum("data->time", 0) == ("SELECT COALESCE(MAX(json_extract(data, '$.time')), 0) AS value FROM entries WHERE json_extract(data, '$.session') = ? AND json_extract(data, '$.call.kind') IN (?)", ("s", "a"))
     assert tasks.filter_alternatives(tasks.filter(title="a"), tasks.filter(title="b").filter_null("block_reason")).count() == ("SELECT count(*) AS value FROM tasks WHERE (title = ? OR (title = ? AND block_reason IS NULL))", ("a", "b"))
+    assert entries.filter(kind="ToolStarting").order_descending("id").limit(9).repeated("data->call->command", 2) == ("SELECT value FROM (SELECT json_extract(data, '$.call.command') AS value FROM entries WHERE kind = ? ORDER BY id DESC LIMIT ? OFFSET ?) WHERE value != '' GROUP BY value HAVING COUNT(*) >= ?", ("ToolStarting", 9, 0, 2)), "the values a page of rows holds at least so many times"
     assert tasks.filter_absent(Query.build(Link).filter(kind="in_plan").filter_ref("source", tasks)).count() == ("SELECT count(*) AS value FROM tasks WHERE NOT EXISTS (SELECT 1 FROM links WHERE kind = ? AND links.source = ? || tasks.id)", ("in_plan", "tasks:"))
 
 
