@@ -15,11 +15,9 @@ class WorkersDataReader:
 
     def read(self, agent: Agent) -> WorkersData:
         rows = self.workers.scoped()
-        waiting = [w for w in rows if w.is_idle()]
         return WorkersData(
             active_workers=tuple(w.id for w in rows if w.is_running()),
-            reports_waiting=tuple(w.id for w in waiting),
-            reports_summary=", ".join(f"worker {w.id} ({w.name})" for w in waiting),
+            idle_workers=tuple(w for w in rows if w.is_idle()),
             active_subagents=self.subagents.running_earlier(agent.session),
             dispatches=tuple(self.subagents.rows(agent.session)),
             worktrees_root=(self.config.home / "worktrees").resolve(),

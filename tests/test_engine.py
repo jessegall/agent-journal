@@ -46,6 +46,7 @@ from journal.models.question import Question
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
 from journal.models.worker import Worker
+from journal.models.worker_state import WorkerState
 from datetime import datetime, timezone
 from journal.repositories.entries import Entries
 from journal.http.agents.agent_activity import AgentActivity
@@ -650,7 +651,7 @@ def test_the_data_is_read_per_feature_and_travels_on_the_event_the_machine_asks(
         data = app.container.get(DataReaders).agent_data(agent)
     assert data.part(TasksFeature).current_task == 1 and data.part(TasksFeature).suspended == ()
     assert len(data.part(MessagesFeature).unread) == 1 and data.part(BriefingFeature).has_overview is False
-    assert data.part(ShellFeature).background == () and data.part(WorkersFeature).reports_waiting == ()
+    assert data.part(ShellFeature).background == () and data.part(WorkersFeature).idle_workers == ()
     event = ToolStarting(call=ToolCall(tool="Write", input={}, operation=Claude().operation("Write", {}))).with_data(data)
     assert event.data.part(TasksFeature).current_task == 1 and ToolStarting(call=ToolCall(tool="Write", input={}, operation=Claude().operation("Write", {}))).data.parts == {}
 
@@ -822,7 +823,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
         "profiles": ProfilesData(names=("journal-researcher", "journal-medior"), subagents=("journal-researcher",), workers=("journal-medior",)),
         "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, 0), EndedOutput(4, 1)), output_reads=("journal output read <output> --grep x", "journal output read <output> --grep x"), readers=(Reader("tests", "the failures", "FAILED"),), tipped=()),
         "secrets": SecretsData(root=tmp_path, folders=(private.resolve(),), spellings=(str(private),)),
-        "workers": WorkersData(active_workers=(), reports_waiting=(2,), reports_summary="worker 2 (Lady Lovelace)", active_subagents=2, dispatches=(Dispatch(id="d1", time=1.0, task="read the plan", brief="look at src/a.py", type="journal-researcher", model="sonnet", session="sub-1", is_active=False),), worktrees_root=tmp_path / "worktrees", worktrees=(WorkerWorktree("3-Lady-Lovelace", 3, "Lady Lovelace"),)),
+        "workers": WorkersData(active_workers=(), idle_workers=(Worker(id=2, name="Lady Lovelace", state=WorkerState.REPORTED),), active_subagents=2, dispatches=(Dispatch(id="d1", time=1.0, task="read the plan", brief="look at src/a.py", type="journal-researcher", model="sonnet", session="sub-1", is_active=False),), worktrees_root=tmp_path / "worktrees", worktrees=(WorkerWorktree("3-Lady-Lovelace", 3, "Lady Lovelace"),)),
     }
     data = FeatureData(parts)
     prompt = Ready().respond(PromptSubmitted(prompt="go on").with_data(data), settings, (MessagesConduct, LawsConduct, ShellConduct, SecretsConduct, QuestionsConduct, ProfilesConduct, WorkersConduct))

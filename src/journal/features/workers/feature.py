@@ -13,6 +13,7 @@ from journal.features.workers.listeners.worker_cards import WorkerCards
 from journal.engine.support.modes import Modes
 from journal.features.plans.states.plans_ready import PlansReady
 from journal.features.workers.listeners.worker_marks import WorkerMarks
+from journal.features.workers.listeners.dispatch_refusal_marks import DispatchRefusalMarks
 from journal.features.workers.states.delegating import Delegating
 from journal.features.workers.states.orchestrating import Orchestrating
 from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
@@ -35,7 +36,7 @@ class Workers(Feature[WorkersData]):
     commands = (WorkerCommand,)
     seeds = (WorkersSeed,)
     jobs = (WorkerWatch,)
-    listeners = (SubagentCards, WorkerCards, WorkerMarks)
+    listeners = (SubagentCards, WorkerCards, WorkerMarks, DispatchRefusalMarks)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
 
@@ -48,8 +49,10 @@ class Workers(Feature[WorkersData]):
     WORKER_OVERFLOW = Nudge(name, "too_many_workers", "{{out}} workers are out, the most at once", "wait for one to report with `journal worker wait`, or give the job to one that reported with `journal worker send`", repeat_interval=0)
     WORKER_FILE = Nudge(name, "file_is_the_workers", "that file is in worker {{n}}'s worktree", "{{name}} writes there: `journal worker send {{n}} \"<job>\"`, or wait for its report and merge", repeat_interval=0)
     UNREAD_WORKER_REPORTS = Nudge(name, "act_on_the_reports", "{{reports_waiting}} reported and you have not acted on it yet", "read its report, then give it its next job, stop it, or mark it done once its work is merged or used", repeat_interval=180, blocks_regardless=True)
+    WORKER_KNOWS_FILES = Nudge(name, "send_it_to_the_worker_that_knows", "{{count}} idle workers already worked on files this job names:\n{{workers}}", "give the job to one of them with its send line, or add --fresh to the dispatch if it truly needs a new worker", repeat_interval=0)
     SUBAGENT_REUSE = Nudge(name, "send_the_job_to_the_subagent", "subagent {{session}} ({{task}}) already worked on the files this job names", "send it the job with SendMessage({to: \"{{session}}\", message: \"<job>\"}), so it goes on with what it knows", repeat_interval=0)
-    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
+    DISPATCH_REFUSALS = (WORKER_KNOWS_FILES.key,)
+    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
 
     skill = Skill("workers", 'Send a worker to write a bounded job and wait for its report; load it before dispatching one', """
 # Workers

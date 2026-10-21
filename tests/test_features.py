@@ -4670,14 +4670,15 @@ def test_a_job_on_files_a_worker_already_worked_on_goes_back_to_that_worker(app:
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "fix src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "fix the chain", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).environment(MAIN):
-        workers.save(workers.find(1).with_(resume="abc").reported(0.0, 0), Actor.system())
-    refused = console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    assert refused.code == 1 and "journal worker send 1" in refused.error, "related work goes back to the worker that knows it"
-    assert console.run(["worker", "dispatch", "Mr. Babbage", "test src/journal/features/shell/chain.py", "--profile", "journal-medior", "--model", "sonnet", "--fresh"], AGENT).code == 0, "unless a fresh one is asked for"
-    assert console.run(["worker", "dispatch", "Mr. Bell", "write docs/other.md", "--profile", "journal-medior", "--model", "sonnet"], AGENT).code == 0, "other files, another worker"
+        workers.save(workers.find(1).with_(resume="abc", touched_paths=("src/journal/features/shell/chain.py",)).reported(0.0, 0), Actor.system())
+    dispatch = lambda line: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": f"journal worker dispatch {line} --profile journal-medior --model sonnet"})
+    status, body = dispatch("'Mr. Babbage' 'test src/journal/features/shell/chain.py'")
+    assert status != 200 and "worker 1, Lady Lovelace, last on src/journal/features/shell/chain.py: `journal worker send 1" in json.dumps(body), "related work goes back to the worker that touched its files"
+    assert dispatch("'Mr. Babbage' 'test src/journal/features/shell/chain.py' --fresh")[0] == 200, "unless a fresh one is asked for"
+    assert dispatch("'Mr. Bell' 'write docs/other.md'")[0] == 200, "other files, another worker"
 
 
 def test_a_subagent_job_on_files_one_already_worked_on_goes_back_to_it_and_a_review_is_fresh(app: App):

@@ -11,7 +11,9 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_stopped import WorkerStopped
 from journal.events.rows.worker_dispatched import WorkerDispatched
+from journal.features.workers.support.dispatch_line import DispatchLine
 from journal.features.workers.support.path_mentions import PathMentions
+from journal.models.worker import Worker
 from journal.features.workers.support.workers_data import WorkersData
 from journal.support.subagent_dispatch import SubagentDispatch
 
@@ -19,7 +21,7 @@ INDEPENDENT_ROLES = ("auditor", "reviewer", "plan-reviewer", "critic")
 
 
 class WorkersConduct(Conduct):
-    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, the reports not acted on are named at a stop and on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
+    """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files a finished one of the same kind worked on is held in favour of that one, a dispatch whose brief names files an idle worker touched is held in favour of that worker, the reports not acted on are named at a stop and on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
 
     def limit_check(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers
@@ -46,8 +48,13 @@ class WorkersConduct(Conduct):
         existing = next((d for d in reversed(event.data.part(Workers).dispatches) if not d.is_active and d.session and d.type == dispatch.role and matched & PathMentions.build(d.brief)), None)
         return self.refuse(Workers.SUBAGENT_REUSE.create(session=existing.session, task=existing.task)) if existing else self.none()
 
+    def files_check(self, event: ToolStarting, settings: Settings) -> Transition:
+        from journal.features.workers.feature import Workers
+        knowing = [w for line in dispatch_lines(event) if not line.fresh for w in knowing_workers(event.data.part(Workers), line.brief)]
+        return self.refuse(Workers.WORKER_KNOWS_FILES.create(count=len(knowing), workers=idle_list(tuple(knowing)))) if knowing else self.none()
+
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return Transition.merged(self, [WorkersConduct.known_check(self, event, settings), WorkersConduct.limit_check(self, event, settings), WorkersConduct.worktrees_check(self, event, settings)])
+        return Transition.merged(self, [WorkersConduct.known_check(self, event, settings), WorkersConduct.limit_check(self, event, settings), WorkersConduct.worktrees_check(self, event, settings), WorkersConduct.files_check(self, event, settings)])
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         return self.none(*report_mentions(event.data))
@@ -71,13 +78,26 @@ class WorkersConduct(Conduct):
 
 
 def report_mentions(data: FeatureData) -> list[Nudge]:
-    workers = data.part(workers_feature())
-    return [workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=workers.reports_summary)] if workers.reports_waiting else []
+    summary = ", ".join(f"worker {w.id} ({w.name})" for w in data.part(workers_feature()).idle_workers)
+    return [workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=summary)] if summary else []
+
+
+def dispatch_lines(event: ToolStarting) -> list[DispatchLine]:
+    return [line for part in event.call.parts if (line := DispatchLine.parsed(part.text))]
+
+
+def idle_list(workers: tuple[Worker, ...]) -> str:
+    return "\n".join(f"worker {w.id}, {w.name}, last on {w.files_line()}: `journal worker send {w.id} \"<job>\"`" for w in workers)
 
 
 def workers_feature():
     from journal.features.workers.feature import Workers
     return Workers
+
+
+def knowing_workers(workers: WorkersData, brief: str) -> list[Worker]:
+    named = PathMentions.build(brief)
+    return [w for w in reversed(workers.idle_workers) if named & set(w.touched_paths or ())]
 
 
 def worktree_edits(workers: WorkersData, edited_paths: tuple[str, ...]):

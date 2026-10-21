@@ -8,7 +8,6 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.features.profiles.support.profile_files import ProfileFiles
 from journal.features.workers.support.worker_reports import WorkerReports
-from journal.features.workers.support.path_mentions import PathMentions
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker import Worker
 from journal.providers.providers import Providers
@@ -70,14 +69,10 @@ class WorkerCommand(Command):
         if self.profiles.kind(args.profile) != "worker":
             raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
-        rows = self.workers.scoped()
-        output = [w for w in rows if w.is_running()]
+        output = [w for w in self.workers.scoped() if w.is_running()]
         maximum = int(self.settings.option(Feature.WORKER_LIMIT))
         if maximum and len(output) >= maximum:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
-        knowing = [] if args.fresh else self.related_workers(rows, args.brief)
-        if knowing:
-            raise Rejection(f"worker {knowing[0].id}, {knowing[0].name}, already worked on the files this job names: give it the job with `journal worker send {knowing[0].id} \"<job>\"`, or add --fresh if it truly needs a new one")
         provider = args.provider or self.provider_default(caller)
         worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
         worker = self.workers.save(worker, caller.actor)
@@ -102,10 +97,6 @@ class WorkerCommand(Command):
         message = self.reports.file(worker.with_(session=caller.session or worker.session, touched_paths=self.branch.touched(worker)), args.text, caller.actor)
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
-
-    def related_workers(self, rows: list[Worker], brief: str) -> list[Worker]:
-        matched = PathMentions.build(brief)
-        return [w for w in reversed(rows) if matched and w.state != WorkerState.DISPATCHED and w.resume and matched & PathMentions.build(w.brief)]
 
     def send(self, args: Namespace, caller: Caller) -> int:
         with self.runner.lock(args.n):
