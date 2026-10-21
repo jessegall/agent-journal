@@ -4,7 +4,6 @@ from dataclasses import replace
 from journal.support.cards import Cards
 from journal.engine.state_machine import StateMachine
 from journal.engine.agent_state import AgentState
-from journal.engine.states.paused import Paused
 from journal.engine.states.wait import Wait
 from journal.features.tasks.states.expecting import Expecting
 from journal.features.tasks.states.stuck import Stuck
@@ -170,15 +169,7 @@ class Actions:
         if isinstance(ctx.state, Wait):
             self.machine.pop(ctx.session, ctx.environment_id, Actor.system(), "released by a workflow")
             return self.say(text, ctx) if text else Decision()
-        wait = self.machine.states.wait_in(ctx.state) if ctx.state else None
-        if wait is None:
-            return Decision()
-        self.machine.move(ctx.session, ctx.environment_id, self.without(ctx.state, wait))
-        return self.say(text, ctx) if text else Decision()
-
-    def without(self, state: AgentState, wait: Paused):
-        """The agent's state with the wait taken out of it: the wait goes back to what it was doing."""
-        return wait.back().to
+        return Decision()
 
     def wait_outside(self, text: str, ctx: Context) -> Decision:
         """The agent waits for what the text names, the wait laid over what it is doing."""
@@ -191,7 +182,7 @@ class Actions:
     def pause(self, ctx: Context, kind, **words) -> Decision:
         if not ctx.session or not ctx.state:
             return Decision()
-        if isinstance(ctx.state, Paused):
+        if isinstance(ctx.state, Wait):
             raise Refused(f"the agent is {ctx.state.name} already: one wait at a time, and Send the agent back ends it")
         self.machine.move(ctx.session, ctx.environment_id, kind.leaving(ctx.state, **words))
         return Decision()
@@ -209,7 +200,7 @@ class Actions:
     @staticmethod
     def leaving(state: AgentState, target: AgentState) -> None:
         """What a change to idle may leave behind: nothing. A task in hand or a wait with its way back is not dropped by a workflow."""
-        if isinstance(state, Paused):
+        if isinstance(state, Wait):
             raise Refused(f"the agent is {state.name} and would lose its way back: Send the agent back returns it, a change to {target.name} would not")
         if state.to_data():
             raise Refused(f"the agent is {state.name} with {', '.join(f'{k} {v}' for k, v in state.to_data().items() if v)}: a move to {target.name} would leave that with nobody on it")

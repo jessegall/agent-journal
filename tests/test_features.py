@@ -173,10 +173,11 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app):
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
     assert machine.current("s1").name == "expecting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
     out = console.run(["task", "done", "1"], AGENT).out
-    assert machine.current("s1").resume == {"state": "following_plan", "data": FollowingPlan(plan_id=1, task_id=2, moved_from=1).to_data()}, "the wait stands, and the agent goes on to task 2 when it ends"
+    beneath = app.container.get(Agents).for_session("s1").stack[-2]
+    assert machine.current("s1").name == "expecting" and beneath["state"] == "following_plan" and beneath["data"]["task_id"] == 2, "the wait stands, and the agent goes on to task 2 when it ends"
     out = console.run(["task", "done", "2"], AGENT).out
     assert "plan 1 is done" in out
-    assert machine.current("s1").resume["state"] == "idle", "done with the plan, the agent goes to rest when its wait ends"
+    assert [layer["state"] for layer in app.container.get(Agents).for_session("s1").stack] == ["idle", "expecting"], "done with the plan, the agent goes to rest when its wait ends"
     assert app.container.get(Plans).find(1).state == PlanState.DONE
 
 

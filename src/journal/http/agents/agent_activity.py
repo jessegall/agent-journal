@@ -1,5 +1,4 @@
 from journal.engine.support.trail import Trail
-from journal.engine.states.paused import Paused
 from journal.engine.states.wait import Wait
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
@@ -100,14 +99,12 @@ class AgentActivity:
     def described(self, state) -> str:
         if isinstance(state, Wait):
             return state.awaiting()[0]
-        if isinstance(state, Paused):
-            return state.awaiting()[0] or (self.described(self.states.named(state.resume["state"], state.resume["data"])) if state.resume else "")
         return state.what if isinstance(state, Working) else ""
 
     def stack_of(self, agent: Agent) -> list[dict]:
         shown = []
         for state in reversed(self.states.stack_of(agent).states):
-            awaits = state.awaiting()[0] if isinstance(state, Paused) else ""
+            awaits = state.awaiting()[0] if isinstance(state, Wait) else ""
             shown.append({"name": state.name, "title": self.states.title_of(state.name), "values": state.to_data(), "awaits": awaits})
         return shown
 

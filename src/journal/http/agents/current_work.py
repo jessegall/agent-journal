@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from journal.engine.states.paused import Paused
 from journal.engine.states.wait import Wait
 from journal.support.states_catalogue import StatesCatalogue
 from journal.features.tasks.states.working import Working
@@ -36,4 +35,4 @@ class CurrentWork:
 
     def awaited(self, agent: Agent) -> tuple[str, str]:
         layers = self.states.stack_of(agent).states
-        return next((layer.awaiting() for layer in reversed(layers) if isinstance(layer, (Wait, Paused)) and layer.awaiting()[0]), ("", ""))
+        return next((layer.awaiting() for layer in reversed(layers) if isinstance(layer, Wait) and layer.awaiting()[0]), ("", ""))

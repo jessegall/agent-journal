@@ -12,7 +12,6 @@ from journal.support.decision import Decision
 from journal.support.floor import Floor
 from journal.engine.agent_state import AgentState
 from journal.engine.state_machine import StateMachine
-from journal.engine.states.paused import Paused
 from journal.support.states_catalogue import StatesCatalogue
 from journal.support.actor import Actor
 from journal.models.chart import Chart
@@ -201,7 +200,7 @@ class Walk:
         if node.key == "move_to":
             name = node.text.strip().partition(" ")[0]
             return self.states.named(name, {}) if self.states.known(name) else None
-        return self.states.resumed(ctx.state) if isinstance(ctx.state, Paused) else None
+        return None
 
     def failed(self, node: Node, ctx: Context, fault: Exception) -> None:
         """A node that raised is recorded where the page can show it, and the path goes on past it, by no from a check and by then from an action, so one broken step never silences what follows. The ruling behind the catch is in NOTES, under the chart."""

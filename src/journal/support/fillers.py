@@ -149,7 +149,7 @@ class Fillers:
 
     def followed(self, ctx: Context) -> FollowingPlan | None:
         """The plan the agent follows, now or once its pause ends."""
-        state = self.states.underneath(ctx.state) if ctx.state else None
+        state = ctx.state
         return state if isinstance(state, FollowingPlan) else None
 
     def followed_plan(self, ctx: Context) -> str:

@@ -4,14 +4,12 @@ from journal.engine.nudger import Nudger
 from journal.engine.support.settings import Settings
 from journal.repositories.setting_rows import SettingRows
 from journal.support.features_known import FeaturesKnown
-from journal.engine.resume import Resume
 from journal.engine.states.ended import Ended
 from journal.engine.support.hooked import Hooked
 from journal.engine.support.held import Held
 from journal.engine.support.stack import Stack
 from journal.engine.support.snapshot_readers import SnapshotReaders
 from journal.events.snapshot import Snapshot
-from journal.engine.states.paused import Paused
 from journal.supervisor_link import SupervisorLink
 from journal.events.event import Event
 from journal.events.rows.row_event import RowEvent
@@ -19,7 +17,6 @@ from journal.support.scope import Scope
 from journal.support.states_catalogue import StatesCatalogue
 from journal.engine.support.transition import Transition
 from journal.events.agent.agent_event import AgentEvent
-from journal.events.state_entered import StateEntered
 from journal.events.bus import Bus
 from journal.events.agent_listener import AgentListener
 from journal.support.decision import Decision
@@ -148,19 +145,9 @@ class StateMachine(AgentListener[AgentEvent]):
         return stack
 
     def placed(self, stack: Stack, to: BaseState) -> Stack:
-        if isinstance(to, Resume):
-            return self.resumed(stack, to)
         if type(to) is type(stack.top()):
             return stack.with_top(to)
-        if isinstance(to, Paused) and to.resumes(stack.top().name):
-            return stack.pushed(to)
         return self.states.stack_under(to)
-
-    def resumed(self, stack: Stack, to: Resume) -> Stack:
-        beneath = stack.popped()
-        if beneath is not stack and beneath.top().name == to.state:
-            return beneath
-        return self.states.stack_under(self.states.named(to.state, to.data))
 
     def current(self, session: str) -> AgentState:
         agent = self.agents.for_session(session)
@@ -183,6 +170,4 @@ class StateMachine(AgentListener[AgentEvent]):
             return agent
         settled = self.agents.save(agent.with_(state=to.name, data=to.to_data(), stack=tuple(stack.to_data())), by)
         self.entries.save(Trail.entry(agent, stack.to_data(), cause, by), by)
-        if to.name != agent.state:
-            self.bus.dispatch(StateEntered(session=agent.session, environment_id=agent.environment_id, left=agent.state, entered=to.name))
         return settled

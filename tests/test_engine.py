@@ -56,7 +56,7 @@ from dataclasses import dataclass
 from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
 from journal.engine.agent_state import AgentState
-from journal.engine.states.paused import Paused
+from journal.engine.states.wait import Wait
 from journal.engine.support.held import Held
 from journal.events.snapshot import Snapshot
 from journal.support.refused import Refused
@@ -438,7 +438,7 @@ CALLS: list[str] = []
 
 
 @dataclass(frozen=True)
-class Noting(Paused):
+class Noting(Wait):
     name = "noting"
 
     def on_push(self, settings):
@@ -451,7 +451,7 @@ class Noting(Paused):
 
 
 @dataclass(frozen=True)
-class Refusing(Paused):
+class Refusing(Wait):
     name = "refusing"
 
     def on_push(self, settings):
@@ -484,7 +484,7 @@ def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catc
     assert popped.stack == Stack((Idle(),)) and popped.nudges == ()
     assert CALLS == ["suspend catching", "push noting", "suspend catching", "pop noting", "resume catching"]
     with pytest.raises(Refused):
-        machine.move("s1", 1, Refusing.leaving(Idle()))
+        machine.push("s1", 1, Refusing(), Actor.system(), "a refused push")
     assert [row["state"] for row in app.container.get(Agents).for_session("s1").stack] == ["idle"]
 
 

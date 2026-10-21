@@ -2,7 +2,7 @@ from journal.engine.agent_state import AgentState
 from journal.engine.base_state import BaseState
 from journal.engine.support.stack import Stack
 from journal.models.agent import Agent
-from journal.engine.states.paused import Paused
+from journal.engine.states.wait import Wait
 from journal.engine.states.ended import Ended
 from journal.support.features_known import FeaturesKnown
 
@@ -21,11 +21,8 @@ class StatesCatalogue:
     def names(self) -> list[str]:
         return sorted(self._states)
 
-    def wait_in(self, state: AgentState) -> AgentState | None:
-        return state if isinstance(state, Paused) else None
-
     def waits(self) -> list[str]:
-        return sorted(name for name, state in self._states.items() if issubclass(state, Paused) and not state.leaves_by_itself)
+        return sorted(name for name, state in self._states.items() if issubclass(state, Wait))
 
     def title_of(self, name: str) -> str:
         return self._states[name].title if name in self._states else name
@@ -42,12 +39,6 @@ class StatesCatalogue:
         state = self._states.get(name) or self._states["idle"]
         return state.from_data(data or {})
 
-    def underneath(self, state: AgentState) -> AgentState:
-        return self.resumed(state) if isinstance(state, Paused) else state
-
-    def resumed(self, paused: Paused) -> AgentState:
-        return self.named(paused.resume.get("state", "idle"), paused.resume.get("data", {}))
-
     def first(self) -> AgentState:
         return self.named("idle", {})
 
@@ -61,8 +52,6 @@ class StatesCatalogue:
 
     def stack_under(self, state: BaseState) -> Stack:
         layers = [state]
-        while isinstance(layers[-1], Paused) and layers[-1].resume:
-            layers.append(self.resumed(layers[-1]))
         if not self.is_floor(layers[-1]):
             layers.append(self.first())
         return Stack(tuple(reversed(layers)))

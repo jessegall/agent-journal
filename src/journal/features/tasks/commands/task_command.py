@@ -6,7 +6,6 @@ from journal.console.command import Command
 from journal.support.where import Where
 from journal.engine.clock import Clock
 from journal.engine.state_machine import StateMachine
-from journal.engine.states.paused import Paused
 from journal.support.refused import Refused
 from journal.features.tasks.states.idle import Idle
 from journal.features.tasks.support.in_hand import InHand
