@@ -13,7 +13,7 @@ class ReleaseSource:
     def tags(self, prefix: str) -> list[str]:
         request = Request(TAGS.format(prefix=prefix), headers={"Accept": "application/vnd.github+json", "User-Agent": "agent-journal"})
         with urlopen(request, timeout=READ_SECONDS) as answer:
-            return [found["ref"].removeprefix("refs/tags/") for found in json.load(answer)]
+            return [rows["ref"].removeprefix("refs/tags/") for rows in json.load(answer)]
 
     def head_of(self, address: str, branch: str) -> str:
         listed = subprocess.run(["git", "ls-remote", "--heads", address, branch], capture_output=True, text=True, timeout=LIST_SECONDS)

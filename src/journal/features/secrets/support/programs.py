@@ -17,5 +17,5 @@ class Programs:
 
     @classmethod
     def named_in(cls, instructions: str) -> tuple[str, ...]:
-        named = dict.fromkeys(found[1] for found in STATED_COMMAND.finditer(instructions))
+        named = dict.fromkeys(rows[1] for rows in STATED_COMMAND.finditer(instructions))
         return tuple(name for name in named if not cls.never_given(name) and shutil.which(name))

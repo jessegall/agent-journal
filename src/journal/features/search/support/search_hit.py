@@ -6,7 +6,7 @@ AROUND = 160
 
 
 @dataclass(frozen=True)
-class Found:
+class SearchHit:
     """One thing a search found: what it is, such as task 12, and the passage that holds the words."""
 
     ref: str

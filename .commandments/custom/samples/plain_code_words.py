@@ -34,13 +34,14 @@ class Nudge:
     def say(self, said: str) -> str:
         # @sin PoeticVariableNameDetector
         meaning = said
+        # @sin PoeticVariableNameDetector
         return meaning
 
     # @righteous PoeticParameterNameDetector
     def render(self, line: str) -> str:
         # @righteous PoeticVariableNameDetector
-        words = line
-        return words
+        text = line
+        return text
 
     # @righteous DocstringInMethodDetector
     def arguments(self, verbs) -> None:

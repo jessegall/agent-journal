@@ -14,10 +14,10 @@ class ToolUses:
     def counted(self, event: AgentEvent) -> AgentEvent:
         if not isinstance(event, (ToolStarting, ToolFinished)):
             return event
-        found = self.agents.across_environments(session=event.session)
-        if not found:
+        rows = self.agents.across_environments(session=event.session)
+        if not rows:
             return event
-        agent = found[0]
+        agent = rows[0]
         if isinstance(event, ToolStarting) and not event.call.is_journal and not event.subagent:
             agent = self.agents.save(agent.tool_used(), Actor.system())
         return event.counted(agent.tool_uses)

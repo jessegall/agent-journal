@@ -14,10 +14,10 @@ class Phones(ScopedRepository[Phone]):
         return [phone for phone in self.across_environments() if phone.is_live(now)]
 
     def anywhere(self, id: int) -> Phone:
-        found = self.across_environments(id=id)
-        if not found:
+        rows = self.across_environments(id=id)
+        if not rows:
             raise NotFound(f"no phone {id}")
-        return found[0]
+        return rows[0]
 
     def by_key(self, key: str) -> Phone | None:
         return next(iter(self.across_environments(key=key)), None)

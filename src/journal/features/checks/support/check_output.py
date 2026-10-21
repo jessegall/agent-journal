@@ -30,7 +30,7 @@ class CheckOutput:
             return CheckProgress(time, cls.tail(output), done, total, round(done / total * 100, 1))
         listed = ITEMS.findall(output)
         total = int(next(filter(None, listed[-1]))) if listed else 0
-        done = sum(len(found) for found in STEPS.findall(output))
+        done = sum(len(rows) for rows in STEPS.findall(output))
         if done and total:
             return CheckProgress(time, cls.tail(output), min(done, total), total, round(min(done, total) / total * 100, 1))
         printed = PERCENT.findall(output[-2000:])

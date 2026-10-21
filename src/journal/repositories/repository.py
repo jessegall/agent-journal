@@ -60,10 +60,10 @@ class Repository(Generic[M]):
         return self._linked("", ())
 
     def _linked(self, clause: str, params: tuple) -> dict[int, list[Ref]]:
-        found: dict[int, list[Ref]] = {}
+        rows: dict[int, list[Ref]] = {}
         for link in self.connection.all(f"SELECT source, target FROM links WHERE {clause}source >= ? AND source < ? ORDER BY id", (*params, f"{self.table}:", f"{self.table};")):
-            found.setdefault(Ref.parse(link["source"]).id, []).append(Ref.parse(link["target"]))
-        return found
+            rows.setdefault(Ref.parse(link["source"]).id, []).append(Ref.parse(link["target"]))
+        return rows
 
     def matching(self, **fields) -> list[M]:
         return self.newest(*self.clause(fields))
@@ -79,8 +79,8 @@ class Repository(Generic[M]):
         ids = list(ids)
         if not ids:
             return []
-        found = {row.id: row for row in self.selected(f"id IN ({', '.join('?' for _ in ids)})", tuple(ids))}
-        return [found[n] for n in ids if n in found]
+        rows = {row.id: row for row in self.selected(f"id IN ({', '.join('?' for _ in ids)})", tuple(ids))}
+        return [rows[n] for n in ids if n in rows]
 
     def search(self, terms: list[str]) -> list[M]:
         clause, params = self.matching_words(terms)

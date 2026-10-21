@@ -32,10 +32,10 @@ class Secret(Model):
     deleted_at: datetime | None = None
 
     def field(self, name: str) -> SecretField:
-        found = next((SecretField.of(raw) for raw in self.fields if raw["name"] == name), None)
-        if found is None:
+        rows = next((SecretField.of(raw) for raw in self.fields if raw["name"] == name), None)
+        if rows is None:
             raise Refused(f"secret {self.id} has no field {name!r}; its fields are {', '.join(raw['name'] for raw in self.fields) or 'none yet'}")
-        return found
+        return rows
 
     def waiting(self) -> bool:
         return any(raw["name"] not in self.filled for raw in self.fields)

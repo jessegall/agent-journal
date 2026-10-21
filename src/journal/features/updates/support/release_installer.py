@@ -39,7 +39,7 @@ class ReleaseInstaller:
 
     @staticmethod
     def script_at(repository: str, ref: str) -> str:
-        found = GITHUB.match(repository)
-        if found is None:
+        rows = GITHUB.match(repository)
+        if rows is None:
             raise Refused(f"the journal installs from GitHub only: {repository} is no GitHub address")
-        return f"https://raw.githubusercontent.com/{found['owner']}/{found['repo']}/{ref}/install.sh"
+        return f"https://raw.githubusercontent.com/{rows['owner']}/{rows['repo']}/{ref}/install.sh"

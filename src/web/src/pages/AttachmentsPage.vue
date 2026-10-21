@@ -121,10 +121,10 @@ const pickKind = (picked) => {
             </template>
             <template v-if="words && listedFiles.length">
                 <SectionHeading class="group-head">
-                    {{ view.found }} {{ view.found === 1 ? "file matches" : "files match" }}
+                    {{ view.total }} {{ view.total === 1 ? "file matches" : "files match" }}
                 </SectionHeading>
             </template>
-            <PagedList :shown="listedFiles.length" :total="view.found" :more="view.more" :load="loadMore">
+            <PagedList :shown="listedFiles.length" :total="view.total" :more="view.more" :load="loadMore">
                 <template v-for="g in groups" :key="g.title">
                     <section class="group">
                         <SectionHeading class="group-head">

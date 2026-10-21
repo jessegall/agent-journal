@@ -27,13 +27,13 @@ class P256:
 
     @staticmethod
     def times(scalar: int, point: tuple) -> tuple | None:
-        found = None
+        rows = None
         while scalar:
             if scalar & 1:
-                found = P256.added(found, point)
+                rows = P256.added(rows, point)
             point = P256.added(point, point)
             scalar >>= 1
-        return found
+        return rows
 
     @staticmethod
     def is_on_curve(public: bytes) -> bool:
@@ -50,5 +50,5 @@ class P256:
         point = (int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big"))
         digest = int.from_bytes(hashlib.sha256(message).digest(), "big")
         inverse = pow(s, -1, N)
-        found = P256.added(P256.times(digest * inverse % N, G), P256.times(r * inverse % N, point))
-        return found is not None and found[0] % N == r
+        rows = P256.added(P256.times(digest * inverse % N, G), P256.times(r * inverse % N, point))
+        return rows is not None and rows[0] % N == r

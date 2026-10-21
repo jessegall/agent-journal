@@ -14,8 +14,8 @@ class MigratedRows(Repository[MigratedRow]):
         return self.connection.one("SELECT 1 AS found FROM migrated_rows WHERE source = ?", (source,)) is not None
 
     def brought_as(self, source: str) -> Ref | None:
-        found = self.connection.one("SELECT target FROM migrated_rows WHERE source = ?", (source,))
-        return None if found is None else Ref.parse(found["target"])
+        rows = self.connection.one("SELECT target FROM migrated_rows WHERE source = ?", (source,))
+        return None if rows is None else Ref.parse(rows["target"])
 
     def referred(self, environment: str, ref: str) -> Ref | None:
         kind, _, n = ref.partition(":")

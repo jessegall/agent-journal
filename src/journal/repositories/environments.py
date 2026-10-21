@@ -9,14 +9,14 @@ class Environments(Repository[Environment]):
     model = Environment
 
     def named(self, name: str) -> Environment:
-        found = self.matching(name=name)
-        return found[0] if found else self.save(Environment(name=name), Actor.system())
+        rows = self.matching(name=name)
+        return rows[0] if rows else self.save(Environment(name=name), Actor.system())
 
     def existing(self, name: str) -> Environment:
-        found = self.matching(name=name)
-        if not found:
+        rows = self.matching(name=name)
+        if not rows:
             raise NotFound("environment", name)
-        return found[0]
+        return rows[0]
 
     def wipe(self, environment: Environment, actor: Actor) -> None:
         with self.connection.transaction():

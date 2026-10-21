@@ -34,8 +34,8 @@ class Entries(ScopedRepository[Entry]):
 
     def said_last(self, session: str, keys: tuple[str, ...]) -> Entry | None:
         marks = ", ".join("?" for _ in keys)
-        found = self.selected(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({marks}) ORDER BY id DESC LIMIT 1", (session, *keys))
-        return found[0] if found else None
+        rows = self.selected(f"kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') IN ({marks}) ORDER BY id DESC LIMIT 1", (session, *keys))
+        return rows[0] if rows else None
 
     def lines_said_after(self, session: str, key: str, entry_id: int) -> list[str]:
         return [e.data["line"] for e in self.selected("kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND id > ? ORDER BY id", (session, key, entry_id))]

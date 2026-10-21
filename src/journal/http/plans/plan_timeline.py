@@ -17,9 +17,9 @@ class PlanTimeline:
         return sorted(moments, key=lambda m: m.time)
 
     def moments(self, task: Task) -> list[TimelineMoment]:
-        found = [TimelineMoment(log.created_at.timestamp(), "log", task.id, task.title, log.line) for log in self.task_logs.of(task)]
+        rows = [TimelineMoment(log.created_at.timestamp(), "log", task.id, task.title, log.line) for log in self.task_logs.of(task)]
         if task.started_at:
-            found.append(TimelineMoment(task.started_at.timestamp(), "started", task.id, task.title, ""))
+            rows.append(TimelineMoment(task.started_at.timestamp(), "started", task.id, task.title, ""))
         if task.finished_at:
-            found.append(TimelineMoment(task.finished_at.timestamp(), "done" if task.state == TaskState.DONE else "ended", task.id, task.title, task.outcome))
-        return found
+            rows.append(TimelineMoment(task.finished_at.timestamp(), "done" if task.state == TaskState.DONE else "ended", task.id, task.title, task.outcome))
+        return rows

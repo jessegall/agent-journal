@@ -170,13 +170,13 @@ class Chain:
 
     @staticmethod
     def segments(part: str) -> list[list[str]]:
-        found: list[list[str]] = [[]]
+        rows: list[list[str]] = [[]]
         for word in Chain.uncommented(part).split():
             if word in ("|", "||", "|&", "&"):
-                found.append([])
+                rows.append([])
                 continue
-            found[-1].append(word)
-        return [Chain.led(text) for text in found]
+            rows[-1].append(word)
+        return [Chain.led(text) for text in rows]
 
     @staticmethod
     def uncommented(part: str) -> str:

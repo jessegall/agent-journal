@@ -49,7 +49,7 @@ class EnvironmentKind:
         return "deleted" if row.is_deleted() else ""
 
     def message_of(self, row: Version3Row, into: Environment) -> Ref | None:
-        return next((found for ref in row.refs if ref.startswith("message:") and (found := self.ledger.referred(into.name, ref))), None)
+        return next((rows for ref in row.refs if ref.startswith("message:") and (rows := self.ledger.referred(into.name, ref))), None)
 
     def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Model:
         raise NotImplementedError

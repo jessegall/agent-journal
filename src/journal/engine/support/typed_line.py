@@ -22,7 +22,7 @@ class TypedLine:
         return line if len(line) <= cls.LONGEST else f"{line[:cls.LONGEST - 4]} ..."
 
     def messages_named(self) -> set[int]:
-        return {int(n) for found in NAMED.findall(self.line) for n in found.split(", ")}
+        return {int(n) for rows in NAMED.findall(self.line) for n in rows.split(", ")}
 
     def holds(self, prompt: str) -> bool:
         text = " ".join(prompt.split())

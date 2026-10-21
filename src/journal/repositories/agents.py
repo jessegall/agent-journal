@@ -32,10 +32,10 @@ class Agents(ScopedRepository[Agent]):
         return self.matching(state=name)
 
     def for_session(self, session: str) -> Agent:
-        found = self.across_environments(session=session)
-        if not found:
+        rows = self.across_environments(session=session)
+        if not rows:
             raise NotFound(self.table, session)
-        return found[0]
+        return rows[0]
 
     def others_lately(self, session: str, since: datetime) -> list[Agent]:
         return [a for a in self.in_() if a.session != session and a.updated_at >= since and not (a.state == "ended" and a.updated_at - a.created_at < timedelta(minutes=1))]

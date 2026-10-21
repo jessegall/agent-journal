@@ -35,17 +35,17 @@ class Menu:
         text = cls.plain(screen)
         footers = list(FOOTER.finditer(text))
         above = text[:footers[-1].start()] if footers else text
-        found = list(OPTION.finditer(above))
-        if not found:
+        rows = list(OPTION.finditer(above))
+        if not rows:
             return None
         block = []
-        for match in reversed(found):
+        for match in reversed(rows):
             if block and int(match["number"]) != int(block[0]["number"]) - 1:
                 break
             block.insert(0, match)
         if len(block) < 2 or int(block[0]["number"]) != 1:
             return None
-        if not footers and above[found[-1].end():].strip() and not any(m["cursor"] for m in block):
+        if not footers and above[rows[-1].end():].strip() and not any(m["cursor"] for m in block):
             return None
         asked = " ".join(cls.asked_lines(above[:block[0].start()]))
         return cls(asked, tuple(Option(int(m["number"]), m["label"], bool(m["cursor"])) for m in block))

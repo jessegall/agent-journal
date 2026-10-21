@@ -22,8 +22,8 @@ class Handler(PooledHandler):
 
     def do_GET(self) -> None:
         request = self._request()
-        if not request.path.startswith(("/journal/", "/hooks/", "/cli")) and (found := self.static.serve(request.path)):
-            return self._file(found)
+        if not request.path.startswith(("/journal/", "/hooks/", "/cli")) and (rows := self.static.serve(request.path)):
+            return self._file(rows)
         self._answer(self._dispatched(request))
 
     def do_POST(self) -> None:

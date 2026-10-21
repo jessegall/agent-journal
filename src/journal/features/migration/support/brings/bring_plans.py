@@ -34,7 +34,7 @@ class BringPlans(EnvironmentKind):
         for given in row.listed("phases"):
             phase = self.phases.imported(Phase(environment_id=into.id, title=given.get("title", ""), complete_when=given.get("when", ""), checkpoint=bool(given.get("checkpoint"))), row.made_at(), actor)
             self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_OF), actor)
-            for task in [found for n in given.get("todos", []) if (found := self.ledger.referred(into.name, f"todo:{n}"))]:
+            for task in [rows for n in given.get("todos", []) if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
                 self.links.save(Link(source=task, target=Ref.to(plan), kind=IN_PLAN), actor)
                 self.links.save(Link(source=task, target=Ref.to(phase), kind=IN_PHASE), actor)
         return plan

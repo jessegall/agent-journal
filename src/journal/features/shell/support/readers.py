@@ -20,10 +20,10 @@ class Readers:
         return [KINDS[path.suffix](path) for path in sorted(self.config.readers.iterdir()) if path.suffix in KINDS]
 
     def named(self, name: str) -> Reader | ScriptReader:
-        found = [path for suffix in KINDS if (path := self.config.readers / f"{name}{suffix}").is_file()]
-        if not found:
+        rows = [path for suffix in KINDS if (path := self.config.readers / f"{name}{suffix}").is_file()]
+        if not rows:
             raise Refused(f"no reader named {name}: `journal reader list` names them")
-        return KINDS[found[0].suffix](found[0])
+        return KINDS[rows[0].suffix](rows[0])
 
     def add(self, reader: Reader) -> None:
         self.config.readers.mkdir(parents=True, exist_ok=True)

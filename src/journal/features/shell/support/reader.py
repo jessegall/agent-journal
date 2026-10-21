@@ -27,5 +27,5 @@ class Reader:
         return self.pattern in command
 
     def read(self, lines: list[str]) -> list[str]:
-        found = re.compile(self.pattern)
-        return [f"{i}: {line}" for i, line in enumerate(lines, 1) if found.search(line)]
+        rows = re.compile(self.pattern)
+        return [f"{i}: {line}" for i, line in enumerate(lines, 1) if rows.search(line)]

@@ -26,8 +26,8 @@ class SettingRows(ScopedRepository[Setting]):
         return self.project(option.key, option.default)
 
     def set(self, key: str, value: object, actor) -> Setting:
-        found = [s for s in self.project_rows() if s.key == key]
-        return self.save((found[0] if found else Setting(environment_id=PROJECT, key=key)).set_to(value, self._now().timestamp()), actor)
+        rows = [s for s in self.project_rows() if s.key == key]
+        return self.save((rows[0] if rows else Setting(environment_id=PROJECT, key=key)).set_to(value, self._now().timestamp()), actor)
 
     def unset(self, key: str, actor) -> None:
         for row in [s for s in self.project_rows() if s.key == key]:

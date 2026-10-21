@@ -25,10 +25,10 @@ class Plugins(Repository[Plugin]):
         self.live = None
 
     def named(self, name: str) -> Plugin:
-        found = self.matching(name=name)
-        if not found:
+        rows = self.matching(name=name)
+        if not rows:
             raise NotFound(self.table, name)
-        return found[0]
+        return rows[0]
 
     def enabled(self) -> list[Plugin]:
         if self.live is None:

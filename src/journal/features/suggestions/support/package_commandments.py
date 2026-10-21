@@ -44,8 +44,8 @@ class PackageCommandments(Suggester):
         if not lock.is_file():
             return None
         data = json.loads(lock.read_text())
-        found = [p.get("version", "") for p in (*data.get("packages", []), *data.get("packages-dev", [])) if p.get("name") == PACKAGE]
-        return found[0] if found else None
+        rows = [p.get("version", "") for p in (*data.get("packages", []), *data.get("packages-dev", [])) if p.get("name") == PACKAGE]
+        return rows[0] if rows else None
 
     def wires_hooks(self) -> bool:
         return any(STAMP in self.read(self.config.root / name) for name in SETTINGS)

@@ -42,13 +42,13 @@ class AgentController(Controller[Agent]):
         return self.activity.page(rows)
 
     def live(self, request: Request) -> Response:
-        found = []
+        rows = []
         for environment in self.environments.all():
             with self.scope.of(environment.id):
                 agent = self.repository.live()
             if agent:
-                found.append({"environment": environment.name, "agent": agent})
-        return Response.json(found)
+                rows.append({"environment": environment.name, "agent": agent})
+        return Response.json(rows)
 
     def type(self, request: Request) -> Response:
         self.supervisor.type(self.scope.id, request.body.get("line", ""))

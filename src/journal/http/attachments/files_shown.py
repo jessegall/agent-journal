@@ -8,5 +8,5 @@ class FilesShown(TypedDict):
 
     files: list[AttachedFile]
     more: bool
-    found: int
+    total: int
     counts: dict

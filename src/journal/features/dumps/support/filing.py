@@ -51,16 +51,16 @@ class Filing:
     def filed(self, n: int, item: str, how: str, refs: str, added: str, actor: Actor) -> Dump:
         if not how.strip():
             raise Refused("say what was done with it")
-        found, own = self.named_refs(refs), self.named_refs(added)
-        if set(own) - set(found):
+        rows, own = self.named_refs(refs), self.named_refs(added)
+        if set(own) - set(rows):
             raise Refused("--added names rows you also list in refs")
         dump = self.dumps.find(n)
-        missing = [ref for ref in found if not self.links.is_row(Ref.parse(ref))]
+        missing = [ref for ref in rows if not self.links.is_row(Ref.parse(ref))]
         if missing:
             raise Refused(f"not a row here: {', '.join(missing)}")
-        for ref in found:
+        for ref in rows:
             self.links.save(Link(source=Ref.to(dump), target=Ref.parse(ref), kind=FILED), actor)
-        return self.written(n, item, actor, outcome=how.strip(), refs=found, added=own, failed="")
+        return self.written(n, item, actor, outcome=how.strip(), refs=rows, added=own, failed="")
 
     def failed(self, n: int, item: str, why: str, actor: Actor) -> Dump:
         if not why.strip():
@@ -101,8 +101,8 @@ class Filing:
         if not question.strip():
             raise Refused("say what you need to know")
         dump = self.open(n, f"dump {n} is closed")
-        found = [g.strip()[:LABEL] for g in guesses.split("|") if g.strip()][:OFFERED]
-        return self.dumps.save(dump.asked(question.strip(), found, time.time()), actor)
+        rows = [g.strip()[:LABEL] for g in guesses.split("|") if g.strip()][:OFFERED]
+        return self.dumps.save(dump.asked(question.strip(), rows, time.time()), actor)
 
     def answer(self, n: int, text: str, actor: Actor) -> Dump:
         self.only_user(actor, "answers a question on a dump")
@@ -117,10 +117,10 @@ class Filing:
         dump = self.dumps.find(n)
         if not dump.brief.strip():
             raise Refused(f"dump {n} has no pasted text to split")
-        found = list(dict.fromkeys(part.strip()[:LABEL] for part in parts.split(",") if part.strip()))
-        if not found or set(found) & set(dump.files):
+        rows = list(dict.fromkeys(part.strip()[:LABEL] for part in parts.split(",") if part.strip()))
+        if not rows or set(rows) & set(dump.files):
             raise Refused("name the parts of the pasted text, comma separated, none named like a dropped file")
-        return self.dumps.save(dump.with_(parts=tuple(found)), actor)
+        return self.dumps.save(dump.with_(parts=tuple(rows)), actor)
 
     def name(self, n: int, title: str, actor: Actor) -> Dump:
         if not title.strip():

@@ -8,8 +8,8 @@ class Shares(ScopedRepository[Share]):
     model = Share
 
     def by_token(self, token: str) -> Share | None:
-        found = self.across_environments(token=token) if token else []
-        return found[0] if found else None
+        rows = self.across_environments(token=token) if token else []
+        return rows[0] if rows else None
 
     def open_anywhere(self) -> list[Share]:
         now = datetime.now(timezone.utc)

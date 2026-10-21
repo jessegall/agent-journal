@@ -41,7 +41,7 @@ class BringWaits(EnvironmentKind):
 
     def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Task:
         task = self.tasks.find(self.ledger.referred(into.name, f"todo:{row.n}").id)
-        for before in [found for n in row.listed("after") if (found := self.ledger.referred(into.name, f"todo:{n}"))]:
+        for before in [rows for n in row.listed("after") if (rows := self.ledger.referred(into.name, f"todo:{n}"))]:
             try:
                 self.links.save(Link(source=Ref.to(task), target=before, kind=WAITS_ON), actor)
             except Refused as loop:

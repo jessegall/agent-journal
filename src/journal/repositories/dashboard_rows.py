@@ -11,5 +11,5 @@ class DashboardRows(Repository[DashboardRow]):
         return self.matching(plugin=plugin)
 
     def keyed(self, plugin: str, key: str) -> DashboardRow | None:
-        found = self.matching(plugin=plugin, key=key)
-        return found[0] if found else None
+        rows = self.matching(plugin=plugin, key=key)
+        return rows[0] if rows else None

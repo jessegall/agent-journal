@@ -946,11 +946,11 @@ def test_every_route_the_viewer_names_is_served_and_version_threes_api_is_gone(s
 
 def test_the_search_page_finds_a_task_by_its_words(server):
     call(server, "POST", "/journal/tasks", {"title": "rebuild the viewer", "brief": "every page"})
-    status, found = call(server, "GET", "/journal/search?words=viewer%20page")
-    assert status == 200 and found["found"][0]["ref"] == "task 1"
-    assert "check" in found["models"] and "message" in found["models"], "the page gets the models it can narrow to"
-    status, found = call(server, "GET", "/journal/search?words=viewer%20page&models=plan,message")
-    assert found["found"] == [], "narrowed to plans and messages, the task is not found"
+    status, rows = call(server, "GET", "/journal/search?words=viewer%20page")
+    assert status == 200 and rows["found"][0]["ref"] == "task 1"
+    assert "check" in rows["models"] and "message" in rows["models"], "the page gets the models it can narrow to"
+    status, rows = call(server, "GET", "/journal/search?words=viewer%20page&models=plan,message")
+    assert rows["found"] == [], "narrowed to plans and messages, the task is not found"
 
 
 def test_the_plan_bars_work_mode_and_the_top_bars_pause_are_version_fours_own(server):

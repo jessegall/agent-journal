@@ -12,8 +12,8 @@ class OutputMask:
     @staticmethod
     def forms(value: str) -> set[bytes]:
         raw = value.encode()
-        found = {raw, base64.b64encode(raw), base64.urlsafe_b64encode(raw), urllib.parse.quote(value, safe="").encode(), json.dumps(value)[1:-1].encode(), raw.hex().encode()}
-        return {form.rstrip(b"=") for form in found if form}
+        rows = {raw, base64.b64encode(raw), base64.urlsafe_b64encode(raw), urllib.parse.quote(value, safe="").encode(), json.dumps(value)[1:-1].encode(), raw.hex().encode()}
+        return {form.rstrip(b"=") for form in rows if form}
 
     def masked(self, output: bytes) -> bytes:
         for form, mask in self.masks:

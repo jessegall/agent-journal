@@ -20,10 +20,10 @@ class AttachedFiles:
 
     def page(self, asked: FilesAsked) -> FilesShown:
         every = sorted((f for m in self.messages.in_() for f in self.of(m)), key=lambda f: -f.time)
-        found = [f for f in every if asked.holds(f)]
+        rows = [f for f in every if asked.holds(f)]
         shelves = {Message.table(): len(every)} if every else {}
         images = sum(f.image for f in every)
-        return FilesShown(files=found[asked.skip:asked.skip + asked.last], more=len(found) > asked.skip + asked.last, found=len(found),
+        return FilesShown(files=rows[asked.skip:asked.skip + asked.last], more=len(rows) > asked.skip + asked.last, total=len(rows),
                           counts={"all": len(every), "images": images, "other": len(every) - images, "shelves": shelves})
 
     def of(self, message: Message) -> list[AttachedFile]:

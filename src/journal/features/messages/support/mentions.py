@@ -11,9 +11,9 @@ class Mentions:
 
     @staticmethod
     def in_(text: str) -> list[Ref]:
-        found = []
+        rows = []
         for kind, n in NAMED.findall(text):
             ref = Ref(TABLES.get(kind.lower(), f"{kind.lower()}s"), int(n))
-            if ref not in found:
-                found.append(ref)
-        return found
+            if ref not in rows:
+                rows.append(ref)
+        return rows

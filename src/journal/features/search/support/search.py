@@ -1,5 +1,5 @@
 from journal.config import Config
-from journal.features.search.support.found import Found
+from journal.features.search.support.search_hit import SearchHit
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
@@ -40,26 +40,26 @@ class Search:
     def models(self) -> list[str]:
         return [self.named(kind) for kind in self.kinds]
 
-    def found(self, terms: list[str]) -> list[Found]:
+    def hits(self, terms: list[str]) -> list[SearchHit]:
         return self.rows(terms, self.kinds)
 
-    def found_in(self, terms: list[str], names: list[str]) -> list[Found]:
+    def kind_hits(self, terms: list[str], names: list[str]) -> list[SearchHit]:
         wanted = [kind for kind in self.kinds if self.named(kind) in names]
-        return self.rows(terms, wanted) + (self.said(terms) if CONVERSATION in names else [])
+        return self.rows(terms, wanted) + (self.conversation_hits(terms) if CONVERSATION in names else [])
 
-    def rows(self, terms: list[str], kinds) -> list[Found]:
-        return [Found.of(row, terms) for kind in kinds for row in kind.search(terms)]
+    def rows(self, terms: list[str], kinds) -> list[SearchHit]:
+        return [SearchHit.of(row, terms) for kind in kinds for row in kind.search(terms)]
 
     @staticmethod
     def named(kind: Repository) -> str:
         return kind.model.table().removesuffix("s")
 
-    def said(self, terms: list[str]) -> list[Found]:
-        found = []
+    def conversation_hits(self, terms: list[str]) -> list[SearchHit]:
+        rows = []
         for agent in reversed([agent for agent in self.agents.in_() if agent.has_program()][-CONVERSATIONS:]):
             path = self.providers.named(agent.provider).transcript(self.config.root, agent.session)
             if path is None:
                 continue
             turns = [turn for turn in self.providers.named(agent.provider).turns(path) if all(word.lower() in turn.text.lower() for word in terms)]
-            found += [Found(f"conversation {agent.session[:8]}, line {turn.line}", Found.around(turn.text, terms)) for turn in reversed(turns)]
-        return found
+            rows += [SearchHit(f"conversation {agent.session[:8]}, line {turn.line}", SearchHit.around(turn.text, terms)) for turn in reversed(turns)]
+        return rows

@@ -32,7 +32,7 @@ class Outline:
 
     def told(self, args: Namespace) -> list[str]:
         if args.grep:
-            return self.found(args.grep)
+            return self.rows(args.grep)
         if args.section:
             section = self.section(args.section)
             return section.bullets() if args.bullets else [f"{section.number}. {section.heading}", *section.lines]
@@ -44,6 +44,6 @@ class Outline:
                 return section
         raise Refused(f"no section {wanted}: the outline numbers them from 1")
 
-    def found(self, text: str) -> list[str]:
+    def rows(self, text: str) -> list[str]:
         lowered = text.lower()
         return [f"{section.number} {section.heading}: {line.strip()}" for section in self.sections for line in section.lines if lowered in line.lower()] or [f"no line holds {text}"]

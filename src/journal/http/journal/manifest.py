@@ -42,5 +42,5 @@ class Manifest:
 
     @staticmethod
     def build() -> str:
-        found = re.search(r'src="[^"]*?([^"/]+\.js)"', DIST.read_text()) if DIST.is_file() else None
-        return found.group(1) if found else "journal-4"
+        rows = re.search(r'src="[^"]*?([^"/]+\.js)"', DIST.read_text()) if DIST.is_file() else None
+        return rows.group(1) if rows else "journal-4"

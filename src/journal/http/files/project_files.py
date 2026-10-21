@@ -52,8 +52,8 @@ class ProjectFiles:
         text = query.lower().split()
         if not text:
             return []
-        found = [self.entry(p) for p in sorted(self.root.rglob("*")) if p.is_file() and not self.hidden(p) and all(w in p.name.lower() for w in text)]
-        return found[:PAGE]
+        rows = [self.entry(p) for p in sorted(self.root.rglob("*")) if p.is_file() and not self.hidden(p) and all(w in p.name.lower() for w in text)]
+        return rows[:PAGE]
 
     def inside(self, given: str) -> Path | None:
         path = (self.root / given.strip("/")).resolve()

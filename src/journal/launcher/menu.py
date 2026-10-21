@@ -86,8 +86,8 @@ class Menu:
 
     def _hooks(self, others: list[Path], aside_before: bool) -> bool:
         files = f"{len(others)} file" + ("s" if len(others) != 1 else "")
-        found = [f"Found now, in {files}:", *(f"  {path}" for path in others)] if others else ["None found in the settings right now."]
-        notes = ["They might conflict with the journal's. Set aside, a copy is kept and they are put back when the journal ends.", *found]
+        rows = [f"Found now, in {files}:", *(f"  {path}" for path in others)] if others else ["None found in the settings right now."]
+        notes = ["They might conflict with the journal's. Set aside, a copy is kept and they are put back when the journal ends.", *rows]
         return self.screen.pick("Set aside your existing hooks?", notes, [Option("Yes, set them aside"), Option("No, keep them")], 0 if aside_before else 1) == 0
 
     def _hooks_to_trust(self, agent: str) -> None:

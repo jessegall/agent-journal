@@ -23,12 +23,12 @@ class OutputFiles:
         return [line for path in self.parts() for line in path.read_text(errors="replace").splitlines()]
 
     def last(self, n: int) -> list[str]:
-        found: list[str] = []
+        rows: list[str] = []
         for path in reversed(self.parts()):
-            found = self.tail_of(path, n - len(found)) + found
-            if len(found) >= n:
+            rows = self.tail_of(path, n - len(rows)) + rows
+            if len(rows) >= n:
                 break
-        return found[-n:]
+        return rows[-n:]
 
     def parts(self) -> list[Path]:
         return [path for i in self.recorded() for name in (f"{i}.out", f"{i}.err") if (path := self.folder / name).is_file()]

@@ -36,7 +36,7 @@ class SecretValues:
         path = self.path
         if not path.is_file():
             return {}
-        return dict(found for found in map(self.parsed, path.read_text().splitlines()) if found)
+        return dict(rows for rows in map(self.parsed, path.read_text().splitlines()) if rows)
 
     def put(self, variable: str, value: str) -> None:
         current = self.values()

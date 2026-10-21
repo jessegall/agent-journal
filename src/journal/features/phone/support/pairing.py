@@ -46,16 +46,16 @@ class Pairing:
 
     def pair(self, given: str, device: str, now: datetime) -> PairedPhone:
         hashes = {self.hashed(given), self.hashed(self.typed(given))}
-        found = next((code for code in self.codes.open(now) if hashes & {code.code, code.short}), None)
-        if found is None:
+        rows = next((code for code in self.codes.open(now) if hashes & {code.code, code.short}), None)
+        if rows is None:
             self.missed(now)
             raise Refused("that code pairs no phone: ask for a new one on the computer")
         self.refuse_a_second(now)
         key = secrets.token_urlsafe(32)
-        self.codes.save(found.closed(now), Actor.system())
+        self.codes.save(rows.closed(now), Actor.system())
         name = " ".join(device.split())[:DEVICE_LONGEST] or "A phone"
-        phone = self.phones.save(Phone(environment_id=found.environment_id, name=name, key=self.hashed(key), expires_at=now + timedelta(days=found.days), last_seen_at=now), Actor.system())
-        self.cards.show(found.environment_id, "", f"A phone paired: {name}", "phone", shows=ChatMark.PHONES)
+        phone = self.phones.save(Phone(environment_id=rows.environment_id, name=name, key=self.hashed(key), expires_at=now + timedelta(days=rows.days), last_seen_at=now), Actor.system())
+        self.cards.show(rows.environment_id, "", f"A phone paired: {name}", "phone", shows=ChatMark.PHONES)
         self.tunnel.settle()
         return PairedPhone(phone, key)
 

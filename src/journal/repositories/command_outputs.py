@@ -11,10 +11,10 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     model = CommandOutput
 
     def of_chain(self, chain: str) -> CommandOutput:
-        found = self.selected_everywhere("chain = ? ORDER BY id", (chain,))
-        if not found:
+        rows = self.selected_everywhere("chain = ? ORDER BY id", (chain,))
+        if not rows:
             raise NotFound(self.table, chain)
-        return found[-1]
+        return rows[-1]
 
     def in_background(self, session: str) -> list[CommandOutput]:
         return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if self.is_running(Path(o.folder))]

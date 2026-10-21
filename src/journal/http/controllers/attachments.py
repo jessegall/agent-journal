@@ -22,5 +22,5 @@ class AttachmentController:
         table, id = request.params["table"], request.number("id")
         if table not in self.rows or not self.rows[table].matching(id=id):
             return Response.not_found("no such file")
-        found = self.attachments.read(table, id, request.params["name"])
-        return FileResponse(*found) if found else Response.not_found("no such file")
+        rows = self.attachments.read(table, id, request.params["name"])
+        return FileResponse(*rows) if rows else Response.not_found("no such file")

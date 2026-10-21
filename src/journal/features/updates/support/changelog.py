@@ -15,7 +15,7 @@ class Changelog:
 
     def page(self, skip: int) -> ChangelogPage:
         text = self.path.read_text() if self.path.is_file() else ""
-        starts = [found.start() for found in RELEASE.finditer(text)]
+        starts = [rows.start() for rows in RELEASE.finditer(text)]
         ends = [*starts[1:], len(text)]
         stop = min(skip + RELEASES_PER_PAGE, len(starts))
         first = starts[0] if starts else len(text)

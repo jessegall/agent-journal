@@ -159,16 +159,16 @@ def clockless(text: str) -> str:
 
 def differences(left: list[dict], right: list[dict], nudges: bool = False) -> list[str]:
     """What differs between two records, step by step, in words; nothing when the agent would have seen the same: the same answer's lines, the same lines typed in order, the same stack when both records carry one, and, when asked, the same nudges said."""
-    found = []
+    rows = []
     for a, b in zip(left, right):
         if lines_of(a["answer"]) != lines_of(b["answer"]):
-            found.append(f"{a['name']}: the hook's answer differs: {a['answer']} against {b['answer']}")
+            rows.append(f"{a['name']}: the hook's answer differs: {a['answer']} against {b['answer']}")
         if a["typed"] != b["typed"]:
-            found.append(f"{a['name']}: the lines typed differ: {a['typed']} against {b['typed']}")
+            rows.append(f"{a['name']}: the lines typed differ: {a['typed']} against {b['typed']}")
         if nudges and sorted(a["nudges"]) != sorted(b["nudges"]):
-            found.append(f"{a['name']}: the nudges said differ: {a['nudges']} against {b['nudges']}")
+            rows.append(f"{a['name']}: the nudges said differ: {a['nudges']} against {b['nudges']}")
         if "stack" in a and "stack" in b and a["stack"] != b["stack"]:
-            found.append(f"{a['name']}: the stack differs: {a['stack']} against {b['stack']}")
+            rows.append(f"{a['name']}: the stack differs: {a['stack']} against {b['stack']}")
     if len(left) != len(right):
-        found.append(f"{len(left)} steps against {len(right)}")
-    return found
+        rows.append(f"{len(left)} steps against {len(right)}")
+    return rows

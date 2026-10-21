@@ -35,10 +35,10 @@ class Codex(Provider):
         kept = self._rollouts.get(session)
         if kept and kept.is_file():
             return kept
-        found = next(self.sessions.glob(f"**/rollout-*-{session}.jsonl"), None)
-        if found:
-            self._rollouts[session] = found
-        return found
+        rows = next(self.sessions.glob(f"**/rollout-*-{session}.jsonl"), None)
+        if rows:
+            self._rollouts[session] = rows
+        return rows
 
     def latest_session(self, project: Path, since: float) -> str:
         rollouts = [path for day in self.days_since(since) for path in (self.sessions / day).glob("rollout-*.jsonl") if path.stat().st_mtime >= since]
@@ -91,8 +91,8 @@ class Codex(Provider):
         return ["codex", "exec", *resumed, "--dangerously-bypass-approvals-and-sandbox", *chosen, brief]
 
     def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
-        found = re.search(r"session id: ([0-9a-f-]{8,})", f"{out}\n{err}", re.IGNORECASE)
-        return super().worker_outcome(out, err)[0], found.group(1) if found else ""
+        rows = re.search(r"session id: ([0-9a-f-]{8,})", f"{out}\n{err}", re.IGNORECASE)
+        return super().worker_outcome(out, err)[0], rows.group(1) if rows else ""
 
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}] for kind in self.hook_kinds}

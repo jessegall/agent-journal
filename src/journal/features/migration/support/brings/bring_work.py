@@ -24,8 +24,8 @@ class BringWork(EnvironmentKind):
         return super().left_behind(row, into) or ("" if self.task_of(row, into) else "its to-do did not come across")
 
     def task_of(self, row: Version3Row, into: Environment) -> int | None:
-        found = self.ledger.referred(into.name, f"todo:{row.data.get('todo')}")
-        return None if found is None else found.id
+        rows = self.ledger.referred(into.name, f"todo:{row.data.get('todo')}")
+        return None if rows is None else rows.id
 
     def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> TaskLog:
         task = self.task_of(row, into)

@@ -11,5 +11,5 @@ class Mentioned:
 
     @staticmethod
     def in_(text: str) -> list[Ref]:
-        found = [Ref(NOUNS[noun.lower()], int(n)) for noun, n in MENTION.findall(text)]
-        return list(dict.fromkeys(found))
+        rows = [Ref(NOUNS[noun.lower()], int(n)) for noun, n in MENTION.findall(text)]
+        return list(dict.fromkeys(rows))

@@ -69,10 +69,10 @@ class Suggesting:
         return self.messages.keyed_anywhere(self.card_key(suggestion), Actor.system())[0].environment_id
 
     def named(self, key: str) -> Suggester:
-        found = [s for s in self.suggesters if s.key == key]
-        if not found:
+        rows = [s for s in self.suggesters if s.key == key]
+        if not rows:
             raise NotFound("suggesters", key)
-        return found[0]
+        return rows[0]
 
     def target_environment(self) -> Environment:
         live = self.agents.live_anywhere()

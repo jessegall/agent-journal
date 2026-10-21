@@ -48,8 +48,8 @@ class Health:
             out = subprocess.run(["claude", "mcp", "list"], cwd=self.config.root, capture_output=True, text=True, timeout=60).stdout
         except (OSError, subprocess.TimeoutExpired) as failed:
             return HealthReport(failure=str(failed))
-        found = {}
+        rows = {}
         for line in out.splitlines():
             if match := LINE.match(line.strip()):
-                found[match["name"]] = Known(match["name"], match["how"].replace(" (HTTP)", "").replace(" (SSE)", ""), STATES[match["mark"]], match["words"].strip())
-        return HealthReport(found)
+                rows[match["name"]] = Known(match["name"], match["how"].replace(" (HTTP)", "").replace(" (SSE)", ""), STATES[match["mark"]], match["words"].strip())
+        return HealthReport(rows)

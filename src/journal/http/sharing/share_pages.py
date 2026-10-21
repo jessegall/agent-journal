@@ -123,11 +123,11 @@ class SharePages:
 
     @staticmethod
     def asset(name: str) -> ShareAnswer:
-        found = (APP / "assets" / name).resolve()
-        if found.parent != (APP / "assets").resolve() or not found.is_file():
+        rows = (APP / "assets" / name).resolve()
+        if rows.parent != (APP / "assets").resolve() or not rows.is_file():
             return SharePages.gone(404)
-        kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
-        return ShareAnswer(200, found.read_bytes(), kind, {"Cache-Control": "public, max-age=31536000, immutable", **APP_HEADERS})
+        kind = mimetypes.guess_type(rows.name)[0] or "application/octet-stream"
+        return ShareAnswer(200, rows.read_bytes(), kind, {"Cache-Control": "public, max-age=31536000, immutable", **APP_HEADERS})
 
     @staticmethod
     def gone(status: int) -> ShareAnswer:

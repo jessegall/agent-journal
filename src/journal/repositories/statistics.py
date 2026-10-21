@@ -31,5 +31,5 @@ class Statistics(Repository[Statistic]):
             return self.save(self.of(key).with_(value=value), actor)
 
     def of(self, key: str) -> Statistic:
-        found = self.matching(key=key)
-        return found[0] if found else Statistic(key=key)
+        rows = self.matching(key=key)
+        return rows[0] if rows else Statistic(key=key)

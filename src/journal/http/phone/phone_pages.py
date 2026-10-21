@@ -83,18 +83,18 @@ class PhonePages:
     @staticmethod
     def public(rest: list[str]) -> ShareAnswer:
         root = (APP / rest[0]).resolve()
-        found = (APP / "/".join(rest)).resolve()
-        if root not in found.parents or not found.is_file():
+        rows = (APP / "/".join(rest)).resolve()
+        if root not in rows.parents or not rows.is_file():
             return SharePages.gone(404)
-        kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
-        return ShareAnswer(200, found.read_bytes(), kind, {"Cache-Control": "public, max-age=3600", **APP_HEADERS})
+        kind = mimetypes.guess_type(rows.name)[0] or "application/octet-stream"
+        return ShareAnswer(200, rows.read_bytes(), kind, {"Cache-Control": "public, max-age=3600", **APP_HEADERS})
 
     @staticmethod
     def worker() -> ShareAnswer:
-        found = APP / WORKER
-        if not found.is_file():
+        rows = APP / WORKER
+        if not rows.is_file():
             return SharePages.gone(404)
-        return ShareAnswer(200, found.read_bytes(), "text/javascript", {"Service-Worker-Allowed": "/p/", "Cache-Control": "no-cache", **APP_HEADERS})
+        return ShareAnswer(200, rows.read_bytes(), "text/javascript", {"Service-Worker-Allowed": "/p/", "Cache-Control": "no-cache", **APP_HEADERS})
 
     def manifest(self) -> ShareAnswer:
         project = self.config.root.name

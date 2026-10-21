@@ -36,7 +36,7 @@ class SecretRun:
         if missing:
             raise Refused(f"secret {secret.id}, {secret.title}, has no value for {', '.join(missing)} on this machine: ask the user with `journal secret request`, and they fill it on the Secrets page")
         by_name = {f.name: values[f.variable] for f in fields}
-        given = PLACEHOLDER.sub(lambda found: by_name.get(found[1], found[0]), template) if template else next((values[f.variable] for f in fields if f.hidden), "")
+        given = PLACEHOLDER.sub(lambda rows: by_name.get(rows[1], rows[0]), template) if template else next((values[f.variable] for f in fields if f.hidden), "")
         mask = OutputMask({values[f.variable]: f.variable for f in fields if f.hidden})
         runs = self.values.path.parent / "runs"
         runs.mkdir(mode=0o700, exist_ok=True)
@@ -58,10 +58,10 @@ class SecretRun:
             raise Refused(f"a secret is never given to {name}: name the program that uses it directly, such as curl or gh")
         if name not in secret.programs:
             raise Refused(f"{name} is not among the programs secret {secret.id} may go to ({', '.join(secret.programs) or 'none yet'}): propose it with `journal secret propose {secret.id} {name}`, and the user allows it on the Secrets page")
-        found = shutil.which(name, path=self.search_path())
-        if found is None:
+        rows = shutil.which(name, path=self.search_path())
+        if rows is None:
             raise Refused(f"no program {name} on this machine")
-        return found
+        return rows
 
     def search_path(self) -> str:
         root = self.config.root.resolve()

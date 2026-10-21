@@ -28,8 +28,8 @@ class DocSearch:
         whole = " ".join(parts.values())
         if not all(word in whole for word in asked):
             return DocHit(id=doc.id, score=0, place="", text="")
-        found = [part for part, text in parts.items() if any(word in text for word in asked)]
-        return DocHit(id=doc.id, score=sum(WEIGHTS[part] for part in found), place=found[0], text=self.passage(doc.body, asked))
+        rows = [part for part, text in parts.items() if any(word in text for word in asked)]
+        return DocHit(id=doc.id, score=sum(WEIGHTS[part] for part in rows), place=rows[0], text=self.passage(doc.body, asked))
 
     @staticmethod
     def passage(body: str, asked: list[str]) -> str:

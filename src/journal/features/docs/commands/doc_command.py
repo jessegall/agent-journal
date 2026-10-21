@@ -57,9 +57,9 @@ class DocCommand(Command):
         folder = Path(args.folder).expanduser()
         if not folder.is_dir():
             raise Refused(f"no such folder: {folder}")
-        found = [doc for doc in map(Version3Doc.read, sorted(p for p in folder.iterdir() if p.is_dir())) if doc]
-        new = [doc for doc in found if not self.docs.titled(doc.title)]
+        rows = [doc for doc in map(Version3Doc.read, sorted(p for p in folder.iterdir() if p.is_dir())) if doc]
+        new = [doc for doc in rows if not self.docs.titled(doc.title)]
         for doc in new:
             self.docs.save(doc, caller.actor)
-        print(f"{len(new)} documents brought in, {len(found) - len(new)} already here")
+        print(f"{len(new)} documents brought in, {len(rows) - len(new)} already here")
         return 0

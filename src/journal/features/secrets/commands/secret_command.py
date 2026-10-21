@@ -163,10 +163,10 @@ class SecretCommand(Command):
         return 0 if done.session_at else 1
 
     def named(self, given: str) -> Secret:
-        found = [s for s in self.secrets.live() if str(s.id) == given or s.title.lower() == given.lower()]
-        if not found:
+        rows = [s for s in self.secrets.live() if str(s.id) == given or s.title.lower() == given.lower()]
+        if not rows:
             raise Refused(f"no secret is numbered or titled {given!r}: `journal secret list` names them")
-        return found[0]
+        return rows[0]
 
     def caller(self, args: Namespace, caller: Caller) -> int:
         print(self.values.path)

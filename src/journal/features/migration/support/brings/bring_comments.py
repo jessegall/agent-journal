@@ -28,7 +28,7 @@ class BringComments(EnvironmentKind):
         return super().left_behind(row, into) or ("" if self.under(row, into) else "the row it was written under did not come across")
 
     def under(self, row: Version3Row, into: Environment) -> Ref | None:
-        return next((found for ref in row.refs if (found := self.ledger.referred(into.name, ref))), None)
+        return next((rows for ref in row.refs if (rows := self.ledger.referred(into.name, ref))), None)
 
     def made(self, row: Version3Row, into: Environment, attached: Path, actor: Actor) -> Message:
         comment = self.messages.imported(Message(environment_id=into.id, author=Author(row.author()), text=row.brief, read_at=row.read_at()), row.made_at(), actor)

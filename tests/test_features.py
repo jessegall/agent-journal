@@ -753,8 +753,8 @@ def test_the_documents_page_lists_the_projects_documents_their_search_and_the_at
     stored = app.container.get(Attachments).store("messages", message.id, "bar.png", b"png")
     app.container.get(Messages).save(message.with_(files=(stored,)), Actor.user(1))
     page = read("/journal/attachments?kind=images")
-    assert page["found"] == 1 and page["files"][0]["name"] == "bar.png" and page["files"][0]["image"] and page["counts"]["images"] == 1, "a file attached to a message is listed"
-    assert read("/journal/attachments?kind=other")["found"] == 0 and read("/journal/attachments?search=screenshot")["found"] == 1
+    assert page["total"] == 1 and page["files"][0]["name"] == "bar.png" and page["files"][0]["image"] and page["counts"]["images"] == 1, "a file attached to a message is listed"
+    assert read("/journal/attachments?kind=other")["total"] == 0 and read("/journal/attachments?search=screenshot")["total"] == 1
 
 
 def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app):
@@ -4590,7 +4590,7 @@ def test_a_subagent_job_on_files_one_already_worked_on_goes_back_to_it_and_a_rev
 class Source:
     def __init__(self, *tags: str, head: str = "") -> None:
         self.tags_asked = []
-        self.found = list(tags)
+        self.rows = list(tags)
         self.plugin_found = []
         self.head = head
         self.branches_asked = []
@@ -4604,7 +4604,7 @@ class Source:
 
     def tags(self, prefix: str) -> list[str]:
         self.tags_asked.append(prefix)
-        return self.found
+        return self.rows
 
 
 class Plugins:
