@@ -56,13 +56,13 @@ test("a watched output's card carries its count and its bar inside it while it r
     finished.done();
 });
 
-test("a docked watch shows its last lines and its bar, and only the user takes it down", async () => {
+test("a docked watch shows its title and ending with its lines kept until it is opened, and only the user takes it down", async () => {
     const {default: WatchDock} = await import("../src/chat/WatchDock.vue");
     const act = vi.fn();
     const ended = {...watch, data: {...watch.data, docked: true, ending: "finished"}};
     const {host, done} = mounted(WatchDock, {message: ended}, act);
     await nextTick();
-    expect([...host.querySelectorAll(".watch-dock-lines li")].map((li) => li.textContent)).toEqual(["FAILED test_b", "FAILED test_c"]);
+    expect(host.querySelector(".watch-dock-lines")).toBeNull();
     expect(host.querySelector(".watch-dock-ending").textContent).toBe("finished");
     host.querySelector('[aria-label^="Take the watched output down"]').click();
     expect(act).toHaveBeenCalledWith("messages", 7, "undock");

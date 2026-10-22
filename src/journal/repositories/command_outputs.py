@@ -34,6 +34,9 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
             self.save(watched.unwatched(), actor)
         return self.save(output.watched(reader, title), actor)
 
+    def reader_outputs(self, reader: str, last: int = 50) -> list[CommandOutput]:
+        return self.selected(self.query().filter(watch_reader=reader).order_descending("id").limit(last))
+
     def all_watched(self) -> list[CommandOutput]:
         return self.selected_globally(self.query().filter(is_watched=True).order("id"))
 

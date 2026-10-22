@@ -6,7 +6,7 @@ import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {useScope} from "../composables/scope.js";
-import {patched} from "../sync/rows.js";
+import {undock} from "../actions/docking.js";
 import {dockedRef} from "../domain/docks.js";
 import {meta} from "../domain/tables.js";
 import {peek} from "../route.js";
@@ -19,12 +19,10 @@ const kind = computed(() => meta(row.value.table));
 const buttons = computed(() => (card.value.dock?.buttons || []).filter((b) => b.act !== "close"));
 const folds = computed(() => props.folded && card.value.dock?.folds !== false);
 
-function undock() {
-    patched(props.message, (row) => (row.data = {...row.data, docked: false}), () => scope.api.act("messages", props.message.id, "undock"));
-}
+const takeDown = () => undock(scope, props.message);
 
 const open = () => peek(row.value.table, row.value.id);
-const OWN = {open, close: undock};
+const OWN = {open, close: takeDown};
 const press = (button) => (OWN[button.act] || (() => scope.api.act(row.value.table, row.value.id, button.act)))();
 </script>
 
@@ -40,7 +38,7 @@ const press = (button) => (OWN[button.act] || (() => scope.api.act(row.value.tab
                     <Btn small @click="press(button)">{{ button.label }}</Btn>
                 </template>
             </span>
-            <CloseButton :title="`Hide from chat; the ${kind.title.toLowerCase()} stays on its page`" @click="undock" />
+            <CloseButton :title="`Hide from chat; the ${kind.title.toLowerCase()} stays on its page`" @click="takeDown" />
         </template>
         <template v-if="card.summary">
             <button type="button" class="row-dock-summary" @click="open">

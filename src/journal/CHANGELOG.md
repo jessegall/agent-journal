@@ -2,6 +2,15 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.7
+
+- An output is read and shown without its terminal colour codes: a test runner's coloured dots no longer reach a card as [90;1m. [39;22m.
+- A docked card shows its title, command, bar and ending, and its output lines only once it is opened.
+- A run inside a container, docker compose exec or docker exec with its flags and its service, is known by the command it runs there, so artisan test in a container is read by the phpunit reader; artisan, phpunit and pest count as testing.
+- When a reader is written anew, every card read through it is drawn again at once, finished or running.
+- A trigger's card names its phrases, where it spelt its title out letter by letter.
+- At the top of a jump the figure lands on a floor whose edge it misses by a few pixels, instead of falling back to try again.
+
 ## 4.5.6
 
 - The restart dialog goes once the journal closes its notice: while it stands, the page reads the notices again every three seconds, where before it relied on the record of changes, which after an upgrade can be thousands of rows deep as the agents' chats are read in, and the closing was lost among them.

@@ -2811,6 +2811,10 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app: App
     console.run(["sequence", "create", "release", "--steps", "bump | tag"], USER)
     console.run(["trigger", "create", "ship it", "release", "--do", "sequence"], USER)
     body = hook(app, "UserPromptSubmit", prompt="ok, ship it now")[1]
+    from journal.repositories.messages import Messages
+    with app.container.get(Scope).environment(1):
+        fired = [m for m in app.container.get(Messages).rows() if m.text == "Trigger release"]
+    assert fired and fired[-1].data["detail"] == "ship it", "the trigger's card names its phrases"
     active = app.container.get(RunTracker)
     assert active.current("s1", 1).title == "release" and "step 1: bump" in hook(app, "Stop")[1].get("reason", ""), "a prompt's words start the sequence and its first step is told at the next stop"
     for _ in range(2):
@@ -6452,6 +6456,13 @@ def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_com
     assert ActivityLabel.build("perl -e 'alarm 590; exec @ARGV' python3 -m pytest -q") == "testing" and ActivityLabel.build("timeout 60 npm test") == "testing"
     from journal.support.command_shape import CommandShape
     assert CommandShape.build("REPLAY_FREEZE=1 perl -e 'alarm 200; exec @ARGV' python3 -m pytest -q") == "python3 -m pytest", "variables set before a command are looked through, as the time-limit wrappers are"
+    assert CommandShape.build("docker compose exec -T server php artisan test --compact") == "php artisan test" and CommandShape.build("docker exec -it -u root app pytest -q") == "pytest", "a run inside a container is known by the command it runs there"
+    from journal.features.shell.support.output_files import OutputFiles
+    styled = app.config.root / "styled"
+    styled.mkdir()
+    (styled / "parts").write_text("R-\n")
+    (styled / "0.out").write_text("\x1b[90;1m.\x1b[39;22m\x1b[90;1m.\x1b[39;22m\n  Tests:  2 passed\n")
+    assert OutputFiles(styled).lines() == ["..", "  Tests:  2 passed"] and OutputFiles(styled).last(1) == ["  Tests:  2 passed"], "colour codes are taken off every line read"
     from journal.features.shell.support.card_line import CardLine
     assert CardLine.is_poor("x" * 81) and not CardLine.is_poor("2 failed, 563 passed in 31.2s"), "a line longer than the card's line reads poorly, a short summary does not"
     assert CardLine.plain("====== 1 failed, 400 deselected in 0.71s ======") == "1 failed, 400 deselected in 0.71s", "the card takes pytest's frame of = signs off its summary"
@@ -8454,6 +8465,15 @@ def test_a_readers_command_run_with_three_different_arguments_tells_the_agent_to
     request = lambda line: ShellRequest(line=wrapped_line(line), cwd=str(app.config.root), shell="/bin/sh", environment=dict(os.environ))
     b"".join(runner.run(request("sleep 0.4"), AGENT, MAIN))
     said = link.pending_lines(MAIN)
+    import time as clock
+    from journal.repositories.command_outputs import CommandOutputs
+    outputs = app.container.get(CommandOutputs)
+    with app.container.get(Scope).environment(MAIN):
+        ended = lambda: all(o.ended for o in outputs.reader_outputs("naps"))
+        for _ in range(50):
+            if ended():
+                break
+            clock.sleep(0.1)
     assert "sleep has run here with 3 different arguments" in said and "give the reader naps a topic pattern" in said, said
 
 

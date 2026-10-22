@@ -1,3 +1,4 @@
+import re
 import shutil
 from pathlib import Path
 
@@ -5,6 +6,7 @@ from journal.support.part import Part
 from journal.support.writes import Writes
 
 BLOCK_BYTES = 65536
+STYLE_CODES = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 
 
 class OutputFiles:
@@ -20,7 +22,7 @@ class OutputFiles:
         return [i for i, kind in enumerate((self.folder / "parts").read_text().splitlines()) if kind.startswith("R")]
 
     def lines(self) -> list[str]:
-        return [line for path in self.parts() for line in path.read_text(errors="replace").splitlines()]
+        return [STYLE_CODES.sub("", line) for path in self.parts() for line in path.read_text(errors="replace").splitlines()]
 
     def last(self, n: int) -> list[str]:
         rows: list[str] = []
@@ -42,7 +44,7 @@ class OutputFiles:
                 file.seek(start)
                 lines = file.read().decode(errors="replace").splitlines()
                 if start == 0 or len(lines) > n:
-                    return lines[-n:] if n > 0 else []
+                    return [STYLE_CODES.sub("", line) for line in lines[-n:]] if n > 0 else []
                 block *= 4
 
     def statuses(self) -> list[int]:

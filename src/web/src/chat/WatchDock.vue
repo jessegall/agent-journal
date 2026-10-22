@@ -4,7 +4,7 @@ import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
-import {patched} from "../sync/rows.js";
+import {undock} from "../actions/docking.js";
 
 const SHOWN_LINES = 6;
 
@@ -17,9 +17,7 @@ const width = computed(() => `${Math.round((card.value.fraction || 0) * 100)}%`)
 const opened = ref(false);
 const output = ref(null);
 
-function undock() {
-    patched(props.message, (row) => (row.data = {...row.data, docked: false}), () => scope.api.act("messages", props.message.id, "undock"));
-}
+const takeDown = () => undock(scope, props.message);
 
 async function read() {
     output.value = await scope.api.readOutput(card.value.output);
@@ -47,7 +45,7 @@ watch(
             <template v-else-if="card.count">
                 <span class="watch-dock-figure">{{ card.count }}</span>
             </template>
-            <CloseButton title="Take the watched output down from above the chat" @click="undock" />
+            <CloseButton title="Take the watched output down from above the chat" @click="takeDown" />
         </template>
         <template v-if="card.line">
             <code class="watch-dock-command">{{ card.line }}</code>
@@ -55,7 +53,7 @@ watch(
         <template v-if="opened && output">
             <pre class="watch-dock-output">{{ output.lines.join("\n") || "It printed nothing yet." }}</pre>
         </template>
-        <template v-else>
+        <template v-else-if="opened">
             <ul class="watch-dock-lines">
                 <template v-for="line in lines" :key="line">
                     <li>{{ line }}</li>
