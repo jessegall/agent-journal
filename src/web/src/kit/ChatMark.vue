@@ -28,7 +28,7 @@ const tint = computed(() => ({
     >
         <Icon :name="mark.icon || 'dot'" />
         <span class="head">
-            <TextDisplay :text="mark.label" inline />
+            <TextDisplay :text="mark.label" inline :row-names="false" />
             <template v-if="mark.name">
                 <strong>{{ mark.name }}</strong>
             </template>
@@ -46,13 +46,13 @@ const tint = computed(() => ({
             <span class="settled">{{ mark.settled }}</span>
         </template>
         <template v-if="mark.detail">
-            <TextDisplay class="detail" :text="mark.detail" inline />
+            <TextDisplay class="detail" :text="mark.detail" inline :row-names="false" />
         </template>
         <template v-if="mark.command">
             <code class="detail command" :title="mark.command">{{ mark.command }}</code>
         </template>
         <template v-if="mark.card">
-            <TextDisplay class="card" :text="mark.card" />
+            <TextDisplay class="card" :text="mark.card" :row-names="false" />
         </template>
         <slot />
     </component>

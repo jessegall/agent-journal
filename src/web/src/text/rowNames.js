@@ -12,9 +12,11 @@ const chips = (text) =>
             `<a class="row-pill" href="#" data-peek="${tableOfWord(word)}:${id}"${at ? ` data-sub="${at}"` : ""}>${word} <span class="row-pill-num">${id}${at ? `:${at}` : ""}</span></a>`
     );
 
-register((text) =>
-    text
-        .split(SKIPPED)
-        .map((part, i) => (i % 2 ? part : chips(part)))
-        .join("")
+register((text, context) =>
+    context.rowNames === false
+        ? text
+        : text
+              .split(SKIPPED)
+              .map((part, i) => (i % 2 ? part : chips(part)))
+              .join("")
 );

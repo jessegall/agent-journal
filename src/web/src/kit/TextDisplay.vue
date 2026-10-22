@@ -4,14 +4,18 @@ import {render} from "../text/index.js";
 import {peekChip, route} from "../route.js";
 import "../text/all.js";
 
-const props = defineProps({text: {type: String, default: ""}, inline: {type: Boolean, default: false}});
+const props = defineProps({
+    text: {type: String, default: ""},
+    inline: {type: Boolean, default: false},
+    rowNames: {type: Boolean, default: true},
+});
 const html = computed(() => {
     const said = props.inline
         ? String(props.text || "")
               .split("\n")
               .find((line) => line.trim()) || ""
         : props.text;
-    const made = render(said, {env: route.value.env});
+    const made = render(said, {env: route.value.env, rowNames: props.rowNames});
     return props.inline ? made.replace(/^<p>|<\/p>\s*$/g, "") : made;
 });
 </script>

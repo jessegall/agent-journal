@@ -27,3 +27,10 @@ test("a row named with a line, a span of lines or a section is a chip that opens
     expect(chips.map((c) => [c.dataset.peek, c.dataset.sub || ""])).toEqual([["docs:55", "120"], ["docs:55", "10-14"], ["docs:55", "section 3"], ["tasks:7", ""]]);
     expect(into.textContent).toBe("read doc 55:120, then doc 55:10-14 and doc 55:section 3; task 7 stays plain");
 });
+
+test("a chat mark draws the rows its words name as plain text, so a click on it opens its own row", () => {
+    const into = document.createElement("div");
+    into.innerHTML = render("Started task 1398: the worker wait", {env: "", rowNames: false});
+    expect(into.querySelectorAll("a[data-peek]").length).toBe(0);
+    expect(into.textContent).toBe("Started task 1398: the worker wait");
+});
