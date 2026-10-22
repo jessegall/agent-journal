@@ -1377,3 +1377,10 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   is gone: the refusal lives where the holder is known.
 - The viewer's task inspector shows "Held by" on a started task: a worker by number and name, an agent by program
   and session.
+
+## The shared journal
+
+Plan 24 builds it on the branch shared-journal, from doc 62 and report 42.
+
+- **What is shared and what stays on one machine.** Every model has `shared`, true by default. Kept on one machine: Entry (the hook and timeline log), Agent (the state stack), Timing, Statistic, CommandOutput, DashboardRow, Secret, Phone, PhoneCode, MigratedRow, Version3Migration, JournalVersion and ReleaseMessage, and also Plugin and McpServer: a plugin is a program installed on the machine and an MCP server's command and keys are the machine's own. Alias is shared: the team runs the same project commands.
+

@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -7,6 +8,8 @@ from journal.models.scoped import Scoped
 @dataclass(frozen=True)
 class PhoneCode(Scoped):
     """A code the user shows to pair one phone: its link and its short form kept only as hashes, open for minutes, used once, voided after too many wrong tries."""
+
+    shared: ClassVar[bool] = False
 
     MAXIMUM_ATTEMPTS = 10
 

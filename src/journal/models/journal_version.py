@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass
 
 from journal.events.journal_updated import JournalUpdated
@@ -7,6 +8,8 @@ from journal.models.model import Model
 @dataclass(frozen=True)
 class JournalVersion(Model):
     """The version the journal last started on and the one it ran before; starting on another one is the journal having been updated."""
+
+    shared: ClassVar[bool] = False
 
     version: str = ""
     previous: str = ""

@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -7,6 +8,8 @@ from journal.models.scoped import Scoped
 @dataclass(frozen=True)
 class Phone(Scoped):
     """A phone paired with the journal through the tunnel: the name its browser gave, its key's hash, and how long it stays paired."""
+
+    shared: ClassVar[bool] = False
 
     PRESENCE_INTERVAL = timedelta(minutes=1)
     NOTIFICATION_RETRY_DELAY = timedelta(minutes=1)

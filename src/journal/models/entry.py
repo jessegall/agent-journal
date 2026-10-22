@@ -10,6 +10,8 @@ from journal.models.scoped import Scoped
 class Entry(Scoped):
     """Append only: everything that happened, from hooks and from commands, and who did it; it is the timeline itself, so it is in no timeline, and a tool entry carries the call's one reading beside the raw hook."""
 
+    shared: ClassVar[bool] = False
+
     timeline_visible: ClassVar[bool] = False
 
     kind: str = ""

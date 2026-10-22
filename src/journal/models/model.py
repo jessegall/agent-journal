@@ -15,6 +15,7 @@ class Model:
 
     text_fields: ClassVar[tuple[str, ...]] = ()
     timeline_visible: ClassVar[bool] = True
+    shared: ClassVar[bool] = True
 
     id: int | None = None
     created_at: datetime | None = None

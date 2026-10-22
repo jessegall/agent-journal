@@ -1,3 +1,4 @@
+from typing import ClassVar
 from dataclasses import dataclass, field
 
 from journal.events.rows.user_paused import UserPaused
@@ -12,6 +13,8 @@ from journal.models.scoped import Scoped
 
 @dataclass(frozen=True)
 class Agent(Scoped):
+    shared: ClassVar[bool] = False
+
 
     session: str = ""
     provider: str = ""
