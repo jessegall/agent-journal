@@ -24,6 +24,7 @@ from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
 from journal.support.worktree_failure import WorktreeFailure
+from journal.support.process_check import ProcessCheck
 
 REPORT_CHARACTERS = 12000
 REPORT_END_CHARACTERS = 3000
@@ -186,15 +187,7 @@ class WorkerRunner:
 
     @staticmethod
     def is_running(pid: int) -> bool:
-        if pid <= 0:
-            return False
-        try:
-            os.kill(pid, 0)
-        except ProcessLookupError:
-            return False
-        except PermissionError:
-            return True
-        return True
+        return ProcessCheck.is_running(pid)
 
     def stop(self, worker: Worker) -> None:
         if self.is_running(worker.pid) and os.getpgid(worker.pid) == worker.pid:

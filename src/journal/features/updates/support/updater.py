@@ -86,7 +86,7 @@ class Updater:
         return newer[-1].version if newer else VERSION
 
     def data(self) -> UpdateData:
-        blocked = self.mark.paused()
+        blocked = self.mark.running()
         return UpdateData(installed=self.label(), latest=self.latest(), newer=self.is_published(), branch=self.branch(), versions=[release.version for release in self.newer()],
                               updating=blocked.target if blocked else "", step=blocked.step if blocked else "", problem=self.problem)
 

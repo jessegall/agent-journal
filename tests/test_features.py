@@ -6242,6 +6242,11 @@ def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(
     threshold.write(UpdatePause("4.0.0", VERSION, "Restarting the journal", timing.time(), -1))
     updating.reconcile(timing.time())
     assert threshold.paused() is None and updating.problem == "", "a journal that came back on the version it went to takes the mark off"
+    import subprocess
+    ended = subprocess.Popen(["true"])
+    ended.wait()
+    threshold.write(UpdatePause("4.0.0", "4.99.0", "Installing the new version", timing.time(), ended.pid))
+    assert threshold.paused() is not None and updating.data().updating == "", "a mark whose process is gone shows no update under way, so the viewer's cover never hangs on it"
 
 
 def test_a_long_typed_line_is_typed_one_segment_at_a_time(app: App):

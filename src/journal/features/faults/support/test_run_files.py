@@ -1,7 +1,7 @@
-import os
 from pathlib import Path
 
 from journal.config import Config
+from journal.support.process_check import ProcessCheck
 
 TEST_RUN_KEY = "tests.running"
 
@@ -22,11 +22,4 @@ class TestRunFiles:
 
     @staticmethod
     def is_running(run_file: Path) -> bool:
-        pid = run_file.suffix.lstrip(".")
-        if not pid.isdigit():
-            return False
-        try:
-            os.kill(int(pid), 0)
-        except ProcessLookupError:
-            return False
-        return True
+        return ProcessCheck.is_running_text(run_file.suffix.lstrip("."))

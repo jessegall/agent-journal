@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.20
+
+- The update dialog shows an update under way only while the process running it lives, so it no longer hangs on Installing the new version when that process went.
+- A worker writes and updates documents and files reports; a subagent still only reads.
+- One check says whether a process still runs, where four places each had their own.
+
 ## 4.5.19
 
 - A worker's report in the chat shows its first two lines, then Show more; each kind of message has its folded height in one table, and the user's and the agent's messages keep theirs.

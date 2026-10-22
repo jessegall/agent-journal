@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from journal.support.actor import Actor
@@ -6,6 +5,7 @@ from journal.support.actor import Actor
 from journal.models.command_output import CommandOutput
 from journal.support.missing_row import MissingRow
 from journal.repositories.scoped_repository import ScopedRepository
+from journal.support.process_check import ProcessCheck
 
 
 class CommandOutputs(ScopedRepository[CommandOutput]):
@@ -55,11 +55,7 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
             return False
         if not (folder / "pid").is_file():
             return True
-        try:
-            os.kill(int((folder / "pid").read_text()), 0)
-        except (ProcessLookupError, ValueError):
-            return False
-        return True
+        return ProcessCheck.is_running_text((folder / "pid").read_text())
 
     def surplus(self, stored: int) -> list[CommandOutput]:
         return list(reversed(self.selected_globally(self.query().order_descending("id").offset(stored))))

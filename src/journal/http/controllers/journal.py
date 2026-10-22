@@ -63,7 +63,7 @@ class JournalController:
         return self.developer(request)
 
     def summary(self, request: Request) -> Response:
-        blocked = self.mark.paused()
+        blocked = self.mark.running()
         return Response.json({"project": self.config.root.name, "root": str(self.config.home), "version": VERSION, "started": STARTED, "color": COLOR,
                               "updating": blocked.target if blocked else "", "step": blocked.step if blocked else "",
                               "environments": [self.data(e) for e in (self.environments.all() or [self.environments.lookup("main")])]})

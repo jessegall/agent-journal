@@ -7,12 +7,13 @@ from dataclasses import asdict
 from journal.config import Config
 from journal.features.updates.support.update_pause import UpdatePause
 from journal.support.rejection import Rejection
+from journal.support.process_check import ProcessCheck
 
 FIRST_STEP = "Installing the new version"
 
 
 class UpdateCard:
-    """The marker file an update keeps while it runs: no second update starts beside it, the viewer's cover stays up through the restart, and the journal that comes up after it knows how it ended."""
+    """The marker file an update keeps while it runs: no second update starts beside it, the viewer's cover stays up through the restart while the process that runs it lives, and the journal that comes up after it knows how it ended."""
 
     def __init__(self, config: Config) -> None:
         self.path = config.home / "runtime" / "updating.json"
@@ -37,6 +38,10 @@ class UpdateCard:
             return None
         return UpdatePause(**data)
 
+    def running(self) -> UpdatePause | None:
+        update = self.paused()
+        return update if update is not None and ProcessCheck.is_running(update.pid) else None
+
     def clear(self) -> None:
         self.path.unlink(missing_ok=True)
 
@@ -45,3 +50,4 @@ class UpdateCard:
         saved = self.path.with_suffix(".tmp")
         saved.write_text(json.dumps(asdict(blocked)))
         saved.replace(self.path)
+
