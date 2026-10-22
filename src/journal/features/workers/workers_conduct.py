@@ -9,6 +9,7 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.stop import Stop
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
+from journal.events.rows.worker_ready import WorkerReady
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_stopped import WorkerStopped
 from journal.events.rows.worker_dispatched import WorkerDispatched
@@ -41,6 +42,11 @@ class WorkersConduct(Conduct):
     def on_worker_dispatched(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
         return self.push(ExternalWait.opened(*event.wait_terms())) if event.awaiter == event.session else self.none()
+
+    def on_worker_ready(self, event: WorkerReady, settings: Settings) -> Transition:
+        if event.worker.is_other_dispatcher(event.session):
+            return self.none()
+        return self.none(workers_feature().WORKER_ARRIVAL.create(n=event.worker.id, name=event.worker.name))
 
     def on_worker_reported(self, event: WorkerReported, settings: Settings) -> Transition:
         if event.worker.is_other_dispatcher(event.session):

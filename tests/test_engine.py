@@ -587,7 +587,7 @@ def test_a_worker_has_a_stack_of_its_own_from_clock_in_to_clock_out_and_none_of_
     assert worker_hook("SessionStart", source="startup") == (200, {}), "a worker owes no overview"
     status, body = worker_hook("PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     assert status == 409 and "your writes wait until you clock in" in body["error"] and "paused" not in body["error"], "its first write is held with the clock-in line alone"
-    assert worker_hook("PreToolUse", tool_name="Bash", tool_input={"command": "journal clock in"})[0] == 200, "the clock-in call itself passes"
+    assert worker_hook("PreToolUse", tool_name="Bash", tool_input={"command": "journal clock-in"})[0] == 200, "the clock-in call itself passes"
     with scope.environment(1):
         workers.save(workers.find(worker.id).ready(1.0), Actor.worker(worker.id))
     assert agents.session_agent("w1").stack[-1]["state"] == "working" and app.container.get(SessionAgents).top("w1").task_id == task.id, "clocking in puts it to work on the task it holds"
@@ -601,6 +601,37 @@ def test_a_worker_has_a_stack_of_its_own_from_clock_in_to_clock_out_and_none_of_
     stack = agents.session_agent("w1").stack
     app.container.get(Bus).dispatch(PlanStarted(environment_id=1, time=1.0, plan_id=1, task_id=0))
     assert agents.session_agent("w1").stack == stack and agents.session_agent("s1").stack[-1]["state"] == "following_plan", "a row event for the environment reaches the main agent alone"
+
+
+def test_a_worker_clocks_in_on_its_task_and_the_main_agent_hears_it(app: App, monkeypatch):
+    from journal.models.support.ref import Ref
+    from journal.models.agent import Agent
+    from journal.models.agent_role import AgentRole
+    from journal.models.task import Task
+    from journal.models.worker import Worker
+    from journal.models.worker_state import WorkerState
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    from journal.supervisor_link import SupervisorLink
+    typed = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: typed.append(fields.get("line", "")))
+    hook(app, "SessionStart")
+    scope, workers, tasks, agents = app.container.get(Scope), app.container.get(Workers), app.container.get(Tasks), app.container.get(Agents)
+    with scope.environment(1):
+        worker = workers.save(Worker(environment_id=1, name="Mr. Babbage", brief="b", session="w1", dispatcher="s1"), Actor.system())
+        task = tasks.save(Task(environment_id=1, title="the parser", brief="the parser reads"), Actor.system())
+        tasks.handover(task, Ref.build(worker), Actor.system())
+        agents.save(Agent(environment_id=1, session="w1", provider="claude", role=AgentRole.WORKER), Actor.system())
+    babbage = Caller.worker("main", worker.id, "w1", "claude")
+    assert app.console().run(["clock-in"], babbage).code == 0
+    assert app.container.get(SessionAgents).top("w1").task_id == task.id, "clocking in moves the worker to Working on its task"
+    with scope.environment(1):
+        assert tasks.find(task.id).state == "started", "and starts the task under it"
+    assert any("worker 1, Mr. Babbage, clocked in" in line for line in typed), "the main agent hears that the worker is at work"
+    assert "a worker clocks in once each time it is sent" in app.console().run(["clock-in"], babbage).error
+    with scope.environment(1):
+        workers.save(workers.find(worker.id).with_(state=WorkerState.DISPATCHED), Actor.system())
+    assert app.console().run(["clock-in"], babbage).code == 0 and app.container.get(SessionAgents).top("w1").task_id == task.id, "a worker sent back clocks in again"
 
 
 def test_journal_panic_passes_every_hold_and_a_compaction_ends_at_the_journals_start(app: App):
