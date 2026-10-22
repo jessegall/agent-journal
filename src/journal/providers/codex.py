@@ -187,6 +187,9 @@ class Codex(Provider):
     def worker_session(self, resume: str) -> str:
         return resume
 
+    def has_worker_hooks(self) -> bool:
+        return False
+
     def worker_command(self, brief: str, model: str, resume: str, session: str) -> list[str]:
         resumed = ["resume", resume] if resume else []
         selection = ["-m", model] if model else []

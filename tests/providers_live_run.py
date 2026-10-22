@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from journal.features.workers.support.worker_reports import REPORTED
+from journal.repositories.links import Links
 from journal.app import App
 from journal.config import Config
 from journal.launcher.launch import Launch
@@ -187,17 +189,20 @@ def test_a_refused_stop_leads_to_work(live: App, provider: str):
 
 
 def test_a_worker_reports_and_resumes_with_its_memory(live: App, provider: str):
+    if not Providers().lookup(provider).has_worker_hooks():
+        pytest.skip(f"a {provider} worker is refused until its hooks are shown to run in a worker's folder")
     launched(live, provider)
     console, workers, reports = live.console(), live.container.get(Workers), live.container.get(WorkerReports)
-    console.run(["worker", "dispatch", "Lady Lovelace", "Say the word amber and nothing else.", "--provider", provider, "--profile", "medior"], Caller.user("main"))
+    dispatched = console.run(["worker", "dispatch", "Lady Lovelace", "Say the word amber and nothing else.", "--provider", provider, "--profile", "journal-medior"], Caller.user("main"))
+    assert dispatched.code == 0, dispatched.error
     with live.container.get(Scope).environment(MAIN):
         first = wait_for(lambda: [(worker, report) for worker in workers.all() if (report := reports.last(worker))], WORKER_SECONDS)
     assert first and "amber" in first[0][1].lower() and first[0][0].session, "the worker's session is read from its output and its report filed"
-    worker, report = first[0]
+    worker = first[0][0]
     assert all(entry.actor != Actor.agent(worker.session) for entry in entries(live, "ToolStarting")), "the worker's commands are its own, not its parent's"
     console.run(["worker", "send", str(worker.id), "What word did you say last time? Answer with that word only."], Caller.user("main"))
     with live.container.get(Scope).environment(MAIN):
-        second = wait_for(lambda: (later := reports.last(workers.find(worker.id))) != report and later, WORKER_SECONDS)
+        second = wait_for(lambda: len(live.container.get(Links).targets(workers.find(worker.id), REPORTED)) > 1 and reports.last(workers.find(worker.id)), WORKER_SECONDS)
     assert second and "amber" in second.lower(), "a second job resumes the worker and it recalls the word"
 
 

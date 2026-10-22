@@ -601,10 +601,12 @@ def test_a_worker_runs_the_dispatching_agents_own_program(app: App, monkeypatch)
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
     console = app.console()
-    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
+    refused = console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
+    assert refused.code != 0 and "a codex worker needs its hooks checked first" in refused.error and "--provider claude" in refused.error, "a Codex agent's worker would run Codex, whose hooks are not shown to run in a worker's folder"
+    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--provider", "claude"], Caller.agent("main", "c1", "codex"))
     console.run(["worker", "dispatch", "Mr. Babbage", "write cli.py", "--profile", "journal-medior", "--model", "sonnet"], USER)
     workers = app.container.get(Workers)
-    assert workers.find(1).provider == "codex" and workers.find(2).provider == "claude", "a Codex agent's worker runs Codex, so its model names fit"
+    assert workers.find(1).provider == "claude" and workers.find(2).provider == "claude"
     assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Caller.agent("main", "c1", "codex")).text, "a list of workers out points at the wait"
 
 
@@ -651,13 +653,13 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
 def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: App, monkeypatch, tmp_path):
     from datetime import date
     from journal.models.agent import Agent
+    from journal.models.worker import Worker
     from journal.repositories.agents import Agents
     from journal.repositories.workers import Workers
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
-    app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
     workers = app.container.get(Workers)
-    worker = workers.save(workers.find(1).with_(worktree=True).running_as(1, timing.time() - 5), Actor.system())
+    worker = workers.save(Worker(environment_id=1, name="Ada Lovelace", brief="write storage.py", provider="codex", model="gpt-5", worktree=True).running_as(1, timing.time() - 5), Actor.system())
     session = "01a15a25-535e-7cc2-993e-d38deedb6b40"
     rollout = tmp_path / "home" / ".codex" / "sessions" / date.today().strftime("%Y/%m/%d") / f"rollout-2026-10-20T18-29-18-{session}.jsonl"
     rollout.parent.mkdir(parents=True)
