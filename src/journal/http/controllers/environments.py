@@ -8,7 +8,7 @@ from journal.supervisor_link import SupervisorLink
 from journal.config import Config
 from journal.http.support.model_fields import ModelFields
 from journal.support.worktree import Worktree
-from journal.features.team.support.environment_owners import EnvironmentOwners
+from journal.repositories.environment_owners import EnvironmentOwners
 from journal.sync.team_account import TeamAccount
 from journal.support.rejection import Rejection
 

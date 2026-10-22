@@ -9571,8 +9571,11 @@ def test_a_second_persons_viewer_and_command_line_writes_are_stamped_with_their_
 def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_and_a_stranger_is_refused(tmp_path, template_journal, monkeypatch):
     import re
     import subprocess
+    from journal.models.message import Message
+    from journal.models.author import Author
+    from journal.repositories.messages import Messages
     from pathlib import Path
-    from journal.features.team.support.environment_owners import EnvironmentOwners
+    from journal.repositories.environment_owners import EnvironmentOwners
     from journal.models.worker import Worker
     from journal.repositories.tasks import Tasks
     from journal.repositories.users import Users
@@ -9639,13 +9642,21 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         bob_main = b.container.get(Environments).lookup("bob-main")
         ada_main = a.container.get(Environments).existing("ada-main")
         owners_a = a.container.get(EnvironmentOwners)
-        assert owners_a.owner_name(ada_main) == "Ada", "the first journal's environments are its person's, named for them"
-        assert eventually(lambda: [environment.name for environment in a.container.get(Environments).rows() if environment.name == "bob-main"] == ["bob-main"] and owners_a.owner_name(a.container.get(Environments).existing("bob-main")) == "Bob"), "a colleague's environment arrives with its owner"
-        assert b.container.get(EnvironmentOwners).is_colleague(Actor.user(2), ada_main) and not b.container.get(EnvironmentOwners).is_colleague(Actor.user(2), bob_main)
+        assert owners_a.owner_name(ada_main.row_id) == "Ada", "the first journal's environments are its person's, named for them"
+        assert eventually(lambda: [environment.name for environment in a.container.get(Environments).rows() if environment.name == "bob-main"] == ["bob-main"] and owners_a.owner_name(a.container.get(Environments).existing("bob-main").row_id) == "Bob"), "a colleague's environment arrives with its owner"
+        assert b.container.get(EnvironmentOwners).is_colleague(Actor.user(2), ada_main.row_id) and not b.container.get(EnvironmentOwners).is_colleague(Actor.user(2), bob_main.row_id)
         refused = urlopen_refusal(f"http://127.0.0.1:{a.server().port}/journal/environments/{a.container.get(Environments).existing('bob-main').row_id}/launch")
         assert "is Bob's: an agent starts only in your own environment" in refused, "the viewer's Start button refuses a colleague's environment"
         rows = {row["name"]: row for row in json.loads(a.console().run(["environment", "json"], USER).text)}
         assert rows["bob-main"]["refusal"].startswith("environment bob-main is Bob's") and rows["ada-main"]["refusal"] == "", "the launcher's rows carry the same refusal"
+        with a.container.get(Scope).environment(ada_main.row_id):
+            note = a.container.get(Messages).save(Message(environment_id=ada_main.row_id, author=Author.USER, text="for my agent"), Actor.user(1))
+        assert eventually(lambda: bool(b.container.get(Messages).global_matching(id=note.id)))
+        read = HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/messages/read", data=json.dumps({"ids": [note.id]}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "ada-main"})
+        urlopen(read, timeout=5).read()
+        assert b.container.get(Messages).global_matching(id=note.id)[0].read_at is None, "a colleague reading Ada's chat marks nothing read"
+        timing.sleep(0.3)
+        assert a.container.get(Messages).global_matching(id=note.id)[0].read_at is None, "nor on Ada's machine"
         shell = subprocess.run(["sh", "-c", f". {Path(__file__).resolve().parent.parent}/src/journal/hooks/environment.sh; journal_environment"], capture_output=True, text=True, timeout=10, cwd=tmp_path, env={"PATH": "/usr/bin:/bin", "JOURNAL_ROOT": str(tmp_path / "b")})
         assert shell.stdout == "bob-main", "a shell on the joined machine works the person's own environment"
         request = HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/tasks", data=json.dumps({"title": "made in bob's viewer"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})

@@ -30,7 +30,7 @@ from journal.repositories.rules import Rules
 from journal.repositories.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
-from journal.features.team.support.environment_owners import EnvironmentOwners
+from journal.repositories.environment_owners import EnvironmentOwners
 from journal.sync.team_account import TeamAccount
 
 TAKEOVER_WINDOW = timedelta(hours=12)

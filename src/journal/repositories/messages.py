@@ -11,6 +11,7 @@ from journal.repositories.links import Links
 from journal.repositories.reactions import Reactions
 from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
+from journal.repositories.environment_owners import EnvironmentOwners
 
 
 class Messages(ScopedRepository[Message]):
@@ -20,7 +21,8 @@ class Messages(ScopedRepository[Message]):
 
     model = Message
 
-    def __init__(self, connection: Connection, bus: Bus, scope: Scope, reactions: Reactions, links: Links) -> None:
+    def __init__(self, connection: Connection, bus: Bus, scope: Scope, reactions: Reactions, links: Links, owners: EnvironmentOwners) -> None:
+        self.owners = owners
         super().__init__(connection, bus, scope)
         self.reactions, self.links = reactions, links
 
@@ -123,4 +125,6 @@ class Messages(ScopedRepository[Message]):
         return list(reversed(rows))
 
     def read(self, message: Message, actor: Actor, tool_use: int) -> Message:
-        return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc), read_position=tool_use), actor)
+        if message.read_at or self.owners.is_colleague(actor, message.environment_id):
+            return message
+        return self.save(message.with_(read_at=datetime.now(timezone.utc), read_position=tool_use), actor)

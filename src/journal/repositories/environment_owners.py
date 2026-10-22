@@ -13,21 +13,21 @@ class EnvironmentOwners:
     def __init__(self, links: Links, users: Users) -> None:
         self.links, self.users = links, users
 
-    def owner_number(self, environment: Environment) -> int:
-        owners = self.links.typed_sources(environment, OWNER, User.table())
+    def owner_number(self, environment_id: int) -> int:
+        owners = self.links.typed_sources(Environment(id=environment_id), OWNER, User.table())
         return owners[0].id if owners else 0
 
-    def owner_name(self, environment: Environment) -> str:
-        number = self.owner_number(environment)
+    def owner_name(self, environment_id: int) -> str:
+        number = self.owner_number(environment_id)
         names = [user.name for user in self.users.numbered([number])] if number else []
         return names[0] if names else ""
 
-    def is_colleague(self, actor: Actor, environment: Environment) -> bool:
-        owner = self.owner_number(environment)
+    def is_colleague(self, actor: Actor, environment_id: int) -> bool:
+        owner = self.owner_number(environment_id)
         return actor.is_user() and owner != 0 and actor.stamp != Actor.user(owner).stamp
 
     def start_refusal(self, environment: Environment, person: int) -> str:
-        owner = self.owner_number(environment)
+        owner = self.owner_number(environment.row_id)
         if not owner or owner == person:
             return ""
-        return f"environment {environment.name} is {self.owner_name(environment) or f'user {owner}'}'s: an agent starts only in your own environment, so one session per environment holds across the team's machines"
+        return f"environment {environment.name} is {self.owner_name(environment.row_id) or f'user {owner}'}'s: an agent starts only in your own environment, so one session per environment holds across the team's machines"

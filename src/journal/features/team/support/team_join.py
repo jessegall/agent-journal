@@ -11,7 +11,7 @@ from journal.repositories.environments import Environments
 from journal.repositories.journal_backup import JournalBackup
 
 from journal.db.schema import Schema
-from journal.features.team.support.environment_owners import OWNER, EnvironmentOwners
+from journal.repositories.environment_owners import OWNER, EnvironmentOwners
 from journal.features.team.support.repository_identity import RepositoryIdentity
 from journal.models.link import Link
 from journal.models.support.ref import Ref
@@ -106,7 +106,7 @@ class TeamJoin:
 
     def claim_environments(self, prefix: str, account_id: int) -> None:
         for environment in self.environments.rows():
-            if not self.owners.owner_number(environment):
+            if not self.owners.owner_number(environment.row_id):
                 self.links.save(Link(source=Ref(User.table(), account_id), target=Ref.build(environment), kind=OWNER), Actor.system())
             if not environment.name.startswith(f"{prefix}-"):
                 self.environments.save(environment.with_(name=f"{prefix}-{environment.name}"), Actor.system())
