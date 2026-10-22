@@ -10,12 +10,13 @@ from journal.support.subagent_dispatch import SubagentDispatch
 from journal.support.task_notification import TaskNotification
 
 ENDS = frozenset({"Stop", "SessionStarted", "SessionEnded"})
-SUBAGENT_KINDS = ENDS | {"SubagentStarted", "SubagentEnded"}
+TURN_FAILED = "TurnFailed"
+SUBAGENT_KINDS = ENDS | {"SubagentStarted", "SubagentEnded", TURN_FAILED}
 TOOL_MOMENTS = ("ToolStarting", "ToolFinished", "ToolFailed")
 
 
 class SubagentEntries:
-    """The subagents an agent dispatched, paired from its session's entries: each dispatch, its answer, its start and end in the background, and a message that runs it again."""
+    """The subagents an agent dispatched, paired from its session's entries: each dispatch, its answer, its start and end in the background, a message that runs it again, and the failed turn of the agent, such as on its usage limit, that cuts every running one off."""
 
     def __init__(self, entries: Entries) -> None:
         self.entries = entries
@@ -48,6 +49,11 @@ class SubagentEntries:
         unstarted: dict[str, int] = {}
         for e in dispatches:
             time = e.created_at.timestamp()
+            if e.kind == TURN_FAILED:
+                reason = f"cut off when the agent's turn failed: {e.data.get('error', '')}"
+                for active in (open_, background, unstarted):
+                    SubagentEntries.failed_rows(rows, active, reason, time)
+                continue
             if e.kind in ENDS:
                 SubagentEntries.stopped(rows, open_, time)
                 if e.kind == "SessionEnded" or (e.kind == "SessionStarted" and e.data.get("source") != "compact"):
@@ -130,6 +136,12 @@ class SubagentEntries:
         for i in [i for i, row in enumerate(rows) if row.session and row.session == receiver]:
             rows[i] = rows[i].resumed(time)
             background[receiver] = i
+
+    @staticmethod
+    def failed_rows(rows: list[Subagent], active: dict[str, int], reason: str, time: float) -> None:
+        for i in active.values():
+            rows[i] = rows[i].failed(reason, time)
+        active.clear()
 
     @staticmethod
     def stopped(rows: list[Subagent], active: dict[str, int], time: float) -> None:

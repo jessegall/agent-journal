@@ -9432,3 +9432,32 @@ def test_a_new_document_and_a_new_report_dock_themselves_at_the_bottom_of_the_ch
             card = docking.card(row)
             assert card is not None and card.data.get(DOCKED), f"{row.heading()} is docked"
             assert len(app.container.get(Messages).with_key(app.container.get(Cards).creation_key(row))) == 1, "one card each"
+
+
+def test_a_subagents_report_in_a_notification_owes_no_skill_by_its_words(skilled):
+    from journal.repositories.agents import Agents
+    app = skilled
+    hook(app, "SessionStart")
+    read_skill(app, "journal")
+    owed = lambda: list(app.container.get(Agents).session_agent("s1").skills_due)
+    notice = "<task-notification><task-id>a1</task-id><status>completed</status><result>a plan, a roadmap, a worker, a report, a doc and a secret</result></task-notification>"
+    hook(app, "UserPromptSubmit", prompt=notice)
+    assert owed() == [], "a subagent's notice owes nothing by its words"
+    hook(app, "UserPromptSubmit", prompt="draw me a roadmap")
+    assert "plans" in owed(), "the user's own words still do"
+
+
+def test_a_running_subagent_is_cut_off_as_failed_when_the_agents_turn_fails_on_its_limit(app: App):
+    from journal.features.workers.support.subagent_entries import SubagentEntries
+    from journal.repositories.entries import Entries
+    hook(app, "SessionStart")
+    call = {"subagent_type": "journal-plan-reviewer", "description": "review the plan", "prompt": "read", "model": "sonnet", "run_in_background": True}
+    hook(app, "PreToolUse", tool_name="Agent", tool_input=call, tool_use_id="t-1")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input=call, tool_response={"agentId": "ag-1", "isAsync": True}, tool_use_id="t-1")
+    app.runtime().deferred.drain()
+    rows = lambda: SubagentEntries(app.container.get(Entries)).rows("s1")
+    assert [row.state.value for row in rows()] == ["running"], "running while it works"
+    hook(app, "StopFailure", error="rate_limit", last_assistant_message="You've hit your weekly limit")
+    app.runtime().deferred.drain()
+    [row] = rows()
+    assert row.state.value == "failed" and "rate_limit" in row.reason, "the failed turn cuts it off, though no end of it ever came"
