@@ -920,6 +920,16 @@ def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_st
     assert not any("check 2" in line for line in keystrokes)
 
 
+def test_a_busy_orchestrator_with_open_tasks_is_told_to_dispatch_them_every_two_minutes(app: App):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    app.container.get(SettingRows).set("workers.mode", "orchestrator", Actor.user(1))
+    app.console().run(["task", "create", "the footer"], USER)
+    use = lambda name: json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": name})[1])
+    told = [use(f"{n}.py") for n in range(3)]
+    assert sum("no worker has them" in line and "task 1 (the footer)" in line for line in told) == 1, "the reminder rides one tool use, then waits two minutes"
+
+
 def test_the_slow_request_tools_start_switched_off_in_a_project(app: App):
     from journal.features.faults.feature import Faults
     from journal.features.registry import Registry

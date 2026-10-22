@@ -78,8 +78,8 @@ export function stopFloors() {
 }
 
 // how far the ground at home moves within GROUND_JUMP_MS, in pixels, before the figure is thrown up with it or falls with it rather than
-// carried along
-const GROUND_JUMP = 8;
+// carried along: a docked card growing or shrinking by a line or two carries it, only a whole bar docking or going moves it
+const GROUND_JUMP = 30;
 const GROUND_JUMP_MS = 200;
 
 const floorNamed = (floors, id) => floors.find((floor) => floor.id === id) ?? null;

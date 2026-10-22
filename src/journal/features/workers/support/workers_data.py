@@ -22,3 +22,6 @@ class WorkersData:
     todos: tuple[WorkerTodo, ...] = ()
     unfinished_outputs: tuple[int, ...] = ()
     ready_work: tuple[ReadyWork, ...] = ()
+
+    def is_full(self, limit: int) -> bool:
+        return limit > 0 and len(self.dispatched_workers) >= limit

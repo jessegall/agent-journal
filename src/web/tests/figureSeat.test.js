@@ -203,7 +203,7 @@ test("a figure keeps its place on the floor it rests on as that moves, and loses
     expect(footingNow({...hanging, id: floorOf(low)}, FIGURE, floorsNow(low))).toBe(null);
 });
 
-test("at home the figure is launched when the ground under it rises more than a few pixels in a moment, falls when it drops so, and a drift carries it", () => {
+test("at home the figure is launched when the ground under it rises more than thirty pixels in a moment, falls when it drops so, and a line or a drift carries it", () => {
     const box = {left: 300, top: 600, width: 400, height: 120};
     page(box);
     const spot = spotOf(null, FIGURE, {x: 640, y: 600});
@@ -213,19 +213,20 @@ test("at home the figure is launched when the ground under it rises more than a 
     // the compose box drifts up a few pixels, and carries it
     box.top = 596;
     expect(frame()).toMatchObject({spot: {x: spot.x, y: 596}, motion: "carried"});
-    // the box grows a line as the user types, and it is thrown up
+    // the box grows a line as the user types, and it is carried up with it, never thrown
     box.top = 576;
-    expect(frame()).toMatchObject({spot: {y: 576}, motion: "launched"});
+    expect(frame()).toMatchObject({spot: {y: 576}, motion: "carried"});
     expect(frame().motion).toBe("carried");
-    // a bar docks over the box a few pixels a frame, carrying it until the ground has risen more than a few pixels, and then throwing it up
-    for (const [top, motion] of [
-        [573, "carried"],
-        [570, "carried"],
-        [566, "launched"],
-    ]) {
+    // a docked card grows by a line or so a frame at a time, and carries it
+    for (const top of [573, 570, 566]) {
         page(box, {left: 300, top, width: 400, height: 576 - top});
-        expect(frame()).toMatchObject({spot: {y: top}, motion});
+        expect(frame()).toMatchObject({spot: {y: top}, motion: "carried"});
     }
+    expect(frame().motion).toBe("carried");
+    // a whole bar docks in one frame, and it is thrown up onto it
+    page(box, {left: 300, top: 530, width: 400, height: 46});
+    expect(frame()).toMatchObject({spot: {y: 530}, motion: "launched"});
+    expect(frame().motion).toBe("carried");
     // the bar goes in one frame, and it falls to the compose box, from where it stood
     page(box);
     expect(frame()).toMatchObject({spot: {x: spot.x, y: 576}, motion: "dropping"});

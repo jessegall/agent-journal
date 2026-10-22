@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.33
+
+- An orchestrator at work with tasks open and no worker on them is reminded on its tool use, every two minutes, to dispatch workers on them before its own piece, unless the workers-out limit is reached.
+- The avatar is carried along when a docked card grows or shrinks by a line or two; only a whole bar docking or going throws it up or lets it fall, so it no longer falls and is snapped back each time a live card updates.
+
 ## 4.5.32
 
 - The Slow requests tools, which are for developing the journal itself, start switched off in every project; a project that switched them on keeps them.

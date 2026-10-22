@@ -30,7 +30,7 @@ class WorkersConduct(Conduct):
     """The workers feature's conduct in every state: a subagent past the most allowed at once is held, a write into a worker's worktree is held, a new subagent whose job names files an idle one of the same kind worked on is held in favour of those, unless they are retired, a dispatch whose brief names files an idle worker touched is held in favour of that worker, a dispatch past its profile's kept workers is held while one of them is idle, retiring an idle worker is held until the repeat says why it cannot be reused, the reports not acted on are named at a stop and on the tick, a worker of this agent's silent for twenty minutes is named once on the tick, a worker this agent dispatches pushes Awaiting on its work, and a worker's report is told as it comes."""
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        checks = (subagent_reuse_check, limit_check, worktrees_check, files_check, idle_cap_check, retire_check)
+        checks = (subagent_reuse_check, limit_check, worktrees_check, files_check, idle_cap_check, retire_check, open_work_check)
         return Transition.merged(self, [check(self, event, settings) for check in checks])
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
@@ -175,3 +175,11 @@ def retire_check(state: BaseState, event: ToolStarting, settings: Settings) -> T
     idle = {w.id: w for w in event.data.part(Workers).idle_workers}
     retirements = [line for line in worker_lines(event, "complete", "stop") if line.number in idle and not line.reason]
     return state.refuse(Workers.REUSE_QUESTION.create(n=retirements[0].number, name=idle[retirements[0].number].name)) if retirements else state.none()
+
+
+def open_work_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    from journal.features.tasks.feature import Tasks
+    tasks, workers = event.data.part(Tasks), event.data.part(workers_feature())
+    if not tasks.open_ids or settings.value(workers_feature().MODE) != "orchestrator" or workers.is_full(settings.integer(workers_feature().WORKER_LIMIT)):
+        return state.none()
+    return state.none(workers_feature().CREW_REMINDER.create(count=len(tasks.open_ids), tasks=tasks.open_summary))
