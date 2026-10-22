@@ -109,3 +109,11 @@ test("working agents are drawn first whatever the order, then those waiting, the
     expect(ordered(grid, "number", grid.map((e) => e.key)).map((e) => e.n)).toEqual([3, 4, 2, 1]);
     expect(ordered(grid, "active").map((e) => e.n)).toEqual([3, 4, 2, 1]);
 });
+
+test("the agents grid slides its cells to their new places when the order changes", async () => {
+    const {readFileSync} = await import("node:fs");
+    const {resolve} = await import("node:path");
+    const grid = readFileSync(resolve(__dirname, "../src/agents/AgentGrid.vue"), "utf8");
+    expect(grid).toMatch(/<TransitionGroup tag="div" name="cell" class="agent-grid">/);
+    expect(grid).toMatch(/\.cell-move \{\s*transition: transform/);
+});

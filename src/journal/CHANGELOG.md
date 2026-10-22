@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.26
+
+- The agents grid slides its cells to their new places when the order changes, so a cell that moves is seen moving rather than gone.
+
 ## 4.5.25
 
 - The orchestrator is named its blocked tasks with their reasons at a stop and every five minutes, whatever else is open, and told to check each is still truly blocked and go on with what it can decide.

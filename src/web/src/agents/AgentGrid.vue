@@ -40,7 +40,7 @@ const openEntry = (entry) => peek(entry.opens.table, entry.opens.id, 0, entry.op
                 }}
             </p>
         </template>
-        <div class="agent-grid">
+        <TransitionGroup tag="div" name="cell" class="agent-grid">
             <template v-for="entry in entries" :key="entry.key">
                 <AgentWindow :entry="entry" @open="openEntry(entry)" />
             </template>
@@ -49,7 +49,7 @@ const openEntry = (entry) => peek(entry.opens.table, entry.opens.id, 0, entry.op
                     <Icon name="agents" :size="22" />
                 </Tile>
             </template>
-        </div>
+        </TransitionGroup>
     </div>
 </template>
 
@@ -74,6 +74,11 @@ const openEntry = (entry) => peek(entry.opens.table, entry.opens.id, 0, entry.op
 
 .agent-grid > * {
     aspect-ratio: 1;
+}
+
+/* a cell whose place in the order changes slides there, so it is seen moving rather than gone */
+.cell-move {
+    transition: transform 320ms cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
 .agent-grid-note {
