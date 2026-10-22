@@ -72,3 +72,32 @@ def test_the_host_setup_starts_a_server_on_a_fresh_volume_whose_admin_logs_in_an
     finally:
         subprocess.run(["docker", "rm", "-f", "agent-journal-setup-test"], capture_output=True, timeout=60)
         subprocess.run(["docker", "volume", "rm", "agent-journal-setup-test"], capture_output=True, timeout=60)
+
+
+def test_a_running_servers_backup_restores_into_a_new_container_that_answers_the_same_rows(tmp_path):
+    docker("build", "-q", "-f", "docker/team-server/Dockerfile", "-t", IMAGE, str(ROOT), seconds=600)
+    restored = "agent-journal-team-restored-test"
+    docker("volume", "create", VOLUME)
+    docker("volume", "create", restored)
+    tmp_path.chmod(0o777)
+    try:
+        docker("run", "-d", "--name", NAME, "-e", "TEAM_ADDRESS=localhost", "-p", f"{PORT}:443", "-v", f"{VOLUME}:/data", IMAGE)
+        time.sleep(2)
+        docker("exec", NAME, "python", "-c", f"from pathlib import Path; from sync_server.account import ADMIN; from sync_server.team_server import TeamServer; TeamServer(Path('/data/team')).accounts.create('ada@example.com', 'Ada', '{PASSWORD}', ADMIN, 1.0)")
+        token = login("before the backup")["token"]
+        upload = urllib.request.Request(f"https://localhost:{PORT}/upload", data=json.dumps({"rows": [{"row_table": "tasks", "row": 7, "fields": {"title": "kept"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 7}}).encode(), headers={"Authorization": f"Bearer {token}"})
+        unverified = ssl.create_default_context()
+        unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
+        urllib.request.urlopen(upload, timeout=10, context=unverified).read()
+        copy = docker("exec", NAME, "python", "-m", "sync_server", "backup", "--data", "/data/team")
+        docker("cp", f"{NAME}:{copy}", str(tmp_path / "team.db"))
+        docker("rm", "-f", NAME)
+        docker("run", "--rm", "-v", f"{restored}:/data", "-v", f"{tmp_path}:/backup", IMAGE, "python", "-m", "sync_server", "restore", "--data", "/data/team", "--from", "/backup/team.db")
+        docker("run", "-d", "--name", NAME, "-e", "TEAM_ADDRESS=localhost", "-p", f"{PORT}:443", "-v", f"{restored}:/data", IMAGE)
+        token = login("after the restore")["token"]
+        request = urllib.request.Request(f"https://localhost:{PORT}/copy", headers={"Authorization": f"Bearer {token}"})
+        with urllib.request.urlopen(request, timeout=10, context=unverified) as answer:
+            assert [row["fields"] for row in json.loads(answer.read())["rows"]] == [{"title": "kept"}], "the restored server answers the same rows"
+    finally:
+        subprocess.run(["docker", "rm", "-f", NAME], capture_output=True, timeout=60)
+        subprocess.run(["docker", "volume", "rm", VOLUME, restored], capture_output=True, timeout=60)

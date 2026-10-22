@@ -55,6 +55,18 @@ class Store:
             finally:
                 self.depth = 0
 
+    def backup(self, target: Path) -> None:
+        with self.lock:
+            copy = sqlite3.connect(target)
+            self.connection.backup(copy)
+            copy.close()
+
+    def restore(self, source: Path) -> None:
+        with self.lock:
+            original = sqlite3.connect(source)
+            original.backup(self.connection)
+            original.close()
+
     def close(self) -> None:
         with self.lock:
             self.connection.close()
