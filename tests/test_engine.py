@@ -75,9 +75,9 @@ from journal.features.shell.feature import Shell as ShellFeature
 from journal.features.workers.feature import Workers as WorkersFeature
 from journal.engine.nudger import Nudger
 from journal.engine.nudge_registry import NudgeRegistry
-from journal.engine.engine import Engine
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.prompt_submitted import PromptSubmitted
+from journal.events.agent.stop import Stop
 from journal.engine.states.wait import Wait
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.compacting import Compacting
@@ -558,6 +558,20 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
     assert app.container.get(Agents).session_agent("s1").data != before and len(moves) == len(trail), "a state whose counts change in place moves nothing, so the trail keeps only pushes and pops"
 
 
+def test_journal_panic_passes_every_hold_and_a_compaction_ends_at_the_journals_start(app: App):
+    hook(app, "SessionStart")
+    console, agents = app.console(), app.container.get(Agents)
+    console.run(["panic", "paused"], AGENT)
+    assert write(app)[0] == 409, "the pause holds every tool"
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal panic apply idle"})[0] == 200, "a panic line passes the hold"
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal panic apply idle && rm -rf a"})[0] == 409, "only a line of panic alone passes"
+    console.run(["panic", "pop"], AGENT)
+    hook(app, "PreCompact")
+    assert agents.session_agent("s1").state == "compacting"
+    app.container.get(StateMachine).compactions_ended()
+    assert [row["state"] for row in agents.session_agent("s1").stack] == ["idle"], "a journal start ends every compaction"
+
+
 def test_journal_panic_pushes_pops_and_empties_the_stack_by_hand_and_the_trail_names_the_agent(app: App):
     hook(app, "SessionStart")
     console, agents = app.console(), app.container.get(Agents)
@@ -620,7 +634,6 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
 def test_the_nudge_registry_hands_back_an_id_lists_every_nudge_and_the_nudger_refuses_one_it_does_not_hold(app: App):
     registry, owned = app.container.get(NudgeRegistry), Nudge("engine", "test_line", "a line of the test")
     assert registry.register(LINE) == "tests.line" and registry.lookup("tests.line") is LINE and registry.register(owned) == "engine.test_line"
-    assert registry.lookup("engine.nothing_while_compacting") is Engine.COMPACTION_PAUSE
     assert all(nudge.key in registry.nudges for feature in app.container.get(Registry).features for nudge in feature.nudges)
     listed = app.console().run(["nudge", "list"], AGENT).text
     assert "tests.line  [tests]  a line" in listed and "tasks.carry_on  [tasks]" in listed and listed.strip().endswith("nudges")
@@ -637,8 +650,7 @@ def test_the_engines_own_states_wait_compacting_and_ended_answer_hand_built_even
     assert not Wait().respond(PromptSubmitted(prompt="[journal] a line"), settings).popped
     assert Wait().respond(owned, settings).popped and not Wait().respond(subagents, settings).popped
     assert Wait().wait_description() == ("", "")
-    assert CompactingState().respond(owned, settings).refusal == Engine.COMPACTION_PAUSE.create()
-    assert CompactingState().respond(SessionStarted(), settings).popped
+    assert all(CompactingState().respond(event, settings).handed_down for event in (owned, PromptSubmitted(prompt="go on"), Stop(), SessionStarted())), "any sign of the agent ends a compaction, so a cancelled one never holds it"
     assert all(Ended().respond(event, settings).popped for event in (SessionStarted(), PromptSubmitted(prompt="hi"), owned))
 
 
@@ -1259,7 +1271,7 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
     assert Stopping().respond(tick, settings, (Talkative,)).nudges == (), "a listener that stops the event's propagation is the last to hear it, so the conduct is silent"
     assert Plain().respond(tick, settings, (Talkative,)).nudges == (LINE,), "the next walk of the same event starts again"
     assert CompactingState().respond(arrived, settings, (Talkative,)).nudges == (OTHER,), "compacting stops nothing itself: what the conduct says queues at the typist"
-    assert CompactingState().respond(ToolStarting(call=shell("ls")).with_data(FeatureData({})), settings, (Talkative,)).refusal == Engine.COMPACTION_PAUSE.create(), "the hold on every tool stands"
+    assert CompactingState().respond(ToolStarting(call=shell("ls")).with_data(FeatureData({})), settings, (Talkative,)).handed_down, "a tool call ends the compaction and goes to the state beneath"
     assert CompactingState().respond(SessionStarted(source="compact").with_data(FeatureData({})), settings, (Talkative,)).popped, "and the session's start still pops it"
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields["line"]))

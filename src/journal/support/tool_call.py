@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from journal.support.alias_call import AliasCall
 from pathlib import Path
 
 from journal.support.chain import Chain
@@ -6,6 +7,8 @@ from journal.support.command_part import CommandPart
 from journal.support.operation import Operation
 from journal.support.recorded_call import RecordedCall
 
+
+PANIC = "panic"
 
 @dataclass(frozen=True)
 class ToolCall:
@@ -46,6 +49,9 @@ class ToolCall:
     def is_script(self) -> bool:
         from journal.support.writes import Writes
         return any(Writes.is_script(part.text) for part in self.parts)
+
+    def is_panic_line(self) -> bool:
+        return bool(self.parts) and all(AliasCall.parsed(part.text).name == PANIC for part in self.parts)
 
     def journal_parts(self) -> tuple[int, int]:
         return sum(1 for part in self.parts if part.is_journal), len(self.parts)

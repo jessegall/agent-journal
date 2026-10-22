@@ -13,7 +13,6 @@ from journal.events.models.model_event import ModelEvent
 from journal.events.agent.agent_event import AgentEvent
 from journal.events.rows.row_event import RowEvent
 from journal.engine.row_event_delivery import RowEventDelivery
-from journal.engine.engine import Engine
 from journal.engine.nudge_registry import NudgeRegistry
 from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
@@ -41,7 +40,6 @@ class Runtime:
 
     def register_nudges(self) -> None:
         nudges = self.container.get(NudgeRegistry)
-        nudges.register(Engine.COMPACTION_PAUSE)
         for feature in self.registry.features:
             for nudge in feature.nudges:
                 nudges.register(nudge)
@@ -58,6 +56,7 @@ class Runtime:
                 self.bus.listen(listener.kind(), Switches(feature, self.container.get(listener), self.registry, self.scope))
             for seed in feature.seeds:
                 self.container.get(seed).run()
+        self.machine.compactions_ended()
         from journal.repositories.environments import Environments
         if not self.container.get(Environments).all():
             self.container.get(Environments).lookup("main")

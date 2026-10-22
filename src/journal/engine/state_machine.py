@@ -1,4 +1,6 @@
 from journal.engine.base_state import BaseState
+from journal.engine.states.compacting import Compacting
+from journal.events.agent.tool_starting import ToolStarting
 from journal.engine.support.typist import Typist
 from journal.engine.nudger import Nudger
 from journal.engine.support.settings import Settings
@@ -31,6 +33,7 @@ from journal.engine.support.session_agents import SessionAgents
 
 MOVED = "a feature moved the agent"
 
+JOURNAL_START = "the journal started, so no compaction is still running"
 
 class StateMachine(AgentListener[AgentEvent]):
     """The one blocking listener on every agent event: loads the agent's state, asks it, saves the new state, and turns the transition into the decision, with what it says sent through the nudger."""
@@ -44,6 +47,8 @@ class StateMachine(AgentListener[AgentEvent]):
         self.settings, self.features, self.scope, self.supervisor, self.entries, self.readers, self.sessions = settings, features, scope, supervisor, entries, readers, sessions
 
     def handle(self, event: AgentEvent) -> Decision:
+        if isinstance(event, ToolStarting) and event.call.is_panic_line():
+            return Decision()
         decision = self.answer(self.sessions.agent(event.session, event.environment_id, event.provider), event)
         if decision.context and not (event.answers_hook and event.has_lines):
             self.type_lines(event.environment_id, decision.context, event.typing_delay)
@@ -102,6 +107,10 @@ class StateMachine(AgentListener[AgentEvent]):
     def reset(self, session: str, environment_id: int, actor: Actor, text: str) -> Agent:
         agent = self.sessions.agent(session, environment_id)
         return self.manual(agent, Stack((self.states.first(),)), actor, text)
+
+    def compactions_ended(self) -> None:
+        for agent in self.agents.global_state(Compacting.name):
+            self.manual(agent, self.states.stack(agent).popped(), Actor.system(), JOURNAL_START)
 
     def manual(self, agent: Agent, following: Stack, actor: Actor, text: str) -> Agent:
         machine_answer = self.hook_machine(self.states.stack(agent), following, self.top_state(), self.readers.agent_data(agent))
