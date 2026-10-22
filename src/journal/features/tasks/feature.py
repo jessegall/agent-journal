@@ -15,6 +15,7 @@ from journal.features.tasks.states.impasse import Impasse
 from journal.features.tasks.states.ready import Ready
 from journal.features.tasks.states.working import Working
 from journal.features.tasks.listeners.release_waits import ReleaseWaits
+from journal.features.tasks.listeners.task_move_cards import TaskMoveCards
 
 
 class Tasks(Feature[TasksData]):
@@ -29,7 +30,7 @@ class Tasks(Feature[TasksData]):
     states = (Ready, Working, Impasse, ExternalWait)
     commands = (TaskCommand, WaitCommand, ImpasseCommand)
     options = (AUTO, FIRST_DELAY, TASK_REMINDER_INTERVAL, LOG_LIMIT, LOG_AGE_LIMIT)
-    listeners = (ClearWaits, ReleaseWaits, WaitCycleCheck)
+    listeners = (ClearWaits, ReleaseWaits, WaitCycleCheck, TaskMoveCards)
     conduct = (TasksConduct,)
     data = (TasksDataReader,)
 

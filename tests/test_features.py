@@ -920,6 +920,25 @@ def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_st
     assert not any("check 2" in line for line in keystrokes)
 
 
+def test_a_task_started_parked_blocked_and_finished_leaves_a_mark_in_the_chat_for_each(app: App):
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    console.run(["task", "create", "the parser", "--start"], AGENT)
+    console.run(["task", "suspend", "1", "the footer first"], AGENT)
+    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "block", "2", "waits on the client's logo"], AGENT)
+    console.run(["task", "resume", "1"], AGENT)
+    console.run(["task", "complete", "1", "--how", "the parser reads"], AGENT)
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        from journal.repositories.messages import Messages
+        marks = [(m.text, m.data.get("detail", "")) for m in app.container.get(Messages).all() if m.data.get("shows") == "task_moves"]
+    texts = [text for text, _ in marks]
+    assert "Started task 1: the parser" in texts and "Parked task 1: the parser" in texts and "Blocked task 2: the footer" in texts and "Finished task 1: the parser" in texts, texts
+    assert ("Blocked task 2: the footer", "waits on the client's logo") in marks, "a parked or blocked mark says why"
+
+
 def test_a_task_the_user_opens_is_told_at_once_to_an_idle_agent_and_frees_a_stuck_one(app: App, monkeypatch):
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
@@ -1520,7 +1539,7 @@ def test_notable_moments_are_cards_in_the_chat(app: App):
     hook(app, "SessionStart")
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["stuck", "stuck on the login"], AGENT)
-    cards = [m for m in app.container.get(Messages).scoped() if m.author == "system"]
+    cards = [m for m in app.container.get(Messages).scoped() if m.author == "system" and m.data.get("shows") != "task_moves"]
     assert [c.text for c in cards] == ["Agent stuck"] and cards[0].data["detail"] == "stuck on the login" and cards[0].data["tone"] == "bad"
 
 
@@ -1628,7 +1647,7 @@ def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app:
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     assert status == 409 and "`journal environment overview`" in body["error"]
     shown = console.run(["environment", "overview"], AGENT).text
-    assert "task in hand: 1 t" in shown and "unread messages: 1" in shown
+    assert "task in hand: 1 t" in shown and re.search(r"unread messages: \d+", shown)
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
 
 def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_beneath_it(app: App, monkeypatch):
@@ -2814,7 +2833,7 @@ def test_a_write_after_a_message_is_read_waits_for_the_answer(app: App):
     app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "t", "--start"], AGENT)
     app.console().run(["message", "send", "could you rename it?"], USER)
-    app.console().run(["message", "read", "1"], AGENT)
+    app.console().run(["message", "unread"], AGENT)
     assert hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.py"})[0] == 409, "a word first, then the work: the user's ruling of 2026-10-16"
     hook(app, "MessageDisplay", message="Yes, renaming it now.")
     app.runtime().deferred.drain()

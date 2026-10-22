@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.30
+
+- A task started, finished, parked or blocked leaves a small mark in the chat, as a filed one does, naming the task and, for parked and blocked, why. Show in chat has a switch for them.
+
 ## 4.5.29
 
 - The avatar keeps its floor within five pixels: feet up to five pixels off a floor stand on it, and a floor that moves away must move further than that before the figure falls. It was two pixels, so a small shift of the page dropped it.

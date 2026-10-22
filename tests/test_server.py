@@ -409,18 +409,18 @@ def test_request_threads_leave_no_connection_behind(server):
 
 def test_each_type_is_read_alone_above_the_last_number_seen(server):
     """A type's read answers its rows above `from`, the newest `last` of them, with its counts; a type whose rows will not load fails alone and the others still answer."""
+    for n in range(3):
+        call(server, "POST", "/journal/messages", {"text": f"hello {n}", "idempotency": f"k{n}"})
+    messages = call(server, "GET", "/journal/messages?after=1&limit=5")[1]
+    assert [r["id"] for r in messages["rows"]] == [2, 3] and messages["counts"]["all"] == 3
+    assert call(server, "GET", "/journal/messages?after=3&limit=5")[1]["rows"] == [], "a poll from the last id seen carries nothing when nothing is new"
     for n in range(1, 5):
         call(server, "POST", "/journal/tasks", {"title": f"task {n}"})
         call(server, "POST", f"/journal/tasks/{n}/start")
         call(server, "POST", f"/journal/tasks/{n}/finish", {"how": "done"})
-    for n in range(3):
-        call(server, "POST", "/journal/messages", {"text": f"hello {n}", "idempotency": f"k{n}"})
     tasks = call(server, "GET", "/journal/tasks?after=1&limit=2")[1]
     assert [r["id"] for r in tasks["rows"]] == [3, 4] and tasks["is_last_page"] is False
     assert tasks["counts"] == {"all": 4, "open": 0, "unread": 0}
-    messages = call(server, "GET", "/journal/messages?after=1&limit=5")[1]
-    assert [r["id"] for r in messages["rows"]] == [2, 3] and messages["counts"]["all"] == 3
-    assert call(server, "GET", "/journal/messages?after=3&limit=5")[1]["rows"] == [], "a poll from the last id seen carries nothing when nothing is new"
     call(server, "POST", "/journal/facts", {"text": "the sky is blue"})
     with server.database.transaction():
         server.database.execute("UPDATE facts SET keywords = '{broken' WHERE id = 1")

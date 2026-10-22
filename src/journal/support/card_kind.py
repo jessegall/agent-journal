@@ -27,4 +27,5 @@ class CardKind(StrEnum):
     PLUGINS = "plugins"
     PHONES = "phones"
     FILED = "filed"
+    TASK_MOVES = "task_moves"
     FAULTS = "faults"
