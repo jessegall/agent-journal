@@ -1751,6 +1751,8 @@ def test_a_task_is_read_whole_with_its_plan_phase_brief_and_every_log_line_in_or
     assert [line.rsplit("  ", 1)[1] for line in lines[5:]] == steps, "every log line, the oldest first, not only the latest three"
     console.run(["task", "create", "loose"], AGENT)
     assert console.run(["task", "show", "2"], AGENT).text.splitlines()[2:] == ["plan: none", "brief: none", "log: none"]
+    assert console.run(["task", "brief", "2", "done when the loose end is tied"], AGENT).code == 0
+    assert "brief: done when the loose end is tied" in console.run(["task", "show", "2"], AGENT).text, "a brief is written anew, never as a log line"
 
 
 def test_the_look_runs_the_commands_the_setting_names_each_under_its_heading_in_order(app: App):
