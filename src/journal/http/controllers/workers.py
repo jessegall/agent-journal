@@ -7,7 +7,6 @@ from journal.http.support.model_fields import ModelFields
 from journal.features.workers.support.worker_task_view import WorkerTaskView
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
-from journal.models.support.ref import Ref
 from journal.repositories.proofs import Proofs
 from journal.repositories.tasks import Tasks
 from journal.repositories.worker_todos import WorkerTodos
@@ -53,11 +52,12 @@ class WorkerController(Controller[Worker]):
         return row.state != WorkerState.STOPPED
 
     def shown_page(self, rows: list[Worker]) -> list[dict]:
-        return [{**ModelFields.build(w), "report": self.reports.last(w), "files": w.files_line(), "task": self.task_view(w)} for w in rows]
+        views = self.task_views(rows)
+        return [{**ModelFields.build(w), "report": self.reports.last(w), "files": w.files_line(), "task": views.get(w.row_id, WorkerTaskView())} for w in rows]
 
-    def task_view(self, worker: Worker) -> WorkerTaskView:
-        holdings = self.tasks.holder_task_ids(Ref.build(worker))
-        if not holdings:
-            return WorkerTaskView()
-        task = self.tasks.find(holdings[0])
-        return WorkerTaskView.built(task, self.todos.task_items(task), self.proofs.task_proofs(task))
+    def task_views(self, rows: list[Worker]) -> dict[int, WorkerTaskView]:
+        numbers = {w.row_id for w in rows}
+        worker_tasks = {worker: task for task, worker in self.tasks.worker_holdings().items() if worker in numbers}
+        tasks = {task.row_id: task for task in self.tasks.numbered(worker_tasks.values())}
+        todos, proofs = self.todos.task_lists(set(tasks)), self.proofs.grouped(set(tasks))
+        return {worker: WorkerTaskView.built(tasks[task], todos.get(task, []), proofs.get(task, [])) for worker, task in worker_tasks.items() if task in tasks}
