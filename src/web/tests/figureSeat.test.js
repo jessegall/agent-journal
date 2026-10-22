@@ -343,3 +343,14 @@ test("a figure sitting on the chat box takes no press below its seat, so a click
     expect(clickedBody("stand", FIGURE.below).bottom).toBeLessThanOrEqual(1 - FIGURE.below);
     expect(clickedBody("hang", FIGURE.below).bottom).toBeGreaterThan(seated.bottom);
 });
+
+test("a corner the figure's world pushes its seat in from is no seat: the figure rests there on its feet, never with its legs over the box", () => {
+    page({left: 210, top: 600, width: 680, height: 120});
+    for (const near of [{x: 210, y: 600}, {x: 890, y: 600}]) {
+        const rest = seatOf(FIGURE, near);
+        expect(rest).toMatchObject({y: 600, posture: "stand"});
+        expect(boxAt(rest, FIGURE).bottom - FIGURE.below * FIGURE.size).toBeCloseTo(600, 5);
+    }
+    page({left: 300, top: 600, width: 400, height: 120});
+    expect(seatOf(FIGURE, {x: 700, y: 600}).posture).toBe("sit");
+});

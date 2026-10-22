@@ -240,13 +240,27 @@ function insideWorld(spot, {size, below}) {
 }
 
 // the seats on either corner of the edge at home, and the places along it to stand, each moved inside the figure's world
-const homeSeats = (edge, figure) => Object.keys(SEAT_SIDES).map((side) => insideWorld(seatAt(edge, side, figure), figure));
+// The seats on the corners of the edge at home whose legs hang past the corner: a seat the figure's world pushes inboard would hang the
+// legs over the face of the compose box, so the figure would seem to sink into it, and is no seat; on the foot of the window, with no box
+// under it, every seat is one
+const homeSeats = (edge, figure, element) =>
+    Object.keys(SEAT_SIDES)
+        .map((side) => seatAt(edge, side, figure))
+        .filter((seat) => !element || Math.abs(insideWorld(seat, figure).x - seat.x) < 1)
+        .map((seat) => insideWorld(seat, figure));
 const homeStands = (edge, figure) => alongTop(edge, HOME_ALONG).map((spot) => insideWorld(spot, figure));
 
-// A seat on a corner of the edge the figure stands on at home; with nothing there it sits on the foot of its world, its legs past it
+// The spots the figure rests on at home: the seats on its corners, else, when no corner holds a seat, its places along the edge on its feet
+const homeRests = (edge, figure, element) => {
+    const seats = homeSeats(edge, figure, element);
+    return seats.length ? seats : homeStands(edge, figure);
+};
+
+// A seat on a corner of the edge the figure stands on at home, or a place along it on its feet when no corner holds a seat; with nothing
+// there it sits on the foot of its world, its legs past it
 export function seatOf(figure, near) {
     const {element, edge} = groundEdge();
-    return {...freeSpot(homeSeats(edge, figure), figure, near), view: null, on: element};
+    return {...freeSpot(homeRests(edge, figure, element), figure, near), view: null, on: element};
 }
 
 // Where a figure that steps out of the way goes at home, its picture clear of `box`, the one it stepped aside from: a seat while it must
@@ -254,7 +268,7 @@ export function seatOf(figure, near) {
 // else the one on either side that hides least; null when none at home is clear of the box.
 export function clearOf(box, figure, near, seated) {
     const {element, edge} = groundEdge();
-    const spots = (seated ? homeSeats(edge, figure) : [...homeSeats(edge, figure), ...homeStands(edge, figure)]).filter(
+    const spots = (seated ? homeRests(edge, figure, element) : [...homeSeats(edge, figure, element), ...homeStands(edge, figure)]).filter(
         (each) => !overlaps(boxAt(each, figure), box)
     );
     const right = freeSpot(
