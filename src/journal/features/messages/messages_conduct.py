@@ -10,13 +10,14 @@ from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.user_resumed import UserResumed
 from journal.events.rows.reaction_added import ReactionAdded
+from journal.events.rows.colleague_commented import ColleagueCommented
 from journal.support.chain import Chain
 
 TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread|recent)|question\s+(?:show|list))\b[^|;&\"']*\|")
 
 
 class MessagesConduct(Conduct):
-    """The messages feature's conduct in every state: the inbox named at a prompt and a stop and every so many of the agent's own tool uses, a write held once the unread were named often enough, the tools held while a read message stays unanswered past so many uses and an answer asked for before that, a read of the user's words piped into a filter held, the reply tag hinted after a message sent by command, and the user's face on a message told."""
+    """The messages feature's conduct in every state: the inbox named at a prompt and a stop and every so many of the agent's own tool uses, a write held once the unread were named often enough, the tools held while a read message stays unanswered past so many uses and an answer asked for before that, a read of the user's words piped into a filter held, the reply tag hinted after a message sent by command, the user's face on a message told, and a colleague's comment told as no words of the user's."""
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.none(*inbox_line(event.data.part(messages_feature()).unread))
@@ -34,6 +35,9 @@ class MessagesConduct(Conduct):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return Transition.merged(self, [truncated_read_check(self, event, settings), unanswered_check(self, event, settings), unread_check(self, event, settings)])
+
+    def on_colleague_commented(self, event: ColleagueCommented, settings: Settings) -> Transition:
+        return self.none(messages_feature().COLLEAGUE_COMMENT.create(colleague=event.colleague, n=event.row_id))
 
     def on_reaction_added(self, event: ReactionAdded, settings: Settings) -> Transition:
         return self.none(messages_feature().USER_REACTION.create(face=event.face, n=event.message_id)) if event.user_origin else self.none()

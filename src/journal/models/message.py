@@ -71,7 +71,7 @@ class Message(Scoped):
     @property
     def sender(self) -> str:
         if self.author == Author.COLLEAGUE:
-            return self.data[self.COLLEAGUE_NAME]
+            return f"{self.data[self.COLLEAGUE_NAME]}, a colleague of your user (not your user's words)"
         return self.data[self.PEER] if self.PEER in self.data else f"the {self.author}"
 
     @property
