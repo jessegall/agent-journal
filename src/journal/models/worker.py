@@ -47,6 +47,7 @@ class Worker(Scoped):
     retire_reason: str = ""
     token_hash: str = ""
     run_end: str = ""
+    transcript_bytes: int = 0
     silence: WorkerSilence = WorkerSilence(SILENCE)
 
     def mention(self) -> WorkerMention:

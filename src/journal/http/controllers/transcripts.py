@@ -4,6 +4,7 @@ from journal.config import Config
 from journal.models.worker import Worker
 from journal.support.actor import Actor
 from journal.repositories.subagents import Subagents
+from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.http.support.request import Request
 from journal.support.response import Response
@@ -20,8 +21,8 @@ from journal.repositories.workers import Workers
 class TranscriptController:
     """The conversation of an agent, of one of its subagents and of a worker, read from the provider's own files."""
 
-    def __init__(self, config: Config, providers: Providers, agents: Agents, workers: Workers, subagents: Subagents, runner: WorkerRunner, turns: TranscriptTurns) -> None:
-        self.config, self.providers, self.agents, self.workers, self.subagents, self.runner, self.turns = config, providers, agents, workers, subagents, runner, turns
+    def __init__(self, config: Config, providers: Providers, agents: Agents, workers: Workers, subagents: Subagents, runner: WorkerRunner, branch: WorkerBranch, turns: TranscriptTurns) -> None:
+        self.config, self.providers, self.agents, self.workers, self.subagents, self.runner, self.branch, self.turns = config, providers, agents, workers, subagents, runner, branch, turns
 
     def agent_transcript(self, request: Request) -> Response:
         agent = self.agents.find(request.number("id"))
@@ -38,7 +39,7 @@ class TranscriptController:
     def worker_transcript(self, request: Request) -> Response:
         worker = self.workers.find(request.number("id"))
         provider = self.providers.lookup(worker.provider)
-        place = self.runner.place(worker)
+        place = self.branch.place(worker)
         session = worker.resume or worker.recovered_session or self.found_session(worker)
         return self.answer(request, provider, provider.transcript(place, session) if session else None)
 

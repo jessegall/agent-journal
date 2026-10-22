@@ -14,6 +14,7 @@ class Switches(Listener[Event]):
         self.feature, self.inner, self.registry, self.scope = feature, inner, registry, scope
         self.blocking = getattr(inner, "blocking", False)
         self.asked_while_free = getattr(inner, "asked_while_free", False)
+        self.is_worker_listener = inner.is_worker_listener
 
     def handle(self, event: Event) -> object:
         with self.scope.environment(self.event_environment(event)):

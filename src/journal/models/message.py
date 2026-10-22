@@ -86,6 +86,10 @@ class Message(Scoped):
         return self.data.get("kind") == TERMINAL_LINE
 
     @property
+    def is_main_unread(self) -> bool:
+        return self.author == Author.USER and self.read_at is None and self.agent_role == AgentRole.MAIN
+
+    @property
     def is_user_facing(self) -> bool:
         return self.author == Author.AGENT and not self.acknowledgement and not self.is_thought
 

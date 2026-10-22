@@ -55,7 +55,7 @@ class Receiver:
             entry = self.recorded(hook, environment, event)
             if self.is_unknown_session_end(event):
                 return Decision()
-            decision = self._blocking(event, self._split(event)[0])
+            decision = self._blocking(event, self._split(self.bus.listeners(type(event)))[0])
             self.entries.save(entry.with_(data={**entry.data, **self.recorded_outcome(hook, decision, timer)}), Actor.agent(hook.session))
             self._defer(event)
         return decision
@@ -63,7 +63,11 @@ class Receiver:
     def worker_recorded(self, hook: Hook, environment: Environment) -> Decision:
         event = self.translation.event(hook, environment)
         self.recorded(hook, environment, event)
-        return self._blocking(event, [listener for listener in self.bus.listeners(type(event)) if listener.is_worker_listener])
+        blocking, deferred = self._split([listener for listener in self.bus.listeners(type(event)) if listener.is_worker_listener])
+        decision = self._blocking(event, blocking)
+        for listener in deferred:
+            self.deferred.add(partial(listener.handle, event))
+        return decision
 
     def recorded(self, hook: Hook, environment: Environment, event: AgentEvent) -> Entry:
         return self.entries.save(Entry(environment_id=environment.row_id, kind=type(event).__name__, actor=Actor.agent(hook.session), data={**hook.stored(), **event.recorded()}), Actor.agent(hook.session))
@@ -86,7 +90,7 @@ class Receiver:
         return isinstance(event, SessionEnded) and not self.agents.matching(session=event.session)
 
     def _immediate(self, event: AgentEvent) -> None:
-        blocking, deferred = self._split(event)
+        blocking, deferred = self._split(self.bus.listeners(type(event)))
         for listener in [*blocking, *deferred]:
             listener.handle(event)
 
@@ -113,10 +117,10 @@ class Receiver:
             return Decision.allowed_with(f"[journal] a guard failed and let this through: {text}. the journal recorded it; tell the user if it happens again")
 
     def _defer(self, event: AgentEvent) -> None:
-        for listener in self._split(event)[1]:
+        for listener in self._split(self.bus.listeners(type(event)))[1]:
             self.deferred.add(partial(listener.handle, event))
 
-    def _split(self, event: AgentEvent) -> tuple[list[Listener], list[Listener]]:
-        listeners = self.bus.listeners(type(event))
+    @staticmethod
+    def _split(listeners: list[Listener]) -> tuple[list[Listener], list[Listener]]:
         blocking = sorted((l for l in listeners if getattr(l, "blocking", False)), key=lambda l: getattr(l, "rank", 1))
         return blocking, [l for l in listeners if not getattr(l, "blocking", False)]

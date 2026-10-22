@@ -133,7 +133,7 @@ class WorkerActions:
             raise Rejection(f"worker {worker.id}, {worker.name}, is still out: tell it with `journal worker notify {worker.id} \"<text>\"`, or wait for its report and send it the job then")
         if not worker.resume:
             raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch the job again")
-        if self.providers.lookup(worker.provider).transcript(self.runner.place(worker), worker.resume) is None:
+        if self.providers.lookup(worker.provider).transcript(self.branch.place(worker), worker.resume) is None:
             raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch the job again")
         try:
             self.runner.renewed(worker)

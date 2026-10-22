@@ -24,6 +24,9 @@ class WorkerBranch:
     def folder(self, worker: Worker) -> Path:
         return self.config.home / "worktrees" / f"{worker.id}-{worker.name}".replace(" ", "-")
 
+    def place(self, worker: Worker) -> Path:
+        return self.folder(worker) if worker.worktree else self.config.root
+
     def git(self, *argv: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
         return subprocess.run(["git", *argv], cwd=cwd or self.config.root, capture_output=True, text=True, timeout=GIT_TIMEOUT_SECONDS)
 

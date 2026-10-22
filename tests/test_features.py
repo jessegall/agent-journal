@@ -21,6 +21,7 @@ from journal.support.tool_call import ToolCall
 from journal.app import App
 from journal.engine.support.session_agents import SessionAgents
 from journal.config import Config
+from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker_state import WorkerState
 from journal.support.actor import Actor
@@ -663,7 +664,7 @@ def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: Ap
     rollout = tmp_path / "home" / ".codex" / "sessions" / date.today().strftime("%Y/%m/%d") / f"rollout-2026-10-20T18-29-18-{session}.jsonl"
     rollout.parent.mkdir(parents=True)
     line_text = {"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "Storage is written."}]}}
-    rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": str(app.container.get(WorkerRunner).place(worker).resolve())}}) + "\n" + json.dumps(line_text) + "\n")
+    rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": str(app.container.get(WorkerBranch).place(worker).resolve())}}) + "\n" + json.dumps(line_text) + "\n")
     read = lambda: json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/workers/1/transcript", headers={"X-Journal-Env": "main"}), timeout=5))
     assert [turn["text"] for turn in read()["turns"]] == ["Storage is written."]
     assert workers.find(1).recovered_session == session, "the session found in Codex's files is kept on the worker's row"
@@ -5310,7 +5311,6 @@ def test_a_workers_worktree_is_cut_from_the_working_tip_and_a_failed_cut_refuses
 
 def test_a_workers_merge_never_touches_the_users_work_and_says_what_stood_in_its_way(app: App):
     import subprocess
-    from journal.features.workers.support.worker_branch import WorkerBranch
     from journal.repositories.workers import Workers
     from journal.repositories.scope import Scope
     root = app.config.root
@@ -5393,7 +5393,6 @@ def test_the_agent_stays_out_of_a_workers_worktree_and_is_told_how_to_work_there
 
 def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_never_while_it_works_or_holds_uncommitted_work(app: App):
     import subprocess
-    from journal.features.workers.support.worker_branch import WorkerBranch
     from journal.repositories.workers import Workers
     from journal.repositories.scope import Scope
     root = app.config.root
@@ -6794,7 +6793,7 @@ def test_a_worker_clocks_out_with_its_report_once_each_point_has_a_proof_that_st
         proofs.added(Proof(environment_id=1, point=1, text="it reads only half", state=ProofState.SHORT), tasks.find(1), Actor.agent("s1"))
     assert "point 1 of task 1 has no proof that stands" in clock_out().error, "refused while a point checked short is not proved again"
     console.run(["proof", "1", "parser.py:30, test_reads_all passes"], lovelace)
-    folder = app.container.get(WorkerRunner).place(worker)
+    folder = app.container.get(WorkerBranch).place(worker)
     (folder / "parser.py").write_text("x = 1\n")
     assert "uncommitted files" in clock_out().error and "parser.py" in clock_out().error, "refused while files are uncommitted, naming them"
     subprocess.run(["git", "add", "parser.py"], cwd=folder, capture_output=True, timeout=30)
@@ -6921,7 +6920,7 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
         workers = app.container.get(Workers)
         for n in (1, 2):
             workers.save(workers.find(n).with_(token_hash="h", session=f"w-{n}").ready(1.0), Actor.system())
-        folder = runner.place(workers.find(1))
+        folder = app.container.get(WorkerBranch).place(workers.find(1))
     (folder / "parser.py").write_text("x = 1\n")
     git("add", "parser.py", cwd=folder)
     git("-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", "the parser", cwd=folder)
@@ -7002,7 +7001,6 @@ def test_the_plan_moves_on_when_a_workers_task_closes_and_its_next_task_goes_to_
 
 def test_a_new_workers_run_that_ends_never_merges_its_work(app: App, monkeypatch):
     import subprocess
-    from journal.features.workers.support.worker_branch import WorkerBranch
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.repositories.workers import Workers
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
@@ -7023,7 +7021,7 @@ def test_a_new_workers_run_that_ends_never_merges_its_work(app: App, monkeypatch
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         runner.run(workers.find(1), commit, Actor.agent("s1"))
-        subprocess.run(commit, cwd=runner.place(workers.find(2)), capture_output=True, timeout=30)
+        subprocess.run(commit, cwd=app.container.get(WorkerBranch).place(workers.find(2)), capture_output=True, timeout=30)
         runner.finish(workers.save(workers.find(2).with_(token_hash="h").delivered(1.0), Actor.system()), 0, Actor.agent("s1"))
         assert git("rev-parse", "HEAD").stdout.strip() == head and not (root / "piece.txt").exists(), "neither run's end, unfinished or clocked out, moves the project's head"
         assert all(git("rev-parse", "--verify", "-q", branch.name(workers.find(n))).returncode == 0 for n in (1, 2)), "and each keeps its branch for its merge"
@@ -7113,7 +7111,7 @@ def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
         codex = app.container.get(Workers).save(Worker(environment_id=1, name="Ada Lovelace", brief="b", provider="codex", worktree=True), Actor.system())
     runner = app.container.get(WorkerRunner)
     written = runner.hook_settings(codex)
-    assert written == runner.place(codex) / ".codex" / "hooks.json" and {block["hooks"][0]["command"] for blocks in json.loads(written.read_text())["hooks"].values() for block in blocks} == {Codex().hook_command(app.config.root)}, "Codex reads its hooks from the worktree's own file"
+    assert written == app.container.get(WorkerBranch).place(codex) / ".codex" / "hooks.json" and {block["hooks"][0]["command"] for blocks in json.loads(written.read_text())["hooks"].values() for block in blocks} == {Codex().hook_command(app.config.root)}, "Codex reads its hooks from the worktree's own file"
     assert "/.codex/hooks.json" in (app.config.root / ".git" / "info" / "exclude").read_text().splitlines(), "which git never sees, so the worker cannot commit it"
     assert Codex().worker_settings_flags(written) == ["--dangerously-bypass-hook-trust"], "and Codex runs the journal's hooks without asking to trust them"
 
@@ -7690,7 +7688,7 @@ def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_wor
     command = Claude().worker_command(runner.instructed(revived), revived.model, revived.resume, revived.session)
     assert revived.is_running() and command[2] == "the boiler" and command[-2:] == ["--resume", "sess-1"], "the new job is the first turn of its last session"
     runner.run(revived, ["sh", "-c", "pwd -P"], Actor.agent("s1"))
-    assert str(runner.place(revived).resolve()) in workers.find(1).run_end, "it runs again in the same worktree"
+    assert str(app.container.get(WorkerBranch).place(revived).resolve()) in workers.find(1).run_end, "it runs again in the same worktree"
 
 
 def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: App, monkeypatch):

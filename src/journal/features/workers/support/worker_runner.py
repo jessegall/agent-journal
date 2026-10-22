@@ -10,6 +10,7 @@ from journal.config import Config
 from journal.support.caller import ACTOR, AGENT_SHELL, WORKER, WORKER_ACTOR, WORKER_TOKEN
 from journal.support.worker_token import WorkerToken
 from journal.features.workers.support.worker_branch import WorkerBranch
+from journal.features.workers.support.worker_chat import WorkerChat
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor
 from journal.models.worker import Worker
@@ -38,9 +39,9 @@ EXCLUDED_VARIABLES = ("JOURNAL_SESSION", "JOURNAL_LAUNCH")
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents) -> None:
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents, chat: WorkerChat) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
-        self.environments, self.profiles, self.agents = environments, profiles, agents
+        self.environments, self.profiles, self.agents, self.chat = environments, profiles, agents, chat
         self._locks: dict[int, threading.Lock] = {}
         self._locks_lock = threading.Lock()
 
@@ -55,7 +56,7 @@ class WorkerRunner:
         threading.Thread(target=self.run_scoped, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
 
     def hook_settings(self, worker: Worker) -> Path:
-        provider, folder = self.providers.lookup(worker.provider), self.place(worker)
+        provider, folder = self.providers.lookup(worker.provider), self.branch.place(worker)
         path = provider.worker_hook_file(folder, self.outputs(worker)[0].with_suffix(".settings.json"))
         if not path.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -81,7 +82,7 @@ class WorkerRunner:
         output.parent.mkdir(parents=True, exist_ok=True)
         try:
             with output.open("w") as output_text, err.open("w") as faults:
-                process = subprocess.Popen(command, cwd=self.place(worker), env=environ, stdin=subprocess.DEVNULL, stdout=output_text, stderr=faults, text=True, start_new_session=True)
+                process = subprocess.Popen(command, cwd=self.branch.place(worker), env=environ, stdin=subprocess.DEVNULL, stdout=output_text, stderr=faults, text=True, start_new_session=True)
         except OSError as error:
             self.reports.file(worker, f"could not start: {error}", actor)
             return
@@ -132,6 +133,7 @@ class WorkerRunner:
 
     def finish(self, worker: Worker, code: int, actor: Actor) -> None:
         self.session_ended(worker)
+        self.chat.read(self.workers.find(worker.row_id))
         output, err = self.outputs(worker)
         provider = self.providers.lookup(worker.provider)
         ended = provider.worker_outcome(self.read(output), self.read(err))
@@ -164,7 +166,7 @@ class WorkerRunner:
         return f"{start}\n\n... {len(text) - len(start) - len(end):,} characters left out ...\n\n{end}"
 
     def latest_session(self, worker: Worker) -> str:
-        return self.providers.lookup(worker.provider).latest_session(self.place(worker), worker.began) if worker.worktree and worker.began else ""
+        return self.providers.lookup(worker.provider).latest_session(self.branch.place(worker), worker.began) if worker.worktree and worker.began else ""
 
     def remaining_seconds(self, worker: Worker) -> float | None:
         limit = self.minutes() * 60
@@ -198,17 +200,14 @@ class WorkerRunner:
         if self.is_running(worker.pid) and os.getpgid(worker.pid) == worker.pid:
             os.killpg(worker.pid, signal.SIGTERM)
 
-    def place(self, worker: Worker) -> Path:
-        return self.branch.folder(worker) if worker.worktree else self.config.root
-
     def workplace(self, worker: Worker) -> Path:
-        folder = self.place(worker)
+        folder = self.branch.place(worker)
         if worker.worktree and not folder.is_dir():
             self.added(worker, "-b", self.branch.name(worker), str(folder), "HEAD")
         return folder
 
     def renewed(self, worker: Worker) -> Path:
-        folder, name = self.place(worker), self.branch.name(worker)
+        folder, name = self.branch.place(worker), self.branch.name(worker)
         if not worker.worktree or folder.is_dir():
             return folder
         self.branch.git("worktree", "prune")

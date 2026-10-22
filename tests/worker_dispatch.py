@@ -13,5 +13,5 @@ def tokenless_run(runner, worker, command: list[str], actor) -> None:
     output, err = runner.outputs(worker)
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w") as printed, err.open("w") as faults:
-        code = subprocess.run(command, cwd=runner.place(worker), stdout=printed, stderr=faults, timeout=60).returncode
+        code = subprocess.run(command, cwd=runner.branch.place(worker), stdout=printed, stderr=faults, timeout=60).returncode
     runner.finish(worker, code, actor)
