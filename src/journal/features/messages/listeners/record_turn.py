@@ -40,7 +40,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
         if not event.final or not event.text.strip():
             return
         if Faces.is_face(event.text):
-            self.supervisor.type(event.environment_id, MessagesFeature.FACE_REPLY.create(face=event.text.strip()).rendered())
+            self.supervisor.type(event.environment_id, MessagesFeature.EMOJI_REPLY.create(face=event.text.strip()).rendered())
             return
         with self.recording:
             self._record(event)

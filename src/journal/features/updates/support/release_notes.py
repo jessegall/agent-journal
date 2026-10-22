@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
-from journal.features.updates.support.release_message import ReleaseMessage
-
 
 @dataclass(frozen=True)
 class ReleaseNotes:
-    """The release messages this environment's agent has not been told yet."""
+    """How many release messages of the project no agent has read yet, and whether this agent's session was already pointed at them."""
 
-    messages: tuple[ReleaseMessage, ...] = ()
+    unread_count: int = 0
+    is_announced: bool = False

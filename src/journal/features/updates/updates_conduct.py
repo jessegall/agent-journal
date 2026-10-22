@@ -9,7 +9,7 @@ from journal.events.feature_data import FeatureData
 
 
 class UpdatesConduct(Conduct):
-    """The updates feature's conduct in every state: the messages of the releases an update crossed are told to the agent once, at its next session start or tick."""
+    """The updates feature's conduct in every state: while release messages wait unread, the agent is pointed at them once per session, at its session start or a tick."""
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         return self.none(*release_lines(event.data))
@@ -20,4 +20,5 @@ class UpdatesConduct(Conduct):
 
 def release_lines(data: FeatureData) -> list[Nudge]:
     from journal.features.updates.feature import Updates
-    return [Updates.RELEASE_MESSAGE.create(version=message.version, text=message.text) for message in data.part(Updates).messages]
+    notes = data.part(Updates)
+    return [Updates.RELEASE_MESSAGES.create(count=notes.unread_count)] if notes.unread_count and not notes.is_announced else []

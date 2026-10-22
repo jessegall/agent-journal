@@ -9210,19 +9210,26 @@ def test_the_users_worktree_commands_run_before_and_after_the_journals_step_whic
     assert not (app.config.home / "worktrees" / "3-Worker-3").exists() and not git_run(root, "branch", "--list", "worker/3-Worker-3").stdout.strip(), "a failing command leaves nothing behind"
 
 
-def test_the_messages_of_the_releases_an_update_crossed_are_told_to_the_agent_once(app: App, monkeypatch):
-    from journal.features.updates.support import release_messages
-    from journal.models.journal_version import JournalVersion
+def test_the_messages_of_the_releases_an_update_crossed_are_kept_until_the_projects_first_agent_reads_them(app: App, monkeypatch):
+    from journal.features.updates.seeds.version_change import VersionChange
+    from journal.features.updates.support import release_texts
     from journal.repositories.journal_versions import JournalVersions
-    monkeypatch.setitem(release_messages.MESSAGES, "4.5.1", "the old news")
-    monkeypatch.setitem(release_messages.MESSAGES, "9.0.0", "not crossed yet")
-    versions = app.container.get(JournalVersions)
-    current = versions.current()
-    versions.save(current.with_(version="4.6.0", previous="4.5.42") if current else JournalVersion(version="4.6.0", previous="4.5.42"), Actor.system())
+    from journal.repositories.release_messages import ReleaseMessages
+    monkeypatch.setitem(release_texts.MESSAGES, "4.5.1", "the old news")
+    monkeypatch.setitem(release_texts.MESSAGES, "99.0.0", "not crossed yet")
+    versions, rows = app.container.get(JournalVersions), app.container.get(ReleaseMessages)
+    booted = lambda previous: (versions.save(versions.current().with_(version=previous), Actor.system()), app.container.get(VersionChange).run())
+    booted("4.6.0")
+    booted("4.5.0")
+    assert sorted(row.version for row in rows.unread()) == sorted(["4.5.1", "4.6.0", "4.13.0"]), "two updates with no agent between keep the messages of both, each once, and none past the version run now"
     told = json.dumps(hook(app, "SessionStart")[1])
-    assert "the journal was updated to 4.6.0: a worker's worktree can now be set up your project's way" in told and "workers.preparation_commands" in told, told
-    assert "the old news" not in told and "not crossed yet" not in told, "only the releases between the last version and this one"
-    assert "updated to 4.6.0" not in json.dumps(hook(app, "SessionStart")[1]), "and each is told once"
+    assert "has release messages for you, 3 unread" in told and "journal update messages" in told, told
+    assert "release messages" not in json.dumps(hook(app, "SessionStart")[1]), "pointed at them once a session"
+    shown = app.console().run(["update", "messages"], AGENT).text
+    assert "4.5.1: the old news" in shown and "4.13.0: a worker's worktree can be set up your project's way" in shown and "workers.preparation_commands" in shown and "--copies" in shown, shown
+    assert rows.unread() == [] and app.console().run(["update", "messages"], AGENT).text == "no release message is unread\n", "read once, for the whole project"
+    other = {"session_id": "s2"}
+    assert "release messages" not in json.dumps(hook(app, "SessionStart", **other)[1]), "another agent is told nothing"
 
 
 def test_a_task_of_an_unapproved_plan_is_neither_started_nor_handed_to_a_worker_nor_counted_as_open(app: App, monkeypatch):

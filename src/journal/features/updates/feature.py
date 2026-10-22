@@ -19,13 +19,13 @@ class Updates(Feature[ReleaseNotes]):
     BRANCH = Option("updates.branch", "Follow this branch", "Empty follows the releases of this major version; a branch name installs that branch's newest commit instead, with Install update, journal update and the hourly check", "", kind="text")
     AUTO = Option("updates.auto", "Install new releases on its own", "When a newer release of this major version is out, or a newer commit of the followed branch, install it and restart the journal; a new major version is never installed on its own; once a new version runs, every plugin installed from a release moves to its newest release that runs on it", False, kind="switch")
     name = "updates"
-    RELEASE_MESSAGE = Nudge(name, "release_message", "the journal was updated to {{version}}: {{text}}", "", repeat_interval=0)
+    RELEASE_MESSAGES = Nudge(name, "release_messages", "the journal was updated and has release messages for you, {{count}} unread", "read them with `journal update messages` and do what they ask", repeat_interval=0)
     title = "Updates"
     help = "Finds the newest release of this version of the journal on GitHub, hourly, and installs it when you say so or, if you switch that on, by itself."
     options = (REPOSITORY, BRANCH, AUTO)
     listeners = (ReleaseCheck, SupervisorUpgrade, SessionRestartClose)
     seeds = (VersionChange, SupervisorCheck)
-    nudges = (RELEASE_MESSAGE,)
+    nudges = (RELEASE_MESSAGES,)
     data = (ReleaseNotesReader,)
     conduct = (UpdatesConduct,)
     jobs = (RestartCheck,)

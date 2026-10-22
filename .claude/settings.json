@@ -109,6 +109,16 @@
           }
         ]
       }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh && exec sh /Users/jessegall/projects/agent-journal/.journal/src/journal/hooks/hook.sh claude /Users/jessegall/projects/agent-journal; exit 0"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

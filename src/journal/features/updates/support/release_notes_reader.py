@@ -1,24 +1,19 @@
-from journal.features.updates.support.release_messages import ReleaseMessages
 from journal.features.updates.support.release_notes import ReleaseNotes
 from journal.models.agent import Agent
 from journal.repositories.entries import Entries
-from journal.repositories.journal_versions import JournalVersions
+from journal.repositories.release_messages import ReleaseMessages
 
-RELEASE_MESSAGE_KEY = "updates.release_message"
+RELEASE_MESSAGES_KEY = "updates.release_messages"
 
 
 class ReleaseNotesReader:
-    """The release messages the last update crossed that this environment has not been told, by the lines already said."""
+    """The project's unread release messages, and whether this session was already pointed at them."""
 
-    def __init__(self, versions: JournalVersions, entries: Entries) -> None:
-        self.versions, self.entries = versions, entries
+    def __init__(self, messages: ReleaseMessages, entries: Entries) -> None:
+        self.messages, self.entries = messages, entries
 
     def read(self, agent: Agent) -> ReleaseNotes:
-        current = self.versions.current()
-        if current is None:
+        unread = self.messages.unread()
+        if not unread:
             return ReleaseNotes()
-        release_messages = ReleaseMessages.crossed(current.previous, current.version)
-        if not release_messages:
-            return ReleaseNotes()
-        history = "\n".join(self.entries.key_lines(RELEASE_MESSAGE_KEY))
-        return ReleaseNotes(tuple(message for message in release_messages if f"updated to {message.version}:" not in history))
+        return ReleaseNotes(len(unread), bool(self.entries.recent_lines(agent.session, RELEASE_MESSAGES_KEY, 0)))
