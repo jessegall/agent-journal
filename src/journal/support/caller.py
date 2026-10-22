@@ -17,7 +17,7 @@ AGENT_REQUIRED = "no agent runs this: only an agent's own session can"
 
 @dataclass(frozen=True)
 class Caller:
-    """Where a command runs and who runs it: the user, an agent by its session and provider, an agent's shell that names no session, a plugin by its name, a worker by its number, its session when its program names one, and its provider, or a subagent of any of these; its kind says which."""
+    """Where a command runs and who runs it: the user, an agent by its session and provider, an agent's shell that names no session, a plugin by its name, a worker by its number, its session when its program names one, and its provider, or a subagent of any of these; its kind says which, and the person is the user's account number on a shared journal."""
 
     environment: str
     session: str | None = None
@@ -25,6 +25,7 @@ class Caller:
     plugin_name: str | None = None
     worker_number: int | None = None
     subagent: bool = False
+    person: int = LOCAL_USER
 
     @classmethod
     def user(cls, environment: str) -> "Caller":
@@ -65,7 +66,7 @@ class Caller:
             return Actor.plugin(self.plugin_name)
         if self.worker_number is not None:
             return Actor.worker(self.worker_number)
-        return Actor.user(LOCAL_USER) if self.session is None else Actor.agent(self.session)
+        return Actor.user(self.person) if self.session is None else Actor.agent(self.session)
 
     @property
     def agent_session(self) -> str:

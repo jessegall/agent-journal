@@ -2,6 +2,7 @@ import json
 import os
 
 from journal.config import Config
+from journal.support.caller import LOCAL_USER
 
 TEAM_FILE = "team.json"
 
@@ -42,3 +43,6 @@ class TeamAccount:
 
     def contents(self) -> dict:
         return json.loads((self.config.home / TEAM_FILE).read_text()) if self.is_joined() else {}
+
+    def user_number(self) -> int:
+        return int(self.contents().get("account_id", LOCAL_USER))

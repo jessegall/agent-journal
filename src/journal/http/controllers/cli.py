@@ -18,6 +18,7 @@ from journal.http.support.stream_response import StreamResponse
 from journal.features.shell.support.shell_runner import EXIT
 from journal.support.response import Response
 from journal.engine.support.launch_files import LaunchFiles
+from journal.sync.team_account import TeamAccount
 
 ACTOR_HEADER = "x-journal-actor"
 THREAD_HEADER = "x-journal-thread"
@@ -27,7 +28,8 @@ EXEC = "__journal_exec"
 class CliController:
     """The shim posts an argv here; the server runs it on the console it already has loaded and answers with the outcome, or with the line an alias stands for, which the shim runs itself. A command from a shell whose launch id is not its environment's is not taken as the live agent's."""
 
-    def __init__(self, console: Console, tokens: PluginTokens, subagents: SubagentCommands, launches: LaunchFiles, providers: Providers, aliases: AliasLines, identity: WorkerIdentity) -> None:
+    def __init__(self, console: Console, tokens: PluginTokens, subagents: SubagentCommands, launches: LaunchFiles, providers: Providers, aliases: AliasLines, identity: WorkerIdentity, account: TeamAccount) -> None:
+        self.account = account
         self.console, self.tokens, self.subagents, self.launches, self.providers, self.aliases = console, tokens, subagents, launches, providers, aliases
         self.identity = identity
 
@@ -66,7 +68,7 @@ class CliController:
         return self.console.run(argv, self.caller(variables, argv, request))
 
     def caller(self, variables: CallerVariables, argv: list[str], request: Request) -> Caller:
-        caller = (variables if self.launches.is_launch(variables.environment, variables.launch) else replace(variables, agent_shell=False)).caller()
+        caller = (variables if self.launches.is_launch(variables.environment, variables.launch) else replace(variables, agent_shell=False)).caller(self.account.user_number())
         if self.subagents.runs(caller, argv, request.headers.get(ACTOR_HEADER), request.headers.get(THREAD_HEADER)):
             return caller.subagent_caller()
         return caller

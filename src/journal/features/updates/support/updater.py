@@ -6,7 +6,6 @@ import time as timing
 from typing import Callable
 
 from journal.config import Config
-from journal.support.caller import LOCAL_USER
 from journal.features.updates.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
 from journal.features.updates.support.release_source import ReleaseSource
@@ -18,6 +17,7 @@ from journal.support.actor import Actor
 from journal.support.rejection import Rejection
 from journal.repositories.setting_rows import SettingRows
 from journal.version import VERSION
+from journal.sync.team_account import TeamAccount
 
 PLUGIN = "code-commandments"
 CHECK_INTERVAL_SECONDS = 3600
@@ -27,7 +27,8 @@ FIRST_CHECK_DELAY_SECONDS = 60
 class Updater:
     """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, and its install: on its own when the user has switched that on, or when they say so."""
 
-    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config) -> None:
+    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config, account: TeamAccount) -> None:
+        self.account = account
         self.settings, self.source, self.installer = settings, source, installer
         self.mark, self.supervisor, self.config = threshold, supervisor, config
         self.releases: list[Release] = []
@@ -140,7 +141,7 @@ class Updater:
         except Rejection as refused:
             self.problem = str(refused)
             return
-        self.install_newest(Actor.user(LOCAL_USER))
+        self.install_newest(Actor.user(self.account.user_number()))
 
     def read(self) -> None:
         try:

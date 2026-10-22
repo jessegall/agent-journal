@@ -9546,3 +9546,23 @@ def test_a_worker_from_another_machine_is_never_watched_signalled_stopped_or_mer
     with pytest.raises(Rejection, match="runs on another machine of the team"):
         actions.merge(7, Actor.user(1))
     assert workers.find(7) == pulled
+
+
+def test_a_second_persons_viewer_and_command_line_writes_are_stamped_with_their_account_number(app: App):
+    from journal.http.support.identity import Identity
+    from journal.repositories.id_blocks import IdBlocks
+    from journal.repositories.tasks import Tasks
+    from journal.support.caller_variables import CallerVariables
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+
+    assert app.container.get(Identity).build({}) == Actor.user(1), "a journal in no team is user 1's"
+    app.container.get(TeamAccount).write({"account_id": 7, "device": "d7"})
+    app.container.get(IdBlocks).add("tasks", 7001, 7999)
+    assert app.container.get(Identity).build({}) == Actor.user(7), "the viewer writes as the person whose account this machine joined with"
+    caller = CallerVariables("main", "claude", False).caller(app.container.get(TeamAccount).user_number())
+    assert caller.actor == Actor.user(7)
+    app.console().run(["task", "create", "made by the second person"], caller)
+    with app.container.get(Scope).environment(1):
+        [task] = [task for task in app.container.get(Tasks).scoped() if task.title == "made by the second person"]
+    assert task.creator == Actor.user(7) and task.id == 7001
+    (app.config.home / TEAM_FILE).unlink()
