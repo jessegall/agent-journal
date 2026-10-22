@@ -31,7 +31,7 @@ TRAILER = re.compile(r"^Journal: (?:tasks|todos) done ((?:\d+(?:[ ,]+(?:and +)?)
 
 
 class CommitDetection(AgentListener[ToolFinished]):
-    """A shell command that committed is followed by a look at the head: the commit becomes a card in the chat, once, a Journal: tasks done line in its message finishes those tasks, and the bus is told a commit was made with what it closed; what the agent is told of it is the git conduct's, handed back with the command's own answer. A commit whose own hook never came, lost to an install or a restart in the same line, is spotted at the next tool use by the head's log having moved, and its tasks close when one of the session's last tool starts held the commit."""
+    """A shell command that committed is followed by a look at the head: the commit becomes a card in the chat, once, a Journal: tasks done line in its message finishes those tasks, and the bus is told a commit was made with what it closed; what the agent is told of it is the git conduct's, handed back with the command's own answer. A commit whose own hook never came, lost to an install or a restart in the same line, is spotted at the next tool use by the head's log having moved, the first look after the journal starts counting as moved, and its tasks close when one of the session's last tool starts held the commit."""
 
     blocking = True
 
@@ -44,12 +44,12 @@ class CommitDetection(AgentListener[ToolFinished]):
         texts = [part.text for part in event.call.parts]
         if any(text.startswith("git merge") for text in texts):
             return self.merged(event)
-        folder = self.folder(event)
-        if not any(text.startswith("git commit") for text in texts) and not self.head_moved(folder):
+        folder, commit_call = self.folder(event), any(text.startswith("git commit") for text in texts)
+        if not commit_call and not self.head_moved(folder):
             return None
         head = self.head(folder)
         actor = Actor.agent(event.session)
-        if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", actor):
+        if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", actor) or not (commit_call or self.is_agents(event, head)):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit"}, actor, CardKind.COMMITS, head.subject)
@@ -69,7 +69,7 @@ class CommitDetection(AgentListener[ToolFinished]):
             return False
         existing = self._head_log_times.get(folder)
         self._head_log_times[folder] = moment
-        return existing is not None and moment != existing
+        return existing != moment
 
     @staticmethod
     def head_log(folder: Path) -> Path:

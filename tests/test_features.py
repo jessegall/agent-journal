@@ -4385,6 +4385,24 @@ def test_a_task_a_worker_holds_is_never_closed_by_a_hand_merge_or_a_trailer(app:
     assert "take its work in with journal worker merge 1" in console.run(["task", "complete", "1", "--how", "by hand"], AGENT).error, "and the agent's own completion is refused"
 
 
+def test_a_commit_whose_own_hook_was_lost_to_a_restart_closes_its_task_at_the_next_tool_use(app: App):
+    import subprocess
+    from journal.features.git.listeners.commit_detection import CommitDetection
+    from journal.repositories.tasks import Tasks
+    root = app.config.root
+    git = lambda *argv: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *argv], cwd=root, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    git("commit", "-q", "--allow-empty", "-m", "start")
+    hook(app, "SessionStart")
+    app.console().run(["task", "create", "the parser", "--start"], AGENT)
+    line = "git add -A && git commit -q -F - <<'EOF'\nthe parser\n\nJournal: tasks done 1\nEOF\ngit push -q; sh install.sh"
+    hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": line})
+    git("commit", "-q", "--allow-empty", "-m", "the parser\n\nJournal: tasks done 1")
+    app.container.get(CommitDetection)._head_log_times.clear()
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response={"stdout": "", "stderr": ""})
+    assert app.container.get(Tasks).find(1).state == "done", "the commit's own hook was lost and the journal restarted, so the next tool use finds it and closes its task"
+
+
 def test_command_outputs_are_a_rolling_log_that_drops_the_oldest_with_its_folder(app: App):
     from journal.repositories.command_outputs import CommandOutputs
     app.container.get(SettingRows).save(Setting(environment_id=0, key="shell.outputs_kept", value=2), Actor.system())
