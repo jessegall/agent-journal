@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.4
+
+- The restart dialog closes once the agent is started again, in every environment: the hook writes the event and the version each session starts on to .journal/runtime/session-version, even when no server answers, and the journal closes the dialog everywhere once that line names the version it runs. A session start that reaches the server closes it in every environment too, where before only its own.
+
 ## 4.5.3
 
 - A journal upgraded from an older version no longer raises KeyError 'tool_use' at every event: the reminder of an unread output reads the tool use of the last line that told of an output's end, and lines said before lines carried it had none. A migration gives every such line its tool use and its moment.

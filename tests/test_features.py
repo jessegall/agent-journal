@@ -3800,6 +3800,33 @@ def test_a_journal_with_agents_and_no_version_kept_was_updated_from_4_4_and_pins
         assert open_notices() == [NOTICE_TITLE], "a journal that has had agents and kept no version was updated from 4.4"
 
 
+def test_the_restart_notice_closes_in_every_environment_once_a_session_started_on_the_running_version(app: App):
+    """The hook writes the event and the version a session started on; once it names the version the journal runs, every environment's restart notice closes, whether or not the start reached the server."""
+    from datetime import datetime, timezone
+    from journal.features.updates.jobs.restart_check import RestartCheck
+    from journal.features.updates.support.session_restart import NOTICE_TITLE, SessionRestart
+    from journal.repositories.environments import Environments
+    from journal.repositories.notices import Notices
+    from journal.version import VERSION
+    app.container.get(Environments).lookup("second")
+    restart, notices = app.container.get(SessionRestart), app.container.get(Notices)
+    restart.notice()
+    def open_everywhere():
+        return [n.title for environment in app.container.get(Environments).all() for n in scoped_notices(environment.row_id) if n.title == NOTICE_TITLE]
+    def scoped_notices(environment_id):
+        with app.container.get(Scope).environment(environment_id):
+            return notices.open_scoped()
+    assert len(open_everywhere()) == 2, "pinned in every environment"
+    marker = app.config.home / "runtime" / "session-version"
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text("SessionStart 4.4.9\n")
+    app.container.get(RestartCheck).tick(datetime.now(timezone.utc).timestamp())
+    assert len(open_everywhere()) == 2, "a session started on an older version takes nothing up"
+    marker.write_text(f"SessionStart {VERSION}\n")
+    app.container.get(RestartCheck).tick(datetime.now(timezone.utc).timestamp())
+    assert open_everywhere() == [], "a session started on the running version closes the notice in every environment"
+
+
 def test_an_update_across_the_shell_runner_pins_a_notice_to_start_the_session_again_until_one_starts(app: App):
     """Updating from before 4.5.0 to it or later pins a notice in every environment asking for the agent's session to start again, once; a start on the same version pins nothing, and the next session start closes it."""
     from journal.features.updates.seeds.version_change import VersionChange

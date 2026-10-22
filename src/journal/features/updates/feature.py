@@ -1,5 +1,6 @@
 from journal.features.feature import Feature
 from journal.features.updates.commands.update_command import UpdateCommand
+from journal.features.updates.jobs.restart_check import RestartCheck
 from journal.features.updates.listeners.release_check import ReleaseCheck
 from journal.features.updates.listeners.supervisor_upgrade import SupervisorUpgrade
 from journal.features.updates.listeners.session_restart_close import SessionRestartClose
@@ -19,4 +20,5 @@ class Updates(Feature):
     options = (REPOSITORY, BRANCH, AUTO)
     listeners = (ReleaseCheck, SupervisorUpgrade, SessionRestartClose)
     seeds = (VersionChange, SupervisorCheck)
+    jobs = (RestartCheck,)
     commands = (UpdateCommand,)
