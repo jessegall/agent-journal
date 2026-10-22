@@ -80,8 +80,11 @@ class Handler(PooledHandler):
             for block in response.blocks:
                 self.wfile.write(block)
                 self.wfile.flush()
-        except (BrokenPipeError, ConnectionResetError, OSError):
+        except (BrokenPipeError, ConnectionResetError):
             return
+        except Exception as fault:
+            traceback.print_exc()
+            self.wfile.write(f"the journal failed while answering: {type(fault).__name__}: {fault}\n".encode())
 
     def _reply(self, response: Response) -> None:
         body = JsonOut.encoded(response.body)

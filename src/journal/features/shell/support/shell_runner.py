@@ -51,37 +51,43 @@ class ShellRunner:
                 folder.numbered(self.record.start(folder.folder.name, "\n".join(Chain.self_parts(posted.line)), folder.folder, caller))
         output_text: queue.Queue = queue.Queue()
         ended: list[int] = []
-        thread = threading.Thread(target=lambda: self.worked(folder, request, caller, cap.is_direct(), output_text, ended, environment), name="shell-chain", daemon=True)
+        faults: list[Exception] = []
+        thread = threading.Thread(target=lambda: self.worked(folder, request, caller, cap.is_direct(), output_text, ended, faults, environment), name="shell-chain", daemon=True)
         thread.start()
         last = b"\n"
         with self.scope.environment(environment):
-            for block in (self.direct(output_text, thread) if cap.is_direct() else self.foreground(folder, request, caller, cap, environment)):
+            for block in (self.direct(output_text, thread, faults) if cap.is_direct() else self.foreground(folder, request, caller, cap, environment, faults)):
                 last = block[-1:] or last
                 yield block
         if cap.is_direct() or folder.is_finished():
             self.closed(folder, request, caller, cap)
             yield f"{'' if last == b'\n' else chr(10)}{EXIT} {ended[0] if ended else 0}\n".encode()
 
-    def worked(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, output_text: queue.Queue, ended: list[int], environment: int) -> None:
+    def worked(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, output_text: queue.Queue, ended: list[int], faults: list[Exception], environment: int) -> None:
         with self.scope.environment(environment):
-            ended.append(self.worker.run(folder, request, caller, direct, output_text.put))
+            try:
+                ended.append(self.worker.run(folder, request, caller, direct, output_text.put))
+            except Exception as fault:
+                faults.append(fault)
         output_text.put(None)
 
     @staticmethod
-    def direct(output_text: queue.Queue, thread: threading.Thread) -> Iterator[bytes]:
+    def direct(output_text: queue.Queue, thread: threading.Thread, faults: list[Exception]) -> Iterator[bytes]:
         while True:
             block = output_text.get()
             if block is None:
                 thread.join()
+                raise_first(faults)
                 return
             yield block
 
-    def foreground(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap, environment: int) -> Iterator[bytes]:
+    def foreground(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap, environment: int, faults: list[Exception]) -> Iterator[bytes]:
         display = OutputShow(folder, cap)
         limit = self.limits.build(request.line, caller.environment, caller.session)
         reader = self.readers.reading(request.line) if limit > 0 else None
         shown, tick, began = 0, 0, time.monotonic()
         while True:
+            raise_first(faults)
             while folder.has_ended(shown):
                 yield display.build(shown).encode()
                 shown += 1
@@ -135,3 +141,8 @@ class ShellRunner:
             return
         if not self.record.is_stored(folder.folder.name, request.line, folder.size(), folder.has_cut()):
             self.record.delete_output(folder.folder.name, caller)
+
+
+def raise_first(faults: list[Exception]) -> None:
+    if faults:
+        raise faults[0]

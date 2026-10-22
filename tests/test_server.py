@@ -1312,15 +1312,16 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
     server = app.server()
     (tmp_path / "a.py").write_text("print(1)\n")
     environment = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": str(tmp_path), "JOURNAL_SESSION": "s1", "CLAUDECODE": "1"}
-    def run(line: str) -> str:
+    def run(line: str, cwd: Path = tmp_path) -> str:
         body = b"".join(f"{k}={v}\0".encode() for k, v in environment.items()) + b"\0\0" + line.encode()
-        request = HttpRequest(f"http://127.0.0.1:{server.port}/shell/run", data=body, method="POST", headers={"Content-Type": "application/octet-stream", "X-Journal-Env": "main", "X-Journal-Cwd": str(tmp_path), "X-Journal-Shell": "bash"})
+        request = HttpRequest(f"http://127.0.0.1:{server.port}/shell/run", data=body, method="POST", headers={"Content-Type": "application/octet-stream", "X-Journal-Env": "main", "X-Journal-Cwd": str(cwd), "X-Journal-Shell": "bash"})
         with urlopen(request, timeout=20) as reply:
             return reply.read().decode()
     try:
         assert run("printf hi && printf there; false") == "hithere\n__journal_exit 1\n", "a short run is shown whole, the parts chained as the shell chains them, and the stream ends with the exit code"
         assert run("printf one && false && printf never; printf two") == "onetwo\n__journal_exit 0\n", "a part after && is skipped while the one before it failed, a part after ; runs whatever came before"
         assert run("cat a.py; echo ====") == "print(1)\n====\n__journal_exit 0\n", "a read of the project's code streams straight through, nothing kept"
+        assert "FileNotFoundError" in run("printf hi", tmp_path / "gone"), "a fault while the answer streams is shown, never an empty answer"
         assert run("journal task list") == "__journal_exit 0\n" or "__journal_exit" in run("journal task list")
         with app.container.get(Scope).environment(1):
             completed = [e for e in app.container.get(Entries).kind_entries("ran", 50)]
