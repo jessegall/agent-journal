@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.16.2
+
+- Only the task in hand takes the agent's log line: a log on a task not started is refused, since nobody would read it, and `journal task edit <n> --title "<title>" --brief "<brief>"` writes either anew instead.
+- A watched output's card shows what its script reader prints; watching through a script reader, or adding one while an output was watched, failed.
+
 ## 4.16.1
 
 - The avatar falls the moment the ground under it moves: every frame its feet are measured against the ground, and more than five pixels down it falls from where it stood, more than five up it is launched; within five it is carried.
