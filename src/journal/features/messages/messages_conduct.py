@@ -75,11 +75,6 @@ def unread_check(state: BaseState, event: ToolStarting, settings: Settings) -> T
     if event.subagent or event.call.is_journal or not messages.unread:
         return state.none()
     limit = settings.integer(feature.EDIT_BLOCK_LIMIT)
-    if event.call.writes and messages.mention_count >= limit:
+    if event.call.writes and messages.inbox_tool_uses >= limit:
         return state.refuse(feature.INBOX_EDIT_BLOCK.create(count=len(messages.unread)))
-    if messages.mention_count > 0:
-        return state.none(feature.inbox_countdown(messages.unread, max(limit - messages.mention_count - 1, 0)))
-    interval = settings.integer(feature.REMINDER_INTERVAL)
-    if interval > 0 and messages.inbox_tool_uses > 0 and messages.inbox_tool_uses % interval == 0:
-        return state.none(feature.inbox(messages.unread))
-    return state.none()
+    return state.none(feature.inbox_countdown(messages.unread, max(limit - messages.inbox_tool_uses - 1, 0)))

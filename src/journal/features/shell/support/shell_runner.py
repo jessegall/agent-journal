@@ -4,6 +4,10 @@ import time
 from dataclasses import replace
 from typing import Iterator
 
+from journal.support.command_shape import CommandShape
+from journal.features.shell.support.reader import Reader
+from journal.features.shell.support.readers import Readers
+from journal.features.shell.support.script_reader import ScriptReader
 from journal.config import Config
 from journal.features.aliases.support.alias_lines import AliasLines
 from journal.features.shell.support.output_views import OutputViews
@@ -30,9 +34,9 @@ LIMIT_READ_TICKS = 10
 class ShellRunner:
     """Runs one shell line for the shim and streams back what the agent sees: the line is split into its parts, run in the user's shell by the worker, each part shown as its status lands and the cap says, the chain moved to the background past the foreground limit with a line naming its output, and an ended output kept under its number or forgotten. A read or write of the project's code streams straight through, nothing kept. The stream is read after the request has left its scope, so the environment comes along and is named again for every read and write; the exit line starts on a line of its own."""
 
-    def __init__(self, config: Config, caps: OutputCap, limits: ForegroundLimit, worker: ChainWorker, record: ShellRecord, scope: Scope, suggestions: WatchSuggestions, aliases: AliasLines, outputs: CommandOutputs, views: OutputViews) -> None:
+    def __init__(self, config: Config, caps: OutputCap, limits: ForegroundLimit, worker: ChainWorker, record: ShellRecord, scope: Scope, suggestions: WatchSuggestions, aliases: AliasLines, outputs: CommandOutputs, views: OutputViews, readers: Readers) -> None:
         self.config, self.caps, self.limits, self.worker, self.record, self.scope, self.suggestions = config, caps, limits, worker, record, scope, suggestions
-        self.aliases, self.outputs, self.views = aliases, outputs, views
+        self.aliases, self.outputs, self.views, self.readers = aliases, outputs, views, readers
 
     def run(self, posted: ShellRequest, caller: Caller, environment: int) -> Iterator[bytes]:
         request = replace(posted, line=self.aliases.expanded(posted.line))
@@ -72,6 +76,7 @@ class ShellRunner:
     def foreground(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> Iterator[bytes]:
         display = OutputShow(folder, cap)
         limit = self.limits.build(request.line, caller.environment, caller.session)
+        reader = self.readers.reading(request.line) if limit > 0 else None
         shown, tick, began = 0, 0, time.monotonic()
         while True:
             while folder.has_ended(shown):
@@ -79,19 +84,31 @@ class ShellRunner:
                 shown += 1
             if folder.is_finished():
                 return
-            if limit > 0 and time.monotonic() - began >= limit:
+            if limit > 0 and (reader is not None or time.monotonic() - began >= limit):
                 folder.moved()
                 part = folder.part_text(shown)
                 number = self.record.moved(folder.folder.name, part, folder.folder, caller)
                 alias = self.aliases.running(part)
                 from journal.features.shell.feature import Shell
-                moved = [Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered(), *(self.watched(number, alias, caller) if alias else self.suggestions.lines(number, part))]
+                moved = [Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered(), *self.watch_lines(number, part, alias, reader, caller)]
                 yield ("\n".join(moved) + f"\n{EXIT} 0\n").encode()
                 return
             time.sleep(TICK_SECONDS)
             tick += 1
             if tick % LIMIT_READ_TICKS == 0:
                 limit = self.limits.build(request.line, caller.environment, caller.session)
+
+    def watch_lines(self, number: int, part: str, alias: Alias | None, reader: Reader | ScriptReader | None, caller: Caller) -> list[str]:
+        if alias is not None:
+            return self.watched(number, alias, caller)
+        if reader is not None:
+            return self.reader_watched(number, part, reader, caller)
+        return self.suggestions.lines(number, part)
+
+    def reader_watched(self, number: int, part: str, reader: Reader | ScriptReader, caller: Caller) -> list[str]:
+        from journal.features.shell.feature import Shell
+        self.views.card(self.outputs.watch(self.outputs.find(number), reader.name, "", caller.actor))
+        return [Shell.READER_WATCH.create(n=number, command=CommandShape.build(part), reader=reader.name).rendered()]
 
     def watched(self, number: int, alias: Alias, caller: Caller) -> list[str]:
         from journal.features.shell.feature import Shell

@@ -44,3 +44,9 @@ describe("rows docked above the chat", () => {
         expect(turn.data.title).toBe("Task 12: Write it");
     });
 });
+
+test("a docked message leaves the chat's stream until it is undocked", async () => {
+    const {undockedRows} = await import("../src/domain/docks.js");
+    const rows = [{id: 1, data: {docked: true}}, {id: 2, data: {}}, {id: 3, data: {docked: false}}];
+    expect(undockedRows(rows).map((m) => m.id)).toEqual([2, 3]);
+});

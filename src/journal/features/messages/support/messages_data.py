@@ -11,6 +11,5 @@ class MessagesData:
     unanswered: tuple[int, ...]
     unanswered_files: tuple[str, ...]
     inbox_tool_uses: int
-    mention_count: int
     uses_unanswered: int
     peer_questions: tuple[PeerQuestion, ...]

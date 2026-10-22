@@ -4,6 +4,7 @@ import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
+import {patched} from "../sync/rows.js";
 
 const SHOWN_LINES = 6;
 
@@ -17,7 +18,7 @@ const opened = ref(false);
 const output = ref(null);
 
 function undock() {
-    scope.api.act("messages", props.message.id, "undock");
+    patched(props.message, (row) => (row.data = {...row.data, docked: false}), () => scope.api.act("messages", props.message.id, "undock"));
 }
 
 async function read() {

@@ -1324,6 +1324,10 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
             completed = [e for e in app.container.get(Entries).kind_entries("ran", 50)]
         assert any(e.data["part"] == "printf hi" and e.data["status"] == 0 for e in completed) and any(e.data["part"] == "cat a.py" and e.data["output"] == "" for e in completed), "every part of the agent's own is recorded with its status; a direct part's output is not kept"
         assert not list((tmp_path / ".journal" / "runtime" / "outputs").glob("*/direct")), "a direct chain's folder is removed when it ends"
+        app.console().run(["reader", "add", "naps", "--commands", "sleep", "--pattern", "slept", "--about", "a nap's end"], Caller.user("main"))
+        began = time.monotonic()
+        moved = run("sleep 2 --a-value; echo slept")
+        assert "went to the background at once and is watched through the reader naps" in moved and time.monotonic() - began < 1.5, "a command a reader reads, whatever its values, goes to the background at once, watched through it"
     finally:
         app.runtime().stop()
 

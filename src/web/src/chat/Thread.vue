@@ -30,7 +30,7 @@ import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import OutputDialog from "./OutputDialog.vue";
 import DumpDock from "./DumpDock.vue";
-import {dockedDump, dockedRows} from "../domain/docks.js";
+import {dockedDump, dockedRows, undockedRows} from "../domain/docks.js";
 import RowDock from "./RowDock.vue";
 import WatchDock from "./WatchDock.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
@@ -150,7 +150,7 @@ let frame = 0;
 
 const revoke = (p) => Object.values(p.previews || {}).forEach(URL.revokeObjectURL);
 const {pending, promise, drop, change, keep, link, keyOf} = usePromised(revoke);
-const thread = computed(() => threadTurns(chat.value, pending.value, here && !!store.paging.more.messages, props.hidden));
+const thread = computed(() => threadTurns(undockedRows(chat.value), pending.value, here && !!store.paging.more.messages, props.hidden));
 watch(thread, (made) => made.keys.forEach((placeholder, ref) => link(ref, placeholder)), {immediate: true});
 const turns = computed(() => thread.value.turns);
 const turnsLoaded = computed(() => scope.loaded("messages"));

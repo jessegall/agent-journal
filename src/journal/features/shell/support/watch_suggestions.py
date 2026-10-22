@@ -1,3 +1,4 @@
+from journal.support.command_shape import CommandShape
 from journal.features.shell.support.activity_label import ActivityLabel
 from journal.features.shell.support.readers import Readers
 
@@ -18,4 +19,4 @@ class WatchSuggestions:
         watch = Shell.WATCH_SUGGESTION.create(n=number, reader="").rendered()
         if ActivityLabel.build(part) not in LONG_RUNS:
             return [watch]
-        return [watch, Shell.NEW_READER_SUGGESTION.create(command=" ".join(part.split()[:2])).rendered()]
+        return [watch, Shell.NEW_READER_SUGGESTION.create(command=CommandShape.build(part)).rendered()]

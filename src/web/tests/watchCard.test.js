@@ -65,5 +65,6 @@ test("a docked watch shows its last lines and its bar, and only the user takes i
     expect(host.querySelector(".watch-dock-ending").textContent).toBe("finished");
     host.querySelector('[aria-label^="Take the watched output down"]').click();
     expect(act).toHaveBeenCalledWith("messages", 7, "undock");
+    expect(ended.data.docked).toBe(false);
     done();
 });

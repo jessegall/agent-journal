@@ -3,6 +3,7 @@ from journal.support.alias_call import AliasCall
 from pathlib import Path
 
 from journal.support.chain import Chain
+from journal.support.command_shape import CommandShape
 from journal.support.command_part import CommandPart
 from journal.support.operation import Operation
 from journal.support.recorded_call import RecordedCall
@@ -38,7 +39,7 @@ class ToolCall:
         return " ".join(str(value) for value in self.input.values())
 
     def recorded(self) -> RecordedCall:
-        return RecordedCall(command=self.command, parts=self.parts, writes=self.writes, edited_paths=self.edited_paths, read_paths=self.read_paths, work=self.work, operation=self.operation)
+        return RecordedCall(command=self.command, parts=self.parts, writes=self.writes, edited_paths=self.edited_paths, read_paths=self.read_paths, work=self.work, shape=CommandShape.build(self.command), operation=self.operation)
 
     def as_data(self) -> dict:
         return self.recorded().as_data()

@@ -11,6 +11,11 @@ export function dockedRows(messages) {
     return messages.filter((m) => m.data?.docked === true).sort((a, b) => updatedAt(b) - updatedAt(a) || b.id - a.id);
 }
 
+// The messages the chat draws in its stream: a docked one sits above the chat instead, until it is undocked.
+export function undockedRows(messages) {
+    return messages.filter((m) => m.data?.docked !== true);
+}
+
 // The table and number of the row a docked message stands for, from its ref.
 export function dockedRef(message) {
     const [table, id] = String(message.data.row).split(":");

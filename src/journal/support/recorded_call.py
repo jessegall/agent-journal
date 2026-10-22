@@ -26,14 +26,15 @@ class RecordedCall:
     edited_paths: tuple[str, ...] = ()
     read_paths: tuple[str, ...] = ()
     work: str = ""
+    shape: str = ""
     operation: Operation = NoOperation()
 
     @classmethod
     def parsed(cls, data: dict) -> "RecordedCall":
         return cls(command=data.get("command", ""), parts=tuple(CommandPart.parsed(part) for part in data.get("parts", ())), writes=bool(data.get("writes")),
-                   edited_paths=tuple(data.get("written_paths", ())), read_paths=tuple(data.get("read_paths", ())), work=data.get("work", ""),
+                   edited_paths=tuple(data.get("written_paths", ())), read_paths=tuple(data.get("read_paths", ())), work=data.get("work", ""), shape=data.get("shape", ""),
                    operation=OPERATIONS.get(data.get("operation", {}).get("kind", ""), NoOperation).parsed(data.get("operation", {})))
 
     def as_data(self) -> dict:
         return {"command": self.command, "parts": [asdict(part) for part in self.parts], "writes": self.writes, "written_paths": list(self.edited_paths), "read_paths": list(self.read_paths),
-                "work": self.work, "operation": self.operation.as_data()}
+                "work": self.work, "shape": self.shape, "operation": self.operation.as_data()}

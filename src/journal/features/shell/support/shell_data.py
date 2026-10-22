@@ -20,3 +20,4 @@ class ShellData:
     watch: OutputView
     aliases: tuple[Alias, ...]
     repeated: tuple[str, ...]
+    repeated_shapes: tuple[str, ...]

@@ -1439,9 +1439,9 @@ def test_an_unread_message_is_counted_down_at_every_tool_use_to_the_write_hold(a
     lines = []
     for _ in range(7):
         lines.append(json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1]))
-        assert "new message 1" not in journal_said() and "tool uses left" not in journal_said()
+        assert "tool uses left" not in journal_said()
     shown = [next((part for part in ("wait for message 1: 3", "wait for message 1: 2", "wait for message 1: 1", "your next write waits for message 1") if part in line), "") for line in lines[:4]]
-    assert shown == ["wait for message 1: 3", "wait for message 1: 2", "wait for message 1: 1", "your next write waits for message 1"], "told of it as it arrived, every tool use after counts down to the hold"
+    assert shown == ["wait for message 1: 3", "wait for message 1: 2", "wait for message 1: 1", "your next write waits for message 1"], "every tool use after the message came counts down to the hold"
     assert app.container.get(Agents).session_agent("s1").tool_uses == 7, "one counter on the agent's row: seven plain tool uses moved it by seven, the journal commands by nothing"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     assert status == 409 and "unread messages" in body["error"]
@@ -6275,6 +6275,16 @@ def test_a_command_moved_to_the_background_is_told_to_watch_it_with_the_reader_t
     outputs.save(outputs.find(1).backgrounded(), Actor.system())
     assert app.console().run(["await", "the tests", "--output", "1", "--reader", "pytest"], AGENT).code == 0
     assert outputs.find(1).is_watched and outputs.find(1).watch_reader == "pytest", "waiting with a reader watches the output too"
+
+
+def test_a_command_is_known_by_its_shape_and_five_runs_of_one_long_run_bring_a_reader_suggestion(app: App):
+    """The values passed to a command never change what it is: pytest -k chat and pytest tests/a.py are pytest, python3 -m pytest -q is python3 -m pytest; five runs of one build with different values are one command run five times, and a reader is suggested for it."""
+    from journal.support.command_shape import CommandShape
+    assert [CommandShape.build(line) for line in ("pytest -k chat", "pytest tests/a.py -q", "python3 -m pytest -q", "npm run test", "git commit -m 'x'", ".journal/bin/judge --changes")] == ["pytest", "pytest", "python3 -m pytest", "npm run test", "git commit", ".journal/bin/judge"]
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    told = [json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": f"make build TARGET=part{i}"})[1]) for i in range(5)]
+    assert ["no reader reads make build yet" in line for line in told] == [False, False, False, False, True], "the fifth run of make build, whatever its values, is told to make a reader"
 
 
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):

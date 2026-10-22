@@ -6,6 +6,7 @@ import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {useScope} from "../composables/scope.js";
+import {patched} from "../sync/rows.js";
 import {dockedRef} from "../domain/docks.js";
 import {meta} from "../domain/tables.js";
 import {peek} from "../route.js";
@@ -19,7 +20,7 @@ const buttons = computed(() => (card.value.dock?.buttons || []).filter((b) => b.
 const folds = computed(() => props.folded && card.value.dock?.folds !== false);
 
 function undock() {
-    scope.api.act("messages", props.message.id, "undock");
+    patched(props.message, (row) => (row.data = {...row.data, docked: false}), () => scope.api.act("messages", props.message.id, "undock"));
 }
 
 const open = () => peek(row.value.table, row.value.id);
