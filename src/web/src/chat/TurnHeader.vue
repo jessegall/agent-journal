@@ -12,6 +12,10 @@ const mine = computed(() => props.turn.who === "user");
         <template v-if="turn.pending">
             <span :class="{'thread-unsent': turn.unsent}">{{ turn.unsent ? "not sent yet, trying again" : "sending" }}</span>
         </template>
+        <template v-else-if="turn.who === 'colleague'">
+            <span class="thread-colleague">{{ (turn.data || {}).colleague }}, colleague</span>
+            <span class="thread-meta-dot" />
+        </template>
         <template v-else-if="mine">
             <span class="thread-ref">message {{ turn.id }}</span>
             <span class="thread-meta-dot" />
@@ -33,6 +37,11 @@ const mine = computed(() => props.turn.who === "user");
     padding: 0 3px;
     font-size: 10.5px;
     color: var(--text-4);
+}
+
+.thread-colleague {
+    color: var(--text-2);
+    font-weight: 500;
 }
 
 .thread-unsent {

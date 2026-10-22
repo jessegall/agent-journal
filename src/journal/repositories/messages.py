@@ -27,7 +27,10 @@ class Messages(ScopedRepository[Message]):
         self.reactions, self.links = reactions, links
 
     def save(self, row: Message, actor: Actor) -> Message:
-        return super().save(row.authored(actor.agent_session()), actor)
+        authored = row.authored(actor.agent_session())
+        if authored.is_unsaved_user_message() and self.owners.is_colleague(actor, authored.environment_id):
+            authored = authored.commented(self.owners.person_name(int(actor.id)), int(actor.id))
+        return super().save(authored, actor)
 
     def main_chat(self) -> Query:
         return self.query().filter(agent_role=AgentRole.MAIN)

@@ -23,8 +23,11 @@ class EnvironmentOwners:
 
     def owner_name(self, environment_id: int) -> str:
         number = self.owner_number(environment_id)
-        names = [user.name for user in self.users.numbered([number])] if number else []
-        return names[0] if names else ""
+        return self.person_name(number) if number else ""
+
+    def person_name(self, number: int) -> str:
+        names = [user.name for user in self.users.numbered([number])]
+        return names[0] if names and names[0] else f"user {number}"
 
     def is_colleague(self, actor: Actor, environment_id: int) -> bool:
         if actor.kind != ActorKind.USER:

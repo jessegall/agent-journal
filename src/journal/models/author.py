@@ -8,6 +8,7 @@ class Author(StrEnum):
     USER = "user"
     AGENT = "agent"
     SYSTEM = "system"
+    COLLEAGUE = "colleague"
 
     @classmethod
     def build(cls, actor: Actor) -> "Author":

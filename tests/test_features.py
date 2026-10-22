@@ -9674,7 +9674,11 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
                 with pytest.raises(Rejection, match="in a colleague's environment you only comment"):
                     refused_write()
             comment = b.container.get(Messages).save(Message(environment_id=ada_main.row_id, author=Author.USER, text="a word from Bob"), Actor.user(2))
-        assert comment.id, "a message in a colleague's environment still goes through"
+        assert comment.author == Author.COLLEAGUE and comment.data["colleague"] == "Bob" and comment.sender == "Bob", "a person's message in a colleague's environment is a colleague's comment"
+        assert eventually(lambda: bool(a.container.get(Messages).global_matching(id=comment.id)))
+        with a.container.get(Scope).environment(ada_main.row_id):
+            assert comment.id not in [message.id for message in a.container.get(Messages).unread()], "it is not among Ada's unread"
+            assert comment.id not in [message.id for message in a.container.get(Messages).unanswered()], "nor among what her agent owes an answer"
         assert urlopen_refusal(f"http://127.0.0.1:{b.server().port}/journal/environments/{ada_main.row_id}/stop").find("only comment") >= 0, "and Bob cannot stop Ada's agent from his viewer"
         made = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/environments", data=json.dumps({"name": "feature-x"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "bob-main"}), timeout=5))
         assert made["name"] == "bob-feature-x", "an environment made from the viewer carries its person"

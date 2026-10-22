@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import ClassVar
 
+from journal.events.rows.colleague_commented import ColleagueCommented
 from journal.events.rows.message_arrived import MessageArrived
 from journal.models.agent_role import AgentRole
 from journal.models.author import Author
@@ -18,6 +19,8 @@ class Message(Scoped):
     THOUGHT = "thought"
     REPORT = "report"
     PEER = "peer"
+    COLLEAGUE_NAME = "colleague"
+    COLLEAGUE_USER = "colleague_user"
     RECIPIENT_KEY = "sent_to"
     ASKS_KEY = "asks"
 
@@ -58,8 +61,17 @@ class Message(Scoped):
     def arrived(self) -> "Message":
         return self.with_event(MessageArrived(text=self.text))
 
+    def is_unsaved_user_message(self) -> bool:
+        return self.is_new and self.author == Author.USER
+
+    def commented(self, name: str, user: int) -> "Message":
+        comment = self.without_events().with_(author=Author.COLLEAGUE, data={**self.data, self.COLLEAGUE_NAME: name, self.COLLEAGUE_USER: user})
+        return comment.with_event(ColleagueCommented(text=self.text, colleague=name))
+
     @property
     def sender(self) -> str:
+        if self.author == Author.COLLEAGUE:
+            return self.data[self.COLLEAGUE_NAME]
         return self.data[self.PEER] if self.PEER in self.data else f"the {self.author}"
 
     @property

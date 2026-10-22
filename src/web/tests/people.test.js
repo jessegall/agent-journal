@@ -34,3 +34,13 @@ test("a colleague's environment opens with a box to comment as yourself and no c
     const bar = readFileSync(resolve(__dirname, "../src/chat/AgentBar.vue"), "utf8");
     expect(bar).toMatch(/<template v-if="colleague">\s*<div class="agent-bar agent-bar-colleague">\{\{ colleague \}\}'s environment: the agent's status there is not known on this machine<\/div>/);
 });
+
+test("a colleague's comment is drawn as theirs, named, and never as yours", async () => {
+    const {threadTurns} = await import("../src/domain/thread.js");
+    const {
+        turns: [turn],
+    } = threadTurns([{id: 9, author: "colleague", creator: "user:7", text: "nice work", created_at: "2026-10-23T10:00:00Z", files: [], data: {colleague: "Anna de Vries", colleague_user: 7}}], []);
+    expect(turn.who).toBe("colleague");
+    const header = readFileSync(resolve(__dirname, "../src/chat/TurnHeader.vue"), "utf8");
+    expect(header).toMatch(/<template v-else-if="turn.who === 'colleague'">\s*<span class="thread-colleague">\{\{ \(turn.data \|\| \{\}\).colleague \}\}, colleague<\/span>/);
+});
