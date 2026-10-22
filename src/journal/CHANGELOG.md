@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.11.0
+
+- A worker dispatch names how its worker tests: `--tests "No tests"`, `"Scoped tests"`, `"Full suite"` or a project's own test template (`journal template create "<title>" --purpose testing --brief "..."`). The template's text goes into the worker's brief.
+- The shipped pytest reader shows only the summary once a run ended, never each failed test's path.
+- The command line on a docked run's card is smaller.
+
 ## 4.10.0
 
 - A reader may pick other lines once a run finished or failed: `journal reader add <name> --pattern ... --finished '<its summary>' --failed '<its failures>'`. The card, the watch lines and a read through the reader show those lines once the run ended. A script reader finds the stage in `JOURNAL_OUTPUT_STAGE`. The shipped pytest, dotnet test and phpunit readers carry both.
