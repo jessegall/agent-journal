@@ -8223,6 +8223,10 @@ def test_an_alias_runs_its_line_with_the_flags_passed_on_and_its_moved_run_is_wa
     output = app.container.get(CommandOutputs).find(number)
     assert output.is_watched and output.watch_reader == "pytest", "a moved alias run is watched through its reader at once"
     assert "the run of journal nap, is watched through the reader pytest" in moved and "watch it live" not in moved, "the move says it is watched, not that it could be"
+    from journal.repositories.messages import Messages
+    with app.container.get(Scope).environment(MAIN):
+        card = app.container.get(Messages).with_key(f"watch:{number}")[0]
+    assert card.data["line"] == "journal nap 2", "the card names the line the agent ran, never the alias's expansion"
 
 
 def test_an_alias_name_that_is_a_journal_command_or_another_alias_is_refused(app: App):

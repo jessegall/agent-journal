@@ -45,7 +45,7 @@ class ShellRunner:
             folder = OutputFiles(self.config.home / "runtime" / "outputs" / f"{time.time_ns()}-{threading.get_ident()}")
             folder.split(request.line, Chain.parts(request.line))
             if not cap.is_whole() and not cap.is_direct():
-                folder.numbered(self.record.start(folder.folder.name, "\n".join(p.text for p in Chain.parts(request.line) if p.recorded), folder.folder, caller))
+                folder.numbered(self.record.start(folder.folder.name, "\n".join(Chain.self_parts(posted.line)), folder.folder, caller))
         output_text: queue.Queue = queue.Queue()
         ended: list[int] = []
         thread = threading.Thread(target=lambda: self.worked(folder, request, caller, cap.is_direct(), output_text, ended, environment), name="shell-chain", daemon=True)
