@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.17
+
+- A journal of the project still running older code after an update is stopped when the installed one starts, so the installed code takes its port. A journal started by an earlier launch could stay on its port through every later launch, which stood by behind it, and answer the new runner's commands with a route it did not have, which came back empty.
+- A restart of the journal waits two seconds, so journal update, install and setup restart end their own answer before the server they restart goes.
+
 ## 4.5.16
 
 - A worker's merge takes what its worktree has checked out, so work committed on a branch the worker made itself is merged too. A merge with no commit to take in is refused and the task stays open; it was reported done with the hash of the merge before it.

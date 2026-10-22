@@ -1256,6 +1256,7 @@ def test_a_plans_timeline_has_each_start_log_and_done_of_its_tasks_oldest_first(
 
 
 def test_a_second_journal_of_the_same_project_stands_by_while_the_first_answers(tmp_path: Path):
+    import os
     import socket
     from journal.support.instance_guard import InstanceGuard
     first = free_pair()
@@ -1266,6 +1267,16 @@ def test_a_second_journal_of_the_same_project_stands_by_while_the_first_answers(
     try:
         assert reserve.other_address() == f"http://127.0.0.1:{first}", "the first journal answers on the port its file names, so a second stands by"
         assert InstanceGuard(Config(tmp_path / "two", port=first, span=3)).other_address() == "", "another project's journal on that port is no reason to stand by"
+        import journal.support.instance_guard as guard
+        stopped = []
+        newer = InstanceGuard(Config(tmp_path / "one", port=first, span=3))
+        newer.stop = stopped.append
+        original, guard.VERSION = guard.VERSION, "99.0.0"
+        try:
+            assert newer.other_address() == f"http://127.0.0.1:{first}" and stopped == [os.getpid()], "a journal of this project running other code than is installed is stopped, and the launch waits for its port"
+        finally:
+            guard.VERSION = original
+        assert reserve.other_address() and len(stopped) == 1, "one of the installed version is never stopped"
         App(Config(tmp_path / "one", port=first, span=3)).server()
         with socket.socket() as probe:
             assert probe.connect_ex(("127.0.0.1", first + 1)) != 0, "a journal built to stand by holds no port until it starts"
