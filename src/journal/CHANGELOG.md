@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.5
+
+- The top bar names what a waiting agent waits on in full: it no longer carries the time waited, which changed every second and left the bar showing only the first word of a long wait; the bottom line keeps the time. A long fixed part of the top line now shortens with an ellipsis before the part that rolls.
+
 ## 4.5.4
 
 - The restart dialog closes once the agent is started again, in every environment: the hook writes the event and the version each session starts on to .journal/runtime/session-version, even when no server answers, and the journal closes the dialog everywhere once that line names the version it runs. A session start that reaches the server closes it in every environment too, where before only its own.

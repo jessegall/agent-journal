@@ -40,7 +40,8 @@ export function waitingFor({text, on, since}, {workers = [], now = Date.now() / 
     const working = refs.length > 0 && refs.every((ref) => ref.startsWith(WORKER));
     const out = items.filter((item) => !item.reported).length;
     const kinds = [...new Set(items.map((item) => item.kind))];
-    return {text, items, working, kind: kinds.length === 1 ? kinds[0] : "", since, line: `${working ? countOf(out || items.length) : text}${since ? ` · ${elapsed(now - since)}` : ""}`};
+    const label = working ? countOf(out || items.length) : text;
+    return {text, items, working, kind: kinds.length === 1 ? kinds[0] : "", since, label, line: `${label}${since ? ` · ${elapsed(now - since)}` : ""}`};
 }
 
 export function waitingOn(agent, workers = [], now = Date.now() / 1000) {
@@ -88,7 +89,7 @@ export function lineOf(agent, task, auto = false, workers = []) {
     const state = stateOf(agent);
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "compacting the conversation, then it carries on";
-    if (state === "waiting") return waitingOn(agent, workers)?.line || "something it has not named";
+    if (state === "waiting") return waitingOn(agent, workers)?.label || "something it has not named";
     if (task) return named(task);
     if (state === "idle") return phrase(auto ? "auto" : "idle");
     return ["working", "busy"].includes(state) ? busyWording(agent) : phrase("bearings");

@@ -364,7 +364,10 @@ async function runBar(p) {
 }
 
 .statusbar-head {
-    flex: none;
+    flex: 0 1000 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: pre;
 }
 

@@ -101,3 +101,9 @@ describe("the chat's status line", () => {
         expect(lineOf()).not.toBe(first);
     });
 });
+
+test("the top bar names what a waiting agent waits on without the time it has waited", async () => {
+    const {lineOf} = await import("../src/domain/agentState.js");
+    const waiting = {status: "idle", awaiting: "The Rustig redesign is live; every open task waits on the client", awaiting_since: new Date(Date.now() - 180000).toISOString()};
+    expect(lineOf(waiting, null)).toBe("The Rustig redesign is live; every open task waits on the client");
+});
