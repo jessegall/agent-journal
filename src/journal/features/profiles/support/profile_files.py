@@ -12,10 +12,13 @@ UNPREFIXED = ("researcher", "planner", "debugger", "senior", "medior")
 REPORTS = ("You only read: change no file, run no tests and write nothing to the journal; the agent that started you does the writing. "
            "Read narrowly: search for the line, read the range you need, never a whole large file. Answer in a short report written to "
            "the agent that started you, with the files and lines that show each point and what you could not check.")
+SHIFT = ("You work the one task the agent that sent you handed you, whose brief follows. Clock in with journal clock-in once you have read it; "
+         "it starts the task and names its number. Keep your own to-do list with journal todo add, check and list. Prove each point of the brief with "
+         "journal proof <point> \"<file:line, and the test that shows it>\", or say why it is not done with journal proof <point> --not-done \"<why>\". "
+         "Commit your work, then clock out with journal clock-out \"<what you changed, file by file, and what you could not do>\": that is your one report, "
+         "to the agent that sent you, never to the user.")
 WRITES = ("You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than "
-          "write a second way. Write the test that proves your change and name it in your report; do not run the suite, the agent that sent you runs it. "
-          "Commit nothing unless the brief says so. Report to the agent that sent you, never to the user: what you changed, file by file, with the lines "
-          "that answer each point of the brief, and what you could not do.")
+          "write a second way. Write the test that proves your change and name it in a proof; do not run the suite, the agent that sent you runs it. " + SHIFT)
 
 
 class ProfileFiles:
@@ -58,6 +61,10 @@ class ProfileFiles:
         fields = {key.strip(): value.strip() for key, value in (line.partition(":")[::2] for line in head.splitlines()[1:] if ":" in line)}
         return ProfileView(name=name, description=fields.get("description", ""), tools=fields.get("tools", ""), kind=fields.get("kind", ProfileKind.SUBAGENT), model=fields.get("model", ""),
                             codex_model=fields.get("codex-model", ""), body=body.strip("\n"), shipped=name in {profile.name for profile in self.PROFILES}, path=str(path.relative_to(self.config.root)))
+
+    def worker_instructions(self, name: str) -> str:
+        profile = self.read(name)
+        return profile["body"] if profile["shipped"] else f"{SHIFT}\n\n{profile['body']}"
 
     def kind(self, name: str) -> str:
         return self.read(name)["kind"] if (self.folder() / f"{name}.md").is_file() else ""

@@ -67,7 +67,7 @@ class WorkerRunner:
     def instructed(self, worker: Worker) -> str:
         if worker.resume or worker.profile is None:
             return worker.brief
-        return f"{self.profiles.read(worker.profile)['body']}\n\n{worker.brief}"
+        return f"{self.profiles.worker_instructions(worker.profile)}\n\n{worker.brief}"
 
     def run_scoped(self, worker: Worker, command: list[str], actor: Actor) -> None:
         with self.scope.environment(worker.environment_id):
