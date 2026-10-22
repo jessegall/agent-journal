@@ -7063,8 +7063,8 @@ def test_a_read_message_holds_a_tool_only_after_a_grace_of_tool_uses_with_a_remi
     assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "11.py")})[0] == 200, "answered, the tools are free again"
 
 
-def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_reports_fails_and_is_stopped(app: App):
-    """Each worker is a keyed card: dispatched with its provider and model, then reported with its report's first line, failed in a bad tone when it could not run, and stopped; one card per worker, updated where it stands, and its retiring a mark of its own."""
+def test_a_workers_dispatch_mark_stays_and_each_later_standing_is_a_new_mark(app: App):
+    """A worker's dispatch is one mark that stays as it went out; its run ending, a stop and a release each add a mark at the bottom, and only a dispatch that could not start turns its own mark red."""
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.repositories.messages import Messages as MessageRows
     from journal.repositories.workers import Workers
@@ -7074,21 +7074,22 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
         dispatched(console, [name, f"a job for {name}", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     messages = app.container.get(MessageRows)
     card = lambda n: next(m for m in messages.scoped() if m.data.get("key") == f"worker:{n}")
+    marks = lambda n: [m.text for m in messages.scoped() if str(m.data.get("key", "")).startswith(f"worker:{n}:")]
     assert card(1).text == "Worker 1, Lady Lovelace: dispatched on claude sonnet" and card(1).data["detail"] == "a job for Lady Lovelace" and card(1).data["shows"] == "workers"
     runner, workers = app.container.get(WorkerRunner), app.container.get(Workers)
     runner.run(workers.find(1), ["sh", "-c", 'echo "the footer is fixed"; test -n "$JOURNAL_WORKER_TOKEN" || exit 9; test "$JOURNAL_ROOT" = "$0" || exit 8', str(app.config.root)], Actor.agent("s1"))
     first_hash = workers.find(1).token_hash
     runner.run(workers.find(2), ["sh", "-c", "echo broken >&2; exit 3"], Actor.agent("s1"))
     runner.run(workers.find(3), ["sh", "-c", "true"], Actor.agent("s1"))
-    assert first_hash == "" and workers.find(3).token_hash == "", "a run carries its token in its process, the first one's command checking it, and the token is cleared when the run ends without clocking out"
+    assert first_hash == "" and workers.find(3).token_hash == "", "a run carries its token in its process, and the token is cleared when the run ends without clocking out"
     console.run(["worker", "stop", "3"], AGENT)
-    assert workers.find(3).token_hash == "", "a stopped worker's token is cleared"
-    assert card(1).text == "Worker 1, Lady Lovelace: ended without clocking out" and card(1).data["tone"] == "bad" and card(1).data["detail"] == "the footer is fixed", "a run that ends without clocking out settles its card with what it printed"
-    assert card(2).text == "Worker 2, Dr. Einstein: ended without clocking out" and card(2).data["detail"].startswith("failed with code 3")
-    assert card(3).text == "Worker 3, Mr. Babbage: stopped"
+    assert card(1).text == "Worker 1, Lady Lovelace: dispatched on claude sonnet", "the dispatch mark stays as it went out"
+    assert marks(1) == ["Worker 1, Lady Lovelace: ended without clocking out"], "a run that ends without clocking out is a new mark"
+    assert marks(2) == ["Worker 2, Dr. Einstein: ended without clocking out"] and marks(3)[-1] == "Worker 3, Mr. Babbage: stopped"
     console.run(["worker", "release", "1"], AGENT)
-    assert card(1).text == "Worker 1, Lady Lovelace: released", "and a release settles it again"
-    assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
+    assert marks(1)[-1] == "Worker 1, Lady Lovelace: released" and card(1).text.endswith("dispatched on claude sonnet"), "and a release is one more"
+    newest = [m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")][-1]
+    assert newest.text == "Worker 1, Lady Lovelace: released", "each new mark lands at the bottom of the chat"
 
 
 def test_one_link_holds_a_task_for_its_worker_until_it_is_released(app: App, monkeypatch):

@@ -17,7 +17,7 @@ STATE_TONES = {WorkerState.STOPPED: "", WorkerState.READY: "", WorkerState.MERGE
 
 
 class WorkerCards(Listener[ModelEvent]):
-    """Each worker is one mark in the chat, keyed by its row, that shows where it stands: written when it is dispatched and settled in place when it clocks in, clocks out, ends unfinished, reports, fails, is stopped, merged or released; its later moments are marks of their own, WorkerMomentCards."""
+    """A worker's dispatch is one mark in the chat, which changes only when the dispatch itself failed, red with why; every later standing it reaches, clocked in, clocked out, unfinished, reported, stopped, merged or released, is a new mark at the bottom of the chat, one per move; its other moments are marks of their own, WorkerMomentCards."""
 
     def __init__(self, cards: Cards, messages: Messages, reports: WorkerReports) -> None:
         self.cards, self.messages, self.reports = cards, messages, reports
@@ -27,12 +27,19 @@ class WorkerCards(Listener[ModelEvent]):
             return
         worker = event.model
         standing = self.standing(worker)
-        key = f"worker:{worker.id}"
+        if worker.state == WorkerState.DISPATCHED and worker.reuse_count:
+            return
+        key = self.key(worker, standing)
         actor = Actor.agent(worker.dispatcher) if worker.dispatcher else Actor.system()
         card = self.messages.keyed(key, actor)
         if card and card[0].data.get("tone") == standing.tone and card[0].data.get("detail") == standing.detail and card[0].text.endswith(standing.text):
             return
         self.cards.show(worker.environment_id, worker.dispatcher, f"Worker {worker.id}, {worker.name}: {standing.text}", "agents", tone=standing.tone, detail=standing.detail, row=Ref.build(worker), actor=actor, key=key, shows=CardKind.WORKERS)
+
+    def key(self, worker: Worker, standing: CardStanding) -> str:
+        if worker.state == WorkerState.DISPATCHED or standing.text == "failed":
+            return f"worker:{worker.id}"
+        return f"worker:{worker.id}:{worker.state}:{worker.silence.timeout.start}"
 
     def standing(self, worker: Worker) -> CardStanding:
         if worker.state in STATE_TONES:
