@@ -6804,6 +6804,62 @@ def test_the_main_agent_is_told_a_workers_work_is_ready_and_checks_each_proof(ap
         assert tasks.holder(tasks.find(1)) == Ref(Worker.table(), 1), "with the task still held"
 
 
+def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app: App, monkeypatch):
+    import subprocess
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.task_state import TaskState
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    (root / ".gitignore").write_text(".journal/\n")
+    git("add", ".gitignore")
+    git("-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", "start")
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
+    console.run(["task", "create", "the notes", "--brief", "the notes are written"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    runner, tasks = app.container.get(WorkerRunner), app.container.get(Tasks)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        for n in (1, 2):
+            workers.save(workers.find(n).with_(token_hash="h", session=f"w-{n}").ready(1.0), Actor.system())
+        folder = runner.place(workers.find(1))
+    (folder / "parser.py").write_text("x = 1\n")
+    git("add", "parser.py", cwd=folder)
+    git("-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", "the parser", cwd=folder)
+    lovelace, babbage = Caller.worker("main", 1, "w-1", "claude"), Caller.worker("main", 2, "w-2", "claude")
+    console.run(["proof", "1", "parser.py:1, test_reads passes"], lovelace)
+    console.run(["proof", "2", "names need a table first", "--not-done"], lovelace)
+    console.run(["clock-out", "the parser reads"], lovelace)
+    console.run(["worker", "check", "1", "1"], AGENT)
+    assert "point 2 of task 1 is not checked" in console.run(["worker", "merge", "1"], AGENT).error, "a merge waits for every proof to be checked"
+    console.run(["worker", "check", "1", "2"], AGENT)
+    (root / "parser.py").write_text("my own draft\n")
+    refused = console.run(["worker", "merge", "1"], AGENT)
+    assert "you have uncommitted changes to files they change: parser.py" in refused.error and "as they were" in refused.error, "a merge over the main agent's own uncommitted change is refused, naming why"
+    with app.container.get(Scope).environment(MAIN):
+        assert tasks.find(1).state != TaskState.FINISHED and folder.is_dir() and (root / "parser.py").read_text() == "my own draft\n", "and nothing moved"
+    (root / "parser.py").unlink()
+    merged = console.run(["worker", "merge", "1"], AGENT)
+    tip = git("rev-parse", "HEAD").stdout.strip()
+    assert merged.code == 0 and (root / "parser.py").exists(), merged.error
+    with app.container.get(Scope).environment(MAIN):
+        done = tasks.find(1)
+        assert done.state == TaskState.FINISHED and tip[:9] in done.outcome and "not done: point 2 (names need a table first)" in done.outcome, "the merge closes the task with the branch tip, naming the point checked as not done"
+        assert workers.find(1).state == WorkerState.MERGED and tasks.holder(done) is None and not folder.exists(), "the hold is released and the worktree retired"
+    console.run(["proof", "1", "notes.md:1, written"], babbage)
+    console.run(["clock-out", "the notes are written"], babbage)
+    console.run(["worker", "check", "2", "1"], AGENT)
+    assert console.run(["worker", "merge", "2"], AGENT).code == 0
+    with app.container.get(Scope).environment(MAIN):
+        assert tasks.find(2).state == TaskState.FINISHED, "a worker with no worktree has its task closed by its merge alone"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner

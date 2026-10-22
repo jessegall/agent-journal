@@ -7,5 +7,6 @@ class ProofState(StrEnum):
     SHOWN = "shown"
     UNFINISHED = "not done"
     CHECKED = "checked"
+    CHECKED_UNFINISHED = "checked, not done"
     SHORT = "short"
     STALE = "stale"

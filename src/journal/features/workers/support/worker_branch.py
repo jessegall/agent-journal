@@ -1,5 +1,6 @@
 import shutil
 import subprocess
+from journal.support.rejection import Rejection
 from pathlib import Path
 
 from journal.support.worktree_refs import TIPS_REF
@@ -52,18 +53,30 @@ class WorkerBranch:
             return ""
         changed = self.git("diff", "--name-only", f"HEAD...{self.name(worker)}").stdout.split()
         listed, later = "; ".join(commits) + f" (files: {', '.join(changed[:20])}{', and more' if len(changed) > 20 else ''})", f"take them in with git merge {self.name(worker)}"
+        refusal = self.refusal(worker)
+        if refusal:
+            return f"its {len(commits)} commits were not taken in, since {refusal}: {listed}; {later}"
+        return f"its {len(commits)} commits were taken into this branch: {listed}"
+
+    def merge_commit(self, worker: Worker) -> str:
+        refusal = self.refusal(worker)
+        if refusal:
+            raise Rejection(f"worker {worker.id}'s work was not merged, since {refusal}; its proofs, its task and its worktree are as they were")
+        return self.git("rev-parse", "HEAD").stdout.strip()
+
+    def refusal(self, worker: Worker) -> str:
         blocked = self.blocked(worker)
         if blocked:
-            return f"its {len(commits)} commits were not taken in, since {blocked}: {listed}; {later}"
+            return blocked
         clashing = self.rebased(worker)
         if clashing:
-            return f"its {len(commits)} commits were not taken in: rebased onto this branch they conflict in {clashing}: {listed}; {later}"
+            return f"rebased onto this branch it conflicts in {clashing}"
         merged = self.git("merge", "--no-edit", self.name(worker))
         if merged.returncode == 0:
-            return f"its {len(commits)} commits were taken into this branch: {listed}"
+            return ""
         clashing = self.conflicts(self.config.root) or (merged.stderr.strip().splitlines() or ["git refused"])[-1]
         self.git("merge", "--abort")
-        return f"its {len(commits)} commits were not taken in: they conflict in {clashing}: {listed}; {later}"
+        return f"it conflicts in {clashing}"
 
     def blocked(self, worker: Worker) -> str:
         if self.git("symbolic-ref", "-q", "HEAD").returncode != 0:

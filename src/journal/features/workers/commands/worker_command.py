@@ -28,6 +28,8 @@ from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
 
+CHECKED_STATES = (ProofState.CHECKED, ProofState.CHECKED_UNFINISHED)
+
 EMPTY_BRIEF_REFUSAL = "task {n} has no brief: a worker's job is its task's brief, so write it first with journal task brief {n} \"<what is done when>\""
 ASSIGNMENT_REFUSALS = {
     TaskState.FINISHED: "task {n} is {state}: a worker is started only on an open task or one you hold",
@@ -58,6 +60,7 @@ class WorkerCommand(Command):
         dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
         dispatch.add_argument("--task", type=int, required=True, help="the task it works on: an open one with a brief, or the one you hold; it is the worker's alone until merged or released")
         self.verb(verbs, "release", "let a worker go whose run ended without clocking out, which frees its task").add_argument("n", type=int)
+        self.verb(verbs, "merge", "take in a clocked-out worker's checked work, which closes its task").add_argument("n", type=int)
         check = self.verb(verbs, "check", "check one proof of a clocked-out worker, or send it back short")
         check.add_argument("n", type=int)
         check.add_argument("point", type=int)
@@ -155,6 +158,24 @@ class WorkerCommand(Command):
             return 0
         self.proofs.save(proofs[-1].checked(), caller.actor)
         print(f"point {args.point} of task {task.id} checked")
+        return 0
+
+    def merge(self, args: Namespace, caller: Caller) -> int:
+        worker = self.workers.find(args.n)
+        if worker.state != WorkerState.DELIVERED:
+            raise Rejection(f"worker {worker.id} is {worker.state}: only a worker that clocked out has work to merge")
+        task = self.tasks.find(self.tasks.holder_task_ids(Ref.build(worker))[0])
+        latest = {proof.point: proof for proof in sorted(self.proofs.task_proofs(task), key=lambda proof: proof.row_id)}
+        unchecked = [point for point in range(1, len(task.points()) + 1) if point not in latest or latest[point].state not in CHECKED_STATES]
+        if unchecked:
+            raise Rejection(f"point {', '.join(map(str, unchecked))} of task {task.id} is not checked: journal worker check {worker.id} <point> first")
+        commit = self.branch.merge_commit(worker) if worker.worktree else ""
+        self.tasks.release(Ref.build(worker), caller.actor)
+        self.workers.save(worker.merged(self.clock_time()), caller.actor)
+        unfinished = [f"point {proof.point} ({proof.text})" for proof in latest.values() if proof.state == ProofState.CHECKED_UNFINISHED]
+        outcome = "; ".join(part for part in (f"worker {worker.id}'s work merged" + (f" as {commit[:9]}" if commit else ""), f"not done: {', '.join(unfinished)}" if unfinished else "") if part)
+        self.tasks.save(task.finished(datetime.now(timezone.utc), outcome), caller.actor)
+        print(f"task {task.id} done: {outcome}; {self.branch.dropped(self.workers.find(worker.id)) or 'it had no worktree'}")
         return 0
 
     @staticmethod
