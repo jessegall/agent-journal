@@ -89,8 +89,10 @@ function subagentEntry(sub, agent, env) {
     };
 }
 
+// The agents under the one here: the workers, its subagents and the agents of the other environments; the agent of this
+// environment is the top bar's, never a cell of its own.
 export function orchestraOf(summary, workers, lead, env) {
-    const environments = ((summary && summary.environments) || []).filter((s) => s.agent).map(environmentEntry);
+    const environments = ((summary && summary.environments) || []).filter((s) => s.agent && s.environment.name !== env).map(environmentEntry);
     const subs = subagentsOf(lead).map((sub) => subagentEntry(sub, lead, env));
     return [...environments, ...workers.map((w) => workerEntry(w, env)), ...subs];
 }

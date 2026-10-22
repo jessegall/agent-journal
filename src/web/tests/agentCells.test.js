@@ -31,7 +31,7 @@ test("the timer shows how long the agent has been on its current job", async () 
     expect(into.textContent).toMatch(/^1h 02m 0\ds$/);
 });
 
-test("an environment's live agent, each worker and the lead's subagents are one grid, each with its model", () => {
+test("another environment's live agent, each worker and the lead's subagents are one grid, each with its model, and this environment's own agent is not in it", () => {
     store.rows = {
         subagents: [
             {
@@ -66,7 +66,7 @@ test("an environment's live agent, each worker and the lead's subagents are one 
     const workers = [
         {id: 3, name: "Hedy", brief: "Fix the tunnel", model: "claude-opus-5-5", state: "dispatched", created_at: at(1), updated_at: at(2)},
     ];
-    const cells = orchestraOf(summary, workers, lead, "main");
+    const cells = orchestraOf(summary, workers, lead, "development");
     expect(cells.map((c) => [c.kind, c.title, c.model])).toEqual([
         ["environment", "Port the viewer", "claude-sonnet-5-5"],
         ["worker", "Fix the tunnel", "claude-opus-5-5"],
@@ -77,6 +77,7 @@ test("an environment's live agent, each worker and the lead's subagents are one 
         {table: "workers", id: 3},
         {table: "agents", id: 1, session: "sub-1"},
     ]);
+    expect(orchestraOf(summary, workers, lead, "main").map((c) => c.kind)).toEqual(["worker", "subagent"]);
 });
 
 test("a cell shows what the agent said and the plain line of what it does, never a tool name", () => {
@@ -93,7 +94,7 @@ test("a cell shows what the agent said and the plain line of what it does, never
         environments: [{environment: {id: 1, name: "main"}, agent: lead, task: null, questions: 0, messages: 0, tasks: 0, silent: false}],
     };
     store.rows = {messages: []};
-    const [shown] = orchestraOf(summary, [], null, "main");
+    const [shown] = orchestraOf(summary, [], null, "development");
     expect([shown.says, shown.doing, JSON.stringify(shown)]).toEqual([
         "The cover now keeps its version.",
         "Reading orchestra.js",
