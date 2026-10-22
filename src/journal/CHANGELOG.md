@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.16.0
+
+- Each emoji the agent puts on your message plays the avatar's own animation for it, once: the butler tips his hat for 🎩, peers through a monocle for 🧐 and raises a glass for 🥂, and every voice's three faces have theirs. Every voice can now put all of its own faces on a message.
+- An open plan shows each phase and task the moment it is added, without a reload.
+- A wait or watch through a reader is no longer refused for a run started through an alias such as journal suite.
+
 ## 4.15.4
 
 - The File edits view no longer flickers to No edits yet while a worker works: it follows the main agent alone and shows only its edits.
