@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.15.2
+
+- Waiting on or watching an output through a reader is refused when that reader does not read the output's command, so a wrong output number fails at once instead of docking a card over the wrong command.
+- `journal output undock N` takes an output's card down.
+
 ## 4.15.1
 
 - A subagent's report no longer makes the agent owe skills by the words in it; only your own words do.
