@@ -3,6 +3,7 @@ from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.nudge import Nudge
 from journal.engine.support.transition import Transition
+from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
@@ -11,6 +12,9 @@ from journal.features.shell.support.ended_output import EndedOutput
 from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.watch_suggestions import LONG_RUNS
 from journal.support.chain import Chain
+from journal.support.foreground_option import FOREGROUND_OPTION
+from journal.support.moment import Moment
+from journal.support.timeout import Timeout
 
 SILENCE_SECONDS = 5.0
 BACKGROUND_CHECK_DELAY_SECONDS = 300.0
@@ -26,14 +30,14 @@ class ShellConduct(Conduct):
         from journal.features.shell.feature import Shell
         watch = event.data.part(Shell).watch
         if not watch.is_watching():
-            return self.none()
+            return unread_check(self, event, settings)
         fix = reader_fix(watch, event.data.part(Shell).tipped)
         if watch.ending:
             return self.none(Shell.WATCH_ENDED.create(n=watch.output, ending=watch.ending, lines=watch.text()), *fix)
         return self.none(Shell.WATCH_VIEW.create(n=watch.output, lines=watch.text()), *fix)
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
-        return Transition.merged(self, [background_check(self, event, settings), ended_check(self, event, settings)])
+        return Transition.merged(self, [background_check(self, event, settings), ended_check(self, event, settings), unread_check(self, event, settings)])
 
 
 def reader_fix(watch: OutputView, tipped: tuple[str, ...]) -> tuple[Nudge, ...]:
@@ -109,6 +113,17 @@ def ended_check(state: BaseState, event: Ticked, settings: Settings) -> Transiti
     if event.silence_seconds < SILENCE_SECONDS or not ended:
         return state.none()
     return state.none(Shell.OUTPUTS_ENDED.create(outputs=outcome_text(ended), n=ended[0].id))
+
+
+def unread_check(state: BaseState, event: AgentEvent, settings: Settings) -> Transition:
+    from journal.features.shell.feature import Shell
+    shell = event.data.part(Shell)
+    if event.subagent or not shell.unread or shell.unannounced:
+        return state.none()
+    interval = Timeout.tool_uses(settings.integer(Shell.UNREAD_OUTPUT_INTERVAL)).combined(Timeout.seconds(settings.integer(FOREGROUND_OPTION)))
+    if not interval.reset(shell.last_ending_line).has_passed(Moment(seconds=event.time, tool_uses=shell.tool_uses)):
+        return state.none()
+    return state.none(Shell.UNREAD_OUTPUT.create(outputs=outcome_text(shell.unread), n=shell.unread[0].id))
 
 
 def background_check(state: BaseState, event: Ticked, settings: Settings) -> Transition:

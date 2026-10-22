@@ -40,6 +40,9 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def watched(self, session: str | None) -> list[CommandOutput]:
         return self.selected(self.query().filter(session=session, is_watched=True).order("id"))
 
+    def unread(self, session: str) -> list[CommandOutput]:
+        return self.selected(self.query().filter(session=session, moved=True, ended=True, is_announced=True, is_read=False, watch_reader="").order("id"))
+
     def unannounced(self, session: str) -> list[CommandOutput]:
         return self.selected(self.query().filter(session=session, moved=True, ended=True, is_announced=False).order("id"))
 

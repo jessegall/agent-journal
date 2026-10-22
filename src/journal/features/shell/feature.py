@@ -22,12 +22,13 @@ class Shell(Feature[ShellData]):
     READ_SHOWN = Option("shell.read_characters", "Show of a command that reads", "The characters of a reading command's output shown, half from each end, such as cat, grep or git diff; past it the agent reads the rest by the output's number", 8000, unit="characters")
     COMMAND_SHOWN = Option("shell.command_characters", "Show any other command's output up to", "Any other command's output, such as a test run or a build, is shown whole up to this; past it only a line naming the output, which the agent reads by its number", 400, unit="characters")
     SHORT = Option("shell.short_output", "Keep no output under", "A command whose whole output is under this many characters, with no pipe in its line, is shown as it is and kept as no numbered output; a longer one, or a line with a pipe into head, tail, grep or any filter, is kept", 400, unit="characters")
+    UNREAD_OUTPUT_INTERVAL = Option("shell.unread_output_every", "Name an unread output again after", "Tool uses after the agent was told a background command ended, while it has not read its output, before it is told again; an idle agent is told again after the seconds a command runs in the foreground", 5, unit="tool uses")
     OUTPUT_COUNT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
     name = "shell"
     title = "Shell commands"
     help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."
     commands = (OutputCommand, ReaderCommand)
-    options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, OUTPUT_COUNT)
+    options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, UNREAD_OUTPUT_INTERVAL, OUTPUT_COUNT)
     listeners = (OutputNotice, WatchUpdate)
     seeds = (CutOffOutputs, DefaultReaders)
     jobs = (WatchRefresh,)
@@ -42,6 +43,7 @@ class Shell(Feature[ShellData]):
     JOURNAL_COMMAND_ISOLATION = Nudge(name, "journal_command_runs_alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_interval=0)
     BACKGROUND_CHECK = Nudge(name, "check_the_background", "output {{background_outputs}} still running", "look at it; hung or stuck: stop it and say why", repeat_interval=300, blocks_regardless=True)
     WATCH_VIEW = Nudge(name, "watched_output", "output {{n}}, which you watch:\n{{lines}}", "`journal output unwatch` ends the watch", repeat_interval=0)
+    UNREAD_OUTPUT = Nudge(name, "unread_output", "{{outputs}}, and you have not read it yet", "`journal output read {{n}} --summary` says how; --tail 20 or --grep reads the part you need", repeat_interval=0)
     WATCH_ENDED = Nudge(name, "watched_output_ended", "output {{n}}, which you watched, {{ending}}:\n{{lines}}", "the watch on it has ended; `journal output read {{n}} --summary` says more", repeat_interval=0)
     WATCH_SUGGESTION = Nudge(name, "watch_it_live", "watch it live, so the user sees it move: `journal output watch {{n}}{{reader}} --title \"<what it is doing, such as Running tests>\"`", "or `journal await \"<what>\" --output {{n}}{{reader}}` when you wait on it", repeat_interval=0)
     NEW_READER_SUGGESTION = Nudge(name, "make_its_reader", "no reader reads {{command}} yet: make one, and its card shows how far it is", "`journal reader add <name> --commands \"{{command}}\" --pattern '<its failure and summary lines>' --progress '<a percent or a count of a total, in groups>' --label 'Running tests'`, then watch it with --reader <name>; the next run is told of it by itself", repeat_interval=0)
@@ -52,7 +54,7 @@ class Shell(Feature[ShellData]):
     ALIAS_WATCH = Nudge(name, "watched_alias_output", "output {{n}}, the run of journal {{name}}, is watched{{reader}}", "you see its view after every tool use until it ends, and the user sees it move in its card; `journal output unwatch` ends the watch", repeat_interval=0)
     ALIAS_HINT = Nudge(name, "use_the_alias", "journal {{name}} runs this line: {{line}}", "run `journal {{name}} [args]` next time: it passes the args on and watches a long run through its reader", repeat_interval=0)
     ALIAS_SUGGESTION = Nudge(name, "add_an_alias", "you ran this line three times or more: {{command}}", "make it an alias, `journal alias add <name> \"{{command}}\"{{reader}}`, and run `journal <name>` from then on", repeat_interval=0)
-    nudges = (READER_FIX, READER_DETAIL, READER_TOPIC, READER_WATCH, ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
+    nudges = (READER_FIX, READER_DETAIL, READER_TOPIC, READER_WATCH, ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, UNREAD_OUTPUT, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands
@@ -62,7 +64,8 @@ Every shell command you run goes through the journal's runner.
 - A line chained with `&&` or `;` is run part by part; each part is recorded with what it printed and how long it took,
   and a failing part stops the chain where the shell would have.
 - A command that runs past thirty seconds, or ten while a message of the user's waits, is moved to the background with
-  the rest of its chain: the tool call returns with its output number, and you are told when output N ends.
+  the rest of its chain: the tool call returns with its output number, and you are told when output N ends. Until you
+  read it, by `journal output read N` or `status N`, it is named again every five tool uses, or after thirty idle seconds.
 - A command whose whole output is under 400 characters, with no pipe in its line, prints as it is and is kept as no
   output. Any other command's output is kept as a numbered output, the newest 250 of them. `journal output read N` needs a flag
   naming the part: `--tail 20`, `--head 20`, `--grep "<words>"`, `--lines 100-160`, `--reader <name>`, `--summary` for

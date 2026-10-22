@@ -50,8 +50,12 @@ class OutputCommand(Command):
             raise Rejection(f"output {n} is not worker {caller.worker_number}'s: a worker reads only the outputs of its own commands")
         return output
 
+    def opened(self, n: int, caller: Caller) -> CommandOutput:
+        output = self.owned(n, caller)
+        return self.outputs.save(output.seen(), caller.actor) if output.ended and not output.is_read else output
+
     def read(self, args: Namespace, caller: Caller) -> int:
-        output = self.owned(args.n, caller)
+        output = self.opened(args.n, caller)
         files = OutputFiles(Path(output.folder))
         if not files.is_stored():
             raise Rejection(f"output {output.id} has no files left")
@@ -82,7 +86,7 @@ class OutputCommand(Command):
 
     def status(self, args: Namespace, caller: Caller) -> int:
         if args.n is not None:
-            print(self.state(self.owned(args.n, caller)))
+            print(self.state(self.opened(args.n, caller)))
             return 0
         for output in self.outputs.backgrounded(caller.session):
             print(f"{output.id:>5}  {self.state(output):<22}  {output.headline()[:100]}")

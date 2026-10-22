@@ -6,7 +6,7 @@ from journal.models.scoped import Scoped
 
 @dataclass(frozen=True)
 class CommandOutput(Scoped):
-    """A shell line the runner ran, numbered by its row: the agent's own command, the folder holding each part's output, and, once it was moved to the background, how it ended, whether the journal's restart cut it off, and whether its agent watches it through a reader; an end a standing wait names is told by the wait's own end. Lines about it name only its number."""
+    """A shell line the runner ran, numbered by its row: the agent's own command, the folder holding each part's output, and, once it was moved to the background, how it ended, whether the journal's restart cut it off, and whether its agent watches it through a reader, and whether its agent has read it since it ended; an end a standing wait names is told by the wait's own end. Lines about it name only its number."""
 
     chain: str = ""
     command: str = ""
@@ -16,6 +16,7 @@ class CommandOutput(Scoped):
     ended: bool = False
     status: int = 0
     is_announced: bool = False
+    is_read: bool = False
     is_interrupted: bool = False
     is_watched: bool = False
     watch_reader: str = ""
@@ -41,6 +42,9 @@ class CommandOutput(Scoped):
 
     def announced(self) -> "CommandOutput":
         return self.with_(is_announced=True)
+
+    def seen(self) -> "CommandOutput":
+        return self.with_(is_read=True)
 
     def watched(self, reader: str, title: str) -> "CommandOutput":
         return self.with_(is_watched=True, watch_reader=reader, watch_title=title)

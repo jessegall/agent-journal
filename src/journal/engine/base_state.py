@@ -1,3 +1,4 @@
+import json
 from dataclasses import asdict, dataclass, fields
 from functools import cache
 from inspect import getmembers, isfunction
@@ -112,7 +113,7 @@ class BaseState:
         return None
 
     def serialized(self) -> dict:
-        return asdict(self)
+        return json.loads(json.dumps(asdict(self)))
 
     def state_text(self) -> str:
         set_fields = [f"{field.name}={getattr(self, field.name)}" for field in fields(self) if getattr(self, field.name) != field.default and not isinstance(getattr(self, field.name), (float, Timeout))]

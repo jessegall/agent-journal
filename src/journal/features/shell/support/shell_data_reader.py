@@ -8,6 +8,7 @@ from journal.models.agent import Agent
 from journal.repositories.aliases import Aliases
 from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.entries import Entries
+from journal.support.moment import Moment
 
 HISTORY_READS = 26
 REPEATS = 3
@@ -30,6 +31,9 @@ class ShellDataReader:
             background=tuple(o.row_id for o in background),
             backgrounded_at=min((o.creation_time.timestamp() for o in background), default=0.0),
             unannounced=tuple(EndedOutput(o.row_id, o.ending()) for o in self.outputs.unannounced(agent.session)),
+            unread=tuple(EndedOutput(o.row_id, o.ending()) for o in self.outputs.unread(agent.session)),
+            tool_uses=agent.tool_uses,
+            last_ending_line=self.last_ending_line(agent),
             output_reads=tuple(reads),
             readers=tuple(self.readers.all()),
             tipped=tuple(tipped),
@@ -38,6 +42,12 @@ class ShellDataReader:
             repeated=tuple(self.entries.repeated_commands(agent.session, REPEATS)),
             repeated_shapes=tuple(self.entries.repeated_shapes(agent.session, SHAPE_REPEATS)),
         )
+
+    def last_ending_line(self, agent: Agent) -> Moment:
+        from journal.features.shell.feature import Shell
+        from journal.features.tasks.feature import Tasks
+        entry = self.entries.last_line_entry(agent.session, (Shell.OUTPUTS_ENDED.key, Shell.UNREAD_OUTPUT.key, Tasks.WAIT_END.key))
+        return Moment(seconds=entry.data["time"], tool_uses=entry.data["tool_use"]) if entry else Moment()
 
     def watch(self, agent: Agent) -> OutputView:
         watched = self.outputs.watched(agent.session)

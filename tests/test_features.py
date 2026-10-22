@@ -1211,6 +1211,7 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app: App, monkeypat
     console.run(["voice", "address", "--title", "Sir", "--name", "Example"], USER)
     text = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
     assert "Talk like a good butler" in text and 'Address me as "Sir Example"' in text
+    console.run(["environment", "overview"], AGENT)
     console.run(["voice", "choose", "squire"], AGENT)
     segments = [line for line in keystrokes if line.startswith("[journal]")]
     full = " ".join(line.removeprefix("[journal] ") for line in segments)
@@ -1259,6 +1260,39 @@ def test_a_stop_the_journal_holds_keeps_the_turn_so_a_line_waits_for_the_next_to
     assert keystrokes == [], "the turn goes on: nothing is typed"
     reply = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b.py"})[1]
     assert "new message " in reply["hookSpecificOutput"]["additionalContext"], "the next tool use carries the line"
+
+
+def test_a_finished_output_left_unread_is_named_again_after_five_tool_uses_and_quiet_once_read(app: App, monkeypatch):
+    """An output told ended and not read is named again every five tool uses or thirty seconds, whichever comes first, until the agent reads it."""
+    import time as timing
+    from journal.events.agent.ticked import Ticked
+    from journal.events.bus import Bus
+    from journal.repositories.command_outputs import CommandOutputs
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    folder = app.config.root / "unread"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text("make build")
+    outputs = app.container.get(CommandOutputs)
+    with app.container.get(Scope).environment(1):
+        from journal.features.shell.support.output_log import OutputLog
+        app.container.get(OutputLog).start("unread", "make build", folder, Caller.agent("main", "s1", "claude"))
+        output = outputs.find(1)
+        outputs.save(output.backgrounded().ended_with(0, timing.time()), Actor.system())
+    app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=timing.time(), silence_seconds=10.0))
+    app.runtime().deferred.drain()
+    def use(i):
+        hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": f"{i}.py"})
+        return hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": f"{i}.py"}, tool_response={})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
+    assert outputs.find(1).is_announced, "the quiet tick told the ending"
+    told = [use(i) for i in range(6)]
+    assert sum("not read it yet" in line for line in told) == 1, "five tool uses after the ending was told, it is named again, once"
+    assert app.console().run(["output", "read", "1", "--tail", "1"], AGENT).code == 0
+    later = [use(i) for i in range(6)]
+    assert not any("not read it yet" in line for line in later), "once read, it is named no more"
 
 
 def test_a_journal_line_typed_as_a_prompt_gets_no_repeat_of_itself(app: App):
@@ -1968,10 +2002,11 @@ def test_a_message_left_while_a_whisper_waits_unseen_is_named_when_the_whisper_i
     console.run(["message", "send", "are you there?"], USER)
     app.runtime().deferred.drain()
     assert not any("new message" in line for line in typed), "the message's line is held behind the whisper still waiting"
-    hook(app, "Stop")
+    stopped = hook(app, "Stop")[1]
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + 30, silence_seconds=30.0))
     app.runtime().deferred.drain()
-    assert any("fact 1 is about this" in line and "new message" in line for line in typed[-1:]), "typed again, the whisper carries the held message with it, so the message is named"
+    held = stopped.get("decision") == "block" and "new message" in stopped.get("reason", "")
+    assert held or any("fact 1 is about this" in line and "new message" in line for line in typed[-1:]), "a held stop's reason names the message, or the whisper typed again carries it with it"
 
 
 def test_auto_mode_answers_a_stop_with_the_next_task(app: App):
@@ -2349,6 +2384,7 @@ def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the
     from journal.features.mcp.support.server_catalogue import ServerCatalogue
     monkeypatch.setattr(Health, "probe", lambda self: HealthReport({"github": ServerCatalogue("github", "npx -y @modelcontextprotocol/server-github", "connected", ""), "linear": ServerCatalogue("linear", "https://mcp.linear.app/mcp", "needs_auth", "Needs authentication"), "playwright": ServerCatalogue("playwright", "npx -y @playwright/mcp@latest --headless", "connected", "")}))
     hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
     port = app.server().port
     def post(path, body):
         with urlopen(R(f"http://127.0.0.1:{port}{path}", data=j.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5) as r:
@@ -2430,6 +2466,7 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields) if verb == "type" else None)
     hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
     link, bus = app.container.get(SupervisorLink), app.container.get(Bus)
     link.type(1, "hello there")
     tick = lambda later: bus.dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + later, silence_seconds=later))
@@ -2760,7 +2797,8 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app: App
     from journal.events.bus import Bus
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=60.0))
     app.runtime().deferred.drain()
-    assert active.current("s1", 1).title == "Writing an update" and any("Find what changed" in line for line in transmitted), "the user's message starts the update sequence, and the step is typed to the agent once it is quiet"
+    said = " ".join(transmitted) + app.container.get(SupervisorLink).pending_lines(1)
+    assert active.current("s1", 1).title == "Writing an update" and "Find what changed" in said, "the user's message starts the update sequence, and the step goes to the agent: typed once it is quiet, or on its next tool use while its held stop keeps it at work"
 
 def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app: App):
     hook(app, "SessionStart")
@@ -5312,6 +5350,7 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app: A
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
     console, sorting = app.console(), app.container.get(DumpFiler)
     notes = tmp_path / "notes.md"
     notes.write_text("The ideas, sorted.\n")
@@ -5323,12 +5362,13 @@ def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app: A
     made(console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT))
     sorting.attach(1, "a.png", Caller.user("main").actor)
     assert "text: not read yet" in console.run(["dump", "items", "1"], AGENT).text and "a.png: not read yet" in console.run(["dump", "items", "1"], AGENT).text
-    assert keystrokes[-1].startswith("[journal] dump 1 has 2 items to file"), keystrokes
+    link = app.container.get(SupervisorLink)
+    assert "dump 1 has 2 items to file" in link.pending_lines(1), "the stop held, the agent works on, so the line waits for its next tool use"
     console.run(["dump", "note", "1", "text", "a list of ideas"], AGENT)
     assert console.run(["dump", "filed", "1", "text", "made a doc", "--refs", "doc:1"], AGENT).code == 0
     assert console.run(["dump", "filed", "1", "a.png", "x", "--refs", "docs:99"], AGENT).code != 0, "a row that is not there is refused"
     assert console.run(["dump", "failed", "1", "a.png", "unreadable"], AGENT).text.endswith("closed: 1 filed, 1 failed\n")
-    assert keystrokes[-1].startswith("[journal] dump 1 is filed (1 filed, 1 failed)")
+    assert "dump 1 is filed (1 filed, 1 failed)" in link.pending_lines(1)
     assert app.container.get(SessionAgents).top("s1").name == "idle", "the dump filed, the agent is back where it was"
     assert console.run(["dump", "stop", "1"], AGENT).code != 0 and console.run(["dump", "remove", "1"], AGENT).code != 0, "only the user stops or removes"
     assert app.container.get(Dumps).find(1).created_refs() == ["docs:1"]
@@ -6341,6 +6381,7 @@ def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_com
     assert ActivityLabel.build("perl -e 'alarm 590; exec @ARGV' python3 -m pytest -q") == "testing" and ActivityLabel.build("timeout 60 npm test") == "testing"
     from journal.features.shell.support.card_line import CardLine
     assert CardLine.is_poor("x" * 81) and not CardLine.is_poor("2 failed, 563 passed in 31.2s"), "a line longer than the card's line reads poorly, a short summary does not"
+    assert CardLine.plain("====== 1 failed, 400 deselected in 0.71s ======") == "1 failed, 400 deselected in 0.71s", "the card takes pytest's frame of = signs off its summary"
     hook(app, "SessionStart")
     folder = app.config.root / "w"
     folder.mkdir()
@@ -8325,3 +8366,4 @@ def test_the_viewers_plugin_install_names_the_aliases_it_skipped(app: App, tmp_p
     (folder / "run.py").write_text("")
     installed = viewer(app, "plugins", {"source": str(folder)})
     assert installed["name"] == "judging" and installed["skipped_aliases"] == ["task"]
+
