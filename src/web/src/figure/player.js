@@ -6,7 +6,7 @@ const KEPT_CLIPS = 4;
 
 const smooth = (k) => k * k * (3 - 2 * k);
 
-// Plays a figure's clips into a canvas. Each stepped frame is posed and drawn once, then copied: posing costs milliseconds a frame
+// Plays a figure's clips into a canvas. A whole frame is posed and drawn once, then copied: posing costs milliseconds a frame
 // and a copy costs next to nothing, so a figure on screen all session costs one copy per step of its clip. A frame whose eyes wear a
 // look, whose legs walk under the clip, or that eases out of the pose before a change is drawn each time, as each of those moves on a
 // clock of its own.
@@ -39,7 +39,7 @@ export class FigurePlayer {
         const blend = this.blend ? {from: this.blend.from, previous: this.moves, k: smooth(k), settled: false} : null;
         const key = `${clip.name}/${index}/${facing}/${posture}/${stride}/${this.canvas.width}/${eyes ? `${eyes.mood}@${eyes.seconds}` : ""}`;
         if (key === this.shown && !blend) return;
-        const live = eyes || stride !== null || blend;
+        const live = eyes || stride !== null || blend || !Number.isInteger(index);
         const {frame, moves} = live
             ? this.liveOf(clip, index, facing, {posture, eyes, stride: stride ?? 0, blend})
             : this.frameOf(clip, index, facing, posture);

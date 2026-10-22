@@ -36,7 +36,7 @@ import {
 } from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
-import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, walkingMoment, workMoments} from "../figure/reactions.js";
+import {answerTo, eyesAt, lookOf, pastimeFor, stretchClip, walkingMoment, workMoments} from "../figure/reactions.js";
 import {
     clickedBody,
     CHANGE_SECONDS,
@@ -63,8 +63,6 @@ import {store} from "../state/store.js";
 const SIZE = 112;
 // how often the figure looks again at what the agent does and where things are, in milliseconds
 const LOOK_EVERY = 1000;
-// how many times a second the body is drawn while it eases from one clip, posture or facing to the next
-const BLEND_FPS = 30;
 const COMPOSE_TURN = 30;
 const SLEEP_GLYPHS = 3;
 const SLEEP_DRIFT_SECONDS = 3;
@@ -166,7 +164,9 @@ function composeFacing() {
 const keyOf = (shown) => `${shown.clip.name}/${shown.facing}`;
 // the frames a second a clip on screen plays at: its own, quickened on a sprint
 const fpsOf = (shown) => shown.clip.fps * (shown.pace ?? 1);
-const frameOf = (shown) => Math.floor(((performance.now() - playing.started) / 1000) * fpsOf(shown));
+// the clip's frame now, as a fraction between its drawn frames, so a pose moves on every display frame; the whole frame counts the play-out rules
+const exactFrameOf = (shown) => ((performance.now() - playing.started) / 1000) * fpsOf(shown);
+const frameOf = (shown) => Math.floor(exactFrameOf(shown));
 
 // A clip plays out before another starts, or gives way at once when it is interruptible (figureState.js canSwitch). It is the one rule every
 // clip goes through, so no clip needs its own check.
@@ -179,11 +179,11 @@ const playedOut = () =>
 // how far through its step the walk under a clip on the move is, stepped as the walk's own frames are, `pace` times as quick
 function strideNow(pace) {
     const {frames, fps} = clipNamed("walk");
-    return (Math.floor((performance.now() / 1000) * fps * pace) % frames) / frames;
+    return (((performance.now() / 1000) * fps * pace) % frames) / frames;
 }
 
 function step() {
-    clearTimeout(frameTimer);
+    cancelAnimationFrame(frameTimer);
     if (!player || document.hidden) return;
     const wanted = current();
     if (playing.shown?.clip.outro && wanted.clip.name !== playing.shown.clip.name && playing.closing === null) {
@@ -224,16 +224,14 @@ function step() {
     const pace = shown.pace ?? 1;
     const stride = drawn === "walk" ? strideNow(pace) : null;
     walking.value = stride !== null || shown.clip.name === "walk";
-    shownFrame.value = frameIn(shown.clip, index, playing.closing);
+    shownFrame.value = frameIn(shown.clip, exactFrameOf(shown), playing.closing);
     player.show(shown.clip, shownFrame.value, shown.facing, {
         posture: drawn,
         eyes: look.eyes,
         stride,
     });
     headAt.value = player.headAt();
-    const strideFps = stride === null ? 0 : clipNamed("walk").fps * pace;
-    const fps = Math.max(fpsOf(shown), look.eyes ? LOOK_FPS : 0, strideFps, player.blending() ? BLEND_FPS : 0);
-    frameTimer = setTimeout(step, 1000 / fps);
+    frameTimer = requestAnimationFrame(step);
 }
 
 // the picture's left and top for a figure on a spot in `posture`
@@ -660,7 +658,7 @@ onMounted(() => {
 onUnmounted(() => {
     stopBody();
     cancelAnimationFrame(homeFrame);
-    clearTimeout(frameTimer);
+    cancelAnimationFrame(frameTimer);
     clearTimeout(lookTimer);
     document.removeEventListener("visibilitychange", seen);
     document.removeEventListener("input", onType, true);

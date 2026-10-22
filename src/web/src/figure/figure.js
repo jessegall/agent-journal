@@ -388,7 +388,7 @@ function celebrate(pose, stance, t) {
 }
 
 function sleep(pose, stance, t) {
-    const frame = Math.round(t * (ACTING.yawnFrames + SLEEP_FRAMES));
+    const frame = t * (ACTING.yawnFrames + SLEEP_FRAMES);
     if (frame < ACTING.yawnFrames) return yawn(pose, stance, frame / ACTING.yawnFrames);
     const breath = waveOf((frame - ACTING.yawnFrames) / SLEEP_FRAMES);
     trunk(pose, {lean: 4 + 1.5 * breath, nod: 8 + 2 * breath, tilt: SIDES[freeSide(stance)] * SLEEP_TILT});
@@ -1032,14 +1032,14 @@ const WAIT_FRAMES = WAIT.intro + WAIT.hold + WAIT.outro;
 const READ_GAZE = {across: 0.04, top: 0.52, bottom: 0.44, forward: [0, -1, 0]};
 
 function heldTime(t) {
-    const frame = Math.round(t * HELD_FRAMES);
+    const frame = t * HELD_FRAMES;
     const held = frame >= ACTING.intro && frame < ACTING.intro + ACTING.hold;
     const draw = frame < ACTING.intro ? frame : HELD_FRAMES - 1 - frame;
     return {frame, held, ready: held ? 1 : rise(draw, 0, ACTING.intro - 1), phase: held ? (frame - ACTING.intro) / ACTING.hold : 0};
 }
 
 function waitTime(t) {
-    const frame = Math.round(t * WAIT_FRAMES);
+    const frame = t * WAIT_FRAMES;
     const held = frame >= WAIT.intro && frame < WAIT.intro + WAIT.hold;
     const draw = frame < WAIT.intro ? frame : WAIT_FRAMES - 1 - frame;
     return {ready: held ? 1 : rise(draw, 0, WAIT.intro - 1), phase: held ? (frame - WAIT.intro) / WAIT.hold : 0};
@@ -1075,7 +1075,7 @@ function eyesToward(pose, target, amount = 1) {
 
 
 function read(pose, stance, t) {
-    const frame = Math.round(t * READ_FRAMES);
+    const frame = t * READ_FRAMES;
     const held = frame >= READING.intro && frame < READING.intro + READING.hold;
     const taking = frame < READING.intro ? frame : READ_FRAMES - 1 - frame;
     const ready = held ? 1 : rise(taking, 0, READING.ready);
