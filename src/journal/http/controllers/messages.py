@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from journal.db.query import Query
 from journal.features.messages.support.mentions import Mentions
 from journal.http.attachments.attachments import Attachments
 from journal.http.controllers.controller import Controller
@@ -30,15 +31,23 @@ class MessageController(Controller[Message]):
     def listed(self, listing: Listing) -> RowList:
         page = listing.listed(self.question_list(listing), lambda m: True, timeline=True)
         unread = self.repository.unviewed()
-        counts = Counts(all=self.repository.count(), open=len(self.open_ids()) + unread, unread=unread)
+        counts = Counts(all=self.repository.counted(self.repository.main_chat()), open=len(self.open_ids()) + unread, unread=unread)
         return RowList(rows=self.shown_page(page["rows"]), is_last_page=page["is_last_page"], counts=counts)
 
     def question_list(self, listing: Listing) -> list[Message]:
         if listing.ids:
             return self.repository.numbered(listing.ids)
+        return self.chat_rows(self.repository.main_chat(), listing)
+
+    def chat_rows(self, chat: Query, listing: Listing) -> list[Message]:
         if listing.cutoff_at:
-            return self.repository.changes(datetime.fromtimestamp(listing.cutoff_at, timezone.utc))
-        return self.repository.window(listing.limit + 1, listing.upper_id, listing.lower_id)
+            return self.repository.changes(chat, datetime.fromtimestamp(listing.cutoff_at, timezone.utc))
+        return self.repository.window(chat, listing.limit + 1, listing.upper_id, listing.lower_id)
+
+    def agent_chat(self, request: Request) -> Response:
+        listing = Listing.query_listing(request.query)
+        page = listing.listed(self.chat_rows(self.repository.agent_chat(request.params["session"]), listing), lambda m: True, timeline=True)
+        return Response.json(RowList(rows=self.shown_page(page["rows"]), is_last_page=page["is_last_page"], counts=Counts(all=len(page["rows"]), open=0, unread=0)))
 
     def open_ids(self) -> set[int]:
         return {m.row_id for m in self.repository.unanswered()} | {m.row_id for m in self.repository.unread()}

@@ -147,6 +147,7 @@ class Routes:
         router.post(f"{API}/messages/{{id}}", messages.update)
         self.acts(router, "messages", messages, "read", "reply", "delete", "react", "press", "dock", "undock")
         router.post(f"{API}/messages/{{id}}/files", messages.attach)
+        router.get(f"{API}/chats/{{session}}", messages.agent_chat)
         router.get(f"{API}/comments", comments.index)
         router.post(f"{API}/comments", comments.store)
         router.post(f"{API}/comments/{{id}}", comments.update)

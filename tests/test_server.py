@@ -14,6 +14,7 @@ from shell_verbs import ShellVerbs
 from journal.app import App
 from journal.engine.support.session_agents import SessionAgents
 from journal.config import Config
+from journal.support.actor import Actor
 from journal.repositories.entries import Entries
 from journal.repositories.scope import Scope
 from journal.support.caller import Caller
@@ -223,7 +224,6 @@ def test_a_taken_port_sends_the_next_journal_to_the_next_one(tmp_path: Path):
 
 
 def test_the_viewer_sees_reactions_and_subagent_marks(tmp_path: Path):
-    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
@@ -313,6 +313,31 @@ def test_a_subagent_whose_dispatch_entries_were_trimmed_runs_again_when_it_is_se
         assert states(["done"]) == ["done"], "and its stop settles it again"
     finally:
         app.runtime().stop()
+
+
+def test_the_main_chat_and_a_workers_chat_each_page_their_own_rows(app: App, server):
+    """With six hundred of a worker's rows written before one of the main chat's, the main chat's poll and page still hold the main row and fill with main rows, and the worker's chat pages back to its first row."""
+    from journal.models.agent_role import AgentRole
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages
+    messages = app.container.get(Messages)
+    with app.container.get(Scope).environment(1):
+        before = call(server, "GET", "/journal/messages")[1]["rows"]
+        for i in range(600):
+            messages.save(Message(environment_id=1, author="agent", text=f"step {i}", session="w1", agent_role=AgentRole.WORKER), Actor.agent("w1"))
+        main = messages.save(Message(environment_id=1, author="user", text="how goes it?"), Actor.user(1))
+    page = call(server, "GET", "/journal/messages")[1]["rows"]
+    assert page[-1]["id"] == main.id and all(r["agent_role"] == "main" for r in page) and len(page) == len(before) + 1, "the main chat's page holds its own rows alone"
+    polled = call(server, "GET", f"/journal/messages?since={time.time() - 60}")[1]["rows"]
+    assert [r["id"] for r in polled][-1] == main.id, "its poll is not crowded out by the worker's rows"
+    worker, earliest = [], 0
+    while True:
+        got = call(server, "GET", f"/journal/chats/w1?limit=100{f'&before={earliest}' if earliest else ''}")[1]
+        worker = got["rows"] + worker
+        earliest = got["rows"][0]["id"]
+        if got["is_last_page"]:
+            break
+    assert [r["text"] for r in worker] == [f"step {i}" for i in range(600)], "the worker's chat pages back to its first row"
 
 
 def test_a_shell_calls_parts_are_its_terminal_lines_with_the_output_the_shell_kept(tmp_path: Path):
@@ -417,7 +442,6 @@ def test_the_environment_header_scopes_each_read_and_a_request_without_it_is_ref
 
 def test_the_viewers_pages_read_the_shapes_they_expect(tmp_path: Path):
     """Settings answer with the whole tree, a read message is read and not closed, a running plan is active, a check carries its last run, a sequence its steps, the hub its counts, the Code page its files."""
-    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
@@ -510,7 +534,6 @@ def test_a_started_plans_phase_shown_advances_when_its_tasks_are_all_done(tmp_pa
 
 
 def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
-    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
@@ -532,7 +555,6 @@ def test_the_status_line_knows_what_the_agent_waits_for(tmp_path: Path):
 
 
 def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: Path, monkeypatch):
-    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
     from journal.supervisor_link import SupervisorLink
@@ -575,7 +597,6 @@ def test_the_activity_rail_the_edits_pane_and_the_documents_read_true(tmp_path: 
 
 
 def test_the_remaining_pages_act_through_the_viewer(tmp_path: Path):
-    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
@@ -635,7 +656,6 @@ def test_a_viewer_polling_from_an_id_ahead_of_a_reset_record_is_brought_back_in_
 
 
 def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_what_it_answers(tmp_path: Path, monkeypatch):
-    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
     from journal.supervisor_link import SupervisorLink
@@ -661,7 +681,6 @@ def test_the_agent_bars_pickers_type_the_providers_command_and_a_reply_names_wha
 
 
 def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_path: Path):
-    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
@@ -684,7 +703,6 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
 def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_cards_by_number(tmp_path: Path):
     from journal.chat.cards import Cards
     from journal.support.card_kind import CardKind
-    from journal.support.actor import Actor
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
@@ -1115,7 +1133,6 @@ def test_a_slow_answer_is_asked_once_given_from_memory_and_asked_again_once_drop
 
 
 def test_an_output_is_read_by_its_id(tmp_path: Path):
-    from journal.support.actor import Actor
     from journal.models.command_output import CommandOutput
     from journal.repositories.command_outputs import CommandOutputs
     app = App(Config(tmp_path, port=0))
@@ -1313,7 +1330,6 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
 
 def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: Path):
     from journal.chat.docking import Docking
-    from journal.support.actor import Actor
     app = App(Config(journal_root, port=0))
     app.runtime().boot()
     server = app.server()

@@ -30,6 +30,9 @@ class Messages(ScopedRepository[Message]):
     def main_chat(self) -> Query:
         return self.query().filter(agent_role=AgentRole.MAIN)
 
+    def agent_chat(self, session: str) -> Query:
+        return self.query().filter(session=session).filter_unlisted("agent_role", (AgentRole.MAIN,))
+
     def main_voice(self) -> Query:
         return self.main_chat().filter(author=Author.AGENT).filter_present("session")
 
@@ -61,14 +64,14 @@ class Messages(ScopedRepository[Message]):
     def sent_with(self, key: str) -> list[Message]:
         return self.selected(self.query().filter(idempotency=key).order("id").limit(1))
 
-    def window(self, last: int, previous: int = 0, following: int = 0) -> list[Message]:
-        query = self.main_chat().filter_greater("id", following)
+    def window(self, chat: Query, last: int, previous: int = 0, following: int = 0) -> list[Message]:
+        query = chat.filter_greater("id", following)
         if previous:
             query = query.filter_less("id", previous)
         return list(reversed(self.selected(query.order_descending("id").limit(last))))
 
-    def changes(self, time: datetime) -> list[Message]:
-        return self.selected(self.main_chat().filter_greater("updated_at", time).order("id").limit(500))
+    def changes(self, chat: Query, time: datetime) -> list[Message]:
+        return self.selected(chat.filter_greater("updated_at", time).order("id").limit(500))
 
     def unviewed(self) -> int:
         return self.counted(self.main_chat().filter(author=Author.AGENT).filter_null("read_at"))
@@ -101,7 +104,7 @@ class Messages(ScopedRepository[Message]):
         return self.selected(self.main_voice().filter(reply_target=n, text=text.strip()))
 
     def recent(self, last: int) -> list[Message]:
-        return self.window(last)
+        return self.window(self.main_chat(), last)
 
     def recent_voice(self, last: int) -> list[Message]:
         return list(reversed(self.selected(self.main_voice().order_descending("id").limit(last))))
