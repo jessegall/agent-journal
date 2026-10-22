@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.22
+
+- Commands run for a user whose login shell is bash. Claude Code's snapshot of a bash setup can carry set -o onecmd, which ends bash after the next command it reads; the journal feeds a line's parts to one shell in turn, so the shell ended right after the snapshot and every command came back empty without running. Each part now turns onecmd off on its own line, so the snapshot's functions and aliases still apply.
+
 ## 4.5.21
 
 - A command still runs when the shell set-up Claude puts before it ends the shell. Claude sources a snapshot of the user's shell before every command; when that snapshot exits or execs, as a bash profile can, the journal's shell was gone before the command and every command came back empty without running. The rest of the line now runs in a fresh shell.

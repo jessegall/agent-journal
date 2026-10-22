@@ -22,6 +22,9 @@ __journal_status() {
 __journal_code=0
 """
 POLL_SECONDS = 0.02
+# Claude Code's snapshot of a bash setup can carry set -o onecmd, which ends a shell after the command it reads next; turned off on
+# the same line as each part, it never ends the shell the chain's next parts are written to
+ONECMD_RESET = "set +t 2>/dev/null"
 
 
 class ChainWorker:
@@ -80,11 +83,11 @@ class ChainWorker:
         part = f'"$(cat {str(folder.folder / f"{i}.part")!r})"'
         redirect = "" if direct else f" > {str(folder.folder / f'{i}.out')!r} 2> {str(folder.folder / f'{i}.err')!r}"
         if text.startswith("exec "):
-            run = f"(eval {part} < /dev/null{redirect}); __journal_code=$?"
+            run = f"(eval {part} < /dev/null{redirect}); __journal_code=$?; {ONECMD_RESET}"
         elif edges:
-            run = f"if __journal_status; eval {part} < /dev/null{redirect}; then __journal_code=0; else __journal_code=$?; fi"
+            run = f"if __journal_status; eval {part} < /dev/null{redirect}; then __journal_code=0; else __journal_code=$?; fi; {ONECMD_RESET}"
         else:
-            run = f"__journal_status; eval {part} < /dev/null{redirect}; __journal_code=$?"
+            run = f"__journal_status; eval {part} < /dev/null{redirect}; __journal_code=$?; {ONECMD_RESET}"
         status = str(folder.folder / f"{i}.status")
         return f"{run}\necho \"$__journal_code\" > {status + '.part'!r} && mv {status + '.part'!r} {status!r}\n"
 

@@ -1336,6 +1336,9 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
         (tmp_path / "snapshot.sh").write_text("exit 0\n")
         wrapped = f"source {tmp_path / 'snapshot.sh'} 2>/dev/null || true && eval 'echo still ran > ran.txt; echo shown' < /dev/null && pwd -P >| {tmp_path / 'cwd'}"
         assert "shown" in run(wrapped) and (tmp_path / "ran.txt").is_file(), "a shell snapshot that ends the shell before the command is passed over: the command still runs in a fresh shell"
+        (tmp_path / "onecmd.sh").write_text("set -o onecmd\nfrom_snapshot() { echo from-snapshot; }\n")
+        snapshot = f"source {tmp_path / 'onecmd.sh'} 2>/dev/null || true && eval 'from_snapshot' < /dev/null && pwd -P >| {tmp_path / 'cwd'}"
+        assert "from-snapshot" in run(snapshot), "a bash snapshot that sets onecmd, as Claude Code's can, never ends the shell: the command runs with the snapshot's functions"
         assert run("journal task list") == "__journal_exit 0\n" or "__journal_exit" in run("journal task list")
         with app.container.get(Scope).environment(1):
             completed = [e for e in app.container.get(Entries).kind_entries("ran", 50)]
