@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.8
+
+- A subagent's command no longer reaches the main agent: the journal's note about it, an output kept or moved to the background, stays in the subagent's own result, told apart by the subagent's own hook announcing the command; and no note about a command is ever typed to an idle agent, it waits for the agent's next tool use.
+- The page's change stream starts after the newest change the page holds, so a change made while the page was away or reconnecting is sent, not skipped.
+- A docked card stays in the chat at half opacity.
+
 ## 4.5.7
 
 - An output is read and shown without its terminal colour codes: a test runner's coloured dots no longer reach a card as [90;1m. [39;22m.

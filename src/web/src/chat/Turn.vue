@@ -183,6 +183,6 @@ function markClick(data) {
 }
 
 .thread-turn.card.docked {
-    opacity: 0.25;
+    opacity: 0.5;
 }
 </style>

@@ -38,17 +38,18 @@ class EntryController:
 
         def events() -> Iterator[bytes]:
             yield b": open\n\n"
-            last, silent = read(self.entries.last_id), 0.0
+            start_id = request.query.get("since")
+            newest_id, silence_seconds = (int(start_id) if start_id else read(self.entries.last_id)), 0.0
             while True:
                 time.sleep(0.5)
-                silent += 0.5
-                for entry in read(lambda: self.entries.recent_shown(last)):
-                    last = entry.id
+                silence_seconds += 0.5
+                for entry in read(lambda: self.entries.recent_shown(newest_id)):
+                    newest_id = entry.id
                     if entry.kind in AGENT_EVENT_KINDS:
-                        silent = 0.0
+                        silence_seconds = 0.0
                         yield self.event(entry)
-                if silent >= HEARTBEAT_SECONDS:
-                    silent = 0.0
+                if silence_seconds >= HEARTBEAT_SECONDS:
+                    silence_seconds = 0.0
                     yield b"event: beat\ndata: keep\n\n"
         return StreamResponse("text/event-stream", events())
 

@@ -1432,3 +1432,28 @@ def test_the_bottom_line_names_every_path_from_the_projects_folder():
     from journal.http.agents.bar_row import BarRow
     row = BarRow("c1 run", "running", "/home/me/project/.journal/plugins/x/bin/judge --changes", 1.0, True, 0, 0, (("/home/me/project/src/a.py", 1, 0),)).relative("/home/me/project")
     assert row.detail == ".journal/plugins/x/bin/judge --changes" and row.files[0][0] == "src/a.py", "the project's folder is taken off the command and the files"
+
+
+def test_the_change_stream_starts_after_the_entry_the_page_names(tmp_path: Path):
+    """A page that reconnects names the newest entry it holds, and the stream sends every later one, so a change made while it was away is not lost."""
+    import urllib.request
+    from journal.models.entry import Entry
+    from journal.repositories.entries import Entries
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        with app.container.get(Scope).environment(1):
+            entries = app.container.get(Entries)
+            known = entries.last_id()
+            entries.save(Entry(environment_id=1, kind="updated", actor=Actor.system(), data={"table": "notices", "id": 5}), Actor.system())
+        seen = b""
+        try:
+            with urllib.request.urlopen(f"http://127.0.0.1:{server.port}/journal/entries/stream?since={known}&env=main", timeout=3) as answer:
+                while b'"table": "notices"' not in seen:
+                    seen += answer.read1(4096)
+        except TimeoutError:
+            pass
+        assert b'"table": "notices"' in seen, seen[:600]
+    finally:
+        app.runtime().stop()

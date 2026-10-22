@@ -86,7 +86,7 @@ class ShellRunner:
                 yield display.build(shown).encode()
                 shown += 1
             if folder.is_finished():
-                self.send_notes(environment, display.notes)
+                yield self.send_notes(caller, environment, display.notes).encode()
                 return
             if limit > 0 and (reader is not None or time.monotonic() - began >= limit):
                 folder.moved()
@@ -94,17 +94,20 @@ class ShellRunner:
                 number = self.record.moved(folder.folder.name, part, folder.folder, caller)
                 alias = self.aliases.running(part)
                 from journal.features.shell.feature import Shell
-                self.send_notes(environment, [*display.notes, Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered(), *self.watch_lines(number, part, alias, reader, caller)])
-                yield f"{EXIT} 0\n".encode()
+                notes = self.send_notes(caller, environment, [*display.notes, Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered(), *self.watch_lines(number, part, alias, reader, caller)])
+                yield f"{notes}{EXIT} 0\n".encode()
                 return
             time.sleep(TICK_SECONDS)
             tick += 1
             if tick % LIMIT_READ_TICKS == 0:
                 limit = self.limits.build(request.line, caller.environment, caller.session)
 
-    def send_notes(self, environment: int, notes: list[str]) -> None:
+    def send_notes(self, caller: Caller, environment: int, notes: list[str]) -> str:
+        if caller.worker_number is not None or caller.subagent:
+            return "".join(f"[journal] {note}\n" for note in notes)
         for note in notes:
-            self.supervisor.type(environment, note)
+            self.supervisor.remark(environment, note)
+        return ""
 
     def watch_lines(self, number: int, part: str, alias: Alias | None, reader: Reader | ScriptReader | None, caller: Caller) -> list[str]:
         if alias is not None:

@@ -8477,6 +8477,25 @@ def test_a_readers_command_run_with_three_different_arguments_tells_the_agent_to
     assert "sleep has run here with 3 different arguments" in said and "give the reader naps a topic pattern" in said, said
 
 
+def test_the_runners_note_is_never_typed_to_an_idle_agent(app: App, monkeypatch):
+    """A note about a command, its move to the background or its kept output, waits for the agent's next hook even while the agent sits idle, as it does while one of its subagents runs the command."""
+    from journal.features.shell.support.shell_request import ShellRequest
+    from journal.features.shell.support.shell_runner import ShellRunner
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    link = app.container.get(SupervisorLink)
+    link.resting(MAIN)
+    request = lambda line: ShellRequest(line=wrapped_line(line), cwd=str(app.config.root), shell="/bin/sh", environment=dict(os.environ))
+    b"".join(app.container.get(ShellRunner).run(request("seq 1 400"), AGENT, MAIN))
+    app.runtime().deferred.drain()
+    assert not any("kept" in line for line in keystrokes), "nothing is typed"
+    assert "kept" in link.pending_lines(MAIN), "the note waits for the next hook"
+    shown = b"".join(app.container.get(ShellRunner).run(request("seq 1 400"), AGENT.subagent_caller(), MAIN)).decode()
+    assert "[journal] output" in shown and "kept" in shown and link.pending_lines(MAIN) == "", "a subagent's command keeps its note in its own result, never the main agent's"
+
+
 def test_an_alias_name_that_is_a_journal_command_or_another_alias_is_refused(app: App):
     console = app.console()
     noun = console.run(["alias", "add", "task", "echo hi"], USER)

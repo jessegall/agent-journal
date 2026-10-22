@@ -150,8 +150,9 @@ export class ApiClient {
         return this.get(this.here(`/entries${query({since, last})}`));
     }
 
-    stream() {
-        return new EventSource(this.address("/entries/stream"));
+    stream(since = 0) {
+        const after = since ? `?since=${since}` : "";
+        return new EventSource(this.address("/entries/stream" + after));
     }
 
     // a resource's rows: a page with its counts, one row, a new one, a change, and an act on one

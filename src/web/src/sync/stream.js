@@ -74,12 +74,13 @@ function poll() {
     asking = setInterval(askAgain, ASK_EVERY);
 }
 
+// The stream starts after the newest entry the page holds, so a change made while it was away or reconnecting is sent, not skipped.
 export function listen() {
     if (onPhone) return poll();
     if (source) source.close();
     store.streamOpen = false;
     startOutbox(route.value.env);
-    source = api.stream();
+    source = api.stream(Math.max(0, ...store.entries.map((e) => e.id)));
     source.onopen = opened;
     source.onmessage = receive;
     source.addEventListener("beat", heard);
