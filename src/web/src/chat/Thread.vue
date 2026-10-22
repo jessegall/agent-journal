@@ -388,7 +388,7 @@ watch(
             <QuestionOverlay :key="questionView.id" />
         </template>
         <template v-if="outputOpen">
-            <OutputDialog :key="outputOpen" :id="outputOpen" @close="outputOpen = 0" />
+            <OutputDialog :key="outputOpen" :n="outputOpen" @close="outputOpen = 0" />
         </template>
         <template v-if="chatOpen">
             <div :class="['thread-write', {hidden: feeding}]">

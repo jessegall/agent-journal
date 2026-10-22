@@ -36,3 +36,8 @@ test("a suggestion's description reaches its card whole, however long", async ()
     );
     expect(turn.suggestion.detail).toBe(long);
 });
+
+test("the chat opens the output dialog on the output it was asked for", () => {
+    const thread = readFileSync(resolve(__dirname, "../src/chat/Thread.vue"), "utf8");
+    expect(thread).toMatch(/<OutputDialog :key="outputOpen" :n="outputOpen"/);
+});
