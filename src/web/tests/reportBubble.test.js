@@ -47,3 +47,11 @@ test("a report bubble is marked as a report from its worker and holds only the r
     expect(shown.bubble).not.toContain("reports:");
     expect((await drawn(own)).report).toBe(false);
 });
+
+test("a worker's report stays in the main chat while the worker's own turns stay in its chat", async () => {
+    const {mainChat} = await import("../src/domain/thread.js");
+    const report = {...message(5, "Lady Montagu reports: the header is fixed", {kind: "report", worker: "Lady Montagu", worker_id: 7}), agent_role: "main"};
+    const turn = {...message(6, "Editing the header"), agent_role: "worker", session: "w7"};
+    expect(mainChat([report, turn]).map((m) => m.id)).toEqual([5]);
+    expect(reportOf(threadTurns(mainChat([report, turn]), []).turns[0])?.worker).toBe("Lady Montagu");
+});

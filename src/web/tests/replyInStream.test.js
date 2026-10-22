@@ -44,3 +44,12 @@ test("the reply shows a quote of the older message it answers", async () => {
     host.remove();
     expect(shown).toEqual({ref: "messages:3", quote: "Is the footer fixed?"});
 });
+
+test("a reply in a worker's own chat stands at its own place there and never reaches the main chat", async () => {
+    const {mainChat} = await import("../src/domain/thread.js");
+    const asked = message(10, 40, "user", "Worker, is it done?", {agent_role: "worker", session: "w1"});
+    const answered = message(11, 50, "agent", "It is done.", {agent_role: "worker", session: "w1", reply_target: 10});
+    const own = threadTurns([asked, answered], []).turns;
+    expect(own.map((t) => [t.key, t.who])).toEqual([["messages:10", "user"], ["messages:11", "agent"]]);
+    expect(mainChat([older, asked, answered]).map((m) => m.id)).toEqual([]);
+});
