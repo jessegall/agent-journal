@@ -14,6 +14,8 @@ USER_WAIT_PATTERN = re.compile(r"\b(?:the user|you|sir|user's|your)\b[^.]{0,40}\
                                  r"|\b(?:what|which|whether)\s+(?:the\s+user|you)\b", re.IGNORECASE)
 MISSING_WAIT_TARGET = ("a wait names what ends it: --output N, a command's output, ends it once the command is done; --until \"<script>\" is run every 30 seconds and ends it once it passes")
 USER_WAIT_REFUSAL = "waiting for the user is no wait: nothing outside ends it. Ask with journal question ask, or end your turn"
+# the fewest words a wait's title has, so the top bar says what the agent waits for and never a bare noun
+LEAST_WAIT_TITLE_WORD_COUNT = 2
 
 
 class WaitCommand(Command):
@@ -28,7 +30,7 @@ class WaitCommand(Command):
 
     def arguments(self, verbs) -> None:
         time = self.verb(verbs, "begin", "say what you wait for, and name what ends the wait")
-        time.add_argument("what", help="what you wait for, as its title: the test run, the build, Lady Lovelace's report")
+        time.add_argument("what", help="what you wait for, in a few words the user reads in the top bar: the test run of task 217, Lady Lovelace's report")
         time.add_argument("--output", type=int, action="append", default=[], metavar="N", help="a command's output; the wait ends once the command is done; more than one waits for all")
         time.add_argument("--reader", default="", help="with --output, also watch the output live through this reader, so the user sees it move while you wait")
         time.add_argument("--until", default="", metavar="SCRIPT", help="a shell script run every 30 seconds; the wait ends once it passes, such as ! kill -0 <pid> for a process")
@@ -38,6 +40,8 @@ class WaitCommand(Command):
             raise Rejection(MISSING_WAIT_TARGET)
         if USER_WAIT_PATTERN.search(args.what):
             raise Rejection(USER_WAIT_REFUSAL)
+        if len(args.what.split()) < LEAST_WAIT_TITLE_WORD_COUNT:
+            raise Rejection(f"\"{args.what}\" is too short for the user to read in the top bar: name what you wait for in a few words, such as \"the test run of task 217\" or \"Lady Lovelace's report on the parser\"")
         unended = self.running(args.output)
         if args.reader:
             self.readers.lookup(args.reader)

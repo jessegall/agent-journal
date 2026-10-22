@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.23
+
+- The orchestrator is told to decide on its own and keep the work moving, waiting for the user only before a step that cannot be undone or reaches outside the project.
+- A wait the agent declares is named in at least two words, so the top bar says what it waits for; a bare noun such as Plan is refused with examples.
+
 ## 4.5.22
 
 - Commands run for a user whose login shell is bash. Claude Code's snapshot of a bash setup can carry set -o onecmd, which ends bash after the next command it reads; the journal feeds a line's parts to one shell in turn, so the shell ended right after the snapshot and every command came back empty without running. Each part now turns onecmd off on its own line, so the snapshot's functions and aliases still apply.

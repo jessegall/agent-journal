@@ -183,6 +183,7 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app: App):
     machine = app.container.get(StateMachine)
     assert (app.container.get(SessionAgents).top("s1").name, app.container.get(SessionAgents).top("s1").plan_id, app.container.get(SessionAgents).top("s1").task_id) == ("following_plan", 1, 1)
     assert "task 1 is in hand" in hook(app, "Stop")[1]["reason"]
+    assert "too short for the user to read in the top bar" in console.run(["await", "Plan", "--until", "false"], AGENT).error, "a wait named by a bare noun is refused, so the top bar says what the agent waits for"
     console.run(["await", "the build", "--until", "false"], AGENT)
     hook(app, "UserPromptSubmit", prompt="[journal] while you wait for the build, task 2 is next")
     assert app.container.get(SessionAgents).top("s1").name == "awaiting" and "is in hand" not in str(hook(app, "Stop")[1]), "a line the journal types frees no wait, and a stop while waiting is not told to carry on"
@@ -1325,7 +1326,9 @@ def test_switching_the_work_mode_tells_the_agent_once_which_mode_it_now_works_in
     use = lambda name: hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": name})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
     assert "you now work" not in use("a.py"), "nothing is said while the mode stays"
     app.container.get(SettingRows).set("workers.mode", "orchestrator", Actor.user(1))
-    assert "you now work as the orchestrator" in use("b.py"), "the switch is told at the next step"
+    switched = use("b.py")
+    assert "you now work as the orchestrator" in switched, "the switch is told at the next step"
+    assert "without waiting for the user" in switched and "cannot be undone" in switched, "the orchestrator decides alone, and waits for the user only before a step that cannot be undone"
     assert "you now work" not in use("c.py"), "and only once"
     app.container.get(SettingRows).set("workers.mode", "solo", Actor.user(1))
     assert "you now work solo" in use("d.py")
