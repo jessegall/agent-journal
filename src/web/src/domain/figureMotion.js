@@ -16,8 +16,13 @@ export const floorAt = (floors, x, y, within = ON_FLOOR) =>
         .sort((a, b) => Math.abs(a.top - y) - Math.abs(b.top - y))[0] ?? null;
 
 // The highest floor under a figure's feet at `x`, `y`: never one the feet were already below
-export const floorBelow = (floors, x, y) =>
-    floors.filter((floor) => holds(floor, x) && floor.top >= y - ON_FLOOR).sort((a, b) => a.top - b.top)[0] ?? null;
+export const floorBelow = (floors, x, y, reach = ON_FLOOR) =>
+    floors.filter((floor) => holds(floor, x) && floor.top >= y - reach).sort((a, b) => a.top - b.top)[0] ?? null;
+
+// At the top of a jump, the moment the figure stops rising and would fall, a floor whose top is this many pixels above its feet is
+// close enough to land on, so a jump that misses an edge by a hair lands instead of falling back to try again.
+export const APEX_REACH = 12;
+const APEX_SPEED = 40;
 
 // The floors at home, the only ones that throw a figure up or let it drop: anywhere else a floor that moves, as a bubble the chat scrolls,
 // carries the figure with it
@@ -65,8 +70,9 @@ export function legAt(leg, from, elapsed, still = false) {
 // floor the moment it touches, with the floor it landed on, and falls to the window's foot when nothing else is under it; with motion
 // kept `still`, it is on that floor at once
 export function fallFrame(body, floors, seconds, fall, size, still = false) {
-    const floor = floorBelow(floors, body.x, body.y);
+    const floor = floorBelow(floors, body.x, body.y, Math.abs(body.speed || 0) < APEX_SPEED ? APEX_REACH : ON_FLOOR);
     if (!floor) return {...body, landed: null};
+    if (floor.top < body.y) return {x: body.x, y: floor.top, speed: 0, landed: floor};
     if (still) return {x: body.x, y: floor.top, speed: 0, landed: floor};
     const step = fallStep({y: body.y, speed: body.speed}, floor.top, seconds, fall, size);
     return {x: body.x, y: step.y, speed: step.speed, landed: step.landed ? floor : null};

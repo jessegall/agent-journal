@@ -132,3 +132,10 @@ describe("the squire's chase", () => {
         expect(chaseRoom([floor("home", 600)], world, {x: 400, y: 500}, picture(400), 160)).toBe(0);
     });
 });
+
+it("at the top of a jump a floor a few pixels above the feet is landed on, and one far above is not", () => {
+    const shelf = floor("bubble", 488);
+    expect(fallFrame({x: 400, y: 495, speed: 0}, [shelf, floor("home", 900)], FRAME, FALLS.butler, 112)).toMatchObject({y: 488, landed: {id: "bubble"}});
+    expect(fallFrame({x: 400, y: 495, speed: 0}, [floor("bubble", 450), floor("home", 900)], FRAME, FALLS.butler, 112).landed).toBe(null);
+    expect(fallFrame({x: 400, y: 495, speed: 400}, [shelf, floor("home", 900)], FRAME, FALLS.butler, 112).landed).toBe(null);
+});
