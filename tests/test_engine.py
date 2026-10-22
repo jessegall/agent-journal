@@ -857,7 +857,7 @@ def test_the_data_is_read_per_feature_and_travels_on_the_event_the_machine_asks(
     with app.container.get(Scope).environment(1):
         data = app.container.get(DataReaders).agent_data(agent)
     assert data.part(TasksFeature).current_task == 1 and data.part(TasksFeature).suspended == ()
-    assert len(data.part(MessagesFeature).unread) == 1 and data.part(BriefingFeature).has_overview is False
+    assert len(data.part(MessagesFeature).unread) == 1 and data.part(BriefingFeature).is_overview_read is False
     assert data.part(ShellFeature).background == () and data.part(WorkersFeature).idle_workers == ()
     event = ToolStarting(call=ToolCall(tool="Write", input={}, operation=Claude().operation("Write", {}))).with_data(data)
     assert event.data.part(TasksFeature).current_task == 1 and ToolStarting(call=ToolCall(tool="Write", input={}, operation=Claude().operation("Write", {}))).data.parts == {}
@@ -1120,7 +1120,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     parts = {
         "plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()),
         "skills": SkillsData(skills_due=("journal",), loaded={"plans": "h2"}, skills=cards),
-        "briefing": BriefingData(has_overview=False, environment="main", peer_session_active_at="09:12", rules="1. Always test", rules_count=1, facts="", reminders="1. Log often", waiting="2 tasks"),
+        "briefing": BriefingData(is_overview_read=False, environment="main", peer_session_active_at="09:12", rules="1. Always test", rules_count=1, facts="", reminders="1. Log often", waiting="2 tasks"),
         "memory": MemoryData(threshold_due=50, context_threshold=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), CardKind.FACTS),), stale=()),
     }
     data = FeatureData(parts)
@@ -1142,7 +1142,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     assert stop.refusal is not None and stop.refusal.key == "skills.stopped_owing"
     paid = FeatureData({**parts, "skills": SkillsData(skills_due=(), loaded={}, skills=cards)})
     assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, operation=Claude().operation("Edit", {"file_path": "a.py"}), writes=True)).with_data(paid), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal.key == "briefing.look_before_the_first_write"
-    looked = FeatureData({**paid.parts, "briefing": BriefingData(**{**parts["briefing"].__dict__, "has_overview": True})})
+    looked = FeatureData({**paid.parts, "briefing": BriefingData(**{**parts["briefing"].__dict__, "is_overview_read": True})})
     assert Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, operation=Claude().operation("Edit", {"file_path": "a.py"}), writes=True)).with_data(looked), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal.key == "memory.write_held_until_decided"
     assert Ready().respond(Stop().with_data(looked), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal.rendered().startswith("you stopped while the journal awaits a decision at the context mark, 50% full")
     decided = FeatureData({**looked.parts, "memory": MemoryData(threshold_due=0, context_threshold=50, rows=parts["memory"].rows, stale=())})

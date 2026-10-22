@@ -34,7 +34,7 @@ class SequencesDataReader:
             step_silence_seconds=datetime.now(timezone.utc).timestamp() - line_time if line_time else DISTANT_SECONDS,
             is_typable=not any(agent.session in (w.session, w.resume) for w in self.workers.global_matching(environment_id=agent.environment_id)),
             question_open=bool(self.questions.open()),
-            obligations_due=not agent.has_overview or bool(agent.threshold_due) or bool(agent.skills_due))
+            obligations_due=not agent.is_overview_read or bool(agent.threshold_due) or bool(agent.skills_due))
 
     def edit_count(self, agent: Agent, run: SequenceRun) -> int:
         if not run.adopted_at:

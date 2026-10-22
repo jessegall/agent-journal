@@ -5,7 +5,7 @@
       "name": "a stop before orienting",
       "answer": {
         "decision": "block",
-        "reason": "you stopped while the journal awaits a look at what is in flight here. run `journal environment overview` first, or `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "you stopped before running `journal environment overview` this session. run it first"
       },
       "typed": [],
       "nudges": [

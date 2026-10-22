@@ -19,13 +19,13 @@ class BriefingConduct(Conduct):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         feature = briefing_feature()
-        if event.subagent or not event.call.writes or event.data.part(feature).has_overview:
+        if event.subagent or not event.call.writes or event.data.part(feature).is_overview_read:
             return self.none()
         return self.refuse(feature.OVERVIEW_REQUEST.create())
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
         feature = briefing_feature()
-        return self.none() if event.data.part(feature).has_overview else self.refuse(feature.OVERVIEW_STOP.create())
+        return self.none() if event.data.part(feature).is_overview_read else self.refuse(feature.OVERVIEW_STOP.create())
 
 
 def briefing_feature():

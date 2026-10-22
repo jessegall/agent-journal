@@ -20,7 +20,7 @@ class Agent(Scoped):
     stack: tuple = ()
     skills_loaded: dict = field(default_factory=dict)
     context_threshold: int = 0
-    has_overview: bool = True
+    is_overview_read: bool = True
     threshold_due: int = 0
     skills_due: tuple[str, ...] = ()
     sequence_runs: tuple = ()
@@ -42,7 +42,7 @@ class Agent(Scoped):
         return self.with_event(SessionRetired(environment_id=self.environment_id, time=time, agent_session=self.session))
 
     def overview_read(self, time: float) -> "Agent":
-        return self.with_(has_overview=True).with_event(OverviewRead(environment_id=self.environment_id, time=time))
+        return self.with_(is_overview_read=True).with_event(OverviewRead(environment_id=self.environment_id, time=time))
 
     def context_decided(self, time: float) -> "Agent":
         return self.with_(threshold_due=0).with_event(ContextDecided(environment_id=self.environment_id, time=time, threshold=self.threshold_due))

@@ -1587,13 +1587,13 @@ def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_bene
     hook(app, "SessionStart")
     from journal.repositories.agents import Agents
     agents = app.container.get(Agents)
-    assert app.container.get(SessionAgents).top("s1").name == "waiting" and agents.session_agent("s1").has_overview is False, "a new session keeps the agent in its wait and owes the look as a fact"
+    assert app.container.get(SessionAgents).top("s1").name == "waiting" and agents.session_agent("s1").is_overview_read is False, "a new session keeps the agent in its wait and owes the look as a fact"
     console.run(["question", "answer", "1", "beta"], USER)
     app.runtime().deferred.drain()
-    assert app.container.get(SessionAgents).top("s1").name == "working" and agents.session_agent("s1").has_overview is False, "the answer released the wait; the look is still owed"
+    assert app.container.get(SessionAgents).top("s1").name == "working" and agents.session_agent("s1").is_overview_read is False, "the answer released the wait; the look is still owed"
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 409, "a write before the look is held"
     console.run(["environment", "overview"], AGENT)
-    assert agents.session_agent("s1").has_overview is True and hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "oriented again, the agent goes on with its work"
+    assert agents.session_agent("s1").is_overview_read is True and hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200, "oriented again, the agent goes on with its work"
 
 
 def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app: App, monkeypatch):
@@ -3100,11 +3100,11 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     agents, needs = app.container.get(Agents), app.container.get(Requirements)
     row = lambda: agents.session_agent("s1")
     hook(app, "SessionStart")
-    assert row().has_overview is False and needs.obligation_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
+    assert row().is_overview_read is False and needs.obligation_names(row()) == ["journal"], "a session start: not oriented, the journal skill owed"
     read_skill(app, "journal")
     assert needs.obligation_names(row()) == [] and row().skills_loaded and "journal" in row().skills_loaded, "the read removes the owed link and keeps the hash"
     app.console().run(["environment", "overview"], AGENT)
-    assert row().has_overview is True, "the look sets oriented and nothing is owed"
+    assert row().is_overview_read is True, "the look sets oriented and nothing is owed"
     hook(app, "UserPromptSubmit", prompt="make me a plan for the release")
     assert needs.obligation_names(row()) == ["plans"], "a prompt naming plans: the plans skill owed"
     read_skill(app, "journal-plans")
@@ -3122,7 +3122,7 @@ def test_what_the_agent_owes_is_a_fact_on_its_row_oriented_the_mark_owed_and_the
     app.console().run(["memory", "skip", "all logged"], AGENT)
     assert row().threshold_due == 0, "nothing survives clears it too"
     status, body = hook(app, "SessionStart", source="compact")
-    assert row().has_overview is False and row().threshold_due == 0, "a start after a compaction owes the look again; the start's own write touches oriented alone"
+    assert row().is_overview_read is False and row().threshold_due == 0, "a start after a compaction owes the look again; the start's own write touches oriented alone"
 
 def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set(tmp_path: Path, monkeypatch):
     import json
@@ -3137,7 +3137,7 @@ def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set
     db = sqlite3.connect(first.config.database)
     working = json.loads(db.execute("SELECT data FROM agents WHERE session = 's1'").fetchone()[0])
     nested = {"resume": {"state": "at_mark", "data": {"resume": {"state": "working", "data": working}, "mark": 50}}, "skill": "plans", "path": ".claude/skills/journal-plans/SKILL.md"}
-    db.execute("UPDATE agents SET state = 'loading_skill', data = ?, has_overview = 1, threshold_due = 0 WHERE session = 's1'", (json.dumps(nested),))
+    db.execute("UPDATE agents SET state = 'loading_skill', data = ?, is_overview_read = 1, threshold_due = 0 WHERE session = 's1'", (json.dumps(nested),))
     old_columns(db)
     db.execute("DELETE FROM migrations")
     db.commit()
@@ -3150,7 +3150,7 @@ def test_an_agent_data_in_a_pause_it_owed_is_unwrapped_at_boot_with_the_fact_set
         from journal.repositories.scope import Scope
         with second.container.get(Scope).environment(MAIN):
             agent = second.container.get(Agents).session_agent("s1")
-            assert agent.state == "working" and agent.data.get("task_id") == 1 and agent.threshold_due == 50 and agent.has_overview is True, "unwrapped to the work it held, the mark owed, never dropped to idle"
+            assert agent.state == "working" and agent.data.get("task_id") == 1 and agent.threshold_due == 50 and agent.is_overview_read is True, "unwrapped to the work it held, the mark owed, never dropped to idle"
             assert "plans" in second.container.get(Requirements).obligation_names(agent), "the skill it was reading is owed as a link"
     finally:
         second.runtime().stop()

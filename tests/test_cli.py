@@ -141,13 +141,13 @@ def test_a_codex_command_orients_its_own_session_in_the_chosen_environment(app: 
     environments, agents = app.container.get(Environments), app.container.get(Agents)
     development = environments.lookup("development")
     with app.container.get(Scope).environment(development.id):
-        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", has_overview=False), Actor.system())
-        agents.save(Agent(session="claude-session", environment_id=development.id, provider="claude", has_overview=False), Actor.system())
+        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", is_overview_read=False), Actor.system())
+        agents.save(Agent(session="claude-session", environment_id=development.id, provider="claude", is_overview_read=False), Actor.system())
     caller = Providers().caller({"JOURNAL_ENV": "development", "CODEX_THREAD_ID": "codex-session", "CODEX_CI": "1"})
     assert app.console().run(["environment", "overview"], caller).code == 0
     with app.container.get(Scope).environment(development.id):
-        assert agents.session_agent("codex-session").has_overview
-        assert not agents.session_agent("claude-session").has_overview
+        assert agents.session_agent("codex-session").is_overview_read
+        assert not agents.session_agent("claude-session").is_overview_read
     assert app.console().run(["task", "create", "Codex task"], caller).code == 0
     with app.container.get(Scope).environment(development.id):
         assert app.container.get(Tasks).all()[-1].creator == Actor.agent("codex-session")
@@ -175,7 +175,7 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App,
     agents = app.container.get(Agents)
     development = app.container.get(Environments).lookup("development")
     with app.container.get(Scope).environment(development.id):
-        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", has_overview=False), Actor.system())
+        agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", is_overview_read=False), Actor.system())
     environ = {key: value for key, value in os.environ.items() if key not in ("JOURNAL_SESSION", "CODEX_SANDBOX", *Claude.inherited_markers)}
     environ.update(JOURNAL_ROOT=str(app.config.root), JOURNAL_ENV="development", JOURNAL_PORT="0", CODEX_THREAD_ID="codex-session", CODEX_CI="1")
     server = app.server()
@@ -185,7 +185,7 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App,
         outcome = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "environment", "overview"], env=environ, capture_output=True, text=True, timeout=10)
         assert outcome.returncode == 0, outcome.stderr
         with app.container.get(Scope).environment(development.id):
-            assert agents.session_agent("codex-session").has_overview
+            assert agents.session_agent("codex-session").is_overview_read
     finally:
         server.stop()
 

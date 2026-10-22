@@ -17,7 +17,7 @@ class Requirements:
         self.registry, self.files, self.nudger, self.agents = registry, files, nudger, agents
 
     def has_obligations(self, agent: Agent) -> bool:
-        return not agent.has_overview or bool(agent.threshold_due) or bool(self.obligation_names(agent))
+        return not agent.is_overview_read or bool(agent.threshold_due) or bool(self.obligation_names(agent))
 
     def obligation_names(self, agent: Agent) -> list[str]:
         return list(agent.skills_due)

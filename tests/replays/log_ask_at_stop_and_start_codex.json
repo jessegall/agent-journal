@@ -65,7 +65,7 @@
       "name": "a stop just after the log",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on\nyou stopped while the journal awaits a look at what is in flight here. run `journal environment overview` first, or `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on\nyou stopped before running `journal environment overview` this session. run it first"
       },
       "typed": [],
       "nudges": [

@@ -34,5 +34,5 @@ class Briefing(Feature[BriefingData]):
     PENDING_ITEMS = Nudge(name, "waiting_for_you", "waiting for you here: {{rows}}", "`journal task list`, `journal message unread`, `journal question list`", repeat_interval=0)
     COMPACTION_SUMMARY = Nudge(name, "brief_and_log_after_compaction", "after the compaction, the work stands here: {{task}}, its last log {{last_log}}; uncommitted files: {{uncommitted}}", "pick up from there, and log what the summary does not say", repeat_interval=0)
     OVERVIEW_REQUEST = Nudge(name, "look_before_the_first_write", "before your first write, run `journal environment overview`: it lists the task in hand, the open tasks, the facts and the reminders", repeat_interval=0)
-    OVERVIEW_STOP = Nudge(name, "stopped_unoriented", "you stopped while the journal awaits a look at what is in flight here", "run `journal environment overview` first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_interval=0)
+    OVERVIEW_STOP = Nudge(name, "stopped_unoriented", "you stopped before running `journal environment overview` this session", "run it first", repeat_interval=0)
     nudges = (JOURNAL_READY, JOURNAL_DISCRETION, JOURNAL_LAWS, TAKEOVER, ACTIVE_RULES, ENVIRONMENT_FACTS, ENVIRONMENT_REMINDERS, PENDING_ITEMS, COMPACTION_SUMMARY, OVERVIEW_REQUEST, OVERVIEW_STOP)
