@@ -86,7 +86,7 @@ const SYSTEM_TURNS = {
         suggestion: {
             id: Number(String(card.row).split(":")[1]),
             title: label,
-            detail: card.detail,
+            detail: card.description ?? card.detail,
             accept: card.accept,
             answer: card.answer,
         },

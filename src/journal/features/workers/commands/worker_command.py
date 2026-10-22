@@ -38,6 +38,8 @@ ASSIGNMENT_REFUSALS = {
     TaskState.SUSPENDED: "task {n} is {state} in another's hands: a worker is started only on an open task or one you hold",
 }
 
+EMPTY_CHANGES = ("", "none", "nothing", "no files", "n/a", "-", "read only", "read-only", "nothing, it only reads")
+
 class WorkerCommand(Command):
     noun = "worker"
     callers = {"peers": WORKER_KINDS, "notify": WORKER_KINDS, "send": WORKER_KINDS, "report": WORKER_KINDS}
@@ -53,6 +55,7 @@ class WorkerCommand(Command):
         dispatch.add_argument("name")
         dispatch.add_argument("brief", nargs="?", default="", help="what the worker is told beside its task's brief")
         dispatch.add_argument("--provider", choices=("claude", "codex"), help="the program the worker runs; the dispatching agent's own when not named")
+        dispatch.add_argument("--changes", required=True, help="the files, folders or document the worker changes; a job that only reads, searches or reviews goes to a subagent, never a worker")
         dispatch.add_argument("--profile", required=True, help="the worker profile it works by: senior, on Opus, for a job that needs judgement; medior, on Sonnet, for one whose shape is settled")
         dispatch.add_argument("--model", help="a model other than the profile's")
         dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code; then name its library folders with --libraries or --copies, or say --no-libraries")
@@ -99,8 +102,10 @@ class WorkerCommand(Command):
         task = self.assignment(args.task, caller)
         provider = args.provider or self.provider_default(caller)
         moment = datetime.now(timezone.utc).timestamp()
+        if args.changes.strip().lower() in EMPTY_CHANGES:
+            raise Rejection("a worker writes: name what it changes with --changes; a job that only reads, searches, researches or reviews goes to a subagent with the Agent tool")
         links, copies = self.library_names(args)
-        worker = Worker(name=args.name, brief="\n\n".join(part for part in (task.brief, args.brief) if part), provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, library_links=links, library_copies=copies, dispatcher=caller.session)
+        worker = Worker(name=args.name, brief="\n\n".join(part for part in (task.brief, args.brief, f"You change: {args.changes}") if part), provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, library_links=links, library_copies=copies, dispatcher=caller.session)
         worker = self.workers.save(worker.contacted(moment), caller.actor)
         try:
             repositories = self.runner.workplace(worker)

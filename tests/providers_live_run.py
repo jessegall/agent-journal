@@ -193,7 +193,7 @@ def test_a_worker_reports_and_resumes_with_its_memory(live: App, provider: str):
     launched(live, provider)
     console, workers, reports = live.console(), live.container.get(Workers), live.container.get(WorkerReports)
     subprocess.run(["git", "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-q", "--allow-empty", "-m", "first"], cwd=live.config.root, check=True, timeout=10)
-    sent = dispatched(console, ["Lady Lovelace", "Say the word amber and nothing else.", "--provider", provider, "--profile", "journal-medior", "--worktree", "--no-libraries"], Caller.user("main"))
+    sent = dispatched(console, ["Lady Lovelace", "Say the word amber and nothing else.", "--provider", provider, "--changes", "the files of its task", "--profile", "journal-medior", "--worktree", "--no-libraries"], Caller.user("main"))
     assert sent.code == 0, sent.error
     with live.container.get(Scope).environment(MAIN):
         first = wait_for(lambda: [(worker, report) for worker in workers.all() if (report := reports.last(worker))], WORKER_SECONDS)

@@ -98,8 +98,9 @@ class Workers(Feature[WorkersData]):
 
 A subagent only reads. A worker writes: code in a worktree of its own, a document, a change.
 
-- `journal worker dispatch "<Name>" --task <n> --profile journal-senior|journal-medior ["<more to tell it>"] [--provider claude|codex] [--worktree --libraries <a,b> | --copies <a,b> | --no-libraries]`:
-  name it after a distinguished figure with a twist on their trade. A worker is started only on a task: an open one with a
+- `journal worker dispatch "<Name>" --task <n> --changes "<the files or document it changes>" --profile journal-senior|journal-medior ["<more to tell it>"] [--provider claude|codex] [--worktree --libraries <a,b> | --copies <a,b> | --no-libraries]`:
+  name it after a distinguished figure with a twist on their trade. A worker writes: `--changes` names what it changes,
+  and a job that only reads, searches, researches or reviews is always a subagent's, never a worker's. A worker is started only on a task: an open one with a
   brief, which is its job, or the one you hold, which it then takes over. The task is the worker's from then on, never
   offered to you as next, until its work is merged or released. The profile sets its model and what it is told:
   medior, on Sonnet, for a job whose shape is settled; senior, on Opus, only for one that needs judgement. `--model` overrides it.

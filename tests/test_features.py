@@ -574,8 +574,8 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app: App, monkeypatch):
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
     console.run(["task", "create", "t", "--start"], AGENT)
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    dispatched(console, ["Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Dr. Einstein", "profile it", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1", "2"], AGENT)
     machine = app.container.get(StateMachine)
     assert app.container.get(SessionAgents).top("s1").name == "awaiting" and hook(app, "Stop")[1] == {}
@@ -599,8 +599,8 @@ def test_a_worker_runs_the_dispatching_agents_own_program(app: App, monkeypatch)
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
     console = app.console()
-    dispatched(console, ["Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
-    dispatched(console, ["Mr. Babbage", "write cli.py", "--profile", "journal-medior", "--model", "sonnet"], USER)
+    dispatched(console, ["Ada Lovelace", "write storage.py", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
+    dispatched(console, ["Mr. Babbage", "write cli.py", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], USER)
     workers = app.container.get(Workers)
     assert workers.find(1).provider == "codex" and workers.find(2).provider == "claude", "a Codex agent's worker runs Codex, so its model names fit"
     assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Caller.agent("main", "c1", "codex")).text, "a list of workers out points at the wait"
@@ -620,7 +620,7 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
     import subprocess
     for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
         subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast", "--worktree", "--no-libraries"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast", "--worktree", "--no-libraries"], AGENT)
     assert console.run(["worker", "send", "1", "now the lexer"], AGENT).code != 0, "still out: its report comes first"
     console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
     assert console.run(["worker", "send", "1", "now the lexer"], AGENT).code != 0, "no session was captured, so there is nothing to resume"
@@ -718,16 +718,16 @@ def test_a_profile_has_a_kind_and_is_dispatched_only_the_way_its_kind_says(app: 
     assert codex["model"] == "gpt-6" and codex["sandbox_mode"] == "workspace-write" and codex["developer_instructions"] == "You write.\nSay \"done\"."
     assert files.read("builder")["kind"] == "worker" and files.read("journal-planner")["kind"] == "subagent"
     hook(app, "SessionStart")
-    refused = dispatched(app.console(), ["Mr. Darwin", "look it up", "--profile", "journal-researcher"], AGENT)
+    refused = dispatched(app.console(), ["Mr. Darwin", "look it up", "--changes", "the files of its task", "--profile", "journal-researcher"], AGENT)
     assert refused.code != 0 and "no worker profile" in refused.error and "Agent tool" in refused.error
     assert (files.read("journal-senior")["model"], files.read("journal-medior")["model"]) == ("opus", "sonnet"), "the two shipped workers keep their own models, whatever the setting"
-    assert "on claude sonnet" in dispatched(app.console(), ["Mr. Brunel", "write it", "--profile", "builder"], AGENT).text, "the profile names the model"
+    assert "on claude sonnet" in dispatched(app.console(), ["Mr. Brunel", "write it", "--changes", "the files of its task", "--profile", "builder"], AGENT).text, "the profile names the model"
     from journal.features.profiles.support.profile_files import SHIFT
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.repositories.workers import Workers
     worker = app.container.get(Workers).scoped()[-1]
-    assert worker.profile == "builder" and app.container.get(WorkerRunner).instructed(worker) == f"{SHIFT}\n\nYou write.\nSay \"done\".\n\nwrite it", "the first job comes after the shift and the custom profile's instructions"
-    assert app.container.get(WorkerRunner).instructed(worker.with_(resume="r1")) == "write it", "a resumed worker remembers them"
+    assert worker.profile == "builder" and app.container.get(WorkerRunner).instructed(worker) == f"{SHIFT}\n\nYou write.\nSay \"done\".\n\nwrite it\n\nYou change: the files of its task", "the first job comes after the shift and the custom profile's instructions"
+    assert app.container.get(WorkerRunner).instructed(worker.with_(resume="r1")) == "write it\n\nYou change: the files of its task", "a resumed worker remembers them"
     status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "builder", "model": "fast", "description": "x", "prompt": "y"})
     assert status == 409 and "worker profile" in body["error"] and "--profile builder" in body["error"]
     assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "model": "fast", "description": "x", "prompt": "y"})[0] == 200
@@ -2217,7 +2217,7 @@ def test_a_worker_from_before_tokens_has_its_output_filed_as_its_report(app: App
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     worker, runner = app.container.get(Workers).find(1), app.container.get(WorkerRunner)
     output, err = runner.outputs(worker)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -2234,7 +2234,7 @@ def test_a_worker_that_reported_itself_keeps_its_report_and_session_when_its_pro
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     workers = app.container.get(Workers)
     stale = workers.find(1)
     app.console().run(["worker", "report", "1", "the parser is done"], Caller.agent("main", "w1", "claude"))
@@ -3077,7 +3077,7 @@ def test_a_row_event_walks_about_every_agent_of_the_environment_and_speaks_once(
     hook(app, "SessionStart", session_id="s2")
     console.run(["environment", "overview"], Caller.agent("main", "s2", "claude"))
     console.run(["task", "create", "t", "--start"], Caller.agent("main", "s2", "claude"))
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], Caller.agent("main", "s2", "claude"))
+    dispatched(console, ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], Caller.agent("main", "s2", "claude"))
     console.run(["worker", "wait", "1"], Caller.agent("main", "s2", "claude"))
     keystrokes.clear()
     machine = app.container.get(StateMachine)
@@ -3537,7 +3537,7 @@ def test_a_workers_report_stays_on_its_row_however_much_is_said_after(app: App):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "report", "1", "the parser is written"], Caller.agent("main", "w1", "claude"))
     messages = app.container.get(Messages)
     for i in range(250):
@@ -3552,7 +3552,7 @@ def test_a_workers_report_message_carries_the_report_kind_and_its_worker(app: Ap
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "report", "1", "the parser is written"], Caller.agent("main", "w1", "claude"))
     report = next(m for m in app.container.get(Messages).all() if m.data.get("kind") == "report")
     assert (report.text, report.data["worker"], report.data["worker_id"]) == ("Lady Lovelace reports: the parser is written", "Lady Lovelace", 1)
@@ -4384,7 +4384,7 @@ def test_a_worker_from_before_tokens_that_ends_has_its_commits_taken_in_and_its_
     git("add", ".gitignore")
     git("commit", "-qm", "start")
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     with app.container.get(Scope).environment(1):
         worker = app.container.get(Workers).find(1)
         tokenless_run(app.container.get(WorkerRunner), worker, ["sh", "-c", "echo parsed > parser.txt && git add parser.txt && git commit -qm 'the parser' && echo half > notes.txt && echo the parser is written"], A.agent("s1"))
@@ -4670,7 +4670,7 @@ def test_an_approved_plan_not_started_holds_the_stop_until_it_is(app: App):
 
 def test_a_question_asked_without_a_session_or_from_a_workers_shell_is_refused(app: App):
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     from journal.repositories.workers import Workers
     workers = app.container.get(Workers)
     workers.save(workers.find(1).with_(session="w1"), USER.actor)
@@ -4720,7 +4720,7 @@ def test_a_worker_past_its_time_limit_is_stopped_and_the_end_of_its_run_kept(app
     from journal.repositories.setting_rows import SettingRows
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     app.container.get(SettingRows).set(WorkersFeature.TIMEOUT.key, 0.005, USER.actor)
     worker = app.container.get(Workers).find(1)
     app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo half done; sleep 30"], A.agent("s1"))
@@ -4761,7 +4761,7 @@ def test_a_task_a_worker_holds_is_never_closed_by_a_hand_merge_or_a_trailer(app:
     hook(app, "SessionStart")
     console = app.console()
     console.run(["task", "create", "the parser", "--brief", "the parser reads"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     git("commit", "-q", "--allow-empty", "-m", "the parser\n\nJournal: tasks done 1")
     answered = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})[1]
     assert app.container.get(Tasks).find(1).state != "done" and "task 1 is worker 1's, so the commit leaves it open" in json.dumps(answered), "a trailer leaves a worker's task open, naming the worker"
@@ -5421,7 +5421,7 @@ def test_a_job_on_files_a_worker_already_worked_on_goes_back_to_that_worker(app:
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    dispatched(console, ["Lady Lovelace", "fix the chain", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Lady Lovelace", "fix the chain", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     workers = app.container.get(Workers)
     with app.container.get(Scope).environment(MAIN):
         workers.save(workers.find(1).with_(resume="abc", touched_paths=("src/journal/features/shell/chain.py",)).reported(0.0, 0), Actor.system())
@@ -5526,7 +5526,7 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app: 
     console.run(["plan", "add", "1", "delegated", "--brief", "the delegated one is done"], USER)
     console.run(["plan", "add", "1", "mine"], USER)
     console.run(["plan", "approve", "1"], USER)
-    console.run(["worker", "dispatch", "Lady Lovelace", "do the delegated one", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "do the delegated one", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT)
     plans = app.container.get(Plans)
     assert plans.next_task(plans.find(1)).title == "mine", "the plan leaves a task a worker is out on to it"
     with urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/tasks", headers={"X-Journal-Env": "main"}), timeout=5) as reply:
@@ -5534,7 +5534,7 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app: 
     assert assigned == {"delegated": 1, "mine": None}, "the viewer sees which worker holds which task"
     console.run(["task", "create", "loose and delegated", "--brief", "the loose one is done"], AGENT)
     console.run(["task", "create", "loose and free"], AGENT)
-    console.run(["worker", "dispatch", "Mr. Babbage", "build the loose one", "--profile", "journal-medior", "--model", "sonnet", "--task", "3"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "build the loose one", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--task", "3"], AGENT)
     assert [task.title for task in plans.free()] == ["loose and free"], "a task a worker is out on is never the next free task for anyone else"
 
 
@@ -5668,10 +5668,10 @@ def test_a_workers_worktree_is_cut_from_the_working_tip_and_a_failed_cut_refuses
     git("add", "feature.txt")
     git("commit", "-qm", "the feature")
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert (app.config.home / "worktrees" / "1-Lady-Lovelace" / "feature.txt").is_file(), "cut from the tip of the branch being worked, not from main"
     git("branch", "worker/2-Ada-Byron")
-    refused = dispatched(app.console(), ["Ada Byron", "write the lexer", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    refused = dispatched(app.console(), ["Ada Byron", "write the lexer", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert refused.code == 1 and "worker Ada Byron was not dispatched" in refused.error and "already exists" in refused.error, "git's refusal is said in plain words"
     with app.container.get(Scope).environment(1):
         assert [w.name for w in app.container.get(Workers).scoped()] == ["Lady Lovelace"], "nothing half made is left behind"
@@ -5692,7 +5692,7 @@ def test_a_workers_merge_never_touches_the_users_work_and_says_what_stood_in_its
     commit(".gitignore", ".journal/\n")
     commit("shared.py", "A = 1\n")
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     branch = app.container.get(WorkerBranch)
     with app.container.get(Scope).environment(1):
         worker = app.container.get(Workers).find(1)
@@ -5719,7 +5719,7 @@ def test_a_worktree_for_a_worker_in_a_project_with_no_commit_is_refused_in_plain
     import subprocess
     subprocess.run(["git", "init", "-q", "-b", "main"], cwd=app.config.root, capture_output=True, timeout=30)
     hook(app, "SessionStart")
-    refused = dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    refused = dispatched(app.console(), ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert refused.code == 1 and "the project has no commit yet" in refused.error
 
 
@@ -5752,7 +5752,7 @@ def test_the_agent_stays_out_of_a_workers_worktree_and_is_told_how_to_work_there
         subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     contained = app.config.home / "worktrees" / "1-Lady-Lovelace" / "parser.py"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(contained), "content": "x"})
     assert status == 409 and "worker 1's worktree" in body["error"] and "journal worker send 1" in body["error"], "the worker's worktree is the worker's"
@@ -5771,7 +5771,7 @@ def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_n
     git("config", "user.name", "T")
     git("commit", "-q", "--allow-empty", "-m", "start")
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     tree = app.config.home / "worktrees" / "1-Lady-Lovelace"
     (tree / "parser.py").write_text("PARSE = 1\n")
     git("add", "parser.py", cwd=tree)
@@ -5902,8 +5902,8 @@ def test_dispatches_past_the_most_at_once_wait(app: App):
     hook(app, "SessionStart")
     console = app.console()
     app.container.get(SettingRows).save(Setting(environment_id=0, key="workers.most_out", value=1), Actor.user(1))
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    refused = dispatched(console, ["Ada Byron", "write the lexer", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    refused = dispatched(console, ["Ada Byron", "write the lexer", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     assert refused.code == 1 and "1 workers are out, the most at once" in refused.error, "a worker past the most out at once is refused"
     app.container.get(SettingRows).save(Setting(environment_id=0, key="workers.most_subagents", value=1), Actor.user(1))
     assert hook(app, "PreToolUse", tool_name="Agent", tool_input={"description": "map the hooks", "prompt": "map", "subagent_type": "journal-researcher", "model": "haiku"})[0] == 200, "the first under a most of one passes: the start being judged is not counted among the running"
@@ -6071,7 +6071,7 @@ def test_a_package_install_of_code_commandments_is_suggested_once_as_the_journal
     assert suggesting.last_round is None, "nothing is suggested in the first minutes after the journal starts"
     suggesting.tick(suggesting.started_at + 15 * 60)
     cards = [m for m in app.container.get(Messages).all() if m.data.get("kind") == "suggestion"]
-    assert len(cards) == 1 and "v4.2.0" in cards[0].data["detail"], "fifteen minutes in, the package install is suggested once as the plugin, naming the version it runs"
+    assert len(cards) == 1 and "v4.2.0" in cards[0].data["description"], "fifteen minutes in, the package install is suggested once as the plugin, naming the version it runs"
     suggesting.tick(suggesting.started_at + 75 * 60)
     assert len([m for m in app.container.get(Messages).all() if m.data.get("kind") == "suggestion"]) == 1, "the next round an hour later does not suggest it again"
     suggestion = suggesting.suggestions.all()[0]
@@ -7096,7 +7096,7 @@ def test_a_workers_dispatch_mark_stays_and_each_later_standing_is_a_new_mark(app
     hook(app, "SessionStart")
     console = app.console()
     for name in ("Lady Lovelace", "Dr. Einstein", "Mr. Babbage"):
-        dispatched(console, [name, f"a job for {name}", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+        dispatched(console, [name, f"a job for {name}", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     messages = app.container.get(MessageRows)
     card = lambda n: next(m for m in messages.scoped() if m.data.get("key") == f"worker:{n}")
     marks = lambda n: [m.text for m in messages.scoped() if str(m.data.get("key", "")).startswith(f"worker:{n}:")]
@@ -7129,7 +7129,7 @@ def test_one_link_holds_a_task_for_its_worker_until_it_is_released(app: App, mon
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "the parser reads the grammar"], AGENT)
-    assert console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT).code == 0
+    assert console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT).code == 0
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         workers.save(workers.find(1).with_(session="w-1", state=WorkerState.REPORTED), Actor.system())
@@ -7154,8 +7154,8 @@ def test_a_worker_runs_the_workers_verbs_on_its_own_rows_alone(app: App, monkeyp
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "the parser reads the grammar"], AGENT)
     console.run(["task", "create", "the lexer", "--brief", "the lexer splits the words"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT)
-    console.run(["worker", "dispatch", "Mr. Babbage", "write the lexer", "--profile", "journal-medior", "--model", "sonnet", "--task", "2"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "write the lexer", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--task", "2"], AGENT)
     lovelace = Caller.worker("main", 1, "w-1", "claude")
     with app.container.get(Scope).environment(MAIN):
         outputs = app.container.get(CommandOutputs)
@@ -7185,14 +7185,14 @@ def test_a_worker_is_started_only_on_a_task_whose_brief_is_its_job(app: App, mon
     console = app.console()
     hook(app, "SessionStart")
     console.run(["environment", "overview"], AGENT)
-    send = lambda *flags: console.run(["worker", "dispatch", "Lady Lovelace", "--profile", "journal-medior", "--model", "sonnet", *flags], AGENT)
+    send = lambda *flags: console.run(["worker", "dispatch", "Lady Lovelace", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", *flags], AGENT)
     assert send().code != 0 and "--task" in send().error, "a dispatch without a task is refused"
     console.run(["task", "create", "the footer"], AGENT)
     assert "task 1 has no brief" in send("--task", "1").error, "a task with no brief is no job"
     console.run(["task", "create", "the parser", "--brief", "the parser reads the grammar"], AGENT)
     assert send("--task", "2", "use the old lexer").code == 0
     with app.container.get(Scope).environment(MAIN):
-        assert app.container.get(Workers).find(1).brief == "the parser reads the grammar\n\nuse the old lexer", "the worker's brief is its task's, the dispatch's text only adds to it"
+        assert app.container.get(Workers).find(1).brief == "the parser reads the grammar\n\nuse the old lexer\n\nYou change: the files of its task", "the worker's brief is its task's, the dispatch's text only adds to it"
     console.run(["task", "create", "the lexer", "--brief", "the lexer splits the words", "--start"], AGENT)
     assert send("--task", "3").code == 0, "the dispatcher hands over the task it holds"
     with app.container.get(Scope).environment(MAIN):
@@ -7244,7 +7244,7 @@ def test_a_worker_clocks_out_with_its_report_once_each_point_has_a_proof_that_st
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "The parser:\n- reads the grammar\n- names each rule"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         worker = workers.save(workers.find(1).with_(token_hash="h", session="w-1").ready(1.0), Actor.system())
@@ -7281,8 +7281,8 @@ def test_a_worker_whose_run_ends_without_clocking_out_keeps_its_task_held_until_
     hook(app, "SessionStart")
     for title in ("the parser", "the lexer"):
         console.run(["task", "create", title, "--brief", f"{title} is written"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     runner, tasks = app.container.get(WorkerRunner), app.container.get(Tasks)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
@@ -7330,8 +7330,8 @@ def test_the_main_agent_is_told_a_workers_work_is_ready_and_checks_each_proof(ap
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
     console.run(["task", "create", "the lexer", "--brief", "the lexer splits the words"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         workers.save(workers.find(1).with_(token_hash="h", session="w-1", resume="w-1").ready(1.0), Actor.system())
@@ -7375,8 +7375,8 @@ def test_a_wait_on_a_clocked_out_worker_is_answered_at_once_and_each_clock_out_i
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
     console.run(["task", "create", "the lexer", "--brief", "the lexer splits the words"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         workers.save(workers.find(1).with_(token_hash="h", session="w-1", resume="w-1").ready(1.0), Actor.system())
@@ -7418,8 +7418,8 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
     console.run(["task", "create", "the notes", "--brief", "the notes are written"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
-    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     runner, tasks = app.container.get(WorkerRunner), app.container.get(Tasks)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
@@ -7464,7 +7464,7 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     with app.container.get(Scope).environment(MAIN):
         assert tasks.find(2).state == TaskState.FINISHED, "a worker with no worktree has its task closed by its merge alone"
     console.run(["task", "create", "the guide", "--brief", "the guide is written"], AGENT)
-    console.run(["worker", "dispatch", "Mrs. Beeton", "--task", "4", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    console.run(["worker", "dispatch", "Mrs. Beeton", "--task", "4", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers.save(workers.find(3).with_(token_hash="h", session="w-3").ready(1.0), Actor.system())
     beeton = Caller.worker("main", 3, "w-3", "claude")
@@ -7503,7 +7503,7 @@ def test_a_worker_in_a_workspace_of_repositories_gets_a_worktree_of_each_and_its
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "the invoices", "--brief", "the invoices page in platform shows totals"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         workers.save(workers.find(1).with_(token_hash="h", session="w-1").ready(1.0), Actor.system())
@@ -7545,7 +7545,7 @@ def test_the_plan_moves_on_when_a_workers_task_closes_and_its_next_task_goes_to_
         plans = app.container.get(Plans)
         plans.save(plans.find(1).with_(state="started"), Actor.system())
     for n in (1, 2):
-        console.run(["worker", "dispatch", f"worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+        console.run(["worker", "dispatch", f"worker {n}", "--task", str(n), "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     tasks, workers = app.container.get(Tasks), app.container.get(Workers)
     def merged(n: int) -> None:
         with app.container.get(Scope).environment(MAIN):
@@ -7585,7 +7585,7 @@ def test_a_new_workers_run_that_ends_never_merges_its_work(app: App, monkeypatch
     console = app.console()
     for n in (1, 2):
         console.run(["task", "create", f"piece {n}", "--brief", f"piece {n} is written"], AGENT)
-        console.run(["worker", "dispatch", f"worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+        console.run(["worker", "dispatch", f"worker {n}", "--task", str(n), "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     runner, branch = app.container.get(WorkerRunner), app.container.get(WorkerBranch)
     commit = ["sh", "-c", "echo x > piece.txt && git add piece.txt && git -c user.email=t@t -c user.name=t commit -qm piece && echo written"]
     with app.container.get(Scope).environment(MAIN):
@@ -7636,7 +7636,7 @@ def test_the_user_checks_sends_back_and_merges_a_workers_work_from_the_viewer(ap
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         workers.save(workers.find(1).with_(token_hash="h", session="w-1", resume="w-1").ready(1.0), Actor.system())
@@ -8096,7 +8096,7 @@ def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_disp
     dispatcher.parent.mkdir(parents=True)
     hook(app, "SessionStart")
     console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
-    dispatched(console, ["Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     said = tmp_path / "said"
     os.mkfifo(said)
     printed = f"""echo '{{"type": "system", "session_id": "worker-session"}}'; {fifo_line(said)}; echo '{{"type": "result", "result": "hello said", "session_id": "worker-session"}}'"""
@@ -8109,7 +8109,7 @@ def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_disp
     said.write_text("\n")
     running.join(10)
     assert workers.find(1).state == WorkerState.UNFINISHED and workers.find(1).resume == "worker-session", "its session is kept when its run ends"
-    dispatched(console, ["Mr. Babbage", "say nothing", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Babbage", "say nothing", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     runner.run(workers.find(2), ["sh", "-c", f"echo '{{}}' >> '{dispatcher}'; echo plain words"], Actor.agent("s1"))
     assert workers.find(2).resume == "" and dispatcher.is_file(), "a worker in the project's own folder never takes the newest transcript there, which is the dispatcher's"
 
@@ -8167,7 +8167,7 @@ def test_a_notify_reaches_only_a_running_claude_worker_and_moves_no_wait(app: Ap
     hook(app, "SessionStart")
     console, workers, sessions = app.console(), app.container.get(Workers), app.container.get(SessionAgents)
     console.run(["task", "create", "t", "--start"], AGENT)
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
     process = subprocess.Popen(["sleep", "30"])
     try:
         workers.save(workers.find(1).running_as(process.pid, timing.time()).with_(resume="w-1"), Actor.system())
@@ -8213,7 +8213,7 @@ def test_a_running_workers_session_takes_the_notify_after_its_key_and_only_as_th
     monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
-    dispatched(console, ["Mr. Babbage", "the engine", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Mr. Babbage", "the engine", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
     process = subprocess.Popen(["sleep", "30"])
     try:
         workers.save(workers.find(1).running_as(process.pid, timing.time()).with_(resume="w-1"), Actor.system())
@@ -8243,7 +8243,7 @@ def test_two_jobs_sent_to_one_worker_at_once_start_one_run(app: App, monkeypatch
     kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
-    dispatched(console, ["Lady Lovelace", "the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Lady Lovelace", "the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     started.clear()
@@ -8270,8 +8270,8 @@ def test_stop_and_send_find_a_workers_process_after_a_restart(app: App, monkeypa
     kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
-    dispatched(console, ["Mr. Brunel", "the bridge", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    dispatched(console, ["Mr. Telford", "the canal", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Mr. Brunel", "the bridge", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Mr. Telford", "the canal", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "fast"], AGENT)
     out_before = subprocess.Popen(["sleep", "30"], start_new_session=True)
     try:
         workers.save(workers.find(1).running_as(out_before.pid, timing.time()), Actor.system())
@@ -8305,7 +8305,7 @@ def test_a_revived_worker_goes_on_in_its_own_worktree_and_branch_and_keeps_its_w
     git("commit", "-qm", "start")
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     folder = app.config.home / "worktrees" / "1-Lady-Lovelace"
     (folder / "parser.py").write_text("committed\n")
     git("add", "parser.py", cwd=folder)
@@ -8349,7 +8349,7 @@ def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_wor
         git(*argv)
     hook(app, "SessionStart")
     console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
-    dispatched(console, ["Mr. Watt", "the governor", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    dispatched(console, ["Mr. Watt", "the governor", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     console.run(["worker", "stop", "1"], AGENT)
     assert "left no session to resume: dispatch the job again" in console.run(["worker", "send", "1", "the boiler"], AGENT).error
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
@@ -8373,7 +8373,7 @@ def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: Ap
     app.container.get(ProfileFiles).write_all()
     hook(app, "SessionStart")
     console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
-    dispatched(console, ["Mr. Harrison", "the clock", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Harrison", "the clock", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     profile = app.container.get(ProfileFiles).read("journal-medior")["body"]
     assert runner.instructed(started[-1]).startswith(profile), "a fresh worker is told its profile first"
     console.run(["worker", "report", "1", "the clock runs"], Caller.agent("main", "w1", "claude"))
@@ -8393,7 +8393,7 @@ def test_a_reused_worker_keeps_every_report_and_is_out_again_until_it_reports(ap
     kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers, links = app.console(), app.container.get(Workers), app.container.get(Links)
-    dispatched(console, ["Mr. Stephenson", "the rocket", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Stephenson", "the rocket", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     console.run(["worker", "report", "1", "the rocket runs"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     console.run(["worker", "complete", "1"], AGENT)
@@ -8414,7 +8414,7 @@ def test_a_job_sent_to_a_worker_that_reported_puts_the_dispatcher_back_in_its_wa
     hook(app, "SessionStart")
     console, workers, sessions = app.console(), app.container.get(Workers), app.container.get(SessionAgents)
     console.run(["task", "create", "t", "--start"], AGENT)
-    dispatched(console, ["Mr. Arkwright", "the frame", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Arkwright", "the frame", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     console.run(["worker", "report", "1", "the frame spins"], Caller.agent("main", "w1", "claude"))
     assert sessions.top("s1").name != "awaiting"
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
@@ -8435,7 +8435,7 @@ def test_each_worker_moment_after_its_dispatch_is_a_short_mark_of_its_own(app: A
     hook(app, "SessionStart")
     console, workers, messages = app.console(), app.container.get(Workers), app.container.get(Messages)
     marks = lambda: [(m.text, m.data.get("tone"), m.data.get("detail")) for m in messages.scoped() if m.data.get("shows") == "workers" and not m.data.get("key")]
-    dispatched(console, ["Mr. Wedgwood", "the vase", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Wedgwood", "the vase", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     console.run(["worker", "report", "1", "the vase is fired"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="w-1"), USER.actor)
     console.run(["worker", "send", "1", "the jug"], AGENT)
@@ -8476,7 +8476,7 @@ def test_the_files_a_worker_touched_are_read_from_its_branch_when_it_reports_a_r
     git("commit", "-qm", "start")
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
-    dispatched(console, ["Lady Lovelace", "rename the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    dispatched(console, ["Lady Lovelace", "rename the parser", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     folder = app.config.home / "worktrees" / "1-Lady-Lovelace"
     git("mv", "src/old_parser.py", "src/parser.py", cwd=folder)
     (folder / "src" / "lexer.py").write_text("lex\n")
@@ -8514,7 +8514,7 @@ def test_only_a_send_counts_a_reuse_and_only_a_retire_gives_its_reason(app: App,
     kept_conversation(app, monkeypatch)
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
-    dispatched(console, ["Mr. Brindley", "the canal", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Brindley", "the canal", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     console.run(["worker", "report", "1", "dug"], Caller.agent("main", "w1", "claude"))
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
     console.run(["worker", "send", "1", "the aqueduct"], AGENT)
@@ -8590,8 +8590,8 @@ def test_retiring_a_worker_the_dispatcher_waits_on_stops_it_and_ends_the_wait(ap
     hook(app, "SessionStart")
     console, workers, sessions = app.console(), app.container.get(Workers), app.container.get(SessionAgents)
     console.run(["task", "create", "t", "--start"], AGENT)
-    dispatched(console, ["Mr. Fulton", "the steamboat", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    dispatched(console, ["Mr. Watt", "the engine", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Fulton", "the steamboat", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Watt", "the engine", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     assert sessions.top("s1").targets() == ["workers:1", "workers:2"]
     process = subprocess.Popen(["sleep", "30"], start_new_session=True)
     try:
@@ -8615,7 +8615,7 @@ def test_a_worker_quiet_for_twenty_minutes_is_named_to_its_dispatcher_once(app: 
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
     console.run(["environment", "overview"], AGENT)
-    dispatched(console, ["Mr. Harrison", "the clock", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    dispatched(console, ["Mr. Harrison", "the clock", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     quiet = lambda: [line for line in keystrokes if "has been quiet for 20 minutes" in line]
     tick_after(app, 19 * 60)
     app.runtime().deferred.drain()
@@ -8889,7 +8889,7 @@ def worktree_worker(app: App, monkeypatch, brief: str, n: int = 1, libraries: tu
     if n == 1:
         hook(app, "SessionStart")
     console.run(["task", "create", f"the job {n}", "--brief", brief], AGENT)
-    dispatched_line = console.run(["worker", "dispatch", f"Worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet", "--worktree", *libraries], AGENT)
+    dispatched_line = console.run(["worker", "dispatch", f"Worker {n}", "--task", str(n), "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", *libraries], AGENT)
     assert dispatched_line.code == 0, dispatched_line.error
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
@@ -9050,7 +9050,7 @@ def test_a_dispatch_whose_inner_worktree_cannot_be_made_is_refused_and_leaves_no
     hook(app, "SessionStart")
     console = app.console()
     console.run(["task", "create", "the job", "--brief", "platform totals"], AGENT)
-    refused = console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    refused = console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert refused.code != 0 and "platform" in refused.error, refused.error
     with app.container.get(Scope).environment(MAIN):
         assert not app.container.get(Workers).scoped(), "no worker row stays"
@@ -9096,7 +9096,7 @@ def library_dispatch(app: App, monkeypatch, *flags: str):
     hook(app, "SessionStart")
     console = app.console()
     console.run(["task", "create", "the job", "--brief", "platform totals"], AGENT)
-    return console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", *flags], AGENT)
+    return console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", *flags], AGENT)
 
 
 def test_a_worktree_dispatch_must_name_its_library_folders_or_say_it_takes_none(app: App, monkeypatch):
@@ -9104,8 +9104,8 @@ def test_a_worktree_dispatch_must_name_its_library_folders_or_say_it_takes_none(
     libraries_made(app.config.root, "node_modules")
     refused = library_dispatch(app, monkeypatch, "--worktree")
     assert refused.code != 0 and "--libraries" in refused.error and "--copies" in refused.error and "--no-libraries" in refused.error, refused.error
-    assert "for a worker with a worktree" in app.console().run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--libraries", "node_modules"], AGENT).error
-    assert "name no folders beside it" in app.console().run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--worktree", "--no-libraries", "--libraries", "node_modules"], AGENT).error
+    assert "for a worker with a worktree" in app.console().run(["worker", "dispatch", "Worker 1", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--libraries", "node_modules"], AGENT).error
+    assert "name no folders beside it" in app.console().run(["worker", "dispatch", "Worker 1", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--worktree", "--no-libraries", "--libraries", "node_modules"], AGENT).error
 
 
 def test_a_library_folder_that_is_missing_tracked_or_outside_the_project_is_refused(app: App, monkeypatch):
@@ -9113,9 +9113,9 @@ def test_a_library_folder_that_is_missing_tracked_or_outside_the_project_is_refu
     libraries_made(root, "node_modules")
     assert "no checkout holds a folder vendr" in library_dispatch(app, monkeypatch, "--worktree", "--libraries", "vendr").error
     console = app.console()
-    assert "not ignored by git" in console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--worktree", "--libraries", "lib"], AGENT).error
+    assert "not ignored by git" in console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--worktree", "--libraries", "lib"], AGENT).error
     for name in ("../elsewhere", ".git", "/usr/lib"):
-        assert "is no library folder" in console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--worktree", "--libraries", name], AGENT).error, name
+        assert "is no library folder" in console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--worktree", "--libraries", name], AGENT).error, name
 
 
 def test_linked_and_copied_library_folders_reach_the_worktree_and_every_inner_one_and_leave_it_clean(app: App, monkeypatch):
@@ -9198,7 +9198,7 @@ def test_the_users_worktree_commands_run_before_and_after_the_journals_step_whic
     settings.set(WorkersFeature.COMPLETION_COMMANDS.key, ['echo "the install broke" && exit 3'], Actor.system())
     console = app.console()
     console.run(["task", "create", "the third", "--brief", "the readme a third time"], AGENT)
-    refused = console.run(["worker", "dispatch", "Worker 3", "--task", "3", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    refused = console.run(["worker", "dispatch", "Worker 3", "--task", "3", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert refused.code != 0 and "failed with code 3: the install broke" in refused.error, refused.error
     assert not (app.config.home / "worktrees" / "3-Worker-3").exists() and not git_run(root, "branch", "--list", "worker/3-Worker-3").stdout.strip(), "a failing command leaves nothing behind"
 
@@ -9227,7 +9227,7 @@ def test_a_task_of_an_unapproved_plan_is_neither_started_nor_handed_to_a_worker_
     console.run(["plan", "add", "1", "the CloudFront lock", "--brief", "lock it"], AGENT)
     refused = console.run(["task", "start", "1"], AGENT)
     assert refused.code != 0 and "belongs to plan 1, which is draft and not approved" in refused.error and "journal plan approve 1" in refused.error, refused.error
-    sent = console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    sent = console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     assert sent.code != 0 and "not approved" in sent.error, "nor is it handed to a worker, whatever the agent was told"
     stop = hook(app, "Stop")[1]
     assert "task 1" not in stop.get("reason", ""), "an unapproved plan's task is not open work, so no stop is held for it"
@@ -9262,3 +9262,19 @@ def test_a_plugin_hears_a_workers_merge_before_and_after_and_its_hold_refuses_it
     app.runtime().deferred.drain()
     heard = [json.loads(line) for line in (app.config.home / "plugin-data" / "echo" / "heard.jsonl").read_text().splitlines()]
     assert any(line["event"] == "worker_merge_result" and line["data"]["commits"] for line in heard), "and hears the merge once it landed"
+
+
+def test_a_worker_is_dispatched_only_to_change_something_and_a_read_only_job_is_sent_to_a_subagent(app: App, monkeypatch):
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["task", "create", "the search", "--brief", "find every row filter outside the repositories"], AGENT)
+    missing = console.run(["worker", "dispatch", "Mr. Dewey", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    assert missing.code != 0 and "--changes" in missing.error, "a dispatch names what the worker changes"
+    nothing = console.run(["worker", "dispatch", "Mr. Dewey", "--task", "1", "--changes", "nothing", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    assert nothing.code != 0 and "goes to a subagent" in nothing.error, "a job that changes nothing is a subagent's"
+    sent = console.run(["worker", "dispatch", "Mr. Dewey", "--task", "1", "--changes", "src/journal/repositories", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    assert sent.code == 0, sent.error
+    from journal.repositories.workers import Workers
+    with app.container.get(Scope).environment(MAIN):
+        assert "You change: src/journal/repositories" in app.container.get(Workers).find(1).brief, "and the worker is told what it changes"

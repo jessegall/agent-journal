@@ -62,8 +62,8 @@ class SuggestionSearch:
         return suggester.target() if answer == SuggestionAnswer.ACCEPTED else ""
 
     def shown(self, suggestion: Suggestion, suggester: Suggester, environment_id: int) -> None:
-        data = {"kind": "suggestion", "icon": "bulb", "row": f"suggestions:{suggestion.id}", "accept": suggester.accept_label, "answer": suggestion.answer or ""}
-        self.cards.keyed(environment_id, self.card_key(suggestion), suggestion.title, data, Actor.system(), CardKind.SUGGESTIONS, suggester.detail())
+        data = {"kind": "suggestion", "icon": "bulb", "row": f"suggestions:{suggestion.id}", "accept": suggester.accept_label, "answer": suggestion.answer or "", "description": suggester.detail()}
+        self.cards.keyed(environment_id, self.card_key(suggestion), suggestion.title, data, Actor.system(), CardKind.SUGGESTIONS)
 
     def card_environment(self, suggestion: Suggestion) -> int:
         return self.messages.keyed_all(self.card_key(suggestion), Actor.system())[0].environment_id

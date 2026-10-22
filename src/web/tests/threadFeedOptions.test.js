@@ -15,3 +15,24 @@ test("the status line above the compose box never goes: when the agent is not wo
     expect(thread).toMatch(/<div v-else class="thread-turn busy"[^>]*>[\s\S]*?\{\{ waitingNow \? "waiting" : "idle" \}\}/);
     expect(thread).not.toMatch(/<Transition name="status">/);
 });
+
+test("a suggestion's description reaches its card whole, however long", async () => {
+    const {threadTurns} = await import("../src/domain/thread.js");
+    const long =
+        "This project installs Code Commandments v4.324.1 as a package, and the package runs its own hooks beside the journal's, so the same sins are raised twice and the chat fills up.";
+    const {
+        turns: [turn],
+    } = threadTurns(
+        [
+            {
+                id: 1,
+                author: "system",
+                text: "Run it as a journal plugin instead?",
+                created_at: "2026-10-22T19:00:00Z",
+                data: {kind: "suggestion", row: "suggestions:3", description: long, detail: "", accept: "Switch"},
+            },
+        ],
+        []
+    );
+    expect(turn.suggestion.detail).toBe(long);
+});

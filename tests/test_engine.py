@@ -1605,7 +1605,7 @@ def orchestrated(app: App) -> None:
     first = stop()
     assert first.get("decision") == "block" and "hand it to a worker" in first["reason"] and "19 tasks are open" in first["reason"] and "dispatch a worker" in first["reason"], "a stop is refused with the task to hand over and the others to dispatch"
     for n, name in ((2, "Ada"), (3, "Florence"), (4, "Babbage")):
-        assert console.run(["worker", "dispatch", name, f"do piece {n}", "--profile", "journal-medior", "--model", "sonnet", "--task", str(n)], AGENT).code == 0, "a worker is put on a task the plan holds while another is in hand"
+        assert console.run(["worker", "dispatch", name, f"do piece {n}", "--changes", "the files of its task", "--profile", "journal-medior", "--model", "sonnet", "--task", str(n)], AGENT).code == 0, "a worker is put on a task the plan holds while another is in hand"
     assert stack()[-1] == "awaiting" and stop().get("decision") != "block", "waiting on the workers, a stop is fine"
     workers = app.container.get(WorkerRows)
     for n in (1, 2, 3):
