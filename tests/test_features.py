@@ -8786,3 +8786,240 @@ def test_the_viewers_plugin_install_names_the_aliases_it_skipped(app: App, tmp_p
     installed = viewer(app, "plugins", {"source": str(folder)})
     assert installed["name"] == "judging" and installed["skipped_aliases"] == ["task"]
 
+
+
+def git_run(cwd: Path, *argv: str):
+    import subprocess
+    return subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+
+
+def repository_made(folder: Path, files: dict[str, str]) -> Path:
+    """A git repository at the folder with one commit of the files given, on main, with a user to commit and merge as."""
+    folder.mkdir(parents=True, exist_ok=True)
+    git_run(folder, "init", "-q", "-b", "main")
+    git_run(folder, "config", "user.email", "t@example.com")
+    git_run(folder, "config", "user.name", "T")
+    for name, text in files.items():
+        (folder / name).parent.mkdir(parents=True, exist_ok=True)
+        (folder / name).write_text(text)
+    git_run(folder, "add", "-A")
+    git_run(folder, "commit", "-qm", "start")
+    return folder
+
+
+def committed(folder: Path, name: str, text: str) -> str:
+    (folder / name).parent.mkdir(parents=True, exist_ok=True)
+    (folder / name).write_text(text)
+    git_run(folder, "add", name)
+    git_run(folder, "-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", f"the {name}")
+    return git_run(folder, "rev-parse", "HEAD").stdout.strip()
+
+
+def workspace_made(app: App, inner: tuple[str, ...] = ("platform", "mobile"), unignored: tuple[str, ...] = ()) -> Path:
+    """A workspace of repositories: the project's own repository ignoring each inner one held at its top, each inner one a repository of its own with a commit."""
+    root = app.config.root
+    ignored = "".join(f"/{name}/\n" for name in inner)
+    repository_made(root, {".gitignore": f".journal/\n{ignored}", "README.md": "the workspace\n"})
+    for name in (*inner, *unignored):
+        repository_made(root / name, {"app.php": "<?php\n// the first line\n"})
+    return root
+
+
+def worktree_worker(app: App, monkeypatch, brief: str, n: int = 1):
+    """A worker dispatched with a worktree on a task of the brief given, clocked in; its row, its folder and its caller."""
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    kept_conversation(app, monkeypatch)
+    console = app.console()
+    if n == 1:
+        hook(app, "SessionStart")
+    console.run(["task", "create", f"the job {n}", "--brief", brief], AGENT)
+    dispatched_line = console.run(["worker", "dispatch", f"Worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    assert dispatched_line.code == 0, dispatched_line.error
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        worker = workers.save(workers.find(n).with_(token_hash="h", session=f"w-{n}", resume=f"w-{n}").ready(1.0), Actor.system())
+        return worker, app.container.get(WorkerBranch).folder(worker), Caller.worker("main", n, f"w-{n}", "claude")
+
+
+def worker_row(app: App, n: int = 1):
+    from journal.repositories.workers import Workers
+    with app.container.get(Scope).environment(MAIN):
+        return app.container.get(Workers).find(n)
+
+
+def proved_and_out(app: App, caller, proof: str = "app.php:1") -> object:
+    console = app.console()
+    console.run(["proof", "1", proof], caller)
+    return console.run(["clock-out", "the work is in"], caller)
+
+
+def checked_and_merged(app: App, n: int = 1):
+    console = app.console()
+    console.run(["worker", "check", str(n), "1"], AGENT)
+    return console.run(["worker", "merge", str(n)], AGENT)
+
+
+def test_a_workspace_worker_gets_worktrees_of_the_repositories_its_brief_names_as_whole_words_in_any_case(app: App, monkeypatch):
+    workspace_made(app, ("platform", "mobile", "docs"))
+    worker, folder, _ = worktree_worker(app, monkeypatch, "fix the Platform invoices and their docstrings")
+    assert worker.repositories == ("platform",), "Platform names platform in any case, and docstrings does not name docs"
+    assert (folder / "platform" / ".git").is_file() and not (folder / "mobile").exists() and not (folder / "docs").exists()
+    assert git_run(app.config.root / "platform", "branch", "--list", "worker/1-Worker-1").stdout.strip(), "the inner worktree is on the worker's branch in its own repository"
+
+
+def test_a_workspace_worker_whose_brief_names_no_repository_gets_a_worktree_of_each(app: App, monkeypatch):
+    workspace_made(app, ("platform", "mobile"))
+    worker, folder, _ = worktree_worker(app, monkeypatch, "tidy the shared settings everywhere")
+    assert worker.repositories == ("mobile", "platform")
+    assert (folder / "platform" / ".git").is_file() and (folder / "mobile" / ".git").is_file()
+
+
+def test_a_nested_repository_the_project_does_not_ignore_and_one_with_no_commit_are_no_inner_repositories(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",), unignored=("loose",))
+    empty = root / "empty"
+    empty.mkdir()
+    git_run(empty, "init", "-q")
+    (root / ".gitignore").write_text(".journal/\n/platform/\n/empty/\n")
+    committed(root, ".gitignore", ".journal/\n/platform/\n/empty/\n/loose-not/\n")
+    worker, folder, caller = worktree_worker(app, monkeypatch, "work on loose, empty and platform")
+    assert worker.repositories == ("platform",), "an unignored nested repository and one with no commit get no worktree"
+    committed(folder, "notes.md", "notes\n")
+    assert proved_and_out(app, caller, "notes.md:1").code == 0, "and the outer worktree's clock-out is not blocked by either"
+
+
+def test_commits_in_the_project_and_two_inner_repositories_each_merge_into_their_own_branch(app: App, monkeypatch):
+    from journal.repositories.tasks import Tasks
+    root = workspace_made(app, ("platform", "mobile"))
+    worker, folder, caller = worktree_worker(app, monkeypatch, "the totals in platform and mobile")
+    committed(folder, "README.md", "the workspace, with totals\n")
+    committed(folder / "platform", "totals.php", "<?php // totals\n")
+    committed(folder / "mobile", "totals.php", "<?php // totals on the phone\n")
+    assert worker_row(app).repositories == ("mobile", "platform")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert (root / "platform" / "totals.php").is_file() and (root / "mobile" / "totals.php").is_file() and "with totals" in (root / "README.md").read_text()
+    with app.container.get(Scope).environment(MAIN):
+        outcome = app.container.get(Tasks).find(1).outcome
+    assert "platform " in outcome and "mobile " in outcome, f"the outcome names each repository's commit: {outcome}"
+
+
+def test_touched_files_across_repositories_carry_their_repository_folder(app: App, monkeypatch):
+    workspace_made(app, ("platform",))
+    worker, folder, _ = worktree_worker(app, monkeypatch, "platform totals")
+    committed(folder, "README.md", "changed\n")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert set(app.container.get(WorkerBranch).touched(worker_row(app))) == {"README.md", "platform/totals.php"}
+
+
+def test_an_uncommitted_file_in_an_inner_worktree_refuses_clock_out_by_its_full_path_whatever_the_users_git_config(app: App, monkeypatch):
+    workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    git_run(folder / "platform", "config", "status.branch", "true")
+    git_run(folder / "platform", "config", "color.status", "always")
+    (folder / "platform" / "draft.php").write_text("<?php\n")
+    out = proved_and_out(app, caller)
+    assert out.code != 0 and "platform/draft.php" in out.error and "##" not in out.error, out.error
+
+
+def test_files_written_into_a_repository_folder_the_worker_has_no_worktree_of_refuse_clock_out(app: App, monkeypatch):
+    workspace_made(app, ("platform", "mobile"))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    (folder / "mobile").mkdir()
+    (folder / "mobile" / "lost.php").write_text("<?php\n")
+    out = proved_and_out(app, caller)
+    assert out.code != 0 and "mobile/" in out.error, "rather than lose them when the worktree is removed"
+
+
+def test_a_detached_head_or_an_overlapping_change_in_one_repository_merges_nothing_anywhere(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    committed(folder, "README.md", "changed by the worker\n")
+    committed(folder / "platform", "app.php", "<?php\n// the worker's line\n")
+    assert proved_and_out(app, caller).code == 0
+    project_head = git_run(root, "rev-parse", "HEAD").stdout.strip()
+    (root / "platform" / "app.php").write_text("<?php\n// the user's unsaved line\n")
+    refused = checked_and_merged(app)
+    assert refused.code != 0 and "platform/app.php" in refused.error, refused.error
+    assert git_run(root, "rev-parse", "HEAD").stdout.strip() == project_head, "the project's branch did not move while platform refused"
+    git_run(root / "platform", "checkout", "--", "app.php")
+    git_run(root / "platform", "checkout", "-q", "--detach")
+    refused = app.console().run(["worker", "merge", "1"], AGENT)
+    assert refused.code != 0 and "platform is on no branch" in refused.error and git_run(root, "rev-parse", "HEAD").stdout.strip() == project_head
+
+
+def test_a_rebase_conflict_in_an_inner_repository_merges_nothing_anywhere(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    committed(folder, "README.md", "changed by the worker\n")
+    committed(folder / "platform", "app.php", "<?php\n// the worker's line\n")
+    committed(root / "platform", "app.php", "<?php\n// the user's line\n")
+    assert proved_and_out(app, caller).code == 0
+    project_head, platform_head = git_run(root, "rev-parse", "HEAD").stdout.strip(), git_run(root / "platform", "rev-parse", "HEAD").stdout.strip()
+    refused = checked_and_merged(app)
+    assert refused.code != 0 and "conflict in platform/app.php" in refused.error, refused.error
+    assert git_run(root, "rev-parse", "HEAD").stdout.strip() == project_head and git_run(root / "platform", "rev-parse", "HEAD").stdout.strip() == platform_head
+
+
+def test_a_worker_sent_a_new_job_naming_another_repository_gets_its_worktree_and_records_it(app: App, monkeypatch):
+    root = workspace_made(app, ("platform", "mobile"))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    assert app.console().run(["worker", "send", "1", "now show the totals in mobile too"], AGENT).code == 0
+    assert worker_row(app).repositories == ("platform", "mobile") and (folder / "mobile" / ".git").is_file()
+    committed(folder / "mobile", "totals.php", "<?php // phone\n")
+    assert git_run(root / "mobile", "log", "--oneline", "main..worker/1-Worker-1").stdout.strip(), "its commit is on the worker's branch of mobile"
+
+
+def test_a_resumed_worker_whose_worktree_was_removed_gets_every_inner_worktree_back_and_merges_their_commits(app: App, monkeypatch):
+    import shutil
+    root = workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    shutil.rmtree(folder)
+    assert app.console().run(["worker", "send", "1", "finish the job"], AGENT).code == 0
+    assert (folder / "platform" / "totals.php").is_file(), "the inner worktree is back on its branch, with its commit"
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0 and (root / "platform" / "totals.php").is_file(), merged.error
+
+
+def test_a_dispatch_whose_inner_worktree_cannot_be_made_is_refused_and_leaves_nothing_behind(app: App, monkeypatch):
+    from journal.repositories.workers import Workers
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "worktree", "add", "-q", "-b", "worker/1-Worker-1", str(root.parent / "elsewhere"), "HEAD")
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["task", "create", "the job", "--brief", "platform totals"], AGENT)
+    refused = console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    assert refused.code != 0 and "platform" in refused.error, refused.error
+    with app.container.get(Scope).environment(MAIN):
+        assert not app.container.get(Workers).scoped(), "no worker row stays"
+    assert not (app.config.home / "worktrees" / "1-Worker-1").exists() and not git_run(root, "branch", "--list", "worker/1-Worker-1").stdout.strip()
+
+
+def test_after_a_merge_every_repository_keeps_the_tip_and_loses_the_branch_and_worktree(app: App, monkeypatch):
+    root = workspace_made(app, ("platform", "mobile"))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform and mobile totals")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    assert checked_and_merged(app).code == 0
+    app.runtime().deferred.drain()
+    for checkout in (root, root / "platform", root / "mobile"):
+        assert not git_run(checkout, "branch", "--list", "worker/1-Worker-1").stdout.strip(), f"no worker branch in {checkout.name}"
+        assert "1-Worker-1" not in git_run(checkout, "worktree", "list").stdout
+        assert git_run(checkout, "rev-parse", "--verify", "-q", "refs/journal/worktrees/1-Worker-1").returncode == 0, f"the tip is kept in {checkout.name}"
+    assert not folder.exists() and not list((app.config.home / "removed-worktrees").iterdir())
+
+
+def test_a_single_repository_worker_knows_no_files_once_its_branch_is_gone(app: App, monkeypatch):
+    root = repository_made(app.config.root, {".gitignore": ".journal/\n", "README.md": "one\n"})
+    worker, folder, _ = worktree_worker(app, monkeypatch, "the readme")
+    assert worker.repositories == ()
+    git_run(root, "worktree", "remove", "--force", str(folder))
+    git_run(root, "branch", "-D", "worker/1-Worker-1")
+    assert app.container.get(WorkerBranch).touched(worker_row(app)) is None

@@ -97,13 +97,13 @@ class WorkerCommand(Command):
         worker = Worker(name=args.name, brief="\n\n".join(part for part in (task.brief, args.brief) if part), provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
         worker = self.workers.save(worker.contacted(moment), caller.actor)
         try:
-            self.runner.workplace(worker)
+            repositories = self.runner.workplace(worker)
         except WorktreeFailure as failed:
             self.workers.delete(worker, caller.actor)
             raise Rejection(f"worker {worker.name} was not dispatched: {failed}") from failed
         self.tasks.handover(task, Ref.build(worker), caller.actor)
         self.runner.start(worker, caller.actor)
-        self.workers.save(self.workers.find(worker.row_id).dispatched(moment), caller.actor)
+        self.workers.save(self.workers.find(worker.row_id).with_(repositories=repositories).dispatched(moment), caller.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
 

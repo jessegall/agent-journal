@@ -16,5 +16,12 @@ class WorkerRepository:
     def is_inner(self) -> bool:
         return self.folder != PROJECT_FOLDER
 
+    @property
+    def is_present(self) -> bool:
+        return (self.worktree / ".git").exists()
+
     def path(self, file: str) -> str:
-        return str(self.folder / file)
+        return f"{self.folder}/{file}" if self.is_inner else file
+
+    def label(self) -> str:
+        return str(self.folder) if self.is_inner else "the project"

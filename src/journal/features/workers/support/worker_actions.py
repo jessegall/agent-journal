@@ -123,7 +123,8 @@ class WorkerActions:
         if self.runner.is_ended(worker):
             worker = self.runner.recorded_end(worker, actor)
         self.resumable(worker)
-        moved, time = worker.with_(dispatcher=worker.dispatcher if dispatcher is None else dispatcher), datetime.now(timezone.utc).timestamp()
+        repositories = self.renewal(worker, brief)
+        moved, time = worker.with_(dispatcher=worker.dispatcher if dispatcher is None else dispatcher, repositories=repositories), datetime.now(timezone.utc).timestamp()
         worker = self.workers.save(moved.resumed(brief, time, WorkerRevived if revival else WorkerReused), actor)
         self.runner.start(worker, actor)
         return worker
@@ -135,8 +136,10 @@ class WorkerActions:
             raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch the job again")
         if self.providers.lookup(worker.provider).transcript(self.branch.place(worker), worker.resume) is None:
             raise Rejection(f"worker {worker.id}, {worker.name}: the conversation of its session {worker.resume} is gone, so it cannot go on with its memory; dispatch the job again")
+
+    def renewal(self, worker: Worker, brief: str) -> tuple[str, ...]:
         try:
-            self.runner.renewed(worker)
+            return self.runner.renewed(worker, brief)
         except WorktreeFailure as failed:
             raise Rejection(f"worker {worker.name} was not sent the job: {failed}") from failed
 

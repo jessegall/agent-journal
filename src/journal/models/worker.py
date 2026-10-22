@@ -34,6 +34,7 @@ class Worker(Scoped):
     model: str = ""
     profile: str | None = None
     worktree: bool = False
+    repositories: tuple[str, ...] = ()
     state: WorkerState = WorkerState.DISPATCHED
     session: str = ""
     dispatcher: str | None = None

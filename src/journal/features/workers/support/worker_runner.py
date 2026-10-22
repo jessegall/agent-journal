@@ -193,33 +193,51 @@ class WorkerRunner:
         if self.is_running(worker.pid) and os.getpgid(worker.pid) == worker.pid:
             os.killpg(worker.pid, signal.SIGTERM)
 
-    def workplace(self, worker: Worker) -> Path:
+    def workplace(self, worker: Worker) -> tuple[str, ...]:
         folder = self.branch.place(worker)
-        if worker.worktree and not folder.is_dir():
-            self.added(worker, "-b", self.branch.name(worker), str(folder), "HEAD")
-            self.inner_added(worker, folder)
-        return folder
-
-    def inner_added(self, worker: Worker, folder: Path) -> None:
-        brief_folders = [name for name in self.branch.inner_folders() if name in worker.brief]
-        branch = self.branch.name(worker)
-        for name in brief_folders or self.branch.inner_folders():
-            checkout = self.config.root / name
-            if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{branch}", cwd=checkout).returncode == 0:
-                self.branch.git("worktree", "add", "-q", str(folder / name), branch, cwd=checkout)
-            elif self.branch.git("rev-parse", "--verify", "-q", "HEAD", cwd=checkout).returncode == 0:
-                self.branch.git("worktree", "add", "-q", "-b", branch, str(folder / name), "HEAD", cwd=checkout)
-
-    def renewed(self, worker: Worker) -> Path:
-        folder, name = self.branch.place(worker), self.branch.name(worker)
         if not worker.worktree or folder.is_dir():
-            return folder
-        self.branch.git("worktree", "prune")
-        if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{name}").returncode == 0:
-            self.added(worker, str(folder), name)
-            self.inner_added(worker, folder)
-            return folder
-        return self.workplace(worker)
+            return worker.repositories
+        self.added(worker, "-b", self.branch.name(worker), str(folder), "HEAD")
+        names = self.branch.brief_folders(worker.brief) or self.branch.inner_folders()
+        try:
+            return self.inner_added(worker, names)
+        except WorktreeFailure:
+            self.branch.discarded(worker, names)
+            raise
+
+    def renewed(self, worker: Worker, brief: str) -> tuple[str, ...]:
+        if not worker.worktree:
+            return worker.repositories
+        folder, name = self.branch.folder(worker), self.branch.name(worker)
+        if not folder.is_dir():
+            self.branch.git("worktree", "prune")
+            if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{name}").returncode == 0:
+                self.added(worker, str(folder), name)
+            else:
+                self.added(worker, "-b", name, str(folder), "HEAD")
+        return self.inner_added(worker, tuple(dict.fromkeys((*worker.repositories, *self.branch.brief_folders(brief)))))
+
+    def inner_added(self, worker: Worker, names: tuple[str, ...]) -> tuple[str, ...]:
+        return tuple(name for name in names if self.inner_worktree(worker, name))
+
+    def inner_worktree(self, worker: Worker, name: str) -> bool:
+        checkout, path, branch = self.config.root / name, self.branch.folder(worker) / name, self.branch.name(worker)
+        if (path / ".git").exists():
+            return True
+        self.branch.git("worktree", "prune", cwd=checkout)
+        if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{branch}", cwd=checkout).returncode == 0:
+            argv = (str(path), branch)
+        elif self.branch.git("rev-parse", "--verify", "-q", "HEAD", cwd=checkout).returncode == 0:
+            argv = ("-b", branch, str(path), "HEAD")
+        else:
+            return False
+        try:
+            outcome = self.branch.checkout_git("worktree", "add", "-q", *argv, cwd=checkout)
+        except subprocess.TimeoutExpired as expired:
+            raise WorktreeFailure(worker.name, f"{name} took longer than {expired.timeout:.0f} seconds to check out") from expired
+        if outcome.returncode != 0:
+            raise WorktreeFailure(worker.name, f"{name}: {outcome.stderr.strip()}")
+        return True
 
     def added(self, worker: Worker, *argv: str) -> None:
         if self.branch.git("rev-parse", "--verify", "-q", "HEAD").returncode != 0:
