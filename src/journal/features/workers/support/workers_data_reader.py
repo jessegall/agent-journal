@@ -4,6 +4,7 @@ from journal.features.workers.support.worker_worktree import WorkerWorktree
 from journal.features.workers.support.workers_data import WorkersData
 from journal.features.workers.support.ready_work import ReadyWork
 from journal.models.agent import Agent
+from journal.models.agent_role import AgentRole
 from journal.models.support.ref import Ref
 from journal.models.worker_state import WorkerState
 from journal.repositories.command_outputs import CommandOutputs
@@ -29,6 +30,7 @@ class WorkersDataReader:
 
     def read(self, agent: Agent) -> WorkersData:
         rows, subagents = self.workers.scoped(), self.subagents.session_subagents(agent.session)
+        agent_rows = [w for w in rows if agent.session in (w.session, w.resume)] if agent.role == AgentRole.WORKER else []
         return WorkersData(
             dispatched_workers=tuple(w for w in rows if w.is_running()),
             idle_workers=tuple(w for w in rows if w.is_idle()),
@@ -36,8 +38,8 @@ class WorkersDataReader:
             subagents=tuple(subagents),
             worktrees_root=(self.config.home / "worktrees").resolve(),
             worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.row_id, w.name) for w in rows),
-            session_workers=tuple(self.workers.session_worker(agent.session)),
+            session_workers=tuple(agent_rows),
             ready_work=tuple(ReadyWork(w.id, w.name, task) for w in rows if w.state == WorkerState.DELIVERED for task in self.tasks.holder_task_ids(Ref.build(w))[:1] if not self.is_acted(task)),
-            unfinished_outputs=tuple(output.row_id for worker in self.workers.session_worker(agent.session) for output in self.outputs.unfinished(Actor.worker(worker.id))),
-            todos=tuple(item for task_id in self.tasks.holder_task_ids(self.workers.agent_holder(agent)) for item in self.todos.task_items(self.tasks.find(task_id))),
+            unfinished_outputs=tuple(output.row_id for worker in agent_rows for output in self.outputs.unfinished(Actor.worker(worker.id))),
+            todos=tuple(item for worker in agent_rows for task_id in self.tasks.holder_task_ids(Ref.build(worker)) for item in self.todos.task_items(self.tasks.find(task_id))),
         )
