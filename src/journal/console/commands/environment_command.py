@@ -125,7 +125,7 @@ class EnvironmentCommand(Command):
         return 0
 
     def create(self, args: Namespace, caller: Caller) -> int:
-        environment = self.environments.lookup(args.name)
+        environment = self.environments.lookup(self.account.personal_name(args.name))
         print(f"environment {environment.id}: {environment.name}")
         return 0
 

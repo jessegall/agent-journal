@@ -9676,6 +9676,14 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
             comment = b.container.get(Messages).save(Message(environment_id=ada_main.row_id, author=Author.USER, text="a word from Bob"), Actor.user(2))
         assert comment.id, "a message in a colleague's environment still goes through"
         assert urlopen_refusal(f"http://127.0.0.1:{b.server().port}/journal/environments/{ada_main.row_id}/stop").find("only comment") >= 0, "and Bob cannot stop Ada's agent from his viewer"
+        made = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/environments", data=json.dumps({"name": "feature-x"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "bob-main"}), timeout=5))
+        assert made["name"] == "bob-feature-x", "an environment made from the viewer carries its person"
+        assert "environment" in b.console().run(["environment", "create", "bob-hotfix"], USER).text and b.container.get(Environments).existing("bob-hotfix"), "a name that carries the person already keeps it"
+        for journal in (a, b):
+            names = [environment.name for environment in journal.container.get(Environments).rows()]
+            assert len(names) == len(set(names)), f"no two environments share a name: {names}"
+        assert eventually(lambda: all(a.container.get(EnvironmentOwners).owner_number(environment.row_id) for environment in a.container.get(Environments).rows())), "every environment has an owner"
+        assert not any(c.container.get(EnvironmentOwners).is_colleague(Actor.user(1), environment.row_id) for environment in c.container.get(Environments).rows()), "a journal in no team has no colleagues"
         shell = subprocess.run(["sh", "-c", f". {Path(__file__).resolve().parent.parent}/src/journal/hooks/environment.sh; journal_environment"], capture_output=True, text=True, timeout=10, cwd=tmp_path, env={"PATH": "/usr/bin:/bin", "JOURNAL_ROOT": str(tmp_path / "b")})
         assert shell.stdout == "bob-main", "a shell on the joined machine works the person's own environment"
         request = HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/tasks", data=json.dumps({"title": "made in bob's viewer"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})

@@ -66,3 +66,8 @@ class TeamAccount:
         prefix = re.sub(r"[^a-z0-9]+", "-", name.split()[0].lower() if name.split() else "").strip("-") or f"user{self.user_number()}"
         (self.config.home / PREFIX_FILE).write_text(prefix)
         return prefix
+
+    def personal_name(self, name: str) -> str:
+        prefix_file = self.config.home / PREFIX_FILE
+        prefix = prefix_file.read_text().strip() if prefix_file.is_file() else ""
+        return f"{prefix}-{name}" if prefix and not name.startswith(f"{prefix}-") else name
