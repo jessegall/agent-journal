@@ -2,6 +2,16 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.40
+
+- Multi-repository worktrees are sturdier:
+  - A worker's inner repositories are recorded on its row; a new job naming another repository gets its worktree, and a resumed worker gets every one back.
+  - Repositories are named by whole words in any case, and only folders the project ignores count as inner repositories.
+  - A merge checks and rebases every repository before any is merged, and a refusal names any repository already merged.
+  - A dispatch that cannot make a worktree removes what it made.
+  - Clock-out reads git status as porcelain, so the user's git settings cannot confuse it, and counts files written into a repository folder the worker has no worktree of.
+- A task unblocked and a parked task resumed each leave a chat mark, as started, parked, blocked and finished ones do.
+
 ## 4.5.39
 
 - `journal worker wait` answers at once for workers already clocked out, naming the task to check, and waits only on the ones still out, folding into a wait already in hand.
