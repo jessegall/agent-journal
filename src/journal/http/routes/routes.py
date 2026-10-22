@@ -123,7 +123,7 @@ class Routes:
         router.get(f"{API}/plans/{{id}}/tasks", plans.plan_tasks)
         router.get(f"{API}/plans/{{id}}/timeline", plans.timeline)
         router.post(f"{API}/plans/{{id}}/tasks", plans.add_task)
-        self.acts(router, "plans", plans, "approve", "start", "suspend", "finish", "abandon")
+        self.acts(router, "plans", plans, "review", "approve", "start", "suspend", "finish", "abandon")
         self.listed(router, "questions", questions)
         router.post(f"{API}/questions", questions.store)
         self.acts(router, "questions", questions, "answer")

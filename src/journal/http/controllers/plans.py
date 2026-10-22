@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from journal.features.plans.support.review_rounds import ReviewRounds
 from journal.features.tasks.active_task import ActiveTask
 from journal.http.controllers.controller import Controller
 from journal.http.plans.plan_outline import PlanOutline
@@ -21,8 +22,8 @@ class PlanController(Controller[Plan]):
 
     repository: Plans
 
-    def __init__(self, plans: Plans, tasks: Tasks, links: Links, outline: PlanOutline, timeline: PlanTimeline, taking: ActiveTask) -> None:
-        self.repository, self.tasks, self.links, self.outline, self.moments, self.taking = plans, tasks, links, outline, timeline, taking
+    def __init__(self, plans: Plans, tasks: Tasks, links: Links, outline: PlanOutline, timeline: PlanTimeline, taking: ActiveTask, rounds: ReviewRounds) -> None:
+        self.repository, self.tasks, self.links, self.outline, self.moments, self.taking, self.rounds = plans, tasks, links, outline, timeline, taking, rounds
 
     def rows(self) -> list[Plan]:
         return self.repository.scoped()
@@ -44,6 +45,9 @@ class PlanController(Controller[Plan]):
         task = self.tasks.save(Task(environment_id=plan.environment_id, title=request.body.get("title", ""), brief=request.body.get("brief", "")), request.actor)
         self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), request.actor)
         return Response.json(task, 201)
+
+    def review(self, request: Request) -> Response:
+        return Response.json(self.shown(self.rounds.begin(self.repository.find(request.number("id")), request.actor)))
 
     def approve(self, request: Request) -> Response:
         return Response.json(self.shown(self.repository.approve(self.repository.find(request.number("id")), request.actor)))

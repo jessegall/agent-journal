@@ -159,8 +159,7 @@ class PlanCommand(Command):
         self.rounds.close(plan, changed, caller)
 
     def review(self, args: Namespace, caller: Caller) -> int:
-        plan = self.plans.save(self.plans.find(args.n).reviewing(), caller.actor)
-        self.rounds.open(plan, caller.actor)
+        self.rounds.begin(self.plans.find(args.n), caller.actor)
         print(f"plan {args.n} in review: put what the reviewers find straight into it, then journal plan ready {args.n}")
         return 0
 

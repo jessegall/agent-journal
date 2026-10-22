@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.10
+
+- The chat stays live again: 4.5.8 started the change stream after the newest change the page remembered, and a page that once held a busier journal on the same address remembered a number past this journal's newest change, so nothing came through. The stream never starts past the journal's own newest change.
+- A critique asked from a plan's page puts a ready plan into review at once, so it cannot be approved while the critics work.
+
 ## 4.5.9
 
 - The copy of the agent's hook lines in its terminal is a developer setting, Show the agent's hook lines in the terminal, off by default; the agent gets its lines either way.

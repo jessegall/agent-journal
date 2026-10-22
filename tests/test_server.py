@@ -1455,5 +1455,34 @@ def test_the_change_stream_starts_after_the_entry_the_page_names(tmp_path: Path)
         except TimeoutError:
             pass
         assert b'"table": "notices"' in seen, seen[:600]
+        with app.container.get(Scope).environment(1):
+            app.container.get(Entries).save(Entry(environment_id=1, kind="updated", actor=Actor.system(), data={"table": "tasks", "id": 9}), Actor.system())
+        later = b""
+        try:
+            with urllib.request.urlopen(f"http://127.0.0.1:{server.port}/journal/entries/stream?since=99999999&env=main", timeout=3) as answer:
+                with app.container.get(Scope).environment(1):
+                    app.container.get(Entries).save(Entry(environment_id=1, kind="updated", actor=Actor.system(), data={"table": "docs", "id": 3}), Actor.system())
+                while b'"table": "docs"' not in later:
+                    later += answer.read1(4096)
+        except TimeoutError:
+            pass
+        assert b'"table": "docs"' in later, "a page that remembers a number past the journal's newest change still hears the next one"
+    finally:
+        app.runtime().stop()
+
+
+def test_a_critique_asked_from_the_plan_page_puts_a_ready_plan_in_review(tmp_path: Path):
+    """The plan page's critique sends the plan into review at once, so it cannot be approved while the critics work."""
+    from journal.models.plan import Plan
+    from journal.models.plan_state import PlanState
+    from journal.repositories.plans import Plans
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        with app.container.get(Scope).environment(1):
+            plan = app.container.get(Plans).save(Plan(environment_id=1, title="the redesign", state=PlanState.READY), Actor.system())
+        status, answered = call(server, "POST", f"/journal/plans/{plan.id}/review")
+        assert status == 200 and answered["state"] == "reviewing", answered
     finally:
         app.runtime().stop()

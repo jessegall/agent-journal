@@ -41,6 +41,7 @@ async function send() {
     sending.value = true;
     try {
         await sendMessage(scope.env || route.value.env, {text: critiqueBrief({agents: agents.value, size: size.value, plan: props.plan, template: picked.value})});
+        if (props.plan.state === "ready") await scope.api.act("plans", props.plan.id, "review");
         emit("close");
     } finally {
         sending.value = false;
