@@ -1,4 +1,5 @@
 from journal.providers.support.profile import Profile
+from journal.providers.support.profile_kind import ProfileKind
 from journal.features.profiles.support.profile_files import ProfileFiles
 from journal.http.support.request import Request
 from journal.support.response import Response
@@ -25,8 +26,8 @@ class ProfileController:
         body = request.body
         if not str(request.params["name"]).replace("-", "").replace("_", "").isalnum():
             return Response.refused("a profile's name is letters, digits, dashes and underscores")
-        if body.get("kind", "subagent") not in ("worker", "subagent"):
+        if body.get("kind", ProfileKind.SUBAGENT) not in ProfileKind:
             return Response.refused("a profile is a worker or a subagent")
-        profile = Profile(request.params["name"], body.get("description", "").strip(), body.get("tools", "").strip(), body.get("body", "").strip(), body.get("kind", "subagent"))
+        profile = Profile(request.params["name"], body.get("description", "").strip(), body.get("tools", "").strip(), body.get("body", "").strip(), ProfileKind(body.get("kind", ProfileKind.SUBAGENT)))
         return Response.json(self.files.save(profile, body.get("model", "").strip(), body.get("codex_model", "").strip()))
 

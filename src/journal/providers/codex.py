@@ -3,13 +3,14 @@ import os
 import re
 import shlex
 import tomllib
+from journal.providers.support.profile_kind import ProfileKind
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Iterator
 
 from journal.support.hook_kind import HookKind
 from journal.providers.support.codex_row import CodexRow
-from journal.features.profiles.support.profile_view import ProfileView
+from journal.providers.support.profile_view import ProfileView
 from journal.providers.provider import Provider
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
@@ -171,7 +172,7 @@ class Codex(Provider):
         return ("resume", session)
 
     def profile_text(self, profile: Profile, model: str, codex_model: str) -> str:
-        sandbox = "read-only" if profile.kind == "subagent" else "workspace-write"
+        sandbox = "read-only" if profile.kind == ProfileKind.SUBAGENT else "workspace-write"
         return (f"name = {json.dumps(profile.name)}\ndescription = {json.dumps(profile.description, ensure_ascii=False)}\nmodel = {json.dumps(codex_model)}\n"
                 f"sandbox_mode = \"{sandbox}\"\ndeveloper_instructions = {json.dumps(profile.body, ensure_ascii=False)}\n")
 

@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from journal.providers.support.profile_kind import ProfileKind
+
 
 @dataclass(frozen=True)
 class Profile:
@@ -9,7 +11,7 @@ class Profile:
     description: str
     tools: str
     body: str
-    kind: str = "subagent"
+    kind: ProfileKind = ProfileKind.SUBAGENT
     model: str | None = None
 
     def model_default(self, selection: str) -> str:

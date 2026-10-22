@@ -8,7 +8,7 @@ from typing import Iterator
 
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.claude_row import ClaudeRow
-from journal.features.profiles.support.profile_view import ProfileView
+from journal.providers.support.profile_view import ProfileView
 from journal.providers.provider import TAIL_BYTES, Provider
 from journal.providers.support.turn import Turn
 from journal.providers.support.capability import Capability

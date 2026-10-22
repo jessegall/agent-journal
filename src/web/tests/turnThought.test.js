@@ -13,13 +13,13 @@ afterEach(() => {
     document.body.innerHTML = "";
 });
 
-test("a summary of the agent's words is drawn as its words, marked Summarised, never as a thought", async () => {
+test("a summary of the agent's words is drawn as its words, marked Summary, never as a thought", async () => {
     const host = document.createElement("div");
     document.body.append(host);
     app = createApp({render: () => h(TurnThought, {turn: {key: "messages:3", text: "Got it, the supervisor only starts the processes."}})});
     app.mount(host);
     await flush();
-    expect(host.textContent).toContain("Summarised");
+    expect(host.textContent).toContain("Summary");
     expect(host.textContent).not.toContain("thought");
     expect(host.textContent).toContain("Got it, the supervisor only starts the processes.");
 });

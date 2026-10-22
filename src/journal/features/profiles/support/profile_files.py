@@ -1,8 +1,9 @@
 from pathlib import Path
 
+from journal.providers.support.profile_kind import ProfileKind
 from journal.config import Config
 from journal.providers.support.profile import Profile
-from journal.features.profiles.support.profile_view import ProfileView
+from journal.providers.support.profile_view import ProfileView
 from journal.providers.providers import Providers
 from journal.repositories.setting_rows import SettingRows
 
@@ -48,14 +49,14 @@ class ProfileFiles:
         return sorted(path.stem for path in self.folder().glob("*.md"))
 
     def subagents(self) -> list[str]:
-        return [p["name"] for p in self.read_all() if p["kind"] != "worker"]
+        return [p["name"] for p in self.read_all() if p["kind"] != ProfileKind.WORKER]
 
     def read(self, name: str) -> ProfileView:
         path = self.folder() / f"{name}.md"
         text = path.read_text()
         head, _, body = text.partition("\n---\n") if text.startswith("---\n") else ("", "", text)
         fields = {key.strip(): value.strip() for key, value in (line.partition(":")[::2] for line in head.splitlines()[1:] if ":" in line)}
-        return ProfileView(name=name, description=fields.get("description", ""), tools=fields.get("tools", ""), kind=fields.get("kind", "subagent"), model=fields.get("model", ""),
+        return ProfileView(name=name, description=fields.get("description", ""), tools=fields.get("tools", ""), kind=fields.get("kind", ProfileKind.SUBAGENT), model=fields.get("model", ""),
                             codex_model=fields.get("codex-model", ""), body=body.strip("\n"), shipped=name in {profile.name for profile in self.PROFILES}, path=str(path.relative_to(self.config.root)))
 
     def kind(self, name: str) -> str:

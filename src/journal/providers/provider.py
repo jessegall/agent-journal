@@ -20,7 +20,7 @@ from journal.support.command_part import CommandPart
 from journal.support.reads import Reads
 from journal.support.writes import Writes
 from journal.features.shell.support.output_reads import OutputReads
-from journal.features.profiles.support.profile_view import ProfileView
+from journal.providers.support.profile_view import ProfileView
 from journal.support.decision import Decision
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind

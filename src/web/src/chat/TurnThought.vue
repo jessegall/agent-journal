@@ -14,7 +14,7 @@ const {words} = useTurnText(() => props.turn, env);
 <template>
     <div class="thread-turn thought" :data-ref="turn.key">
         <div class="thought-text">
-            <BubbleHeader icon="bot" label="Summarised" tone="muted" small />
+            <BubbleHeader icon="bot" label="Summary" tone="muted" small />
             <TextDisplay :text="turn.text" />
         </div>
         <div class="thread-tools">

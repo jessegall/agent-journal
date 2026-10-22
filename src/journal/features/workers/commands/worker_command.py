@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from journal.providers.support.profile_kind import ProfileKind
 from journal.chat.cards import Cards
 from argparse import Namespace
 
@@ -75,7 +76,7 @@ class WorkerCommand(Command):
         return self.providers.default().name if caller.provider is None else caller.provider
 
     def dispatch(self, args: Namespace, caller: Caller) -> int:
-        if self.profiles.kind(args.profile) != "worker":
+        if self.profiles.kind(args.profile) != ProfileKind.WORKER:
             raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
         output = [w for w in self.workers.scoped() if w.is_running()]
