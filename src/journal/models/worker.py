@@ -50,6 +50,9 @@ class Worker(Scoped):
     transcript_bytes: int = 0
     silence: WorkerSilence = WorkerSilence(SILENCE)
 
+    def conversation(self) -> str:
+        return self.resume or self.session or self.recovered_session
+
     def mention(self) -> WorkerMention:
         return WorkerMention(self.row_id, self.name, self.dispatcher)
 

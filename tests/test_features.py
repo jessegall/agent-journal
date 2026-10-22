@@ -650,6 +650,27 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
     assert ended.report == "it broke" and ended.error == "The 'no-such-model-9' model is not supported when using Codex with a ChatGPT account.", "a run that exits 0 with a failed turn is failed by it, its message read out of the error"
 
 
+def test_a_codex_workers_turns_are_read_from_its_rollout_into_its_chat(app: App, monkeypatch, tmp_path):
+    """A Codex worker's conversation is the thread it printed; its rollout, found by that thread, is read into its own chat as a Claude worker's transcript is."""
+    from datetime import date
+    from journal.features.workers.support.worker_chat import WorkerChat
+    from journal.models.agent_role import AgentRole
+    from journal.models.worker import Worker
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    session = "01a15a25-535e-7cc2-993e-d38deedb6b41"
+    rollout = tmp_path / "home" / ".codex" / "sessions" / date.today().strftime("%Y/%m/%d") / f"rollout-2026-10-22T10-00-00-{session}.jsonl"
+    rollout.parent.mkdir(parents=True)
+    line_text = {"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "Storage is written."}]}}
+    rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": str(app.config.root)}}) + "\n" + json.dumps(line_text) + "\n")
+    with app.container.get(Scope).environment(1):
+        worker = app.container.get(Workers).save(Worker(environment_id=1, name="Ada Lovelace", brief="write storage.py", provider="codex", resume=session), Actor.system())
+        app.container.get(WorkerChat).read(worker)
+        chat = [m.text for m in app.container.get(Messages).all() if m.agent_role == AgentRole.WORKER and m.session == session]
+    assert chat == ["Storage is written."]
+
+
 def test_a_running_workers_session_is_looked_up_once_and_kept_on_its_row(app: App, monkeypatch, tmp_path):
     from datetime import date
     from journal.models.agent import Agent

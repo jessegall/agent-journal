@@ -16,17 +16,17 @@ class WorkerChat:
         self.messages, self.workers, self.providers, self.branch = messages, workers, providers, branch
 
     def instruction(self, worker: Worker, text: str, actor: Actor) -> Message:
-        return self.messages.save(Message(environment_id=worker.environment_id, author=Author.USER, text=text, session=worker.session or None, agent_role=AgentRole.WORKER), actor)
+        return self.messages.save(Message(environment_id=worker.environment_id, author=Author.USER, text=text, session=worker.conversation() or None, agent_role=AgentRole.WORKER), actor)
 
     def read(self, worker: Worker) -> Worker:
-        if not worker.session:
+        if not worker.conversation():
             return worker
-        blocks = self.providers.lookup(worker.provider).authored_texts(self.branch.place(worker), worker.session, worker.transcript_bytes)
+        blocks = self.providers.lookup(worker.provider).authored_texts(self.branch.place(worker), worker.conversation(), worker.transcript_bytes)
         for i, text in enumerate(blocks.texts):
-            self.turn(worker, text, f"transcript:{worker.session}:{worker.transcript_bytes}:{i}")
+            self.turn(worker, text, f"transcript:{worker.conversation()}:{worker.transcript_bytes}:{i}")
         return worker if blocks.time == worker.transcript_bytes else self.workers.touch(worker, Actor.system(), transcript_bytes=blocks.time)
 
     def turn(self, worker: Worker, text: str, key: str) -> None:
         if self.messages.sent_with(key):
             return
-        self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=text, session=worker.session, agent_role=AgentRole.WORKER, idempotency=key), Actor.agent(worker.session))
+        self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=text, session=worker.conversation(), agent_role=AgentRole.WORKER, idempotency=key), Actor.agent(worker.conversation()))
