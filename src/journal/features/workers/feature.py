@@ -93,11 +93,18 @@ A subagent only reads. A worker writes: code in a worktree of its own, a documen
   a stop or a long quiet with open tasks tells you to check the plans and dispatch, and a task in hand is one to hand
   over, never to do yourself. Solo: you do everything yourself and a worker's dispatch is refused. The user sets it
   with the plan bar's buttons.
-- `journal worker wait <n> [<n>...]` waits until they have reported; stopping is fine while you wait.
-- A worker reports with `journal worker report <n> "<what it found or did>"`; you are told, and told again when
-  the last one is back. `journal worker list` shows every worker, and the subagents you started with their state and task.
-- A report is acted on once you give the worker its next job, `journal worker stop <n>` it, or `journal worker complete <n>`
-  when its work is merged or used; until then you are told again at once and every three minutes.
+- A worker works a shift on its task: it clocks in with `journal clock-in`, keeps its own list with `journal todo`,
+  proves each point of the brief with `journal proof <point> "<file:line, and the test>"` or says why not with
+  `--not-done`, commits its work, and clocks out with `journal clock-out "<report>"`, its one report. You are told when
+  it clocks in, and once when its work is ready to check; your stops name the work still waiting.
+- `journal worker wait <n> [<n>...]` waits until they have clocked out; stopping is fine while you wait.
+- Check each proof: read them with `journal task show <task>`, then `journal worker check <n> <point>`, or
+  `journal worker check <n> <point> --short "<what is missing>"`, which sends it back to the same worker on the same task.
+  Once every point is checked, `journal worker merge <n>` takes its branch in and closes the task; nothing else lands a
+  worker's work, not the end of its run, a hand merge or a commit's tasks-done line.
+- A worker whose run ends without clocking out still holds its task: send it again with `journal worker send <n>`, or
+  let the task go with `journal worker release <n>`. `journal worker list` shows every worker, and the subagents you
+  started with their state and task.
 - A worker that runs past 60 minutes is stopped and its report says so (setting workers.timeout_minutes, 0 for no limit).
 - Related work goes back to the worker that knows it: `journal worker send <n> "<next job>"` gives a worker that
   reported, or was stopped, its next job in its last session, with its memory of the last job, in the same worktree.
