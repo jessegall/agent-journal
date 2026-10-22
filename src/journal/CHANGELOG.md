@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.15.1
+
+- A subagent's report no longer makes the agent owe skills by the words in it; only your own words do.
+- Subagents cut off by the usage limit end as failed instead of showing as running.
+
 ## 4.15.0
 
 - A new document or report docks itself at the bottom of the chat, so you can open it whenever.
