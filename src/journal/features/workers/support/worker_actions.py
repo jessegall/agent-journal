@@ -96,7 +96,7 @@ class WorkerActions:
         self.tasks.release(Ref.build(worker), actor)
         self.workers.save(worker.merged(datetime.now(timezone.utc).timestamp()), actor)
         unfinished = [f"point {proof.point} ({proof.text})" for proof in latest.values() if proof.state == ProofState.CHECKED_UNFINISHED]
-        merged = f"worker {worker.id}'s work merged as {commit[:9]}" if commit else f"worker {worker.id}'s work taken in, with no commit to merge"
+        merged = f"worker {worker.id}'s work merged as {commit}" if commit else f"worker {worker.id}'s work taken in, with no commit to merge"
         outcome = f"{merged}; not done: {', '.join(unfinished)}" if unfinished else merged
         closed = self.tasks.save(task.finished(datetime.now(timezone.utc), outcome), actor)
         return MergeOutcome(closed, self.branch.dropped(self.workers.find(worker.id)))

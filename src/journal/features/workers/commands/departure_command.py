@@ -54,4 +54,4 @@ class DepartureCommand(Command):
     def uncommitted(self, worker: Worker) -> list[str]:
         if not worker.worktree:
             return []
-        return [line[3:] for line in self.branch.git("status", "--porcelain", cwd=self.branch.folder(worker)).stdout.splitlines() if line.strip()]
+        return self.branch.remaining(worker)

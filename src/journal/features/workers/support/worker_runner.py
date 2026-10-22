@@ -197,7 +197,18 @@ class WorkerRunner:
         folder = self.branch.place(worker)
         if worker.worktree and not folder.is_dir():
             self.added(worker, "-b", self.branch.name(worker), str(folder), "HEAD")
+            self.inner_added(worker, folder)
         return folder
+
+    def inner_added(self, worker: Worker, folder: Path) -> None:
+        brief_folders = [name for name in self.branch.inner_folders() if name in worker.brief]
+        branch = self.branch.name(worker)
+        for name in brief_folders or self.branch.inner_folders():
+            checkout = self.config.root / name
+            if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{branch}", cwd=checkout).returncode == 0:
+                self.branch.git("worktree", "add", "-q", str(folder / name), branch, cwd=checkout)
+            elif self.branch.git("rev-parse", "--verify", "-q", "HEAD", cwd=checkout).returncode == 0:
+                self.branch.git("worktree", "add", "-q", "-b", branch, str(folder / name), "HEAD", cwd=checkout)
 
     def renewed(self, worker: Worker) -> Path:
         folder, name = self.branch.place(worker), self.branch.name(worker)
@@ -206,6 +217,7 @@ class WorkerRunner:
         self.branch.git("worktree", "prune")
         if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{name}").returncode == 0:
             self.added(worker, str(folder), name)
+            self.inner_added(worker, folder)
             return folder
         return self.workplace(worker)
 

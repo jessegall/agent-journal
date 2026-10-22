@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.38
+
+- A worker in a project that holds repositories of its own inside it, a workspace of repositories, gets a worktree of each inner repository its task's brief names, all of them when it names none, each on the worker's branch at the same place. Its commits merge into each repository's own branch with the same checks, clock-out counts uncommitted files in all of them, and cleanup removes them all. A single repository works as before.
+
 ## 4.5.37
 
 - The waiting avatar holds its watch up for over five seconds at a time, a bigger watch that reads as one, then puts it away and whistles idly, swaying, before it looks again; it took the watch out and put it back in a quick loop.

@@ -7385,6 +7385,52 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
         assert taken.code == 0 and tasks.find(4).state == TaskState.FINISHED and "no commit to merge" in tasks.find(4).outcome, "a worker whose work is journal rows, with no commit, has its task closed by its merge"
 
 
+def test_a_worker_in_a_workspace_of_repositories_gets_a_worktree_of_each_and_its_commits_merge_into_their_own(app: App, monkeypatch):
+    import subprocess
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.task_state import TaskState
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    commit = lambda message, cwd: git("-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", message, cwd=cwd)
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "t@example.com")
+    git("config", "user.name", "T")
+    (root / ".gitignore").write_text(".journal/\n/platform/\n")
+    git("add", ".gitignore")
+    commit("start", root)
+    platform = root / "platform"
+    platform.mkdir()
+    git("init", "-q", "-b", "main", cwd=platform)
+    git("config", "user.email", "t@example.com", cwd=platform)
+    git("config", "user.name", "T", cwd=platform)
+    (platform / "app.php").write_text("<?php\n")
+    git("add", "app.php", cwd=platform)
+    commit("start", platform)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the invoices", "--brief", "the invoices page in platform shows totals"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        workers.save(workers.find(1).with_(token_hash="h", session="w-1").ready(1.0), Actor.system())
+        folder = app.container.get(WorkerBranch).place(workers.find(1))
+    assert (folder / "platform" / ".git").is_file(), "the worker's worktree holds its own worktree of the inner repository its brief names"
+    (folder / "platform" / "totals.php").write_text("<?php // totals\n")
+    git("add", "totals.php", cwd=folder / "platform")
+    commit("the totals", folder / "platform")
+    lovelace = Caller.worker("main", 1, "w-1", "claude")
+    console.run(["proof", "1", "platform/totals.php:1"], lovelace)
+    assert console.run(["clock-out", "the totals are in"], lovelace).code == 0
+    console.run(["worker", "check", "1", "1"], AGENT)
+    merged = console.run(["worker", "merge", "1"], AGENT)
+    assert merged.code == 0 and (platform / "totals.php").is_file(), merged.error
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Tasks).find(1).state == TaskState.FINISHED and "platform" in app.container.get(Tasks).find(1).outcome, "its commit is merged into the inner repository's own branch, and the task closes"
+
+
 def test_the_plan_moves_on_when_a_workers_task_closes_and_its_next_task_goes_to_the_main_agent(app: App, monkeypatch):
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.models.support.ref import Ref
