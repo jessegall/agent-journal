@@ -21,4 +21,5 @@ class TasksData:
     last_commands: tuple[str, ...]
     open_ids: tuple[int, ...] = ()
     open_summary: str = ""
+    blocked_summary: str = ""
     agent_tasks: tuple[int, ...] = ()

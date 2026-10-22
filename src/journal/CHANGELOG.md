@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.25
+
+- The orchestrator is named its blocked tasks with their reasons at a stop and every five minutes, whatever else is open, and told to check each is still truly blocked and go on with what it can decide.
+- An orchestrator whose every task left is blocked may not stop: it checks them and decides what it can, waits on its workers while they are out, or says it is stuck. Each line reminds it that it is the orchestrator and decides for itself.
+
 ## 4.5.24
 
 - A worker's stack always rests on the worker's own state, whatever the work mode. A worker whose base had been swapped away was given the main agent's mode beneath its work, so in orchestrator mode its stops were told to dispatch workers; a stack already wrong is put right at its next step.
