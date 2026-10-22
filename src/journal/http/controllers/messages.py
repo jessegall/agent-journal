@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from journal.db.query import Query
 from journal.features.messages.support.mentions import Mentions
-from journal.http.attachments.attachments import Attachments
+from journal.sync.attachments import Attachments
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts
 from journal.http.row_list import RowList

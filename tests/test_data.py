@@ -413,7 +413,7 @@ def test_the_tasks_repository_answers_which_tasks_are_open_blocked_parked_and_un
 def test_each_model_says_whether_it_is_shared_with_the_team_or_kept_on_one_machine():
     from journal.models.all_models import AllModels
     local = sorted(model.__name__ for model in AllModels.MODELS if not model.shared)
-    assert local == sorted(["Entry", "Agent", "Timing", "Statistic", "CommandOutput", "DashboardRow", "Secret", "Phone", "PhoneCode", "MigratedRow", "Version3Migration", "JournalVersion", "ReleaseMessage", "OutgoingChange", "IdBlock", "Plugin", "McpServer"]), "the models kept on one machine are the ones NOTES.md names"
+    assert local == sorted(["Entry", "Agent", "Timing", "Statistic", "CommandOutput", "DashboardRow", "Secret", "Phone", "PhoneCode", "MigratedRow", "Version3Migration", "JournalVersion", "ReleaseMessage", "OutgoingChange", "IdBlock", "PendingUpload", "Plugin", "McpServer"]), "the models kept on one machine are the ones NOTES.md names"
     assert all(model.shared for model in AllModels.MODELS if model.__name__ in ("Task", "Message", "Alias", "Worker", "Setting")), "everything else is shared"
 
 
@@ -669,6 +669,8 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     from journal.repositories.shared_tables import SharedTables
     from journal.sync.rejected_edits import RejectedEdits
     from journal.repositories.id_blocks import IdBlocks
+    from journal.repositories.pending_uploads import PendingUploads
+    from journal.sync.attachments import Attachments
 
     team = TeamServer(tmp_path)
     team.accounts.create("ada@example.com", "Ada", "correct horse battery", ADMIN, 1.0)
@@ -684,7 +686,8 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         links = Links(tasks.connection, tasks.bus)
         messages = Messages(tasks.connection, tasks.bus, scope, Reactions(tasks.connection, tasks.bus, scope, links), links, EnvironmentOwners(links, Users(tasks.connection, tasks.bus)))
         rejected = RejectedEdits(SharedTables(tasks.connection, tasks.bus), outgoing, links, Cards(messages))
-        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus))
+        uploads = PendingUploads(tasks.connection, tasks.bus)
+        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus), uploads, Attachments(Config(tmp_path / name), uploads, account, TeamServerLink(account)))
         client.start()
         return scope, tasks, client, messages
 

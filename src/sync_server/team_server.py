@@ -8,6 +8,7 @@ from sync_server.blocks_handler import BlocksHandler
 from sync_server.db.invitation_rows import InvitationRows
 from sync_server.invitations import Invitations
 from sync_server.upload_handler import UploadHandler
+from sync_server.file_store import FileStore
 from sync_server.team_details import TeamDetails
 from sync_server.db.team_detail_rows import TeamDetailRows
 from sync_server.change_log import ChangeLog
@@ -31,6 +32,7 @@ from sync_server.server_clock import ServerClock
 from sync_server.team_request_handler import TeamRequestHandler
 
 DATABASE = "team.db"
+FILES = "files"
 
 
 class TeamServer:
@@ -49,6 +51,7 @@ class TeamServer:
         self.blocks = BlocksHandler(self.ranges, self.devices)
         self.admins = AdminHandler(self.devices, self.accounts, self.invitations, self.clock)
         self.details = TeamDetails(TeamDetailRows(self.store), self.log)
+        self.files = FileStore(data / FILES)
         self.uploads = UploadHandler(self.store, self.log, self.ranges, self.devices, self.details)
         self.pushes = PushHandler(self.store, self.log, self.devices, PushResults(PushResultRows(self.store)))
         self.pulls = PullHandler(self.log, self.devices, self.clock)

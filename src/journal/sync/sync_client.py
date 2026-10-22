@@ -2,7 +2,10 @@ import threading
 import time
 from typing import Callable
 
+from journal.sync.attachments import Attachments
 from journal.repositories.id_blocks import IdBlocks
+from journal.repositories.pending_uploads import PendingUploads
+from journal.support.actor import Actor
 from journal.repositories.outgoing_changes import OutgoingChanges
 from journal.repositories.shared_tables import SharedTables
 from journal.sync.commit_signal import CommitSignal
@@ -13,6 +16,7 @@ from journal.sync.team_account import TeamAccount
 from journal.sync.team_change import TeamChange
 from journal.sync.team_refusal import TeamRefusal
 from journal.sync.team_server_link import TeamServerLink
+from sync_server.file_place import FilePlace
 
 BATCH_ROWS = 200
 IDLE_SECONDS = 5
@@ -22,11 +26,11 @@ LAST_RETRY_SECONDS = 30
 
 
 class SyncClient:
-    """Keeps a joined journal in step with its team: a send loop pushes the queued changes oldest first in batches, woken by every commit that queues one, and a receive loop long-polls for the team's changes and applies them. On a fault both wait 1, 2, 4 seconds and so on up to 30 and try again; a change is removed from the queue only once the server answered for it, and the edits it rejected are put right here; before each batch it asks for a block of row numbers for every shared table that holds less than a block and a fifth. The clock offset is measured from the server's time in each pull answer and sent with each push."""
+    """Keeps a joined journal in step with its team: a send loop pushes the queued changes oldest first in batches, woken by every commit that queues one, and a receive loop long-polls for the team's changes and applies them. On a fault both wait 1, 2, 4 seconds and so on up to 30 and try again; a change is removed from the queue only once the server answered for it, and the edits it rejected are put right here; before each batch it sends the files attached here that the server lacks, so a change never names a file the server has not got, and asks for a block of row numbers for every shared table that holds less than a block and a fifth. The clock offset is measured from the server's time in each pull answer and sent with each push."""
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, outgoing: OutgoingChanges, incoming: IncomingChanges, rejected: RejectedEdits, signal: CommitSignal, status: SyncStatus, blocks: IdBlocks, tables: SharedTables) -> None:
+    def __init__(self, account: TeamAccount, link: TeamServerLink, outgoing: OutgoingChanges, incoming: IncomingChanges, rejected: RejectedEdits, signal: CommitSignal, status: SyncStatus, blocks: IdBlocks, tables: SharedTables, uploads: PendingUploads, attachments: Attachments) -> None:
         self.account, self.link, self.outgoing, self.incoming, self.rejected, self.signal, self.status = account, link, outgoing, incoming, rejected, signal, status
-        self.blocks, self.tables = blocks, tables
+        self.blocks, self.tables, self.uploads, self.attachments = blocks, tables, uploads, attachments
         self.stopping = threading.Event()
         self.clock_offset = 0.0
         self.sender = threading.Thread()
@@ -57,6 +61,7 @@ class SyncClient:
                 delay = min(delay * 2, LAST_RETRY_SECONDS)
 
     def send(self) -> None:
+        self.upload_files()
         self.refill()
         batch = self.outgoing.sending_batch(BATCH_ROWS)
         if not batch:
@@ -66,6 +71,13 @@ class SyncClient:
         self.outgoing.sent(batch)
         self.rejected.apply(answer.rejected)
         self.status.connected()
+
+    def upload_files(self) -> None:
+        for upload in self.uploads.waiting():
+            path = self.attachments.path(upload.row_table, upload.row, upload.name)
+            if path.is_file():
+                self.link.upload_file(FilePlace(upload.row_table, upload.row, upload.name), path.read_bytes())
+            self.uploads.delete(upload, Actor.system())
 
     def refill(self) -> None:
         wanted = [table for table in self.tables.names() if self.blocks.is_wanted(table)]

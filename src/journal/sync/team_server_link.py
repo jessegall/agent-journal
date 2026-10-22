@@ -9,6 +9,7 @@ from sync_server.blocks_answer import BlocksAnswer
 from sync_server.copied_row import CopiedRow
 from sync_server.device import Device
 from sync_server.device_list import DeviceList
+from sync_server.file_place import FilePlace
 from sync_server.full_copy import FullCopy
 from sync_server.invitation_answer import InvitationAnswer
 from sync_server.login_answer import LoginAnswer
@@ -72,6 +73,12 @@ class TeamServerLink:
 
     def posted(self, path: str, body: dict) -> bytes:
         return self.sent(self.account.address(), path, json.dumps(body).encode(), REQUEST_SECONDS)
+
+    def upload_file(self, place: FilePlace, data: bytes) -> None:
+        self.sent(self.account.address(), f"/files/{place.address()}", data, COPY_SECONDS)
+
+    def fetch_file(self, place: FilePlace) -> bytes:
+        return self.sent(self.account.address(), f"/files/{place.address()}", None, COPY_SECONDS)
 
     def sent(self, address: str, path: str, body: bytes | None, seconds: float) -> bytes:
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.account.token()}"}

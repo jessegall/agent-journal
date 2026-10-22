@@ -7,20 +7,26 @@ from urllib.parse import parse_qsl, urlsplit
 from sync_server.accept_request import AcceptRequest
 from sync_server.admin_request import AdminRequest
 from sync_server.blocks_request import BlocksRequest
+from sync_server.file_answer import FileAnswer
+from sync_server.file_place import FilePlace
 from sync_server.login_request import LoginRequest
 from sync_server.push_request import PushRequest
 from sync_server.refusal import Refusal
 from sync_server.upload_request import UploadRequest
 
 BEARER = "Bearer "
+FILES_PATH = "/files/"
 FORWARDED_HEADER = "X-Forwarded-For"
 
 
 class TeamRequestHandler(BaseHTTPRequestHandler):
-    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; a refusal is a 403 with its line, an unknown path a 404."""
+    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; and /files/<table>/<row>/<name>, read with GET and written with POST of its bytes; a refusal is a 403 with its line, an unknown path a 404."""
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
+        if url.path.startswith(FILES_PATH):
+            self.file_answer(lambda: self.server.team.files.get(self.file_place(url.path)))
+            return
         query = dict(parse_qsl(url.query))
         team = self.server.team
         routes = {"/pull": lambda: team.pulls.answer(self.token(), int(query.get("after", "0")), float(query.get("wait", "0"))), "/copy": lambda: team.copies.answer(self.token()), "/devices": lambda: team.admins.listed(self.token()), "/team": lambda: team.details.answer()}
@@ -28,6 +34,9 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         team = self.server.team
+        if urlsplit(self.path).path.startswith(FILES_PATH):
+            self.answered(lambda: FileAnswer(team.files.put(self.file_place(urlsplit(self.path).path), self.raw_body())))
+            return
         routes = {
             "/login": lambda: self.login(self.login_request()),
             "/accept": lambda: team.logins.accepted(self.typed(AcceptRequest), self.address()),
@@ -51,6 +60,22 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             self.sent(200, asdict(route()))
         except Refusal as refusal:
             self.sent(403, {"error": str(refusal)})
+
+    def file_place(self, path: str) -> FilePlace:
+        self.server.team.devices.device(self.token())
+        return FilePlace.parsed(path.removeprefix(FILES_PATH))
+
+    def file_answer(self, read) -> None:
+        try:
+            data = read()
+        except Refusal as refusal:
+            self.sent(404, {"error": str(refusal)})
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", "application/octet-stream")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
 
     def sent(self, status: int, body: dict) -> None:
         text = json.dumps(body).encode()

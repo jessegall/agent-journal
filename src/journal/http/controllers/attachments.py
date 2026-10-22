@@ -1,5 +1,5 @@
 from journal.http.attachments.attached_files import AttachedFiles
-from journal.http.attachments.attachments import Attachments
+from journal.sync.attachments import Attachments
 from journal.http.attachments.file_request import FileRequest
 from journal.http.support.sandboxed_file_response import SandboxedFileResponse
 from journal.http.support.request import Request

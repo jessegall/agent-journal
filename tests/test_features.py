@@ -824,7 +824,7 @@ def test_a_check_keeps_its_description_for_the_page(app: App):
 
 
 def test_the_documents_page_lists_the_projects_documents_their_search_and_the_attached_files(app: App, tmp_path):
-    from journal.http.attachments.attachments import Attachments
+    from journal.sync.attachments import Attachments
     from journal.models.message import Message
     from journal.repositories.messages import Messages
     old = tmp_path / "doc"
@@ -9710,6 +9710,28 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
             unread = [message.id for message in a.container.get(Messages).unread()]
         assert ada_side["id"] not in unread and bob_side["id"] not in unread and bob_side["author"] == "user", "no agent is told of the side thread, and a colleague's word there is no comment"
         assert "lunch at one" not in a.console().run(["message", "unread"], Caller.agent("ada-main", "s1", "claude")).text, "nor does the agent's inbox list it"
+        def journal_call(journal, path, body, content_type="application/json"):
+            request = HttpRequest(f"http://127.0.0.1:{journal.server().port}/journal/{path}", data=body, method="POST", headers={"Content-Type": content_type, "X-Journal-Env": "ada-main"})
+            return json.load(urlopen(request, timeout=5))
+
+        def attached(journal, path, name, data):
+            boundary = "b0undary"
+            body = f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{name}\"\r\nContent-Type: application/octet-stream\r\n\r\n".encode() + data + f"\r\n--{boundary}--\r\n".encode()
+            return journal_call(journal, path, body, f"multipart/form-data; boundary={boundary}")
+
+        def file_on(journal, path):
+            try:
+                with urlopen(HttpRequest(f"http://127.0.0.1:{journal.server().port}/journal/{path}", headers={"X-Journal-Env": "ada-main"}), timeout=5) as answer:
+                    return answer.read()
+            except HTTPError:
+                return b""
+
+        picture_message = journal_call(a, "messages", json.dumps({"text": "the screenshot"}).encode())
+        attached(a, f"messages/{picture_message['id']}/files", "pic.png", b"\x89PNG picture")
+        dump = journal_call(a, "dumps", json.dumps({"brief": "a pile"}).encode())
+        attached(a, f"dumps/{dump['id']}/files", "notes.txt", b"dumped notes")
+        assert eventually(lambda: file_on(b, f"messages/{picture_message['id']}/files/pic.png") == b"\x89PNG picture"), "a picture attached on Ada's machine opens on Bob's"
+        assert eventually(lambda: file_on(b, f"dumps/{dump['id']}/files/notes.txt") == b"dumped notes"), "and so does a file dropped in a dump"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")
