@@ -217,7 +217,7 @@ function step() {
     // the leg waiting for the clip it sets off with goes in the frame that clip goes on screen, so the walk is never drawn on the spot
     if (shown === wanted && wanted.startsLeg && !body.trip.moves) depart();
     drawn = drawnIn(shown, body.trip ? POSTURES[body.place.posture].travels : body.place.posture, body.trip?.moves);
-    if (!body.trip?.started) rest();
+    if (!body.trip?.started && !body.airborne) rest();
     const look = eyesAt(looking, shown.facing, performance.now() / 1000);
     looking = look.looking;
     const pace = shown.pace ?? 1;
