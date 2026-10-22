@@ -86,6 +86,19 @@ class SubagentEntries:
         return rows
 
     @staticmethod
+    def moved(row: Subagent, entry: Entry) -> Subagent:
+        time, agent_id = entry.created_at.timestamp(), entry.data.get("agent_id", "")
+        if entry.kind == "ToolStarting" and isinstance(entry.recorded_call().operation, AgentMessage) and entry.recorded_call().operation.receiver == row.session:
+            return row.resumed(time)
+        if not row.is_running():
+            return row
+        if entry.kind == "SubagentEnded" and agent_id == row.session:
+            return row.finished(SubagentState.FINISHED, time)
+        if entry.kind == "SessionEnded" or (entry.kind == "SessionStarted" and entry.data.get("source") != "compact"):
+            return row.finished(SubagentState.STOPPED, time)
+        return row
+
+    @staticmethod
     def started(rows: list[Subagent], background: dict[str, int], unstarted: dict[str, int], agent_id: str) -> None:
         if not unstarted or not agent_id:
             return

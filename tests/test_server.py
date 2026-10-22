@@ -14,6 +14,8 @@ from shell_verbs import ShellVerbs
 from journal.app import App
 from journal.engine.support.session_agents import SessionAgents
 from journal.config import Config
+from journal.repositories.entries import Entries
+from journal.repositories.scope import Scope
 from journal.support.caller import Caller
 
 
@@ -275,6 +277,40 @@ def test_the_subagents_are_listed_as_their_rows_stand_a_resumed_one_running_agai
         page = listed()
         assert [(r["task"], r["dispatcher"], r["session"], r["state"]) for r in page["rows"]] == [("map the hooks", "s9", "a9", "running")], "resumed by a message, it is running again"
         assert page["counts"]["open"] == 1, "and counted open, as the census counts it"
+    finally:
+        app.runtime().stop()
+
+
+def test_a_subagent_whose_dispatch_entries_were_trimmed_runs_again_when_it_is_sent_a_message(tmp_path: Path):
+    """The entries are trimmed to the newest, so a subagent dispatched long ago has no dispatch entry left; a message to it still sets it running, and its stop settles it."""
+    app = App(Config(tmp_path, port=0))
+    app.runtime().start()
+    server = app.server()
+    try:
+        hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
+        agent = {"subagent_type": "journal-researcher", "description": "map the hooks", "prompt": "read", "model": "sonnet"}
+        message = {"to": "a9", "message": "one more"}
+        def hook(kind, **extra):
+            urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s9", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
+        listed = lambda: call(server, "GET", "/journal/subagents")[1]["rows"]
+        def states(expected):
+            for _ in range(50):
+                if [r["state"] for r in listed()] == expected:
+                    return expected
+                time.sleep(0.1)
+            return [r["state"] for r in listed()]
+        hook("SessionStart", source="startup")
+        hook("PreToolUse", tool_name="Agent", tool_input=agent, tool_use_id="t-1")
+        hook("PostToolUse", tool_name="Agent", tool_input={}, tool_response={"isAsync": True, "agentId": "a9"}, tool_use_id="t-1")
+        hook("SubagentStop", agent_id="a9")
+        assert states(["done"]) == ["done"]
+        entries = app.container.get(Entries)
+        with app.container.get(Scope).environment(1):
+            entries.trim(entries.last_id(), 0)
+        hook("PreToolUse", tool_name="SendMessage", tool_input=message, tool_use_id="t-2")
+        assert states(["running"]) == ["running"], "a message sets it running though its dispatch entry is gone"
+        hook("SubagentStop", agent_id="a9")
+        assert states(["done"]) == ["done"], "and its stop settles it again"
     finally:
         app.runtime().stop()
 
@@ -833,7 +869,6 @@ def test_the_transcript_of_an_agent_and_of_its_subagent_are_read_from_the_provid
 def test_a_kept_version_3_journal_is_offered_put_off_and_brought_across_with_a_report(tmp_path: Path):
     import time
     from journal.repositories.reports import Reports
-    from journal.repositories.scope import Scope
     app = App(Config(tmp_path, port=0))
     app.runtime().boot()
     server = app.server()
@@ -1082,7 +1117,6 @@ def test_an_output_is_read_by_its_id(tmp_path: Path):
     from journal.support.actor import Actor
     from journal.models.command_output import CommandOutput
     from journal.repositories.command_outputs import CommandOutputs
-    from journal.repositories.scope import Scope
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()
@@ -1253,8 +1287,6 @@ def test_a_reply_in_the_column_hangs_under_its_comment_and_a_reply_in_the_chat_i
 def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_streams_what_the_agent_sees(tmp_path: Path):
     """The one test with a real shell: a short line, so it stays fast."""
     import os
-    from journal.repositories.entries import Entries
-    from journal.repositories.scope import Scope
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
     server = app.server()
@@ -1280,7 +1312,6 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
 
 def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: Path):
     from journal.chat.docking import Docking
-    from journal.repositories.scope import Scope
     from journal.support.actor import Actor
     app = App(Config(journal_root, port=0))
     app.runtime().boot()
