@@ -18,7 +18,6 @@ RUN groupadd --gid 10001 journal \
     && chmod 2770 /data/project
 
 COPY --chown=root:root src /opt/agent-journal/src
-COPY --chown=root:root VERSION /opt/agent-journal/VERSION
 COPY --chown=root:root --chmod=755 docker/entrypoint.sh docker/hosted-journal /usr/local/bin/
 
 ENV JOURNAL_PROJECT=/data/project \

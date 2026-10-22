@@ -1,13 +1,14 @@
 #!/bin/sh
 # Sets up a hosted team journal on this machine with Docker: asks for the project, the admin and the address,
 # writes the admin into a new volume, starts the team server and prints the line a journal joins it with.
-# Run it on the server: curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/host/install.sh | sh
+# Run it on the server with the copy each release carries, which pulls that release's team image:
+#   curl -fsSL https://github.com/jessegall/agent-journal/releases/latest/download/install.sh | sh
 # A second project on the same host needs ports of its own: TEAM_HTTPS_PORT and TEAM_HTTP_PORT, with the server's own
 # certificate (give an IP address), since only one container can hold 80 and 443.
 # Back up a running server with: docker exec agent-journal-<project> python -m sync_server backup --data /data/team
 set -eu
 
-IMAGE="${TEAM_IMAGE:-ghcr.io/jessegall/agent-journal-team:latest}"
+IMAGE="${TEAM_IMAGE:-ghcr.io/jessegall/agent-journal-team:${TEAM_VERSION:-latest}}"
 HTTPS_PORT="${TEAM_HTTPS_PORT:-443}"
 HTTP_PORT="${TEAM_HTTP_PORT:-80}"
 

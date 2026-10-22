@@ -1,5 +1,6 @@
-# Publishes the journal-on-a-server image for each release tag and signs it; the updater on the server verifies the
-# signature before it deploys. Actions are pinned by commit, and only a release tag such as v2.261.0 runs this at all.
+# Publishes the journal-on-a-server image and the team server image for each release tag and signs them; the updater on
+# the server verifies the signature before it deploys. The team image carries the release's version, which the copy of
+# host/install.sh attached to the release pulls. Actions are pinned by commit, and only a release tag such as v2.261.0 runs this at all.
 name: Docker image
 
 on:
@@ -7,7 +8,7 @@ on:
     tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 
 permissions:
-  contents: read
+  contents: write
   packages: write
   id-token: write
 
@@ -20,7 +21,8 @@ jobs:
           fetch-depth: 0
       - name: Check the tag is a release on main
         run: |
-          [ "${GITHUB_REF_NAME}" = "v$(cat VERSION)" ] || { echo "the tag ${GITHUB_REF_NAME} is not the version in VERSION"; exit 1; }
+          version=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' src/journal/version.py)
+          [ "${GITHUB_REF_NAME}" = "v${version}" ] || { echo "the tag ${GITHUB_REF_NAME} is not the version in src/journal/version.py, ${version}"; exit 1; }
           git merge-base --is-ancestor "${GITHUB_SHA}" origin/main || { echo "the tagged commit is not on main"; exit 1; }
       - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
@@ -58,3 +60,44 @@ jobs:
           cosign verify "ghcr.io/${{ github.repository }}@${DIGEST}" \
             --certificate-identity-regexp '^https://github.com/${{ github.repository }}/\.github/workflows/docker-image\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+  team-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Check the tag is a release on main
+        run: |
+          version=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' src/journal/version.py)
+          [ "${GITHUB_REF_NAME}" = "v${version}" ] || { echo "the tag ${GITHUB_REF_NAME} is not the version in src/journal/version.py, ${version}"; exit 1; }
+          git merge-base --is-ancestor "${GITHUB_SHA}" origin/main || { echo "the tagged commit is not on main"; exit 1; }
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+      - uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5 # v3.10.1
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          file: docker/team-server/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-team:${{ github.ref_name }}
+            ghcr.io/${{ github.repository }}-team:latest
+      - name: Sign the image
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "ghcr.io/${{ github.repository }}-team@${DIGEST}"
+      - name: Attach the setup script that pulls this release's image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sed 's/TEAM_VERSION:-latest/TEAM_VERSION:-'"${GITHUB_REF_NAME}"'/' host/install.sh > install.sh
+          for attempt in $(seq 1 30); do gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 && break; sleep 20; done
+          gh release upload "${GITHUB_REF_NAME}" install.sh --clobber
