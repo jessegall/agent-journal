@@ -8386,7 +8386,7 @@ def test_an_alias_runs_its_line_with_the_flags_passed_on_and_its_moved_run_is_wa
     from journal.repositories.messages import Messages
     with app.container.get(Scope).environment(MAIN):
         card = app.container.get(Messages).with_key(f"watch:{number}")[0]
-    assert card.data["line"] == "journal nap 2", "the card names the line the agent ran, never the alias's expansion"
+    assert card.data["line"] == "sleep 2", "the card names the line the alias ran, never the alias"
 
 
 def test_a_readers_command_run_with_three_different_arguments_tells_the_agent_to_give_the_reader_a_topic(app: App):

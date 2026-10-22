@@ -2,7 +2,6 @@ from pathlib import Path
 
 from journal.chat.cards import AUTO_DOCKED, DOCKED, Cards
 from journal.features.shell.support.activity_label import ActivityLabel
-from journal.support.chain import Chain
 from journal.features.shell.support.card_line import CardLine
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_view import OutputView
@@ -88,8 +87,6 @@ class OutputViews:
 
     @staticmethod
     def watched_part(output: CommandOutput) -> str:
-        if Chain.is_journal_line(output.command):
-            return output.command
         files = OutputFiles(Path(output.folder))
         if not files.is_stored() or not files.recorded():
             return output.headline()
