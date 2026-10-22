@@ -95,8 +95,6 @@ class Console:
         return f"a {kind} may not run journal {args.noun} {args.verb}; a {kind} may run {', '.join(allowed) or 'no journal command'}"
 
     def chained_text(self, line: ChainedLine, caller: Caller) -> str:
-        if not line.argv:
-            return line.absent
         outcome = self.run(list(line.argv), caller)
         return (outcome.text or outcome.error).rstrip() or "nothing"
 

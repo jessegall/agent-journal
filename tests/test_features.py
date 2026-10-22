@@ -1755,11 +1755,16 @@ def test_the_look_runs_the_commands_the_setting_names_each_under_its_heading_in_
     console.run(["task", "create", "write the notes", "--start"], AGENT)
     console.run(["task", "log", "1", "opened NOTES.md"], AGENT)
     app.container.get(SettingRows).set("briefing.look_commands", ["task show {{task_in_hand}}", "plan show {{started_plan}}", "question list", "task list"], Actor.user(1))
+    from journal.features.briefing.seeds.overview_command_update import OverviewCommandUpdate
+    app.container.get(OverviewCommandUpdate).run()
+    assert app.container.get(SettingRows).project("briefing.look_commands") == ["task show current", "plan show current", "question list", "task list"], "a stored list with the old placeholders is brought up to date"
     shown = console.run(["environment", "overview"], AGENT).text
     headings = [line for line in shown.splitlines() if line.startswith("== journal ")]
-    assert headings == ["== journal task show 1 ==", "== journal plan show ==", "== journal question list ==", "== journal task list =="], "each command under its heading, in the order the setting names them"
-    assert "opened NOTES.md" in shown and "no plan is started" in shown, "the task in hand read whole, and the plan in hand said to be missing"
-    assert shown.index("task in hand: 1 write the notes") < shown.index("== journal task show 1 =="), "the summary comes first"
+    assert headings == ["== journal task show current ==", "== journal plan show current ==", "== journal question list ==", "== journal task list =="], "each command under its heading, in the order the setting names them"
+    assert "opened NOTES.md" in shown and "no plan is started" in shown, "the task in hand read whole, and the started plan said to be missing"
+    assert shown.index("task in hand: 1 write the notes") < shown.index("== journal task show current =="), "the summary comes first"
+    console.run(["task", "suspend", "1", "for a moment"], AGENT)
+    assert console.run(["task", "show", "current"], AGENT).text == "no task is in hand\n", "with none in hand, task show current says so"
     console.run(["task", "create", "an old one"], AGENT)
     console.run(["task", "complete", "2"], AGENT)
     listed = console.run(["task", "list"], AGENT).text

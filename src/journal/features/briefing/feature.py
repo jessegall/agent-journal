@@ -2,6 +2,7 @@ from journal.features.briefing.listeners.session_exclusivity import SessionExclu
 from journal.features.briefing.listeners.end_silent_sessions import EndSilentSessions
 from journal.features.briefing.listeners.start_overview_obligation import StartOverviewObligation
 from journal.features.feature import Feature
+from journal.features.briefing.seeds.overview_command_update import OverviewCommandUpdate
 from journal.features.briefing.briefing_conduct import BriefingConduct
 from journal.features.briefing.support.briefing_data_reader import BriefingDataReader
 from journal.features.briefing.support.briefing_data import BriefingData
@@ -11,9 +12,9 @@ from journal.support.option import Option
 
 class Briefing(Feature[BriefingData]):
     OVERVIEW_COMMANDS = Option("briefing.look_commands", "Commands the overview runs",
-                               "The journal commands journal environment overview runs after its summary, in this order, each under its heading; {{started_plan}} is the plan in hand "
-                               "and {{task_in_hand}} the task in hand, and a command naming one that is not there says so instead",
-                               ["plan show {{started_plan}}", "task list", "message unread", "worker list", "question list", "task show {{task_in_hand}}"], kind="lines")
+                               "The journal commands journal environment overview runs after its summary, in this order, each under its heading; plan show current shows the started plan "
+                               "and task show current the task in hand, each saying so when there is none",
+                               ["plan show current", "task list", "message unread", "worker list", "question list", "task show current"], kind="lines")
     name = "briefing"
     title = "Session briefing"
     help = "Every session start, and every resume after a compaction, tells the agent where it is and what binds it: the start block, the engine's own, said before any state's own line at the start."
@@ -21,6 +22,7 @@ class Briefing(Feature[BriefingData]):
     listeners = (StartOverviewObligation, SessionExclusivity, EndSilentSessions)
     data = (BriefingDataReader,)
     options = (OVERVIEW_COMMANDS,)
+    seeds = (OverviewCommandUpdate,)
 
     JOURNAL_READY = Nudge(name, "journal_ready", "the journal is ready on {{env}}", repeat_interval=0)
     ACTIVE_RULES = Nudge(name, "rules_in_force", "{{count}} rules in force: {{rows}}", repeat_interval=0)

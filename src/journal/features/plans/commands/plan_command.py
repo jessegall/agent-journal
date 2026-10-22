@@ -19,6 +19,7 @@ from journal.support.rejection import Rejection
 from journal.repositories.phases import Phases
 from journal.repositories.plans import PHASE_LINK, PLAN_LINK, PHASE_TASK_LINK, Plans
 from journal.repositories.tasks import Tasks
+CURRENT = "current"
 
 
 class PlanCommand(Command):
@@ -71,7 +72,7 @@ class PlanCommand(Command):
         Waits.arguments(block, "plan")
         self.verb(verbs, "unblock", "what the plan waited on came: it is started again").add_argument("n", type=int)
         self.verb(verbs, "cancel", "a plan given up, with the tasks that are its alone; one another live plan holds stays").add_argument("n", type=int)
-        self.verb(verbs, "show", "a plan and its tasks").add_argument("n", type=int)
+        self.verb(verbs, "show", "a plan and its tasks").add_argument("n", help="the plan's number, or current for the started plan")
         self.verb(verbs, "list", "every plan here")
 
     def create(self, args: Namespace, caller: Caller) -> int:
@@ -205,7 +206,13 @@ class PlanCommand(Command):
         return 0
 
     def show(self, args: Namespace, caller: Caller) -> int:
-        plan = self.plans.find(args.n)
+        if args.n == CURRENT:
+            started = next((p for p in self.plans.scoped() if p.state == PlanState.STARTED), None)
+            if started is None:
+                print("no plan is started")
+                return 0
+            args.n = started.id
+        plan = self.plans.find(int(args.n))
         print(f"plan {plan.id} {plan.state}: {plan.title}")
         if plan.state == PlanState.STARTED and (phases := self.plans.phased(plan)):
             current = phases[plan.current_phase(phases) - 1]

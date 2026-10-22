@@ -70,7 +70,7 @@ class EnvironmentCommand(Command):
         return 0
 
     def overview_chain(self, args: Namespace, caller: Caller) -> list[ChainedLine]:
-        return self.overview_commands.lines(caller)
+        return self.overview_commands.lines()
 
     def current_work(self, caller: Caller) -> list[str]:
         start = datetime.now(timezone.utc) - TAKEOVER_WINDOW

@@ -23,6 +23,7 @@ from journal.repositories.plans import PLAN_LINK, Plans
 from journal.repositories.questions import Questions
 from journal.repositories.tasks import Tasks
 from journal.features.tasks.support.next_open_task import NextOpenTask
+CURRENT = "current"
 
 
 class TaskCommand(Command):
@@ -61,7 +62,7 @@ class TaskCommand(Command):
         suspension.add_argument("n", type=int)
         suspension.add_argument("why")
         self.verb(verbs, "resume", "pick a parked task up again").add_argument("n", type=int)
-        self.verb(verbs, "show", "a task whole: its title, state, plan and phase, brief and every log line in order").add_argument("n", type=int)
+        self.verb(verbs, "show", "a task whole: its title, state, plan and phase, brief and every log line in order").add_argument("n", help="the task's number, or current for the task in hand")
         self.verb(verbs, "list", "every task here not closed, and how many are done or cancelled").add_argument("--all", action="store_true", help="every task, the closed ones too")
 
     def create(self, args: Namespace, caller: Caller) -> int:
@@ -130,7 +131,14 @@ class TaskCommand(Command):
         return self.tasks.find(n) if caller.worker_number is None else self.tasks.worker_task(n, caller.worker_number)
 
     def show(self, args: Namespace, caller: Caller) -> int:
-        task = self.readable(args.n, caller)
+        if args.n == CURRENT:
+            holder = self.taking.holder(caller)
+            current_task = self.tasks.holder_task(holder) if holder is not None else None
+            if current_task is None:
+                print("no task is in hand")
+                return 0
+            args.n = current_task.id
+        task = self.readable(int(args.n), caller)
         print(f"""task {task.id}: {task.title}
 state: {task.state}
 {self.place(task)}

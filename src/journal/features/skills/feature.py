@@ -52,7 +52,8 @@ lists the verbs.
   with the args at its end and watches a long run through its reader. Plugins ship aliases too; `journal alias list` names them.
 - `journal environment overview` after a compaction or a takeover lists what is in flight, then runs the journal commands
   the setting briefing.look_commands names, each under its heading: by default the started plan with its phase in hand,
-  the task list, the unread messages, the workers, the open questions and the task in hand read whole.
+  the task list, the unread messages, the workers, the open questions and the task in hand read whole. `journal plan show
+  current` and `journal task show current` show the started plan and the task in hand.
 - `journal await "<what>" --output <n>` or `--until "<script>"` when you wait on something outside your hands, then end
   your turn: the wait ends by itself once that is done.
 - `journal search "<words>"` finds every task, plan, message, document, report and agent conversation here that holds
