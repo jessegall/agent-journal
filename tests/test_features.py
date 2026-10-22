@@ -7030,6 +7030,11 @@ def test_a_worker_runs_the_workers_verbs_on_its_own_rows_alone(app: App, monkeyp
     assert console.run(["worker", "peers"], lovelace).code == 0 and console.run(["reader", "list"], lovelace).code == 0 and console.run(["fact", "list"], lovelace).code == 0
     refused = console.run(["message", "send", "hello"], lovelace)
     assert refused.code == 1 and refused.error.startswith("a worker may not run journal message send"), "a worker never speaks in the chat"
+    notes = app.config.root / "notes.md"
+    notes.write_text("## Grammar\nthe rules\n")
+    assert console.run(["doc", "create", "Grammar notes", "--file", str(notes)], lovelace).code == 0 and console.run(["doc", "update", "1", "--file", str(notes)], lovelace).code == 0, "writing is a worker's job: it writes and updates a document"
+    assert console.run(["report", "create", "Parser findings", "--body", "the grammar is ambiguous"], lovelace).code == 0, "and files a report"
+    assert console.run(["doc", "create", "Scout notes", "--file", str(notes)], AGENT.subagent_caller()).error.startswith("a subagent may not run journal doc create"), "a subagent still only reads"
 
 
 def test_a_worker_is_started_only_on_a_task_whose_brief_is_its_job(app: App, monkeypatch):
