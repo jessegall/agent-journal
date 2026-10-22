@@ -28,6 +28,7 @@ class Feature[D](DataSource[D]):
     listeners: ClassVar[tuple[type[Listener], ...]] = ()
     data: ClassVar[tuple[type, ...]] = ()
     conduct: ClassVar[tuple[type[Conduct], ...]] = ()
+    worker_conduct: ClassVar[tuple[type[Conduct], ...]] = ()
     commands: ClassVar[tuple[type[Command], ...]] = ()
     seeds: ClassVar[tuple[type[Seed], ...]] = ()
     jobs: ClassVar[tuple[type[Job], ...]] = ()

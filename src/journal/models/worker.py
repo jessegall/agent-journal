@@ -60,10 +60,10 @@ class Worker(Scoped):
         return self.contacted(time).with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker=self.mention(), report=report, ref=self.mention().ref(), outcome=f"{self.mention().title()}, reported"))
 
     def ready(self, time: float) -> "Worker":
-        return self.contacted(time).with_(state=WorkerState.READY).with_event(WorkerReady(environment_id=self.environment_id, time=time, worker=self.mention()))
+        return self.contacted(time).with_(state=WorkerState.READY).with_event(WorkerReady(environment_id=self.environment_id, time=time, worker=self.mention(), worker_session=self.session))
 
     def delivered(self, time: float) -> "Worker":
-        return self.contacted(time).with_(state=WorkerState.DELIVERED).with_event(WorkerDelivered(environment_id=self.environment_id, time=time, worker=self.mention()))
+        return self.contacted(time).with_(state=WorkerState.DELIVERED).with_event(WorkerDelivered(environment_id=self.environment_id, time=time, worker=self.mention(), worker_session=self.session))
 
     def merged(self, time: float) -> "Worker":
         return self.with_(state=WorkerState.MERGED, token_hash="").with_event(WorkerMerged(environment_id=self.environment_id, time=time, worker=self.mention()))

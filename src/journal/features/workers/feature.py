@@ -1,4 +1,5 @@
 from journal.features.feature import Feature
+from journal.features.workers.clock_conduct import ClockConduct
 from journal.features.workers.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_data_reader import WorkersDataReader
 from journal.features.workers.support.workers_data import WorkersData
@@ -44,7 +45,9 @@ class Workers(Feature[WorkersData]):
     listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMomentCards, DispatchRefusalCards, SilentWorkerRecord)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
+    worker_conduct = (ClockConduct,)
 
+    READINESS = Nudge(name, "clock_in_first", "your writes wait until you clock in", "clock in with journal clock in once you have read your task, journal task show <n>", repeat_interval=0)
     WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_interval=0)
     ORCHESTRATE = Nudge(name, "orchestrate", "{{count}} tasks are open across the plans: {{tasks}}", "check the plans and dispatch a worker on each task you can, journal worker dispatch \"<Name>\" --task <n>; keep the reviews for yourself", repeat_interval=0)
     TASK_DELEGATION = Nudge(name, "delegate_the_task", "{{name}} is in hand and you orchestrate; {{logged}}", "hand it to a worker, journal worker dispatch \"<Name>\" --task <n> with this task's number, and review its report; log what the worker is on", repeat_interval=0)
@@ -59,7 +62,7 @@ class Workers(Feature[WorkersData]):
     REUSE_QUESTION = Nudge(name, "could_it_be_reused", "Are you sure worker {{n}}, {{name}}, cannot be reused?", "if it can, give it its next job with `journal worker send {{n}} \"<job>\"`; if not, repeat the command with --why \"<why it cannot>\"", repeat_interval=0)
     SILENT_WORKER = Nudge(name, "worker_quiet", "worker {{n}}, {{name}}, has been quiet for {{minutes}} minutes", "look at its transcript on its worker page, tell it something with `journal worker notify {{n}} \"<text>\"`, or stop it", repeat_interval=0)
     SUBAGENT_REUSE = Nudge(name, "send_the_job_to_the_subagent", "{{count}} idle subagents already worked on files this job names:\n{{subagents}}", "send the job to one of them with its SendMessage line, so it goes on with what it knows, or retire it with `journal subagent retire <n>` if the job needs a fresh one", repeat_interval=0)
-    nudges = (WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, REUSE_QUESTION, SILENT_WORKER, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
+    nudges = (READINESS, WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, REUSE_QUESTION, SILENT_WORKER, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
 
     skill = Skill("workers", 'Send a worker to write a bounded job and wait for its report; load it before dispatching one', """
 # Workers

@@ -1,4 +1,5 @@
 from journal.engine.support.modes import Modes
+from journal.models.agent_role import AgentRole
 from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
 from journal.features.feature import Feature
@@ -7,6 +8,8 @@ from journal.features.support.service import Service
 from journal.support.skill import Skill
 from journal.repositories.setting_rows import SettingRows
 
+
+ROLE_CONDUCT = {AgentRole.MAIN: lambda feature: feature.conduct, AgentRole.WORKER: lambda feature: feature.worker_conduct}
 
 class Registry:
     """Every feature, and whether each is on in an environment. The catalogue, the bus and the console are filled from here at boot."""
@@ -28,8 +31,8 @@ class Registry:
     def options(self) -> list:
         return [option for feature in self.features for option in feature.options]
 
-    def conducts(self) -> tuple[type[Conduct], ...]:
-        return tuple(conduct for feature in self.features for conduct in feature.conduct)
+    def conducts(self, role: AgentRole) -> tuple[type[Conduct], ...]:
+        return tuple(conduct for feature in self.features for conduct in ROLE_CONDUCT[role](feature))
 
     def states(self) -> list[type[BaseState]]:
         return [state for feature in self.features for state in feature.states]

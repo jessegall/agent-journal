@@ -4,6 +4,7 @@ from journal.engine.base_state import BaseState
 from journal.engine.support.modes import Modes
 from journal.engine.conduct import Conduct
 from journal.engine.nudge import Nudge
+from journal.models.agent_role import AgentRole
 from journal.support.option import Option
 
 
@@ -17,6 +18,6 @@ class FeatureRegistry(Protocol):
 
     def options(self) -> list[Option]: ...
 
-    def conducts(self) -> tuple[type[Conduct], ...]: ...
+    def conducts(self, role: AgentRole) -> tuple[type[Conduct], ...]: ...
 
     def silenced(self, nudge: Nudge) -> bool: ...

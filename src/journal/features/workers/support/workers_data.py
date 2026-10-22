@@ -8,7 +8,7 @@ from journal.models.worker import Worker
 
 @dataclass(frozen=True)
 class WorkersData:
-    """The workers feature's reading: the workers out and the idle workers whose report is not acted on, how many subagents of this session's rows are running, every subagent this session dispatched, and the workers' worktrees."""
+    """The workers feature's reading: the workers out and the idle workers whose report is not acted on, how many subagents of this session's rows are running, every subagent this session dispatched, the workers' worktrees, and the worker whose agent this is, for a worker's own agent."""
 
     dispatched_workers: tuple[Worker, ...]
     idle_workers: tuple[Worker, ...]
@@ -16,3 +16,4 @@ class WorkersData:
     subagents: tuple[Subagent, ...]
     worktrees_root: Path
     worktrees: tuple[WorkerWorktree, ...]
+    session_workers: tuple[Worker, ...] = ()

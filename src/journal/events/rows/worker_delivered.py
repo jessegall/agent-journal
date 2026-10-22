@@ -9,3 +9,8 @@ class WorkerDelivered(RowEvent):
     """A worker handed in its work with a proof for each point of its brief."""
 
     worker: WorkerMention
+    worker_session: str
+
+    @property
+    def recipient(self) -> str:
+        return self.worker_session

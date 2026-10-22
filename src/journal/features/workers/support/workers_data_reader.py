@@ -22,4 +22,5 @@ class WorkersDataReader:
             subagents=tuple(subagents),
             worktrees_root=(self.config.home / "worktrees").resolve(),
             worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.row_id, w.name) for w in rows),
+            session_workers=tuple(self.workers.session_worker(agent.session)),
         )

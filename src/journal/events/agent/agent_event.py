@@ -26,6 +26,9 @@ class AgentEvent(Event):
     def content(self) -> str:
         return ""
 
+    def has_hook_lines(self) -> bool:
+        return self.answers_hook and self.has_lines
+
     def with_data(self, data: FeatureData) -> Self:
         return replace(self, data=data)
 

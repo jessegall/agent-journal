@@ -27,6 +27,10 @@ class Agent(Scoped):
     tool_uses: int = 0
     inbox_position: int = 0
     role: AgentRole = AgentRole.MAIN
+    queued_lines: tuple[str, ...] = ()
+
+    def queued(self, lines: str) -> "Agent":
+        return self.with_(queued_lines=(*self.queued_lines, lines))
 
     def user_paused(self, time: float) -> "Agent":
         return self.with_event(UserPaused(environment_id=self.environment_id, time=time, agent_session=self.session))

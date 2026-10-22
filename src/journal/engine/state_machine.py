@@ -1,4 +1,5 @@
 from journal.engine.base_state import BaseState
+from journal.models.agent_role import AgentRole
 from journal.engine.states.compacting import Compacting
 from journal.events.agent.tool_starting import ToolStarting
 from journal.engine.support.typist import Typist
@@ -39,6 +40,7 @@ class StateMachine(AgentListener[AgentEvent]):
     """The one blocking listener on every agent event: loads the agent's state, asks it, saves the new state, and turns the transition into the decision, with what it says sent through the nudger."""
 
     blocking = True
+    is_worker_listener = True
 
     rank = 0
 
@@ -49,10 +51,22 @@ class StateMachine(AgentListener[AgentEvent]):
     def handle(self, event: AgentEvent) -> Decision:
         if isinstance(event, ToolStarting) and event.call.is_panic_line():
             return Decision()
-        decision = self.answer(self.sessions.agent(event.session, event.environment_id, event.provider), event)
-        if decision.context and not (event.answers_hook and event.has_lines):
+        agent = self.sessions.agent(event.session, event.environment_id, event.provider)
+        decision = self.answer(agent, event)
+        if agent.role == AgentRole.WORKER:
+            return self.worker_decision(agent.row_id, decision, event)
+        if decision.context and not event.has_hook_lines():
             self.type_lines(event.environment_id, decision.context, event.typing_delay)
         return decision
+
+    def worker_decision(self, agent_id: int, decision: Decision, event: AgentEvent) -> Decision:
+        agent = self.agents.find(agent_id)
+        if event.has_hook_lines():
+            self.agents.save(agent.with_(queued_lines=()), Actor.system())
+            return Decision.allowed_with("\n".join(agent.queued_lines)).merged(decision)
+        if decision.context:
+            self.agents.save(agent.queued(decision.context), Actor.system())
+        return Decision(decision.allowed, decision.reason)
 
     def type_lines(self, environment_id: int, lines: str, following: float) -> None:
         for line in lines.split("\n"):
@@ -63,18 +77,24 @@ class StateMachine(AgentListener[AgentEvent]):
             with self.scope.environment(agent.environment_id):
                 answered = self.answer(agent, event.reaching(agent.session))
             if answered.context:
-                self.type_lines(agent.environment_id, answered.context, 0.0)
+                self.row_lines(agent, answered.context)
 
     def audience(self, event: RowEvent) -> list[Agent]:
         listeners = self.agents.main_scoped(event.environment_id) if event.environment_id else self.agents.main_unended()
         recipients = [agent for agent in self.agents.global_matching(session=event.recipient) if event.recipient and agent.state != "ended" and agent not in listeners]
         return [*listeners, *recipients]
 
+    def row_lines(self, agent: Agent, lines: str) -> None:
+        if agent.role == AgentRole.WORKER:
+            self.agents.save(self.agents.find(agent.row_id).queued(lines), Actor.system())
+            return
+        self.type_lines(agent.environment_id, lines, 0.0)
+
     def answer(self, agent: Agent, event: AgentEvent | RowEvent) -> Decision:
         settings = self.top_state()
         stack = self.states.apply_mode(self.states.stack(agent), settings)
         event = event.with_data(self.readers.agent_data(agent))
-        transition = stack.top().respond(event, settings, self.features.conducts())
+        transition = stack.top().respond(event, settings, self.features.conducts(agent.role))
         machine_answer = self.hook_machine(stack, self.moved(self.placed(stack, transition.target), transition), settings, event.data)
         if transition.dropped:
             self.entries.save(StackHistory.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
