@@ -2,6 +2,16 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.41
+
+- A worktree dispatch names its library folders:
+  - `--libraries node_modules,.venv` links the main checkout's folders.
+  - `--copies vendor` gives the worker copies of its own, as disk clones. Composer's vendor must be copied, since through a link its autoloader would load the main checkout's classes.
+  - `--no-libraries` gives none.
+
+  Each folder reaches the project's worktree and every inner repository's worktree whose checkout holds it, and is kept out of git there.
+- The avatar stands on a moving chat card instead of sinking into it and jumping back up.
+
 ## 4.5.40
 
 - Multi-repository worktrees are sturdier:
