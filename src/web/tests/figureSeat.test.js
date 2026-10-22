@@ -13,8 +13,8 @@ const {
     hiddenAt,
     inWorld,
     postureOf,
-    seatOf,
-    seatRise,
+    restOf,
+    standRise,
     spotOf,
     tripBetween,
     tripTo,
@@ -63,8 +63,8 @@ afterEach(() => {
 
 test("a figure sitting on the right corner of a box turns right, and on the left corner turns left, part way back to the viewer", () => {
     page({left: 300, top: 600, width: 400, height: 120});
-    const right = seatOf(FIGURE, {x: 700, y: 600});
-    const left = seatOf(FIGURE, {x: 300, y: 600});
+    const right = restOf(FIGURE, {x: 700, y: 600});
+    const left = restOf(FIGURE, {x: 300, y: 600});
     expect(right.face).toBe(60);
     expect(left.face).toBe(300);
 });
@@ -72,41 +72,37 @@ test("a figure sitting on the right corner of a box turns right, and on the left
 test("a figure's hips sit a little inboard of the corner it sits on, so its weight rests on the surface and only its legs reach past the edge", () => {
     page({left: 300, top: 600, width: 400, height: 120});
     const inboard = 0.14 * FIGURE.size;
-    expect(seatOf(FIGURE, {x: 700, y: 600}).x).toBeCloseTo(700 - inboard, 5);
-    expect(seatOf(FIGURE, {x: 300, y: 600}).x).toBeCloseTo(300 + inboard, 5);
+    expect(restOf(FIGURE, {x: 700, y: 600}).x).toBeCloseTo(700 - inboard, 5);
+    expect(restOf(FIGURE, {x: 300, y: 600}).x).toBeCloseTo(300 + inboard, 5);
 });
 
-test("a seated figure's hips sit on the box's edge, and the room it takes above the edge is what the thread leaves", () => {
+test("a resting figure stands on the box's edge, and the room it takes above the edge is what the thread leaves", () => {
     page({left: 300, top: 600, width: 400, height: 120});
-    const spot = seatOf(FIGURE, {x: 700, y: 600});
-    expect(spot).toMatchObject({y: 600, posture: "sit"});
-    expect(600 - boxAt(spot, FIGURE).top).toBeCloseTo(seatRise(FIGURE), 5);
+    const spot = restOf(FIGURE, {x: 700, y: 600});
+    expect(spot).toMatchObject({y: 600, posture: "stand"});
+    expect(600 - boxAt(spot, FIGURE).top).toBeCloseTo(standRise(FIGURE), 5);
 });
 
-test("whatever it plays, the figure's feet never go below the edge it rests on: on its feet they are on the line, seated they hang past it", () => {
+test("whatever it plays, the figure's feet never go below the edge it rests on, since every rest is on its feet", () => {
     page({left: 300, top: 600, width: 400, height: 120});
     const feet = (spot, posture) => boxAt(spot, FIGURE, posture).bottom - FIGURE.below * FIGURE.size;
-    const seat = seatOf(FIGURE, {x: 700, y: 600});
+    const rest = restOf(FIGURE, {x: 700, y: 600});
     const standing = spotOf(null, FIGURE);
     expect(feet(standing, "stand")).toBeCloseTo(600, 5);
-    // a clip that cannot sit, such as the walk or the landing, is drawn on its feet at a seat, not at the seated picture's depth
-    const walk = {postures: ["stand"]};
-    expect(postureOf(walk, seat.posture)).toBe("stand");
-    expect(feet(seat, postureOf(walk, seat.posture))).toBeCloseTo(600, 5);
-    expect(feet(seat, "sit")).toBeCloseTo(600 + POSTURES.sit.drop * FIGURE.size, 5);
-    // it travels to a seat on its feet, so the walk there runs along the line and never sinks into the box
-    expect(POSTURES[seat.posture].travels).toBe("stand");
+    expect(rest.posture).toBe("stand");
+    expect(feet(rest, postureOf({postures: ["stand", "sit"]}, rest.posture))).toBeCloseTo(600, 5);
+    expect(POSTURES[rest.posture].travels).toBe("stand");
 });
 
-test("before the chat is drawn the figure sits on the foot of the window on the same line it stands on, so sitting down never lifts it", () => {
+test("before the chat is drawn the figure rests on the foot of the window on the line it stands on", () => {
     globalThis.window = {innerWidth: 1280, innerHeight: 720};
     globalThis.document = {querySelector: () => null, querySelectorAll: () => []};
     for (const near of [
         {x: 0, y: 700},
         {x: 1280, y: 700},
     ]) {
-        const seat = seatOf(FIGURE, near);
-        expect(seat).toMatchObject({y: 720, posture: "sit"});
+        const seat = restOf(FIGURE, near);
+        expect(seat).toMatchObject({y: 720, posture: "stand"});
         expect(spotOf(null, FIGURE, near).y).toBe(seat.y);
         expect(seat.x).toBeGreaterThanOrEqual(FIGURE.size / 2);
         expect(seat.x).toBeLessThanOrEqual(1280 - FIGURE.size / 2);
@@ -119,25 +115,25 @@ test("a bar docked over the compose box is the ground the figure stands and sits
     page(box, {left: 300, top: 556, width: 400, height: 44});
     const docked = groundEdge();
     expect(docked.edge.top).toBe(556);
-    expect(seatOf(FIGURE, {x: 700, y: 556})).toMatchObject({y: 556, on: docked.element});
+    expect(restOf(FIGURE, {x: 700, y: 556})).toMatchObject({y: 556, on: docked.element});
     expect(spotOf(null, FIGURE).y).toBe(556);
     page(box);
     expect(groundEdge().edge.top).toBe(600);
-    expect(seatOf(FIGURE, {x: 700, y: 556}).y).toBe(600);
+    expect(restOf(FIGURE, {x: 700, y: 556}).y).toBe(600);
 });
 
 test("of the corners at home the figure takes one whose body covers no words, though another is nearer", () => {
     page({left: 300, top: 600, width: 400, height: 120});
-    const left = seatOf(FIGURE, {x: 300, y: 600});
+    const left = restOf(FIGURE, {x: 300, y: 600});
     write([{left: left.x - 30, right: left.x + 30, top: 600 - 60, bottom: 600 - 40}]);
-    const chosen = seatOf(FIGURE, {x: 300, y: 600});
+    const chosen = restOf(FIGURE, {x: 300, y: 600});
     expect(chosen.x).toBeGreaterThan(600);
     expect(hiddenAt(chosen, FIGURE)).toBe(0);
 });
 
 test("only what the body is drawn over above its line counts, and only words and controls that are drawn", () => {
     page({left: 300, top: 600, width: 400, height: 120});
-    const seat = seatOf(FIGURE, {x: 700, y: 600});
+    const seat = restOf(FIGURE, {x: 700, y: 600});
     // a turn's tools in the middle of the body, shown only on hover, and words its legs hang over below the edge, which are the box's own
     const tools = {left: seat.x - 5, right: seat.x + 5, top: 562, bottom: 590};
     write([{left: seat.x - 30, right: seat.x + 30, top: 610, bottom: 625}], [{box: tools, shown: false}]);
@@ -189,8 +185,8 @@ test("a trip up walks under the place and then jumps, one down falls and then wa
 test("a figure keeps its place on the floor it rests on as that moves, and loses its ground when the floor goes", () => {
     const box = {left: 300, top: 600, width: 400, height: 120};
     page(box);
-    const seat = seatOf(FIGURE, {x: 700, y: 600});
-    expect(footingOn(seat, floorsNow(), 5)).toEqual({id: "home", dx: seat.x - 300, dy: 0, posture: "sit", home: true, ground: {y: 600, at: 5}});
+    const seat = restOf(FIGURE, {x: 700, y: 600});
+    expect(footingOn(seat, floorsNow(), 5)).toEqual({id: "home", dx: seat.x - 300, dy: 0, posture: "stand", home: true, ground: {y: 600, at: 5}});
     expect(footingOn({...seat, on: null}, floorsNow())).toBe(null);
     const moved = {getBoundingClientRect: () => ({...box, left: 320, top: 580})};
     const kept = {id: floorOf(moved), dx: 10, dy: 0, posture: "stand", home: false};
@@ -267,8 +263,8 @@ test("a trip lands on the line where it is when the figure arrives, not where it
 test("a trip is drawn from where the figure is as it sets off, so one getting up from a seat that moved walks level along the line", () => {
     const box = {left: 300, top: 600, width: 400, height: 120};
     page(box);
-    const right = seatOf(FIGURE, {x: 700, y: 600});
-    const left = seatOf(FIGURE, {x: 300, y: 600});
+    const right = restOf(FIGURE, {x: 700, y: 600});
+    const left = restOf(FIGURE, {x: 300, y: 600});
     const [rightFooting, leftFooting] = [footingOn(right, floorsNow()), footingOn(left, floorsNow())];
     // while it gets up the compose box grows, and the seat it sits on rises with it
     box.top = 560;
@@ -306,7 +302,7 @@ test("no part of the figure is ever outside the chat window: not past its sides,
     expect(inWorld({x: 500, y: CHAT.bottom, posture: "sit"}, FIGURE)).toBe(true);
     expect(inWorld({x: 500, y: CHAT.bottom - 20, posture: "hang"}, FIGURE)).toBe(false);
     // a compose box wider than the chat window gives seats and spots at home that are pulled inside it
-    for (const spot of [seatOf(FIGURE, {x: 950, y: 600}), seatOf(FIGURE, {x: 150, y: 600}), spotOf(null, FIGURE, {x: 900, y: 600})]) {
+    for (const spot of [restOf(FIGURE, {x: 950, y: 600}), restOf(FIGURE, {x: 150, y: 600}), spotOf(null, FIGURE, {x: 900, y: 600})]) {
         expect(spot.y).toBe(600);
         expect(inWorld(spot, FIGURE)).toBe(true);
     }
@@ -344,13 +340,13 @@ test("a figure sitting on the chat box takes no press below its seat, so a click
     expect(clickedBody("hang", FIGURE.below).bottom).toBeGreaterThan(seated.bottom);
 });
 
-test("a corner the figure's world pushes its seat in from is no seat: the figure rests there on its feet, never with its legs over the box", () => {
+test("the figure rests on its feet on every corner, never with its legs over the box", () => {
     page({left: 210, top: 600, width: 680, height: 120});
     for (const near of [{x: 210, y: 600}, {x: 890, y: 600}]) {
-        const rest = seatOf(FIGURE, near);
+        const rest = restOf(FIGURE, near);
         expect(rest).toMatchObject({y: 600, posture: "stand"});
         expect(boxAt(rest, FIGURE).bottom - FIGURE.below * FIGURE.size).toBeCloseTo(600, 5);
     }
     page({left: 300, top: 600, width: 400, height: 120});
-    expect(seatOf(FIGURE, {x: 700, y: 600}).posture).toBe("sit");
+    expect(restOf(FIGURE, {x: 700, y: 600}).posture).toBe("stand");
 });

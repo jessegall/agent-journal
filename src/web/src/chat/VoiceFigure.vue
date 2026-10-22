@@ -86,7 +86,7 @@ const held = computed(() => figureStateOf(agent.value, waitingSince.value, now.v
 // whether the figure belongs in the chat now: its agent is here, in a state Settings shows it in
 const belongs = computed(() => Boolean(agent.value) && shownIn(store.settings?.voices?.avatar_shown, held.value.state));
 // the stay the figure keeps while nothing calls it anywhere, and the box it was last clicked out of, kept clear of it (perches.js)
-let stay = {where: "seat", until: 0};
+let stay = {where: "rest", until: 0};
 let cleared = {until: 0};
 // the sides, "l" or "r", of the hands this voice carries nothing in, which it can hang by
 let hands = [];

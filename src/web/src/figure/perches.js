@@ -1,15 +1,15 @@
 import {RESTS} from "../domain/figureState.js";
 import {holds, latestFloors} from "./floors.js";
-import {boxAt, clearOf, hiddenAt, openTabs, overlaps, pointedView, seatAt, seatOf, seatRise, spotOf} from "./places.js";
+import {boxAt, clearOf, hiddenAt, openTabs, overlaps, pointedView, cornerAt, restOf, standRise, spotOf} from "./places.js";
 import {letsGoFor} from "./reactions.js";
 
 // Where a figure perches on a message bubble now and then, instead of the compose box's edge: on top of it with its legs over the side,
 // or hanging from its top corner by its hands. A perch names its bubble's floor (figure/floors.js), so it rides the bubble as the thread
 // scrolls, and is let go when the bubble leaves the thread's view.
-export const SITS = "sit";
+export const STANDS = "stand";
 export const HANGS = "hang";
 
-// the share of perches that are a hang rather than a sit
+// the share of perches that are a hang rather than a stand on the corner
 export const HANG_SHARE = 0.4;
 
 // Where the figure goes when nothing calls it elsewhere, and how long it stays, in seconds between the two: each time a stay is over it
@@ -17,7 +17,7 @@ export const HANG_SHARE = 0.4;
 // message bubble or crosses to stand on one of the page's tabs, and whatever the agent is doing it does from there. A hang is short, as
 // hanging is work.
 export const ROAMS = [
-    {where: "seat", odds: 0.3, stay: [15, 40]},
+    {where: "rest", odds: 0.3, stay: [15, 40]},
     {where: "edge", odds: 0.4, stay: [8, 20]},
     {where: "bubble", odds: 0.15, stay: [15, 40]},
     {where: "tab", odds: 0.15, stay: [10, 25]},
@@ -38,10 +38,10 @@ export const between = ([least, most], random) => least + random() * (most - lea
 const sideOf = (rect, scroller) => (rect.left - scroller.left > scroller.right - rect.right ? "left" : "right");
 
 // whether a figure perched on this bubble's top corner stays inside the thread's view `scroller`
-const inView = (rect, scroller, figure) => rect.top - seatRise(figure) >= scroller.top && rect.top <= scroller.bottom - 8;
+const inView = (rect, scroller, figure) => rect.top - standRise(figure) >= scroller.top && rect.top <= scroller.bottom - 8;
 
-// a figure sitting on a bubble has its hips this share of its height inside the corner, over the bubble's padding rather than its words,
-// so its legs hang clear of them
+// a figure standing on a bubble's corner has its feet this share of its height inside the corner, over the bubble's padding rather than
+// its words
 const PERCH_INBOARD = 0.05;
 
 // the corner each hand takes facing the viewer; the body hangs outside the bubble so it never covers its words
@@ -50,11 +50,11 @@ const HANG_OUT = 0.3;
 const TURNED_TO_THE_BUBBLE = 180;
 
 // The perch a figure takes now on the bubbles of the floors snapshot `floors`, or null when no bubble in view has one free: the newest
-// bubble first, as the thread keeps it in view while older ones scroll away, and on each the way the roll says first, a hang or a sit,
+// bubble first, as the thread keeps it in view while older ones scroll away, and on each the way the roll says first, a hang or a stand on the corner,
 // then the other. `hands` are the sides, "l" or "r", of the hands that carry nothing; `random` is a function returning 0 up to 1.
 export function perchOn(floors, figure, hands, random) {
     const open = floors.floors.filter((floor) => floor.kind === "bubble" && inView(floor, floors.view, figure));
-    const kinds = !hands.length ? [SITS] : random() < HANG_SHARE ? [HANGS, SITS] : [SITS, HANGS];
+    const kinds = !hands.length ? [STANDS] : random() < HANG_SHARE ? [HANGS, STANDS] : [STANDS, HANGS];
     const perches = open.reverse().flatMap((floor) => kinds.map((kind) => perchAt(floor, kind, floors.view, hands)));
     return perches.find((perch) => perchSpot(perch, floors, figure)) ?? null;
 }
@@ -63,7 +63,7 @@ export function perchOn(floors, figure, hands, random) {
 // only the other hand free it turns to face the bubble, as one hangs from a ledge facing the wall, so that hand comes to the corner.
 function perchAt(floor, kind, view, hands) {
     const side = sideOf(floor, view);
-    if (kind === SITS) return {floor: floor.id, kind, side, grip: ""};
+    if (kind === STANDS) return {floor: floor.id, kind, side, grip: ""};
     const grip = hands.find((hand) => HAND_CORNER[hand] === side);
     return grip ? {floor: floor.id, kind, side, grip, face: 0} : {floor: floor.id, kind, side, grip: hands[0], face: TURNED_TO_THE_BUBBLE};
 }
@@ -78,7 +78,7 @@ export function perchSpot(perch, floors, figure) {
 }
 
 function spotOn(perch, floor, figure) {
-    if (perch.kind === SITS) return {...seatAt({...floor, width: floor.right - floor.left}, perch.side, figure, PERCH_INBOARD), on: floor.element};
+    if (perch.kind === STANDS) return {...cornerAt({...floor, width: floor.right - floor.left}, perch.side, figure, PERCH_INBOARD), on: floor.element};
     const out = (perch.side === "left" ? -1 : 1) * HANG_OUT * figure.size;
     const x = (perch.side === "left" ? floor.left : floor.right) + out;
     return {x, y: floor.top, face: perch.face, posture: "hang", grip: perch.grip, on: floor.element};
@@ -114,10 +114,10 @@ export function stayingAt(stay, figure, near) {
         return spot ? {...spot, view: null} : null;
     }
     if (stay.where === "edge") return spotOf(null, figure, stay.along);
-    return seatOf(figure, near);
+    return restOf(figure, near);
 }
 
-// Where the figure goes now and the stay it keeps: seated at home while its agent cannot act; to the tab of what waits on the user when
+// Where the figure goes now and the stay it keeps: resting at home while its agent cannot act; to the tab of what waits on the user when
 // something does and that tab has a spot inside the figure's world; otherwise where its stay is, drawing the next stay when this one is
 // over or its place is gone. `near` is where it is, `counts` the views' badge counts and `state` what the agent does. The spot is kept
 // clear of the box the figure stepped aside from while that box is `cleared` (keptClear).
@@ -133,14 +133,14 @@ export function keptClear(spot, {state, now, near, figure, cleared}) {
 }
 
 function targetOf({state, counts, stay, now, near, figure, hands, random}) {
-    if (RESTS.has(state)) return {spot: seatOf(figure, near), stay};
+    if (RESTS.has(state)) return {spot: restOf(figure, near), stay};
     const pressing = pointedView(counts, openTabs());
     const pointing = pressing && spotOf(pressing, figure, near);
     if (pointing) return {spot: pointing, stay};
     const kept = now < stay.until && stayingAt(stay, figure, near);
     if (kept) return {spot: kept, stay};
     const next = nextStay(now, figure, hands, random);
-    return {spot: stayingAt(next, figure, near) || seatOf(figure, near), stay: next};
+    return {spot: stayingAt(next, figure, near) || restOf(figure, near), stay: next};
 }
 
 // how long the box a figure stepped aside from stays clear of it, in seconds
@@ -150,9 +150,9 @@ export const CLEARED_SECONDS = 30;
 // over, and `box`, the picture it was drawn in then, is kept clear of it for CLEARED_SECONDS
 export const stepAside = (stay, box, now) => ({stay: {...stay, until: 0}, cleared: {box, until: now + CLEARED_SECONDS}});
 
-// The stay once the ground went from under the figure: a stroll along the home edge or a seat there is kept, any stay away from home is
-// given up for a seat
-export const stayAtHome = (stay) => (stay.where === "edge" ? stay : {where: "seat", until: stay.where === "seat" ? stay.until : 0});
+// The stay once the ground went from under the figure: a stroll along the home edge or a rest there is kept, any stay away from home is
+// given up for a rest
+export const stayAtHome = (stay) => (stay.where === "edge" ? stay : {where: "rest", until: stay.where === "rest" ? stay.until : 0});
 
 // The stay once a look comes: over at once when the figure hangs there with its back to the viewer, so it lets go and turns round to
 // show it, else kept

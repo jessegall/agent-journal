@@ -31,7 +31,7 @@ const CONTROLS = "button, a[href], input, select, textarea, [role=tab], [role=bu
 
 // How each posture meets the line it rests on: the share of the figure's height from that line down to the feet of its standing picture,
 // and the posture it travels in to get there. It stands with its feet on the line, sits with its hips on it and hangs by its hands from
-// it; it walks to a seat on its feet and sits down there, and leaps straight to a hang. On the move it walks with its feet on the line.
+// it; it leaps straight to a hang. A rest is never a seat: see cornerAt. On the move it walks with its feet on the line.
 const SEAT_DROP = 0.26;
 // the gripping hand of every voice's hang is 2.91 of the picture's 5.4 units above its standing feet: the short arms of these figures
 // reach no higher than the head, so the hand, not the hat, is what meets the bubble's corner
@@ -208,24 +208,24 @@ const ON_TAB = [0.5, 0.25, 0.75];
 
 const tabSpots = (tab) => alongTop(tab.getBoundingClientRect(), ON_TAB);
 
-// Where a figure sits: on a corner of a box it perches on, turned along the edge it dangles over and a third of the way back toward the
-// viewer, so its eyes and what it holds on its lap are seen, with its hips a little inboard of the corner so the weight rests on the
-// surface behind the edge and only the legs reach past it
-const SEAT_SIDES = {
+// Where a figure rests at the end of an edge: standing on the corner of a box, its feet on the top, turned along the edge and a third of
+// the way back toward the viewer, a little inboard of the corner so it stands on the surface. It never sits there: sitting hangs its
+// legs over the face of the box, so it looks as if it sinks into it to the knees.
+const CORNER_SIDES = {
     right: {along: 1, inboard: -1, face: 60},
     left: {along: 0, inboard: 1, face: 300},
 };
-const SEAT_INBOARD = 0.14;
+const CORNER_INBOARD = 0.14;
 
-// The seat on one corner of a box's top edge, `side` being "left" or "right", the hips `reach` of the figure's height inside the corner;
+// The place on one corner of a box's top edge, `side` being "left" or "right", the feet `reach` of the figure's height inside the corner;
 // `face` turns the figure along the edge, 0 faces the viewer
-export function seatAt(box, side, {size}, reach = SEAT_INBOARD) {
-    const {along, inboard, face} = SEAT_SIDES[side];
-    return {x: box.left + box.width * along + inboard * reach * size, y: box.top, face, posture: "sit"};
+export function cornerAt(box, side, {size}, reach = CORNER_INBOARD) {
+    const {along, inboard, face} = CORNER_SIDES[side];
+    return {x: box.left + box.width * along + inboard * reach * size, y: box.top, face, posture: "stand"};
 }
 
-// the pixels of a seated figure above the edge it sits on
-export const seatRise = ({size, below}) => (1 - below - SEAT_DROP) * size;
+// the pixels of a figure standing on an edge above it
+export const standRise = ({size, below}) => (1 - below) * size;
 
 // A spot at home standing or sitting, moved inside the figure's world: its picture within the world's left, right and top, and the line
 // it rests on at or above the world's foot
@@ -239,36 +239,22 @@ function insideWorld(spot, {size, below}) {
     };
 }
 
-// the seats on either corner of the edge at home, and the places along it to stand, each moved inside the figure's world
-// The seats on the corners of the edge at home whose legs hang past the corner: a seat the figure's world pushes inboard would hang the
-// legs over the face of the compose box, so the figure would seem to sink into it, and is no seat; on the foot of the window, with no box
-// under it, every seat is one
-const homeSeats = (edge, figure, element) =>
-    Object.keys(SEAT_SIDES)
-        .map((side) => seatAt(edge, side, figure))
-        .filter((seat) => !element || Math.abs(insideWorld(seat, figure).x - seat.x) < 1)
-        .map((seat) => insideWorld(seat, figure));
+// the places on either corner of the edge at home, and the places along it, each moved inside the figure's world
+const homeCorners = (edge, figure) => Object.keys(CORNER_SIDES).map((side) => insideWorld(cornerAt(edge, side, figure), figure));
 const homeStands = (edge, figure) => alongTop(edge, HOME_ALONG).map((spot) => insideWorld(spot, figure));
 
-// The spots the figure rests on at home: the seats on its corners, else, when no corner holds a seat, its places along the edge on its feet
-const homeRests = (edge, figure, element) => {
-    const seats = homeSeats(edge, figure, element);
-    return seats.length ? seats : homeStands(edge, figure);
-};
-
-// A seat on a corner of the edge the figure stands on at home, or a place along it on its feet when no corner holds a seat; with nothing
-// there it sits on the foot of its world, its legs past it
-export function seatOf(figure, near) {
+// Where the figure rests at home: on a corner of the edge it stands on, on its feet; with nothing there, on the foot of its world
+export function restOf(figure, near) {
     const {element, edge} = groundEdge();
-    return {...freeSpot(homeRests(edge, figure, element), figure, near), view: null, on: element};
+    return {...freeSpot(homeCorners(edge, figure), figure, near), view: null, on: element};
 }
 
-// Where a figure that steps out of the way goes at home, its picture clear of `box`, the one it stepped aside from: a seat while it must
-// sit, else a seat or a place along the edge. The first free one on the right of the box is taken, free being that it hides nothing,
+// Where a figure that steps out of the way goes at home, its picture clear of `box`, the one it stepped aside from: a corner while it
+// rests, else a corner or a place along the edge. The first free one on the right of the box is taken, free being that it hides nothing,
 // else the one on either side that hides least; null when none at home is clear of the box.
-export function clearOf(box, figure, near, seated) {
+export function clearOf(box, figure, near, resting) {
     const {element, edge} = groundEdge();
-    const spots = (seated ? homeRests(edge, figure, element) : [...homeSeats(edge, figure, element), ...homeStands(edge, figure)]).filter(
+    const spots = (resting ? homeCorners(edge, figure) : [...homeCorners(edge, figure), ...homeStands(edge, figure)]).filter(
         (each) => !overlaps(boxAt(each, figure), box)
     );
     const right = freeSpot(

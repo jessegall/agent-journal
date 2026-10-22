@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.28
+
+- The avatar rests on its feet everywhere, on the compose box's corners and on the chat bubbles alike, and never sits. Sitting hung its legs over the face of what it sat on, so it looked as if it sank through the floor to the knees, and getting up looked like a jump.
+
 ## 4.5.27
 
 - An agent may say it is stuck only when every task left is blocked: journal stuck is refused while a task is open, in progress or parked.
