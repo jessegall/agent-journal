@@ -34,7 +34,7 @@ class OutputViews:
             return OutputView.unmeasured(output.row_id, (), ending)
         if not output.watch_reader:
             return OutputView.unmeasured(output.row_id, tuple(files.last(TAIL_LINES)), ending)
-        reader, lines = self.readers.lookup(output.watch_reader), files.lines()
+        reader, lines = self.readers.lookup(output.watch_reader).variant(output.stage()), files.lines()
         progress = reader.progress(lines)
         figure = progress.text() if progress.is_known() else ""
         return OutputView(output.row_id, tuple(reader.read(lines)[-VIEW_LINES:]), figure, progress.fraction(), ending)
@@ -43,7 +43,7 @@ class OutputViews:
         files = OutputFiles(Path(output.folder))
         if not output.watch_reader or not files.is_stored():
             return view.lines
-        return tuple(CardLine.plain(line) for _, line in self.readers.lookup(output.watch_reader).picked_lines(files.lines())[-VIEW_LINES:])
+        return tuple(CardLine.plain(line) for _, line in self.readers.lookup(output.watch_reader).variant(output.stage()).picked_lines(files.lines())[-VIEW_LINES:])
 
     @staticmethod
     def ending_lines(output: CommandOutput) -> tuple[str, ...]:

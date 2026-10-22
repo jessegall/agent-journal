@@ -22,14 +22,16 @@ SILENCE_SECONDS = 5.0
 BACKGROUND_CHECK_DELAY_SECONDS = 300.0
 ALIAS_RUNS = 3
 READER_RUNS = 5
+COUNTING_SUGGESTION_RUNS = 50
+TESTING = "testing"
 READER_REQUEST_COUNT = 3
 
 
 class ShellConduct(Conduct):
-    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone while an alias may chain, a read of an output by hand is pointed at a reader or asked to become one, a line an alias runs is pointed at the alias and a line run three times is asked to become one, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends."""
+    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone while an alias may chain, a read of an output by hand is pointed at a reader or asked to become one, a line an alias runs is pointed at the alias and a line run three times is asked to become one, a test run no counting reader reads is offered one on its first run and every fiftieth, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends."""
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return Transition.merged(self, [journal_isolation_check(self, event, settings), partial_read_check(self, event, settings), readers_check(self, event, settings), alias_check(self, event, settings), reader_suggestion_check(self, event, settings)])
+        return Transition.merged(self, [journal_isolation_check(self, event, settings), partial_read_check(self, event, settings), readers_check(self, event, settings), alias_check(self, event, settings), reader_suggestion_check(self, event, settings), counting_reader_check(self, event, settings)])
 
     def on_tool_finished(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
@@ -91,6 +93,16 @@ def reader_suggestion_check(state: BaseState, event: ToolStarting, settings: Set
         return state.none()
     tip = Shell.NEW_READER_SUGGESTION.create(command=shape)
     return state.none() if tip.rendered() in shell.tipped else state.none(tip)
+
+
+def counting_reader_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    from journal.features.shell.feature import Shell
+    shape = event.call.recorded().shape
+    if ActivityLabel.build(shape) != TESTING or event.shape_runs % COUNTING_SUGGESTION_RUNS != 1:
+        return state.none()
+    if any(r.is_counting() and r.commands.is_read(event.call.command) for r in event.data.part(Shell).readers):
+        return state.none()
+    return state.none(Shell.COUNTING_READER_SUGGESTION.create(command=shape))
 
 
 def alias_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:

@@ -64,7 +64,7 @@ class OutputCommand(Command):
             return 0
         lines = files.lines()
         if args.reader:
-            print("\n".join(self.readers.lookup(args.reader).read(lines)))
+            print("\n".join(self.readers.lookup(args.reader).variant(output.stage()).read(lines)))
             return 0
         if args.grep:
             print("\n".join(Reader("grep", "the lines matching a pattern", args.grep).read(lines)))

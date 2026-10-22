@@ -49,6 +49,7 @@ class Shell(Feature[ShellData]):
     UNREAD_OUTPUT = Nudge(name, "unread_output", "{{outputs}}, and you have not read it yet", repeat_interval=0)
     WATCH_ENDED = Nudge(name, "watched_output_ended", "output {{n}}, which you watched, {{ending}}:\n{{lines}}", "the watch has ended", repeat_interval=0)
     WATCH_SUGGESTION = Nudge(name, "watch_it_live", "watch it live, so the user sees it move: `journal output watch {{n}}{{reader}} --title \"<what it is doing, such as Running tests>\"`", "or `journal await \"<what>\" --output {{n}}{{reader}}` when you wait on it", repeat_interval=0)
+    COUNTING_READER_SUGGESTION = Nudge(name, "counting_reader_suggestion", "a suggestion, not a must: no reader counts passed and failed for {{command}}, so its card cannot show them while it runs", "if it helps, `journal reader add <name> --commands \"{{command}}\" --pattern '<its failure lines>' --progress '<a count of a total, in groups>' --finished '<its summary line>' --failed '<its failures>' --label 'Running tests'`", repeat_interval=0)
     NEW_READER_SUGGESTION = Nudge(name, "make_its_reader", "no reader reads {{command}} yet: make one, and its card shows how far it is", "`journal reader add <name> --commands \"{{command}}\" --pattern '<its failure and summary lines>' --progress '<a percent or a count of a total, in groups>' --label 'Running tests'`, then watch it with --reader <name>; the next run is told of it by itself", repeat_interval=0)
     READER_FIX = Nudge(name, "fix_the_reader", "the reader {{reader}} put a line on output {{n}}'s card that reads as code or data, or is too long for the card, for the user: {{line}}", "tighten its pattern to short lines a person reads as how the run goes, such as its summary: `journal reader add {{reader}} --pattern '<those lines>' ...` writes it anew", repeat_interval=0)
     READER_REWRITE_REQUEST = Nudge(name, "fix_the_reader_first", "the reader {{reader}} was asked three times to read better on its card", "write it anew first, `journal reader add {{reader}} --pattern '<short lines a person reads>' ...`; your other tools wait until you have", repeat_interval=0)
@@ -59,7 +60,7 @@ class Shell(Feature[ShellData]):
     ALIAS_WATCH = Nudge(name, "watched_alias_output", "output {{n}}, the run of journal {{name}}, is watched{{reader}}", repeat_interval=0)
     ALIAS_HINT = Nudge(name, "use_the_alias", "journal {{name}} runs this line: {{line}}", "run `journal {{name}} [args]` next time: it passes the args on and watches a long run through its reader", repeat_interval=0)
     ALIAS_SUGGESTION = Nudge(name, "add_an_alias", "you ran {{shape}} three times or more", "make it an alias, `journal alias add <name> \"<the line without the values that change>\"{{reader}}`, and run `journal <name> <those values>` from then on", repeat_interval=0)
-    nudges = (READER_FIX, READER_REWRITE_REQUEST, READER_REWRITE_NOTICE, READER_DETAIL, READER_TOPIC, READER_WATCH, ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, UNREAD_OUTPUT, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
+    nudges = (READER_FIX, READER_REWRITE_REQUEST, READER_REWRITE_NOTICE, READER_DETAIL, READER_TOPIC, READER_WATCH, ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, COUNTING_READER_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, UNREAD_OUTPUT, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands
@@ -91,6 +92,8 @@ Every shell command you run goes through the journal's runner.
   `\\[(\\d+)%\\]` or a count of a total such as `(\\d+)/(\\d+)`, drawn as a bar in the card, and `--label "<words>"` says what the run is doing, such as Running tests or Building the
   application, never a bare name such as Tests; `--topic '<pattern>'`, read over the command line, adds what a run is about
   after the title, such as the test files or the -k a line names, for a command run with different arguments.
+  `--finished '<pattern>'` and `--failed '<pattern>'` pick other lines once the command finished or failed, such as its summary
+  or its failures; a script reader finds which in JOURNAL_OUTPUT_STAGE: running, finished or failed.
 - A reader names the commands whose output it reads, `--commands "pytest"`, and a command moved to the background that
   runs one is told to watch it with that reader, so one reader serves every later run; a test run or a build no reader
   reads is told to make one first, with the line to copy. The journal ships readers for pytest, dotnet test and phpunit

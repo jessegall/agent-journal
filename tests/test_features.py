@@ -9284,3 +9284,40 @@ def test_a_worker_is_dispatched_only_to_change_something_and_a_read_only_job_is_
     from journal.repositories.workers import Workers
     with app.container.get(Scope).environment(MAIN):
         assert "You change: src/journal/repositories" in app.container.get(Workers).find(1).brief, "and the worker is told what it changes"
+
+
+def test_a_reader_shows_its_running_finished_and_failed_variant_each_at_its_stage(app: App):
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    hook(app, "SessionStart")
+    console, outputs = app.console(), app.container.get(CommandOutputs)
+    folder = app.config.root / "w"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text("pytest -q")
+    (folder / "0.out").write_text("[ 40%] test_a\nFAILED test_b\n3 passed, 1 failed in 2.0s\n")
+    app.container.get(OutputLog).start("w", "pytest", folder, Caller.agent("main", "s1", "claude"))
+    console.run(["reader", "add", "variants", "--pattern", r"\[ *\d+%\]", "--finished", "passed", "--failed", "^FAILED", "--about", "a test run", "--label", "Running tests"], AGENT)
+    read = lambda: console.run(["output", "read", "1", "--reader", "variants"], AGENT).text
+    assert read() == "1: [ 40%] test_a\n", "while it runs, the reader's own pattern"
+    outputs.save(outputs.find(1).ended_with(1, 0.0), Actor.system())
+    assert read() == "2: FAILED test_b\n", "once it failed, the failed variant"
+    outputs.save(outputs.find(1).with_(status=0), Actor.system())
+    assert read() == "3: 3 passed, 1 failed in 2.0s\n", "once it finished, the finished variant"
+    console.run(["reader", "add", "plain", "--pattern", "FAILED", "--about", "the failures"], AGENT)
+    assert console.run(["output", "read", "1", "--reader", "plain"], AGENT).text == "2: FAILED test_b\n", "a reader with one pattern reads as before"
+    script = app.config.root / "stage.sh"
+    script.write_text('echo "stage $JOURNAL_OUTPUT_STAGE"\n')
+    console.run(["reader", "add", "stages", "--script", str(script), "--about", "the stage"], AGENT)
+    assert console.run(["output", "read", "1", "--reader", "stages"], AGENT).text == "stage finished\n", "a script reader is handed the stage"
+
+
+def test_a_test_run_no_counting_reader_reads_is_offered_one_on_its_first_run_and_every_fiftieth(app: App):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    told = ["counts passed and failed" in json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cargo test"})[1]) for i in range(52)]
+    assert [i for i, said in enumerate(told) if said] == [0, 50], "the first run, then the fifty-first"
+    assert not any("counts passed and failed" in json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "pytest -q"})[1]) for _ in range(2)), "pytest is read by the counting reader the journal ships"
+    app.console().run(["reader", "add", "counts", "--pattern", "passed", "--progress", r"(\d+)/(\d+)", "--commands", "cargo test", "--about", "the counts", "--label", "Running tests"], AGENT)
+    told = ["counts passed and failed" in json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "cargo test"})[1]) for i in range(50)]
+    assert not any(told), "never once a counting reader reads it"

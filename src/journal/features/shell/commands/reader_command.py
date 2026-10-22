@@ -35,6 +35,8 @@ class ReaderCommand(Command):
         addition.add_argument("--topic", default="", help="a pattern read over the command line whose matches say what a run is about, after the card's title: the test files a line names, or its -k, such as '(\\S+\\.py)'")
         addition.add_argument("--label", default="", help="what the run is doing, the card's title and the words before its progress, such as Running tests")
         addition.add_argument("--step", default="", help="a pattern for one step, such as a test's dot, that moves the progress between two of its counts")
+        addition.add_argument("--finished", default="", help="a pattern for the lines it picks once the command finished, such as its summary; the pattern picks them while it runs")
+        addition.add_argument("--failed", default="", help="a pattern for the lines it picks once the command failed, such as its failures; the pattern picks them while it runs")
         addition.add_argument("--commands", default="", help="the commands whose output it reads, comma-separated, such as pytest or dotnet test: a command moved to the background that runs one is told to watch it with this reader")
         self.verb(verbs, "list", "the project's readers, each with what it picks")
 
@@ -45,8 +47,9 @@ class ReaderCommand(Command):
             self.readers.add_script(args.name, args.about, args.script, ReaderCommands.parsed(args.commands))
         else:
             re.compile(args.pattern)
-            re.compile(args.progress)
-            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, ActivityTitle.checked(args.label), ReaderCommands.parsed(args.commands), args.step, args.topic))
+            for pattern in (args.progress, args.finished, args.failed):
+                re.compile(pattern)
+            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, ActivityTitle.checked(args.label), ReaderCommands.parsed(args.commands), args.step, args.topic, args.finished, args.failed))
         for output in self.outputs.reader_outputs(args.name):
             self.views.card(output)
         print(f"reader {args.name} added: journal output read N --reader {args.name}")
