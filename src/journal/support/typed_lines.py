@@ -67,13 +67,15 @@ class TypedLines:
         return any(t.environment_id == environment_id for t in self._waiting)
 
     def queue(self, line: QueuedLine) -> None:
+        if any(h.environment_id == line.environment_id and h.line == line.line for h in self._held):
+            return
         self._held.append(line)
 
     def batched(self, environment_id: int) -> QueuedLine | None:
-        blocked = [h for h in self._held if h.environment_id == environment_id]
+        blocked = [h for h in self._held if h.environment_id == environment_id and not h.is_remark]
         if not blocked:
             return None
-        self._held = [h for h in self._held if h.environment_id != environment_id]
+        self._held = [h for h in self._held if h not in blocked]
         lines = [h.line.removeprefix(JOURNAL_PREFIX).strip() for h in blocked]
         return QueuedLine(environment_id, f"{JOURNAL_PREFIX} {TypedLine.SEPARATOR.join(lines)}", max(h.delay_seconds for h in blocked))
 

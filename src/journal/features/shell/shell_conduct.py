@@ -20,7 +20,6 @@ SILENCE_SECONDS = 5.0
 BACKGROUND_CHECK_DELAY_SECONDS = 300.0
 ALIAS_RUNS = 3
 READER_RUNS = 5
-INTERPRETERS = frozenset({"python", "python3", "node", "perl", "ruby", "php", "sh", "bash", "zsh"})
 
 
 class ShellConduct(Conduct):
@@ -90,7 +89,7 @@ def alias_check(state: BaseState, event: ToolStarting, settings: Settings) -> Tr
     if hints:
         return state.none(hints[0])
     command, shape = event.call.command, event.call.recorded().shape
-    if event.shape_runs < ALIAS_RUNS or Chain.is_journal(command) or Chain.is_read_line(command) or shape in INTERPRETERS:
+    if event.shape_runs < ALIAS_RUNS or Chain.is_journal(command) or Chain.is_read_line(command) or " " not in shape:
         return state.none()
     reader = next((r.name for r in shell.readers if r.commands.is_read(command)), "<the reader that reads its output>")
     tip = Shell.ALIAS_SUGGESTION.create(shape=shape, reader=f" --reader {reader}")

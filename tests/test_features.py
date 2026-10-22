@@ -955,7 +955,8 @@ def test_shop_talk_and_the_third_person_are_named(app: App, monkeypatch):
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message="I ran journal task start 3 because the user wants it.")
     app.runtime().deferred.drain()
-    assert any("talks about the journal's commands" in t for t in keystrokes) and any("say you, never the user" in t for t in keystrokes)
+    told = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b.py"})[1]["hookSpecificOutput"]["additionalContext"]
+    assert "talks about the journal's commands" in told and "say you, never the user" in told, "both remarks ride on the next tool use"
 
 
 def test_a_subagents_dispatch_and_its_end_are_two_marks_in_the_chat(app: App):
@@ -1295,6 +1296,24 @@ def test_a_finished_output_left_unread_is_named_again_after_five_tool_uses_and_q
     assert not any("not read it yet" in line for line in later), "once read, it is named no more"
 
 
+def test_a_remark_waits_for_the_next_hook_and_a_line_queued_twice_goes_once(app: App, monkeypatch):
+    """A remark asks for nothing now, so an idle agent is not woken for it: it rides on the next tool use; the same line queued twice is said once."""
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    hook(app, "MessageDisplay", message="The footer — the one on the phone page — is fixed.")
+    app.runtime().deferred.drain()
+    assert not any("em dashes" in line for line in keystrokes), "the remark is not typed to the idle agent"
+    reply = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b.py"})[1]
+    assert "em dashes" in reply.get("hookSpecificOutput", {}).get("additionalContext", ""), (reply, keystrokes)
+    link = app.container.get(SupervisorLink)
+    link.working(1)
+    link.type(1, "output 4 finished")
+    link.type(1, "output 4 finished")
+    assert link.pending_lines(1) == "output 4 finished", "a line already queued is not queued again"
+
+
 def test_a_journal_line_typed_as_a_prompt_gets_no_repeat_of_itself(app: App):
     """A prompt that is a journal line already says its words, so its hook adds no line it carries."""
     hook(app, "SessionStart")
@@ -1414,7 +1433,8 @@ def test_em_dashes_and_run_together_paragraphs_are_pointed_out(app: App, monkeyp
     hook(app, "MessageDisplay", message="The build — the one from last night — is green.")
     hook(app, "MessageDisplay", message=("The build is green. " * 25).strip())
     app.runtime().deferred.drain()
-    assert any("em dashes" in line for line in keystrokes) and any("no blank lines between paragraphs" in line for line in keystrokes)
+    told = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b.py"})[1]["hookSpecificOutput"]["additionalContext"]
+    assert "em dashes" in told and "no blank lines between paragraphs" in told, "both remarks ride on the next tool use"
 
 
 def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app: App, monkeypatch):

@@ -14,5 +14,8 @@ class Event:
     def key(self) -> str:
         return re.sub(r"(?<!^)(?=[A-Z])", "_", type(self).__name__).lower()
 
+    def has_hook_lines(self) -> bool:
+        return False
+
     def stop_propagation(self) -> None:
         self.propagation.stop()

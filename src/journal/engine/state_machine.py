@@ -24,6 +24,7 @@ from journal.events.bus import Bus
 from journal.events.agent_listener import AgentListener
 from journal.support.decision import Decision
 from journal.support.actor import Actor
+from journal.engine.nudge import Nudge
 from journal.models.agent import Agent
 from journal.support.rejection import Rejection
 from journal.repositories.agents import Agents
@@ -81,6 +82,10 @@ class StateMachine(AgentListener[AgentEvent]):
             self.agents.save(agent.queued(decision.context), Actor.system())
         return Decision(decision.allowed, decision.reason)
 
+    @staticmethod
+    def is_queued_remark(agent: Agent, nudge: Nudge, event: AgentEvent | RowEvent) -> bool:
+        return nudge.is_remark and not event.has_hook_lines() and agent.role != AgentRole.WORKER
+
     def type_lines(self, environment_id: int, lines: str, following: float) -> None:
         for line in lines.split("\n"):
             self.supervisor.type(environment_id, line, following=following)
@@ -110,7 +115,11 @@ class StateMachine(AgentListener[AgentEvent]):
         if transition.dropped:
             self.entries.save(StackHistory.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
         agent = self._store(agent, machine_answer, event.key, Actor.system())
-        lines = [line for nudge in (*transition.nudges, *machine_answer.nudges) if (line := self.nudger.deliver(agent, nudge))]
+        nudge_lines = [(nudge, line) for nudge in (*transition.nudges, *machine_answer.nudges) if (line := self.nudger.deliver(agent, nudge))]
+        remark_lines = [line for nudge, line in nudge_lines if self.is_queued_remark(agent, nudge, event)]
+        for remark in remark_lines:
+            self.supervisor.remark(agent.environment_id, remark)
+        lines = [line for _, line in nudge_lines if line not in remark_lines]
         keystrokes = [line for nudge in transition.terminal_lines if (line := self.nudger.deliver(agent, nudge))]
         for line in keystrokes:
             self.supervisor.type(agent.environment_id, line, following=event.typing_delay)

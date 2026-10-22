@@ -39,6 +39,10 @@ class SupervisorLink:
             return
         self.type_whole(environment_id, flagged, following)
 
+    def remark(self, environment_id: int, line: str) -> None:
+        if not self.typed.is_disabled(environment_id):
+            self.typed.queue(QueuedLine(environment_id, f"{JOURNAL_PREFIX} {' '.join(line.split())}", is_remark=True))
+
     def type_whole(self, environment_id: int, flagged: str, following: float) -> None:
         segment, remainder = TypedLine.opening_segment(flagged, JOURNAL_PREFIX)
         self.typed.typed(environment_id, segment)
